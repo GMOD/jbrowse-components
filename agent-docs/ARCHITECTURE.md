@@ -101,7 +101,7 @@ is declared in `STATES_NO_RULES`.
 
 ### Fetch
 
-- Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
+- Don't put fetch-result derivatives (`cellData`, `samplePloidy`, etc.) into
   `rpcProps()`; it is an infinite fetch loop. See
   [the trap](reference/FETCH_KEYS.md#rpcprops-loop-trap-and-how-to-break-it).
 - Don't declare `rpcProps`, `zoomFetchArgs`, `regionHasData` or `isCacheValid`

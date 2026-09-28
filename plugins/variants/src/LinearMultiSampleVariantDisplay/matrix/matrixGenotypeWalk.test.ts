@@ -31,9 +31,8 @@ function matrixCellData({ ref = [], alt = [] }: Cells): CellDataResult {
   const rows = [...ref.toSorted(byRow), ...alt.toSorted(byRow)]
   return {
     mode: 'matrix',
-    sampleInfo: {},
+    samplePloidy: {},
     rowNames: SAMPLE_NAMES,
-    hasPhased: false,
     hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
     hasUnphased: false,

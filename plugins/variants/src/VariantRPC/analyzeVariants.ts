@@ -16,7 +16,6 @@ import {
 import { featureHasConsequence } from '../shared/variantConsequence.ts'
 
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
-import type { SampleInfo } from '../shared/types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
@@ -74,36 +73,28 @@ export function packGenotypeKey(str: string, start: number, end: number) {
   return (seen & 0xff80) === 0 ? key : 0
 }
 
-// Merge one sample's per-feature ploidy/phasing into the running sampleInfo
-// (max ploidy seen, phased if ever phased).
-function accumulateSampleInfo(
-  sampleInfo: Record<string, SampleInfo>,
+// The most alleles any of a sample's genotypes carried
+function accumulatePloidy(
+  samplePloidy: Record<string, number>,
   key: string,
   ploidy: number,
-  isPhased: boolean,
 ) {
-  const existing = sampleInfo[key]
-  if (existing) {
-    if (ploidy > existing.maxPloidy) {
-      existing.maxPloidy = ploidy
-    }
-    existing.isPhased ||= isPhased
-  } else {
-    sampleInfo[key] = { maxPloidy: ploidy, isPhased }
+  const existing = samplePloidy[key]
+  if (existing === undefined || ploidy > existing) {
+    samplePloidy[key] = ploidy
   }
 }
 
 export interface AnalyzedVariants {
   // The features the filters kept, each with its most frequent alt allele
   filteredVariants: FilteredVariant[]
-  sampleInfo: Record<string, SampleInfo>
-  hasPhased: boolean
+  samplePloidy: Record<string, number>
   // Whether any called genotype is one the phased painter treats as phased or
   // haploid data — `isPhasedOrHaploid` in shared/getPhasedColor.ts, i.e. it
-  // carries no `/`. Wider than `hasPhased`, deliberately: a pangenome callset is
-  // haploid per assembly path and `vg deconstruct` writes bare `0`/`1`/`23`, so
-  // no `|` appears anywhere in a file phased mode renders correctly. This is
-  // what gates the menu entry, so the gate matches the painter.
+  // carries no `/`. Not "any `|`": a pangenome callset is haploid per assembly
+  // path and `vg deconstruct` writes bare `0`/`1`/`23`, so no `|` appears
+  // anywhere in a file phased mode renders correctly. This is what gates the
+  // menu entry, so the gate matches the painter.
   //
   // The one place it is narrower than the per-genotype predicate is an uncalled
   // genotype: `.` and `.|.` carry no `/` but are no data, so they count toward
@@ -198,7 +189,7 @@ export function buildHeaderRemap(
 
 /**
  * The one pass over a fetch's genotypes: the feature filters, and everything
- * the cell loops and the legend need — per-sample ploidy/phasing, the legend
+ * the cell loops and the legend need — per-sample ploidy, the legend
  * flags and each kept feature's interned genotype codes.
  *
  * `processGenotypes` reports each genotype as a range into the line, and a
@@ -212,7 +203,7 @@ export function buildHeaderRemap(
  * With a MAF or missingness threshold set, `getFilteredVariants`' cheaper
  * count drops the sites it rejects first: the analysis costs more per cell than
  * the count does, and a threshold typically keeps a small fraction of a
- * window. Ploidy and phasing fold in from the sites the analysis walks.
+ * window. Ploidy folds in from the sites the analysis walks.
  */
 export function analyzeVariants({
   features,
@@ -227,8 +218,7 @@ export function analyzeVariants({
   filterChain?: SerializableFilterChain
   report?: ProgressReporter
 }): AnalyzedVariants {
-  const sampleInfo: Record<string, SampleInfo> = {}
-  let hasPhased = false
+  const samplePloidy: Record<string, number> = {}
   let hasPhasedOrHaploid = false
   let hasConsequence = false
   let hasPhaseSet = false
@@ -271,14 +261,12 @@ export function analyzeVariants({
   const memoLen = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoCode = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoPloidy = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
-  const memoPhased = new Uint8Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoCount = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
 
-  // Per-sample ploidy/phasing, indexed by canonical column and folded into
-  // `sampleInfo` once after the pass. Ploidy 0 means the column was never
-  // reported, which keeps a sample with no genotype out of `sampleInfo`.
+  // Per-sample ploidy, indexed by canonical column and folded into
+  // `samplePloidy` once after the pass. Ploidy 0 means the column was never
+  // reported, which keeps a sample with no genotype out of `samplePloidy`.
   const ploidyByColumn = new Int32Array(numSamples)
-  const phasedByColumn = new Uint8Array(numSamples)
 
   // Records to intern once the canonical order is known; only ever populated on
   // the no-header-sample-list path below.
@@ -359,20 +347,17 @@ export function analyzeVariants({
             if (memoPloidy[m]! > ploidyByColumn[column]!) {
               ploidyByColumn[column] = memoPloidy[m]!
             }
-            phasedByColumn[column] ||= memoPhased[m]!
             return
           }
         }
 
         let ploidy = 1
         let called = false
-        let phased = false
         let unphased = false
         for (let i = start; i < end; i++) {
           const c = str.charCodeAt(i)
           if (c === 124 /* | */) {
             ploidy++
-            phased = true
           } else if (c === 47 /* / */) {
             ploidy++
             unphased = true
@@ -380,13 +365,9 @@ export function analyzeVariants({
             called = true
           }
         }
-        hasPhased ||= phased
         hasPhasedOrHaploid ||= called && !unphased
         if (ploidy > ploidyByColumn[column]!) {
           ploidyByColumn[column] = ploidy
-        }
-        if (phased) {
-          phasedByColumn[column] = 1
         }
 
         // An empty range is a sample whose colon-separated FORMAT fields stop
@@ -405,7 +386,6 @@ export function analyzeVariants({
           memoLen[memoN] = len
           memoCode[memoN] = code
           memoPloidy[memoN] = ploidy
-          memoPhased[memoN] = phased ? 1 : 0
           memoCount[memoN] = 1
           memoN++
         } else {
@@ -431,13 +411,11 @@ export function analyzeVariants({
         const val = record[key]!
         let ploidy = 1
         let called = false
-        let phased = false
         let unphased = false
         for (let i = 0, l = val.length; i < l; i++) {
           const c = val.charCodeAt(i)
           if (c === 124 /* | */) {
             ploidy++
-            phased = true
           } else if (c === 47 /* / */) {
             ploidy++
             unphased = true
@@ -445,9 +423,8 @@ export function analyzeVariants({
             called = true
           }
         }
-        hasPhased ||= phased
         hasPhasedOrHaploid ||= called && !unphased
-        accumulateSampleInfo(sampleInfo, key, ploidy, phased)
+        accumulatePloidy(samplePloidy, key, ploidy)
       }
       alleleCounts = calculateAlleleCounts(record)
     }
@@ -489,26 +466,21 @@ export function analyzeVariants({
     }
   }
 
-  // Fold the column-indexed ploidy/phasing into `sampleInfo`, through the same
-  // merge the record path uses so a fetch mixing the two agrees. Runs before
-  // the record block below, which reads `sampleInfo`'s keys to extend the
+  // Fold the column-indexed ploidy into `samplePloidy`, through the same merge
+  // the record path uses so a fetch mixing the two agrees. Runs before the
+  // record block below, which reads `samplePloidy`'s keys to extend the
   // canonical order.
   for (let column = 0; column < numSamples; column++) {
     const ploidy = ploidyByColumn[column]!
     if (ploidy > 0) {
-      accumulateSampleInfo(
-        sampleInfo,
-        sampleNames[column]!,
-        ploidy,
-        phasedByColumn[column] === 1,
-      )
+      accumulatePloidy(samplePloidy, sampleNames[column]!, ploidy)
     }
   }
 
   if (pendingRecords.length > 0) {
     // Record-backed adapters: the sample universe is whatever the records
     // mention, in first-seen order.
-    for (const key in sampleInfo) {
+    for (const key in samplePloidy) {
       if (!sampleIndexByName.has(key)) {
         sampleIndexByName.set(key, sampleNames.length)
         sampleNames.push(key)
@@ -534,8 +506,7 @@ export function analyzeVariants({
 
   return {
     filteredVariants,
-    sampleInfo,
-    hasPhased,
+    samplePloidy,
     hasPhasedOrHaploid,
     hasConsequence,
     hasPhaseSet,

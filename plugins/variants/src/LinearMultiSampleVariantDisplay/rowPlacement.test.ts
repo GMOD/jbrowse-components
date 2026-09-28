@@ -26,11 +26,8 @@ function regularCellData(rowNames: string[]): CellDataResult {
   const numCells = rowNames.length
   return {
     mode: 'regular',
-    sampleInfo: Object.fromEntries(
-      SAMPLES.map(name => [name, { maxPloidy: 2, isPhased: false }]),
-    ),
+    samplePloidy: Object.fromEntries(SAMPLES.map(name => [name, 2])),
     rowNames,
-    hasPhased: false,
     hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
     hasUnphased: false,

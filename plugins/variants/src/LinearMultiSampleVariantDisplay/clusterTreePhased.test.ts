@@ -3,13 +3,13 @@ import { createTestEnvironment } from './testEnv.ts'
 
 // The phased counterpart to clusterTreeLands.test.ts. There the rows the tree
 // names are samples; here they are haplotypes, and the display only knows how
-// many each sample has once `sampleInfo` has arrived on `cellData`.
+// many each sample has once `samplePloidy` has arrived on `cellData`.
 const SOURCES = [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }]
 
-const SAMPLE_INFO = {
-  S0: { maxPloidy: 2 },
-  S1: { maxPloidy: 2 },
-  S2: { maxPloidy: 2 },
+const SAMPLE_PLOIDY = {
+  S0: 2,
+  S1: 2,
+  S2: 2,
 }
 
 // Six haplotype rows, reordered so S2's pair leads. hclust's `order` is the leaf
@@ -25,10 +25,10 @@ async function clusterPhased() {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SOURCES)
   display.setPhasedMode('phased')
-  // sampleInfo reaches the model only through cellData, which is what
+  // samplePloidy reaches the model only through cellData, which is what
   // `clusteringReady` waits for in phased mode
   display.setCellData({
-    sampleInfo: SAMPLE_INFO,
+    samplePloidy: SAMPLE_PLOIDY,
     rowNames: ['S0 HP0', 'S0 HP1', 'S1 HP0', 'S1 HP1', 'S2 HP0', 'S2 HP1'],
   } as unknown as Parameters<typeof display.setCellData>[0])
 
@@ -45,14 +45,14 @@ async function clusterPhased() {
   return display
 }
 
-test('phased mode reports itself ready to cluster once sampleInfo lands', () => {
+test('phased mode reports itself ready to cluster once samplePloidy lands', () => {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SOURCES)
   display.setPhasedMode('phased')
   expect(display.clusteringReady).toBe(false)
 
   display.setCellData({
-    sampleInfo: SAMPLE_INFO,
+    samplePloidy: SAMPLE_PLOIDY,
     rowNames: [],
   } as unknown as Parameters<typeof display.setCellData>[0])
   expect(display.clusteringReady).toBe(true)

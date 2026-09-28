@@ -19,7 +19,6 @@ import { orderByScreenPosition } from './orderByScreenPosition.ts'
 
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../LinearMultiSampleVariantDisplay/matrix/computeVariantMatrixCells.ts'
-import type { SampleInfo } from '../shared/types.ts'
 import type { SimplifiedVariantFeature } from './analyzeVariants.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -49,14 +48,13 @@ function paintedLegendFlags(
 }
 
 interface CellDataBase {
-  sampleInfo: Record<string, SampleInfo>
+  samplePloidy: Record<string, number>
   // Names the worker's row list, aligned to the `cellRowIndices` the cell arrays
   // carry: `rowNames[cellRowIndices[i]]` is the row cell `i` belongs to. The
   // client turns these into screen rows by name — nothing positional survives
   // the boundary. Haplotype rows are named by the shared "<sampleName> HP<n>"
   // convention, so they match the client's expansion exactly.
   rowNames: string[]
-  hasPhased: boolean
   // Whether any called genotype is phased OR haploid, which is the predicate the
   // phased painter uses (`isPhasedOrHaploid`) and so the one that gates the
   // "Phased" rendering-mode entry — see analyzeVariants.
@@ -157,8 +155,7 @@ export async function executeVariantCellData({
   }
   const {
     filteredVariants: passing,
-    sampleInfo,
-    hasPhased,
+    samplePloidy,
     hasPhasedOrHaploid,
     hasConsequence,
     hasPhaseSet,
@@ -204,11 +201,11 @@ export async function executeVariantCellData({
 
   // The worker's own row list, in its own arbitrary order — see
   // buildCanonicalRows. Phased mode expands to per-haplotype rows here, using
-  // the sampleInfo just computed, which is also why the client cannot send
-  // expanded sources: sampleInfo is fetch-derived and putting it in `rpcProps()`
+  // the ploidy just computed, which is also why the client cannot send
+  // expanded sources: ploidy is fetch-derived and putting it in `rpcProps()`
   // would loop.
   const effectiveSources = buildCanonicalRows({
-    sampleInfo,
+    samplePloidy,
     sampleFilter,
     renderingMode,
   })
@@ -288,9 +285,8 @@ export async function executeVariantCellData({
     return rpcResult(
       {
         mode: 'regular' as const,
-        sampleInfo,
+        samplePloidy,
         rowNames,
-        hasPhased,
         hasPhasedOrHaploid,
         ...painted,
         hasConsequence,
@@ -339,9 +335,8 @@ export async function executeVariantCellData({
     return rpcResult(
       {
         mode: 'matrix' as const,
-        sampleInfo,
+        samplePloidy,
         rowNames,
-        hasPhased,
         hasPhasedOrHaploid,
         ...paintedLegendFlags([cellData]),
         hasConsequence,

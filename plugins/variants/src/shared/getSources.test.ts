@@ -8,12 +8,12 @@ import {
 describe('expandSourcesToHaplotypes', () => {
   test('expands diploid samples to two haplotypes', () => {
     const sources = [{ name: 'HG001' }, { name: 'HG002' }]
-    const sampleInfo = {
-      HG001: { isPhased: true, maxPloidy: 2 },
-      HG002: { isPhased: true, maxPloidy: 2 },
+    const samplePloidy = {
+      HG001: 2,
+      HG002: 2,
     }
 
-    const result = expandSourcesToHaplotypes({ sources, sampleInfo })
+    const result = expandSourcesToHaplotypes({ sources, samplePloidy })
 
     expect(result).toEqual([
       { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
@@ -25,12 +25,12 @@ describe('expandSourcesToHaplotypes', () => {
 
   test('handles variable ploidy', () => {
     const sources = [{ name: 'HG001' }, { name: 'HG002' }]
-    const sampleInfo = {
-      HG001: { isPhased: true, maxPloidy: 2 },
-      HG002: { isPhased: true, maxPloidy: 3 },
+    const samplePloidy = {
+      HG001: 2,
+      HG002: 3,
     }
 
-    const result = expandSourcesToHaplotypes({ sources, sampleInfo })
+    const result = expandSourcesToHaplotypes({ sources, samplePloidy })
 
     expect(result).toHaveLength(5)
     expect(result[2]).toMatchObject({
@@ -47,21 +47,21 @@ describe('expandSourcesToHaplotypes', () => {
 
   test('a haploid sample keeps its own name', () => {
     const sources = [{ name: 'CFT073' }, { name: 'HG001' }]
-    const sampleInfo = {
-      CFT073: { isPhased: true, maxPloidy: 1 },
-      HG001: { isPhased: true, maxPloidy: 2 },
+    const samplePloidy = {
+      CFT073: 1,
+      HG001: 2,
     }
 
     expect(
-      expandSourcesToHaplotypes({ sources, sampleInfo }).map(s => s.name),
+      expandSourcesToHaplotypes({ sources, samplePloidy }).map(s => s.name),
     ).toEqual(['CFT073', 'HG001 HP0', 'HG001 HP1'])
   })
 
-  test('defaults to ploidy 2 when sampleInfo missing', () => {
+  test('defaults to ploidy 2 when samplePloidy missing', () => {
     const sources = [{ name: 'HG001' }]
-    const sampleInfo = {}
+    const samplePloidy = {}
 
-    const result = expandSourcesToHaplotypes({ sources, sampleInfo })
+    const result = expandSourcesToHaplotypes({ sources, samplePloidy })
 
     expect(result).toEqual([
       { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
@@ -77,22 +77,22 @@ describe('expandSourcesToHaplotypes', () => {
       { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
       { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
     ]
-    const sampleInfo = {
-      HG001: { isPhased: true, maxPloidy: 2 },
+    const samplePloidy = {
+      HG001: 2,
     }
 
-    const result = expandSourcesToHaplotypes({ sources, sampleInfo })
+    const result = expandSourcesToHaplotypes({ sources, samplePloidy })
 
     expect(result).toEqual(sources)
   })
 
   test('preserves other source properties', () => {
     const sources = [{ name: 'HG001', color: 'red', group: 'family1' }]
-    const sampleInfo = {
-      HG001: { isPhased: true, maxPloidy: 2 },
+    const samplePloidy = {
+      HG001: 2,
     }
 
-    const result = expandSourcesToHaplotypes({ sources, sampleInfo })
+    const result = expandSourcesToHaplotypes({ sources, samplePloidy })
 
     expect(result[0]).toMatchObject({
       name: 'HG001 HP0',

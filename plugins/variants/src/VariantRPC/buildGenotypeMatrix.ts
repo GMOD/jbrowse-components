@@ -1,7 +1,7 @@
 import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
 import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
 
-import type { SampleInfo, Source } from '../shared/types.ts'
+import type { Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
@@ -31,11 +31,14 @@ export async function buildGenotypeMatrix({
     filters?: SerializableFilterChain
     statusCallback?: StatusCallback
     renderingMode?: string
-    sampleInfo?: Record<string, SampleInfo>
+    samplePloidy?: Record<string, number>
   }
 }) {
-  const { renderingMode, sampleInfo } = args
-  return renderingMode === 'phased' && sampleInfo
-    ? getPhasedGenotypeMatrix({ pluginManager, args: { ...args, sampleInfo } })
+  const { renderingMode, samplePloidy } = args
+  return renderingMode === 'phased' && samplePloidy
+    ? getPhasedGenotypeMatrix({
+        pluginManager,
+        args: { ...args, samplePloidy },
+      })
     : getGenotypeMatrix({ pluginManager, args })
 }

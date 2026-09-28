@@ -136,9 +136,7 @@ describe('the facet bands over the arranged order', () => {
     display.setPhasedMode('phased')
     display.setSources(SOURCES)
     display.setCellData({
-      sampleInfo: Object.fromEntries(
-        SOURCES.map(s => [s.name, { maxPloidy: 2 }]),
-      ),
+      samplePloidy: Object.fromEntries(SOURCES.map(s => [s.name, 2])),
     } as unknown as Parameters<typeof display.setCellData>[0])
     display.setRowOrder(
       ['S0', 'S1', 'S2'].flatMap(sampleName => [
@@ -463,10 +461,10 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     display.setSources(SOURCES)
     display.setCellData({
       ...ONE_VARIANT,
-      sampleInfo: {
-        S0: { maxPloidy: 2 },
-        S1: { maxPloidy: 2 },
-        S2: { maxPloidy: 2 },
+      samplePloidy: {
+        S0: 2,
+        S1: 2,
+        S2: 2,
       },
     } as unknown as Parameters<typeof display.setCellData>[0])
     display.setRowColorField('population')

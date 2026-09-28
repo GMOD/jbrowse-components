@@ -14,13 +14,16 @@ import type { MenuItem } from '@jbrowse/core/ui'
 //
 // No cells here — only the summary flags the worker ships alongside them, which
 // are what the menu reads.
-function cellData(flags: {
-  hasPhased: boolean
+function cellData({
+  ploidy,
+  ...flags
+}: {
+  ploidy: number
   hasPhasedOrHaploid: boolean
 }): CellDataResult {
   return {
     mode: 'regular',
-    sampleInfo: { S0: { maxPloidy: 2, isPhased: flags.hasPhased } },
+    samplePloidy: { S0: ploidy },
     rowNames: ['S0'],
     hasSecondaryAlt: false,
     hasUnphased: false,
@@ -37,10 +40,7 @@ function cellData(flags: {
   }
 }
 
-function phasedRow(flags?: {
-  hasPhased: boolean
-  hasPhasedOrHaploid: boolean
-}) {
+function phasedRow(flags?: { ploidy: number; hasPhasedOrHaploid: boolean }) {
   const { display } = createTestEnvironment().createDisplay()
   if (flags) {
     display.setCellData(cellData(flags))
@@ -62,11 +62,11 @@ function phasedRow(flags?: {
   return row as MenuItem & { label: string; disabled?: boolean }
 }
 
-const diploidPhased = { hasPhased: true, hasPhasedOrHaploid: true }
-const diploidUnphased = { hasPhased: false, hasPhasedOrHaploid: false }
+const diploidPhased = { ploidy: 2, hasPhasedOrHaploid: true }
+const diploidUnphased = { ploidy: 2, hasPhasedOrHaploid: false }
 // what a `vg deconstruct` pangenome VCF looks like: haploid everywhere, so no
-// `|` in the file and `hasPhased` false across the whole callset
-const haploid = { hasPhased: false, hasPhasedOrHaploid: true }
+// `|` in the file
+const haploid = { ploidy: 1, hasPhasedOrHaploid: true }
 
 test('offers phased mode on a phased diploid callset', () => {
   const row = phasedRow(diploidPhased)

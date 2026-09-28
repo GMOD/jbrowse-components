@@ -49,11 +49,11 @@ test('a legend focus in phased mode shows the group as haplotype rows', () => {
   const d = display()
   d.setPhasedMode('phased')
   d.setCellData({
-    sampleInfo: {
-      S0: { maxPloidy: 2 },
-      S1: { maxPloidy: 2 },
-      S2: { maxPloidy: 2 },
-      S3: { maxPloidy: 2 },
+    samplePloidy: {
+      S0: 2,
+      S1: 2,
+      S2: 2,
+      S3: 2,
     },
     rowNames: [],
   } as unknown as Parameters<typeof d.setCellData>[0])
@@ -64,7 +64,7 @@ test('a legend focus in phased mode shows the group as haplotype rows', () => {
   // samples that are left and the haplotype rows come back with them
   expect(d.sources.map(s => s.name)).toEqual(['S0', 'S2'])
   d.setCellData({
-    sampleInfo: { S0: { maxPloidy: 2 }, S2: { maxPloidy: 2 } },
+    samplePloidy: { S0: 2, S2: 2 },
     rowNames: [],
   } as unknown as Parameters<typeof d.setCellData>[0])
   expect(d.sources.map(s => s.name)).toEqual([
@@ -81,11 +81,11 @@ test('a legend focus after a phased clustering run names the haplotype rows', ()
   const d = display()
   d.setPhasedMode('phased')
   d.setCellData({
-    sampleInfo: {
-      S0: { maxPloidy: 2 },
-      S1: { maxPloidy: 2 },
-      S2: { maxPloidy: 2 },
-      S3: { maxPloidy: 2 },
+    samplePloidy: {
+      S0: 2,
+      S1: 2,
+      S2: 2,
+      S3: 2,
     },
     rowNames: [],
   } as unknown as Parameters<typeof d.setCellData>[0])

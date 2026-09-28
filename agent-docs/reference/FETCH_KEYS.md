@@ -324,14 +324,14 @@ server.
 
 In the variant case, `rpcProps().sampleFilter` reads `sourcesBase`, the
 adapter's samples narrowed to the focus before any haplotype expansion — which
-needs `sampleInfo` — so a focus naming haplotypes asks for their samples
+needs `samplePloidy` — so a focus naming haplotypes asks for their samples
 (`parseRowName`, the inverse of the haplotype naming). The client's `sources`
-view still reads `sampleInfo` for rendering, safe because it is not in
+view still reads `samplePloidy` for rendering, safe because it is not in
 `rpcProps()`. The worker expands to haplotype rows itself, after computing
-`sampleInfo` from the features.
+`samplePloidy` from the features.
 
 **Rule:** `rpcProps()` must contain only user-controlled settings. Never include
-`cellData`, `sampleInfo`, or any getter that reads them.
+`cellData`, `samplePloidy`, or any getter that reads them.
 
 Because both families key on the *returned* payload (see "the cache key is the
 return value, not the reads"), the loop needs a fetch-derived value to reach the

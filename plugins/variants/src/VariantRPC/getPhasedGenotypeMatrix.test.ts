@@ -52,11 +52,11 @@ function makeVcfFeature(
 async function build({
   features,
   sources,
-  sampleInfo,
+  samplePloidy,
 }: {
   features: Feature[]
   sources: { name: string; sampleName?: string; HP?: number }[]
-  sampleInfo: Record<string, { isPhased: boolean; maxPloidy: number }>
+  samplePloidy: Record<string, number>
 }) {
   mockGetFeatures.mockResolvedValue(features)
   return getPhasedGenotypeMatrix({
@@ -69,19 +69,19 @@ async function build({
       sources,
       minorAlleleFrequencyFilter: 0,
       maxMissingnessFilter: 1,
-      sampleInfo,
+      samplePloidy,
     },
   })
 }
 
-const diploid = { isPhased: true, maxPloidy: 2 }
+const diploid = 2
 
 describe('getPhasedGenotypeMatrix', () => {
   test('emits one row per haplotype, in sample then HP order', async () => {
     const rows = await build({
       features: [makeFeature('v1', { HG001: '0|1', HG002: '1|1' })],
       sources: [{ name: 'HG001' }, { name: 'HG002' }],
-      sampleInfo: { HG001: diploid, HG002: diploid },
+      samplePloidy: { HG001: diploid, HG002: diploid },
     })
     expect([...rows.keys()]).toEqual([
       'HG001 HP0',
@@ -95,7 +95,7 @@ describe('getPhasedGenotypeMatrix', () => {
     const rows = await build({
       features: [makeFeature('v1', { HG001: '0|1' })],
       sources: [{ name: 'HG001' }],
-      sampleInfo: { HG001: diploid },
+      samplePloidy: { HG001: diploid },
     })
     expect([...rows.get('HG001 HP0')!]).toEqual([0])
     expect([...rows.get('HG001 HP1')!]).toEqual([1])
@@ -108,7 +108,7 @@ describe('getPhasedGenotypeMatrix', () => {
     const rows = await build({
       features: [makeFeature('v1', { HG001: '1|2' })],
       sources: [{ name: 'HG001' }],
-      sampleInfo: { HG001: diploid },
+      samplePloidy: { HG001: diploid },
     })
     expect([...rows.get('HG001 HP0')!]).toEqual([1])
     expect([...rows.get('HG001 HP1')!]).toEqual([1])
@@ -118,7 +118,7 @@ describe('getPhasedGenotypeMatrix', () => {
     const rows = await build({
       features: [makeFeature('v1', { HG001: '0/1', HG002: '0|1' })],
       sources: [{ name: 'HG001' }, { name: 'HG002' }],
-      sampleInfo: { HG001: diploid, HG002: diploid },
+      samplePloidy: { HG001: diploid, HG002: diploid },
     })
     expect([...rows.get('HG001 HP0')!]).toEqual([NaN])
     expect([...rows.get('HG001 HP1')!]).toEqual([NaN])
@@ -128,7 +128,7 @@ describe('getPhasedGenotypeMatrix', () => {
     const rows = await build({
       features: [makeFeature('v1', { HG001: '.|1', HG002: '0|1' })],
       sources: [{ name: 'HG001' }, { name: 'HG002' }],
-      sampleInfo: { HG001: diploid, HG002: diploid },
+      samplePloidy: { HG001: diploid, HG002: diploid },
     })
     expect([...rows.get('HG001 HP0')!]).toEqual([NaN])
     expect([...rows.get('HG001 HP1')!]).toEqual([1])
@@ -138,9 +138,9 @@ describe('getPhasedGenotypeMatrix', () => {
     const rows = await build({
       features: [makeFeature('v1', { HG001: '0|1', HG002: '0|1|1' })],
       sources: [{ name: 'HG001' }, { name: 'HG002' }],
-      sampleInfo: {
+      samplePloidy: {
         HG001: diploid,
-        HG002: { isPhased: true, maxPloidy: 3 },
+        HG002: 3,
       },
     })
     expect([...rows.keys()]).toHaveLength(5)
@@ -151,7 +151,7 @@ describe('getPhasedGenotypeMatrix', () => {
     const rows = await build({
       features: [makeFeature('v1', { HG001: '0|1' })],
       sources: [{ name: 'HG001' }, { name: 'MISSING_SAMPLE' }],
-      sampleInfo: { HG001: diploid, MISSING_SAMPLE: diploid },
+      samplePloidy: { HG001: diploid, MISSING_SAMPLE: diploid },
     })
     expect([...rows.get('MISSING_SAMPLE HP0')!]).toEqual([NaN])
     expect([...rows.get('MISSING_SAMPLE HP1')!]).toEqual([NaN])
@@ -168,14 +168,14 @@ describe('getPhasedGenotypeMatrix', () => {
         { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
         { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
       ],
-      sampleInfo: { HG001: diploid, HG002: diploid },
+      samplePloidy: { HG001: diploid, HG002: diploid },
     })
     expect([...rows.keys()]).toEqual(['HG001 HP1', 'HG002 HP0'])
     expect([...rows.get('HG001 HP1')!]).toEqual([1])
     expect([...rows.get('HG002 HP0')!]).toEqual([1])
   })
 
-  // `sampleInfo` is keyed by the bare VCF sample identity, and so is the
+  // `samplePloidy` is keyed by the bare VCF sample identity, and so is the
   // "<sampleName> HP<n>" row label the display's own `sources` getter builds.
   // A local copy of the expansion here keyed both off `name` instead, so a
   // source whose render name differs from its sampleName fell back to diploid
@@ -184,7 +184,7 @@ describe('getPhasedGenotypeMatrix', () => {
     const rows = await build({
       features: [makeFeature('v1', { HG001: '0|1|1' })],
       sources: [{ name: 'renamed', sampleName: 'HG001' }],
-      sampleInfo: { HG001: { isPhased: true, maxPloidy: 3 } },
+      samplePloidy: { HG001: 3 },
     })
     expect([...rows.keys()]).toEqual(['HG001 HP0', 'HG001 HP1', 'HG001 HP2'])
     expect([...rows.get('HG001 HP2')!]).toEqual([1])
@@ -198,7 +198,7 @@ describe('getPhasedGenotypeMatrix', () => {
         makeFeature('v3', { HG001: '0|1' }),
       ],
       sources: [{ name: 'HG001' }],
-      sampleInfo: { HG001: diploid },
+      samplePloidy: { HG001: diploid },
     })
     expect([...rows.get('HG001 HP0')!]).toEqual([0, 1, 0])
     expect([...rows.get('HG001 HP1')!]).toEqual([1, 1, 1])
@@ -212,7 +212,7 @@ describe('getPhasedGenotypeMatrix', () => {
 // disagree. 1000G chrX non-PAR is the canonical instance: haploid males beside
 // phased diploid females.
 describe('getPhasedGenotypeMatrix mixed ploidy', () => {
-  const haploid = { isPhased: true, maxPloidy: 1 }
+  const haploid = 1
 
   test('a haploid call fills its one haplotype row and no other', async () => {
     const rows = await build({
@@ -223,7 +223,7 @@ describe('getPhasedGenotypeMatrix mixed ploidy', () => {
         { name: 'MALE HP0', sampleName: 'MALE', HP: 0 },
         { name: 'MALE HP1', sampleName: 'MALE', HP: 1 },
       ],
-      sampleInfo: { FEMALE: diploid, MALE: haploid },
+      samplePloidy: { FEMALE: diploid, MALE: haploid },
     })
     expect(rows.get('FEMALE HP0')![0]).toBe(0)
     expect(rows.get('FEMALE HP1')![0]).toBe(1)
@@ -240,7 +240,7 @@ describe('getPhasedGenotypeMatrix mixed ploidy', () => {
         { name: 'MALE HP0', sampleName: 'MALE', HP: 0 },
         { name: 'OTHER HP0', sampleName: 'OTHER', HP: 0 },
       ],
-      sampleInfo: { MALE: haploid, OTHER: haploid },
+      samplePloidy: { MALE: haploid, OTHER: haploid },
     })
     expect(rows.get('MALE HP0')![0]).toBe(0)
     expect(rows.get('OTHER HP0')![0]).toBeNaN()
@@ -257,7 +257,7 @@ describe('getPhasedGenotypeMatrix mixed ploidy', () => {
 // dendrogram simply groups haplotypes by someone else's calls.
 //
 // Mixed ploidy on purpose: chrY males are haploid while everyone is diploid on
-// chr1, so `sampleInfo` carries the max and the haploid call has to land on HP0
+// chr1, so `samplePloidy` carries the max and the haploid call has to land on HP0
 // and leave HP1 with nothing to say.
 describe('getPhasedGenotypeMatrix across two VCF headers', () => {
   // identity-stable per file, as one parser's features are
@@ -277,7 +277,7 @@ describe('getPhasedGenotypeMatrix across two VCF headers', () => {
         makeVcfFeature('chrY:1', chrYHeader, { MALE1: '1', MALE2: '0' }),
       ],
       sources: cohort,
-      sampleInfo: info,
+      samplePloidy: info,
     })
     // absent from the chrY file, not the carrier of the first male's call
     expect([...rows.get('FEMALE HP0')!]).toEqual([0, NaN])
@@ -303,7 +303,7 @@ describe('getPhasedGenotypeMatrix across two VCF headers', () => {
         }),
       ],
       sources: cohort,
-      sampleInfo: info,
+      samplePloidy: info,
     })
     expect([...rows.get('FEMALE HP0')!]).toEqual([NaN, 0])
     expect([...rows.get('FEMALE HP1')!]).toEqual([NaN, 1])

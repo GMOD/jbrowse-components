@@ -143,7 +143,7 @@ gives `TreeSidebarMixin`, and a run writes names beside its tree, re-appending
 the rows a focus hides after the clade.
 
 **Named stages, named readers.** `sourcesBase` is the adapter's samples narrowed
-to `rows.kept`, the fetch key's input, so it reads no `sampleInfo`: a focus
+to `rows.kept`, the fetch key's input, so it reads no `samplePloidy`: a focus
 naming a haplotype keeps its sample there (`keptRows` with `rowAlias`, through
 `parseRowName`). The rest are `TreeSidebarMixin`'s over this display's hooks:
 `discoveredRows`, `expandRows` (`expandPhasedRows`), then `editableSources`,
@@ -152,12 +152,12 @@ dialog's list and the sort's — `clusterableSources`, narrowed to the focus,
 which both clustering paths send, and `bandedSources`, stacked in the `facet`'s
 bands. `sources` adds the palette.
 
-**Phased rows are the ploidy `sampleInfo` reports plus any haplotype the order
+**Phased rows are the ploidy `samplePloidy` reports plus any haplotype the order
 names.** Until the ploidy lands, the named haplotypes stand in for it, so an
 arranged track keeps its haplotype rows and its tree across the refetch a
-settings change triggers rather than folding back to samples. The expansion
-reads `samplePloidy`, which keeps its identity while each fetch reports the same
-ploidies, so a region arrival re-derives no row.
+settings change triggers rather than folding back to samples. `samplePloidy`
+keeps its identity while each fetch reports the same ploidies, so a region
+arrival re-derives no row.
 
 **The row tint is `labelColor`**, the channel tree-sidebar's `RowLabelsOverlay`
 and `SvgRowLabels` draw — the cells are colored by genotype, so a row has no

@@ -1,4 +1,4 @@
-import type { ProcessedSource, SampleInfo, Source } from './types.ts'
+import type { ProcessedSource, Source } from './types.ts'
 
 // A source's bare VCF sample identity: `sampleName` when present (set once a
 // source is processed/HP-expanded), else the raw `name`. Single source of truth
@@ -79,14 +79,14 @@ export function rowAliasOf(sources: readonly Source[]) {
 // The "<sampleName> HP<n>" haplotype-row convention, with `parseRowName` its
 // inverse, for the worker's cell computation and genotype matrix and the
 // display's rows alike. A source that already carries an HP index (a row of a
-// phased clustering run) passes through; the rest expand into maxPloidy rows,
-// keyed by sampleName, defaulting to diploid.
+// phased clustering run) passes through; the rest expand into one row per
+// allele of the sample's ploidy, defaulting to diploid.
 export function expandSourcesToHaplotypes({
   sources,
-  sampleInfo,
+  samplePloidy,
 }: {
   sources: Source[]
-  sampleInfo: Record<string, SampleInfo>
+  samplePloidy: Record<string, number>
 }): HaplotypeSource[] {
   return sources.flatMap(source => {
     const sampleName = resolveSampleName(source)
@@ -94,7 +94,7 @@ export function expandSourcesToHaplotypes({
     if (HP !== undefined) {
       return [{ ...source, sampleName, HP }]
     }
-    return makeHaplotypeSources(source, sampleInfo[sampleName]?.maxPloidy ?? 2)
+    return makeHaplotypeSources(source, samplePloidy[sampleName] ?? 2)
   })
 }
 
@@ -112,18 +112,18 @@ export function expandSourcesToHaplotypes({
  * does. Every phased row places by that name, and a mismatch would place every
  * phased row at `HIDDEN_ROW`.
  *
- * The rows come from `sampleInfo`: every sample the fetched genotypes mention,
+ * The rows come from `samplePloidy`: every sample the fetched genotypes mention,
  * narrowed by `sampleFilter` when the client draws a subset. Its order is
  * first-seen and therefore arbitrary, which is fine because nothing is drawn in
  * that order. A sample the client lists but this window's genotypes never
  * mention gets no row and no cells, and it would have drawn no cells anyway.
  */
 export function buildCanonicalRows({
-  sampleInfo,
+  samplePloidy,
   sampleFilter,
   renderingMode,
 }: {
-  sampleInfo: Record<string, SampleInfo>
+  samplePloidy: Record<string, number>
   // `undefined` is "every sample", an empty list is "no samples" — they are not
   // the same answer and collapsing them costs a whole cell matrix. Only the
   // client's pre-sources state sends `undefined`; a filter that resolved to
@@ -134,28 +134,14 @@ export function buildCanonicalRows({
 }): ProcessedSource[] {
   const keep = sampleFilter ? new Set(sampleFilter) : undefined
   const rows: ProcessedSource[] = []
-  for (const sampleName in sampleInfo) {
+  for (const sampleName in samplePloidy) {
     if (!keep || keep.has(sampleName)) {
       rows.push({ name: sampleName, sampleName })
     }
   }
   return renderingMode === 'phased'
-    ? expandSourcesToHaplotypes({ sources: rows, sampleInfo })
+    ? expandSourcesToHaplotypes({ sources: rows, samplePloidy })
     : rows
-}
-
-/** Each sample's ploidy as `sampleInfo` reports it. */
-export function ploidyBySample(
-  sampleInfo: Record<string, SampleInfo> | undefined,
-): Record<string, number> | undefined {
-  if (!sampleInfo) {
-    return undefined
-  }
-  const ploidy: Record<string, number> = {}
-  for (const sampleName in sampleInfo) {
-    ploidy[sampleName] = sampleInfo[sampleName]!.maxPloidy
-  }
-  return ploidy
 }
 
 // The haplotypes a sample takes a row for: its ploidy, plus any the order

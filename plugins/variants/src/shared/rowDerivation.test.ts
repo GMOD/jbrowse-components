@@ -16,11 +16,11 @@ const SOURCES = [
 ]
 
 // S3 is haploid, so phased mode gives it one row.
-const SAMPLE_INFO = {
-  S0: { isPhased: true, maxPloidy: 2 },
-  S1: { isPhased: true, maxPloidy: 2 },
-  S2: { isPhased: true, maxPloidy: 2 },
-  S3: { isPhased: true, maxPloidy: 1 },
+const SAMPLE_PLOIDY = {
+  S0: 2,
+  S1: 2,
+  S2: 2,
+  S3: 1,
 }
 
 const GENOTYPES = {
@@ -71,7 +71,7 @@ function landCells(display: Display) {
     mode: 'regular',
     sampleNames: SOURCES.map(s => s.name),
     genotypeDict,
-    sampleInfo: SAMPLE_INFO,
+    samplePloidy: SAMPLE_PLOIDY,
     rowNames: [],
     simplifiedFeatures: Object.keys(GENOTYPES).map(id => ({
       id,

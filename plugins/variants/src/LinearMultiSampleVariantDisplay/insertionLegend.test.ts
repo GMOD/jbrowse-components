@@ -28,9 +28,8 @@ function featureIndexData() {
 function cellData(insertedBp: number): CellDataResult {
   return {
     mode: 'regular',
-    sampleInfo: { S0: { maxPloidy: 2, isPhased: false } },
+    samplePloidy: { S0: 2 },
     rowNames: ['S0'],
-    hasPhased: false,
     hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
     hasUnphased: false,

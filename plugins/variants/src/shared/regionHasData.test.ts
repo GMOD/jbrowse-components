@@ -67,9 +67,8 @@ test('a regular-mode fetch stays current across a zoom', async () => {
         ? Promise.resolve({
             mode: 'regular',
             perRegionCellData: {},
-            sampleInfo: {},
+            samplePloidy: {},
             rowNames: [],
-            hasPhased: false,
             hasPhasedOrHaploid: false,
             hasSecondaryAlt: false,
             hasUnphased: false,

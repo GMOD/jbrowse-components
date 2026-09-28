@@ -14,7 +14,7 @@ import { rotateClusterRun, validateClusterOrder } from '@jbrowse/tree-sidebar'
 // phased mode, which the matrix was built over — so validation lives here: a
 // hand-pasted order is where a short or duplicated list would otherwise drop or
 // double rows, and where `matrixRowNames` catches a row set that moved during
-// the trip to R, a focus or phasing switching on as `sampleInfo` arrives.
+// the trip to R, a focus or phasing switching on as `samplePloidy` arrives.
 export function applyClusterOrder({
   rows,
   arranged,

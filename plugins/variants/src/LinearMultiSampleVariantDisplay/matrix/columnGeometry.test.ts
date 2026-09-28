@@ -9,9 +9,8 @@ import type { CellDataResult } from '../../VariantRPC/executeVariantCellData.ts'
 function matrixCellData(starts: number[], refNames?: string[]): CellDataResult {
   return {
     mode: 'matrix',
-    sampleInfo: {},
+    samplePloidy: {},
     rowNames: [],
-    hasPhased: false,
     hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
     hasUnphased: false,

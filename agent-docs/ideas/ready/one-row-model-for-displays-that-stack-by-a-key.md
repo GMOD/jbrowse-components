@@ -96,7 +96,7 @@ their own, over one `arrangeRows` and the hooks a display supplies.
 
 - **Nothing upstream of a fetch key reads a fetch result.** The variant
   displays' `sampleFilter` reads the focused, unexpanded rows because expansion
-  reads `sampleInfo` (`MultiSampleVariantBaseModel.ts`, `rpcProps`); focusing
+  reads `samplePloidy` (`MultiSampleVariantBaseModel.ts`, `rpcProps`); focusing
   after expansion is a silent refetch loop.
 - **Named consumers read named stages**: the arrangement dialog the expanded
   unfocused rows, clustering the focused rows, the fetch key the focused

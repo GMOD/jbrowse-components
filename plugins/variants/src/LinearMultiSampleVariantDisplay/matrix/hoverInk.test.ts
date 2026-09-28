@@ -20,9 +20,8 @@ const SOURCES = [
 function matrixCellData(): MatrixCellDataResult {
   return {
     mode: 'matrix',
-    sampleInfo: {},
+    samplePloidy: {},
     rowNames: ROW_NAMES,
-    hasPhased: false,
     hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
     hasUnphased: false,

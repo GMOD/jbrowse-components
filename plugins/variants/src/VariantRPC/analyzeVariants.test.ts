@@ -136,9 +136,9 @@ describe('analyzeVariants genotype codes', () => {
       ],
       new Map(),
     )
-    expect(result.sampleInfo.S1!.maxPloidy).toBe(2)
-    expect(result.sampleInfo.S2!.maxPloidy).toBe(3)
-    expect(result.sampleInfo.S3!.maxPloidy).toBe(1)
+    expect(result.samplePloidy.S1).toBe(2)
+    expect(result.samplePloidy.S2).toBe(3)
+    expect(result.samplePloidy.S3).toBe(1)
   })
 
   // The site memo recognizes a short genotype by a packed int and a long one by
@@ -164,8 +164,8 @@ describe('analyzeVariants genotype codes', () => {
       S5: '1|1|1',
       S6: '0|1',
     })
-    expect(result.sampleInfo.S2!.maxPloidy).toBe(3)
-    expect(result.sampleInfo.S6!.maxPloidy).toBe(2)
+    expect(result.samplePloidy.S2).toBe(3)
+    expect(result.samplePloidy.S6).toBe(2)
   })
 
   // Two-digit allele indices are what a decomposed multiallelic site spells,
@@ -304,8 +304,8 @@ function makeRecordFeature(
 
 // `hasPhasedOrHaploid` is what gates the "Phased" rendering-mode entry, and it
 // has to answer for the genotypes the painter treats as phased data —
-// `isPhasedOrHaploid` in shared/getPhasedColor.ts, which is "carries no `/`".
-// `hasPhased` cannot: a pangenome callset is haploid per assembly path and `vg
+// `isPhasedOrHaploid` in shared/getPhasedColor.ts, which is "carries no `/`",
+// not "carries a `|`": a pangenome callset is haploid per assembly path and `vg
 // deconstruct` writes bare `0`/`1`/`23`, so a whole file that phased mode
 // renders correctly contains no `|` at all.
 describe('analyzeVariants phasing flags', () => {
@@ -314,13 +314,11 @@ describe('analyzeVariants phasing flags', () => {
 
   it('reports a callset with no `|` anywhere as phased-or-haploid', () => {
     const result = flags(['S1', 'S2'], ['1', '23'])
-    expect(result.hasPhased).toBe(false)
     expect(result.hasPhasedOrHaploid).toBe(true)
   })
 
   it('reports an unphased diploid callset as neither', () => {
     const result = flags(['S1', 'S2'], ['0/1', '1/1'])
-    expect(result.hasPhased).toBe(false)
     expect(result.hasPhasedOrHaploid).toBe(false)
   })
 
@@ -332,10 +330,9 @@ describe('analyzeVariants phasing flags', () => {
     expect(result.hasPhasedOrHaploid).toBe(false)
   })
 
-  it('reports a mixed-ploidy phased file as both', () => {
+  it('reports a mixed-ploidy phased file as phased-or-haploid', () => {
     // 1000G chrX non-PAR: haploid males beside phased diploid females
     const result = flags(['FEMALE', 'MALE'], ['0|1', '1'])
-    expect(result.hasPhased).toBe(true)
     expect(result.hasPhasedOrHaploid).toBe(true)
   })
 

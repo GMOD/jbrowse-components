@@ -1,4 +1,4 @@
-import type { ProcessedSource, SampleInfo } from './types.ts'
+import type { ProcessedSource } from './types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ClusterRun } from '@jbrowse/tree-sidebar'
@@ -22,13 +22,13 @@ export interface ReducedModel extends IStateTreeNode {
   filters?: SerializableFilterChain
   adapterConfig: Record<string, unknown>
   renderingMode: string
-  sampleInfo?: Record<string, SampleInfo>
+  samplePloidy?: Readonly<Record<string, number>>
   // `rows.domain`, off `TreeSidebarMixin`. A run rotates its dendrogram towards
   // it rather than discarding it, so both entry points forward it.
   rowDomain: string[]
   // Whether the fetched inputs clustering needs have arrived. Phased mode
-  // clusters haplotypes, which needs per-sample ploidy from `sampleInfo` — and
-  // that rides with `cellData`, later than the header-only `adapterSamples`.
+  // clusters haplotypes, which needs `samplePloidy` — and that rides with
+  // `cellData`, later than the header-only `adapterSamples`.
   // On this interface rather than only on the autorun's own type because BOTH
   // entry points have to gate on it: run before it, and `buildGenotypeMatrix`
   // silently builds the sample-level matrix instead, so the tree's leaves

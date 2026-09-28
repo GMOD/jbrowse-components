@@ -119,7 +119,7 @@ only the stages downstream of it:
 2. `expandedRows`, through `expandRows`: variants' phased haplotypes, the rows
    themselves elsewhere. Variants' `sourcesBase`, the focused samples the fetch
    asks for, is a stage of the display's beside this one and never reads it,
-   since expansion reads `sampleInfo`, a fetch result.
+   since expansion reads `samplePloidy`, a fetch result.
 3. `editableSources`: `arrangeRows` orders by `rowOrder`, relabels by
    `rows.labels` and tints by the `rowColor` pairs on the `identityChannel`. It
    hands back `expandedRows` itself while nothing is arranged, which the `!==`

@@ -1,4 +1,4 @@
-import type { SampleInfo, Source } from '../shared/types.ts'
+import type { Source } from '../shared/types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
@@ -21,9 +21,9 @@ interface BaseVariantRpcArgs {
 export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sources: Source[]
   // Which matrix to build: 'phased' means one row per haplotype, which needs
-  // per-sample ploidy from `sampleInfo`. Anything else means one row per sample.
+  // `samplePloidy`. Anything else means one row per sample.
   renderingMode?: string
-  sampleInfo?: Record<string, SampleInfo>
+  samplePloidy?: Record<string, number>
 }
 
 // What gets fetched is `GetGenotypeMatrixArgs` exactly; `partition` names the

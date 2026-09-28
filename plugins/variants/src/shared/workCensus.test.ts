@@ -23,11 +23,11 @@ const SOURCES = [
   { name: 'S3', population: 'EAS', label: 'Sample three' },
 ]
 
-const SAMPLE_INFO = {
-  S0: { isPhased: true, maxPloidy: 2 },
-  S1: { isPhased: true, maxPloidy: 2 },
-  S2: { isPhased: true, maxPloidy: 2 },
-  S3: { isPhased: true, maxPloidy: 1 },
+const SAMPLE_PLOIDY = {
+  S0: 2,
+  S1: 2,
+  S2: 2,
+  S3: 1,
 }
 
 const GENOTYPES = {
@@ -35,7 +35,7 @@ const GENOTYPES = {
   v700: ['1|0', '0|0', '1|1', '0'],
 }
 
-// A fetch's payload, and a fresh `sampleInfo` with it, as every arrival brings
+// A fetch's payload, and a fresh `samplePloidy` with it, as every arrival brings
 function landCells(display: Display, regionIndex: number) {
   const genotypeDict = [...new Set(Object.values(GENOTYPES).flat())]
   const codes = (gts: string[]) =>
@@ -45,7 +45,7 @@ function landCells(display: Display, regionIndex: number) {
       mode: 'regular',
       sampleNames: SOURCES.map(s => s.name),
       genotypeDict,
-      sampleInfo: structuredClone(SAMPLE_INFO),
+      samplePloidy: structuredClone(SAMPLE_PLOIDY),
       rowNames: [],
       simplifiedFeatures: Object.keys(GENOTYPES).map(id => ({
         id,

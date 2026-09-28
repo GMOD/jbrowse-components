@@ -36,7 +36,7 @@ export async function runGenotypeClustering({
     filters,
     adapterConfig,
     renderingMode,
-    sampleInfo,
+    samplePloidy,
   } = model
   if (!model.sourcesBase) {
     return
@@ -56,7 +56,7 @@ export async function runGenotypeClustering({
       adapterConfig,
       signal,
       renderingMode,
-      sampleInfo,
+      samplePloidy,
       partition: model.clusterPartition,
       statusCallback,
     },

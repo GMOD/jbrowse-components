@@ -29,9 +29,7 @@ dialog) cloned from `createMAFFilterMenuItem` under the "Filter by" submenu.
 Open question: whether masking should also feed the MAF filter (a masked het
 shouldn't count toward AF) — couples to `minorAlleleFrequencyUtils.ts`, defer
 past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
-(color het cells by allelic fraction — a somatic/mosaic cohort view). `sampleInfo`
-(per-sample `maxPloidy`/`isPhased`) is already computed and shipped but only
-used internally for haplotype expansion — never surfaced to the user.
+(color het cells by allelic fraction — a somatic/mosaic cohort view).
 
 **Pedigree / inheritance awareness (biggest biological ceiling).** There is no
 pedigree, affected-status, or trio model today — "grouping" is a flat `colorBy` on

@@ -64,7 +64,6 @@ import {
 import { buildSampleIndex } from './genotypeCodec.ts'
 import {
   expandPhasedRows,
-  ploidyBySample,
   parseRowName,
   resolveSampleName,
   rowAliasOf,
@@ -351,7 +350,7 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #volatile
          *
-         * Single source of truth for fetched per-display data. sampleInfo
+         * Single source of truth for fetched per-display data. samplePloidy
          * and the summary flags are derived from this via getters —
          * fetchNeeded only needs to call setCellData(result).
          */
@@ -513,17 +512,9 @@ export default function MultiSampleVariantBaseModelF(
         get hasPhaseSet() {
           return self.cellData?.hasPhaseSet ?? false
         },
-        /**
-         * #getter
-         */
-        get sampleInfo() {
-          return self.cellData?.sampleInfo
-        },
       }))
       .views(self => {
-        const ploidy = stableIdentityComputed(() =>
-          ploidyBySample(self.sampleInfo),
-        )
+        const ploidy = stableIdentityComputed(() => self.cellData?.samplePloidy)
         return {
           /**
            * #getter
@@ -1032,7 +1023,7 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          * The adapter's samples narrowed to the focus, `rows.kept` — a
          * haplotype named there keeps its sample. The row set the fetch asks
-         * for, and so it must not read `sampleInfo` (see `sampleFilter`).
+         * for, and so it must not read `samplePloidy` (see `sampleFilter`).
          * `undefined` until the samples land.
          */
         get sourcesBase(): Source[] | undefined {
@@ -1064,9 +1055,8 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * Whether the fetched inputs clustering needs are present yet. Phased
-         * clustering clusters haplotypes, which needs per-sample ploidy from
-         * `sampleInfo`; that arrives with `cellData`, later than the header-only
-         * `adapterSamples`. Gating the auto-cluster run on this (not just
+         * clustering clusters haplotypes, which needs `samplePloidy`; that
+         * arrives with `cellData`, later than the header-only `adapterSamples`. Gating the auto-cluster run on this (not just
          * `adapterSamples`) stops it racing ahead and building a sample-level
          * tree whose leaves ("HG001") never match the expanded haplotype rows
          * ("HG001 HP0").
@@ -1074,7 +1064,7 @@ export default function MultiSampleVariantBaseModelF(
         get clusteringReady() {
           return (
             !!self.adapterSamples &&
-            (self.renderingMode !== 'phased' || !!self.sampleInfo)
+            (self.renderingMode !== 'phased' || !!self.samplePloidy)
           )
         },
         /**
@@ -1126,7 +1116,7 @@ export default function MultiSampleVariantBaseModelF(
          *
          * Reads `sourcesBase`, the focused samples before phased expansion,
          * never `sources`, for the loop reason below: expansion reads
-         * `sampleInfo`, a fetch result. A focus naming haplotypes asks for their
+         * `samplePloidy`, a fetch result. A focus naming haplotypes asks for their
          * samples, and the worker expands them itself.
          */
         get sampleFilter(): string[] | undefined {
@@ -1140,7 +1130,7 @@ export default function MultiSampleVariantBaseModelF(
         //
         // Only settings the *worker* reads belong here, and nothing fetch-derived
         // may appear (`sampleFilter` reads `sourcesBase`, not `sources`, because
-        // `sources` reads `sampleInfo` — a fetch result — and would loop).
+        // `sources` reads `samplePloidy` — a fetch result — and would loop).
         // `referenceDrawingMode` is added by the display at genomic positions
         // alone, where the worker drops reference cells under 'skip'.
         rpcProps() {

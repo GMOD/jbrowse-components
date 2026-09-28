@@ -28,7 +28,7 @@ const MultiSampleVariantClusterDialog = observer(
         tsvFilename="genotypes.tsv"
         // The same pair of gates the auto path uses (`autoClusterReady` in
         // setupMultiSampleVariantAutoruns), not just "are there sources". In
-        // phased mode the haplotype matrix needs `sampleInfo`, which arrives
+        // phased mode the haplotype matrix needs `samplePloidy`, which arrives
         // with cellData; running before it builds a sample-level tree whose
         // leaves never match the haplotype rows, so the run appears to do
         // nothing. The row count is the second half: the menu row that opens
@@ -50,7 +50,7 @@ const MultiSampleVariantClusterDialog = observer(
             filters: model.filters,
             adapterConfig: model.adapterConfig,
             renderingMode: model.renderingMode,
-            sampleInfo: model.sampleInfo,
+            samplePloidy: model.samplePloidy,
             ...args,
           })
         }

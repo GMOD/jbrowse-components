@@ -157,7 +157,7 @@ rendering mode's granularity — a sample in allele-count mode, `"<sample> HP<n>
 in phased mode, where a sample's name stands for its haplotypes — and
 `parseRowName`, beside `expandSourcesToHaplotypes`, reads a haplotype name back
 to its sample, so a focus naming haplotypes still asks the fetch for samples
-without reading `sampleInfo`. Phased rows are the ploidy `sampleInfo` reports
+without reading `samplePloidy`. Phased rows are the ploidy `samplePloidy` reports
 plus any haplotype the order names, which stand in for the ploidy until it
 lands. `rowColor` is `field | { field, domain, range }` (`VariantRowColor`):
 the field is the samplesTsv attribute whose palette tints every row, as the

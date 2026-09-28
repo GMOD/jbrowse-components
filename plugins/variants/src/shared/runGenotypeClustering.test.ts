@@ -179,9 +179,9 @@ describe('runGenotypeClustering', () => {
       clusterableSources: haplotypes,
       editableSources: haplotypes,
       renderingMode: 'phased',
-      sampleInfo: {
-        sampleA: { isPhased: true, maxPloidy: 2 },
-        sampleB: { isPhased: true, maxPloidy: 2 },
+      samplePloidy: {
+        sampleA: 2,
+        sampleB: 2,
       },
     })
     const rpcManager = makeRpcManager(async () => ({

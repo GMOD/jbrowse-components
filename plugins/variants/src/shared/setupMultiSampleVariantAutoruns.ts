@@ -29,7 +29,7 @@ export function setupMultiSampleVariantAutoruns(self: Self) {
     // not.
     //
     // `clusteringReady` (from ReducedModel) is the gate both clustering entry
-    // points share: phased mode needs `sampleInfo`, which only a landed fetch
+    // points share: phased mode needs `samplePloidy`, which only a landed fetch
     // supplies, so "sources exist" is not enough here the way it is for the
     // other flavors.
     //

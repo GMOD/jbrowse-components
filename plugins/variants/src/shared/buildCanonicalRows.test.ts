@@ -1,20 +1,18 @@
 import { buildCanonicalRows } from './getSources.ts'
 
-import type { SampleInfo } from './types.ts'
-
 // A mixed-ploidy set, since that is where the haplotype expansion has anything
 // to decide: HG002 is haploid (a pangenome assembly path, or chrX non-PAR).
-const sampleInfo: Record<string, SampleInfo> = {
-  HG001: { maxPloidy: 2, isPhased: true },
-  HG002: { maxPloidy: 1, isPhased: true },
-  HG003: { maxPloidy: 2, isPhased: true },
+const samplePloidy: Record<string, number> = {
+  HG001: 2,
+  HG002: 1,
+  HG003: 2,
 }
 
 describe('buildCanonicalRows', () => {
   test('takes every sample the data mentions when no filter is sent', () => {
     expect(
       buildCanonicalRows({
-        sampleInfo,
+        samplePloidy,
         sampleFilter: undefined,
         renderingMode: 'alleleCount',
       }).map(s => s.name),
@@ -27,7 +25,7 @@ describe('buildCanonicalRows', () => {
     // that resolved to nothing and must compute nothing.
     expect(
       buildCanonicalRows({
-        sampleInfo,
+        samplePloidy,
         sampleFilter: [],
         renderingMode: 'alleleCount',
       }),
@@ -36,12 +34,12 @@ describe('buildCanonicalRows', () => {
 
   test('narrows to the filter, and ignores its order', () => {
     const forward = buildCanonicalRows({
-      sampleInfo,
+      samplePloidy,
       sampleFilter: ['HG001', 'HG003'],
       renderingMode: 'alleleCount',
     })
     const reversed = buildCanonicalRows({
-      sampleInfo,
+      samplePloidy,
       sampleFilter: ['HG003', 'HG001'],
       renderingMode: 'alleleCount',
     })
@@ -54,7 +52,7 @@ describe('buildCanonicalRows', () => {
 
   test('expands to haplotype rows in phased mode, per-sample ploidy', () => {
     const rows = buildCanonicalRows({
-      sampleInfo,
+      samplePloidy,
       sampleFilter: undefined,
       renderingMode: 'phased',
     })
@@ -69,7 +67,7 @@ describe('buildCanonicalRows', () => {
     expect(rows.map(s => s.HP)).toEqual([0, 1, 0, 0, 1])
     // filtered by SAMPLE name, expanded after — the client narrows the
     // haplotypes it draws when it places these
-    expect(rows.every(s => sampleInfo[s.sampleName])).toBe(true)
+    expect(rows.every(s => samplePloidy[s.sampleName])).toBe(true)
   })
 
   test('names haplotype rows the way the client expands them', () => {
@@ -77,7 +75,7 @@ describe('buildCanonicalRows', () => {
     // worker ships in `rowNames` are the strings `sources` produces. If these
     // ever drift, every phased row silently places at HIDDEN_ROW.
     const rows = buildCanonicalRows({
-      sampleInfo: { HG001: { maxPloidy: 2, isPhased: true } },
+      samplePloidy: { HG001: 2 },
       sampleFilter: ['HG001'],
       renderingMode: 'phased',
     })

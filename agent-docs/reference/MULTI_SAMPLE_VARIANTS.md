@@ -19,7 +19,7 @@ what each step bought. The rules that follow from it are in
 than as a string — and from that single pass it:
 
 - interns `genotypeCodes`,
-- accumulates `sampleInfo` (ploidy, phasing),
+- accumulates `samplePloidy`,
 - folds the legend flags,
 - counts each site's alleles for the MAF and missingness filters.
 
@@ -58,15 +58,15 @@ analysis walks, which with a threshold set are the ones it kept, as before.
 ## Nothing on the per-cell path may be keyed by sample NAME
 
 The callback runs once per cell, so a string-hash lookup there is 10⁸ hashes on a
-real panel. `sampleInfo` was exactly that: an object with one property per
-sample, looked up by name to accumulate ploidy and phasing.
+real panel. `samplePloidy` was exactly that: an object with one property per
+sample, looked up by name to accumulate ploidy.
 
 It accumulates into typed arrays indexed by the column the callback already
 holds, and folds into the name-keyed `Record` once after the pass, through the
-same `accumulateSampleInfo` the record path uses so a mixed fetch still agrees.
-The fold has to run **before** the record block, which reads `sampleInfo`'s keys
-to extend the canonical order. Ploidy 0 means "column never reported", which is
-what keeps a genotype-less sample out of `sampleInfo`.
+same `accumulatePloidy` the record path uses so a mixed fetch still agrees.
+The fold has to run **before** the record block, which reads `samplePloidy`'s
+keys to extend the canonical order. Ploidy 0 means "column never reported",
+which is what keeps a genotype-less sample out of `samplePloidy`.
 
 ## The site memo probes by packed int where it can
 

@@ -12,7 +12,7 @@ import {
   readPhasedAlleleIndicators,
 } from './genotypeMatrixEncoding.ts'
 
-import type { SampleInfo, Source } from '../shared/types.ts'
+import type { Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
@@ -33,7 +33,7 @@ export async function getPhasedGenotypeMatrix({
     minorAlleleFrequencyFilter: number
     maxMissingnessFilter: number
     filters?: SerializableFilterChain
-    sampleInfo: Record<string, SampleInfo>
+    samplePloidy: Record<string, number>
     statusCallback?: StatusCallback
   }
 }) {
@@ -44,7 +44,7 @@ export async function getPhasedGenotypeMatrix({
     filters,
     regions,
     signal,
-    sampleInfo,
+    samplePloidy,
     statusCallback,
   } = args
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
@@ -60,7 +60,7 @@ export async function getPhasedGenotypeMatrix({
   // contributes just that row and keeps its own name — that's how a re-cluster
   // over a subtree-filtered set arrives, where one haplotype of a sample can be
   // visible and the other not.
-  const rowSpecs = expandSourcesToHaplotypes({ sources, sampleInfo })
+  const rowSpecs = expandSourcesToHaplotypes({ sources, samplePloidy })
 
   const rawFeatures = await fetchVariantFeatures(dataAdapter, regions, args)
   const filteredVariants = getFilteredVariants({
