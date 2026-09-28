@@ -59,17 +59,17 @@ order.
 **Where it runs is the design.** Parse time rotates only a tree that was
 supplied rather than computed. On `TreeSidebarMixin` provenance alone says so,
 because `rows.domain` is the arrangement itself: a run writes its tree's leaf
-order there in the same action as the tree. MAF's guide tree never enters
-`rows.tree`: MAF's `rowTree` draws the adapter's newick while some rotation of
-it lists `rows.domain`, so it carries no provenance and rotates at parse, and
-maf reads its row order back off that same computed, so the leaves and the rows
-cannot drift. Everything else rotates in the run that produced it:
-`rotateClusterRun`, called from `applyClusterRun` and from variants'
-`applyClusterOrder`, which is the path `runGenotypeClustering` takes instead.
-Rotating an arranged tree on the way out would turn a restored session's
-dendrogram away from the order saved beside it and draw nothing at all. The
-R-paste `applyOrder` path carries no tree and rotates nothing: a paste is an
-explicit order.
+order there in the same action as the tree. A guide tree, the newick a display's
+adapter supplies through `guideTreeNewick` (MAF's `.nh`), never enters
+`rows.tree`: the mixin's `rowTree` draws it while some rotation of it lists
+`rows.domain`, so it carries no provenance and rotates at parse, and maf reads
+its row order back off that same computed, so the leaves and the rows cannot
+drift. Everything else rotates in the run that produced it: `rotateClusterRun`,
+called from `applyClusterRun` and from variants' `applyClusterOrder`, which is
+the path `runGenotypeClustering` takes instead. Rotating an arranged tree on the
+way out would turn a restored session's dendrogram away from the order saved
+beside it and draw nothing at all. The R-paste `applyOrder` path carries no tree
+and rotates nothing: a paste is an explicit order.
 
 `writeNewick` is the only thing here that writes the format rather than reading
 it, for that rotated run tree alone. It imports hclust's `quoteName` rather than
@@ -135,6 +135,7 @@ The hooks are declared by the mixin and overridden by a getter in a later
 hook's name throws at `create`:
 
 - `discoveredRows` — every display.
+- `guideTreeNewick` — none by default; MAF's adapter newick.
 - `expandRows(rows)` — variants.
 - `rowAlias` — variants: the sample a haplotype row answers to, so an order, a
   label, a tint and a focus written against a sample reach its haplotypes, and

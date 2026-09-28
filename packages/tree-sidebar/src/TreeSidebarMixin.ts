@@ -10,6 +10,7 @@ import { arrangeRows, bandRows, orderRowsByDomain } from './arrangeRows.ts'
 import {
   applySubtreeFilter,
   buildTree,
+  getLeafNames,
   keptRows,
   matchBandClades,
 } from './clusterUtils.ts'
@@ -220,6 +221,25 @@ function orderDropsTree(
 }
 
 /**
+ * Whether the names of `order` that `leaves` holds appear in `leaves`' order.
+ */
+function listsInOrder(leaves: readonly string[], order: readonly string[]) {
+  const position = new Map(leaves.map((name, i) => [name, i]))
+  let last = -1
+  for (const name of order) {
+    const at = position.get(name)
+    if (at !== undefined) {
+      if (at < last) {
+        return false
+      }
+      last = at
+      position.delete(name)
+    }
+  }
+  return true
+}
+
+/**
  * Whether the dialog's rows keep the order they have among the current rows,
  * so a row a region added while the dialog was open reads as no move.
  */
@@ -244,7 +264,7 @@ export interface ClusterRun {
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colours the `rowColor` object, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows` and overrides the hooks its rows need
+ * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colours the `rowColor` object, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows`, and `guideTreeNewick` where its adapter carries a tree, and overrides the hooks its rows need
  *
  * The rows are derived in stages, each a computed of its own: the display's
  * `discoveredRows`, then `expandedRows` (`expandRows`: a variant display's
@@ -351,13 +371,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The cluster tree the rows are arranged by, `rows.tree`, as newick.
-       */
-      get rowTree(): string | undefined {
-        return getConf(confNode(self), ['rows', 'tree'])
-      },
-      /**
-       * #getter
        * What `rowTree` was computed from, the locus and the settings; undefined
        * for a tree that arrived as data.
        */
@@ -428,6 +441,16 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
+       * Overridable hook: the guide tree the display's adapter supplies, as
+       * newick, which `rowTree` draws while some rotation of it lists
+       * `rows.domain`. It never enters `rows.tree`, since the adapter
+       * re-supplies it on every load. None by default.
+       */
+      get guideTreeNewick(): string | undefined {
+        return undefined
+      },
+      /**
+       * #getter
        * Overridable hook: the name a row also answers to, for a display whose
        * rows stand for something named by another name (a variant display's
        * haplotype rows, each answering to its sample). An order, a label, a
@@ -469,6 +492,41 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       expandRows(rows: S[]): S[] {
         return rows
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `guideTreeNewick` parsed and rotated towards `rows.domain`; undefined
+       * while the display supplies none.
+       */
+      get guideTree() {
+        const newick = self.guideTreeNewick
+        return newick ? buildTree(newick, self.rowDomain) : undefined
+      },
+      /**
+       * #getter
+       * Whether the rotated guide tree lists `rows.domain`'s names in
+       * `rows.domain`'s order, which holds exactly when some rotation of it
+       * does.
+       */
+      get guideTreeHonoursDomain(): boolean {
+        const { guideTree } = this
+        return (
+          !!guideTree && listsInOrder(getLeafNames(guideTree), self.rowDomain)
+        )
+      },
+      /**
+       * #getter
+       * The tree the rows are arranged by, as newick: `rows.tree`, else the
+       * guide tree while `guideTreeHonoursDomain`. A reorder no rotation
+       * produces hides the guide tree, and a reset brings it back.
+       */
+      get rowTree(): string | undefined {
+        return (
+          getConf(confNode(self), ['rows', 'tree']) ??
+          (this.guideTreeHonoursDomain ? self.guideTreeNewick : undefined)
+        )
       },
     }))
     .views(self => ({
@@ -666,31 +724,37 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get clusterableSources(): S[] {
         return keptRows(self.editableSources, self.rowFocus, self.rowAlias)
       },
-      // A tree that arrived as data rotates towards the declared order at
-      // parse; a run's tree was rotated by the run, in the same write as the
-      // order it produced.
+      /**
+       * #getter
+       * `rowTree` parsed. A run rotated its tree in the same write as the
+       * order it produced; a tree that arrived as data rotates towards
+       * `rows.domain` here, and the guide tree is `guideTree`'s parse.
+       */
       get parsedTree() {
-        return self.rowTree
-          ? buildTree(
-              self.rowTree,
-              self.rowTreeProvenance ? [] : self.rowDomain,
-            )
-          : undefined
+        const tree: string | undefined = getConf(confNode(self), [
+          'rows',
+          'tree',
+        ])
+        if (tree) {
+          return buildTree(tree, self.rowTreeProvenance ? [] : self.rowDomain)
+        }
+        return self.guideTreeHonoursDomain ? self.guideTree : undefined
       },
       /**
        * #method
        * Whether the arrangement dialog's submit of `next` drops the tree: an
-       * order that moves no row is not written, so it drops nothing.
+       * order that moves no row is not written, so it drops nothing, and the
+       * guide tree drops only for an order no rotation of it lists.
        */
       rowOrderWillDropTree(next: readonly { name: string }[]) {
-        return (
-          !movesNoRow(next, self.editableSources) &&
-          orderDropsTree(
-            self.rowTree,
-            self.rowDomain,
-            orderOver(self.rowDomain, next),
-          )
-        )
+        const order = orderOver(self.rowDomain, next)
+        const guide = self.guideTreeNewick
+        return guide &&
+          !getConf(confNode(self), ['rows', 'tree']) &&
+          self.guideTreeHonoursDomain
+          ? !listsInOrder(getLeafNames(buildTree(guide, order)), order)
+          : !movesNoRow(next, self.editableSources) &&
+              orderDropsTree(self.rowTree, self.rowDomain, order)
       },
     }))
     .views(self => ({

@@ -10,6 +10,7 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
+import { getLeafNames } from './clusterUtils.ts'
 import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
@@ -169,6 +170,70 @@ describe('a display supplying the hooks', () => {
         .volatile(() => ({ discoveredRows: [] }))
         .create({ configuration: {} }),
     ).toThrow(/computed value/)
+  })
+})
+
+// `((a,b),c)` has four of the six orders of its leaves as rotations; a, c, b
+// parts the sister pair, so no rotation lists it.
+describe('a guide tree the display supplies', () => {
+  const GUIDE = '((a,b),c);'
+  const named = (names: string[]) => names.map(name => ({ name }))
+
+  function makeGuided() {
+    return types
+      .compose(
+        'GuidedTreeDisplay',
+        TreeSidebarMixin(),
+        types.model({
+          type: types.literal('GuidedTreeDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .views(() => ({
+        get discoveredRows() {
+          return named(['a', 'b', 'c'])
+        },
+        get guideTreeNewick() {
+          return GUIDE
+        },
+      }))
+      .create({ type: 'GuidedTreeDisplay', configuration: {} })
+  }
+
+  it('draws while the domain honours a rotation of it', () => {
+    const display = makeGuided()
+    expect(display.rowTree).toBe(GUIDE)
+    expect(display.rowOrderWillDropTree(named(['c', 'b', 'a']))).toBe(false)
+    display.setRowOrder(named(['c', 'b', 'a']))
+    expect(display.rowTree).toBe(GUIDE)
+    expect(getLeafNames(display.parsedTree!)).toEqual(['c', 'b', 'a'])
+  })
+
+  it('hides under an order no rotation produces, and returns on reset', () => {
+    const display = makeGuided()
+    expect(display.rowOrderWillDropTree(named(['a', 'c', 'b']))).toBe(true)
+    display.setRowOrder(named(['a', 'c', 'b']))
+    expect(display.rowTree).toBeUndefined()
+    expect(display.parsedTree).toBeUndefined()
+    display.resetRowArrangement()
+    expect(display.rowTree).toBe(GUIDE)
+    expect(getLeafNames(display.parsedTree!)).toEqual(['a', 'b', 'c'])
+  })
+
+  // The guide tree lists c, a, b too, so only the run's tree can be the one
+  // drawn, and any move drops it.
+  it("yields to a run's tree in `rows.tree`", () => {
+    const display = makeGuided()
+    const runTree = '(c,(a,b));'
+    display.setRowOrder(named(['c', 'a', 'b']), {
+      tree: runTree,
+      provenance: { regions: [{ refName: 'ctgA', start: 0, end: 100 }] },
+    })
+    expect(display.guideTreeHonoursDomain).toBe(true)
+    expect(display.rowTree).toBe(runTree)
+    expect(display.rowOrderWillDropTree(named(['c', 'b', 'a']))).toBe(true)
+    display.resetRowArrangement()
+    expect(display.rowTree).toBe(GUIDE)
   })
 })
 

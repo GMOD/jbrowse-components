@@ -38,12 +38,10 @@ import {
   TreeSidebarMixin,
   applySubtreeFilter,
   buildSpatialIndex,
-  buildTree,
   computeClusterHierarchy,
   filterRowsBySubtree,
   getLeafNames,
   keptRows,
-  orderOver,
   resetRowOrderMenuItems,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
@@ -216,25 +214,6 @@ function categoricalScale(
     title,
     entries: items.map(({ label, color }) => ({ value: label, label, color })),
   }
-}
-
-/**
- * Whether the names of `order` that `leaves` holds appear in `leaves`' order.
- */
-function listsInOrder(leaves: readonly string[], order: readonly string[]) {
-  const position = new Map(leaves.map((name, i) => [name, i]))
-  let last = -1
-  for (const name of order) {
-    const at = position.get(name)
-    if (at !== undefined) {
-      if (at < last) {
-        return false
-      }
-      last = at
-      position.delete(name)
-    }
-  }
-  return true
 }
 
 /**
@@ -721,94 +700,19 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The adapter's guide tree, parsed and rotated towards `rows.domain`;
-         * undefined when the adapter supplies none.
-         */
-        get guideTree() {
-          const newick = self.treeNewickVolatile
-          return newick ? buildTree(newick, self.rowDomain) : undefined
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Whether the rotated guide tree lists `rows.domain`'s species in
-         * `rows.domain`'s order, which holds exactly when some rotation of it
-         * does.
-         */
-        get guideTreeHonoursDomain(): boolean {
-          const { guideTree } = self
-          return (
-            !!guideTree && listsInOrder(getLeafNames(guideTree), self.rowDomain)
-          )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The tree the rows are arranged by: a clustering run's, `rows.tree`,
-         * else the adapter's guide tree while some rotation of it lists
-         * `rows.domain`'s species in that order. A reorder no rotation
-         * produces hides it, and a reset brings it back.
-         *
-         * The guide tree never enters `rows.tree`: the adapter re-supplies it
-         * on every load, so a stored copy would go stale behind an edited
-         * `.nh`.
-         */
-        get rowTree(): string | undefined {
-          return (
-            getConf(self, ['rows', 'tree']) ??
-            (self.guideTreeHonoursDomain ? self.treeNewickVolatile : undefined)
-          )
-        },
-      }))
-      .views(self => {
-        const { rowOrderWillDropTree: superRowOrderWillDropTree } = self
-        return {
-          /**
-           * #getter
-           * `TreeSidebarMixin`'s parse of `rowTree`, reusing `guideTree` for
-           * the guide tree rather than parsing its newick twice.
-           */
-          get parsedTree() {
-            const runTree: string | undefined = getConf(self, ['rows', 'tree'])
-            if (runTree) {
-              return buildTree(
-                runTree,
-                self.rowTreeProvenance ? [] : self.rowDomain,
-              )
-            }
-            return self.guideTreeHonoursDomain ? self.guideTree : undefined
-          },
-          /**
-           * #method
-           * Whether writing `next` as the row order hides the drawn tree: the
-           * mixin's answer for a run's tree, and for the guide tree whether no
-           * rotation of it lists the order `setRowOrder` would write.
-           */
-          rowOrderWillDropTree(next: readonly { name: string }[]) {
-            const newick = self.treeNewickVolatile
-            if (
-              getConf(self, ['rows', 'tree']) ||
-              !newick ||
-              !self.guideTreeHonoursDomain
-            ) {
-              return superRowOrderWillDropTree(next)
-            }
-            const order = orderOver(self.rowDomain, next)
-            return !listsInOrder(getLeafNames(buildTree(newick, order)), order)
-          },
-        }
-      })
-      .views(self => ({
-        /**
-         * #getter
          * `TreeSidebarMixin`'s hook: the worker's species, in the order it
          * reported them. Empty until the first fetch populates the set;
          * `sourcesKnown` is the readiness question.
          */
         get discoveredRows(): MafSource[] {
           return self.sourcesVolatile
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the adapter's guide tree.
+         */
+        get guideTreeNewick(): string | undefined {
+          return self.treeNewickVolatile
         },
         /**
          * #getter

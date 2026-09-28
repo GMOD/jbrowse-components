@@ -145,8 +145,9 @@ multi-row feature display and MAF. It also derives the rows a run clusters,
 | Row labels | `rows.labels` |
 | Row colours | `rowColor` pairs |
 
-MAF's adapter guide tree is data rather than config: `rowTree` draws it while
-some rotation of it lists `rows.domain` and never writes it to `rows.tree`.
+A guide tree a display's adapter supplies (`guideTreeNewick`, MAF's `.nh`) is
+data rather than config: `rowTree` draws it while some rotation of it lists
+`rows.domain` and never writes it to `rows.tree`.
 `treeAreaWidth`, the sidebar's pixel width (default 80), is config too.
 
 Key actions:
