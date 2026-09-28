@@ -2361,7 +2361,7 @@ test('hiding a section takes its instances out of the drawn layer and lifts the 
   expect(display.rowCount).toBe(2)
   const [layer] = display.rpcDataMap.get(0)!.layers
   expect(layer!.count).toBe(2)
-  expect([...layer!.featureIndex]).toEqual([1, 2])
+  expect([...layer!.featureIndex!]).toEqual([1, 2])
   expect(rowsOf(display)).toEqual([0, 1])
   display.showAllGroups()
   expect(rowsOf(display)).toEqual([0, 1, 2])

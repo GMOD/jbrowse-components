@@ -1,0 +1,143 @@
+{
+  "id": "typed-sources-synthetic",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node --max-old-space-size=14000 packages/core/benches/tablePipeline.bench.ts --base=98ce6436fa --rounds=9 --json",
+    "notes": "On ada (24 cores, load ~1). A million SimpleFeatures through each step and the encode, main (98ce6436fa) against the working tree: the rows over a feature list, where the columnar encoder reads a feature per lane rather than every lane per feature in one walk. rows by sample differs mostly by ADR-192, the span asking for no hit index. Interleaved round-robin with the order rotated, MIN across rounds, lanes checked equal before timing."
+  },
+  "columns": [
+    {
+      "key": "scenario",
+      "label": "scenario"
+    },
+    {
+      "key": "baseMs",
+      "label": "main",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "headMs",
+      "label": "typed sources",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlVsBase",
+      "label": "control vs main",
+      "format": "x",
+      "precision": 2,
+      "derived": "controlMs / baseMs",
+      "align": "right"
+    },
+    {
+      "key": "headVsBase",
+      "label": "typed sources vs main",
+      "format": "x",
+      "precision": 2,
+      "derived": "headMs / baseMs",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "encode, y and a colour",
+        "baseMs": 147.7,
+        "controlMs": 156.2,
+        "headMs": 146.5
+      }
+    },
+    {
+      "values": {
+        "scenario": "encode, categorical colour",
+        "baseMs": 49.1,
+        "controlMs": 42.1,
+        "headMs": 46.7
+      }
+    },
+    {
+      "values": {
+        "scenario": "encode, jexl y",
+        "baseMs": 85.3,
+        "controlMs": 83.9,
+        "headMs": 78
+      }
+    },
+    {
+      "values": {
+        "scenario": "filter",
+        "baseMs": 84.5,
+        "controlMs": 85.5,
+        "headMs": 81.7
+      }
+    },
+    {
+      "values": {
+        "scenario": "formula",
+        "baseMs": 85.3,
+        "controlMs": 85.7,
+        "headMs": 80.9
+      }
+    },
+    {
+      "values": {
+        "scenario": "flatten",
+        "baseMs": 109.4,
+        "controlMs": 113.8,
+        "headMs": 102.2
+      }
+    },
+    {
+      "values": {
+        "scenario": "bin, count",
+        "baseMs": 37.8,
+        "controlMs": 36.8,
+        "headMs": 41.6
+      }
+    },
+    {
+      "values": {
+        "scenario": "bin, mean",
+        "baseMs": 47.5,
+        "controlMs": 47.6,
+        "headMs": 49.8
+      }
+    },
+    {
+      "values": {
+        "scenario": "coverage",
+        "baseMs": 153.2,
+        "controlMs": 179.1,
+        "headMs": 126.3
+      }
+    },
+    {
+      "values": {
+        "scenario": "pileup",
+        "baseMs": 72.2,
+        "controlMs": 73.7,
+        "headMs": 72.7
+      }
+    },
+    {
+      "values": {
+        "scenario": "rows by sample",
+        "baseMs": 169.1,
+        "controlMs": 172.8,
+        "headMs": 81
+      }
+    }
+  ]
+}

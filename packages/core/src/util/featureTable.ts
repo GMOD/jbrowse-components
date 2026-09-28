@@ -12,7 +12,9 @@ export type NumberLane =
   | Uint32Array
   | Int32Array
   | Uint16Array
+  | Int16Array
   | Uint8Array
+  | Int8Array
 
 /**
  * #api
@@ -22,11 +24,40 @@ export type CodeLane = Uint8Array | Uint16Array | Uint32Array
 
 /**
  * #api
+ * Text held as bytes, one per character: row `i`'s is `length[i]` bytes of
+ * `bytes` from `offset[i]`, so many rows share one buffer, as an adapter's
+ * arena holds them.
+ */
+export interface TextColumn {
+  kind: 'text'
+  bytes: Uint8Array
+  offset: Uint32Array
+  length: Uint32Array
+  at: Uint32Array | undefined
+}
+
+/**
+ * #api
+ * A list of rows per row: row `i`'s entries are the rows of `entries` from
+ * `start[i]` up to `start[i + 1]`, and `keys`, where the list is a record
+ * keyed by name, the name of each entry.
+ */
+export interface ListColumn {
+  kind: 'list'
+  start: Uint32Array
+  entries: ColumnTable
+  keys: Column | undefined
+  at: Uint32Array | undefined
+}
+
+/**
+ * #api
  * A field's values over a table's rows, resolved once per step so the loop
  * reading it is chosen before the loop runs: a lane a step wrote, codes into
- * labels, a field read off the parser's own features, or a value a step
- * computes per row. `at` is the row each of the table's rows reads, where the
- * lane or the features belong to a table this one stands on.
+ * labels, a field read off the parser's own features, text or lists an
+ * adapter holds typed, or a value a step computes per row. `at` is the row
+ * each of the table's rows reads, where the lane or the features belong to a
+ * table this one stands on.
  */
 export type Column =
   | {
@@ -48,6 +79,8 @@ export type Column =
       field: string
       at: Uint32Array | undefined
     }
+  | TextColumn
+  | ListColumn
   | { kind: 'value'; read: (row: number) => unknown }
   | { kind: 'none' }
 
@@ -81,6 +114,12 @@ export function valueAt(column: Column, i: number): unknown {
     case 'feature': {
       return column.features[column.at ? column.at[i]! : i]!.get(column.field)
     }
+    case 'text': {
+      return textOfRow(column, column.at ? column.at[i]! : i)
+    }
+    case 'list': {
+      return listOfRow(column, column.at ? column.at[i]! : i)
+    }
     case 'value': {
       return column.read(i)
     }
@@ -88,6 +127,32 @@ export function valueAt(column: Column, i: number): unknown {
       return undefined
     }
   }
+}
+
+const decoder = new TextDecoder()
+
+function textOfRow({ bytes, offset, length }: TextColumn, r: number) {
+  const from = offset[r]!
+  return decoder.decode(bytes.subarray(from, from + length[r]!))
+}
+
+// A keyed list is the record its entries are filed in by name, each entry a
+// plain record; any other is its entries as features.
+function listOfRow({ start, entries, keys }: ListColumn, r: number) {
+  const from = start[r]!
+  const to = start[r + 1]!
+  if (keys) {
+    const out: Record<string, unknown> = {}
+    for (let j = from; j < to; j++) {
+      out[String(valueAt(keys, j))] = entries.record(j)
+    }
+    return out
+  }
+  const out: Feature[] = []
+  for (let j = from; j < to; j++) {
+    out.push(entries.row(j))
+  }
+  return out
 }
 
 /**
@@ -116,6 +181,14 @@ export function readerOf(column: Column): (i: number) => unknown {
       return at
         ? i => features[at[i]!]!.get(field)
         : i => features[i]!.get(field)
+    }
+    case 'text': {
+      const { at } = column
+      return at ? i => textOfRow(column, at[i]!) : i => textOfRow(column, i)
+    }
+    case 'list': {
+      const { at } = column
+      return at ? i => listOfRow(column, at[i]!) : i => listOfRow(column, i)
     }
     case 'value': {
       return column.read
@@ -147,6 +220,8 @@ export function numberReaderOf(column: Column): (i: number) => number {
         : i => numericValue(features[i]!.get(field))
     }
     case 'category':
+    case 'text':
+    case 'list':
     case 'value': {
       const read = readerOf(column)
       return i => numericValue(read(i))
@@ -162,7 +237,9 @@ export function throughIndex(column: Column, at: Uint32Array): Column {
   switch (column.kind) {
     case 'number':
     case 'category':
-    case 'feature': {
+    case 'feature':
+    case 'text':
+    case 'list': {
       const inner = column.at
       if (!inner) {
         return { ...column, at }
@@ -199,6 +276,63 @@ export class SourceTable implements FeatureTable {
 
   row(i: number) {
     return this.features[i]!
+  }
+}
+
+/**
+ * #api
+ * A table an adapter answers from the typed arrays it already holds, where
+ * `getFeaturesArray` would make an object per row: a column per field, and
+ * each row's id. A row's hover JSON is every field it holds.
+ */
+export class ColumnTable implements MadeRows {
+  readonly length: number
+  private readonly columns: ReadonlyMap<string, Column>
+  private readonly ids: (i: number) => string
+
+  constructor(
+    length: number,
+    columns: ReadonlyMap<string, Column>,
+    id: (i: number) => string,
+  ) {
+    this.length = length
+    this.columns = columns
+    this.ids = id
+  }
+
+  column(field: string) {
+    return this.columns.get(field) ?? NO_COLUMN
+  }
+
+  /** The fields the row holds, as a plain record. */
+  record(i: number) {
+    const out: Record<string, unknown> = {}
+    for (const [field, column] of this.columns) {
+      const v = valueAt(column, i)
+      if (v !== undefined) {
+        out[field] = v
+      }
+    }
+    return out
+  }
+
+  id(i: number) {
+    return this.ids(i)
+  }
+
+  json(i: number) {
+    return {
+      ...this.record(i),
+      uniqueId: this.id(i),
+    } as SimpleFeatureSerialized
+  }
+
+  parentOfRow() {
+    return undefined
+  }
+
+  row(i: number): Feature {
+    return new TableRow(this, i)
   }
 }
 

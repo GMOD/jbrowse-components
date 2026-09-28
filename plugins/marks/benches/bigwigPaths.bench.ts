@@ -12,9 +12,10 @@ import { resolve } from 'node:path'
 // 1500: each zoom fetches one screen of that width from --start, clamped to
 // the contig, which is what a display's region fetch is), --zooms=<bp/px,...>
 // (default one zoom inside each tier of the file, the raw section included),
-// --rounds (default 7), --json.
+// --rounds (default 7), --no-index (the marks arms without the hit index a
+// bar asks for, which wiggle's hover does without), --json.
 //
-// Four arms per zoom, interleaved round-robin, MIN across rounds
+// Six arms per zoom, interleaved round-robin, MIN across rounds
 // (agent-docs/reference/BENCHMARKING.md), each a fetch plus what the RPC
 // executor does with it:
 //
@@ -26,6 +27,9 @@ import { resolve } from 'node:path'
 //               `{ mark: 'bar', encoding: { y: 'score' } }`
 //   marks-mean  the same fetch through `bin: auto` and `aggregate: mean` first,
 //               which is what a density-style declaration costs on top
+//   table       getFeatureTable, the adapter's rows as a table over bbi's
+//               arrays, then the same encode: what CoreGetEncodedLayers runs
+//   table-mean  the same table through `bin: auto` and `aggregate: mean`
 //
 // The bbi block cache is warm after the first round, so the MIN is a refetch
 // over held blocks: the zoom-across-a-tier case, not a cold open.
@@ -100,7 +104,9 @@ const zooms = flag('zooms')
 
 const jexl = createJexlInstance()
 // markLanes('bar'), spelled here because markList.ts reaches React
-const BAR_LANES: LaneName[] = ['y', 'color', 'colorValue', 'index']
+const BAR_LANES: LaneName[] = process.argv.includes('--no-index')
+  ? ['y', 'color', 'colorValue']
+  : ['y', 'color', 'colorValue', 'index']
 
 function meanSteps(bpPerPx: number): TransformStep[] {
   return [
@@ -139,6 +145,21 @@ function armMarksMean(region: Region, bpPerPx: number) {
   return async () => {
     const features = await adapter.getFeaturesArray(region, { bpPerPx })
     const binned = runTransforms(features, steps, jexl)
+    return encodeFeatures(binned, { y: MEAN_FIELD }, BAR_LANES, { jexl })
+  }
+}
+
+function armTable(region: Region, bpPerPx: number) {
+  return async () => {
+    const table = await adapter.getFeatureTable(region, { bpPerPx })
+    return encodeFeatures(table, { y: 'score' }, BAR_LANES, { jexl })
+  }
+}
+function armTableMean(region: Region, bpPerPx: number) {
+  const steps = meanSteps(bpPerPx)
+  return async () => {
+    const table = await adapter.getFeatureTable(region, { bpPerPx })
+    const binned = runTransforms(table, steps, jexl)
     return encodeFeatures(binned, { y: MEAN_FIELD }, BAR_LANES, { jexl })
   }
 }
@@ -235,11 +256,14 @@ for (const bpPerPx of zooms) {
     ['control', armControl(region, bpPerPx)],
     ['marks', armMarks(region, bpPerPx)],
     ['marks-mean', armMarksMean(region, bpPerPx)],
+    ['table', armTable(region, bpPerPx)],
+    ['table-mean', armTableMean(region, bpPerPx)],
   ] as const
 
   const wiggle = await arms[0][1]()
   const marks = await arms[2][1]()
-  if (wiggle.numFeatures !== marks.count) {
+  const table = await arms[4][1]()
+  if (wiggle.numFeatures !== marks.count || table.count !== marks.count) {
     throw new Error(
       `${bpPerPx} bp/px: wiggle holds ${wiggle.numFeatures} rows, marks ${marks.count}`,
     )
@@ -248,7 +272,10 @@ for (const bpPerPx of zooms) {
     if (
       wiggle.featurePositions[i * 2] !== marks.x[i] ||
       wiggle.featurePositions[i * 2 + 1] !== marks.x2[i] ||
-      wiggle.featureScores[i] !== marks.y[i]
+      wiggle.featureScores[i] !== marks.y[i] ||
+      table.x[i] !== marks.x[i] ||
+      table.x2[i] !== marks.x2[i] ||
+      table.y[i] !== marks.y[i]
     ) {
       throw new Error(`${bpPerPx} bp/px: row ${i} differs between the paths`)
     }
@@ -282,6 +309,8 @@ for (const bpPerPx of zooms) {
     controlMs: Number(best[1]!.toFixed(2)),
     marksMs: Number(best[2]!.toFixed(2)),
     marksMeanMs: Number(best[3]!.toFixed(2)),
+    tableMs: Number(best[4]!.toFixed(2)),
+    tableMeanMs: Number(best[5]!.toFixed(2)),
     binBp,
     ...(error
       ? {
@@ -308,7 +337,7 @@ if (asJson) {
         ? ''
         : `  bin ${r.binBp}bp x${r.bins}: mean-of-means err ${r.meanErrPct}% mean, ${r.maxErrPct}% max; span-weighted ${r.weightedErrPct}%`
     console.log(
-      `  ${String(r.bpPerPx).padStart(9)} bp/px  tier ${r.tier.padEnd(9)} ${String(r.regionBp).padStart(10)}bp rows ${String(r.rows).padStart(7)}  wiggle ${r.wiggleMs.toFixed(2).padStart(7)}ms  control ${r.controlMs.toFixed(2).padStart(7)}ms  marks ${r.marksMs.toFixed(2).padStart(7)}ms (${(r.marksMs / r.wiggleMs).toFixed(2)}x)  marks-mean ${r.marksMeanMs.toFixed(2).padStart(7)}ms${error}`,
+      `  ${String(r.bpPerPx).padStart(9)} bp/px  tier ${r.tier.padEnd(9)} ${String(r.regionBp).padStart(10)}bp rows ${String(r.rows).padStart(7)}  wiggle ${r.wiggleMs.toFixed(2).padStart(7)}ms  control ${r.controlMs.toFixed(2).padStart(7)}ms  marks ${r.marksMs.toFixed(2).padStart(7)}ms (${(r.marksMs / r.wiggleMs).toFixed(2)}x)  marks-mean ${r.marksMeanMs.toFixed(2).padStart(7)}ms  table ${r.tableMs.toFixed(2).padStart(7)}ms (${(r.tableMs / r.wiggleMs).toFixed(2)}x)  table-mean ${r.tableMeanMs.toFixed(2).padStart(7)}ms${error}`,
     )
   }
 }

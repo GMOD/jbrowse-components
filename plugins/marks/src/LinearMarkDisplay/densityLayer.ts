@@ -9,7 +9,6 @@ const EMPTY: StoredLayer = {
   skipped: 0,
   x: new Uint32Array(0),
   x2: new Uint32Array(0),
-  featureIndex: new Uint32Array(0),
   yMin: Infinity,
   yMax: -Infinity,
 }
@@ -26,7 +25,6 @@ export function densityLayer(
   color: number,
 ): StoredLayer {
   const count = starts.length
-  const featureIndex = new Uint32Array(count)
   const colors = new Uint32Array(count)
   const fb =
     count > 0 ? new Flatbush(count, undefined, Float64Array) : undefined
@@ -34,7 +32,6 @@ export function densityLayer(
   let yMax = -Infinity
   for (let i = 0; i < count; i++) {
     const v = scores[i]!
-    featureIndex[i] = i
     colors[i] = color
     yMin = v < yMin ? v : yMin
     yMax = v > yMax ? v : yMax
@@ -49,7 +46,6 @@ export function densityLayer(
     y: scores,
     color: colors,
     glyph: new Uint8Array(count).fill(GLYPH_DISC),
-    featureIndex,
     yMin,
     yMax,
     flatbush: fb,

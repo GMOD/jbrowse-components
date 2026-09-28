@@ -236,9 +236,23 @@ disagree with the painting.
 
 A field's values over a table's rows, resolved once per step so the loop
 reading it is chosen before the loop runs: a lane a step wrote, codes into
-labels, a field read off the parser's own features, or a value a step
-computes per row. `at` is the row each of the table's rows reads, where the
-lane or the features belong to a table this one stands on.
+labels, a field read off the parser's own features, text or lists an
+adapter holds typed, or a value a step computes per row. `at` is the row
+each of the table's rows reads, where the lane or the features belong to a
+table this one stands on.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
+
+## ColumnTable
+
+A table an adapter answers from the typed arrays it already holds, where
+`getFeaturesArray` would make an object per row: a column per field, and
+each row's id. A row's hover JSON is every field it holds.
+
+```js
+// type signature
+typeof ColumnTable
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
@@ -321,7 +335,8 @@ EncodedChannels with the lanes in `L` present — what
 
 One encoding's channels over one region's features, dense and
 index-aligned: instance `i` of every array is the same feature, and
-`featureIndex[i]` says which one of the input list it was. A lane is
+`featureIndex[i]` says which one of the input list it was, or it is absent
+where instance `i` is feature `i` (featureIndexAt). A lane is
 present when the caller asked for it (LaneName); Encoded
 is this type with a known lane set required.
 
@@ -357,6 +372,11 @@ A feature whose `x`, `x2` or (declared and asked-for) `y` is not finite is
 skipped and counted in `skipped`, so every array stays index-aligned with
 the Flatbush. Pure: the RPC around it owns the adapter, the filters and the
 transferables.
+
+Columnar: one pass admits the rows over `x`, `x2` and `y` alone, and none
+runs where all three are lanes of whole numbers; every other lane is then
+filled in its own loop over the admitted rows, a lane straight off a typed
+column and a categorical over a `category` column per label.
 
 ```js
 // type signature
@@ -408,6 +428,18 @@ every layer's own steps over each section alone, and stack the sections,
 each starting on the row after the one above it ends.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## featureIndexAt
+
+The input feature instance `i` of `channels` was: `featureIndex[i]`, or `i`
+itself where the encoder skipped none and so shipped no index.
+
+```js
+// type signature
+(channels: Pick<EncodedChannels, "featureIndex">, i: number) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ## FeatureTable
 
@@ -590,9 +622,10 @@ them everywhere.
 
 ## LaneName
 
-The lanes a caller asks the encoder to fill, beyond `x`, `x2` and
-`featureIndex`, which every payload carries: a mark's channels, and
-`index` for the Flatbush a hover reads. A lane not asked for is neither
+The lanes a caller asks the encoder to fill, beyond `x` and `x2`, which
+every payload carries, and `featureIndex`, which one carries where a
+feature was skipped: a mark's channels, and `index` for the Flatbush a
+hover reads. A lane not asked for is neither
 allocated nor transferred, and a caller that never hovers declines the
 index, which is most of the encoder's cost after the walk.
 
@@ -619,6 +652,14 @@ row, so the steps that follow it read the rows already in section order.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
+
+## ListColumn
+
+A list of rows per row: row `i`'s entries are the rows of `entries` from
+`start[i]` up to `start[i + 1]`, and `keys`, where the list is a record
+keyed by name, the name of each entry.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ## ListedRowSource
 
@@ -1258,6 +1299,14 @@ empty or missing token.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
+## TextColumn
+
+Text held as bytes, one per character: row `i`'s is `length[i]` bytes of
+`bytes` from `offset[i]`, so many rows share one buffer, as an adapter's
+arena holds them.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ## thresholdCuts
 

@@ -8,6 +8,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { calcStdFromSums } from '@jbrowse/core/util/stats'
 
+import { bigWigFeatureTable } from './bigWigFeatureTable.ts'
 import {
   binAlignedExtent,
   binRawRegion,
@@ -191,6 +192,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
       }
       observer.complete()
     }, signal)
+  }
+
+  override async getFeatureTable(region: Region, opts: WiggleOptions = {}) {
+    return bigWigFeatureTable(await this.getArrayFeatureView(region, opts))
   }
 
   private basesPerSpan({ bpPerPx = 0, resolution = 1 }: WiggleOptions) {

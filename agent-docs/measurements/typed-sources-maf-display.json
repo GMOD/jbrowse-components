@@ -1,0 +1,106 @@
+{
+  "id": "typed-sources-maf-display",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "npx esbuild plugins/maf/benches/mafOnMarks.bench.ts --bundle --platform=node --format=esm --outfile=/tmp/mafOnMarks.mjs --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && node --max-old-space-size=12000 /tmp/mafOnMarks.mjs --rounds=7 --json",
+    "notes": "On ada (24 cores, load ~1). One fetched region of the synthetic MAF-tabix fixture per shape. MAF display is the worker's pack, placeMafRegionData and buildMafChannels at a bp a cell; control is the same declared again. Features is marks_maf_cells over the fetched MafFeatures through layerTables and the columnar encoder, with no hit index as a span asks; typed is the same over mafFeatureTableOf, the blocks packed into the MAF display's arena inside the timing. Interleaved round-robin with the order rotated, MIN across rounds. The mark paths draw more instances than the MAF display (a gap and an insertion are runs of their own), which counts against them."
+  },
+  "columns": [
+    {
+      "key": "shape",
+      "label": "region"
+    },
+    {
+      "key": "runs",
+      "label": "runs",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "mafMs",
+      "label": "MAF display",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "featuresNoIndexMs",
+      "label": "features",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "typedMs",
+      "label": "typed",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "featuresVsMaf",
+      "label": "features vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "featuresNoIndexMs / mafMs",
+      "align": "right"
+    },
+    {
+      "key": "typedVsMaf",
+      "label": "typed vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "typedMs / mafMs",
+      "align": "right"
+    },
+    {
+      "key": "typedVsFeatures",
+      "label": "typed vs features",
+      "format": "x",
+      "precision": 2,
+      "derived": "typedMs / featuresNoIndexMs",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "shape": "26 species, 1600 blocks of 250 columns",
+        "runs": 2352118,
+        "mafMs": 94.4,
+        "controlMs": 91.2,
+        "featuresNoIndexMs": 106.7,
+        "typedMs": 102.1
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 20000 blocks of 8 columns",
+        "runs": 1325522,
+        "mafMs": 133.4,
+        "controlMs": 127.1,
+        "featuresNoIndexMs": 172.7,
+        "typedMs": 141.1
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 200 blocks of 250 columns",
+        "runs": 5516070,
+        "mafMs": 203.8,
+        "controlMs": 208,
+        "featuresNoIndexMs": 239.3,
+        "typedMs": 257.3
+      }
+    }
+  ]
+}

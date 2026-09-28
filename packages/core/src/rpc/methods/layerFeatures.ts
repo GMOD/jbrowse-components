@@ -22,7 +22,7 @@ export interface LayerFeatures {
 }
 
 /**
- * The feature list each layer of a `CoreGetEncodedLayers` request encodes: the
+ * The table each layer of a `CoreGetEncodedLayers` request encodes: the
  * region's features through the shared steps, split by the facet where the
  * request names one, then through each layer's own steps, with each faceted
  * layer's stacked rows beside it. An instance's `featureIndex` indexes its
@@ -53,7 +53,7 @@ export async function layerFeatures(
     statusCallback,
     () =>
       Promise.all([
-        dataAdapter.getFeaturesArray(region, fetchOpts),
+        dataAdapter.getFeatureTable(region, fetchOpts),
         dataAdapter.getZoomRange(fetchOpts),
       ]),
   )

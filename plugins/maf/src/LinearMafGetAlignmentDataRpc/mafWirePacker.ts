@@ -37,10 +37,13 @@ export interface MafWireReserve {
  * correctness backstop rather than the expected route.
  */
 class Column<T extends Uint8Array | Int8Array | Uint32Array> {
-  constructor(
-    private array: T,
-    private grow: (n: number) => T,
-  ) {}
+  private array: T
+  private grow: (n: number) => T
+
+  constructor(array: T, grow: (n: number) => T) {
+    this.array = array
+    this.grow = grow
+  }
 
   at(index: number) {
     if (index >= this.array.length) {

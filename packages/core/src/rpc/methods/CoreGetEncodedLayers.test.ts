@@ -1,4 +1,5 @@
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
+import { asTable } from '../../util/featureTable.ts'
 import createJexlInstance from '../../util/jexl.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
 import CoreGetEncodedLayers from './CoreGetEncodedLayers.ts'
@@ -31,7 +32,7 @@ async function run(args: Partial<CoreGetEncodedLayersArgs>) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
-      getFeaturesArray: async () => features,
+      getFeatureTable: async () => asTable(features),
       getZoomRange: async () => undefined,
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
@@ -64,15 +65,15 @@ test('no transform encodes every feature', async () => {
 })
 
 test('the zoom reaches the adapter, so one with zoom levels answers at it', async () => {
-  const getFeaturesArray = jest.fn(
-    async (_region: unknown, _opts: { bpPerPx?: number }) => features,
+  const getFeatureTable = jest.fn(
+    async (_region: unknown, _opts: { bpPerPx?: number }) => asTable(features),
   )
   const zoomRange = { minBpPerPx: 250, maxBpPerPx: 1000 }
   const getZoomRange = jest.fn(async (_opts: { bpPerPx?: number }) => zoomRange)
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
-      getFeaturesArray,
+      getFeatureTable,
       getZoomRange,
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
@@ -86,7 +87,7 @@ test('the zoom reaches the adapter, so one with zoom levels answers at it', asyn
     layers: [{ encoding: { y: 'score' }, lanes: ['y'] }],
     bpPerPx: 500,
   })
-  expect(getFeaturesArray.mock.calls[0]![1]).toMatchObject({ bpPerPx: 500 })
+  expect(getFeatureTable.mock.calls[0]![1]).toMatchObject({ bpPerPx: 500 })
   expect(getZoomRange.mock.calls[0]![0]).toMatchObject({ bpPerPx: 500 })
   expect((result as RpcResult<EncodedLayersResult>).value.zoomRange).toEqual(
     zoomRange,
@@ -94,13 +95,13 @@ test('the zoom reaches the adapter, so one with zoom levels answers at it', asyn
 })
 
 test("the request's adapter options reach the adapter, under the zoom and signal", async () => {
-  const getFeaturesArray = jest.fn(
-    async (_region: unknown, _opts: object) => features,
+  const getFeatureTable = jest.fn(async (_region: unknown, _opts: object) =>
+    asTable(features),
   )
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
-      getFeaturesArray,
+      getFeatureTable,
       getZoomRange: async () => undefined,
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
@@ -114,7 +115,7 @@ test("the request's adapter options reach the adapter, under the zoom and signal
     bpPerPx: 500,
     opts: { ld: { refName: 'chr1' }, bpPerPx: 1 },
   })
-  expect(getFeaturesArray.mock.calls[0]![1]).toMatchObject({
+  expect(getFeatureTable.mock.calls[0]![1]).toMatchObject({
     ld: { refName: 'chr1' },
     bpPerPx: 500,
   })
@@ -134,7 +135,7 @@ test('a facet runs every layer per section and stacks the sections', async () =>
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
-      getFeaturesArray: async () => reads,
+      getFeatureTable: async () => asTable(reads),
       getZoomRange: async () => undefined,
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
@@ -191,7 +192,7 @@ describe('a layer stands in the row its encoding names, stacked per section unde
     jest.mocked(getAdapter).mockResolvedValue({
       dataAdapter: {
         getFeatures: () => {},
-        getFeaturesArray: async () => reads,
+        getFeatureTable: async () => asTable(reads),
         getZoomRange: async () => undefined,
       },
     } as unknown as Awaited<ReturnType<typeof getAdapter>>)
@@ -280,7 +281,7 @@ describe("a facet's own pileup packs per section, the display's across every sec
     jest.mocked(getAdapter).mockResolvedValue({
       dataAdapter: {
         getFeatures: () => {},
-        getFeaturesArray: async () => reads,
+        getFeatureTable: async () => asTable(reads),
         getZoomRange: async () => undefined,
       },
     } as unknown as Awaited<ReturnType<typeof getAdapter>>)
@@ -332,7 +333,7 @@ test("a layer's own transform runs after the shared one, and the other layer see
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
-      getFeaturesArray: async () => features,
+      getFeatureTable: async () => asTable(features),
       getZoomRange: async () => undefined,
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)

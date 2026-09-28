@@ -12,17 +12,20 @@ import {
 import { categoricalPalette, categoricalValueColor } from '../ui/colors.ts'
 import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR } from './colorBits.ts'
+import { ColumnTable } from './featureTable.ts'
 import Flatbush from './flatbush/index.ts'
 import createJexlInstance from './jexl.ts'
 import {
   continuousColorScale,
   encodeFeatures,
   encodedChannelTransferables,
+  featureIndexAt,
   rampOverExtent,
 } from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
 import { thresholdField, thresholdPalette } from './thresholdScale.ts'
 
+import type { Column, NumberLane } from './featureTable.ts'
 import type { ContinuousRef, ShapeName, LaneName } from './markEncoding.ts'
 
 const jexl = createJexlInstance()
@@ -56,7 +59,7 @@ test('x and x2 default to start and end, read natively', () => {
   expect(r.count).toBe(5)
   expect([...r.x]).toEqual([0, 100, 200, 300, 400])
   expect([...r.x2]).toEqual([50, 150, 250, 350, 450])
-  expect([...r.featureIndex]).toEqual([0, 1, 2, 3, 4])
+  expect(r.featureIndex).toBeUndefined()
   expect([...r.y]).toEqual([0, 0, 0, 0, 0])
   expect(r.yMin).toBe(Infinity)
   expect(r.yMax).toBe(-Infinity)
@@ -68,7 +71,7 @@ test('a declared y skips the features whose value is not finite, and counts them
   expect(r.count).toBe(3)
   expect(r.skipped).toBe(2)
   expect([...r.y]).toEqual([10, 40, 25])
-  expect([...r.featureIndex]).toEqual([0, 1, 2])
+  expect([...r.featureIndex!]).toEqual([0, 1, 2])
   expect(r.yMin).toBe(10)
   expect(r.yMax).toBe(40)
   const fb = Flatbush.from(r.flatbushData!)
@@ -950,7 +953,7 @@ test('text is a lane of strings, filled only when named, empty where the field h
     { jexl },
   )
   expect(r.text).toEqual(['geneA', '', 'a,b', '7'])
-  expect(encodedChannelTransferables(r)).toHaveLength(3)
+  expect(encodedChannelTransferables(r)).toHaveLength(2)
   const derived = encodeFeatures(
     [feature(0, { score: 4 })],
     { text: 'jexl:"n="+feature.score' },
@@ -1195,4 +1198,110 @@ test('a VCF missing value, `[undefined]`, files under the no-value row on every 
   ).toEqual(['a', ''])
   expect(enc.shapeScale!.entries.map(e => e.value)).toEqual(['a', ''])
   expect(enc.text).toEqual(['a', '', ''])
+})
+
+function lane(values: NumberLane, at?: Uint32Array): Column {
+  return { kind: 'number', values, at }
+}
+
+test('whole-number lanes place every row, so the payload ships no index', () => {
+  const table = new ColumnTable(
+    3,
+    new Map([
+      ['start', lane(Int32Array.from([5, -2, 30]))],
+      ['end', lane(Uint32Array.from([9, 4, 40]))],
+    ]),
+    String,
+  )
+  const r = encodeFeatures(table, { row: Uint32Array.from([2, 0, 1]) }, ['row'])
+  expect(r.count).toBe(3)
+  expect(r.featureIndex).toBeUndefined()
+  expect([...r.x]).toEqual([5, 0, 30])
+  expect([...r.x2]).toEqual([9, 4, 40])
+  expect([...r.row]).toEqual([2, 0, 1])
+  expect(featureIndexAt(r, 2)).toBe(2)
+  expect(encodedChannelTransferables(r)).toHaveLength(3)
+})
+
+test('a lane read through its index, with rows skipped, names each instance by its row', () => {
+  const at = Uint32Array.from([3, 2, 1, 0])
+  const table = new ColumnTable(
+    4,
+    new Map<string, Column>([
+      ['start', lane(Uint32Array.from([0, 10, 20, 30]), at)],
+      ['end', lane(Uint32Array.from([5, 15, 25, 35]), at)],
+      ['score', lane(Float32Array.from([1, Number.NaN, 3, 4]), at)],
+      [
+        'state',
+        {
+          kind: 'category',
+          codes: Uint8Array.from([0, 1, 0, 1]),
+          labels: ['a', 'b'],
+          at,
+        },
+      ],
+    ]),
+    String,
+  )
+  const r = encodeFeatures(
+    table,
+    { y: 'score', color: { field: 'state', scale: 'categorical' } },
+    ['y', 'color'],
+  )
+  expect(r.count).toBe(3)
+  expect([...r.featureIndex!]).toEqual([0, 1, 3])
+  expect(featureIndexAt(r, 2)).toBe(3)
+  expect([...r.x]).toEqual([30, 20, 0])
+  expect([...r.y]).toEqual([4, 3, 1])
+  const [b, a] = ['b', 'a'].map(v => cssColorToABGR(categoricalValueColor(v)))
+  expect([...r.color]).toEqual([b, a, a])
+})
+
+test('lanes with no index skip a row whose y is not finite, and stop a negative position at 0', () => {
+  const table = new ColumnTable(
+    4,
+    new Map([
+      ['start', lane(Int32Array.from([-5, 10, 20, 30]))],
+      ['end', lane(Int32Array.from([5, 15, 25, 35]))],
+      ['score', lane(Float32Array.from([1, Number.NaN, Infinity, 4]))],
+    ]),
+    String,
+  )
+  const r = encodeFeatures(table, { y: 'score' }, ['y'])
+  expect(r.count).toBe(2)
+  expect(r.skippedPosition).toBe(0)
+  expect([...r.featureIndex!]).toEqual([0, 3])
+  expect([...r.x]).toEqual([0, 30])
+  expect([...r.x2]).toEqual([5, 35])
+  expect([...r.y]).toEqual([1, 4])
+  expect([r.yMin, r.yMax]).toEqual([1, 4])
+})
+
+test('a categorical over a category column lists only the labels its placed rows carry', () => {
+  const table = new ColumnTable(
+    3,
+    new Map<string, Column>([
+      ['start', lane(Float64Array.from([0, Number.NaN, 20]))],
+      ['end', lane(Uint32Array.from([5, 15, 25]))],
+      [
+        'state',
+        {
+          kind: 'category',
+          codes: Uint8Array.from([0, 1, 0]),
+          labels: ['a', 'b', 'c'],
+          at: undefined,
+        },
+      ],
+    ]),
+    String,
+  )
+  const r = encodeFeatures(
+    table,
+    { color: { field: 'state', scale: 'categorical' } },
+    ['color'],
+  )
+  expect(r.skippedPosition).toBe(1)
+  expect(
+    r.scale?.kind === 'categorical' ? r.scale.entries.map(e => e.value) : [],
+  ).toEqual(['a'])
 })

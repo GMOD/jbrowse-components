@@ -1,6 +1,7 @@
 import { firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { asTable } from '../../util/featureTable.ts'
 import { createStatusFanOut } from '../../util/progress.ts'
 import { blankStats, scoresToStats } from '../../util/stats.ts'
 import { BaseAdapter } from './BaseAdapter.ts'
@@ -9,6 +10,7 @@ import { aggregateQuantitativeStats } from './stats.ts'
 import { isFeatureAdapter } from './util.ts'
 
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type { FeatureTable } from '../../util/featureTable.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 import type { FeatureDensity } from './featureDensity.ts'
@@ -116,6 +118,19 @@ export abstract class BaseFeatureDataAdapter<
    */
   public getFeaturesArray(region: Region, opts: BaseOptions = {}) {
     return firstValueFrom(this.getFeatures(region, opts).pipe(toArray()))
+  }
+
+  /**
+   * The features overlapping a region as the table a mark's declaration runs
+   * over: by default a table over {@link getFeaturesArray}. An adapter that
+   * already holds its rows as typed arrays answers a `ColumnTable` over them
+   * instead, and makes no object per row.
+   */
+  public async getFeatureTable(
+    region: Region,
+    opts: BaseOptions = {},
+  ): Promise<FeatureTable> {
+    return asTable(await this.getFeaturesArray(region, opts))
   }
 
   /**

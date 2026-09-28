@@ -5,7 +5,6 @@ import {
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
 import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
-import { keepRampValues } from '@jbrowse/render-core/marks'
 
 import { drawnScales } from './drawnScales.ts'
 
@@ -134,36 +133,72 @@ function rowRemap(region: MarkRegionData, layout: FacetLayout) {
   return remap
 }
 
+function gather<T extends Uint32Array | Uint8Array>(
+  lane: T,
+  kept: Uint32Array,
+) {
+  const out = new (lane.constructor as new (n: number) => T)(kept.length)
+  for (let k = 0; k < kept.length; k++) {
+    out[k] = lane[kept[k]!]!
+  }
+  return out
+}
+
+// A ramp's raw values by their bits, so a no-value marker survives the copy.
+function gatherFloats(lane: Float32Array, kept: Uint32Array) {
+  const bits = gather(
+    new Uint32Array(lane.buffer, lane.byteOffset, lane.length),
+    kept,
+  )
+  return new Float32Array(bits.buffer, bits.byteOffset, bits.length)
+}
+
 // The layer as drawn: its rows on the layout, and a hidden section's
-// instances gone from every lane and from the hit index.
+// instances gone from every lane and from the hit index, each lane gathered
+// through the one list of instances kept.
 function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
   const { row } = layer
   if (!row) {
     return layer
   }
-  const moved = row.map(r => remap[r] ?? HIDDEN)
-  if (!moved.includes(HIDDEN)) {
+  const moved = new Uint32Array(row.length)
+  let shown = 0
+  for (let i = 0; i < row.length; i++) {
+    const r = remap[row[i]!] ?? HIDDEN
+    moved[i] = r
+    if (r !== HIDDEN) {
+      shown++
+    }
+  }
+  if (shown === row.length) {
     return { ...layer, row: moved }
   }
-  const shown = (_: unknown, i: number) => moved[i] !== HIDDEN
-  const x = layer.x.filter(shown)
-  const x2 = layer.x2.filter(shown)
-  const y = layer.y?.filter(shown)
+  const kept = new Uint32Array(shown)
+  for (let i = 0, k = 0; i < moved.length; i++) {
+    if (moved[i] !== HIDDEN) {
+      kept[k++] = i
+    }
+  }
+  const x = gather(layer.x, kept)
+  const x2 = gather(layer.x2, kept)
+  const y = layer.y && gatherFloats(layer.y, kept)
+  const { featureIndex, text } = layer
   return drawnScales({
     ...layer,
-    count: x.length,
+    count: shown,
     x,
     x2,
     y,
-    row: moved.filter(r => r !== HIDDEN),
-    featureIndex: layer.featureIndex.filter(shown),
-    color: layer.color?.filter(shown),
-    colorValue: layer.colorValue && keepRampValues(layer.colorValue, shown),
-    glyph: layer.glyph?.filter(shown),
-    text: layer.text?.filter(shown),
-    size: layer.size?.filter(shown),
-    x2Ref: layer.x2Ref?.filter(shown),
-    flatbush: layer.flatbush && x.length > 0 ? hitIndexOf(x, x2, y) : undefined,
+    row: gather(moved, kept),
+    featureIndex: featureIndex ? gather(featureIndex, kept) : kept,
+    color: layer.color && gather(layer.color, kept),
+    colorValue: layer.colorValue && gatherFloats(layer.colorValue, kept),
+    glyph: layer.glyph && gather(layer.glyph, kept),
+    text: text && Array.from(kept, i => text[i]!),
+    size: layer.size && gatherFloats(layer.size, kept),
+    x2Ref: layer.x2Ref && gather(layer.x2Ref, kept),
+    x2Region: layer.x2Region && gather(layer.x2Region, kept),
+    flatbush: layer.flatbush && shown > 0 ? hitIndexOf(x, x2, y) : undefined,
     flatbushData: undefined,
   })
 }

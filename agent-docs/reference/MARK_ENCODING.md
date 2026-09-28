@@ -20,7 +20,7 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | Piece | Where | What it owns |
 | --- | --- | --- |
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a shape that is a name, a jexl expression or a categorical scale over the shape names, an integer `row`, a `text` lane of strings for the text mark, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
-| `runTransforms`, `layerTables` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `cells`, `bin`, `aggregate`, `coverage`, `pileup`, `mate` — run in order over a table (`featureTable.ts`; a feature list is a source table), each step one kernel reading what the last answered and answering a table of its own ([ADR-191](../architecture-decision-records/adr-191-the-mark-pipeline-runs-over-tables.md)); `layerTables` runs a whole layered request, facet included |
+| `runTransforms`, `layerTables` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `cells`, `bin`, `aggregate`, `coverage`, `pileup`, `mate` — run in order over a table (`featureTable.ts`; a feature list is a source table, and an adapter holding its rows typed answers a `ColumnTable` over them through `getFeatureTable`, [ADR-193](../architecture-decision-records/adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)), each step one kernel reading what the last answered and answering a table of its own ([ADR-191](../architecture-decision-records/adr-191-the-mark-pipeline-runs-over-tables.md)); `layerTables` runs a whole layered request, facet included |
 | `CoreGetEncodedLayers` | `packages/core/src/rpc/methods/CoreGetEncodedLayers.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `filter` list as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
 | `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ mark, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry with a shape reading `layers[markIndex]` through a lens that checks its type's lanes are present (`markLanes` over `MARK_SPECS`) and `enabled` inside the entry's zoom range, a `text` entry placed as DOM by `placeTextMarks` in the entry's stead, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over the candidates its layer answers — a span's by the rows near the cursor (`rowSpanIndex`, [ADR-192](../architecture-decision-records/adr-192-a-span-answers-a-hover-by-its-row.md)), any other's from its Flatbush — spans stacked on `row` into `rowCount` bands |
 
@@ -104,10 +104,11 @@ written high to low.
 **A scale belongs to a channel, not to colour alone.** `shape` takes the
 same `{ field, scale: 'categorical', domain? }` that `color` does, with
 `range` — shape names, the three in order by default — as colour's `range`
-lists colours, and `encodeFeatures` resolves both through one categorical arm:
-the walk records which distinct value each admitted instance carried and
-`resolve` hands every value its range entry once the table is known, pinned
-by `domain` or derived from the value. The payload carries `scale` for the
+lists colours, and `encodeFeatures` resolves both through one categorical arm,
+`paintCategories`: each value's range entry, pinned by `domain` or derived
+from the value, is its own whatever else a region met, so over a `category`
+column each label resolves once and the lane is painted by code, and the
+table lists the values the admitted instances carried. The payload carries `scale` for the
 colour channel and `shapeScale` for the shape channel, and the mark display's
 legend draws a shape table as rows whose swatch is the shape — recorded from
 render-core's own `appendGlyph` as SVG path data, so the key cannot draw a
@@ -127,6 +128,16 @@ that never hovers through it (wiggle's fallback, the example plugin's
 every-instance walk) declines it. A `jexl` instance is likewise passed only
 by a caller with a `jexl:` channel to compile; every other channel is a
 field name or a reader.
+
+**The encoder fills a lane at a time.** One pass admits the rows over `x`,
+`x2` and `y` alone, straight off the lanes where they are lanes, and none runs
+where all three hold whole numbers; every other lane is its own loop over the
+admitted rows, reading a lane through one composed index or none. A loop
+testing `kept ? kept[k] : k` per element ran 3-4x slower in V8, which does not
+hoist the test, so each loop is written once with the index and once without.
+`featureIndex` is absent where no row was skipped, since it is then the
+identity; `featureIndexAt` reads either
+([ADR-193](../architecture-decision-records/adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)).
 
 **A feature the encoder cannot place is counted, not lost.** A feature whose
 `x`, `x2` or asked-for `y` reads as missing or not a number is left out of
@@ -335,8 +346,8 @@ Three packers moved onto it on 2026-09-09:
 - **wiggle's array-less fallback** (`featuresToRaw`,
   `plugins/wiggle/src/util.ts`) is `encodeFeatures(features, { y })` where
   `y` is a reader over `scoreField` that plots a missing value at 0, as the
-  slot documents, plus the summary `minScore`/`maxScore` band read over
-  `featureIndex` afterwards, the way Manhattan reads r². The array fast path
+  slot documents, plus the summary `minScore`/`maxScore` band read through
+  `featureIndexAt` afterwards, the way Manhattan reads r². The array fast path
   (BigWig, GC content) never materialises a `Feature` and stays as it is;
   `RawFeatureArrays` admits the encoder's `Uint32Array` beside the bbi
   `Int32Array`, and `processFeaturesFromArrays` copies either. Measured over

@@ -63,7 +63,7 @@ export async function collectMarkRowMatrix({
     () =>
       Promise.all(
         regions.map(region =>
-          dataAdapter.getFeaturesArray(region, {
+          dataAdapter.getFeatureTable(region, {
             bpPerPx,
             statusCallback: slot(),
             signal,
@@ -75,10 +75,10 @@ export async function collectMarkRowMatrix({
   const matrixRowOf = new Map(rows.map((name, r) => [name, r]))
   const sums = new Float64Array(rows.length * width)
   const counts = new Int32Array(rows.length * width)
-  for (const [regionIndex, features] of fetched.entries()) {
+  for (const [regionIndex, table] of fetched.entries()) {
     checkAbortSignal(signal)
     const { layers, sections } = layerTables(
-      features,
+      table,
       { transform, facet, layers: [{ transform: layer.transform }] },
       jexl,
     )

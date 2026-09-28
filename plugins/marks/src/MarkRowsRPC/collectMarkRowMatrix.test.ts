@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { asTable } from '@jbrowse/core/util/featureTable'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { clusterMarkRows } from './clusterMarkRows.ts'
@@ -26,13 +27,13 @@ function feats(
 }
 
 function stubAdapter(byRegion: SimpleFeature[][]) {
-  const getFeaturesArray = jest.fn((_region: Region, _opts: unknown) =>
-    Promise.resolve(byRegion.shift() ?? []),
+  const getFeatureTable = jest.fn((_region: Region, _opts: unknown) =>
+    Promise.resolve(asTable(byRegion.shift() ?? [])),
   )
   jest
     .mocked(getFeatureAdapterOrThrow)
-    .mockResolvedValue({ getFeaturesArray } as never)
-  return getFeaturesArray
+    .mockResolvedValue({ getFeatureTable } as never)
+  return getFeatureTable
 }
 
 function args(over: Partial<MarkRowMatrixArgs>) {
@@ -55,7 +56,7 @@ async function matrix(over: Partial<MarkRowMatrixArgs>) {
 }
 
 test('each row averages the instances split into it, over the columns each covers', async () => {
-  const getFeaturesArray = stubAdapter([
+  const getFeatureTable = stubAdapter([
     feats([
       { source: 'a', start: 0, end: 10, score: 2 },
       { source: 'a', start: 0, end: 5, score: 4 },
@@ -68,7 +69,7 @@ test('each row averages the instances split into it, over the columns each cover
     b: [0, 1, 0, 0],
     c: [0, 0, 0, 0],
   })
-  expect(getFeaturesArray).toHaveBeenCalledWith(
+  expect(getFeatureTable).toHaveBeenCalledWith(
     region(0, 10),
     expect.objectContaining({ bpPerPx: 2.5 }),
   )

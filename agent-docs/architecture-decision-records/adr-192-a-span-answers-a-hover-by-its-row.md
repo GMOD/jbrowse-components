@@ -7,8 +7,7 @@ summary: "A span answers a hover by the row it stands in: its layer asks the wor
 
 ## Status
 
-Accepted (2026-09-28). The second landing of
-[the-mark-pipeline-runs-over-tables](../ideas/ready/the-mark-pipeline-runs-over-tables.md),
+Accepted (2026-09-28). The second landing of the table pipeline,
 behind [ADR-191](adr-191-the-mark-pipeline-runs-over-tables.md).
 
 ## Context

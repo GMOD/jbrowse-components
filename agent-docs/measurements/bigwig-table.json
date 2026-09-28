@@ -1,0 +1,116 @@
+{
+  "id": "bigwig-table",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node plugins/marks/benches/bigwigPaths.bench.ts --file=HG008_log2ratio.500bp.bw --refName=chr1 --screenPx=400000 --zooms=600,2500 --rounds=9 --json, and again with --no-index",
+    "notes": "On ada, over a 54 MB 500 bp-bin BigWig (a copy-number log2 ratio from the GIAB HG008 cancer set), one 400,000 px screen of chr1 at 600 and 2500 bp/px so a region holds 10^5-10^6 rows; bbi's block cache is warm, so each arm is a refetch over held blocks plus what its RPC executor does. Wiggle is getFeatureArraysMulti and processFeaturesFromArrays; features is getFeaturesArray (a BigWigFeature per row) and encodeFeatures over the bar's lanes; table is getFeatureTable, a ColumnTable over bbi's arrays, and the same encode. A bar asks for the hit index; the declined rows leave it out, which wiggle's hover does without. MIN across rounds, x, x2 and y checked equal across the three before timing."
+  },
+  "columns": [
+    {
+      "key": "tier",
+      "label": "tier"
+    },
+    {
+      "key": "index",
+      "label": "hit index"
+    },
+    {
+      "key": "rows",
+      "label": "rows",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "wiggleMs",
+      "label": "wiggle",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "marksMs",
+      "label": "features",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "tableMs",
+      "label": "table",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "marksVsWiggle",
+      "label": "features vs wiggle",
+      "format": "x",
+      "precision": 2,
+      "derived": "marksMs / wiggleMs",
+      "align": "right"
+    },
+    {
+      "key": "tableVsWiggle",
+      "label": "table vs wiggle",
+      "format": "x",
+      "precision": 2,
+      "derived": "tableMs / wiggleMs",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "tier": "raw",
+        "index": "asked",
+        "rows": 441186,
+        "wiggleMs": 18.27,
+        "controlMs": 16.44,
+        "marksMs": 68.66,
+        "tableMs": 55.07
+      }
+    },
+    {
+      "values": {
+        "tier": "2048 (synthetic)",
+        "index": "asked",
+        "rows": 112138,
+        "wiggleMs": 25.66,
+        "controlMs": 25.46,
+        "marksMs": 37.8,
+        "tableMs": 34.96
+      }
+    },
+    {
+      "values": {
+        "tier": "raw",
+        "index": "declined",
+        "rows": 441186,
+        "wiggleMs": 17.95,
+        "controlMs": 16.53,
+        "marksMs": 32.23,
+        "tableMs": 18.79
+      }
+    },
+    {
+      "values": {
+        "tier": "2048 (synthetic)",
+        "index": "declined",
+        "rows": 112138,
+        "wiggleMs": 25.77,
+        "controlMs": 25.51,
+        "marksMs": 29.29,
+        "tableMs": 26.1
+      }
+    }
+  ]
+}

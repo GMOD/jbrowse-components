@@ -45,6 +45,34 @@ describe('adapter can fetch features from volvox.bw', () => {
     const featuresJsonArray = featuresArray.map(f => f.toJSON())
     expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
   })
+  it.each([
+    ['raw records', {}],
+    ['a summary tier', { bpPerPx: 1000, resolution: 1 }],
+  ])(
+    'answers a table whose rows are its features, over %s',
+    async (_, opts) => {
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 40000,
+        assemblyName: 'volvox',
+      }
+      const features = await adapter.getFeaturesArray(region, opts)
+      const table = await adapter.getFeatureTable(region, opts)
+      expect(table.length).toBe(features.length)
+      expect(features.length).toBeGreaterThan(0)
+      const summary = features[0]!.get('summary')
+      expect(summary).toBe('bpPerPx' in opts)
+      features.forEach((f, i) => {
+        const row = table.row(i)
+        expect(row.id()).toBe(f.id())
+        expect(row.toJSON()).toEqual(f.toJSON())
+        for (const field of ['start', 'end', 'score', 'minScore', 'summary']) {
+          expect(row.get(field)).toBe(f.get(field))
+        }
+      })
+    },
+  )
   it('get region stats', async () => {
     expect(
       await adapter.getRegionQuantitativeStats({

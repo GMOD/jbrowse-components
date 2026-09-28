@@ -1,4 +1,4 @@
-import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
+import { encodeFeatures, featureIndexAt } from '@jbrowse/core/util/markEncoding'
 import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core/renderingBackendTypes'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -155,17 +155,17 @@ export function processFeaturesFromArrays(
 // aliases min/max onto the scores rather than shipping two copies.
 function summaryChannels(
   features: readonly Feature[],
-  featureIndex: Uint32Array,
-  scores: Float32Array,
+  encoded: { featureIndex?: Uint32Array; y: Float32Array },
 ) {
+  const scores = encoded.y
   if (!features.some(f => f.get('summary'))) {
     return { minScores: undefined, maxScores: undefined }
   }
-  const n = featureIndex.length
+  const n = scores.length
   const minScores = new Float32Array(n)
   const maxScores = new Float32Array(n)
   for (let i = 0; i < n; i++) {
-    const f = features[featureIndex[i]!]!
+    const f = features[featureIndexAt(encoded, i)]!
     const score = scores[i]!
     const summary = f.get('summary')
     minScores[i] = summary
@@ -185,16 +185,17 @@ export function featuresToRaw(
   features: readonly Feature[],
   scoreField = 'score',
 ): RawFeatureArrays {
-  const { x, x2, y, featureIndex, count } = encodeFeatures(
+  const encoded = encodeFeatures(
     features,
     { y: f => Number(f.get(scoreField) ?? 0) },
     ['y'],
   )
+  const { x, x2, y, count } = encoded
   return {
     starts: x,
     ends: x2,
     scores: y,
-    ...summaryChannels(features, featureIndex, y),
+    ...summaryChannels(features, encoded),
     count,
   }
 }

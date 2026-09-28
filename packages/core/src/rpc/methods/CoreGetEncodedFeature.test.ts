@@ -1,5 +1,7 @@
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
+import { asTable } from '../../util/featureTable.ts'
 import createJexlInstance from '../../util/jexl.ts'
+import { featureIndexAt } from '../../util/markEncoding.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
 import CoreGetEncodedFeature from './CoreGetEncodedFeature.ts'
 import CoreGetEncodedLayers from './CoreGetEncodedLayers.ts'
@@ -40,7 +42,7 @@ function request(args: Partial<CoreGetEncodedLayersArgs>) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
-      getFeaturesArray: async () => reads,
+      getFeatureTable: async () => asTable(reads),
       getZoomRange: async () => undefined,
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
@@ -68,7 +70,7 @@ async function drawnAndReadBack(args: Partial<CoreGetEncodedLayersArgs>) {
       feature: await details.invoke({
         ...req,
         layer: 0,
-        featureIndex: layer.featureIndex[i]!,
+        featureIndex: featureIndexAt(layer, i),
       }),
     })),
   )

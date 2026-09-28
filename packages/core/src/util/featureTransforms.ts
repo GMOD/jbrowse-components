@@ -9,6 +9,7 @@ import {
   numberReaderOf,
   readerOf,
   selectRows,
+  throughIndex,
   valueAt,
   withColumns,
 } from './featureTable.ts'
@@ -18,7 +19,13 @@ import { numericValue } from './numericValue.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 import { junctionEnds, svClassOfAlt, svClassOfToken } from './svAlt.ts'
 
-import type { Column, FeatureTable, MadeRows } from './featureTable.ts'
+import type {
+  Column,
+  FeatureTable,
+  ListColumn,
+  MadeRows,
+  TextColumn,
+} from './featureTable.ts'
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
   AggregateOp,
@@ -64,13 +71,19 @@ function oneSection(n: number): Bounds {
 // each section starts at the first row whose parent row is in it.
 function boundsThrough(bounds: Bounds, parentRow: Uint32Array): Bounds {
   const out = new Uint32Array(bounds.length)
-  let at = 0
+  let lo = 0
   for (let s = 0; s < bounds.length; s++) {
     const edge = bounds[s]!
-    while (at < parentRow.length && parentRow[at]! < edge) {
-      at++
+    let hi = parentRow.length
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1
+      if (parentRow[mid]! < edge) {
+        lo = mid + 1
+      } else {
+        hi = mid
+      }
     }
-    out[s] = at
+    out[s] = lo
   }
   return out
 }
@@ -187,13 +200,31 @@ function fannedEntries(items: unknown): [string | number, unknown][] {
 
 /**
  * The entries a `flatten` fanned out, one row each over the container row it
- * came from. An entry answers a field it carries — a feature its own, a
- * record its own key, a plain value the fanned field — and the container
- * answers the rest, except the fanned field itself, so an entry never reads
- * back its siblings. A container kept with nothing to fan out is a row of its
- * own that reads everything off itself.
+ * came from. A container kept with nothing to fan out is a row of its own
+ * that reads everything off itself.
  */
-class FlatTable extends DerivedTable {
+abstract class FannedTable extends DerivedTable {
+  override get madeFrom() {
+    return true
+  }
+
+  /** A container kept with nothing to fan out: the row is the container. */
+  abstract isKept(i: number): boolean
+
+  abstract get hasKept(): boolean
+
+  override row(i: number): Feature {
+    return this.isKept(i) ? this.parent.row(this.parentOf(i)) : super.row(i)
+  }
+}
+
+/**
+ * The entries a `flatten` fanned out of a list or record a row holds. An
+ * entry answers a field it carries — a feature its own, a record its own key,
+ * a plain value the fanned field — and the container answers the rest,
+ * except the fanned field itself, so an entry never reads back its siblings.
+ */
+class FlatTable extends FannedTable {
   private readonly field: string
   private readonly items: readonly unknown[]
   private readonly at: readonly (string | number | undefined)[]
@@ -219,17 +250,12 @@ class FlatTable extends DerivedTable {
     this.keyField = step.key
   }
 
-  override get madeFrom() {
-    return true
-  }
-
-  /** A container kept with nothing to fan out: the row is the container. */
   isKept(i: number) {
     return this.at[i] === undefined
   }
 
-  override row(i: number): Feature {
-    return this.isKept(i) ? this.parent.row(this.parentOf(i)) : super.row(i)
+  get hasKept() {
+    return this.at.includes(undefined)
   }
 
   // An entry's value for a field, `undefined` where it states none.
@@ -343,7 +369,195 @@ class FlatTable extends DerivedTable {
   }
 }
 
-function flatten({ table, bounds }: Staged, step: FlattenStep): Staged {
+/**
+ * The entries a `flatten` fanned out of a list column, which are the list's
+ * own rows: an entry reads the fields its list holds straight off the list's
+ * lanes, and the container the rest. A keyed entry is a record filed under
+ * its name, any other a feature of its own.
+ */
+class ListFlatTable extends FannedTable {
+  private readonly field: string
+  private readonly list: ListColumn
+  private readonly entryRow: Uint32Array | undefined
+  private readonly position: Uint32Array
+  private readonly kept: Uint8Array | undefined
+  private readonly indexField: string | undefined
+  private readonly keyField: string | undefined
+
+  constructor(
+    parent: FeatureTable,
+    parentRow: Uint32Array,
+    field: string,
+    list: ListColumn,
+    entryRow: Uint32Array | undefined,
+    position: Uint32Array,
+    kept: Uint8Array | undefined,
+    step: FlattenStep,
+  ) {
+    super(parent, parentRow)
+    this.field = field
+    this.list = list
+    this.entryRow = entryRow
+    this.position = position
+    this.kept = kept
+    this.indexField = step.index
+    this.keyField = step.key
+  }
+
+  isKept(i: number) {
+    return this.kept?.[i] === 1
+  }
+
+  get hasKept() {
+    return this.kept !== undefined
+  }
+
+  private entryOf(i: number) {
+    return this.entryRow ? this.entryRow[i]! : i
+  }
+
+  private throughEntries(column: Column) {
+    return this.entryRow ? throughIndex(column, this.entryRow) : column
+  }
+
+  private entryColumn(name: string): Column | undefined {
+    const { keys, entries } = this.list
+    if (name === this.indexField) {
+      return { kind: 'number', values: this.position, at: undefined }
+    }
+    if (name === this.keyField && keys) {
+      return this.throughEntries(keys)
+    }
+    if (name === this.field) {
+      return NO_COLUMN
+    }
+    if (name === 'uniqueId' && keys) {
+      return { kind: 'value', read: i => this.id(i) }
+    }
+    const column = entries.column(name)
+    return column.kind === 'none' ? undefined : this.throughEntries(column)
+  }
+
+  protected own(name: string): Column | undefined {
+    const column = this.entryColumn(name)
+    const { kept } = this
+    if (!kept || column === undefined) {
+      return column
+    }
+    const entry = readerOf(column)
+    const container = readerOf(this.inherited(name))
+    return { kind: 'value', read: i => (kept[i] ? container(i) : entry(i)) }
+  }
+
+  override id(i: number) {
+    const container = this.parent.row(this.parentOf(i))
+    if (this.isKept(i)) {
+      return container.id()
+    }
+    const { keys, entries } = this.list
+    const j = this.entryOf(i)
+    return keys
+      ? `${container.id()}#${String(valueAt(keys, j))}`
+      : entries.id(j)
+  }
+
+  override json(i: number): SimpleFeatureSerialized {
+    const containerRow = this.parent.row(this.parentOf(i))
+    if (this.isKept(i)) {
+      return containerRow.toJSON()
+    }
+    const { keys, entries } = this.list
+    const j = this.entryOf(i)
+    const own: Record<string, unknown> = {}
+    if (this.indexField !== undefined) {
+      own[this.indexField] = this.position[i]
+    }
+    if (this.keyField !== undefined && keys) {
+      own[this.keyField] = valueAt(keys, j)
+    }
+    const { [this.field]: _siblings, ...container } = containerRow.toJSON()
+    const entry = keys
+      ? {
+          refName: containerRow.get('refName'),
+          start: containerRow.get('start'),
+          end: containerRow.get('end'),
+          ...entries.record(j),
+          uniqueId: this.id(i),
+        }
+      : entries.json(j)
+    return { ...container, ...entry, ...own }
+  }
+}
+
+// A list column fanned out: each row's entries in order, their positions and
+// the entry rows they are, with no entry read.
+function flattenList(
+  { table, bounds }: Staged,
+  step: FlattenStep,
+  field: string,
+  list: ListColumn,
+): Staged {
+  const { start, at } = list
+  const n = table.length
+  let size = 0
+  let empty = 0
+  for (let i = 0; i < n; i++) {
+    const r = at ? at[i]! : i
+    const count = start[r + 1]! - start[r]!
+    size += count
+    if (count === 0) {
+      empty++
+    }
+  }
+  const total = size + (step.keepEmpty ? empty : 0)
+  const parentRow = new Uint32Array(total)
+  const position = new Uint32Array(total)
+  const entryRow = new Uint32Array(total)
+  const kept = total > size ? new Uint8Array(total) : undefined
+  let k = 0
+  let inOrder = true
+  for (let i = 0; i < n; i++) {
+    const r = at ? at[i]! : i
+    const from = start[r]!
+    const to = start[r + 1]!
+    if (from === to && kept) {
+      parentRow[k] = i
+      kept[k] = 1
+      inOrder = false
+      k++
+    }
+    for (let j = from; j < to; j++) {
+      parentRow[k] = i
+      position[k] = j - from
+      entryRow[k] = j
+      inOrder &&= j === k
+      k++
+    }
+  }
+  return {
+    table: new ListFlatTable(
+      table,
+      parentRow,
+      field,
+      list,
+      inOrder ? undefined : entryRow,
+      position,
+      kept,
+      step,
+    ),
+    bounds: boundsThrough(bounds, parentRow),
+  }
+}
+
+function flatten(staged: Staged, step: FlattenStep): Staged {
+  const { field = DEFAULT_FLATTEN_FIELD } = step
+  const column = isPlainFieldRef(field) ? staged.table.column(field) : undefined
+  return column?.kind === 'list'
+    ? flattenList(staged, step, field, column)
+    : flattenValues(staged, step)
+}
+
+function flattenValues({ table, bounds }: Staged, step: FlattenStep): Staged {
   const { field = DEFAULT_FLATTEN_FIELD, keepEmpty } = step
   const read = stepReader(table, field, 'a flatten')
   const parentRow = new RowsBuilder()
@@ -398,21 +612,6 @@ function isGapByte(b: number) {
   return b === DASH || b === SPACE
 }
 
-// The columns carrying the row's own sequence: a gap run reaching either end
-// of the row measures where the block was cut, not the alignment, so it is no
-// cell either.
-function alignedColumns(row: string): [number, number] {
-  let first = 0
-  while (first < row.length && isGapByte(row.charCodeAt(first))) {
-    first++
-  }
-  let last = row.length - 1
-  while (last > first && isGapByte(row.charCodeAt(last))) {
-    last--
-  }
-  return [first, last]
-}
-
 // The row a cell step reads against: past any table that only reordered or
 // annotated the rows, the one they were fanned out of.
 function containerOf(table: FeatureTable) {
@@ -444,6 +643,111 @@ function compose(outer: Uint32Array | undefined, inner: Uint32Array) {
   return out
 }
 
+// Below this length a character loop copies a string faster than
+// `encodeInto`, as the MAF packer measured.
+const ASCII_COPY_MAX_LENGTH = 64
+const encoder = new TextEncoder()
+
+// A column's text as bytes, one per character: an adapter's own, or the
+// strings a feature holds copied into one buffer.
+function textOf(column: Column, n: number): TextColumn {
+  if (column.kind === 'text') {
+    return column
+  }
+  const read = readerOf(column)
+  const texts = new Array<string | undefined>(n)
+  let total = 0
+  for (let i = 0; i < n; i++) {
+    const v = read(i)
+    if (typeof v === 'string') {
+      texts[i] = v
+      total += v.length
+    }
+  }
+  const bytes = new Uint8Array(total)
+  const offset = new Uint32Array(n)
+  const length = new Uint32Array(n)
+  let pos = 0
+  for (let i = 0; i < n; i++) {
+    const text = texts[i]
+    if (text === undefined) {
+      continue
+    }
+    offset[i] = pos
+    if (text.length <= ASCII_COPY_MAX_LENGTH) {
+      for (let c = 0; c < text.length; c++) {
+        bytes[pos + c] = text.charCodeAt(c)
+      }
+      length[i] = text.length
+    } else {
+      length[i] = encoder.encodeInto(
+        text,
+        bytes.subarray(pos, pos + text.length),
+      ).written
+    }
+    pos += text.length
+  }
+  return { kind: 'text', bytes, offset, length, at: undefined }
+}
+
+/**
+ * The texts a `cells` walk reads, by the row of the table it walked: each
+ * row's own, and the reference it is read against, which a row fanned out of
+ * a container reads off the container.
+ */
+class WalkedTexts {
+  readonly row: TextColumn
+  readonly reference: TextColumn
+  private readonly refRow: Uint32Array | undefined
+
+  constructor(row: TextColumn, ref: TextColumn, refRow?: Uint32Array) {
+    this.row = row
+    this.reference = ref
+    this.refRow = refRow
+  }
+
+  rowOf(r: number) {
+    const { at } = this.row
+    return at ? at[r]! : r
+  }
+
+  refOf(r: number) {
+    const p = this.refRow ? this.refRow[r]! : r
+    const { at } = this.reference
+    return at ? at[p]! : p
+  }
+}
+
+function walkedTexts(table: FeatureTable, field: string) {
+  const row = textOf(table.column(field), table.length)
+  const container = containerOf(table)
+  const made = container?.made
+  if (container && !(made instanceof FannedTable && made.hasKept)) {
+    const { table: base } = container
+    return new WalkedTexts(
+      row,
+      textOf(base.column(field), base.length),
+      container.row,
+    )
+  }
+  // A container a flatten kept with nothing to fan out is the row itself, so
+  // its reference is its own container's, as its `parent()` says.
+  const byParent = (r: number) => table.row(r).parent?.()?.get(field)
+  const readContainer = container
+    ? readerOf(container.table.column(field))
+    : undefined
+  const read =
+    readContainer && made instanceof FannedTable
+      ? (r: number) => {
+          const { toMade, row: refRow } = container!
+          return made.isKept(toMade ? toMade[r]! : r)
+            ? byParent(r)
+            : readContainer(refRow ? refRow[r]! : r)
+        }
+      : byParent
+  return new WalkedTexts(row, textOf({ kind: 'value', read }, table.length))
+}
+
 /**
  * The runs a `cells` step answers, one per stretch of one state against the
  * reference, typed: each run's span, its state and the text column it starts
@@ -455,8 +759,7 @@ class CellTable extends DerivedTable {
   private readonly end: Uint32Array
   private readonly state: Uint8Array
   private readonly textAt: Uint32Array
-  private readonly rowText: (row: number) => string
-  private readonly refText: (row: number) => string
+  private readonly texts: WalkedTexts
   private firstOfRow: Uint32Array | undefined
   private derived = new Map<string, Column>()
 
@@ -469,16 +772,14 @@ class CellTable extends DerivedTable {
       state: Uint8Array
       textAt: Uint32Array
     },
-    rowText: (row: number) => string,
-    refText: (row: number) => string,
+    texts: WalkedTexts,
   ) {
     super(parent, parentRow)
     this.start = lanes.start
     this.end = lanes.end
     this.state = lanes.state
     this.textAt = lanes.textAt
-    this.rowText = rowText
-    this.refText = refText
+    this.texts = texts
   }
 
   override get madeFrom() {
@@ -538,7 +839,7 @@ class CellTable extends DerivedTable {
             const s = this.state[i]
             values[i] =
               s === MISMATCH
-                ? this.rowText(this.parentOf(i))[this.textAt[i]!]
+                ? this.mismatched(i)
                 : s === INSERTION
                   ? this.inserted(i)
                   : undefined
@@ -552,19 +853,31 @@ class CellTable extends DerivedTable {
     }
   }
 
+  private mismatched(i: number) {
+    const { bytes, offset } = this.texts.row
+    const k = this.texts.rowOf(this.parentOf(i))
+    return String.fromCharCode(bytes[offset[k]! + this.textAt[i]!]!)
+  }
+
   // The bases a row holds where the reference has none, from the column the
   // insertion starts at to the reference's next base.
   private inserted(i: number) {
-    const row = this.rowText(this.parentOf(i))
-    const ref = this.refText(this.parentOf(i))
+    const { row, reference: ref } = this.texts
+    const r = this.parentOf(i)
+    const k = this.texts.rowOf(r)
+    const f = this.texts.refOf(r)
+    const rowAt = row.offset[k]!
+    const refAt = ref.offset[f]!
+    const end = Math.min(row.length[k]!, ref.length[f]!)
     let out = ''
     for (
       let col = this.textAt[i]!;
-      col < row.length && ref.charCodeAt(col) === DASH;
+      col < end && ref.bytes[refAt + col] === DASH;
       col++
     ) {
-      if (!isGapByte(row.charCodeAt(col))) {
-        out += row[col]
+      const b = row.bytes[rowAt + col]!
+      if (!isGapByte(b)) {
+        out += String.fromCharCode(b)
       }
     }
     return out
@@ -595,12 +908,20 @@ class CellTable extends DerivedTable {
 
 // The lanes a `cells` walk writes, doubled as a row would overrun them.
 class RunLanes {
-  start = new Uint32Array(1024)
-  end = new Uint32Array(1024)
-  state = new Uint8Array(1024)
-  textAt = new Uint32Array(1024)
-  parentRow = new Uint32Array(1024)
+  start: Uint32Array
+  end: Uint32Array
+  state: Uint8Array
+  textAt: Uint32Array
+  parentRow: Uint32Array
   length = 0
+
+  constructor(capacity: number) {
+    this.start = new Uint32Array(capacity)
+    this.end = new Uint32Array(capacity)
+    this.state = new Uint8Array(capacity)
+    this.textAt = new Uint32Array(capacity)
+    this.parentRow = new Uint32Array(capacity)
+  }
 
   reserve(more: number) {
     const need = this.length + more
@@ -619,67 +940,44 @@ class RunLanes {
     this.textAt = widen(this.textAt)
     this.parentRow = widen(this.parentRow)
   }
-}
 
-// Where each parent row's children start, for children written parent by
-// parent in order.
-function firstRowIndex(parentRow: Uint32Array, parents: number) {
-  const first = new Uint32Array(parents)
-  for (let i = parentRow.length - 1; i >= 0; i--) {
-    first[parentRow[i]!] = i
-  }
-  return first
-}
-
-function cells({ table, bounds }: Staged, step: CellsStep): Staged {
-  const { field = DEFAULT_CELLS_FIELD } = step
-  const container = containerOf(table)
-  const readRow = readerOf(table.column(field))
-  const byParent = (r: number) => table.row(r).parent?.()?.get(field)
-  const readContainer = container
-    ? readerOf(container.table.column(field))
-    : undefined
-  const refRow = container?.row
-  // A container a flatten kept with nothing to fan out is the row itself, so
-  // its reference is its own container's, as its `parent()` says.
-  const made = container?.made
-  const toMade = container?.toMade
-  const kept =
-    made instanceof FlatTable
-      ? (r: number) => made.isKept(toMade ? toMade[r]! : r)
-      : undefined
-  const readRef = readContainer
-    ? (r: number) =>
-        kept?.(r) ? byParent(r) : readContainer(refRow ? refRow[r]! : r)
-    : byParent
-  const readStart = numberReaderOf(table.column('start'))
-  const rowText = (r: number) => readRow(r) as string
-  const refText = (r: number) => readRef(r) as string
-
-  const lanes = new RunLanes()
-  for (let r = 0; r < table.length; r++) {
-    const ref = readRef(r)
-    const row = readRow(r)
-    let pos = readStart(r)
-    if (typeof ref !== 'string' || typeof row !== 'string' || !(pos >= 0)) {
-      continue
+  // One row's runs against its reference: a run per column is the most it
+  // can answer, so the lanes grow once and the walk writes through locals.
+  walk(
+    r: number,
+    startPos: number,
+    rowBytes: Uint8Array,
+    rowAt: number,
+    rowLen: number,
+    refBytes: Uint8Array,
+    refAt: number,
+    refLen: number,
+  ) {
+    this.reserve(refLen + 1)
+    const { start, end, state, textAt, parentRow } = this
+    let n = this.length
+    let pos = startPos
+    // The columns carrying the row's own sequence: a gap run reaching either
+    // end of the row measures where the block was cut, not the alignment, so
+    // it is no cell either.
+    let first = 0
+    while (first < rowLen && isGapByte(rowBytes[rowAt + first]!)) {
+      first++
     }
-    // A run per column is the most a row can answer, so the lanes grow once
-    // per row and the walk below writes through locals.
-    lanes.reserve(ref.length + 1)
-    const { start, end, state, textAt, parentRow } = lanes
-    let n = lanes.length
-    const [first, last] = alignedColumns(row)
+    let last = rowLen - 1
+    while (last > first && isGapByte(rowBytes[rowAt + last]!)) {
+      last--
+    }
     let runStart = -1
     let runState = NO_STATE
     let runBase = -1
     let runCol = 0
     let insertAt = -1
-    for (let col = 0; col < ref.length; col++) {
-      const refByte = ref.charCodeAt(col)
-      const rowByte = col < row.length ? row.charCodeAt(col) : SPACE
+    for (let col = 0; col < refLen; col++) {
+      const refByte = refBytes[refAt + col]!
+      const rowByte = col < rowLen ? rowBytes[rowAt + col]! : SPACE
       if (refByte === DASH) {
-        if (insertAt < 0 && col < row.length && !isGapByte(rowByte)) {
+        if (insertAt < 0 && col < rowLen && !isGapByte(rowByte)) {
           insertAt = col
         }
         continue
@@ -693,7 +991,7 @@ function cells({ table, bounds }: Staged, step: CellsStep): Staged {
         n++
         insertAt = -1
       }
-      const drawn = col >= first && col <= last && col < row.length
+      const drawn = col >= first && col <= last && col < rowLen
       const st = !drawn
         ? NO_STATE
         : isGapByte(rowByte)
@@ -726,22 +1024,69 @@ function cells({ table, bounds }: Staged, step: CellsStep): Staged {
       parentRow[n] = r
       n++
     }
-    lanes.length = n
+    this.length = n
+  }
+}
+
+// Where each parent row's children start, for children written parent by
+// parent in order.
+function firstRowIndex(parentRow: Uint32Array, parents: number) {
+  const first = new Uint32Array(parents)
+  for (let i = parentRow.length - 1; i >= 0; i--) {
+    first[parentRow[i]!] = i
+  }
+  return first
+}
+
+function cells({ table, bounds }: Staged, step: CellsStep): Staged {
+  const { field = DEFAULT_CELLS_FIELD } = step
+  const texts = walkedTexts(table, field)
+  const readStart = numberReaderOf(table.column('start'))
+  const { bytes: rowBytes, offset: rowOffset, length: rowLength } = texts.row
+  const {
+    bytes: refBytes,
+    offset: refOffset,
+    length: refLength,
+  } = texts.reference
+
+  // A run per reference base is the most a row can answer and far past what
+  // one does, so the lanes start at an eighth of it.
+  let bound = 0
+  for (let r = 0; r < table.length; r++) {
+    bound += refLength[texts.refOf(r)]! + 1
+  }
+  const lanes = new RunLanes(Math.max(1024, bound >>> 3))
+  for (let r = 0; r < table.length; r++) {
+    const f = texts.refOf(r)
+    const refLen = refLength[f]!
+    const pos = readStart(r)
+    if (refLen > 0 && pos >= 0) {
+      const k = texts.rowOf(r)
+      lanes.walk(
+        r,
+        pos,
+        rowBytes,
+        rowOffset[k]!,
+        rowLength[k]!,
+        refBytes,
+        refOffset[f]!,
+        refLen,
+      )
+    }
   }
   const n = lanes.length
-  const rows = lanes.parentRow.slice(0, n)
+  const rows = lanes.parentRow.subarray(0, n)
   return {
     table: new CellTable(
       table,
       rows,
       {
-        start: lanes.start.slice(0, n),
-        end: lanes.end.slice(0, n),
-        state: lanes.state.slice(0, n),
-        textAt: lanes.textAt.slice(0, n),
+        start: lanes.start.subarray(0, n),
+        end: lanes.end.subarray(0, n),
+        state: lanes.state.subarray(0, n),
+        textAt: lanes.textAt.subarray(0, n),
       },
-      rowText,
-      refText,
+      texts,
     ),
     bounds: boundsThrough(bounds, rows),
   }

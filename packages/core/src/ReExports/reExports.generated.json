@@ -2853,6 +2853,7 @@
     "@jbrowse/core/util/featureTable": {
       "package": "@jbrowse/core",
       "names": [
+        "ColumnTable",
         "DerivedTable",
         "NO_COLUMN",
         "SelectTable",
@@ -3252,6 +3253,7 @@
         "continuousColorScale",
         "encodeFeatures",
         "encodedChannelTransferables",
+        "featureIndexAt",
         "hitIndexOf",
         "rampOverExtent",
         "withHitIndex"

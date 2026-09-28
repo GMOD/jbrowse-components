@@ -1,0 +1,71 @@
+{
+  "id": "typed-sources-maf-pipeline",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node --max-old-space-size=14000 packages/core/benches/tablePipeline.bench.ts --base=98ce6436fa --rounds=9 --maf --only=MAF --json",
+    "notes": "On ada (24 cores, load ~1). main is 98ce6436fa, the table pipeline of ADR-191 and ADR-192, run as main ran it (runTransforms, facetLayers, and the span asking for the hit index); control is main extracted a second time. The working tree runs layerTables and the columnar encoder, with the span asking for no index. marks_maf_cells over the synthetic MAF-tabix fixture at 470 species, 200 blocks, 5.5M runs. The typed row hands the working tree the table the MAF adapters answer (mafFeatureTableOf over the same blocks), its pack inside the timing. Interleaved round-robin with the order rotated, MIN across rounds, lanes checked equal before timing. --only=MAF matters: with the million synthetic features alive beside it, each full collection marks them and the typed row read 471-506 ms against 371-403 for the features row, which is the harness and not the path."
+  },
+  "columns": [
+    {
+      "key": "scenario",
+      "label": "scenario"
+    },
+    {
+      "key": "baseMs",
+      "label": "main",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "headMs",
+      "label": "typed sources",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlVsBase",
+      "label": "control vs main",
+      "format": "x",
+      "precision": 2,
+      "derived": "controlMs / baseMs",
+      "align": "right"
+    },
+    {
+      "key": "headVsBase",
+      "label": "typed sources vs main",
+      "format": "x",
+      "precision": 2,
+      "derived": "headMs / baseMs",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "MAF cells, 470 species",
+        "baseMs": 921.1,
+        "controlMs": 922.6,
+        "headMs": 227.7
+      }
+    },
+    {
+      "values": {
+        "scenario": "MAF cells typed, 470 species",
+        "baseMs": 913.7,
+        "controlMs": 925.4,
+        "headMs": 221.8
+      }
+    }
+  ]
+}

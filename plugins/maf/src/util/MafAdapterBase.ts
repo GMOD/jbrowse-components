@@ -8,6 +8,7 @@ import {
   loadMafSummaryAdapter,
   mafSummaryFeatures,
 } from './loadMafSummaryAdapter.ts'
+import { mafFeatureTable } from './mafFeatureTable.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -52,6 +53,10 @@ export abstract class MafAdapterBase<
       })),
       ...(treeNewick === undefined ? {} : { tree: treeNewick }),
     }
+  }
+
+  override getFeatureTable(query: Region, opts?: BaseOptions) {
+    return mafFeatureTable(this.getFeatures(query, opts), query.refName)
   }
 
   // The zoom-out tier: per-species alignment-block rows with no sequence, from

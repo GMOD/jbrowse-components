@@ -106,8 +106,10 @@ at random hovers. It lands at
 its identity, which cuts each run at the bin edges and weights the mean by
 bases, is exact at
 0.81-2.00x<!--m:maf-on-marks-identity.columnsIdentityVsMaf.range-->.
-[the-mark-pipeline-runs-over-tables](../ideas/ready/the-mark-pipeline-runs-over-tables.md)
-is the proposal, with what the spike leaves open.
+[ADR-191](adr-191-the-mark-pipeline-runs-over-tables.md) to
+[ADR-193](adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)
+built it, and [maf-onto-marks](../handoffs/maf-onto-marks.md) holds what the
+spike left open.
 
 ## Revisit if
 

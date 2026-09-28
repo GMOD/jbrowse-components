@@ -1,5 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { featureIndexAt } from '@jbrowse/core/util/markEncoding'
 import {
   GLYPH_DIAMOND,
   GLYPH_DISC,
@@ -51,7 +52,7 @@ describe('a point reads back as its whole GWAS record', () => {
         : ((await invoke('CoreGetEncodedFeature', {
             ...request,
             layer: mark,
-            featureIndex: layer.featureIndex[i]!,
+            featureIndex: featureIndexAt(layer, i),
           })) as SimpleFeatureSerialized)
     return { glyph: layer.glyph![i], color: layer.color?.[i], feature }
   }

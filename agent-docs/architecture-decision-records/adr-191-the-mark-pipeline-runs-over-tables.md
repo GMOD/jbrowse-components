@@ -7,9 +7,10 @@ summary: "The mark display's worker pipeline runs over tables rather than one Fe
 
 ## Status
 
-Accepted (2026-09-28). The first landing of
-[the-mark-pipeline-runs-over-tables](../ideas/ready/the-mark-pipeline-runs-over-tables.md),
-which Colin asked to be built as the ideal system rather than a shim after
+Accepted (2026-09-28). The first of three landings, with
+[ADR-192](adr-192-a-span-answers-a-hover-by-its-row.md) and
+[ADR-193](adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md),
+of the table pipeline, which Colin asked to be built as the ideal system rather than a shim after
 [ADR-190](adr-190-the-maf-display-stays-off-the-feature-steps.md) found the
 Feature steps taking seconds where the MAF display takes tenths.
 

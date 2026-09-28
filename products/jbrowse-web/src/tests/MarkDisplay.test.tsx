@@ -1,6 +1,7 @@
 import './svgExportMocks.ts'
 
 import { saveAs } from '@jbrowse/core/util'
+import { featureIndexAt } from '@jbrowse/core/util/markEncoding'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import { fireEvent, waitFor } from '@testing-library/react'
 
@@ -298,7 +299,7 @@ test('a binned count and the raw features share one fetch, and each draws in its
     markIndex: 1,
     regionIndex: 0,
     instance: at,
-    featureIndex: layer.featureIndex[at],
+    featureIndex: featureIndexAt(layer, at),
     refName: 'ctgA',
     start: layer.x![at]!,
     end: layer.x2![at]!,

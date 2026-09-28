@@ -1,4 +1,7 @@
-import { runTransforms } from '@jbrowse/core/util/featureTransforms'
+import {
+  layerTables,
+  runTransforms,
+} from '@jbrowse/core/util/featureTransforms'
 import {
   BedTabixAdapter,
   bedTabixConfigSchema as BedTabixConfigSchema,
@@ -87,6 +90,27 @@ test('a flatten over alignments answers one row per species on the reference spa
     true,
   )
   expect(simCells.some(c => c.get('state') === 'mismatch')).toBe(true)
+})
+
+test("the adapter's table answers the species cells its features do", async () => {
+  const region = { refName: 'ctgA', start: 0, end: 200, assemblyName: 'volvox' }
+  const request = {
+    transform: [
+      { type: 'flatten' as const, field: 'alignments', key: 'species' },
+      { type: 'cells' as const },
+    ],
+    facet: { field: 'species' },
+    layers: [{}],
+  }
+  const table = await adapter.getFeatureTable(region)
+  const features = await adapter.getFeaturesArray(region)
+  const packed = layerTables(table, request).layers[0]!
+  const fromFeatures = layerTables(features, request).layers[0]!
+  expect(packed.table.length).toBeGreaterThan(100)
+  expect(packed.row).toEqual(fromFeatures.row)
+  const view = (t: FeatureTable) =>
+    tableFeatures(t).map(f => [f.id(), f.toJSON()])
+  expect(view(packed.table)).toEqual(view(fromFeatures.table))
 })
 
 function rows_(features: readonly Feature[]) {

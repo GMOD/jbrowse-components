@@ -8,7 +8,9 @@
 //
 // `--maf` adds the `marks_maf_cells` declaration over the synthetic MAF-tabix
 // fixture at 470 species (plugins/maf/benches/mafTabixFixture.ts), which needs
-// bgzip and tabix on PATH.
+// bgzip and tabix on PATH, twice: once over the blocks as features, and once
+// with the head arm answering the table the MAF adapters do
+// (`mafFeatureTableOf`), its pack inside the timing.
 //
 // Three arms per scenario, interleaved round-robin with the order rotated,
 // MIN across rounds (agent-docs/reference/BENCHMARKING.md): `base` is the ref,
@@ -97,6 +99,8 @@ interface Scenario {
   lanes: LaneName[]
   /** The lanes the working tree's display asks for, where they differ from the ref's. */
   headLanes?: LaneName[]
+  /** The table the working tree's adapter answers in place of `input`, made inside the timing. */
+  headInput?: () => unknown
 }
 
 // The layer a faceted request encodes: its rows in section order under
@@ -141,8 +145,9 @@ function controlDriver(p: Pipeline, s: Scenario) {
 function headDriver(p: Pipeline, s: Scenario) {
   const plan = p.layerTables!
   return () => {
+    const input = s.headInput ? s.headInput() : s.input
     const { layers } = plan(
-      s.input,
+      input,
       {
         transform: s.steps,
         facet: s.facet ? { field: s.facet } : undefined,
@@ -251,8 +256,17 @@ async function mafFeatures() {
     })
 }
 
-const features = syntheticFeatures()
-const nested = nestedFeatures(features)
+// Built the first time a selected scenario reads them, so a run of the MAF
+// scenarios alone keeps no million features alive: every full collection
+// marks the whole heap, and a typed arm's buffers trigger them.
+let synthetic: { flat: Feature[]; nested: Feature[] } | undefined
+function syntheticInputs() {
+  if (!synthetic) {
+    const flat = syntheticFeatures()
+    synthetic = { flat, nested: nestedFeatures(flat) }
+  }
+  return synthetic
+}
 const BIN: TransformStep[] = [
   { type: 'bin', step: 10_000 },
   { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
@@ -266,56 +280,72 @@ const SPAN_BY_ROW: LaneName[] = ['row', 'color']
 const scenarios: Scenario[] = [
   {
     name: 'encode, y and a colour',
-    input: features,
+    get input() {
+      return syntheticInputs().flat
+    },
     steps: [],
     encoding: { y: 'score', color: 'red' },
     lanes: [...BAR, 'index'],
   },
   {
     name: 'encode, categorical colour',
-    input: features,
+    get input() {
+      return syntheticInputs().flat
+    },
     steps: [],
     encoding: { y: 'score', color: { field: 'strand', scale: 'categorical' } },
     lanes: BAR,
   },
   {
     name: 'encode, jexl y',
-    input: features,
+    get input() {
+      return syntheticInputs().flat
+    },
     steps: [],
     encoding: { y: 'jexl:feature.score * 2', color: 'red' },
     lanes: BAR,
   },
   {
     name: 'filter',
-    input: features,
+    get input() {
+      return syntheticInputs().flat
+    },
     steps: [{ type: 'filter', expr: 'jexl:feature.score % 2 == 0' }],
     encoding: { y: 'score', color: 'red' },
     lanes: BAR,
   },
   {
     name: 'formula',
-    input: features,
+    get input() {
+      return syntheticInputs().flat
+    },
     steps: [{ type: 'formula', expr: 'jexl:feature.score * 2', as: 'twice' }],
     encoding: { y: 'twice', color: 'red' },
     lanes: BAR,
   },
   {
     name: 'flatten',
-    input: nested,
+    get input() {
+      return syntheticInputs().nested
+    },
     steps: [{ type: 'flatten' }],
     encoding: { y: 'score', color: 'red' },
     lanes: BAR,
   },
   {
     name: 'bin, count',
-    input: features,
+    get input() {
+      return syntheticInputs().flat
+    },
     steps: BIN,
     encoding: { y: 'count', color: 'red' },
     lanes: BAR,
   },
   {
     name: 'bin, mean',
-    input: features,
+    get input() {
+      return syntheticInputs().flat
+    },
     steps: [
       BIN[0]!,
       {
@@ -329,21 +359,27 @@ const scenarios: Scenario[] = [
   },
   {
     name: 'coverage',
-    input: features,
+    get input() {
+      return syntheticInputs().flat
+    },
     steps: [{ type: 'coverage' }],
     encoding: { y: 'coverage', color: 'red' },
     lanes: BAR,
   },
   {
     name: 'pileup',
-    input: features,
+    get input() {
+      return syntheticInputs().flat
+    },
     steps: [{ type: 'pileup' }],
     encoding: { y: 'score', row: 'row', color: 'red' },
     lanes: [...BAR, 'row'],
   },
   {
     name: 'rows by sample',
-    input: features,
+    get input() {
+      return syntheticInputs().flat
+    },
     steps: [],
     facet: 'sample',
     encoding: { color: 'red' },
@@ -353,13 +389,15 @@ const scenarios: Scenario[] = [
 ]
 
 if (withMaf) {
-  scenarios.push({
-    name: 'MAF cells, 470 species',
-    input: await mafFeatures(),
+  const blocks = await mafFeatures()
+  const { mafFeatureTableOf } =
+    await import('../../../plugins/maf/src/util/mafFeatureTable.ts')
+  const cells = {
+    input: blocks,
     steps: [
       { type: 'flatten', field: 'alignments', key: 'species' },
       { type: 'cells' },
-    ],
+    ] satisfies TransformStep[],
     facet: 'species',
     encoding: {
       color: {
@@ -371,7 +409,15 @@ if (withMaf) {
     },
     lanes: SPAN,
     headLanes: SPAN_BY_ROW,
-  })
+  }
+  scenarios.push(
+    { name: 'MAF cells, 470 species', ...cells },
+    {
+      name: 'MAF cells typed, 470 species',
+      ...cells,
+      headInput: () => mafFeatureTableOf(blocks, blocks[0]!.get('refName')),
+    },
+  )
 }
 
 const only = flag('only')?.split(',')

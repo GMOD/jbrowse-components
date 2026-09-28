@@ -29,6 +29,10 @@
 //                    which ADR-190's records hold.
 //   marks-no-index   the same without the hit index, which the MAF display's
 //                    hover does without
+//   typed            the same over the table the MAF adapters answer
+//                    (`mafFeatureTableOf`: the blocks packed into the MAF
+//                    display's arena, inside the timing), as the mark display
+//                    runs it
 //   columns          the same steps over columns, the hit index included
 //   columns-rows     the facet ordering the species rows ahead of `cells`, so
 //                    each row's runs come out together and in order and a
@@ -63,7 +67,11 @@ import {
   runTransforms,
 } from '@jbrowse/core/util/featureTransforms'
 import createJexlInstance from '@jbrowse/core/util/jexl'
-import { encodeFeatures, hitIndexOf } from '@jbrowse/core/util/markEncoding'
+import {
+  encodeFeatures,
+  featureIndexAt,
+  hitIndexOf,
+} from '@jbrowse/core/util/markEncoding'
 import {
   BedTabixAdapter,
   bedTabixConfigSchema as BedTabixConfigSchema,
@@ -90,6 +98,7 @@ import { buildIdentityRuns } from '../src/LinearMafRenderer/identity.ts'
 import { buildMafChannels } from '../src/LinearMafRenderer/mafChannels.ts'
 import MafTabixAdapter from '../src/MafTabixAdapter/MafTabixAdapter.ts'
 import MafTabixConfigSchema from '../src/MafTabixAdapter/configSchema.ts'
+import { mafFeatureTableOf } from '../src/util/mafFeatureTable.ts'
 import { DEFAULT_SPEC, ensureMafTabixFixture } from './mafTabixFixture.ts'
 
 import type { MafWireRegionData } from '../src/LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -267,6 +276,20 @@ function armMarksNoIndex(features: readonly Feature[]) {
     { jexl },
   ).count
 }
+function armTyped(features: readonly Feature[]) {
+  const { layers } = layerTables(
+    mafFeatureTableOf(features, features[0]!.get('refName')),
+    { transform: SHARED, facet: FACET, layers: [{}] },
+    jexl,
+  )
+  const { table: cells, row } = layers[0]!
+  return encodeFeatures(
+    cells,
+    { ...CELLS_ENCODING, row },
+    SPAN_LANES_NO_INDEX,
+    { jexl },
+  ).count
+}
 function armColumns(features: readonly Feature[]) {
   const rows = flattenRecords(features, 'alignments', 'species')
   const runs = cellsColumns(rows)
@@ -377,8 +400,9 @@ function checkCells(features: readonly Feature[]) {
     { jexl },
   )
   const wantBase = Array.from(
-    want.featureIndex,
-    (fi, k) => `${want.color[k]}/${cells.row(fi).get('base') ?? ''}`,
+    { length: want.count },
+    (_, k) =>
+      `${want.color[k]}/${cells.row(featureIndexAt(want, k)).get('base') ?? ''}`,
   )
   const runs = cellsColumns(flattenRecords(features, 'alignments', 'species'))
   const { row } = facetRows(runs, 'species')
@@ -591,6 +615,7 @@ for (const { name, spec } of stages ? [] : SHAPES) {
     control: () => armControl(features, rowIndexBySrc),
     marks: () => armMarks(features),
     'marks-no-index': () => armMarksNoIndex(features),
+    typed: () => armTyped(features),
     columns: () => armColumns(features),
     'columns-rows': () => armColumnsRows(features),
     'columns-rows-bytes': () => armColumnsRowsBytes(features),
@@ -624,6 +649,7 @@ for (const { name, spec } of stages ? [] : SHAPES) {
     controlMs: ms('control'),
     featuresMs: ms('marks'),
     featuresNoIndexMs: ms('marks-no-index'),
+    typedMs: ms('typed'),
     columnsMs: ms('columns'),
     rowMajorMs: ms('columns-rows'),
     rowMajorBytesMs: ms('columns-rows-bytes'),

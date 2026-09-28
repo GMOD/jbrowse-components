@@ -1,3 +1,4 @@
+import { featureIndexAt } from '@jbrowse/core/util/markEncoding'
 import { clamp } from '@jbrowse/core/util/numericUtils'
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 import {
@@ -140,7 +141,7 @@ export function findMarkHit(
     markIndex,
     regionIndex,
     instance: hit.index,
-    featureIndex: layer.featureIndex[hit.index]!,
+    featureIndex: featureIndexAt(layer, hit.index),
     refName: displayedRegions[regionIndex]!.refName,
     start,
     end,

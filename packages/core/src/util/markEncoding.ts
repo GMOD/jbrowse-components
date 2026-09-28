@@ -29,7 +29,7 @@ import {
 } from './thresholdScale.ts'
 
 import type { CategoricalField } from './categoricalField.ts'
-import type { FeatureTable } from './featureTable.ts'
+import type { Column, FeatureTable, NumberLane } from './featureTable.ts'
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
   ColorEncoding,
@@ -159,6 +159,8 @@ function jexlExpression(ref: string, jexl: JexlInstance | undefined) {
 // path, `jexl:` expression or caller's reader over the row as a `Feature`.
 type RowReader<T = unknown> = (i: number) => T
 
+type NumberColumn = Extract<Column, { kind: 'number' }>
+
 function channelReader(
   table: FeatureTable,
   ref: FieldRef | ChannelReader,
@@ -190,20 +192,21 @@ function isShapeName(shape: string): shape is ShapeName {
   return shape in SHAPE_CODES
 }
 
+// A shape named outright is its code, which fills the lane without reading a
+// row.
 function shapeReader(
   table: FeatureTable,
   shape: Exclude<ShapeEncoding, object> | ChannelReader<number> | undefined,
   jexl: JexlInstance | undefined,
-): RowReader<number> {
+): number | RowReader<number> {
   if (shape === undefined) {
-    return () => GLYPH_DISC
+    return GLYPH_DISC
   }
   if (typeof shape === 'function') {
     return i => shape(table.row(i))
   }
   if (isShapeName(shape)) {
-    const code = SHAPE_CODES[shape]
-    return () => code
+    return SHAPE_CODES[shape]
   }
   const expr = jexlExpression(shape, jexl)
   return i => {
@@ -219,65 +222,297 @@ function lutColorAt(lut: Uint8Array, t: number) {
   return packAbgr(lut[o]!, lut[o + 1]!, lut[o + 2]!, lut[o + 3]!)
 }
 
-// The categorical arm `color` and `shape` share: the walk records which
-// key each admitted instance carried, `''` for none, and `resolve` hands
-// every key met its entry in the field's order, so two regions that met
-// different key sets still agree on every key they share. Over a category
-// column a label's key is found once, and each row looks its code up.
-function categoricalChannel(
+// The table row each instance reads, where a row was skipped; with none
+// skipped, instance `k` is row `k`.
+type Kept = Uint32Array | undefined
+
+// A numeric channel: the lane itself where it names a `number` column, so a
+// loop can read it with no call per row, and a reader over any.
+interface NumberSource {
+  lane: NumberColumn | undefined
+  read: RowReader<number>
+}
+
+function numberSource(
+  table: FeatureTable,
+  ref: FieldRef | ChannelReader,
+  jexl: JexlInstance | undefined,
+): NumberSource {
+  return {
+    lane: laneOf(table, ref),
+    read: numberChannelReader(table, ref, jexl),
+  }
+}
+
+function laneOf(table: FeatureTable, ref: FieldRef | ChannelReader) {
+  if (typeof ref === 'function' || !isPlainFieldRef(ref)) {
+    return undefined
+  }
+  const column = table.column(ref)
+  return column.kind === 'number' ? column : undefined
+}
+
+// A stacked row reads as `Number` reads it, where a quantitative channel reads
+// text by `numericValue`'s rules.
+function rowSource(
+  table: FeatureTable,
+  ref: FieldRef | ChannelReader,
+  jexl: JexlInstance | undefined,
+): NumberSource {
+  const read = channelReader(table, ref, jexl)
+  return { lane: laneOf(table, ref), read: i => Number(read(i)) }
+}
+
+function isUnsigned(values: NumberLane) {
+  return (
+    values instanceof Uint32Array ||
+    values instanceof Uint16Array ||
+    values instanceof Uint8Array
+  )
+}
+
+// A lane of whole numbers holds no NaN or infinity, so it places every row.
+function isWhole(source: NumberSource) {
+  const values = source.lane?.values
+  return (
+    values !== undefined &&
+    !(values instanceof Float32Array || values instanceof Float64Array)
+  )
+}
+
+// The one index a loop reads a lane through for instance `k`: the kept row,
+// the lane's own index, or both composed. A loop tests for it once and runs
+// with no branch per element, which V8 does not hoist for it.
+function laneIndex(kept: Kept, at: Uint32Array | undefined) {
+  if (!kept || !at) {
+    return kept ?? at
+  }
+  const index = new Uint32Array(kept.length)
+  for (let k = 0; k < kept.length; k++) {
+    index[k] = at[kept[k]!]!
+  }
+  return index
+}
+
+// `out[k]`, the value instance `k` reads; into an unsigned lane a negative
+// stops at 0 rather than wrapping.
+function fillNumbers(
+  out: Uint32Array | Float32Array,
+  { lane, read }: NumberSource,
+  kept: Kept,
+  count: number,
+) {
+  const unsigned = out instanceof Uint32Array
+  if (!lane) {
+    for (let k = 0; k < count; k++) {
+      const v = read(kept ? kept[k]! : k)
+      out[k] = unsigned && v < 0 ? 0 : v
+    }
+    return
+  }
+  const { values } = lane
+  const index = laneIndex(kept, lane.at)
+  if (!index && (!unsigned || isUnsigned(values))) {
+    out.set(values.subarray(0, count))
+  } else if (!index) {
+    for (let k = 0; k < count; k++) {
+      const v = values[k]!
+      out[k] = v < 0 ? 0 : v
+    }
+  } else if (unsigned) {
+    for (let k = 0; k < count; k++) {
+      const v = values[index[k]!]!
+      out[k] = v < 0 ? 0 : v
+    }
+  } else {
+    for (let k = 0; k < count; k++) {
+      out[k] = values[index[k]!]!
+    }
+  }
+}
+
+// The rows that place, and their `x`, `x2` and `y` written: every row where
+// all three are lanes of whole numbers, and otherwise each whose three read
+// finite. A position before the sequence's first base, a flank run off the
+// start or an `END=0`, stops at 0 rather than wrapping the unsigned lane.
+function admit(
+  sources: { x: NumberSource; x2: NumberSource; y: NumberSource | undefined },
+  out: { x: Uint32Array; x2: Uint32Array; y: Float32Array | undefined },
+  n: number,
+  report: ProgressReporter | undefined,
+) {
+  const { x, x2, y } = sources
+  if (isWhole(x) && isWhole(x2) && (!y || isWhole(y))) {
+    fillNumbers(out.x, x, undefined, n)
+    fillNumbers(out.x2, x2, undefined, n)
+    if (y && out.y) {
+      fillNumbers(out.y, y, undefined, n)
+    }
+    return { kept: undefined, count: n, skippedPosition: 0 }
+  }
+  const kept = new Uint32Array(n)
+  const { x: xs, x2: x2s, y: ys } = out
+  const lanes = unindexedLanes(x, x2, y)
+  if (lanes) {
+    const { count, skippedPosition } = admitLanes(lanes, out, kept, n)
+    return {
+      kept: count === n ? undefined : kept.subarray(0, count),
+      count,
+      skippedPosition,
+    }
+  }
+  const readX = x.read
+  const readX2 = x2.read
+  const readY = y?.read
+  let count = 0
+  let skippedPosition = 0
+  for (let i = 0; i < n; i++) {
+    report?.(i)
+    const xv = readX(i)
+    const x2v = readX2(i)
+    const yv = readY ? readY(i) : 0
+    if (!Number.isFinite(xv) || !Number.isFinite(x2v)) {
+      skippedPosition++
+      continue
+    }
+    if (!Number.isFinite(yv)) {
+      continue
+    }
+    xs[count] = xv < 0 ? 0 : xv
+    x2s[count] = x2v < 0 ? 0 : x2v
+    if (ys) {
+      ys[count] = yv
+    }
+    kept[count++] = i
+  }
+  return {
+    kept: count === n ? undefined : kept.subarray(0, count),
+    count,
+    skippedPosition,
+  }
+}
+
+function unindexedLanes(
+  x: NumberSource,
+  x2: NumberSource,
+  y: NumberSource | undefined,
+) {
+  const lanes = [x.lane, x2.lane, y?.lane]
+  return lanes[0] &&
+    !lanes[0].at &&
+    lanes[1] &&
+    !lanes[1].at &&
+    (!y || (lanes[2] && !lanes[2].at))
+    ? { x: lanes[0].values, x2: lanes[1].values, y: lanes[2]?.values }
+    : undefined
+}
+
+// `admit`'s walk read straight off lanes with no index, so no row costs a
+// call: with a `y` lane in one loop and without one in another, since V8
+// would test for it on every row.
+function admitLanes(
+  lanes: { x: NumberLane; x2: NumberLane; y: NumberLane | undefined },
+  out: { x: Uint32Array; x2: Uint32Array; y: Float32Array | undefined },
+  kept: Uint32Array,
+  n: number,
+) {
+  const { x: xl, x2: x2l, y: yl } = lanes
+  const { x: xs, x2: x2s } = out
+  let count = 0
+  let skippedPosition = 0
+  if (yl) {
+    const ys = out.y!
+    for (let i = 0; i < n; i++) {
+      const xv = xl[i]!
+      const x2v = x2l[i]!
+      const yv = yl[i]!
+      if (!Number.isFinite(xv) || !Number.isFinite(x2v)) {
+        skippedPosition++
+      } else if (Number.isFinite(yv)) {
+        xs[count] = xv < 0 ? 0 : xv
+        x2s[count] = x2v < 0 ? 0 : x2v
+        ys[count] = yv
+        kept[count++] = i
+      }
+    }
+  } else {
+    for (let i = 0; i < n; i++) {
+      const xv = xl[i]!
+      const x2v = x2l[i]!
+      if (!Number.isFinite(xv) || !Number.isFinite(x2v)) {
+        skippedPosition++
+      } else {
+        xs[count] = xv < 0 ? 0 : xv
+        x2s[count] = x2v < 0 ? 0 : x2v
+        kept[count++] = i
+      }
+    }
+  }
+  return { count, skippedPosition }
+}
+
+// The categorical arm `color` and `shape` share: `out[k]` the lane value of
+// the entry instance `k`'s key takes, `''` the key of none, and the keys met
+// with their entries in the field's order. A key's entry is its own whatever
+// else was met, so two regions agree on every key they share. Over a category
+// column each label is keyed once, and the lane written by its code.
+function paintCategories<T>(
   table: FeatureTable,
   ref: FieldRef | ChannelReader,
   jexl: JexlInstance | undefined,
   categories: CategoricalField,
-  n: number,
+  within: { kept: Kept; count: number; report: ProgressReporter | undefined },
+  out: Uint32Array | Uint8Array,
+  entryOf: (key: string) => T,
+  laneValue: (entry: T) => number,
 ) {
-  const keys = new Map<string, number>()
-  const indexOf = new Uint32Array(n)
-  const keyIndex = (key: string) => {
-    let index = keys.get(key)
-    if (index === undefined) {
-      index = keys.size
-      keys.set(key, index)
+  const { kept, count, report } = within
+  const resolved = new Map<string, { entry: T; value: number }>()
+  const resolve = (key: string) => {
+    let r = resolved.get(key)
+    if (r === undefined) {
+      const entry = entryOf(key)
+      r = { entry, value: laneValue(entry) }
+      resolved.set(key, r)
     }
-    return index
+    return r
   }
   const column =
     typeof ref !== 'function' && isPlainFieldRef(ref)
       ? table.column(ref)
       : undefined
-  let collect: (i: number, at: number) => void
+  let met: Iterable<string>
   if (column?.kind === 'category') {
-    const { codes, labels, at: rowAt } = column
-    const ofCode = new Int32Array(labels.length).fill(-1)
-    collect = (i, at) => {
-      const code = codes[rowAt ? rowAt[i]! : i]!
-      let index = ofCode[code]!
-      if (index < 0) {
-        index = keyIndex(categories.key(labels[code]))
-        ofCode[code] = index
+    const { codes, labels } = column
+    const keyOfCode = labels.map(label => categories.key(label))
+    const valueOfCode = Uint32Array.from(keyOfCode, key => resolve(key).value)
+    const metCode = new Uint8Array(labels.length)
+    const index = laneIndex(kept, column.at)
+    if (index) {
+      for (let k = 0; k < count; k++) {
+        const code = codes[index[k]!]!
+        metCode[code] = 1
+        out[k] = valueOfCode[code]!
       }
-      indexOf[at] = index
+    } else {
+      for (let k = 0; k < count; k++) {
+        const code = codes[k]!
+        metCode[code] = 1
+        out[k] = valueOfCode[code]!
+      }
     }
+    met = new Set(keyOfCode.filter((_, code) => metCode[code]))
   } else {
     const read = channelReader(table, ref, jexl)
-    collect = (i, at) => {
-      indexOf[at] = keyIndex(categories.key(read(i)))
+    for (let k = 0; k < count; k++) {
+      report?.(k)
+      out[k] = resolve(categories.key(read(kept ? kept[k]! : k))).value
     }
+    met = resolved.keys()
   }
-  return {
-    indexOf,
-    collect,
-    resolve<T>(entryOf: (key: string) => T) {
-      const ofIndex: T[] = Array.from({ length: keys.size })
-      const entries: { value: string; entry: T }[] = []
-      for (const value of [...keys.keys()].sort(categories.compare)) {
-        const entry = entryOf(value)
-        ofIndex[keys.get(value)!] = entry
-        entries.push({ value, entry })
-      }
-      return { ofIndex, entries }
-    },
-  }
+  return [...met]
+    .sort(categories.compare)
+    .map(value => ({ value, entry: resolved.get(value)!.entry }))
 }
 
 /**
@@ -333,6 +568,11 @@ export function withHitIndex<T extends EncodedChannels>(
  * skipped and counted in `skipped`, so every array stays index-aligned with
  * the Flatbush. Pure: the RPC around it owns the adapter, the filters and the
  * transferables.
+ *
+ * Columnar: one pass admits the rows over `x`, `x2` and `y` alone, and none
+ * runs where all three are lanes of whole numbers; every other lane is then
+ * filled in its own loop over the admitted rows, a lane straight off a typed
+ * column and a categorical over a `category` column per label.
  */
 export function encodeFeatures<L extends LaneName>(
   input: readonly Feature[] | FeatureTable,
@@ -344,22 +584,78 @@ export function encodeFeatures<L extends LaneName>(
   const table = asTable(input)
   const n = table.length
   const has = (lane: LaneName) => (lanes as readonly LaneName[]).includes(lane)
-  const readX = numberChannelReader(table, encoding.x ?? 'start', jexl)
-  const { x2: x2Encoding } = encoding
+  const {
+    x2: x2Encoding,
+    y: yEncoding,
+    row: rowEncoding,
+    text: textEncoding,
+    size: sizeEncoding,
+    shape: shapeEncoding,
+  } = encoding
   const x2Locus = typeof x2Encoding === 'object' ? x2Encoding : undefined
-  const readX2 = numberChannelReader(
-    table,
-    typeof x2Encoding === 'object' ? x2Encoding.pos : (x2Encoding ?? 'end'),
-    jexl,
+  const ySource =
+    has('y') && yEncoding !== undefined
+      ? numberSource(table, yEncoding, jexl)
+      : undefined
+  const xs = new Uint32Array(n)
+  const x2s = new Uint32Array(n)
+  const ys = has('y') ? new Float32Array(n) : undefined
+  const { kept, count, skippedPosition } = admit(
+    {
+      x: numberSource(table, encoding.x ?? 'start', jexl),
+      x2: numberSource(
+        table,
+        typeof x2Encoding === 'object' ? x2Encoding.pos : (x2Encoding ?? 'end'),
+        jexl,
+      ),
+      y: ySource,
+    },
+    { x: xs, x2: x2s, y: ys },
+    n,
+    report,
   )
-  const readX2Chrom = x2Locus
-    ? channelReader(table, x2Locus.chrom, jexl)
-    : undefined
-  const readRefName = x2Locus ? undefined : readerOf(table.column('refName'))
-  const x2Ref = has('x2Ref') ? new Uint32Array(n) : undefined
+  const rowAt = (k: number) => (kept ? kept[k]! : k)
+  const y = ys?.subarray(0, count)
+
+  let yMin = Infinity
+  let yMax = -Infinity
+  if (ySource && y) {
+    for (let k = 0; k < count; k++) {
+      const v = y[k]!
+      if (v < yMin) {
+        yMin = v
+      }
+      if (v > yMax) {
+        yMax = v
+      }
+    }
+  }
+
+  let x2Ref: Uint32Array | undefined
   const x2RefNames: string[] = []
-  const refIndex = new Map<string, number>()
-  const { size: sizeEncoding } = encoding
+  if (has('x2Ref')) {
+    x2Ref = new Uint32Array(count)
+    const readChrom = x2Locus
+      ? channelReader(table, x2Locus.chrom, jexl)
+      : undefined
+    const readRefName = readerOf(table.column('refName'))
+    const refIndex = new Map<string, number>()
+    for (let k = 0; k < count; k++) {
+      report?.(k)
+      const r = rowAt(k)
+      const there = readChrom
+        ? valueText(readChrom(r))
+        : (readRefName(r) as string)
+      let ref = refIndex.get(there)
+      if (ref === undefined) {
+        ref = x2RefNames.length
+        refIndex.set(there, ref)
+        x2RefNames.push(there)
+      }
+      x2Ref[k] = ref
+    }
+  }
+
   const sizeRef: SizeRef | undefined =
     has('size') &&
     sizeEncoding !== undefined &&
@@ -368,40 +664,80 @@ export function encodeFeatures<L extends LaneName>(
         ? { field: sizeEncoding }
         : sizeEncoding
       : undefined
-  const size = sizeRef ? new Float32Array(n) : undefined
-  const readSize = sizeRef
-    ? numberChannelReader(table, sizeRef.field, jexl)
-    : undefined
-  const { y: yEncoding } = encoding
-  const readY =
-    has('y') && yEncoding !== undefined
-      ? numberChannelReader(table, yEncoding, jexl)
-      : undefined
-  const { row: rowEncoding } = encoding
-  const rowValues =
-    has('row') && typeof rowEncoding === 'object' ? rowEncoding : undefined
-  const readRow =
-    has('row') && rowEncoding !== undefined && typeof rowEncoding !== 'object'
-      ? channelReader(table, rowEncoding, jexl)
-      : undefined
+  const size = sizeRef ? new Float32Array(count) : undefined
+  if (sizeRef && size) {
+    fillNumbers(size, numberSource(table, sizeRef.field, jexl), kept, count)
+  }
 
-  const { text: textEncoding } = encoding
-  const readText =
-    has('text') && textEncoding !== undefined
-      ? channelReader(table, textEncoding, jexl)
-      : undefined
+  const row = has('row') ? new Uint32Array(count) : undefined
+  if (row && typeof rowEncoding === 'object') {
+    if (rowEncoding instanceof Uint32Array && !kept) {
+      row.set(rowEncoding.subarray(0, count))
+    } else {
+      for (let k = 0; k < count; k++) {
+        const rv = rowEncoding[rowAt(k)]!
+        row[k] = rv > 0 ? rv : 0
+      }
+    }
+  } else if (
+    row &&
+    rowEncoding !== undefined &&
+    typeof rowEncoding !== 'object'
+  ) {
+    fillNumbers(row, rowSource(table, rowEncoding, jexl), kept, count)
+  }
 
-  const x = new Uint32Array(n)
-  const x2 = new Uint32Array(n)
-  const y = has('y') ? new Float32Array(n) : undefined
-  const row = has('row') ? new Uint32Array(n) : undefined
-  const glyph = has('glyph') ? new Uint8Array(n) : undefined
-  const text = has('text') ? new Array<string>(n) : undefined
-  const featureIndex = new Uint32Array(n)
-  let yMin = Infinity
-  let yMax = -Infinity
-  let count = 0
-  let skippedPosition = 0
+  const text = has('text') ? new Array<string>(count) : undefined
+  if (text) {
+    if (textEncoding === undefined) {
+      text.fill('')
+    } else {
+      const read = channelReader(table, textEncoding, jexl)
+      for (let k = 0; k < count; k++) {
+        report?.(k)
+        text[k] = valueText(read(rowAt(k)))
+      }
+    }
+  }
+
+  const glyph = has('glyph') ? new Uint8Array(count) : undefined
+  let shapeScale: ShapeScaleTable | undefined
+  if (glyph && typeof shapeEncoding === 'object') {
+    const shapeField = categoricalField(shapeEncoding.field, {
+      domain: shapeEncoding.domain?.map(String),
+    })
+    const range = shapeEncoding.range ?? SHAPE_NAMES
+    const shapeOf = categoricalScale(shapeField.domain, range, {
+      fallback: range.length > shapeField.domain.length ? [] : SHAPE_NAMES,
+    })
+    const entries = paintCategories(
+      table,
+      shapeEncoding.field,
+      jexl,
+      shapeField,
+      { kept, count, report },
+      glyph,
+      (key): ShapeName => (key === '' ? 'circle' : shapeOf(key)),
+      name => SHAPE_CODES[name],
+    )
+    shapeScale = {
+      kind: 'shape',
+      field: shapeEncoding.field,
+      domain: [...shapeField.domain],
+      ...(shapeEncoding.range ? { range: [...shapeEncoding.range] } : {}),
+      entries: entries.map(e => ({ value: e.value, shape: e.entry })),
+    }
+  } else if (glyph && typeof shapeEncoding !== 'object') {
+    const shape = shapeReader(table, shapeEncoding, jexl)
+    if (typeof shape === 'number') {
+      glyph.fill(shape)
+    } else {
+      for (let k = 0; k < count; k++) {
+        report?.(k)
+        glyph[k] = shape(rowAt(k))
+      }
+    }
+  }
 
   const colorEncoding = encoding.color ?? DEFAULT_MARK_COLOR
   const declaredScale =
@@ -417,193 +753,41 @@ export function encodeFeatures<L extends LaneName>(
   // lane choice: a mark that reads the scale itself names `colorValue` and
   // gets the raw values, so a ramp's domain unions over the regions and a
   // threshold's cuts move as uniforms. Anything else names `color` and the
-  // walk resolves per region. A colour over the field `y` plots is the `y`
+  // encoder resolves per region. A colour over the field `y` plots is the `y`
   // lane itself, aliased rather than copied.
   const quantitative = rampEncoding ?? thresholdEncoding
   const colorReadsY =
     quantitative !== undefined &&
     has('colorValue') &&
     y !== undefined &&
-    yEncoding !== undefined &&
     typeof yEncoding === 'string' &&
     quantitative.field === yEncoding
   const colorValue =
     quantitative && has('colorValue')
       ? colorReadsY
         ? y
-        : new Float32Array(n)
+        : new Float32Array(count)
       : undefined
-  const color = has('color') && !colorValue ? new Uint32Array(n) : undefined
-  const wantColor = color !== undefined || colorValue !== undefined
-  const scaled = wantColor ? declaredScale : undefined
-  const readColor =
-    !wantColor || colorReadsY
-      ? undefined
-      : scaled
-        ? channelReader(table, scaled.field, jexl)
-        : unscaledColorReader(
-            table,
-            colorEncoding as string | ChannelReader<number>,
-            jexl,
-          )
-  // A scaled channel resolves after the walk, once the table is known: the
-  // category per admitted instance, or a ramp's raw value, kept here.
-  const colorField =
-    scaled?.scale === 'categorical'
-      ? categoricalField(scaled.field, {
-          domain: scaled.domain?.map(String),
-          range: scaled.range,
-        })
-      : undefined
-  const colorCategories =
-    colorField && scaled && readColor
-      ? categoricalChannel(table, scaled.field, jexl, colorField, n)
-      : undefined
-  // The raw values of a scaled colour, where the walk fills them: a ramp's
-  // always, a threshold's where the caller resolves it; the encoder resolves
-  // a threshold into packed colours only for a caller naming `color` alone.
-  const rampValues =
-    scaled && (rampEncoding ?? (thresholdEncoding && colorValue))
-      ? (colorValue ?? new Float32Array(n))
-      : undefined
-  const rampBits = rampValues
-    ? new Uint32Array(rampValues.buffer, rampValues.byteOffset, n)
-    : undefined
-  const cuts =
-    scaled && thresholdEncoding
-      ? thresholdCuts(thresholdEncoding.domain ?? [])
-      : undefined
-  const binColors =
-    scaled && thresholdEncoding && cuts && color
-      ? Uint32Array.from(
-          thresholdPalette(cuts.length + 1, thresholdEncoding.range),
-          c => cssColorToABGR(c),
-        )
-      : undefined
+  const color = has('color') && !colorValue ? new Uint32Array(count) : undefined
+  const scaled = color || colorValue ? declaredScale : undefined
+  let scale: ColorScaleTable | undefined
   let missingMet = false
   let notNumberMet = false
-  const { shape: shapeEncoding } = encoding
-  const shapeScaled =
-    glyph && typeof shapeEncoding === 'object' ? shapeEncoding : undefined
-  const shapeField = shapeScaled
-    ? categoricalField(shapeScaled.field, {
-        domain: shapeScaled.domain?.map(String),
-      })
-    : undefined
-  const shapeCategories =
-    shapeScaled && shapeField
-      ? categoricalChannel(table, shapeScaled.field, jexl, shapeField, n)
-      : undefined
-  const readShape = glyph
-    ? shapeReader(
-        table,
-        typeof shapeEncoding === 'object' ? undefined : shapeEncoding,
-        jexl,
-      )
-    : undefined
-
-  for (let i = 0; i < n; i++) {
-    report?.(i)
-    const xv = readX(i)
-    const x2v = readX2(i)
-    const yv = readY ? readY(i) : 0
-    if (!Number.isFinite(xv) || !Number.isFinite(x2v) || !Number.isFinite(yv)) {
-      if (!Number.isFinite(xv) || !Number.isFinite(x2v)) {
-        skippedPosition++
-      }
-      continue
-    }
-    // A position before the sequence's first base, a flank run off the start
-    // or an `END=0`, stops at 0 rather than wrapping the unsigned lane.
-    x[count] = xv < 0 ? 0 : xv
-    x2[count] = x2v < 0 ? 0 : x2v
-    if (x2Ref) {
-      const there = readX2Chrom
-        ? valueText(readX2Chrom(i))
-        : (readRefName!(i) as string)
-      let ref = refIndex.get(there)
-      if (ref === undefined) {
-        ref = x2RefNames.length
-        refIndex.set(there, ref)
-        x2RefNames.push(there)
-      }
-      x2Ref[count] = ref
-    }
-    if (y) {
-      y[count] = yv
-    }
-    if (size && readSize) {
-      size[count] = readSize(i)
-    }
-    if (readY) {
-      if (yv < yMin) {
-        yMin = yv
-      }
-      if (yv > yMax) {
-        yMax = yv
-      }
-    }
-    if (row && readRow) {
-      const rv = Number(readRow(i))
-      row[count] = rv > 0 ? rv : 0
-    } else if (row && rowValues) {
-      const rv = rowValues[i]!
-      row[count] = rv > 0 ? rv : 0
-    }
-    if (shapeCategories) {
-      shapeCategories.collect(i, count)
-    } else if (glyph && readShape) {
-      glyph[count] = readShape(i)
-    }
-    if (text) {
-      text[count] = readText ? valueText(readText(i)) : ''
-    }
-    featureIndex[count] = i
-    if (colorCategories) {
-      colorCategories.collect(i, count)
-    } else if (colorReadsY) {
-      // the y lane is the colour's; a skipped feature never reached here
-    } else if (rampValues && rampBits && readColor) {
-      const v = readColor(i)
-      if (isMissing(v)) {
-        rampBits[count] = RAMP_NO_VALUE_BITS
-        missingMet = true
-      } else {
-        rampValues[count] = numericValue(v)
-        notNumberMet ||= Number.isNaN(rampValues[count])
-      }
-    } else if (binColors && cuts && color && readColor) {
-      const v = readColor(i)
-      const bin = thresholdIndex(v, cuts)
-      if (bin >= 0) {
-        color[count] = binColors[bin]!
-      } else if (isMissing(v)) {
-        color[count] = NO_VALUE_ABGR
-        missingMet = true
-      } else {
-        color[count] = FALLBACK_COLOR
-        notNumberMet = true
-      }
-    } else if (color && readColor) {
-      color[count] = readColor(i) as number
-    }
-    count++
-  }
-
-  let scale: ColorScaleTable | undefined
-  if (
-    scaled?.scale === 'categorical' &&
-    colorField &&
-    colorCategories &&
-    color
-  ) {
-    const { ofIndex, entries } = colorCategories.resolve(key =>
-      cssColorToABGR(colorField.color(key)),
+  if (scaled?.scale === 'categorical' && color) {
+    const colorField = categoricalField(scaled.field, {
+      domain: scaled.domain?.map(String),
+      range: scaled.range,
+    })
+    const entries = paintCategories(
+      table,
+      scaled.field,
+      jexl,
+      colorField,
+      { kept, count, report },
+      color,
+      key => cssColorToABGR(colorField.color(key)),
+      abgr => abgr,
     )
-    const { indexOf } = colorCategories
-    for (let i = 0; i < count; i++) {
-      color[i] = ofIndex[indexOf[i]!]!
-    }
     scale = {
       kind: 'categorical',
       field: scaled.field,
@@ -612,82 +796,78 @@ export function encodeFeatures<L extends LaneName>(
       ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
       entries: entries.map(e => ({ value: e.value, color: e.entry })),
     }
-  } else if (scaled && thresholdEncoding && cuts) {
-    scale = {
-      kind: 'threshold',
-      field: thresholdEncoding.field,
-      domain: cuts,
-      ...(thresholdEncoding.range
-        ? { range: [...thresholdEncoding.range] }
-        : {}),
-      ...(missingMet ? { missing: true } : {}),
-      ...(notNumberMet ? { notNumber: true } : {}),
-    }
-  } else if (scaled && rampEncoding && rampValues) {
-    const extent = scaleExtent(
-      rampValues,
-      count,
-      rampEncoding.scale,
-      rampEncoding.domainQuantile,
-    )
-    const {
-      domainMin,
-      domainMax,
-      domainMid,
-      domainQuantile,
-      range,
-      scheme,
-      reverse,
-    } = rampEncoding
-    const { domain, lut, colorOf } = continuousColorScale(rampEncoding, extent)
-    if (color && rampBits) {
-      for (let i = 0; i < count; i++) {
-        color[i] =
-          rampBits[i] === RAMP_NO_VALUE_BITS
-            ? NO_VALUE_ABGR
-            : colorOf(rampValues[i]!)
+  } else if (scaled && quantitative) {
+    // The raw values, where they are kept: a ramp's always, a threshold's
+    // where the caller resolves it; the encoder resolves a threshold into
+    // packed colours only for a caller naming `color` alone.
+    const values =
+      colorValue ?? (rampEncoding ? new Float32Array(count) : undefined)
+    const read = channelReader(table, quantitative.field, jexl)
+    if (values && !colorReadsY) {
+      const bits = new Uint32Array(values.buffer, values.byteOffset, count)
+      for (let k = 0; k < count; k++) {
+        report?.(k)
+        const v = read(rowAt(k))
+        if (isMissing(v)) {
+          bits[k] = RAMP_NO_VALUE_BITS
+          missingMet = true
+        } else {
+          values[k] = numericValue(v)
+          notNumberMet ||= Number.isNaN(values[k])
+        }
       }
     }
-    scale = {
-      kind: 'ramp',
-      field: rampEncoding.field,
-      scale: rampEncoding.scale,
-      domain,
-      pinned: [domainMin !== undefined, domainMax !== undefined],
-      ...(domainMid === undefined ? {} : { domainMid }),
-      ...(range ? { range: [...range] } : {}),
-      ...(scheme ? { scheme } : {}),
-      ...(reverse ? { reverse } : {}),
-      extent,
-      ...(domainQuantile !== undefined && domainQuantile < 1
-        ? { quantile: domainQuantile }
-        : {}),
-      lut,
-      ...(missingMet ? { missing: true } : {}),
-      ...(notNumberMet ? { notNumber: true } : {}),
+    if (thresholdEncoding) {
+      const cuts = thresholdCuts(thresholdEncoding.domain ?? [])
+      if (color) {
+        const binColors = Uint32Array.from(
+          thresholdPalette(cuts.length + 1, thresholdEncoding.range),
+          c => cssColorToABGR(c),
+        )
+        for (let k = 0; k < count; k++) {
+          report?.(k)
+          const v = read(rowAt(k))
+          const bin = thresholdIndex(v, cuts)
+          if (bin >= 0) {
+            color[k] = binColors[bin]!
+          } else if (isMissing(v)) {
+            color[k] = NO_VALUE_ABGR
+            missingMet = true
+          } else {
+            color[k] = FALLBACK_COLOR
+            notNumberMet = true
+          }
+        }
+      }
+      scale = {
+        kind: 'threshold',
+        field: thresholdEncoding.field,
+        domain: cuts,
+        ...(thresholdEncoding.range
+          ? { range: [...thresholdEncoding.range] }
+          : {}),
+        ...(missingMet ? { missing: true } : {}),
+        ...(notNumberMet ? { notNumber: true } : {}),
+      }
+    } else if (rampEncoding && values) {
+      scale = rampScale(rampEncoding, values, count, color, {
+        missingMet,
+        notNumberMet,
+      })
     }
-  }
-
-  let shapeScale: ShapeScaleTable | undefined
-  if (shapeScaled && shapeField && shapeCategories && glyph) {
-    const range = shapeScaled.range ?? SHAPE_NAMES
-    const shapeOf = categoricalScale(shapeField.domain, range, {
-      fallback: range.length > shapeField.domain.length ? [] : SHAPE_NAMES,
-    })
-    const { ofIndex, entries } = shapeCategories.resolve((key): ShapeName =>
-      key === '' ? 'circle' : shapeOf(key),
+  } else if (color) {
+    const paint = unscaledColor(
+      table,
+      colorEncoding as string | ChannelReader<number>,
+      jexl,
     )
-    const codeOfIndex = Uint8Array.from(ofIndex, name => SHAPE_CODES[name])
-    const { indexOf } = shapeCategories
-    for (let i = 0; i < count; i++) {
-      glyph[i] = codeOfIndex[indexOf[i]!]!
-    }
-    shapeScale = {
-      kind: 'shape',
-      field: shapeScaled.field,
-      domain: [...shapeField.domain],
-      ...(shapeScaled.range ? { range: [...shapeScaled.range] } : {}),
-      entries: entries.map(e => ({ value: e.value, shape: e.entry })),
+    if (typeof paint === 'number') {
+      color.fill(paint)
+    } else {
+      for (let k = 0; k < count; k++) {
+        report?.(k)
+        color[k] = paint(rowAt(k))
+      }
     }
   }
 
@@ -706,6 +886,8 @@ export function encodeFeatures<L extends LaneName>(
     }
   }
 
+  const x = xs.subarray(0, count)
+  const x2 = x2s.subarray(0, count)
   const flatbushData =
     has('index') && count > 0 ? hitIndexOf(x, x2, y, count).data : undefined
 
@@ -713,36 +895,38 @@ export function encodeFeatures<L extends LaneName>(
     count,
     skipped: n - count,
     skippedPosition,
-    x: x.subarray(0, count),
-    x2: x2.subarray(0, count),
-    featureIndex: featureIndex.subarray(0, count),
+    x,
+    x2,
     yMin,
     yMax,
   }
+  if (kept) {
+    encoded.featureIndex = kept
+  }
   if (y) {
-    encoded.y = y.subarray(0, count)
+    encoded.y = y
   }
   if (row) {
-    encoded.row = row.subarray(0, count)
+    encoded.row = row
   }
   if (color) {
-    encoded.color = color.subarray(0, count)
+    encoded.color = color
   }
   if (colorValue) {
     // the y view itself where the colour reads y, so a reader can tell
-    encoded.colorValue = colorReadsY ? encoded.y : colorValue.subarray(0, count)
+    encoded.colorValue = colorValue
   }
   if (glyph) {
-    encoded.glyph = glyph.subarray(0, count)
+    encoded.glyph = glyph
   }
   if (text) {
-    encoded.text = text.length === count ? text : text.slice(0, count)
+    encoded.text = text
   }
   if (size) {
-    encoded.size = size.subarray(0, count)
+    encoded.size = size
   }
   if (x2Ref) {
-    encoded.x2Ref = x2Ref.subarray(0, count)
+    encoded.x2Ref = x2Ref
     encoded.x2RefNames = x2RefNames
   }
   if (sizeScale) {
@@ -758,6 +942,58 @@ export function encodeFeatures<L extends LaneName>(
     encoded.shapeScale = shapeScale
   }
   return encoded as Encoded<L>
+}
+
+// A ramp's table over the values it met, painting `color` through it where
+// the encoder resolves the scale.
+function rampScale(
+  rampEncoding: ContinuousRef,
+  values: Float32Array,
+  count: number,
+  color: Uint32Array | undefined,
+  met: { missingMet: boolean; notNumberMet: boolean },
+): ColorScaleTable {
+  const extent = scaleExtent(
+    values,
+    count,
+    rampEncoding.scale,
+    rampEncoding.domainQuantile,
+  )
+  const {
+    domainMin,
+    domainMax,
+    domainMid,
+    domainQuantile,
+    range,
+    scheme,
+    reverse,
+  } = rampEncoding
+  const { domain, lut, colorOf } = continuousColorScale(rampEncoding, extent)
+  if (color) {
+    const bits = new Uint32Array(values.buffer, values.byteOffset, count)
+    for (let k = 0; k < count; k++) {
+      color[k] =
+        bits[k] === RAMP_NO_VALUE_BITS ? NO_VALUE_ABGR : colorOf(values[k]!)
+    }
+  }
+  return {
+    kind: 'ramp',
+    field: rampEncoding.field,
+    scale: rampEncoding.scale,
+    domain,
+    pinned: [domainMin !== undefined, domainMax !== undefined],
+    ...(domainMid === undefined ? {} : { domainMid }),
+    ...(range ? { range: [...range] } : {}),
+    ...(scheme ? { scheme } : {}),
+    ...(reverse ? { reverse } : {}),
+    extent,
+    ...(domainQuantile !== undefined && domainQuantile < 1
+      ? { quantile: domainQuantile }
+      : {}),
+    lut,
+    ...(met.missingMet ? { missing: true } : {}),
+    ...(met.notNumberMet ? { notNumber: true } : {}),
+  }
 }
 
 /**
@@ -866,22 +1102,34 @@ export function colorEvaluator(
   return () => constant
 }
 
-// A constant colour answers without reading the row, so a table's rows are
-// never made into features to paint every one the same.
-function unscaledColorReader(
+// A constant colour is its packed value, which fills the lane without reading
+// a row.
+function unscaledColor(
   table: FeatureTable,
   color: string | ChannelReader<number>,
   jexl: JexlInstance | undefined,
-): RowReader<number> {
+): number | RowReader<number> {
   if (typeof color === 'function') {
     return i => color(table.row(i))
   }
   if (!isJexl(color)) {
-    const constant = cssColorToABGR(color)
-    return () => constant
+    return cssColorToABGR(color)
   }
   const colorOf = colorEvaluator(color, jexl)
   return i => colorOf(table.row(i))
+}
+
+/**
+ * #api
+ * The input feature instance `i` of `channels` was: `featureIndex[i]`, or `i`
+ * itself where the encoder skipped none and so shipped no index.
+ */
+export function featureIndexAt(
+  channels: Pick<EncodedChannels, 'featureIndex'>,
+  i: number,
+) {
+  const { featureIndex } = channels
+  return featureIndex ? featureIndex[i]! : i
 }
 
 /**
@@ -892,12 +1140,9 @@ function unscaledColorReader(
 export function encodedChannelTransferables(c: EncodedChannels) {
   // A set, since `colorValue` may be the `y` lane itself and a buffer listed
   // twice fails the transfer.
-  const buffers = new Set<ArrayBufferLike>([
-    c.x.buffer,
-    c.x2.buffer,
-    c.featureIndex.buffer,
-  ])
+  const buffers = new Set<ArrayBufferLike>([c.x.buffer, c.x2.buffer])
   for (const lane of [
+    c.featureIndex,
     c.y,
     c.row,
     c.color,

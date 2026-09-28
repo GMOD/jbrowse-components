@@ -1,6 +1,6 @@
 ---
 name: maf-onto-marks
-description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. Items 1, 2 and 4 landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference with each insertion an interbase feature, ADR-189's adapter listing gives the rows the tree's order and the guide tree - then item 3's pinned, scrolling row height. A bench that evening found the Feature steps taking 8 s where the MAF display takes 0.7 at 470 species (ADR-190); ADR-191 moved the whole mark pipeline onto tables the same night and ADR-192 took the hit index off a span, so the rest of the list is open again.
+description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. Items 1, 2 and 4 landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference with each insertion an interbase feature, ADR-189's adapter listing gives the rows the tree's order and the guide tree - then item 3's pinned, scrolling row height. A bench that evening found the Feature steps taking 8 s where the MAF display takes 0.7 at 470 species (ADR-190); ADR-191 moved the whole mark pipeline onto tables the same night, ADR-192 took the hit index off a span and ADR-193 made the MAF worker's arena the rows, so the rest of the list is open again.
 ---
 
 # The MAF display onto the mark display
@@ -58,9 +58,32 @@ and draws an exact identity, and
 [ADR-191](../architecture-decision-records/adr-191-the-mark-pipeline-runs-over-tables.md)
 built the tables into the pipeline itself. [ADR-192](../architecture-decision-records/adr-192-a-span-answers-a-hover-by-its-row.md)
 then took the hit index off a span, which over a 470-species region cost more
-than the rest of the request. Items 5 to 11 are open again; what
-[the-mark-pipeline-runs-over-tables](../ideas/ready/the-mark-pipeline-runs-over-tables.md)
-still plans, typed sources, would take the MAF worker's arena as the rows.
+than the rest of the request, and
+[ADR-193](../architecture-decision-records/adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)
+has the MAF adapters answer the MAF worker's arena as the rows and the encoder
+fill a lane at a time. The `marks_maf_cells` span now runs at
+1.26x<!--m:typed-sources-maf-display.470-species-200-blocks-of-250-columns.typedVsMaf-->
+the MAF display's path at 470 species. Items 5 to 11 are open again.
+
+Two levers are left on the data path, both measured:
+
+- **The `cells` walk** is 133 ms of the 220 ms request on ada, a byte kernel
+  the MAF display's `buildMafChannels` also pays. A `cells` that bins as it
+  walks, where a `bin` follows it, is the obvious fusion for the identity,
+  which makes runs and then bins them where `buildIdentityRuns` counts matches
+  in one walk:
+  859.9ms<!--m:maf-on-marks-identity.470-species-200-blocks-of-250-columns.columnsIdentityMs-->
+  against
+  430.1ms<!--m:maf-on-marks-identity.470-species-200-blocks-of-250-columns.mafIdentityMs-->.
+- **The pack** (32 ms on ada): the MAF adapters build a `MafFeature` with a
+  record and a string per species, and `mafFeatureTable` then packs them into
+  the arena. Parsing straight into the packer spares both, for the MAF display
+  too; MAF_WORKER_PIPELINE.md measured that restructure at 1.18x on narrow
+  blocks. Today the typed table is level with the features it packs at 470
+  species
+  (1.08x<!--m:typed-sources-maf-display.470-species-200-blocks-of-250-columns.typedVsFeatures-->)
+  and ahead over narrow blocks
+  (0.82x<!--m:typed-sources-maf-display.26-species-20000-blocks-of-8-columns.typedVsFeatures-->).
 
 ## What the mark display must gain, ranked
 

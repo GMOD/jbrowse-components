@@ -165,9 +165,10 @@ export interface MarkEncoding {
 
 /**
  * #api
- * The lanes a caller asks the encoder to fill, beyond `x`, `x2` and
- * `featureIndex`, which every payload carries: a mark's channels, and
- * `index` for the Flatbush a hover reads. A lane not asked for is neither
+ * The lanes a caller asks the encoder to fill, beyond `x` and `x2`, which
+ * every payload carries, and `featureIndex`, which one carries where a
+ * feature was skipped: a mark's channels, and `index` for the Flatbush a
+ * hover reads. A lane not asked for is neither
  * allocated nor transferred, and a caller that never hovers declines the
  * index, which is most of the encoder's cost after the walk.
  */
@@ -314,7 +315,8 @@ export type ScaleTable = ColorScaleTable | ShapeScaleTable
  * #api
  * One encoding's channels over one region's features, dense and
  * index-aligned: instance `i` of every array is the same feature, and
- * `featureIndex[i]` says which one of the input list it was. A lane is
+ * `featureIndex[i]` says which one of the input list it was, or it is absent
+ * where instance `i` is feature `i` ({@link featureIndexAt}). A lane is
  * present when the caller asked for it ({@link LaneName}); {@link Encoded}
  * is this type with a known lane set required.
  */
@@ -334,7 +336,7 @@ export interface EncodedChannels {
   skippedPosition?: number
   x: Uint32Array
   x2: Uint32Array
-  featureIndex: Uint32Array
+  featureIndex?: Uint32Array
   y?: Float32Array
   color?: Uint32Array
   /**
