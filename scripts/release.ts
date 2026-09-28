@@ -207,6 +207,12 @@ function readReleaseDocs(releaseTag: string, changelogSince: string[]) {
       `No blogpost draft found at ${paths.notes}, please write one.`,
     )
   }
+  const review = `${DRAFTS_DIR}/${releaseTag}.review.md`
+  if (fs.existsSync(review)) {
+    throw new Error(
+      `${review} still holds findings against the draft. Work them in and delete it first.`,
+    )
+  }
   const notes = fs.readFileSync(paths.notes, 'utf8')
   // Also a check-docs validator, so this normally passed hours ago — but
   // --skip-ci-check exists, and this is the last moment a broken figure path

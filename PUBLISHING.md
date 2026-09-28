@@ -33,6 +33,10 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    "gone, and the draft says so on purpose" or "stale claim". A checker was
    tried for this and is in `agent-docs/reference/REJECTED_IDEAS.md`.
 
+   The findings go in `website/release_announcement_drafts/v<version>.review.md`
+   beside the draft. `pnpm release` refuses while one exists, so the review is
+   worked into the drafts and deleted before the tag.
+
    Check the published plugins too, on a major release:
 
    ```bash

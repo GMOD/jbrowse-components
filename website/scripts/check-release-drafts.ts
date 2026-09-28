@@ -33,6 +33,9 @@ const VERSION = String.raw`v\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?`
 const DRAFT_NAME = new RegExp(`^${VERSION}\\.md$`)
 // The optional hand-written changelog that replaces the generated PR list.
 const CHANGELOG_NAME = new RegExp(`^${VERSION}\\.changelog\\.md$`)
+// A working review of the draft. Nothing publishes it, and it names the removed
+// symbols it tells the rewrite to take out, so only its pairing is checked.
+const REVIEW_NAME = new RegExp(`^${VERSION}\\.review\\.md$`)
 
 // Figures live in S3 and are materialized by `pnpm figures:pull`, so a runner
 // that has not pulled has none of them on disk. figures.lock is the authority
@@ -238,6 +241,13 @@ for (const file of drafts) {
       )
     } else {
       console.log(`${file} covers up to ${through}, ${behind} commit(s) back`)
+    }
+    continue
+  }
+  if (REVIEW_NAME.test(file)) {
+    const tag = file.replace(/\.review\.md$/, '')
+    if (!existsSync(join(DRAFTS, `${tag}.md`))) {
+      flag(`reviews ${tag}.md, which does not exist; delete it`)
     }
     continue
   }
