@@ -195,38 +195,30 @@ The published contig aligns to the reference in four blocks:
     derivative   33126-39549   - -> chr3:25,352,683-25,359,111
 ```
 
-The derivative has four contiguous segments: two chr3 arms in opposite
-orientations, a foldback, with short pieces of chr10 and chr12 spliced in at the
-turn. Those two fragments are templated insertions, stretches of other
-chromosomes captured at a repair junction.
+The derivative is four contiguous segments: two chr3 arms in opposite
+orientations, joined by short chr10 and chr12 pieces. The last segment reads an
+interval the allele already carried back on the other strand, an inverted
+duplication that starts a breakage-fusion-bridge cycle. The chr10 and chr12
+pieces are templated insertions, sequence captured from other chromosomes at a
+repair junction.
 
 The PAF is a synteny track and the contig is an assembly, so the derivative
-loads against the reference directly. The BED names which reference interval
-each stretch of the contig came from, as a feature track on the derivative — a
-gene track cannot say this, since derivative segments usually sit inside one big
-intron.
+loads against the reference directly. The demo adds three tracks:
 
-The demo also carries the reference's gene annotation projected through those
-segments into derivative coordinates, clipped where a junction cut a feature and
-flipped where a segment is inverted. This allele carries _RARB_'s first coding
-exon and its start codon, then the 183 bp of chr12 that the second junction
-splices in, which is _TRHDE_ coding sequence in reverse, then _RARB_ again
-inverted.
+- a BED feature track on the derivative naming the reference interval each
+  stretch came from, since a gene track cannot say this when a segment sits
+  inside one large intron
+- the reference gene annotation projected into derivative coordinates, clipped
+  where a junction cut a feature and flipped where a segment is inverted: the
+  allele holds _RARB_'s first coding exon, then 183 bp of _TRHDE_ coding
+  sequence in reverse, then _RARB_ again inverted
+- a read lane under the reference row that draws split alignments only, one row
+  per molecule, with the truth set's validated calls above it
 
-Ribbons below are colored by the reference chromosome they come from. The last
-segment names the event: an interval the allele has already carried, read back
-on the other strand, so the derivative turns around on itself. That leaves the
-stretch in the allele twice in opposite orientations, an inverted duplication,
-with the two templated inserts at the turn. A fold-back is the first step of a
-breakage-fusion-bridge cycle.
-
-The read lane under the reference row draws split alignments only, one row per
-molecule, with the truth set's validated calls above it.
-
-Between the two, each junction is drawn once as an arc joining its two ends,
-with a short tick at each foot over the sequence that end keeps: ticks pointing
-away from each other are a deletion-type join, toward each other a
-duplication-type, and parallel an inversion.
+Ribbons are colored by source chromosome. Each junction draws once as an arc,
+with a tick at each foot: ticks pointing away from each other are a
+deletion-type join, toward each other a duplication-type, and parallel an
+inversion.
 
 <Figure caption="The reconstructed derivative against its three source loci: RefSeq genes, the truth set and the tumor's split reads above, with each junction drawn once as an arc; the same annotation projected onto the allele below, each segment labelled with the interval it came from." src="/img/cancer_sv/derivative_synteny.png" />
 
