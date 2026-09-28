@@ -8,7 +8,9 @@ inverted, translocated, duplicated regions), loaded as multi-genome lanes, and
 a minigraph pangenome of the 27 with the tabix projections JBrowse queries a
 locus from. The accessions' own gene, transposon, methylation and histone
 tracks are not rehosted: config.json points at the 1001 Genomes data centre,
-which serves them with CORS and Range support.
+which serves them with CORS and Range support. Its <id>.{CG,CHG,CHH}meth.bw
+files store each cytosine as a zero-length record, so their zoom levels hold no
+sums and the methylation tracks read zero from 80 bp/px; zoomed in they draw.
 
 Assemblies
 ----------
