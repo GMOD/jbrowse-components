@@ -8,7 +8,7 @@ import CramAdapter from '../CramAdapter/CramAdapter.ts'
 import {
   getVolvoxSequenceSubAdapter,
   volvoxReference,
-} from '../CramAdapter/CramTestAdapters.ts'
+} from '../CramAdapter/CramTestAdapters.fixture.ts'
 import cramConfigSchema from '../CramAdapter/configSchema.ts'
 import SamAdapter from '../SamAdapter/SamAdapter.ts'
 import samConfigSchema from '../SamAdapter/configSchema.ts'

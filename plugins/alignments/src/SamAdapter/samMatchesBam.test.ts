@@ -6,7 +6,7 @@ import bamConfigSchema from '../BamAdapter/configSchema.ts'
 import {
   getVolvoxSequenceSubAdapter,
   volvoxReference,
-} from '../CramAdapter/CramTestAdapters.ts'
+} from '../CramAdapter/CramTestAdapters.fixture.ts'
 import SamAdapter from './SamAdapter.ts'
 import samConfigSchema from './configSchema.ts'
 

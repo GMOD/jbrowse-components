@@ -12,7 +12,7 @@ import CramAdapter from '../CramAdapter/CramAdapter.ts'
 import {
   getVolvoxSequenceSubAdapter,
   volvoxReference,
-} from '../CramAdapter/CramTestAdapters.ts'
+} from '../CramAdapter/CramTestAdapters.fixture.ts'
 import cramConfigSchema from '../CramAdapter/configSchema.ts'
 
 import type { Feature } from '@jbrowse/core/util'

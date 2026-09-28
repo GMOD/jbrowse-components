@@ -9,7 +9,7 @@ import Adapter from './CramAdapter.ts'
 import {
   getVolvoxSequenceSubAdapter,
   volvoxReference,
-} from './CramTestAdapters.ts'
+} from './CramTestAdapters.fixture.ts'
 import configSchema from './configSchema.ts'
 
 const pluginManager = new PluginManager()

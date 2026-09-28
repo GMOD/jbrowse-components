@@ -22,6 +22,7 @@ export type {
   MarkSnapshot,
   StepSnapshot,
 } from './LinearMarkDisplay/markProblems.ts'
+export type { ValueColor } from './LinearMarkDisplay/valueColor.ts'
 
 export default class MarksPlugin extends Plugin {
   name = 'MarksPlugin'

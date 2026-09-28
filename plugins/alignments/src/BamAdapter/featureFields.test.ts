@@ -5,7 +5,7 @@ import { toArray } from 'rxjs/operators'
 import {
   getVolvoxSequenceSubAdapter,
   volvoxReference,
-} from '../CramAdapter/CramTestAdapters.ts'
+} from '../CramAdapter/CramTestAdapters.fixture.ts'
 import { getMappingQuality, hasPairOrientation } from '../shared/util.ts'
 import Adapter from './BamAdapter.ts'
 import configSchema from './configSchema.ts'

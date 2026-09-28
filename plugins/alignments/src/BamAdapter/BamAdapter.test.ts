@@ -5,11 +5,11 @@ import { toArray } from 'rxjs/operators'
 import {
   getVolvoxSequenceSubAdapter,
   volvoxReference,
-} from '../CramAdapter/CramTestAdapters.ts'
+} from '../CramAdapter/CramTestAdapters.fixture.ts'
 import Adapter from './BamAdapter.ts'
 import configSchema from './configSchema.ts'
 
-import type { SequenceAdapter } from '../CramAdapter/CramTestAdapters.ts'
+import type { SequenceAdapter } from '../CramAdapter/CramTestAdapters.fixture.ts'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 // the reference a fetch of MD-less reads compares against; the RPC path builds
