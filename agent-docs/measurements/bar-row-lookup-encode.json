@@ -1,0 +1,63 @@
+{
+  "id": "bar-row-lookup-encode",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node --max-old-space-size=14000 packages/core/benches/tablePipeline.bench.ts --base=8fe6fc71a4 --rounds=7 --features=1000000 --json",
+    "notes": "On ada (load average 10-11). main at 8fe6fc71a4 (base, and control: main extracted a second time) is the table pipeline of ADR-193, whose bar asks the worker for the hit index; the working tree's bar asks for none. A million synthetic features encoded as bars with y and a constant colour. Interleaved round-robin with the order rotated, MIN across rounds, lanes other than the index checked equal before timing. The row index a hover builds on the main thread is not in these times; bar-row-lookup prices it over a BigWig."
+  },
+  "columns": [
+    {
+      "key": "scenario",
+      "label": "scenario"
+    },
+    {
+      "key": "baseMs",
+      "label": "hit index",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "headMs",
+      "label": "row lookup",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "controlVsBase",
+      "label": "control vs index",
+      "format": "x",
+      "precision": 2,
+      "derived": "controlMs / baseMs",
+      "align": "right"
+    },
+    {
+      "key": "headVsBase",
+      "label": "row lookup vs index",
+      "format": "x",
+      "precision": 2,
+      "derived": "headMs / baseMs",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "encode, y and a colour",
+        "baseMs": 157.8,
+        "controlMs": 170.6,
+        "headMs": 37.9
+      }
+    }
+  ]
+}

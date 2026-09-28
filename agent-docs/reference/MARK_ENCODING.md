@@ -22,7 +22,7 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a shape that is a name, a jexl expression or a categorical scale over the shape names, an integer `row`, a `text` lane of strings for the text mark, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
 | `runTransforms`, `layerTables` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `cells`, `bin`, `aggregate`, `coverage`, `pileup`, `mate` — run in order over a table (`featureTable.ts`; a feature list is a source table, and an adapter holding its rows typed answers a `ColumnTable` over them through `getFeatureTable`, [ADR-193](../architecture-decision-records/adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)), each step one kernel reading what the last answered and answering a table of its own ([ADR-191](../architecture-decision-records/adr-191-the-mark-pipeline-runs-over-tables.md)); `layerTables` runs a whole layered request, facet included |
 | `CoreGetEncodedLayers` | `packages/core/src/rpc/methods/CoreGetEncodedLayers.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `filter` list as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
-| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ mark, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry with a shape reading `layers[markIndex]` through a lens that checks its type's lanes are present (`markLanes` over `MARK_SPECS`) and `enabled` inside the entry's zoom range, a `text` entry placed as DOM by `placeTextMarks` in the entry's stead, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over the candidates its layer answers — a span's by the rows near the cursor (`rowSpanIndex`, [ADR-192](../architecture-decision-records/adr-192-a-span-answers-a-hover-by-its-row.md)), any other's from its Flatbush — spans stacked on `row` into `rowCount` bands |
+| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ mark, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry with a shape reading `layers[markIndex]` through a lens that checks its type's lanes are present (`markLanes` over `MARK_SPECS`) and `enabled` inside the entry's zoom range, a `text` entry placed as DOM by `placeTextMarks` in the entry's stead, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over the candidates its layer answers — a bar, rule, line or span's by the rows near the cursor (`rowSpanIndex`, [ADR-192](../architecture-decision-records/adr-192-a-span-answers-a-hover-by-its-row.md), [ADR-196](../architecture-decision-records/adr-196-a-bar-answers-a-hover-by-its-row.md)), a point or link's from its Flatbush — spans stacked on `row` into `rowCount` bands |
 
 **A positional channel is a field and the value scale is the plot's**, where
 `color` and `shape` each carry their own scale object.
@@ -125,7 +125,9 @@ mark display's lens hands a shape its layer only when the lanes it reads
 are there. The index is a lane like the others because it was most of the
 cost after the walk — the `no-index` and `wiggle` rows below — and a caller
 that never hovers through it (wiggle's fallback, the example plugin's
-every-instance walk) declines it. A `jexl` instance is likewise passed only
+every-instance walk) declines it. The mark display names it for a point or a
+link alone: a bar, rule, line or span stands between `x` and `x2` in one row,
+and the display finds it there (ADR-196). A `jexl` instance is likewise passed only
 by a caller with a `jexl:` channel to compile; every other channel is a
 field name or a reader.
 
@@ -257,7 +259,8 @@ encode is the cost it was, so nothing is skipped by zoom before the RPC.
 byte-gated and composes `DensityTierMixin`, so where the gate refuses the
 detail fetch a mark declaring `source: 'density'` draws the adapter's
 `densityAdapter` bins as its own layer — the sidecar's intervals as `x`/`x2`,
-its levels as `y`, a Flatbush over the same box — and `rpcDataMap` answers
+its levels as `y`, a Flatbush over the same box where the mark is a point —
+and `rpcDataMap` answers
 that in the region store's place, so the domain, the axis, the legend, the
 hover and the SVG export are the paths the features already take. Every other
 mark is empty there, a corner chip says the sidecar is what is drawn, and a
