@@ -1,6 +1,12 @@
 import { binnedAggregate, fusesBinAggregate } from './binnedAggregate.ts'
 import { categoricalField } from './categoricalField.ts'
 import {
+  binnedCellMatches,
+  fusesAfterCells,
+  fusesCellMatches,
+} from './cellMatches.ts'
+import { cells } from './cellsStep.ts'
+import {
   DerivedTable,
   NO_COLUMN,
   WithTable,
@@ -18,9 +24,11 @@ import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 import {
   BIN_OVERLAP_FIELD,
   DEFAULT_BIN_AS,
+  FannedTable,
   MadeTable,
   OpSums,
   binSize,
+  boundsThrough,
   groupKey,
   intervalsOf,
   isWeighted,
@@ -30,18 +38,12 @@ import {
 } from './stepTables.ts'
 import { junctionEnds, svClassOfAlt, svClassOfToken } from './svAlt.ts'
 
-import type {
-  Column,
-  FeatureTable,
-  ListColumn,
-  TextColumn,
-} from './featureTable.ts'
+import type { Column, FeatureTable, ListColumn } from './featureTable.ts'
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
   AggregateOp,
   AggregateStep,
   BinStep,
-  CellsStep,
   CoverageStep,
   FacetSection,
   FacetSpec,
@@ -56,34 +58,13 @@ import type { Bounds, Staged } from './stepTables.ts'
 export { BIN_OVERLAP_FIELD, DEFAULT_BIN_AS } from './stepTables.ts'
 export const DEFAULT_BIN_FIELD = 'start'
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
-export const DEFAULT_CELLS_FIELD = 'seq'
+export { DEFAULT_CELLS_FIELD } from './cellsStep.ts'
 export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS: [string, string] = ['start', 'end']
 
 function oneSection(n: number): Bounds {
   return Uint32Array.of(0, n)
-}
-
-// Section starts through a step whose rows came from its input's in order:
-// each section starts at the first row whose parent row is in it.
-function boundsThrough(bounds: Bounds, parentRow: Uint32Array): Bounds {
-  const out = new Uint32Array(bounds.length)
-  let lo = 0
-  for (let s = 0; s < bounds.length; s++) {
-    const edge = bounds[s]!
-    let hi = parentRow.length
-    while (lo < hi) {
-      const mid = (lo + hi) >>> 1
-      if (parentRow[mid]! < edge) {
-        lo = mid + 1
-      } else {
-        hi = mid
-      }
-    }
-    out[s] = lo
-  }
-  return out
 }
 
 function expression(expr: string, jexl: JexlInstance | undefined) {
@@ -158,26 +139,6 @@ function fannedEntries(items: unknown): [string | number, unknown][] {
   return typeof items === 'object' && items !== null && !isFeature(items)
     ? Object.entries(items)
     : []
-}
-
-/**
- * The entries a `flatten` fanned out, one row each over the container row it
- * came from. A container kept with nothing to fan out is a row of its own
- * that reads everything off itself.
- */
-abstract class FannedTable extends DerivedTable {
-  override get madeFrom() {
-    return true
-  }
-
-  /** A container kept with nothing to fan out: the row is the container. */
-  abstract isKept(i: number): boolean
-
-  abstract get hasKept(): boolean
-
-  override row(i: number): Feature {
-    return this.isKept(i) ? this.parent.row(this.parentOf(i)) : super.row(i)
-  }
 }
 
 /**
@@ -554,501 +515,6 @@ function flattenValues({ table, bounds }: Staged, step: FlattenStep): Staged {
       at,
       position.finish(),
       step,
-    ),
-    bounds: boundsThrough(bounds, rows),
-  }
-}
-
-const DASH = 45
-const SPACE = 32
-const LOWER_BIT = 0x20
-
-const CELL_STATES = ['match', 'mismatch', 'gap', 'insertion'] as const
-const MATCH = 0
-const MISMATCH = 1
-const GAP = 2
-const INSERTION = 3
-const NO_STATE = 255
-
-function isGapByte(b: number) {
-  return b === DASH || b === SPACE
-}
-
-// The row a cell step reads against: past any table that only reordered or
-// annotated the rows, the one they were fanned out of.
-function containerOf(table: FeatureTable) {
-  let at: FeatureTable = table
-  let toBase: Uint32Array | undefined
-  while (at instanceof DerivedTable && !at.madeFrom) {
-    toBase = at.parentRow ? compose(toBase, at.parentRow) : toBase
-    at = at.parent
-  }
-  if (!(at instanceof DerivedTable)) {
-    return undefined
-  }
-  return {
-    made: at,
-    toMade: toBase,
-    table: at.parent,
-    row: at.parentRow ? compose(toBase, at.parentRow) : toBase,
-  }
-}
-
-function compose(outer: Uint32Array | undefined, inner: Uint32Array) {
-  if (!outer) {
-    return inner
-  }
-  const out = new Uint32Array(outer.length)
-  for (let i = 0; i < outer.length; i++) {
-    out[i] = inner[outer[i]!]!
-  }
-  return out
-}
-
-// Below this length a character loop copies a string faster than
-// `encodeInto`, as the MAF packer measured.
-const ASCII_COPY_MAX_LENGTH = 64
-const encoder = new TextEncoder()
-
-// A column's text as bytes, one per character: an adapter's own, or the
-// strings a feature holds copied into one buffer.
-function textOf(column: Column, n: number): TextColumn {
-  if (column.kind === 'text') {
-    return column
-  }
-  const read = readerOf(column)
-  const texts = new Array<string | undefined>(n)
-  let total = 0
-  for (let i = 0; i < n; i++) {
-    const v = read(i)
-    if (typeof v === 'string') {
-      texts[i] = v
-      total += v.length
-    }
-  }
-  const bytes = new Uint8Array(total)
-  const offset = new Uint32Array(n)
-  const length = new Uint32Array(n)
-  let pos = 0
-  for (let i = 0; i < n; i++) {
-    const text = texts[i]
-    if (text === undefined) {
-      continue
-    }
-    offset[i] = pos
-    if (text.length <= ASCII_COPY_MAX_LENGTH) {
-      for (let c = 0; c < text.length; c++) {
-        bytes[pos + c] = text.charCodeAt(c)
-      }
-      length[i] = text.length
-    } else {
-      length[i] = encoder.encodeInto(
-        text,
-        bytes.subarray(pos, pos + text.length),
-      ).written
-    }
-    pos += text.length
-  }
-  return { kind: 'text', bytes, offset, length, at: undefined }
-}
-
-/**
- * The texts a `cells` walk reads, by the row of the table it walked: each
- * row's own, and the reference it is read against, which a row fanned out of
- * a container reads off the container.
- */
-class WalkedTexts {
-  readonly row: TextColumn
-  readonly reference: TextColumn
-  private readonly refRow: Uint32Array | undefined
-
-  constructor(row: TextColumn, ref: TextColumn, refRow?: Uint32Array) {
-    this.row = row
-    this.reference = ref
-    this.refRow = refRow
-  }
-
-  rowOf(r: number) {
-    const { at } = this.row
-    return at ? at[r]! : r
-  }
-
-  refOf(r: number) {
-    const p = this.refRow ? this.refRow[r]! : r
-    const { at } = this.reference
-    return at ? at[p]! : p
-  }
-}
-
-function walkedTexts(table: FeatureTable, field: string) {
-  const row = textOf(table.column(field), table.length)
-  const container = containerOf(table)
-  const made = container?.made
-  if (container && !(made instanceof FannedTable && made.hasKept)) {
-    const { table: base } = container
-    return new WalkedTexts(
-      row,
-      textOf(base.column(field), base.length),
-      container.row,
-    )
-  }
-  // A container a flatten kept with nothing to fan out is the row itself, so
-  // its reference is its own container's, as its `parent()` says.
-  const byParent = (r: number) => table.row(r).parent?.()?.get(field)
-  const readContainer = container
-    ? readerOf(container.table.column(field))
-    : undefined
-  const read =
-    readContainer && made instanceof FannedTable
-      ? (r: number) => {
-          const { toMade, row: refRow } = container!
-          return made.isKept(toMade ? toMade[r]! : r)
-            ? byParent(r)
-            : readContainer(refRow ? refRow[r]! : r)
-        }
-      : byParent
-  return new WalkedTexts(row, textOf({ kind: 'value', read }, table.length))
-}
-
-/**
- * The runs a `cells` step answers, one per stretch of one state against the
- * reference, typed: each run's span, its state and the text column it starts
- * at, with `base`, `match` and `length` read back out of the texts when asked
- * for.
- */
-class CellTable extends DerivedTable {
-  private readonly start: Uint32Array
-  private readonly end: Uint32Array
-  private readonly state: Uint8Array
-  private readonly textAt: Uint32Array
-  private readonly texts: WalkedTexts
-  private firstOfRow: Uint32Array | undefined
-  private derived = new Map<string, Column>()
-
-  constructor(
-    parent: FeatureTable,
-    parentRow: Uint32Array,
-    lanes: {
-      start: Uint32Array
-      end: Uint32Array
-      state: Uint8Array
-      textAt: Uint32Array
-    },
-    texts: WalkedTexts,
-  ) {
-    super(parent, parentRow)
-    this.start = lanes.start
-    this.end = lanes.end
-    this.state = lanes.state
-    this.textAt = lanes.textAt
-    this.texts = texts
-  }
-
-  override get madeFrom() {
-    return true
-  }
-
-  private laneOf(name: string, build: () => Column) {
-    let column = this.derived.get(name)
-    if (!column) {
-      column = build()
-      this.derived.set(name, column)
-    }
-    return column
-  }
-
-  protected own(name: string): Column | undefined {
-    switch (name) {
-      case 'start': {
-        return { kind: 'number', values: this.start, at: undefined }
-      }
-      case 'end': {
-        return { kind: 'number', values: this.end, at: undefined }
-      }
-      case 'state': {
-        return {
-          kind: 'category',
-          codes: this.state,
-          labels: CELL_STATES,
-          at: undefined,
-        }
-      }
-      case 'match': {
-        return this.laneOf(name, () => {
-          const values = new Float32Array(this.length)
-          for (let i = 0; i < this.length; i++) {
-            const s = this.state[i]
-            values[i] = s === MATCH ? 1 : s === MISMATCH ? 0 : Number.NaN
-          }
-          return { kind: 'number', values, at: undefined, nanIsAbsent: true }
-        })
-      }
-      case 'length': {
-        return this.laneOf(name, () => {
-          const values = new Float32Array(this.length).fill(Number.NaN)
-          for (let i = 0; i < this.length; i++) {
-            if (this.state[i] === INSERTION) {
-              values[i] = this.inserted(i).length
-            }
-          }
-          return { kind: 'number', values, at: undefined, nanIsAbsent: true }
-        })
-      }
-      case 'base': {
-        return this.laneOf(name, () => {
-          const values = new Array<string | undefined>(this.length)
-          for (let i = 0; i < this.length; i++) {
-            const s = this.state[i]
-            values[i] =
-              s === MISMATCH
-                ? this.mismatched(i)
-                : s === INSERTION
-                  ? this.inserted(i)
-                  : undefined
-          }
-          return { kind: 'value', read: i => values[i] }
-        })
-      }
-      default: {
-        return undefined
-      }
-    }
-  }
-
-  private mismatched(i: number) {
-    const { bytes, offset } = this.texts.row
-    const k = this.texts.rowOf(this.parentOf(i))
-    return String.fromCharCode(bytes[offset[k]! + this.textAt[i]!]!)
-  }
-
-  // The bases a row holds where the reference has none, from the column the
-  // insertion starts at to the reference's next base.
-  private inserted(i: number) {
-    const { row, reference: ref } = this.texts
-    const r = this.parentOf(i)
-    const k = this.texts.rowOf(r)
-    const f = this.texts.refOf(r)
-    const rowAt = row.offset[k]!
-    const refAt = ref.offset[f]!
-    const end = Math.min(row.length[k]!, ref.length[f]!)
-    let out = ''
-    for (
-      let col = this.textAt[i]!;
-      col < end && ref.bytes[refAt + col] === DASH;
-      col++
-    ) {
-      const b = row.bytes[rowAt + col]!
-      if (!isGapByte(b)) {
-        out += String.fromCharCode(b)
-      }
-    }
-    return out
-  }
-
-  override id(i: number) {
-    const p = this.parentOf(i)
-    this.firstOfRow ??= firstRowIndex(this.parentRow!, this.parent.length)
-    return `${this.parent.row(p).id()}#${i - this.firstOfRow[p]!}`
-  }
-
-  override json(i: number): SimpleFeatureSerialized {
-    const out: Record<string, unknown> = {
-      ...this.parent.row(this.parentOf(i)).toJSON(),
-      start: this.start[i],
-      end: this.end[i],
-      state: CELL_STATES[this.state[i]!],
-    }
-    for (const name of ['base', 'match', 'length']) {
-      const v = valueAt(this.column(name), i)
-      if (v !== undefined) {
-        out[name] = v
-      }
-    }
-    return out as SimpleFeatureSerialized
-  }
-}
-
-// The lanes a `cells` walk writes, doubled as a row would overrun them.
-class RunLanes {
-  start: Uint32Array
-  end: Uint32Array
-  state: Uint8Array
-  textAt: Uint32Array
-  parentRow: Uint32Array
-  length = 0
-
-  constructor(capacity: number) {
-    this.start = new Uint32Array(capacity)
-    this.end = new Uint32Array(capacity)
-    this.state = new Uint8Array(capacity)
-    this.textAt = new Uint32Array(capacity)
-    this.parentRow = new Uint32Array(capacity)
-  }
-
-  reserve(more: number) {
-    const need = this.length + more
-    if (need <= this.start.length) {
-      return
-    }
-    const size = Math.max(this.start.length * 2, need)
-    const widen = <T extends Uint8Array | Uint32Array>(a: T): T => {
-      const next = new (a.constructor as new (size: number) => T)(size)
-      next.set(a)
-      return next
-    }
-    this.start = widen(this.start)
-    this.end = widen(this.end)
-    this.state = widen(this.state)
-    this.textAt = widen(this.textAt)
-    this.parentRow = widen(this.parentRow)
-  }
-
-  // One row's runs against its reference: a run per column is the most it
-  // can answer, so the lanes grow once and the walk writes through locals.
-  walk(
-    r: number,
-    startPos: number,
-    rowBytes: Uint8Array,
-    rowAt: number,
-    rowLen: number,
-    refBytes: Uint8Array,
-    refAt: number,
-    refLen: number,
-  ) {
-    this.reserve(refLen + 1)
-    const { start, end, state, textAt, parentRow } = this
-    let n = this.length
-    let pos = startPos
-    // The columns carrying the row's own sequence: a gap run reaching either
-    // end of the row measures where the block was cut, not the alignment, so
-    // it is no cell either.
-    let first = 0
-    while (first < rowLen && isGapByte(rowBytes[rowAt + first]!)) {
-      first++
-    }
-    let last = rowLen - 1
-    while (last > first && isGapByte(rowBytes[rowAt + last]!)) {
-      last--
-    }
-    let runStart = -1
-    let runState = NO_STATE
-    let runBase = -1
-    let runCol = 0
-    let insertAt = -1
-    for (let col = 0; col < refLen; col++) {
-      const refByte = refBytes[refAt + col]!
-      const rowByte = col < rowLen ? rowBytes[rowAt + col]! : SPACE
-      if (refByte === DASH) {
-        if (insertAt < 0 && col < rowLen && !isGapByte(rowByte)) {
-          insertAt = col
-        }
-        continue
-      }
-      if (insertAt >= 0) {
-        start[n] = pos
-        end[n] = pos
-        state[n] = INSERTION
-        textAt[n] = insertAt
-        parentRow[n] = r
-        n++
-        insertAt = -1
-      }
-      const drawn = col >= first && col <= last && col < rowLen
-      const st = !drawn
-        ? NO_STATE
-        : isGapByte(rowByte)
-          ? GAP
-          : (refByte | LOWER_BIT) === (rowByte | LOWER_BIT)
-            ? MATCH
-            : MISMATCH
-      const base = st === MISMATCH ? rowByte : -1
-      if (st !== runState || base !== runBase) {
-        if (runStart >= 0) {
-          start[n] = runStart
-          end[n] = pos
-          state[n] = runState
-          textAt[n] = runCol
-          parentRow[n] = r
-          n++
-        }
-        runStart = st === NO_STATE ? -1 : pos
-        runState = st
-        runBase = base
-        runCol = col
-      }
-      pos++
-    }
-    if (runStart >= 0) {
-      start[n] = runStart
-      end[n] = pos
-      state[n] = runState
-      textAt[n] = runCol
-      parentRow[n] = r
-      n++
-    }
-    this.length = n
-  }
-}
-
-// Where each parent row's children start, for children written parent by
-// parent in order.
-function firstRowIndex(parentRow: Uint32Array, parents: number) {
-  const first = new Uint32Array(parents)
-  for (let i = parentRow.length - 1; i >= 0; i--) {
-    first[parentRow[i]!] = i
-  }
-  return first
-}
-
-function cells({ table, bounds }: Staged, step: CellsStep): Staged {
-  const { field = DEFAULT_CELLS_FIELD } = step
-  const texts = walkedTexts(table, field)
-  const readStart = numberReaderOf(table.column('start'))
-  const { bytes: rowBytes, offset: rowOffset, length: rowLength } = texts.row
-  const {
-    bytes: refBytes,
-    offset: refOffset,
-    length: refLength,
-  } = texts.reference
-
-  // A run per reference base is the most a row can answer and far past what
-  // one does, so the lanes start at an eighth of it.
-  let bound = 0
-  for (let r = 0; r < table.length; r++) {
-    bound += refLength[texts.refOf(r)]! + 1
-  }
-  const lanes = new RunLanes(Math.max(1024, bound >>> 3))
-  for (let r = 0; r < table.length; r++) {
-    const f = texts.refOf(r)
-    const refLen = refLength[f]!
-    const pos = readStart(r)
-    if (refLen > 0 && pos >= 0) {
-      const k = texts.rowOf(r)
-      lanes.walk(
-        r,
-        pos,
-        rowBytes,
-        rowOffset[k]!,
-        rowLength[k]!,
-        refBytes,
-        refOffset[f]!,
-        refLen,
-      )
-    }
-  }
-  const n = lanes.length
-  const rows = lanes.parentRow.subarray(0, n)
-  return {
-    table: new CellTable(
-      table,
-      rows,
-      {
-        start: lanes.start.subarray(0, n),
-        end: lanes.end.subarray(0, n),
-        state: lanes.state.subarray(0, n),
-        textAt: lanes.textAt.subarray(0, n),
-      },
-      texts,
     ),
     bounds: boundsThrough(bounds, rows),
   }
@@ -1673,13 +1139,25 @@ function runSteps(
   for (let k = 0; k < list.length; k++) {
     const step = list[k]!
     const next = list[k + 1]
+    const after = list[k + 2]
+    const matches =
+      step.type === 'cells' &&
+      next?.type === 'bin' &&
+      after?.type === 'aggregate' &&
+      fusesCellMatches(step, next, after)
+        ? binnedCellMatches(current, step, next, after)
+        : undefined
     const fused =
+      !matches &&
       step.type === 'bin' &&
       next?.type === 'aggregate' &&
       fusesBinAggregate(step, next)
         ? binnedAggregate(current, step, next)
         : undefined
-    if (fused) {
+    if (matches) {
+      current = matches
+      k += 2
+    } else if (fused) {
       current = fused
       k++
     } else {
@@ -1687,6 +1165,46 @@ function runSteps(
     }
   }
   return current
+}
+
+/**
+ * Each layer's steps over `steps` run once for all of them. A trailing
+ * `cells` runs inside each layer whose own steps start with the bin and
+ * aggregate it fuses with, so `runSteps` meets the three together, and once
+ * for the other layers.
+ */
+function runLayers(
+  staged: Staged,
+  steps: readonly TransformStep[] | undefined,
+  layers: readonly (readonly TransformStep[] | undefined)[],
+  jexl: JexlInstance | undefined,
+  keep: (s: Staged, ran: readonly TransformStep[] | undefined) => Staged = s =>
+    s,
+) {
+  const list = steps ?? []
+  const last = list.at(-1)
+  const trailing =
+    last?.type === 'cells' && layers.some(own => fusesAfterCells(last, own))
+      ? last
+      : undefined
+  if (!trailing) {
+    const shared = keep(runSteps(staged, list, jexl), list)
+    return layers.map(own => keep(runSteps(shared, own, jexl), own))
+  }
+  const ahead = runSteps(staged, list.slice(0, -1), jexl)
+  let shared: Staged | undefined
+  return layers.map(own =>
+    fusesAfterCells(trailing, own)
+      ? keep(runSteps(ahead, [trailing, ...own!], jexl), [...list, ...own!])
+      : keep(
+          runSteps(
+            (shared ??= keep(runStep(ahead, trailing, jexl), list)),
+            own,
+            jexl,
+          ),
+          own,
+        ),
+  )
 }
 
 function rowOf(value: unknown) {
@@ -1854,19 +1372,15 @@ export function facetLayers(
   }
 
   const labels = ordered.map(k => keys[k]!)
-  const sectioned = keepingSection(
-    runSteps({ table: selectRows(table, order), bounds }, sectionSteps, jexl),
+  const layered = runLayers(
+    { table: selectRows(table, order), bounds },
     sectionSteps,
-    field,
-    labels,
+    layers.map(({ transform }) => transform),
+    jexl,
+    (staged, steps) => keepingSection(staged, steps, field, labels),
   )
-  const placed = layers.map(({ transform, row }) => {
-    const out = keepingSection(
-      runSteps(sectioned, transform, jexl),
-      transform,
-      field,
-      labels,
-    )
+  const placed = layers.map(({ row }, l) => {
+    const out = layered[l]!
     const readRow =
       row === undefined
         ? undefined
@@ -1996,12 +1510,16 @@ export function layerTables(
 } {
   const { transform = [], facet, layers } = request
   if (!facet) {
-    const shared = runTransforms(input, transform, jexl)
+    const table = asTable(input)
+    const layered = runLayers(
+      { table, bounds: oneSection(table.length) },
+      transform,
+      layers.map(layer => layer.transform),
+      jexl,
+    )
     return {
-      layers: layers.map(layer => ({
-        table: layer.transform?.length
-          ? runTransforms(shared, layer.transform, jexl)
-          : shared,
+      layers: layers.map((layer, l) => ({
+        table: layered[l]!.table,
         row: layer.row,
       })),
       sections: undefined,

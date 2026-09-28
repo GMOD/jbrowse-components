@@ -1,8 +1,9 @@
-// The pieces of the transform steps that the fused bin-and-aggregate kernel
-// shares with the steps themselves. Imported by relative path only, so none
-// of it is a package subpath or part of the plugin ABI.
+// The pieces of the transform steps that the fused kernels share with the
+// steps themselves. Imported by relative path only, so none of it is a
+// package subpath or part of the plugin ABI.
 import { aggregateFieldName } from './aggregateFieldName.ts'
 import {
+  DerivedTable,
   NO_COLUMN,
   TableRow,
   numberReaderOf,
@@ -36,6 +37,47 @@ export type Bounds = Uint32Array
 export interface Staged {
   table: FeatureTable
   bounds: Bounds
+}
+
+// Section starts through a step whose rows came from its input's in order:
+// each section starts at the first row whose parent row is in it.
+export function boundsThrough(bounds: Bounds, parentRow: Uint32Array): Bounds {
+  const out = new Uint32Array(bounds.length)
+  let lo = 0
+  for (let s = 0; s < bounds.length; s++) {
+    const edge = bounds[s]!
+    let hi = parentRow.length
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1
+      if (parentRow[mid]! < edge) {
+        lo = mid + 1
+      } else {
+        hi = mid
+      }
+    }
+    out[s] = lo
+  }
+  return out
+}
+
+/**
+ * The entries a `flatten` fanned out, one row each over the container row it
+ * came from. A container kept with nothing to fan out is a row of its own
+ * that reads everything off itself.
+ */
+export abstract class FannedTable extends DerivedTable {
+  override get madeFrom() {
+    return true
+  }
+
+  /** A container kept with nothing to fan out: the row is the container. */
+  abstract isKept(i: number): boolean
+
+  abstract get hasKept(): boolean
+
+  override row(i: number): Feature {
+    return this.isKept(i) ? this.parent.row(this.parentOf(i)) : super.row(i)
+  }
 }
 
 // A step reads a name or a dotted path. A plain name reads the table's column;
