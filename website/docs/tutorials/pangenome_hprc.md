@@ -64,31 +64,21 @@ row of its **Loci** table ends in launches: **graph**, **variants**,
 <Figure caption="The HPRC page: the whole-chromosome links, then the head of the Loci table, where each row ends in its launches. The RHD / RHCE and SMN1 / SMN2 rows have no graph launch. The boxed link is the graph launch the next step takes." src="/img/pangenome/genomes_hprc_loci.png" />
 
 Press **graph** on the HLA / MHC row. JBrowse opens on
-`chr6:32,510,001-32,600,000`, the MHC class II window.
+`chr6:32,510,001-32,600,000`, the MHC class II window, with the graph track
+under three lanes that index the same graph on GRCh38:
 
-<Figure caption="The graph launch at MHC class II: RefSeq genes, bubbles and the allele inventory over the graph track, anchored on the view's coordinates, colored by reference position with alleles in charcoal." src="/img/pangenome/genomes_hprc_mhc_graph.png" />
-
-## Reading the cut
-
-The graph opens anchored, every x a GRCh38 coordinate:
-
-- the **backbone** is GRCh38's path, along the top row
-- a **bubble** is a place where haplotypes disagree
-- an **allele** is sequence a haplotype carries in place of the reference, a
-  node in a lower row
-- an **edge** is a deletion, a dashed jump over the segments it skips
-
-Hover a node for its length and **rank**, the lower row it sits in. Nodes are
-colored by reference position, red to magenta; an allele has none, so it draws
-in charcoal.
-
-Two lanes above the graph track index the same graph on GRCh38:
-
-- the **bubbles** lane draws one block per bubble; hover the widest, covering
-  _HLA-DRB5_ and more, for its shortest and longest allele
-- the **allele inventory** draws one row per allele; the
+- the RefSeq genes
+- the **bubbles** lane, one block per bubble, where haplotypes disagree; hover
+  the widest, which covers _HLA-DRB5_ and more, for its shortest and longest
+  allele
+- the **allele inventory**, one row per allele, which the
   [graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
-  filters it by size
+  filters by size
+
+In the graph, the **backbone** is GRCh38's path, an **allele** is sequence a
+haplotype carries in place of the reference, drawn in charcoal, and an **edge**
+is a deletion, a dashed jump over the segments it skips. Nodes are colored by
+reference position, red to magenta.
 
 ## The graph moves with the view
 
@@ -109,10 +99,9 @@ takes it straight past GRCh38's.
 
 ## A whole chromosome, one node per bubble {#a-chromosome-and-back}
 
-Pick **Layout → Anchored** again and type `chr6` into the location box. Past a
-zoom named in the adapter's `coarse` slot, the graph switches to one node per
-bubble, so the whole chromosome draws; the lanes above show a zoom-in message at
-this width.
+Type `chr6` into the location box. Past a zoom named in the adapter's `coarse`
+slot, the graph switches to one node per bubble, so the whole chromosome draws;
+the lanes above show a zoom-in message at this width.
 
 The **Whole chromosome** links above the HPRC page's loci table open the same
 tier with a curve of segments per bubble, how much the haplotypes disagree at
@@ -127,26 +116,18 @@ tier and writes the `coarse` slot.
 
 ## From an allele to its haplotype
 
-Back at MHC class II, find the allele under _HLA-DRB5_: a charcoal node in a
-lower row, 1.8 kb long, hanging across 12 kb of backbone. Right-click it and
-take **Highlight in hg38**. A band appears in the linear view across the 12 kb
-the allele attaches over, covering most of _HLA-DRB5_.
-
-<Figure caption="The MHC class II cut drawn both ways under the same tracks, colored by reference position with alleles in charcoal. Left, force-directed, with the allele's right-click menu open on Highlight in hg38 and its band in the linear view. Right, anchored: each x a GRCh38 coordinate, the reference row on top, each lower row one rank, and the ringed dashed arc a deletion." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
-
-## Check it on the haplotype
-
-Left-click the same node. Its details give `contributingHaplotype`, `NA20809#2`,
-and the node's menu offers **Open in NA20809.2**. Take it. A second linear view
-opens below the first, on that haplotype's chromosome 6, framed on the allele
-with its CAT gene annotation. Zoom out a few steps for the genes around it.
+Back at MHC class II, `chr6:32,510,001-32,600,000`, find the allele under
+_HLA-DRB5_: a charcoal node 1.8 kb long. Left-click it. Its details give
+`contributingHaplotype`, `NA20809#2`, and the node's menu offers **Open in
+NA20809.2**. Take it. A second linear view opens below the first, on that
+haplotype's chromosome 6, framed on the allele with its CAT gene annotation.
 
 <Video src="/media/pangenome/hprc_browse.mp4" caption="The whole route from the HPRC page: the HLA / MHC graph launch, the allele under HLA-DRB5 hovered, and the same allele opened on NA20809 haplotype 2, whose genes around it include no HLA-DRB5." />
 
 <Figure caption="The same launch in two frames. First, the MHC class II cut with the NA20809.2 allele ringed and its right-click menu open on Open in NA20809.2. Second, the view that entry opens: NA20809 haplotype 2's chromosome 6 with its CAT genes, which put HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
 
-The haplotype's CAT annotation has _HLA-DRB9_ and _HLA-DRB6_ either side of the
-allele and no _HLA-DRB5_, the gene its band covered on hg38.
+Zoom out a few steps for the genes around the allele. The haplotype has
+_HLA-DRB9_ and _HLA-DRB6_ on either side and no _HLA-DRB5_.
 
 ## See also
 
