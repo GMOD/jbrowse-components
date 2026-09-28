@@ -783,8 +783,9 @@ export function binnedMeanColumns(
     const e = ends[i]!
     for (let b = Math.floor(s / step); b * step < e; b++) {
       const w = Math.min(e, (b + 1) * step) - Math.max(s, b * step)
-      weight[base + b] += w
-      weighted[base + b] += v * w
+      const at = base + b
+      weight[at] = weight[at]! + w
+      weighted[at] = weighted[at]! + v * w
     }
   }
   let out = 0
@@ -862,10 +863,11 @@ export function orderBySection(table: Table, field: string) {
   )
   const offsets = new Uint32Array(order.length + 1)
   for (let c = 0; c < values.length; c++) {
-    offsets[sectionOfCode[c]! + 1] += perCode[c]!
+    const at = sectionOfCode[c]! + 1
+    offsets[at] = offsets[at]! + perCode[c]!
   }
   for (let s = 0; s < order.length; s++) {
-    offsets[s + 1] += offsets[s]!
+    offsets[s + 1] = offsets[s + 1]! + offsets[s]!
   }
   const next = offsets.slice(0, order.length)
   const permutation = new Uint32Array(n)
@@ -903,7 +905,7 @@ export function sectionRows(
     offsets[s + 1]!++
   }
   for (let s = 0; s < sectionCount; s++) {
-    offsets[s + 1] += offsets[s]!
+    offsets[s + 1] = offsets[s + 1]! + offsets[s]!
   }
   return { row, offsets }
 }

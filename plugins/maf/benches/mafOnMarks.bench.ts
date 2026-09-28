@@ -80,6 +80,7 @@ import {
   sectionRows,
   spanHitsInRow,
 } from '../../../packages/core/benches/columnSteps.ts'
+import { EMPTY_MAF_COVERAGE } from '../src/LinearMafDisplay/encodeMafRows.ts'
 import { placeMafRegionData } from '../src/LinearMafDisplay/placeMafRows.ts'
 import { MafWirePacker } from '../src/LinearMafGetAlignmentDataRpc/mafWirePacker.ts'
 import { buildIdentityRuns } from '../src/LinearMafRenderer/identity.ts'
@@ -88,6 +89,7 @@ import MafTabixAdapter from '../src/MafTabixAdapter/MafTabixAdapter.ts'
 import MafTabixConfigSchema from '../src/MafTabixAdapter/configSchema.ts'
 import { DEFAULT_SPEC, ensureMafTabixFixture } from './mafTabixFixture.ts'
 
+import type { MafWireRegionData } from '../src/LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { AlignmentRecord } from '../src/types.ts'
 import type { MafFixtureSpec } from './mafTabixFixture.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -191,7 +193,9 @@ const IDENTITY_STEPS: TransformStep[] = [
   },
 ]
 
-function pack(features: readonly Feature[]) {
+// The wire the MAF display places, less the coverage the worker adds beside
+// the pack: placement reads none of it.
+function pack(features: readonly Feature[]): MafWireRegionData {
   const packer = new MafWirePacker()
   for (const feature of features) {
     const alignments = feature.get('alignments') as Record<
@@ -212,7 +216,7 @@ function pack(features: readonly Feature[]) {
       })
     }
   }
-  return packer.finishBlocks()
+  return { ...packer.finishBlocks(), coverage: EMPTY_MAF_COVERAGE }
 }
 
 // One driver per arm, written out rather than shared, so no call site goes
