@@ -52,7 +52,7 @@ interface MarkRowProbe {
     number,
     { layers: { count: number; row?: Uint32Array }[] }
   >
-  renderState: { canvasHeight: number; rowCount: number }
+  renderState: { canvasHeight: number; rowHeight: number }
   valueScales: { height: number; offset: number; bandTops?: number[] }[]
 }
 
@@ -93,9 +93,9 @@ test('a multi-BigWig faceted by source bands the mark display one row per source
   expect(perRow.reduce((a, b) => a + b, 0)).toBe(layer.count)
   expect(Math.min(...perRow)).toBeGreaterThan(1000)
 
-  const { canvasHeight, rowCount } = display.renderState
-  expect(rowCount).toBe(sections.length)
-  const rowHeight = Math.floor(canvasHeight / rowCount)
+  const { canvasHeight, rowHeight } = display.renderState
+  expect(display.rowCount).toBe(sections.length)
+  expect(rowHeight).toBe(Math.floor(canvasHeight / sections.length))
   const yTop = (display.height - canvasHeight) / 2
   const [axis] = display.valueScales
   expect(axis!.height).toBe(rowHeight)
