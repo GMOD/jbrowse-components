@@ -191,6 +191,8 @@ describe('expandPhasedRows', () => {
     const haploid = expandPhasedRows({ rows, ploidy, domain })
     expect(names(diploid).slice(-2)).toEqual(['HG003 HP0', 'HG003 HP1'])
     expect(names(haploid).slice(-2)).toEqual(['HG003 HP0', 'HG003 HP1'])
+    // beside its HP1 row, HP0 is not the whole sample
+    expect(haploid.slice(-2).map(r => r.label)).toEqual([undefined, undefined])
   })
 
   test('the rows themselves while no sample expands', () => {

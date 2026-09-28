@@ -17,20 +17,19 @@ export type HaplotypeSource = ProcessedSource & { HP: number }
 
 const HAPLOTYPE_ROW_NAME = /^(.*) HP(\d+)$/
 
-// A haploid sample's one haplotype is the sample, so its row reads as the
-// sample. Only the label says so: the name stays `HP0` whatever the window's
-// ploidy, or a sample haploid on chrX non-PAR and diploid in the PAR renames
-// its row out of the arrangement on a pan.
+// A haploid sample's one row is the sample, so it reads as the sample. Only
+// the label says so: the name stays `HP0` whatever the window's ploidy, or a
+// sample haploid on chrX non-PAR and diploid in the PAR renames its row out of
+// the arrangement on a pan. `sole` is false beside any other row of the sample,
+// such as an HP1 the arrangement still names.
 function haplotypeRow(
   source: Source,
   sampleName: string,
   HP: number,
-  ploidy: number | undefined,
+  sole: boolean,
 ): HaplotypeSource {
   const row = { ...source, name: `${sampleName} HP${HP}`, sampleName, HP }
-  return ploidy === 1 && HP === 0
-    ? { ...row, label: source.label ?? sampleName }
-    : row
+  return sole ? { ...row, label: source.label ?? sampleName } : row
 }
 
 function makeHaplotypeSources(
@@ -39,7 +38,7 @@ function makeHaplotypeSources(
 ): HaplotypeSource[] {
   const sampleName = resolveSampleName(source)
   return Array.from({ length: ploidy }, (_, i) =>
-    haplotypeRow(source, sampleName, i, ploidy),
+    haplotypeRow(source, sampleName, i, ploidy === 1),
   )
 }
 
@@ -205,7 +204,12 @@ export function expandPhasedRows({
       expanded = true
       for (const HP of hps) {
         out.push(
-          haplotypeRow(row, row.sampleName, HP, ploidy?.[row.sampleName]),
+          haplotypeRow(
+            row,
+            row.sampleName,
+            HP,
+            hps.length === 1 && ploidy?.[row.sampleName] === 1,
+          ),
         )
       }
     } else {
