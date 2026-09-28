@@ -1,6 +1,6 @@
 ---
 name: maf-onto-marks
-description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. Items 1, 2 and 4 landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference with each insertion an interbase feature, ADR-189's adapter listing gives the rows the tree's order and the guide tree - then item 3's pinned, scrolling row height, and the rest stays ranked here, with the identity-through-bin gap the cells step left.
+description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. Items 1, 2 and 4 landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference with each insertion an interbase feature, ADR-189's adapter listing gives the rows the tree's order and the guide tree - then item 3's pinned, scrolling row height. A bench that evening found the Feature steps taking 8 s where the MAF display takes 0.7 at 470 species (ADR-190), so the rest waits on typed lanes, which a spike put at the MAF display's speed and Colin said to build.
 ---
 
 # The MAF display onto the mark display
@@ -45,6 +45,20 @@ file pointers to re-read.
   (`stateModel.ts` `placeMafRegionData` memo); the row table (ADR-165) is what
   the mark display would bring instead.
 
+## Measured before going further
+
+`plugins/maf/benches/mafOnMarks.bench.ts` ran the `marks_maf_cells`
+declaration against the MAF display's own path over the same fetched blocks.
+Over `Feature` objects it is too slow to replace anything, and a declared
+identity through `bin` and `aggregate mean` answers the wrong mean;
+[ADR-190](../architecture-decision-records/adr-190-the-maf-display-stays-off-the-feature-steps.md)
+records it. A bench-only spike running the same steps over typed lanes, with a
+row lookup in place of the hit index, lands at about the MAF display's speed
+and draws an exact identity:
+[a-step-that-makes-rows-writes-typed-lanes](../ideas/ready/a-step-that-makes-rows-writes-typed-lanes.md).
+Items 5 to 11 wait on that call, since each would add a layer to a path that
+already fails rule 3.
+
 ## What the mark display must gain, ranked
 
 1. ~~A way onto a MafTrack, with one feature per species per block.~~ Landed,
@@ -59,7 +73,10 @@ file pointers to re-read.
    takes) is the missing piece; sub-pixel sampling (`binBp`) and the
    cross-block flank (`rowFlank.ts`) are the other two things the MAF
    painters do that the step does not. `bin: auto`'s 1-2-5 ladder differs
-   from MAF's power-of-two `binBp`.
+   from MAF's power-of-two `binBp`. The spike's `binnedMeanColumns` is the
+   cutting `bin` and a mean weighted by bases, exact against a count off the
+   text; what it changes for a count per bin over long features is still the
+   call.
 3. ~~Per-display row geometry: a fixed px `rowHeight` with virtual scroll,
    and `rowProportion`.~~ Landed: the mark display composes `RowHeightMixin`,
    pins a row under `rows` and fits it elsewhere, and scrolls the rows past

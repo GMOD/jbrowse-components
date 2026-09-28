@@ -1,0 +1,142 @@
+{
+  "id": "maf-on-marks-cells",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "npx esbuild plugins/maf/benches/mafOnMarks.bench.ts --bundle --platform=node --format=esm --outfile=/tmp/mafOnMarks.mjs --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && node --max-old-space-size=14000 /tmp/mafOnMarks.mjs --rounds=5 --json",
+    "notes": "One region of the synthetic MAF-tabix fixture (plugins/maf/benches/mafTabixFixture.ts, divergence graded 2-20% across the species, ~4% reference gaps), fetched once: MafFeature holds its parse eagerly, so every arm times what it does with the same features. Interleaved round-robin with the order rotated each round, MIN across rounds. The MAF arms leave out the worker coverage the display always computes and encode every base where the display samples one per window below half a pixel, both in the other arms' favour. MAF display is MafWirePacker as executeMafAlignmentData feeds it, placeMafRegionData and buildMafChannels at one bp a cell; control is the same declared twice. Feature steps is the marks_maf_cells declaration as CoreGetEncodedLayers runs it: flatten over alignments keyed by species, cells, the facet on species, encodeFeatures over the span's lanes with the hit index; no hit index drops the index. Lanes is packages/core/benches/columnSteps.ts running the same steps over typed lanes with the hit index; row lookup orders the species rows ahead of cells and answers a hover from each row's start instead of the index, checked against it at 3000 random hovers. Lanes answer the Feature steps run for run, colour key and base included, checked before timing. runs counts the declared runs, insertions included, which the MAF display draws as an overlay. At 470 species the control reads 0.73x on a machine other jobs were loading, so a ratio against the MAF display resolves only to about that there; the seconds do not depend on it."
+  },
+  "columns": [
+    {
+      "key": "shape",
+      "label": "region"
+    },
+    {
+      "key": "runs",
+      "label": "runs",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "mafMs",
+      "label": "MAF display",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "featuresMs",
+      "label": "Feature steps",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "featuresNoIndexMs",
+      "label": "no hit index",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "columnsMs",
+      "label": "lanes",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "rowMajorMs",
+      "label": "lanes, row lookup",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "controlVsMaf",
+      "label": "control vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "controlMs / mafMs",
+      "align": "right"
+    },
+    {
+      "key": "featuresVsMaf",
+      "label": "Feature steps vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "featuresMs / mafMs",
+      "align": "right"
+    },
+    {
+      "key": "featuresNoIndexVsMaf",
+      "label": "no hit index vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "featuresNoIndexMs / mafMs",
+      "align": "right"
+    },
+    {
+      "key": "columnsVsMaf",
+      "label": "lanes vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "columnsMs / mafMs",
+      "align": "right"
+    },
+    {
+      "key": "rowMajorVsMaf",
+      "label": "row lookup vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "rowMajorMs / mafMs",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "shape": "26 species, 1600 blocks of 250 columns",
+        "runs": 2352118,
+        "mafMs": 248.3,
+        "controlMs": 231.5,
+        "featuresMs": 2480.1,
+        "featuresNoIndexMs": 1458.1,
+        "columnsMs": 589.1,
+        "rowMajorMs": 259
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 20000 blocks of 8 columns",
+        "runs": 1325522,
+        "mafMs": 318.7,
+        "controlMs": 322.4,
+        "featuresMs": 2117.6,
+        "featuresNoIndexMs": 1410.5,
+        "columnsMs": 402.6,
+        "rowMajorMs": 242
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 200 blocks of 250 columns",
+        "runs": 5516070,
+        "mafMs": 717.8,
+        "controlMs": 521.1,
+        "featuresMs": 8410.5,
+        "featuresNoIndexMs": 3549.9,
+        "columnsMs": 1550.4,
+        "rowMajorMs": 587
+      }
+    }
+  ]
+}

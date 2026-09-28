@@ -1,0 +1,115 @@
+{
+  "id": "maf-on-marks-identity",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "npx esbuild plugins/maf/benches/mafOnMarks.bench.ts --bundle --platform=node --format=esm --outfile=/tmp/mafOnMarks.mjs --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && node --max-old-space-size=14000 /tmp/mafOnMarks.mjs --rounds=5 --json",
+    "notes": "One region of the synthetic MAF-tabix fixture (plugins/maf/benches/mafTabixFixture.ts, divergence graded 2-20% across the species, ~4% reference gaps), fetched once: MafFeature holds its parse eagerly, so every arm times what it does with the same features. Interleaved round-robin with the order rotated each round, MIN across rounds. The MAF arms leave out the worker coverage the display always computes and encode every base where the display samples one per window below half a pixel, both in the other arms' favour. Identity per species over 64 bp bins. MAF display is the pack, the placement and buildIdentityRuns. Feature steps is what a config can declare today: bin and aggregate mean over match behind cells, where a run counts once, in the bin its start falls in. Lanes is the lane cells, then bin cutting each run at the bin edges and a mean weighted by the bases each piece puts in its bin. Error is the distance from bases matched over bases compared per species and bin, counted straight off the text; bins where the Feature steps answer no mean are left out of theirs. The lanes' error is float32 rounding of the mean, under 1e-7, and reads 0 here."
+  },
+  "columns": [
+    {
+      "key": "shape",
+      "label": "region"
+    },
+    {
+      "key": "bins",
+      "label": "bins",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "mafIdentityMs",
+      "label": "MAF display",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "featuresIdentityMs",
+      "label": "Feature steps",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "columnsIdentityMs",
+      "label": "lanes",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "featuresIdentityVsMaf",
+      "label": "Feature steps vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "featuresIdentityMs / mafIdentityMs",
+      "align": "right"
+    },
+    {
+      "key": "columnsIdentityVsMaf",
+      "label": "lanes vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "columnsIdentityMs / mafIdentityMs",
+      "align": "right"
+    },
+    {
+      "key": "featuresWorst",
+      "label": "Feature steps, worst error",
+      "format": "ratio",
+      "align": "right"
+    },
+    {
+      "key": "featuresMean",
+      "label": "Feature steps, mean error",
+      "format": "ratio",
+      "align": "right"
+    },
+    {
+      "key": "columnsWorst",
+      "label": "lanes, worst error",
+      "format": "ratio",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "shape": "26 species, 1600 blocks of 250 columns",
+        "bins": 194792,
+        "mafIdentityMs": 203.1,
+        "featuresIdentityMs": 2071.7,
+        "columnsIdentityMs": 320.6,
+        "featuresWorst": 0.984,
+        "featuresMean": 0.374,
+        "columnsWorst": 0.0
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 20000 blocks of 8 columns",
+        "bins": 81250,
+        "mafIdentityMs": 297.6,
+        "featuresIdentityMs": 2043,
+        "columnsIdentityMs": 240.5,
+        "featuresWorst": 0.386,
+        "featuresMean": 0.195,
+        "columnsWorst": 0.0
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 200 blocks of 250 columns",
+        "bins": 440390,
+        "mafIdentityMs": 430.1,
+        "featuresIdentityMs": 6404.9,
+        "columnsIdentityMs": 859.9,
+        "featuresWorst": 0.984,
+        "featuresMean": 0.378,
+        "columnsWorst": 0.0
+      }
+    }
+  ]
+}
