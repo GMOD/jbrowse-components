@@ -186,18 +186,18 @@ and cleaner.
 ## Ask to be taken there
 
 ```text
-Take the synteny view to the 2R region, with the gene tracks on.
+Take the synteny view to the 2R region.
 ```
 
 Simulans's row navigates to `chr2R:1-2,400,000`, mauritiana's to
 `chr2R:500,000-3,800,000`.
 
-<Figure caption="The 2R region on both rows with the gene tracks on. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
+<Figure caption="The 2R region on both rows. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
 
 Then take it to the first of the two X regions, `chrX:8,100,000-8,950,000` over
 `chrX:8,330,000-9,180,000`, where the same event reads cleanly:
 
-<Figure caption="The X region at the same settings. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
+<Figure caption="The X region in the same view. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
 
 ## What you had to tell it
 

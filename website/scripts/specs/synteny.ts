@@ -1971,7 +1971,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    viewportHeight: 1040,
+    viewportHeight: 1100,
   },
 
   // The same accessions as lanes under Col-0's own coordinates: each lane placed

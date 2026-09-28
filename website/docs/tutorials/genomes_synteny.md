@@ -174,7 +174,7 @@ open the strain lanes at that gene:
 - in the track menu, **Lanes → Choose lanes...**, type `house mouse` into the
   filter and tick the strains, the C57BL/6J T2T assembly among them
 
-<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies its star holds, the C57BL/6J T2T assembly first. Every other lane opens a gap under the middle of the gene, the sequence the reference strain lacks, and the T2T assembly of that same strain runs straight." />
+<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over Mus strain assemblies, the C57BL/6J T2T assembly first. Every other lane opens a gap under the middle of the gene, the sequence the reference strain lacks, and the T2T assembly of that same strain runs straight." />
 
 ## One person's two haplotypes at 17q21.31
 

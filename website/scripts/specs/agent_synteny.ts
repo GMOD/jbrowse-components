@@ -33,12 +33,13 @@ function flySynteny(
   sim: string,
   mau: string,
   extra: Record<string, unknown> = {},
+  withGenes = false,
 ) {
   return {
     type: 'LinearSyntenyView',
     views: [
-      { assembly: SIM, loc: sim, tracks: [SIM_GENES] },
-      { assembly: MAU, loc: mau, tracks: [MAU_GENES] },
+      { assembly: SIM, loc: sim, tracks: withGenes ? [SIM_GENES] : [] },
+      { assembly: MAU, loc: mau, tracks: withGenes ? [MAU_GENES] : [] },
     ],
     tracks: [[PIF]],
     levelHeights: [200],
@@ -76,6 +77,7 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
           'chr3R:16,090,000-16,120,000',
           'chr3R:16,826,000-16,856,000',
           { levelHeights: [140] },
+          true,
         ),
       ],
     }),

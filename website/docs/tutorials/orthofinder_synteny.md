@@ -128,7 +128,7 @@ The `drosophila` set is _D. melanogaster_, close relatives _D. simulans_ and _D.
 yakuba_, and the distant _D. pseudoobscura_ and _D. virilis_. Flies keep their
 chromosome arms (Muller elements) but rewrite gene order inside them.
 
-<Figure caption="Five Drosophila genomes stacked on OrthoFinder orthogroups: melanogaster, simulans, yakuba, pseudoobscura, virilis, on one bp/px. Each melanogaster arm's colour marks a single chromosome in every row below, and the bundles cross themselves where inversions have accumulated." src="/img/orthofinder_synteny/drosophila.png" />
+<Figure caption="Five Drosophila genomes stacked on OrthoFinder orthogroups: melanogaster, simulans, yakuba, pseudoobscura, virilis, on one bp/px. Each gutter colors its ribbons by chromosome on its own, so a color matches across two adjacent rows and does not carry down the stack. The bundles cross themselves where inversions have accumulated." src="/img/orthofinder_synteny/drosophila.png" />
 
 ### One locus, one lane per fly
 
