@@ -18,7 +18,7 @@ box this was taken on swings wall-clock 2x between runs, which is why everything
 here comparing two implementations is an interleaved ratio.
 
 ```
-  parse (scanMafTabixEntry over the column)      26 ms
+  parse (an indexOf scan of the column)         26 ms
   pack (reserve + MafWirePacker)                 31 ms
   computeMafCoverage                             89 ms   <- half the worker
   computeSNPCoverage                             27 ms

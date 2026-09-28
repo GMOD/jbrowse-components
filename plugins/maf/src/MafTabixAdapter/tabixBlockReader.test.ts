@@ -1,7 +1,13 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { of } from 'rxjs'
+import { firstValueFrom, of } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
 import { MafRegionSink } from '../LinearMafGetAlignmentDataRpc/mafRegionSink.ts'
+import MafFeature from '../MafFeature.ts'
+import {
+  featureView,
+  legacyMafTabixFeatures,
+} from '../util/legacyMafParse.fixture.ts'
 import { featureBlocks } from '../util/mafBlockSink.ts'
 import { mafFeatureTable } from '../util/mafFeatureTable.ts'
 import MafTabixAdapter from './MafTabixAdapter.ts'
@@ -11,7 +17,7 @@ import type { MafAdapterOptions } from '../types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FeatureTable } from '@jbrowse/core/util/featureTable'
 
-function adapterOver(lines: string[], refAssemblyName = '') {
+function bedOver(lines: string[]) {
   const features = lines.map(
     (field5, i) =>
       new SimpleFeature({
@@ -22,19 +28,42 @@ function adapterOver(lines: string[], refAssemblyName = '') {
         field5,
       }),
   )
+  return {
+    getFeatures: () => of(...features),
+  } as unknown as BaseFeatureDataAdapter
+}
+
+function adapterOver(lines: string[], refAssemblyName = '') {
+  const bed = bedOver(lines)
   return new MafTabixAdapter(
     MafTabixConfigSchema.create({ refAssemblyName }),
     () =>
       Promise.resolve({
-        dataAdapter: {
-          getFeatures: () => of(...features),
-        } as unknown as BaseFeatureDataAdapter,
+        dataAdapter: bed,
         sessionIds: new Set<string>(),
       }),
   )
 }
 
 const region = { refName: 'chr1', start: 0, end: 1000, assemblyName: 'hg38' }
+
+async function featuresBothWays(
+  lines: string[],
+  opts?: MafAdapterOptions,
+  refAssemblyName = '',
+) {
+  const rebuilt = await firstValueFrom(
+    adapterOver(lines, refAssemblyName)
+      .getFeatures(region, opts)
+      .pipe(toArray()),
+  )
+  const legacy = await firstValueFrom(
+    legacyMafTabixFeatures(bedOver(lines), region, opts, refAssemblyName).pipe(
+      toArray(),
+    ),
+  )
+  return { rebuilt, legacy }
+}
 
 async function packedBothWays(
   adapter: MafTabixAdapter,
@@ -103,6 +132,14 @@ const LINES = [
     'panTro6.chr3:+52:4:+::AAAT',
     `rn6.chr1:${'9'.repeat(18)}:4:+:5000:AATT`,
   ].join(','),
+  // a truncated entry is not completed from the next, a colon stays in its
+  // sequence, a name with no dot is its whole token
+  [
+    e('hg38.chr1', 114, '+', 'CCGG'),
+    'mm10.chr9:100:6,panTro6.chr3:203343:6:-:273340:gaattc',
+    'rn6.chr1:100:6:+:15072434:GA:TTC',
+    'nodot:1:2:+:9:AC',
+  ].join(','),
   // a non-ASCII row, long and short
   [
     e('hg38.chr1', 116, '+', 'ACéT'),
@@ -159,4 +196,56 @@ test("the adapter's table answers the ids and JSON its MafFeatures do", async ()
   const samples = [{ id: 'mm10', label: 'mm10' }]
   const filtered = await tablesBothWays(adapter, { samples })
   expect(filtered.direct).toEqual(filtered.features)
+})
+
+describe('getFeatures answers the MafFeatures the old parse did', () => {
+  const samples = (...ids: string[]) => ids.map(id => ({ id, label: id }))
+  test.each([
+    ['every species', undefined, ''],
+    ['a sample set', { samples: samples('hg38', 'mm10', '3', 'rn6') }, ''],
+    ['a filtered-out reference', { samples: samples('mm10') }, ''],
+    ['refAssemblyName', undefined, 'panTro6'],
+    ['an absent refAssemblyName', undefined, 'galGal6'],
+  ] as const)('%s', async (_, opts, refAssemblyName) => {
+    const { rebuilt, legacy } = await featuresBothWays(
+      LINES,
+      opts,
+      refAssemblyName,
+    )
+    expect(rebuilt).toHaveLength(LINES.length)
+    expect(rebuilt.every(f => f instanceof MafFeature)).toBe(true)
+    expect(featureView(rebuilt)).toStrictEqual(featureView(legacy))
+  })
+
+  test('each entry keeps its own fields', async () => {
+    const { rebuilt } = await featuresBothWays(LINES)
+    const [first, twice, indexed, malformed, truncated] = rebuilt.map(
+      f => f.get('alignments') as Record<string, unknown>,
+    )
+    expect(first!.panTro6).toStrictEqual({
+      chr: 'chr3',
+      srcStart: 40,
+      seq: 'ACTT',
+      strand: -1,
+      srcSize: 5000,
+    })
+    expect(Object.keys(twice!)).toEqual(['hg38', 'mm10', 'panTro6'])
+    expect(twice!.mm10).toMatchObject({ chr: 'chr2', srcStart: 99 })
+    expect(Object.keys(indexed!)).toEqual(['3', '12', 'hg38', 'panTro6'])
+    expect(Object.keys(malformed!)).toEqual(['hg38', 'panTro6', 'rn6'])
+    expect(malformed!.panTro6).toMatchObject({ srcStart: 52, srcSize: NaN })
+    expect(truncated!.mm10).toBeUndefined()
+    expect(truncated!.panTro6).toMatchObject({ srcStart: 203343 })
+    expect(truncated!.rn6).toMatchObject({ seq: 'GA:TTC' })
+    expect(truncated!.nodot).toMatchObject({ seq: 'AC' })
+  })
+
+  test('the reference row is the named one, else the first entry', async () => {
+    const seqs = async (opts?: MafAdapterOptions, ref = '') =>
+      (await featuresBothWays(LINES, opts, ref)).rebuilt.map(f => f.get('seq'))
+    expect((await seqs())[0]).toBe('ACGT')
+    expect((await seqs(undefined, 'panTro6'))[0]).toBe('ACTT')
+    expect((await seqs({ samples: samples('mm10') }))[0]).toBe('ACGT')
+    expect((await seqs()).at(-1)).toBe('')
+  })
 })

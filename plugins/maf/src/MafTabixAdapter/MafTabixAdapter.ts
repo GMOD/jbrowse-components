@@ -1,21 +1,13 @@
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  ObservableCreate,
-  subscribeToObservable,
-} from '@jbrowse/core/util/rxjs'
+import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
-import MafFeature from '../MafFeature.ts'
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
 import { buildSampleFilter } from '../util/getSamples.ts'
 import { loadSubAdapter } from '../util/loadSubAdapter.ts'
-import {
-  makeSourceResolver,
-  scanMafTabixEntry,
-  selectReferenceSequenceString,
-} from '../util/parseAssemblyName.ts'
+import { mafBlockFeatures } from '../util/mafFeatureSink.ts'
 import { MafTabixBlockReader } from './tabixBlockReader.ts'
 
-import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
+import type { MafAdapterOptions } from '../types.ts'
 import type { SubAdapterLoader } from '../util/loadSubAdapter.ts'
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { MafTabixAdapterConfig } from './configSchema.ts'
@@ -70,67 +62,11 @@ export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfi
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
-    return ObservableCreate<Feature>(async observer => {
-      const { adapter } = await this.configure(opts)
-      const refAssemblyName = this.getConf('refAssemblyName')
-      const resolver = makeSourceResolver(buildSampleFilter(opts))
-      // Reads the reference entry when the sample filter drops it: the
-      // reference row still positions the block, as on the other three paths.
-      const anySource = makeSourceResolver()
-
-      await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
-        const encoded = alignmentColumn(feature)
-        const alignments: Record<string, AlignmentRecord> = {}
-        // Per stanza, not per query: MAF puts the reference first in every
-        // stanza, and a stanza whose reference resolves to nothing has no
-        // genomic extent and vanishes from the rows and from coverage.
-        let firstEntrySeq: string | undefined
-
-        // Walked with `indexOf` rather than `split(',')`. This column holds
-        // every species' bases for the block, so it is nearly the whole line,
-        // and splitting it built an array of one string per species on every
-        // block — tens of thousands of throwaway strings per fetch, whose only
-        // surviving content is the `seq` each one ends with. `scanMafTabixEntry`
-        // slices out just that.
-        for (let from = 0, l = encoded.length; from < l;) {
-          let to = encoded.indexOf(',', from)
-          if (to === -1) {
-            to = l
-          }
-          const entry = scanMafTabixEntry(encoded, from, to, resolver.resolve)
-          if (entry) {
-            const { assemblyName, chr, srcStart, strand, srcSize, seq } = entry
-            alignments[assemblyName] = { chr, srcStart, strand, srcSize, seq }
-          }
-          if (from === 0) {
-            firstEntrySeq = (
-              entry ?? scanMafTabixEntry(encoded, 0, to, anySource.resolve)
-            )?.seq
-          }
-          from = to + 1
-        }
-
-        observer.next(
-          new MafFeature(
-            feature.id(),
-            feature.get('start'),
-            feature.get('end'),
-            feature.get('refName'),
-            0, // strand determined per-alignment
-            alignments,
-            selectReferenceSequenceString(
-              alignments,
-              refAssemblyName,
-              query.assemblyName,
-              firstEntrySeq,
-            ) ?? '',
-          ),
-        )
-      })
-
-      resolver.reportUnmatched()
-      observer.complete()
-    }, opts?.signal)
+    return mafBlockFeatures(
+      query.refName,
+      sink => this.readBlocks(query, sink, opts),
+      opts?.signal,
+    )
   }
 
   override async readBlocks(

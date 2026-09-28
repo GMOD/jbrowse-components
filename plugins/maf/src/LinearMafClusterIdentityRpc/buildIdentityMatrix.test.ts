@@ -2,6 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { buildIdentityMatrix } from './buildIdentityMatrix.ts'
 
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // One block, one row per genome, hand-written so each assertion below names the
@@ -40,7 +41,7 @@ function fakePluginManager(features: Feature[], bytes = 0) {
 
 // getAdapter is reached through loadMafSamplesAdapter, so the module is mocked
 // rather than the adapter constructed: the builder's contract is with
-// `getFeatures` + `getSamples` and nothing else.
+// `readBlocks` + `getSamples` and nothing else.
 jest.mock('../util/loadMafSamplesAdapter.ts', () => ({
   loadMafSamplesAdapter: (pluginManager: {
     features: Feature[]
@@ -50,17 +51,24 @@ jest.mock('../util/loadMafSamplesAdapter.ts', () => ({
       getRegionByteSize: () => Promise.resolve(pluginManager.bytes),
       // filtered by region, so a two-region case sees only its own blocks —
       // which is what the per-region column segments are about
-      getFeatures: (region: { refName: string; start: number; end: number }) =>
+      readBlocks: (
+        region: { refName: string; start: number; end: number },
+        sink: MafBlockSink,
+      ) =>
         // required inside the factory: jest hoists this above the imports, so a
         // module referenced from the enclosing scope is not defined yet
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require('rxjs').from(
-          pluginManager.features.filter(
-            f =>
-              f.get('refName') === region.refName &&
-              f.get('start') < region.end &&
-              f.get('end') > region.start,
+        require('../util/mafBlockSink.ts').featureBlocks(
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          require('rxjs').from(
+            pluginManager.features.filter(
+              f =>
+                f.get('refName') === region.refName &&
+                f.get('start') < region.end &&
+                f.get('end') > region.start,
+            ),
           ),
+          sink,
         ),
     },
     samples: [],

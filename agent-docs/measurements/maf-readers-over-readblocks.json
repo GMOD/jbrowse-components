@@ -1,0 +1,79 @@
+{
+  "id": "maf-readers-over-readblocks",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "npx esbuild plugins/maf/benches/mafOnMarks.bench.ts --bundle --platform=node --format=esm --outfile=/tmp/mafOnMarks.mjs --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && for a in tabix bigmaf; do for s in 1 2; do node --expose-gc --max-old-space-size=12000 /tmp/mafOnMarks.mjs --readers --adapter=$a --shape=$s --rounds=20 --json; done; done",
+    "notes": "On ada (24 cores, load 14-17), one process per shape and adapter, MIN of 20 rounds, a collection before each arm, interleaved round-robin with the order rotated. Every arm reads the region off the adapter over a warm chunk cache, parse included. getFeatures: legacy is the parse getFeatures ran before ADR-199 (legacyMafParse.fixture.ts), control the same declared again, rebuilt is readBlocks into MafFeatureSink; each arm collects the MafFeatures. Identity: legacy walks the old parse's MafFeatures as buildIdentityMatrix did, control the same again, sink is readIdentityMatrix through readBlocks, over every species of the region. The rebuilt MafFeatures and the sink's matrix are checked equal to the legacy arms' before timing. The controls sit 0.96-1.07x from their arm at this load: two reruns of the bigMaf 470-species getFeatures arms at 30 rounds put rebuilt at 1.07x and 0.90x and control at 1.09x and 0.96x, so that row's 1.13x is inside the noise."
+  },
+  "columns": [
+    { "key": "shape", "label": "region" },
+    { "key": "adapter", "label": "adapter" },
+    { "key": "blocks", "label": "blocks", "format": "compact", "align": "right" },
+    { "key": "featuresLegacyMs", "label": "getFeatures, old parse", "format": "ms", "precision": 1, "align": "right" },
+    { "key": "featuresControlMs", "label": "control", "format": "ms", "precision": 1, "align": "right" },
+    { "key": "featuresRebuiltMs", "label": "getFeatures, over readBlocks", "format": "ms", "precision": 1, "align": "right" },
+    { "key": "identityLegacyMs", "label": "matrix, over MafFeatures", "format": "ms", "precision": 1, "align": "right" },
+    { "key": "identityControlMs", "label": "control", "format": "ms", "precision": 1, "align": "right" },
+    { "key": "identitySinkMs", "label": "matrix, through its sink", "format": "ms", "precision": 1, "align": "right" },
+    { "key": "featuresControlVsLegacy", "label": "getFeatures control vs old", "format": "x", "precision": 2, "derived": "featuresControlMs / featuresLegacyMs", "align": "right" },
+    { "key": "featuresRebuiltVsLegacy", "label": "getFeatures rebuilt vs old", "format": "x", "precision": 2, "derived": "featuresRebuiltMs / featuresLegacyMs", "align": "right" },
+    { "key": "identityControlVsLegacy", "label": "matrix control vs old", "format": "x", "precision": 2, "derived": "identityControlMs / identityLegacyMs", "align": "right" },
+    { "key": "identitySinkVsLegacy", "label": "matrix sink vs old", "format": "x", "precision": 2, "derived": "identitySinkMs / identityLegacyMs", "align": "right" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "shape": "26 species, 20000 blocks of 8 columns",
+        "adapter": "MafTabixAdapter",
+        "blocks": 20000,
+        "featuresLegacyMs": 187.5,
+        "featuresControlMs": 196.2,
+        "featuresRebuiltMs": 163,
+        "identityLegacyMs": 201.5,
+        "identityControlMs": 194.7,
+        "identitySinkMs": 123.8
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 20000 blocks of 8 columns",
+        "adapter": "BigMafAdapter",
+        "blocks": 20000,
+        "featuresLegacyMs": 334.3,
+        "featuresControlMs": 337.2,
+        "featuresRebuiltMs": 324.3,
+        "identityLegacyMs": 328.8,
+        "identityControlMs": 322.7,
+        "identitySinkMs": 277.6
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 200 blocks of 250 columns",
+        "adapter": "MafTabixAdapter",
+        "blocks": 200,
+        "featuresLegacyMs": 43.3,
+        "featuresControlMs": 43,
+        "featuresRebuiltMs": 38,
+        "identityLegacyMs": 178.1,
+        "identityControlMs": 175.8,
+        "identitySinkMs": 158.4
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 200 blocks of 250 columns",
+        "adapter": "BigMafAdapter",
+        "blocks": 200,
+        "featuresLegacyMs": 104.5,
+        "featuresControlMs": 111.3,
+        "featuresRebuiltMs": 118.6,
+        "identityLegacyMs": 239.1,
+        "identityControlMs": 245,
+        "identitySinkMs": 223.6
+      }
+    }
+  ]
+}
