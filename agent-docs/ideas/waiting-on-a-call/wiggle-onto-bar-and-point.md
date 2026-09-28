@@ -1,6 +1,6 @@
 ---
 name: wiggle-onto-bar-and-point
-description: Move wiggle's xyplot and scatter onto render-core's bar and point marks. The line (ADR-184) and the pivot as a shader-side threshold over the plotted value (ADR-185) landed 2026-09-28. Two blockers remain — markColor.slang has no symlog, and wiggle holds one colour and one row per source where bar and point read both per instance — and the call is whether a layer may carry a per-source constant or wiggle fills constant arrays at pack time. Sized at 7-10 days.
+description: Move wiggle's xyplot and scatter onto render-core's bar and point marks. The line (ADR-184) and the pivot as a shader-side threshold over the plotted value (ADR-185) landed 2026-09-28, and a constant colour rides as one number on the layer (ADR-198). Two blockers remain — markColor.slang has no symlog, and wiggle holds one row per source where bar and point read a row lane per instance — and the call left is whether `row` may ride as a per-layer constant the way colour now does. Sized at 7-10 days.
 ---
 
 # Wiggle's xyplot and scatter onto `bar` and `point`
@@ -23,16 +23,24 @@ nothing. The density heatmap is a `span` under a colour scale (ADR-113's
 ## What is still real
 
 - `markColor.slang` has no symlog.
-- Wiggle holds one colour and one row per source where `bar` and `point` read
-  both per instance. ADR-165 stage 2's row table already gives them a per-row
+- Wiggle holds one row per source where `bar` and `point` read a `row` lane
+  per instance. ADR-165 stage 2's row table already gives them a per-row
   colour.
 
 ## The call
 
 Whether a layer may carry a per-source constant, or wiggle fills constant
-arrays at pack time. A bench decides the cost of the second.
+arrays at pack time. For colour it is answered:
+[ADR-198](../../architecture-decision-records/adr-198-a-constant-colour-rides-as-a-scalar.md)
+lets `EncodedChannels.color` be one number, which the GPU pack expands for the
+pack alone and Canvas2D expands once, so a constant-colour bar holds wiggle's
+12 bytes a feature. `row` is the same question one lane over: a multi-wiggle
+source is one layer standing in one row, and a `row` lane repeats that number
+per instance (ADR-152's third condition). The same union, `Uint32Array |
+number` read through a `rowAt`, would answer it the same way; `rowLane`
+already fills zeros at pack time for a layer with none.
 [wiggle-instance-records-carry-per-row-constants](../ready/wiggle-instance-records-carry-per-row-constants.md)
-measures the same per-row constants.
+measures the same per-row constants from the GPU side.
 
 ## First step once answered
 

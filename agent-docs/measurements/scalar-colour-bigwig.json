@@ -1,0 +1,120 @@
+{
+  "id": "scalar-colour-bigwig",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node --experimental-transform-types plugins/marks/benches/bigwigPaths.bench.ts --file=HG008_log2ratio.500bp.bw --refName=chr1 --screenPx=400000 --zooms=600,2500 --rounds=41 --json --base=7660bce293, five runs",
+    "notes": "On ada, over a 54 MB 500 bp-bin BigWig (a copy-number log2 ratio from the GIAB HG008 cancer set), one 400,000 px screen of chr1 at 600 and 2500 bp/px; bbi's block cache is warm, so each arm is a refetch over held blocks plus what its RPC executor does. Wiggle is getFeatureArraysMulti and processFeaturesFromArrays, control the same through a second driver; lane is getFeatureTable and packages/core's encodeFeatures extracted at 7660bce293, which fills a colour lane for the bar's default colour; scalar is the same table through the working tree's encodeFeatures, which answers the colour as one number. The bar asks for y, color and colorValue and no hit index. Arms interleaved with the order rotated each round, MIN across 41 rounds and then across five runs; x, x2, y and each instance's colour checked equal across the two encodes before timing. A memory-heavy job on 19 of the box's 24 cores (load average 17-20) ran throughout; control read 0.96-1.01x wiggle per run at the raw tier, and scalar 0.88-0.98x lane. An in-process A/B of the two encodes on a quieter box (load falling from 17 to 7) read them level at the raw tier, 1.12x wiggle each, with the encode alone at 2.4-2.5 ms scalar against 2.6-3.1 ms lane beside wiggle's 0.8 ms pack: read the lane-against-scalar gap in these rows as what the busy box shows, not as the change's size. Bytes are the unique buffers under each payload's arrays over its rows: wiggle's interleaved positions and scores, and at a summary tier its minimum and maximum too."
+  },
+  "columns": [
+    {
+      "key": "tier",
+      "label": "tier"
+    },
+    {
+      "key": "rows",
+      "label": "rows",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "wiggleMs",
+      "label": "wiggle",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "baseMs",
+      "label": "lane",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "headMs",
+      "label": "scalar",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlVsWiggle",
+      "label": "control vs wiggle",
+      "format": "x",
+      "precision": 2,
+      "derived": "controlMs / wiggleMs",
+      "align": "right"
+    },
+    {
+      "key": "baseVsWiggle",
+      "label": "lane vs wiggle",
+      "format": "x",
+      "precision": 2,
+      "derived": "baseMs / wiggleMs",
+      "align": "right"
+    },
+    {
+      "key": "headVsWiggle",
+      "label": "scalar vs wiggle",
+      "format": "x",
+      "precision": 2,
+      "derived": "headMs / wiggleMs",
+      "align": "right"
+    },
+    {
+      "key": "wiggleBytes",
+      "label": "wiggle B/row",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "baseBytes",
+      "label": "lane B/row",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "headBytes",
+      "label": "scalar B/row",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "tier": "raw",
+        "rows": 441186,
+        "wiggleMs": 19.15,
+        "controlMs": 19.22,
+        "baseMs": 22.08,
+        "headMs": 20.84,
+        "wiggleBytes": 12,
+        "baseBytes": 16,
+        "headBytes": 12
+      }
+    },
+    {
+      "values": {
+        "tier": "2048 (synthetic)",
+        "rows": 112138,
+        "wiggleMs": 28.75,
+        "controlMs": 28.89,
+        "baseMs": 29.32,
+        "headMs": 28.88,
+        "wiggleBytes": 20,
+        "baseBytes": 16,
+        "headBytes": 12
+      }
+    }
+  ]
+}

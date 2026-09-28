@@ -131,6 +131,18 @@ and the display finds it there (ADR-196). A `jexl` instance is likewise passed o
 by a caller with a `jexl:` channel to compile; every other channel is a
 field name or a reader.
 
+**A constant colour is one number, not a lane.** Where the colour is a CSS
+colour, the default included, `encodeFeatures` answers `color` as the packed
+ABGR itself, and `encodedChannelTransferables` lists no buffer for it; a
+categorical, threshold, ramp or `jexl:` colour stays a lane even where every
+instance takes one colour. `colorAt` reads either spelling, beside
+`featureIndexAt`, and a caller that indexes `color` directly is a type error
+under the union. Nothing downstream holds the expanded lane: the GPU pack
+fills one for the pack alone (`colorBits`), and Canvas2D expands it once and
+keeps it on the payload as it keeps a ramp's bake (`paintColors`). The
+instance record is unchanged, so the shaders never learn the difference
+([ADR-198](../architecture-decision-records/adr-198-a-constant-colour-rides-as-a-scalar.md)).
+
 **The encoder fills a lane at a time.** One pass admits the rows over `x`,
 `x2` and `y` alone, straight off the lanes where they are lanes, and none runs
 where all three hold whole numbers; every other lane is its own loop over the

@@ -211,3 +211,19 @@ shape questions rather than byte questions. Leave them and the mark grammar
 draws a thousand-source multi-wiggle at two thirds of wiggle's worker time while
 shipping and holding two thirds more bytes than wiggle does, which is the trade
 ADR-127 already declined once.
+
+## Amended 2026-09-28: the first two conditions are met
+
+[ADR-193](adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)
+met the first: `featureIndex` is absent where it is the identity.
+[ADR-198](adr-198-a-constant-colour-rides-as-a-scalar.md) meets the second: a
+constant colour is one number on the layer, expanded for the GPU pack alone and
+once for Canvas2D, so a bar over a BigWig's raw rows holds
+12<!--m:scalar-colour-bigwig.raw.headBytes--> bytes a feature, wiggle's own.
+The time sits on the line over the same rows rather than under it: the table
+arm runs at 1.09x<!--m:scalar-colour-bigwig.raw.headVsWiggle--> wiggle there,
+and a quieter A/B read it level with the lane's 1.12x; what remains is the
+encode's copy of the positions and its admit pass over `y`. Two conditions remain: a multi-wiggle's `row` as a
+per-layer constant, the question ADR-198 answered for colour
+([wiggle-onto-bar-and-point](../ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md)),
+and a `pileup` kernel that sorts without a comparator.
