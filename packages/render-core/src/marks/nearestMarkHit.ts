@@ -173,8 +173,10 @@ class ReverseRange implements Iterable<number>, Iterator<number> {
  * shape with no rows — the bands starting `rowOffsetPx` down, as the shapes
  * place them. An end within reach of a band edge opens to infinity, where an
  * out-of-domain value clamps, so a cursor near the seam reaches the
- * neighbouring band too. A point passes its `insetPx`; a bar passes its
- * `origin`, and its window opens away from the origin on the cursor's side.
+ * neighbouring band too, and so does one within `edgePx` of it, where a bar's
+ * clip strip stands. A point passes its `insetPx`; a bar passes its `origin`,
+ * and its window opens away from the origin on the cursor's side, or both
+ * ways where the radius reaches the origin, which every bar stands on.
  */
 export function valueWindow(
   yPx: number,
@@ -183,10 +185,11 @@ export function valueWindow(
   scale: RowParams &
     MarkValueScale & {
       insetPx?: number
+      edgePx?: number
       origin?: number
     },
 ): [number, number] {
-  const { domain, insetPx = 0, origin } = scale
+  const { domain, insetPx = 0, edgePx = 0, origin } = scale
   const { valueScaleType, valueSymlogConstant } = valueScaleUniforms(scale)
   const height = scale.rowHeight ?? canvasHeight
   const offset = scale.rowOffsetPx ?? 0
@@ -210,17 +213,21 @@ export function valueWindow(
         valueSymlogConstant,
       )
     const lo =
-      yPx + radiusPx >= top + height - inset
+      yPx + radiusPx >= top + height - inset - edgePx
         ? -Infinity
         : valueAt(yPx + radiusPx)
     const hi =
-      yPx - radiusPx <= top + inset ? Infinity : valueAt(yPx - radiusPx)
+      yPx - radiusPx <= top + inset + edgePx
+        ? Infinity
+        : valueAt(yPx - radiusPx)
     const [bandMin, bandMax] =
       origin === undefined
         ? [lo, hi]
-        : valueAt(yPx) >= origin
+        : lo > origin
           ? [lo, Infinity]
-          : [-Infinity, hi]
+          : hi < origin
+            ? [-Infinity, hi]
+            : [-Infinity, Infinity]
     valueMin = Math.min(valueMin, bandMin)
     valueMax = Math.max(valueMax, bandMax)
   }

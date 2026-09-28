@@ -272,8 +272,8 @@ const BIN: TransformStep[] = [
   { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
 ]
 const BAR: LaneName[] = ['y', 'color']
-// A span asked main's worker for the hit index; since the row lookup it asks
-// for none, and the display finds a hovered span by its row.
+// A span (ADR-192) and a bar (ADR-196) asked the worker for the hit index; the
+// display now finds either by its row, so the head arm asks for none.
 const SPAN: LaneName[] = ['row', 'color', 'index']
 const SPAN_BY_ROW: LaneName[] = ['row', 'color']
 
@@ -286,6 +286,7 @@ const scenarios: Scenario[] = [
     steps: [],
     encoding: { y: 'score', color: 'red' },
     lanes: [...BAR, 'index'],
+    headLanes: BAR,
   },
   {
     name: 'encode, categorical colour',

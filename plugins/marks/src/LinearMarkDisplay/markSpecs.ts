@@ -32,8 +32,10 @@ export interface MarkSpec {
   /**
    * How the mark answers a hover: `index` searches a spatial index the worker
    * builds over its instances, `rows` finds them by the row they stand in and
-   * their bp (a span only ever stands in its own row), and `false` answers
-   * none. Only `index` asks the worker for a lane.
+   * their bp, and `false` answers none. Only `index` asks the worker for a
+   * lane. A mark standing between `x` and `x2` in one row answers by rows; a
+   * point keeps the index, since a scatter crowds a bp window with values the
+   * index prunes, and a link spans rows.
    */
   readonly hit: 'index' | 'rows' | false
   /**
@@ -64,7 +66,7 @@ export const MARK_SPECS = {
     channels: ['y', 'row', 'color'],
     value: 'required',
     ramp: 'display',
-    hit: 'index',
+    hit: 'rows',
   },
   point: {
     channels: ['y', 'row', 'color', 'shape'],
@@ -77,14 +79,14 @@ export const MARK_SPECS = {
     channels: ['y', 'row', 'color'],
     value: 'required',
     ramp: 'display',
-    hit: 'index',
+    hit: 'rows',
     size: 'constant',
   },
   line: {
     channels: ['y', 'row', 'color'],
     value: 'required',
     ramp: 'display',
-    hit: 'index',
+    hit: 'rows',
     size: 'constant',
   },
   span: {
@@ -123,6 +125,11 @@ export function plotsValue(type: MarkType) {
   return specOf(type).value !== 'none'
 }
 
+/** Whether a mark type answers a hover through the hit index the worker builds. */
+export function hitsByIndex(type: MarkType) {
+  return specOf(type).hit === 'index'
+}
+
 /** Whether a mark type's ramp colour resolves per region, in the worker. */
 export function rampResolvesPerRegion(type: MarkType) {
   return specOf(type).ramp === 'worker'
@@ -145,6 +152,6 @@ export function markLanes(type: MarkType): MarkLane[] {
           : [channel],
     ),
     ...(spec.farFoot ? (['x2Ref'] as const) : []),
-    ...(spec.hit === 'index' ? (['index'] as const) : []),
+    ...(hitsByIndex(type) ? (['index'] as const) : []),
   ]
 }

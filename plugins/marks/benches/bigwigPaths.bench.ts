@@ -4,16 +4,19 @@ import { resolve } from 'node:path'
 // both (ADR-125), and how far a binned `mean` over a summary tier sits from
 // the raw section it summarises.
 //
-//   node plugins/marks/benches/bigwigPaths.bench.ts
-//   node plugins/marks/benches/bigwigPaths.bench.ts --file=/path/to/big.bw --refName=chr2 --rounds=9
+//   node --experimental-transform-types plugins/marks/benches/bigwigPaths.bench.ts
+//   node --experimental-transform-types plugins/marks/benches/bigwigPaths.bench.ts --file=/path/to/big.bw --refName=chr2 --rounds=9
+//
+// Transform types rather than strip them: the hover check reaches render-core's
+// marks barrel, whose line mark declares a parameter property.
 //
 // Flags: --file (default test_data/volvox/volvox_microarray.bw), --refName
 // (default the header's first), --start (default 0), --screenPx (default
 // 1500: each zoom fetches one screen of that width from --start, clamped to
 // the contig, which is what a display's region fetch is), --zooms=<bp/px,...>
 // (default one zoom inside each tier of the file, the raw section included),
-// --rounds (default 7), --no-index (the marks arms without the hit index a
-// bar asks for, which wiggle's hover does without), --json.
+// --rounds (default 7), --index (the marks arms with the hit index a bar
+// asked for before ADR-196), --json.
 //
 // Six arms per zoom, interleaved round-robin, MIN across rounds
 // (agent-docs/reference/BENCHMARKING.md), each a fetch plus what the RPC
@@ -38,6 +41,13 @@ import { resolve } from 'node:path'
 // marks arm's x/x2/y before any time is believed, since both are supposed to
 // be the same tier rows.
 //
+// The hover: over the table arm's bars, the display's first hover builds
+// `rowSpanIndex` on the main thread, timed beside the Flatbush `hitIndexOf`
+// builds over the same lanes, which a bar asked the worker for before ADR-196.
+// `findMarkHit` by rows must answer what it answers through that Flatbush at
+// 5000 random hovers over the screen, and the mean time of one hover each way
+// prints beside it.
+//
 // The error rows: for a summary tier, `aggregate: mean` over `bin: auto` is
 // a mean of tier means, unweighted, since bbi exports no validCnt. Against
 // the raw section's coverage-weighted mean over the same bins, the bench
@@ -49,17 +59,35 @@ import { performance } from 'node:perf_hooks'
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import createJexlInstance from '@jbrowse/core/util/jexl'
-import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
+import { encodeFeatures, hitIndexOf } from '@jbrowse/core/util/markEncoding'
+import {
+  barMark,
+  defineMark,
+  rowSpanIndex,
+  withPassId,
+} from '@jbrowse/render-core/marks'
 
 import BigWigAdapter from '../../wiggle/src/BigWigAdapter/BigWigAdapter.ts'
 import configSchema from '../../wiggle/src/BigWigAdapter/configSchema.ts'
 import { tierSpanRange } from '../../wiggle/src/BigWigAdapter/tierSpanRange.ts'
 import { processFeaturesFromArrays } from '../../wiggle/src/util.ts'
 import { autoBinStep } from '../src/LinearMarkDisplay/autoBin.ts'
+import { findMarkHit } from '../src/LinearMarkDisplay/findMarkHit.ts'
 
+import type {
+  DisplayMark,
+  MarkRegionData,
+  MarkRenderState,
+  StoredLayer,
+} from '../src/LinearMarkDisplay/markList.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { LaneName, TransformStep } from '@jbrowse/core/util/markEncoding'
+import type {
+  EncodedChannels,
+  LaneName,
+  TransformStep,
+} from '@jbrowse/core/util/markEncoding'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const flag = (name: string) =>
   process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1]
@@ -104,9 +132,9 @@ const zooms = flag('zooms')
 
 const jexl = createJexlInstance()
 // markLanes('bar'), spelled here because markList.ts reaches React
-const BAR_LANES: LaneName[] = process.argv.includes('--no-index')
-  ? ['y', 'color', 'colorValue']
-  : ['y', 'color', 'colorValue', 'index']
+const BAR_LANES: LaneName[] = process.argv.includes('--index')
+  ? ['y', 'color', 'colorValue', 'index']
+  : ['y', 'color', 'colorValue']
 
 function meanSteps(bpPerPx: number): TransformStep[] {
   return [
@@ -248,6 +276,119 @@ function meanOfMeansError(
   }
 }
 
+function barMarkOf(hitBy: DisplayMark['hitBy']): DisplayMark {
+  const mark = defineMark({
+    shape: withPassId(barMark, 'bar#0'),
+    channels: (d: MarkRegionData) => d.layers[0] as never,
+    params: (s: MarkRenderState) => ({
+      domain: s.domainY,
+      scaleType: s.scaleTypeY,
+      symlogConstant: s.symlogConstantY,
+      origin: s.origin,
+      minWidthPx: s.minWidthPx,
+      seamPx: 0,
+      rowHeight: s.rowHeight,
+      rowOffsetPx: -s.scrollTop,
+    }),
+  })
+  return Object.assign(mark, { markIndex: 0, hitBy })
+}
+
+function minMs(run: () => unknown) {
+  let best = Infinity
+  for (let r = 0; r < rounds; r++) {
+    const t0 = performance.now()
+    run()
+    best = Math.min(best, performance.now() - t0)
+  }
+  return best
+}
+
+// The bars' hover by rows against the same through a Flatbush, over one
+// screen of the region: identical answers first, then the builds and one
+// hover's mean each way.
+function hoverCheck(bars: EncodedChannels, region: Region, bpPerPx: number) {
+  const layer = bars as StoredLayer
+  const { x, x2, y, count } = layer
+  const widthPx = (region.end - region.start) / bpPerPx
+  const block: RenderBlock = {
+    displayedRegionIndex: 0,
+    start: region.start,
+    end: region.end,
+    screenStartPx: 0,
+    screenEndPx: widthPx,
+    reversed: false,
+  }
+  const state: MarkRenderState = {
+    domainY: [Math.min(0, layer.yMin), Math.max(0, layer.yMax)],
+    scaleTypeY: 'linear',
+    symlogConstantY: 1,
+    colorScales: [],
+    canvasWidth: widthPx,
+    canvasHeight: 100,
+    bpPerPx,
+    origin: 0,
+    minWidthPx: 0,
+    markSizes: [0],
+    sizeScales: [],
+    linkRegions: [],
+    valueInsetPx: 0,
+    rowHeight: 100,
+    rowProportions: [1],
+    scrollTop: 0,
+  }
+  const flatbushMs = minMs(() => hitIndexOf(x, x2, y, count))
+  const rowIndexMs = minMs(() => rowSpanIndex(x, x2, undefined, count))
+  const byRows = new Map([[0, { layers: [layer] }]])
+  const indexed = new Map([
+    [0, { layers: [{ ...layer, flatbush: hitIndexOf(x, x2, y, count) }] }],
+  ])
+  const rowMarks = [barMarkOf('rows')]
+  const indexMarks = [barMarkOf('index')]
+  const probes = 5000
+  let seed = 7
+  const rand = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648
+    return seed / 2147483648
+  }
+  const points = Array.from({ length: probes }, () => [
+    rand() * widthPx,
+    rand() * 100,
+  ])
+  const hover = (
+    data: typeof byRows,
+    marks: DisplayMark[],
+    [px, py]: number[],
+  ) => findMarkHit(px!, py!, [block], data, marks, state, [region])
+  let hits = 0
+  for (const p of points) {
+    const got = hover(byRows, rowMarks, p)
+    const want = hover(indexed, indexMarks, p)
+    if (JSON.stringify(got) !== JSON.stringify(want)) {
+      throw new Error(
+        `${bpPerPx} bp/px at ${p.join(',')}: by rows ${JSON.stringify(got)}, through the Flatbush ${JSON.stringify(want)}`,
+      )
+    }
+    hits += got ? 1 : 0
+  }
+  const perHover = (data: typeof byRows, marks: DisplayMark[]) =>
+    (minMs(() => {
+      for (const p of points) {
+        hover(data, marks, p)
+      }
+    }) *
+      1000) /
+    probes
+  return {
+    probes,
+    hits,
+    flatbushMs: Number(flatbushMs.toFixed(2)),
+    rowIndexMs: Number(rowIndexMs.toFixed(2)),
+    rowHoverUs: Number(perHover(byRows, rowMarks).toFixed(2)),
+    indexHoverUs: Number(perHover(indexed, indexMarks).toFixed(2)),
+  }
+}
+
 const results = []
 for (const bpPerPx of zooms) {
   const region = screenAt(bpPerPx)
@@ -290,6 +431,7 @@ for (const bpPerPx of zooms) {
     }
   }
 
+  const hover = hoverCheck(table, region, bpPerPx)
   const tier = tierLabel(bpPerPx)
   const binBp = autoBinStep(bpPerPx)
   const error =
@@ -312,6 +454,7 @@ for (const bpPerPx of zooms) {
     tableMs: Number(best[4]!.toFixed(2)),
     tableMeanMs: Number(best[5]!.toFixed(2)),
     binBp,
+    hover,
     ...(error
       ? {
           bins: error.bins,
@@ -336,6 +479,10 @@ if (asJson) {
       r.bins === undefined
         ? ''
         : `  bin ${r.binBp}bp x${r.bins}: mean-of-means err ${r.meanErrPct}% mean, ${r.maxErrPct}% max; span-weighted ${r.weightedErrPct}%`
+    const h = r.hover
+    console.log(
+      `  ${String(r.bpPerPx).padStart(9)} bp/px  hover: ${h.hits}/${h.probes} hits agree; Flatbush build ${h.flatbushMs}ms, row index ${h.rowIndexMs}ms; a hover ${h.indexHoverUs}us through the Flatbush, ${h.rowHoverUs}us by rows`,
+    )
     console.log(
       `  ${String(r.bpPerPx).padStart(9)} bp/px  tier ${r.tier.padEnd(9)} ${String(r.regionBp).padStart(10)}bp rows ${String(r.rows).padStart(7)}  wiggle ${r.wiggleMs.toFixed(2).padStart(7)}ms  control ${r.controlMs.toFixed(2).padStart(7)}ms  marks ${r.marksMs.toFixed(2).padStart(7)}ms (${(r.marksMs / r.wiggleMs).toFixed(2)}x)  marks-mean ${r.marksMeanMs.toFixed(2).padStart(7)}ms  table ${r.tableMs.toFixed(2).padStart(7)}ms (${(r.tableMs / r.wiggleMs).toFixed(2)}x)  table-mean ${r.tableMeanMs.toFixed(2).padStart(7)}ms${error}`,
     )

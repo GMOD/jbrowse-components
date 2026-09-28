@@ -14,20 +14,24 @@ const EMPTY: StoredLayer = {
 }
 
 /**
- * One region's density read as the layer a `bar` or `point` mark draws: the
- * sidecar's own intervals as `x`/`x2` and its levels as `y`, one packed colour
- * per bin, a circle for the point's shape, and the Flatbush the hover reads. The sidecar's rows are what a wiggle track
- * would draw of the same bigWig at the same bp/px — the zoom level the adapter
+ * One region's density read as the layer a value mark draws: the sidecar's
+ * own intervals as `x`/`x2` and its levels as `y`, one packed colour per bin,
+ * a circle for the point's shape, and the Flatbush the hover reads where the
+ * mark answers through one. The sidecar's rows are what a wiggle track would
+ * draw of the same bigWig at the same bp/px — the zoom level the adapter
  * picked — so nothing is resampled on the way through.
  */
 export function densityLayer(
   { starts, ends, scores }: FeatureDensity,
   color: number,
+  indexed: boolean,
 ): StoredLayer {
   const count = starts.length
   const colors = new Uint32Array(count)
   const fb =
-    count > 0 ? new Flatbush(count, undefined, Float64Array) : undefined
+    indexed && count > 0
+      ? new Flatbush(count, undefined, Float64Array)
+      : undefined
   let yMin = Infinity
   let yMax = -Infinity
   for (let i = 0; i < count; i++) {
@@ -61,8 +65,9 @@ export function densityRegionData(
   markCount: number,
   markIndex: number,
   color: number,
+  indexed: boolean,
 ): MarkRegionData {
-  const layer = densityLayer(density, color)
+  const layer = densityLayer(density, color, indexed)
   return {
     layers: Array.from({ length: markCount }, (_, i) =>
       i === markIndex ? layer : EMPTY,

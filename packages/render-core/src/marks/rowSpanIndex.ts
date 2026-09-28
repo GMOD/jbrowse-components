@@ -1,9 +1,10 @@
 /**
- * Spans grouped by the row they stand in, each row's in start order, with the
- * furthest end any span of the row has reached so far: what answers which of
- * a row's spans overlap a stretch of bp, in place of a spatial index over
- * every span. A span only ever stands in its own row, so the question a hover
- * asks is one row's, and the answer is a binary search and a short walk.
+ * Instances from `x` to `x2` grouped by the row they stand in, each row's in
+ * start order, with the furthest end any instance of the row has reached so
+ * far: what answers which of a row's spans, bars, rules or line steps overlap
+ * a stretch of bp, in place of a spatial index over every instance. Each
+ * stands in its own row only, so the question a hover asks is one row's, and
+ * the answer is a binary search and a short walk.
  */
 export interface RowSpanIndex {
   /** Each row key's first position in `order`, and the end, at `key + 1`. */

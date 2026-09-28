@@ -185,7 +185,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
             domain: ['1', '-1'],
           },
         },
-        lanes: ['y', 'row', 'color', 'colorValue', 'index'],
+        lanes: ['y', 'row', 'color', 'colorValue'],
       },
       {
         encoding: {
@@ -236,7 +236,7 @@ test('a text mark asks the worker for the text lane and no hit index, and takes 
     encoding: { y: 'score', text: 'name' },
     lanes: ['y', 'row', 'color', 'text'],
   })
-  expect(bar!.lanes).toContain('index')
+  expect(bar!.lanes).toEqual(['y', 'row', 'color', 'colorValue'])
   expect(display.markList.map(m => [m.pass.id, m.markIndex])).toEqual([
     ['bar#1', 1],
   ])

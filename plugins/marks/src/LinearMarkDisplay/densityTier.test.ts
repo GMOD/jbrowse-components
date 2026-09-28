@@ -98,10 +98,8 @@ test('a density mark draws the sidecar in the refused fetch place', () => {
   // the sidecar's levels are the axis, through the same y scale the features
   // draw against
   expect(display.domain).toEqual([0, 18])
-  // and the hover reads the bin off the same index the features use
-  expect([...layers[1]!.flatbush!.search(900, -1, 1100, 100)].sort()).toEqual([
-    0, 1,
-  ])
+  // a bar finds the hovered bin by its row, so the tier builds no index
+  expect(layers[1]!.flatbush).toBeUndefined()
 })
 
 // the tier draws on the canvas the banner would have replaced, so the display

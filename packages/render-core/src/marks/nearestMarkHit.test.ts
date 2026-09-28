@@ -232,4 +232,20 @@ describe('valueWindow', () => {
       [-Infinity, -5],
     )
   })
+
+  test('a radius reaching the origin reaches every bar, which all stand on it', () => {
+    expect(valueWindow(53, 5, frame, { domain: [-10, 10], origin: 0 })).toEqual(
+      [-Infinity, Infinity],
+    )
+  })
+
+  test("an end within `edgePx` of a band edge opens, where a bar's clip strip stands", () => {
+    expect(valueWindow(92, 5, frame, { domain: [0, 10] })[0]).toBeCloseTo(0.3)
+    expect(valueWindow(92, 5, frame, { domain: [0, 10], edgePx: 3 })[0]).toBe(
+      -Infinity,
+    )
+    expect(valueWindow(8, 5, frame, { domain: [0, 10], edgePx: 3 })[1]).toBe(
+      Infinity,
+    )
+  })
 })

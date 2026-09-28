@@ -121,7 +121,7 @@ import {
   toBinEdges,
   widestBinStep,
 } from './markRequest.ts'
-import { readsValue } from './markSpecs.ts'
+import { hitsByIndex, readsValue } from './markSpecs.ts'
 import {
   DEFAULT_LINE_WIDTH_PX,
   DEFAULT_LINK_STROKE_PX,
@@ -654,6 +654,7 @@ export function stateModelFactory(
                   self.conf.marks.length,
                   markIndex,
                   color,
+                  hitsByIndex(mark.mark),
                 ),
               )
             }

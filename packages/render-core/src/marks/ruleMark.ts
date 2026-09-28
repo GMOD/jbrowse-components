@@ -163,5 +163,7 @@ export const ruleMark: MarkShape<RuleChannels, RuleParams> = {
       : undefined
   },
 
-  valueWindow,
+  valueWindow(yPx, radiusPx, frame, params) {
+    return valueWindow(yPx, radiusPx + params.sizePx / 2, frame, params)
+  },
 }

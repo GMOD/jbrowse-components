@@ -241,7 +241,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
 
   valueWindow(yPx, radiusPx, frame, params) {
     return params.rowBandPx === undefined
-      ? valueWindow(yPx, radiusPx, frame, params)
+      ? valueWindow(yPx, radiusPx, frame, { ...params, edgePx: CLIP_STRIP_PX })
       : [-Infinity, Infinity]
   },
 }

@@ -14,7 +14,7 @@ import type {
   MarkRenderState,
   StoredLayer,
 } from './markList.ts'
-import type { RowSpanIndex } from '@jbrowse/render-core/marks'
+import type { HitWindow, RowSpanIndex } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export interface MarkHitInfo {
@@ -49,8 +49,6 @@ const HIT_RADIUS_PX = 8
 
 const rowIndexes = new WeakMap<StoredLayer, RowSpanIndex>()
 
-// A span layer's spans by row, built the first time a hover asks it: a span
-// only ever stands in its own row, so no index over every span is needed.
 function rowIndexOf(layer: StoredLayer) {
   let index = rowIndexes.get(layer)
   if (!index) {
@@ -83,12 +81,34 @@ function rowKeysNear(yPx: number, state: MarkRenderState, radiusPx: number) {
   return keys
 }
 
+// What a Flatbush over every instance's (x..x2, y) answers for the window,
+// less the rows out of reach; the reach widens by the mark's size, the most a
+// rule or line's stroke stands past its band.
+function rowCandidates(
+  layer: StoredLayer,
+  yPx: number,
+  state: MarkRenderState,
+  sizePx: number,
+  { bpMin, bpMax, valueMin, valueMax }: HitWindow,
+) {
+  const index = rowIndexOf(layer)
+  const out: number[] = []
+  for (const key of rowKeysNear(yPx, state, HIT_RADIUS_PX + sizePx)) {
+    spansInRow(index, layer.x, layer.x2, key, bpMin, bpMax, out)
+  }
+  const { y } = layer
+  return y ? out.filter(i => y[i]! >= valueMin && y[i]! <= valueMax) : out
+}
+
+const drawnLastFirst = (a: number, b: number) => b - a
+
 /**
  * The mark instance nearest the cursor, marks on top asked first: each
- * mark's own hit test runs over the candidates its layer answers — a span's
- * from the rows near the cursor, any other's from the Flatbush the worker
- * built — and only a strictly nearer instance from a mark underneath replaces
- * one from a mark above.
+ * mark's own hit test runs over the candidates its layer answers — a bar,
+ * line, rule or span's from the rows near the cursor, a point or link's from
+ * the Flatbush the worker built — and only a strictly nearer instance from a
+ * mark underneath replaces one from a mark above. Candidates go back to
+ * front, so of two equally near the one drawn over the other answers.
  */
 export function findMarkHit(
   mouseX: number,
@@ -99,7 +119,6 @@ export function findMarkHit(
   state: MarkRenderState,
   displayedRegions: readonly { refName: string }[],
 ): MarkHitInfo | undefined {
-  let nearRows: number[] | undefined
   const hit = nearestMarkHit(
     marks,
     blocks,
@@ -110,22 +129,24 @@ export function findMarkHit(
     {
       radiusPx: HIT_RADIUS_PX,
       regionKeys: regionData.keys(),
-      candidates: (data, m, { bpMin, bpMax, valueMin, valueMax }) => {
+      candidates: (data, m, reach) => {
         const mark = marks[m]!
         const layer = data.layers[mark.markIndex]
         if (!layer) {
           return undefined
         }
-        if (mark.hitBy === 'rows') {
-          const index = rowIndexOf(layer)
-          nearRows ??= rowKeysNear(mouseY, state, HIT_RADIUS_PX)
-          const out: number[] = []
-          for (const key of nearRows) {
-            spansInRow(index, layer.x, layer.x2, key, bpMin, bpMax, out)
-          }
-          return out
-        }
-        return layer.flatbush?.search(bpMin, valueMin, bpMax, valueMax)
+        const { bpMin, bpMax, valueMin, valueMax } = reach
+        const found =
+          mark.hitBy === 'rows'
+            ? rowCandidates(
+                layer,
+                mouseY,
+                state,
+                state.markSizes[mark.markIndex] ?? 0,
+                reach,
+              )
+            : layer.flatbush?.search(bpMin, valueMin, bpMax, valueMax)
+        return found?.sort(drawnLastFirst)
       },
     },
   )
