@@ -104,8 +104,15 @@ does not, so the copies a haplotype adds read as its purple stretch.
 
 Click the KIV-2 bubble boxed in the bubbles lane. Its details give
 `shortestAlleleLength` and `longestAlleleLength`, the shortest and longest
-routes the rGFA holds there. Every bar in walk rows falls between them, and
-GRCh38's, with no purple, is the shortest of the nine.
+routes the rGFA holds there. Every other bar in walk rows falls between them,
+and GRCh38's, with no purple, is the shortest of those.
+
+HG02055's bar is shorter than the bubble allows because its assembly's contig
+ends inside the array, so the walk covers only the stretch before the break.
+This cut stops at the window, which leaves no flanking reference to measure a
+walk's ends against, so walk rows cannot mark the bar partial the way the ABCA7
+rows below mark HG04199's. Read a bar shorter than the bubble's shortest route
+as an assembly that does not span the array.
 
 ## The ABCA7 VNTR
 
