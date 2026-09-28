@@ -133,7 +133,6 @@ import {
 import { stepChannels } from './stepChannels.ts'
 import { valueColorOf, withValueColors } from './valueColor.ts'
 
-import type { ListedSource } from '../MarkRowsRPC/MarkGetRowSources.ts'
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 import type {
   LinearMarkDisplayConfig,
@@ -164,6 +163,10 @@ import type { PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type { ValueColor } from './valueColor.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  ListedRowSource,
+  RowSourceListing,
+} from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type {
@@ -657,13 +660,15 @@ export function stateModelFactory(
          * The latest `MarkGetRowSources` answer, stamped with the adapter
          * config it answers.
          */
-        sourceListing: undefined as AdapterRead<ListedSource[]> | undefined,
+        sourceListing: undefined as
+          | AdapterRead<RowSourceListing | undefined>
+          | undefined,
       }))
       .actions(self => ({
         /**
          * #action
          */
-        setSourceListing(read: AdapterRead<ListedSource[]>) {
+        setSourceListing(read: AdapterRead<RowSourceListing | undefined>) {
           self.sourceListing = read
         },
       }))
@@ -671,11 +676,11 @@ export function stateModelFactory(
         /**
          * #getter
          * The sources the adapter lists whatever a region holds, a
-         * multi-BigWig's files; empty for an adapter that lists none, and
-         * undefined until the current adapter config's listing lands.
+         * multi-BigWig's files; undefined for an adapter that lists none, and
+         * until the current adapter config's listing lands.
          */
-        get adapterSources(): ListedSource[] | undefined {
-          return readFor(self, self.sourceListing)
+        get adapterSources(): ListedRowSource[] | undefined {
+          return readFor(self, self.sourceListing)?.sources
         },
       }))
       .views(self => {
@@ -1908,7 +1913,6 @@ export function stateModelFactory(
   )
 }
 
-export type { ListedSource } from '../MarkRowsRPC/MarkGetRowSources.ts'
 export type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 export type { FacetLayout } from './facet.ts'
 export type { MarkHitInfo } from './findMarkHit.ts'

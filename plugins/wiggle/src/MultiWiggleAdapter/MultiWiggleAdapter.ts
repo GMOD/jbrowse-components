@@ -20,6 +20,10 @@ import type {
   BaseOptions,
   ZoomRange,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  RowSourceLister,
+  RowSourceListing,
+} from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
 import type { Feature } from '@jbrowse/core/util'
 import type {
   FileLocation,
@@ -127,7 +131,14 @@ interface AdapterEntry {
   [key: string]: unknown
 }
 
-export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
+function isText(value: unknown): value is string {
+  return typeof value === 'string' && value !== ''
+}
+
+export default class MultiWiggleAdapter
+  extends BaseFeatureDataAdapter
+  implements RowSourceLister
+{
   public static capabilities = ['hasResolution']
 
   getAdapters = cachedSetup({ setup: () => this.getAdaptersImpl() })
@@ -350,5 +361,18 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
   async getSources(_regions: Region[], opts?: BaseOptions) {
     return (await this.getSourcesAndWarnings(opts)).sources
+  }
+
+  async listRowSources(opts?: BaseOptions): Promise<RowSourceListing> {
+    const sources: { name: string; [key: string]: unknown }[] =
+      await this.getSources([], opts)
+    return {
+      field: 'source',
+      sources: sources.map(({ name, label, color }) => ({
+        name,
+        ...(isText(label) ? { label } : {}),
+        ...(isText(color) ? { color } : {}),
+      })),
+    }
   }
 }

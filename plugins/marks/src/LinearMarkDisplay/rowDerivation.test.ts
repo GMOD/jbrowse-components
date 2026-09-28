@@ -274,7 +274,7 @@ async function listingSources(
   const env = createTestEnvironment({ marks: BARS, ...display })
   env.mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
     method === 'MarkGetRowSources'
-      ? Promise.resolve(listed)
+      ? Promise.resolve({ field: 'source', sources: listed })
       : new Promise(() => {}),
   )
   const { display: model } = env.createDisplay()
@@ -416,7 +416,7 @@ test('a listing that answers another adapter config lists no rows', async () => 
   expect(display.sources.map(row => row.name)).toContain('s99')
   display.setSourceListing({
     adapterConfig: { type: 'BedAdapter', uri: 'another.bed' },
-    value: LISTED,
+    value: { field: 'source', sources: LISTED },
   })
   expect(display.adapterSources).toBeUndefined()
   expect(display.sources.map(row => row.name)).toEqual([

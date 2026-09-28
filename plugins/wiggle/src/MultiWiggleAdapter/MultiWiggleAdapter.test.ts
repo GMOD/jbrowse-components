@@ -582,6 +582,30 @@ describe('MultiWiggleAdapter.getSources', () => {
   })
 })
 
+describe('MultiWiggleAdapter.listRowSources', () => {
+  it('lists each subtrack as a source row with its own label and colour', async () => {
+    const adapter = new MultiWiggleAdapter(configSchema.create({}))
+    adapter.getAdapters = jest.fn().mockResolvedValue([
+      { source: 'k1', color: '#f00', group: 'g', dataAdapter: stubDataAdapter },
+      {
+        source: 'k2',
+        label: 'Knockdown 2',
+        color: '',
+        dataAdapter: stubDataAdapter,
+      },
+      { source: 'k3', label: 3, dataAdapter: stubDataAdapter },
+    ])
+    expect(await adapter.listRowSources()).toEqual({
+      field: 'source',
+      sources: [
+        { name: 'k1', color: '#f00' },
+        { name: 'k2', label: 'Knockdown 2' },
+        { name: 'k3' },
+      ],
+    })
+  })
+})
+
 describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti', () => {
   const region = { refName: 'chr1', start: 0, end: 100, assemblyName: 'hg38' }
   const region2 = {
@@ -1082,6 +1106,17 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
     ])
     expect(warnings).toHaveLength(1)
     expect(warnings[0]).toContain('1 of the 3 samples in the subtrack list')
+  })
+
+  it('lists the rows in the table order with its colours', async () => {
+    const { adapter } = adapterWithTsv()
+    expect(await adapter.listRowSources()).toEqual({
+      field: 'source',
+      sources: [
+        { name: 'c', color: '#f00' },
+        { name: 'a', color: '#00f' },
+      ],
+    })
   })
 
   it('fetches only the listed subtracks when the caller names none', async () => {

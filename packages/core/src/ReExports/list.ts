@@ -146,6 +146,7 @@ export default [
   '@jbrowse/core/data_adapters/adapterSessionRefcount',
   '@jbrowse/core/data_adapters/BaseAdapter',
   '@jbrowse/core/data_adapters/BaseAdapter/getAdapterId',
+  '@jbrowse/core/data_adapters/BaseAdapter/rowSources',
   '@jbrowse/core/data_adapters/BaseAdapter/stats',
   '@jbrowse/core/data_adapters/BaseAdapter/types',
   '@jbrowse/core/data_adapters/BaseAdapter/zoomRange',

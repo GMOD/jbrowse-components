@@ -10,30 +10,30 @@ const args = {
   adapterConfig: { type: 'MultiWiggleAdapter' },
 }
 
-test("a multi-BigWig's files come back with their labels and colours", async () => {
+test("a multi-BigWig's listing comes back as the adapter answers it", async () => {
+  const listing = {
+    field: 'source',
+    sources: [
+      { name: 'k1', color: '#f00' },
+      { name: 'k2', label: 'Knockdown 2' },
+    ],
+  }
   jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
-    getMultiSourceFeatureArraysMulti: jest.fn(),
-    getSources: () =>
-      Promise.resolve([
-        { name: 'k1', source: 'k1', color: '#f00', group: 'g' },
-        { name: 'k2', source: 'k2', label: 'Knockdown 2', color: '' },
-      ]),
+    listRowSources: () => Promise.resolve(listing),
   } as never)
   expect(
     await new MarkGetRowSources(new PluginManager()).execute(args),
-  ).toEqual([
-    { name: 'k1', color: '#f00' },
-    { name: 'k2', label: 'Knockdown 2' },
-  ])
+  ).toEqual(listing)
 })
 
-test('an adapter that lists no sources is not asked to scan its features', async () => {
+test('an adapter that lists no rows answers undefined and is asked nothing', async () => {
   const getSources = jest.fn()
-  jest
-    .mocked(getFeatureAdapterOrThrow)
-    .mockResolvedValue({ getSources } as never)
+  jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+    getMultiSourceFeatureArraysMulti: jest.fn(),
+    getSources,
+  } as never)
   expect(
     await new MarkGetRowSources(new PluginManager()).execute(args),
-  ).toEqual([])
+  ).toBeUndefined()
   expect(getSources).not.toHaveBeenCalled()
 })

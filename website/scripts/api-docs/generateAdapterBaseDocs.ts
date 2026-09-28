@@ -27,6 +27,7 @@ const NOT_A_BASE = new Set([
   'featureDensity.ts',
   'getAdapterId.ts',
   'index.ts',
+  'rowSources.ts',
   'stats.ts',
   'types.ts',
   'util.ts',

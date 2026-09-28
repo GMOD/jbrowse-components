@@ -566,6 +566,24 @@ the lanes the display's mark reads.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## ListedRowSource
+
+One row an adapter lists: `name` is a value of the listing's field, and
+`label` and `color` are what the adapter names and colours that row with.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
+
+## listsRowSources
+
+Whether an adapter implements RowSourceLister.
+
+```js
+// type signature
+(adapter: object) => adapter is RowSourceLister
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
+
 ## LocusRef
 
 A position that may lie on another sequence: the field holding its refName
@@ -849,6 +867,21 @@ a lap has to read as one tone across the whole palette or it reads as noise.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/color/index.ts)
+
+## RowSourceLister
+
+An adapter that lists its rows without reading a region: a multi-BigWig its
+files, a MAF its species.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
+
+## RowSourceListing
+
+Every row an adapter has, in its own order, whatever the loaded regions hold,
+so a row display gives a row with nothing in view its place, label and
+colour.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
 
 ## runTransforms
 

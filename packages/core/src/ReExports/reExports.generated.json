@@ -946,6 +946,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/data_adapters/BaseAdapter/rowSources": {
+      "package": "@jbrowse/core",
+      "names": [
+        "listsRowSources"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/data_adapters/BaseAdapter/stats": {
       "package": "@jbrowse/core",
       "names": [

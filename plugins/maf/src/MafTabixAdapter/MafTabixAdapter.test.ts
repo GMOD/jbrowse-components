@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+
 import {
   BedTabixAdapter,
   bedTabixConfigSchema as BedTabixConfigSchema,
@@ -178,6 +180,31 @@ describe('MafTabixAdapter reads a maf_to_bed BED', () => {
     expect(treeNewick).toContain('volvox')
     // leaf order drives row order
     expect(samples.map(s => s.id)).toContain('simvolvox')
+  })
+
+  it('lists its species as rows over the alignments record, in tree order', async () => {
+    const listing = await adapter({
+      samples: [{ id: 'simvolvox', label: 'Sim', color: '#f00' }],
+    }).listRowSources()
+    expect(listing).toEqual({
+      field: 'alignments',
+      sources: [
+        { name: 'volvox' },
+        { name: 'simvolvox', label: 'Sim', color: '#f00' },
+        { name: 'minivolvox' },
+        { name: 'microvolvox' },
+        { name: 'nanovolvox' },
+        { name: 'megavolvox' },
+        { name: 'ultravolvox' },
+        { name: 'picovolvox' },
+        { name: 'hypervolvox' },
+        { name: 'metavolvox' },
+      ],
+      tree: fs.readFileSync(
+        require.resolve('../../../../test_data/volvox/volvox.maf.nh'),
+        'utf8',
+      ),
+    })
   })
 
   // The byte gate reads this; it comes from the tabix index alone, no download.

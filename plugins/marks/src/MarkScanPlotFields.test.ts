@@ -42,14 +42,17 @@ test("a GFF3 track's source column takes no rows", async () => {
 test("a multi-BigWig's listed files take a row each, though its first features are all one file's", async () => {
   expect(
     await scan({
-      getMultiSourceFeatureArraysMulti: jest.fn(),
       getFeaturesInMultipleRegionsArray: () =>
         Promise.resolve(
           features.map(
             f => new SimpleFeature({ ...f.toJSON(), source: 'est' }),
           ),
         ),
-      getSources: () => Promise.resolve([{ name: 'est' }, { name: 'bw2' }]),
+      listRowSources: () =>
+        Promise.resolve({
+          field: 'source',
+          sources: [{ name: 'est' }, { name: 'bw2' }],
+        }),
     }),
   ).toEqual({
     numeric: ['score'],
@@ -61,8 +64,23 @@ test("a multi-BigWig's listed files take a row each, though its first features a
 test('a multi-BigWig of one file takes no rows', async () => {
   expect(
     await scan({
-      getMultiSourceFeatureArraysMulti: jest.fn(),
-      getSources: () => Promise.resolve([{ name: 'est' }]),
+      listRowSources: () =>
+        Promise.resolve({ field: 'source', sources: [{ name: 'est' }] }),
+    }),
+  ).toEqual({
+    numeric: ['score'],
+    categorical: ['source'],
+  })
+})
+
+test("a MAF's listed species take no rows on source", async () => {
+  expect(
+    await scan({
+      listRowSources: () =>
+        Promise.resolve({
+          field: 'alignments',
+          sources: [{ name: 'hg38' }, { name: 'mm10' }],
+        }),
     }),
   ).toEqual({
     numeric: ['score'],
