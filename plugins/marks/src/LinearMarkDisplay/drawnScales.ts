@@ -107,25 +107,25 @@ function scanChunk(
   e.notNumber = notNumber
 }
 
-// A ramp's extent over the drawn instances as the encoder measured the
+// A scaled lane's extent over the drawn instances as the encoder measured the
 // region's: a log scale over the positive values, and a declared quantile
 // clipping each end, which the extremes a scan keeps cannot say.
-function drawnRampExtent(
-  ramp: Float32Array,
+function drawnExtent(
+  values: Float32Array,
   row: Uint32Array | undefined,
   drawnKeys: Uint8Array | undefined,
   count: number,
   scale: 'linear' | 'log',
-  quantile: number | undefined,
+  quantile?: number,
 ) {
-  const values = new Float32Array(count)
+  const kept = new Float32Array(count)
   let n = 0
   for (let i = 0; i < count; i++) {
     if (!drawnKeys || drawnKeys[row ? row[i]! : 0] === 1) {
-      values[n++] = ramp[i]!
+      kept[n++] = values[i]!
     }
   }
-  return scaleExtent(values, n, scale, quantile)
+  return scaleExtent(kept, n, scale, quantile)
 }
 
 /**
@@ -183,7 +183,7 @@ export function drawnScales(
     ramp &&
     scale?.kind === 'ramp' &&
     (scale.scale === 'log' || scale.quantile !== undefined)
-      ? drawnRampExtent(
+      ? drawnExtent(
           ramp,
           layer.row,
           drawnKeys,
@@ -192,6 +192,10 @@ export function drawnScales(
           scale.quantile,
         )
       : [vMin, vMax]
+  const sizeExtent: [number, number] =
+    sizeScale && layer.size && sizeScale.scale === 'log'
+      ? drawnExtent(layer.size, layer.row, drawnKeys, count, 'log')
+      : [sMin, sMax]
   return {
     ...layer,
     yMin: valued ? yMin : layer.yMin,
@@ -218,6 +222,6 @@ export function drawnScales(
       ...shapeScale,
       entries: shapeScale.entries.filter(e => glyphs.has(SHAPE_CODES[e.shape])),
     },
-    sizeScale: sizeScale && { ...sizeScale, extent: [sMin, sMax] },
+    sizeScale: sizeScale && { ...sizeScale, extent: sizeExtent },
   }
 }

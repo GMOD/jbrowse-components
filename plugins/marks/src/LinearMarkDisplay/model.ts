@@ -113,7 +113,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
 
 import { densityRegionData } from './densityLayer.ts'
-import { facetLayout, facetRegion, rowsLayout } from './facet.ts'
+import { facetLayout, facetRegion, rowsLayout, sectionsOn } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
@@ -399,34 +399,71 @@ export interface MarkView {
   densityMark: number
 }
 
+/** A layer as the autoscale folds it: the region it was fetched into, and its lanes. */
+interface RegionLayer {
+  index: number
+  layer: StoredLayer
+}
+
+// A link's extent on the region that drew it: both feet where the far one
+// lies on this region too, the near foot alone where it lies elsewhere, so a
+// curve rising to a mate left of the view or on another sequence still folds
+// into the axis while its near foot is in view.
+function linkFeet(
+  layer: StoredLayer,
+  index: number,
+): [Uint32Array, Uint32Array] | undefined {
+  const { x2Region, count } = layer
+  if (!x2Region) {
+    return undefined
+  }
+  const starts = new Uint32Array(count)
+  const ends = new Uint32Array(count)
+  for (let i = 0; i < count; i++) {
+    const near = layer.x[i]!
+    const far = x2Region[i] === index ? layer.x2[i]! : near
+    starts[i] = Math.min(near, far)
+    ends[i] = near === far ? near + 1 : Math.max(near, far)
+  }
+  return [starts, ends]
+}
+
 // Each folded layer as a `ScoreSpan`, so the shared autoscale walks the `y`
 // lane the same way it walks a wiggle source's scores: one value per instance,
 // clipped to the block the entry carries, a row the table hides left out.
 function layerSpans(
-  entries: VisibleEntry<StoredLayer>[],
+  entries: VisibleEntry<RegionLayer>[],
   drawnKeys: Uint8Array | undefined,
 ): ScoreSpan[] {
-  return entries.flatMap(({ data, visStart, visEnd }) => {
-    const { y } = data
-    return y
-      ? [
-          {
-            count: data.count,
-            starts: data.x,
-            ends: data.x2,
-            stride: 1,
-            endOffset: 0,
-            low: y,
-            high: y,
-            visStart,
-            visEnd,
-            sortedBins: false,
-            row: data.row,
-            drawnKeys,
-          },
-        ]
-      : []
+  return entries.flatMap(({ data: { index, layer }, visStart, visEnd }) => {
+    const { y } = layer
+    if (!y) {
+      return []
+    }
+    const [starts, ends] = linkFeet(layer, index) ?? [layer.x, layer.x2]
+    return [
+      {
+        count: layer.count,
+        starts,
+        ends,
+        stride: 1,
+        endOffset: 0,
+        low: y,
+        high: y,
+        visStart,
+        visEnd,
+        sortedBins: false,
+        row: layer.row,
+        drawnKeys,
+      },
+    ]
   })
+}
+
+// A bar's baseline trains the axis, as ggplot2's does, where the scale can
+// reach it: a log axis has no 0.
+function baselineReached(origin: number, scaleType: string) {
+  return scaleType !== 'log' || origin > 0
 }
 
 /**
@@ -867,8 +904,8 @@ export function stateModelFactory(
               : undefined,
           )
           const found = new Set<string>()
-          for (const { facet } of self.featurePayloads.values()) {
-            for (const { key } of facet ?? []) {
+          for (const region of self.featurePayloads.values()) {
+            for (const { key } of sectionsOn(region, self.rowsField) ?? []) {
               if (!listed.has(key)) {
                 found.add(key)
               }
@@ -1030,7 +1067,13 @@ export function stateModelFactory(
         const drawnKeys = stableIdentityComputed(() => {
           const table = self.rowTable
           return (
-            table && drawnKeysOf(table, self.rpcDataMap.values(), self.rowKeys)
+            table &&
+            drawnKeysOf(
+              table,
+              self.rpcDataMap.values(),
+              self.rowKeys,
+              self.rowsField,
+            )
           )
         })
         const scaled = createEncodeMemo(
@@ -1115,22 +1158,29 @@ export function stateModelFactory(
           const indices = self.drawingMarkIndices
           const folded = new Set(indices)
           const types = indices.map(i => self.markTypes[i]!)
-          const { origin, domainQuantile, drawnKeys } = self
+          const { origin, domainQuantile, drawnKeys, scaleType } = self
           const reached = [
             ...self.scoreRules.map(rule => rule.value),
-            ...(types.includes('bar') ? [origin] : []),
+            ...(types.includes('bar') && baselineReached(origin, scaleType)
+              ? [origin]
+              : []),
           ]
           return visibleStatsRange({
             active: indices.some(i =>
               marksValue(self.conf.marks[i]!, self.markChannels[i]!),
             ),
             view: self.host,
-            payloadFor: index => self.scaleDataMap.get(index),
-            itemsFor: data =>
-              data.layers.filter(
-                (l, i) =>
-                  folded.has(i) && l.count > 0 && Number.isFinite(l.yMin),
-              ),
+            payloadFor: index => {
+              const data = self.scaleDataMap.get(index)
+              return data && { index, data }
+            },
+            itemsFor: ({ index, data }) =>
+              data.layers
+                .filter(
+                  (l, i) =>
+                    folded.has(i) && l.count > 0 && Number.isFinite(l.yMin),
+                )
+                .map((layer): RegionLayer => ({ index, layer })),
             accumulate: entries =>
               computeSpanStats(layerSpans(entries, drawnKeys)),
             range: (stats, entries) =>

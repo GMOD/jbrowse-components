@@ -16,7 +16,11 @@ import { zoomInRange } from './markList.ts'
 import { MARK_SPECS, markLanes, plotsValue } from './markSpecs.ts'
 import {
   DEFAULT_BIN_AS,
+  DEFAULT_BIN_FIELD,
+  DEFAULT_COVERAGE_AS,
+  DEFAULT_FLATTEN_FIELD,
   DEFAULT_FORMULA_AS,
+  DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_X2,
 } from './markVocabulary.ts'
@@ -158,8 +162,7 @@ export function lastBinEdges(steps: readonly MarkTransformStepConfig[]) {
 
 /**
  * A step list as the worker's, with an `auto` bin resolved at `bpPerPx` and
- * an emptied slot left off, so the worker's default stands where the channel
- * reader assumed it.
+ * an emptied name written as the default the channel reader assumed for it.
  * `binEdges` is what an aggregate naming no groupby groups by before any bin
  * of this list: the display's last bin's, for a mark's list.
  */
@@ -183,7 +186,7 @@ export function stepsOf(
         return {
           type: 'bin',
           step: binStepWidth(step.step, bpPerPx),
-          field: step.field || undefined,
+          field: step.field || DEFAULT_BIN_FIELD,
           as: binEdges,
         }
       case 'aggregate':
@@ -197,18 +200,18 @@ export function stepsOf(
           }),
         }
       case 'coverage':
-        return { type: 'coverage', as: step.as || undefined }
+        return { type: 'coverage', as: step.as || DEFAULT_COVERAGE_AS }
       case 'flatten':
         return {
           type: 'flatten',
-          field: step.field || undefined,
-          index: step.index || undefined,
+          field: step.field || DEFAULT_FLATTEN_FIELD,
+          index: step.index,
           keepEmpty: step.keepEmpty,
         }
       case 'pileup':
         return {
           type: 'pileup',
-          as: step.as || undefined,
+          as: step.as || DEFAULT_PILEUP_AS,
           fields: pairOf(step.fields, DEFAULT_PILEUP_FIELDS),
           padding: step.padding,
         }

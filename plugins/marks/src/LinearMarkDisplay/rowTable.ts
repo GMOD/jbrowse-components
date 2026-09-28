@@ -1,6 +1,7 @@
 import { HIDDEN_ROW, buildRowTable } from '@jbrowse/render-core/marks'
 
 import { drawnScales } from './drawnScales.ts'
+import { sectionsOn } from './facet.ts'
 
 import type { MarkRegionData } from './markList.ts'
 import type { RowKeys, RowTable } from '@jbrowse/render-core/marks'
@@ -8,17 +9,15 @@ import type { RowKeys, RowTable } from '@jbrowse/render-core/marks'
 /**
  * A region under `rows` with every `row` lane a key: each row of a section the
  * worker stacked holds the key of the value the section is, so the lanes stay
- * put whatever order or focus the rows take. A region fetched before the
- * split, or split on another field, names no value: every instance of it is
- * hidden until its refetch lands, and none of its values enters the key space.
+ * put whatever order or focus the rows take. A region `sectionsOn` names no
+ * sections for has every instance hidden until its refetch lands.
  */
 export function keyRegion(
   region: MarkRegionData,
   rowKeys: RowKeys,
   field: string,
 ): MarkRegionData {
-  const facet =
-    region.request?.facet?.field === field ? region.facet : undefined
+  const facet = sectionsOn(region, field)
   const depth =
     facet?.reduce((n, s) => Math.max(n, s.firstRow + s.rowCount), 0) ?? 0
   const keyOf = new Uint32Array(depth).fill(HIDDEN_ROW)
@@ -53,16 +52,18 @@ export function markRowTable(
 
 /**
  * 1 at each key the table draws, or undefined where every loaded instance is
- * drawn: a name only departed regions or an earlier `rows.field` knew hides
- * nothing, and a region fetched before the split hides all of its own.
+ * drawn: a name only departed regions knew hides nothing, and a region fetched
+ * before the split or split on another field hides all of its own.
  */
 export function drawnKeysOf(
   { slot }: RowTable,
   regions: Iterable<MarkRegionData>,
   rowKeys: RowKeys,
+  field: string,
 ): Uint8Array | undefined {
   const mask = () => Uint8Array.from(slot, s => (s === HIDDEN_ROW ? 0 : 1))
-  for (const { facet } of regions) {
+  for (const region of regions) {
+    const facet = sectionsOn(region, field)
     if (!facet) {
       return mask()
     }

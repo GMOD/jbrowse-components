@@ -130,3 +130,14 @@ test('a region whose drawn set did not move keeps its payload', () => {
   )
   expect(second.get(0)).toBe(first.get(0))
 })
+
+test('the same feet in two rows are two curves, and both draw', () => {
+  const data = payload([
+    { x: 100, x2: 900, ref: 'ctgA', region: 0 },
+    { x: 100, x2: 900, ref: 'ctgA', region: 0 },
+    { x: 100, x2: 900, ref: 'ctgA', region: 0 },
+  ])
+  data.layers[0]!.row = Uint32Array.of(0, 1, 1)
+  const out = createLinkOwners()(new Map([[0, data]]), [A], canonical)
+  expect(lane(out, 0)).toEqual([0, 0, LINK_ELSEWHERE])
+})

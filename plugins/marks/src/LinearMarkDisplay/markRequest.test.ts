@@ -45,11 +45,11 @@ test('an emptied step slot leaves the worker its default, which the channel read
     ],
   })
   expect(stepsOf(mark.transform, 1)).toEqual([
-    { type: 'coverage', as: undefined },
-    { type: 'pileup', as: undefined, fields: ['start', 'end'], padding: 0 },
+    { type: 'coverage', as: 'coverage' },
+    { type: 'pileup', as: 'row', fields: ['start', 'end'], padding: 0 },
     { type: 'formula', expr: 'jexl:1', as: 'value' },
-    { type: 'flatten', field: undefined, index: undefined, keepEmpty: false },
-    { type: 'bin', step: 10, field: undefined, as: ['start', 'end'] },
+    { type: 'flatten', field: 'subfeatures', index: '', keepEmpty: false },
+    { type: 'bin', step: 10, field: 'start', as: ['start', 'end'] },
   ])
   const reads = [
     new SimpleFeature({ uniqueId: 'a', refName: 'ctgA', start: 0, end: 100 }),

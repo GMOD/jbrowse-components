@@ -17,6 +17,12 @@ function footKey(ref: string, bp: number, ref2: string, bp2: number) {
   return a < b ? `${a}|${b}` : `${b}|${a}`
 }
 
+// A curve is its two feet in its band: the same pair in two rows or two
+// sections is two samples' curves, and both draw.
+function linkKey(layer: StoredLayer, i: number, feet: string) {
+  return `${layer.row?.[i] ?? 0}#${feet}`
+}
+
 function linkKeys(
   layer: StoredLayer,
   region: OwnerRegion,
@@ -29,11 +35,10 @@ function linkKeys(
   const far = x2RefNames.map(name => canonical(region.assemblyName, name))
   const keys = new Array<string>(layer.count)
   for (let i = 0; i < layer.count; i++) {
-    keys[i] = footKey(
-      region.refName,
-      layer.x[i]!,
-      far[x2Ref[i]!]!,
-      layer.x2[i]!,
+    keys[i] = linkKey(
+      layer,
+      i,
+      footKey(region.refName, layer.x[i]!, far[x2Ref[i]!]!, layer.x2[i]!),
     )
   }
   return keys
@@ -46,7 +51,8 @@ function sameIndices(a: readonly number[], b: readonly number[] | undefined) {
 /**
  * Each link drawn once over the loaded regions. The copies of one curve — a
  * pair whose two ends both have records, or one record fetched into two
- * regions — share their two feet, unordered, and all but one are set to
+ * regions — share their two feet, unordered, and their row, and all but one
+ * are set to
  * {@link LINK_ELSEWHERE}: the first in the lowest region holding its own
  * foot, else in the lowest region. The feet read through the assembly's
  * aliases, so a pair whose ALT spells its own CHROM another way, which the

@@ -33,6 +33,16 @@ export interface FacetLayout {
 }
 
 /**
+ * The sections a region split on `field`, or none for a region fetched
+ * before the split or split on another field, whose instances stay hidden
+ * until its refetch lands and whose values enter no layout, key space or row
+ * list.
+ */
+export function sectionsOn(region: MarkRegionData, field: string) {
+  return region.request?.facet?.field === field ? region.facet : undefined
+}
+
+/**
  * The sections over every loaded region: each key as tall as the deepest
  * region packed it, the cap over the keys of all of them, the domain's order,
  * and the hidden ones gone. The keys merged into the overflow section keep
@@ -44,8 +54,8 @@ export function facetLayout(
   hidden: ReadonlySet<string>,
 ): FacetLayout {
   const heights = new Map<string, number>()
-  for (const { facet } of regions) {
-    for (const { key, rowCount } of facet ?? []) {
+  for (const region of regions) {
+    for (const { key, rowCount } of sectionsOn(region, field.field) ?? []) {
       heights.set(key, Math.max(heights.get(key) ?? 0, rowCount))
     }
   }

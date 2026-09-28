@@ -49,6 +49,32 @@ test('a log ramp re-measured over the drawn instances reads the positive ones', 
   expect(extentOf(drawnScales(layer('log'), bothSections))).toEqual([1, 1000])
 })
 
+test('a log size scale re-measured over the drawn instances reads the positive ones', () => {
+  const values = [0, 2, 50, 500]
+  const drawn = drawnScales(
+    {
+      count: 4,
+      skipped: 0,
+      x: new Uint32Array(4),
+      x2: new Uint32Array(4),
+      yMin: Number.NaN,
+      yMax: Number.NaN,
+      row: Uint32Array.of(0, 0, 0, 1),
+      size: Float32Array.from(values),
+      sizeScale: {
+        field: 'score',
+        scale: 'log',
+        domain: [2, 500],
+        pinned: [false, false],
+        range: [1, 6],
+        extent: [2, 500],
+      },
+    } as unknown as StoredLayer,
+    Uint8Array.of(1, 0),
+  )
+  expect(drawn.sizeScale!.extent).toEqual([2, 50])
+})
+
 test('an unclipped linear ramp keeps the drawn extremes', () => {
   expect(extentOf(drawnScales(layer('linear'), Uint8Array.of(0, 1)))).toEqual([
     1, 20,
