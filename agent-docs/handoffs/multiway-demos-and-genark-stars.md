@@ -1,52 +1,62 @@
 ---
 name: multiway-demos-and-genark-stars
-description: "After the 2026-09-28 multi-way round: two hosted-star tutorial sections wait on an ada shoot in the multiway-demos worktree, jb2hubs' GenArk stars wait on a pipeline run and staging deploy, and the Arabidopsis knob demo's CG lane layer needs a value check before it earns a page."
+description: "After the 2026-09-28 multi-way round: the two hosted-star tutorial sections and the 44 GenArk staging stars are live, and the Arabidopsis knob demo waits on a call, because the 1001 Genomes methylation bigWigs store every site as a zero-length record and so read zero at every zoom level."
 ---
 
 The round landed the one lane-fetch bookkeeping with four fixes
-(`bc85b6305b`), three comment trims and their docs regen, and on jb2hubs main
-(`af11f15ad39`, pushed) a multi-way star for every GenArk hub with three or
-more liftOver mates.
+(`bc85b6305b`), three comment trims and their docs regen, the
+`genomes_synteny.md` sections on choosing a star's lanes (mouse strains at
+Nnt, one person's haplotypes at 17q21.31) with their figures, and on jb2hubs
+main (`af11f15ad39`, `fb8f3920786`) a multi-way star for every GenArk hub with
+three or more liftOver mates.
 
-## Next
+## GenArk stars on staging
 
-1. **Shoot the two figures and land the page.** Branch `multiway-demos`
-   (`.claude/worktrees/multiway-demos`, `3d13cb59a3`) holds two
-   `genomes_synteny.md` sections, "Choosing the lanes: mouse strains at Nnt"
-   and "One person's two haplotypes at 17q21.31", their specs
-   `genomes_synteny/mouse_strains_nnt` and `human_17q21_haplotypes` in
-   `specs/synteny.ts`, and `handoffs/multiway-orientation-few-groups.md`.
-   From that worktree: `jb-shoot genomes_synteny/mouse_strains_nnt
-   genomes_synteny/human_17q21_haplotypes --publish`, commit `figures.lock`,
-   `pnpm autogen`, rebase (the handoffs README will conflict; regenerate it),
-   land. Ada refused ssh on 2026-09-28 (fail2ban); Colin logs in first. Both
-   pictures were checked locally: every strain lane opens a gap over Nnt's
-   exons 7 to 11 with the C57BL/6J T2T lane straight, and H9 hap2 crosses hap1
-   across the H2 inversion.
+44 GenArk hubs serve a `config-staging.json` from the bucket, and
+staging.genomes.jbrowse.org launches them. Each is its `config.json` plus the
+one star track, and every PIF and index the stars name returns 200. They were
+built on ada into a scratch tree (`buildConfigsBatch.ts --out-root`), uploaded
+alone, and copied into ada's `hubs/` tree untracked, so an `--upload-only`
+sync keeps them and the next full `run.sh` rebuilds the same bytes and commits
+them.
 
-2. **Run the GenArk pipeline for the 47 hubs and deploy staging.** On ada,
-   `genark2jbrowse/src/buildConfigsBatch.ts` over the hubs in
-   `website/src/genarkStars.json` writes each `config-staging.json`; upload
-   them (the star reads the pairwise tracks' own PIFs, so nothing else moves),
-   then `./run.sh --staging`. Untested end to end: a GenArk star's lanes are
-   labelled by GenArk's common name and open on the first nine mates by name,
-   since GenArk carries no `speciesDefaultOn`; look at one (the T2T apes,
-   `GCA_0288*`) before deploying the site.
+The list was 47 until `fb8f3920786`. The synteny catalog holds a GenArk hub's
+liftOver track twice (the UCSC side's row and the hub's own), and the star
+index counted both, so three hubs with two mates were listed and got no
+config.
 
-3. **The hs1 orientation vote** is a real defect on hosted data,
-   `handoffs/multiway-orientation-few-groups.md`: a fresh lane with three
-   shared groups lets one inverted record outvote 1.5 Mb of forward chain.
-   The fix proposed there needs the grape stability walk re-run.
+A GenArk star opens on its first nine mates by accession, since GenArk carries
+no curated species list, and names itself by accession ("GCA_028858775.2 vs 10
+genomes"). A common name in the track name is the obvious next polish.
 
-## Not now
+## Arabidopsis knob: the methylation files are malformed
 
-- **Arabidopsis knob with CG methylation as a lane layer.** Driven locally
-  through the dev server with the 11 accessions' `CGmeth.bw` files as
-  `laneLayers` on `syri_1001g`: the layer draws in every lane but reads as a
-  solid strip at a 1.5 Mb window and the shared domain printed `-1–1`. The
-  bigWigs name their refs `6909_Chr4` and hold scores 0 to 1. Check what a
-  zoom level's summary returns over the knob against the arm before
-  building the page; the config generator is the session's scratchpad
-  `arabidopsis_layers.cjs`.
+The 1001 Genomes `<id>.{CG,CHG,CHH}meth.bw` files store each cytosine as a
+zero-length record (start equals end, all 4,123,130 in 6909's CG file). A
+zero-length record covers no bases, so the writer recorded zero bases covered
+in every zoom record and in the header's total summary, and the sums with
+them. Zoom levels keep only min and max. @gmod/bbi reads a zoom level from
+80 bp/px (the 160 bp level; a window of about 80 kb at 1,000 px), so every
+zoomed-out bin scores 0. That is the "solid strip"
+and the `-1–1` domain the lane layer showed at 1.5 Mb, and it is true today of
+the demo's own eleven methylation tracks. UCSC's `bigWigToBedGraph` prints
+nothing for these files.
+
+The data carries the knob. At base resolution, CG methylation over Chr4's
+first 1.6 Mb averages 0.1 to 0.2 and jumps to about 0.8 from 1.7 to 2.4 Mb,
+in 6909, 9728 and 10002 alike. Re-encoding with 1 bp intervals
+(`bedGraphToBigWig`, 23 MB to 27 MB per file) gives zoom levels that match the
+base data bin for bin.
+
+The call: rehost re-encoded copies of the 33 files under
+`jbrowse.org/demos/arabidopsis_pangenome/`, with the prep script in the demo's
+README, which currently records not rehosting them as the choice. With that
+done the knob page is buildable; the layer config generator is in the
+2026-09-28 session's scratchpad as `arabidopsis_layers.cjs`.
+
+## Also open
+
+- **The hs1 orientation vote**, `multiway-orientation-few-groups.md`: the
+  human figure leaves hs1 out until the fix there is measured.
 - Drosophila's bithorax split on dm6 and the Bovini stack on bosTau9 were
   surveyed (both hosted in their stars) and not started.
