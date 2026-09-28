@@ -37,8 +37,8 @@
 //   8 regions, 200k reads  139.4    122.7     164
 //
 // So a view of one or two regions pays the per-region numbering the worker
-// used to do, roughly a fifth of the layout it runs at every landing anyway,
-// and a view of many regions pays less than the reconcile did. The first
+// used to do, now on the main thread, and a view of many regions pays less
+// than the reconcile did (ADR-188, measurement `chain-join-landings`). The first
 // version of `attachChainFields` re-answered every read at every landing and
 // allocated two objects per chain: 251 ms at 8 regions, 37 ms at one.
 

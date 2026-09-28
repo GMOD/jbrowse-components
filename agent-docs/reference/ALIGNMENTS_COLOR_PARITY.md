@@ -158,15 +158,15 @@ out-of-range index (`8 % 8 === 0`) *happened* to paint the clamp's answer; slots
 1 and 9 are LR as well. Index 10 is the first that wraps onto a colour of its
 own. So the usual "diverges only out of range" was itself masked twice over.
 
-The mate link is the other shape: `buildChainResultFields` overwrites a
-supplementary's `readPairOrientations` entry with the chain primary's, because
+The mate link is the other shape: in chain mode `attachChainFields` gives a
+supplementary's `readPairOrientations` entry the chain primary's, because
 `pair_orientation` is derived (in @gmod/bam) from the record's own reverse bit
 and position and a strand-flipped segment computes a different one. The arcs read
-that same array — so in **chain** mode they got the corrected value and in
-**pileup** mode they did not, the same reads at the same locus taking a different
-arc colour from a layout setting. `mateLinkArc` now sources orientation and TLEN
-from a primary endpoint itself (`pairFieldEntry`), which is a no-op when both
-primaries are loaded since the two primaries of a pair always agree.
+the fetched array, which carries no such correction, so the same reads at the
+same locus would take a different arc colour from the fills beside them.
+`mateLinkArc` sources orientation and TLEN from a primary endpoint itself
+(`pairFieldEntry`), which is a no-op when both primaries are loaded since the
+two primaries of a pair always agree.
 
 A related inconsistency is **open and deliberate**: `readInsertSizes` is not
 corrected the way `readPairOrientations` is, so under the plain `insertSize`

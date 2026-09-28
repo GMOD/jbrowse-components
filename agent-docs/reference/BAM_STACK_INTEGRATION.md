@@ -133,7 +133,8 @@ behind it. A clamped region is exactly what `setReference` throws on. The
 
 **`viewAsPairs` / `pairAcrossChr` / `maxInsertSize`.** `BamFile.fetchPairs`
 exists and no in-tree code passes any of it: this repo does its own chaining in
-`partitionChains` / `filterChainFeatures`, over reads it already has. Worth
+`filterChainFeatures` (worker) and `attachChainFields` (main thread), over reads
+it already has. Worth
 knowing because `@gmod/bam` ADR 0003 rejected memoizing `get name` on the
 grounds that `fetchPairs` is the only caller that re-reads a name — a
 conclusion that depends on this staying unused.

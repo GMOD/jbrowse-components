@@ -84,8 +84,8 @@ key**, so a track that turned it off for one query and on for the next would
 decode every slice twice.
 
 **`viewAsPairs` / `pairAcrossChr` / `maxInsertSize`.** This repo does its own
-chaining in `partitionChains` / `filterChainFeatures`, over reads it already
-has. Identical to the BAM case.
+chaining in `filterChainFeatures` (worker) and `attachChainFields` (main
+thread), over reads it already has. Identical to the BAM case.
 
 **`getCigarString`.** `CramSlightlyLazyFeature.CIGAR` goes through
 `NUMERIC_CIGAR` and `numericCigarToString`, so asking for the string builds and

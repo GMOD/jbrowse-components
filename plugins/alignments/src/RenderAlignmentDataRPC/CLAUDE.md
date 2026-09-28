@@ -1,6 +1,10 @@
 # RenderAlignmentDataRPC
 
-One RPC serves pileup and chain, branching on `args.linkedReads`.
+One RPC serves every alignments display, and it knows no chains: chain identity
+is joined on the main thread (`attachChainFields`,
+[ADR-188](../../../../agent-docs/architecture-decision-records/adr-188-the-worker-knows-no-chains.md)).
+What chain mode changes about a fetch is the unit a facet keeps whole,
+`facet.unit`.
 
 ## Row-instanced vs position-aggregate
 
@@ -56,15 +60,20 @@ read likewise.
   key.
 - Key generators must cover **both** worlds this pipeline serves — hence
   `strand` over `SAM_FLAG_REVERSE`, and `getMappingQuality`.
-- Chain numbering is **per worker call**, so anything unioning chains across
-  calls keys by chain **name**, not chainIdx.
+- A chain-unit facet keys each chain off its representative read (or the
+  dimension's `chainKey`) and files the whole chain in that section. A region
+  holding only a chain's supplementary files it under the supplementary's own
+  key, so a chain can sit in two sections across regions — which is why
+  `attachChainFields` unions by name across lanes as well as regions.
 
 ## One value, three types, one per invalidation tier
 
-`WorkerPileupData` is what this RPC returns. `PileupLayoutArrays` is what
-main-thread layout adds, `readTagColors`/`readColorCategories` what the two
-color bakes add, and `PileupDataResult` is the whole of it — the value a
-renderer, hit test or overlay reads. The display's tier rule
+`WorkerPileupData` is what this RPC returns. `ChainFields` is what chain mode
+attaches on the main thread ahead of layout (`ChainedPileupData`, the layout's
+input), `PileupLayoutArrays` is what main-thread layout adds,
+`readTagColors`/`readColorCategories` what the two color bakes add, and
+`PileupDataResult` is the whole of it — the value a renderer, hit test or
+overlay reads. The display's tier rule
 (plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md §"Which getter decides
 what a setting invalidates") is therefore type-checked rather than remembered:
 

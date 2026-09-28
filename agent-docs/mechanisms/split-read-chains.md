@@ -27,12 +27,11 @@ segments because that is what the code says.
 
 ## 1. A chain is keyed by read name, never by a number a fetch minted
 
-Chain numbering is per worker call, so the same read gets a different chain index
-from every region that sees it. **Anything unioning chains across calls keys on
-the read NAME** —
-[RenderAlignmentDataRPC/CLAUDE.md](../../plugins/alignments/src/RenderAlignmentDataRPC/CLAUDE.md)
-states it, `mergeChains` lays rows out by it, and `reconcileChainSuppAcrossRegions`
-re-answers a fill by it.
+Chains are numbered per region, so the same read gets a different chain index
+from every region that holds it. **Anything unioning chains across regions keys
+on the read NAME** — `attachChainFields`
+(`plugins/alignments/src/LinearAlignmentsDisplay/chainFields.ts`) unions each
+chain's answers by it, and `mergeChains` lays rows out by it.
 
 The two failures live at the edges of "name":
 
@@ -152,17 +151,18 @@ over that alignment, so the overlay dips it (`crossesOwnAlignment`).
 The most expensive rule here, because the per-region answer is never *wrong* —
 it is correctly about the wrong subject.
 
-The worker marks each chain per region: does it carry a supplementary segment,
-and which way does its primary point. **A chain crossing a region boundary is
-exactly the case where no region holds the whole chain**, and an
-interchromosomal fusion — one window on chr22, one on chr9 — is the shape chain
-mode exists for. So one molecule was classified twice, differently, and neither
-answer was about the molecule: the chr22 side saw no supplementary and painted
-the scheme's plain fill, the chr9 side saw no primary and framed its segment
-against the unknown-primary fallback while the legend said "inverted relative to
-the chain's primary". `reconcileChainSuppAcrossRegions`
-(`plugins/alignments/src/LinearAlignmentsDisplay/chainSuppAcrossRegions.ts`)
-re-answers both bits from the union of the regions, keyed by name per rule 1.
+Each chain carries a mark: does it have a supplementary segment, and which way
+does its primary point. **A chain crossing a region boundary is exactly the
+case where no region holds the whole chain**, and an interchromosomal fusion —
+one window on chr22, one on chr9 — is the shape chain mode exists for. When the
+worker marked chains, one call per region, it classified one molecule twice,
+differently, and neither answer was about the molecule: the chr22 side saw no
+supplementary and painted the scheme's plain fill, the chr9 side saw no primary
+and framed its segment against the unknown-primary fallback while the legend
+said "inverted relative to the chain's primary". `attachChainFields` answers
+from the union of every region and lane, keyed by name per rule 1, and the
+worker no longer knows chains at all
+([ADR-188](../architecture-decision-records/adr-188-the-worker-knows-no-chains.md)).
 
 `consensusChainStrandFrames`
 (`plugins/alignments/src/LinearAlignmentsDisplay/chainStrandConsensus.ts`) is the
@@ -174,14 +174,13 @@ a vote across every chain on screen, and the pass sweeps until nothing flips.
 Two mechanics that make a re-answer possible at all, both worth copying:
 
 - **The encoding has to leave room to replace half an answer.** These bits were
-  an 0–4 enum where a split marker occupied the same value space as the field
-  being recomputed, so a split read had to be skipped whole. As a bit field with
-  `CHAIN_SPLIT_MASK`, the union re-answers the has-supp and frame bits and ORs
-  the read's own split bits back in.
-- **The per-region producer and the reconciler share one encoder.**
-  `chainSuppFill` (`plugins/alignments/src/shared/buildChainMetadata.ts`) is
-  exported for that reason: the union has to encode the answer *the same way*,
-  not the same way again.
+  an 0–4 enum where a split marker occupied the same value space as the frame,
+  so a split read's frame could not be re-answered at all. As a bit field, the
+  consensus rewrites the frame bit alone (`withChainFrame`).
+- **One producer, answering from the union.** A per-region answer that a
+  reconciler then corrects has to be encoded the same way twice, and was.
+  `attachChainFields` memoizes each region's lone answer and re-answers only the
+  reads of chains another region shares, so the correction is the answer.
 
 ## 7. Two features that point at each other need a key that sorts
 

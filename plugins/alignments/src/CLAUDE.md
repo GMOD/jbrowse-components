@@ -135,7 +135,8 @@ clone is priced by object **count**, and a name is **decoded**, not copied.
 
 - **`readNameAt(data, i)`, never `readNameBlock.slice` by hand.** V8 slices a
   long string in O(1).
-- **`FeatureData` has no `name`.** The QNAME is on `ChainFeatureData` only.
+- **`FeatureData` has no `name`.** Chain mode reads each QNAME off the block on
+  the main thread (`attachChainFields`).
 - **Anything feeding the block must be allocation-free** —
   `BamSlightlyLazyFeature` exposes `nameLength` + `copyNameInto`; a `nameBytes`
   subarray view per read gave the entire win back.

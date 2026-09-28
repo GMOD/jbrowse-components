@@ -34,6 +34,13 @@ handed unlaid data and the worker cannot state a field it has no answer for
 (plugins/alignments/src/RenderAlignmentDataRPC/CLAUDE.md §"One value, three
 types").
 
+**Chain mode is not a tier-1 setting.** The worker knows no chains;
+`chainAttachment` joins chain identity across every region and lane
+(`attachChainFields`), and `chainedByGroup` is the layout's input. So the pairs
+toggle relayouts, and refetches only under a facet, whose unit it changes.
+`rawDataByGroup` stays chain-free: the arcs, sashimi and a split view overlaying
+the display read it and must not recompute on the toggle.
+
 - **Never put a fetch-result derivative in `rpcProps()`** — infinite loop.
   `colorTagMap` is the canonical trap.
 - **A color input in `groupLayoutContext` costs a full relayout** and loses both
@@ -54,12 +61,11 @@ primary), and the two are independent. Read them through `chainHasSupp` /
 integers the split kind could only be written by destroying the frame, and every
 consumer carried a workaround for that.
 
-`CHAIN_FRAME_REV` is a **frame**, and the worker's answer for it is overwritten
-twice on the main thread — `reconcileChainSuppAcrossRegions` (one molecule
-across regions) then `consensusChainStrandFrames` (molecules about each other) —
-because the worker frames on `primaryStrand` and **on a foldback the primary
-flag is arbitrary**. Alternatives measured 58/52/61% agreement where the
-consensus reaches 100%.
+`CHAIN_FRAME_REV` is a **frame**. `attachChainFields` frames each chain on its
+primary's strand from every region at once, and `consensusChainStrandFrames`
+then re-answers it from the molecules about each other, because **on a foldback
+the primary flag is arbitrary**. Alternatives measured 58/52/61% agreement where
+the consensus reaches 100%.
 
 - **Votes are purity-normalized, not length-weighted**, or one long arm — also
   the primary — outvotes everything and the pass flips nothing.

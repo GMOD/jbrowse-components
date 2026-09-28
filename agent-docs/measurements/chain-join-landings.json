@@ -1,0 +1,29 @@
+{
+  "id": "chain-join-landings",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "npx esbuild plugins/alignments/benches/chainJoin.bench.ts --bundle --platform=node --format=esm --outfile=/tmp/chainJoin.mjs && node --expose-gc /tmp/chainJoin.mjs --rounds=40 --reads=<n> --regions=<n>",
+    "notes": "Main-thread chain-mode cost of a view's regions landing one at a time, min ms over 40 rounds summed over the landings. 'before' is the worker-numbered path: the structured clone of each landed region's `chainNames`, then `reconcileChainSuppAcrossRegions` over every region held. 'after' is `attachChainFields` over every region held, the landed region cold in its per-region memo. Synthetic pairs, every 50th pair's read2 filed in the next region and every 70th read2 supplementary. 'chain layout' is `buildLaidOutChainMap` over every region once, which both paths pay at each landing, for scale. Arms interleaved in one node 24 process on AC power at load 13-16; the duplicated-baseline control held 0.99-1.06x. The worker's own chain numbering, which 'after' now does on the main thread, is in neither arm's worker time."
+  },
+  "columns": [
+    { "key": "view", "label": "view" },
+    { "key": "beforeMs", "label": "before", "format": "ms", "precision": 1, "align": "right" },
+    { "key": "afterMs", "label": "after", "format": "ms", "precision": 1, "align": "right" },
+    {
+      "key": "addedMs",
+      "label": "added",
+      "format": "ms",
+      "precision": 1,
+      "align": "right",
+      "derived": "afterMs - beforeMs"
+    },
+    { "key": "layoutMs", "label": "chain layout", "format": "ms", "precision": 0, "align": "right" }
+  ],
+  "rows": [
+    { "values": { "view": "1 region, 100k reads", "beforeMs": 3.1, "afterMs": 20.6, "layoutMs": 97 } },
+    { "values": { "view": "2 regions, 200k reads", "beforeMs": 37.9, "afterMs": 69.3, "layoutMs": 199 } },
+    { "values": { "view": "8 regions, 200k reads", "beforeMs": 139.4, "afterMs": 122.7, "layoutMs": 164 } }
+  ]
+}
