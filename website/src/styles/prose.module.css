@@ -74,6 +74,26 @@
     opacity: 1;
   }
 
+  /* rehype-data-urls shows each source URL as host/…/file until the checkbox
+     under the "Where the data comes from" heading is ticked. */
+  .prose :global(.data-urls-toggle) {
+    margin-right: 0.4rem;
+  }
+  .prose :global(.data-urls-label) {
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .prose :global(.data-urls .url-full) {
+    display: none;
+    word-break: break-all;
+  }
+  .prose :global(.data-urls-toggle:checked ~ .data-urls .url-short) {
+    display: none;
+  }
+  .prose :global(.data-urls-toggle:checked ~ .data-urls .url-full) {
+    display: inline;
+  }
+
   /* The docs' link base: color only, so the prose rule above is what adds the
      underline and a chrome link stays clean. It has to live in this file rather
      than in DocsLayout's scoped styles to lose to `.prose p a` — an Astro scoped
