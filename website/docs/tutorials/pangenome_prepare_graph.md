@@ -12,10 +12,10 @@ locus, zoom to a chromosome, to the nodes, and to the haplotypes that carry a
 variant. One command converts the graph into small indexed files that answer a
 window at a time, and writes the config that puts them on a track. We:
 
-- runs that command on HPRC release 2, checked against a published output
-- opens the track as a graph and as tiled features
-- checks the index against the graph
-- adds two optional layers: carriage per segment, and each haplotype's walk
+- run that command on HPRC release 2, checked against a published output
+- open the track as a graph and as tiled features
+- check the index against the graph
+- add two optional layers: carriage per segment, and each haplotype's walk
 
 :::caution Experimental
 
@@ -169,8 +169,8 @@ anchored on the view's coordinates.
 Right-click a node for **Open in** the haplotype named in its rGFA id
 (`NA20809#2#CM094351.1`), when the session holds an assembly named or aliased to
 `sample#haplotype`.
-[Browsing the graph](/docs/tutorials/pangenome_hprc#check-it-on-the-haplotype)
-takes that route.
+[Browsing the graph](/docs/tutorials/pangenome_hprc#from-an-allele-to-its-haplotype)
+shows the route.
 
 ## Checking the index against the graph
 
@@ -188,12 +188,10 @@ Ask the graph about one of the segments it returned:
 gfatools view -l s12829 -r 0 hprc-v2.1-mc-grch38.sv.gfa.gz
 ```
 
-`SN`/`SO` on that S-line are the BED row's first two columns; `SR` is the fifth.
-An **empty result** where the reference is tiled means the wrong namespace:
-segments are indexed under the graph's PanSN names, so `chr1` alone finds
-nothing where `GRCh38#0#chr1` finds everything. **Backbone rows with no
-alleles** mean the graph collapsed there, which minigraph does to near-identical
-segmental duplications.
+`SN`/`SO` on that S-line are the BED row's first two columns, and `SR` is the
+fifth. An empty result where the reference is tiled means the wrong namespace:
+segments are indexed under PanSN names, so `GRCh38#0#chr1` finds them and `chr1`
+alone does not.
 
 ## A whole chromosome {#a-whole-chromosome-the-bubble-tier}
 
@@ -227,13 +225,12 @@ Run it once per assembly, reference first.
 writes one tabix-indexed row per bubble per sample, drawn as one lane per
 haplotype.
 
-With a **plain GFA**, the path walk that built the index recorded who visits
-each segment, as an `SM:Z:` tag: it reaches the node panel as `carriedBy` and a
-track as `feature.samples`/`feature.carriers`, so the graph track can be colored
-by carriage. **Color by... → Attribute...** with `carriers` gives each count a
-colour of its own and a key. Past a handful of haplotypes a ramp reads better,
-and **Edit as JSON...** in the same dialog takes one, here from red for a
-segment one haplotype carries to grey for the most widely carried:
+With a **plain GFA**, the index records who visits each segment as an `SM:Z:`
+tag, which reaches a track as `feature.samples` and `feature.carriers`. Past a
+handful of haplotypes, a ramp colors the graph track by carriage better than a
+color per count: **Color by... → Attribute...** with `carriers`, then **Edit as
+JSON...** takes this one, red for a segment one haplotype carries and grey for
+the most widely carried:
 
 ```json addtrack
 {
@@ -259,9 +256,9 @@ segment one haplotype carries to grey for the most widely carried:
 
 <Figure caption="The carriage ramp on the E. coli pggb graph over an IS5 insertion in K12. The segment K12 alone walks is red; the segments all five strains share are grey." src="/img/pangenome/prepare_graph_carriage.png" links="Open this view=pangenome/prepare_graph_carriage" />
 
-Carriage is per haplotype (`HG002.1`); the sample alone merges a diploid's two
-copies.
-[Who carries each allele](/docs/tutorials/pangenome_hprc_carriers#carriage-at-the-graphs-own-granularity)
+Carriage is per haplotype (`HG002.1`), since the sample alone merges a diploid's
+two copies.
+[Allele carriers](/docs/tutorials/pangenome_hprc_carriers#carriage-at-the-graphs-own-granularity)
 reads carriage from a file built this way.
 
 ## Every haplotype's walk: a gbz-base database
@@ -301,9 +298,8 @@ gbz-haplotype-index --interval 16384 --anchor-spacing 131072 \
   graph.gbz graph.haplotype-index.db
 ```
 
-Over HPRC's 464 haplotypes that's a 7.9 GB companion, built in about 13 minutes
-on 24 cores with a 12 GB memory peak. On a 16-thread Intel Mac the walk aborts
-inside libmalloc's nano zone, fixed by `MallocNanoZone=0` or `--threads 8`.
+Over HPRC's 464 haplotypes that is a 7.9 GB companion, built in about 13 minutes
+on 24 cores with a 12 GB memory peak.
 
 The database and companion need URLs that serve range requests: the track's
 `uri` and `haplotypeIndexLocation`:
