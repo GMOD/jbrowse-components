@@ -137,7 +137,8 @@ and the CNV calls as a BED, both loaded straight from their FTP URL.
 The CNV BED ships without a header; name its columns with
 [`columnNames`](/docs/config/bedadapter/#slot-columnnames). A threshold colour
 over `total_copy_number` paints each call by its copy number with a key, the
-same palette as the subclonal lane further down:
+same palette as the subclonal lane further down, and a `labels.name` expression
+prints each call's copy number with its haplotype split:
 
 ```json addtrack
 {
@@ -159,6 +160,9 @@ same palette as the subclonal lane further down:
     ]
   },
   "displayDefaults": {
+    "labels": {
+      "name": "jexl:'CN '+get(feature,'total_copy_number')+' ('+get(feature,'hap1_copy_number')+'|'+get(feature,'hap2_copy_number')+')'"
+    },
     "color": {
       "field": "total_copy_number",
       "scale": "threshold",

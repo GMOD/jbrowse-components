@@ -332,7 +332,7 @@ const BENCHMARK_CNV_COLOR = {
 }
 // 120 px holds the key's title and its five intervals; shorter, the lane
 // clips CN 4+ and more off the bottom of its key.
-const benchmarkCnvLane = (trackId = 'hg008_cnv_calls') => ({
+const benchmarkCnvLane = (trackId = 'hg008t_somatic_cnv') => ({
   trackId,
   type: 'LinearBasicDisplay',
   color: BENCHMARK_CNV_COLOR,
@@ -1191,8 +1191,7 @@ export const svSpecs: ScreenshotSpec[] = [
                 // the somatic-SV benchmark call, so the junction the reads
                 // support is anchored to its benchmark BND on both panels
                 {
-                  trackId:
-                    'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+                  trackId: 'hg008t_benchmark_sv',
                   type: 'LinearVariantDisplay',
                   height: 40,
                 },
@@ -1217,8 +1216,7 @@ export const svSpecs: ScreenshotSpec[] = [
               assembly: 'GRCh38_GIABv3',
               tracks: [
                 {
-                  trackId:
-                    'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+                  trackId: 'hg008t_benchmark_sv',
                   type: 'LinearVariantDisplay',
                   height: 40,
                 },
@@ -1368,8 +1366,7 @@ export const svSpecs: ScreenshotSpec[] = [
           trackLabels: 'offset',
           tracks: [
             {
-              trackId:
-                'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+              trackId: 'hg008t_benchmark_sv',
               type: 'LinearVariantDisplay',
               height: 55,
             },
@@ -1529,8 +1526,7 @@ export const svSpecs: ScreenshotSpec[] = [
               heightMode: 'grow',
             },
             {
-              trackId:
-                'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+              trackId: 'hg008t_benchmark_sv',
               type: 'LinearVariantDisplay',
               // The box around the deletion, drawn by the DISPLAY rather than
               // by the annotation overlay (review: "the red box isnt really
@@ -1609,7 +1605,7 @@ export const svSpecs: ScreenshotSpec[] = [
         fromAnchor: { text: SV_85_DEL, dy: 30 },
         anchor: {
           view: 1,
-          track: 'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+          track: 'hg008t_benchmark_sv',
           locus: SV_85_DEL,
           fracY: 0,
           dy: 14,
@@ -1624,7 +1620,7 @@ export const svSpecs: ScreenshotSpec[] = [
         // the 50px gap whatever width the deletion draws at
         anchor: {
           view: 1,
-          track: 'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+          track: 'hg008t_benchmark_sv',
           locus: SV_85_DEL,
           fracY: 0,
           alignX: 'right',
@@ -1707,7 +1703,7 @@ export const svSpecs: ScreenshotSpec[] = [
           // showing the supporting reads across the deletion.
           tracks: [
             'hg38_ncbiRefSeq_ucsc',
-            'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+            'hg008t_benchmark_sv',
             {
               trackId: 'hg008t_pacbio_chr10_deletion_slice',
               // compact pileup: the "Compact" feature-height preset sets
@@ -1791,8 +1787,7 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             'GRCh38_GIABv3-ReferenceSequenceTrack',
             {
-              trackId:
-                'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+              trackId: 'hg008t_benchmark_sv',
               height: 60,
             },
             // Both pileups sorted at the same column, which is inside the
@@ -1913,9 +1908,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
-            benchmarkCnvLane(
-              'GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls',
-            ),
+            benchmarkCnvLane(),
           ],
         },
       ],
@@ -1975,7 +1968,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // chr9p21.3 is the window where the four can be told apart. Inside a CN 1 arm
   // the benchmark calls two events: a ~20 kb homozygous deletion over CDKN2A
   // (SV_75, CN 0) and a ~310 kb CN 2 segment 650 kb to its right (SV_76, 0+2).
-  //   - benchmark (hg008_cnv_calls, from the cgiab config): both, CN-labeled.
+  //   - benchmark (hg008t_somatic_cnv, from the cgiab config): both, CN-labeled.
   //   - NYGC BIC-seq2, annotated: both, on the same breakpoints, DEL then DUP.
   //   - DRAGEN: the 310 kb one as CNLOH, and nothing over the deletion. Its own
   //     command line in the VCF header sets --cnv-filter-length=50000, so a
@@ -2200,7 +2193,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // context), tumor-vs-normal per-base coverage, the raw HG008-T long-read
   // pileup with supplementary alignments linked (the deletion is a clean
   // drop-out in the reads themselves), and the CN-labeled benchmark CNV track
-  // (the config's hg008_cnv_calls) whose label reads out the called copy
+  // (the config's hg008t_somatic_cnv) whose label reads out the called copy
   // number (CN 0). The coarse log2 ratio was dropped (it duplicates the
   // per-base coverage without adding scale context at this zoom).
   //
@@ -2368,7 +2361,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // lower (~0.33) band rather than the single 0.5 line of a balanced region.
   // A compact NCBI RefSeq gene track (hg38_ncbiRefSeq_ucsc, from the cgiab
   // config) anchors KRAS in the gained arm, and the CN-labeled benchmark CNV
-  // track (hg008_cnv_calls, also from the config) reads the opaque "SV_101" id
+  // track (hg008t_somatic_cnv, also from the config) reads the opaque "SV_101" id
   // out as its copy number (the bare SV id doesn't clarify the
   // event). Zoomed out from 3.5Mb so the gain sits in flanking context.
   {
@@ -2448,7 +2441,7 @@ export const svSpecs: ScreenshotSpec[] = [
   //     at 0, YET the BAF still splits off 0.5. Invisible to depth alone; only the
   //     BAF reveals it.
   // Same stack as the chr3/SMAD4 two-panel views: log2 over raw BAF over the
-  // CN-labeled benchmark CNV calls (hg008_cnv_calls, from the cgiab config).
+  // CN-labeled benchmark CNV calls (hg008t_somatic_cnv, from the cgiab config).
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_chr17_loh',
@@ -2536,7 +2529,7 @@ export const svSpecs: ScreenshotSpec[] = [
 
   // SMAD4 (DPC4), the mirror image of the TP53 event: 18q loss with LOH
   // (CN 1, 0+1) — negative log2 AND the BAF het SNPs splitting off the 0.5 line.
-  // The CNV calls use the config's CN-labeled hg008_cnv_calls track so the 18q
+  // The CNV calls use the config's CN-labeled hg008t_somatic_cnv track so the 18q
   // event reads out as its copy number + haplotype split (the bare
   // draftbenchmark SV ids don't say what the call is).
   {

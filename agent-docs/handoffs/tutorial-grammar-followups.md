@@ -33,12 +33,12 @@ in git; what follows is what is left.
 
 ## Figures whose config is still a copy
 
-- **cgiab keeps three id sets for four lanes.** The benchmark SV and CNV
-  lanes, BAF and the subclonal CNV load from `demos/cgiab/config.json` under
-  ids the page's fences do not use, and the page's `HG008-T_baf` and
-  `hg008_subclonal_cnv` fences share ids with that config. Converging them
-  means editing that config, which carries an undeployed change nobody has
-  signed off (below).
+- **cgiab's benchmark lanes load under the page's ids** since 2026-09-27:
+  `demos/cgiab/config.json` carries `hg008t_benchmark_sv` and
+  `hg008t_somatic_cnv` as the page's fences spell them, and every spec names
+  those. The old ids (`GRCh38_HG008-T-V0.5_…draftbenchmark.vcf`, `…calls`,
+  `hg008_cnv_calls`) stay in the config until the site redeploys, because the
+  live tutorial's figure links still open them. Drop them after that deploy.
 - **A figure on a hosted demo config draws the config's track, not the page's
   fence.** Nothing compares those two copies either; hg002's gene tracks were
   one such pair (the page and `demos/hg002` now agree).
