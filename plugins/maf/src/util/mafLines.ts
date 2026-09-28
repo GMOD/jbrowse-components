@@ -10,7 +10,7 @@ import type { SourceResolver } from './parseAssemblyName.ts'
 
 /**
  * The line grammar of a MAF stanza, shared by the two readers of it: bigMaf
- * packs the lines `;`-joined into one bigBed field (`parseBigMafStanza`), a
+ * packs the lines `;`-joined into one bigBed field (`BigMafBlockReader`), a
  * bgzip MAF holds them newline-separated in the file itself (`parseMafBlocks`).
  * Only the framing differs — `a` lines and blank-line terminators exist in the
  * file and not in the packed field — so the framing stays with each reader and

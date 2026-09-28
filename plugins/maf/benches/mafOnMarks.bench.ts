@@ -74,6 +74,14 @@
 // sink (`readBlocks`), for the MAF display's pack and coverage and for the
 // mark display's table, steps and encode, beside the BED read alone. The
 // direct path must pack and encode what the features do before any timing.
+// The features arms read the parse `getFeatures` ran before it went through
+// `readBlocks` (`legacyMafParse.fixture.ts`).
+//
+// `--readers --shape=<index>` times the two MafFeature readers `readBlocks`
+// took over, parse included: `getFeatures` by the old parse and rebuilt over
+// `readBlocks`, and the identity matrix clustering builds, walked over the old
+// parse's MafFeatures and counted through its own sink. Each must answer what
+// its old arm does before any timing.
 //
 // `--shape=<index>` runs one shape. Under `node --expose-gc` each arm starts
 // after a collection.
@@ -121,6 +129,7 @@ import BigBedAdapter from '../../bed/src/BigBedAdapter/BigBedAdapter.ts'
 import BigBedConfigSchema from '../../bed/src/BigBedAdapter/configSchema.ts'
 import BigMafAdapter from '../src/BigMafAdapter/BigMafAdapter.ts'
 import BigMafConfigSchema from '../src/BigMafAdapter/configSchema.ts'
+import { readIdentityMatrix } from '../src/LinearMafClusterIdentityRpc/buildIdentityMatrix.ts'
 import { EMPTY_MAF_COVERAGE } from '../src/LinearMafDisplay/encodeMafRows.ts'
 import { placeMafRegionData } from '../src/LinearMafDisplay/placeMafRows.ts'
 import { buildMafCoverageRegion } from '../src/LinearMafGetAlignmentDataRpc/buildMafCoverageRegion.ts'
@@ -130,6 +139,12 @@ import { buildIdentityRuns } from '../src/LinearMafRenderer/identity.ts'
 import { buildMafChannels } from '../src/LinearMafRenderer/mafChannels.ts'
 import MafTabixAdapter from '../src/MafTabixAdapter/MafTabixAdapter.ts'
 import MafTabixConfigSchema from '../src/MafTabixAdapter/configSchema.ts'
+import {
+  featureView,
+  legacyBigMafFeatures,
+  legacyIdentityMatrix,
+  legacyMafTabixFeatures,
+} from '../src/util/legacyMafParse.fixture.ts'
 import { featureBlocks } from '../src/util/mafBlockSink.ts'
 import {
   mafFeatureTable,
@@ -155,6 +170,7 @@ import type {
   MarkEncodingInput,
   TransformStep,
 } from '@jbrowse/core/util/markEncoding'
+import type { Observable } from 'rxjs'
 
 const flag = (name: string) =>
   process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1]
@@ -165,6 +181,7 @@ const binBp = num('binBp', 64)
 const stages =
   process.argv.includes('--stages') || process.argv.includes('--column-stages')
 const parse = process.argv.includes('--parse')
+const readers = process.argv.includes('--readers')
 const onlyIdentity = process.argv.includes('--identity')
 
 // The first shape is MAF_WORKER_PIPELINE.md's profile, the second the narrow
@@ -848,7 +865,7 @@ const asJson = process.argv.includes('--json')
 const results = []
 const gc = (globalThis as { gc?: () => void }).gc
 const oneShape = flag('shape')
-for (const { name, spec } of stages || parse
+for (const { name, spec } of stages || parse || readers
   ? []
   : SHAPES.filter((_, i) => oneShape === undefined || i === Number(oneShape))) {
   const features = await fetchRegion(spec)
@@ -1040,9 +1057,11 @@ if (process.argv.includes('--column-stages')) {
 // encode. `-features` reads MafFeatures, as every adapter did before
 // `readBlocks`; `-direct` is MafTabixAdapter's parse straight into the sink.
 // Written out per arm, the control included.
-async function parseMafFeatures(adapter: MafAdapterBase, region: Region) {
+type LegacyRead = (region: Region) => Observable<Feature>
+
+async function parseMafFeatures(legacy: LegacyRead, region: Region) {
   const sink = new MafRegionSink(undefined)
-  await featureBlocks(adapter.getFeatures(region), sink)
+  await featureBlocks(legacy(region), sink)
   const packed = sink.packer.finishBlocks()
   const coverage = buildMafCoverageRegion(
     packed,
@@ -1052,9 +1071,9 @@ async function parseMafFeatures(adapter: MafAdapterBase, region: Region) {
   )
   return { packed, coverage, sink }
 }
-async function parseMafControl(adapter: MafAdapterBase, region: Region) {
+async function parseMafControl(legacy: LegacyRead, region: Region) {
   const sink = new MafRegionSink(undefined)
-  await featureBlocks(adapter.getFeatures(region), sink)
+  await featureBlocks(legacy(region), sink)
   const packed = sink.packer.finishBlocks()
   const coverage = buildMafCoverageRegion(
     packed,
@@ -1076,11 +1095,8 @@ async function parseMafDirect(adapter: MafAdapterBase, region: Region) {
   )
   return { packed, coverage, sink }
 }
-async function parseTypedFeatures(adapter: MafAdapterBase, region: Region) {
-  const table = await mafFeatureTable(
-    adapter.getFeatures(region),
-    region.refName,
-  )
+async function parseTypedFeatures(legacy: LegacyRead, region: Region) {
+  const table = await mafFeatureTable(legacy(region), region.refName)
   const { layers } = layerTables(
     table,
     { transform: SHARED, facet: FACET, layers: [{}] },
@@ -1163,41 +1179,161 @@ function openBigMaf(spec: MafFixtureSpec) {
 }
 
 function openTabix(spec: MafFixtureSpec) {
-  const { adapter, region } = openRegion(spec)
   const fixture = ensureMafTabixFixture(undefined, spec)
+  const bedGzLocation = {
+    localPath: fixture.bedGzPath,
+    locationType: 'LocalPathLocation' as const,
+  }
+  const index = {
+    location: {
+      localPath: fixture.tbiPath,
+      locationType: 'LocalPathLocation' as const,
+    },
+  }
   const raw = new BedTabixAdapter(
-    BedTabixConfigSchema.create({
-      bedGzLocation: {
-        localPath: fixture.bedGzPath,
-        locationType: 'LocalPathLocation',
-      },
-      index: {
-        location: {
-          localPath: fixture.tbiPath,
-          locationType: 'LocalPathLocation',
-        },
-      },
-    }),
+    BedTabixConfigSchema.create({ bedGzLocation, index }),
   )
+  const adapter = new MafTabixAdapter(
+    MafTabixConfigSchema.create({ bedGzLocation, index }),
+    () =>
+      Promise.resolve({
+        dataAdapter: raw as BaseFeatureDataAdapter,
+        sessionIds: new Set<string>(),
+      }),
+  )
+  const region = {
+    refName: fixture.refName,
+    start: fixture.start,
+    end: fixture.end,
+    assemblyName: 'bench',
+  }
   return { adapter, region, raw }
+}
+
+function openFormat(spec: MafFixtureSpec) {
+  const format = flag('adapter') ?? 'tabix'
+  const opened = format === 'bigmaf' ? openBigMaf(spec) : openTabix(spec)
+  const bed = opened.raw as BaseFeatureDataAdapter
+  const legacy: LegacyRead = r =>
+    format === 'bigmaf'
+      ? legacyBigMafFeatures(bed, r)
+      : legacyMafTabixFeatures(bed, r)
+  return { ...opened, bed, format, legacy }
+}
+
+function timeArms(arms: Record<string, () => Promise<number>>) {
+  const best: Record<string, number> = {}
+  const counts: Record<string, number> = {}
+  const only = flag('arms')?.split(',')
+  const order = Object.keys(arms).filter(arm => !only || only.includes(arm))
+  return (async () => {
+    for (let r = 0; r < rounds; r++) {
+      const rotated = [
+        ...order.slice(r % order.length),
+        ...order.slice(0, r % order.length),
+      ]
+      for (const arm of rotated) {
+        gc?.()
+        const t0 = performance.now()
+        const n = await arms[arm]!()
+        best[arm] = Math.min(best[arm] ?? Infinity, performance.now() - t0)
+        counts[arm] = n
+      }
+    }
+    const ms = (arm: string) => Math.round(best[arm]! * 10) / 10
+    return { best, counts, order, ms, gc: Boolean(gc) }
+  })()
+}
+
+if (readers) {
+  const { name, spec } = SHAPES[num('shape', 0)]!
+  const { adapter, region, format, legacy } = openFormat(spec)
+  const sources = Array.from({ length: spec.species }, (_, i) => `sp${i}`)
+  const featuresOf = (o: Observable<Feature>) =>
+    firstValueFrom(o.pipe(toArray()))
+
+  if (
+    !isDeepStrictEqual(
+      featureView(await featuresOf(legacy(region))),
+      featureView(await featuresOf(adapter.getFeatures(region))),
+    )
+  ) {
+    throw new Error('the rebuilt getFeatures answers different MafFeatures')
+  }
+  const matrixView = (m: Map<string, Float32Array>) =>
+    [...m].map(([k, row]) => [k, [...row]])
+  if (
+    !isDeepStrictEqual(
+      matrixView(await legacyIdentityMatrix(legacy, [region], sources)),
+      matrixView(await readIdentityMatrix(adapter, [region], sources)),
+    )
+  ) {
+    throw new Error('the identity sink counts a different matrix')
+  }
+
+  const { counts, order, ms, gc } = await timeArms({
+    'features-legacy': async () => (await featuresOf(legacy(region))).length,
+    'features-control': async () => (await featuresOf(legacy(region))).length,
+    'features-rebuilt': async () =>
+      (await featuresOf(adapter.getFeatures(region))).length,
+    'identity-legacy': async () =>
+      (await legacyIdentityMatrix(legacy, [region], sources)).size,
+    'identity-control': async () =>
+      (await legacyIdentityMatrix(legacy, [region], sources)).size,
+    'identity-sink': async () =>
+      (await readIdentityMatrix(adapter, [region], sources)).size,
+  })
+  if (asJson) {
+    console.log(
+      JSON.stringify(
+        {
+          shape: name,
+          adapter: format,
+          rounds,
+          gc,
+          blocks: counts['features-rebuilt'],
+          featuresLegacyMs: ms('features-legacy'),
+          featuresControlMs: ms('features-control'),
+          featuresRebuiltMs: ms('features-rebuilt'),
+          identityLegacyMs: ms('identity-legacy'),
+          identityControlMs: ms('identity-control'),
+          identitySinkMs: ms('identity-sink'),
+        },
+        null,
+        2,
+      ),
+    )
+  } else {
+    console.log(
+      `\n${name}, ${format}: parse included, min of ${rounds}, gc ${gc}`,
+    )
+    console.table(
+      order.map(arm => ({
+        arm,
+        ms: ms(arm),
+        count: counts[arm],
+        'vs legacy': (
+          ms(arm) /
+          ms(arm.startsWith('identity') ? 'identity-legacy' : 'features-legacy')
+        ).toFixed(2),
+      })),
+    )
+  }
 }
 
 if (parse) {
   const { name, spec } = SHAPES[num('shape', 0)]!
-  const format = flag('adapter') ?? 'tabix'
-  const opened = format === 'bigmaf' ? openBigMaf(spec) : openTabix(spec)
-  const { adapter, region } = opened
-  const bed = opened.raw as BaseFeatureDataAdapter
+  const { adapter, region, format, bed, legacy } = openFormat(spec)
 
   const wireDiff = firstDifference(
-    wireOf(await parseMafFeatures(adapter, region)),
+    wireOf(await parseMafFeatures(legacy, region)),
     wireOf(await parseMafDirect(adapter, region)),
   )
   if (wireDiff !== undefined) {
     throw new Error(`the direct parse packs a different ${wireDiff}`)
   }
   const spanDiff = firstDifference(
-    await parseTypedFeatures(adapter, region),
+    await parseTypedFeatures(legacy, region),
     await parseTypedDirect(adapter, region),
   )
   if (spanDiff !== undefined) {
@@ -1206,13 +1342,13 @@ if (parse) {
 
   const arms: Record<string, () => Promise<number>> = {
     'maf-features': async () =>
-      (await parseMafFeatures(adapter, region)).packed.rowOffset.length,
+      (await parseMafFeatures(legacy, region)).packed.rowOffset.length,
     'maf-control': async () =>
-      (await parseMafControl(adapter, region)).packed.rowOffset.length,
+      (await parseMafControl(legacy, region)).packed.rowOffset.length,
     'maf-direct': async () =>
       (await parseMafDirect(adapter, region)).packed.rowOffset.length,
     'typed-features': async () =>
-      (await parseTypedFeatures(adapter, region)).count,
+      (await parseTypedFeatures(legacy, region)).count,
     'typed-direct': async () => (await parseTypedDirect(adapter, region)).count,
     bed: () => parseBed(bed, region),
   }

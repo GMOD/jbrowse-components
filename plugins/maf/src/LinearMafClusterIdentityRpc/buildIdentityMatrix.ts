@@ -1,13 +1,14 @@
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { formatBytes } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
-import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 
-import type { AlignmentRecord } from '../types.ts'
+import type { MafAdapterOptions } from '../types.ts'
+import type { MafAdapterBase } from '../util/MafAdapterBase.ts'
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { StatusCallback } from '@jbrowse/core/util/progress'
 import type { ClusterMatrix } from '@jbrowse/tree-sidebar'
 
@@ -60,7 +61,7 @@ interface RegionSegment {
  * one column per region — clustering is a one-shot action and the alternative
  * is a region that bins to nothing.
  */
-function buildSegments(regions: Region[]) {
+export function buildSegments(regions: Region[]) {
   const spans = regions.map(r => Math.max(1, r.end - r.start))
   const total = spans.reduce((a, b) => a + b, 0)
   const budget = Math.max(1, Math.min(MAX_COLUMNS, total))
@@ -168,101 +169,137 @@ export async function buildIdentityMatrix({
     )
   }
   const opts = configSamples.length ? { ...args, samples: configSamples } : args
+  return readIdentityMatrix(adapter, regions, sources, opts)
+}
 
+/**
+ * The matrix {@link buildIdentityMatrix} returns, read off `adapter` with no
+ * byte gate: each region's blocks through `readBlocks` into an
+ * {@link IdentityMatrixSink}.
+ */
+export async function readIdentityMatrix(
+  adapter: MafAdapterBase,
+  regions: Region[],
+  sources: string[],
+  opts?: MafAdapterOptions,
+) {
   const { segments, columns } = buildSegments(regions)
+  const sink = new IdentityMatrixSink(sources, columns, opts?.signal)
+  for (const [regionIndex, region] of regions.entries()) {
+    sink.segment = segments[regionIndex]!
+    await adapter.readBlocks(region, sink, opts)
+  }
+  return sink.finish()
+}
+
+/**
+ * Counts, per displayed genome and bin, the bases that match the reference,
+ * off the ranges `readBlocks` hands it. An `e` line aligns no base, so
+ * `addEmpty` counts nothing.
+ */
+class IdentityMatrixSink implements MafBlockSink {
+  segment: RegionSegment | undefined
 
   // Seeded in `sources` order, and nothing is ever added to it: a genome the
   // file holds but the display is not drawing has no row here, and so cannot
   // shift the indices `order` is expressed in.
-  const matched = new Map<string, Float32Array>()
-  for (const name of sources) {
-    matched.set(name, new Float32Array(columns))
-  }
-  // The reference positions the fetched blocks actually reached, per bin. Every
-  // row shares this denominator, which is why it is counted once per block
-  // rather than per row.
-  const covered = new Float32Array(columns)
+  private matched = new Map<string, Float32Array>()
+  // The reference positions the blocks reached, per bin: every row's
+  // denominator, so counted once per block rather than per row.
+  private covered: Float32Array
+  private columns: number
+  private signal: AbortSignal | undefined
 
-  // Per-block reference decisions, replayed for every row: the bin each column
-  // falls in (-1 for none) and its case-folded reference byte. Grown across
-  // blocks rather than allocated per block, and the fold hoisted out of the row
-  // loop, for the reasons `ColumnMapper` in `binning.ts` gives for the
-  // same shape — real MAF is many small blocks (ce11 26-way's median is 7bp),
-  // and the fold was redone once per species per column.
-  let columnBin = new Int32Array(0)
-  let refFolded = new Uint8Array(0)
+  // The block's bin per column (-1 for none) and its case-folded reference
+  // byte, grown across blocks: real MAF is many small blocks (ce11 26-way's
+  // median is 7bp), and `ColumnMapper` in `binning.ts` has the same shape.
+  private columnBin = new Int32Array(0)
+  private refFolded = new Uint8Array(0)
+  private refLength = 0
 
-  for (const [regionIndex, region] of regions.entries()) {
-    const segment = segments[regionIndex]!
-    await subscribeToObservable(
-      adapter.getFeatures(region, opts),
-      (feature: Feature) => {
-        checkAbortSignal(signal)
-        const refSeq = feature.get('seq') as string
-        const alignments = feature.get('alignments') as Record<
-          string,
-          AlignmentRecord
-        >
-        const blockStart = feature.get('start')
-
-        // Column -> bin, walked once per block and reused by every row in it. A
-        // reference-gap column advances no reference position and is marked -1.
-        if (columnBin.length < refSeq.length) {
-          columnBin = new Int32Array(refSeq.length)
-          refFolded = new Uint8Array(refSeq.length)
-        }
-        let refPos = blockStart
-        for (let c = 0; c < refSeq.length; c++) {
-          const refCode = refSeq.charCodeAt(c)
-          // case-insensitive, since soft-masked repeat runs are lower case in
-          // most MAFs and a masked match is still a match
-          refFolded[c] = refCode | 32
-          if (refCode === GAP) {
-            columnBin[c] = -1
-            continue
-          }
-          if (refPos >= segment.start && refPos < segment.end) {
-            const bin =
-              segment.colOffset +
-              Math.min(
-                segment.columns - 1,
-                Math.floor((refPos - segment.start) / segment.binWidth),
-              )
-            columnBin[c] = bin
-            covered[bin]! += 1
-          } else {
-            columnBin[c] = -1
-          }
-          refPos++
-        }
-
-        for (const sampleId in alignments) {
-          const row = matched.get(sampleId)
-          if (!row) {
-            continue
-          }
-          const { seq } = alignments[sampleId]!
-          const n = Math.min(seq.length, refSeq.length)
-          for (let c = 0; c < n; c++) {
-            const bin = columnBin[c]!
-            if (bin < 0) {
-              continue
-            }
-            const base = seq.charCodeAt(c)
-            if (base !== GAP && (base | 32) === refFolded[c]!) {
-              row[bin]! += 1
-            }
-          }
-        }
-      },
-    )
+  constructor(sources: string[], columns: number, signal?: AbortSignal) {
+    for (const name of sources) {
+      this.matched.set(name, new Float32Array(columns))
+    }
+    this.covered = new Float32Array(columns)
+    this.columns = columns
+    this.signal = signal
   }
 
-  for (const row of matched.values()) {
-    for (let bin = 0; bin < columns; bin++) {
-      const denominator = covered[bin]!
-      row[bin] = denominator > 0 ? row[bin]! / denominator : 0
+  startBlock(
+    _id: string,
+    start: number,
+    _end: number,
+    _strand: number,
+    ref: string,
+    refFrom: number,
+    refTo: number,
+  ) {
+    checkAbortSignal(this.signal)
+    const { covered } = this
+    const segment = this.segment!
+    const n = refTo - refFrom
+    if (this.columnBin.length < n) {
+      this.columnBin = new Int32Array(n)
+      this.refFolded = new Uint8Array(n)
+    }
+    const { columnBin, refFolded } = this
+    this.refLength = n
+    let refPos = start
+    for (let c = 0; c < n; c++) {
+      const refCode = ref.charCodeAt(refFrom + c)
+      // soft-masked repeats are lower case in most MAFs, and a masked match
+      // is still a match
+      refFolded[c] = refCode | 32
+      if (refCode === GAP) {
+        columnBin[c] = -1
+        continue
+      }
+      if (refPos >= segment.start && refPos < segment.end) {
+        const bin =
+          segment.colOffset +
+          Math.min(
+            segment.columns - 1,
+            Math.floor((refPos - segment.start) / segment.binWidth),
+          )
+        columnBin[c] = bin
+        covered[bin]! += 1
+      } else {
+        columnBin[c] = -1
+      }
+      refPos++
     }
   }
-  return matched
+
+  addRow(sampleId: string, text: string, from: number, to: number) {
+    const row = this.matched.get(sampleId)
+    if (!row) {
+      return
+    }
+    const { columnBin, refFolded } = this
+    const n = Math.min(to - from, this.refLength)
+    for (let c = 0; c < n; c++) {
+      const bin = columnBin[c]!
+      if (bin < 0) {
+        continue
+      }
+      const base = text.charCodeAt(from + c)
+      if (base !== GAP && (base | 32) === refFolded[c]!) {
+        row[bin]! += 1
+      }
+    }
+  }
+
+  addEmpty() {}
+
+  finish() {
+    const { matched, covered, columns } = this
+    for (const row of matched.values()) {
+      for (let bin = 0; bin < columns; bin++) {
+        const denominator = covered[bin]!
+        row[bin] = denominator > 0 ? row[bin]! / denominator : 0
+      }
+    }
+    return matched
+  }
 }

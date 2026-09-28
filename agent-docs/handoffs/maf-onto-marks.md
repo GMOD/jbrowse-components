@@ -89,8 +89,9 @@ MAF display's `buildMafChannels` also pays.
 
 [ADR-199](../architecture-decision-records/adr-199-the-maf-display-stays-its-own-and-shares-the-grammars-kernels.md):
 the MAF display stays the MafTrack's display type, and the two paths share
-one implementation wherever they compute the same thing — the parser (item
-12), the packed arena, and the identity walk (the lever above). The list below
+one implementation wherever they compute the same thing — the parser, one
+per format since ADR-195's amendment, the packed arena, and the identity walk
+(the lever above). The list below
 is what the mark display lacks against the MAF display, built when a declared
 track needs it rather than to retire the MAF display.
 
@@ -138,11 +139,6 @@ track needs it rather than to retire the MAF display.
 10. Cross-region derived fields: the source-chromosome rank per row, the
     inversion consensus strand.
 11. SNP and interbase coverage in the band.
-12. One parser per format: `getFeatures` rebuilt over `readBlocks`, a sink
-    assembling `MafFeature`s from the ranges it is handed, since the FASTA
-    export, clustering by identity and the feature details keep reading
-    `MafFeature`s (ADR-199). Clustering by identity gets a sink of its own:
-    [maf-clustering-reads-blocks-into-a-sink](../ideas/ready/maf-clustering-reads-blocks-into-a-sink.md).
 
 ## What ports today with no new mark
 

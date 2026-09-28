@@ -2,110 +2,7 @@ import {
   makeSourceResolver,
   matchSampleId,
   parseAssemblyAndChr,
-  parseMafTabixEntry,
-  scanMafTabixEntry,
-  selectReferenceSequenceString,
 } from './parseAssemblyName.ts'
-
-// The form MafTabixAdapter actually uses: entries scanned in place out of the
-// one comma-joined alignment column, never split into their own strings.
-describe('scanMafTabixEntry over a comma-joined column', () => {
-  const resolve = makeSourceResolver(new Set(['ce11', 'caeRem4'])).resolve
-  const column =
-    'ce11.chrI:100:6:+:15072434:GAATTC,' +
-    'caeRem4.Crem_Contig89:203343:6:-:273340:gaattc'
-  const scanAll = (text: string) => {
-    const out = []
-    for (let from = 0; from < text.length;) {
-      let to = text.indexOf(',', from)
-      if (to === -1) {
-        to = text.length
-      }
-      out.push(scanMafTabixEntry(text, from, to, resolve))
-      from = to + 1
-    }
-    return out
-  }
-
-  test('reads each entry at its own offset', () => {
-    expect(scanAll(column)).toEqual([
-      {
-        assemblyName: 'ce11',
-        chr: 'chrI',
-        srcStart: 100,
-        strand: 1,
-        srcSize: 15072434,
-        seq: 'GAATTC',
-      },
-      {
-        assemblyName: 'caeRem4',
-        chr: 'Crem_Contig89',
-        srcStart: 203343,
-        strand: -1,
-        srcSize: 273340,
-        seq: 'gaattc',
-      },
-    ])
-  })
-
-  // The hazard of scanning in place instead of splitting: `indexOf` does not
-  // stop at the entry boundary, so a truncated entry would happily take its
-  // fields from the species after it — a real sequence filed under the wrong
-  // genome at the wrong coordinate, which nothing downstream could detect.
-  test('a truncated entry is rejected, not completed from the next one', () => {
-    const truncated =
-      'ce11.chrI:100:6,caeRem4.Crem_Contig89:203343:6:-:273340:gaattc'
-    const [first, second] = scanAll(truncated)
-    expect(first).toBeUndefined()
-    // ...and the scan still picks the following entry up intact
-    expect(second).toMatchObject({ assemblyName: 'caeRem4', seq: 'gaattc' })
-  })
-
-  test('an entry with no sequence is rejected', () => {
-    expect(scanAll('ce11.chrI:100:6:+:15072434:')[0]).toBeUndefined()
-  })
-
-  test('a sequence runs to the entry end, so a stray colon cannot truncate it', () => {
-    // Colons cannot occur in MAF sequence characters, so taking the remainder
-    // is strictly safer than stopping at a sixth colon would be.
-    const entry = 'ce11.chrI:100:6:+:15072434:GA:TTC'
-    expect(scanMafTabixEntry(entry, 0, entry.length, resolve)?.seq).toBe(
-      'GA:TTC',
-    )
-  })
-})
-
-describe('parseMafTabixEntry', () => {
-  const samples = makeSourceResolver(new Set(['ce11', 'caeRem4'])).resolve
-
-  test('parses strand and srcSize from a + entry', () => {
-    expect(
-      parseMafTabixEntry('ce11.chrI:2996373:67:+:15072434:GAATTC', samples),
-    ).toEqual({
-      assemblyName: 'ce11',
-      chr: 'chrI',
-      srcStart: 2996373,
-      strand: 1,
-      srcSize: 15072434,
-      seq: 'GAATTC',
-    })
-  })
-
-  test('parses a − entry (the strand the old code dropped)', () => {
-    const e = parseMafTabixEntry(
-      'caeRem4.Crem_Contig89:203343:79:-:273340:gaaatc',
-      samples,
-    )
-    expect(e).toMatchObject({ strand: -1, srcSize: 273340, srcStart: 203343 })
-  })
-
-  test('returns undefined for an unknown sample or malformed entry', () => {
-    expect(
-      parseMafTabixEntry('unknown.chr1:1:2:+:9:ACGT', samples),
-    ).toBeUndefined()
-    expect(parseMafTabixEntry('', samples)).toBeUndefined()
-  })
-})
 
 describe('matchSampleId (sample-set aware splitting)', () => {
   const samples = new Set(['Species1.1', 'Species1.2', 'mm10'])
@@ -319,46 +216,6 @@ describe('bare versioned accessions', () => {
   })
 })
 
-describe('selectReferenceSequenceString', () => {
-  const hg38Seq = 'ACGTACGT'
-  const mm10Seq = 'TGCATGCA'
-  const alignments = { hg38: { seq: hg38Seq }, mm10: { seq: mm10Seq } }
-
-  test('refAssemblyName wins over the queried assembly', () => {
-    expect(
-      selectReferenceSequenceString(alignments, 'mm10', 'hg38', hg38Seq),
-    ).toBe(mm10Seq)
-  })
-
-  test.each(['', undefined])(
-    'the queried assembly follows an unset refAssemblyName (%p)',
-    ref => {
-      expect(
-        selectReferenceSequenceString(alignments, ref, 'hg38', mm10Seq),
-      ).toBe(hg38Seq)
-    },
-  )
-
-  // The stanza's first entry is the reference in a well-formed MAF, and it is
-  // read before the sample filter, so a filter without the reference in it
-  // still hands the block its extent.
-  test('falls back to the first entry when neither name resolves', () => {
-    const filtered = { mm10: { seq: mm10Seq } }
-    expect(
-      selectReferenceSequenceString(filtered, 'galGal6', 'hg38', hg38Seq),
-    ).toBe(hg38Seq)
-    expect(
-      selectReferenceSequenceString({}, undefined, undefined, hg38Seq),
-    ).toBe(hg38Seq)
-  })
-
-  test('is undefined for an empty stanza', () => {
-    expect(
-      selectReferenceSequenceString({}, 'hg38', 'mm10', undefined),
-    ).toBeUndefined()
-  })
-})
-
 describe('real-world MAF format parsing', () => {
   test('ce10.chrI from UCSC 7-way alignment', () => {
     const result = parseAssemblyAndChr('ce10.chrI')
@@ -390,25 +247,6 @@ describe('real-world MAF format parsing', () => {
       assemblyName: 'cb4',
       chr: 'chrI',
     })
-  })
-
-  test('multiple assemblies from same MAF block produce correct lookup', () => {
-    const ce10Seq = 'TCTTTTAGTATTTGTAA'
-    const caePb3Seq = 'tcTTTTCGC-TTTATAA'
-    const alignments = {
-      ce10: { seq: ce10Seq },
-      caePb3: { seq: caePb3Seq },
-    }
-
-    // When querying with ce10 assembly
-    expect(selectReferenceSequenceString(alignments, '', 'ce10', ce10Seq)).toBe(
-      ce10Seq,
-    )
-
-    // When refAssemblyName is configured to override
-    expect(
-      selectReferenceSequenceString(alignments, 'caePb3', 'ce10', ce10Seq),
-    ).toBe(caePb3Seq)
   })
 })
 

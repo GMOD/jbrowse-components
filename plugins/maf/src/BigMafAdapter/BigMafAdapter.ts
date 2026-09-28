@@ -1,15 +1,10 @@
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  ObservableCreate,
-  subscribeToObservable,
-} from '@jbrowse/core/util/rxjs'
+import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
-import MafFeature from '../MafFeature.ts'
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
 import { buildSampleFilter } from '../util/getSamples.ts'
 import { loadSubAdapter } from '../util/loadSubAdapter.ts'
-import { makeSourceResolver } from '../util/parseAssemblyName.ts'
-import { parseBigMafStanza } from '../util/parseBigMaf.ts'
+import { mafBlockFeatures } from '../util/mafFeatureSink.ts'
 import { BigMafBlockReader } from './stanzaBlockReader.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
@@ -62,34 +57,11 @@ export default class BigMafAdapter extends MafAdapterBase<BigMafAdapterConfig> {
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
-    return ObservableCreate<Feature>(async observer => {
-      const { adapter } = await this.configure(opts)
-      // bigMaf packs the full MAF stanza (s/i/e/q lines) into one ';'-joined
-      // `mafBlock` field; parseBigMafStanza turns it into aligned + empty rows.
-      const resolver = makeSourceResolver(buildSampleFilter(opts))
-
-      await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
-        const { alignments, empties, referenceSeq } = parseBigMafStanza(
-          mafBlockField(feature),
-          resolver.resolve,
-        )
-        observer.next(
-          new MafFeature(
-            feature.id(),
-            feature.get('start'),
-            feature.get('end'),
-            feature.get('refName'),
-            0, // strand not in BigMaf format
-            alignments,
-            referenceSeq,
-            empties,
-          ),
-        )
-      })
-
-      resolver.reportUnmatched()
-      observer.complete()
-    }, opts?.signal)
+    return mafBlockFeatures(
+      query.refName,
+      sink => this.readBlocks(query, sink, opts),
+      opts?.signal,
+    )
   }
 
   override async readBlocks(

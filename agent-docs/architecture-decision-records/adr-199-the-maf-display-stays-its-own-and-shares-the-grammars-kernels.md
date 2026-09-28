@@ -39,8 +39,10 @@ ADR-197), and lacks the rest.
   - **One parser per format.** `readBlocks` (ADR-195) is the parse, and
     `getFeatures` is rebuilt over it with a sink that assembles `MafFeature`s
     from the ranges it is handed; the FASTA export and the feature details read
-    those. Clustering by identity gets a sink of its own
-    ([maf-clustering-reads-blocks-into-a-sink](../ideas/ready/maf-clustering-reads-blocks-into-a-sink.md)).
+    those. Clustering by identity counts through a sink of its own. Both
+    landed:
+    [ADR-195](adr-195-a-maf-adapter-parses-its-blocks-into-the-packer.md)'s
+    consequences measure them.
   - **One packed arena**, `MafWirePacker`, which both paths fill since ADR-193.
   - **One identity walk.** The MAF display's `buildIdentityRuns` counts matches
     in one walk and the mark pipeline makes runs and then bins them, at

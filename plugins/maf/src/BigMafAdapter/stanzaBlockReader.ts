@@ -7,9 +7,11 @@ import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { MafLineTarget, MafSourceLine } from '../util/mafLines.ts'
 
 /**
- * A bigMaf stanza into a {@link MafBlockSink}: the rows and empties
- * `parseBigMafStanza` files in its records, in their order, with no record per
- * species. `applyMafLine` is the line grammar both follow.
+ * A bigMaf stanza, its lines `;`-joined, into a {@link MafBlockSink}: its rows
+ * and empties in the order a record keyed by species lists them, with no
+ * record per species. The reference is the first `s` line, taken before the
+ * sample filter, so a reference the filter drops still positions the block.
+ * `applyMafLine` is the line grammar, shared with the bgzip MAF reader.
  */
 export class BigMafBlockReader implements MafLineTarget {
   private resolver

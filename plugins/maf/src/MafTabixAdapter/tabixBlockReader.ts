@@ -32,9 +32,12 @@ function parseDecimal(text: string, from: number, to: number) {
 
 /**
  * The MAF-tabix alignment column into a {@link MafBlockSink}, each sequence a
- * range of the column. A block's rows and reference are the ones
- * `MafTabixAdapter.getFeatures` files in its `MafFeature`, and
- * `scanMafTabixEntry` is the field grammar both follow.
+ * range of the column. An entry is `sample.chr:start:size:strand:srcSize:seq`,
+ * every field inside the entry and the sequence non-empty, else it is
+ * skipped; the sequence runs to the entry's end. The reference row is the one
+ * `refAssemblyName` names, else the queried assembly's, else the column's
+ * first entry, read before the sample filter so a reference the filter drops
+ * still positions the block.
  */
 export class MafTabixBlockReader {
   private resolver

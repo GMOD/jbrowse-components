@@ -398,7 +398,7 @@ signal that the row count, not the loop, is what has run out.
 
 ### Fetch dominates at 470-way, so render tuning there is the wrong term
 
-One 40kb buffered window through the adapter's own `split` + `parseMafTabixEntry`:
+One 40kb buffered window through the adapter's parse of the time, a `split` of the column and an entry parser:
 
 | rows | split+parse | payload (uncompressed) |
 | --- | --- | --- |
