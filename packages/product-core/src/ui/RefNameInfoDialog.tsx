@@ -1,5 +1,4 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
   CopyToClipboardButton,
   Dialog,
@@ -7,7 +6,10 @@ import {
   LoadingEllipses,
 } from '@jbrowse/core/ui'
 import { createStatusFanOut, statusProgressLabel } from '@jbrowse/core/util'
-import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
+import {
+  getConfAssemblyNames,
+  getConfRpcSessionId,
+} from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { DialogContent } from '@mui/material'
@@ -52,13 +54,8 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
 }: AboutPanelProps & { onClose: () => void }) {
   const { classes } = useStyles()
   const { rpcManager } = session
-  const adapterConfig = readConfObject(config, 'adapter') as Record<
-    string,
-    unknown
-  >
-  // the id the track's own requests use, so this reaches their worker and
-  // their cached adapter rather than pinning a copy on another worker
-  const sessionId = adapterConfigCacheKey(adapterConfig)
+  const adapterConfig = readConfObject(config, 'adapter')
+  const sessionId = getConfRpcSessionId(config)
 
   const { data, error, isLoading, status } = useFetch(
     ['CoreGetRefNames', sessionId] as const,

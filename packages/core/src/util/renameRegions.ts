@@ -180,18 +180,17 @@ export async function renameRegionsIfNeeded<
   const { regions = [] } = args
   // captured before the await, since MST regions may be dead after
   const assemblyNames = regions.map(r => r.assemblyName)
-  const [genome = args.assemblyName, ...others] = new Set(
-    assemblyNames.filter(Boolean),
-  )
-  if (others.length > 0) {
+  const genomes = [...new Set(assemblyNames)]
+  if (genomes.length > 1) {
     throw new Error(
-      `regions on ${[genome, ...others].join(', ')} in one request: a request is about one genome, and a comparative request (synteny, dotplot) renames with renameComparativeRegions`,
+      `regions on ${genomes.join(', ')} in one request: a request is about one genome, and a comparative request (synteny, dotplot) renames with renameComparativeRegions`,
     )
   }
   const data = await loadRenameData(assemblyManager, assemblyNames, args)
   return {
     ...args,
-    assemblyName: genome,
+    // a call with no regions keeps the genome it named itself
+    assemblyName: genomes[0] ?? args.assemblyName,
     regions: renamedRegions(regions, assemblyNames, data),
   }
 }

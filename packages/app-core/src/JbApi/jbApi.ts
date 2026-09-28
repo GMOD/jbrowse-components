@@ -14,7 +14,6 @@ import {
   releaseAdapterSession,
   retainAdapterSession,
 } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
-import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { adapterByteLimit } from '@jbrowse/core/rpc/byteBudget'
 import {
   isElectron,
@@ -32,6 +31,7 @@ import {
 import {
   allSessionTracks,
   getConfAssemblyNamesOrNone,
+  getConfRpcSessionId,
   guessTrackConfForLocation,
   isSameAssemblyName,
   viewCanDisplayTrack,
@@ -1186,11 +1186,9 @@ async function visibleRegionsOf(
   }))
 }
 
-// The same RPCs the track's display issues, on the same worker: the sessionId
-// is `adapterConfigCacheKey` of the adapter config, which is exactly what
-// `BaseTrackModel.rpcSessionId` derives, so a shown track's parsed index and
-// chunk cache are reused rather than rebuilt in a main-thread twin that nothing
-// ever freed. Retained and released like a track does, so an un-shown track's
+// The same RPCs the track's display issues, under the track's own session id
+// (getConfRpcSessionId), so a shown track's parsed index and chunk cache are
+// reused. Retained and released like a track does, so an un-shown track's
 // worker cache is dropped once this read is done. Regions are renamed to the
 // file's own refNames during serialization (RpcMethodTypeWithRenameRegions),
 // and the features come back rebuilt as SimpleFeature. What crosses the worker
@@ -1208,7 +1206,7 @@ async function fetchFeatures(
     )
   }
   const adapterConfig = readConfObject(conf, 'adapter')
-  const sessionId = adapterConfigCacheKey(adapterConfig)
+  const sessionId = getConfRpcSessionId(conf)
   // The adapter's own declared limit where it has one, so this does not quietly
   // disagree with the size the track's display already refuses to render —
   // the reasoning BaseTrackModel.exportByteLimit spells out for "Save track

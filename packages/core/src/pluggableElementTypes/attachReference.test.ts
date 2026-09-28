@@ -26,7 +26,6 @@ const pluginManager = new PluginManager()
 pluginManager.rootModel = {
   session: {
     assemblyManager: {
-      assemblyNameMap: {},
       confByName: new Map([
         ['volvox', assemblyConf('volvox')],
         ['vvx', assemblyConf('volvox')],

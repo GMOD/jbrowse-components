@@ -207,6 +207,16 @@ export function getConfAssemblyNamesOrNone(conf: AnyConfigurationModel) {
   return confAssemblyNames(conf) ?? []
 }
 
+/**
+ * The RPC session id a track's own requests go out under, from its config:
+ * what `BaseTrackModel.rpcSessionId` computes, for a caller holding no model.
+ * A call under any other id lands on another worker, which builds a second
+ * copy of the adapter that nothing frees.
+ */
+export function getConfRpcSessionId(conf: AnyConfigurationModel) {
+  return adapterConfigCacheKey(readConfObject(conf, 'adapter'))
+}
+
 export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
@@ -1547,7 +1557,7 @@ function warmTrackAdapter(
       string,
       unknown
     >
-    const sessionId = adapterConfigCacheKey(adapterConfig)
+    const sessionId = getConfRpcSessionId(conf)
     session.rpcManager
       // eslint-disable-next-line no-restricted-syntax -- a code download the track's first request would make anyway: nothing to show, and nothing a user can move on from
       .call(sessionId, 'CoreLoadAdapterCode', {

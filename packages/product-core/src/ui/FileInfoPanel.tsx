@@ -1,10 +1,12 @@
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { statusProgressLabel } from '@jbrowse/core/util'
-import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
+import {
+  getConfAssemblyNamesOrNone,
+  getConfRpcSessionId,
+} from '@jbrowse/core/util/tracks'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { observer } from 'mobx-react'
 
@@ -17,11 +19,8 @@ const FileInfoPanel = observer(function FileInfoPanel({
   session,
 }: AboutPanelProps) {
   const { rpcManager } = session
-  const adapterConfig = readConfObject(config, 'adapter') as Record<
-    string,
-    unknown
-  >
-  const sessionId = adapterConfigCacheKey(adapterConfig)
+  const adapterConfig = readConfObject(config, 'adapter')
+  const sessionId = getConfRpcSessionId(config)
   // named so a reference-reading adapter resolves to the instance the track's
   // own requests built, not a spare one
   const [assemblyName] = getConfAssemblyNamesOrNone(config)

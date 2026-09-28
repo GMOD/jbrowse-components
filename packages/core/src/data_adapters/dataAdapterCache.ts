@@ -25,14 +25,13 @@ export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
  */
 export const READS_REFERENCE = 'readsReference'
 
-export function readsReference(
+function readsReference(
   pluginManager: PluginManager,
   adapterConfig: ConfigSnap | undefined,
 ) {
   const type: unknown = adapterConfig?.type
   return (
     typeof type === 'string' &&
-    pluginManager.hasAdapterType(type) &&
     pluginManager
       .getAdapterType(type)
       .adapterCapabilities.includes(READS_REFERENCE)
