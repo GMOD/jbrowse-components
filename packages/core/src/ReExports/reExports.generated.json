@@ -2873,6 +2873,7 @@
     "@jbrowse/core/util/featureTransforms": {
       "package": "@jbrowse/core",
       "names": [
+        "BIN_OVERLAP_FIELD",
         "DEFAULT_BIN_AS",
         "DEFAULT_BIN_FIELD",
         "DEFAULT_CELLS_FIELD",

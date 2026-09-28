@@ -13,6 +13,11 @@ One summary over a group: `count` needs no field; `sum`, `mean`, `min` and
 `max` read one, skipping values that are not numbers. The output field is
 `as`, else `count` or `<op>_<field>`.
 
+`weight` names a field each row counts by: `count` is then the sum of the
+weights, `sum` the sum of value times weight, and `mean` that over the sum
+of the weights, a row whose weight is not a number counting for nothing. A
+weight moves no minimum or maximum, so `min` and `max` read none.
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ## AggregateStep
@@ -36,10 +41,18 @@ A table over a feature list, or the table itself.
 
 ## BinStep
 
-Snap every feature to the genome-aligned bin of `step` bp its `field`
-(`start` by default) falls in, writing the bin's edges over the fields
-`as` names — `start` and `end` by default, so an `aggregate` grouped by
-those counts per bin and the bar spans the bin.
+Place every feature in a genome-aligned bin of `step` bp, writing the bin's
+edges over the fields `as` names — `start` and `end` by default, so an
+`aggregate` grouped by those counts per bin and the bar spans the bin.
+
+With `field` (`start` by default) a feature lands in the one bin that field
+falls in. With `fields`, an interval's start and end, it is cut at the bin
+edges into one piece per bin it overlaps, each piece writing `overlap`, the
+bases of the interval inside its bin; a zero-length interval (an insertion)
+is one piece of overlap 0 in the bin holding its position, and one whose
+ends are not numbers is none. A piece is its feature with those fields
+beside it, so its id and hover are the feature's, and an `aggregate` over
+the pieces weighted by `overlap` is a mean per base.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

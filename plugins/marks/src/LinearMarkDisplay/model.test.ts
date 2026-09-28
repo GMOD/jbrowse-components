@@ -1453,19 +1453,37 @@ function stepFetch(steps: Record<string, unknown>[]) {
 test('every step type reaches the worker with each of its slots written out', () => {
   const { members } = getConfigurationSchemaUnion(markTransformStep)!
   const types = Object.keys(members)
-  const wire = stepFetch(types.map(type => ({ type }))).transform
-  expect(
-    wire.map(step =>
+  const written = (steps: Record<string, unknown>[]) =>
+    stepFetch(steps).transform.map(step =>
       Object.entries(step).flatMap(([key, value]) =>
         value === undefined ? [] : [key],
       ),
-    ),
-  ).toEqual(
+    )
+  // A bin names the field it places by or the interval it cuts, never both.
+  const either: Record<string, string> = { bin: 'fields' }
+  expect(written(types.map(type => ({ type })))).toEqual(
     types.map(type => [
       'type',
-      ...Object.keys(getConfigurationSchemaDefinition(members[type]!)!),
+      ...Object.keys(getConfigurationSchemaDefinition(members[type]!)!).filter(
+        slot => slot !== either[type],
+      ),
     ]),
   )
+  expect(written([{ type: 'bin', fields: ['start', 'end'] }])).toEqual([
+    ['type', 'step', 'fields', 'as'],
+  ])
+  const [weighted] = stepFetch([
+    {
+      type: 'aggregate',
+      ops: [{ op: 'mean', field: 'match', weight: 'overlap' }, { op: 'count' }],
+    },
+  ]).transform
+  expect(weighted).toMatchObject({
+    ops: [
+      { op: 'mean', field: 'match', weight: 'overlap', as: 'mean_match' },
+      { op: 'count', field: undefined, weight: undefined, as: 'count' },
+    ],
+  })
 })
 
 test('a step slot left at its default and one written at it are one fetch, for every step type and an aggregate op named its own output name', () => {

@@ -412,6 +412,48 @@ test('a pair slot naming another number of fields says it reads the default', ()
   ])
 })
 
+test('a bin over fields names two, leaves field unread, and a weight on a min or max says it reads none', () => {
+  expect(
+    problemsOf([
+      {
+        mark: 'bar',
+        encoding: { y: 'identity' },
+        transform: [
+          { type: 'bin', step: 10, fields: ['start'] },
+          { type: 'bin', step: 10, fields: ['from', 'to'], field: 'end' },
+          { type: 'bin', step: 10, fields: ['start', 'end'], field: 'start' },
+          {
+            type: 'aggregate',
+            ops: [
+              { op: 'mean', field: 'match', weight: 'overlap', as: 'identity' },
+              { op: 'max', field: 'match', weight: 'overlap' },
+            ],
+          },
+        ],
+      },
+    ]).map(p => `${p.level} ${p.rule} ${p.slot}: ${p.message}`),
+  ).toEqual([
+    'warning step-pair transform.0.fields: a bin reads two field names from fields and this names 1, so it reads its field alone, start',
+    'warning bin-field-and-fields transform.1.field: a bin over fields cuts each interval at the bin edges and reads no field, so end is unread',
+    'warning unread-weight transform.3.ops.1.weight: a weight moves no maximum, so the max reads its field alone',
+  ])
+})
+
+test('a y reading the overlap a bin over fields writes is written', () => {
+  expect(
+    found([
+      {
+        mark: 'bar',
+        encoding: { y: 'overlap' },
+        transform: [
+          { type: 'aggregate', ops: [{ op: 'count' }] },
+          { type: 'bin', step: 10, fields: ['start', 'end'] },
+        ],
+      },
+    ]),
+  ).toEqual([])
+})
+
 test('a jexl: field on a step is pointed at formula, where a dotted path is read', () => {
   const grouped = (field: string) => [
     {

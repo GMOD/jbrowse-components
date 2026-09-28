@@ -1408,6 +1408,91 @@
           ]
         }
       ]
+    },
+    {
+      "type": "MafTrack",
+      "trackId": "marks_maf_identity",
+      "name": "Mark identity by species over a MAF",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MafTabixAdapter",
+        "samples": [
+          "volvox",
+          "simvolvox",
+          "minivolvox",
+          "microvolvox",
+          "nanovolvox",
+          "megavolvox",
+          "ultravolvox",
+          "picovolvox",
+          "hypervolvox",
+          "metavolvox"
+        ],
+        "bedGzLocation": {
+          "uri": "volvox.maf.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "nhLocation": {
+          "uri": "volvox.maf.nh",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "volvox.maf.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_maf_identity-LinearMarkDisplay",
+          "transform": [
+            {
+              "type": "flatten",
+              "field": "alignments",
+              "key": "species"
+            },
+            {
+              "type": "cells"
+            }
+          ],
+          "rows": "species",
+          "marks": [
+            {
+              "mark": "span",
+              "transform": [
+                {
+                  "type": "bin",
+                  "step": "auto",
+                  "fields": ["start", "end"]
+                },
+                {
+                  "type": "aggregate",
+                  "ops": [
+                    {
+                      "op": "mean",
+                      "field": "match",
+                      "weight": "overlap",
+                      "as": "identity"
+                    }
+                  ]
+                }
+              ],
+              "encoding": {
+                "color": {
+                  "field": "identity",
+                  "scale": "linear",
+                  "domainMin": 0,
+                  "domainMax": 1,
+                  "range": ["white", "#08519c"]
+                }
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

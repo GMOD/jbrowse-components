@@ -141,7 +141,7 @@ export function positionSource(
       step.type === 'bin' &&
       pairOf(step.as, DEFAULT_BIN_AS).includes(field)
     ) {
-      return step.field
+      return intervalFields(step) ? field : step.field
     }
     if (
       step.type === 'coverage' ||
@@ -157,6 +157,15 @@ export function positionSource(
 
 function binEdgesOf(step: { as: readonly string[] }) {
   return pairOf(step.as, DEFAULT_BIN_AS)
+}
+
+// The interval a `bin` cuts at its edges, where its `fields` names two; any
+// other number bins by `field`, as the rule list says.
+function intervalFields(step: {
+  fields: readonly string[]
+}): [string, string] | undefined {
+  const [start, end] = step.fields
+  return step.fields.length === 2 && start && end ? [start, end] : undefined
 }
 
 /**
@@ -190,21 +199,30 @@ export function stepsOf(
           expr: step.expr,
           as: step.as || DEFAULT_FORMULA_AS,
         }
-      case 'bin':
+      case 'bin': {
         binEdges = binEdgesOf(step)
-        return {
-          type: 'bin',
-          step: binStepWidth(step.step, bpPerPx),
-          field: step.field || DEFAULT_BIN_FIELD,
-          as: binEdges,
-        }
+        const width = binStepWidth(step.step, bpPerPx)
+        const fields = intervalFields(step)
+        return fields
+          ? { type: 'bin', step: width, fields, as: binEdges }
+          : {
+              type: 'bin',
+              step: width,
+              field: step.field || DEFAULT_BIN_FIELD,
+              as: binEdges,
+            }
+      }
       case 'aggregate':
         return {
           type: 'aggregate',
           groupby:
             step.groupby.length > 0 ? [...step.groupby] : (binEdges ?? []),
           ops: step.ops.map((o): AggregateOp => {
-            const op = { op: o.op, field: o.field || undefined }
+            const op = {
+              op: o.op,
+              field: o.field || undefined,
+              weight: o.weight || undefined,
+            }
             return { ...op, as: o.as || aggregateFieldName(op) }
           }),
         }

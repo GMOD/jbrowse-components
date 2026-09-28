@@ -5,6 +5,7 @@ import {
   slotChoices,
 } from '@jbrowse/core/configuration'
 import {
+  BIN_OVERLAP_FIELD as WORKER_BIN_OVERLAP_FIELD,
   DEFAULT_BIN_AS as WORKER_BIN_AS,
   DEFAULT_BIN_FIELD as WORKER_BIN_FIELD,
   DEFAULT_COVERAGE_AS as WORKER_COVERAGE_AS,
@@ -16,6 +17,7 @@ import { asArrayType, isType } from '@jbrowse/mobx-state-tree'
 
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
+  BIN_OVERLAP_FIELD,
   DEFAULT_BIN_AS,
   DEFAULT_BIN_FIELD,
   DEFAULT_COVERAGE_AS,
@@ -66,6 +68,7 @@ test("a step's defaults are the ones the worker reads for a slot the wire leaves
   expect({
     binField: DEFAULT_BIN_FIELD,
     binAs: [...DEFAULT_BIN_AS],
+    binOverlap: BIN_OVERLAP_FIELD,
     coverageAs: DEFAULT_COVERAGE_AS,
     flattenField: DEFAULT_FLATTEN_FIELD,
     pileupAs: DEFAULT_PILEUP_AS,
@@ -73,6 +76,7 @@ test("a step's defaults are the ones the worker reads for a slot the wire leaves
   }).toEqual({
     binField: WORKER_BIN_FIELD,
     binAs: WORKER_BIN_AS,
+    binOverlap: WORKER_BIN_OVERLAP_FIELD,
     coverageAs: WORKER_COVERAGE_AS,
     flattenField: WORKER_FLATTEN_FIELD,
     pileupAs: WORKER_PILEUP_AS,
@@ -115,10 +119,12 @@ test('every step slot keeps its type, default and vocabulary', () => {
     'formula.as': 'string = "value"',
     'bin.step': 'number = 10000',
     'bin.field': 'string = "start"',
+    'bin.fields': 'stringArray = []',
     'bin.as': 'stringArray = ["start","end"]',
     'aggregate.groupby': 'stringArray = []',
     'aggregate.ops[].op': 'stringEnum = "count" of count, sum, mean, min, max',
     'aggregate.ops[].field': 'string = ""',
+    'aggregate.ops[].weight': 'string = ""',
     'aggregate.ops[].as': 'string = ""',
     'coverage.as': 'string = "coverage"',
     'flatten.field': 'string = "subfeatures"',

@@ -3,6 +3,7 @@ import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 import { AUTO_BIN } from './autoBin.ts'
 import {
   AGGREGATE_OPS,
+  BIN_OVERLAP_FIELD,
   CELLS_FIELDS,
   DEFAULT_AGGREGATE_OP,
   DEFAULT_CELLS_FIELD,
@@ -242,7 +243,7 @@ export function stepSummary(step: StepSnapshot): string {
       return `${step.as || DEFAULT_FORMULA_AS} = ${step.expr || '…'}`
     }
     case 'bin': {
-      return `bin ${step.step ?? 10000}`
+      return `bin ${step.step ?? 10000}${step.fields?.length === 2 ? `, cutting ${step.fields.join('-')}` : ''}`
     }
     case 'aggregate': {
       const names = (step.ops ?? []).map(op =>
@@ -295,6 +296,9 @@ export function stepWrittenFields(steps: readonly StepSnapshot[]): string[] {
       }
       case 'cells': {
         return [...CELLS_FIELDS]
+      }
+      case 'bin': {
+        return step.fields?.length === 2 ? [BIN_OVERLAP_FIELD] : []
       }
       default: {
         return []

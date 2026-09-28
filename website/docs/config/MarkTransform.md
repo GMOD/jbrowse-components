@@ -17,6 +17,19 @@ transform: [
 ]
 ```
 
+The fraction of aligned bases matching the reference per bin, behind a
+`cells` step, each run weighted by the bases it puts in the bin:
+
+```js
+transform: [
+  { type: 'bin', step: 'auto', fields: ['start', 'end'] },
+  {
+    type: 'aggregate',
+    ops: [{ op: 'mean', field: 'match', weight: 'overlap', as: 'identity' }],
+  },
+]
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
 One step of a `transform` list, which runs over the region's features in
@@ -26,7 +39,8 @@ is refused at load.
 
 `filter` keeps the features an expression admits; `formula` writes an
 expression's value into a field; `bin` snaps each feature to a
-genome-aligned bin; `aggregate` folds each group into one feature carrying
+genome-aligned bin, or with `fields` cuts it into a piece per bin it
+overlaps; `aggregate` folds each group into one feature carrying
 its summaries; `coverage` replaces the features with runs of how many
 overlap each stretch; `flatten` fans out an array or a record field;
 `cells` replaces each aligned row with its runs of match, mismatch and gap
@@ -52,9 +66,11 @@ A MarkTransform is one of the types its rows begin with, named by its `type`, an
 | <span id="slot-formulaas">**formula.as**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'value'</code> | The field the value is written to. |
 | <span id="slot-binstep">**bin.step**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10000</code> | The bin width in bp, aligned to the genome, or `"auto"` for a width that follows the view's zoom — the target of four pixels per bin, snapped up to the next 1/2/5 rung, resolved before the fetch and keyed into it. |
 | <span id="slot-binfield">**bin.field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'start'</code> | The field placing a feature in a bin: a name, or a dotted path into a structured field (`INFO.END`). A `formula` step in front computes one. |
+| <span id="slot-binfields">**bin.fields**</span><br>`stringArray` = <code>[]</code> | An interval's start and end fields, in place of `field`: each feature is cut at the bin edges into one piece per bin it overlaps, and each piece writes `overlap`, the bases of the interval inside its bin, which an `aggregate` op's `weight` reads for a mean per base. Empty bins by `field`. |
 | <span id="slot-binas">**bin.as**</span><br>`stringArray` = <code>DEFAULT_BIN_AS</code> | The two fields the bin's edges are written to. An `aggregate` behind the bin that names no `groupby` groups by these. |
 | <span id="slot-aggregateopsop">**aggregate.ops.op**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (count, sum, mean, min, max) = <code>'count'</code> | `count` needs no field; `sum`, `mean`, `min` and `max` read one. |
 | <span id="slot-aggregateopsfield">**aggregate.ops.field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The feature field the op reads, for every op but `count`. |
+| <span id="slot-aggregateopsweight">**aggregate.ops.weight**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | A field each feature counts by: `count` sums it, `sum` sums the value times it, and `mean` divides that by its sum. `overlap` behind a `bin` over `fields` weights a mean by bases. `min` and `max` read none. Empty counts every feature once. |
 | <span id="slot-aggregateopsas">**aggregate.ops.as**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The output field. Empty is `count`, or `<op>_<field>`. |
 | <span id="slot-aggregategroupby">**aggregate.groupby**</span><br>`stringArray` = <code>[]</code> | The fields whose distinct value sets make the groups. Empty takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's, so binning and counting needs no restatement; with none there it folds the whole region into one feature. |
 | <span id="slot-aggregateops">**aggregate.ops**</span><br><code>types.array(aggregateOpSchema)</code> | The summaries each group carries. |

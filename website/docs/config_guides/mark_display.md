@@ -880,7 +880,9 @@ each reported under its id:
 | `field-spells-constant` | warning | A colour's or a shape's `field` spelling a CSS colour or a shape name, which is a constant written `{ value }`. |
 | `labels-domain` | warning | A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
 | `unpinned-text-ramp` | warning | A text's colour ramp with an open end, whose colours then differ from one region to the next. |
-| `step-pair` | warning | A `bin`'s `as` or a `pileup`'s `fields` naming other than two fields, so the step reads its defaults. |
+| `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |
+| `bin-field-and-fields` | warning | A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. |
+| `unread-weight` | warning | A `weight` on a `min` or a `max`, which no weight moves. |
 | `value-beside-rows` | warning | A mark other than a span drawn beside one that stacks rows, standing in the first of them. |
 | `two-packings` | warning | Two `pileup` steps packing one plot, whose rows share numbers. |
 | `cross-section-packing` | warning | A `pileup` in the display's `transform` under a `facet`, packing across every section. |

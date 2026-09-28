@@ -6304,6 +6304,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/PlainString",
           "default": "start"
         },
+        "fields": {
+          "description": "an interval's start and end, cut at the bin edges.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "as": {
           "description": "the bin's start and end fields.",
           "type": "array",
@@ -6339,6 +6346,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "field": {
           "description": "field the op reads.",
+          "$ref": "#/$defs/PlainString",
+          "default": ""
+        },
+        "weight": {
+          "description": "field each feature counts by.",
           "$ref": "#/$defs/PlainString",
           "default": ""
         },

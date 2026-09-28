@@ -1,9 +1,8 @@
-import { aggregateFieldName } from './aggregateFieldName.ts'
+import { binnedAggregate, fusesBinAggregate } from './binnedAggregate.ts'
 import { categoricalField } from './categoricalField.ts'
 import {
   DerivedTable,
   NO_COLUMN,
-  TableRow,
   WithTable,
   asTable,
   numberReaderOf,
@@ -14,16 +13,27 @@ import {
   withColumns,
 } from './featureTable.ts'
 import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
-import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
-import { numericValue } from './numericValue.ts'
+import { stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
+import {
+  BIN_OVERLAP_FIELD,
+  DEFAULT_BIN_AS,
+  MadeTable,
+  OpSums,
+  binSize,
+  groupKey,
+  intervalsOf,
+  isWeighted,
+  madeGroups,
+  stepNumberReader,
+  stepReader,
+} from './stepTables.ts'
 import { junctionEnds, svClassOfAlt, svClassOfToken } from './svAlt.ts'
 
 import type {
   Column,
   FeatureTable,
   ListColumn,
-  MadeRows,
   TextColumn,
 } from './featureTable.ts'
 import type { JexlInstance } from './jexlStrings.ts'
@@ -41,27 +51,15 @@ import type {
   TransformStep,
 } from './markEncodingTypes.ts'
 import type { Feature, SimpleFeatureSerialized } from './simpleFeature.ts'
+import type { Bounds, Staged } from './stepTables.ts'
 
+export { BIN_OVERLAP_FIELD, DEFAULT_BIN_AS } from './stepTables.ts'
 export const DEFAULT_BIN_FIELD = 'start'
-export const DEFAULT_BIN_AS: [string, string] = ['start', 'end']
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export const DEFAULT_CELLS_FIELD = 'seq'
 export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS: [string, string] = ['start', 'end']
-
-/**
- * A table's rows split into sections, each a contiguous range: `bounds[s]` is
- * where section `s` starts and `bounds[s + 1]` where it ends. A step keeps
- * its rows in section order, and one that groups rows groups within a
- * section, so a faceted request runs each step once over every section.
- */
-type Bounds = Uint32Array
-
-interface Staged {
-  table: FeatureTable
-  bounds: Bounds
-}
 
 function oneSection(n: number): Bounds {
   return Uint32Array.of(0, n)
@@ -93,42 +91,6 @@ function expression(expr: string, jexl: JexlInstance | undefined) {
     throw new Error(`a jexl transform needs a jexl instance (${expr})`)
   }
   return stringToJexlExpression(expr, jexl)
-}
-
-// A step reads a name or a dotted path. A plain name reads the table's column;
-// a path walks each row, chosen once per step. A computed field is a `formula`
-// step's to make.
-function stepReader(table: FeatureTable, ref: string, step: string) {
-  if (isJexl(ref)) {
-    throw new Error(
-      `${step} field is a name or a dotted path, and a formula step in front computes one (${ref})`,
-    )
-  }
-  if (isPlainFieldRef(ref)) {
-    return readerOf(table.column(ref))
-  }
-  const read = fieldReader(ref, undefined)
-  return (i: number) => read(table.row(i))
-}
-
-function stepNumberReader(table: FeatureTable, ref: string, step: string) {
-  if (isPlainFieldRef(ref) && !isJexl(ref)) {
-    return numberReaderOf(table.column(ref))
-  }
-  const read = stepReader(table, ref, step)
-  return (i: number) => numericValue(read(i))
-}
-
-// A list holding one value is that value, as a VCF's ALT and INFO fields
-// arrive, and a longer one is its text: a Map keys a list by identity, which
-// made every row a group of its own. A missing value is one group, whether
-// the field is absent or holds a VCF's `.`.
-function groupKey(value: unknown): unknown {
-  return Array.isArray(value)
-    ? value.length === 1
-      ? (value[0] ?? undefined)
-      : value.join(',')
-    : (value ?? undefined)
 }
 
 class RowsBuilder {
@@ -1262,11 +1224,15 @@ function mates({ table, bounds }: Staged): Staged {
   }
 }
 
-function bin({ table, bounds }: Staged, step: BinStep): Staged {
-  const { field = DEFAULT_BIN_FIELD, step: size } = step
-  if (!(size > 0)) {
-    throw new Error(`a bin step needs a positive size (${size})`)
-  }
+function bin(staged: Staged, step: BinStep): Staged {
+  return step.fields
+    ? binIntervals(staged, step, step.fields)
+    : binPoints(staged, step)
+}
+
+function binPoints({ table, bounds }: Staged, step: BinStep): Staged {
+  const { field = DEFAULT_BIN_FIELD } = step
+  const size = binSize(step)
   const [asStart, asEnd] = step.as ?? DEFAULT_BIN_AS
   const read = stepNumberReader(table, field, 'a bin')
   const n = table.length
@@ -1284,57 +1250,46 @@ function bin({ table, bounds }: Staged, step: BinStep): Staged {
   return { table: new WithTable(table, written), bounds }
 }
 
-/**
- * Rows a step made from nothing: an `aggregate`'s groups and a `coverage`'s
- * runs, carrying only the fields they wrote and an id from their span, with
- * no feature to hang from.
- */
-class MadeTable implements MadeRows {
-  readonly length: number
-  private readonly columns: ReadonlyMap<string, Column>
-  private readonly tags: (i: number) => string
-
-  constructor(
-    length: number,
-    columns: ReadonlyMap<string, Column>,
-    tags: (i: number) => string,
-  ) {
-    this.length = length
-    this.columns = columns
-    this.tags = tags
-  }
-
-  column(field: string): Column {
-    return field === 'uniqueId'
-      ? { kind: 'value', read: i => this.id(i) }
-      : (this.columns.get(field) ?? NO_COLUMN)
-  }
-
-  id(i: number) {
-    const at = (field: string) => String(valueAt(this.column(field), i))
-    return `${at('refName')}:${at('start')}-${at('end')}${this.tags(i)}`
-  }
-
-  parentOfRow() {
-    return undefined
-  }
-
-  row(i: number): Feature {
-    return new TableRow(this, i)
-  }
-
-  json(i: number): SimpleFeatureSerialized {
-    const out: Record<string, unknown> = {}
-    for (const [field, column] of this.columns) {
-      out[field] = valueAt(column, i)
+function binIntervals(
+  { table, bounds }: Staged,
+  step: BinStep,
+  fields: [string, string],
+): Staged {
+  const size = binSize(step)
+  const [asStart, asEnd] = step.as ?? DEFAULT_BIN_AS
+  const iv = intervalsOf(table, fields, size, bounds)
+  const { pieces } = iv
+  const parentRow = new Uint32Array(pieces)
+  const binStart = new Float64Array(pieces)
+  const binEnd = new Float64Array(pieces)
+  const overlap = new Float64Array(pieces)
+  let k = 0
+  for (let i = 0; i < table.length; i++) {
+    const first = iv.first[i]!
+    if (Number.isNaN(first)) {
+      continue
     }
-    out.uniqueId = this.id(i)
-    return out as SimpleFeatureSerialized
+    const s = iv.start[i]!
+    const e = iv.end[i]!
+    for (let b = first; b <= iv.last[i]!; b++) {
+      const lo = b * size
+      const hi = lo + size
+      parentRow[k] = i
+      binStart[k] = lo
+      binEnd[k] = hi
+      overlap[k] = Math.min(e, hi) - Math.max(s, lo)
+      k++
+    }
   }
-}
-
-function valueColumn(values: readonly unknown[]): Column {
-  return { kind: 'value', read: i => values[i] }
+  const written = new Map<string, Column>([
+    [asStart, { kind: 'number', values: binStart, at: undefined }],
+    [asEnd, { kind: 'number', values: binEnd, at: undefined }],
+    [BIN_OVERLAP_FIELD, { kind: 'number', values: overlap, at: undefined }],
+  ])
+  return {
+    table: new WithTable(table, written, parentRow),
+    bounds: boundsThrough(bounds, parentRow),
+  }
 }
 
 // Each row's group, numbered in the order groups are first met, a section
@@ -1417,93 +1372,43 @@ function aggregate({ table, bounds }: Staged, step: AggregateStep): Staged {
     start[g] = Math.min(start[g]!, readStart(i) as number)
     end[g] = Math.max(end[g]!, readEnd(i) as number)
   }
-
-  const columns = new Map<string, Column>()
-  for (const [f, field] of groupby.entries()) {
-    const read = reads[f]!
-    columns.set(field, valueColumn(firstRow.map(i => groupKey(read(i)))))
-  }
-  for (const agg of ops) {
-    columns.set(
-      aggregateFieldName(agg),
-      aggregateColumn(table, agg, groupOf, groups),
-    )
-  }
-  columns.set('refName', valueColumn(firstRow.map(i => readRefName(i))))
-  columns.set('start', { kind: 'number', values: start, at: undefined })
-  columns.set('end', { kind: 'number', values: end, at: undefined })
-
-  const serial = new Uint32Array(groups)
-  const out = new Uint32Array(bounds.length)
-  let s = 0
-  for (let g = 0; g < groups; g++) {
-    while (s < sectionOf[g]!) {
-      s++
-      out[s] = g
-    }
-    serial[g] = g - out[s]!
-  }
-  for (s++; s < bounds.length; s++) {
-    out[s] = groups
-  }
-  return {
-    table: new MadeTable(groups, columns, g => `#${serial[g]}`),
-    bounds: out,
-  }
+  return madeGroups({
+    groups,
+    keys: groupby.map((field, f): [string, unknown[]] => {
+      const read = reads[f]!
+      return [field, firstRow.map(i => groupKey(read(i)))]
+    }),
+    ops: ops.map(agg => aggregateColumn(table, agg, groupOf, groups)),
+    step,
+    refNames: firstRow.map(i => readRefName(i)),
+    start,
+    end,
+    sectionOf,
+    sections: bounds.length,
+  })
 }
 
 function aggregateColumn(
   table: FeatureTable,
-  { op, field }: AggregateOp,
+  agg: AggregateOp,
   groupOf: Uint32Array,
   groups: number,
 ): Column {
   const n = table.length
-  if (op === 'count') {
-    const counts = new Float64Array(groups)
-    for (let i = 0; i < n; i++) {
-      counts[groupOf[i]!]!++
-    }
-    return { kind: 'number', values: counts, at: undefined }
-  }
-  if (field === undefined) {
-    throw new Error(`an aggregate ${op} needs a field`)
-  }
-  const read = stepNumberReader(table, field, 'an aggregate')
-  const sum = new Float64Array(groups)
-  const count = new Float64Array(groups)
-  const min = new Float64Array(groups).fill(Infinity)
-  const max = new Float64Array(groups).fill(-Infinity)
+  const sums = new OpSums(agg, groups)
+  const { field, weight } = agg
+  const readValue =
+    agg.op === 'count' || field === undefined
+      ? () => Number.NaN
+      : stepNumberReader(table, field, 'an aggregate')
+  const readWeight =
+    weight !== undefined && isWeighted(agg)
+      ? stepNumberReader(table, weight, 'an aggregate')
+      : () => 1
   for (let i = 0; i < n; i++) {
-    const v = read(i)
-    if (!Number.isFinite(v)) {
-      continue
-    }
-    const g = groupOf[i]!
-    sum[g]! += v
-    count[g]!++
-    if (v < min[g]!) {
-      min[g] = v
-    }
-    if (v > max[g]!) {
-      max[g] = v
-    }
+    sums.add(groupOf[i]!, readValue(i), readWeight(i))
   }
-  if (op === 'sum') {
-    return { kind: 'number', values: sum, at: undefined }
-  }
-  const values = new Float64Array(groups)
-  for (let g = 0; g < groups; g++) {
-    values[g] =
-      count[g] === 0
-        ? Number.NaN
-        : op === 'mean'
-          ? sum[g]! / count[g]!
-          : op === 'min'
-            ? min[g]!
-            : max[g]!
-  }
-  return { kind: 'number', values, at: undefined, nanIsAbsent: true }
+  return sums.column(groups)
 }
 
 // Rows in start order, ties in the order they came: a start and a row packed
@@ -1734,8 +1639,22 @@ function runSteps(
   jexl: JexlInstance | undefined,
 ) {
   let current = staged
-  for (const step of steps ?? []) {
-    current = runStep(current, step, jexl)
+  const list = steps ?? []
+  for (let k = 0; k < list.length; k++) {
+    const step = list[k]!
+    const next = list[k + 1]
+    const fused =
+      step.type === 'bin' &&
+      next?.type === 'aggregate' &&
+      fusesBinAggregate(step, next)
+        ? binnedAggregate(current, step, next)
+        : undefined
+    if (fused) {
+      current = fused
+      k++
+    } else {
+      current = runStep(current, step, jexl)
+    }
   }
   return current
 }
@@ -1920,7 +1839,8 @@ function writes(step: TransformStep): readonly string[] | undefined {
       return [step.as]
     }
     case 'bin': {
-      return step.as ?? DEFAULT_BIN_AS
+      const as = step.as ?? DEFAULT_BIN_AS
+      return step.fields ? [...as, BIN_OVERLAP_FIELD] : as
     }
     case 'cells': {
       return ['start', 'end', 'state', 'base', 'match', 'length']

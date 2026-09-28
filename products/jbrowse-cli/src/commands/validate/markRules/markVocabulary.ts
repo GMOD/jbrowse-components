@@ -44,6 +44,8 @@ export const DEFAULT_MARK_SOURCE: MarkSourceName = 'features'
 export const DEFAULT_FORMULA_AS = 'value'
 export const DEFAULT_BIN_FIELD = 'start'
 export const DEFAULT_BIN_AS = ['start', 'end'] as const
+/** What a `bin` over `fields` writes on each piece: the bases of its interval inside its bin. */
+export const BIN_OVERLAP_FIELD = 'overlap'
 export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export const DEFAULT_CELLS_FIELD = 'seq'

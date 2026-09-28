@@ -305,6 +305,29 @@ describe('a marks list in a config file', () => {
     ])
   })
 
+  it('says a bin over fields leaves its field unread, and a weight moves no max', () => {
+    expect(
+      found([
+        {
+          mark: 'bar',
+          encoding: { y: 'top' },
+          transform: [
+            { type: 'bin', step: 10, field: 'end', fields: ['start', 'end'] },
+            {
+              type: 'aggregate',
+              ops: [
+                { op: 'max', field: 'score', weight: 'overlap', as: 'top' },
+              ],
+            },
+          ],
+        },
+      ]),
+    ).toEqual([
+      `warning bin-field-and-fields ${DISPLAY}.marks[0].transform[0].field`,
+      `warning unread-weight ${DISPLAY}.marks[0].transform[1].ops[0].weight`,
+    ])
+  })
+
   it("checks the display's own steps, at the display's path", () => {
     const bar = { mark: 'bar', encoding: { y: 'score' } }
     expect(

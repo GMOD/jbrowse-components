@@ -94,6 +94,19 @@ const bin = ConfigurationSchema(
       description: 'field placing a feature in a bin',
     },
     /**
+     * #slot bin.fields
+     * An interval's start and end fields, in place of `field`: each feature
+     * is cut at the bin edges into one piece per bin it overlaps, and each
+     * piece writes `overlap`, the bases of the interval inside its bin, which
+     * an `aggregate` op's `weight` reads for a mean per base. Empty bins by
+     * `field`.
+     */
+    fields: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: "an interval's start and end, cut at the bin edges",
+    },
+    /**
      * #slot bin.as
      * The two fields the bin's edges are written to. An `aggregate` behind the
      * bin that names no `groupby` groups by these.
@@ -128,6 +141,18 @@ const aggregateOpSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: '',
       description: 'field the op reads',
+    },
+    /**
+     * #slot aggregate.ops.weight
+     * A field each feature counts by: `count` sums it, `sum` sums the value
+     * times it, and `mean` divides that by its sum. `overlap` behind a `bin`
+     * over `fields` weights a mean by bases. `min` and `max` read none. Empty
+     * counts every feature once.
+     */
+    weight: {
+      type: 'string',
+      defaultValue: '',
+      description: 'field each feature counts by',
     },
     /**
      * #slot aggregate.ops.as
@@ -296,7 +321,8 @@ const pileup = ConfigurationSchema(
  *
  * `filter` keeps the features an expression admits; `formula` writes an
  * expression's value into a field; `bin` snaps each feature to a
- * genome-aligned bin; `aggregate` folds each group into one feature carrying
+ * genome-aligned bin, or with `fields` cuts it into a piece per bin it
+ * overlaps; `aggregate` folds each group into one feature carrying
  * its summaries; `coverage` replaces the features with runs of how many
  * overlap each stretch; `flatten` fans out an array or a record field;
  * `cells` replaces each aligned row with its runs of match, mismatch and gap
@@ -316,6 +342,19 @@ const pileup = ConfigurationSchema(
  * transform: [
  *   { type: 'bin', step: 'auto' },
  *   { type: 'aggregate', ops: [{ op: 'count' }] },
+ * ]
+ * ```
+ *
+ * #example
+ * The fraction of aligned bases matching the reference per bin, behind a
+ * `cells` step, each run weighted by the bases it puts in the bin:
+ * ```js
+ * transform: [
+ *   { type: 'bin', step: 'auto', fields: ['start', 'end'] },
+ *   {
+ *     type: 'aggregate',
+ *     ops: [{ op: 'mean', field: 'match', weight: 'overlap', as: 'identity' }],
+ *   },
  * ]
  * ```
  */

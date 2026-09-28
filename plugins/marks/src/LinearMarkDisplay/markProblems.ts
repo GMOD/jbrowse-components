@@ -14,7 +14,9 @@ import {
 import { MARK_SPECS, rampResolvesPerRegion, readsValue } from './markSpecs.ts'
 import {
   DEFAULT_AGGREGATE_OP,
+  BIN_OVERLAP_FIELD,
   DEFAULT_BIN_AS,
+  DEFAULT_BIN_FIELD,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
   DEFAULT_LINE_INTERPOLATE,
@@ -91,10 +93,14 @@ export const MARK_RULES = {
   'step-expression': 'error',
   /** A `bin` whose `step` is neither `"auto"` nor a positive width. */
   'bin-width': 'error',
-  /** A `bin`'s `as` or a `pileup`'s `fields` naming other than two fields, so the step reads its defaults. */
+  /** A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. */
   'step-pair': 'warning',
+  /** A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. */
+  'bin-field-and-fields': 'warning',
   /** A `sum`, `mean`, `min` or `max` naming no `field`. */
   'op-field': 'error',
+  /** A `weight` on a `min` or a `max`, which no weight moves. */
+  'unread-weight': 'warning',
   /** A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. */
   'step-field-expression': 'error',
   /** A `y` naming a field that no `aggregate` or `coverage` step before it writes. */
@@ -137,6 +143,7 @@ type OwnProblem = Omit<MarkProblem, 'mark'>
 interface OpSnapshot {
   op?: AggregateOpName
   field?: string
+  weight?: string
   as?: string
 }
 
@@ -144,7 +151,13 @@ interface OpSnapshot {
 export type StepSnapshot =
   | { type: 'filter'; expr?: string }
   | { type: 'formula'; expr?: string; as?: string }
-  | { type: 'bin'; step?: number | string; field?: string; as?: string[] }
+  | {
+      type: 'bin'
+      step?: number | string
+      field?: string
+      fields?: string[]
+      as?: string[]
+    }
   | { type: 'aggregate'; groupby?: string[]; ops?: OpSnapshot[] }
   | { type: 'coverage'; as?: string }
   | {
@@ -374,6 +387,7 @@ function fieldRefs(step: StepSnapshot): [string, string | undefined][] {
     refs.map((ref, k): [string, string] => [`${slot}.${k}`, ref])
   switch (step.type) {
     case 'bin':
+      return [['field', step.field], ...list('fields', step.fields)]
     case 'flatten':
     case 'cells':
       return [['field', step.field]]
@@ -382,9 +396,9 @@ function fieldRefs(step: StepSnapshot): [string, string | undefined][] {
     case 'aggregate':
       return [
         ...list('groupby', step.groupby),
-        ...(step.ops ?? []).map((o, k): [string, string | undefined] => [
-          `ops.${k}.field`,
-          o.field,
+        ...(step.ops ?? []).flatMap((o, k): [string, string | undefined][] => [
+          [`ops.${k}.field`, o.field],
+          [`ops.${k}.weight`, o.weight],
         ]),
       ]
     default:
@@ -392,14 +406,27 @@ function fieldRefs(step: StepSnapshot): [string, string | undefined][] {
   }
 }
 
-// A slot naming two fields, and the default it reads as when it names another
-// number of them.
-function pairSlot(step: StepSnapshot) {
+// The slots naming two fields, and what each reads as when it names another
+// number of them: a bin's `fields` left empty is a bin by `field`.
+function pairSlots(step: StepSnapshot) {
   return step.type === 'bin'
-    ? { slot: 'as', names: step.as, fallback: DEFAULT_BIN_AS }
+    ? [
+        { slot: 'as', names: step.as, reads: DEFAULT_BIN_AS.join(' and ') },
+        {
+          slot: 'fields',
+          names: step.fields?.length ? step.fields : undefined,
+          reads: `its field alone, ${step.field || DEFAULT_BIN_FIELD}`,
+        },
+      ]
     : step.type === 'pileup'
-      ? { slot: 'fields', names: step.fields, fallback: DEFAULT_PILEUP_FIELDS }
-      : undefined
+      ? [
+          {
+            slot: 'fields',
+            names: step.fields,
+            reads: DEFAULT_PILEUP_FIELDS.join(' and '),
+          },
+        ]
+      : []
 }
 
 type Steps = readonly (StepSnapshot | undefined)[]
@@ -512,6 +539,9 @@ function madeFields(steps: readonly StepSnapshot[]) {
       for (const edge of step.as?.length === 2 ? step.as : DEFAULT_BIN_AS) {
         fields.add(edge)
       }
+      if (step.fields?.length === 2) {
+        fields.add(BIN_OVERLAP_FIELD)
+      }
     }
   }
   return fields
@@ -546,18 +576,33 @@ function stepProblems(steps: Steps, list = 'transform') {
         found('bin-width', `${at}.step`, 'a bin is a positive width in bp'),
       )
     }
-    const pair = pairSlot(step)
-    if (pair?.names && pair.names.length !== 2) {
+    for (const pair of pairSlots(step)) {
+      if (pair.names && pair.names.length !== 2) {
+        problems.push(
+          found(
+            'step-pair',
+            `${at}.${pair.slot}`,
+            `a ${type} reads two field names from ${pair.slot} and this names ${pair.names.length}, so it reads ${pair.reads}`,
+          ),
+        )
+      }
+    }
+    if (
+      type === 'bin' &&
+      step.fields?.length === 2 &&
+      step.field &&
+      step.field !== DEFAULT_BIN_FIELD
+    ) {
       problems.push(
         found(
-          'step-pair',
-          `${at}.${pair.slot}`,
-          `a ${type} reads two field names from ${pair.slot} and this names ${pair.names.length}, so it reads ${pair.fallback.join(' and ')}`,
+          'bin-field-and-fields',
+          `${at}.field`,
+          `a bin over fields cuts each interval at the bin edges and reads no field, so ${step.field} is unread`,
         ),
       )
     }
     if (type === 'aggregate') {
-      for (const [k, { op = DEFAULT_AGGREGATE_OP, field }] of (
+      for (const [k, { op = DEFAULT_AGGREGATE_OP, field, weight }] of (
         step.ops ?? []
       ).entries()) {
         if (op !== 'count' && !field) {
@@ -566,6 +611,15 @@ function stepProblems(steps: Steps, list = 'transform') {
               'op-field',
               `${at}.ops.${k}.field`,
               `${op} reads a field and names none`,
+            ),
+          )
+        }
+        if ((op === 'min' || op === 'max') && weight) {
+          problems.push(
+            found(
+              'unread-weight',
+              `${at}.ops.${k}.weight`,
+              `a weight moves no ${op === 'min' ? 'minimum' : 'maximum'}, so the ${op} reads its field alone`,
             ),
           )
         }
