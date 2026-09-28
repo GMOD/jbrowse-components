@@ -353,10 +353,10 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: ChordVariantDisplay": {
     "bezierRadiusRatio": "number = 0.1",
-    "color": "color = "rgba(255,133,0,0.32)"",
     "colorHover": "color = "#555"",
     "colorSelected": "color = "black"",
     "onChordClick": "boolean = false",
+    "opacity": "number = 1",
   },
   "display: DotplotDisplay": {},
   "display: LDTrackDisplay": {

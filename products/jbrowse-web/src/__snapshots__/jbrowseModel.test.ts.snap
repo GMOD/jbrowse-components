@@ -3423,7 +3423,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "marks": [
             {
               "encoding": {
-                "color": "#a65628",
+                "color": {
+                  "value": "#a65628",
+                },
                 "size": 3,
               },
               "mark": "link",
@@ -3461,7 +3463,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "marks": [
             {
               "encoding": {
-                "color": "#a65628",
+                "color": {
+                  "value": "#a65628",
+                },
                 "size": 3,
               },
               "mark": "link",
