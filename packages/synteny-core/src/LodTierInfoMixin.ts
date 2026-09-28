@@ -86,9 +86,16 @@ export function LodTierInfoMixin() {
  * that wants the header of an untiered adapter for what else it carries; the
  * threshold slot stays the default so a PAFAdapter still never asks.
  */
+/**
+ * `lanes` is the selection a lane-declaring source reads its header for, read
+ * in `run` with the adapter config, so the tier info is the chosen lanes'.
+ */
 export function installLodTierInfoFetch(
   self: LodTierInfoHost,
-  { alsoWhen = () => false }: { alsoWhen?: () => boolean } = {},
+  {
+    alsoWhen = () => false,
+    lanes,
+  }: { alsoWhen?: () => boolean; lanes?: () => string[] | undefined } = {},
 ) {
   installPrerequisiteFetch(self, {
     name: 'LodTierInfo',
@@ -96,7 +103,10 @@ export function installLodTierInfoFetch(
     report: { setStatusMessage: () => {} },
     gate: () => trackHasLodTiers(self.parentTrack) || alsoWhen(),
     run: (adapterConfig, ctx): Promise<unknown> =>
-      ctx.callRpc('CoreGetInfo', { adapterConfig }),
+      ctx.callRpc('CoreGetInfo', {
+        adapterConfig,
+        ...(lanes === undefined ? {} : { haplotypes: lanes() }),
+      }),
     commit: read => {
       self.setAdapterHeader(read)
     },

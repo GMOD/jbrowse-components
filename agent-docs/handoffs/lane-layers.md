@@ -1,6 +1,6 @@
 ---
 name: lane-layers
-description: "ADR-180's lane layers after the spike: template layers and described lanes as temporary assemblies are built; left are releasing the Hubs plugin's assembly answer, a GC cost measurement (and a twobit index over-read) before jb2hubs writes GC into every star, and the hg38 star reading every child's index."
+description: "ADR-180's lane layers after the spike: template layers and described lanes as temporary assemblies are built and the Hubs plugin's assembly answer is released; left is a GC cost measurement (and a twobit index over-read) before jb2hubs writes GC into every star."
 ---
 
 The spike is `laneLayers` on `MultiWaySyntenyDisplay`: a row of data per lane
@@ -18,13 +18,7 @@ only through renaming, and never through an RPC by hand
 their own genome's GC, and "Open in new view" hands a lane to its hub's
 connection without losing it.
 
-1. **Release the Hubs plugin's new answer.** `describeAssemblies.ts` answers
-   `{ assembly, geneAdapter }`, `baseUri` stamped beside each `uri`
-   (jbrowse-plugin-hubs `69b9eb5`, on its local main, unpushed and
-   unreleased). Core reads only those two, so a hub star on a build carrying
-   `d3f8e161e7` draws no mate genes under plugin 1.0.15; release 1.0.16
-   (`pnpm version patch`, then the store step) before pushing core.
-2. **Measure before jb2hubs writes GC into every star.** Cold at TP53, a
+1. **Measure before jb2hubs writes GC into every star.** Cold at TP53, a
    chromosome-level lane reads 2.4-2.9 MB of 2bit, mostly its chromosome's
    soft-mask block list, against about 1 MB for a gc5Base bigWig. A
    scaffold-level lane reads far more: `@gmod/twobit` 6.0.12 `getIndex`
@@ -35,20 +29,6 @@ connection without losing it.
    (`ucsc2jbrowse/src/multiwayStarTrack.ts`) writes the layer and sizes each
    lane at 22 + 12 (gene names) + the band + 2; its 22 is already short by
    the gene-name row, and the gene-page link's pitch (34) grows by the band.
-3. **The hg38 star reads every child's index.** On the default lanes at TP53
-   it fetched 241 `.pif.gz.csi` files, 234 MB, with temporary assemblies
-   off. Three routes do it, and none is a lane-layers change:
-   `MultiPairwiseSyntenyAdapter.getRefNames` for the anchor unions every
-   child holding it, which is every child, and each child's
-   `PifFile.refSeqNames` is its index; the warm-up in `tracks.ts`
-   (`688793ff8b`) sends that `CoreGetRefNames` before the first fetch and
-   the rename map sends it again; and `getHeader` reads every child's tabix
-   header and coarse-tier probe for one `hasCoarseTier`. The 2026-09-24
-   "reads eight" measured `getFeatures`, whose `childrenForLanes` already
-   narrows to the chosen lanes, so this is a cost those routes always had
-   rather than a regression. The display knows its lanes (`haplotypes` in
-   its fetch options) and the anchor's names are the assembly's own, so the
-   fix is those two routes reading only the chosen children, or nothing.
 
 ## Not now
 

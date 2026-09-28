@@ -380,7 +380,12 @@ Today's providers:
   the anchor, and declares every mate as a lane, labelled and grouped by its
   `lanes` slot. It declares `headerLanes`, so a window reads only the children
   for the lanes the display asks for (`childrenForLanes`), and a star over every
-  liftOver file a genome has costs the chosen lanes' reads. `mateShape:
+  liftOver file a genome has costs the chosen lanes' reads. The header's tier
+  facts and the anchor's refNames narrow the same way, each child's answer
+  being its index: the header read names the display's lanes, the fetch
+  carries them beside its regions so the rename pass loads a map per selection
+  (`refNameMapKey`), and the track warm-up sends a lane-declaring source no
+  refNames call at all. `mateShape:
   'grouped'` is ignored by every PIF adapter: each record
   arrives as one feature with one `mate`, and the display groups on the clipped
   `syntenyId` (file offset plus window). A mate-vs-mate query returns the empty

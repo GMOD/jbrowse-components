@@ -101,12 +101,12 @@ function fetchPhases(
       const { features, ops } = await ctx.callRpc('MultiWayGetFeatures', {
         regions,
         adapterConfig: self.adapterConfig,
+        ...(haplotypes === undefined ? {} : { haplotypes }),
         opts: {
           mateShape: 'grouped',
           lodMode: lodTier,
           clipToRegion: true,
           splitAtGapBp: SPLIT_AT_GAP_BP,
-          ...(haplotypes === undefined ? {} : { haplotypes }),
         },
       })
       return { features: dedupe(features, r => r.id()), ops }
@@ -401,6 +401,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   // so the picker can offer the whole universe before any lane is placed
   installLodTierInfoFetch(self, {
     alsoWhen: () => self.adapterDeclaresLanes,
+    lanes: () => self.fetchLaneSelection,
   })
   installGlobalFetchAutorun(self, {
     ...fetchPhases(self),
@@ -445,10 +446,12 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     fetchSpecs: () => self.laneLinksFetchSpecs,
     held: () => self.laneLinks,
     fetchOne: async (spec, ctx) => {
+      const haplotypes = self.fetchLaneSelection
       const { features: links, ops } = await ctx.callRpc(
         'MultiWayGetFeatures',
         {
           adapterConfig: self.adapterConfig,
+          ...(haplotypes === undefined ? {} : { haplotypes }),
           regions: spec.onAnchor
             ? spec.regions
             : await laneRegions(

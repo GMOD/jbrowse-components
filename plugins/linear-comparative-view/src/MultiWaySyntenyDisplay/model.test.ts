@@ -1726,6 +1726,32 @@ test('a graph track opens on its own assemblies beside the anchor', () => {
   expect(laneResetLabel(display)).toBe("Show the track's lanes (2)")
 })
 
+// A 241-child hub star answers its header's tier facts and its refNames from
+// each child's index, so the header read and the fetch, whose rename pass loads
+// the refNames, both say which lanes they are for. Beside the regions rather
+// than inside `opts`, since the rename pass reads the call's own arguments.
+test('the header read and the fetch name the lanes a lane-declaring source reads', async () => {
+  const calls: { name: string; args: Record<string, unknown> }[] = []
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+    trackAssemblyNames: ['volvox', 'HG00097.1', 'HG00099.1'],
+    rpc: async (name, args) => {
+      calls.push({ name, args })
+      return name === 'CoreGetInfo' ? { hasCoarseTier: false } : []
+    },
+  })
+  await until(() => calls.some(c => c.name === 'MultiWayGetFeatures'))
+  await until(() => calls.some(c => c.name === 'CoreGetInfo'))
+  const lanes = ['HG00097.1', 'HG00099.1']
+  expect(calls.find(c => c.name === 'CoreGetInfo')!.args.haplotypes).toEqual(
+    lanes,
+  )
+  const fetch = calls.find(c => c.name === 'MultiWayGetFeatures')!.args
+  expect(fetch.haplotypes).toEqual(lanes)
+  expect(fetch.opts).not.toHaveProperty('haplotypes')
+  expect(display.fetchLaneSelection).toEqual(lanes)
+})
+
 // The bug this locks down: `laneSelection` existed and narrowed the DRAWING,
 // and nothing passed it to the adapter — so a graph track showing eight lanes
 // still fetched all 464 haplotypes and threw away 456 of them. The two halves

@@ -25,13 +25,28 @@ function setup({
     refNameAliases: Object.fromEntries(
       assemblyRefNames.map(n => [n, n] as const),
     ),
-    rpcManager: { call: async () => fileRefNames },
+    rpcManager: { call: jest.fn(async () => fileRefNames) },
     getCanonicalRefName: (name: string) =>
       assemblyRefNames.includes(name) ? name : aliases[name],
     setRefNameMismatch,
   } as unknown as RefNameMapAssembly
   return { assembly, setRefNameMismatch }
 }
+
+// a source that declares its lanes reads an index per lane named, so the lanes
+// a fetch is for travel with the refNames call rather than being dropped here
+test('forwards the lanes the fetch names', async () => {
+  const { assembly } = setup({ fileRefNames: CHR, assemblyRefNames: CHR })
+  await loadRefNameMap(assembly, adapterConfig, {
+    sessionId: 'sesh',
+    haplotypes: ['panTro6', 'mm39'],
+  })
+  expect(assembly.rpcManager.call).toHaveBeenCalledWith(
+    'sesh',
+    'CoreGetRefNames',
+    expect.objectContaining({ haplotypes: ['panTro6', 'mm39'] }),
+  )
+})
 
 const CHR = ['chr1', 'chr2', 'chr3']
 

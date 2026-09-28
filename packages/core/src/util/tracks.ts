@@ -1507,6 +1507,20 @@ function adapterTypesIn(
  * track's config node reads it, so a frozen config.json entry is read through a
  * node of its type: its raw adapter snapshot hashes to another worker.
  */
+function declaresLanes(
+  adapterConfig: Record<string, unknown>,
+  pluginManager: PluginManager,
+) {
+  const { type } = adapterConfig
+  return (
+    typeof type === 'string' &&
+    pluginManager.hasAdapterType(type) &&
+    pluginManager
+      .getAdapterType(type)
+      .adapterCapabilities.includes('headerLanes')
+  )
+}
+
 function warmTrackAdapter(self: GenericView, trackId: string) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
@@ -1535,7 +1549,9 @@ function warmTrackAdapter(self: GenericView, trackId: string) {
     const sequenceAdapter = assemblyName
       ? getSequenceAdapterConfigByName(session.assemblyManager, assemblyName)
       : undefined
-    if (sequenceAdapter) {
+    // a source that declares its lanes reads an index per lane asked about,
+    // and only its display knows which; asked about none it would read all
+    if (sequenceAdapter && !declaresLanes(adapterConfig, pluginManager)) {
       session.rpcManager
         // eslint-disable-next-line no-restricted-syntax -- an index read the track's first request would make anyway: nothing to show, and nothing a user can move on from
         .call(sessionId, 'CoreGetRefNames', {

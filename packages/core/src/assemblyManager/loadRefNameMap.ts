@@ -56,6 +56,7 @@ export async function loadRefNameMap(
       adapterConfig: adapterConfig as Record<string, unknown>,
       assemblyName: assembly.name,
       sequenceAdapter,
+      haplotypes: options.haplotypes,
       // signal intentionally not passed, fixes issues like #2221.
       // alternative fix #2540 was proposed but non-working currently
       signal: undefined,

@@ -27,6 +27,9 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
       args: {
         regions: RegionLike[]
         adapterConfig: Record<string, unknown>
+        // beside the regions rather than in `opts`, so the rename pass reads
+        // the star's refNames for these lanes alone
+        haplotypes?: string[]
         opts?: Record<string, unknown>
       }
       return: MultiWayFeatures
@@ -52,13 +55,14 @@ export default class MultiWayGetFeatures extends RpcMethodTypeWithRenameRegions<
   }
 
   async execute(args: RpcExecuteArgs<'MultiWayGetFeatures'>) {
-    const { signal, statusCallback, regions, opts } = args
+    const { signal, statusCallback, regions, haplotypes, opts } = args
     const dataAdapter = await getFeatureAdapterOrThrow({
       ...args,
       pluginManager: this.pluginManager,
     })
     const withOps: ComparativeOptions = {
       ...opts,
+      haplotypes,
       keepAlignment: true,
       statusCallback,
       signal,

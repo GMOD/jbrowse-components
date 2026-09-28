@@ -7,7 +7,6 @@ import {
 import { onBecomeObserved } from 'mobx'
 
 import { getConf } from '../configuration/index.ts'
-import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import {
   createStatusFanOut,
@@ -24,6 +23,7 @@ import {
 import { getGeneticCodesFromFile, lookupGeneticCodeId } from './geneticCodes.ts'
 import { loadRefNameMap } from './loadRefNameMap.ts'
 import { defaultRefNameColors } from './refNameColors.ts'
+import { refNameMapKey } from './refNameMapKey.ts'
 import {
   buildRefNameMaps,
   checkRefName,
@@ -678,7 +678,7 @@ export default function assemblyFactory(
         if (!options.sessionId) {
           throw new Error('sessionId is required')
         }
-        const key = adapterConfigCacheKey(adapterConf)
+        const key = refNameMapKey(adapterConf, options)
         let entry = self.adapterLoads.get(key)
         if (!entry) {
           // evict on failure so a later call can retry

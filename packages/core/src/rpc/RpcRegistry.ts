@@ -26,6 +26,7 @@ export interface RpcRegistry {
       // every other method cannot reach it.
       sequenceAdapter?: Record<string, unknown>
       assemblyName?: string
+      haplotypes?: string[]
     }
     return: string[]
   }
@@ -98,6 +99,7 @@ export interface RpcRegistry {
   CoreGetInfo: {
     args: {
       adapterConfig: Record<string, unknown>
+      haplotypes?: string[]
     }
     return: unknown
   }

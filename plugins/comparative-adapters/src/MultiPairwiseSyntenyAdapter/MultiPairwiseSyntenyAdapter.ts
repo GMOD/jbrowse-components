@@ -51,10 +51,12 @@ export interface MultiPairwiseSyntenyInfo extends LodTierInfo {
 }
 
 /**
- * `haplotypes` narrows a fetch to the children aligning the anchor to the
+ * `haplotypes` narrows a call to the children aligning the anchor to the
  * mates it lists, spelled as the children spell them; undefined is every
- * child. The multiway display sends its lane selection under this name for
- * any adapter declaring `headerLanes`.
+ * child. The header's tier facts and the refNames narrow with the features,
+ * since each child's answer is its index: a 241-child star asked about eight
+ * lanes reads eight indexes. The multiway display sends its lane selection
+ * under this name for any adapter declaring `headerLanes`.
  */
 export interface MultiPairwiseSyntenyOptions extends ComparativeOptions {
   haplotypes?: string[]
@@ -220,11 +222,11 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
     },
   })
 
-  async getHeader(opts: ComparativeOptions = {}) {
+  async getHeader(opts: MultiPairwiseSyntenyOptions = {}) {
     const star = await this.star(opts)
     const tiers = await Promise.all(
-      star.children.map(async child =>
-        readLodTierInfo(await child.adapter.getHeader(opts)),
+      childrenForLanes(star.children, star.anchor, opts.haplotypes).map(
+        async child => readLodTierInfo(await child.adapter.getHeader(opts)),
       ),
     )
     const gaps = tiers.flatMap(tier =>
@@ -246,14 +248,18 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
     return info
   }
 
-  async getRefNames(opts: ComparativeOptions = {}) {
+  async getRefNames(opts: MultiPairwiseSyntenyOptions = {}) {
     const { assemblyName } = opts
     const star = await this.star(opts)
     const holders =
       assemblyName === undefined
         ? []
-        : star.children.filter(child =>
-            child.assemblyNames.includes(assemblyName),
+        : childrenForLanes(
+            star.children.filter(child =>
+              child.assemblyNames.includes(assemblyName),
+            ),
+            assemblyName,
+            opts.haplotypes,
           )
     const names = await Promise.all(
       holders.map(child => child.adapter.getRefNames(opts)),

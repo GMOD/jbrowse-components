@@ -33,6 +33,11 @@ export interface BaseOptions {
   // Resolving it here instead hides a fetch input from that key, which is how
   // a zoom across the threshold came to leave a view holding the wrong tier.
   lodMode?: LodTier
+  // The lanes a multi-genome source is asked about, spelled as it spells them.
+  // A source that declares its lanes (`headerLanes`) reads only these lanes'
+  // files for its header and refNames as it does for its features; absent,
+  // every lane.
+  haplotypes?: string[]
   // "I read only top-level features", so an adapter may skip work that exists
   // to complete SUBFEATURE lists. A request, not an instruction: only the
   // adapter knows whether its format's top-level set is even a function of the

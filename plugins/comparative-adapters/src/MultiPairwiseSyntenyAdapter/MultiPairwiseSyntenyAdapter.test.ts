@@ -368,6 +368,37 @@ describe('MultiPairwiseSyntenyAdapter', () => {
     expect(await adapter.getRefNames({})).toEqual([])
   })
 
+  // A hub star has 241 children and a display draws eight; each child's tier
+  // facts and refNames are its index, so the unnamed lanes' indexes go unread.
+  // The unreadable child proves it: named lanes answer, every lane cannot.
+  it("reads only the named lanes' children for its header and refNames", async () => {
+    const unreadable = {
+      ...pif('anchor_vs_c', ['anchor', 'genomeC']),
+      index: {
+        location: {
+          localPath: '/nonexistent/anchor_vs_c.pif.gz.tbi',
+          locationType: 'LocalPathLocation' as const,
+        },
+      },
+    }
+    const star = makeAdapter([
+      pif('b_vs_anchor', ['genomeB', 'anchor']),
+      unreadable,
+    ])
+    expect(await star.getHeader({ haplotypes: ['genomeB'] })).toMatchObject({
+      hasCoarseTier: true,
+      lanes: [{ name: 'genomeB' }, { name: 'genomeC' }],
+    })
+    expect(
+      await star.getRefNames({
+        assemblyName: 'anchor',
+        haplotypes: ['genomeB'],
+      }),
+    ).toEqual(['ctgA', 'ctgB'])
+    await expect(star.getHeader()).rejects.toThrow()
+    await expect(star.getRefNames({ assemblyName: 'anchor' })).rejects.toThrow()
+  })
+
   it('serves the coarse tier only when every child carries one', async () => {
     const tiered = makeAdapter([
       pif('b_vs_anchor', ['genomeB', 'anchor']),
