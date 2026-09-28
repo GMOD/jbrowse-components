@@ -148,6 +148,23 @@ test('picking a mode in Preferences drops the held one', () => {
   expect(session.themeIsDark).toBe(true)
 })
 
+test('a palette change keeps a held mode unless the palette pins its own', () => {
+  installMatchMedia(true)
+  const session = makeSession({
+    extraThemes: { midnight: { name: 'M', palette: { mode: 'dark' } } },
+  })
+  session.setThemeMode('system')
+  session.setSystemThemeOverride('light')
+
+  session.setThemeName('minimal')
+  expect(session.themeIsDark).toBe(false)
+
+  session.setThemeName('midnight')
+  session.setThemeName('default')
+  expect(session.systemThemeOverride).toBeUndefined()
+  expect(session.themeIsDark).toBe(true)
+})
+
 test('a held mode survives a reload only while the OS still disagrees', () => {
   installMatchMedia(true)
   const session = makeSession()

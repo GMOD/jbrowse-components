@@ -249,12 +249,18 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
        * Pick a palette. A name from before light and dark were an axis sets
        * the mode it spelled as well, so an old share link, a saved figure spec
        * and `jbrowse-img --theme darkStock` all still mean what they said.
+       * Either that or a palette pinned to its own mode drops a held mode,
+       * which would otherwise resurface on the next palette change.
        */
       setThemeName(name: string) {
         const { themeName, mode } = resolveThemeSelection(name)
         self.sessionThemeName = themeName
         if (mode) {
           self.sessionThemeMode = mode
+        }
+        const drawnMode = self.themeIsDark ? 'dark' : 'light'
+        if (mode || drawnMode !== self.effectiveThemeMode) {
+          self.systemThemeOverride = undefined
         }
       },
       /**
