@@ -125,12 +125,15 @@ export type {
 } from './LinearAlignmentsDisplay/sectionLayout.ts'
 export type { ColorPalette } from './shaders/colors.ts'
 export type {
+  ChainFields,
+  ChainedPileupData,
   GroupedAlignmentsResult,
   PileupDataResult,
   RowCap,
   RowCapSource,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
+export type { ChainedByGroup } from './LinearAlignmentsDisplay/chainFields.ts'
 export type { HoverCoverageBand } from './LinearAlignmentsDisplay/model.ts'
 export { LAYOUT_ORDERS } from './shared/types.ts'
 export type { LayoutOrder } from './shared/types.ts'
@@ -155,5 +158,6 @@ export type {
   ReadColorBy,
   SortedBy,
   TagColorScale,
+  WorkerFacet,
 } from './shared/types.ts'
 export type { ReadCategoryKey } from './shared/readCategoryFilters.ts'
