@@ -69,6 +69,8 @@ export const figureLiveRefs: Record<string, string> = {
   "genomes_synteny/launch_sequence": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr16%3A54%2C036%2C000-54%2C054%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeqCurated%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hg38-rmsk%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22hg38_to_panTro6_liftOver%22%2C%22type%22%3A%22LGVSyntenyDisplay%22%2C%22collapseGroupRows%22%3Afalse%2C%22height%22%3A60%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "genomes_synteny/star_link": "https://staging.genomes.jbrowse.org/gene/?gene=TNNT3",
   "genomes_synteny/star_lanes": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig-staging.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22NC_000011.10%3A1822626-2024102%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38_liftOver_multiway%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22laneFilter%22%3A%7B%22only%22%3A%5B%22GCF_029281585.2%22%2C%22panPan3%22%2C%22panTro6%22%2C%22ponAbe3%22%2C%22nomLeu3%22%2C%22rhiRox1%22%2C%22GCF_008728515.1%22%2C%22GCF_000956065.1%22%2C%22rheMac10%22%2C%22GCF_037993035.2%22%2C%22chlSab2%22%2C%22GCF_000955945.1%22%2C%22GCF_049354715.1%22%2C%22GCF_040939455.1%22%2C%22otoGar3%22%2C%22galVar1%22%2C%22GCA_033439345.1%22%2C%22GCF_964237555.1%22%2C%22ochPri3%22%2C%22hetGla2%22%2C%22cavPor3%22%2C%22dasNov3%22%2C%22triMan1%22%2C%22loxAfr3%22%2C%22echTel2%22%2C%22GCF_004115215.2%22%5D%7D%2C%22domain%22%3A%5B%22GCF_029281585.2%22%2C%22panPan3%22%2C%22panTro6%22%2C%22ponAbe3%22%2C%22nomLeu3%22%2C%22rhiRox1%22%2C%22GCF_008728515.1%22%2C%22GCF_000956065.1%22%2C%22rheMac10%22%2C%22GCF_037993035.2%22%2C%22chlSab2%22%2C%22GCF_000955945.1%22%2C%22GCF_049354715.1%22%2C%22GCF_040939455.1%22%2C%22otoGar3%22%2C%22galVar1%22%2C%22GCA_033439345.1%22%2C%22GCF_964237555.1%22%2C%22ochPri3%22%2C%22hetGla2%22%2C%22cavPor3%22%2C%22dasNov3%22%2C%22triMan1%22%2C%22loxAfr3%22%2C%22echTel2%22%2C%22GCF_004115215.2%22%5D%2C%22height%22%3A918%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "genomes_synteny/mouse_strains_nnt": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fmm39%2Fconfig-staging.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22mm39%22%2C%22loc%22%3A%22chr13%3A119%2C460%2C000-119%2C560%2C000%22%2C%22tracks%22%3A%5B%22mm39-ncbiRefSeq%22%2C%7B%22trackId%22%3A%22mm39_liftOver_multiway%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22laneFilter%22%3A%7B%22only%22%3A%5B%22GCA_964188535.1%22%2C%22GCA_921999865.2%22%2C%22GCA_921998555.2%22%2C%22GCA_001624215.1%22%2C%22GCA_921997145.2%22%2C%22GCA_921997125.2%22%2C%22GCA_001624505.1%22%2C%22GCA_921998325.2%22%2C%22GCA_001624745.1%22%2C%22GCA_001624835.1%22%2C%22GCA_001624775.1%22%2C%22GCA_921999005.2%22%2C%22GCA_921997135.2%22%2C%22GCF_900094665.2%22%5D%7D%2C%22domain%22%3A%5B%22GCA_964188535.1%22%2C%22GCA_921999865.2%22%2C%22GCA_921998555.2%22%2C%22GCA_001624215.1%22%2C%22GCA_921997145.2%22%2C%22GCA_921997125.2%22%2C%22GCA_001624505.1%22%2C%22GCA_921998325.2%22%2C%22GCA_001624745.1%22%2C%22GCA_001624835.1%22%2C%22GCA_001624775.1%22%2C%22GCA_921999005.2%22%2C%22GCA_921997135.2%22%2C%22GCF_900094665.2%22%5D%2C%22height%22%3A510%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "genomes_synteny/human_17q21_haplotypes": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig-staging.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A45%2C300%2C000-46%2C800%2C000%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%2C%7B%22trackId%22%3A%22hg38_liftOver_multiway%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22laneFilter%22%3A%7B%22only%22%3A%5B%22GCA_054883195.1%22%2C%22GCA_054883265.1%22%2C%22GCA_018852615.2%22%2C%22GCA_018506965.1%22%5D%7D%2C%22domain%22%3A%5B%22GCA_054883195.1%22%2C%22GCA_054883265.1%22%2C%22GCA_018852615.2%22%2C%22GCA_018506965.1%22%5D%2C%22height%22%3A170%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv_cgiab/dotplot_haplotypes": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22DotplotView%22%2C%22displayName%22%3A%22HG008-T%20v3.2%20hap1%20vs%20GRCh38%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22GRCh38_GIABv3%22%7D%2C%7B%22assembly%22%3A%22HG008T_v3.2%22%2C%22displayedRegionNames%22%3A%5B%22*_hap1%22%5D%7D%5D%2C%22tracks%22%3A%5B%22HG008T_v3.2_pif%22%5D%2C%22autoDiagonalize%22%3Atrue%2C%22height%22%3A640%7D%2C%7B%22type%22%3A%22DotplotView%22%2C%22displayName%22%3A%22HG008-T%20v3.2%20hap2%20vs%20GRCh38%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22GRCh38_GIABv3%22%7D%2C%7B%22assembly%22%3A%22HG008T_v3.2%22%2C%22displayedRegionNames%22%3A%5B%22*_hap2%22%5D%7D%5D%2C%22tracks%22%3A%5B%22HG008T_v3.2_pif%22%5D%2C%22autoDiagonalize%22%3Atrue%2C%22height%22%3A640%7D%5D%2C%22layout%22%3A%7B%22direction%22%3A%22horizontal%22%2C%22children%22%3A%5B%7B%22views%22%3A%5B0%5D%2C%22size%22%3A50%7D%2C%7B%22views%22%3A%5B1%5D%2C%22size%22%3A50%7D%5D%7D%7D&sessionName=Screenshot",
   "sv_cgiab/dotplot_import_form": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22DotplotView%22%2C%22views%22%3A%5B%7B%7D%2C%7B%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv_cgiab/synteny_view": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22drawCurves%22%3Atrue%2C%22levelHeights%22%3A%5B200%2C200%5D%2C%22minAlignmentLength%22%3A500000%2C%22alpha%22%3A0.35%2C%22tracks%22%3A%5B%5B%22HG008T_v3.2_pif%22%5D%2C%5B%22HG008T_v3.2_pif%22%5D%5D%2C%22views%22%3A%5B%7B%22loc%22%3A%22chr3_chr6_chr11_hap2%20chr13_hap2%22%2C%22assembly%22%3A%22HG008T_v3.2%22%2C%22hideNoTracksActive%22%3Atrue%7D%2C%7B%22loc%22%3A%22chr3%3A1-198295559%20chr13%3A1-114364328%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22hideNoTracksActive%22%3Atrue%2C%22highlight%22%3A%5B%7B%22refName%22%3A%22chr3%22%2C%22assemblyName%22%3A%22GRCh38_GIABv3%22%2C%22start%22%3A136976414%2C%22end%22%3A142976414%2C%22color%22%3A%22rgba(31%2C119%2C180%2C0.45)%22%7D%2C%7B%22refName%22%3A%22chr13%22%2C%22assemblyName%22%3A%22GRCh38_GIABv3%22%2C%22start%22%3A111353244%2C%22end%22%3A114364328%2C%22color%22%3A%22rgba(31%2C119%2C180%2C0.45)%22%7D%5D%7D%2C%7B%22loc%22%3A%22chr3_chr13_hap1%3A1-212897834%22%2C%22assembly%22%3A%22HG008T_v3.2%22%2C%22hideNoTracksActive%22%3Atrue%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -429,6 +431,8 @@ export const figureLiveRefs: Record<string, string> = {
 // (SessionUrlSpec.liveLabel).
 export const figureLiveLabels: Record<string, string> = {
   "genomes_synteny/star_link": "Open the TNNT3 gene page",
+  "genomes_synteny/mouse_strains_nnt": "Open the mouse strains at Nnt",
+  "genomes_synteny/human_17q21_haplotypes": "Open the four haplotypes at 17q21.31",
   "genomes_basics/site_home": "Open genomes.jbrowse.org",
   "genomes_basics/site_search": "Open genomes.jbrowse.org",
   "genomes_basics/site_ucsc_list": "Open the UCSC genome list",
@@ -484,7 +488,9 @@ export const figureSlowSpecs: string[] = [
   "genomes_basics/search_tp53",
   "genomes_msa/genomic_domains",
   "genomes_msa/launch_sequence",
+  "genomes_synteny/human_17q21_haplotypes",
   "genomes_synteny/launch_sequence",
+  "genomes_synteny/mouse_strains_nnt",
   "genomes_synteny/ribbons_curved",
   "genomes_synteny/ribbons_default",
   "genomes_synteny/star_lanes",
@@ -900,6 +906,14 @@ export const figureFrames: Record<
   "genomes_synteny/star_lanes": {
     "width": 1300,
     "height": 1140
+  },
+  "genomes_synteny/mouse_strains_nnt": {
+    "width": 1300,
+    "height": 900
+  },
+  "genomes_synteny/human_17q21_haplotypes": {
+    "width": 1300,
+    "height": 620
   },
   "sv_cgiab/dotplot_haplotypes": {
     "width": 1800,

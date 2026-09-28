@@ -159,6 +159,33 @@ below hg38 pass through hg38, since each chain aligns its genome to hg38 alone.
 [Reading the stack](/docs/tutorials/hg38_vertebrates_synteny#reading-the-stack)
 covers the lane labels, the ribbons and the lane menus.
 
+## Choosing the lanes: mouse strains at Nnt
+
+A star holds every genome UCSC lifts its reference over to, so which lanes open
+is a choice. mm39's star holds the Mouse Genomes Project strains, and mm39 is
+C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al. 2006). We'll
+open the strain lanes at that gene:
+
+- open
+  [mm39 on staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/ucsc/mm39/)
+  and turn on **mm39 vs 76 genomes (liftOver, multi-way)** under **Pairwise
+  alignments**
+- type `Nnt` into the location box
+- in the track menu, **Lanes → Choose lanes...**, type `house mouse` into the
+  filter and tick the strains, the C57BL/6J T2T assembly among them
+
+<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies its star holds, the C57BL/6J T2T assembly first. Every other lane opens a gap under the middle of the gene, the sequence the reference strain lacks, and the T2T assembly of that same strain runs straight." />
+
+## One person's two haplotypes at 17q21.31
+
+hg38's star holds both haplotypes of the H9 T2T assembly, so a stack can put one
+person's two chromosomes under the reference. At 17q21.31 the H2 haplotype is a
+900 kb inversion (Stefansson et al. 2005), and H9 carries one of each. Open
+hg38's star at `chr17:45,300,000-46,800,000` and choose the two H9 haplotypes,
+the HG002 maternal assembly and the NA24631 maternal assembly as lanes.
+
+<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over four T2T haplotypes. The H9 hap2 lane crosses the lane above it across the inversion and runs straight either side of it; the other three haplotypes run straight throughout." />
+
 ## See also
 
 - [](/docs/tutorials/genomes_basics)
@@ -168,3 +195,12 @@ covers the lane labels, the ribbons and the lane menus.
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/dotplot_view)
 - [The T2T human variation paper](https://www.science.org/doi/10.1126/science.abl3533)
+
+## References
+
+- Freeman HC, Hugill A, Dear NT, Ashcroft FM, Cox RD. Deletion of nicotinamide
+  nucleotide transhydrogenase: a new quantitive trait locus accounting for
+  glucose intolerance in C57BL/6J mice. Diabetes (2006).
+  https://doi.org/10.2337/db06-0358
+- Stefansson H, et al. A common inversion under selection in Europeans. Nat
+  Genet (2005). https://doi.org/10.1038/ng1508

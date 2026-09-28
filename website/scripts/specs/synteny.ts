@@ -402,6 +402,34 @@ function tnnt3StarSession() {
   )
 }
 
+// A hosted reference's star opened on the lanes named, in that order, with the
+// reference's gene track above it: the route the tutorial's Lanes menu takes,
+// pinned as a link
+function hostedStarSession(db: string, loc: string, lanes: string[]) {
+  return sessionSpec(
+    encodeURIComponent(`https://jbrowse.org/ucsc/${db}/config-staging.json`),
+    {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: db,
+          loc,
+          tracks: [
+            `${db}-ncbiRefSeq`,
+            {
+              trackId: `${db}_liftOver_multiway`,
+              type: 'MultiWaySyntenyDisplay',
+              laneFilter: { only: lanes },
+              domain: lanes,
+              height: (lanes.length + 1) * 34,
+            },
+          ],
+        },
+      ],
+    },
+  )
+}
+
 // The two files one MCScan run writes, each drawn on its own and stacked into
 // one figure. Same window and same view settings in both parts, so the only
 // variable is which file the adapter is reading: `.anchors` puts a ribbon on
@@ -4391,6 +4419,48 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 240000,
     viewportWidth: 1300,
     viewportHeight: 1140,
+  },
+
+  {
+    mode: 'url',
+    name: 'genomes_synteny/mouse_strains_nnt',
+    url: hostedStarSession('mm39', 'chr13:119,460,000-119,560,000', [
+      'GCA_964188535.1',
+      'GCA_921999865.2',
+      'GCA_921998555.2',
+      'GCA_001624215.1',
+      'GCA_921997145.2',
+      'GCA_921997125.2',
+      'GCA_001624505.1',
+      'GCA_921998325.2',
+      'GCA_001624745.1',
+      'GCA_001624835.1',
+      'GCA_001624775.1',
+      'GCA_921999005.2',
+      'GCA_921997135.2',
+      'GCF_900094665.2',
+    ]),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportWidth: 1300,
+    viewportHeight: 900,
+    liveLabel: 'Open the mouse strains at Nnt',
+  },
+
+  {
+    mode: 'url',
+    name: 'genomes_synteny/human_17q21_haplotypes',
+    url: hostedStarSession('hg38', 'chr17:45,300,000-46,800,000', [
+      'GCA_054883195.1',
+      'GCA_054883265.1',
+      'GCA_018852615.2',
+      'GCA_018506965.1',
+    ]),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportWidth: 1300,
+    viewportHeight: 620,
+    liveLabel: 'Open the four haplotypes at 17q21.31',
   },
 
   // Both haplotypes of HG008T v3.2 against GRCh38, one dotplot each, tiled
