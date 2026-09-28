@@ -1,4 +1,4 @@
-import { LINK_ELSEWHERE } from '@jbrowse/render-core/marks'
+import { LINK_ELSEWHERE, LINK_NO_REGION } from '@jbrowse/render-core/marks'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 
@@ -7,6 +7,66 @@ export interface OwnerRegion {
   start: number
   end: number
   assemblyName: string
+}
+
+/** A displayed region as a link's far foot is looked up in it. */
+export interface MateRegion extends OwnerRegion {
+  index: number
+}
+
+/**
+ * Each link layer's `x2Region`: the region the far foot places through, its
+ * refName read through the assembly's aliases. The block's own region when it
+ * holds the foot, else any displayed region that does, else the block's own
+ * region when the foot is on its contig past its edge, else none. Once per
+ * fetch or region change, so a pan places through the shader's table alone.
+ */
+export function withMateRegions(
+  data: MarkRegionData,
+  regions: readonly MateRegion[],
+  canonical: (assemblyName: string, refName: string) => string,
+  ownIndex: number,
+): MarkRegionData {
+  const byRef = new Map<string, MateRegion[]>()
+  for (const region of regions) {
+    const list = byRef.get(region.refName)
+    if (list) {
+      list.push(region)
+    } else {
+      byRef.set(region.refName, [region])
+    }
+  }
+  const assemblies = [...new Set(regions.map(r => r.assemblyName))]
+  return {
+    ...data,
+    layers: data.layers.map(layer => {
+      const { x2Ref, x2RefNames } = layer
+      if (!x2Ref || !x2RefNames) {
+        return layer
+      }
+      const candidates = x2RefNames.map(name => {
+        const found: MateRegion[] = []
+        for (const assemblyName of assemblies) {
+          for (const region of byRef.get(canonical(assemblyName, name)) ?? []) {
+            if (region.assemblyName === assemblyName) {
+              found.push(region)
+            }
+          }
+        }
+        return found
+      })
+      const x2Region = new Uint32Array(layer.count)
+      for (let i = 0; i < layer.count; i++) {
+        const pos = layer.x2[i]!
+        const onRef = candidates[x2Ref[i]!] ?? []
+        const holds = (r: MateRegion) => pos >= r.start && pos < r.end
+        const own = onRef.find(r => r.index === ownIndex)
+        const region = own && holds(own) ? own : (onRef.find(holds) ?? own)
+        x2Region[i] = region ? region.index : LINK_NO_REGION
+      }
+      return { ...layer, x2Region }
+    }),
+  }
 }
 
 type Canonical = (assemblyName: string, refName: string) => string

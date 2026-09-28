@@ -39,7 +39,8 @@ export interface FacetLayout {
  * list.
  */
 export function sectionsOn(region: MarkRegionData, field: string) {
-  return region.request?.facet?.field === field ? region.facet : undefined
+  const asked = region.request?.facet?.field
+  return asked === undefined || asked === field ? region.facet : undefined
 }
 
 /**

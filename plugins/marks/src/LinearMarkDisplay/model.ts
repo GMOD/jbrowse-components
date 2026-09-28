@@ -7,8 +7,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
-import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   assembleLocString,
   getDialogHost,
@@ -16,7 +14,6 @@ import {
   pluralize,
 } from '@jbrowse/core/util'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { rampDomain } from '@jbrowse/core/util/colorRamp'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
@@ -30,34 +27,21 @@ import {
   activeJexlFilters,
   configuredJexlFilters,
   liftRetiredFilterSetting,
-  jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import {
-  DEFAULT_MARK_COLOR,
-  withHitIndex,
-} from '@jbrowse/core/util/markEncoding'
+import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
-import LegendMixin, {
-  legendCheckboxItem,
-} from '@jbrowse/display-kit/LegendMixin'
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import {
-  FEATURE_FIELD_PRESETS,
-  featureColorEncoding,
-  withPreset,
-} from '@jbrowse/display-kit/colorConfigSchema'
+import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
-import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
-import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
@@ -72,7 +56,6 @@ import {
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
-  LINK_NO_REGION,
   RowKeys,
   inkOfInstances,
   shiftInk,
@@ -82,17 +65,11 @@ import {
 import {
   TreeSidebarMixin,
   buildSpatialIndex,
-  clusteringMenuItem,
   computeClusterHierarchy,
   orderRowsByValueAt,
-  resetRowOrderMenuItems,
-  rowArrangementMenuItem,
   setupTreeSidebarAutoruns,
-  showRowLabelsMenuItem,
   sortRowsAtColumn,
-  sortRowsHereMenuItem,
   treeSidebarOffset,
-  treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import {
   DEFAULT_POINT_DIAMETER_PX,
@@ -100,37 +77,40 @@ import {
   autoscaleDomainFromSpans,
   axisPlotBox,
   computeSpanStats,
-  makeCrossHatchItem,
-  makeScoreSubMenu,
   resolveRenderState,
   resolveSymlogConstant,
   visibleStatsRange,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
-import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
-import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
 
 import { densityRegionData } from './densityLayer.ts'
 import { facetLayout, facetRegion, rowsLayout, sectionsOn } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
-import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
-import { createLinkOwners } from './linkOwners.ts'
+import {
+  buildMarkLegend,
+  colorSection,
+  keySettingOf,
+  markColorScales,
+  markConstantColor,
+} from './legend.ts'
+import { createLinkOwners, withMateRegions } from './linkOwners.ts'
+import { baselineReached, layerSpans } from './markAutoscale.ts'
 import {
   buildMarkList,
+  highestRow,
   markDrawsAt,
   markRowHeightPx,
   rowValuesAt,
 } from './markList.ts'
+import { markContextMenuItems, markTrackMenuItems } from './markMenus.ts'
 import { liftMarkPlot as liftPlot, markPlotOf } from './markPlot.ts'
 import { markProblems, problemText } from './markProblems.ts'
 import {
-  encodingOf,
   lastBinEdges,
+  markEntryOf,
   markLayerRequest,
-  marksValue,
   positionSource,
   stepsOf,
   toBinEdges,
@@ -153,16 +133,17 @@ import type {
   LinearMarkDisplayConfig,
   LinearMarkDisplayConfigModel,
   MarkConfig,
+  MarkTransformStepConfig,
   MarkType,
 } from './configSchema.ts'
 import type { FacetLayout } from './facet.ts'
 import type { MarkHitInfo } from './findMarkHit.ts'
-import type { MarkKeySetting, ScaledChannel } from './legend.ts'
+import type { MateRegion } from './linkOwners.ts'
+import type { RegionLayer } from './markAutoscale.ts'
 import type {
   MarkEntry,
   MarkRegionData,
   MarkRenderState,
-  StoredLayer,
   TextMarkEntry,
 } from './markList.ts'
 import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
@@ -209,22 +190,15 @@ import type {
   RowColorDeal,
   RowSource,
 } from '@jbrowse/tree-sidebar'
-import type { ScoreSpan, ValueScale, VisibleEntry } from '@jbrowse/wiggle-core'
+import type { ValueScale } from '@jbrowse/wiggle-core'
 
 export type MarkRenderingBackend = PerRegionRenderingBackend<
   MarkRegionData,
   MarkRenderState
 >
 
-const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
-const MarkRowArrangementDialog = lazy(
-  () => import('./components/MarkRowArrangementDialog.tsx'),
-)
 const MarkPlotDialog = lazy(() => import('./components/MarkPlotDialog.tsx'))
 const PlotJsonDialog = lazy(() => import('./components/PlotJsonDialog.tsx'))
-const MarkClusterDialog = lazy(
-  () => import('./components/MarkClusterDialog.tsx'),
-)
 
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
@@ -236,37 +210,6 @@ function storedRegionData(result: EncodedLayersResult): MarkRegionData {
     zoomRange: result.zoomRange,
     notices: result.notices,
   }
-}
-
-function highestRow(layers: readonly StoredLayer[], visible: boolean[]) {
-  let highest = 0
-  for (const [mark, { row }] of layers.entries()) {
-    if (row && visible[mark]) {
-      for (let i = 0; i < row.length; i++) {
-        if (row[i]! > highest) {
-          highest = row[i]!
-        }
-      }
-    }
-  }
-  return highest
-}
-
-// The one colour a mark paints every instance: the default blue where none
-// is written, and none under a jexl callback or a scale.
-function constantColorOf(mark: MarkConfig): string | undefined {
-  const encoding = featureColorEncoding(mark.encoding.color)
-  return encoding === undefined
-    ? DEFAULT_MARK_COLOR
-    : typeof encoding === 'string' && !isJexl(encoding)
-      ? encoding
-      : undefined
-}
-
-// A scale has no meaning over a bin the sidecar wrote, and a jexl callback
-// has no feature to read.
-function markConstantColor(mark: MarkConfig): number {
-  return cssColorToABGR(constantColorOf(mark) ?? DEFAULT_MARK_COLOR)
 }
 
 /**
@@ -284,186 +227,10 @@ export function markSizeOf({
   )
 }
 
-// What a mark's channel says of its key: its guide members, copied out of the
-// config so a section holds plain values.
-function keySettingOf(
-  mark: MarkConfig | undefined,
-  channel: ScaledChannel,
-): MarkKeySetting {
-  if (!mark) {
-    return {}
-  }
-  if (channel === 'color') {
-    const { title, labels, breaks, descending, missingLabel } = withPreset(
-      mark.encoding.color,
-      FEATURE_FIELD_PRESETS,
-    )
-    return {
-      title,
-      labels: [...labels],
-      breaks: [...breaks],
-      descending,
-      missingLabel,
-    }
-  }
-  const { title, labels, breaks, missingLabel } = mark.encoding.shape
-  const swatchColor = constantColorOf(mark)
-  return {
-    title,
-    labels: [...labels],
-    breaks: [...breaks],
-    missingLabel,
-    ...(swatchColor === undefined ? {} : { swatchColor }),
-  }
-}
-
-function markEntryOf(mark: MarkConfig, channels: StepChannels): MarkEntry {
-  const valued = marksValue(mark, channels)
-  return {
-    type: mark.mark,
-    minBpPerPx: mark.minBpPerPx,
-    maxBpPerPx: mark.maxBpPerPx,
-    placed: !readsValue(mark.mark) || valued,
-    valued,
-    linkShape: mark.linkShape,
-  }
-}
-
-/** A displayed region as a link's far foot is looked up in it. */
-interface MateRegion {
-  index: number
-  refName: string
-  start: number
-  end: number
-  assemblyName: string
-}
-
-/**
- * Each link layer's `x2Region`: the region the far foot places through, its
- * refName read through the assembly's aliases. The block's own region when it
- * holds the foot, else any displayed region that does, else the block's own
- * region when the foot is on its contig past its edge, else none. Once per
- * fetch or region change, so a pan places through the shader's table alone.
- */
-function withMateRegions(
-  data: MarkRegionData,
-  regions: readonly MateRegion[],
-  canonical: (assemblyName: string, refName: string) => string,
-  ownIndex: number,
-): MarkRegionData {
-  const byRef = new Map<string, MateRegion[]>()
-  for (const region of regions) {
-    const list = byRef.get(region.refName)
-    if (list) {
-      list.push(region)
-    } else {
-      byRef.set(region.refName, [region])
-    }
-  }
-  const assemblies = [...new Set(regions.map(r => r.assemblyName))]
-  return {
-    ...data,
-    layers: data.layers.map(layer => {
-      const { x2Ref, x2RefNames } = layer
-      if (!x2Ref || !x2RefNames) {
-        return layer
-      }
-      const candidates = x2RefNames.map(name => {
-        const found: MateRegion[] = []
-        for (const assemblyName of assemblies) {
-          for (const region of byRef.get(canonical(assemblyName, name)) ?? []) {
-            if (region.assemblyName === assemblyName) {
-              found.push(region)
-            }
-          }
-        }
-        return found
-      })
-      const x2Region = new Uint32Array(layer.count)
-      for (let i = 0; i < layer.count; i++) {
-        const pos = layer.x2[i]!
-        const onRef = candidates[x2Ref[i]!] ?? []
-        const holds = (r: MateRegion) => pos >= r.start && pos < r.end
-        const own = onRef.find(r => r.index === ownIndex)
-        const region = own && holds(own) ? own : (onRef.find(holds) ?? own)
-        x2Region[i] = region ? region.index : LINK_NO_REGION
-      }
-      return { ...layer, x2Region }
-    }),
-  }
-}
-
 /** The marks at the view's zoom: which draw, and which the sidecar stands in for. */
 export interface MarkView {
   visible: boolean[]
   densityMark: number
-}
-
-/** A layer as the autoscale folds it: the region it was fetched into, and its lanes. */
-interface RegionLayer {
-  index: number
-  layer: StoredLayer
-}
-
-// A link's extent on the region that drew it: both feet where the far one
-// lies on this region too, the near foot alone where it lies elsewhere, so a
-// curve rising to a mate left of the view or on another sequence still folds
-// into the axis while its near foot is in view.
-function linkFeet(
-  layer: StoredLayer,
-  index: number,
-): [Uint32Array, Uint32Array] | undefined {
-  const { x2Region, count } = layer
-  if (!x2Region) {
-    return undefined
-  }
-  const starts = new Uint32Array(count)
-  const ends = new Uint32Array(count)
-  for (let i = 0; i < count; i++) {
-    const near = layer.x[i]!
-    const far = x2Region[i] === index ? layer.x2[i]! : near
-    starts[i] = Math.min(near, far)
-    ends[i] = near === far ? near + 1 : Math.max(near, far)
-  }
-  return [starts, ends]
-}
-
-// Each folded layer as a `ScoreSpan`, so the shared autoscale walks the `y`
-// lane the same way it walks a wiggle source's scores: one value per instance,
-// clipped to the block the entry carries, a row the table hides left out.
-function layerSpans(
-  entries: VisibleEntry<RegionLayer>[],
-  drawnKeys: Uint8Array | undefined,
-): ScoreSpan[] {
-  return entries.flatMap(({ data: { index, layer }, visStart, visEnd }) => {
-    const { y } = layer
-    if (!y) {
-      return []
-    }
-    const [starts, ends] = linkFeet(layer, index) ?? [layer.x, layer.x2]
-    return [
-      {
-        count: layer.count,
-        starts,
-        ends,
-        stride: 1,
-        endOffset: 0,
-        low: y,
-        high: y,
-        visStart,
-        visEnd,
-        sortedBins: false,
-        row: layer.row,
-        drawnKeys,
-      },
-    ]
-  })
-}
-
-// A bar's baseline trains the axis, as ggplot2's does, where the scale can
-// reach it: a log axis has no 0.
-function baselineReached(origin: number, scaleType: string) {
-  return scaleType !== 'log' || origin > 0
 }
 
 /**
@@ -673,19 +440,24 @@ export function stateModelFactory(
          * The declared marks' encodings, as the worker takes them.
          */
         get encodings(): MarkEncoding[] {
-          const { markChannels } = this
-          return self.conf.marks.map((m, i) => encodingOf(m, markChannels[i]))
+          return this.layerRequests.map(request => request.encoding)
+        },
+        /**
+         * #getter
+         * The steps that run before each mark's encode, in order: the
+         * display's, the facet's, then the mark's own.
+         */
+        get markStepLists(): MarkTransformStepConfig[][] {
+          const shared = [...self.conf.transform, ...self.conf.facet.transform]
+          return self.conf.marks.map(m => [...shared, ...m.transform])
         },
         /**
          * #getter
          * The channels each mark's steps fill where its encoding leaves them
-         * unwritten, over the display's, the facet's and the mark's own steps.
+         * unwritten.
          */
         get markChannels(): StepChannels[] {
-          const shared = [...self.conf.transform, ...self.conf.facet.transform]
-          return self.conf.marks.map(m =>
-            stepChannels([...shared, ...m.transform]),
-          )
+          return this.markStepLists.map(steps => stepChannels(steps))
         },
         /**
          * #getter
@@ -759,8 +531,6 @@ export function stateModelFactory(
         get drawsRows(): boolean {
           return self.rowsField !== '' && !self.facet
         },
-      }))
-      .views(self => ({
         /**
          * #getter
          * Whether each `row` lane holds a key the row table places: under
@@ -768,10 +538,8 @@ export function stateModelFactory(
          * count every row's features and draw as one band.
          */
         get drawsKeyedRows(): boolean {
-          return self.drawsRows && !self.coarseTierStandsIn
+          return this.drawsRows && !self.coarseTierStandsIn
         },
-      }))
-      .views(self => ({
         /**
          * #getter
          * The field the worker splits the features on: the facet's, else the
@@ -779,7 +547,7 @@ export function stateModelFactory(
          */
         get splitField(): string | undefined {
           return (
-            self.facet?.field ?? (self.drawsRows ? self.rowsField : undefined)
+            self.facet?.field ?? (this.drawsRows ? self.rowsField : undefined)
           )
         },
         /**
@@ -819,8 +587,6 @@ export function stateModelFactory(
             ? 'never'
             : coarseTierModeOf(self.densityTierMode)
         },
-      }))
-      .views(self => ({
         /**
          * #getter
          * The tier's bins as this display's own payload: the density mark's
@@ -847,8 +613,6 @@ export function stateModelFactory(
           }
           return payloads
         },
-      }))
-      .views(self => ({
         /**
          * #getter
          * The layers as they came back, keyed by displayedRegionIndex: the
@@ -859,7 +623,7 @@ export function stateModelFactory(
          */
         get featurePayloads(): ReadonlyMap<number, MarkRegionData> {
           return self.coarseTierStandsIn
-            ? self.densityPayloads
+            ? this.densityPayloads
             : (self.regionPayloads as ReadonlyMap<number, MarkRegionData>)
         },
       }))
@@ -1117,17 +881,12 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The mark types drawing at the view's zoom.
-         */
-        get visibleMarkTypes(): MarkType[] {
-          const { visible } = self.markView
-          return self.markTypes.filter((_, i) => visible[i])
-        },
-        /**
-         * #getter
+         * Whether a point mark draws at the view's zoom, for the Point size menu.
          */
         get hasPointMark(): boolean {
-          return this.visibleMarkTypes.includes('point')
+          return this.drawingMarkIndices.some(
+            i => self.markTypes[i] === 'point',
+          )
         },
         /**
          * #method
@@ -1166,9 +925,7 @@ export function stateModelFactory(
               : []),
           ]
           return visibleStatsRange({
-            active: indices.some(i =>
-              marksValue(self.conf.marks[i]!, self.markChannels[i]!),
-            ),
+            active: indices.some(i => self.markEntries[i]!.valued),
             view: self.host,
             payloadFor: index => {
               const data = self.scaleDataMap.get(index)
@@ -1194,8 +951,6 @@ export function stateModelFactory(
               ),
           })
         },
-      }))
-      .views(self => ({
         /**
          * #getter
          */
@@ -1240,9 +995,8 @@ export function stateModelFactory(
           // One band per row where the marks stand in rows, the scale ruling
           // each on its own the way the multi-wiggle display's does; the whole
           // plot box otherwise.
-          const rowCount = this.rowCount
-          const { yTop, plotHeight } = axisPlotBox(height)
-          const rowHeight = markRowHeightPx(plotHeight, rowCount)
+          const { rowCount, effectiveRowHeight: rowHeight } = this
+          const yTop = this.rowsTopOffset
           const band =
             rowCount > 1
               ? {
@@ -1324,6 +1078,23 @@ export function stateModelFactory(
             highest = Math.max(highest, highestRow(data.layers, visible))
           }
           return highest + 1
+        },
+        /**
+         * #getter
+         * The px each row is drawn in, the band every shape gets.
+         */
+        get effectiveRowHeight(): number {
+          return markRowHeightPx(
+            axisPlotBox(self.height).plotHeight,
+            this.rowCount,
+          )
+        },
+        /**
+         * #getter
+         * Where the rows start, below the plot's top inset.
+         */
+        get rowsTopOffset(): number {
+          return axisPlotBox(self.height).yTop
         },
         /**
          * #getter
@@ -1461,7 +1232,7 @@ export function stateModelFactory(
           if (!hit) {
             return []
           }
-          const top = axisPlotBox(self.height).yTop
+          const top = this.rowsTopOffset
           const mark = self.markList.findIndex(
             m => m.markIndex === hit.markIndex,
           )
@@ -1604,13 +1375,7 @@ export function stateModelFactory(
         get skippedFeatures(): SkippedFeatures {
           const { encodings } = self
           const { visible } = self.markView
-          const shared = self.conf.transform
-          const positionFields = self.conf.marks.map((m, i) => {
-            const steps = [
-              ...shared,
-              ...self.conf.facet.transform,
-              ...m.transform,
-            ]
+          const positionFields = self.markStepLists.map((steps, i) => {
             const { x = 'start', x2 = 'end' } = encodings[i] ?? {}
             const x2Field = typeof x2 === 'object' ? x2.pos : x2
             return [
@@ -1672,23 +1437,6 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The px each row is drawn in, the band every shape gets.
-         */
-        get effectiveRowHeight(): number {
-          return markRowHeightPx(
-            axisPlotBox(self.height).plotHeight,
-            self.rowCount,
-          )
-        },
-        /**
-         * #getter
-         * Where the rows start, below the plot's top inset.
-         */
-        get rowsTopOffset(): number {
-          return axisPlotBox(self.height).yTop
-        },
-        /**
-         * #getter
          * The first mark drawing at this zoom that stands at a value: what a
          * row's value at a column is read from, and what clustering compares.
          * -1 where none does.
@@ -1699,8 +1447,6 @@ export function stateModelFactory(
             -1
           )
         },
-      }))
-      .views(self => ({
         /**
          * #getter
          * The dendrogram positioned against the rows drawn, or undefined where
@@ -1715,13 +1461,11 @@ export function stateModelFactory(
             self.showBranchLength,
           )
         },
-      }))
-      .views(self => ({
         /**
          * #getter
          */
         get spatialIndex() {
-          return buildSpatialIndex(self.hierarchy)
+          return buildSpatialIndex(this.hierarchy)
         },
       }))
       .volatile(self => ({
@@ -1973,117 +1717,13 @@ export function stateModelFactory(
          * #method
          */
         trackMenuItems(): MenuItem[] {
-          return [
-            {
-              label: 'Edit plot...',
-              icon: ShowChartIcon,
-              onClick: () => {
-                self.openMarkPlotDialog()
-              },
-            },
-            makeScoreSubMenu(self),
-            ...makePointSizeSubMenu({
-              label: 'Point size',
-              applies: self.hasPointMark,
-              value: () => self.pointSize,
-              defaultValue: DEFAULT_POINT_DIAMETER_PX,
-              set: n => {
-                self.setPointSize(n)
-              },
-            }),
-            ...filterMenuItems({
-              narrowings: { filter: jexlFilterNarrowing(self) },
-              onEdit: () => {
-                getDialogHost(self).queueDialog(handleClose => [
-                  JexlFilterDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            }),
-            ...sectionOrderMenuItems({
-              sections: self.facetLayout.rows ? [] : self.facetLayout.sections,
-              domain: self.facet?.domain ?? [],
-              setDomain: domain => {
-                self.setFacetDomain(domain)
-              },
-              hideGroup: key => {
-                self.hideGroup(key)
-              },
-            }),
-            ...(self.drawsRows ? rowsMenuItems() : []),
-            ...densityTierMenuItems(self),
-            ...makeShowSubMenu([
-              ...(self.drawsRows
-                ? [
-                    ...treeSidebarShowMenuItems(self),
-                    showRowLabelsMenuItem(self),
-                  ]
-                : []),
-              makeCrossHatchItem(self),
-              legendCheckboxItem(self),
-            ]),
-          ]
-
-          function rowsMenuItems(): MenuItem[] {
-            return [
-              rowArrangementMenuItem({
-                ready: self.editableSources.length > 0,
-                onOpen: () => {
-                  getDialogHost(self).queueDialog(handleClose => [
-                    MarkRowArrangementDialog,
-                    { model: self, handleClose },
-                  ])
-                },
-              }),
-              ...resetRowOrderMenuItems(self),
-              clusteringMenuItem(
-                self,
-                {
-                  label: 'Cluster rows by similarity...',
-                  disabled: self.valueMarkIndex === -1,
-                  disabledHelpText: 'No bar or point mark draws at this zoom',
-                  onClick: () => {
-                    getDialogHost(self).queueDialog(handleClose => [
-                      MarkClusterDialog,
-                      { model: self, handleClose },
-                    ])
-                  },
-                },
-                self.clusterableSources.length,
-              ),
-            ]
-          }
+          return markTrackMenuItems(self as LinearMarkDisplayModel)
         },
         /**
          * #method
          */
         contextMenuItems(): MenuItem[] {
-          const hit = self.coarseTierStandsIn
-            ? undefined
-            : self.contextMenuInfo?.hit
-          return hit
-            ? [
-                {
-                  label: 'Open feature details',
-                  icon: MenuOpenIcon,
-                  onClick: () => {
-                    self.selectFeature(hit)
-                  },
-                },
-                ...(self.drawsRows
-                  ? [
-                      sortRowsHereMenuItem({
-                        label: 'Sort rows by value here',
-                        rowCount: self.editableSources.length,
-                        onClick: () => {
-                          self.sortRowsByValueAt(hit.refName, hit.bp)
-                        },
-                      }),
-                      ...resetRowOrderMenuItems(self),
-                    ]
-                  : []),
-              ]
-            : []
+          return markContextMenuItems(self as LinearMarkDisplayModel)
         },
       }))
       .actions(self => ({

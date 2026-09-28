@@ -2,18 +2,28 @@ import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
   derivedColorScale,
   everyRowPaints,
 } from '@jbrowse/core/util/legendCandidates'
-import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
+import {
+  DEFAULT_MARK_COLOR,
+  rampOverExtent,
+} from '@jbrowse/core/util/markEncoding'
 import {
   rampGapScales,
   thresholdKeyEntries,
   thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
+import {
+  FEATURE_FIELD_PRESETS,
+  featureColorEncoding,
+  withPreset,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { rampMidNorm, scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
+import type { MarkConfig } from './configSchema.ts'
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type {
   CategoricalEntry,
@@ -28,6 +38,63 @@ import type {
 } from '@jbrowse/core/util/markEncoding'
 
 const RAMP_STOPS = 8
+
+/**
+ * The one colour a mark paints every instance: the default blue where none is
+ * written, and none under a jexl callback or a scale.
+ */
+export function constantColorOf(mark: MarkConfig): string | undefined {
+  const encoding = featureColorEncoding(mark.encoding.color)
+  return encoding === undefined
+    ? DEFAULT_MARK_COLOR
+    : typeof encoding === 'string' && !isJexl(encoding)
+      ? encoding
+      : undefined
+}
+
+/**
+ * `constantColorOf` packed, the default blue where the mark has none: what a
+ * bin the sidecar wrote paints, a scale having no meaning over it and a jexl
+ * callback no feature to read.
+ */
+export function markConstantColor(mark: MarkConfig): number {
+  return cssColorToABGR(constantColorOf(mark) ?? DEFAULT_MARK_COLOR)
+}
+
+/**
+ * What a mark's channel says of its key: its guide members, copied out of the
+ * config so a section holds plain values.
+ */
+export function keySettingOf(
+  mark: MarkConfig | undefined,
+  channel: ScaledChannel,
+): MarkKeySetting {
+  if (!mark) {
+    return {}
+  }
+  if (channel === 'color') {
+    const { title, labels, breaks, descending, missingLabel } = withPreset(
+      mark.encoding.color,
+      FEATURE_FIELD_PRESETS,
+    )
+    return {
+      title,
+      labels: [...labels],
+      breaks: [...breaks],
+      descending,
+      missingLabel,
+    }
+  }
+  const { title, labels, breaks, missingLabel } = mark.encoding.shape
+  const swatchColor = constantColorOf(mark)
+  return {
+    title,
+    labels: [...labels],
+    breaks: [...breaks],
+    missingLabel,
+    ...(swatchColor === undefined ? {} : { swatchColor }),
+  }
+}
 
 // Values past which a numeric field drawn as categories has stopped being a
 // vocabulary. A numeric field genuinely used as one — a rank, a copy number, a

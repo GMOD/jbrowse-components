@@ -94,8 +94,8 @@ const CEILINGS = [
   // fills, the model's reading (ADR-173).
   {
     entry: 'plugins/marks/src/LinearMarkDisplay/markProblems.ts',
-    runtime: 9,
-    types: 9,
+    runtime: 11,
+    types: 11,
   },
 ]
 

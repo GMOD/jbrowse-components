@@ -13,7 +13,7 @@ import {
 import { binStepWidth } from './autoBin.ts'
 import { markShapeScale } from './configSchema.ts'
 import { zoomInRange } from './markList.ts'
-import { MARK_SPECS, markLanes, plotsValue } from './markSpecs.ts'
+import { MARK_SPECS, markLanes, plotsValue, readsValue } from './markSpecs.ts'
 import {
   DEFAULT_BIN_AS,
   DEFAULT_BIN_FIELD,
@@ -26,6 +26,7 @@ import {
 } from './markVocabulary.ts'
 
 import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
+import type { MarkEntry } from './markList.ts'
 import type { MarkSpec } from './markSpecs.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type {
@@ -227,6 +228,22 @@ export function stepsOf(
  */
 export function marksValue(mark: MarkConfig, channels: StepChannels) {
   return plotsValue(mark.mark) && (mark.encoding.y !== '' || !!channels.y)
+}
+
+/** A mark's type, zoom range and whether it stands at a value, what the mark list is built from. */
+export function markEntryOf(
+  mark: MarkConfig,
+  channels: StepChannels,
+): MarkEntry {
+  const valued = marksValue(mark, channels)
+  return {
+    type: mark.mark,
+    minBpPerPx: mark.minBpPerPx,
+    maxBpPerPx: mark.maxBpPerPx,
+    placed: !readsValue(mark.mark) || valued,
+    valued,
+    linkShape: mark.linkShape,
+  }
 }
 
 /**

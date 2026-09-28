@@ -183,6 +183,24 @@ export function rowValuesAt(
  * while every row has one, and a fraction of one past that, so the rows
  * squash to fit the plot rather than run off its foot.
  */
+/** The highest `row` any visible layer carries, 0 where none packs. */
+export function highestRow(
+  layers: readonly StoredLayer[],
+  visible: readonly boolean[],
+) {
+  let highest = 0
+  for (const [mark, { row }] of layers.entries()) {
+    if (row && visible[mark]) {
+      for (let i = 0; i < row.length; i++) {
+        if (row[i]! > highest) {
+          highest = row[i]!
+        }
+      }
+    }
+  }
+  return highest
+}
+
 export function markRowHeightPx(canvasHeight: number, rowCount: number) {
   return rowCount > canvasHeight
     ? canvasHeight / rowCount
