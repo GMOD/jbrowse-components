@@ -47,7 +47,7 @@ const useStyles = makeStyles()(theme => ({
     position: 'relative',
     gridRow: '1/2',
     gridColumn: '2/2',
-    zIndex: 100,
+    zIndex: 99,
   },
   // Out of flow, so this layer's remaining children — the error banners — are
   // laid out from the top of the plot rect and stack there, over the dots.

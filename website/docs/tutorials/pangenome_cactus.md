@@ -277,7 +277,7 @@ wide records paint over the fine layer under them. `cactus-pangenome` pops that
 tree with [`vcfbub`](https://github.com/pangenome/vcfbub) by default;
 `--vcfbub 0` turns it off, and `--vcfwave` realigns the survivors into primitive
 variants. The pggb tutorial
-[sets the same knob by hand](/docs/tutorials/pangenome_ecoli#why-the-reference-path-takes-a-length).
+[sets the same knob by hand](/docs/tutorials/pangenome_ecoli#pangenome-variants-projection).
 
 ## Whole-genome alignment (MAF) projection
 
@@ -511,8 +511,8 @@ covers what the walk can be trusted for, and the graph size past which
 
 `--viz` wrote `mc/ecoli.viz/chr.full.viz.png`, the
 [`odgi viz`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_viz.html)
-raster the [pggb tutorial](/docs/tutorials/pangenome_ecoli#compared-to-odgi-viz)
-also shows: one row per strain, graph node order on the horizontal axis.
+raster the [pggb tutorial](/docs/tutorials/pangenome_ecoli) also shows: one row
+per strain, graph node order on the horizontal axis.
 
 <Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz, one row per strain. The horizontal axis is graph node order, so its positions do not correspond to genes or coordinates. The gold band marks the locus carried over to the figure below." src="/img/pangenome_cactus/graph.png" />
 

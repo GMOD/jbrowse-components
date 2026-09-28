@@ -495,7 +495,7 @@ Walking a P line in step order gives every segment an interval on that path,
 coordinates a plain GFA does not carry.
 [`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
 does that walk and takes the graph's bubbles from the raw snarl VCF kept
-[above](#why-the-reference-path-takes-a-length):
+[above](#pangenome-variants-projection):
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh

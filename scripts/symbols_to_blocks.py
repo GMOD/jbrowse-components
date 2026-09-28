@@ -15,6 +15,11 @@ bacterial pangenome. Unnamed genes are skipped by --unnamed, which defaults to
 NCBI's LOC ids; a PGAP bacterial annotation wants --unnamed '_RS[0-9]+$' for
 its locus tags.
 
+Each gene is named in the BED and the table by its symbol as written, so a
+MultiWaySyntenyDisplay colored by `cluster` keys its legend on `atpA` rather than
+on the annotation's gene id. A second gene with the same symbol becomes `atpA.2`,
+and a gene with no usable symbol keeps its id.
+
 One row per anchor gene, in the anchor's coordinate order, so the table is
 reference-anchored the way jcvi's mcscan output is. A row that names only the
 anchor is dropped, since it links nothing.
@@ -63,6 +68,18 @@ def genes(path, biotype):
             gid = attr(f[8], 'ID')
             if gid:
                 out.append((f[0], int(f[3]) - 1, int(f[4]), gid, f[6], attr(f[8], 'Name')))
+    return out
+
+
+def cell_names(g, named):
+    """The genes with their id replaced by the name the BED and table use."""
+    used = {}
+    out = []
+    for ref, start, end, gid, strand, sym in g:
+        base = sym if named(sym) else gid
+        n = used.get(base, 0) + 1
+        used[base] = n
+        out.append((ref, start, end, base if n == 1 else f'{base}.{n}', strand, sym))
     return out
 
 
@@ -118,14 +135,14 @@ def main(argv):
     by_symbol = {}
     anchor_genes = None
     for name, path in columns.items():
-        g = genes(path, a.biotype)
+        g = cell_names(genes(path, a.biotype), named)
         with open(f'{a.bed_dir}/{name}.bed', 'w') as bed:
             for ref, start, end, gid, strand, _ in g:
                 bed.write(f'{ref}\t{start}\t{end}\t{gid}\t0\t{strand}\n')
         table = {}
-        for _, _, _, gid, _, sym in g:
+        for _, _, _, cell, _, sym in g:
             if named(sym):
-                table.setdefault(key(sym), []).append(gid)
+                table.setdefault(key(sym), []).append(cell)
         by_symbol[name] = table
         dup = sum(1 for gids in table.values() if len(gids) > 1)
         print(f'{name}: {len(g)} genes, {len(table)} distinct symbols, {dup} with copies', file=sys.stderr)
