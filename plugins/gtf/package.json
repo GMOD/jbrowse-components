@@ -33,10 +33,12 @@
     "@gmod/tabix": "^3.8.3",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.6.1",
+    "mobx": "^7.0.5",
     "rxjs": "^7.8.2"
   },
   "peerDependencies": {
-    "react": ">=19.0.0"
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
   },
   "publishConfig": {
     "access": "public",
