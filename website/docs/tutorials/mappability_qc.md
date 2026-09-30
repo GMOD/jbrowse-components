@@ -145,15 +145,9 @@ same duplication, with the two genes closer together.
 
 Long reads test the same question on real data. The 1000 Genomes ONT release
 aligned GM18501 to both references with the same minimap2 pipeline, and
-`scan_mappability_qc.sh` counts its records over _SMN1_ on each:
-
-| reference | records | MAPQ 0 | MAPQ 60 |
-| --------- | ------: | -----: | ------: |
-| GRCh38    |     290 |  46.6% |    6.9% |
-| T2T-CHM13 |     290 |  46.6% |    9.7% |
-
-The long reads place better than the short reads at the same gene, and the MAPQ
-0 share is the same on both references.
+`scan_mappability_qc.sh` prints the share of its records over _SMN1_ at MAPQ 0
+and at MAPQ 60 on each. The long reads place better than the short reads at the
+same gene, and the MAPQ 0 share is the same on both references.
 
 ## Depth at the locus and at a control
 

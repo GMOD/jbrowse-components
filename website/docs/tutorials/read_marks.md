@@ -340,22 +340,20 @@ bcftools view -s NA12878 1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz 
     -f '%CHROM\t%POS\t%END\t%INFO/SVLEN\t[%GT]\t%INFO/AF\t%INFO/EVIDENCE\n'
 ```
 
-Pairs of 2 to 10 kb in the 100 kb window around each call:
+| position, chr20 |    size | genotype |
+| --------------- | ------: | -------- |
+| 1.58 Mb         | 33.1 kb | 0/1      |
+| 32.94 Mb        |  3.9 kb | 0/1      |
+| 34.23 Mb        |  3.3 kb | 1/1      |
+| 43.64 Mb        |  2.7 kb | 0/1      |
+| 43.85 Mb        |  2.6 kb | 0/1      |
+| 52.14 Mb        |  2.1 kb | 1/1      |
+| 54.03 Mb        | 10.9 kb | 0/1      |
+| 55.86 Mb        |  6.0 kb | 0/1      |
 
-| position, chr20 |    size | genotype | pairs 2 to 10 kb in the window |
-| --------------- | ------: | -------- | -----------------------------: |
-| 1.58 Mb         | 33.1 kb | 0/1      |                   not in range |
-| 32.94 Mb        |  3.9 kb | 0/1      |                             18 |
-| 34.23 Mb        |  3.3 kb | 1/1      |                             46 |
-| 43.64 Mb        |  2.7 kb | 0/1      |                             10 |
-| 43.85 Mb        |  2.6 kb | 0/1      |                             25 |
-| 52.14 Mb        |  2.1 kb | 1/1      |                             32 |
-| 54.03 Mb        | 10.9 kb | 0/1      |                   not in range |
-| 55.86 Mb        |  6.0 kb | 0/1      |                             16 |
-
-Every callset deletion in range is a bar, and the two homozygous ones are
-tallest. Other windows hold ten or more such pairs with no call: the chromosome
-start and 1.4, 2.8, 32.7 and 48.5 Mb.
+Every callset deletion between 2 and 10 kb is a bar, and the two homozygous ones
+are tallest. Other windows hold ten or more such pairs with no call: the
+chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb.
 
 To check the _EFCAB8_ deletion against the reads, compare the depth inside the
 call with the depth beside it, and count the long pairs around it:
@@ -368,13 +366,9 @@ samtools view -q 20 NA12878.final.cram chr20:32935000-32944000 |
     END { print norm " pairs at the library insert, " big " over 2 kb" }'
 ```
 
-| window                      | mean depth |
-| --------------------------- | ---------: |
-| chr20:32,937,680-32,941,583 |      15.6x |
-| chr20:32,930,000-32,937,000 |      34.1x |
-
-Around the call, almost every pair sits at the library insert, and a few dozen
-exceed 2 kb.
+Depth inside the call comes out about half the depth beside it, as a
+heterozygous deletion predicts. Around the call, almost every pair sits at the
+library insert, and a few dozen exceed 2 kb.
 
 ## Reproduce it end to end
 

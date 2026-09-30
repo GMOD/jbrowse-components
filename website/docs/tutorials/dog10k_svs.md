@@ -262,24 +262,13 @@ A 14.9 kb `DUP` at chr6:47,375,677 in the Michigan Manta callset spans the
 pancreatic amylase gene end to end. Extra copies help dogs digest starch, a
 change [Axelsson et al. (2013)](https://doi.org/10.1038/nature11837) tied to
 domestication. Across the whole collection, the record separates dogs from
-wolves almost completely:
-
-```text
-  Breed_Dogs      1575 canids: 1568 hom alt, 6 hom ref, 1 het
-  Mixed/Other       12 canids: 12 hom alt
-  Village_Dogs     237 canids: 236 hom alt, 1 hom ref
-  Wolf              55 canids: 50 hom ref, 4 het, 1 hom alt
-```
+wolves almost completely: nearly every dog is homozygous for it and nearly every
+wolf lacks it.
 
 A 223 bp SINE insertion in pancreatic ribonuclease, chr15:18,164,072 in the
-Zenodo Paragraph set, is the reverse, carried by wolves and almost no dogs:
-
-```text
-  Breed_Dogs      1575 canids: 1574 hom ref, 1 het
-  Mixed/Other       12 canids: 12 hom ref
-  Village_Dogs     237 canids: 236 hom ref, 1 het
-  Wolf              55 canids: 29 hom ref, 26 het
-```
+Zenodo Paragraph set, is the reverse, carried by wolves and almost no dogs.
+[`build_dog10k_amy2b_sv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_amy2b_sv.sh)
+prints both records' genotypes tallied by population.
 
 The build script slices the same animals from both callsets in the same order,
 so the two lanes line up row for row: two ordinary breeds, the three Arctic

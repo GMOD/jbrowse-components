@@ -81,14 +81,14 @@ Uniform**.
 Yilmaz et al. (2024) name each structure by its _AMY1_ count. Our five
 haplotypes land on H1a, H2A0, H3r, H5 and H7:
 
-| Span against GRCh38's | HPRC haplotypes | _AMY1_ copies | Structure |
-| --------------------- | --------------- | ------------- | --------- |
-| 94 kb shorter         | 53              | 1             | H1a       |
-| 72 kb shorter         | 11              | 2, no _AMY2A_ | H2A0      |
-| the same              | 232             | 3             | H3r       |
-| 94 kb longer          | 79              | 5             | H5        |
-| 188 kb longer         | 22              | 7             | H7        |
-| 282 kb longer         | 5               | 9             | H9        |
+| Span against GRCh38's | _AMY1_ copies | Structure |
+| --------------------- | ------------- | --------- |
+| 94 kb shorter         | 1             | H1a       |
+| 72 kb shorter         | 2, no _AMY2A_ | H2A0      |
+| the same              | 3             | H3r       |
+| 94 kb longer          | 5             | H5        |
+| 188 kb longer         | 7             | H7        |
+| 282 kb longer         | 9             | H9        |
 
 ## Reproduce it end to end
 
