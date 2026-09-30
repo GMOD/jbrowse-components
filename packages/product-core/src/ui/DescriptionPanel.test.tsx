@@ -75,6 +75,28 @@ test('strips scripting from the fetched page', async () => {
   expect(container.querySelector('img')?.getAttribute('onerror')).toBeNull()
 })
 
+test('renders inline markup without fetching, and with no original to link', () => {
+  const { getByText, queryByText } = renderPanel({
+    ucsc: { html: '<h2>Methods</h2><p>inline prose</p>' },
+  })
+  expect(getByText('Methods', { selector: 'h2' })).toBeTruthy()
+  expect(getByText('inline prose')).toBeTruthy()
+  expect(getByText(/written for the UCSC Genome Browser/)).toBeTruthy()
+  expect(queryByText('View original')).toBeNull()
+  expect(mockReadFile).not.toHaveBeenCalled()
+})
+
+test('strips scripting from inline markup', () => {
+  const { getByText, container } = renderPanel({
+    ucsc: {
+      html: '<p>real</p><script>window.pwned = 1</script><img src="x" onerror="window.pwned = 1">',
+    },
+  })
+  expect(getByText('real')).toBeTruthy()
+  expect(container.querySelector('script')).toBeNull()
+  expect(container.querySelector('img')?.getAttribute('onerror')).toBeNull()
+})
+
 test('surfaces a fetch failure instead of spinning', async () => {
   mockReadFile.mockRejectedValue(new Error('404 fetching description'))
   const { getByText, queryByText } = renderPanel({

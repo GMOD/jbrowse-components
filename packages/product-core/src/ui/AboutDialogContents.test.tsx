@@ -74,3 +74,18 @@ test('renders a metadata field named after an omitted config field', () => {
   const { getByText } = renderContents(config)
   expect(getByText(/a metadata column/)).toBeTruthy()
 })
+
+test('shows inline trackDb prose in the Description card only', () => {
+  const { getAllByText, getByText } = renderContents(
+    makeTrackConf({
+      trackId: 't2',
+      name: 'Track 2',
+      metadata: {
+        ucsc: { track: 'alphaMissense', html: '<p>predictions for all</p>' },
+      },
+    }),
+  )
+  expect(getAllByText('predictions for all')).toHaveLength(1)
+  expect(getByText('Description')).toBeTruthy()
+  expect(getByText('alphaMissense')).toBeTruthy()
+})

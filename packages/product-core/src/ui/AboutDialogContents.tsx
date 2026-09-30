@@ -13,6 +13,7 @@ import DescriptionPanel from './DescriptionPanel.tsx'
 import FileInfoPanel from './FileInfoPanel.tsx'
 import HeaderButtons from './HeaderButtons.tsx'
 import RefNameInfoDialog from './RefNameInfoDialog.tsx'
+import { omitTrackDescription } from './descriptionHtml.ts'
 import { getAboutDialogConfig } from './util.ts'
 
 import type { AboutPanelProps } from './util.ts'
@@ -54,12 +55,12 @@ const AboutDialogContents = observer(function AboutDialogContents({
           {/* no `hideFields` here: those name config structure, and metadata is
               the user's own key/values — a metadata column called `refNames`
               silently disappeared */}
-          <Attributes attributes={shown.metadata} hideUris={hideUris} />
+          <Attributes
+            attributes={omitTrackDescription(shown.metadata)}
+            hideUris={hideUris}
+          />
         </BaseCard>
       ) : null}
-      {/* a track hub's own prose page for this track, which is the half of a
-          hub track nothing in the app surfaced — the metadata card shows its
-          URL and stops there */}
       <DescriptionPanel config={config} session={session} />
       {/* the assembly a reference sequence track belongs to. That track's own
           config is three slots of adapter, and the interesting half of what a
