@@ -18,17 +18,45 @@ export function copiesOf(allele: RepeatAllele, units: RepeatUnit[]) {
     const each = Number.isInteger(run.count)
       ? run.bp / n
       : (units[run.unit]?.length ?? run.bp / run.count)
-    const lengths =
+    const lengths = (
       run.copyBp ??
       Array.from({ length: n }, (_, i) =>
         i < n - 1 ? each : run.bp - each * (n - 1),
       )
+    ).map(bp => Math.max(0, bp))
     for (const bp of lengths) {
       boxes.push({ start: at, bp, unit: run.unit })
       at += bp
     }
   }
   return boxes
+}
+
+export interface CopyRun extends CopyBox {
+  first: number
+  count: number
+  narrow: boolean
+}
+
+// Consecutive copies of one unit that each draw narrower than `minPx` merge into
+// a single run, so an array of thousands of copies stays a handful of elements
+export function mergeNarrowCopies(
+  copies: CopyBox[],
+  scale: number,
+  minPx: number,
+) {
+  const runs: CopyRun[] = []
+  copies.forEach((copy, i) => {
+    const last = runs.at(-1)
+    const narrow = copy.bp * scale < minPx
+    if (last?.narrow && narrow && last.unit === copy.unit) {
+      last.bp += copy.bp
+      last.count++
+    } else {
+      runs.push({ ...copy, first: i, count: 1, narrow })
+    }
+  })
+  return runs
 }
 
 export function copyCount(allele: RepeatAllele) {
@@ -75,8 +103,10 @@ export function axisTicks(max: number, target = 6) {
   }
   const raw = max / target
   const power = 10 ** Math.floor(Math.log10(raw))
-  const step =
-    [1, 2, 5, 10].map(m => m * power).find(s => s >= raw) ?? 10 * power
+  const step = Math.max(
+    1,
+    [1, 2, 5, 10].map(m => m * power).find(s => s >= raw) ?? 10 * power,
+  )
   const ticks: number[] = []
   for (let t = 0; t <= max; t += step) {
     ticks.push(t)

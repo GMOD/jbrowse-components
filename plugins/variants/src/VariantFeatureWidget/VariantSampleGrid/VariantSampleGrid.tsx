@@ -239,7 +239,7 @@ export default function VariantSampleGrid({
           </Typography>
           <ErrorBoundary FallbackComponent={ErrorBanner}>
             <VariantGenotypeFrequencyTable
-              rows={textFilteredRows}
+              rows={allelePicked}
               selectedGenotypes={selectedGenotypes}
               setSelectedGenotypes={setSelectedGenotypes}
               showToolbar={showToolbar}

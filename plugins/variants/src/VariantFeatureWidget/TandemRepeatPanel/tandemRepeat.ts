@@ -33,7 +33,7 @@ export interface RepeatAllele {
 }
 
 export interface TandemRepeat {
-  name: string
+  name?: string
   refName: string
   start: number
   end: number
@@ -253,13 +253,16 @@ export function tandemRepeatOf(
   }
   const refName = f.refName
   const start = f.start + 1
-  const svlen = numbers(info(f, 'SVLEN'))[0]
-  const end = svlen === undefined ? f.end : start + svlen
+  const svlen = numbers(info(f, 'SVLEN'))[f.ALT?.indexOf(TANDEM_REPEAT) ?? 0]
+  const end = svlen === undefined ? f.end : start + Math.abs(svlen)
   const { haplotypes, counts, calledAlleles } = sampleAlleles(
     f,
     alleles,
     end - start,
   )
+  if (haplotypes.length === 0 && calledAlleles > 0) {
+    return undefined
+  }
   const drawn =
     haplotypes.length > 0
       ? haplotypes
@@ -289,9 +292,7 @@ export function tandemRepeatOf(
       : {}),
   })
   return {
-    name:
-      strings(f.name)[0] ??
-      `${refName}:${(start + 1).toLocaleString()}-${end.toLocaleString()}`,
+    name: strings(f.name)[0],
     refName,
     start,
     end,

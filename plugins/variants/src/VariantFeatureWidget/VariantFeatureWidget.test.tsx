@@ -274,10 +274,27 @@ test('clicking an allele row narrows the Samples card to its carriers', async ()
   const { findByText, getAllByTestId, getByText } = renderWidget(cohortRecord)
   await findByText('ALT 1 · 25%')
   const row = getAllByTestId('tandem-repeat-row').find(r =>
-    r.textContent.includes('ALT 1'),
+    r.textContent.startsWith('ALT 1 ·'),
   )!
   fireEvent.click(row)
   expect(getByText(/Samples \(10 of 40\) carrying ALT 1/)).toBeTruthy()
   fireEvent.click(row)
   expect(getByText('Samples (40)')).toBeTruthy()
+})
+
+test('a record with no ID does not repeat its locus in the panel header', async () => {
+  const { findByTestId, getByText } = renderWidget({
+    ...cohortRecord,
+    uniqueId: 'anonymous',
+    name: undefined,
+    samples: { S1: { GT: ['1'] } },
+  })
+  await findByTestId('tandem-repeat-view')
+  expect(
+    getByText(
+      (_, el) =>
+        el?.tagName === 'P' &&
+        el.textContent === 'chr6:160,616,004-160,616,033 · 1 haplotype',
+    ),
+  ).toBeTruthy()
 })

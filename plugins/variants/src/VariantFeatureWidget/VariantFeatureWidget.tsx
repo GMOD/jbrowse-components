@@ -8,6 +8,8 @@ import {
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
+import { ErrorBanner } from '@jbrowse/core/ui'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { assembleLocString, notEmpty } from '@jbrowse/core/util'
 import { getBreakendMateLocString, safeParseBreakend } from '@jbrowse/sv-core'
 import { Paper, Typography } from '@mui/material'
@@ -133,7 +135,14 @@ const FeatDefined = observer(function FeatDefined({
   // can carry '.' for a missing entry, so coerce per ALT index rather than
   // requiring the whole array to be numeric (which dropped the span entirely)
   const svlens = Array.isArray(INFO?.SVLEN) ? INFO.SVLEN : []
-  const repeat = useMemo(() => tandemRepeatOf(feat), [feat])
+  const repeat = useMemo(() => {
+    try {
+      return tandemRepeatOf(feat)
+    } catch (e) {
+      console.error(e)
+      return undefined
+    }
+  }, [feat])
   const [selectedAlt, setSelectedAlt] = useState<number | null>(null)
   const display = jexlFilterDisplay(model.track)
   const fieldActions = display
@@ -145,11 +154,13 @@ const FeatDefined = observer(function FeatDefined({
     <Paper data-testid="variant-side-drawer">
       <Suspense fallback={null}>
         {repeat ? (
-          <TandemRepeatPanel
-            repeat={repeat}
-            selectedAlt={selectedAlt}
-            onSelectAlt={setSelectedAlt}
-          />
+          <ErrorBoundary FallbackComponent={ErrorBanner}>
+            <TandemRepeatPanel
+              repeat={repeat}
+              selectedAlt={selectedAlt}
+              onSelectAlt={setSelectedAlt}
+            />
+          </ErrorBoundary>
         ) : null}
       </Suspense>
       <FeatureDetails

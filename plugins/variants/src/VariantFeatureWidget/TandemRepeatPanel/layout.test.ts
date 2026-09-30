@@ -1,4 +1,10 @@
-import { axisTicks, copiesOf, formatBp, readout } from './layout.ts'
+import {
+  axisTicks,
+  copiesOf,
+  formatBp,
+  mergeNarrowCopies,
+  readout,
+} from './layout.ts'
 
 const units = [{ length: 5548, copies: 7 }]
 
@@ -62,4 +68,50 @@ test('ruler ticks step by 1, 2 or 5 times a power of ten', () => {
   expect(axisTicks(147189)).toEqual([0, 50000, 100000])
   expect(axisTicks(3161)).toEqual([0, 1000, 2000, 3000])
   expect(axisTicks(0)).toEqual([0])
+})
+
+test('narrow copies of one unit merge into a single run', () => {
+  const copies = Array.from({ length: 15_000 }, (_, i) => ({
+    start: i * 2,
+    bp: 2,
+    unit: 0,
+  }))
+  const runs = mergeNarrowCopies(copies, 0.001, 3)
+  expect(runs).toHaveLength(1)
+  expect(runs[0]).toMatchObject({
+    start: 0,
+    bp: 30_000,
+    first: 0,
+    count: 15_000,
+  })
+})
+
+test('wide copies and a change of unit each start a new run', () => {
+  const copies = [
+    { start: 0, bp: 100, unit: 0 },
+    { start: 100, bp: 100, unit: 0 },
+    { start: 200, bp: 1, unit: 1 },
+    { start: 201, bp: 1, unit: 1 },
+    { start: 202, bp: 1, unit: 0 },
+  ]
+  expect(mergeNarrowCopies(copies, 1, 3).map(r => r.count)).toEqual([
+    1, 1, 2, 1,
+  ])
+})
+
+test('a copy count that disagrees with its bases never draws a negative copy', () => {
+  const boxes = copiesOf(
+    {
+      label: 'a',
+      altIndex: 1,
+      bp: 15,
+      runs: [{ unit: 0, count: 2.5, bp: 15 }],
+    },
+    [{ length: 10, copies: 2.5 }],
+  )
+  expect(boxes.every(b => b.bp >= 0)).toBe(true)
+})
+
+test('a span of a few bp gets whole-bp ticks', () => {
+  expect(axisTicks(3)).toEqual([0, 1, 2, 3])
 })

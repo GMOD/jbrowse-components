@@ -9,7 +9,13 @@ import {
   useTheme,
 } from '@mui/material'
 
-import { axisTicks, copiesOf, formatBp, readout } from './layout.ts'
+import {
+  axisTicks,
+  copiesOf,
+  formatBp,
+  mergeNarrowCopies,
+  readout,
+} from './layout.ts'
 
 import type { RepeatAllele, TandemRepeat } from './tandemRepeat.ts'
 
@@ -32,7 +38,6 @@ const BAR_PX = 12
 const AXIS_PX = 26
 const PAD = 12
 const CHAR_PX = 6.6
-// copies narrower than this draw as one run, without separators
 const MIN_COPY_PX = 3
 
 function unitColor(unit: number) {
@@ -118,10 +123,11 @@ function Row({
   gap: string
   referenceBp: number
   dimmed: boolean
-  onSelect: () => void
+  onSelect?: () => void
 }) {
   const top = y - BAR_PX / 2
   const copies = copiesOf(allele, repeat.units)
+  const runs = mergeNarrowCopies(copies, scale, MIN_COPY_PX)
   const unit = repeat.unitLength
   const ticked =
     !allele.runs && unit !== undefined && unit * scale >= MIN_COPY_PX
@@ -129,7 +135,7 @@ function Row({
     <g
       data-testid="tandem-repeat-row"
       opacity={dimmed ? 0.3 : 1}
-      style={{ cursor: 'pointer' }}
+      style={{ cursor: onSelect ? 'pointer' : undefined }}
       onClick={onSelect}
     >
       <rect
@@ -143,19 +149,23 @@ function Row({
         {allele.label}
       </text>
       {allele.runs ? (
-        copies.map((copy, i) => {
-          const px = copy.bp * scale
+        runs.map(run => {
+          const px = run.bp * scale
+          const which =
+            run.count > 1
+              ? `copies ${run.first + 1}-${run.first + run.count}`
+              : `copy ${run.first + 1}`
           return (
             <rect
-              key={i}
-              x={X(copy.start)}
+              key={run.first}
+              x={X(run.start)}
               y={top}
               width={Math.max(1, px >= MIN_COPY_PX ? px - 1 : px)}
               height={BAR_PX}
-              fill={unitColor(copy.unit)}
+              fill={unitColor(run.unit)}
             >
               <title>
-                {`${allele.label}: copy ${i + 1} of ${copies.length}, unit ${copy.unit + 1}, ${copy.bp.toLocaleString()} bp`}
+                {`${allele.label}: ${which} of ${copies.length}, unit ${run.unit + 1}, ${run.bp.toLocaleString()} bp`}
               </title>
             </rect>
           )
@@ -227,7 +237,7 @@ export default function TandemRepeatPanel({
   const labelPx = Math.max(...alleles.map(a => a.label.length)) * CHAR_PX + PAD
   const readoutPx = Math.max(...readouts.map(r => r.length)) * CHAR_PX + PAD
   const plotPx = Math.max(100, width - labelPx - readoutPx - 2 * PAD)
-  const maxBp = Math.max(referenceBp, ...alleles.map(a => a.bp))
+  const maxBp = Math.max(1, referenceBp, ...alleles.map(a => a.bp))
   const scale = plotPx / maxBp
   const left = PAD + labelPx
   const X = (bp: number) => left + bp * scale
@@ -235,8 +245,11 @@ export default function TandemRepeatPanel({
   const text = theme.palette.text.primary
   const faint = theme.palette.text.secondary
   const gap = theme.palette.background.paper
-  const noun =
-    mode === 'allele' ? 'alleles' : byAllele ? 'haplotypes' : 'alleles'
+  const noun = mode === 'sample' && byAllele ? 'haplotype' : 'allele'
+  const undrawn =
+    mode === 'allele'
+      ? repeat.calledAlleles - all.reduce((n, a) => n + (a.count ?? 0), 0)
+      : 0
   return (
     <BaseCard title="Tandem repeat">
       <div ref={ref}>
@@ -250,8 +263,14 @@ export default function TandemRepeatPanel({
           }}
         >
           <Typography variant="body2">
-            <b>{repeat.name}</b> · {refName}:{(start + 1).toLocaleString()}-
-            {end.toLocaleString()} · {all.length.toLocaleString()} {noun}
+            {repeat.name ? (
+              <>
+                <b>{repeat.name}</b> ·{' '}
+              </>
+            ) : null}
+            {refName}:{(start + 1).toLocaleString()}-{end.toLocaleString()} ·{' '}
+            {all.length.toLocaleString()} {noun}
+            {all.length === 1 ? '' : 's'}
             {mode === 'allele'
               ? ` across ${repeat.calledAlleles.toLocaleString()} called`
               : ''}
@@ -264,6 +283,7 @@ export default function TandemRepeatPanel({
               onChange={(_, next: Mode | null) => {
                 if (next) {
                   setChosen(next)
+                  onSelectAlt(null)
                 }
               }}
             >
@@ -320,18 +340,31 @@ export default function TandemRepeatPanel({
               gap={gap}
               referenceBp={referenceBp}
               dimmed={selectedAlt !== null && allele.altIndex !== selectedAlt}
-              onSelect={() => {
-                onSelectAlt(
-                  selectedAlt === allele.altIndex ? null : allele.altIndex,
-                )
-              }}
+              onSelect={
+                byAllele
+                  ? () => {
+                      onSelectAlt(
+                        selectedAlt === allele.altIndex
+                          ? null
+                          : allele.altIndex,
+                      )
+                    }
+                  : undefined
+              }
             />
           ))}
         </svg>
         {all.length > alleles.length ? (
-          <Typography variant="caption">
-            {(all.length - alleles.length).toLocaleString()} more {noun} not
+          <Typography variant="caption" component="div">
+            {(all.length - alleles.length).toLocaleString()} more {noun}s not
             drawn
+          </Typography>
+        ) : null}
+        {undrawn > 0 ? (
+          <Typography variant="caption" component="div">
+            {undrawn.toLocaleString()} of{' '}
+            {repeat.calledAlleles.toLocaleString()} called alleles are not
+            &lt;CNV:TR&gt; and are not drawn
           </Typography>
         ) : null}
       </div>

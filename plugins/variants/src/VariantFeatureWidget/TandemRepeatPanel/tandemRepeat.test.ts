@@ -114,3 +114,39 @@ test('a record stating no repeat has no alleles to draw', () => {
     }),
   ).toBeUndefined()
 })
+
+test('a record with no ID states no name', () => {
+  const { name: _name, ...anonymous } = tandem
+  expect(tandemRepeatOf(anonymous)!.name).toBeUndefined()
+})
+
+test('the reference allele spans the SVLEN of the first <CNV:TR> ALT', () => {
+  const repeat = tandemRepeatOf({
+    ...base,
+    ALT: ['<DEL>', '<CNV:TR>'],
+    INFO: { SVLEN: [500, -30], RN: [0, 1], RUS: [A], RUC: [3], RB: [30] },
+  })!
+  expect(repeat.end - repeat.start).toBe(30)
+})
+
+test('a record whose called alleles are all outside <CNV:TR> draws nothing', () => {
+  expect(
+    tandemRepeatOf({
+      ...base,
+      ALT: ['<DEL>', '<CNV:TR>'],
+      INFO: { SVLEN: [500, 30], RN: [0, 1], RUS: [A], RUC: [3], RB: [30] },
+      samples: { S1: { GT: ['1|1'] } },
+    }),
+  ).toBeUndefined()
+})
+
+test('called alleles outside <CNV:TR> stay in the frequency denominator', () => {
+  const repeat = tandemRepeatOf({
+    ...base,
+    ALT: ['<DEL>', '<CNV:TR>'],
+    INFO: { SVLEN: [500, 30], RN: [0, 1], RUS: [A], RUC: [3], RB: [30] },
+    samples: { S1: { GT: ['1|2'] } },
+  })!
+  expect(repeat.calledAlleles).toBe(2)
+  expect(repeat.byAllele?.map(a => a.label)).toEqual(['ALT 2 · 50%'])
+})
