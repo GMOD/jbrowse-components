@@ -36,7 +36,6 @@ import {
   carriedSyntenySettings,
   collectTrackWarnings,
   getSyntenyTracks,
-  liftSyntenyViewSettings,
   releaseTemporaryAssemblies,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
@@ -67,6 +66,7 @@ import {
   rowViewMenuItems,
 } from './menus.ts'
 import { sharedFit } from './sharedFit.ts'
+import { liftLegacySyntenyView } from './util/liftViewLevelTracks.ts'
 
 import type { FollowReport } from '../SyntenyFollow/followHost.ts'
 import type {
@@ -1389,7 +1389,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     registry: pluginManager,
     materialized: snap => !!snap.views?.length,
   })
-    .preProcessSnapshot(liftSyntenyViewSettings)
+    .preProcessSnapshot(liftLegacySyntenyView)
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {

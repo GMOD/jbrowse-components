@@ -134,6 +134,17 @@ test('a key naming neither a launch key nor a property is named on attach', asyn
   )
 })
 
+test('an unknown key logs and raises no toast', async () => {
+  const session = createTestSession()
+  const notify = jest.spyOn(session, 'notify')
+  const spec: Record<string, unknown> = { views: ROWS, drawCurvez: true }
+  await session.launchView('LinearSyntenyView', spec)
+  expect(warnings()).toContain(
+    'LinearSyntenyView ignored unknown key(s): drawCurvez',
+  )
+  expect(notify).not.toHaveBeenCalled()
+})
+
 test('the follow is one property, and the retired rowSync is not a key', async () => {
   const view = await open({ views: ROWS, followSynteny: true })
   expect(view.followSynteny).toBe(true)

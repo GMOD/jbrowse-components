@@ -52,18 +52,13 @@ export function setterOnlyMessage(label: string, keys: string[]) {
 
 /**
  * Name the keys a view was handed and could not place, from the partition
- * `withLaunchInput` runs on the snapshot.
+ * `withLaunchInput` runs on the snapshot. The console alone, like
+ * `reportLegacyInit`: the view opened without them, and the keys are usually a
+ * v4 session's retired state that a visitor holding the link cannot act on.
  */
 export function reportUnknownKeys(self: IStateTreeNode, keys: string[]) {
-  if (!keys.length) {
-    return
-  }
-  const message = unknownKeysMessage(viewLabel(self), keys)
-  console.warn(message)
-  try {
-    getNotificationSink(self).notify(message, 'warning')
-  } catch {
-    // a view built outside a session has nowhere to put it
+  if (keys.length) {
+    console.warn(unknownKeysMessage(viewLabel(self), keys))
   }
 }
 

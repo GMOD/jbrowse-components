@@ -1,5 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { createTestSession } from '@jbrowse/web/testUtils'
+import {
+  createTestSession,
+  createTestSessionAsync,
+} from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
 import type { LinearSyntenyViewModel } from './model.ts'
@@ -87,4 +90,61 @@ test('a per-level `tracks` opens the synteny track on level 0', async () => {
   const view = await openWith({ views, tracks: [['vol_synteny']] })
   await when(() => openTrackIds(view).length > 0, { timeout: 5000 })
   expect(openTrackIds(view)).toEqual(['vol_synteny'])
+})
+
+// A session written before levels held their tracks lists the built tracks on
+// the view itself, which v4.3.0 opened on level 0 and the demo configs still
+// write.
+test('built tracks on the view open on level 0', async () => {
+  const row = (id: string, assemblyName: string) => ({
+    id,
+    type: 'LinearGenomeView',
+    bpPerPx: 10,
+    offsetPx: 0,
+    displayedRegions: [
+      { assemblyName, refName: 'ctgA', start: 0, end: 16000, reversed: false },
+    ],
+  })
+  const session = await createTestSessionAsync({
+    jbrowseConfig: {
+      assemblies: [assembly('volvox'), assembly('volvox2')],
+      tracks: [
+        {
+          type: 'SyntenyTrack',
+          trackId: 'vol_synteny',
+          name: 'vol synteny',
+          assemblyNames: ['volvox', 'volvox2'],
+          adapter: {
+            type: 'PAFAdapter',
+            pafLocation: { uri: 'volvox.paf', locationType: 'UriLocation' },
+            queryAssembly: 'volvox',
+            targetAssembly: 'volvox2',
+          },
+        },
+      ],
+    },
+    sessionSnapshot: {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [row('r1', 'volvox'), row('r2', 'volvox2')],
+          tracks: [
+            {
+              type: 'SyntenyTrack',
+              configuration: 'vol_synteny',
+              displays: [
+                {
+                  type: 'LinearSyntenyDisplay',
+                  configuration: 'vol_synteny-LinearSyntenyDisplay',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  })
+  expect(openTrackIds(session.views[0] as LinearSyntenyViewModel)).toEqual([
+    'vol_synteny',
+  ])
 })
