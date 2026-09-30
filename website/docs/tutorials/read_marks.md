@@ -86,7 +86,7 @@ callset says NA12878 carries one copy of a 3.9 kb deletion. A `bar` mark over a
         {
           "mark": "bar",
           "transform": [{ "type": "coverage" }],
-          "encoding": { "color": "#c8d8ee" }
+          "encoding": { "color": { "value": "#c8d8ee" } }
         }
       ]
     }
@@ -308,7 +308,7 @@ read it:
             { "type": "bin", "step": "auto" },
             { "type": "aggregate", "ops": [{ "op": "count" }] }
           ],
-          "encoding": { "color": "#d62728" }
+          "encoding": { "color": { "value": "#d62728" } }
         }
       ]
     }

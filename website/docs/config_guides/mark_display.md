@@ -127,7 +127,7 @@ Each mark's `encoding` maps feature fields to the channels its type reads:
 | `x2`    | every mark                             | the right edge; `end` by default                                                                                                                                                                             |
 | `y`     | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand in the middle of its band |
 | `row`   | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                         |
-| `color` | every mark                             | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                                              |
+| `color` | every mark                             | a field through a scale (below), or a constant `{ "value": … }` holding a CSS colour or a jexl callback returning one; a bare string is a field                                                              |
 | `shape` | `point`                                | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                        |
 | `size`  | `point`, `rule`, `line`, `link`        | a number of px, a point's diameter, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a range of px (below)                              |
 | `text`  | `text`                                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                            |
@@ -245,11 +245,13 @@ numbers.
 
 ## Colour scales
 
-`color` as a string paints every feature that colour, or whatever a jexl
-callback answers. As an object it binds a field to a scale, and the legend reads
-the same table the colours came from. A colour written with an alpha, `rgba()`
-or `#rrggbbaa`, paints at that opacity, as a constant or as an entry of a
-`range`, which is how a dense scatter or overlapping spans stay readable.
+`color` as a bare string names a field, and as an object binds that field to a
+scale, so the legend reads the same table the colours came from. A constant is
+`{ "value": "steelblue" }`, or a `value` holding a jexl callback that answers a
+colour per feature; a colour name written bare is reported as a field no feature
+holds. A colour written with an alpha, `rgba()` or `#rrggbbaa`, paints at that
+opacity, as a constant or as an entry of a `range`, which is how a dense scatter
+or overlapping spans stay readable.
 
 - **categorical** —
   `{ "field": "strand", "scale": "categorical", "range": ["#1f77b4", "#ff7f0e"] }`
