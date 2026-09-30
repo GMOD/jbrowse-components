@@ -556,6 +556,49 @@
       ]
     },
     {
+      "type": "AlignmentsTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "trackId": "marks_stack",
+      "name": "Mark stack",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_stack-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "bar",
+              "transform": [
+                {
+                  "type": "coverage",
+                  "groupby": ["strand"]
+                },
+                {
+                  "type": "stack",
+                  "by": "strand"
+                }
+              ],
+              "encoding": {
+                "color": "strand"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "type": "MultiQuantitativeTrack",
       "trackId": "marks_multi_rows",
       "name": "Mark rows over a MultiBigWig",

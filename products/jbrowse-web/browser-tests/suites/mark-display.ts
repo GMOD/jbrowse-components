@@ -177,6 +177,16 @@ const suite: TestSuite = {
       snapshotSelector: withChrome,
       readySelector: `${withChrome} [data-testid="group-label-chip"]`,
     }),
+    // A stack: coverage per strand cut at one set of stretches, each
+    // strand's bars standing on the other's through the bar's `y2` lane,
+    // which the shader reads as an attribute and the painter as a lane.
+    lgvSnapshotTest({
+      name: 'coverage per strand stacked, each strand standing on the one below',
+      snapshot: 'mark-stack',
+      loc: 'ctgA:1-5000',
+      tracks: ['marks_stack'],
+      config,
+    }),
     // A MAF block is one feature with an `alignments` record per species; a
     // flatten with `key` fans it out into a row each (ADR-186), and a span
     // coloured by `chr` is the MAF display's colour-by-source-chromosome.
