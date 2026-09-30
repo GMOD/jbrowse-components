@@ -1,6 +1,6 @@
 import { measureText } from '@jbrowse/core/util/measureText'
 import { cullOverlappingLabels } from '@jbrowse/display-ui'
-import { keepFeatureLabel } from '@jbrowse/plugin-canvas'
+import { computeLabelLeftPx, keepFeatureLabel } from '@jbrowse/plugin-canvas'
 
 import type { LaneGene } from './geneGlyph.ts'
 import type { Lane } from './laneStack.ts'
@@ -123,7 +123,11 @@ export function placeLaneLabels({
       if (
         keepFeatureLabel('fitWidth', roomRight - roomLeft, textWidth, pinned, 1)
       ) {
-        const left = (n.left + n.right) / 2 - textWidth / 2
+        const left = computeLabelLeftPx(textWidth, {
+          featureLeftPx: n.left,
+          featureRightPx: n.right,
+          screenStartPx: 0,
+        })
         candidates.push({
           key: `${lane.assemblyName}:${n.id}`,
           text: n.name,

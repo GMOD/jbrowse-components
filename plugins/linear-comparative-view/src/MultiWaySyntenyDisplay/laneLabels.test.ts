@@ -74,6 +74,33 @@ describe('placeLaneLabels', () => {
     ])
   })
 
+  it("starts a name at its gene's left edge, as a feature track does", () => {
+    const [label] = placeLaneLabels({
+      lanes: [lane('a', 20)],
+      genesOf: () => [gene('Nnt', 200, 900)],
+      labelOf,
+      glyphHeight: 10,
+      width: 1000,
+      height: 200,
+      fontFamily: 'sans-serif',
+    })
+    expect(label!.left).toBe(200)
+  })
+
+  it('holds a name on screen under a gene that starts off the left edge', () => {
+    const [label] = placeLaneLabels({
+      lanes: [lane('a', 20)],
+      genesOf: () => [gene('Nnt', -500, 900)],
+      labelOf,
+      glyphHeight: 10,
+      width: 1000,
+      height: 200,
+      fontFamily: 'sans-serif',
+    })
+    expect(label!.left).toBeGreaterThanOrEqual(0)
+    expect(label!.left).toBeLessThan(10)
+  })
+
   it('leaves out a nameless gene and one off the canvas', () => {
     expect(place({ a: [gene('', 100, 200), gene('OFF', 2000, 2100)] })).toEqual(
       [],
@@ -115,7 +142,7 @@ describe('placeLaneLabels', () => {
     })
     expect(labels.map(l => [l.text, l.pinned])).toEqual([
       ['CROWDED', true],
-      ['B', false],
+      ['A', false],
     ])
   })
 })

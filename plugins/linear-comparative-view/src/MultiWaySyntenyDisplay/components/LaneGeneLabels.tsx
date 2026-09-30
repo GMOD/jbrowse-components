@@ -32,11 +32,7 @@ const LaneGeneLabels = observer(function LaneGeneLabels({
         <FloatingText
           key={label.key}
           data-testid="multiway-gene-label"
-          x={
-            drawnPx(laneMapOf(model, label.row), label.left + label.width / 2) -
-            label.width / 2 +
-            dragOffsetPx
-          }
+          x={drawnPx(laneMapOf(model, label.row), label.left) + dragOffsetPx}
           y={label.top - scrollTop}
           color={bandInk().text}
           fontSize={GENE_LABEL_FONT_PX}

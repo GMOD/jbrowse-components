@@ -170,7 +170,10 @@ export interface LabelMetrics {
 // rightward, the overhang the packer reserved. One that fits sits between two
 // clamps: `visibleStart` keeps it from starting off-screen, `rightEdgeLimit`
 // stops its end passing the feature's right edge, and the right-edge limit wins.
-function computeLabelLeftPx(textWidth: number, bounds: FeatureBoundsPx) {
+export function computeLabelLeftPx(
+  textWidth: number,
+  bounds: Omit<FeatureBoundsPx, 'featureBottomPx'>,
+) {
   const { featureLeftPx, featureRightPx, screenStartPx } = bounds
   const fitsInFeature = textWidth <= featureRightPx - featureLeftPx
   const visibleStart = Math.max(
