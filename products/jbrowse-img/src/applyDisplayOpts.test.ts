@@ -78,3 +78,11 @@ test('a display with no filterBy says so rather than dropping the option', async
   expect(warn).toHaveBeenCalledWith(expect.stringContaining('has no filterBy'))
   warn.mockRestore()
 })
+
+test('a track the view could not open names the display it was asked for', async () => {
+  const { view } = fakeView()
+  ;(view as { launchTrack: unknown }).launchTrack = async () => undefined
+  await expect(
+    applyDisplayOpts(view, 't', 'alignments', ['display:marks']),
+  ).rejects.toThrow('Failed to open track "t" with display "LinearMarkDisplay"')
+})

@@ -1,4 +1,5 @@
 import { samFlagNames } from '@jbrowse/cigar-utils'
+import { getSession } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
@@ -1016,6 +1017,18 @@ export function buildDisplaySnapshot(category: Category, opts: string[]) {
 // was built into the config, or a hosted `--track <id>`) with its display in the
 // requested state. `trackId` is the exact id; `category` selects which modifiers
 // apply. Shared by applyTrackOpts and the --track path.
+// The last error the session was told, where the view sits in a session tree
+function lastSessionError(view: LinearGenomeViewModel) {
+  try {
+    const { snackbarMessages } = getSession(view) as unknown as {
+      snackbarMessages: { message: string; level?: string }[]
+    }
+    return snackbarMessages.findLast(m => m.level === 'error')?.message
+  } catch {
+    return undefined
+  }
+}
+
 export async function applyDisplayOpts(
   view: LinearGenomeViewModel,
   trackId: string,
@@ -1065,11 +1078,13 @@ export async function applyDisplayOpts(
     displayType ? { ...displaySnap, type: displayType } : displaySnap,
   )
   // launchTrack returns undefined on any failure (invalid track config, or a
-  // display: type that doesn't exist for this track) — surface a clear message
-  // instead of a downstream "cannot read 'displays' of undefined".
+  // display: type that doesn't exist for this track) and says why to the
+  // session's snackbar, which nothing shows here: name the track and carry the
+  // reason, instead of a downstream "cannot read 'displays' of undefined".
   if (!opened) {
+    const reason = lastSessionError(view)
     throw new Error(
-      `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}`,
+      `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}${reason ? `: ${reason}` : ''}`,
     )
   }
   if (filterBy) {
