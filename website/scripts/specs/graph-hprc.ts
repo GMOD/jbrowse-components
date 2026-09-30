@@ -1472,7 +1472,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       ],
     }),
     viewportWidth: 1400,
-    viewportHeight: 760,
+    viewportHeight: 1010,
     hideTooltip: true,
     actions: [
       { type: 'waitForAppSettled', timeout: 120000 },
