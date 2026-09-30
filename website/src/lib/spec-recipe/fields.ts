@@ -2122,7 +2122,7 @@ export const launchFields: Record<string, FieldRecipe> = {
   collapseEmptyRows: value =>
     value === false
       ? {
-          path: 'Launch synteny view dialog → Collapse panels to rulers (unchecked)',
+          path: 'Add → Linear synteny view → Collapse panels to rulers (unchecked)',
           note: 'A row the launch gave no tracks opens with its "No tracks active" block instead of its ruler alone.',
         }
       : value === true
