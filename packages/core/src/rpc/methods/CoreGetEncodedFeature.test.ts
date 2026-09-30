@@ -105,8 +105,9 @@ test('a run counted inside a facet section reads back with that section depth', 
     expect(feature).toMatchObject({ start: x, end: x2, coverage: y })
   }
   expect(drawn.map(d => Object.keys(d.feature!).sort())).toEqual(
-    drawn.map(() => ['coverage', 'end', 'refName', 'start', 'uniqueId']),
+    drawn.map(() => ['HP', 'coverage', 'end', 'refName', 'start', 'uniqueId']),
   )
+  expect(new Set(drawn.map(d => d.feature!.HP))).toEqual(new Set(['1', '2']))
 })
 
 test('a bin reads back as the bin the steps made', async () => {

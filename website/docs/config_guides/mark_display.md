@@ -523,6 +523,23 @@ A `pileup` in the display's own `transform` runs before the split, so it packs
 across every section and leaves each section the rows the others fill; the
 facet's is the one that packs per section.
 
+A section's rows keep the facet's value through a `coverage` or an `aggregate`,
+the way a ggplot2 stat keeps its facet variable, so a colour over the field the
+plot is split on paints each section's depth its own colour:
+
+```json
+{
+  "facet": "strand",
+  "marks": [
+    {
+      "mark": "bar",
+      "transform": [{ "type": "coverage" }],
+      "encoding": { "color": "strand" }
+    }
+  ]
+}
+```
+
 The field is read the way a channel reads one: a name, a dotted path
 (`INFO.SVTYPE`), or a `jexl:` expression. Where the value has to be computed
 first, the display's own `transform` runs before the split:

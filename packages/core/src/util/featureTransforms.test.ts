@@ -478,6 +478,65 @@ test('a faceted section is the unfaceted layer over its own features, offset', (
   }
 })
 
+test("a section's coverage runs and aggregate groups still name the facet's value", () => {
+  const features = [
+    feature(0, 20, { sample: 'b', strand: -1 }),
+    feature(5, 25, { sample: 'b', strand: -1 }),
+    feature(0, 20, { sample: 'a', strand: 1 }),
+    feature(30, 40, { strand: 1 }),
+  ]
+  const { layers } = facetLayers(features, { field: 'sample' }, [
+    { transform: [{ type: 'coverage' }] },
+    {
+      transform: [
+        { type: 'bin', step: 100 },
+        { type: 'aggregate', ops: [{ op: 'count' }] },
+      ],
+    },
+    {
+      transform: [
+        {
+          type: 'aggregate',
+          groupby: ['sample'],
+          ops: [{ op: 'count' }],
+        },
+      ],
+    },
+  ])
+  const [runs, bins, groups] = layers
+  expect(rows(runs!.features, 'sample', 'coverage')).toEqual([
+    ['a', 1],
+    ['b', 1],
+    ['b', 2],
+    ['b', 1],
+    [undefined, 1],
+  ])
+  expect(runs!.features[0]!.toJSON()).toMatchObject({ sample: 'a' })
+  expect(runs!.features[4]!.toJSON()).not.toHaveProperty('sample')
+  expect(rows(bins!.features, 'sample', 'count')).toEqual([
+    ['a', 1],
+    ['b', 2],
+    [undefined, 1],
+  ])
+  expect(rows(groups!.features, 'sample', 'count')).toEqual([
+    ['a', 1],
+    ['b', 2],
+    [undefined, 1],
+  ])
+})
+
+test("a facet on a dotted path names it on the section's made rows", () => {
+  const { layers } = facetLayers(
+    [feature(0, 20, { tags: { HP: 2 } }), feature(0, 20, { tags: { HP: 1 } })],
+    { field: 'tags.HP' },
+    [{ transform: [{ type: 'coverage' }] }],
+  )
+  expect(rows(layers[0]!.features, 'tags.HP', 'coverage')).toEqual([
+    ['1', 1],
+    ['2', 1],
+  ])
+})
+
 // The encoder reads each feature's own fields, and the row beside it.
 test('a faceted layer hands on its features as its steps left them', () => {
   const features = [

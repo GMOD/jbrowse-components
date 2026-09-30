@@ -13,7 +13,7 @@ import {
   withColumns,
 } from './featureTable.ts'
 import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
-import { stringToJexlExpression } from './jexlStrings.ts'
+import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 import {
   BIN_OVERLAP_FIELD,
@@ -1665,6 +1665,73 @@ function rowOf(value: unknown) {
 }
 
 /**
+ * A section's rows behind a step that made them from nothing, a coverage's
+ * runs or an aggregate's groups, still answer the field their section was
+ * split on, as a ggplot2 stat keeps its facet variable: one column of each
+ * section's key, built the first time a channel reads it, and a parent that
+ * carries the field itself is read instead.
+ */
+class SectionTable extends DerivedTable {
+  private readonly field: string
+  private readonly labels: readonly string[]
+  private readonly bounds: Bounds
+
+  constructor(
+    parent: FeatureTable,
+    field: string,
+    labels: readonly string[],
+    bounds: Bounds,
+  ) {
+    super(parent, undefined)
+    this.field = field
+    this.labels = labels
+    this.bounds = bounds
+  }
+
+  protected own(field: string): Column | undefined {
+    if (field !== this.field || this.parent.column(field).kind !== 'none') {
+      return undefined
+    }
+    const { labels } = this
+    const codes = new Uint32Array(this.length)
+    for (let s = 0; s < labels.length; s++) {
+      codes.fill(s, this.bounds[s], this.bounds[s + 1])
+    }
+    // the section of the rows with nothing in the field answers nothing
+    return labels.includes('')
+      ? { kind: 'value', read: i => labels[codes[i]!] || undefined }
+      : { kind: 'category', codes, labels, at: undefined }
+  }
+
+  override json(i: number): SimpleFeatureSerialized {
+    const out = super.json(i)
+    const label = valueAt(this.column(this.field), i)
+    return label === undefined || this.field in out
+      ? out
+      : { ...out, [this.field]: label }
+  }
+}
+
+function makesRows(steps: readonly TransformStep[] | undefined) {
+  return steps?.some(s => s.type === 'aggregate' || s.type === 'coverage')
+}
+
+// The staged rows still naming their section's value where a step made them
+function keepingSection(
+  staged: Staged,
+  steps: readonly TransformStep[] | undefined,
+  field: FieldRef,
+  labels: readonly string[],
+): Staged {
+  return !isJexl(field) && makesRows(steps)
+    ? {
+        ...staged,
+        table: new SectionTable(staged.table, field, labels, staged.bounds),
+      }
+    : staged
+}
+
+/**
  * #api
  * One layer of a faceted request: its rows in section order, and the stacked
  * row of each, index for index.
@@ -1756,13 +1823,20 @@ export function facetLayers(
     order[next[sectionOf[keyOfRow[i]!]!]!++] = i
   }
 
-  const sectioned = runSteps(
-    { table: selectRows(table, order), bounds },
+  const labels = ordered.map(k => keys[k]!)
+  const sectioned = keepingSection(
+    runSteps({ table: selectRows(table, order), bounds }, sectionSteps, jexl),
     sectionSteps,
-    jexl,
+    field,
+    labels,
   )
   const placed = layers.map(({ transform, row }) => {
-    const out = runSteps(sectioned, transform, jexl)
+    const out = keepingSection(
+      runSteps(sectioned, transform, jexl),
+      transform,
+      field,
+      labels,
+    )
     const readRow =
       row === undefined
         ? undefined
