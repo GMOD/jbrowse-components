@@ -70,12 +70,12 @@ export function hpyloriSyntenyWithGenes({
         tracks: [['26695_vs_chc155.pif'], ['chc155_vs_j99.pif']],
         views: [
           {
-            loc: 'NC_018939v1:177696-190329',
+            loc: 'NC_018939v1:672000-782000',
             assembly: 'GCF_000307795.1',
             tracks: [geneTrack('GCF_000307795.1-ncbiGff')],
           },
           {
-            loc: 'NZ_AP026446v1:287157-299790',
+            loc: 'NZ_AP026446v1:780000-890000',
             assembly: 'GCF_025998455.1',
             tracks: [geneTrack('GCF_025998455.1-ncbiGff')],
           },
@@ -83,7 +83,7 @@ export function hpyloriSyntenyWithGenes({
             // j99 aligns to chc155 in inverted orientation, so the [rev]
             // suffix flips this panel (declarative loc-string reverse) to
             // straighten the level-1 ribbons — otherwise they cross in an X
-            loc: 'NZ_CP011330v1:872350-884982[rev]',
+            loc: 'NZ_CP011330v1:305000-415000[rev]',
             assembly: 'GCF_000982695.1',
             tracks: [geneTrack('GCF_000982695.1-ncbiGff')],
           },
@@ -4830,9 +4830,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // no route between them, so the coloring read as something a config author
   // does rather than something a reader can do to the track in front of them.
   //
-  // Track menu -> Color by... -> Attribute..., then the attribute's name. The
-  // caption under the field lists the values the genes in view carry, which
-  // are the names the figure beside it colours. The field is an Autocomplete,
+  // Track menu -> Color by... -> Attribute..., then the attribute's name. Over
+  // the inversion window the genes carry more symbols than the key lists, so
+  // the caption under the field says that; every symbol still takes its color.
+  // The field is an Autocomplete,
   // so it is typed into by testid (its label text resolves to an element that
   // takes no focus), and Escape folds the suggestion list off the caption.
   //
@@ -4865,7 +4866,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         value: 'gene',
         clear: true,
       },
-      { type: 'waitForText', text: 'Found' },
+      { type: 'waitForText', text: 'gene takes more than' },
       { type: 'press', key: 'Escape' },
       { type: 'delay', ms: 300 },
     ],
