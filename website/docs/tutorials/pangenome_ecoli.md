@@ -404,7 +404,7 @@ selection covers under two submenus:
 - **Linear synteny view, K12 vs...** opens the two as a
   [linear synteny view](/docs/user_guides/linear_synteny_view)
 
-<Video src="/media/synteny/maf_row_synteny.mp4" caption="From the pggb alignment's rows to a two-strain synteny view: a drag across the rows, the menu listing the strains it covers, and the synteny view the NCTC86 entry opens, with K12's genes over the alignment and NCTC86's genes under the ribbon." />
+<Video src="/media/synteny/maf_row_synteny.mp4" caption="From the pggb alignment's rows to a two-strain synteny view: a drag across the rows, the menu listing the strains it covers, and the synteny view the IAI39 entry opens, with no ribbon under ybhH and ybhI, the two K12 genes IAI39 lacks." />
 
 ## Pangenome depth projection (core vs accessory)
 
@@ -626,7 +626,7 @@ types → Feature display** draws it as a lane. A ruler drag offers **Launch →
 Linear synteny view**; the same menu on a synteny row's scale bar lets **Replace
 current view** re-anchor the stack.
 
-<Video src="/media/synteny/ecoli_roundtrip.mp4" caption="One selection, a synteny stack: the Launch menu over a K12 window, the stack anchored on K12, and a drag on the Sakai row re-anchoring the stack on Sakai in place." />
+<Video src="/media/synteny/ecoli_roundtrip.mp4" caption="One selection, a synteny stack: the Launch menu over a K12 window, the stack anchored on K12, where Sakai's row carries a prophage K12 lacks, and a drag across it on the Sakai row re-anchoring the stack on Sakai." />
 
 Adding the track itself, from an empty session, is **Open track... → Add
 pangenome graph track**:
@@ -753,7 +753,7 @@ A segment the reference never visits sits on the strain's own coordinates.
 Right-click the 75 bp CFT073 segment and pick **Open in CFT073**: it opens
 CFT073 at `1,048,515` with its gene track.
 
-<Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's menu opened on the CFT073 allele, and the view its Open in entry adds: CFT073 in CFT073 coordinates, with its gene track already under it." />
+<Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's menu opened on the CFT073 allele, under the K12 genes it bypasses, and the view its Open in entry adds: CFT073 in CFT073 coordinates, where ssuE runs straight into pyrD." />
 
 K12 carries several genes in the span; CFT073 runs _ssuE_ straight into _pyrD_
 with none between.

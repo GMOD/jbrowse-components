@@ -20,28 +20,11 @@ import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 const {
   config: PGGB_CONFIG,
   genesTrack,
-  segmentsTrack,
   locusWindow,
   tourWindow: PGGB_TOUR_WINDOW,
-  rowsWindow,
-  pangenomeConfig: PGGB_PANGENOME_CONFIG,
   strainLaunchNode: PGGB_STRAIN_NODE,
-  strainGraph: PGGB_STRAIN_GRAPH,
+  strainLaunchSession: PGGB_STRAIN_LAUNCH,
 } = pggbVideoFixtures
-
-// The graph alone, on the five-assembly config: the node menu offers only
-// assemblies the session has.
-const pggbStrainStart = sessionSpec(PGGB_PANGENOME_CONFIG, {
-  sessionTracks: [segmentsTrack],
-  views: [
-    {
-      type: 'LinearGenomeView',
-      assembly: 'K12',
-      loc: rowsWindow,
-      tracks: [PGGB_STRAIN_GRAPH],
-    },
-  ],
-})
 
 // K12 with its genes and nothing of the graph, 20 kb out from the IS5 element.
 // The segments track is absent rather than hidden, because
@@ -311,8 +294,8 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome/hprc_follow_view',
     description:
-      'The HLA / MHC graph session searched to C4A: the chr6 hit taken from the picker, two zoom-outs to take in C4B, and the graph track re-cut at each step to the bubble whose alleles run from 0 to 66 kb',
-    goal: 'Search a gene, and the graph track follows the view there',
+      'The HLA / MHC graph session searched to C4A: the chr6 hit taken from the picker and two zoom-outs to take in C4B, ending on the bubble whose alleles run from 0 to 66 kb',
+    goal: 'Find the bubble where haplotypes differ in C4 copy number',
     url: portalGraphLaunch(),
     readySelector: GRAPH_DRAWN,
     readyTimeout: 240000,
@@ -371,16 +354,17 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome/pggb_out_to_strain',
     description:
-      "A CFT073 allele opened on CFT073's own coordinates: right-click the node in the graph track, take its Open in entry, and read the deletion from the donor's side",
+      "A CFT073 allele opened on CFT073's own coordinates, under the K12 genes it bypasses: right-click the node in the graph track, take its Open in entry, and read the deletion from the donor's side",
     goal: 'Open a graph allele on the strain that carries it',
-    url: pggbStrainStart,
-    viewportHeight: 1000,
+    url: PGGB_STRAIN_LAUNCH,
+    // pangenome/pggb_strain_launch's three views, re-measure from the run
+    viewportHeight: 1200,
     readySelector: GRAPH_DRAWN,
     readyTimeout: 120000,
     steps: [
       {
         type: 'rightclick',
-        anchor: { graphNode: PGGB_STRAIN_NODE },
+        anchor: { view: 1, graphNode: PGGB_STRAIN_NODE },
         say: 'Right-click the CFT073 allele and open it on CFT073',
         hold: 900,
       },
@@ -395,7 +379,7 @@ export const pangenomeVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3000,
-        say: "CFT073's own coordinates open below, with its genes under them",
+        say: 'On CFT073, ssuE runs into pyrD: the genes K-12 has between them are gone',
       },
     ],
     tailMs: 3500,

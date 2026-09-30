@@ -100,7 +100,7 @@ The olive no-call column is a copy-number gain in the lane beneath it.
 
 <Figure caption="The 1KGP ensemble SV callset over the RHD locus on chr1, with the panel's sequencing depth under it. The deletion draws as a wide block, splitting the cohort into three bands in the matrix and three levels in the depth." src="/img/multisv_rhd.png" />
 
-<Video src="/media/sv/multisample_sort.mp4" caption="On the callset shown in the figure above, a right-click on the deletion sorts the cohort by genotype there, resolving the callset order into three bands. The track menu's clustering then re-keys the same rows on the whole window and draws the tree it built." />
+<Video src="/media/sv/multisample_sort.mp4" caption="On the callset shown in the figure above, a right-click on the deletion sorts the cohort by genotype there, resolving the callset order into three bands: both copies of RHD deleted, one, then neither." />
 
 The olive stripe is `HGSV_1823`, a small copy-number record inside the deletion,
 uncalled in most of the cohort. A no-call has a separate color. Copy number is a

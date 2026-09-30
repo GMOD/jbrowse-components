@@ -250,6 +250,32 @@ const PGGB_STRAIN_GRAPH = graphTrack(PGGB_SEGMENTS_TRACK, {
   showBubbles: false,
 })
 
+// Where pangenome/pggb_strain_launch and its tour start. The five-assembly
+// config, because the node menu offers only assemblies the session has.
+const PGGB_STRAIN_LAUNCH = sessionSpec(ECOLI_PANGENOME_CONFIG, {
+  sessionTracks: [PGGB_SEGMENTS_SESSION_TRACK],
+  views: [
+    // K12 across the span the CFT073 segment bypasses, so the frame holds
+    // both sides of the event (review: "not a strong figure"): seven
+    // genes between ssuE and pyrD here, none in the launched view below.
+    {
+      type: 'LinearGenomeView',
+      assembly: 'K12',
+      loc: 'chr:996,800-1,005,900',
+      tracks: [{ trackId: 'K12_genes', type: 'LinearBasicDisplay' }],
+    },
+    // The graph in a view of its own: the window above is 7.1 kb of a
+    // base-level graph, thousands of nodes, and the node sits in a 460 bp
+    // window that draws fine, which the cap holds the cut to.
+    {
+      type: 'LinearGenomeView',
+      assembly: 'K12',
+      loc: PGGB_ROWS_WINDOW,
+      tracks: [PGGB_STRAIN_GRAPH],
+    },
+  ],
+})
+
 // The bubble the hover and sample-rows figures are about: K12
 // chr:1,094,197-1,097,573, where Sakai and CFT073 carry ~110-113 kb alleles,
 // NCTC86 a 41 kb one, and IAI39 deletes 3.2 kb. Picked off the BED, not by eye:
@@ -1193,14 +1219,10 @@ export const pggbVideoFixtures = {
   rowsLocus: PGGB_ROWS_LOCUS,
   rowsWindow: PGGB_ROWS_WINDOW,
   locusSession: pggbLocusSession,
-  // The five-assembly config, which the outbound launch needs and CONFIG cannot
-  // serve: the node menu offers only assemblies the session has, so on a
-  // K12-only fixture the CFT073 entry the tour clicks is not in the menu at all.
-  pangenomeConfig: ECOLI_PANGENOME_CONFIG,
-  // The CFT073 allele pangenome/pggb_strain_launch rings, in the same graph, so
-  // the tour and the still open the same node's menu.
+  // The CFT073 allele pangenome/pggb_strain_launch rings, in the same session,
+  // so the tour and the still open the same node's menu.
   strainLaunchNode: '118465-',
-  strainGraph: PGGB_STRAIN_GRAPH,
+  strainLaunchSession: PGGB_STRAIN_LAUNCH,
 }
 
 export const ecoliGraphSpecs: ScreenshotSpec[] = [
@@ -1353,29 +1375,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     // session actually has, so the node menu came up with `Open in K12 — around
     // this node` as its only target and nothing to click. This one carries all
     // five, which is also what puts CFT073's genes in the launched view.
-    url: sessionSpec(ECOLI_PANGENOME_CONFIG, {
-      sessionTracks: [PGGB_SEGMENTS_SESSION_TRACK],
-      views: [
-        // K12 across the span the CFT073 segment bypasses, so the frame holds
-        // both sides of the event (review: "not a strong figure"): seven
-        // genes between ssuE and pyrD here, none in the launched view below.
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: 'chr:996,800-1,005,900',
-          tracks: [{ trackId: 'K12_genes', type: 'LinearBasicDisplay' }],
-        },
-        // The graph in a view of its own: the window above is 7.1 kb of a
-        // base-level graph, thousands of nodes, and the node sits in a 460 bp
-        // window that draws fine, which the cap holds the cut to.
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: PGGB_ROWS_WINDOW,
-          tracks: [PGGB_STRAIN_GRAPH],
-        },
-      ],
-    }),
+    url: PGGB_STRAIN_LAUNCH,
     readySelector: GRAPH_DRAWN,
     readyTimeout: 120000,
     viewportWidth: 1100,

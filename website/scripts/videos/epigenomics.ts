@@ -38,26 +38,24 @@ const pickContext = (label: string): VideoStep[] => [
     type: 'click',
     selector: WGBS_MENU,
     say: `Color the reads by the ${label} context`,
-    hold: 1200,
+    hold: 700,
   },
   { type: 'waitForSelector', selector: COLOR_BY },
-  { type: 'click', selector: COLOR_BY, hold: 1200 },
+  { type: 'click', selector: COLOR_BY, hold: 700 },
   { type: 'waitForSelector', selector: BISULFITE },
-  // The submenu this tour is about, held: the four contexts with the current
-  // one checked, and under them the "Show unmethylated (blue)" checkbox that
-  // only exists once bisulfite is the scheme in force.
-  { type: 'click', selector: BISULFITE, hold: 2500 },
+  // the four contexts with the current one checked
+  { type: 'click', selector: BISULFITE, hold: 1300 },
   { type: 'waitForSelector', selector: CONTEXT(label) },
   // The radio mark moving, before the menu goes: that is the only frame saying
   // which of the four is now in force.
-  { type: 'click', selector: CONTEXT(label), hold: 1400 },
+  { type: 'click', selector: CONTEXT(label), hold: 900 },
   ...leaveMenu(COLOR_BY),
   // The recolor itself, on camera. Nothing is refetched — the reads are
   // loaded and the context is a render prop — so what plays here is the same
   // pileup repainting, which is the whole claim three stacked panels cannot
   // make.
   { type: 'waitForAppSettled', timeout: 120000 },
-  { type: 'delay', ms: 2500 },
+  { type: 'delay', ms: 2000 },
 ]
 
 export const epigenomicsVideos: VideoSpec[] = [
@@ -192,7 +190,7 @@ export const epigenomicsVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 4000,
-        say: 'Clustered, the states form blocks and the tissue stripe mixes',
+        say: 'Clustered: epigenomes with HOXA active, red, part from those holding it repressed, grey',
       },
     ],
     tailMs: 4500,

@@ -97,7 +97,7 @@ well, so pick the chr6 hit, then zoom out twice to take in _C4B_. The graph
 track cuts each new window, and scrolling or zooming moves it with the lanes
 above.
 
-<Video src="/media/pangenome/hprc_follow_view.mp4" caption="C4A searched from the HLA / MHC launch: the chr6 hit taken from the picker, two zoom-outs to C4B, and the graph track re-cut at each step to the bubble whose alleles run from nothing to twice GRCh38's C4 module." />
+<Video src="/media/pangenome/hprc_follow_view.mp4" caption="C4A searched from the HLA / MHC launch: the chr6 hit taken from the picker and two zoom-outs to C4B, ending on the bubble whose alleles run from nothing to twice GRCh38's C4 module." />
 
 Open the graph track's menu and pick **Layout → Force-directed layout**, which
 draws the graph by its shape, in coordinates fitted to the track.

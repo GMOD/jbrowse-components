@@ -17,7 +17,7 @@ export const configVideos: VideoSpec[] = [
     name: 'config/settings_to_json',
     description:
       'Two settings clicked onto a volvox CRAM and the session they are named in: Color by... and Read connections, then Share and the readable session panel under its link',
-    goal: 'Set two read options, then read them back out of a share link',
+    goal: 'Set two read options, then open the session that records them',
     url: defaultsSession,
     // Sized to what overhangs the app, which the run's content report cannot
     // see and so asks for 404px back: the Read connections cascade's shadow
@@ -118,7 +118,7 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 4000,
-        say: 'Both settings, spelled out in the session behind the link',
+        say: 'The whole session as JSON; the settings sit under trackConfigDeltas',
       },
     ],
     tailMs: 3000,

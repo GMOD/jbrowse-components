@@ -551,6 +551,11 @@ const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
 // segments lane beside them — the two datasets the one rubberband offers a
 // view of, and the segments lane is what the launched stack's K-12 row carries
 // into the graph launch (anchorPanelTracks copies every non-synteny track).
+//
+// Wider than the launch tour's window, around K-12 chr:807,327, between ybhC
+// and ybhB. all_vs_all.paf breaks Sakai's alignment there, 855,696-891,123
+// before and 929,694-954,608 after, and Sakai.gff.gz annotates the 38.5 kb
+// between as phage terminase, tail and Nle effector genes.
 const ECOLI_ROUND_TRIP_START = sessionSpec(
   encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
   {
@@ -558,7 +563,7 @@ const ECOLI_ROUND_TRIP_START = sessionSpec(
       {
         type: 'LinearGenomeView',
         assembly: 'K12',
-        loc: 'chr:795,000-815,000',
+        loc: 'chr:783,000-832,000',
         tracks: [
           {
             trackId: 'ecoli_ava',
@@ -584,14 +589,14 @@ const ECOLI_ROUND_TRIP_START = sessionSpec(
 // blocks on K-12, narrow enough that every strain's row is a run of bases
 // rather than a bar, with the gene lane that names what the rows are aligning.
 //
-// THE WINDOW IS BACKBONE, and the tour is about the menu the rows raise, so it
-// has to be. `ecoli_pggb.maf.bed.gz` carries one row per strain that aligns and
-// no row at all for one that does not; a menu is built from the rows the drag
-// covers, so a window inside an accessory island lists one strain and the tour
-// says "one entry per strain the drag covers" over it. chr:1,446,000 is such a
-// window -- the paa island, where two of the three blocks under it carry K-12
-// and NCTC86 alone -- and it is the window this tour was first written at.
-// Every block between 797,952 and 801,145 carries all five.
+// EVERY STRAIN ALIGNS SOMEWHERE IN THE WINDOW, and one of them not everywhere.
+// `ecoli_pggb.maf.bed.gz` carries one row per strain that aligns and no row at
+// all for one that does not; a menu is built from the rows the drag covers, so
+// a window inside an accessory island lists one strain. chr:1,446,000 is such a
+// window -- the paa island -- and it is the window this tour was first written
+// at. Here the blocks at 800,105 and 803,325 carry all five, and the two
+// between them carry no IAI39: all_vs_all.paf has IAI39 running 768 bp where
+// K-12 runs 800,701-803,686, which is ybhH and ybhI.
 const ECOLI_MAF_ROWS = sessionSpec(
   encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
   {
@@ -599,7 +604,7 @@ const ECOLI_MAF_ROWS = sessionSpec(
       {
         type: 'LinearGenomeView',
         assembly: 'K12',
-        loc: 'chr:798,300-801,100',
+        loc: 'chr:800,100-804,300',
         tracks: [
           {
             trackId: 'K12_genes',
@@ -5458,10 +5463,13 @@ export const syntenyVideoFixtures = {
   mafRows: ECOLI_MAF_ROWS,
   // The alignment lane the MAF tour drags across, and the reference span the
   // drag covers. The x is named on K-12 because that is the axis the rows are
-  // drawn against; which rows the drag catches is the `fracY` at each end, and
-  // the guide tree sorts NCTC86 last of the five.
+  // drawn against; which rows the drag catches is the `fracY` at each end.
   mafTrackId: 'ecoli_pggb_maf',
-  mafRowSpan: { start: 'chr:798,700', end: 'chr:800,700' },
+  mafRowSpan: { start: 'chr:800,300', end: 'chr:804,100' },
+  // The span the round trip rubberbands on K-12: wide enough that Sakai's
+  // alignments either side of its prophage both fall inside the launch's
+  // outlier reach (1.5 selections from the median), so Sakai's panel spans it.
+  roundTripSpan: { start: 'chr:787,000', end: 'chr:828,000' },
   // The span the tour rubberbands, which is the span the composite's own drag
   // covers (`launchFromSelectionParts` measures it in pixels; this names it).
   //

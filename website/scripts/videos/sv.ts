@@ -4,7 +4,7 @@ import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { cgiabVideoFixtures, svVideoFixtures } from '../specs/sv.ts'
 import { SORT_BY_GENOTYPE, multisvVideoFixtures } from '../specs/ui.ts'
-import { cascade, DENDROGRAM, leaveMenu, trackMenu } from './shared.ts'
+import { cascade, leaveMenu, trackMenu } from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
 
@@ -117,44 +117,29 @@ export const svVideos: VideoSpec[] = [
     tailMs: 4000,
   },
 
-  // TWO ORDERS OVER ONE COHORT, and sv_multisamples.md puts both in a single
-  // paragraph it has no picture for. The page says the rows "arrive in the
-  // callset's own order, which encodes nothing", then names the right-click that
-  // bands them, then names the track menu's clustering as "the other
-  // arrangement" — three states, and `multisv_rhd` is the middle one alone.
-  // Nothing on the page shows the order the reader actually lands in, and
-  // nothing shows the dendrogram at all.
+  // sv_multisamples.md says the rows "arrive in the callset's own order", then
+  // names the right-click that bands them, and `multisv_rhd` is the banded state
+  // alone. The rows before and after carry the same 3202 samples in the same
+  // colors, so a before/after pair has no visual link; the clip is the callset
+  // order resolving into the three dosages of RHD.
   //
-  // A re-layout is what makes that unshowable in stills. The rows before and
-  // after carry the same 3202 samples over the same window in the same colors,
-  // so a before/after pair is two pictures with no visual link: which row went
-  // where is the whole content, and it is exactly what is missing. Watching the
-  // block resolve is the only way that paragraph gets checked.
+  // The track menu's clustering was the second half of this tour and is cut:
+  // it re-keys the rows on the whole window, which undid the bands the clip had
+  // just reached, and five other tours film that menu.
   //
-  // ORDER MATTERS between the two halves, and the page's order is the one
-  // filmed. The sort keys every row on ONE call, so the three bands are the
-  // three dosages of RHD and the block is legible as such; clustering then
-  // re-keys the same rows on the whole window, which is a different question and
-  // undoes the bands on purpose. Filmed the other way round, the sort would read
-  // as a correction of the tree.
-  //
-  // Neither item leaves its menu standing, so no Escapes belong here.
-  // `Sort rows by genotype here` is a plain action row (multiSampleVariantMenuItems.ts,
-  // `variantContextMenuItems`) and `Cluster rows by genotype...` is one that
-  // queues a dialog, and `staysOpenOnClick` keeps only a checkbox or a radio up.
+  // `Sort rows by genotype here` is a plain action row
+  // (multiSampleVariantMenuItems.ts, `variantContextMenuItems`), so it leaves
+  // no menu standing.
   {
     name: 'sv/multisample_sort',
     description:
-      'Two orders over the 1000 Genomes cohort at the RHD deletion: right-click the block for Sort rows by genotype here and the callset order resolves into three dosage bands, then Clustering, Cluster rows by genotype... and Run clustering re-key the same rows on the whole window and draw the tree they came out of',
+      'The 1000 Genomes cohort at the RHD deletion: right-click the block for Sort rows by genotype here and the callset order resolves into three dosage bands',
     goal: 'Order 3202 genomes by their genotype at the RHD deletion',
     url: unsortedRhdPanel,
     // SIZED TO THE FIGURE, which is the same four lanes: `multisv_rhd` measures
     // them at 1230 and every one carries an explicit height (290 matrix, 330
     // depth, 170 records, 120 genes), so the app stands as tall at 1920 wide as
-    // at that figure's 1500 — and nothing in the tour grows it. Both things the
-    // route adds go sideways or nowhere: the dendrogram is a gutter reserved on
-    // the LEFT (`treeSidebarOffset`), and the cluster dialog is centred in a
-    // frame this tall with room to spare.
+    // at that figure's 1500 — and nothing in the tour grows it.
     //
     // 1244 rather than that figure's 1230: the run measured the app at 1240,
     // since the figure is captured at its content height and this is a fixed
@@ -210,54 +195,6 @@ export const svVideos: VideoSpec[] = [
         type: 'delay',
         ms: 4500,
         say: 'Three bands, top to bottom: both copies deleted, one, then neither',
-      },
-      {
-        type: 'click',
-        selector: trackMenu(matrixTrackId),
-        say: 'Now cluster the same rows on the whole window instead',
-        hold: 1800,
-      },
-      { type: 'waitForText', text: 'Clustering' },
-      { type: 'click', text: 'Clustering', hold: 1600 },
-      { type: 'waitForText', text: 'Cluster rows by genotype...' },
-      { type: 'click', text: 'Cluster rows by genotype...' },
-      // The ellipsis is the app saying this row opens a dialog, which the other
-      // clustering tour's item does not. Held, because the dialog is where the
-      // route stops being obvious: it names the matrix it is about to build and
-      // offers the R-script path beside the in-app one.
-      { type: 'waitForText', text: 'Run clustering' },
-      { type: 'delay', ms: 3000 },
-      // By `button`, not by bare text: the dialog's own description ends in
-      // "hierarchical clustering", and a text match resolving to that paragraph
-      // clicks successfully and does nothing.
-      {
-        type: 'click',
-        selector: 'button::-p-text(Run clustering)',
-      },
-      // Off camera for the run, which ships the genotype matrix to a worker and
-      // hclusts 3202 rows: a progress bar inside the dialog rather than an
-      // animation, and the same trade tcga/cohort_cnv_clustering makes.
-      {
-        type: 'waitForSelector',
-        selector: DENDROGRAM,
-        timeout: 300000,
-        cut: true,
-      },
-      // The dialog closes itself on success (`ClusterAutoTab`'s onSuccess), and
-      // this is the frame it has to be out of. It lands a tick after the wait
-      // above — `runGenotypeClustering` sets the tree before `run()` resolves —
-      // so the budget here is for the tick and not for the run.
-      {
-        type: 'waitForText',
-        text: 'Run clustering',
-        hidden: true,
-        timeout: 60000,
-      },
-      // the tree beside rows keyed on the whole window, which no figure carries
-      {
-        type: 'delay',
-        ms: 3500,
-        say: 'Clustered on every call in view, with the tree beside the rows',
       },
     ],
     tailMs: 4000,

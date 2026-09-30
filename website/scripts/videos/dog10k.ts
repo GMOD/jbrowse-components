@@ -17,8 +17,8 @@ export const dog10kVideos: VideoSpec[] = [
   // The figure reaches its row order through `clusterRegion` + `runClustering`,
   // so the page states an ordering it never shows being produced. The clip's
   // addition is the BEFORE: rows in the panel's build order, then reordered, and
-  // then the page's "cluster on the core, then widen" advice, which no still can
-  // check, since both windows look alike afterwards.
+  // then the page's "cluster on the core, then widen" advice, ending on the
+  // window the page's haplotype-block figure is of.
   {
     name: 'dog10k/igf1_cluster_route',
     description:
@@ -64,7 +64,7 @@ export const dog10kVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="zoom_out"]',
-        say: 'Zoom out to the flanks around the core',
+        say: 'Widen the window to see how far the block runs',
       },
       {
         type: 'waitForSelector',
@@ -76,7 +76,7 @@ export const dog10kVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3000,
-        say: 'The order computed on the core holds across the wider window',
+        say: 'Small breeds, orange, share one haplotype across IGF1; most giants lack it',
       },
     ],
     tailMs: 3000,

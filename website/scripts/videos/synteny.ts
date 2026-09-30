@@ -27,6 +27,7 @@ const {
   restackAnchor,
   restackLanes,
   restackSpan,
+  roundTripSpan,
   roundTripStart,
   strains,
   unorderedDotplot,
@@ -99,7 +100,7 @@ const LAUNCH_SYNTENY_VIEW =
 
 // `cascading-menuitem-<label>`, lowercased with whitespace as `_`: the child's
 // label is the strain and its locus, and only the strain half is stable.
-const MAF_NCTC86_ENTRY = '[data-testid^="cascading-menuitem-nctc86_chr"]'
+const MAF_IAI39_ENTRY = '[data-testid^="cascading-menuitem-iai39_chr"]'
 
 // The MAF display's rows area, below its coverage and conservation bands. As a
 // drag's `band` it is what makes the two `fracY` fractions mean "the top row"
@@ -946,7 +947,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3500,
-        say: `${allVsAllMoved} under K-12, so the stack compares that pair directly`,
+        say: `${allVsAllMoved} under K-12: each white wedge is sequence only one of them has`,
       },
     ],
     tailMs: 4500,
@@ -1103,13 +1104,13 @@ export const syntenyVideos: VideoSpec[] = [
   // The Sakai row's drag is a selector anchor with `dx` either side of the
   // ruler's centre rather than a locus: Sakai's coordinates for this window
   // are whatever the launch resolved them to, and naming them here would pin
-  // the tour to one resolution of the PAF. Most of the ruler, so the
-  // re-anchored stack keeps the indels at the window's edges.
+  // the tour to one resolution of the PAF. The prophage is the middle of that
+  // row, so the drag takes it with a few kilobases of backbone either side.
   {
     name: 'synteny/ecoli_roundtrip',
     description:
-      'One selection on K-12 and the stacks it launches: the stack anchored on K-12, then a drag on the Sakai row re-anchoring the stack on Sakai',
-    goal: 'From one K-12 selection to a strain stack, re-anchored on Sakai',
+      "One selection on K-12 and the stacks it launches: the stack anchored on K-12, where Sakai's row carries a prophage K-12 lacks, then a drag across it on the Sakai row re-anchoring the stack on Sakai",
+    goal: 'Find a prophage Sakai carries and K-12 lacks, then view it from Sakai',
     url: roundTripStart,
     // the launch dialog's five rows are the tallest state
     viewportHeight: 780,
@@ -1125,11 +1126,11 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'drag',
         fromAnchor: {
-          locus: allVsAllSpan.start,
+          locus: roundTripSpan.start,
           band: RUBBERBAND,
         },
         toAnchor: {
-          locus: allVsAllSpan.end,
+          locus: roundTripSpan.end,
           band: RUBBERBAND,
         },
         say: 'Select a span and launch a stack of the strains on it',
@@ -1162,7 +1163,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 2500,
-        say: 'The stack, anchored on K-12, one row per strain',
+        say: "Sakai's row runs twice as long: 38 kb sits where K-12 has none",
       },
       {
         type: 'drag',
@@ -1170,15 +1171,15 @@ export const syntenyVideos: VideoSpec[] = [
           selector: RUBBERBAND,
           view: [0, 1],
           alignX: 'center',
-          dx: -800,
+          dx: -600,
         },
         toAnchor: {
           selector: RUBBERBAND,
           view: [0, 1],
           alignX: 'center',
-          dx: 800,
+          dx: 600,
         },
-        say: "Select on Sakai's row to re-anchor the stack on Sakai",
+        say: "Select that stretch on Sakai's row to re-anchor the stack on Sakai",
         hold: 900,
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
@@ -1209,7 +1210,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3500,
-        say: 'The same stack, now anchored on Sakai',
+        say: 'Anchored on Sakai: its prophage spans the row, with no K-12 match under it',
       },
     ],
     tailMs: 4500,
@@ -1223,12 +1224,12 @@ export const syntenyVideos: VideoSpec[] = [
   // lists every strain that aligns in the window rather than a slice of them.
   //
   // The submenu child is picked by its testid prefix rather than by text: the
-  // inline "Open NCTC86 ... in new view" entry above it contains the same
+  // inline "Open IAI39 ... in new view" entry above it contains the same
   // words, and a text match lands on whichever comes first.
   {
     name: 'synteny/maf_row_synteny',
     description:
-      "From the pggb alignment's rows to a two-strain synteny view: a drag across the rows, the menu listing the strains it covers, and the synteny view the NCTC86 entry opens",
+      "From the pggb alignment's rows to a two-strain synteny view: a drag across the rows, the menu listing the strains it covers, and the synteny view the IAI39 entry opens, with no ribbon under the two K12 genes IAI39 lacks",
     goal: 'From a multiple alignment to a two-strain synteny view',
     url: mafRows,
     // The linear view plus the two-row view the launch adds below it. The frame
@@ -1243,7 +1244,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 2500,
-        say: 'The pggb alignment as a MAF, one row per strain',
+        say: "The pggb alignment, one row per strain; IAI39's row is blank mid-window",
       },
       {
         type: 'drag',
@@ -1269,8 +1270,8 @@ export const syntenyVideos: VideoSpec[] = [
         text: 'Linear synteny view, K12 vs...',
         hold: 1200,
       },
-      { type: 'waitForSelector', selector: MAF_NCTC86_ENTRY },
-      { type: 'click', selector: MAF_NCTC86_ENTRY },
+      { type: 'waitForSelector', selector: MAF_IAI39_ENTRY },
+      { type: 'click', selector: MAF_IAI39_ENTRY },
       {
         type: 'waitForSelector',
         selector: displayPainted('synteny_canvas'),
@@ -1299,7 +1300,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 4000,
-        say: "K-12 over NCTC86, the ribbons drawn from the alignment's columns",
+        say: 'K-12 over IAI39: no ribbon under ybhH and ybhI, which IAI39 lacks',
       },
     ],
     tailMs: 4500,
