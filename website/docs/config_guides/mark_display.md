@@ -623,6 +623,26 @@ sorted after. A domain orders the sections and never changes which exist.
 facet's `domain`, and **Reset section order** clears it. A hidden section leaves
 the legend and the value axis along with the plot.
 
+Haplotagged reads split by their `HP` tag, the tag lifted into a field by a
+`formula` so the chips and the key name it `HP`:
+
+```json
+"displays": [
+  {
+    "type": "LinearMarkDisplay",
+    "transform": [{ "type": "formula", "expr": "jexl:getTag(feature,'HP')", "as": "HP" }],
+    "facet": "HP",
+    "marks": [
+      {
+        "mark": "span",
+        "transform": [{ "type": "pileup" }],
+        "encoding": { "color": { "field": "HP", "scale": "categorical", "title": "Haplotype" } }
+      }
+    ]
+  }
+]
+```
+
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 
 `facet` and its `domain` are the same slot and the same ordering rule the gene,

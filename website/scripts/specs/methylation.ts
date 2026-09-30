@@ -80,6 +80,16 @@ const SNRPN_MODKIT_MULTI_TRACK = pageTrack(
   'tutorials/methylation.md',
   'HG002_snrpn_modkit_multi',
 )
+// The haplotype split declared on the mark display, both forms the page
+// prints: depth one row per HP value, and the reads one band per value.
+const SNRPN_DEPTH_BY_HP_TRACK = pageTrack(
+  'tutorials/methylation.md',
+  'HG002_snrpn_depth_by_hp',
+)
+const SNRPN_READS_BY_HP_TRACK = pageTrack(
+  'tutorials/methylation.md',
+  'HG002_snrpn_reads_by_hp',
+)
 
 // The three lanes the WGBS pileup is read against, shared by the contexts
 // figure and by the tour that films one pileup cycling through the contexts:
@@ -540,6 +550,49 @@ export const methylationSpecs: ScreenshotSpec[] = [
         anchor: { text: 'HP: none', alignX: 'right', dx: 90 },
       },
     ],
+  },
+
+  // The split the page's two mark-display fences declare, over the window the
+  // combined figure uses: the depth rows above the faceted pileup, so a reader
+  // sees the two forms one config apart. The reads carrying no HP tag take
+  // the third row and the third band, which the caption names.
+  {
+    mode: 'url',
+    name: 'methylation/hg002_snrpn_declared_by_hp',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [SNRPN_DEPTH_BY_HP_TRACK, SNRPN_READS_BY_HP_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr15:24,948,000-24,962,000',
+          tracks: [
+            {
+              trackId: 'cpgisland_ucsc_hg38',
+              type: 'LinearBasicDisplay',
+              height: 40,
+            },
+            HG38_GENE_LANE,
+            {
+              trackId: 'HG002_snrpn_depth_by_hp',
+              type: 'LinearMarkDisplay',
+              height: 180,
+              forceLoad: true,
+            },
+            {
+              trackId: 'HG002_snrpn_reads_by_hp',
+              type: 'LinearMarkDisplay',
+              height: 400,
+              forceLoad: true,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('mark-display'),
+    readyTimeout: 150000,
+    // cpg(40) + gene(90) + depth rows(180) + reads(400) + chrome
+    viewportHeight: 810,
   },
 
   {

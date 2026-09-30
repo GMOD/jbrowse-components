@@ -175,14 +175,84 @@ so an unmethylated row stays flat:
 The aggregate profile and the reads split the same way, with the same haplotype
 methylated in both.
 
-A [mark display](/docs/config_guides/mark_display#facets) with `facet: "HP"`
-declares the haplotype split in a config, and opens with one band of rows per
-haplotype, each labelled by a chip.
-
 See the
 [alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for
 the Group-by dialog. `whatshap haplotag` writes the `HP` tag onto your own reads
 from a phased VCF.
+
+### Declaring the split in a config
+
+The menu writes the split into the track's settings. The same split can be
+declared up front on a [mark display](/docs/config_guides/mark_display), which
+draws the reads as a plot from a config rather than through the alignments
+track's menus, and takes any tag as the field to split on. We'll declare it
+twice over the same BAM:
+
+- **one band per haplotype**, the reads packed into a pileup under a chip that
+  names the tag's value, with `facet` on the `HP` tag:
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "HG002_snrpn_reads_by_hp",
+  "name": "HG002 reads by haplotype",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BamAdapter",
+    "uri": "https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam"
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "HG002_snrpn_reads_by_hp-LinearMarkDisplay",
+      "facet": "tags.HP",
+      "marks": [
+        {
+          "mark": "span",
+          "transform": [{ "type": "pileup" }],
+          "encoding": { "color": { "field": "tags.HP", "title": "Haplotype" } }
+        }
+      ]
+    }
+  ]
+}
+```
+
+- **one row per haplotype of read depth**, with `rows` on the same tag and a
+  `coverage` step counting each row's reads:
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "HG002_snrpn_depth_by_hp",
+  "name": "HG002 depth by haplotype",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BamAdapter",
+    "uri": "https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam"
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "HG002_snrpn_depth_by_hp-LinearMarkDisplay",
+      "rows": "tags.HP",
+      "marks": [
+        {
+          "mark": "bar",
+          "transform": [{ "type": "coverage" }],
+          "encoding": { "color": { "field": "tags.HP", "title": "Haplotype" } }
+        }
+      ]
+    }
+  ]
+}
+```
+
+Reads carrying no `HP` tag take a band and a row of their own. The
+[mark display guide](/docs/config_guides/mark_display#facets) covers the facet's
+order, its chips and the other fields a facet or rows can split on.
+
+<Figure caption="The haplotype split declared: read depth one row per HP value on top, the reads packed one band per value below, both over the same haplotagged BAM and the same window as the figures above." src="/img/methylation/hg002_snrpn_declared_by_hp.png" />
 
 ## Navigating with bedMethyl and comparing samples
 

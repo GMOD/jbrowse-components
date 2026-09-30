@@ -395,6 +395,7 @@ tracks over NA12878. Given your own reads,
 ## See also
 
 - [](/docs/config_guides/mark_display)
+- [](/docs/tutorials/methylation#declaring-the-split-in-a-config)
 - [](/docs/tutorials/alu_age)
 - [](/docs/tutorials/mappability_qc)
 - [](/docs/tutorials/sv_multisamples)
