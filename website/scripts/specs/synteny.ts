@@ -1776,9 +1776,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // The join's negative at cohort scale: the O-antigen cluster between galF
-  // and gnd, whose genes differ by serotype and share no symbol. The K-12
-  // derivatives sort to the top and match it gene for gene; every lane below
-  // chains the flanks and draws its own cluster with no ribbon.
+  // and gnd. The K-12 derivatives sort to the top and match it gene for gene;
+  // every lane below chains the flanks, wzx and wzy, and draws its
+  // serotype-specific genes grey.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_symbol_oantigen',

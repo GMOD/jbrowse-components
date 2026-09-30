@@ -91,11 +91,21 @@ protein would look named and match nothing:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/symbols_to_blocks.py
-# --anchor names the genome whose genes are the rows; --unnamed is the
-# locus-tag shape PGAP falls back to, which joins nothing
-python3 symbols_to_blocks.py --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]+$' \
+# --anchor names the genome whose genes lead the table; --unnamed is the
+# locus-tag shape PGAP falls back to, which joins nothing; --merge-cited
+# joins a gene PGAP renamed to the gene it was annotated from
+python3 symbols_to_blocks.py --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]+$' --merge-cited \
   MG1655=MG1655.gff.gz Sakai=Sakai.gff.gz CFT073=CFT073.gff.gz Sflexneri_301=Sflexneri_301.gff.gz
 ```
+
+PGAP also renames genes between releases, so most strains here call K-12's _gnd_
+_gndA_. PGAP records on each CDS the protein it annotated the gene from
+(`similar to AA sequence:RefSeq:NP_416533.1`, the K-12 _gnd_ protein), and
+`--merge-cited` joins the two symbols when that protein is in the table under
+the other name. Two symbols that one genome carries side by side, such as K-12's
+_narH_ and its paralog _narY_, stay apart. After the rows for K-12's genes, the
+table adds a row for each symbol K-12 lacks that two other genomes share, with a
+dot in K-12's column.
 
 The helper reports how much of each column it filled, and that number is the
 screen a strain has to pass. Older PGAP runs gave genes a locus tag and no
@@ -153,16 +163,16 @@ figure below shows every lane at once:
 
 Opened on K-12 at the _atp_ operon, the track draws a lane per genome under the
 K-12 axis. Every gene is colored by its ortholog group, which the table names
-after the ID of the K-12 gene anchoring it, so a conserved gene is one color
-running down the whole stack. A gene no group claims is grey, which marks the
-genes specific to a strain at a glance. A lane's header names its chromosome,
-where it is looking and `[rev]` where the strain's chromosome reads the other
-way. The key in the top right turns a color back into a group's name, with a
-_(no value)_ row for the grey, and _Show legend_ on the track menu puts it away.
-The display leaves it out where it would run to a list, which is any window
-holding more than thirty groups. Lanes stack densest first, so the genomes
-placing the most of the window sit at the top and the reduced Shigella genomes
-fall toward the bottom without anything naming them.
+after the K-12 gene anchoring it, so a conserved gene is one color running down
+the whole stack. A gene no group claims is grey, which marks the genes specific
+to a strain at a glance. A lane's header names its chromosome, where it is
+looking and `[rev]` where the strain's chromosome reads the other way. The key
+in the top right turns a color back into a group's name, with a _(no value)_ row
+for the grey, and _Show legend_ on the track menu puts it away. The display
+leaves it out where it would run to a list, which is any window holding more
+than thirty groups. Lanes stack densest first, so the genomes placing the most
+of the window sit at the top and the reduced Shigella genomes fall toward the
+bottom without anything naming them.
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {
@@ -193,17 +203,19 @@ fall toward the bottom without anything naming them.
 The O-antigen cluster between _galF_ and _gnd_ is the locus that differs most
 between strains, because each serotype carries a different set of sugar pathway
 genes. The lanes that keep the whole cluster sort to the top, and their headers
-say why: DH10B, HMS174, C3026, MGY, tolC- and MG1655_TMP32XR1 are all K-12
+say why: DH10B, HMS174, C3026, MGY, tolC and MG1655_TMP32XR1 are all K-12
 derivatives, carrying the K-12 cluster gene for gene. Below them the flanking
-genes chain down every lane, _galF_ on one side and _wzzB_ and _ugd_ on the
-other, and the _rfbB_, _rfbD_, _rfbA_ and _rfbC_ genes join wherever a strain
-carries them. Most PGAP annotations name _gnd_ as _gndA_, so the K-12 _gnd_
-joins only a handful of lanes. The rest of the cluster draws grey in most lanes
-below the K-12 derivatives: the table holds one row per K-12 gene, so a symbol
-K-12 lacks, such as _wzx_ or _wzy_, has no row to join, even where two other
-strains share it.
+genes chain down every lane: _galF_ on one side, _gnd_ (_gndA_ in most lanes),
+_ugd_ and _wzzB_ on the other. Inside the cluster the _rfbB_, _rfbD_, _rfbA_ and
+_rfbC_ genes join wherever a strain carries them, and so do _wzx_ and _wzy_,
+which PGAP annotated in the K-12 derivatives from K-12's _rfbX_ and _wbbH_.
+Every O-antigen cluster carries a flippase and a polymerase under those names,
+though their sequences differ between serotypes, and O-serotype PCR typing
+relies on that difference. The genes between them draw grey below the K-12
+derivatives: they are the serotype's sugar pathway, and a window anchored on
+K-12 draws only the rows holding a K-12 gene.
 
-<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The six K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, wzzB and ugd chains run through, the rfb genes join where a strain carries them, and the rest of the cluster is mostly grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The six K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, gnd, ugd and wzzB chains run through, the rfb genes, wzx and wzy join where a strain carries them, and the serotype-specific genes between them are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
 The variable loci need a homology call across the proteomes to fill the table:
 an [OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or the
