@@ -170,7 +170,7 @@ the anchored layout to draw it along, so pick **Layout → Force-directed layout
 and **Bubble spread → Compress lengths** from the graph track's menu; the figure
 shows the three under the RefSeq genes.
 
-<Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. Every row but the yak carries the insertion the inventory lists without carriers, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
+<Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. The variant lane over the rows marks the insertion just right of the `>3423>3424` call. Every row but the yak carries the insertion the inventory lists without carriers, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
 
 The yak row carries the reference. Leonard et al. built no yak assembly, so
 their result does not cover it.
@@ -222,7 +222,7 @@ trait to a 14.3 kb segment repeated in tandem upstream of _KIT_: white-headed
 breeds carry extra copies, colour-headed breeds a deletion. The Hereford
 reference holds a collapsed copy. Open `chr6:70,080,000-70,180,000`.
 
-<Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes and the callset. The Simmental row carries a distinct allele across the repeat, and every other row carries the deletion." src="/img/pangenome/bovine_kit.png" />
+<Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes and the callset, whose variant lane draws the 20.6 kb record across the repeat and names its alleles. The Simmental row carries a distinct allele across the repeat, and every other row carries the deletion." src="/img/pangenome/bovine_kit.png" />
 
 Click the Simmental cell to read its allele length against the reference.
 
@@ -231,7 +231,7 @@ Click the Simmental cell to read its allele length against the reference.
 _TAS2R46_ encodes a bitter taste receptor. Leonard et al. (2022) found a 17 kb
 deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 
-<Figure caption="TAS2R46 on ARS-UCD1.2: RefSeq genes and the callset. The gaur row carries the deletion, and four cattle rows carry a different allele across the same span." src="/img/pangenome/bovine_tas2r46.png" />
+<Figure caption="TAS2R46 on ARS-UCD1.2: RefSeq genes and the callset, whose variant lane draws the 17 kb record over the deleted span and names its alleles. The gaur row carries the deletion, and four cattle rows carry a different allele across the same span." src="/img/pangenome/bovine_tas2r46.png" />
 
 The four cattle rows hold an allele about as long as the reference with a
 different sequence. Click one to compare the two.
