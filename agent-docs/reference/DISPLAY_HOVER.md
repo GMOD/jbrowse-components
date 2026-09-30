@@ -74,8 +74,11 @@ So: answer the invalidation question once, in the place that owns the hover.
 
 ## Deriving is the other correct design
 
-MAF stores no hit — its body re-runs `mafHitTest` from the live pointer on every
-render, so an observer re-resolves under a moving viewport by construction.
+MAF's tooltip stores no hit — its body re-runs `mafHitTest` from the live
+pointer on every render, so an observer re-resolves under a moving viewport by
+construction. What MAF publishes is stored: the row under the pointer, set by
+its mousemove handler through `StoredHoverMixin`, so it takes the same clear as
+any other stored hover.
 
 ## Whichever it is, publish it as `hoveredFeature`
 

@@ -30,7 +30,7 @@ import MafBandHandles from './MafBandHandles.tsx'
 import MafBandLabels from './MafBandLabels.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import { resolveMafPointerHit } from './mafHitTest.ts'
+import { mafPointerAt, resolveMafPointerHit } from './mafHitTest.ts'
 import { useDragSelection } from './useDragSelection.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
@@ -39,6 +39,15 @@ import type React from 'react'
 
 function createMafBackend(canvas: HTMLCanvasElement) {
   return createMarkBackend(canvas, MAF_MARKS)
+}
+
+function rowUnder(model: LinearMafDisplayModel, x: number, y: number) {
+  const { pos, rowIndex, inBands } = mafPointerAt(model, x, y)
+  const row =
+    x >= treeSidebarRightEdge(model) && !inBands && !pos.oob
+      ? model.sources[rowIndex]
+      : undefined
+  return row ? { name: row.name } : undefined
 }
 
 // Thin outer: owns the DisplayChrome + the drag-selection hook, which needs a
@@ -90,7 +99,11 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
       ref={ref}
       onPointerDown={drag.handlePointerDown}
       onMouseDown={drag.handleMouseDown}
-      onMouseMove={drag.handleMouseMove}
+      onMouseMove={e => {
+        drag.handleMouseMove(e)
+        const { x, y } = eventPoint(e)
+        model.setHoveredFeature(rowUnder(model, x, y))
+      }}
       onMouseUp={drag.handleMouseUp}
       onContextMenu={onContextMenu}
       onDoubleClick={() => {
@@ -98,7 +111,10 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
           drag.clearSelectionBox()
         }
       }}
-      onMouseLeave={drag.handleMouseLeave}
+      onMouseLeave={() => {
+        drag.handleMouseLeave()
+        model.clearHoveredFeature()
+      }}
     >
       {({ canvasRef, mouseTracker }) => (
         <MafBody

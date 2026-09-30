@@ -24,6 +24,7 @@ import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -169,6 +170,15 @@ import type { YAxis } from '@jbrowse/wiggle-core'
  * schemas while reaching no renderer at all. Naming it what it is removes the
  * translation and the trap together.
  */
+/**
+ * The row under the pointer, which the display publishes as its
+ * `hoveredFeature` so another display in the view can tell which sample the
+ * pointer is on
+ */
+export interface MafRowHover {
+  name: string
+}
+
 export interface MafSource extends RowSource {
   /** assembly this row's genome is loaded as, when it is navigable */
   assemblyName?: string
@@ -255,6 +265,7 @@ export default function stateModelFactory(
       .compose(
         'LinearMafDisplay',
         BaseDisplay,
+        StoredHoverMixin<MafRowHover>((a, b) => a.name === b.name),
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
         CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),

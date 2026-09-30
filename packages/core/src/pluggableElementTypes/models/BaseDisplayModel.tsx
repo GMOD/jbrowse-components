@@ -229,7 +229,7 @@ function stateModelFactory() {
        * `installClearHoverOnViewportChange` calls.
        *
        * A display that STORES its hover owes an override; one that derives it
-       * from the live pointer (MAF, Hi-C, LD) owes nothing, and the default
+       * from the live pointer (Hi-C, LD) owes nothing, and the default
        * costs it nothing. Declared here so the clear can be installed for every
        * display rather than remembered per display — forgetting it is the
        * failure ARCHITECTURE.md's stored-hover section is about, and it used to

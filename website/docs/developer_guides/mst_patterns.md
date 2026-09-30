@@ -100,6 +100,7 @@ so the mixins cannot be chained on one at a time the way `.views()` and
 .compose(
   'LinearMafDisplay',
   BaseDisplay,
+  StoredHoverMixin<MafRowHover>((a, b) => a.name === b.name),
   TrackHeightMixin(),
   MultiRegionDisplayMixin(),
   CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
