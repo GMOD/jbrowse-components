@@ -190,7 +190,7 @@ export const epigenomicsVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 4000,
-        say: 'Clustered: epigenomes with HOXA active, red, part from those holding it repressed, grey',
+        say: 'Clustered: epigenomes with HOXA active, red, sit apart from those holding it repressed, grey',
       },
     ],
     tailMs: 4500,

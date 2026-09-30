@@ -357,8 +357,8 @@ export const pangenomeVideos: VideoSpec[] = [
       "A CFT073 allele opened on CFT073's own coordinates, under the K12 genes it bypasses: right-click the node in the graph track, take its Open in entry, and read the deletion from the donor's side",
     goal: 'Open a graph allele on the strain that carries it',
     url: PGGB_STRAIN_LAUNCH,
-    // pangenome/pggb_strain_launch's three views, re-measure from the run
-    viewportHeight: 1200,
+    // the run measured the three views at 1160; the rest is the caption's strip
+    viewportHeight: 1290,
     readySelector: GRAPH_DRAWN,
     readyTimeout: 120000,
     steps: [

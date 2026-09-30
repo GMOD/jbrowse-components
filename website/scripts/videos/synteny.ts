@@ -1105,7 +1105,9 @@ export const syntenyVideos: VideoSpec[] = [
   // ruler's centre rather than a locus: Sakai's coordinates for this window
   // are whatever the launch resolved them to, and naming them here would pin
   // the tour to one resolution of the PAF. The prophage is the middle of that
-  // row, so the drag takes it with a few kilobases of backbone either side.
+  // row, and the drag takes ~15 kb of backbone either side of it: CFT073 and
+  // IAI39 carry relatives of this phage elsewhere, and with less flank than
+  // that those hits outweigh it and their panels open megabases away.
   {
     name: 'synteny/ecoli_roundtrip',
     description:
@@ -1171,13 +1173,13 @@ export const syntenyVideos: VideoSpec[] = [
           selector: RUBBERBAND,
           view: [0, 1],
           alignX: 'center',
-          dx: -600,
+          dx: -850,
         },
         toAnchor: {
           selector: RUBBERBAND,
           view: [0, 1],
           alignX: 'center',
-          dx: 600,
+          dx: 850,
         },
         say: "Select that stretch on Sakai's row to re-anchor the stack on Sakai",
         hold: 900,
@@ -1195,7 +1197,7 @@ export const syntenyVideos: VideoSpec[] = [
         selector: panelArrow(allVsAllMoved, 5, 'up'),
         timeout: 180000,
       },
-      { type: 'delay', ms: 2500 },
+      { type: 'delay', ms: 1200 },
       {
         type: 'click',
         text: 'Replace current view',
