@@ -264,8 +264,8 @@ carried into dogs match both panels equally.
 
 Blocks break up towards the end of chr1, tracking the genetic map. The build
 script tiles the chromosome and prints block-edge count and recombination per
-window, and the window with the most block edges also has the highest
-recombination rate.
+window, and the window with the most block edges sits in a tile whose
+recombination is far above the median tile's.
 
 ### Where the painting and the alleles disagree
 
@@ -280,10 +280,11 @@ at a time, and FLARE matches whole haplotypes against a panel.
 The build script prints a count of wolf blocks with their median and longest,
 one line per animal. The Tamaskan has many short wolf assignments, the longest
 within the range of the Kars, the Eurasier and the Spanish Mastiff. The Shiloh
-Shepherd carries one wolf block far longer than any other breed dog in the
-sweep; a later genome-wide run over the same collection puts it among the three
-dogs with the longest, most recent wolf tracts
-([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
+Shepherd carries the longest wolf block of any dog outside the two wolfdog
+breeds, and many blocks besides, where the Great Anglo-French Tricolour Hound
+with the next longest has three. A later genome-wide run over the same
+collection puts it among the three dogs with the longest, most recent wolf
+tracts ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 **Clustering** → **Cluster rows by similarity...** in the track menu derives the
 order from the blocks themselves, and on the full 243-animal painting it puts
