@@ -254,7 +254,7 @@ export const marksSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
-    viewportHeight: 640,
+    viewportHeight: 1000,
     hideSelectors: ['.MuiTooltip-popper'],
     hideTooltip: true,
     actions: [
