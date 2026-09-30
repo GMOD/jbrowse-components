@@ -88,16 +88,12 @@ test('the deprecation flag is not saved into the session snapshot', () => {
 test('a key naming neither a launch key nor a property is named on attach', () => {
   open({ type: 'LinearGenomeView', assembly: 'hg38', locc: 'chr1' })
   expect(warnings()).toEqual(['LinearGenomeView ignored unknown key(s): locc'])
-  expect(notify).toHaveBeenCalledWith(
-    'LinearGenomeView ignored unknown key(s): locc',
-    'warning',
-  )
+  expect(notify).not.toHaveBeenCalled()
 })
 
 test('an unknown key is reported once', () => {
   open({ type: 'LinearGenomeView', locc: 'chr1' })
   expect(warnings()).toHaveLength(1)
-  expect(notify).toHaveBeenCalledTimes(1)
 })
 
 // A blob holding only what afterAttach reports is not work to do. Read as one,

@@ -11,6 +11,7 @@
   "GtfTabixAdapter": "display",
   "HtsgetBamAdapter": "display",
   "MafTabixAdapter": "display",
+  "MultiWiggleAdapter": "display",
   "SplitVcfTabixAdapter": "own:5000000",
   "VcfTabixAdapter": "own:5000000"
 }

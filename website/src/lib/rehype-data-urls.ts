@@ -97,7 +97,7 @@ const rehypeDataUrls: Plugin<[], Root> = () => (tree, file) => {
     {
       type: 'element',
       tagName: 'label',
-      properties: { htmlFor: 'show-full-urls', className: ['data-urls-label'] },
+      properties: { htmlFor: ['show-full-urls'], className: ['data-urls-label'] },
       children: [{ type: 'text', value: 'Show full URLs' }],
     },
   ]
