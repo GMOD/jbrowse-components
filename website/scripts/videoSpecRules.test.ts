@@ -213,6 +213,23 @@ test('a coordinate typed into the location box', () => {
   expect(typed('chr9:1-100 chr22:1-100')).toBe('')
 })
 
+test('a tour whose only clicks are zoom buttons', () => {
+  const zoom: VideoStep = {
+    type: 'click',
+    selector: '[data-testid="zoom_out"]',
+  }
+  expect(
+    problems([
+      spec({ steps: [{ type: 'hover', selector: '#ribbon' }, zoom, zoom] }),
+    ]),
+  ).toMatch('every click is a zoom button')
+  expect(
+    problems([
+      spec({ steps: [{ type: 'click', text: 'Cluster rows' }, zoom] }),
+    ]),
+  ).toBe('')
+})
+
 // ── the doc side ───────────────────────────────────────────────────────────
 
 const embedLine = '<Video src="/media/topic/tour.mp4" caption="A tour." />'

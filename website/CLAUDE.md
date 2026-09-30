@@ -49,9 +49,18 @@ filmed on demand and never by a sweep. `pnpm video --list` says what there is;
 `<Video src="/media/...mp4" caption="..." />`, which grows a link to the session
 the tour was filmed in.
 
-- **A video is for a ROUTE or a RE-LAYOUT**, and everything else is a figure. A
-  still is searchable, diffable, annotatable and readable at a glance, and none
-  of that survives being filmed.
+- **A video is for a ROUTE that ends on a RESULT**, and everything else is a
+  figure. A still is searchable, diffable, annotatable and readable at a glance,
+  and none of that survives being filmed.
+  - The route is one a reader would not find alone: a menu path, a dialog, a
+    form, a right-click target. Zooming, panning, hovering and searching a gene
+    are navigation, and `validateVideoSpecs` fails a tour whose only clicks are
+    zoom buttons.
+  - The result is what the last frame shows in the data's terms (HP 1 methylated
+    at SNRPN, the ERBB2 tumors in one block), and the payoff line reads it off
+    that frame.
+  - A line saying the track re-fits, re-cuts, swaps or follows narrates the
+    renderer. Say what the data shows once it has.
 - **A viewer follows a tour with no page beside it**, so each one states its
   `goal` before anything moves, narrates at most five phases in plain words, and
   ends on a payoff line held over the result — one route per clip.
@@ -96,7 +105,7 @@ the tour was filmed in.
   `pnpm autogen`**, or the page holds a box the wrong shape and the browser
   letterboxes the clip inside it.
 - **A clip's figure carries an id built from its SPEC NAME**
-  (`video-pangenome-tier_to_fine`), which DocsLayout's jump bar under the h1
+  (`video-pangenome-hprc_browse`), which DocsLayout's jump bar under the h1
   links to. So renaming a spec silently breaks any inbound link to that anchor,
   and nothing checks it — `check-links` only sees anchors a doc itself writes.
   The bar labels each link with the h2/h3 above the clip, one entry per section,

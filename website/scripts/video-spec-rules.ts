@@ -138,11 +138,15 @@ export function validateVideoSpecs(
 // the result. Each rule is one way a tour was filmed that nobody could follow:
 // `pangenome/hprc_browse` ran twelve lines over seven routes in 82 seconds,
 // typed three coordinates, and ended on six zoom-out clicks with nothing said
-// about what they found.
+// about what they found. `synteny/multiway_zoom_out` was a hover and three
+// zoom-outs between two states the page already had figures of.
 export const MAX_GOAL_WORDS = 14
 export const MAX_LINES = 5
 
 const ACTIONS = new Set(['click', 'rightclick', 'type', 'drag', 'press'])
+
+// A view's own zoom buttons, by the testid every header gives them.
+const ZOOM_BUTTON = /zoom_(in|out)/
 
 // `chr6:31,980,000-32,050,000`, a window read off a figure, which a viewer
 // cannot tell from any other run of digits. One token only: two windows
@@ -177,6 +181,17 @@ function storyProblems(spec: VideoSpec) {
   ) {
     problems.push(
       `${at}: end on the payoff — a \`delay\` after the last action, whose \`say\` names what the result shows`,
+    )
+  }
+  const clicks = spec.steps.filter(
+    step => step.type === 'click' || step.type === 'rightclick',
+  )
+  if (
+    clicks.length > 0 &&
+    clicks.every(step => ZOOM_BUTTON.test(step.selector ?? ''))
+  ) {
+    problems.push(
+      `${at}: every click is a zoom button, and zooming is navigation a reader already knows; film a menu path, a dialog or a form, or leave the two ends to figures`,
     )
   }
   for (const step of spec.steps) {
