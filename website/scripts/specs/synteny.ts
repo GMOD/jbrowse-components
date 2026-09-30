@@ -3740,6 +3740,34 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
   },
 
+  // allvsall_synteny.md §"Percent identity per strain": the same track switched
+  // to Marks with nothing declared, so the figure is the default plot a reader
+  // gets from the Display types menu.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_identity_rows',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'K12',
+            loc: 'chr:1-4,641,652',
+            tracks: [
+              { trackId: 'ecoli_ava', type: 'LinearMarkDisplay', height: 420 },
+            ],
+          },
+        ],
+      },
+    ),
+    viewportHeight: 640,
+    readySelector: displayPainted('mark-display'),
+    readyTimeout: 120000,
+  },
+
   // The Linear synteny view import form for the allvsall_synteny.md "From the
   // UI" section, using the all-vs-all Quick start path. A bare LinearSyntenyView
   // session spec is rejected (needs >=2 views), so open it the way a user does:

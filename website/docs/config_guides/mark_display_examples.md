@@ -10,9 +10,9 @@ Each section below is one complete track config for `LinearMarkDisplay`, the
 picture it draws over a hosted file, and a link that opens the same view live.
 The first ten read one file, UCSC's RepeatMasker Alu rows for hg38, whose
 `milliDiv` column is a copy's divergence from its consensus; the rest read a BED
-of read pairs, a set of copy-number BigWigs and two PAF files of genome
-alignments. Copy the config whose shape matches your file and change the field
-names. [](/docs/config_guides/mark_display) explains each slot.
+of read pairs, a set of copy-number BigWigs and a PAF of genome alignments. Copy
+the config whose shape matches your file and change the field names.
+[](/docs/config_guides/mark_display) explains each slot.
 
 ## Bars from a column
 
@@ -485,7 +485,7 @@ alignment is a percent identity plot, the picture
 [PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes.
 Stretches with no rule are where nothing aligned.
 
-```json addtrack config=https://jbrowse.org/demos/hpylori/config.json loc=NC_018939.1
+```json addtrack config=https://jbrowse.org/demos/hpylori/config.json loc=NC_018939.1:1,035,000-1,080,000
 {
   "type": "SyntenyTrack",
   "trackId": "hpylori_identity",
@@ -500,74 +500,22 @@ Stretches with no rule are where nothing aligned.
     {
       "type": "LinearMarkDisplay",
       "displayId": "hpylori_identity-LinearMarkDisplay",
-      "transform": [
-        {
-          "type": "formula",
-          "expr": "jexl:feature.identity * 100",
-          "as": "pid"
-        }
-      ],
       "scales": {
-        "y": { "domainMin": 50, "domainMax": 100, "title": "Percent identity" }
+        "y": { "domainMin": 0.5, "domainMax": 1, "title": "Identity" }
       },
-      "marks": [{ "mark": "rule", "encoding": { "y": "pid", "size": 2 } }]
+      "marks": [{ "mark": "rule", "encoding": { "y": "identity", "size": 2 } }]
     }
   ]
 }
 ```
 
-<Figure src="/img/mark_display_examples/identity.png" caption="H. pylori 26695 against J99 across the whole chromosome, one line per alignment at its percent identity." />
+<Figure src="/img/mark_display_examples/identity.png" caption="H. pylori 26695 against J99, one line per alignment at its identity: two long alignments either side of a run of short, more similar ones, with gaps where nothing aligned." />
 
 A PAF line carries one identity for the whole alignment, so a long alignment
-draws as one flat line however its identity varies along its length.
-
-## Percent identity, one row per genome
-
-An all-vs-all PAF aligns the reference to several genomes at once, and each
-alignment names the other genome in `mate.assemblyName`. The first `formula`
-copies that into a field `rows` can split on, which gives each strain a row
-beside the others. The `filter` drops K12's alignments to itself, and it runs
-first because a step after the one writing the rows field runs inside each row.
-
-```json addtrack config=https://jbrowse.org/demos/ecoli_pangenome/config.json loc=chr
-{
-  "type": "SyntenyTrack",
-  "trackId": "ecoli_identity",
-  "name": "K12 against four strains, percent identity",
-  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
-  "adapter": {
-    "type": "MultiGenomePAFAdapter",
-    "uri": "https://jbrowse.org/demos/ecoli_pangenome/all_vs_all.paf.gz",
-    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
-  },
-  "displays": [
-    {
-      "type": "LinearMarkDisplay",
-      "displayId": "ecoli_identity-LinearMarkDisplay",
-      "transform": [
-        { "type": "filter", "expr": "jexl:feature.mate.assemblyName != 'K12'" },
-        {
-          "type": "formula",
-          "expr": "jexl:feature.mate.assemblyName",
-          "as": "strain"
-        },
-        {
-          "type": "formula",
-          "expr": "jexl:feature.identity * 100",
-          "as": "pid"
-        }
-      ],
-      "rows": "strain",
-      "scales": {
-        "y": { "domainMin": 80, "domainMax": 100, "title": "Percent identity" }
-      },
-      "marks": [{ "mark": "rule", "encoding": { "y": "pid", "size": 2 } }]
-    }
-  ]
-}
-```
-
-<Figure src="/img/mark_display_examples/identity_rows.png" caption="E. coli K12 against Sakai, CFT073, NCTC86 and IAI39, one row per strain, each alignment a line at its percent identity." />
+draws as one flat line however its identity varies along its length. An
+all-vs-all PAF gives one row per genome, which
+[the all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny#percent-identity-per-strain)
+walks through.
 
 ## More
 

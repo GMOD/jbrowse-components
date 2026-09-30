@@ -13,8 +13,6 @@ const PAIRS_BED =
   'https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz'
 const PUR_CNV = 'https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR'
 const HPYLORI_CONFIG = 'https://jbrowse.org/demos/hpylori/config.json'
-const ECOLI_CONFIG = 'https://jbrowse.org/demos/ecoli_pangenome/config.json'
-const ECOLI = ['K12', 'Sakai', 'CFT073', 'NCTC86', 'IAI39']
 
 const ALU_LOCUS = 'chr1:151,000,000-151,030,000'
 const ALU_REGION = 'chr1:150,000,000-153,000,000'
@@ -207,44 +205,8 @@ const TRACKS = {
       {
         type: 'LinearMarkDisplay',
         displayId: 'hpylori_identity-LinearMarkDisplay',
-        transform: [
-          { type: 'formula', expr: 'jexl:feature.identity * 100', as: 'pid' },
-        ],
-        scales: {
-          y: { domainMin: 50, domainMax: 100, title: 'Percent identity' },
-        },
-        marks: [{ mark: 'rule', encoding: { y: 'pid', size: 2 } }],
-      },
-    ],
-  },
-  ecoli_identity: {
-    type: 'SyntenyTrack',
-    trackId: 'ecoli_identity',
-    name: 'K12 against four strains, percent identity',
-    assemblyNames: ECOLI,
-    adapter: {
-      type: 'MultiGenomePAFAdapter',
-      uri: 'https://jbrowse.org/demos/ecoli_pangenome/all_vs_all.paf.gz',
-      assemblyNames: ECOLI,
-    },
-    displays: [
-      {
-        type: 'LinearMarkDisplay',
-        displayId: 'ecoli_identity-LinearMarkDisplay',
-        transform: [
-          { type: 'filter', expr: "jexl:feature.mate.assemblyName != 'K12'" },
-          {
-            type: 'formula',
-            expr: 'jexl:feature.mate.assemblyName',
-            as: 'strain',
-          },
-          { type: 'formula', expr: 'jexl:feature.identity * 100', as: 'pid' },
-        ],
-        rows: 'strain',
-        scales: {
-          y: { domainMin: 80, domainMax: 100, title: 'Percent identity' },
-        },
-        marks: [{ mark: 'rule', encoding: { y: 'pid', size: 2 } }],
+        scales: { y: { domainMin: 0.5, domainMax: 1, title: 'Identity' } },
+        marks: [{ mark: 'rule', encoding: { y: 'identity', size: 2 } }],
       },
     ],
   },
@@ -333,16 +295,15 @@ export const markDisplayExampleSpecs: ScreenshotSpec[] = [
     height: 300,
     viewportHeight: 510,
   }),
-  exampleSpec('identity', 'hpylori_identity', 'NC_018939.1', {
-    config: HPYLORI_CONFIG,
-    assembly: 'GCF_000307795.1',
-    height: 200,
-    viewportHeight: 410,
-  }),
-  exampleSpec('identity_rows', 'ecoli_identity', 'chr', {
-    config: ECOLI_CONFIG,
-    assembly: 'K12',
-    height: 320,
-    viewportHeight: 530,
-  }),
+  exampleSpec(
+    'identity',
+    'hpylori_identity',
+    'NC_018939.1:1,035,000-1,080,000',
+    {
+      config: HPYLORI_CONFIG,
+      assembly: 'GCF_000307795.1',
+      height: 200,
+      viewportHeight: 410,
+    },
+  ),
 ]

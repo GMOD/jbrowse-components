@@ -278,6 +278,43 @@ stack above. For a real pangenome, index first with
 
 <Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps are where a strain has no alignment to the K-12 backbone. IAI39 sits directly below K-12, so its blue stretches and the blue crossings under them are the same inversions." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
+### Percent identity per strain
+
+The same track can draw each alignment as a line at its identity, one row per
+strain, the percent identity plot
+[PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes. In
+the track menu, **Display types → Marks** draws it with nothing to configure.
+The config below is the same plot written out:
+
+- `rows` splits the alignments by the strain each one aligns to, which the PAF
+  adapter puts in `mate.assemblyName`
+- a `rule` mark draws a line across each alignment at its `identity`, which
+  comes from minimap2's `de` divergence tag
+
+```json addtrack config=https://jbrowse.org/demos/ecoli_pangenome/config.json loc=chr
+{
+  "type": "SyntenyTrack",
+  "trackId": "ecoli_ava_identity",
+  "name": "K-12 against each strain, identity",
+  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
+  "adapter": {
+    "type": "MultiGenomePAFAdapter",
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/all_vs_all.paf.gz",
+    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "ecoli_ava_identity-LinearMarkDisplay",
+      "rows": "mate.assemblyName",
+      "marks": [{ "mark": "rule", "encoding": { "y": "identity", "size": 2 } }]
+    }
+  ]
+}
+```
+
+<Figure caption="K-12 against each other strain, one row per strain, each alignment a line at its identity." src="/img/multiway_synteny/ecoli_identity_rows.png" />
+
 ### Lanes in strain coordinates
 
 On the K-12 axis, a strain with no alignment to the backbone is a white gap.

@@ -191,3 +191,37 @@ test('an ordinary VCF names no other end, so its default is what its fields say'
     { mark: 'bar', encoding: { y: 'score' } },
   ])
 })
+
+function alignment(assemblyName: string, identity?: number) {
+  return {
+    ...(identity === undefined ? {} : { identity }),
+    mate: { refName: 'chr', start: 100, end: 200, assemblyName },
+  }
+}
+
+test('alignments to other genomes draw their identity, a row per genome', () => {
+  const fields = scanPlotFields(
+    features([
+      alignment('Sakai', 0.97),
+      alignment('CFT073', 0.99),
+      alignment('Sakai', 0.82),
+    ]),
+    { listedSources: 0 },
+  )
+  expect(fields.genomes).toEqual(['CFT073', 'Sakai'])
+  expect(fields.rows).toBe('mate.assemblyName')
+  expect(defaultPlotMarks(fields)).toEqual([
+    { mark: 'rule', encoding: { y: 'identity', size: 2 } },
+  ])
+})
+
+test('a pairwise alignment is one row, and one with no identity draws its spans', () => {
+  const pairwise = scanPlotFields(features([alignment('J99', 0.93)]), {
+    listedSources: 0,
+  })
+  expect(pairwise.rows).toBeUndefined()
+  const blocks = scanPlotFields(features([alignment('J99')]), {
+    listedSources: 0,
+  })
+  expect(defaultPlotMarks(blocks)).toEqual([{ mark: 'span' }])
+})

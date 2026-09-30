@@ -26,6 +26,7 @@ const NON_PLOT_FIELDS = new Set([
 const ALWAYS_CATEGORICAL = new Set(['strand'])
 
 const ROWS_FIELD = 'source'
+const GENOME_FIELD = 'mate.assemblyName'
 
 /** The plottable fields the scanned features carry, split by what they hold. */
 export interface PlotFields {
@@ -34,8 +35,14 @@ export interface PlotFields {
   sparse?: string[]
   /** Text fields few enough values apart that a colour key can name them. */
   categorical: string[]
-  /** `source`, where a multi-source adapter lists more than one: a row each. */
+  /**
+   * The field giving a row each: `source` where a multi-source adapter lists
+   * more than one, or the mate's assembly where the features align to more
+   * than one other genome.
+   */
   rows?: string
+  /** The genomes the features align to, where they are genome alignments. */
+  genomes?: string[]
   /**
    * How the scanned features state a second locus, where any of them do: the
    * `mate` a paired adapter filled, or a breakend or symbolic `ALT`.
@@ -100,6 +107,7 @@ export function scanPlotFields(
   const values = new Map<string, Set<unknown>>()
   let mated: PlotFields['mated']
   let reads = features.length > 0
+  const genomes = new Set<string>()
   const n = Math.min(features.length, PLOT_FIELD_SAMPLE)
   for (let i = 0; i < n; i++) {
     const feature = features[i]!
@@ -108,6 +116,10 @@ export function scanPlotFields(
     }
     const record = feature.toJSON()
     reads &&= typeof record.flags === 'number'
+    const mate = record.mate
+    if (isRecord(mate) && typeof mate.assemblyName === 'string') {
+      genomes.add(mate.assemblyName)
+    }
     for (const [field, value] of fieldEntries(record)) {
       const v = datumOf(value)
       if (v === undefined) {
@@ -132,7 +144,12 @@ export function scanPlotFields(
     categorical: fields.filter(
       f => !numeric.get(f)! && values.get(f)!.size <= MAX_LEGEND_ITEMS,
     ),
-    ...(listedSources > 1 ? { rows: ROWS_FIELD } : {}),
+    ...(listedSources > 1
+      ? { rows: ROWS_FIELD }
+      : genomes.size > 1
+        ? { rows: GENOME_FIELD }
+        : {}),
+    ...(genomes.size > 0 ? { genomes: [...genomes].sort() } : {}),
     ...(mated === undefined ? {} : { mated }),
     ...(reads ? { reads: true as const } : {}),
   }

@@ -2,6 +2,7 @@ import type { MarkSnapshot } from './markProblems.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 
 export const DEFAULT_PLOT_FIELD = 'score'
+const IDENTITY_FIELD = 'identity'
 
 /**
  * What a display picked from the Display types menu draws with nothing
@@ -10,7 +11,10 @@ export const DEFAULT_PLOT_FIELD = 'score'
  * per pair is the arc band's picture rather than a plot's; a link to the
  * other end where the features name one, since a BEDPE, a STAR-Fusion file
  * and an SV VCF are each a pair of loci before they are anything else and a
- * bar of a paired record's score says nothing about what it pairs. Otherwise
+ * bar of a paired record's score says nothing about what it pairs. Alignments
+ * to other genomes draw each alignment at its identity, a row per genome, as
+ * PipMaker's percent identity plot did; their mate is on another assembly, so
+ * a link to it would land on the wrong genome. Otherwise
  * bars of `score` where most features carry a numeric one, and nothing where
  * they do not — there is no second column every format agrees on, and
  * guessing one would draw a picture the user did not ask for, as a score on
@@ -21,6 +25,11 @@ export function defaultPlotMarks(
 ): MarkSnapshot[] | undefined {
   if (fields.reads) {
     return [{ mark: 'bar', transform: [{ type: 'coverage' }] }]
+  }
+  if (fields.genomes) {
+    return fields.numeric.includes(IDENTITY_FIELD)
+      ? [{ mark: 'rule', encoding: { y: IDENTITY_FIELD, size: 2 } }]
+      : [{ mark: 'span' }]
   }
   if (fields.mated) {
     return [{ mark: 'link', transform: [{ type: 'mate' }] }]
