@@ -315,11 +315,13 @@ These apply to everything under `website/`, including `docs/` and `tutorials/`.
 - **Few numbers in prose, and none that assert a result.** A number that _names_
   something (a variant's size, a coordinate, a published cohort size) is fine; a
   number stating an aspect of the data the page could have shown instead is not,
-  however real, because the reader cannot check it against the picture.
-  "Programmatically derived" is not an exemption — say which way it went and let
-  the figure carry how far. Measurements go in a table, the script, or a spec
-  comment. Density matters too: several derived figures in one paragraph read as
-  arithmetic even when each is defensible.
+  however real, because the reader cannot check it against the picture and it
+  goes out of date with nothing to flag it when the data or the code moves.
+  "Programmatically derived" is not an exemption, and neither is a script's
+  output pasted into the page — say which way it went and let the figure carry
+  how far. Measurements go in a table, the script, or a spec comment. Density
+  matters too: several derived figures in one paragraph read as arithmetic even
+  when each is defensible.
 - **An aside a first-time reader does not need is a footnote**, `[^name]` with
   its definition at the bottom of the file (GFM footnotes, through remarkGfm).
   They render as a small **Notes** block under the page's last section, and
