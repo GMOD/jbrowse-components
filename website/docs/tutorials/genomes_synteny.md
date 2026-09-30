@@ -34,9 +34,8 @@ alignments** → **liftOver** in the track selector and turn on **hg38 to Human
 (hs1) liftOver**. Type `TNNT3` into the location box; the hosted config ships a
 name index.
 
-The hg38 config declares one assembly, hg38. When a track names an assembly
-JBrowse does not know, the site's hub plugin supplies the config for that genome
-through the `Core-handleUnrecognizedAssembly` extension point.
+The hg38 config declares one assembly, hg38. When a track names another genome,
+the site loads that genome's config the first time a view needs it.
 
 In a plain linear genome view the liftOver track draws one feature per chain
 block, laid out in rows.
@@ -87,7 +86,7 @@ in every individual; against T2T-CHM13 that segment is intact on the other side
 of _TNNT3_ in the opposite orientation. Colored by strand, it is the one
 off-color ribbon.
 
-<Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) at TNNT3, colored by strand with curved ribbons and transparent indels. LINC01150 sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13, and the purple ribbon is the segment that moved." src="/img/synteny_hg38_hs1_tnnt3.png" />
+<Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each. It sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13, and the purple ribbon joining the two shaded spans is the segment that moved." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
 ## Trying other pairs
 

@@ -177,14 +177,14 @@ copy-number record.
 A VCF record is one interval with fixed breakpoints and a few symbolic alleles,
 which cannot describe nested multiallelic copy number. Depth, for its part,
 gives no genotype, allele frequency or phasing. At a simple biallelic deletion
-the two sources agree. Navigate to _UGT2B17_ on chr4 with the same track
-settings:
+the two sources agree. Navigate to _UGT2B17_ on chr4 with the PUR panel track
+from the first section under the SV map VCF:
 
-<Figure caption="UGT2B17 on chr4, a biallelic deletion, depth flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion. Same track settings as the CCL3L1 figure." src="/img/cnv1000g/ugt2b17_biallelic.png" />
+<Figure caption="UGT2B17 on chr4 in the PUR panel track, under the SV map. A biallelic deletion: each individual sits flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
 ## A Zarr store for the whole panel
 
-The PUR track above holds 104 individuals.
+The PUR panel track holds 104 individuals.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
 measures the requests, bytes and time needed to fill this window from all 2504
 BigWigs and from a Zarr store holding the same samples, using the readers the

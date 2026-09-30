@@ -8,12 +8,15 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-A RepeatMasker track is one packed lane of colored blocks. The same file opened
-as a [multi-row feature display](/docs/user_guides/multirow_feature_track) is
-one labelled lane per class, whose height is that class's share of the window.
-JBrowse reads the classes from the file, so no data preparation is needed. Every
-genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), and any other
-UCSC/GenArk hub config, carries a RepeatMasker track to try it on.
+Repeat classes spread along a genome differently: over a window of 17q21, SINE
+copies fill it end to end while LINE copies come in clusters. A RepeatMasker
+track draws every class in one packed lane of colored blocks, where that
+difference is hard to read. The same file opened as a
+[multi-row feature display](/docs/user_guides/multirow_feature_track) draws one
+labelled lane per class. JBrowse reads the classes from the file, so no data
+preparation is needed. Every genome at
+[genomes.jbrowse.org](https://genomes.jbrowse.org), and any other UCSC/GenArk
+hub config, carries a RepeatMasker track to try it on.
 
 ## Prerequisites
 

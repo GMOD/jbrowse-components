@@ -36,33 +36,33 @@ const oneTranscriptPerGene = {
 }
 
 // One marker gene per row of the pseudobulk track, each as its own 4 kb region
-// in a single discontinuous view. Each window is the 3' 2 kb of a canonical PBMC
-// marker (10x 3' chemistry piles a cell's reads into the last ~1.5 kb of the
-// transcript), and the regions are in the same order as the track's rows, so the
-// signal walks diagonally down the frame: the row that carries each column is
-// the cell type that marker defines.
-//
-// Coordinates are the MANE Select transcript's 3' end for each gene, from the
-// UCSC `mane` track (a + strand gene's chromEnd, a - strand gene's chromStart).
+// in a single discontinuous view, in the rows' order, so the signal walks
+// diagonally down the frame. None of the nine is in the PANELS
+// build_scrna_pseudobulk.sh labels the clusters with, so the diagonal is not
+// guaranteed by the labelling; each was picked from the hosted BigWigs as the
+// gene highest in its row and near zero in the others. Each window is centred on
+// the RefSeq Select transcript's 3' end (10x 3' chemistry piles a cell's reads
+// into the last ~1.5 kb); LINC02446 has no Select transcript, and its reads sit
+// at the shorter isoform's end.
 const MARKER_PANEL = [
   // CD4 T
-  ['IL7R', 'chr5', 35879603],
+  ['CD40LG', 'chrX', 136660390],
   // CD8 T
-  ['CD8A', 'chr2', 86784609],
+  ['LINC02446', 'chr12', 10558794],
   // NK
-  ['GNLY', 'chr2', 85698852],
+  ['SPON2', 'chr4', 1166931],
   // B
-  ['MS4A1', 'chr11', 60470752],
+  ['CD22', 'chr19', 35347361],
   // CD14 Mono
-  ['LYZ', 'chr12', 69354234],
+  ['S100A12', 'chr1', 153373710],
   // CD16 Mono
-  ['FCGR3A', 'chr1', 161541758],
+  ['HES4', 'chr1', 998963],
   // cDC
-  ['FCER1A', 'chr1', 159308202],
+  ['ENHO', 'chr9', 34521042],
   // pDC
-  ['LILRA4', 'chr19', 54333184],
+  ['LRRC26', 'chr9', 137168757],
   // Platelet
-  ['PPBP', 'chr4', 73986438],
+  ['GNG11', 'chr7', 93928610],
 ] as const
 
 const MARKER_PANEL_LOC = MARKER_PANEL.map(

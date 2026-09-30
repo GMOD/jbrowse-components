@@ -10,7 +10,8 @@ tutorial_category: Population genomics
 The BXD mice are inbred strains bred down from two parents, B6 and DBA/2, so
 each strain carries a mosaic of blocks from one or the other. We paint each
 strain by which parent gave it each block and stack that under a GeneNetwork QTL
-scan, so a trait peak sits over the blocks that drive it.
+scan of coat color, then band the strains by their coat color to see which
+blocks under each peak set it.
 
 ## Prerequisites
 
@@ -35,6 +36,8 @@ BXD consensus genotypes and QTL scans from GeneNetwork
   https://gn1.genenetwork.org/genotypes/BXD.geno
 - the coat-color scan (trait 11280), from GeneNetwork's mapping API:
   https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma&trait_id=11280
+- the coat-color scores per strain, from GeneNetwork's sample-data API:
+  https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280
 - the chromosome painting, rehosted for the track config:
   https://jbrowse.org/demos/bxd/bxd_painting.bed.gz
 
@@ -50,10 +53,6 @@ thousands of traits. We build two tracks from the panel on mm10:
   the B and D blocks of each strain
 - a QTL Manhattan track (the [Manhattan display](/docs/user_guides/gwas_track))
   from a single-marker scan of a BXD phenotype
-
-Both tracks also render inline through the
-[Python anywidget interface](/docs/jbrowse_anywidget) (or [](/docs/jbrowser) in
-R), so you can run a scan and view its peak in one Python or R session.
 
 ## BXD consensus genotypes
 
@@ -198,7 +197,7 @@ natural-log p-value column would need it. See the
 {
   "type": "GWASTrack",
   "trackId": "bxd_gwas_coatcolor_mm10",
-  "name": "BXD QTL: coat color (GEMMA, Tyrp1, chr4)",
+  "name": "BXD QTL: coat color (GEMMA)",
   "assemblyNames": ["mm10"],
   "adapter": {
     "type": "GWASAdapter",
@@ -213,26 +212,93 @@ natural-log p-value column would need it. See the
 
 ## Reading the coat-color peak
 
-The coat-color scan puts a plateau of tied markers on chr4, whose interval
-contains _Tyrp1_. To line the painting up with it, right-click the painting at
-that column and pick **Sort rows by color here** (a saved session stores the
-same sort in `sortRowsBy` on the display). Rows then order by B/D genotype at
-the peak. The split directly beneath the peak is the contrast the scan scores,
-and away from the locus it breaks up into mixed B/D blocks.
+The scan puts a plateau of tied markers on chr4, whose interval contains
+_Tyrp1_, the brown locus. A second, lower peak sits on chr9. Stacked over the
+painting, a peak marks a column, and the question is whether the strains' coat
+colors line up with their genotype there.
 
-<Video src="/media/qtl/painting_sort.mp4" caption="The sort as the menu item does it: 198 strains arrive in their recombinant mosaic, a right-click on the column under the peak reaches Sort rows by color here, and the rows resolve into the B/D split the scan scores." />
+## Grouping the strains by coat color
 
-<Figure src="/img/qtl/bxd_painting_sorted.png" caption="The menu open over the sorted painting: keyed on genotype at the peak, the strains resolve into a clean, wide red-over-blue split directly beneath the Manhattan peak."/>
+GeneNetwork scores coat color on a four-step scale: black is 4, grey 3, brown 2
+and DBA/2's dilute brown 1. We'll fetch each strain's score and turn the four
+values into four bands of painting rows, so the phenotype orders the rows and
+the genotype stays free to agree with it or not.
 
-<Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4: the coat-color association rises to a peak over Tyrp1, and the haplotype painting (sorted by genotype at that peak) resolves into a clean D (red) over B (blue) split at the gene."/>
+The scores come from GeneNetwork's sample-data API, and `jq` writes one
+[`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) entry
+per score, a regex matching that score's strains:
 
-### Clustering the rows by similarity
+<!-- from: scripts/bxd_build_demo.sh -->
 
-Sorting orders every row on one column. **Clustering → Cluster rows by
-similarity...** in the track menu orders them on the whole region in view, here
-chr4, and draws the tree down the left-hand side. A session sets it with
-`runClustering: true`, as `sortRowsBy` stores a sort. See
-[](/docs/user_guides/clustering).
+```bash
+curl -fsSL https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280 -o coat_color_values.json
+jq '{ "4": ["black", "rgb(30,30,30)"], "3": ["grey", "rgb(150,150,160)"],
+      "2": ["brown", "rgb(130,80,40)"], "1": ["dilute brown", "rgb(210,175,130)"] } as $class
+  | [ .[] | select((.sample_name | startswith("BXD")) and (.value | IN(1, 2, 3, 4))) ]
+  | group_by(-.value)
+  | map($class[.[0].value | floor | tostring] as [$group, $color]
+        | { match: ("^(" + (map(.sample_name) | join("|")) + ")$"), group: $group, color: $color })' \
+  coat_color_values.json > rowGroups.json
+```
+
+Add the result to the painting's display entry, beside `rows` and `color`,
+together with `facet: "group"`:
+
+- `rowGroups` tags each strain with its coat color and tints its sidebar swatch
+  in that color. The blocks keep their genotype colors.
+- `facet: "group"` stacks the four groups in labelled bands, black at the top.
+  The few strains scored between two steps match no entry and sit in a band of
+  their own at the bottom.
+
+```json
+{
+  "rowGroups": [
+    {
+      "match": "^(BXD100|BXD105|BXD109|BXD11|BXD110|BXD116|BXD119|BXD120|BXD121|BXD123|BXD124|BXD125|BXD128a|BXD131|BXD133|BXD136|BXD14|BXD142|BXD145|BXD148|BXD149|BXD151|BXD152|BXD153|BXD154|BXD156|BXD165|BXD171|BXD173|BXD186|BXD190|BXD191|BXD199|BXD2|BXD20|BXD204|BXD207|BXD210|BXD217|BXD218|BXD219|BXD23|BXD31|BXD32|BXD34|BXD35|BXD42|BXD43|BXD48|BXD48a|BXD50|BXD51|BXD56|BXD86|BXD87)$",
+      "group": "black",
+      "color": "rgb(30,30,30)"
+    },
+    {
+      "match": "^(BXD101|BXD117|BXD12|BXD122|BXD130|BXD135|BXD139|BXD141|BXD144|BXD146|BXD147|BXD155|BXD157|BXD16|BXD162|BXD169|BXD172|BXD174|BXD175|BXD176|BXD178|BXD18|BXD180|BXD181|BXD183|BXD184|BXD19|BXD198|BXD202|BXD205|BXD208|BXD211|BXD212|BXD215|BXD22|BXD29|BXD33|BXD38|BXD39|BXD40|BXD49|BXD5|BXD6|BXD76|BXD79|BXD8|BXD94)$",
+      "group": "grey",
+      "color": "rgb(150,150,160)"
+    },
+    {
+      "match": "^(BXD102|BXD104|BXD106|BXD108|BXD111|BXD114|BXD115|BXD126|BXD127|BXD128|BXD13|BXD132|BXD134|BXD15|BXD150|BXD177|BXD192|BXD193|BXD194|BXD195|BXD196|BXD197|BXD200|BXD203|BXD209|BXD24|BXD24a|BXD25|BXD27|BXD28|BXD36|BXD52|BXD53|BXD55|BXD59|BXD60|BXD62|BXD65|BXD65a|BXD66|BXD68|BXD72|BXD74|BXD78|BXD88)$",
+      "group": "brown",
+      "color": "rgb(130,80,40)"
+    },
+    {
+      "match": "^(BXD1|BXD107|BXD112|BXD113|BXD138|BXD160|BXD161|BXD168|BXD170|BXD187|BXD188|BXD189|BXD201|BXD206|BXD21|BXD216|BXD220|BXD30|BXD44|BXD45|BXD61|BXD63|BXD64|BXD65b|BXD67|BXD69|BXD70|BXD71|BXD73|BXD73a|BXD73b|BXD75|BXD77|BXD81|BXD83|BXD84|BXD85|BXD89|BXD9|BXD90|BXD91|BXD93|BXD95|BXD98|BXD99)$",
+      "group": "dilute brown",
+      "color": "rgb(210,175,130)"
+    }
+  ],
+  "facet": "group"
+}
+```
+
+Open chr4 with the gene track filtered to _Tyrp1_ (**Filter by...** in its track
+menu, `jexl:get(feature,'name')=='Tyrp1'`), the scan and the grouped painting:
+
+<Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4, with the painting's rows banded by coat color. Under the peak at Tyrp1 the black and grey bands are solid B (blue) and both brown bands solid D (red). Away from the peak every band is a mix of the two."/>
+
+The bands come from the phenotype alone, so the solid column under the peak is
+the finding: black and grey strains inherited B6's copy of _Tyrp1_, brown and
+dilute brown strains DBA/2's. The rest of chr4 is the control, where the bands
+mix B and D blocks because nothing there sets coat color.
+
+## The second peak: dilute on chr9
+
+The chr9 peak falls on _Myo5a_, the dilute locus. The same grouped painting,
+with the gene track filtered to _Myo5a_, splits the bands the other way:
+
+<Figure src="/img/qtl/bxd_myo5a_locus.png" caption="The whole of chr9, same bands. Under the peak at Myo5a the black and brown bands are B and the grey and dilute brown bands D, while the rest of chr9 is mixed."/>
+
+So the four-step scale is two genes. _Tyrp1_ sets black against brown and
+_Myo5a_ sets full color against dilute, and grey is a black coat diluted. The
+scale puts the brown step at twice the dilute step, which is why the chr4 peak
+stands higher than the chr9 one.
 
 ## Reproduce it end to end
 
@@ -247,12 +313,13 @@ npx --yes serve bxd_demo/jbrowse2 # then open the printed URL
 ```
 
 The script downloads JBrowse and the GeneNetwork consensus genotypes, builds the
-painting, fetches the coat-color scan (trait `11280`) from GeneNetwork's mapping
-API, and writes a `config.json` that opens on mm10 chr4 with the scan over the
-painting. It prints the marker at the peak and its LOD as it goes.
+painting, fetches the coat-color scan (trait `11280`) and the per-strain scores
+from GeneNetwork, and writes a `config.json` that opens on mm10 chr4 with the
+scan over the painting banded by coat color. It prints the marker at the peak
+and its LOD as it goes.
 
 You can swap in any GeneNetwork trait id. Coat color is close to Mendelian here,
-and a polygenic trait scans flatter, with no peak sharp enough to sort the
+and a polygenic trait scans flatter, with no peak sharp enough to band the
 painting under.
 
 ## See also

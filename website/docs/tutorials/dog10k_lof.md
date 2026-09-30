@@ -273,8 +273,11 @@ The upper lane holds every Golden Retriever, Labrador Retriever and Boxer in the
 collection, plus the four wolves from the genotype figure. Every Golden carries
 the expansion, every Boxer carries two copies, and the Labradors split one dog
 to the next. Row labels come from the sample column, the order from `domain`.
-The wolves rest on callset depth alone, since none of the dogs with published
-reads is a wolf.
+
+The four wolves, the control, all carry the expansion, so unlike the stop-gained
+allele it is shared with wild canids and predates domestication. Their calls
+rest on callset depth alone, since none of the dogs with published reads is a
+wolf.
 
 The white stripes through both lanes are windows with no call. A window whose
 median across the whole collection is not two copies measures a quirk of the

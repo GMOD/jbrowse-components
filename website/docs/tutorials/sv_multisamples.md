@@ -95,7 +95,7 @@ The figure has three lanes over NCBI RefSeq genes:
   this window, where blue is a copy lost against the diploid white and red a
   copy gained
 
-<Figure caption="The 1KGP ensemble SV callset over the RHD locus on chr1, with the panel's sequencing depth under it. The deletion draws as a wide block, splitting the cohort into three bands in the matrix and three levels in the depth." src="/img/multisv_rhd.png" />
+<Figure caption="The 1KGP ensemble SV callset over the RHD locus on chr1, with the panel's copy-number calls under it. The deletion draws as a wide block, splitting the cohort into three bands in the matrix and three levels of copy number." src="/img/multisv_rhd.png" />
 
 <Video src="/media/sv/multisample_sort.mp4" caption="On the callset shown in the figure above, a right-click on the deletion sorts the cohort by genotype there, resolving the callset order into three bands: both copies of RHD deleted, one, then neither." />
 

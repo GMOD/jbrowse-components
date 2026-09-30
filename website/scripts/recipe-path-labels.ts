@@ -104,8 +104,6 @@ export const PATH_ROOTS = new Set([
  * applying, and its comment with it when nothing else is under that comment.
  */
 export const PATH_PROSE = new Set([
-  // a right-click on the canvas, at a column the reader picks
-  'Right-click the track at the column to sort on',
   // the location box, then the highlight control
   'Zoom to region / use the location box, then add a highlight',
   // the tree sidebar's own drag/checkbox/swatch affordances, none of them menu

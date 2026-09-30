@@ -6,4 +6,4 @@
 # visual takeaway, and move the color/stroke/row glossary into the prose that
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
-
+tutorials/pangenome_hprc_haplotypes.md /img/multiway_synteny/hprc_amylase_stack.png

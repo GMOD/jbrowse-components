@@ -2,7 +2,8 @@
 #
 # Reproducibly build the BXD systems-genetics demo from
 # website/docs/tutorials/bxd_qtl.md: the 198-strain chromosome painting plus the
-# GeneNetwork QTL scan for coat color, whose chr4 peak interval holds Tyrp1,
+# GeneNetwork QTL scan for coat color, whose chr4 peak interval holds Tyrp1 and
+# chr9 peak Myo5a, with the painting's rows banded by each strain's coat color,
 # then wire up a runnable JBrowse.
 #
 # It downloads the GeneNetwork BXD consensus genotypes, builds the painting BED
@@ -37,8 +38,8 @@ cd "$OUTDIR"
 APP=jbrowse2   # relative to $OUTDIR, so the [ -f ] guard resolves after the cd
 
 # ── Source data (GeneNetwork consensus genotypes), skip if present ───────────
-# The phenotypes are not downloaded: GeneNetwork maps them itself, and the scans
-# below are fetched already computed rather than recomputed here.
+# GeneNetwork maps the phenotype itself, and the scan below is fetched already
+# computed rather than recomputed here.
 [ -f BXD.geno ] || curl -fsSL -o BXD.geno https://gn1.genenetwork.org/genotypes/BXD.geno
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
@@ -61,7 +62,7 @@ tabix -f -p bed "$APP"/bxd_painting.bed.gz
 # that relatedness and answer a different question, so this only reshapes.
 # 11280 = coat color, a Mendelian-scale peak on chr4 (LOD 48). Most BXD traits
 # are polygenic and scan flat by comparison, which is why this one carries the
-# figure: there has to be a peak worth sorting the painting underneath.
+# figure: there has to be a peak worth banding the painting underneath.
 GN='https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma'
 scan() {  # <trait_id> <out_stem>
   [ -f "$2.json" ] || curl -fsSL -o "$2.json" "$GN&trait_id=$1"
@@ -76,6 +77,18 @@ scan() {  # <trait_id> <out_stem>
   echo "$2: $(jq -r '.[0] | max_by(.lod_score) | "peak \(.name) chr\(.chr):\(.Mb)Mb LOD \(.lod_score*100|round/100)"' "$2.json")"
 }
 scan 11280 bxd_gwas_coatcolor
+
+# ── Coat-color scores per strain, as one rowGroups entry per score ───────────
+# GeneNetwork's 11280 scale: black 4, grey 3, brown 2, DBA/2's dilute brown 1.
+# A strain scored between two steps matches no entry and bands on its own.
+[ -f coat_color_values.json ] || curl -fsSL https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280 -o coat_color_values.json
+jq '{ "4": ["black", "rgb(30,30,30)"], "3": ["grey", "rgb(150,150,160)"],
+      "2": ["brown", "rgb(130,80,40)"], "1": ["dilute brown", "rgb(210,175,130)"] } as $class
+  | [ .[] | select((.sample_name | startswith("BXD")) and (.value | IN(1, 2, 3, 4))) ]
+  | group_by(-.value)
+  | map($class[.[0].value | floor | tostring] as [$group, $color]
+        | { match: ("^(" + (map(.sample_name) | join("|")) + ")$"), group: $group, color: $color })' \
+  coat_color_values.json > rowGroups.json
 
 # ── config.json: mm10 from jbrowse.org, the scan + the painting local ─────────
 cat > "$APP"/config.json <<'JSON'
@@ -110,7 +123,7 @@ cat > "$APP"/config.json <<'JSON'
     {
       "type": "GWASTrack",
       "trackId": "bxd_gwas_coatcolor_mm10",
-      "name": "BXD QTL: coat color (GEMMA, Tyrp1, chr4)",
+      "name": "BXD QTL: coat color (GEMMA)",
       "assemblyNames": ["mm10"],
       "category": ["GeneNetwork / BXD"],
       "adapter": {
@@ -166,9 +179,15 @@ cat > "$APP"/config.json <<'JSON'
 }
 JSON
 
+# band the painting's rows by coat color
+jq --slurpfile groups rowGroups.json \
+  '(.tracks[] | select(.trackId == "bxd_chromosome_painting_mm10") | .displays[0])
+     += { rowGroups: $groups[0], facet: "group" }' \
+  "$APP"/config.json > config.tmp.json && mv config.tmp.json "$APP"/config.json
+
 echo
-echo "Built $APP/config.json with mm10, the 198-strain chromosome painting, and"
-echo "GeneNetwork's GEMMA scan for coat color. It opens on chr4 with the"
-echo "Manhattan over the painting; right-click the painting near the peak and"
-echo "pick \"Sort rows by color here\" to reveal the B/D split. Serve it:"
+echo "Built $APP/config.json with mm10, the 198-strain chromosome painting"
+echo "banded by coat color, and GeneNetwork's GEMMA scan for coat color. It opens"
+echo "on chr4, where the black and grey bands are B under the Tyrp1 peak and the"
+echo "brown bands D; chr9 splits them the other way at Myo5a. Serve it:"
 echo "  npx --yes serve $(pwd)/$APP"

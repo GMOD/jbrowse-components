@@ -55,8 +55,6 @@ The VCF loads on `hg38` as an ordinary `VariantTrack`
 paste its URL into **File → Open track...**, which infers the adapter and the
 `.tbi` index beside the file.
 
-<Video src="/media/variants/trio_open_vcf.mp4" caption="The trio VCF opened by URL with no config written: File, Open track..., the URL pasted in, and the variants drawing under the genes in the default display." />
-
 <Figure caption="The VCF on initial load, in the default display: one orange box per variant." src="/img/trio-basic.png"/>
 
 ## Enabling the matrix view
@@ -67,7 +65,7 @@ Switch the track to the
 row and each variant a column, with black lines tying the columns back to their
 genomic positions.
 
-<Figure caption="The multi-sample variant display in equal-width columns. One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
+<Figure caption="The multi-sample variant display as a genotype matrix. One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
 
 ## Enabling the phased mode
 
@@ -213,15 +211,17 @@ HG02026 and red for mother HG02025:
 
 <Figure caption="hap-ibd inheritance blocks in the multi-row feature display. Blue rows are father HG02026's two haplotypes, red rows are mother HG02025's. Each crossover is a spot where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
 
-The blue rows together are the child's paternal chromosome. Exactly one of them
-is filled at any position, and the filled row is the father's copy the child
-inherited there, so every step between the blue rows is a crossover. The red
-rows are the maternal chromosome in the same way.
+The blue rows together are the child's paternal chromosome. Where one of them is
+filled, it is the father's copy the child inherited there, so every step between
+the blue rows is a crossover. The red rows are the maternal chromosome in the
+same way.
 
-The one-filled-row rule is the control in the figure: two filled blue rows at a
-position, or neither, would mean hap-ibd matched one child haplotype to both of
-the father's copies or to neither. The centromere is blank because it has no
-markers to match on.
+The control in the figure is that no position has both blue rows filled, or both
+red rows, which would mean hap-ibd matched one child haplotype to both of a
+parent's copies. That holds along the whole chromosome. A position with neither
+row filled, such as the first few megabases, is one where hap-ibd found no
+segment long enough to report. The blocks run straight through the centromere,
+because hap-ibd joins the markers on either side of it.
 
 ## Relating the painting back to the genotypes
 

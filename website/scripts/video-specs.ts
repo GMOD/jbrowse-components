@@ -28,7 +28,6 @@ import { hicVideos } from './videos/hic.ts'
 import { methylationVideos } from './videos/methylation.ts'
 import { pangenomeVideos } from './videos/pangenome.ts'
 import { proteinVideos } from './videos/proteins.ts'
-import { qtlVideos } from './videos/qtl.ts'
 import { repeatVideos } from './videos/repeats.ts'
 import { svVideos } from './videos/sv.ts'
 import { syntenyVideos } from './videos/synteny.ts'
@@ -45,7 +44,6 @@ export const videoSpecs: VideoSpec[] = [
   ...proteinVideos,
   ...dog10kVideos,
   ...tcgaVideos,
-  ...qtlVideos,
   ...methylationVideos,
   ...syntenyVideos,
   ...svVideos,

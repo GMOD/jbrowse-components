@@ -46,8 +46,7 @@ Building your own instance needs:
 ## Where the data comes from
 
 HG008, the C-GIAB matched tumor/normal pair, under NCBI BioProject PRJNA200694
-on the C-GIAB FTP. The assemblies are on NIST's S3 bucket, and the per-clone CNV
-calls are rehosted here.
+on the C-GIAB FTP. The assemblies are on NIST's S3 bucket.
 
 The reference and the reads:
 
@@ -82,13 +81,6 @@ The assemblies:
   https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz
 - the matched normal assembly, v6.3:
   https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008N_v6.3/HG008N_v6.3.fasta.gz
-
-The single-cell-derived clone panel:
-
-- short-read WGS, one run per clone:
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/NIST/HG008-T_clones/
-- the per-clone CNVkit calls, rehosted merged into one multi-row BED:
-  https://jbrowse.org/demos/cgiab/HG008T-clones.cnv.multirow.bed.gz
 
 ## The C-GIAB dataset
 
@@ -136,9 +128,9 @@ and the CNV calls as a BED, both loaded straight from their FTP URL.
 
 The CNV BED has no header, so name its columns with
 [`columnNames`](/docs/config/bedadapter/#slot-columnnames). A threshold colour
-on `total_copy_number` paints each call by copy number, in the same palette as
-the subclonal lane further down, and a `labels.name` expression prints the copy
-number of each call with its split between haplotypes:
+on `total_copy_number` paints each call by copy number, and a `labels.name`
+expression prints the copy number of each call with its split between
+haplotypes:
 
 ```json addtrack
 {
@@ -522,50 +514,6 @@ makes the adapter fetch raw per-site values at the zoom levels of these figures:
 }
 ```
 
-### Subclonal copy number
-
-HG008-T is a cellular mixture: a genome-doubled fraction grows across passages
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)), and the
-benchmark CNV BED reports copy number for the cells that have not doubled.
-
-C-GIAB publishes short-read WGS for a panel of HG008-T single-cell-derived
-clones under
-[`HG008-T_clones/`](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/NIST/HG008-T_clones/).
-We merged the CNVkit calls for each clone into one BED with a `clone` column,
-which splits into rows like the Wakhan haplotypes. A row that differs from the
-rest marks a CNV found in that subclone alone:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "hg008_subclonal_cnv",
-  "name": "HG008-T subclonal CNV (per-clone CNVkit)",
-  "assemblyNames": ["GRCh38_GIABv3"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/cgiab/HG008T-clones.cnv.multirow.bed.gz"
-  },
-  "displays": [
-    {
-      "type": "LinearMultiRowFeatureDisplay",
-      "rows": "clone",
-      "color": {
-        "field": "cn",
-        "scale": "threshold",
-        "domain": ["1", "2", "3", "4"],
-        "range": ["#2166ac", "#92c5de", "#e0e0e0", "#f4a582", "#b2182b"],
-        "labels": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4+"],
-        "title": "Copy number"
-      }
-    }
-  ]
-}
-```
-
-CNVkit centers the log2 ratios of each sample on that sample's median, so the
-balanced state in this lane can sit at a copy number other than 2. Compare it
-with the absolute `total_copy_number` in the benchmark CNV track.
-
 ## Align the tumor assembly to GRCh38
 
 The tumor assembly is haplotype-resolved into T2T scaffolds. Load it as a second
@@ -691,16 +639,8 @@ figure below draws one MANE Select transcript under the lanes.
 For a first check, load the tumor and normal coverage from
 [goleft indexcov](https://github.com/brentp/goleft/tree/master/indexcov),
 published as `HG008-N_indexcov.bw` and `HG008-T_indexcov.bw`, as one
-multi-wiggle track by URL:
-
-- **Show all regions in assembly** on the linear genome view start screen opens
-  every chromosome at once.
-- **Score → Set min/max score...** in the track menu pins the axis off the
-  centromere and repeat spikes.
-- **Plot type → Overlapping → Scatter** draws the two samples as points in one
-  band, tumor red and normal blue.
-
-<Figure caption="The linear genome view start screen, with every chromosome laid out across the view." src="/img/sv_cgiab/cnv_show_all_regions.png" />
+multi-wiggle track by URL. **Plot type → Overlapping → Scatter** in its track
+menu draws the two samples as points in one band, tumor red and normal blue.
 
 Zoom to a region and open the benchmark CNV BED. Coverage shows where the copy
 number steps, and the BAF track shows the allelic balance across each step.
@@ -790,8 +730,6 @@ fill equally.
 **Add → Dotplot view**, set the de novo assembly as one axis and GRCh38 as the
 other, and pick the matching synteny track.
 
-<Figure caption="The dotplot import form, with the HG008-T v3.2 assembly on one axis and GRCh38 on the other." src="/img/sv_cgiab/dotplot_import_form.png" />
-
 HG008-T v3.2's scaffold names end in `_hap1` or `_hap2`, so one plot stacks both
 haplotypes and doubles every diagonal. Restrict the y axis to one haplotype at a
 time for a plain assembly-vs-reference diagonal.
@@ -815,24 +753,6 @@ fusion.
 For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
-
-### Methylation on the tumor reads
-
-The C-GIAB PacBio HiFi BAMs carry per-read 5mC calls in `MM`/`ML` tags, which
-JBrowse draws with no extra files. Open the tumor reads. Set **Color by... →
-Modifications**, then **One color per type, plus low-probability & unmodified in
-blue**, which paints every CpG in context.
-
-<Figure caption="Tumor PacBio HiFi reads at the CDKN2B-AS1 end of the CDKN2A locus, over the NCBI RefSeq gene lane, colored by base modification with unmodified cytosines filled in. Neighboring CpG-dense blocks come out in opposite states, one of them at the CDKN2B-AS1 transcription start." src="/img/sv_cgiab/methylation_cdkn2b.png" />
-
-Scattered ticks mark low CpG density, because the fill draws a cytosine only
-where the reference has one in CpG context.
-
-See
-[Modifications and methylation](/docs/user_guides/alignments_track#modifications-and-methylation)
-for the display modes, and the
-[methylation tutorial](/docs/tutorials/methylation) for the aggregate and
-allele-specific views.
 
 ## Where to go next
 

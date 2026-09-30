@@ -132,21 +132,21 @@ types:
         "name": "CD8 Naive",
         "group": "T cell",
         "color": "#4363d8",
-        "uri": "https://example.com/bw/CD8_Naive.bw"
+        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "CD8 Memory",
         "group": "T cell",
         "color": "#3cb44b",
-        "uri": "https://example.com/bw/CD8_Memory.bw"
+        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "Naive B",
         "group": "B cell",
         "color": "#f58231",
-        "uri": "https://example.com/bw/Naive_B.bw"
+        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw"
       }
     ]
   }
@@ -173,9 +173,9 @@ array of URLs and labels each row from its filename:
   "adapter": {
     "type": "MultiWiggleAdapter",
     "bigWigs": [
-      "https://example.com/bw/CD8_Naive.bw",
-      "https://example.com/bw/CD8_Memory.bw",
-      "https://example.com/bw/Naive_B.bw"
+      "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw",
+      "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw",
+      "https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw"
     ]
   }
 }

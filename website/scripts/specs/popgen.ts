@@ -344,21 +344,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
         fontSize: 15,
         maxWidth: 440,
       },
-      {
-        type: 'text',
-        anchor: {
-          track: 'sites_all',
-          locus: 'chr2R:12,008,000',
-          // 0.12, not 0.04: the anchor's fracY is taken over the track's whole
-          // box, so at 0.04 the pill's top edge landed on the track header's own
-          // name row.
-          fracY: 0.12,
-          alignX: 'left',
-        },
-        text: 'Called sites fall less, so the dip is in allele frequencies',
-        fontSize: 15,
-        maxWidth: 440,
-      },
     ],
   },
 

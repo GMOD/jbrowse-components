@@ -218,15 +218,6 @@ const TRIO_DENSE_LOC = 'chr1:63,624,200-63,647,100'
 
 export const trioVideoFixtures = {
   vcfTrackId: TRIO_VCF_TRACK,
-  vcfUrl:
-    'https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz',
-  // the gene lane alone, for the tour that opens the VCF the way a reader
-  // opens their own
-  genesOnly: lgvSession(DEMO_CONFIG, {
-    assembly: 'hg38',
-    loc: TRIO_DENSE_LOC,
-    tracks: [TRIO_GENE_LANE],
-  }),
   zoomOutsToMatrix: 7,
   // The tour's opening state: the gene lane the figures carry, with the VCF in
   // the display it loads with, since the route being filmed is what gets from

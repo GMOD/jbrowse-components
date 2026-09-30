@@ -338,17 +338,17 @@ their walks in pairs in the order `walkRowSamples` lists them:
 HG00099, HG03688 and HG00741 tick at the end of each bar: reads and assemblies
 agree. HG02647 and HG01943 turn red: TRGT calls each near-homozygous while the
 graph carries a haplotype neither call reaches (two, in HG01943). HG02559 and
-HG04199 each carry a walk with no verdict: no read spans HG02559's second
-allele, so its tick is grey, and HG04199's assembly does not span the repeat, so
-its readout marks that walk partial.
+HG04199 each carry a walk with no verdict: no read spans one of HG02559's
+alleles, so the tick on HG02559#1 is grey, and HG04199's assembly does not span
+the repeat, so its readout marks that walk partial.
 
 <Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar carrying the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
 ## Check it against TRGT's genotypes
 
 Click the TRGT record. Its sample table gives `AL`, the allele lengths behind
-each tick, and `SD`, the number of reads spanning each allele. HG02559's second
-allele has an `SD` of 0, the grey tick in the figure above.
+each tick, and `SD`, the number of reads spanning each allele. One of HG02559's
+alleles has an `SD` of 0, the grey tick in the figure above.
 
 ## The ABCA7 alleles across 94 samples
 

@@ -230,11 +230,11 @@ margin.
 
 Clustering reads the region on screen, and over the whole window the
 undifferentiated sites dilute the separating columns. Zoom to the core, cluster
-there, then widen back out. The display stores the order per sample name, so it
-holds. A session can set the region directly with `clusterRegion` beside
-`runClustering`, as the figure below does.
+there, then widen back out to see how far the block runs. A session can set the
+region directly with `clusterRegion` beside `runClustering`, as the figure below
+does.
 
-<Video src="/media/dog10k/igf1_cluster_route.mp4" caption="The route on the differentiated core: rows in the panel's build order, the track menu's clustering run, and the same order held when the window widens back out. The size swatch starts as three breed blocks and ends interleaved." />
+<Video src="/media/dog10k/igf1_cluster_route.mp4" caption="The route on the differentiated core: rows in the panel's build order, then the track menu's clustering run, which gathers the size classes into blocks on genotype alone. Widened back out, the small breeds share one haplotype across IGF1 that most giants lack." />
 
 ## Reading the IGF1 haplotype block
 

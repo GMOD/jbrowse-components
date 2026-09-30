@@ -47,8 +47,9 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 ## CFH: a two-gene deletion
 
 Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and
-press **haplotypes** on the CFH / CFHR row. Lanes missing _CFHR3_ and _CFHR1_
-(Hughes et al. 2006) are shorter.
+press **haplotypes** on the CFH / CFHR row. A lane missing _CFHR3_ and _CFHR1_
+(Hughes et al. 2006), such as HG00253's second haplotype, runs from _CFH_
+straight on to _CFHR4_.
 
 <Figure caption="The CFH cluster from the HPRC page's haplotypes launch: the RefSeq genes over one lane per structural configuration, each a haplotype's walk read from the graph and drawn on that haplotype's contig under its CAT genes. A lane that lacks CFHR3 and CFHR1 leaves that stretch of its neighbour unmatched in the band between them." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
@@ -63,9 +64,11 @@ press **Draw these lanes**.
 ## Amylase: copy number
 
 Press **haplotypes** on the AMY1 row and choose `HG01361.1`, `HG00133.2`,
-`HG00133.1`, `NA18608.2` and `HG00232.1`. A longer lane carries more copies.
+`HG00133.1`, `NA18608.2` and `HG00232.1`. A lane carrying more copies spans more
+of its contig in the same width, and its label gives that span as a multiple of
+the window.
 
-<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, each from a different span class, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes, and the lane's length across the array carries the copy count; each band draws the extra copies of the longer lane as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
+<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, each from a different span class, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes, and the span in each lane's label carries the copy count; each band draws the extra copies of the longer lane as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
 
 To read the lengths, take **Display types → Graph**, enter the five names in
 **Settings → Haplotypes**, then pick **Layout → Walk rows** and **Color →
@@ -184,7 +187,7 @@ bash build_amylase_haplotypes.sh
 }
 ```
 
-<Figure caption="One haplotype of each common amylase structure from the offline script, one AMY1 copy at the top to seven at the bottom, each under its gene track and aligned to the row under it by minimap2, colored by strand. The two three-copy rows align straight through; one copy to three and three to five each open a wedge over the genes only the longer row carries." src="/img/multiway_synteny/hprc_amylase_stack.png" />
+<Figure caption="One haplotype of each common amylase structure from the offline script, one AMY1 copy at the top to seven at the bottom, each under its gene track and aligned to the row under it by minimap2, colored by strand. The two three-copy rows align end to end, crossed in the middle where the array's inverted copies match each other both ways. One copy to three, three to five and five to seven each open a wedge over the genes only the longer row carries." src="/img/multiway_synteny/hprc_amylase_stack.png" />
 
 ## Whole genomes from a GFA
 

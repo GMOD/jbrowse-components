@@ -253,8 +253,8 @@ Moving a figure off a page means moving its card's crop source in
 - Two pages were removed and don't come back as written: `readpair_heatmap`
   (16250c4b58) and `introgression` (3be9f8f745), whose human archaic figures a
   reviewer could not check and which had no negative control. `methylation.md`'s
-  fiber-seq section is the pattern: the treated sample above its no-enzyme
-  control in one figure.
+  SNRPN figure is the pattern: the methylated haplotype above its unmethylated
+  partner in one figure.
 - `pangenome_chrm` (42d7fe8da6) was removed too. Its caption claimed clean
   lineage clusters the matrix did not show, its legend offered heterozygous
   dosage on a haploid genome, and a band at the start of the chromosome read as

@@ -269,8 +269,9 @@ tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:191,000,001-192,000
 | 191 to 192 Mb  |        161 |   55 |
 | 203 to 204 Mb  |        690 |   47 |
 
-The dense megabase holds several times the copies and fewer AluY, so its young
-share is lower and its bar is blue.
+The AluY count barely moves between the two megabases. The difference is the
+older copies, which pile up in the dense one, so the young share is lower there
+and its bar is blue: the share tracks where old Alu has accumulated.
 
 ## Reproduce it end to end
 

@@ -240,10 +240,11 @@ The bottom band is the tumors whose receptor calls do not resolve a subtype.
 Hovering a column names its mutation and consequence; clicking opens the variant
 popup with per-tumor read counts.
 
-_PIK3CA_ at the same zoom piles on two hotspots in the HR+/HER2- band, H1047R in
-the kinase domain and E542K/E545K in the helical one.
+_PIK3CA_ at the same zoom piles its calls on three columns, H1047R in the kinase
+domain and E542K and E545K side by side in the helical one. All three run
+through every band, densest in HR+/HER2-.
 
-<Figure caption="PIK3CA's exons with the rows banded and colored by receptor subtype and the gene's introns collapsed. Two columns carry most of the cohort's calls, against the private columns spread around them." src="/img/tcga/mutations_pik3ca_grouped.png" />
+<Figure caption="PIK3CA's exons with the rows banded and colored by receptor subtype and the gene's introns collapsed. Three columns, two in the helical domain and one in the kinase domain, carry most of the cohort's calls, against the private columns spread around them." src="/img/tcga/mutations_pik3ca_grouped.png" />
 
 ## Add a mutation recurrence track
 

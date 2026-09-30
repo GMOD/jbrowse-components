@@ -163,21 +163,21 @@ rows in the figure below:
         "name": "CD4 T",
         "group": "T cell",
         "color": "#1f77b4",
-        "uri": "https://example.com/bw/CD4_T.bw"
+        "uri": "https://jbrowse.org/demos/scrna_pbmc5k/CD4_T.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "CD8 T",
         "group": "T cell",
         "color": "#279e68",
-        "uri": "https://example.com/bw/CD8_T.bw"
+        "uri": "https://jbrowse.org/demos/scrna_pbmc5k/CD8_T.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "CD14 Mono",
         "group": "Monocyte",
         "color": "#8c564b",
-        "uri": "https://example.com/bw/CD14_Mono.bw"
+        "uri": "https://jbrowse.org/demos/scrna_pbmc5k/CD14_Mono.bw"
       }
     ]
   },
@@ -192,7 +192,17 @@ rows in the figure below:
 Take the row order and colors from the single-cell object, so related lineages
 stay adjacent and a row keeps the color its cluster had on the UMAP.
 
-<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view, in the same order as the rows they mark. The signal runs down the diagonal." src="/img/scrna/marker_panel.png" />
+The clusters were named by scoring them against marker panels, so those markers
+would light up their own rows by construction. To test the labels, open nine
+markers the panels leave out, one per cell type: _CD40LG_, _LINC02446_, _SPON2_,
+_CD22_, _S100A12_, _HES4_, _ENHO_, _LRRC26_ and _GNG11_. Paste their 3' ends
+into the location box as one discontinuous view:
+
+```text
+chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,931 chr19:35,345,361-35,349,361 chr1:153,371,710-153,375,710 chr1:996,963-1,000,963 chr9:34,519,042-34,523,042 chr9:137,166,757-137,170,757 chr7:93,926,610-93,930,610
+```
+
+<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci the cluster labelling did not use, in the same order as the rows they mark. The signal runs down the diagonal." src="/img/scrna/marker_panel.png" />
 
 Each marker's expression shows as the height of its 3' spike from row to row.
 The axis is logarithmic because all nine rows share it.

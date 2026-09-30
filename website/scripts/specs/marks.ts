@@ -335,7 +335,7 @@ export const aluAgeSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'Alu sparse: more young copies',
+        text: 'Alu sparse: young share high',
         fontSize: 18,
         leader: true,
         anchor: {
@@ -348,7 +348,7 @@ export const aluAgeSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Alu dense: fewer young copies',
+        text: 'Alu dense: young share low',
         fontSize: 18,
         leader: true,
         anchor: {

@@ -181,8 +181,8 @@ haplotype, each labelled by a chip.
 
 See the
 [alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for
-the Group-by dialog and the [phased-trio tutorial](/docs/tutorials/analyze_trio)
-for producing `HP`-tagged reads.
+the Group-by dialog. `whatshap haplotag` writes the `HP` tag onto your own reads
+from a phased VCF.
 
 ## Navigating with bedMethyl and comparing samples
 

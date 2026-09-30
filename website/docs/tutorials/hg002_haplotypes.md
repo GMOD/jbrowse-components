@@ -96,12 +96,13 @@ haplotype to chain to, and their column and row stay empty.
 ## The 8p23.1 inversion
 
 Every chromosome in the plot is a red diagonal against the same chromosome on
-the other haplotype, and chromosome 8 is the one to look at closely. HG002 is
-heterozygous for the 8p23.1 inversion polymorphism (Bosch _et al._ 2009), so the
-maternal and paternal copies of that arm run in opposite directions, and the
-Q100 chain carries it as its largest inverted block, close to 4 Mb. A linear
-synteny view reads the two copies against each other, with the tracks for each
-haplotype beside the ribbons.
+the other haplotype, and a few carry small blue marks where a stretch runs
+inverted. At whole-genome scale those marks look alike, so the literature picks
+which to open: HG002 is heterozygous for the 8p23.1 inversion polymorphism
+(Bosch _et al._ 2009), so the maternal and paternal copies of that arm run in
+opposite directions, and the Q100 chain carries it as its largest inverted
+block, close to 4 Mb. A linear synteny view reads the two copies against each
+other, with the tracks for each haplotype beside the ribbons.
 
 Open **Add → Linear synteny view**. Its **Quick start** already offers the two
 rows the chain implies and the chain between them, so press **Launch**; both

@@ -104,28 +104,6 @@ then pick **Layout → Force-directed layout** from the graph track menu and tic
 
 <Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one cut. The bubbles lane is a single row, the allele inventory draws each alternative path at its size, and the graph carries one superbubble label, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and each charcoal loop is sequence other strains carry and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
-## Opening the bubble
-
-The bubble index lists the whole _Dock2_ window as one **superbubble**, the name
-the index gives a bubble too large to type as an insertion or deletion. Its
-label gives a segment count and the span of its routes. A bubble that fills the
-whole drawing gets the label and no halo.
-
-Click the label. The track lays out the segments of that bubble alone and
-derives the bubbles inside it: a backbone node that no edge jumps over is a
-boundary, and the stretch between two boundaries is a bubble. Each derived
-bubble gets a halo and a label that opens in turn, and each level has a button
-back to the level above.
-[Repeat lengths across HPRC haplotypes](/docs/tutorials/pangenome_hprc_repeats#the-lpa-kringle-repeat)
-opens one such level at _LPA_.
-
-## The control
-
-_Nnt_ holds one large allele that the other strains carry and the reference
-lacks, so its cut should hold nothing to descend into. The
-[Nnt figure](#nnt-a-deletion-that-appears-as-an-insertion) halos that allele as
-a plain insertion, and none of its labels is a superbubble.
-
 ## Check it against the index
 
 The _Dock2_ bubble is one row of the hosted bubble index:
@@ -135,9 +113,8 @@ tabix https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed
   'mm39#0#chr11:34516044-34560497'
 ```
 
-The row gives the segment count and route span the label printed. The track
-derives the bubbles inside it each time the level opens, so they appear in no
-file.
+The row gives the segment count and route span the figure's superbubble label
+prints.
 
 ## Build it yourself
 

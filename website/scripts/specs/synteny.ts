@@ -252,7 +252,20 @@ const CHRY_GENE_LANE = {
 // hg38 vs T2T-CHM13 (hs1) at TNNT3, the locus the genomes.jbrowse.org demo
 // session parks on. `view` carries the ribbon-drawing settings that differ
 // between the default figure and the curved/transparent-indel one.
-function tnnt3Session(view: Record<string, unknown> = {}) {
+const LINC01150_BAND = { label: 'LINC01150', color: 'rgba(120,80,200,0.14)' }
+
+function tnnt3Session(
+  view: Record<string, unknown> = {},
+  { markLinc01150 = false } = {},
+) {
+  const band = (assemblyName: string, start: number, end: number) =>
+    markLinc01150
+      ? {
+          highlight: [
+            { refName: 'chr11', start, end, assemblyName, ...LINC01150_BAND },
+          ],
+        }
+      : {}
   return sessionSpec(HG38_HS1_CONFIG, {
     views: [
       {
@@ -266,6 +279,7 @@ function tnnt3Session(view: Record<string, unknown> = {}) {
             loc: 'chr11:1,881,000-1,955,000',
             tracks: [{ trackId: 'hg38-genes', geneGlyphMode: 'longestCoding' }],
             trackLabels: 'offset',
+            ...band('hg38', 1_897_015, 1_908_656),
           },
           {
             // same window shifted by the +83.7 kb hg38->hs1 offset the demo
@@ -284,6 +298,7 @@ function tnnt3Session(view: Record<string, unknown> = {}) {
               },
             ],
             trackLabels: 'offset',
+            ...band('hs1', 2_011_880, 2_023_477),
           },
         ],
       },
@@ -4029,7 +4044,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     ...TNNT3_FRAME,
     name: 'synteny_hg38_hs1_tnnt3',
-    url: tnnt3Session({ drawCurves: true, cigarMode: 'matches' }),
+    url: tnnt3Session(
+      { drawCurves: true, cigarMode: 'matches' },
+      { markLinc01150: true },
+    ),
   },
 
   // Two-part figure for the genomes_synteny tutorial: the same view as it opens
@@ -4534,37 +4552,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
         dx: 40,
         dy: 80,
       },
-    ],
-  },
-
-  // The dotplot import form with HG008T v3.2 on one axis and GRCh38 on the other
-  // (tutorial caption). An empty DotplotView (views:[{},{}]) shows the form; both
-  // selectors default to the config's first assembly (GRCh38_GIABv3), so open the
-  // first (x-axis) selector and pick HG008T v3.2. Replaces a stale hand-made
-  // capture that showed unrelated generic assembly names. Selecting via the UI
-  // (not pre-setting assemblies in the snapshot) keeps the form open — pre-set
-  // assemblies auto-launch the view.
-  {
-    mode: 'url',
-    name: 'sv_cgiab/dotplot_import_form',
-    url: cgiabUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
-    // the cgiab config has synteny tracks, so the form opens in Quick start;
-    // this figure is about picking the two assemblies, which is Manual
-    readyText: 'Quick start',
-    readyTimeout: 60000,
-    viewportWidth: 1500,
-    // tall enough to include the optional synteny-track row below the assembly
-    // selectors and the full wrapped helper text — 400 clipped the card's bottom
-    // edge mid-sentence, and 477 clipped it again once each axis took its own
-    // row (the run reported 83 css px)
-    viewportHeight: 561,
-    actions: [
-      // Manual inherits Quick start's track, so the axes already read
-      // HG008T v3.2 / GRCh38_GIABv3 with the synteny track selected — exactly
-      // the pairing this figure wants. No menu-driving needed to set them.
-      { type: 'click', text: 'Manual' },
-      { type: 'waitForText', text: 'Select assemblies for dotplot view' },
-      { type: 'delay', ms: 1000 },
     ],
   },
 

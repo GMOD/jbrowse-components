@@ -10,8 +10,8 @@ tutorial_category: Genes & annotation
 ---
 
 We look at where the genes sit along human chromosome 1 and which transposons
-sit near them: Alu elements pile up where the genes are, and L1 elements where
-they are not. A whole chromosome holds more genes, and far more repeat copies,
+sit near them: Alu elements pile up where the genes are, and L1 elements spread
+more evenly. A whole chromosome holds more genes, and far more repeat copies,
 than a browser fetches at once, so each track points at a small bigWig of
 feature counts per kilobase, built once with `jbrowse make-density`. The track
 draws that bigWig as a band wherever its features are too many to fetch, and
@@ -60,11 +60,11 @@ records to draw a screen stops at the estimate and, since each of these has a
 density sidecar, draws the sidecar instead. Each band is the features per
 kilobase in that track along the chromosome, scaled to the track's peak.
 
-<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes, the Alu and L1 copies from RepeatMasker, and the simple repeats. Each band is that track's features per kilobase, scaled to its own peak. Genes cluster at the 1p36 tip and across 1q21 to 1q23; Alu rises and falls with them, L1 fills the stretches between, and the simple repeats stay level throughout." />
+<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes, the Alu and L1 copies from RepeatMasker, and the simple repeats. Each band is that track's features per kilobase, scaled to its own peak. Genes cluster at the 1p36 tip and across 1q21 to 1q23, and Alu rises and falls with them. L1 and the simple repeats run close to level throughout." />
 
-The gene band and the Alu band peak together, the L1 band is close to their
-inverse, and the simple-repeat band, the control, follows neither. The gap in
-every band is the centromere.
+The gene band and the Alu band peak together. The simple-repeat band, the
+control, follows neither, and at this scale neither does L1, which runs about as
+level. The gap in every band is the centromere.
 
 ## Building the density sidecar
 
@@ -125,7 +125,7 @@ Zoom to 10 Mb over 1q21 to 1q23. The gene track's fetch now fits, so its band is
 gone and the genes are drawn. The Alu and L1 tracks would still each pull
 thousands of records for this window, so they keep their bands.
 
-<Figure src="/img/gene_density_1q21.png" caption="10 Mb of chromosome 1 from 150 to 160 Mb. The RefSeq genes are back as features; the Alu and L1 tracks, still over budget at this width, keep their bands. The Alu band peaks under the densest run of genes, and the L1 band is fullest where the genes thin out." />
+<Figure src="/img/gene_density_1q21.png" caption="10 Mb of chromosome 1 from 150 to 160 Mb. The RefSeq genes are back as features; the Alu and L1 tracks, still over budget at this width, keep their bands. The Alu band peaks under the densest runs of genes, and the L1 band runs more evenly across them." />
 
 A track draws its features once their fetch fits the budget. The gene track and
 the Alu track show the same window here, and only the Alu track is over budget.
@@ -152,8 +152,8 @@ tabix L1.bed.gz chr1:155,000,000-156,000,000 | wc -l
 | 155 to 156 Mb | 49    | 1298 | 254 | 269            |
 | 60 to 61 Mb   | 4     | 146  | 295 | 235            |
 
-The gene count runs with the Alu count and against the L1 count, and the simple
-repeats come out about the same in both, the same pattern the four bands show.
+The gene count runs with the Alu count, while L1 and the simple repeats come out
+about the same in both, the same pattern the four bands show.
 
 ## Reproduce it end to end
 
