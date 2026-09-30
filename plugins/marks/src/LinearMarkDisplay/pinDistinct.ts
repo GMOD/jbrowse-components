@@ -21,16 +21,25 @@ export interface SharedKey {
  */
 export function sharedKeysOf(sections: MarkLegendSection[]): SharedKey[] {
   return sections.flatMap(({ markIndexes, channel, scale }) => {
-    const entries: [value: string, swatch: string][] =
+    const keyed:
+      | { entries: [value: string, swatch: string][]; domain: string[] }
+      | undefined =
       scale.kind === 'categorical'
-        ? scale.entries.map(e => [e.value, String(e.color)])
+        ? {
+            entries: scale.entries.map(e => [e.value, String(e.color)]),
+            domain: scale.domain,
+          }
         : scale.kind === 'shape'
-          ? scale.entries.map(e => [e.value, e.shape])
-          : []
-    if (entries.length === 0) {
+          ? {
+              entries: scale.entries.map(e => [e.value, e.shape]),
+              domain: scale.domain,
+            }
+          : undefined
+    if (!keyed) {
       return []
     }
-    const listed = new Set(scale.domain)
+    const { entries, domain } = keyed
+    const listed = new Set(domain)
     const bySwatch = new Map<string, string[]>()
     for (const [value, swatch] of entries) {
       if (value !== '') {
@@ -47,7 +56,7 @@ export function sharedKeysOf(sections: MarkLegendSection[]): SharedKey[] {
             channel,
             shared,
             pinned: [
-              ...scale.domain,
+              ...domain,
               ...entries.flatMap(([value]) =>
                 value !== '' && !listed.has(value) ? [value] : [],
               ),

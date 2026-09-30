@@ -897,7 +897,11 @@ export function markProblems({
   const drawsRows = named(rows?.field) && !faceted
   // the field the sections or rows are split on, which every section's rows
   // keep through the steps that make rows
-  const split = faceted ? facet?.field : drawsRows ? rows?.field : undefined
+  const split = faceted
+    ? String(facet?.field)
+    : drawsRows
+      ? String(rows?.field)
+      : undefined
   const section = readable(facet?.transform ?? [])
   const display = readable(transform)
   const shared = [...display, ...section]
