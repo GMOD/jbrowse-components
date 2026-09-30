@@ -19,6 +19,7 @@
 //
 // Usage: node scripts/agent-evals/webAgentEval.ts [--device id] [--model m]
 //        [--filter name] [--runs N] [--out dir] [--build dir] [--guide]
+//        [--set dev|heldout|all]
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -27,7 +28,9 @@ import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 
 import { servePageBridge } from './pageBridge.ts'
-import { BASELINE_SPEC, TASKS } from './tasks.ts'
+import { BASELINE_SPEC, selectTasks } from './tasks.ts'
+
+import type { TaskSet } from './tasks.ts'
 
 const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -41,6 +44,7 @@ function flag(name: string, fallback: string) {
 const model = flag('model', 'sonnet')
 const filter = flag('filter', '')
 const runs = Number(flag('runs', '1'))
+const taskSet = flag('set', 'dev') as TaskSet
 const buildDir = path.resolve(
   flag('build', path.join(repoRoot, 'products/jbrowse-web/build')),
 )
@@ -252,7 +256,7 @@ interface RunMetrics {
   usd: number
 }
 
-const tasks = TASKS.filter(t => !filter || t.name.includes(filter))
+const tasks = selectTasks(taskSet, filter, 'web')
 const metrics: RunMetrics[] = []
 try {
   for (const task of tasks) {

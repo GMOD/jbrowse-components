@@ -25,17 +25,32 @@
 // build/mcpServer.js), and `claude` on PATH. Under xvfb:
 // `pnpm --filter @jbrowse/desktop eval:mcp:headless`.
 //
-// Usage: node test/mcpAgentEval.ts [--model sonnet|opus] [--filter name]
+// `--set heldout` runs the tasks phrased apart from the docs. Run them to read
+// the dev score against, not while editing the docs or jb.help. The run also
+// reports which briefed jb routes the agents reached, derived from the live
+// object and its `help` string, so a route no task exercises shows by name.
+//
+// Usage: node test/mcpAgentEval.ts [--model sonnet|opus|haiku] [--filter name]
 //        [--runs N] [--out dir] [--client code|desktop] [--attach]
+//        [--set dev|heldout|all]
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline'
 
-import { BASELINE_SPEC, TASKS } from '../../../scripts/agent-evals/tasks.ts'
+import {
+  briefedRoutes,
+  rollUpRoutes,
+  routesUsed,
+} from '../../../scripts/agent-evals/jbUsage.ts'
+import {
+  BASELINE_SPEC,
+  selectTasks,
+} from '../../../scripts/agent-evals/tasks.ts'
 import { desktopRoot, openVolvox, repoRoot } from './mcpHarness.ts'
 
+import type { TaskSet } from '../../../scripts/agent-evals/tasks.ts'
 import type { McpClient } from './mcpHarness.ts'
 
 const args = process.argv.slice(2)
@@ -46,6 +61,7 @@ function flag(name: string, fallback: string) {
 const model = flag('model', 'sonnet')
 const filter = flag('filter', '')
 const runs = Number(flag('runs', '1'))
+const taskSet = flag('set', 'dev') as TaskSet
 const client = flag('client', 'code')
 const outDir = path.resolve(
   flag('out', path.join(os.tmpdir(), `jbrowse-agent-eval-${Date.now()}`)),
@@ -116,6 +132,10 @@ interface RunMetrics {
   chars: Record<string, number>
   images: number
   docsArgs: string[]
+  // run_javascript calls whose code names each briefed jb route, and how many
+  // of those calls errored
+  routeCalls: Record<string, number>
+  routeErrors: Record<string, number>
 }
 
 function stripClaudeEnv() {
@@ -188,7 +208,7 @@ function resultText(content: unknown) {
   return { chars, images }
 }
 
-function count(events: StreamEvent[]) {
+function count(events: StreamEvent[], routes: string[]) {
   const calls = {
     runJavascript: 0,
     errored: 0,
@@ -198,9 +218,12 @@ function count(events: StreamEvent[]) {
   }
   const chars: Record<string, number> = {}
   const docsArgs: string[] = []
+  const routeCalls: Record<string, number> = {}
+  const routeErrors: Record<string, number> = {}
   // a tool_result names only the id it answers, so the tool it cost is the
   // tool_use that id belongs to
   const nameById = new Map<string, string>()
+  const routesById = new Map<string, string[]>()
   let images = 0
   for (const ev of events) {
     for (const block of ev.message?.content ?? []) {
@@ -211,6 +234,13 @@ function count(events: StreamEvent[]) {
         }
         if (name === 'run_javascript') {
           calls.runJavascript += 1
+          const used = routesUsed(String(block.input?.code ?? ''), routes)
+          if (block.id) {
+            routesById.set(block.id, used)
+          }
+          for (const route of used) {
+            routeCalls[route] = (routeCalls[route] ?? 0) + 1
+          }
         } else if (name === 'docs') {
           calls.docs += 1
           const { topic, section, search } = block.input ?? {}
@@ -227,6 +257,9 @@ function count(events: StreamEvent[]) {
       if (block.type === 'tool_result') {
         if (block.is_error) {
           calls.errored += 1
+          for (const route of routesById.get(block.tool_use_id ?? '') ?? []) {
+            routeErrors[route] = (routeErrors[route] ?? 0) + 1
+          }
         }
         const name = nameById.get(block.tool_use_id ?? '') ?? 'other'
         const measured = resultText(block.content)
@@ -242,6 +275,8 @@ function count(events: StreamEvent[]) {
     chars,
     images,
     docsArgs,
+    routeCalls,
+    routeErrors,
     turns: result?.num_turns ?? 0,
     seconds: Math.round((result?.duration_ms ?? 0) / 1000),
     usd: Number((result?.total_cost_usd ?? 0).toFixed(3)),
@@ -311,14 +346,21 @@ fs.writeFileSync(
   }),
 )
 
-const tasks = TASKS.filter(t => !filter || t.name.includes(filter))
+const tasks = selectTasks(taskSet, filter, 'desktop')
 const metrics: RunMetrics[] = []
 const session = await openVolvox(attach)
+const briefing = (
+  await session.client.callJson('run_javascript', {
+    code: 'return { members: Object.keys(jb), help: jb.help }',
+    timeoutMs: 30_000,
+  })
+).value as { members: string[]; help: string }
+const routes = briefedRoutes(briefing.help, briefing.members)
 try {
   for (const task of tasks) {
     for (let run = 1; run <= runs; run++) {
       let events: StreamEvent[] = []
-      let counted = count(events)
+      let counted = count(events, routes)
       // one task whose staging times out costs its own row, not the half hour
       // of runs behind it
       let verdict: { pass: boolean; detail: unknown } = {
@@ -338,7 +380,7 @@ try {
         }
         const prompt = task.prompt.replaceAll('DATA', repoRoot)
         events = await runAgent(prompt, cwd, mcpConfig)
-        counted = count(events)
+        counted = count(events, routes)
         verdict = await grade(session.client, task.grade, counted.answer)
       } catch (e) {
         verdict = { pass: false, detail: { harnessError: `${e}` } }
@@ -390,8 +432,12 @@ const medians = tasks.map(task => {
     tokens: of(m => m.tokensIn + m.cacheWrite + m.cacheRead + m.tokensOut),
     chars: of(m => Object.values(m.chars).reduce((a, n) => a + n, 0)),
     seconds: of(m => m.seconds),
+    passes: rows.filter(m => m.pass).length,
+    runs: rows.length,
   }
 })
+const everyRun = medians.filter(m => m.passes === m.runs).length
+const routeRows = rollUpRoutes(metrics, routes)
 
 console.log(
   `\n${passed}/${metrics.length} passed on ${model} (client ${client}); run_javascript ${sum('runJavascript')}, errored ${sum('errored')}, docs ${sum('docs')}, screenshots ${sum('screenshots')}, ${sum('seconds')}s, $${sum('usd').toFixed(2)}`,
@@ -399,23 +445,43 @@ console.log(
 console.log(
   `tokens in ${sum('tokensIn')}, cache write ${sum('cacheWrite')}, cache read ${sum('cacheRead')}, out ${sum('tokensOut')}; tool_result chars ${charsLine(charTotals)}, images ${sum('images')}`,
 )
+console.log(
+  `${everyRun}/${medians.length} tasks passed every one of their ${runs} run(s)`,
+)
 if (runs > 1) {
   console.log('\nper-task medians over the runs')
   for (const m of medians) {
     console.log(
-      `  ${m.task.padEnd(20)} js=${m.runJavascript} err=${m.errored} tokens=${m.tokens} chars=${m.chars} ${m.seconds}s`,
+      `  ${m.task.padEnd(28)} ${m.passes}/${m.runs} js=${m.runJavascript} err=${m.errored} tokens=${m.tokens} chars=${m.chars} ${m.seconds}s`,
     )
   }
 }
+console.log(
+  `\nbriefed routes reached (${routeRows.filter(r => r.calls > 0).length}/${routeRows.length}): calls, errors, runs passed/failed`,
+)
+for (const r of routeRows.filter(r => r.calls > 0)) {
+  console.log(
+    `  ${r.route.padEnd(24)} ${r.calls} calls, ${r.errors} err, ${r.passedRuns}/${r.failedRuns}`,
+  )
+}
+console.log(
+  `never reached: ${routeRows
+    .filter(r => r.calls === 0)
+    .map(r => r.route)
+    .join(' ')}`,
+)
 fs.writeFileSync(
   path.join(outDir, 'summary.json'),
   JSON.stringify(
     {
       model,
       client,
+      set: taskSet,
       runs,
       passed,
       total: metrics.length,
+      tasksPassingEveryRun: everyRun,
+      routes: routeRows,
       totals: {
         runJavascript: sum('runJavascript'),
         errored: sum('errored'),
