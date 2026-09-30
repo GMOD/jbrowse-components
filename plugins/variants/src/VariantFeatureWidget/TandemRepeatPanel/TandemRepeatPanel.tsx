@@ -236,7 +236,7 @@ export default function TandemRepeatPanel({
   const mode: Mode =
     byAllele &&
     (chosen ??
-      (repeat.alleles.length > SAMPLE_MAX_ROWS ? 'allele' : 'sample')) ===
+      (repeat.haplotypeCount > SAMPLE_MAX_ROWS ? 'allele' : 'sample')) ===
       'allele'
       ? 'allele'
       : 'sample'
@@ -310,7 +310,7 @@ export default function TandemRepeatPanel({
           style={{ display: 'block' }}
           data-testid="tandem-repeat-view"
         >
-          {axisTicks(maxBp).map(bp => (
+          {axisTicks(maxBp, Math.max(2, Math.floor(plotPx / 50))).map(bp => (
             <g key={bp}>
               <line
                 x1={X(bp)}
