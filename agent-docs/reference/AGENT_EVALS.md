@@ -57,5 +57,14 @@ turns and dollars, not characters removed.
 
 `--runs N` prints `passes/runs` per task and how many tasks passed every run.
 One run per task hides a 75% task: three passes in a row happen about 42% of the
-time at that rate. Sonnet saturates the dev set; `--model haiku` is the weaker
-agent that still discriminates.
+time at that rate.
+
+## The agents that count
+
+The target is sonnet and opus at their best, so a weaker model is not the
+yardstick and a fix that only a weak model needs is not wanted. When the dev
+set saturates on sonnet, add harder tasks rather than a weaker model. A
+workaround in `jb` that exists because an agent stumbled is evidence to test,
+not a fixture: hide it and compare pass rate, turns and dollars on opus and
+sonnet. `agent-docs/ideas/ready/ablate-the-jb-spellings-agents-stumbled-on.md`
+lists the two to try first.
