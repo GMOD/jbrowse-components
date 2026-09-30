@@ -22,6 +22,7 @@ export type {
   MarkSnapshot,
   StepSnapshot,
 } from './LinearMarkDisplay/markProblems.ts'
+export type { SharedKey } from './LinearMarkDisplay/pinDistinct.ts'
 export type { ValueColor } from './LinearMarkDisplay/valueColor.ts'
 
 export default class MarksPlugin extends Plugin {
