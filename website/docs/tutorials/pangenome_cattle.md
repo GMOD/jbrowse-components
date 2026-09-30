@@ -224,7 +224,9 @@ reference holds a collapsed copy. Open `chr6:70,080,000-70,180,000`.
 
 <Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes and the callset, whose variant lane draws the 20.6 kb record across the repeat and names its alleles. The Simmental row carries a distinct allele across the repeat, and every other row carries the deletion." src="/img/pangenome/bovine_kit.png" />
 
-Click the Simmental cell to read its allele length against the reference.
+The larger box at the left of the Simmental row is an insertion the length of
+the 14.3 kb segment: Simmental carries one more copy than the Hereford
+reference.
 
 ### A deletion of TAS2R46 in gaur
 
@@ -233,8 +235,10 @@ deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 
 <Figure caption="TAS2R46 on ARS-UCD1.2: RefSeq genes and the callset, whose variant lane draws the 17 kb record over the deleted span and names its alleles. The gaur row carries the deletion, and four cattle rows carry a different allele across the same span." src="/img/pangenome/bovine_tas2r46.png" />
 
-The four cattle rows hold an allele about as long as the reference with a
-different sequence. Click one to compare the two.
+The four cattle rows, Angus, Piedmontese, Brahman and Nellore, hold an allele
+slightly longer than the reference, and the insertion boxed in each row, between
+TAS2R46 and the next gene, is most of the difference. Two taurine and two
+indicine breeds share that allele, and only the gaur's deletes the span.
 
 ## Build it yourself
 
