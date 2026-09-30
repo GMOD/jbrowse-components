@@ -68,6 +68,7 @@ function Legend({
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
       {repeat.units.slice(0, UNIT_COLORS.length).map((unit, i) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- a unit is named by its position, "unit 1"
         <div key={i} style={legendRow}>
           <div style={{ ...swatch, backgroundColor: unitColor(i) }} />
           <span>
@@ -340,6 +341,7 @@ export default function TandemRepeatPanel({
           />
           {alleles.map((allele, i) => (
             <Row
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- nothing makes a row label unique
               key={`${allele.label}-${i}`}
               allele={allele}
               repeat={repeat}
