@@ -470,6 +470,55 @@ test('a jexl: field on a step is pointed at formula, where a dotted path is read
   ])
 })
 
+test('every channel reading a field the steps unmade is named, and the facet field is kept', () => {
+  const depth = (encoding: Record<string, unknown>) => ({
+    mark: 'bar',
+    transform: [{ type: 'coverage' }],
+    encoding,
+  })
+  expect(found([depth({ color: 'name' })])).toEqual([
+    'warning unwritten-field mark 0 encoding.color.field',
+  ])
+  expect(
+    problemsOf([depth({ color: { field: 'name', scale: 'categorical' } })]).map(
+      problemText,
+    ),
+  ).toEqual([
+    'mark 0 encoding.color.field: reads "name", which no step before it writes; they leave refName, start, end, coverage',
+  ])
+  expect(found([depth({ color: 'strand' })], 'strand')).toEqual([])
+  expect(found([depth({ color: 'strand' })], undefined, [], 'strand')).toEqual(
+    [],
+  )
+  expect(found([depth({ color: { value: 'red' } })])).toEqual([])
+  expect(found([depth({ color: 'jexl:feature.coverage > 3' })])).toEqual([])
+  expect(
+    found([
+      {
+        mark: 'text',
+        transform: [{ type: 'bin', step: 100 }, { type: 'aggregate' }],
+        encoding: {},
+      },
+    ]),
+  ).toEqual(['warning unwritten-field mark 0 encoding.text'])
+  expect(found([{ ...depth({ x: 'thickStart', row: 'lane' }) }])).toEqual([
+    'warning unwritten-field mark 0 encoding.x',
+    'warning unwritten-field mark 0 encoding.row',
+  ])
+  expect(
+    found([
+      {
+        mark: 'point',
+        transform: [{ type: 'coverage' }],
+        encoding: { shape: 'type', size: { field: 'score' } },
+      },
+    ]),
+  ).toEqual([
+    'warning unread-channel mark 0 encoding.size.field',
+    'warning unwritten-field mark 0 encoding.shape.field',
+  ])
+})
+
 test("the display's own steps are checked as a mark's are, under no mark", () => {
   const bar = { mark: 'bar', encoding: { y: 'score' } }
   const problems = problemsOf([bar], undefined, [

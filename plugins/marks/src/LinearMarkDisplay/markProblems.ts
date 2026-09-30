@@ -33,7 +33,7 @@ import {
 import { stepChannels } from './stepChannels.ts'
 
 import type { ColorSlots, ScaleEnds } from './markRuleFacts.ts'
-import type { MarkSpec } from './markSpecs.ts'
+import type { MarkChannel, MarkSpec } from './markSpecs.ts'
 import type {
   AggregateOpName,
   LineInterpolation,
@@ -105,6 +105,8 @@ export const MARK_RULES = {
   'step-field-expression': 'error',
   /** A `y` naming a field that no `aggregate` or `coverage` step before it writes. */
   'unwritten-y': 'error',
+  /** Another channel naming a field that no `aggregate` or `coverage` step before it writes, so it reads no value. */
+  'unwritten-field': 'warning',
   /** A mark other than a span drawn beside one that stacks rows, standing in the first of them. */
   'value-beside-rows': 'warning',
   /** Two `pileup` steps packing one plot, whose rows share numbers. */
@@ -640,10 +642,44 @@ function stepProblems(steps: Steps, list = 'transform') {
   return problems
 }
 
+// Each field a mark's channels read besides `y`, by the slot naming it: the
+// channels its type reads, a colour's or a shape's field where it is a scale,
+// a text's field as its default leaves it, and a link's size field.
+function channelFields(
+  mark: MarkSnapshot,
+  spec: MarkSpec,
+): [slot: string, field: string][] {
+  const encoding = mark.encoding ?? {}
+  const { x, x2, row, color = {}, shape, text = DEFAULT_TEXT_FIELD } = encoding
+  const reads = (channel: MarkChannel) => spec.channels.includes(channel)
+  const named: [string, string | undefined][] = [
+    ['encoding.x', x],
+    ['encoding.x2', typeof x2 === 'string' ? x2 : x2?.pos],
+    ['encoding.x2.chrom', typeof x2 === 'object' ? x2.chrom : undefined],
+    ['encoding.row', reads('row') ? row : undefined],
+    [
+      'encoding.color.field',
+      reads('color') && colorScaleOf(color) !== 'none'
+        ? fieldOf(color)
+        : undefined,
+    ],
+    ['encoding.shape.field', reads('shape') ? fieldOf(shape) : undefined],
+    ['encoding.text', reads('text') ? text : undefined],
+    [
+      'encoding.size.field',
+      spec.size === 'channel' ? sizeFieldOf(encoding.size) : undefined,
+    ],
+  ]
+  return named.flatMap(([slot, field]) =>
+    field && !isJexl(field) ? [[slot, field]] : [],
+  )
+}
+
 function ownProblems(
   mark: MarkSnapshot,
   display: readonly StepSnapshot[],
   section: readonly StepSnapshot[],
+  split?: string,
 ) {
   const type = markTypeOf(mark)
   const problems: OwnProblem[] = []
@@ -803,14 +839,23 @@ function ownProblems(
     )
   }
   const fields = madeFields([...display, ...section, ...stepsOf(mark)])
-  if (fields && y && !isJexl(y) && !fields.has(y)) {
-    problems.push(
-      found(
-        'unwritten-y',
-        'encoding.y',
-        `reads "${y}", which no step before it writes; they leave ${[...fields].join(', ')}`,
-      ),
-    )
+  if (fields) {
+    if (split) {
+      fields.add(split)
+    }
+    const leaves = `which no step before it writes; they leave ${[...fields].join(', ')}`
+    if (y && !isJexl(y) && !fields.has(y)) {
+      problems.push(
+        found('unwritten-y', 'encoding.y', `reads "${y}", ${leaves}`),
+      )
+    }
+    for (const [slot, field] of channelFields(mark, spec)) {
+      if (!fields.has(field)) {
+        problems.push(
+          found('unwritten-field', slot, `reads "${field}", ${leaves}`),
+        )
+      }
+    }
   }
   return problems
 }
@@ -849,6 +894,9 @@ export function markProblems({
 }: PlotSnapshot): MarkProblem[] {
   const faceted = named(facet?.field)
   const drawsRows = named(rows?.field) && !faceted
+  // the field the sections or rows are split on, which every section's rows
+  // keep through the steps that make rows
+  const split = faceted ? facet?.field : drawsRows ? rows?.field : undefined
   const section = readable(facet?.transform ?? [])
   const display = readable(transform)
   const shared = [...display, ...section]
@@ -883,7 +931,10 @@ export function markProblems({
     ...(drawsRows ? packingsUnderRows(marks, transform, section) : []),
     ...marks.flatMap((mark, i) =>
       mark
-        ? ownProblems(mark, display, section).map(p => ({ mark: i, ...p }))
+        ? ownProblems(mark, display, section, split).map(p => ({
+            mark: i,
+            ...p,
+          }))
         : [],
     ),
   ]

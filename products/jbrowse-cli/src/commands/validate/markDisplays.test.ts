@@ -260,6 +260,12 @@ describe('a marks list in a config file', () => {
     ).toEqual([])
   })
 
+  it('names a colour, shape, text or row field the steps leave out', () => {
+    expect(found([{ ...COVERAGE, encoding: { color: 'name' } }])).toEqual([
+      `warning unwritten-field ${DISPLAY}.marks[0].encoding.color.field`,
+    ])
+  })
+
   it('reads a step output by the name the step writes it to', () => {
     const depth = (as: unknown) => [
       {
