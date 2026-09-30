@@ -237,3 +237,47 @@ test('a copy number record stating no repeat gets no tandem repeat panel', () =>
   })
   expect(queryByText('Tandem repeat')).toBeNull()
 })
+
+const cohort = Object.fromEntries(
+  Array.from({ length: 40 }, (_, i) => [
+    `S${i}`,
+    { GT: [i < 10 ? '1|1' : '0|0'] },
+  ]),
+)
+
+const cohortRecord = {
+  uniqueId: 'cohort',
+  refName: 'chr6',
+  start: 160616002,
+  end: 160616003,
+  name: 'KIV-2',
+  REF: 'A',
+  ALT: ['<CNV:TR>'],
+  INFO: {
+    SVLEN: [30],
+    RN: [1],
+    RUS: ['ACGTACGTAC'],
+    RUC: [3],
+    RB: [30],
+  },
+  samples: cohort,
+}
+
+test('a cohort opens on one row per allele, not per sample', async () => {
+  const { findByText, queryByText } = renderWidget(cohortRecord)
+  await findByText('REF · 75%')
+  expect(queryByText('ALT 1 · 25%')).toBeTruthy()
+  expect(queryByText('S0#1')).toBeNull()
+})
+
+test('clicking an allele row narrows the Samples card to its carriers', async () => {
+  const { findByText, getAllByTestId, getByText } = renderWidget(cohortRecord)
+  await findByText('ALT 1 · 25%')
+  const row = getAllByTestId('tandem-repeat-row').find(r =>
+    r.textContent.includes('ALT 1'),
+  )!
+  fireEvent.click(row)
+  expect(getByText(/Samples \(10 of 40\) carrying ALT 1/)).toBeTruthy()
+  fireEvent.click(row)
+  expect(getByText('Samples (40)')).toBeTruthy()
+})

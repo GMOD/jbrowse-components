@@ -1,6 +1,13 @@
+import { useState } from 'react'
+
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import { Typography, useTheme } from '@mui/material'
+import {
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+  useTheme,
+} from '@mui/material'
 
 import { axisTicks, copiesOf, formatBp, readout } from './layout.ts'
 
@@ -98,6 +105,8 @@ function Row({
   text,
   gap,
   referenceBp,
+  dimmed,
+  onSelect,
 }: {
   allele: RepeatAllele
   repeat: TandemRepeat
@@ -108,6 +117,8 @@ function Row({
   text: string
   gap: string
   referenceBp: number
+  dimmed: boolean
+  onSelect: () => void
 }) {
   const top = y - BAR_PX / 2
   const copies = copiesOf(allele, repeat.units)
@@ -115,7 +126,19 @@ function Row({
   const ticked =
     !allele.runs && unit !== undefined && unit * scale >= MIN_COPY_PX
   return (
-    <g data-testid="tandem-repeat-row">
+    <g
+      data-testid="tandem-repeat-row"
+      opacity={dimmed ? 0.3 : 1}
+      style={{ cursor: 'pointer' }}
+      onClick={onSelect}
+    >
+      <rect
+        x={0}
+        y={y - ROW_PX / 2}
+        width="100%"
+        height={ROW_PX}
+        fill="transparent"
+      />
       <text x={labelRight} y={y + 4} fontSize={11} textAnchor="end" fill={text}>
         {allele.label}
       </text>
@@ -170,15 +193,35 @@ function Row({
 }
 
 const FALLBACK_WIDTH = 360
+// per-haplotype rows up to this many read as a sample list; beyond it the panel
+// opens on one row per allele, whose frequency stands in for the sample names
+const SAMPLE_ROWS_MAX = 24
+const ROWS_MAX = 30
+
+type Mode = 'sample' | 'allele'
 
 export default function TandemRepeatPanel({
   repeat,
+  selectedAlt,
+  onSelectAlt,
 }: {
   repeat: TandemRepeat
+  selectedAlt: number | null
+  onSelectAlt: (altIndex: number | null) => void
 }) {
   const theme = useTheme()
   const [ref, { width = FALLBACK_WIDTH }] = useMeasure('width')
-  const { alleles, refName, start, end } = repeat
+  const { byAllele, refName, start, end } = repeat
+  const [chosen, setChosen] = useState<Mode>()
+  const mode: Mode =
+    byAllele &&
+    (chosen ??
+      (repeat.alleles.length > SAMPLE_ROWS_MAX ? 'allele' : 'sample')) ===
+      'allele'
+      ? 'allele'
+      : 'sample'
+  const all = mode === 'allele' ? byAllele! : repeat.alleles
+  const alleles = all.slice(0, ROWS_MAX)
   const referenceBp = end - start
   const readouts = alleles.map(a => readout(a, referenceBp, repeat.unitLength))
   const labelPx = Math.max(...alleles.map(a => a.label.length)) * CHAR_PX + PAD
@@ -192,6 +235,8 @@ export default function TandemRepeatPanel({
   const text = theme.palette.text.primary
   const faint = theme.palette.text.secondary
   const gap = theme.palette.background.paper
+  const noun =
+    mode === 'allele' ? 'alleles' : byAllele ? 'haplotypes' : 'alleles'
   return (
     <BaseCard title="Tandem repeat">
       <div ref={ref}>
@@ -206,9 +251,26 @@ export default function TandemRepeatPanel({
         >
           <Typography variant="body2">
             <b>{repeat.name}</b> · {refName}:{(start + 1).toLocaleString()}-
-            {end.toLocaleString()} · {alleles.length} alleles, each on its own
-            bp axis
+            {end.toLocaleString()} · {all.length.toLocaleString()} {noun}
+            {mode === 'allele'
+              ? ` across ${repeat.calledAlleles.toLocaleString()} called`
+              : ''}
           </Typography>
+          {byAllele ? (
+            <ToggleButtonGroup
+              value={mode}
+              exclusive
+              size="small"
+              onChange={(_, next: Mode | null) => {
+                if (next) {
+                  setChosen(next)
+                }
+              }}
+            >
+              <ToggleButton value="allele">By allele</ToggleButton>
+              <ToggleButton value="sample">By haplotype</ToggleButton>
+            </ToggleButtonGroup>
+          ) : null}
           <Legend repeat={repeat} referenceBp={referenceBp} />
         </div>
         <svg
@@ -257,9 +319,21 @@ export default function TandemRepeatPanel({
               text={text}
               gap={gap}
               referenceBp={referenceBp}
+              dimmed={selectedAlt !== null && allele.altIndex !== selectedAlt}
+              onSelect={() => {
+                onSelectAlt(
+                  selectedAlt === allele.altIndex ? null : allele.altIndex,
+                )
+              }}
             />
           ))}
         </svg>
+        {all.length > alleles.length ? (
+          <Typography variant="caption">
+            {(all.length - alleles.length).toLocaleString()} more {noun} not
+            drawn
+          </Typography>
+        ) : null}
       </div>
     </BaseCard>
   )

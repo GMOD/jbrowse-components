@@ -15,13 +15,14 @@ import VariantAlleleFrequencyTable from './VariantAlleleFrequencyTable.tsx'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable.tsx'
 import SampleFilters from './VariantSampleFilters.tsx'
 import {
+  carriesAllele,
   filterSampleRows,
   getAlleleFrequencies,
   getSampleGridRows,
 } from './getSampleGridRows.ts'
 
 import type { Descriptions, VCFFeatureSerialized } from '../types.ts'
-import type { Filters } from './types.ts'
+import type { Filters, InfoFields } from './types.ts'
 
 // One entry per mode: its toggle-button label and which columns it shows. Adding
 // a mode here adds its button and its filter, with no third list to update.
@@ -42,15 +43,17 @@ type ColumnDisplayMode = keyof typeof columnDisplayModes
 
 // Stable empty defaults so the row/frequency/column memos below don't churn on
 // every render when a field is absent.
-const EMPTY_SAMPLES = {}
+const EMPTY_SAMPLES: Record<string, InfoFields> = {}
 const EMPTY_ALT: string[] = []
 
 export default function VariantSampleGrid({
   feature,
   descriptions,
+  selectedAlt = null,
 }: {
   feature: VCFFeatureSerialized
   descriptions?: Descriptions
+  selectedAlt?: number | null
 }) {
   const [filter, setFilter] = useState<Filters>({})
   const [storedColumnDisplayMode, setColumnDisplayMode] =
@@ -109,12 +112,22 @@ export default function VariantSampleGrid({
     [rows, filter],
   )
 
+  const allelePicked = useMemo(
+    () =>
+      selectedAlt === null
+        ? textFilteredRows
+        : textFilteredRows.filter(row =>
+            carriesAllele(samples[row.id], selectedAlt),
+          ),
+    [textFilteredRows, samples, selectedAlt],
+  )
+
   const filteredRows = useMemo(
     () =>
       selectedGenotypes === null
-        ? textFilteredRows
-        : textFilteredRows.filter(row => selectedGenotypes.has(row.GT)),
-    [textFilteredRows, selectedGenotypes],
+        ? allelePicked
+        : allelePicked.filter(row => selectedGenotypes.has(row.GT)),
+    [allelePicked, selectedGenotypes],
   )
 
   // Columns are the union of FORMAT fields across every sample, not just
@@ -248,9 +261,12 @@ export default function VariantSampleGrid({
 
       <Typography variant="subtitle2" style={{ marginTop: 16 }}>
         Samples{' '}
-        {selectedGenotypes !== null
-          ? `(${filteredRows.length} of ${textFilteredRows.length})`
-          : `(${textFilteredRows.length})`}
+        {filteredRows.length === textFilteredRows.length
+          ? `(${textFilteredRows.length})`
+          : `(${filteredRows.length} of ${textFilteredRows.length})`}
+        {selectedAlt === null
+          ? ''
+          : ` carrying ${selectedAlt === 0 ? 'REF' : `ALT ${selectedAlt}`}`}
       </Typography>
       <DataGridFlexContainer>
         <DataGrid

@@ -1,4 +1,5 @@
 import {
+  carriesAllele,
   filterSampleRows,
   getAlleleFrequencies,
   getSampleGridRows,
@@ -59,4 +60,12 @@ test('allele frequencies count called alleles, excluding missing', () => {
 test('allele frequencies are empty when no sample has a GT call', () => {
   expect(getAlleleFrequencies({ HG001: { DP: [30] } }, 'A', ['T'])).toEqual([])
   expect(getAlleleFrequencies({}, 'A', ['T'])).toEqual([])
+})
+
+test('carriesAllele reads the GT index, phased or not', () => {
+  expect(carriesAllele({ GT: ['0|1'] }, 1)).toBe(true)
+  expect(carriesAllele({ GT: ['0/2'] }, 1)).toBe(false)
+  expect(carriesAllele({ GT: ['0/1'] }, 0)).toBe(true)
+  expect(carriesAllele({ GT: ['./.'] }, 1)).toBe(false)
+  expect(carriesAllele(undefined, 1)).toBe(false)
 })

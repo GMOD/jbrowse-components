@@ -21,11 +21,15 @@ export interface RepeatUnit {
   sequence?: string
 }
 
-// The reference allele states no runs
+// The reference allele states no runs. `altIndex` is the allele's GT index, 0
+// for the reference; `count` is the called alleles carrying it, where the
+// allele stands for every haplotype that does
 export interface RepeatAllele {
   label: string
   bp: number
+  altIndex: number
   runs?: RepeatRun[]
+  count?: number
 }
 
 export interface TandemRepeat {
@@ -36,7 +40,13 @@ export interface TandemRepeat {
   // what the reference allele is ticked by
   unitLength?: number
   units: RepeatUnit[]
+  // one per called haplotype, or one per ALT allele of a record with no samples
   alleles: RepeatAllele[]
+  // one per allele the samples carry, most frequent first; undefined without
+  // called samples
+  byAllele?: RepeatAllele[]
+  // called alleles across samples, the denominator of each allele's frequency
+  calledAlleles: number
 }
 
 function info(f: VCFFeatureSerialized, name: string): unknown {
@@ -151,33 +161,83 @@ function labelOf(sample: string, k: number, called: number, phased: boolean) {
   return called > 1 ? `${sample} (${k + 1})` : sample
 }
 
+interface DrawnAllele {
+  label: string
+  bp: number
+  altIndex: number
+  runs?: ParsedRun[]
+  count?: number
+}
+
 function sampleAlleles(
   f: VCFFeatureSerialized,
   alleles: (ParsedRun[] | undefined)[],
   referenceBp: number,
 ) {
-  const samples = f.samples
-  const out: { label: string; bp: number; runs?: ParsedRun[] }[] = []
-  for (const [sample, fields] of Object.entries(samples ?? {})) {
+  const out: DrawnAllele[] = []
+  const counts = new Map<number, number>()
+  let calledAlleles = 0
+  for (const [sample, fields] of Object.entries(f.samples ?? {})) {
     const gt = strings(fields.GT)[0] ?? ''
     const phased = gt.includes('|')
     const called = gt.split(/[/|]/).flatMap((index, k) => {
       const i = Number(index)
+      if (index === '' || !Number.isInteger(i)) {
+        return []
+      }
+      counts.set(i, (counts.get(i) ?? 0) + 1)
+      calledAlleles++
       const runs = i > 0 ? alleles[i - 1] : undefined
-      if (!Number.isInteger(i) || (i > 0 && !runs)) {
+      if (i > 0 && !runs) {
         return []
       }
       return [
         runs
-          ? { k, bp: runs.reduce((s, r) => s + r.bp, 0), runs }
-          : { k, bp: referenceBp },
+          ? { k, altIndex: i, bp: runs.reduce((s, r) => s + r.bp, 0), runs }
+          : { k, altIndex: i, bp: referenceBp },
       ]
     })
     for (const { k, ...allele } of called) {
       out.push({ label: labelOf(sample, k, called.length, phased), ...allele })
     }
   }
-  return out
+  return { haplotypes: out, counts, calledAlleles }
+}
+
+export function formatPercent(count: number, total: number) {
+  const pct = (count / total) * 100
+  return `${pct >= 10 ? pct.toFixed(0) : pct.toPrecision(2)}%`
+}
+
+function byAlleleOf(
+  alleles: (ParsedRun[] | undefined)[],
+  counts: Map<number, number>,
+  calledAlleles: number,
+  referenceBp: number,
+) {
+  const distinct: DrawnAllele[] = [
+    { label: 'REF', bp: referenceBp, altIndex: 0 },
+    ...alleles.flatMap((runs, i) =>
+      runs
+        ? [
+            {
+              label: `ALT ${i + 1}`,
+              bp: runs.reduce((s, r) => s + r.bp, 0),
+              altIndex: i + 1,
+              runs,
+            },
+          ]
+        : [],
+    ),
+  ]
+  return distinct
+    .map(allele => ({ ...allele, count: counts.get(allele.altIndex) ?? 0 }))
+    .filter(allele => allele.count > 0)
+    .sort((a, b) => b.count - a.count || a.altIndex - b.altIndex)
+    .map(allele => ({
+      ...allele,
+      label: `${allele.label} · ${formatPercent(allele.count, calledAlleles)}`,
+    }))
 }
 
 // The record's alleles, one per called haplotype, or the ALT alleles of a
@@ -195,16 +255,21 @@ export function tandemRepeatOf(
   const start = f.start + 1
   const svlen = numbers(info(f, 'SVLEN'))[0]
   const end = svlen === undefined ? f.end : start + svlen
-  const called = sampleAlleles(f, alleles, end - start)
+  const { haplotypes, counts, calledAlleles } = sampleAlleles(
+    f,
+    alleles,
+    end - start,
+  )
   const drawn =
-    called.length > 0
-      ? called
+    haplotypes.length > 0
+      ? haplotypes
       : alleles.flatMap((runs, i) =>
           runs
             ? [
                 {
                   label: `ALT ${i + 1}`,
                   bp: runs.reduce((s, r) => s + r.bp, 0),
+                  altIndex: i + 1,
                   runs,
                 },
               ]
@@ -212,6 +277,17 @@ export function tandemRepeatOf(
         )
   const units = unitsOf(alleles)
   const index = new Map(units.map((u, i) => [u.key, i]))
+  const withUnits = ({ runs, ...allele }: DrawnAllele): RepeatAllele => ({
+    ...allele,
+    ...(runs
+      ? {
+          runs: runs.map(({ key, length: _length, sequence: _s, ...run }) => ({
+            unit: index.get(key)!,
+            ...run,
+          })),
+        }
+      : {}),
+  })
   return {
     name:
       strings(f.name)[0] ??
@@ -221,18 +297,14 @@ export function tandemRepeatOf(
     end,
     unitLength: unitLengthOf(f),
     units: units.map(({ key: _key, ...unit }) => unit),
-    alleles: drawn.map(({ runs, ...allele }) => ({
-      ...allele,
-      ...(runs
-        ? {
-            runs: runs.map(
-              ({ key, length: _length, sequence: _s, ...run }) => ({
-                unit: index.get(key)!,
-                ...run,
-              }),
-            ),
-          }
-        : {}),
-    })),
+    alleles: drawn.map(withUnits),
+    ...(calledAlleles > 0
+      ? {
+          byAllele: byAlleleOf(alleles, counts, calledAlleles, end - start).map(
+            withUnits,
+          ),
+        }
+      : {}),
+    calledAlleles,
   }
 }

@@ -103,6 +103,15 @@ export function getAlleleFrequencies(
         .sort((a, b) => b.count - a.count)
 }
 
+// Whether a sample's called genotype has the allele at GT index `altIndex`
+export function carriesAllele(
+  fields: InfoFields | undefined,
+  altIndex: number,
+) {
+  const gt = fields?.GT?.[0]
+  return gt ? `${gt}`.split(GENOTYPE_SPLITTER).includes(`${altIndex}`) : false
+}
+
 // Applies the per-column case-insensitive regex filters to already-built rows.
 // Separated from row building so an invalid regex (or a filter matching nothing)
 // surfaces an error/empty result without discarding the rows the column and

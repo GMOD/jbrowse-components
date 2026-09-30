@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo } from 'react'
+import { Suspense, lazy, useMemo, useState } from 'react'
 
 import {
   FeatureDetailsFrame,
@@ -134,6 +134,7 @@ const FeatDefined = observer(function FeatDefined({
   // requiring the whole array to be numeric (which dropped the span entirely)
   const svlens = Array.isArray(INFO?.SVLEN) ? INFO.SVLEN : []
   const repeat = useMemo(() => tandemRepeatOf(feat), [feat])
+  const [selectedAlt, setSelectedAlt] = useState<number | null>(null)
   const display = jexlFilterDisplay(model.track)
   const fieldActions = display
     ? (path: string[], value: unknown) =>
@@ -143,7 +144,13 @@ const FeatDefined = observer(function FeatDefined({
   return (
     <Paper data-testid="variant-side-drawer">
       <Suspense fallback={null}>
-        {repeat ? <TandemRepeatPanel repeat={repeat} /> : null}
+        {repeat ? (
+          <TandemRepeatPanel
+            repeat={repeat}
+            selectedAlt={selectedAlt}
+            onSelectAlt={setSelectedAlt}
+          />
+        ) : null}
       </Suspense>
       <FeatureDetails
         feature={rest}
@@ -194,7 +201,11 @@ const FeatDefined = observer(function FeatDefined({
           <Typography>Alleles: {`${clickedAlleles}`}</Typography>
         </BaseCard>
       ) : null}
-      <VariantSampleGrid feature={feat} descriptions={descriptions} />
+      <VariantSampleGrid
+        feature={feat}
+        descriptions={descriptions}
+        selectedAlt={selectedAlt}
+      />
     </Paper>
   )
 })
