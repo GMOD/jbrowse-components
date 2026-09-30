@@ -143,42 +143,6 @@ Each pair in the upper group straddles the missing 3.9 kb. `score` is the
 mapping quality on every track type. Hover a point for its values; click it to
 open the read.
 
-## Which reads carry the long inserts
-
-A `span` over a `pileup` transform is a read pileup. A `formula` step writes the
-unsigned insert so both mates share a colour, and a ramp pinned at 5 kb paints a
-spanning pair red.
-
-```json
-"marks": [
-  {
-    "mark": "span",
-    "transform": [
-      { "type": "formula", "expr": "jexl:abs(feature.template_length)", "as": "insert" },
-      { "type": "pileup" }
-    ],
-    "encoding": {
-      "row": "row",
-      "color": {
-        "field": "insert",
-        "scale": "linear",
-        "domainMin": 0,
-        "domainMax": 5000,
-        "range": ["#c8d8ee", "#d62728"],
-        "title": "Insert size (bp)"
-      }
-    }
-  }
-]
-```
-
-Zoom to the left edge of the dip, `chr20:32,936,200-32,939,200`.
-
-<Figure src="/img/read_marks/pileup.png" caption="The left breakpoint at 3 kb, the reads stacked and coloured by their pair's insert. The red reads end together at 32,937,680, where their mates lie 4 kb to the right; the pale reads run across it, and thin out on the far side." />
-
-An unpinned ramp spans the values on screen, so a window with no spanning pair
-would paint its longest ordinary insert red; pin the `domain` to avoid that.
-
 ## Scanning the chromosome for the same signature
 
 Fetching every read of a chromosome overruns the byte budget, so cut the long

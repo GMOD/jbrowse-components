@@ -124,6 +124,7 @@ test('one menu holds every setting that decides what the plot looks like', async
   for (const label of [
     'CIGAR indels',
     /^Gridlines/,
+    'Tick labels',
     'Level of detail',
     'Opacity',
     'Line width',
@@ -187,6 +188,7 @@ test.each([
   // matched loosely because the label carries `withHint`, which appends an
   // aside at a zoom with no ruler to cast
   [/^Gridlines/, 'setShowGridlines', 'showGridlines'],
+  ['Tick labels', 'setShowTickLabels', 'showTickLabels'],
 ] as const)(
   'a row moved out of the ⋮ menu reports the model and writes it back',
   async (name, setter, prop) => {

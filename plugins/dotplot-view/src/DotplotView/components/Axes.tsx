@@ -99,7 +99,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewWidth, borderY, hview } = model
+  const { viewWidth, borderY, hview, showTickLabels } = model
   // Horizontal-axis labels are drawn vertically (rotated -90° about their anchor).
   const rotate = -90
   const {
@@ -148,7 +148,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
           {/* `labeled` is the model's collision decision (major, and clear of
               the last label); `x > 10` is this axis' own edge rule, keeping a
               label off the region name drawn at the start of the axis. */}
-          {labeled && x > 10 ? (
+          {labeled && showTickLabels && x > 10 ? (
             <text
               x={x - 7}
               y={0}
@@ -194,7 +194,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewHeight, borderX, vview } = model
+  const { viewHeight, borderX, vview, showTickLabels } = model
   const {
     offsetPx,
     dynamicBlocks,
@@ -238,7 +238,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
               strokeWidth={1}
               stroke={color}
             />
-            {labeled && alongPx > 10 ? (
+            {labeled && showTickLabels && alongPx > 10 ? (
               <text
                 y={y - 3}
                 x={borderX - 7}
