@@ -227,7 +227,7 @@ default: the label box is also what `rowGroups` uses, and a group's swatch wins
 over it. It does nothing on a track colored per feature (an `itemRgb` painting,
 a jexl `color` slot), where no single color represents the row.
 
-<Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:39.0-40.5Mb, 1104 TCGA-BRCA tumors clustered by copy-number profile with the dendrogram and row labels beside them. Rows sort into amplified, gained, lost, and balanced bands." />
+<Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:37.5-42 Mb, 1104 TCGA-BRCA tumors clustered by their copy-number profile over the 1.5 Mb around ERBB2, with the dendrogram beside them. Rows sort into amplified, gained, lost, and balanced bands." />
 
 ## Worked examples
 

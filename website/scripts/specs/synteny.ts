@@ -5665,7 +5665,7 @@ function launchMenuStills(): ScreenshotSpec[] {
         {
           type: 'drag',
           fromAnchor: {
-            locus: 'chr:800,300',
+            locus: 'chr:800,800',
             track: 'ecoli_pggb_maf',
             band: '[data-testid="maf-rows"]',
             fracY: 0.02,

@@ -137,7 +137,7 @@ of their own.
 
 Every figure below is in the sorted state.
 
-<Figure caption="chr17:39.0-40.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure below." src="/img/tcga/cohort_cnv_erbb2.png" />
+<Figure caption="chr17:37.5-42 Mb, with ERBB2 highlighted and the 1104 rows clustered on chr17:39.0-40.5 Mb, the window the track opens at. The rows sort into amplified, gained, lost and balanced bands, and the flanks show the amplified tumors' gain thinning out on either side of the gene. The same locus is one vertical stripe in the genome-wide figure below." src="/img/tcga/cohort_cnv_erbb2.png" />
 
 With each row under a pixel tall, the saturated colours crowd out the neutral
 ones. The stack shows where the events are, and the recurrence track below

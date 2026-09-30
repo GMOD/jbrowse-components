@@ -167,12 +167,11 @@ after the K-12 gene anchoring it, so a conserved gene is one color running down
 the whole stack. A gene no group claims is grey, which marks the genes specific
 to a strain at a glance. A lane's header names its chromosome, where it is
 looking and `[rev]` where the strain's chromosome reads the other way. The key
-in the top right turns a color back into a group's name, with a _(no value)_ row
-for the grey, and _Show legend_ on the track menu puts it away. The display
-leaves it out where it would run to a list, which is any window holding more
-than thirty groups. Lanes stack densest first, so the genomes placing the most
-of the window sit at the top and the reduced Shigella genomes fall toward the
-bottom without anything naming them.
+in the top right turns a color back into a group's name, and _Show legend_ on
+the track menu puts it away. The display leaves it out where it would run to a
+list, which is any window holding more than thirty groups. Lanes stack densest
+first, so the genomes placing the most of the window sit at the top and the
+reduced Shigella genomes fall toward the bottom without anything naming them.
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {

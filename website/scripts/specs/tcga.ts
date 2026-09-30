@@ -434,7 +434,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // Note the banding is qualitative, not proportional: 1104 rows in a few
   // hundred px puts each tumor well under 1px, so rows alias and the saturated
   // colors crowd out the neutral ones. Measured off the BED the window is 70%
-  // balanced, but it paints as ~52%. The tutorial states the real numbers.
+  // balanced, but it paints as ~52%.
   //
   // Neutral stays near-white (#f7f7f7) on purpose. A darker neutral makes this
   // figure's balanced band more obviously "data", but washes out the
@@ -508,8 +508,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // is exactly the thing the label exists to explain. The label sitting
     // inside the region names it without having to point.
     //
-    // No number in either label (see website/CLAUDE.md): the balanced share is
-    // in the tutorial's prose, where a reader can check it against the file.
+    // No number in either label (see website/CLAUDE.md).
     annotations: [
       {
         type: 'text',
