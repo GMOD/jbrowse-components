@@ -148,10 +148,9 @@ that is not transcribed.
 ## Splice junctions
 
 Splice junctions come back as arcs in a sashimi plot. Add the K562 and GM12878
-polyA junctions, zoom in to _TAL1_, and raise the **Min score** slider in the
-K562 track menu to leave the strong arcs.[^junctions]
+polyA junctions and zoom in to _TAL1_.[^junctions]
 
-<Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 polyA plus RNA-seq, with the K562 track's minimum score raised. The K562 arcs join the exons the RefSeq track draws; the GM12878 lane has none." src="/img/alphagenome/splice_junctions.png" />
+<Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 polyA plus RNA-seq. The K562 arcs join the exons the RefSeq track draws; the GM12878 lane has none." src="/img/alphagenome/splice_junctions.png" />
 
 The K562 arcs land on the exon boundaries in the RefSeq track. The GM12878 lane
 is empty, because _TAL1_ is off there.
@@ -247,9 +246,9 @@ https://doi.org/10.1126/science.1259037
 
 [^junctions]:
     AlphaGenome returns tens of thousands of junctions for a megabase. The
-    adapter loads them all and filters them in the browser, and its default
-    threshold leaves dozens of faint arcs over one gene. The track colors arcs
-    by strand.
+    adapter loads them all and draws only those scoring 0.5 or more, which over
+    one gene leaves the few strong arcs rather than dozens of faint ones. The
+    track colors arcs by strand and strokes them by score.
 
 [^mapping]:
     AlphaGenome lays out the alternate prediction along the alternate sequence,

@@ -72,7 +72,6 @@ const VARIANT_TOKEN = 'demo-tal1-variant-cd34'
 // plugin and a miss opens the display's own menu without it.
 const ENHANCER_1_LOCUS = 'chr1:47,212,072'
 const TOP_ROW = 0.1
-const MIN_SCORE_SLIDER = '[data-testid="min-score-slider"]'
 const PREDICT_VARIANT_EFFECT =
   '[data-testid="cascading-menuitem-predict_variant_effect_with_alphagenome"]'
 
@@ -275,10 +274,7 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
   //
   // Both cell lines, over TAL1 alone (review: "too many split junctions to
   // understand"). K562's arcs land on the exon boundaries RefSeq draws and
-  // GM12878's lane is empty, since TAL1 is off there. The adapter keeps every
-  // junction above 0.01, which over TAL1 is sixty-odd faint arcs around eight
-  // strong ones, so the track's own Min score slider goes to 0.5 of the 0-5
-  // its loaded scores span.
+  // GM12878's lane is empty, since TAL1 is off there.
   {
     ...common,
     name: 'alphagenome/splice_junctions',
@@ -288,7 +284,7 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       ...pick('splice_junctions', 'polyA plus'),
       row('splice_junctions', 'k562-polya-plus-rna-seq'),
       row('splice_junctions', 'gm12878-polya-plus-rna-seq'),
-      ...addAndSettle('arc-display'),
+      ...addAndSettle('mark-display'),
       {
         type: 'type',
         selector: 'input[placeholder="Search for location"]',
@@ -296,21 +292,6 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
         clear: true,
       },
       { type: 'press', key: 'Enter' },
-      { type: 'waitForAppSettled' },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="track_menu_icon"][data-trackid$="-junctions-reference-0"]',
-      },
-      { type: 'waitForText', text: 'Min score' },
-      // a tenth of the way along the 220 px slider, whose scores span 0-5
-      {
-        type: 'click',
-        anchor: { selector: MIN_SCORE_SLIDER, alignX: 'left', dx: 22 },
-      },
-      { type: 'waitForText', text: 'Min score: 0.50' },
-      { type: 'click', selector: '.MuiMenu-root .MuiBackdrop-root' },
-      { type: 'waitForSelector', selector: '.MuiMenu-root', hidden: true },
       { type: 'waitForAppSettled' },
     ],
     viewportHeight: 690,
