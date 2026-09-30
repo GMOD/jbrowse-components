@@ -5383,54 +5383,6 @@ export const syntenyVideoFixtures = {
   emptySyntenyForm: hpyloriUrl({
     views: [{ type: 'LinearSyntenyView', views: [{}, {}] }],
   }),
-  // Where the multi-way zoom-out tour starts, which is the state
-  // `multiway_synteny/lgv_track_clicked` above opens on: the gene-level cut of
-  // the grape lanes, close enough that each ribbon connects one gene to one
-  // ortholog. The tour zooms OUT from here, so the re-fit each lane makes as
-  // the anchor's window widens is the film's whole subject — the two committed
-  // figures are its endpoints and the re-layout between them is what a still
-  // cannot carry.
-  multiwayLanes: sessionSpec(
-    encodeURIComponent(
-      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-    ),
-    {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'GCF_030704535.1',
-          loc: 'chr11:828,000-866,000',
-          tracks: [
-            {
-              trackId: 'GCF_030704535.1-ncbiRefSeq',
-              type: 'LinearBasicDisplay',
-              showOnlyGenes: true,
-              displayMode: 'compact',
-              showLabels: 'auto',
-            },
-            {
-              trackId: 'grape_peach_cacao_blocks',
-              type: 'MultiWaySyntenyDisplay',
-              domain: [
-                'GCF_000346465.2',
-                'GCF_000208745.1',
-                'poplar',
-                'citrus',
-                'arabidopsis',
-                'tomato',
-              ],
-              height: 340,
-            },
-          ],
-        },
-      ],
-    },
-  ),
-  // An anchor gene of the tandem expansion the zoom figure reads (three grape
-  // copies against one peach ortholog), whose ribbon the tour hovers: the
-  // hover point sits just below the anchor lane's glyph row, where that
-  // group's ribbon leaves it.
-  multiwayHoverLocus: 'chr11:836,500',
   // Where the track-menu launch tour starts: the same grasses lane state its
   // still is of.
   grassesLanes: GRASSES_RICE_LANES,

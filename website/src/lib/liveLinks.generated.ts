@@ -2336,7 +2336,6 @@ export const figureFrames: Record<
 export const videoLiveRefs: Record<string, string> = {
   "pangenome/pggb_subgraph_launch": "?config=test_data/graphgenomeview/config.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22K12_genes%22%2C%22name%22%3A%22K12%20genes%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22Gff3TabixAdapter%22%2C%22gffGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz.tbi%22%7D%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1%2C290%2C000-1%2C310%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22K12_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A70%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome_cactus/subgraph_launch": "?config=test_data/graphgenomeview/config.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22K12_genes%22%2C%22name%22%3A%22K12%20genes%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22Gff3TabixAdapter%22%2C%22gffGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz.tbi%22%7D%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1%2C972%2C900-1%2C984%2C900%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22K12_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A70%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "pangenome/tier_to_fine": "?config=test_data/graphgenomeview/config.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22K12_genes%22%2C%22name%22%3A%22K12%20genes%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22Gff3TabixAdapter%22%2C%22gffGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz.tbi%22%7D%7D%7D%7D%2C%7B%22type%22%3A%22GraphTrack%22%2C%22trackId%22%3A%22ecoli_pggb_tier50%22%2C%22name%22%3A%22pggb%20graph%20bubbles%20(coarse%20tier%2C%20one%20node%20per%20bubble)%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22RgfaTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb.tier50%22%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearGraphDisplay%22%2C%22displayId%22%3A%22ecoli_pggb_tier50-LinearGraphDisplay%22%7D%2C%7B%22type%22%3A%22LinearBasicDisplay%22%2C%22displayId%22%3A%22ecoli_pggb_tier50-LinearBasicDisplay%22%7D%5D%7D%2C%7B%22type%22%3A%22GraphTrack%22%2C%22trackId%22%3A%22ecoli_pggb_segments%22%2C%22name%22%3A%22pggb%20graph%20segments%20(whole%20graph%2C%20by%20locus)%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22RgfaTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb%22%2C%22coarse%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb.tier50%22%2C%22aboveBpPerPx%22%3A1%7D%7D%2C%22displayDefaults%22%3A%7B%22showLabels%22%3A%22none%22%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearGraphDisplay%22%2C%22displayId%22%3A%22ecoli_pggb_segments-LinearGraphDisplay%22%7D%2C%7B%22type%22%3A%22LinearBasicDisplay%22%2C%22displayId%22%3A%22ecoli_pggb_segments-LinearBasicDisplay%22%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1%2C250%2C000-1%2C350%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22K12_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22ecoli_pggb_tier50%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showLabels%22%3A%22none%22%2C%22height%22%3A50%2C%22color%22%3A%22jexl%3Aget(feature%2C'rank')%3E0%20%3F%20'rgb(60%2C65%2C72)'%20%3A%20'hsl('%20%2B%20min(300%2C%20max(0%2C%20((get(feature%2C'start')%2Bget(feature%2C'end'))%2F2%20-%201250000)%20%2F%20100000%20*%20300))%20%2B%20'%2C70%25%2C50%25)'%22%7D%2C%7B%22trackId%22%3A%22ecoli_pggb_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22colorScheme%22%3A%22reference-position%22%2C%22colorDomain%22%3A%7B%22start%22%3A1250000%2C%22end%22%3A1350000%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/pggb_layout_switch": "?config=test_data/graphgenomeview/config.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22K12_genes%22%2C%22name%22%3A%22K12%20genes%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22Gff3TabixAdapter%22%2C%22gffGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz.tbi%22%7D%7D%7D%7D%2C%7B%22type%22%3A%22GraphTrack%22%2C%22trackId%22%3A%22ecoli_pggb_segments%22%2C%22name%22%3A%22pggb%20graph%20segments%20(whole%20graph%2C%20by%20locus)%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22RgfaTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb%22%2C%22coarse%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb.tier50%22%2C%22aboveBpPerPx%22%3A1%7D%7D%2C%22displayDefaults%22%3A%7B%22showLabels%22%3A%22none%22%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearGraphDisplay%22%2C%22displayId%22%3A%22ecoli_pggb_segments-LinearGraphDisplay%22%7D%2C%7B%22type%22%3A%22LinearBasicDisplay%22%2C%22displayId%22%3A%22ecoli_pggb_segments-LinearBasicDisplay%22%7D%5D%7D%2C%7B%22type%22%3A%22MafTrack%22%2C%22trackId%22%3A%22ecoli_pggb_maf%22%2C%22name%22%3A%22pggb%20graph%3A%20whole-genome%20alignment%20(MAF%2C%20vs%20K12)%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22MafTabixAdapter%22%2C%22samples%22%3A%5B%22K12%22%2C%22Sakai%22%2C%22CFT073%22%2C%22NCTC86%22%2C%22IAI39%22%5D%2C%22nhLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb.nh%22%7D%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb.maf.bed.gz%22%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1%2C004%2C500-1%2C004%2C961%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22K12_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22ecoli_pggb_maf%22%2C%22type%22%3A%22LinearMafDisplay%22%2C%22rows%22%3A%7B%22domain%22%3A%5B%22K12%22%2C%22CFT073%22%2C%22IAI39%22%2C%22NCTC86%22%2C%22Sakai%22%5D%7D%2C%22showTree%22%3Atrue%2C%22height%22%3A150%7D%2C%7B%22trackId%22%3A%22ecoli_pggb_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22samplerows%22%2C%22colorScheme%22%3A%22reference-position%22%2C%22colorDomain%22%3A%7B%22start%22%3A1004500%2C%22end%22%3A1004961%7D%2C%22maxRegionBp%22%3A508%2C%22height%22%3A600%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/hprc_browse": "https://staging.genomes.jbrowse.org/pangenomes/hprc",
   "pangenome/hprc_follow_view": "?config=https%3A%2F%2Fjbrowse.org%2Fpangenome%2Fhprc-grch38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22displayName%22%3A%22HLA%20%2F%20MHC%20graph%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%3A32510001-32600000%22%2C%22tracks%22%3A%5B%22hg38_ncbiRefSeq_ucsc%22%2C%7B%22trackId%22%3A%22hprc_minigraph_bubbles%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22hprc_minigraph_alleles%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22height%22%3A120%7D%2C%7B%22trackId%22%3A%22hprc_minigraph_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22auto%22%2C%22colorScheme%22%3A%22reference-position%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -2351,7 +2350,6 @@ export const videoLiveRefs: Record<string, string> = {
   "qtl/painting_sort": "?config=test_data/config_bxd.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22mm10%22%2C%22loc%22%3A%22chr4%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22bxd_gwas_coatcolor_mm10%22%2C%22type%22%3A%22LinearManhattanDisplay%22%2C%22height%22%3A140%7D%2C%7B%22trackId%22%3A%22bxd_chromosome_painting_mm10%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22height%22%3A420%2C%22forceLoad%22%3Atrue%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "methylation/open_modbam": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr15%3A24%2C953%2C500-24%2C957%2C500%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22cpgisland_ucsc_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A90%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "methylation/group_by_hp": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr15%3A24%2C948%2C000-24%2C962%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22cpgisland_ucsc_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22HG002_snrpn_5mC_reads%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22height%22%3A320%2C%22forceLoad%22%3Atrue%2C%22baseColor%22%3A%7B%22field%22%3A%22modifications%22%7D%2C%22modifications%22%3A%7B%22fillUnmarked%22%3Atrue%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "synteny/multiway_zoom_out": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgrape_peach_cacao%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_030704535.1%22%2C%22loc%22%3A%22chr11%3A828%2C000-866%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22GCF_030704535.1-ncbiRefSeq%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showOnlyGenes%22%3Atrue%2C%22displayMode%22%3A%22compact%22%2C%22showLabels%22%3A%22auto%22%7D%2C%7B%22trackId%22%3A%22grape_peach_cacao_blocks%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22domain%22%3A%5B%22GCF_000346465.2%22%2C%22GCF_000208745.1%22%2C%22poplar%22%2C%22citrus%22%2C%22arabidopsis%22%2C%22tomato%22%5D%2C%22height%22%3A340%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "synteny/multiway_launch_stack": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Forthofinder_grasses%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22rice%22%2C%22loc%22%3A%223%3A31%2C590%2C000-31%2C775%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22rice_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showOnlyGenes%22%3Atrue%2C%22displayMode%22%3A%22compact%22%7D%2C%7B%22trackId%22%3A%22grasses_orthogroups%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22domain%22%3A%5B%22sorghum%22%2C%22brachypodium%22%2C%22setaria%22%2C%22maize%22%5D%2C%22height%22%3A320%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "synteny/three_strain_import": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fhpylori%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22views%22%3A%5B%7B%7D%2C%7B%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "synteny/hg002_dotplot_import": "?config=https://jbrowse.org/demos/hg002/config.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
@@ -2400,10 +2398,6 @@ export const videoFrames: Record<
   "pangenome_cactus/subgraph_launch": {
     "width": 1920,
     "height": 780
-  },
-  "pangenome/tier_to_fine": {
-    "width": 1920,
-    "height": 810
   },
   "pangenome/pggb_layout_switch": {
     "width": 1920,
@@ -2460,10 +2454,6 @@ export const videoFrames: Record<
   "methylation/group_by_hp": {
     "width": 1920,
     "height": 740
-  },
-  "synteny/multiway_zoom_out": {
-    "width": 1920,
-    "height": 810
   },
   "synteny/multiway_launch_stack": {
     "width": 1920,
@@ -2619,7 +2609,6 @@ export const videoCaptioned: string[] = [
   "pangenome/pggb_layout_switch",
   "pangenome/pggb_out_to_strain",
   "pangenome/pggb_subgraph_launch",
-  "pangenome/tier_to_fine",
   "pangenome_cactus/subgraph_launch",
   "proteins/annotation_1d",
   "proteins/genomes_protein_launch",
@@ -2637,7 +2626,6 @@ export const videoCaptioned: string[] = [
   "synteny/liftover_launch",
   "synteny/maf_row_synteny",
   "synteny/multiway_launch_stack",
-  "synteny/multiway_zoom_out",
   "synteny/restack_around_locus",
   "synteny/three_strain_import",
   "tcga/cohort_cnv_clustering",
@@ -2668,11 +2656,6 @@ export const videoSteps: Record<string, string[]> = {
     "The graph draws under the genes, cut from the window on screen",
     "Select the IS1 element past flhD and zoom to it",
     "At IS1 the graph re-cuts: the element is one node the other strains skip"
-  ],
-  "pangenome/tier_to_fine": [
-    "Zoomed out, each node is a whole bubble; hover for its span",
-    "Open the bubble's span in the linear view",
-    "Zoomed in, the graph swaps the bubble for the segments inside it"
   ],
   "pangenome/pggb_layout_switch": [
     "Sample rows: one row per strain, on the reference axis",
@@ -2751,12 +2734,6 @@ export const videoSteps: Record<string, string[]> = {
     "Both haplotypes' reads interleave; red is a methylated CpG, blue is not",
     "Group the reads by their HP haplotype tag",
     "HP 1 is methylated at the SNRPN promoter; HP 2 is not"
-  ],
-  "synteny/multiway_zoom_out": [
-    "Gene scale: one ribbon per ortholog pair between the lanes",
-    "Hover a ribbon to light its ortholog group down the stack",
-    "Zoom out; each lane re-fits its own window to the anchor's",
-    "Block scale: each genome's copy of the grape block, lane by lane"
   ],
   "synteny/multiway_launch_stack": [
     "Rice's genes, with one ortholog lane per grass under them",

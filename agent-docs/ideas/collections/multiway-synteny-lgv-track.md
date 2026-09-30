@@ -228,9 +228,8 @@ build scripts and repo configs colour genes by `{ field: 'cluster' }`; the
 hosted configs keep the `jexl:` hash of the name until the hosted app is on v5.
 Then one `deploy-demo.sh` of each, and a reshoot of the five figures on those
 two pages, whose specs load the hosted configs. The next reshoot also changes
-`lane_header_menu` (the grape page, which gains **Flip lane**), the
-`synteny/multiway_zoom_out` video (lane motion) and any figure showing the
-**Color by...** menu, which now has Genes and Ribbons sections.
+`lane_header_menu` (the grape page, which gains **Flip lane**) and any figure
+showing the **Color by...** menu, which now has Genes and Ribbons sections.
 
 **A synced per-lane view.** A lane hosts one annotation plus the layers
 [ADR-180](../../architecture-decision-records/adr-180-a-multiway-lane-is-a-layer-list-under-its-frame.md)

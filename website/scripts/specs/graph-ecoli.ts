@@ -185,10 +185,8 @@ const PGGB_TIER_REGION = {
 }
 const PGGB_TIER_TRACK = 'ecoli_pggb_tier50'
 // The one node in the tier that stands for the IS5 element, arrowed in
-// pangenome/pggb_bubble_tier and right-clicked by pangenome/tier_to_fine. The id
-// is the tier's own -- source segment qualified by reference start, which is
-// what snarls_to_bubble_bed.py emits -- so the figure's callout and the tour's
-// menu open on one object.
+// pangenome/pggb_bubble_tier. The id is the tier's own -- source segment
+// qualified by reference start, which is what snarls_to_bubble_bed.py emits.
 const PGGB_TIER_IS5_NODE = '79945@1299497'
 
 // The coarse level-of-detail tier of the pggb graph: one node per bubble, with
@@ -1203,19 +1201,6 @@ export const pggbVideoFixtures = {
   // the tour and the still open the same node's menu.
   strainLaunchNode: '118465-',
   strainGraph: PGGB_STRAIN_GRAPH,
-  // THE COARSE END OF THE LADDER, shared with pangenome/pggb_bubble_tier so the
-  // clip and the figure are one window, one track and one node: the tier lane's
-  // ramp is over the same 100 kb, and the bubble the figure arrows is the one
-  // the tour opens the menu on.
-  tierTrack: PGGB_TIER_SESSION_TRACK,
-  tierTrackId: PGGB_TIER_TRACK,
-  tierWindow: PGGB_TIER_WINDOW,
-  tierCut: pggbTierCut,
-  tierIs5Node: PGGB_TIER_IS5_NODE,
-  // The ramp the figure paints its tier lane with. A fixture rather than a
-  // second spelling in the video module: it is a function of the region, and a
-  // second spelling of the region is a second window.
-  tierLaneColor: referencePositionColor(PGGB_TIER_REGION),
 }
 
 export const ecoliGraphSpecs: ScreenshotSpec[] = [

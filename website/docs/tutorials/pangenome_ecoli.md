@@ -683,8 +683,6 @@ skips.
 Hover a node for the segments it collapsed. A tier node's **Open in K12** takes
 the view to the span it stands for, and the graph track cuts the segments there.
 
-<Video src="/media/pangenome/tier_to_fine.mp4" caption="The coarse tier's IS5 bubble taken down to the segments: hovering the node marks the K12 span it stands for in the lanes above, and the node's Open in K12 entry moves the view to that span, where the graph track cuts the segments." />
-
 **Layout → Sample rows** gives each strain a separate row: carriage on this
 graph, build order (minigraph's `SR`) on an rGFA.
 

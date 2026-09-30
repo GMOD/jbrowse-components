@@ -24,8 +24,6 @@ const {
   mafRowSpan,
   mafRows,
   mafTrackId,
-  multiwayHoverLocus,
-  multiwayLanes,
   restackAnchor,
   restackLanes,
   restackSpan,
@@ -129,88 +127,6 @@ const DOTPLOT_DRAWN =
 const DOTPLOT_VIEW_MENU = '[data-testid="dotplot_view_menu"]'
 
 export const syntenyVideos: VideoSpec[] = [
-  // A RE-LAYOUT THE PAGE'S TWO FIGURES ONLY BOOKEND. Every lane below the
-  // anchor is fitted to whatever orthologs the anchor's window brings in, so a
-  // zoom-out is not the anchor's own re-scale repeated seven times: each lane
-  // re-fits its OWN frame, a sparse lane holds its genome's scale until the
-  // window forces it wider, and the ribbons re-chain onto the new frames. The
-  // tutorial's gene-level and block-level figures are the two endpoints; the
-  // re-fit between them is motion, and this films it.
-  //
-  // The hover opens the clip because it is the reading the ribbons exist for
-  // and no still can perform it: one ribbon under the pointer, its whole
-  // ortholog group filling in down every lane that kept the gene.
-  {
-    name: 'synteny/multiway_zoom_out',
-    description:
-      "The grape multi-way lanes at gene scale, a hovered ribbon reading one ortholog group down the stack, then three zoom-outs with every lane re-fitting its own frame to the anchor's widening window",
-    goal: 'Zoom a grape-anchored stack out from gene scale to block scale',
-    url: multiwayLanes,
-    // The app is the grape gene track over the 340px lane stack, 691px as the
-    // run measured it, with the caption chip's strip under it.
-    viewportHeight: 810,
-    // phase ready covers the dependent per-lane gene fetch too, so the camera
-    // opens on lanes carrying their gene models rather than on boxes about to
-    // be replaced
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 120000,
-    steps: [
-      // park the pointer off the cytoband strip so the opening frame carries
-      // no coordinate chip
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      {
-        type: 'delay',
-        ms: 2500,
-        say: 'Gene scale: one ribbon per ortholog pair between the lanes',
-      },
-      // just below the anchor lane's glyph row, where the tandem-expansion
-      // group's ribbon leaves it
-      {
-        type: 'hover',
-        anchor: {
-          track: 'grape_peach_cacao_blocks',
-          locus: multiwayHoverLocus,
-          fracY: 0.11,
-        },
-        say: 'Hover a ribbon to light its ortholog group down the stack',
-        hold: 3000,
-      },
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 800 },
-      {
-        type: 'click',
-        selector: '[data-testid="zoom_out"]',
-        say: "Zoom out; each lane re-fits its own window to the anchor's",
-        hold: 600,
-      },
-      // on camera: the lanes re-fitting IS the payoff, and the app publishes
-      // when the refetch behind it has settled
-      { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 1500 },
-      {
-        type: 'click',
-        selector: '[data-testid="zoom_out"]',
-        hold: 600,
-      },
-      { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 1500 },
-      {
-        type: 'click',
-        selector: '[data-testid="zoom_out"]',
-        hold: 600,
-      },
-      { type: 'waitForAppSettled', timeout: 120000 },
-      // off the zoom button, whose tooltip otherwise stands in the poster
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // the block-level state the page's first figure is of
-      {
-        type: 'delay',
-        ms: 3500,
-        say: "Block scale: each genome's copy of the grape block, lane by lane",
-      },
-    ],
-    tailMs: 4500,
-  },
-
   // THE HANDOFF THE LANES CANNOT PERFORM ON THEMSELVES. "From lanes to a full
   // stack" names a track-menu entry, a dialog and a replaced view, and every
   // one of those is a shape the reader has not seen — the same reason the

@@ -1,5 +1,5 @@
 // The graph tours, on the pangenome pages: loading a graph and reading it at a
-// locus, the coarse-to-fine and layout switches, and the HPRC page's routes.
+// locus, the layout switch, and the HPRC page's routes.
 import { menuCascade, sessionSpec } from '../screenshot-spec-helpers.ts'
 import {
   HPRC_PAGE,
@@ -10,7 +10,7 @@ import {
   PGGB_SEGMENTS_TRACK_JSON,
   pggbVideoFixtures,
 } from '../specs/graph-ecoli.ts'
-import { GRAPH_DRAWN, graphCutDrawn } from '../specs/graph-fixtures.ts'
+import { GRAPH_DRAWN } from '../specs/graph-fixtures.ts'
 import { hprcClusterFixtures, hprcVideoFixtures } from '../specs/graph-hprc.ts'
 import { cactusVideoFixtures } from '../specs/pangenome_cactus.ts'
 import {
@@ -37,12 +37,6 @@ const {
   pangenomeConfig: PGGB_PANGENOME_CONFIG,
   strainLaunchNode: PGGB_STRAIN_NODE,
   strainGraph: PGGB_STRAIN_GRAPH,
-  tierTrack: PGGB_TIER_TRACK_CONF,
-  tierTrackId: PGGB_TIER_TRACK,
-  tierWindow: PGGB_TIER_WINDOW,
-  tierCut: PGGB_TIER_CUT,
-  tierIs5Node: PGGB_TIER_IS5_NODE,
-  tierLaneColor: PGGB_TIER_LANE_COLOR,
 } = pggbVideoFixtures
 
 // The graph alone, on the five-assembly config: the node menu offers only
@@ -85,31 +79,6 @@ const cactusTourStart = sessionSpec(cactusVideoFixtures.config, {
       loc: cactusVideoFixtures.tourWindow,
       tracks: [
         { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
-      ],
-    },
-  ],
-})
-
-// Both tiers over one 100 kb window, past the segments track's `coarse`
-// handover. The tier lane carries pggb_bubble_tier's own ramp and the graph's is
-// pinned to it, so the bubble the figure arrows keeps its colour in the clip.
-const pggbTierStart = sessionSpec(PGGB_CONFIG, {
-  sessionTracks: [genesTrack, PGGB_TIER_TRACK_CONF, segmentsTrack],
-  views: [
-    {
-      type: 'LinearGenomeView',
-      assembly: 'K12',
-      loc: PGGB_TIER_WINDOW,
-      tracks: [
-        { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
-        {
-          trackId: PGGB_TIER_TRACK,
-          type: 'LinearBasicDisplay',
-          showLabels: 'none',
-          height: 50,
-          color: PGGB_TIER_LANE_COLOR,
-        },
-        PGGB_TIER_CUT,
       ],
     },
   ],
@@ -276,49 +245,6 @@ export const pangenomeVideos: VideoSpec[] = [
       },
     ],
     tailMs: 2500,
-  },
-  // The node's own menu takes a tier node to its span, so the reader never types
-  // a coordinate, and past the segments track's `coarse` handover the graph
-  // re-cuts from the segments.
-  {
-    name: 'pangenome/tier_to_fine',
-    description:
-      "The coarse tier's IS5 bubble taken down to the segments: hover the node for the K12 span it collapses, then take its Open in K12 entry, which lands the linear view on that span while the graph re-cuts from the segments",
-    goal: 'Take one bubble from the coarse tier down to its segments',
-    url: pggbTierStart,
-    viewportHeight: 810,
-    readySelector: graphCutDrawn('coarse'),
-    readyTimeout: 120000,
-    steps: [
-      { type: 'hover', selector: WORDMARK },
-      {
-        type: 'hover',
-        anchor: { graphNode: PGGB_TIER_IS5_NODE },
-        say: 'Zoomed out, each node is a whole bubble; hover for its span',
-        hold: 3200,
-      },
-      {
-        type: 'rightclick',
-        anchor: { graphNode: PGGB_TIER_IS5_NODE },
-        say: "Open the bubble's span in the linear view",
-        hold: 900,
-      },
-      { type: 'waitForText', text: 'Open in K12' },
-      { type: 'click', text: 'Open in K12' },
-      {
-        type: 'waitForSelector',
-        selector: graphCutDrawn('fine'),
-        timeout: 120000,
-      },
-      { type: 'waitForAppSettled', timeout: 120000, cut: true },
-      { type: 'hover', selector: WORDMARK },
-      {
-        type: 'delay',
-        ms: 3000,
-        say: 'Zoomed in, the graph swaps the bubble for the segments inside it',
-      },
-    ],
-    tailMs: 3000,
   },
   // Ends on the force drawing, the taller state, so the frame's slack falls at
   // the opening rather than under the poster.
