@@ -294,8 +294,8 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome/hprc_follow_view',
     description:
-      'The HLA / MHC graph session searched to C4A: the chr6 hit taken from the picker and two zoom-outs to take in C4B, ending on the bubble whose alleles run from 0 to 66 kb',
-    goal: 'Find the bubble where haplotypes differ in C4 copy number',
+      'The HLA / MHC graph session searched to C4A: the chr6 hit taken from the picker, two zoom-outs to take in C4B, and the graph track re-cut at each step to the bubble whose alleles run from 0 to 66 kb',
+    goal: 'Search a gene, and the graph track follows the view there',
     url: portalGraphLaunch(),
     readySelector: GRAPH_DRAWN,
     readyTimeout: 240000,
