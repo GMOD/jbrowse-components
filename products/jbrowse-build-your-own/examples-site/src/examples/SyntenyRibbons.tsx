@@ -83,12 +83,7 @@ const geneTrack = (assembly: string) => ({
 
 const chromSizes = (assembly: string) => ({
   name: assembly,
-  sequence: {
-    adapter: {
-      type: 'ChromSizesAdapter',
-      uri: `https://jbrowse.org/ucsc/${assembly}/${assembly}.chrom.sizes`,
-    },
-  },
+  uri: `https://jbrowse.org/ucsc/${assembly}/${assembly}.chrom.sizes`,
 })
 
 const SyntenyRibbons = observer(function SyntenyRibbons() {

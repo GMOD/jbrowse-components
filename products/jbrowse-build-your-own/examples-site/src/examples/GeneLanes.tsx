@@ -67,23 +67,14 @@ const GeneLanes = observer(function GeneLanes() {
     config: {
       assemblies: genomes.map(name => ({
         name,
-        sequence: {
-          adapter: {
-            type: 'ChromSizesAdapter',
-            uri: `${base}/${name}.chrom.sizes`,
-          },
-        },
+        uri: `${base}/${name}.chrom.sizes`,
       })),
       tracks: [
         ...genomes.map(name => ({
-          type: 'FeatureTrack',
           trackId: `${name}_genes`,
           name: `${name} genes`,
           assemblyNames: [name],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            uri: `${base}/${name}.gff.gz`,
-          },
+          uri: `${base}/${name}.gff.gz`,
         })),
         {
           type: 'SyntenyTrack',
