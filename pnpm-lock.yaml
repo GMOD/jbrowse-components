@@ -2106,6 +2106,9 @@ importers:
       '@gmod/bbi':
         specifier: ^11.3.0
         version: 11.3.0
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2161,6 +2164,9 @@ importers:
       '@jbrowse/display-test-utils':
         specifier: workspace:^
         version: link:../../packages/display-test-utils
+      '@jbrowse/plugin-bed':
+        specifier: workspace:^
+        version: link:../bed
 
   products/jbrowse-build-your-own/examples-site:
     dependencies:

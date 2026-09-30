@@ -13,9 +13,14 @@ import { map, toArray } from 'rxjs/operators'
 import { fetchRegionRaws } from '../fetchRegionRaws.ts'
 import { getFilename } from '../util.ts'
 import { mapWithConcurrency } from './mapWithConcurrency.ts'
+import {
+  getFilenameFromAdapterConfig,
+  getPrimaryLocationPath,
+} from './memberLocation.ts'
 
 import type { MultiSourceFetchOpts as WiggleOptions } from '../multiSourceAdapter.ts'
 import type { RawFeatureArrays } from '../util.ts'
+import type { MemberConfig } from './memberLocation.ts'
 import type {
   BaseOptions,
   ZoomRange,
@@ -25,10 +30,7 @@ import type {
   RowSourceListing,
 } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
 import type { Feature } from '@jbrowse/core/util'
-import type {
-  FileLocation,
-  AugmentedRegion as Region,
-} from '@jbrowse/core/util/types'
+import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 // Bounds bytes in flight rather than sockets: each running subtrack fetch holds
 // its downloaded blocks, decompression output and parsed arrays until it
@@ -46,36 +48,9 @@ async function namingSource<T>(source: string, work: Promise<T>) {
   }
 }
 
-interface AdapterConfig {
-  type?: string
+interface AdapterConfig extends MemberConfig {
   source?: string
   name?: string
-  bigWigLocation?: FileLocation
-  [key: string]: unknown
-}
-
-function getLocationPath(location?: FileLocation) {
-  return location === undefined
-    ? undefined
-    : 'uri' in location && location.uri
-      ? location.uri
-      : 'localPath' in location && location.localPath
-        ? location.localPath
-        : 'blob' in location && location.blob instanceof File
-          ? location.blob.name || undefined
-          : undefined
-}
-
-// The basename a BigWig subadapter falls back to when its config names no
-// `source`/`name` — the same path `disambiguateSources` reads below, so the
-// derived label and the label that gets qualified on a collision are one walk
-// over the location rather than two that can disagree about which forms count.
-function getFilenameFromAdapterConfig(config: AdapterConfig) {
-  if (config.type !== 'BigWigAdapter') {
-    return undefined
-  }
-  const path = getLocationPath(config.bigWigLocation)
-  return path ? getFilename(path) : undefined
 }
 
 // Grow a colliding label leftward to include its parent directory, e.g. the
@@ -112,7 +87,7 @@ function disambiguateSources(entries: AdapterEntry[]): AdapterEntry[] {
       return entry
     }
     const preferred =
-      parentDirLabel(entry.source, getLocationPath(entry.bigWigLocation)) ??
+      parentDirLabel(entry.source, getPrimaryLocationPath(entry)) ??
       entry.source
     let source = preferred
     let n = 2
@@ -124,11 +99,9 @@ function disambiguateSources(entries: AdapterEntry[]): AdapterEntry[] {
   })
 }
 
-interface AdapterEntry {
+interface AdapterEntry extends MemberConfig {
   dataAdapter: BaseFeatureDataAdapter
   source: string
-  bigWigLocation?: FileLocation
-  [key: string]: unknown
 }
 
 function isText(value: unknown): value is string {
@@ -222,6 +195,25 @@ export default class MultiWiggleAdapter
       }
     }
     return range
+  }
+
+  public async getRegionByteSize(regions: Region[], opts: WiggleOptions = {}) {
+    const adapters = await this.getFilteredAdapters(opts.sources)
+    const slot = createStatusFanOut(opts.statusCallback)
+    const sizes = await mapWithConcurrency(
+      adapters,
+      SUBTRACK_FETCH_CONCURRENCY,
+      adp =>
+        namingSource(
+          adp.source,
+          adp.dataAdapter.getRegionByteSize(regions, {
+            ...opts,
+            statusCallback: slot(),
+          }),
+        ),
+    )
+    const known = sizes.filter(size => size !== undefined)
+    return known.length ? known.reduce((a, b) => a + b, 0) : undefined
   }
 
   private sourceFeatures(
