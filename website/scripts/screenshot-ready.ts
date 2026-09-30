@@ -46,7 +46,10 @@ function sessionExpectations(spec: SessionUrlSpec | EmbeddedSpec) {
   const session = declaredSession(spec)
   return session && Array.isArray(session.views) && session.views.length > 0
     ? {
-        assembly: assemblyFromSession(session),
+        assembly:
+          'formAssembly' in spec && spec.formAssembly
+            ? undefined
+            : assemblyFromSession(session),
         trackIds: trackIdsFromSession(session),
       }
     : { views: 0 }

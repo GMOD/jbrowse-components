@@ -271,6 +271,9 @@ export interface SessionUrlSpec extends CommonSpecFields {
   // census — so `readyText` or `readySelector` is its whole positive signal,
   // followed by network idle
   noSession?: boolean
+  // the spec's `assembly` presets an import form rather than opening a view,
+  // so the census has no open assembly to wait for
+  formAssembly?: boolean
   readyText?: string // text to wait for before settle
   readySelector?: string // CSS selector to wait for before settle
   readyTimeout?: number // ms override for the ready wait (default 30000)

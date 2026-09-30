@@ -1392,6 +1392,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
+    formAssembly: true,
     readyText: 'Open from track',
     readyTimeout: 60000,
   },
