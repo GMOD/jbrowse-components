@@ -679,7 +679,9 @@ liftOver record there is 20 Mb of marmoset against 5.7 Mb of human, and merging
 indels under 3 px or putting every lane at the anchor's scale left the
 starbursts in place. What it costs is multiplicity: two copies on one pixel
 draw like one. The pairwise band keeps stacking, where the sum is the density
-picture.
+picture. A `min` blend over a transparent pixel keeps the transparent pixel, so
+`buildBandCell` lays paper under every gutter, the anchor's half of the first
+one included, and its stripes shade lane bodies only.
 
 ### 3.4 Pixels
 

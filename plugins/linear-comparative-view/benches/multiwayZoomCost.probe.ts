@@ -291,7 +291,8 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
   })
   const tBands = ms(() => {
     buildBandCell({
-      bands: stack.lanes,
+      rows: stack.lanes,
+      glyphHeight: stack.glyphHeight,
       width: WIDTH,
       paper: '#fff',
       stripe: '#eee',

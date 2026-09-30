@@ -1995,13 +1995,13 @@ export function stateModelFactory(
         return {
           kind: 'glyphs',
           data: buildBandCell({
-            bands: laneGeometry(
+            ...laneGeometry(
               self.height,
               1 + self.rowAssemblies.length,
               self.splitStrands,
               self.geneLabelPx,
               self.layerPx,
-            ).rows,
+            ),
             width: self.canvasWidth,
             paper: bandGroundColor(),
             stripe: bandInk().stripe,

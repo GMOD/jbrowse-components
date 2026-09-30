@@ -123,6 +123,8 @@ function stack({
   cacao = cacaoFrame,
   contigOf = () => undefined,
   splitStrands = false,
+  geneLabelPx = 0,
+  layerPx = 0,
 }: {
   features: Feature[]
   assemblyNames?: string[]
@@ -130,6 +132,8 @@ function stack({
   cacao?: RowFrame
   contigOf?: BuildLanesOpts['contigOf']
   splitStrands?: boolean
+  geneLabelPx?: number
+  layerPx?: number
 }) {
   const groups = groupFeatures(features)
   return buildLanes({
@@ -154,6 +158,8 @@ function stack({
     width: WIDTH,
     height: HEIGHT,
     splitStrands,
+    geneLabelPx,
+    layerPx,
   })
 }
 
@@ -985,55 +991,73 @@ test('the ticks stop where the lane’s baseline stops, at its contig end', () =
   ])
 })
 
-test('a band covers each mate lane, striped on alternate rows', () => {
+describe('the band cell', () => {
   const s = stack({
     features: [
       pairFeature('g1', 100, 200),
       pairFeature('g1', 100, 200, { mate: 'cacao', mateRef: 'Tc1' }),
     ],
     assemblyNames: ['grape', 'peach', 'cacao'],
+    splitStrands: true,
+    geneLabelPx: 12,
+    layerPx: 10,
   })
-  const bands = buildBandCell({
-    bands: s.lanes,
-    width: WIDTH,
-    paper: 'white',
-    stripe: 'rgba(0,0,0,0.04)',
-    page: '#fff',
-  })
-  expect(bands.rectYs.length).toBe(3)
-  expect([...bands.rectPositions]).toEqual([
-    PX_ORIGIN,
-    PX_ORIGIN + WIDTH,
-    PX_ORIGIN,
-    PX_ORIGIN + WIDTH,
-    PX_ORIGIN,
-    PX_ORIGIN + WIDTH,
-  ])
-  expect(bands.rectYs[0]).toBe(s.lanes[1]!.bandStart)
-  expect(bands.rectHeights[2]).toBe(s.lanes[2]!.bandEnd - s.lanes[2]!.bandStart)
-})
-
-test('off a page of the band ground, one sheet of it lies under the whole stack first', () => {
-  const s = stack({ features: [pairFeature('g1', 100, 200)] })
+  const paper = cssColorToABGR('#fff')
+  const stripe = cssColorToABGR('rgba(0,0,0,0.04)')
+  const gutters = buildRibbonGeometry({
+    stack: s,
+    laneLinks: undefined,
+    ribbonColor: 'grey',
+    drawCurves: false,
+    bridgeSkippedLanes: false,
+  }).layers.map(({ yTop, height }) => [yTop, yTop + height] as const)
   const bandsOn = (page: string) =>
     buildBandCell({
-      bands: s.lanes,
+      rows: s.lanes,
+      glyphHeight: s.glyphHeight,
       width: WIDTH,
       paper: '#fff',
       stripe: 'rgba(0,0,0,0.04)',
       page,
     })
-  const light = bandsOn('white')
-  const dark = bandsOn('#121212')
-  expect([...dark.rectYs]).toEqual([0, ...light.rectYs])
-  expect([...dark.rectHeights]).toEqual([
-    s.lanes[1]!.bandEnd,
-    ...light.rectHeights,
-  ])
-  expect([...dark.rectColors]).toEqual([
-    cssColorToABGR('#fff'),
-    ...light.rectColors,
-  ])
+  const rectsIn = (page: string, color: number) => {
+    const cell = bandsOn(page)
+    return [...cell.rectColors].flatMap((c, i) =>
+      c === color
+        ? [[cell.rectYs[i]!, cell.rectYs[i]! + cell.rectHeights[i]!] as const]
+        : [],
+    )
+  }
+
+  test.each(['#fff', '#121212'])(
+    'every gutter lies on the paper on a %s page, since the min blend keeps nothing over a transparent pixel',
+    page => {
+      expect(gutters).toHaveLength(2)
+      const sheets = rectsIn(page, paper)
+      for (const [top, bottom] of gutters) {
+        expect(sheets.some(([y1, y2]) => y1 <= top && y2 >= bottom)).toBe(true)
+      }
+    },
+  )
+
+  test('on a page of the paper the anchor lane body stays off it, keeping the view gridlines', () => {
+    expect(rectsIn('#fff', paper)).toEqual([
+      [s.lanes[0]!.glyphTop + s.glyphHeight, s.lanes[2]!.bandEnd],
+    ])
+    expect(rectsIn('#121212', paper)).toEqual([[0, s.lanes[2]!.bandEnd]])
+  })
+
+  test('stripes shade alternate lane bodies and no gutter', () => {
+    const stripes = rectsIn('#fff', stripe)
+    expect(stripes).toEqual([
+      [s.lanes[1]!.layerTop, s.lanes[1]!.glyphTop + s.glyphHeight],
+    ])
+    for (const [top, bottom] of gutters) {
+      for (const [y1, y2] of stripes) {
+        expect(y2 <= top || y1 >= bottom).toBe(true)
+      }
+    }
+  })
 })
 
 describe('a lane cell', () => {

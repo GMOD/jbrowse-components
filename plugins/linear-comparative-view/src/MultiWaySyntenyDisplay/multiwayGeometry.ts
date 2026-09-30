@@ -710,16 +710,20 @@ class GlyphBuilder {
 
 /**
  * Reads the lane geometry alone, so a pan, zoom or settle keeps this cell's
- * identity and its upload.
+ * identity and its upload. The paper starts at the first gutter on a page of
+ * it, since the gutters' min blend over a transparent pixel draws nothing, and
+ * the stripes cover lane bodies, never a gutter.
  */
 export function buildBandCell({
-  bands,
+  rows,
+  glyphHeight,
   width,
   paper,
   stripe,
   page,
 }: {
-  bands: LaneBand[]
+  rows: LaneBand[]
+  glyphHeight: number
   width: number
   paper: string
   stripe: string
@@ -728,17 +732,17 @@ export function buildBandCell({
   const paperColor = cssColorToABGR(paper)
   const stripeColor = cssColorToABGR(stripe)
   const glyphs = new GlyphBuilder()
-  const bottom = bands.at(-1)
-  if (bottom && cssColorToABGR(page) !== paperColor) {
-    glyphs.rect(0, width, 0, bottom.bandEnd, paperColor)
+  const anchor = rows[0]
+  const bottom = rows.at(-1)
+  if (anchor && bottom) {
+    const top =
+      cssColorToABGR(page) === paperColor ? anchor.glyphTop + glyphHeight : 0
+    glyphs.rect(0, width, top, bottom.bandEnd - top, paperColor)
   }
-  bands.forEach((band, row) => {
-    if (row > 0) {
-      const height = band.bandEnd - band.bandStart
-      glyphs.rect(0, width, band.bandStart, height, paperColor)
-      if (row % 2 === 1) {
-        glyphs.rect(0, width, band.bandStart, height, stripeColor)
-      }
+  rows.forEach((band, row) => {
+    if (row % 2 === 1) {
+      const bodyEnd = band.glyphTop + glyphHeight
+      glyphs.rect(0, width, band.layerTop, bodyEnd - band.layerTop, stripeColor)
     }
   })
   return glyphs.build()
