@@ -111,9 +111,9 @@ annotations share one naming pipeline. It also writes a row for each symbol
 human lacks, which a window anchored on human does not draw. RefSeq names an ape
 gene after its human ortholog except for an open reading frame, where human
 _C1orf35_ becomes chimp _C1H1orf35_, so the helper reads that spelling back and
-the chimp gene joins the _C1orf35_ row under the human name. The rows human
-lacks are then genes human carries only as a pseudogene or non-coding RNA,
-_CMAH_ among them, and genes the ape annotations name differently from human's.
+the chimp gene joins the _C1orf35_ row. The rows human lacks are then genes
+human carries only as a pseudogene or non-coding RNA, _CMAH_ among them, and
+genes the ape annotations name differently from human's.
 
 ## Setting up the assemblies
 

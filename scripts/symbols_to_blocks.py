@@ -17,7 +17,8 @@ which defaults to NCBI's LOC ids; a PGAP bacterial annotation wants
 NCBI names a non-human gene after its human ortholog, except that human
 C1orf35 becomes C1H1orf35 in chimp, "chromosome 1 C1orf35 homolog", with the
 species' own chromosome first (C2AH2orf40 on chimp 2A, CXHXorf1 on X). The
-table undoes that spelling, so the ortholog joins and draws as C1orf35.
+table undoes that spelling, so the ortholog joins, and its BED names it, as
+C1orf35.
 
 Each BED names a gene by its symbol, so the table's cells, and the ortholog
 groups JBrowse builds from them, read as gene names. A gene with no symbol is
