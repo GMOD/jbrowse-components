@@ -215,6 +215,59 @@ of a multiscale pair.
 `title` is optional: unset, the axis has no caption. A plot banded by `facet` or
 `rows` carries the one caption beside its bands.
 
+## One quantity per category
+
+A count per bin per strand, or a depth per haplotype, is one bar per category at
+each position, and drawn from the origin at one x they cover each other. Give
+each category its own place instead. Two categories mirror across the axis, one
+drawn upward and one down through a `formula` negating its value:
+
+```json
+"marks": [
+  {
+    "mark": "bar",
+    "transform": [
+      { "type": "filter", "expr": "jexl:feature.strand == 1" },
+      { "type": "coverage" }
+    ],
+    "encoding": { "color": { "value": "tomato" } }
+  },
+  {
+    "mark": "bar",
+    "transform": [
+      { "type": "filter", "expr": "jexl:feature.strand == -1" },
+      { "type": "coverage" },
+      { "type": "formula", "expr": "jexl:-feature.coverage", "as": "down" }
+    ],
+    "encoding": { "y": "down", "color": { "value": "steelblue" } }
+  }
+]
+```
+
+Several categories take a row each, the multi-row form, with `rows` on the
+display and the same `coverage` in the mark; the sections keep the value they
+were split on, so a colour over it names each row:
+
+```json
+{
+  "transform": [
+    { "type": "formula", "expr": "jexl:getTag(feature,'HP')", "as": "hp" }
+  ],
+  "rows": "hp",
+  "marks": [
+    {
+      "mark": "bar",
+      "transform": [{ "type": "coverage" }],
+      "encoding": { "color": "hp" }
+    }
+  ]
+}
+```
+
+`facet` in place of `rows` gives each category a labelled section with a chip to
+hide it by. Every row and section reads the display's one `scales.y`, so the
+heights compare.
+
 ## Two quantities
 
 A coverage run in the hundreds and a per-read mapping quality in the tens cannot

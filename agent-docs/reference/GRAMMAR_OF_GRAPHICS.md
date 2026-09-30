@@ -609,13 +609,16 @@ the row axis in the vocabulary above, and none is a new channel.
 
 ## Gaps against the grammar
 
-- **`stack` is absent, and so are `median` and a weighted `coverage`.** A
-  stacked histogram by category (ggplot2's `position_stack`, GenomeSpy's
-  `stack` writing `y0`/`y1`) needs a bar drawn between two values, which is
-  the `y2` channel declined on captures for the range bar
-  (§"Against GenomeSpy and Gosling"); a
-  bar mark per category drawn from the origin gives the overlay the Alu
-  tutorial draws. `aggregate` takes `count`, `sum`, `mean`, `min` and `max`
+- **`stack` is absent by choice, and so are `median` and a weighted
+  `coverage`.** A stacked histogram by category (ggplot2's `position_stack`,
+  GenomeSpy's `stack` writing `y0`/`y1`) was built and measured on
+  2026-09-30 — `coverage.groupby`, a `stack` step and a bar `y2` lane, branch
+  `worktree-stack-spike`, the lane at 1 ms and 4 MB per million bars unnamed
+  — and declined on its captures: Colin is "not really a huge fan of stacked
+  bar charts", and prefers the mirror (two bars, a `formula` negating one)
+  and the rows form (`rows` over a `coverage`), both of which draw today.
+  Don't re-propose a stack; the branch holds the range bar too, which the
+  2026-09-23 capture declined. `aggregate` takes `count`, `sum`, `mean`, `min` and `max`
   where Vega-Lite and GenomeSpy add `median` and the quartiles, and
   `coverage` counts features where GenomeSpy's takes a `weight` field. Each
   is an arm in `runTransforms` and a slot on its step, and each waits on a
@@ -750,12 +753,11 @@ holds each shape's painter, shader and hit test to each other
 
 The gaps a user meets first, in order:
 
-1. **No `y2` channel**, declined on captures (2026-09-23): on the COLO829
-   tumour coverage over 1 Mb of hg19 chr17, a BigWig tier's min-to-max range
-   bar read worse to Colin than the same `minScore`/`maxScore` (ADR-123) as two
-   point marks over the mean, and than wiggle's whisker band. `origin` stays
-   the display's slot, and the channel reopens on a config whose picture two
-   point marks cannot give.
+1. **No `y2` channel**, declined twice on captures: the min-to-max range bar
+   over the COLO829 tumour coverage on 2026-09-23 read worse than two point
+   marks over the mean and than wiggle's whisker band, and the stacked bar
+   on 2026-09-30 read worse to Colin than the mirror and the rows form
+   (§"Gaps against the grammar"). `origin` stays the display's slot.
 2. **In-app authoring reaches the whole plot, and stops at the display's own
    steps.** **Edit plot...** is `facet`, `rows` and the axis (`scales.y` title,
    type, ends, grid) above the mark list, and per mark its type, its steps and

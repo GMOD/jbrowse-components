@@ -45,7 +45,7 @@ The evening's grammar analysis (its 21 verified defects landed, 0875b9a6db..1ea5
 
 - **A `line` mark.** Answered: ADR-184 landed it on 2026-09-28, with ADR-185's
   threshold over the plotted value the same day.
-- **A `y2` channel**, declined on one capture (the min-to-max range bar): it is the lane behind a stacked histogram, an area, an error bar and a rect between two values.
+- **A `y2` channel**: declined twice, the range bar on 2026-09-23 and the stacked bar on 2026-09-30 (built on branch `worktree-stack-spike`, unlanded); Colin prefers the mirror and the rows form to a stack. Closed.
 - **Layer data through the adapter**: a union adapter over feature adapters stamping `source`, as `MultiWiggleAdapter` does, so two files draw in one plot through a `filter` per mark; `source: "density"` is already per-layer data.
 - **`scales.y.rules` as a `rule` layer with a constant `y`**, so a reference line takes a zoom range and a per-row value.
 - **A `tooltip` channel** naming the fields a hover prints.

@@ -35,3 +35,22 @@ test('a faceted coverage colours each section by the field it was split on', () 
     'Reverse strand',
   ])
 })
+
+test('a coverage under rows colours each row by the field it was split on', () => {
+  const { display } = createTestEnvironment({
+    rows: 'strand',
+    marks: [
+      {
+        mark: 'bar',
+        transform: [{ type: 'coverage' }],
+        encoding: { color: 'strand' },
+      },
+    ],
+  }).createDisplay()
+  display.setRpcData(0, workerResult(display, READS), REGION)
+  const [key] = display.colorScales
+  expect(key?.kind === 'categorical' && key.entries.map(e => e.label)).toEqual([
+    'Forward strand',
+    'Reverse strand',
+  ])
+})
