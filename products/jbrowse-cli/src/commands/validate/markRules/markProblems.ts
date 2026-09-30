@@ -106,7 +106,7 @@ export const MARK_RULES = {
   'step-field-expression': 'error',
   /** A `y` naming a field that no `aggregate` or `coverage` step before it writes. */
   'unwritten-y': 'error',
-  /** Another channel naming a field that no `aggregate` or `coverage` step before it writes, so it reads no value. */
+  /** Another channel naming a field that no `aggregate` or `coverage` step before it writes, so it reads no value; the field a `facet` or `rows` splits on counts as written. */
   'unwritten-field': 'warning',
   /** A mark other than a span drawn beside one that stacks rows, standing in the first of them. */
   'value-beside-rows': 'warning',

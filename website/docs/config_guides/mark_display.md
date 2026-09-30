@@ -898,7 +898,6 @@ each reported under its id:
 | `op-field` | error | A `sum`, `mean`, `min` or `max` naming no `field`. |
 | `step-field-expression` | error | A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. |
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
-| `unwritten-field` | warning | Another channel naming a field that no `aggregate` or `coverage` step before it writes, so it reads no value; the field a `facet` or `rows` splits on is kept. |
 | `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. |
 | `unread-size` | warning | An `encoding.size` on a mark that draws no point or rule and strokes no link. |
 | `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
@@ -917,6 +916,7 @@ each reported under its id:
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |
 | `bin-field-and-fields` | warning | A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. |
 | `unread-weight` | warning | A `weight` on a `min` or a `max`, which no weight moves. |
+| `unwritten-field` | warning | Another channel naming a field that no `aggregate` or `coverage` step before it writes, so it reads no value; the field a `facet` or `rows` splits on counts as written. |
 | `value-beside-rows` | warning | A mark other than a span drawn beside one that stacks rows, standing in the first of them. |
 | `two-packings` | warning | Two `pileup` steps packing one plot, whose rows share numbers. |
 | `cross-section-packing` | warning | A `pileup` in the display's `transform` under a `facet`, packing across every section. |

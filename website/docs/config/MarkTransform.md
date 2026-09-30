@@ -49,10 +49,11 @@ run of reference gaps, with `state`, `base`, `match` and `length` written;
 `pileup` writes
 each feature's row in a greedy first-fit packing; `mate` answers one
 feature per other end a record states, the `mate` a paired adapter fills
-in (BEDPE, STAR-Fusion) or each VCF `ALT` naming a locus, with
-`mate.refName`, `mate.start`, `mate.end` and `mate.mateDirection`, the
-record's own `mateDirection`, the `alt` it came from and `svType` written,
-a record naming no other end dropped and a pair of ends answered once.
+in (BEDPE, STAR-Fusion), each VCF `ALT` naming a locus, or a paired read's
+`next_ref` and `next_pos`, with `mate.refName`, `mate.start`, `mate.end`
+and `mate.mateDirection`, the record's own `mateDirection`, the `alt` it
+came from and `svType` written, a record naming no other end dropped and a
+pair of ends answered once.
 
 ## Config slots
 
