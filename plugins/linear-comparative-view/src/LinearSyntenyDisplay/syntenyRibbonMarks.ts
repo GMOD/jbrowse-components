@@ -1,4 +1,4 @@
-import { getContrastRatio, getContrastText } from '@jbrowse/core/ui/palette'
+import { getContrastText } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { defineMark } from '@jbrowse/render-core/marks'
@@ -25,10 +25,6 @@ import type { ShaderModule } from '@jbrowse/render-core/slangPass'
 
 const PASS_FILL_STRAIGHT = 'fillStraight'
 const PASS_FILL_CURVE = 'fillCurve'
-const PASS_FILL_STRAIGHT_DARKEST = 'fillStraightDarkest'
-const PASS_FILL_CURVE_DARKEST = 'fillCurveDarkest'
-const PASS_FILL_STRAIGHT_LIGHTEST = 'fillStraightLightest'
-const PASS_FILL_CURVE_LIGHTEST = 'fillCurveLightest'
 const PASS_EDGE_STRAIGHT = 'edgeStraight'
 const PASS_EDGE_CURVE = 'edgeCurve'
 
@@ -56,14 +52,6 @@ export interface SyntenyRibbonParams {
   base1: number
   overdrawPx: number
   groundColor: string
-  /**
-   * false paints a pixel several ribbons cover with the strongest of them — the
-   * darkest on a light ground, the lightest on a dark one — rather than their
-   * stacked alpha, which turns the crossing of an inversion's many thin tiles
-   * black. Absent is the stacking the pairwise band keeps, where the sum is the
-   * density picture
-   */
-  overlapsStack?: boolean
 }
 
 /**
@@ -152,7 +140,6 @@ function writeRibbonUniforms(
     // outline in, contrast-derived so a dark band gets a light outline.
     ground: [gr / 255, gg / 255, gb / 255],
     ink: [ir / 255, ig / 255, ib / 255],
-    overlapsStack: p.overlapsStack === false ? 0 : 1,
   })
 }
 
@@ -194,34 +181,20 @@ function writeSyntenyUniforms(
  * exists to prevent — so the pick stays a model-level function over the same
  * geometry the painter uses, as the arc band's does.
  */
-type RibbonFillShape = MarkShape<
-  SyntenyInstanceData,
-  SyntenyRibbonParams | undefined
->
-
 function ribbonFillShape(
   id: string,
   mod: ShaderModule,
   curves: boolean,
-  overlap: Overlap,
-): RibbonFillShape {
+): MarkShape<SyntenyInstanceData, SyntenyRibbonParams | undefined> {
   return {
     id,
     pass: {
-      ...slangPass({
-        id,
-        mod,
-        blendState: overlap === 'stack' ? undefined : { op: overlap },
-      }),
+      ...slangPass({ id, mod }),
       pack: data => syntenyInstanceCache.get(data),
     },
     writeUniforms: writeSyntenyUniforms,
     paintsBlock(_block, _frame, p) {
-      return (
-        p !== undefined &&
-        p.track.drawCurves === curves &&
-        overlapOf(p) === overlap
-      )
+      return p !== undefined && p.track.drawCurves === curves
     },
     paintBlock(ctx, data, _block, frame, p) {
       if (p) {
@@ -232,25 +205,10 @@ function ribbonFillShape(
           frame.canvasWidth,
           p.overdrawPx,
           p.groundColor,
-          p.overlapsStack,
         )
       }
     },
   }
-}
-
-// how a pixel several ribbons cover resolves: their stacked alpha, or the
-// strongest of them against the band's ground, which min keeps on a light
-// ground and max on a dark one
-type Overlap = 'stack' | 'min' | 'max'
-
-function overlapOf(p: SyntenyRibbonParams): Overlap {
-  return p.overlapsStack !== false
-    ? 'stack'
-    : getContrastRatio(p.groundColor, '#000') >=
-        getContrastRatio(p.groundColor, '#fff')
-      ? 'min'
-      : 'max'
 }
 
 /**
@@ -290,23 +248,16 @@ function ribbonEdgeShape(
   }
 }
 
-function fillPair(straight: string, curve: string, overlap: Overlap) {
-  return {
-    straight: ribbonFillShape(
-      straight,
-      syntenyFillStraightShader,
-      false,
-      overlap,
-    ),
-    curve: ribbonFillShape(curve, syntenyFillCurveShader, true, overlap),
-  }
-}
-
-const stackingFills = fillPair(PASS_FILL_STRAIGHT, PASS_FILL_CURVE, 'stack')
-const strongestFills = [
-  fillPair(PASS_FILL_STRAIGHT_DARKEST, PASS_FILL_CURVE_DARKEST, 'min'),
-  fillPair(PASS_FILL_STRAIGHT_LIGHTEST, PASS_FILL_CURVE_LIGHTEST, 'max'),
-]
+const fillStraightShape = ribbonFillShape(
+  PASS_FILL_STRAIGHT,
+  syntenyFillStraightShader,
+  false,
+)
+const fillCurveShape = ribbonFillShape(
+  PASS_FILL_CURVE,
+  syntenyFillCurveShader,
+  true,
+)
 const edgeStraightShape = ribbonEdgeShape(
   PASS_EDGE_STRAIGHT,
   syntenyEdgeStraightShader,
@@ -321,12 +272,12 @@ const edgeCurveShape = ribbonEdgeShape(
 /**
  * The ribbon marks for a display whose cells carry ribbon geometry, outline
  * selections, or neither — the pairwise band and the multi-way stack are both
- * that shape, and both draw through these.
+ * that shape, and both draw through these four.
  *
- * `fillStraight` owns the region's buffer and every other fill borrows it
- * (`bufferOf`): `drawCurves` and `overlapsStack` choose which one pass paints,
- * so toggling either changes a uniform and the pass and uploads nothing. The
- * outline pair splits a separate small buffer the same way.
+ * `fillStraight` owns the region's buffer and `fillCurve` borrows it
+ * (`bufferOf`), so a `drawCurves` toggle changes a uniform and the pass and
+ * uploads nothing; the outline pair splits a separate small buffer the same
+ * way.
  */
 export function syntenyRibbonMarks<TRegion, TState extends MarkFrame>(lenses: {
   ribbons: (region: TRegion) => SyntenyInstanceData | undefined
@@ -339,7 +290,7 @@ export function syntenyRibbonMarks<TRegion, TState extends MarkFrame>(lenses: {
 }): Mark<TRegion, TState>[] {
   const { ribbons, outline, params } = lenses
   const fillStraight = defineMark({
-    shape: stackingFills.straight,
+    shape: fillStraightShape,
     channels: ribbons,
     params,
   })
@@ -348,15 +299,14 @@ export function syntenyRibbonMarks<TRegion, TState extends MarkFrame>(lenses: {
     channels: outline,
     params,
   })
-  const borrowing = (shape: RibbonFillShape) =>
-    defineMark({ shape, channels: ribbons, params, bufferOf: fillStraight })
   return [
     fillStraight,
-    borrowing(stackingFills.curve),
-    ...strongestFills.flatMap(({ straight, curve }) => [
-      borrowing(straight),
-      borrowing(curve),
-    ]),
+    defineMark({
+      shape: fillCurveShape,
+      channels: ribbons,
+      params,
+      bufferOf: fillStraight,
+    }),
     edgeStraight,
     defineMark({
       shape: edgeCurveShape,

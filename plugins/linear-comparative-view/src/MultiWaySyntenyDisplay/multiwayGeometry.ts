@@ -711,9 +711,9 @@ class GlyphBuilder {
 
 /**
  * Reads the lane geometry alone, so a pan, zoom or settle keeps this cell's
- * identity and its upload. The paper starts at the first gutter on a page of
- * it, since the gutters' min blend over a transparent pixel draws nothing, and
- * the stripes cover lane bodies, never a gutter.
+ * identity and its upload. On a page of the paper, the paper starts at the
+ * first gutter so every gutter sits on the same ground, and the stripes cover
+ * lane bodies, never a gutter.
  */
 export function buildBandCell({
   rows,

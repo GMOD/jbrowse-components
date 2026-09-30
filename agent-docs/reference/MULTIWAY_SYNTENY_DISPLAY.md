@@ -670,18 +670,11 @@ out of the viewport. The pick does not draw at all: `pickRibbonAt` walks
 `createSyntenyPicker` the pairwise display uses, so it stabs a 1D flatbush index
 of x-hulls and tests what comes back exactly ([SYNTENY_PICKING.md](SYNTENY_PICKING.md)).
 
-**A gutter paints the strongest ribbon over a pixel, not the sum.** The
-multi-way marks pass `overlapsStack: false`, so the fill leaves pre-blended over
-the band's ground and opaque, under a `min` blend on a light ground and `max` on
-a dark one; Canvas2D and the SVG export paint weakest first. At hg38 chr17:15.2–
-16.4 Mb an inversion's ~150 one-pixel tiles cross near one point, and stacked at
-the default 0.3 alpha that point went black — the "starburst" the 17p figure
-carried. Merging the tiles into a band per record misplaces genes, since a
-liftOver record there is 20 Mb of marmoset against 5.7 Mb of human, and merging
-indels under 3 px or putting every lane at the anchor's scale left the
-starbursts in place. What it costs is multiplicity: two copies on one pixel
-draw like one. The pairwise band keeps stacking, where the sum is the density
-picture. A `min` blend over a transparent pixel keeps the transparent pixel, so
+**A gutter stacks its ribbons' alpha, as the pairwise band does**, so a pixel
+several ribbons cover reads darker. 1e1b761b2b painted the strongest ribbon over
+a pixel instead, under a `min` blend: that cleared the starbursts an inversion's
+~150 one-pixel tiles draw at hg38 chr17:15.2–16.4 Mb, but it flattened the
+overlap shading and drew the first gutter's ribbons short, so we removed it.
 `buildBandCell` lays paper under every gutter, the anchor's half of the first
 one included, and its stripes shade lane bodies only.
 

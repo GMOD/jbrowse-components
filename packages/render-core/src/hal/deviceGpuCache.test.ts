@@ -172,7 +172,6 @@ describe('deviceGpuCache', () => {
       { ...SPAN, vertexAttributes: [{ ...attr!, components: 3 }, ...attrs] },
       { ...SPAN, blend: false },
       { ...SPAN, blendState: { op: 'max' } },
-      { ...SPAN, blendState: { op: 'min' } },
       { ...SPAN, blendState: { op: 'behind' } },
       { ...SPAN, topology: 'line-list' },
       {
@@ -241,17 +240,4 @@ describe('deviceGpuCache', () => {
     }
     expect(builds).toBe(1)
   })
-
-  it.each(['min', 'max'] as const)(
-    'blends %s on colour and alpha with the only factors WebGPU accepts',
-    op => {
-      const { blend } = pipelineRecipe(
-        { ...SPAN, blendState: { op } },
-        WGSL_SOURCE,
-        4,
-      )
-      const channel = { srcFactor: 'one', dstFactor: 'one', operation: op }
-      expect(blend).toEqual({ color: channel, alpha: channel })
-    },
-  )
 })

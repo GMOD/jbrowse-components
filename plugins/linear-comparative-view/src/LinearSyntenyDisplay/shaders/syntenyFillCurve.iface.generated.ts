@@ -29,7 +29,6 @@ export const UNIFORM_OFFSET_F32 = {
   yTop: 12,
   fadeThinAlignments: 13,
   devicePixelRatio: 14,
-  overlapsStack: 15,
   ground: 16,
   ink: 20,
 } as const
@@ -50,7 +49,6 @@ export interface Uniforms {
   yTop: number
   fadeThinAlignments: number
   devicePixelRatio: number
-  overlapsStack: number
   ground: [number, number, number]
   ink: [number, number, number]
 }
@@ -72,7 +70,6 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[12] = uniforms.yTop
   f32[13] = uniforms.fadeThinAlignments
   f32[14] = uniforms.devicePixelRatio
-  f32[15] = uniforms.overlapsStack
   f32[16] = uniforms.ground[0]
   f32[17] = uniforms.ground[1]
   f32[18] = uniforms.ground[2]

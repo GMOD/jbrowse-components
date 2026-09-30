@@ -1030,7 +1030,7 @@ describe('the band cell', () => {
   }
 
   test.each(['#fff', '#121212'])(
-    'every gutter lies on the paper on a %s page, since the min blend keeps nothing over a transparent pixel',
+    'every gutter lies on the paper on a %s page',
     page => {
       expect(gutters).toHaveLength(2)
       const sheets = rectsIn(page, paper)

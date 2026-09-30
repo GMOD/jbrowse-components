@@ -49,12 +49,11 @@ export interface ShaderModule {
  *
  * - `verticesPerInstance` — the canvas chevron pass, whose count is the
  *   shader's `CHEVRON_VERTS` times a cap the *renderer* chooses.
- * - `blendState` / `topology` — the synteny fill is the one module drawn under
- *   two blends: its strongest-ribbon passes take min or max where the stacking
- *   pass inherits src-over, since one uniform switches the fragment between
- *   the two outputs. Wiggle's step line and center line each have their own
- *   module instead, and the center line states `//! blend: max` itself. A
- *   shader whose passes disagree declares neither and says which at each pass.
+ * - `blendState` / `topology` — no pass in the tree overrides these. Wiggle's
+ *   step line and center line did while they shared one module and blended
+ *   differently (src-over against max); each record now has its own module,
+ *   and the center line's states `//! blend: max` itself. A shader whose passes
+ *   disagree declares neither and says which at each pass.
  * - `blend: false` — nothing disables blending today, which is why there is no
  *   `//! blend: none` to inherit it from.
  *
