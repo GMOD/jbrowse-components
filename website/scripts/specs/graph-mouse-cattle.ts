@@ -19,7 +19,7 @@
 // deconstructed into a VCF that does. Each figure below is picked to show one
 // of those.
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
-import { GRAPH_DRAWN, graphTrack, local } from './graph-fixtures.ts'
+import { GRAPH_DRAWN, cutNear, graphTrack, local } from './graph-fixtures.ts'
 
 import type {
   ScreenshotSpec,
@@ -250,9 +250,10 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // The graph lanes against the callset at one published insertion: the
-  // allele inventory holds the HSPA1B segment as alleles with no carriers, and
-  // the callset says every assembly bar the yak has one.
+  // The graph against the callset at one published insertion: the allele
+  // inventory holds the HSPA1B segment as alleles with no carriers, the callset
+  // says every assembly bar the yak has one, and the graph track the section
+  // cuts draws it as the loop off the backbone.
   {
     ...bovineLocusSpec(
       'pangenome/bovine_bola',
@@ -265,9 +266,17 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           type: 'LinearPileupDisplay',
           height: 90,
         },
+        graphTrack('bovine_minigraph_segments', {
+          layoutMode: 'force',
+          bubbleSpread: 'compress',
+          colorScheme: 'reference-position',
+          paneHeight: 420,
+          maxRegionBp: cutNear(28_000),
+        }),
       ],
-      690,
+      1150,
     ),
+    readySelector: GRAPH_DRAWN,
     annotations: [
       {
         type: 'text',

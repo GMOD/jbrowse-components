@@ -508,7 +508,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // breed labels beside it. The band drops the app chrome above the tracks;
     // anything tighter framed a fragment of a callout's text at card size.
     src: 'pangenome/bovine_bola.png',
-    band: [0.18, 1],
+    band: [0.108, 0.6],
     position: 'left',
   },
   pangenome_cactus: {

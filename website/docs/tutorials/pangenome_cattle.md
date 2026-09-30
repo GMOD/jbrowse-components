@@ -179,10 +179,12 @@ second alternate allele in a colour of its own:
 
 In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000`, and the
 graph track cuts the segments around _HSPA1A_. Turn on the callset and the
-allele inventory in the track selector; the figure shows them under the RefSeq
-genes.
+allele inventory in the track selector. An insertion has no reference span for
+the anchored layout to draw it along, so pick **Layout → Force-directed layout**
+and **Bubble spread → Compress lengths** from the graph track's menu; the figure
+shows the three under the RefSeq genes.
 
-<Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, and the allele inventory. Every row but the yak carries the insertion the inventory lists without carriers." src="/img/pangenome/bovine_bola.png" />
+<Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. Every row but the yak carries the insertion the inventory lists without carriers, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
 
 The yak row carries the reference. Leonard et al. built no yak assembly, so
 their result has nothing to say about it.
