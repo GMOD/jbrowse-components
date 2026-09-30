@@ -68,6 +68,7 @@ MCScanX, and stacking the genomes in one view.
 - **Display:** [ChordSyntenyDisplay](../chordsyntenydisplay)
 - **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 - **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
 

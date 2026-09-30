@@ -149,7 +149,7 @@ The display types, grouped by the track type they attach to:
 | [](/docs/config/multiquantitativetrack) | [](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearwiggledisplay) |
 | [](/docs/config/quantitativetrack) | [](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearwiggledisplay) |
 | [](/docs/config/referencesequencetrack) | [](/docs/config/linearreferencesequencedisplay) |
-| [](/docs/config/syntenytrack) | [](/docs/config/chordsyntenydisplay)<br/>[](/docs/config/dotplotdisplay)<br/>[](/docs/config/lgvsyntenydisplay)<br/>[](/docs/config/linearsyntenydisplay)<br/>[](/docs/config/multiwaysyntenydisplay) |
+| [](/docs/config/syntenytrack) | [](/docs/config/chordsyntenydisplay)<br/>[](/docs/config/dotplotdisplay)<br/>[](/docs/config/lgvsyntenydisplay)<br/>[](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearsyntenydisplay)<br/>[](/docs/config/multiwaysyntenydisplay) |
 | [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay)<br/>[](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearmultisamplevariantdisplay)<br/>[](/docs/config/linearvariantdisplay) |
 
 <!-- DISPLAY_TYPES END -->

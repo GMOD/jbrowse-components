@@ -40,7 +40,7 @@ inference.
   LinearHicDisplay
 - [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack.md) —
   displays: ChordSyntenyDisplay, DotplotDisplay, LinearSyntenyDisplay,
-  LGVSyntenyDisplay, MultiWaySyntenyDisplay
+  LGVSyntenyDisplay, MultiWaySyntenyDisplay, LinearMarkDisplay
 - [GWASTrack](https://jbrowse.org/jb2/docs/config/gwastrack.md) — displays:
   LinearManhattanDisplay
 

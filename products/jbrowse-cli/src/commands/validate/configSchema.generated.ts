@@ -11907,6 +11907,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
                 }
               ]
             },
@@ -11917,6 +11920,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
                 }
               ]
             },
@@ -11927,6 +11933,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
                 }
               ]
             },
@@ -11950,10 +11959,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/growMaxHeight"
             },
             "densityTier": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTier"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTier"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
+                }
+              ]
             },
             "densityTierBpPerPx": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTierBpPerPx"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTierBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
+                }
+              ]
             },
             "readConnectionsLineWidth": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsLineWidth"
@@ -11987,13 +12010,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filterBy"
             },
             "facet": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/facet"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+                }
+              ]
             },
             "collapseGroupRows": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/collapseGroupRows"
             },
             "scales": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
             },
             "mismatchAlpha": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mismatchAlpha"
@@ -12008,6 +12045,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
                 }
               ]
             },
@@ -12140,6 +12180,51 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "splitStrands": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/splitStrands"
+            },
+            "marks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
+            },
+            "transform": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "rows": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
+            },
+            "rowColor": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
+            },
+            "showTree": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+            },
+            "rowHeight": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
+            },
+            "origin": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "minWidthPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+            },
+            "filter": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
           },
           "patternProperties": {

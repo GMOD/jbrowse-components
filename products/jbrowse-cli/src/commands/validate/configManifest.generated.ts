@@ -2761,7 +2761,8 @@ export const configManifest: ConfigManifest = {
         "DotplotDisplay",
         "LinearSyntenyDisplay",
         "LGVSyntenyDisplay",
-        "MultiWaySyntenyDisplay"
+        "MultiWaySyntenyDisplay",
+        "LinearMarkDisplay"
       ]
     },
     "GWASTrack": {

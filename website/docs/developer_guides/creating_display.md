@@ -48,6 +48,7 @@ past `LinearGenomeView`:
 | [](/docs/config/syntenytrack) | [](/docs/config/chordsyntenydisplay) | CircularView |
 |  | [](/docs/config/dotplotdisplay) | DotplotView |
 |  | [](/docs/config/lgvsyntenydisplay) | LinearGenomeView |
+|  | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearsyntenydisplay) | LinearSyntenyView |
 |  | [](/docs/config/multiwaysyntenydisplay) | LinearGenomeView |
 | [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay) | CircularView |

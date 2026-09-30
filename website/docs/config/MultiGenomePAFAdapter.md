@@ -46,6 +46,7 @@ on.
 - **Display:** [ChordSyntenyDisplay](../chordsyntenydisplay)
 - **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 - **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
 

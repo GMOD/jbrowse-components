@@ -43,6 +43,7 @@ also covers converting an MCScanX run into these files.
 - **Display:** [ChordSyntenyDisplay](../chordsyntenydisplay)
 - **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 - **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
 

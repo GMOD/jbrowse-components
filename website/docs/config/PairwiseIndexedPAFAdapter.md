@@ -34,6 +34,7 @@ auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
 - **Display:** [ChordSyntenyDisplay](../chordsyntenydisplay)
 - **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 - **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
 

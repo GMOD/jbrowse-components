@@ -35,6 +35,7 @@ _See the **Config slots** section below for all available configuration fields._
 - **Display:** [ChordSyntenyDisplay](../chordsyntenydisplay) ([state model](../../models/chordsyntenydisplay))
 - **Display:** [DotplotDisplay](../dotplotdisplay) ([state model](../../models/dotplotdisplay))
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay) ([state model](../../models/lgvsyntenydisplay))
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay) ([state model](../../models/linearmarkdisplay))
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay) ([state model](../../models/linearsyntenydisplay))
 - **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay) ([state model](../../models/multiwaysyntenydisplay))
 - **Adapter:** [BlastTabularAdapter](../blasttabularadapter)
