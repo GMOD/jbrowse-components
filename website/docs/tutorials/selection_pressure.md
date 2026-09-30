@@ -47,6 +47,8 @@ release 116.
   https://ftp.ensembl.org/pub/release-116/gff3/macaca_mulatta/Macaca_mulatta.Mmul_10.116.gff3.gz
 - rhesus macaque coding sequence:
   https://ftp.ensembl.org/pub/release-116/fasta/macaca_mulatta/cds/Macaca_mulatta.Mmul_10.cds.all.fa.gz
+- the finished blocks table, BEDs and config, rehosted so the ribbons load
+  without running jcvi: https://jbrowse.org/demos/primate_selection/config.json
 
 ## What dN/dS says
 
@@ -148,8 +150,38 @@ colour as it is; `drawCurves` separates stacked neighbours.
 
 ## Reading the plot
 
-Open the collinear neighbourhood around _LYZ_ on human chromosome 12 and pick
-**Color by value → dN/dS**:
+The session below opens the collinear neighbourhood around _LYZ_ on human
+chromosome 12 from the hosted copy, coloured by dN/dS. In your own build, pick
+**Color by value → dN/dS**.
+
+```json session config=https://jbrowse.org/demos/primate_selection/config.json
+{
+  "defaultSession": {
+    "name": "Selection pressure across a primate gene neighbourhood",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "views": [
+          {
+            "assembly": "human",
+            "loc": "12:68,790,000-69,880,000",
+            "tracks": ["human_genes"]
+          },
+          {
+            "assembly": "rhesus",
+            "loc": "11:68,330,000-69,390,000",
+            "tracks": ["rhesus_genes"]
+          }
+        ],
+        "tracks": [["primate_orthologs"]],
+        "color": { "field": "dnds" },
+        "alpha": 0.95,
+        "drawCurves": true
+      }
+    ]
+  }
+}
+```
 
 <Figure caption="Human against rhesus macaque across a collinear neighbourhood on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
 

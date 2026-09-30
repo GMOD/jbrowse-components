@@ -141,6 +141,10 @@ hg38's orientation.
 
 <Figure src="/img/genomes_synteny/star_lanes.png" caption="The view the link opens: hg38 at TNNT3 above one lane per genome. In every lane that names them, the genes around TNNT3 read in hg38's order, SYT8 to MRPL23; the platypus lane spreads over many sequences and names none of them." />
 
+The stack shows the TNNT3 neighbourhood's gene order holding across species. The
+[rearrangement above](#the-tnnt3-rearrangement) differs between human
+assemblies, so it does not appear among the species lanes.
+
 Each lane reads the same chain file as that genome's pairwise liftOver track, so
 the one view holds what a synteny view per genome would. The ribbons between two
 lanes below hg38 pass through hg38, since each chain aligns one genome to hg38.
