@@ -48,9 +48,6 @@ The Drosophila Genetic Reference Panel, 205 inbred lines
 - π inside the inverted and standard karyotypes:
   https://jbrowse.org/demos/popgen/pi_INV.bw and
   https://jbrowse.org/demos/popgen/pi_STD.bw
-- the inversion genotypes and the line table beside them:
-  https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz and
-  https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv
 
 The dm6 assembly and gene track are the hosted UCSC
 [hub](/docs/user_guides/hub_url)'s own entries.
@@ -214,19 +211,77 @@ the per-group π bigWigs load as one track:
 }
 ```
 
-The inverted lines carry less diversity than the standard ones across the
-inverted region, most noticeably near the breakpoints.
+In 2 kb windows each arrangement's π swings several fold from one window to the
+next, far more than the inversion moves one against the other, so two rows of it
+look alike. Pooling the windows into 250 kb bins and taking log2 of inverted
+over standard gives one lane that sits at zero wherever the two arrangements
+carry equal diversity. The build script's `awk` step writes it from the two π
+bedGraphs:
+
+<!-- from: scripts/build_dgrp_popgen.sh -->
+
+```bash
+# B: bin width; each bin's pi is the length-weighted mean of its 2 kb windows
+awk -F'\t' -v OFS='\t' -v B=250000 '
+  NR==FNR { len[$1]=$2; next }
+  FNR==1 { g++ }
+  { k=$1 SUBSEP int($2/B); w=$3-$2; s[g,k]+=$4*w; n[g,k]+=w; seen[k] }
+  END {
+    for (k in seen) if (s[1,k]>0 && s[2,k]>0) {
+      split(k, a, SUBSEP); end=(a[2]+1)*B; if (end>len[a[1]]) end=len[a[1]]
+      print a[1], a[2]*B, end, log((s[1,k]/n[1,k])/(s[2,k]/n[2,k]))/log(2)
+    }
+  }' dm6.chrom.sizes pi_INV.bedgraph pi_STD.bedgraph |
+  sort -k1,1 -k2,2n > pi_ratio_In2Lt.bedgraph
+bedGraphToBigWig pi_ratio_In2Lt.bedgraph dm6.chrom.sizes pi_ratio_In2Lt.bw
+```
+
+The track colors each bin by which side of zero it falls on, on a pinned
+symmetric axis:
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "pi_ratio_in2lt",
+  "name": "π, In(2L)t over standard (log2, 250 kb bins)",
+  "assemblyNames": ["dm6"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/pi_ratio_In2Lt.bw"
+  },
+  "displayDefaults": {
+    "color": {
+      "field": "score",
+      "scale": "threshold",
+      "domain": [0],
+      "range": ["#e66100", "#1f78b4"],
+      "labels": ["inverted lower", "inverted higher"],
+      "title": "π, In(2L)t vs standard"
+    },
+    "scales": {
+      "y": { "domainMin": -1.5, "domainMax": 1.5, "title": "log2 ratio" }
+    }
+  }
+}
+```
 
 ## Reading the signals
 
-Search `Cyp6g1` (on `2R`) in the location box and add the Tajima's D track
-alongside π. Both dip together over the swept window. Add the called-variant
-count under them, column 4 of the table π comes from. A duplication of _Cyp6g1_
+Search `Cyp6g1` (on `2R`) in the location box. Add three more tracks, each a
+`QuantitativeTrack` shaped like the Fst one above with its own `uri`:
+
+- Tajima's D over the whole panel,
+  `https://jbrowse.org/demos/popgen/tajimad_all.bw`
+- π over the whole panel, `https://jbrowse.org/demos/popgen/pi_all.bw`
+- the called-variant count per window, column 4 of the table π comes from,
+  `https://jbrowse.org/demos/popgen/sites_all.bw`
+
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip together over the highlighted window against their background either side, and the count of called variants under them falls with them."/>
+
+Tajima's D and π dip together over the swept window. A duplication of _Cyp6g1_
 segregates alongside the resistance allele
 ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and the
 duplicated sequence lowers the number of sites called in the window.
-
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip together over the highlighted window against their background either side, and the count of called variants under them falls with them."/>
 
 Fst read against within-group π:
 
@@ -240,54 +295,20 @@ _Ace_ and _CHKov1_ on `3R` show the same pattern. DGRPool also types
 `In(3R)Payne`, so repeating the grouping step with that phenotype scans `3R` the
 same way.
 
-## The inversion, genome-wide and per line
+## The inversion, genome-wide and within each arrangement
 
 Open the assembly with no location to lay the six arms out side by side. The
 `In(2L)t` Fst track rises over the inverted region of 2L against low background
 everywhere else.
 
-To see which lines carry it, represent the arrangement as one `<INV>` record
-spanning the In(2L)t breakpoints (`2L:2,225,744-13,154,180`), genotyped across
-every karyotyped line, and load it in the
-[regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail),
-which draws each genotype at the call's true span.
-[](/docs/tutorials/ld_mosquitoes) builds the same track for a mosquito
-inversion.
+Then open `chr2L` alone, with the π ratio track under Fst:
 
-The build script writes both inputs: a `samples.tsv` whose first column is the
-sample name and whose other columns are attributes to band and color rows by,
-and a one-record SV VCF genotyping every line `1/1` or `0/0`. Load it with a
-`LinearMultiSampleVariantDisplay` that bands (`facet`) and colors (`rowColor`)
-rows by the `karyotype` column, with the standard lines declared first so the
-carriers draw at the bottom of the lane:
+<Figure src="/img/popgen/in2lt_pi_ratio.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, chr2L alone with π in the inverted lines over π in the standard ones, log2 in 250 kb bins. Inside the inversion the bins fall below zero, furthest at the two breakpoints, and toward the centromere past the inversion they sit at zero." links="Six arms=popgen/fst_in2lt_2L"/>
 
-```json addtrack
-{
-  "type": "VariantTrack",
-  "trackId": "dgrp_In2Lt_sv",
-  "name": "In(2L)t inversion genotyped across DGRP lines",
-  "assemblyNames": ["dm6"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz",
-    "samplesTsvLocation": {
-      "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv"
-    }
-  },
-  "displays": [
-    {
-      "type": "LinearMultiSampleVariantDisplay",
-      "facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] },
-      "rowColor": "karyotype"
-    }
-  ]
-}
-```
-
-Each row is a line colored by its genotype, with the karyotype strip down the
-sidebar and the two classes contiguous.
-
-<Figure src="/img/popgen/in2lt_inversion.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, a second view of chr2L adds one row per DGRP line, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau runs past both." links="Six arms=popgen/fst_in2lt_2L"/>
+The inverted lines carry less diversity than the standard ones across the
+inverted region, most near the breakpoints, where the suppressed recombination
+is strongest. Toward the centromere past the inversion, where the arrangements
+recombine freely, the ratio sits at zero.
 
 Differentiation decays gradually outside the breakpoints
 ([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)); the

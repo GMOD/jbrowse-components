@@ -119,22 +119,40 @@ const SITES_TRACK = {
   },
 }
 
-// No per-group-pi figure, deliberately. The tutorial documents the
-// MultiQuantitativeTrack config for pi_INV.bw + pi_STD.bw, but there is no view
-// of it worth publishing: across the inverted region pi_INV/pi_STD sits at
-// 0.7-0.9 and only reaches 0.38 in one 200 kb bin near the distal breakpoint
-// (measured off the pipeline bedGraphs). Every framing tried — whole arm,
-// one xyplot row per group, a 0-0.012 heatmap zoomed to the strongest trough
-// — produced two
-// rows a reader cannot tell apart. Fst is the signal that reads; leave the
-// contrast to the prose rather than shipping a figure that shows nothing.
+// No per-group-pi figure. Every framing of pi_INV.bw beside pi_STD.bw that was
+// tried (whole arm, one xyplot row per group, a 0-0.012 heatmap zoomed to the
+// strongest trough) gave two rows a reader cannot tell apart, so
+// popgen/in2lt_pi_ratio draws the contrast as one pooled ratio lane instead.
 
-// The DGRP In(2L)t genotypes, one row per line: the per-sample counterpart to
-// the Fst scan, which says the arrangement is differentiated where this says
-// WHO carries it. The multi-sample display draws each genotype at the call's
-// true span, so the carrier block starts and ends at the breakpoints under the
-// Fst plateau, which the matrix's evenly spaced columns would not.
-const IN2LT_SV_TRACK = pageTrack(POPGEN_DOC, 'dgrp_In2Lt_sv')
+// The DGRP In(2L)t genotypes, one row per line, for the grouping guide's facet
+// example (config_guides/grouping_and_ordering.md), so it is written here
+// rather than read off a page fence.
+const IN2LT_SV_TRACK = {
+  type: 'VariantTrack',
+  trackId: 'dgrp_In2Lt_sv',
+  name: 'In(2L)t inversion genotyped across DGRP lines',
+  assemblyNames: ['dm6'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz',
+    samplesTsvLocation: {
+      uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv',
+    },
+  },
+  displays: [
+    {
+      type: 'LinearMultiSampleVariantDisplay',
+      facet: { field: 'karyotype', domain: ['Standard', 'In(2L)t'] },
+      rowColor: 'karyotype',
+    },
+  ],
+}
+
+// log2(pi inverted / pi standard) in 250 kb bins: in 2 kb windows each group
+// swings several fold, so two per-group rows read alike. Pooled, the ratio falls to about
+// -0.5 to -1.3 at both breakpoints, sits near zero mid-inversion, and near zero
+// again toward the centromere past the proximal breakpoint, the control.
+const PI_RATIO_TRACK = pageTrack(POPGEN_DOC, 'pi_ratio_in2lt')
 
 export const popgenSpecs: ScreenshotSpec[] = [
   // Genome-wide (all six dm6 arms): the In(2L)t Fst track rises into a tall
@@ -434,8 +452,72 @@ export const popgenSpecs: ScreenshotSpec[] = [
       },
     ],
     readySelector: displayPainted('variant-display'),
-    readyText: IN2LT_SV_TRACK.name as string,
+    readyText: IN2LT_SV_TRACK.name,
     readyTimeout: 120000,
     viewportHeight: 1194,
+  },
+
+  // The tutorial's figure: the six arms over Fst, then chr2L with the pi ratio. popgen/in2lt_inversion above carries the per-line genotype
+  // lane, which the grouping guide uses as a facet example; in the tutorial it
+  // was the karyotype table redrawn, so its block spanning the breakpoints was
+  // true by construction.
+  {
+    mode: 'url',
+    name: 'popgen/in2lt_pi_ratio',
+    url: `${DM6_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [IN2LT_INVERSION_TRACK, FST_TRACK, PI_RATIO_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'dm6',
+          displayedRegionNames: [
+            'chr2L',
+            'chr2R',
+            'chr3L',
+            'chr3R',
+            'chr4',
+            'chrX',
+          ],
+          tracks: [
+            {
+              trackId: 'in2lt_inversion',
+              type: 'LinearBasicDisplay',
+              height: 40,
+            },
+            {
+              trackId: 'fst_in2lt',
+              type: 'LinearWiggleDisplay',
+              height: 160,
+            },
+          ],
+        },
+        {
+          type: 'LinearGenomeView',
+          assembly: 'dm6',
+          loc: 'chr2L',
+          tracks: [
+            {
+              trackId: 'in2lt_inversion',
+              type: 'LinearBasicDisplay',
+              height: 40,
+            },
+            {
+              trackId: 'fst_in2lt',
+              type: 'LinearWiggleDisplay',
+              height: 130,
+            },
+            {
+              trackId: 'pi_ratio_in2lt',
+              type: 'LinearWiggleDisplay',
+              height: 180,
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readySelector: displayPainted('wiggle-display'),
+    readyText: PI_RATIO_TRACK.name as string,
+    readyTimeout: 120000,
+    viewportHeight: 1014,
   },
 ]

@@ -5,10 +5,11 @@
 #
 # It downloads the DGRP2 dm6 SNP VCF and the In(2L)t inversion karyotypes,
 # splits the panel into inverted/standard groups, computes windowed Fst,
-# nucleotide diversity (pi), and Tajima's D as bigWigs with vcftools, builds the
-# one-record inversion SV VCF the per-sample section loads, downloads
-# JBrowse, and writes a config.json with the dm6 assembly (from UCSC) plus all
-# of those tracks, opening on the In(2L)t inversion across chromosome arm 2L.
+# nucleotide diversity (pi), its inverted-over-standard ratio, and Tajima's D as
+# bigWigs with vcftools, builds a one-record inversion SV VCF genotyping every
+# line (the grouping guide's per-line lane), downloads JBrowse, and writes a
+# config.json with the dm6 assembly (from UCSC) plus all of those tracks,
+# opening on the In(2L)t inversion across chromosome arm 2L.
 #
 # Everything is pinned (fixed input URLs, 2 kb windows), so re-running
 # reproduces the same tracks.
@@ -101,6 +102,24 @@ for g in all INV STD; do
   bedGraphToBigWig pi_$g.bedgraph dm6.chrom.sizes pi_$g.bw
 done
 
+# ── pi, inverted over standard, in 250 kb bins -> bigWig ─────────────────────
+# Two 2 kb pi tracks cannot be compared by eye: each swings several fold window
+# to window, far more than the inversion moves one against the other. Pooling
+# 250 kb and taking log2(INV/STD) leaves one lane at zero wherever the two
+# arrangements carry equal diversity.
+awk -F'\t' -v OFS='\t' -v B=250000 '
+  NR==FNR { len[$1]=$2; next }
+  FNR==1 { g++ }
+  { k=$1 SUBSEP int($2/B); w=$3-$2; s[g,k]+=$4*w; n[g,k]+=w; seen[k] }
+  END {
+    for (k in seen) if (s[1,k]>0 && s[2,k]>0) {
+      split(k, a, SUBSEP); end=(a[2]+1)*B; if (end>len[a[1]]) end=len[a[1]]
+      print a[1], a[2]*B, end, log((s[1,k]/n[1,k])/(s[2,k]/n[2,k]))/log(2)
+    }
+  }' dm6.chrom.sizes pi_INV.bedgraph pi_STD.bedgraph \
+  | sort -k1,1 -k2,2n > pi_ratio_In2Lt.bedgraph
+bedGraphToBigWig pi_ratio_In2Lt.bedgraph dm6.chrom.sizes pi_ratio_In2Lt.bw
+
 # ── Called variants per window -> bigWig ─────────────────────────────────────
 # Column 4 of the same table vcftools already wrote, so this costs no extra run.
 # It is what separates the two readings of a diversity trough: pi falling with
@@ -151,7 +170,7 @@ else
   jb() { npx -y @jbrowse/cli "$@"; }
 fi
 [ -f "$APP/index.html" ] || jb create "$APP"
-cp fst_In2Lt.bw pi_all.bw pi_INV.bw pi_STD.bw tajimad_all.bw sites_all.bw \
+cp fst_In2Lt.bw pi_all.bw pi_INV.bw pi_STD.bw pi_ratio_In2Lt.bw tajimad_all.bw sites_all.bw \
    dgrp_In2Lt_sv.vcf.gz dgrp_In2Lt_sv.vcf.gz.tbi dgrp_In2Lt_samples.tsv "$APP"/
 
 # ── config.json: dm6 from UCSC + the scan tracks ─────────────────────────────
@@ -216,6 +235,25 @@ cat > "$APP"/config.json <<'JSON'
           { "type": "BigWigAdapter", "source": "π inverted", "uri": "pi_INV.bw" },
           { "type": "BigWigAdapter", "source": "π standard", "uri": "pi_STD.bw" }
         ]
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "pi_ratio_in2lt",
+      "name": "π, In(2L)t over standard (log2, 250 kb bins)",
+      "assemblyNames": ["dm6"],
+      "category": ["DGRP scans"],
+      "adapter": { "type": "BigWigAdapter", "uri": "pi_ratio_In2Lt.bw" },
+      "displayDefaults": {
+        "color": {
+          "field": "score",
+          "scale": "threshold",
+          "domain": [0],
+          "range": ["#e66100", "#1f78b4"],
+          "labels": ["inverted lower", "inverted higher"],
+          "title": "π, In(2L)t vs standard"
+        },
+        "scales": { "y": { "domainMin": -1.5, "domainMax": 1.5, "title": "log2 ratio" } }
       }
     },
     {
