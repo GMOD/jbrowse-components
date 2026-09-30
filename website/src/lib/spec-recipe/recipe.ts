@@ -148,11 +148,12 @@ function fieldSteps(
 ) {
   const steps: RecipeStep[] = []
   const unmapped: string[] = []
+  const settings = Object.fromEntries(entries)
   for (const [field, value] of entries) {
     if (IGNORED_FIELDS.has(field)) {
       continue
     }
-    const produced = table[field]?.(value, context)
+    const produced = table[field]?.(value, { ...context, settings })
     const found = produced ? [produced].flat() : []
     for (const step of found) {
       steps.push({

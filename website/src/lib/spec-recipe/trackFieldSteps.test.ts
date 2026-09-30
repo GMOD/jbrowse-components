@@ -30,3 +30,17 @@ test('an autoscale group is the score menu of the display it is on', () => {
     scalePaths({ y: { autoscaleGroup: 'depth' } }, 'LinearWiggleDisplay'),
   ).toEqual(['Track menu → Score → Autoscale with other tracks...'])
 })
+
+test('clustering over a narrower window names that window in its step', () => {
+  const settings = {
+    runClustering: true,
+    clusterRegion: '17:39,000,000-40,500,000',
+  }
+  const step = trackFields.runClustering!(true, { noun: 'row', settings })
+  expect(Array.isArray(step) ? undefined : step?.note).toContain(
+    'clusters over 17:39,000,000-40,500,000',
+  )
+  expect(
+    trackFields.clusterRegion!(settings.clusterRegion, { noun: 'row' }),
+  ).toEqual([])
+})

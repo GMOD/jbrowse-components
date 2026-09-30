@@ -112,6 +112,8 @@ export interface FieldContext {
   // field like colorBy means a different control on a synteny view than on any
   // other, and unlike a track entry a view always names its own type.
   viewType?: string
+  // every field of the entry, for a recipe whose step another field qualifies
+  settings?: Record<string, unknown>
 }
 
 // A recipe answers with several steps where one spec key stands over several
@@ -1345,15 +1347,16 @@ export const trackFields: Record<string, FieldRecipe> = {
             }
           : undefined
       : undefined,
+  // Elsewhere runClustering's step names the window
   clusterRegion: (value, { displayType }) =>
-    typeof value === 'string' &&
-    displayType &&
-    MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
-      ? {
-          path: `Navigate to the region you want to cluster on, then ${TRACK_MENU} → Cluster rows by genotype...`,
-          note: `Clustering is scoped to the region it was run over — this figure clustered on ${value}, which is what the row order reflects even after navigating elsewhere.`,
-        }
-      : undefined,
+    typeof value !== 'string'
+      ? undefined
+      : displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+        ? {
+            path: `Navigate to the region you want to cluster on, then ${TRACK_MENU} → Cluster rows by genotype...`,
+            note: `Clustering is scoped to the region it was run over — this figure clustered on ${value}, which is what the row order reflects even after navigating elsewhere.`,
+          }
+        : [],
   showRowSeparators: (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType === 'LinearMultiRowFeatureDisplay'
@@ -1802,13 +1805,21 @@ export const trackFields: Record<string, FieldRecipe> = {
   // `layout`/`domain` that states one outright. They are easy to confuse, so
   // each note says what the order is computed FROM: clustering uses the whole
   // region in view, the sort uses a single column.
-  runClustering: value =>
-    value === true
+  runClustering: (value, { displayType, settings }) => {
+    const region =
+      displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+        ? undefined
+        : asString(settings?.clusterRegion)
+    return value === true
       ? {
           path: `${TRACK_MENU} → Clustering → Cluster rows by similarity`,
-          note: 'Orders the rows by how alike they are across the region in view, and draws the tree it built beside them. It clusters over what is displayed, so the same menu item somewhere else gives a different order.',
+          note: region
+            ? `Orders the rows by how alike they are across the region in view, and draws the tree it built beside them. This figure clusters over ${region}: zoom there, run it, then zoom back out, and the order holds.`
+            : 'Orders the rows by how alike they are across the region in view, and draws the tree it built beside them. It clusters over what is displayed, so the same menu item somewhere else gives a different order.',
         }
-      : undefined,
+      : undefined
+  },
+
   // Two displays carry this property and each names its own menu item and its
   // own value, so the note is written per display rather than for whichever one
   // came first — the reason FieldContext carries `displayType` at all.
