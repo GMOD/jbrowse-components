@@ -3129,6 +3129,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
+       * y ranges, from the top of the highlight bands, of tracks whose display
+       * sets `drawsGenomicCoordinates` to false; the bands skip them
+       */
+      nonGenomicTrackBands() {
+        const y0 = self.headerHeight + self.scalebarHeight
+        return [...self.pinnedTracks, ...self.unpinnedTracks].flatMap(track => {
+          const display = track.activeDisplay as {
+            drawsGenomicCoordinates?: boolean
+          }
+          const top = self.getTrackYOffset(track.configuration.trackId)
+          return display.drawsGenomicCoordinates === false && top !== undefined
+            ? [{ top: top - y0, height: self.trackHeight(track) }]
+            : []
+        })
+      },
+
+      /**
+       * #method
        * like getHighlightCoords but laid out against the overview scalebar and
        * shifted by the cytoband offset
        */

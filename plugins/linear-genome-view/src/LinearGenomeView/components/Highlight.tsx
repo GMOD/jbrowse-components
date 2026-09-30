@@ -36,6 +36,7 @@ const Highlight = observer(function Highlight({
       coords={coords}
       background={bandColor.toRgbString()}
       label={label}
+      gaps={model.nonGenomicTrackBands()}
     >
       {coords.width >= CHIP_MIN_WIDTH ? (
         <HighlightChip
