@@ -58,9 +58,7 @@ function shortenLinks(node: Element) {
   return count
 }
 
-// In the "Where the data comes from" list, each raw URL shows as host/…/file,
-// and a checkbox under the heading switches every one to the full URL. The
-// toggle is CSS only (`~` siblings), so it works without a script.
+// The checkbox toggles the full URLs by CSS alone (`~` siblings), with no script
 const rehypeDataUrls: Plugin<[], Root> = () => (tree, file) => {
   if (file.data.feed === true) {
     return

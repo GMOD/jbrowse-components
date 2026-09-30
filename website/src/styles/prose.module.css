@@ -74,8 +74,6 @@
     opacity: 1;
   }
 
-  /* rehype-data-urls shows each source URL as host/…/file until the checkbox
-     under the "Where the data comes from" heading is ticked. */
   .prose :global(.data-urls-toggle) {
     margin-right: 0.4rem;
   }
