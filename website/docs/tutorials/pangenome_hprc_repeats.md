@@ -367,7 +367,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/mai
 node trgt-to-cnv-tr.mjs hprc_abca7_trgt.vcf.gz > hprc_abca7_cnvtr.vcf
 ```
 
-[Sort, bgzip and index](/docs/quickstart_web#preparing-your-data) the output,
+[Sort, bgzip and index](/docs/quickstart_web#vcf) the output,
 then add it as a track:
 
 ```json addtrack
