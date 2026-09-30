@@ -159,16 +159,15 @@ supported by few reads.
 
 ## Loading your own RNA-seq data
 
-An aligned, sorted and indexed BAM or CRAM is an `AlignmentsTrack`. The adapter
-takes one `uri` and finds the `.bai` or `.crai` beside the file:
+An aligned, sorted and indexed BAM or CRAM loads as an `AlignmentsTrack` from
+one `uri`, and JBrowse finds the `.bai` or `.crai` beside the file:
 
 ```json addtrack
 {
-  "type": "AlignmentsTrack",
   "trackId": "my_rnaseq",
   "name": "My RNA-seq",
-  "assemblyNames": ["hg38"],
-  "adapter": { "type": "BamAdapter", "uri": "https://yourhost/rnaseq.bam" }
+  "uri": "https://yourhost/rnaseq.bam",
+  "assemblyNames": ["hg38"]
 }
 ```
 

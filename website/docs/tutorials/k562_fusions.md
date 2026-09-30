@@ -179,14 +179,10 @@ script lifts the breakends to hg38 and adds both as tracks:
 
 ```json addtrack
 {
-  "type": "QuantitativeTrack",
   "trackId": "K562_cn",
   "name": "K562 copy-number segments (DepMap WGS)",
+  "uri": "K562_cn.bw",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BigWigAdapter",
-    "uri": "K562_cn.bw"
-  },
   "displayDefaults": {
     "scales": {
       "y": { "domainMin": 0, "domainMax": 8, "title": "copy ratio (DepMap)" }

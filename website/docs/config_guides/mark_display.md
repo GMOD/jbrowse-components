@@ -28,11 +28,8 @@ Bars from a BED score column, coloured by strand, with the colour key on screen:
   "type": "FeatureTrack",
   "trackId": "scores",
   "name": "Scores",
+  "uri": "https://example.com/scores.bed.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://example.com/scores.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",
@@ -184,11 +181,8 @@ horizontal lines at chosen values, and `title`, the caption beside the axis.
   "type": "FeatureTrack",
   "trackId": "association",
   "name": "Association",
+  "uri": "https://example.com/association.bed.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://example.com/association.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",
@@ -443,11 +437,8 @@ band where it does not. Bars with each feature's name over them:
   "type": "FeatureTrack",
   "trackId": "labelled_scores",
   "name": "Scores with labels",
+  "uri": "https://example.com/scores.bed.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://example.com/scores.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",
@@ -490,11 +481,8 @@ Splice junctions from a STAR file, stroked by read support and labelled with it:
   "type": "FeatureTrack",
   "trackId": "junctions",
   "name": "Splice junctions",
+  "uri": "https://example.com/junctions.bed.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://example.com/junctions.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",
@@ -540,11 +528,8 @@ Write them out to say more — a colour by type, a stroke by score, a shape:
   "type": "VariantTrack",
   "trackId": "sv_calls",
   "name": "SV calls",
+  "uri": "https://example.com/sv.vcf.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://example.com/sv.vcf.gz"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",

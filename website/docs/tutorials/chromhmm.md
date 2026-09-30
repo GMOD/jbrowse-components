@@ -102,12 +102,9 @@ partitioned on `cellType`. It references the `hg19` assembly; see the
   "type": "FeatureTrack",
   "trackId": "broad_chromhmm_multirow_hg19",
   "name": "ChromHMM chromatin state (Broad ENCODE, 9 cell types)",
+  "uri": "wgEncodeBroadHmm.multirow.bed.gz",
   "assemblyNames": ["hg19"],
   "category": ["ENCODE", "Chromatin state"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "wgEncodeBroadHmm.multirow.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
@@ -131,7 +128,7 @@ partitioned on `cellType`. It references the `hg19` assembly; see the
 }
 ```
 
-The adapter finds the `.bed.gz.tbi` beside the file.
+JBrowse finds the `.bed.gz.tbi` beside the file.
 [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) sets up the
 sub-rows:
 
@@ -207,12 +204,9 @@ order. The merged file is hosted, so the whole track is:
   "type": "FeatureTrack",
   "trackId": "roadmap_chromhmm_multirow_hg19",
   "name": "ChromHMM chromatin state (Roadmap, 127 epigenomes)",
+  "uri": "https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb",
   "assemblyNames": ["hg19"],
   "category": ["Roadmap Epigenomics", "Chromatin state"],
-  "adapter": {
-    "type": "BigBedAdapter",
-    "uri": "https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb"
-  },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",

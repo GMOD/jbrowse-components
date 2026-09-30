@@ -578,11 +578,8 @@ per strain:
   "type": "FeatureTrack",
   "trackId": "ecoli_minigraph_paths",
   "name": "minigraph graph: per-strain path through each bubble",
+  "uri": "ecoli_minigraph_paths.bed.gz",
   "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "ecoli_minigraph_paths.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",

@@ -166,11 +166,8 @@ draws the window across its extent, `encoding.size` px thick.
   "type": "FeatureTrack",
   "trackId": "fst_scan",
   "name": "Fst scan",
+  "uri": "https://yourhost/fst.bed.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://yourhost/fst.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearManhattanDisplay",

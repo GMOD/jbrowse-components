@@ -120,14 +120,10 @@ is a 7.8 kb block.
 
 ```json addtrack
 {
-  "type": "VariantTrack",
   "trackId": "dog10k_nhej1_svs",
   "name": "Dog10K structural variants at NHEJ1",
-  "assemblyNames": ["UU_Cfam_GSD_1.0"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "dog10k_nhej1_svs.vcf.gz"
-  }
+  "uri": "dog10k_nhej1_svs.vcf.gz",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"]
 }
 ```
 
@@ -196,14 +192,10 @@ partner coordinate inside `ALT` and needs more; see the
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
   "trackId": "omia_dog_variants",
   "name": "OMIA causal variants (dog)",
+  "uri": "omia_dog_variants.gff3.gz",
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "omia_dog_variants.gff3.gz"
-  },
   "displayDefaults": {
     "labels": { "description": "jexl:feature.inheritance" }
   }
@@ -223,11 +215,8 @@ The figure filters the window's SV records to this one:
   "type": "VariantTrack",
   "trackId": "dog10k_nhej1_svs",
   "name": "Dog10K structural variants at NHEJ1",
+  "uri": "dog10k_nhej1_svs.vcf.gz",
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "dog10k_nhej1_svs.vcf.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",

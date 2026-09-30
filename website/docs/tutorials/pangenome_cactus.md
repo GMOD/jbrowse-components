@@ -238,11 +238,8 @@ matrix display, one column per variant and one row per sample:
   "type": "VariantTrack",
   "trackId": "ecoli_cactus_variants",
   "name": "MC graph: pangenome variants (vs K12)",
+  "uri": "mc/ecoli.vcf.gz",
   "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "mc/ecoli.vcf.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
@@ -395,14 +392,10 @@ ordinary alignments track:
 
 ```json addtrack
 {
-  "type": "AlignmentsTrack",
   "trackId": "ecoli_cactus_reads",
   "name": "KTa004 reads mapped through the graph (vs K12)",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "BamAdapter",
-    "uri": "ecoli_cactus_reads.bam"
-  }
+  "uri": "ecoli_cactus_reads.bam",
+  "assemblyNames": ["K12"]
 }
 ```
 

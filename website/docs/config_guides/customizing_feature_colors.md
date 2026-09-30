@@ -85,14 +85,10 @@ back:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
   "trackId": "mobilome",
   "name": "Mobilome",
+  "uri": "MGYG000000001_mobilome.gff",
   "assemblyNames": ["MGYG000000001"],
-  "adapter": {
-    "type": "Gff3Adapter",
-    "uri": "MGYG000000001_mobilome.gff"
-  },
   "displayDefaults": {
     "color": "jexl:{prophage:'#8e44ad',viral_sequence:'#9b59b6',plasmid:'#2980b9',insertion_sequence:'#e67e22',terminal_inverted_repeat_element:'#d35400',inverted_repeat_element:'#d35400',integron:'#16a085',conjugative_integron:'#1abc9c',attC_site:'#0e6655',compositional_outlier:'#c0392b',direct_repeat:'#7f8c8d',CDS:'#bdc3c7'}[feature.type] || 'gray'"
   }

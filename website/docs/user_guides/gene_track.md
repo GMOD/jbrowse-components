@@ -90,14 +90,10 @@ what a config author declares and what a reader arranges are one setting:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
   "trackId": "ncbi_refseq_hg38",
   "name": "NCBI RefSeq genes",
+  "uri": "https://example.com/GCF_000001405.40.gff.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "https://example.com/GCF_000001405.40.gff.gz"
-  },
   "displayDefaults": {
     "facet": {
       "field": "gene_biotype",
@@ -230,14 +226,10 @@ the track's `labels.name` reads it:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
   "trackId": "enterovirus_d_genes",
   "name": "Genes",
+  "uri": "https://example.com/GCF_000861205.1.gff.gz",
   "assemblyNames": ["GCF_000861205.1"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "https://example.com/GCF_000861205.1.gff.gz"
-  },
   "displayDefaults": {
     "labels": {
       "name": "jexl:feature.product || feature.name || feature.id"

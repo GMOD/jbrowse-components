@@ -191,14 +191,10 @@ OMIA curates as OMIA 000483-9913. Add OMIA's cattle records as a lane:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
   "trackId": "omia_cattle_variants",
   "name": "OMIA causal variants (cattle)",
+  "uri": "omia_cattle_variants.gff3.gz",
   "assemblyNames": ["bosTau9"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "omia_cattle_variants.gff3.gz"
-  },
   "displayDefaults": {
     "labels": {
       "description": "jexl:feature.inheritance"

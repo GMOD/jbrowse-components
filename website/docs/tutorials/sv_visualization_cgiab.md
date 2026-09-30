@@ -115,14 +115,10 @@ and the CNV calls as a BED, both loaded straight from their FTP URL.
 
 ```json addtrack
 {
-  "type": "VariantTrack",
   "trackId": "hg008t_benchmark_sv",
   "name": "HG008-T V0.5 draft benchmark somatic SVs",
-  "assemblyNames": ["GRCh38_GIABv3"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz"
-  }
+  "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz",
+  "assemblyNames": ["GRCh38_GIABv3"]
 }
 ```
 

@@ -57,14 +57,10 @@ finds the `.bai` index beside the file:
 
 ```json addtrack
 {
-  "type": "AlignmentsTrack",
   "trackId": "HG002_snrpn_5mC_reads",
   "name": "HG002 ONT reads (5mC, haplotagged)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BamAdapter",
-    "uri": "https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam"
-  }
+  "uri": "https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam",
+  "assemblyNames": ["hg38"]
 }
 ```
 

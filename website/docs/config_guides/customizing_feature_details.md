@@ -13,16 +13,12 @@ track dialog. For complex logic, register a jexl function in a small plugin.
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
   "trackId": "genes",
   "assemblyNames": ["volvox"],
   "name": "Genes",
+  "uri": "volvox.sort.gff3.gz",
   "formatDetails": {
     "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}"
-  },
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "volvox.sort.gff3.gz"
   }
 }
 ```
@@ -90,14 +86,10 @@ every feature is written as a plain object. A GFF3 gene nests three levels deep
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
   "trackId": "genes_transcripts_only",
   "name": "Genes",
+  "uri": "volvox.sort.gff3.gz",
   "assemblyNames": ["volvox"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "volvox.sort.gff3.gz"
-  },
   "formatDetails": {
     "feature": {
       "Source": "GENCODE v44",
@@ -155,14 +147,10 @@ callback's variable is `config`, the track's own configuration:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
   "trackId": "genes",
   "name": "Genes",
+  "uri": "volvox.sort.gff3.gz",
   "assemblyNames": ["volvox"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "volvox.sort.gff3.gz"
-  },
   "formatAbout": {
     "hideUris": true,
     "config": "jexl:{Source:'GENCODE v44',adapter:undefined}"

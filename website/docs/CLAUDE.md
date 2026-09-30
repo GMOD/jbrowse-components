@@ -50,6 +50,12 @@ check by fixing the manifest, not by removing a skip.
   table is regenerated. Better still, say what the table cannot.
 - **Write `displayDefaults`, not a `displays` array**, unless the example
   selects a non-default display type or needs real `displayId`s.
+- **Write a track as the whole-track shorthand** (`trackId`, `uri`,
+  `assemblyNames`) when its extension infers the type and adapter the example
+  wants and the adapter carries no other slot. Keep `type` beside a `displays`
+  array, which the config schema requires. A page whose subject is the adapter
+  or the full form keeps it, and so does a fence a figure spec reads through
+  `pageTrack`.
 - **Show a whole track config, not a fragment**, tagged ```json addtrack —
   however small the point. A bare `{ "color": … }` blob is the one shape a
   reader cannot paste. `check-config-blocks` enforces it.

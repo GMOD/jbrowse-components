@@ -225,11 +225,10 @@ opens on, and the track menu switches it afterwards:
 
 ```json addtrack
 {
-  "type": "AlignmentsTrack",
   "trackId": "arabidopsis_wgbs",
   "name": "Arabidopsis WGBS (bwameth)",
+  "uri": "arabidopsis_wgbs.bam",
   "assemblyNames": ["GCF_000001735.4"],
-  "adapter": { "type": "BamAdapter", "uri": "arabidopsis_wgbs.bam" },
   "displayDefaults": {
     "baseColor": { "field": "bisulfite" },
     "modifications": { "cytosineContext": "CG" }

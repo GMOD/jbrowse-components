@@ -117,14 +117,10 @@ An SNV VCF loads as an ordinary `VariantTrack`:
 
 ```json addtrack
 {
-  "type": "VariantTrack",
   "trackId": "dog10k_cyp1a2_snvs",
   "name": "Dog10K SNVs at CYP1A2",
-  "assemblyNames": ["UU_Cfam_GSD_1.0"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "dog10k_cyp1a2_snvs.vcf.gz"
-  }
+  "uri": "dog10k_cyp1a2_snvs.vcf.gz",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"]
 }
 ```
 
@@ -154,11 +150,8 @@ out:
   "type": "VariantTrack",
   "trackId": "dog10k_cyp1a2_snvs",
   "name": "Dog10K SNVs at CYP1A2",
+  "uri": "dog10k_cyp1a2_snvs.vcf.gz",
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "dog10k_cyp1a2_snvs.vcf.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",

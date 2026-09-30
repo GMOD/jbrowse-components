@@ -101,11 +101,10 @@ track's `displayDefaults` apply every time the track loads, and in a served
 
 ```json addtrack
 {
-  "type": "AlignmentsTrack",
   "trackId": "volvox_sv_cram",
   "name": "volvox-sv (cram)",
+  "uri": "volvox-sv.cram",
   "assemblyNames": ["volvox"],
-  "adapter": { "type": "CramAdapter", "uri": "volvox-sv.cram" },
   "displayDefaults": {
     "height": 250,
     "linkedReads": "normal",

@@ -225,14 +225,10 @@ HiFi reads. We host its _ABCA7_ call as this track:
 
 ```json addtrack
 {
-  "type": "VariantTrack",
   "trackId": "hprc_abca7_trgt",
   "name": "TRGT repeat genotypes at ABCA7, 94 HPRC samples",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz"
-  }
+  "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz",
+  "assemblyNames": ["hg38"]
 }
 ```
 
@@ -372,14 +368,10 @@ track:
 
 ```json addtrack
 {
-  "type": "VariantTrack",
   "trackId": "hprc_abca7_cnvtr",
   "name": "TRGT alleles at ABCA7 as repeat records, 94 HPRC samples",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_cnvtr.vcf.gz"
-  }
+  "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_cnvtr.vcf.gz",
+  "assemblyNames": ["hg38"]
 }
 ```
 

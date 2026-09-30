@@ -73,8 +73,9 @@ names what it reads through, `name` defaults to the file name, and a config
 declaring exactly one assembly supplies `assemblyNames`. Write any of those keys
 yourself to override the guess: an explicit `type` picks a track type the
 extension would not, and an `adapter` block replaces the guessed one outright. A
-format the tables do not list needs the full form, and so does a file whose
-extension names one format while it holds another
+track listing `displays` names its `type` too, so the config schema can check
+those display types against it. A format the tables do not list needs the full
+form, and so does a file whose extension names one format while it holds another
 ([the shortest track](/docs/config_guides/tracks#the-shortest-track)).
 
 ## Sequence / assembly

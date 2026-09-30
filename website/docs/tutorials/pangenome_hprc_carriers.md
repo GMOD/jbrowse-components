@@ -71,11 +71,8 @@ matrix of haplotypes. The same 2.3 GB VCF as a track:
   "type": "VariantTrack",
   "trackId": "hprc2_wave_grch38",
   "name": "HPRC2 pangenome callset (464 haplotypes)",
+  "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
@@ -138,11 +135,8 @@ same session:
   "type": "VariantTrack",
   "trackId": "hprc2_pgbi_grch38",
   "name": "HPRC2 pangenome carriage (snarl-level, 462 haplotypes)",
+  "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",

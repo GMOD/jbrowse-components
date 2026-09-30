@@ -40,11 +40,8 @@ config:
   "type": "FeatureTrack",
   "trackId": "chromhmm",
   "name": "ChromHMM states",
+  "uri": "https://example.com/chromhmm.bed.gz",
   "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://example.com/chromhmm.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
@@ -76,11 +73,8 @@ repeat name, which is thousands of rows rather than twenty.
   "type": "FeatureTrack",
   "trackId": "genark_rmsk",
   "name": "RepeatMasker by class",
+  "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/019/238/085/GCF_019238085.1/bbi/GCF_019238085.1_USGS_WTPT01.rmsk.bb",
   "assemblyNames": ["GCF_019238085.1"],
-  "adapter": {
-    "type": "BigBedAdapter",
-    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/019/238/085/GCF_019238085.1/bbi/GCF_019238085.1_USGS_WTPT01.rmsk.bb"
-  },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
@@ -139,11 +133,8 @@ mean copy number, with `labels` naming each interval in the key:
   "type": "FeatureTrack",
   "trackId": "tcga_brca_cnv",
   "name": "TCGA-BRCA copy number",
+  "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",

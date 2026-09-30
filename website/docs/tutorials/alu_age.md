@@ -185,11 +185,8 @@ and key names on an open track.
   "type": "FeatureTrack",
   "trackId": "alu_young_share",
   "name": "AluY share per Mb, against the genome",
+  "uri": "https://jbrowse.org/code/jb2/main/test_data/alu_age/Alu.young_share.bed.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/code/jb2/main/test_data/alu_age/Alu.young_share.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",

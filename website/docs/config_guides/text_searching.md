@@ -36,14 +36,10 @@ slots that decide what `text-index` puts in it:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
   "trackId": "mytrack",
   "name": "My track name",
+  "uri": "yourfile.gff.gz",
   "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "yourfile.gff.gz"
-  },
   "textSearching": {
     "textSearchAdapter": "trix/mytrack.ix",
     "indexingAttributes": ["Name", "ID"],

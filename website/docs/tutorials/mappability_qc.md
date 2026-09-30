@@ -92,14 +92,10 @@ Then add the NA12878 reads, colored by mapping quality:
 
 ```json addtrack
 {
-  "type": "AlignmentsTrack",
   "trackId": "na12878_qc_reads",
   "name": "NA12878, 30x Illumina (1000 Genomes)",
+  "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "CramAdapter",
-    "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
-  },
   "displayDefaults": { "color": { "field": "mapq" } }
 }
 ```

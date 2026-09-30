@@ -201,11 +201,8 @@ tabix -p bed ecoli_pggb_untangle_rows.bed.gz
   "type": "FeatureTrack",
   "trackId": "ecoli_pggb_untangle_rows",
   "name": "pggb graph: untangle per strain (orientation, vs K12)",
+  "uri": "ecoli_pggb_untangle_rows.bed.gz",
   "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "ecoli_pggb_untangle_rows.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
@@ -455,14 +452,10 @@ samtools index ecoli_e146_ont.bam
 
 ```json addtrack
 {
-  "type": "AlignmentsTrack",
   "trackId": "ecoli_e146_ont",
   "name": "E146 nanopore reads (vs K12)",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "BamAdapter",
-    "uri": "ecoli_e146_ont.bam"
-  }
+  "uri": "ecoli_e146_ont.bam",
+  "assemblyNames": ["K12"]
 }
 ```
 

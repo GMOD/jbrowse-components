@@ -73,11 +73,8 @@ callset says NA12878 carries one copy of a 3.9 kb deletion. A `bar` mark over a
   "type": "AlignmentsTrack",
   "trackId": "na12878_read_depth",
   "name": "NA12878 depth (1000 Genomes, 30x)",
+  "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "CramAdapter",
-    "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",
@@ -113,11 +110,8 @@ the thousands, so the insert goes on a second track over the same file:
   "type": "AlignmentsTrack",
   "trackId": "na12878_read_marks",
   "name": "NA12878 insert size (1000 Genomes, 30x)",
+  "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "CramAdapter",
-    "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",
@@ -168,11 +162,8 @@ and a ramp pinned at 5 kb paints a spanning pair red.
   "type": "AlignmentsTrack",
   "trackId": "na12878_read_pileup",
   "name": "NA12878 reads (1000 Genomes, 30x)",
+  "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "CramAdapter",
-    "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",
@@ -247,11 +238,8 @@ The BED holds few enough rows to fetch whole at any zoom. Two tracks read it:
   "type": "FeatureTrack",
   "trackId": "na12878_chr20_pairs",
   "name": "NA12878 chr20, pairs over 1 kb",
+  "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",
@@ -285,11 +273,8 @@ The BED holds few enough rows to fetch whole at any zoom. Two tracks read it:
   "type": "FeatureTrack",
   "trackId": "na12878_chr20_pair_counts",
   "name": "NA12878 chr20, pairs of 2 to 10 kb per bin",
+  "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",
@@ -389,6 +374,7 @@ tracks over NA12878. Given your own reads,
 ## See also
 
 - [](/docs/config_guides/mark_display)
+- [](/docs/tutorials/methylation#declaring-the-split-in-a-config)
 - [](/docs/tutorials/alu_age)
 - [](/docs/tutorials/mappability_qc)
 - [](/docs/tutorials/sv_multisamples)

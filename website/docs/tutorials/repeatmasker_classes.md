@@ -84,8 +84,8 @@ class with a color, and `rows.domain` fixes the lane order.
   "type": "FeatureTrack",
   "trackId": "rmsk_hg38_rows",
   "name": "RepeatMasker by class",
+  "uri": "rmsk.bed.gz",
   "assemblyNames": ["hg38"],
-  "adapter": { "type": "BedTabixAdapter", "uri": "rmsk.bed.gz" },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",

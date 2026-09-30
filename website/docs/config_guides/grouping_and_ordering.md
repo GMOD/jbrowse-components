@@ -183,12 +183,9 @@ tiers rather than alphabetical order:
   "type": "FeatureTrack",
   "trackId": "broad_chromhmm_multirow_hg19",
   "name": "ChromHMM chromatin state (Broad ENCODE, 9 cell types)",
+  "uri": "wgEncodeBroadHmm.multirow.bed.gz",
   "assemblyNames": ["hg19"],
   "category": ["ENCODE", "Chromatin state"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "wgEncodeBroadHmm.multirow.bed.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",

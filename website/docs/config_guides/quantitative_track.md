@@ -48,14 +48,10 @@ in every row of a track on `rows`:
 
 ```json addtrack
 {
-  "type": "QuantitativeTrack",
   "trackId": "tumor_depth",
   "name": "Tumor depth",
+  "uri": "https://yourhost/tumor_depth.bw",
   "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "BigWigAdapter",
-    "uri": "https://yourhost/tumor_depth.bw"
-  },
   "displayDefaults": {
     "scales": {
       "y": { "rules": [{ "value": 30, "label": "2 copies" }, 15] }
@@ -237,14 +233,10 @@ track form:
 
 ```json addtrack
 {
-  "type": "MultiQuantitativeTrack",
   "trackId": "sample_modkit",
   "name": "CpG methylation (modkit)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://yourhost/sample_modkit.bedmethyl.gz"
-  }
+  "uri": "https://yourhost/sample_modkit.bedmethyl.gz",
+  "assemblyNames": ["hg38"]
 }
 ```
 

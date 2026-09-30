@@ -176,14 +176,10 @@ the middle of each:
 
 ```json addtrack
 {
-  "type": "QuantitativeTrack",
   "trackId": "hic_gm12878_compartments",
   "name": "GM12878 compartment eigenvector (ENCFF661LPK)",
+  "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BigWigAdapter",
-    "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig"
-  },
   "displayDefaults": {
     "scales": { "y": { "domainMin": -0.012, "domainMax": 0.012 } }
   }
@@ -215,14 +211,10 @@ screen.
 
 ```json addtrack
 {
-  "type": "HicTrack",
   "trackId": "hic_k562_insitu",
   "name": "K562 in situ Hi-C (ENCODE ENCSR545YBD)",
+  "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "HicAdapter",
-    "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic"
-  },
   "displayDefaults": {
     "selectedNormalization": "NONE"
   }

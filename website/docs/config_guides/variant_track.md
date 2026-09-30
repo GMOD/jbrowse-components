@@ -58,14 +58,10 @@ preprocessing:
 
 ```json addtrack
 {
-  "type": "VariantTrack",
   "trackId": "my_maf_track",
   "name": "Variants colored by allele frequency",
+  "uri": "https://yourhost/file.vcf.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://yourhost/file.vcf.gz"
-  },
   "displayDefaults": {
     "color": "jexl:maf(feature)<0.01?'#ccc':maf(feature)<0.05?'#74a9cf':'#045a8d'"
   }
@@ -87,11 +83,8 @@ default display, so preset its slots in a `displays` array; they are listed on
   "type": "VariantTrack",
   "trackId": "diversity_panel",
   "name": "Diversity Panel",
+  "uri": "https://yourhost/diversity.vcf.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://yourhost/diversity.vcf.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
@@ -130,11 +123,8 @@ default alt colour.
   "type": "VariantTrack",
   "trackId": "diversity_panel",
   "name": "Diversity Panel",
+  "uri": "https://yourhost/diversity.vcf.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://yourhost/diversity.vcf.gz"
-  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
@@ -225,11 +215,8 @@ jexl) and signed LD are available:
   "type": "VariantTrack",
   "trackId": "variants_ld",
   "name": "Variants with LD",
+  "uri": "https://yourhost/variants.vcf.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://yourhost/variants.vcf.gz"
-  },
   "displays": [{ "type": "LDDisplay" }]
 }
 ```
@@ -244,14 +231,10 @@ so the filters and signed LD are absent here. The
 
 ```json addtrack
 {
-  "type": "LDTrack",
   "trackId": "ld_plink",
   "name": "Linkage disequilibrium",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "PlinkLDTabixAdapter",
-    "uri": "https://yourhost/study.ld.gz"
-  }
+  "uri": "https://yourhost/study.ld.gz",
+  "assemblyNames": ["hg38"]
 }
 ```
 

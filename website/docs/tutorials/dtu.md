@@ -169,14 +169,10 @@ clicking an isoform opens its numbers in the details panel.
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
   "trackId": "dtu_muscle_vs_liver",
   "name": "Transcript usage: skeletal muscle vs liver (satuRn)",
+  "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz"
-  },
   "displayDefaults": {
     "subfeatureLabels": "below",
     "color": {
@@ -219,14 +215,10 @@ config, each track names the same group:
 
 ```json addtrack
 {
-  "type": "QuantitativeTrack",
   "trackId": "liver_plus",
   "name": "Liver RNA-seq, + strand (ENCSR135IAL)",
+  "uri": "https://jbrowse.org/demos/dtu/ENCFF565QRM.liver.plus.bigWig",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BigWigAdapter",
-    "uri": "https://jbrowse.org/demos/dtu/ENCFF565QRM.liver.plus.bigWig"
-  },
   "displayDefaults": {
     "scales": { "y": { "autoscaleGroup": "coverage" } }
   }
@@ -249,8 +241,8 @@ The script fetches the eight RSEM tables and the four coverage bigWigs from
 ENCODE, downloads the GENCODE v29 GFF3 those quantifications were made against,
 runs the satuRn fit, and writes `dtu_muscle_vs_liver.gff3.gz` with its `.tbi`
 index, a local build of the file the track configuration above loads from
-jbrowse.org. Point the adapter's `uri` at the local copy to open your own run.
-The script needs [Prerequisites](#prerequisites) on your `PATH`.
+jbrowse.org. Point the track's `uri` at the local copy to open your own run. The
+script needs [Prerequisites](#prerequisites) on your `PATH`.
 
 Along the way the script prints the transcript and gene counts at each filtering
 step, and the minimum empirical FDR beside the regular-FDR count.

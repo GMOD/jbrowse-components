@@ -32,14 +32,10 @@ shows what each does to the picture:
 
 ```json addtrack
 {
-  "type": "HicTrack",
   "trackId": "hic_kr",
   "name": "Hi-C (KR, log scale)",
+  "uri": "https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic",
   "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "HicAdapter",
-    "uri": "https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic"
-  },
   "displayDefaults": {
     "selectedNormalization": "KR",
     "color": { "scale": "log", "scheme": "viridis" },
@@ -73,11 +69,8 @@ keeps the high-scoring calls, drawn here in dark red as thin arcs:
   "type": "VariantTrack",
   "trackId": "hic_loops",
   "name": "Hi-C loops",
+  "uri": "https://example.com/loops.bedpe.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedpeAdapter",
-    "uri": "https://example.com/loops.bedpe.gz"
-  },
   "displays": [
     {
       "type": "LinearMarkDisplay",
@@ -113,14 +106,10 @@ covers the sign check that goes with it:
 
 ```json addtrack
 {
-  "type": "QuantitativeTrack",
   "trackId": "hic_compartments",
   "name": "Compartment eigenvector",
+  "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BigWigAdapter",
-    "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig"
-  },
   "displayDefaults": {
     "scales": { "y": { "domainMin": -0.03, "domainMax": 0.03 } }
   }

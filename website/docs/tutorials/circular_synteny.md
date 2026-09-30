@@ -252,14 +252,10 @@ is opened as a density strip whose colour is the average over each pixel's bins:
 
 ```json addtrack
 {
-  "type": "QuantitativeTrack",
   "trackId": "hg38ToMm39_gene_density",
   "name": "Genes per 100 kb",
+  "uri": "https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw",
   "assemblyNames": ["hg38", "mm39"],
-  "adapter": {
-    "type": "BigWigAdapter",
-    "uri": "https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw"
-  },
   "displayDefaults": {
     "mark": "heatmap",
     "summaryScoreMode": "avg",
