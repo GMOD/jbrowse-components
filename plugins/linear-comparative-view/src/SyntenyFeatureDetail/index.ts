@@ -47,6 +47,7 @@ export default function SyntenyFeatureWidgetF(pluginManager: PluginManager) {
     () =>
       new WidgetType({
         name: 'SyntenyFeatureWidget',
+        discardOnClose: true,
         heading: 'Synteny feature details',
         configSchema,
         stateModel: stateModelF(pluginManager),

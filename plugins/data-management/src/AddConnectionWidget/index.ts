@@ -12,6 +12,7 @@ export default function AddConnectionWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'AddConnectionWidget',
+      discardOnClose: true,
       heading: 'Add a connection',
       configSchema,
       stateModel,

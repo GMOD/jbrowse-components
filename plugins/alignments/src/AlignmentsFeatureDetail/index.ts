@@ -11,6 +11,7 @@ export default function AlignmentFeatureDetailsF(pluginManager: PluginManager) {
     () =>
       new WidgetType({
         name: 'AlignmentsFeatureWidget',
+        discardOnClose: true,
         heading: 'Feature details',
         configSchema,
         stateModel: stateModelFactory(pluginManager),

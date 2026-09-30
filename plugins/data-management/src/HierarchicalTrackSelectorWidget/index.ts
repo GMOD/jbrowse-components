@@ -13,7 +13,6 @@ export default function HierarchicalTrackSelectorWidgetF(
     return new WidgetType({
       name: 'HierarchicalTrackSelectorWidget',
       heading: 'Available tracks',
-      keepOnClose: true,
       configSchema,
       stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazyWithPreload(

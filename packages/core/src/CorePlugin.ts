@@ -59,6 +59,7 @@ export default class CorePlugin extends Plugin {
     pluginManager.addWidgetType(() => {
       return new WidgetType({
         name: 'BaseFeatureWidget',
+        discardOnClose: true,
         heading: 'Feature details',
         configSchema,
         stateModel: stateModelFactory(pluginManager),

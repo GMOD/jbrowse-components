@@ -35,6 +35,7 @@ export default function HelpWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'HelpWidget',
+      discardOnClose: true,
       heading: 'Help',
       configSchema,
       stateModel,
@@ -67,11 +68,11 @@ alongside `id` and `type`, and receives them as `addWidget`'s third argument —
 `UcscResultsWidget` in the BLAT plugin is that shape, holding the hits its table
 renders.
 
-Closing a widget removes it from the session, so what it holds does not ride
-along in every session a user saves or shares. A widget whose state a user
-expects back on reopen — the track selector's collapsed categories, the
-add-track form half filled in — sets **`keepOnClose: true`** on its
-`WidgetType`, and closing only hides it.
+Closing a widget hides it, and it stays in the session with everything it holds.
+A widget that shows a result rather than a tool a user returns to — a feature's
+details, a search's hits — sets **`discardOnClose: true`** on its `WidgetType`,
+so closing removes it and what it holds stops riding along in every session a
+user saves or shares.
 
 ## Opening a widget
 

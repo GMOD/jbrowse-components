@@ -17,6 +17,7 @@ export default function AboutWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'AboutWidget',
+      discardOnClose: true,
       heading: 'About',
       configSchema,
       stateModel,

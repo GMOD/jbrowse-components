@@ -11,6 +11,7 @@ export default function VariantFeatureWidgetF(pluginManager: PluginManager) {
     () =>
       new WidgetType({
         name: 'VariantFeatureWidget',
+        discardOnClose: true,
         heading: 'Feature details',
         configSchema,
         stateModel: stateModelFactory(pluginManager),

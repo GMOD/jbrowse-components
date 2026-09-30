@@ -29,6 +29,7 @@ export default function BreakpointAlignmentsFeatureDetailF(
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'BreakpointAlignmentsWidget',
+      discardOnClose: true,
       heading: 'Breakpoint feature details',
       configSchema,
       stateModel,

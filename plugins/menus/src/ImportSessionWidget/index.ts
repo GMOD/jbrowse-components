@@ -17,6 +17,7 @@ export default function ImportSessionWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'ImportSessionWidget',
+      discardOnClose: true,
       heading: 'Import session',
       configSchema,
       stateModel,

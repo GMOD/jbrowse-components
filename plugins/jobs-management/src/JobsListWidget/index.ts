@@ -13,7 +13,6 @@ export default function JobsListWidgetF(pluginManager: PluginManager) {
     return new WidgetType({
       name: 'JobsListWidget',
       heading: 'Jobs list',
-      keepOnClose: true,
       configSchema,
       stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazyWithPreload(

@@ -21,6 +21,7 @@ class TestWidgetPlugin extends Plugin {
         new WidgetType({
           name: 'TestWidget',
           heading: 'Test widget',
+          discardOnClose: true,
           configSchema: ConfigurationSchema('TestWidget', {}),
           stateModel: types.model('TestWidget', {
             id: ElementId,
@@ -35,7 +36,6 @@ class TestWidgetPlugin extends Plugin {
         new WidgetType({
           name: 'TestKeptWidget',
           heading: 'Test kept widget',
-          keepOnClose: true,
           configSchema: ConfigurationSchema('TestKeptWidget', {}),
           stateModel: types.model('TestKeptWidget', {
             id: ElementId,
@@ -284,7 +284,7 @@ test('closing a widget takes it and what it holds out of the session', () => {
   jest.useRealTimers()
 })
 
-test('a keepOnClose widget stays in the session after its close', () => {
+test('a widget type without discardOnClose stays in the session after its close', () => {
   const session = createSession()
   const widget = addKeptWidget(session, 'kept')
   session.showWidget(widget)
@@ -302,7 +302,7 @@ test('minimizing the drawer keeps every widget in the session', () => {
   expect(isAlive(widget)).toBe(true)
 })
 
-test('hideAllWidgets removes the widgets that are not keepOnClose', () => {
+test('hideAllWidgets removes the discardOnClose widgets and keeps the rest', () => {
   const session = createSession()
   session.showWidget(addTestWidget(session, 'first'))
   session.showWidget(addKeptWidget(session, 'kept'))

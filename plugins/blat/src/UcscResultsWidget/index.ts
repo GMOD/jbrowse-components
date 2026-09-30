@@ -11,6 +11,7 @@ export default function UcscResultsWidgetF(pluginManager: PluginManager) {
     () =>
       new WidgetType({
         name: 'UcscResultsWidget',
+        discardOnClose: true,
         heading: 'Search results',
         configSchema,
         stateModel: stateModelFactory(),

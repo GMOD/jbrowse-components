@@ -12,6 +12,7 @@ export default function MafSequenceWidgetF(pluginManager: PluginManager) {
     () =>
       new WidgetType({
         name: 'MafSequenceWidget',
+        discardOnClose: true,
         heading: 'MAF Sequence',
         configSchema,
         stateModel: stateModelFactory(),

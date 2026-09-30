@@ -230,8 +230,8 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
 
       /**
        * #action
-       * closes the widget and removes it from the session, unless its type
-       * sets `keepOnClose`. Minimizing the drawer is not closing.
+       * closes the widget, and removes it from the session when its type sets
+       * `discardOnClose`. Minimizing the drawer is not closing.
        */
       hideWidget(widget: WidgetStateModel) {
         self.activeWidgets.delete(widget.id)
@@ -240,7 +240,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         }
         if (
           self.widgets.get(widget.id) === widget &&
-          !pluginManager.getWidgetType(widget.type).keepOnClose
+          pluginManager.getWidgetType(widget.type).discardOnClose
         ) {
           detach(widget)
           scheduleDetachedDestroy(widget)

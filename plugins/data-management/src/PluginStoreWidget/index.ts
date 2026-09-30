@@ -12,6 +12,7 @@ export default function PluginStoreWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'PluginStoreWidget',
+      discardOnClose: true,
       heading: 'Plugin store',
       configSchema,
       stateModel: stateModelFactory(pluginManager),

@@ -17,6 +17,7 @@ export default function SessionManagerF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'SessionManager',
+      discardOnClose: true,
       heading: 'Recent sessions',
       configSchema,
       stateModel,

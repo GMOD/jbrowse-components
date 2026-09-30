@@ -12,6 +12,7 @@ export default function GridBookmarkWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'GridBookmarkWidget',
+      discardOnClose: true,
       heading: 'Highlights',
       configSchema,
       stateModel: stateModelFactory(pluginManager),

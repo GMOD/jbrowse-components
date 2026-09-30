@@ -17,6 +17,7 @@ export default function HelpWidgetF(pluginManager: PluginManager) {
   pluginManager.addWidgetType(() => {
     return new WidgetType({
       name: 'HelpWidget',
+      discardOnClose: true,
       heading: 'Help',
       configSchema,
       stateModel,
