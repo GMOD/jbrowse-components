@@ -1845,8 +1845,12 @@ test('flattenRows packs a band onto one row, naming only what clears', () => {
   }))
   const data = labeledFeatureData([...pile, ...spread])
   const flat = flatten(data)
+  expect(flat.flatbushItems).toHaveLength(10)
   expect(flat.flatbushItems.every(it => it.topPx === 0)).toBe(true)
   expect(namedIds(flat)).toEqual(['f0', 'g0', 'g1', 'g2', 'g3'])
+  const bottomOf = (id: string) =>
+    flat.flatbushItems.find(it => it.featureId === id)!.bottomPx
+  expect(bottomOf('f1')).toBeLessThan(bottomOf('f0'))
   const stacked = layout(new Map([[0, data]]), 20).get(0)!
   expect(
     new Set(stacked.flatbushItems.map(it => it.topPx)).size,
@@ -1874,6 +1878,14 @@ test('flattenRows drops the description with the name', () => {
     withDescriptions.floatingLabelsData.get('b')?.descriptionLabel,
   ).toBeUndefined()
   expect(namedIds(flatten(data))).toEqual(['a', 'b'])
+})
+
+test('flattenRows gives a shared start to the longer record', () => {
+  const data = labeledFeatureData([
+    { featureId: 'short', startBp: 100, endBp: 101, height: 10 },
+    { featureId: 'long', startBp: 100, endBp: 20_000, height: 10 },
+  ])
+  expect(namedIds(flatten(data))).toEqual(['long'])
 })
 
 // The pack spends no rows under `flattenRows`, so a collapse plan is work with

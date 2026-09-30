@@ -365,7 +365,7 @@ function decideLabelReservations(
   const { labelFontPx, rowPadding } = metrics
   const { labelInfoByFeatureId, features, overhangRoom } = prep
   const packed = new Map<string, PackedExtent>()
-  const droppedLabelIds = new Set<string>()
+  const droppedNameIds = new Set<string>()
 
   for (const [id, geom] of features) {
     const labelInfo = labelInfoByFeatureId.get(id)
@@ -390,7 +390,7 @@ function decideLabelReservations(
         geom.gene ? geneLabelRoomFactor : labelRoomFactor,
       )
     if (hasDrawableName && !keepName) {
-      droppedLabelIds.add(id)
+      droppedNameIds.add(id)
     }
     // A dropped name removes only the name, so a description still needs its
     // row.
@@ -425,7 +425,7 @@ function decideLabelReservations(
       labelTopPx: labelLines * labelFontPx > 0 ? bodyHeightPx : undefined,
     })
   }
-  return { packed, droppedLabelIds }
+  return { packed, droppedNameIds }
 }
 
 // Sorts after every real row, so a new feature fills gaps rather than
@@ -439,11 +439,14 @@ function compareRank(a: number, b: number) {
 }
 
 // Three ranks: pinned, then prior row, then bp; this only reorders insertion,
-// and every feature still lands on its first-fit row.
+// and every feature still lands on its first-fit row. `longerFirst` breaks a
+// bp tie for the longer span, as `outranks` picks a pile's leader; the stacked
+// pack keeps insertion order there.
 function byPackPriority(
   packed: ReadonlyMap<string, PackedExtent>,
   pinnedFeatureIds: ReadonlySet<string>,
   prevYByFeatureId?: ReadonlyMap<string, number>,
+  longerFirst = false,
 ) {
   const pinRank = (id: string) => (pinnedFeatureIds.has(id) ? 0 : 1)
   const priorRow = (id: string) => prevYByFeatureId?.get(id) ?? PRIOR_ROW_NONE
@@ -451,7 +454,8 @@ function byPackPriority(
     ([idA, a], [idB, b]) =>
       compareRank(pinRank(idA), pinRank(idB)) ||
       compareRank(priorRow(idA), priorRow(idB)) ||
-      compareRank(a.layoutStartBp, b.layoutStartBp),
+      compareRank(a.layoutStartBp, b.layoutStartBp) ||
+      (longerFirst ? compareRank(b.endBp - b.startBp, a.endBp - a.startBp) : 0),
   )
 }
 
@@ -526,33 +530,35 @@ function packSingleRow(
   features: PackPrep['features'],
   inputs: LayoutInputs,
   rowPadding: number,
+  droppedNameIds: Set<string>,
 ) {
   const { bpPerPx, pinnedFeatureIds } = inputs
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
-  const unlabeledIds = new Set<string>()
+  const droppedDescriptionIds = new Set<string>()
   const kept: [number, number][] = []
   // Collapsed mode reserves no labels, so it skips the sort.
   const ordered = [...packed.values()].some(e => e.labelTopPx !== undefined)
-    ? byPackPriority(packed, pinnedFeatureIds)
+    ? byPackPriority(packed, pinnedFeatureIds, undefined, true)
     : packed
   for (const [id, ext] of ordered) {
     layoutMap.set(id, 0)
-    const strip = reservedBoxPx(ext, features.get(id)!, bpPerPx).labelRows
+    layoutHeights.set(id, ext.height)
+    if (ext.labelTopPx === undefined) {
+      continue
+    }
+    const strip = reservedBoxPx(ext, features.get(id)!, bpPerPx).labelRows!
     if (
-      strip &&
       kept.some(([left, right]) => strip.left < right && left < strip.right)
     ) {
-      unlabeledIds.add(id)
-      layoutHeights.set(id, ext.labelTopPx! + rowPadding)
+      droppedNameIds.add(id)
+      droppedDescriptionIds.add(id)
+      layoutHeights.set(id, ext.labelTopPx + rowPadding)
     } else {
-      if (strip) {
-        kept.push([strip.left, strip.right])
-      }
-      layoutHeights.set(id, ext.height)
+      kept.push([strip.left, strip.right])
     }
   }
-  return { layoutMap, layoutHeights, unlabeledIds }
+  return { layoutMap, layoutHeights, droppedDescriptionIds }
 }
 
 export function packPreparedRef(
@@ -566,7 +572,7 @@ export function packPreparedRef(
   const { heightMultiplier, singleRow } = metrics
   const { features, collapsedFeatureIds, collapsedSpansPx } = prep
   const { trimPlan } = trims
-  const { packed, droppedLabelIds } = decideLabelReservations(
+  const { packed, droppedNameIds } = decideLabelReservations(
     prep,
     trims,
     inputs,
@@ -575,8 +581,14 @@ export function packPreparedRef(
 
   if (singleRow) {
     return {
-      ...packSingleRow(packed, features, inputs, metrics.rowPadding),
-      droppedLabelIds,
+      ...packSingleRow(
+        packed,
+        features,
+        inputs,
+        metrics.rowPadding,
+        droppedNameIds,
+      ),
+      droppedNameIds,
       trimPlan,
     }
   }
@@ -615,8 +627,8 @@ export function packPreparedRef(
   return {
     layoutMap,
     layoutHeights,
-    droppedLabelIds,
-    unlabeledIds: new Set<string>(),
+    droppedNameIds,
+    droppedDescriptionIds: new Set<string>(),
     trimPlan,
   }
 }

@@ -13,7 +13,10 @@ type LaneRecord = [id: string, start: number, end: number, description: string]
 
 // The bovine pangenome's records at KIT (chr6:70,080,000) and TAS2R46
 // (chr5:98,575,000), rebased to 0: a long record with nested ones inside it,
-// which the lane's single row letters on top of each other.
+// which the lane's single row letters on top of each other. A kept label's
+// strip spans its record's whole body, since a label that fits inside slides
+// along it with the viewport, which is why `>7497>7498`, clear of the long
+// record's text, still goes unnamed.
 const KIT: LaneRecord[] = [
   ['>7493>7494', 3197, 3198, 'A -> 74bp'],
   ['>7494>7499', 19508, 40130, '20.6Kbp -> 1bp,37.5Kbp'],
