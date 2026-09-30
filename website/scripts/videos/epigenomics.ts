@@ -147,10 +147,9 @@ export const epigenomicsVideos: VideoSpec[] = [
     // swatch stripe, which shifts `treeAreaWidth` to the right to clear the tree
     // (`treeSidebarOffset`).
     //
-    // 890 rather than the figure's 880: the run reported 5px of app below the
-    // frame, which is the figure being captured at its content height where this
-    // is a fixed frame.
-    viewportHeight: 890,
+    // 892 rather than the figure's 880: the run measured the app at 891, since
+    // the figure is captured at its content height and this is a fixed frame.
+    viewportHeight: 892,
     readySelector: MULTIROW_READY,
     readyTimeout: 300000,
     steps: [

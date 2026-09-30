@@ -1212,7 +1212,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3500,
-        say: 'Anchored on Sakai: its prophage spans the row, with no K-12 match under it',
+        say: 'Anchored on Sakai: the white wedge is its prophage, which K-12 lacks',
       },
     ],
     tailMs: 4500,
