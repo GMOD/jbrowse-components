@@ -1,9 +1,18 @@
 ---
 name: multi-file-tracks-take-their-rows-from-their-members
-description: Many files as one track, one row per file, for any format — a multi-row BED from twenty per-sample peak files as well as today's multi-BigWig. One multi-file adapter in core replaces MultiWiggleAdapter and exposes its members, each display's worker loops over them the way wiggle's typed-array path already does, rows come from the adapter's listing through shared code, a region carries its chromosome aliases so files may spell chromosomes differently, and one generated combine table serves the add-track form, the track selector, jb.addTrack, `jbrowse add-track` and jbrowse-img. Read before touching MultiWiggleAdapter, the multi-wiggle add-track workflow, "Create multi-wiggle track", `--multiwig`, refName renaming, or a row display's source of rows.
+description: Where the multi-row add-track plan grows once one of its accepted loose edges is reported — files spelling chromosomes differently, a row missing while its file has nothing in view, the per-feature copy, one bad file blanking the stack, the CLI and jbrowse-img staying BigWig-only. The full design behind it, reviewed four times; handoffs/multi-row-add-track.md is what is being built. One multi-file adapter in core replaces MultiWiggleAdapter and exposes its members, each display's worker loops over them the way wiggle's typed-array path already does, rows come from the adapter's listing through shared code, a region carries its chromosome aliases so files may spell chromosomes differently, and one generated combine table serves the add-track form, the track selector, jb.addTrack, `jbrowse add-track` and jbrowse-img. Read before touching MultiWiggleAdapter, the multi-wiggle add-track workflow, "Create multi-wiggle track", `--multiwig`, refName renaming, or a row display's source of rows.
 ---
 
 # Multi-file tracks take their rows from their members
+
+**Not the plan being built.** On 2026-09-30 Colin chose four small changes to
+existing code, loose edges accepted, over this design:
+[handoffs/multi-row-add-track.md](../../handoffs/multi-row-add-track.md). This
+doc is where that plan grows, one piece at a time, when a user reports the edge
+the piece fixes: the alias stamp for files spelling chromosomes differently, the
+shared listing for a row missing while its file has nothing in view, the member
+loop for the per-feature copy and per-file errors, the generated combine table
+for the CLI and jbrowse-img. Build no piece on its own merit.
 
 ## What is wrong today
 
