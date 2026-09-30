@@ -3,6 +3,8 @@ import { scaleExtent } from '@jbrowse/core/util/quantileExtent'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 
+import { plotsValue, rampResolvesPerRegion } from './markSpecs.ts'
+
 import type { MarkConfig } from './configSchema.ts'
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { StepChannels } from './stepChannels.ts'
@@ -22,12 +24,16 @@ export type ValueColor = ContinuousRef | ThresholdRef
 /**
  * The colour declaration of a mark whose colour is a linear, log or threshold
  * scale over the field its `y` reads, named or filled by its steps; undefined
- * for every other colour.
+ * for every other colour, and for a mark type with no `y` lane to read it off
+ * or whose ramp the worker resolves.
  */
 export function valueColorOf(
   mark: MarkConfig,
   channels: StepChannels,
 ): ValueColor | undefined {
+  if (!plotsValue(mark.mark) || rampResolvesPerRegion(mark.mark)) {
+    return undefined
+  }
   const encoding = featureColorEncoding(mark.encoding.color)
   if (typeof encoding !== 'object') {
     return undefined

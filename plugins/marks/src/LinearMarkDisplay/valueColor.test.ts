@@ -109,3 +109,38 @@ test('a colour over another field keeps its own lane and stays a fetch input', (
   expect(request!.lanes).toContain('colorValue')
   expect(display.valueColors).toEqual([undefined])
 })
+
+test('a span coloured by the depth its coverage step writes keeps its colour lanes', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        mark: 'span',
+        transform: [{ type: 'coverage' }],
+        encoding: { color: { field: 'coverage', scale: 'linear' } },
+      },
+    ],
+  }).createDisplay()
+  const [request] = display.layerRequests
+  expect(request!.encoding.color).toMatchObject({ field: 'coverage' })
+  expect(request!.lanes).toContain('colorValue')
+  expect(request!.lanes).not.toContain('y')
+  expect(display.valueColors).toEqual([undefined])
+})
+
+test('a text coloured by the field it stands at keeps the colour the worker resolves', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        mark: 'text',
+        encoding: {
+          y: 'score',
+          color: { field: 'score', scale: 'threshold', domain: [5] },
+        },
+      },
+    ],
+  }).createDisplay()
+  const [request] = display.layerRequests
+  expect(request!.encoding.color).toMatchObject({ field: 'score' })
+  expect(request!.lanes).toContain('color')
+  expect(display.valueColors).toEqual([undefined])
+})
