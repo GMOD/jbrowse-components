@@ -441,6 +441,21 @@ test('unions the names over the head of the list, not just the first feature', (
   expect(r.partitionCandidates).toEqual(['clade', 'sample'])
 })
 
+test('offers the source a stacked track stamps on each feature', () => {
+  const r = packMultiRowFeatures({
+    features: [
+      feat({ start: 0, end: 50, source: 'peaks_a' }),
+      feat({ start: 0, end: 30, source: 'peaks_b' }),
+    ],
+    partitionField: 'source',
+    lengthField: '',
+    colorConfig: { value: undefined, field: '' },
+    jexl: createJexlInstance(),
+  })
+  expect(r.partitionCandidates).toEqual(['source'])
+  expect(r.partitionValues).toEqual(['peaks_a', 'peaks_b'])
+})
+
 test('samples the head rather than every feature', () => {
   const many = Array.from({ length: 500 }, (_, i) =>
     feat({ start: i, end: i + 1, sample: 'a', [`col${i}`]: 1 }),

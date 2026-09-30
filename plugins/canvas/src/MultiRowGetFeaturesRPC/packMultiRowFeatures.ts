@@ -90,7 +90,6 @@ const NON_PARTITION_TAGS = new Set([
   'strand',
   'score',
   'phase',
-  'source',
 ])
 
 const PARTITION_CANDIDATE_SAMPLE = 20
