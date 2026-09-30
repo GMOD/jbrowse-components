@@ -52,14 +52,6 @@ carries the state color. Merging them into one file with an extra `cellType`
 column lets the multi-row feature display draw a labeled sub-row per cell type,
 so 9 cell types (or 127) share one config, one adapter, and one fetch.
 
-HOXA is the window the build script opens on. The genes are transcribed in the
-order they sit in, so each cell type opens the stretch matching its position
-along the body axis and holds the rest under Polycomb. HUVEC and HSMM, the
-mesodermal pair, open the posterior genes; the keratinocyte, lung-fibroblast and
-mammary lines stop at HOXA7; GM12878 and K562 are blood and keep the whole
-cluster repressed. H1-hESC's magenta is `3_Poised_Promoter`, the bivalent state
-HOX clusters are held in before a lineage commits.
-
 ## What the merged file holds
 
 The nine
@@ -161,6 +153,19 @@ without one. JBrowse paints a feature with its `itemRgb`, and the
 that.
 
 On [JBrowse Desktop](/docs/quickstart_desktop) point `uri` at the local path.
+
+Open HOXA, `chr7:27,110,000-27,265,000`, the window the build script opens on,
+with a gene track above the painting:
+
+<Figure src="/img/chromhmm_encode_hoxa.png" caption="The nine ENCODE cell types over HOXA, one row each in ENCODE's tier order, under the RefSeq genes. HUVEC and HSMM are active into the posterior genes, HMEC, NHEK and NHLF stop at HOXA7, the blood lines GM12878 and K562 are repressed across the cluster, and H1-hESC is poised." />
+
+The HOX genes are transcribed in the order they sit in, so each cell type opens
+the stretch matching its position along the body axis and holds the rest under
+Polycomb. HUVEC and HSMM, the mesodermal pair, open the posterior genes; the
+keratinocyte, lung-fibroblast and mammary lines stop at HOXA7; GM12878 and K562
+are blood and keep the whole cluster repressed. H1-hESC's magenta is
+`3_Poised_Promoter`, the bivalent state HOX clusters are held in before a
+lineage commits.
 
 ## The legend, filtering and row order
 

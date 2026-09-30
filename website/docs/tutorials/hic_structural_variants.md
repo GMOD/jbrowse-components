@@ -8,10 +8,12 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-JBrowse fetches a Hi-C matrix for every _pair_ of regions on screen. Put a chr9
-window and a chr22 window in one linear view and the space between them fills
-with the contacts between the two: background in a normal karyotype, and the
-Philadelphia chromosome in K562.
+Two chromosomes joined by a translocation touch each other all along the join,
+so Hi-C reads linking them run far above background. We look for the
+Philadelphia chromosome, the _BCR_-_ABL1_ fusion, in the Hi-C of the K562
+leukemia line against GM12878's normal karyotype. JBrowse fetches a Hi-C matrix
+for every _pair_ of regions on screen, so a chr9 window and a chr22 window in
+one linear view draw the contacts between the two.
 
 ## Prerequisites
 

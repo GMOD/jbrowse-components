@@ -294,7 +294,8 @@ per group.
 
 [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin)/[`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax)
 pin every row to one axis. Open it above the matrix to read each band's rate
-over it. _TP53_ climbs toward the triple-negative group where _PIK3CA_ falls.
+over it. The two lines of output above already show the contrast: _TP53_ climbs
+toward the triple-negative group where _PIK3CA_ falls.
 
 `--impact` sets what counts as a hit, defaulting to the HIGH and MODERATE tiers,
 the ones `impactColor` paints. The rate has no background model, and gene length

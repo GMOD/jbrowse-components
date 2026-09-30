@@ -2391,6 +2391,36 @@ export const uiSpecs: ScreenshotSpec[] = [
     hideSelectors: ['[data-testid="subtree_filter_hint"]'],
   },
 
+  // The nine-cell ENCODE Broad HMM track over HOXA, the window its build script
+  // opens on: each cell type opens the stretch of the cluster matching its
+  // position along the body axis, blood keeps the whole cluster repressed, and
+  // H1-hESC holds it poised.
+  {
+    mode: 'url',
+    name: 'chromhmm_encode_hoxa',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:27,110,000-27,265,000',
+      tracks: [
+        {
+          trackId: 'ncbi_gff_hg19',
+          type: 'LinearBasicDisplay',
+          showLabels: 'name',
+          filterSetting: ["jexl:feature.type!='pseudogene'"],
+          height: 110,
+        },
+        {
+          trackId: 'broad_chromhmm_multirow_hg19',
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 240,
+        },
+      ],
+    }),
+    readyText: 'ChromHMM',
+    readyTimeout: 120000,
+    viewportHeight: 620,
+  },
+
   // The "Display types" submenu, with the multi-row display boxed: the
   // multi-row user guide's answer to "where do I turn this on". Deliberately
   // shot on a track still in its DEFAULT display, so the figure shows the

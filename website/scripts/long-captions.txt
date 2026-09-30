@@ -7,4 +7,3 @@
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
 tutorials/allvsall_synteny.md /img/multiway_synteny/ecoli_island_lanes.png
-tutorials/pangenome_hprc_haplotypes.md /img/multiway_synteny/hprc_amylase_stack.png

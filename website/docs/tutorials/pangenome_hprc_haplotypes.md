@@ -187,7 +187,7 @@ bash build_amylase_haplotypes.sh
 }
 ```
 
-<Figure caption="One haplotype of each common amylase structure from the offline script, one AMY1 copy at the top to seven at the bottom, each under its gene track and aligned to the row under it by minimap2, colored by strand. The two three-copy rows align end to end, crossed in the middle where the array's inverted copies match each other both ways. One copy to three, three to five and five to seven each open a wedge over the genes only the longer row carries." src="/img/multiway_synteny/hprc_amylase_stack.png" />
+<Figure caption="One haplotype of each common amylase structure, one AMY1 copy at the top to seven at the bottom, each aligned to the row under it by minimap2 and colored by strand. Each step up in copies opens a wedge over the genes only the longer row carries." src="/img/multiway_synteny/hprc_amylase_stack.png" />
 
 ## Whole genomes from a GFA
 
