@@ -109,10 +109,10 @@ dot in K-12's column.
 
 The helper reports how much of each column it filled, and that number is the
 screen a strain has to pass. Older PGAP runs gave genes a locus tag and no
-symbol, so a genome can be complete, current and join nothing; of a hundred
-accessions tried for this page, a quarter of those that still downloaded were
-like that, and two were phage genomes. Counting the named genes in an annotation
-shows which genomes will fail the join before anything is built:
+symbol, so a genome can be complete, current and join nothing; many of the
+accessions tried for this page were like that, and some were phage genomes.
+Counting the named genes in an annotation shows which genomes will fail the join
+before anything is built:
 
 <!-- from: scripts/build_ecoli_orthologs.sh -->
 
@@ -214,7 +214,7 @@ relies on that difference. The genes between them draw grey below the K-12
 derivatives: they are the serotype's sugar pathway, and a window anchored on
 K-12 draws only the rows holding a K-12 gene.
 
-<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The six K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, gnd, ugd and wzzB chains run through, the rfb genes, wzx and wzy join where a strain carries them, and the serotype-specific genes between them are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, gnd, ugd and wzzB chains run through, the rfb genes, wzx and wzy join where a strain carries them, and the serotype-specific genes between them are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
 The variable loci need a homology call across the proteomes to fill the table:
 an [OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or the

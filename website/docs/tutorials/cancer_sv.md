@@ -163,8 +163,8 @@ pieces.
 
 ## The derivative allele
 
-The demo includes a der(3) contig, 39,549 bp assembled from the 29 tumour reads
-that span all three loci, so every base in it comes from those reads.
+The demo includes a der(3) contig assembled from the tumour reads that span all
+three loci, so every base in it comes from those reads.
 
 To build one from your own data, pull the reads crossing the loci with
 `samtools view`, assemble them with
@@ -202,8 +202,8 @@ GRCh38. The figure, built from the demo config, shows:
   interval, which the gene track cannot do because a segment usually sits inside
   one large intron
 - the reference gene annotation projected onto the derivative: the first coding
-  exon of _RARB_, 183 bp of _TRHDE_ coding sequence in reverse, then _RARB_
-  again, inverted
+  exon of _RARB_, a short stretch of _TRHDE_ coding sequence in reverse, then
+  _RARB_ again, inverted
 - the tumor's split reads under the reference row, one row per molecule, with
   the truth set's validated calls above them
 - each junction drawn once as an arc, with a tick at each end over the sequence

@@ -8,10 +8,10 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-The COLO829 somatic structural-variant callset lists 135 junctions, and each one
-is worth checking against the reads. We render every junction as an image of the
-reads at both ends with `jb2export batch`, then render the matched normal the
-same way as the control.
+The COLO829 somatic structural-variant callset lists over a hundred junctions,
+and each one is worth checking against the reads. We render every junction as an
+image of the reads at both ends with `jb2export batch`, then render the matched
+normal the same way as the control.
 
 ## Prerequisites
 

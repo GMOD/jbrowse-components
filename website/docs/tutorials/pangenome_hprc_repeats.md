@@ -129,12 +129,12 @@ choose **Show repeat copies**. The TandemRepeat plugin, which the hosted config
 loads beside the graph plugin, opens a view with one bar per haplotype, each on
 a separate bp axis, and each copy coloured by its unit.
 
-<Figure caption="The KIV-2 record under LPA, and the view its right-click item opens: one bar per haplotype, each copy coloured by its unit. GRCh38 carries six copies, the fourth of unit 2; HG00133 carries 27, all of unit 1. The dashed line marks GRCh38's length." src="/img/pangenome/hprc_kiv2_copies_by_unit.png" />
+<Figure caption="The KIV-2 record under LPA, and the view its right-click item opens: one bar per haplotype, each copy coloured by its unit. GRCh38's short array has one copy of unit 2, and HG00133's runs far past the dashed line that marks GRCh38's length, all of unit 1." src="/img/pangenome/hprc_kiv2_copies_by_unit.png" />
 
-The 138 copies across the nine arrays form two units: copies of one unit differ
-by under 0.5%, and the two units by about 2.3%. Unit 2 opens five of the eight
-HPRC arrays and sits fourth in GRCh38's. The counts agree with walk rows: 27
-copies in HG00133's 147 kb.
+The copies across the nine arrays form two units, and copies of one unit differ
+from each other less than the two units do. Unit 2 opens most of the HPRC arrays
+and sits fourth in GRCh38's, and every HG00133 copy is of unit 1. The copy
+counts agree with the walk lengths in walk rows.
 
 The record came from the same graph cut.
 [`tandem-repeat-vcf.mjs`](https://github.com/GMOD/jbrowse-plugin-tandem-repeat/blob/main/scripts/tandem-repeat-vcf.mjs)
@@ -352,10 +352,10 @@ alleles has an `SD` of 0, the grey tick in the figure above.
 
 ## The ABCA7 alleles across 94 samples
 
-TRGT writes each allele as its full sequence, so the record above lists 167 ALT
-alleles of up to 8.6 kb each, and the details are a wall of `CCCCGTGAGC`. The
-TandemRepeat plugin's script rewrites the same record as `<CNV:TR>` alleles,
-each a run of the locus's 51 bp motif:
+TRGT writes each allele as its full sequence, so the record above lists well
+over a hundred ALT alleles, some of them kilobases long, and the details are a
+wall of `CCCCGTGAGC`. The TandemRepeat plugin's script rewrites the same record
+as `<CNV:TR>` alleles, each a run of the locus's 51 bp motif:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/main/scripts/trgt-to-cnv-tr.mjs
@@ -388,14 +388,12 @@ opens above the details. With 94 samples the card starts on **By allele**: one
 bar per allele instead of one per haplotype, each labelled with the share of the
 188 called alleles that carry it, most common first.
 
-<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each bar is one of TRGT's alleles as copies of the 51 bp motif, with its share of the 188 called alleles at left and its length and copy count at right. ALT 1 is the most common at 2.1%, a 387 bp allele of 7.6 copies." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
+<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each bar is one of TRGT's alleles as copies of the 51 bp motif, with its share of the called alleles at left and its length and copy count at right. Almost every bar is one allele carried once." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
-Almost no allele repeats: 148 of the 167 are carried once, 18 twice, and ALT 1
-four times. They run from 383 bp to 8.6 kb, 7.5 to 169 copies of the motif, and
-no sample carries GRCh38's 689 bp allele. Click the ALT 1 bar: the other bars
-fade and the **Samples** card narrows to the samples that carry it. **By
-haplotype** swaps the bars for the first 30 called alleles, each labelled with
-its sample.
+Almost every allele is carried once, and no sample carries GRCh38's allele.
+Click the ALT 1 bar: the other bars fade and the **Samples** card narrows to the
+samples that carry it. **By haplotype** swaps the bars for the first 30 called
+alleles, each labelled with its sample.
 
 ## Check the alleles against TRGT's lengths
 

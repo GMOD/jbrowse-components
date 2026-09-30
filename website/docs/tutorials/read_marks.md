@@ -151,7 +151,7 @@ the thousands, so the insert goes on a second track over the same file:
 
 Open it under the depth track, on the same window.
 
-<Figure src="/img/read_marks/insert_size.png" caption="The same window, the depth as bars above and each pair's insert size as a point below, each track with a separate y axis. The pairs sit in a band under 1,000 bases, and over the left edge of the dip a second group appears between 4,300 and 4,700 bases, in the full blue of a mapping quality of 60." />
+<Figure src="/img/read_marks/insert_size.png" caption="The same window, the depth as bars above and each pair's insert size as a point below, each track with a separate y axis. The pairs sit in a low band, and over the left edge of the dip a second group appears well above it, in the full blue of a mapping quality of 60." />
 
 Each pair in the upper group straddles the missing 3.9 kb. On an alignments
 track `score` is the mapping quality. Hover a point for its values, or click it
@@ -207,7 +207,7 @@ and a ramp pinned at 5 kb paints a spanning pair red.
 
 Open the track at the left edge of the dip, `chr20:32,936,200-32,939,200`.
 
-<Figure src="/img/read_marks/pileup.png" caption="The left breakpoint at 3 kb, the reads stacked and coloured by their pair's insert. The red reads end together at 32,937,680, where their mates lie 4 kb to the right; the pale reads run across it, and thin out on the far side." />
+<Figure src="/img/read_marks/pileup.png" caption="The left breakpoint at 3 kb, the reads stacked and coloured by their pair's insert. The red reads end together at 32,937,680, where their mates lie across the deletion to the right; the pale reads run across it, and thin out on the far side." />
 
 An unpinned ramp spans the values on screen, so in a window with no spanning
 pair it would paint the longest ordinary insert red. Pinning `domainMin` and
@@ -234,14 +234,13 @@ samtools view -q 20 -F 0x904 --input-fmt-option required_fields=0x1DF NA12878.fi
 tabix -p bed NA12878.chr20.discordant_pairs.bed.gz
 ```
 
-The BED holds 11,327 rows, few enough to fetch whole at any zoom. Two tracks
-read it:
+The BED holds few enough rows to fetch whole at any zoom. Two tracks read it:
 
 - a `point` per pair at the middle of its insert, `tlen` on y, coloured by
   `score`; a `filter` under 20 kb keeps the centromere's megabase inserts off
   the axis
 - a `bar` per bin counting pairs of 2 to 10 kb, on an axis pinned at 60 so the
-  centromere saturates and a deletion's ten to fifty pairs stand up
+  centromere saturates and a deletion's few dozen pairs stand up
 
 ```json addtrack
 {
@@ -355,8 +354,8 @@ Pairs of 2 to 10 kb in the 100 kb window around each call:
 | 55.86 Mb        |  6.0 kb | 0/1      |                             16 |
 
 Every callset deletion in range is a bar, and the two homozygous ones are
-tallest. Five other windows hold ten or more such pairs with no call: the
-chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb.
+tallest. Other windows hold ten or more such pairs with no call: the chromosome
+start and 1.4, 2.8, 32.7 and 48.5 Mb.
 
 To check the _EFCAB8_ deletion against the reads, compare the depth inside the
 call with the depth beside it, and count the long pairs around it:
@@ -374,7 +373,8 @@ samtools view -q 20 NA12878.final.cram chr20:32935000-32944000 |
 | chr20:32,937,680-32,941,583 |      15.6x |
 | chr20:32,930,000-32,937,000 |      34.1x |
 
-Around the call, 1,688 pairs sit at the library insert and 41 exceed 2 kb.
+Around the call, almost every pair sits at the library insert, and a few dozen
+exceed 2 kb.
 
 ## Reproduce it end to end
 

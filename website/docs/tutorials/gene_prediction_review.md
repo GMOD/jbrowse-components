@@ -54,9 +54,8 @@ in two.
 
 ## Sorting the models
 
-Tiberius predicts 559<!--m:tiberius-chr22-run.models-predicted.count--> models
-on chr22. The portal compares each with GENCODE and puts it in one of five
-classes, and every class except Agrees gets a card.
+The portal compares each Tiberius model on chr22 with GENCODE and puts it in one
+of five classes, and every class except Agrees gets a card.
 
 | Class              | What it means                                                     | On chr22                                                   | What an annotator does   |
 | ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------ |

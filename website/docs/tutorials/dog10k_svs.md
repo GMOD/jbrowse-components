@@ -109,9 +109,8 @@ bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
   dog10k_nhej1_svs.vcf.gz | tr ' ' '\n' | grep -v '=0/0'
 ```
 
-Eleven of the thirteen Collies carry it, four homozygous, along with two of four
-Shetland Sheepdogs and one of two Silken Windhounds. Every other animal is
-homozygous reference.
+Most of the Collies carry it, some homozygous, along with some of the Shetland
+Sheepdogs and Silken Windhounds. Every other animal is homozygous reference.
 
 ## Loading the slice with breed labels
 
@@ -217,7 +216,7 @@ lifted record can place the locus correctly and still be off by a few bases.
 
 ### Filtering to one record
 
-The window holds nine SV records, and the figure filters to this one:
+The figure filters the window's SV records to this one:
 
 ```json addtrack
 {
@@ -240,9 +239,9 @@ The window holds nine SV records, and the figure filters to this one:
 
 Without the filter, a second deletion nested inside the 7.8 kb one draws yellow
 no-calls over the dark blue rows, and the two records look like one striped
-block. The four no-calls at the nested deletion are the four dogs homozygous for
-the larger one, because a dog with no copy of the surrounding sequence has no
-reads to genotype it from:
+block. The no-calls at the nested deletion are the dogs homozygous for the
+larger one, because a dog with no copy of the surrounding sequence has no reads
+to genotype it from:
 
 ```bash
 # -r also returns records that span the region, so -i keeps the one starting here
@@ -313,15 +312,14 @@ sample name and every other column is an attribute; `rowColor` names the
 attribute that colours the swatch. The _RNASE1_ track is the same config with
 the other slice's `uri`.
 
-<Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. The same 86 animals are in the same order in both, so each row is one animal: the dogs carry the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
+<Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. The same animals are in the same order in both, so each row is one animal: the dogs carry the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
 
-Two of the three Greenland Dogs lack the duplication; the third carries it, as
-does every Alaskan Malamute and Samoyed. The grey Czechoslovakian Wolfdog row is
-CZEC000003, the animal
-[the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
-wolf-derived blocks on. Every wolf carrying the insertion is heterozygous. Three
-of the six Iranian wolves carry the amylase duplication and none the
-ribonuclease insertion, while the Greek and Swedish wolves do the reverse.
+Most of the Greenland Dogs lack the duplication, while every Alaskan Malamute
+and Samoyed carries it. The grey Czechoslovakian Wolfdog row is CZEC000003, the
+animal [the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
+wolf-derived blocks on. Every wolf carrying the insertion is heterozygous. Some
+of the Iranian wolves carry the amylase duplication and none the ribonuclease
+insertion, while the Greek and Swedish wolves do the reverse.
 
 A genotype records whether an animal carries the duplication, so an animal with
 four copies and one with twenty are both `1/1`.
@@ -460,11 +458,11 @@ parent row and an insertion below it. Both retrocopies align to the same three
 exons, so each intron is a gap in both ribbons. The window ends where the CFA18
 alignment does, and the CFA12 ribbon runs past it.
 
-<Figure caption="Two independent FGF4 retrocopies aligned to the parent gene between them, with the Manta calls in reference coordinates and then across 55 Dog10K genomes. Every ribbon gap falls on a parent intron and the blue blocks sit in those same two places." src="/img/dog10k-fgf4-retrogene-synteny.png" />
+<Figure caption="Two independent FGF4 retrocopies aligned to the parent gene between them, with the Manta calls in reference coordinates and then across Dog10K genomes. Every ribbon gap falls on a parent intron and the blue blocks sit in those same two places." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
-The two GenBank records agree at 207 codons and differ in how much UTR they
-include. Both deposited sequences end at the poly(A) tail, so neither records
-where its copy inserted.
+The two GenBank records agree across the coding sequence and differ in how much
+UTR they include. Both deposited sequences end at the poly(A) tail, so neither
+records where its copy inserted.
 
 ## Other loci
 

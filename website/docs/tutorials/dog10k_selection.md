@@ -115,8 +115,8 @@ WINDOW=20000 REGIONS=chr15:40600000-42600000 \
 <Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed significance line. Bottom: the wedge's span, two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band marks the 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Each point is a window, so a peak marks a region. The genome-wide scan uses wide
-bins to keep the noise across twelve thousand windows down, so the _IGF1_ peak
-is a single bar.
+bins to keep the noise across thousands of windows down, so the _IGF1_ peak is a
+single bar.
 
 Fst has no p-value, so the threshold is a
 [reference line](/docs/config/valuescale/#slot-scalesyrules) at a quantile of

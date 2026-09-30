@@ -296,7 +296,7 @@ and `COLOR` columns of `EID_metadata.tab`, which the clustering does not use.
 The list includes an ENCODE2012 group. Roadmap folded the ENCODE 2012 reference
 epigenomes (GM12878, K562, HeLa-S3, HepG2, A549, HUVEC, NHEK and the rest) into
 the compendium as one group, so that entry names a data source, and its members
-span ten anatomies. The same file's `ANATOMY` column splits the epigenomes
+span several anatomies. The same file's `ANATOMY` column splits the epigenomes
 finer, and `TYPE` sorts them by how the sample was collected.
 
 ## Reproduce it end to end

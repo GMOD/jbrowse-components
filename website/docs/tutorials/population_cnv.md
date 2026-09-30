@@ -159,19 +159,18 @@ step lines on one pinned axis, so each plateau lines up with a copy count:
 }
 ```
 
-<Figure caption="The CCL3L1 window as six stacked profiles on a shared 0-10 axis, from an individual carrying about nine copies down to one carrying none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
+<Figure caption="The CCL3L1 window as six stacked profiles on a shared 0-10 axis, from the individual carrying the most copies down to one carrying none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
 Two paralogous blocks carry the variation. The right-hand one spans CCL3L1 and
 CCL4L1, chemokine genes that exist in a variable number of tandem copies. The
-left-hand one is a TBC1D3 repeat. Between them, an individual in this panel
-carries anywhere from zero to ten copies.
+left-hand one is a TBC1D3 repeat.
 
 ## The same window in the 1000 Genomes SV map
 
 The 1000 Genomes phase 3 integrated SV map covers this window with one CNV
 record, at chr17:36,108,706-36,155,499 with three symbolic alleles (`<CN2>`,
-`<CN3>`, `<CN4>`). It ends about 35 kb before the block where depth resolves the
-widest range, and between 36,155,499 and 36,461,232 the GRCh38 release has no
+`<CN3>`, `<CN4>`). It ends before the block where depth resolves the widest
+range, and between 36,155,499 and 36,461,232 the GRCh38 release has no
 copy-number record.
 
 A VCF record is one interval with fixed breakpoints and a few symbolic alleles,
@@ -208,10 +207,10 @@ Against the hosted files, at a median range request of 25 ms:
 | bytes                                     | 48.39 MB     | 0.22 MB    |
 | wall clock                                | 24.5 s       | 0.2 s      |
 
-Each BigWig needs six dependent reads to find and fetch a region's values, so
-the cost grows with the number of files. The Zarr store is one array of samples
-by bins: two metadata reads, then one chunk covering all 2504 samples across 256
-bins.
+Each BigWig needs several dependent reads to find and fetch a region's values,
+so the cost grows with the number of files. The Zarr store is one array of
+samples by bins: two metadata reads, then one chunk covering all 2504 samples
+across 256 bins.
 
 [Zarr](https://zarr.dev/) v3 stores such arrays as chunk files on static
 hosting, which [zarrita.js](https://github.com/manzt/zarrita.js) reads directly.
@@ -315,8 +314,8 @@ picks which a view draws, so an amplification narrower than a bin is visible
 under `max` and averaged away under `avg`.
 
 The converter holds the finest level in memory and derives the rest from it.
-Without the `--region` flags this panel takes a few GB at 10 kb bins and about
-31 GB at the 1 kb of the BigWigs, so start a whole-genome pyramid coarse. The
+Without the `--region` flags this panel takes a few GB at 10 kb bins and tens of
+GB at the 1 kb of the BigWigs, so start a whole-genome pyramid coarse. The
 converter prints the size of the finest level before allocating it, and exits if
 it will not fit.
 

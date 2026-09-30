@@ -11,8 +11,8 @@ tutorial_category: Cancer genomics
 A fusion caller outputs a table of gene pairs, each with the coordinate of the
 transcript junction. Load STAR-Fusion's short-read calls beside long RNA reads
 from the same cell line, count the molecules that cross each junction, then find
-where the chromosome broke: K562's BCR-ABL1 breaks 122 kb before the junction
-the caller reports, inside _ABL1_'s first intron, and the DNA break under the
+where the chromosome broke: K562's BCR-ABL1 breaks well before the junction the
+caller reports, inside _ABL1_'s first intron, and the DNA break under the
 amplicon's other junction, NUP214-XKR3, sits at the junction the caller reports.
 
 ## Prerequisites
@@ -107,7 +107,7 @@ Searching the table narrows both halves. `chrM` collects the rows that pair a
 gene with a mitochondrial transcript, the usual chimeric-read artefacts, and
 `Mitelman` leaves the two rows listed in the fusion databases. `chr9` leaves the
 same two, `BCR--ABL1` and `NUP214--XKR3`: two junctions between chr9 and chr22
-whose chr22 partners are 6.5 Mb apart, which the rest of the page shows to be
+whose chr22 partners are megabases apart, which the rest of the page shows to be
 the two ends of one amplified segment.
 
 Each row's caret menu has **Open in linear genome view**, which puts the row's

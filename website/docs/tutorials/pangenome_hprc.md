@@ -96,9 +96,9 @@ C4 copy than GRCh38.
 ## From an allele to its haplotype
 
 Type `chr6:32,500,000-32,560,000`, the MHC class II window. The charcoal node
-beside _HLA-DRB5_ is an allele 1.8 kb long that hangs across 12 kb of backbone.
-Right-click it and take **Highlight in hg38**: a band marks the span of GRCh38
-it replaces, which covers most of _HLA-DRB5_.
+beside _HLA-DRB5_ is an allele much shorter than the stretch of backbone it
+hangs across. Right-click it and take **Highlight in hg38**: a band marks the
+span of GRCh38 it replaces, which covers most of _HLA-DRB5_.
 
 <Figure caption="MHC class II with the graph track in the force-directed layout, colored by reference position. The ringed charcoal node is the allele beside HLA-DRB5, with its right-click menu open on Highlight in hg38." src="/img/pangenome/hprc_mhc_layout_force.png" />
 

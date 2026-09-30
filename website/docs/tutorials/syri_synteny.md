@@ -355,8 +355,8 @@ table:
 awk -F'\t' '$11=="INV" {print $3-$2+1, $1, $2, $3}' Col-0_Ler.syri.out | sort -nr | head -1
 ```
 
-The largest inversion is 1,170,016 bp on `Chr4`, from 1,612,606 to 2,782,621,
-the interval the crossed ribbon spans and the orange block on the Ler row.
+The largest inversion is on `Chr4`, from 1,612,606 to 2,782,621, the interval
+the crossed ribbon spans and the orange block on the Ler row.
 
 ## Reproduce it end to end
 

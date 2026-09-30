@@ -163,9 +163,9 @@ TMSK000001      0.033   0.967     Tamaskan
 GRSD000002      0       1         German Shepherd Dog
 ```
 
-Nearly all swept breeds come in at a trace of wolf, and seven of the eight
-wolfdogs sit far above them. The eighth, Czechoslovakian 2, lands inside the
-range of the sweep with no long block anywhere; the Saarloos and Czechoslovakian
+Nearly all swept breeds come in at a trace of wolf, and all but one of the
+wolfdogs sit far above them. That one, Czechoslovakian 2, lands inside the range
+of the sweep with no long block anywhere; the Saarloos and Czechoslovakian
 Wolfdog breeds have both been bred back to dogs for decades.
 
 ### Collapsing calls into blocks
@@ -248,9 +248,9 @@ one `labels` entry per `domain` color.
 
 `rows.domain` is abbreviated here; the build script writes all sixty-four rows
 in descending order of chr1 wolf fraction from FLARE's summary. A second BED
-holds all 243 animals, loaded the same way with no `domain`; at 486 rows there
-is no room for labels, so the small painting shows the labels and the big one
-the extent.
+holds all 243 animals, loaded the same way with no `domain`; at two rows per
+animal there is no room for labels, so the small painting shows the labels and
+the big one the extent.
 
 ## Reading the painting
 
@@ -270,9 +270,9 @@ recombination rate.
 ### Where the painting and the alleles disagree
 
 Most held-out wolves paint essentially all wolf. The two Swedish museum
-specimens come out about half dog, yet on the second measurement the build
-script prints, the fraction of near-fixed differing sites carrying the wolf
-allele, they score highest of all eight. That fraction scores alleles one site
+specimens come out partly dog, yet on the second measurement the build script
+prints, the fraction of near-fixed differing sites carrying the wolf allele,
+they score highest of the held-out wolves. That fraction scores alleles one site
 at a time, and FLARE matches whole haplotypes against a panel.
 
 ### The Tamaskan and the Shiloh Shepherd

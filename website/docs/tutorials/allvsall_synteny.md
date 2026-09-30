@@ -328,7 +328,7 @@ adds a key naming both groups:
 }
 ```
 
-<Figure caption="The paa operon island on K-12 with a flank on each side. Graph depth drops from five genomes to two across the island and comes back after it. In the all-vs-all lanes below, the island genes (feaR, tynA and the paa operon) are red in every lane: K-12 and NCTC86 carry them. CFT073 annotates none and goes straight from one flank to the other. Sakai and IAI39 annotate none either, and their lanes open reversed on a stretch holding the right-hand flank but not ldhA and ydbH on the left." src="/img/multiway_synteny/ecoli_island_lanes.png" />
+<Figure caption="The paa operon island on K-12 with a flank on each side. Graph depth drops across the island and comes back after it. In the all-vs-all lanes below, the island genes (feaR, tynA and the paa operon) are red in every lane: K-12 and NCTC86 carry them. CFT073 annotates none and goes straight from one flank to the other. Sakai and IAI39 annotate none either, and their lanes open reversed on a stretch holding the right-hand flank but not ldhA and ydbH on the left." src="/img/multiway_synteny/ecoli_island_lanes.png" />
 
 ### The gap in the graph {#the-same-gap-drawn-as-a-graph}
 

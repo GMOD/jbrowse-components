@@ -108,9 +108,9 @@ placeholder. The pseudoautosomal genes are an exception, annotated on both X and
 Y, so each Y copy gets a separate row. The helper prints how much of each column
 it filled; for these eight the lanes come back nearly full, because the
 annotations share one naming pipeline. It also writes a row for each symbol
-human lacks, 410 of them, which a window anchored on human does not draw. Most
-are ape genes RefSeq names as the homolog of a human open reading frame,
-_C1H1orf35_ for human _C1orf35_, a spelling the join cannot match.
+human lacks, which a window anchored on human does not draw. Most are ape genes
+RefSeq names as the homolog of a human open reading frame, _C1H1orf35_ for human
+_C1orf35_, a spelling the join cannot match.
 
 ## Setting up the assemblies
 

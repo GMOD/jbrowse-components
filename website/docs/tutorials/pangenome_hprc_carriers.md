@@ -279,6 +279,5 @@ length and the CAT genes.
 
 [^taf]:
     Release 2.0 publishes an earlier build of the alignment as a 5.9 GB TAF,
-    which `BgzipTaffyAdapter` reads with the same shorthand. The TAF reads a
-    quarter of the bytes per locus, and has more underalignment and unpatched
-    centromeres.
+    which `BgzipTaffyAdapter` reads with the same shorthand. The TAF reads fewer
+    bytes per locus, and has more underalignment and unpatched centromeres.

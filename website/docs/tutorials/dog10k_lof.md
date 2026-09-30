@@ -82,8 +82,7 @@ C>T at that first base makes TGA, a stop
 
 `CGA` to `TGA` is one substitution and it is a stop codon, so a C>T at
 chr30:38,261,635 truncates the protein at 373 of 513 residues. Checking the
-callset at exactly that position finds it, at 4.4% allele frequency and passing
-every filter:
+callset at exactly that position finds it, passing every filter:
 
 <!-- from: scripts/build_dog10k_cyp1a2.sh -->
 
@@ -109,8 +108,8 @@ bcftools view -r chr30:38258000-38265000 -S cyp.samples --force-samples \
 tabix -p vcf dog10k_cyp1a2_snvs.vcf.gz
 ```
 
-The slice holds 490 SNVs across the gene for the chosen samples. `cyp.samples`
-holds breeds that carry the allele, two that do not, and four Greek gray wolves.
+`cyp.samples` holds breeds that carry the allele, two that do not, and four
+Greek gray wolves.
 
 ## Loading the slice with breed labels
 
@@ -134,7 +133,7 @@ relabel the rows without touching the VCF: the display's `rows` labels for named
 animals ([](/docs/tutorials/dog10k_svs)), or a `samplesTsvLocation` for a larger
 panel ([Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)).
 
-A whole-gene view of 490 SNVs is a field of one-pixel ticks, so zoom to the
+A whole-gene view of the slice is a field of one-pixel ticks, so zoom to the
 codon. At base level each sample's call is a block, and the gene track shows
 which exon it sits in.
 
@@ -147,7 +146,8 @@ of breeds carry the allele and it reaches homozygosity in several: every German
 Hound and every Shetland Sheepdog sampled here carries at least one copy, while
 every wolf and every coyote in the collection is homozygous reference.
 
-Three neighbours sit inside the same 101 bp, and the display filters them out:
+Three neighbours sit within about a hundred bases, and the display filters them
+out:
 
 ```json addtrack
 {
@@ -204,7 +204,7 @@ evidence and is painted at 1 kb resolution.
 
 The callset records depth only where a variant was called, so the build script
 checks it against the 15 CRAMs the Dog10K share publishes. Over the shared
-windows the two depth sources agree at r = 0.92 with no bias. The CRAM-based
+windows the two depth sources agree closely, with no bias. The CRAM-based
 painting is in the config as `dog10k_cyp1a2_cn`.
 
 The output is a BED with the colour in the itemRgb column, a `sample` column and
@@ -322,9 +322,9 @@ bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
 ```
 
 The script reads depth over this gene from each published CRAM, paints the 15
-dogs, then slices the callset's depth field and paints the other 1,972. It
-prints each dog's copy number over the element beside the spread of the sequence
-around it, and the agreement between the two measurements.
+dogs, then slices the callset's depth field and paints the rest. It prints each
+dog's copy number over the element beside the spread of the sequence around it,
+and the agreement between the two measurements.
 
 ## See also
 

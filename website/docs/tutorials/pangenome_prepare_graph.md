@@ -372,7 +372,7 @@ bash build_hprc_gbz_index.sh out
     minutes.
 
 [^gbz-cost]:
-    Over HPRC's 464 haplotypes the companion is 7.9 GB, built in about 13
-    minutes on 24 cores with a 12 GB memory peak. On a 16-thread Intel Mac the
-    build aborts inside libmalloc's nano zone; `MallocNanoZone=0` or
+    Over HPRC's 464 haplotypes the companion is 7.9 GB, built in about a quarter
+    of an hour on 24 cores with a 12 GB memory peak. On a 16-thread Intel Mac
+    the build aborts inside libmalloc's nano zone; `MallocNanoZone=0` or
     `--threads 8` avoids it.

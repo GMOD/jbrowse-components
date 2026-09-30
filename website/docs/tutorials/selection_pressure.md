@@ -107,8 +107,8 @@ order of magnitude above the cluster is a paralog the aligner preferred, and
 `--max-ds` removes it.
 
 The top of a table sorted by dN/dS is the pairs with almost nothing to divide
-by: _HBA1_ comes out over 2 off a single synonymous difference. `--min-syn-subs`
-is a floor on that count.
+by: _HBA1_ lands there off a single synonymous difference. `--min-syn-subs` is a
+floor on that count.
 
 Every row also carries that count and a two-sided Fisher exact p, the test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
