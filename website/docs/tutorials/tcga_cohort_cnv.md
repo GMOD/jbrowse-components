@@ -13,18 +13,10 @@ a recurrent event reads as a vertical stripe down the stack.
 
 ## Prerequisites
 
-- A JBrowse 2 instance to add tracks to (see the
-  [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop), which loads these tracks by
-  URL with nothing to host) and the [JBrowse CLI](/docs/cli)
-- These files, hosted; the whole 1104-tumor cohort is a few MB of segment calls:
-
-| File                                                                             | What                              |
-| -------------------------------------------------------------------------------- | --------------------------------- |
-| `https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz`                            | the segment stack                 |
-| `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz`            | cohort gain/loss frequencies      |
-| `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz` | the same, split by clinical group |
-| `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`                          | per-tumor histology, receptors    |
+- a JBrowse 2 instance to add tracks to (see the
+  [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop)) and the
+  [JBrowse CLI](/docs/cli)
 
 ## Where the data comes from
 
@@ -47,13 +39,11 @@ needed.
 The hg38 reference and gene track beside them are the hosted UCSC
 [hub](/docs/user_guides/hub_url)'s own entries.
 
-## What the files hold
+## Segment file
 
 [Reproduce it end to end](#reproduce-it-end-to-end) below builds these files
-from the GDC for any project id.
-
-The BED is one segment call per line, with a `#`-prefixed header naming the
-columns past `end`:
+from the GDC for any project id. The BED is one segment call per line, with a
+`#`-prefixed header naming the columns past `end`:
 
 ```text
 #chrom  start     end        name    sample             segmean
@@ -66,8 +56,8 @@ tumor/normal ratio and colors them.
 
 ## Load the segments into JBrowse
 
-The assembly comes first. The hosted FASTA calls its contigs bare (`1`) while
-the BED uses `chr1`, so pass the alias file and both resolve.
+Add the assembly first. The hosted FASTA names its contigs `1`, `2`, ... and the
+BED uses `chr1`, so pass the alias file to map one onto the other.
 
 ```bash
 export OUT=/var/www/html/jbrowse2
@@ -116,7 +106,7 @@ The segments themselves are a `FeatureTrack` whose
 ```
 
 [`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight)
-auto-fits, which at this row count leaves every tumor a single pixel line. Two
+auto-fits, which at this row count makes each tumor under a pixel tall. Two
 settings do the rest:
 
 - [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) splits the file
@@ -125,22 +115,23 @@ settings do the rest:
   `segmean` onto a diverging blue-to-red scale at four cut points, since this
   BED carries no `itemRgb`, and `labels` names each bin in the key
 
-That colour block writes out a whole encoding channel. It names the column, the
-kind of scale, its cut points, the colours those map onto and the labels the key
-carries. Any display with a `color` slot takes the same five keys, and
-[](/docs/tutorials/alu_age) puts height and colour on one file through them.
+The `color` block names the column, the scale type, its cut points, the colours
+they map to and the labels in the key. Any display with a `color` slot takes the
+same five keys, and [](/docs/tutorials/alu_age) uses them to set height and
+colour from one file.
 
 ## Cluster the stack
 
-Open the track at whole-genome zoom, then run **Clustering → Cluster rows by
-similarity** from the track menu (see [](/docs/user_guides/clustering)), which
-averages `segmean` across each bin and sorts the stack into blocks of shared
-copy-number profile.
+Open the track over _ERBB2_ and choose **Clustering → Cluster rows by
+similarity...** from the track menu (see [](/docs/user_guides/clustering)).
+JBrowse averages `segmean` across each bin in view and sorts the rows into
+blocks with a shared copy-number profile, so the tumors amplified at _ERBB2_
+gather into one band.
 
-A vertical stripe is one locus called the same way across many rows. A whole row
-tending red or blue is one heavily aneuploid tumor, and clustering pulls those
-together into a band. Clustering on a single-locus window instead sorts the
-cohort into its copy-number classes there.
+A vertical stripe is one locus called the same way across many rows. Clustered
+at whole-genome zoom, the stack groups tumors by their genome-wide profile, and
+the heavily aneuploid tumors, whose rows run red or blue end to end, form a band
+of their own.
 
 <Video src="/media/tcga/cohort_cnv_clustering.mp4" caption="The ERBB2 window, clustered from the track menu: 1104 tumors in barcode order, the Clustering item, and the bands the run leaves behind." />
 
@@ -148,9 +139,9 @@ Every figure below is in the sorted state.
 
 <Figure caption="chr17:39.0-40.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure below." src="/img/tcga/cohort_cnv_erbb2.png" />
 
-At this row count each row is well under a pixel tall, so the saturated colors
-crowd out the neutral ones. The stack maps where the events are; the track below
-counts how many rows carry them.
+With each row under a pixel tall, the saturated colours crowd out the neutral
+ones. The stack shows where the events are, and the recurrence track below
+counts how many tumors carry them.
 
 ## Add a recurrence track
 
@@ -165,8 +156,8 @@ chr8    127600000  127800000  49.73  -0.91
 chr16   89200000   89300000   3.26   -46.38
 ```
 
-`BedGraphTabixAdapter` reads every column past `end` as its own signal. Loss is
-written negative so a wiggle cutting its colour at the default `origin` of 0
+`BedGraphTabixAdapter` reads every column past `end` as a separate signal. Loss
+is written negative so a wiggle cutting its colour at the default `origin` of 0
 draws gains up in one colour and losses down in the other.
 
 ```json addtrack
@@ -194,20 +185,20 @@ draws gains up in one colour and losses down in the other.
 
 `scales.y`'s `domainMin` and `domainMax`
 ([display options](/docs/config_guides/quantitative_track#display-options)) pin
-the axis, so a bar means the same fraction wherever you navigate. The colour
-reuses the stack's palette. Placed above the stack, each peak sits over a
-stripe:
+the axis, so a bar means the same fraction wherever you navigate, and the colour
+reuses the palette of the stack. Place the track above the stack, so that each
+peak sits over a stripe:
 
-<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's gain and loss frequency per 100 kb. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
+<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one row per tumor, clustered by profile, under the cohort's gain and loss frequency per 100 kb. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
 
-Each bar is the fraction of the cohort carrying a call past the cutoff, with no
-background model or significance test;
-[GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41) is the tool for that.
+Each bar is the fraction of the cohort carrying a call past the cutoff.
+[GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41) tests which peaks rise above
+a background model.
 
 ## Split the recurrence by clinical group
 
 `cnv_recurrence.py --groups` runs the same tally once per value of a clinical
-column and writes each group its own gain and loss column:
+column and writes a gain and a loss column per group:
 
 <!-- from: scripts/build_tcga_cohort_cnv.sh -->
 
@@ -242,7 +233,6 @@ gain above the line and its loss below:
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "tcga_brca_cnv_recurrence_by_subtype-LinearMarkDisplay",
       "height": 500,
       "transform": [
         {
@@ -297,27 +287,41 @@ different split. `histology` and `stage` work for any TCGA project, while
 
 ## Use your own cohort
 
-Any caller that emits per-sample segments works. The track config only needs a
-BED with a sample column and a numeric column to color by:
+Any caller that writes per-sample segments works. Reshape its output into a BED
+with a sample column and a numeric column to colour by, one segment per line:
 
 ```text
-#chrom  start  end  name  sample  segmean
+#chrom  start      end        name   sample    segmean
+chr1    1000000    2500000    +0.42  tumor_01  0.42
+chr1    1000000    8000000    -0.75  tumor_02  -0.75
+chr8    127000000  128500000  +1.30  tumor_01  1.30
 ```
 
-[CNVkit](https://cnvkit.readthedocs.io/) `.call.cns`, ASCAT, and
+[CNVkit](https://cnvkit.readthedocs.io/) `.call.cns`, ASCAT and
 [PURPLE](https://github.com/hartwigmedical/hmftools/tree/master/purple) segments
-all reshape into that with the same concatenate-and-tag step.
+all reshape into this by concatenating the per-sample files with the sample name
+added as a column. Sort, compress and index the result:
 
-## Where to go next
+```bash
+jbrowse sort-bed cohort.bed | bgzip > cohort.bed.gz
+tabix cohort.bed.gz
+```
 
-The same one-row-per-sample pattern carries to other GDC open-access data:
+Then add the segment track config from
+[Load the segments into JBrowse](#load-the-segments-into-jbrowse) with `uri`
+pointing at `cohort.bed.gz`.
 
-- **Allele-specific copy number** (ASCAT, open access) reports major and minor
-  allele copy number separately, so it shows copy-neutral loss of
-  heterozygosity. Same `.seg` shape, same display, only the coloring expression
-  changes
-- **Methylation** (Beta Value arrays, open access) is probe-level with genomic
-  coordinates, and loads the same way with beta as the color field
+## Other GDC data
+
+The one-row-per-sample layout of the segment stack works for other GDC
+open-access data:
+
+- Allele-specific copy number (ASCAT) reports major and minor allele copy number
+  separately, so it shows copy-neutral loss of heterozygosity. It has the same
+  `.seg` layout and loads in the same display, with a different colour
+  expression.
+- Methylation (Beta Value arrays) is probe-level with genomic coordinates, and
+  loads the same way with beta as the colour field.
 
 Splice junction quantification is controlled access at the GDC; GTEx and
 recount3 publish open junction summaries.
@@ -341,20 +345,20 @@ npx --yes serve jbrowse2                   # then open the printed URL
 
 The script writes `tcga_brca_cnv.bed.gz` (+ `.tbi`), the two recurrence
 bedGraphs (+ `.tbi`) and `tcga_brca_clinical.tsv`, then a `jbrowse2/` opening on
-_ERBB2_. The assembly is the hosted UCSC hg38 hub's entry copied in, so the
-reference is never downloaded. Swap in any other project id (`TCGA-OV`,
-`TCGA-LUAD`, ...), with a third argument to group the recurrence by a different
-clinical column.
+_ERBB2_. The script copies the assembly entry from the hosted UCSC hg38 hub, so
+it downloads no reference. Swap in any other project id (`TCGA-OV`, `TCGA-LUAD`,
+...), with a third argument to group the recurrence by a different clinical
+column.
 
 Three steps decide whether the track loads correctly:
 
-- **Open-access files only.** The **Masked Copy Number Segment** files
-  (Affymetrix SNP 6.0, harmonized to GRCh38, germline CNV probes removed) need
-  no dbGaP application. The query filters to `Primary Tumor`
-- **The `.seg` to BED reshape.** `.seg` names contigs bare (`1`), so the script
-  adds `chr`, and `.seg` starts are 1-based inclusive, so it subtracts 1. It
-  keeps one file per barcode
-- **`Segment_Mean` is carried through unchanged**
+- The query fetches the open-access **Masked Copy Number Segment** files
+  (Affymetrix SNP 6.0, harmonized to GRCh38, germline CNV probes removed), which
+  need no dbGaP application, and filters to `Primary Tumor`.
+- `.seg` names contigs `1`, `2`, ... and its starts are 1-based inclusive, so
+  the script adds `chr` and subtracts 1 from each start. It keeps one file per
+  barcode.
+- `Segment_Mean` passes through unchanged.
 
 [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
 runs on its own given a cohort BED. It skips bins where fewer than half the

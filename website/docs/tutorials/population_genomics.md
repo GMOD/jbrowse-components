@@ -10,7 +10,7 @@ tutorial_category: Population genomics
 
 Compute per-window Fst, nucleotide diversity (π), and Tajima's D from a
 multi-sample VCF, load them as bigWig quantitative tracks stacked in one view,
-each on its own y-axis, and read where the signals line up against genes.
+each with a separate y-axis, and read where the signals line up against genes.
 
 ## Prerequisites
 
@@ -57,33 +57,31 @@ The dm6 assembly and gene track are the hosted UCSC
 
 ## Windowed statistics as tracks
 
-A population-genetic scan is a per-window statistic along the genome: Fst
-between two groups, nucleotide diversity (π) within one, dxy between them. That
-is the shape of a wiggle track, so whatever a scanner writes per window loads as
-a [quantitative track](/docs/user_guides/quantitative_track). Haplotype
+A population-genetic scan reports one statistic per window along the genome: Fst
+between two groups, nucleotide diversity (π) within one, dxy between them. Any
+per-window output loads as a
+[quantitative track](/docs/user_guides/quantitative_track), and haplotype
 statistics (iHS, XP-EHH, e.g. from
 [selscan](https://github.com/szpiech/selscan)) load the same way.
 
-This tutorial stacks Fst, π and Tajima's D in one view over the
-[Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP), 205
-inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)) on dm6.
-Two signals stand out:
+We stack Fst, π and Tajima's D in one view over the
+[Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP) on dm6 and
+look at two signals:
 
-- **Fst across the `In(2L)t` inversion.** The inversion suppresses recombination
+- Fst across the `In(2L)t` inversion. The inversion suppresses recombination
   between the two arrangements in a heterozygote
   ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)),
   so Fst tracks the arrangement boundary.
-- **The π landscape.** It dips at loci under selection, such as the
-  insecticide-resistance gene _Cyp6g1_
-  ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
+- π dips at loci under selection, such as the insecticide-resistance gene
+  _Cyp6g1_ ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
 
 ## Building the scans
 
 The inversion karyotypes
 ([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)) harmonize the
 `In(2L)t` typing of [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554):
-`0` for standard homozygotes, `2` for inverted, `1` for heterozygotes, which are
-dropped.
+`0` for standard homozygotes, `2` for inverted, `1` for heterozygotes, which the
+script drops.
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
 derives the two sample lists, one name per line as
 [vcftools](https://vcftools.github.io/) takes for `--weir-fst-pop` and `--keep`,
@@ -96,22 +94,20 @@ pack into a bigWig. Fst uses the Weir & Cockerham estimator
 <!-- from: scripts/build_dgrp_popgen.sh -->
 
 ```bash
-# chrom.sizes from the VCF header, so it carries the same contig names the
-# scans will
+# chrom.sizes from the VCF header, so it uses the contig names of the scans
 bcftools view -h dgrp2.vcf.gz |
   awk -F'[=,>]' '/^##contig/{print $3"\t"$5}' > dm6.chrom.sizes
 
-# window == step, so windows tile rather than overlap
+# window equal to step, so windows tile the genome
 vcftools --gzvcf dgrp2.vcf.gz \
   --weir-fst-pop In2Lt_INV.txt --weir-fst-pop In2Lt_STD.txt \
   --fst-window-size 2000 --fst-window-step 2000 --out fst_In2Lt
-# BIN_START is 1-based here, hence -1; negative Fst is an estimator artifact
-# at low-differentiation sites and is floored at 0.
-# $5 is WEIGHTED_FST, the window's summed variance components divided; $6 beside
-# it is MEAN_FST, the average of the per-site ratios, which any window with a
-# few uninformative sites in it pulls around.
-# BIN_END is the NOMINAL window end, so a contig's last window is reported past
-# the end of it. Clamp, or bedGraphToBigWig refuses the whole file.
+# BIN_START is 1-based here, hence -1
+# negative Fst is an estimator artifact at low-differentiation sites; floor at 0
+# $5 is WEIGHTED_FST, the ratio of summed variance components
+# $6, MEAN_FST, averages per-site ratios and swings on a few uninformative sites
+# BIN_END is the nominal window end, so the last window of a contig passes its
+# end; clamp it, or bedGraphToBigWig refuses the whole file
 awk -F'\t' 'NR==FNR{len[$1]=$2; next}
      FNR>1 && $5!="nan" && $5!="-nan" {
        v=$5+0; if (v<0) v=0
@@ -140,8 +136,8 @@ constructed before the clamp:
 
 ```bash
 vcftools --gzvcf dgrp2.vcf.gz --TajimaD 2000 --out tajimad_all
-# BIN_START is already 0-based (no -1), and there is no BIN_END, so the end is
-# built here and clamped: an interval past the contig end is rejected downstream
+# BIN_START is already 0-based, and there is no BIN_END
+# build the end here and clamp it to the contig length
 awk -F'\t' 'NR==FNR{len[$1]=$2; next}
      FNR>1 && $4!="nan" && $4!="-nan" {
        end=$2+2000; if (end>len[$1]) end=len[$1]
@@ -154,18 +150,20 @@ bedGraphToBigWig tajimad_all.bedgraph dm6.chrom.sizes tajimad_all.bw
 Window size trades resolution for smoothness. 2 kb resolves a single-gene sweep
 like _Cyp6g1_ sharply; widen toward 5-10 kb for smoother genome-wide overviews.
 
-Check chromosome naming: a mismatch draws an empty track with no error. The
-bigWigs take their contig names from the VCF header (`2L`, `2R`, `X`, FlyBase
-style) where UCSC dm6 prefixes them `chr2L`.
-[Refname aliasing](/docs/developer_guides/refname_aliasing) reconciles the two.
+A contig-name mismatch draws an empty track with no error. The bigWigs take
+contig names from the VCF header (`2L`, `2R`, `X`, FlyBase style), where UCSC
+dm6 writes `chr2L`, and
+[refname aliasing](/docs/developer_guides/refname_aliasing) maps one to the
+other.
 
-Because this VCF holds variant sites only, `--window-pi` counts every position
-not in the file as invariant and callable alike, so a window that lost sites to
-filtering reads as low diversity. [pixy](https://pixy.readthedocs.io/)
+The DGRP VCF holds variant sites only, so `--window-pi` counts every position
+missing from the file as invariant and callable, and a window that lost sites to
+filtering shows low diversity. [pixy](https://pixy.readthedocs.io/)
 ([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) takes an
 allSites VCF and reports π, dxy and Fst per window without that bias, and its
-output packs into a bigWig the same way. The same filtering lifts Tajima's D's
-whole baseline, so D reads as an excursion against the panel's own background.
+output packs into a bigWig the same way. Filtering also shifts the whole
+baseline of Tajima's D, so read D at a locus against the genome-wide background
+of the panel.
 
 ## Loading the scans in JBrowse
 
@@ -187,8 +185,8 @@ With a dm6 assembly and gene track loaded (see
 }
 ```
 
-Fst and π sit on very different scales, so load them as separate tracks with
-their own y-axes. A [multi-wiggle](/docs/config_guides/quantitative_track)
+Fst and π sit on very different scales, so load them as separate tracks, each
+with a separate y-axis. A [multi-wiggle](/docs/config_guides/quantitative_track)
 shares one axis across rows, which suits the same statistic across groups, so
 the per-group π bigWigs load as one track:
 
@@ -225,12 +223,12 @@ Search `Cyp6g1` (on `2R`) in the location box and add the Tajima's D track
 alongside π. Both dip together over the swept window. Add the called-variant
 count under them, column 4 of the table π comes from. A duplication of _Cyp6g1_
 segregates alongside the resistance allele
-([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and copy
-number costs a window called sites.
+([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and the
+duplicated sequence lowers the number of sites called in the window.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip together over the highlighted window against their background either side. The count under them falls too, but much less."/>
 
-Each pair of values reads differently:
+Fst read against within-group π:
 
 | Fst  | Within-group π         | Reading                                          |
 | ---- | ---------------------- | ------------------------------------------------ |
@@ -238,13 +236,13 @@ Each pair of values reads differently:
 | High | High in both, high dxy | Long-standing divergence (e.g. an inversion)     |
 | Low  | High                   | Shared variation / gene flow                     |
 
-_Ace_ and _CHKov1_ on `3R` read the same way. `In(3R)Payne` is typed in the same
-DGRPool table set, so repeating the grouping step with its phenotype scans `3R`
-as above.
+_Ace_ and _CHKov1_ on `3R` show the same pattern. DGRPool also types
+`In(3R)Payne`, so repeating the grouping step with that phenotype scans `3R` the
+same way.
 
 ## The inversion, genome-wide and per line
 
-Opening the assembly with no location lays the six arms out side by side. The
+Open the assembly with no location to lay the six arms out side by side. The
 `In(2L)t` Fst track rises over the inverted region of 2L against low background
 everywhere else.
 
@@ -261,7 +259,7 @@ sample name and whose other columns are attributes to band and color rows by,
 and a one-record SV VCF genotyping every line `1/1` or `0/0`. Load it with a
 `LinearMultiSampleVariantDisplay` that bands (`facet`) and colors (`rowColor`)
 rows by the `karyotype` column, with the standard lines declared first so the
-carriers land at the bottom of the lane:
+carriers draw at the bottom of the lane:
 
 ```json addtrack
 {
@@ -293,7 +291,7 @@ sidebar and the two classes contiguous.
 
 Differentiation decays gradually outside the breakpoints
 ([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)); the
-extent at the top of the frame is published coordinates.
+extent at the top of the frame marks the published breakpoints.
 
 ## Reproduce it end to end
 

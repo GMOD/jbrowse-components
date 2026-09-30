@@ -154,7 +154,7 @@ export async function selectSpecsToRender(): Promise<
   }
 
   // The figure a doc publishes for a compose spec is the STACK, not the parts.
-  // Re-rendering a part on its own (`--filter pangenome/graph_resolution_pggb`)
+  // Re-rendering a part on its own (`--filter pangenome/graph_context_none`)
   // would leave that stack showing the old part, with nothing to say so — so pull
   // in every compose spec whose parts this run touches.
   const selectedNames = new Set(selected.map(s => s.name))

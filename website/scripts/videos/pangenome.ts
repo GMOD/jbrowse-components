@@ -1,19 +1,14 @@
 // The graph tours, on the pangenome pages: loading a graph and reading it at a
-// locus, and the HPRC page's routes.
+// locus, opening an allele on its strain, and the HPRC callset clustering.
 import { menuCascade, sessionSpec } from '../screenshot-spec-helpers.ts'
-import {
-  HPRC_PAGE,
-  MHC_GRAPH_LINK,
-  portalGraphLaunch,
-} from '../specs/genomes_pangenome.ts'
 import {
   PGGB_SEGMENTS_TRACK_JSON,
   pggbVideoFixtures,
 } from '../specs/graph-ecoli.ts'
 import { GRAPH_DRAWN } from '../specs/graph-fixtures.ts'
-import { hprcClusterFixtures, hprcVideoFixtures } from '../specs/graph-hprc.ts'
+import { hprcClusterFixtures } from '../specs/graph-hprc.ts'
 import { cactusVideoFixtures } from '../specs/pangenome_cactus.ts'
-import { displayReady, LOCATION_BOX, trackMenu, zoomToSteps } from './shared.ts'
+import { displayReady, trackMenu, zoomToSteps } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -57,22 +52,11 @@ const cactusTourStart = sessionSpec(cactusVideoFixtures.config, {
   ],
 })
 
-const {
-  haplotype: HAPLOTYPE,
-  haplotypeNode: HAPLOTYPE_NODE,
-  launchedZoomOutButton: LAUNCHED_ZOOM_OUT,
-} = hprcVideoFixtures
-
 const GRAPH_WORKFLOW = 'Add pangenome graph track'
 const URL_INPUT = '[data-testid="urlInput"]'
 const SAMPLE_INPUT = '[data-testid="graph-sample-input"]'
 const TRACK_NAME_INPUT = '[data-testid="graph-track-name-input"]'
-const HAPLOTYPE_GENES_LABEL = 'CAT genes (NA20809 haplotype 2, HPRC release 2)'
 const WORDMARK = '[aria-label="JBrowse"]'
-// GRCh38 carries the MHC's genes on its alt contigs too, so a gene search there
-// raises the picker, which lists the primary chromosome's hit first.
-const FIRST_SEARCH_HIT = 'tbody tr:first-child button'
-const ZOOM_OUT = '[data-testid="zoom_out"]'
 
 // File → Open track... → Add pangenome graph track, the form, Submit: the one
 // way both E. coli pages load a graph, each field read off the page's own fence
@@ -215,138 +199,6 @@ export const pangenomeVideos: VideoSpec[] = [
       },
     ],
     tailMs: 2500,
-  },
-  // The HPRC page's graph launch is a target="_blank" link, so the tour follows
-  // it into the new tab.
-  {
-    name: 'pangenome/hprc_browse',
-    description:
-      'HPRC release 2 from its genomes.jbrowse.org page: the HLA / MHC graph launch, the allele under HLA-DRB5 hovered and opened on NA20809 haplotype 2, whose genes there include no HLA-DRB5',
-    goal: 'Open the HLA graph from the HPRC page and trace one allele',
-    url: HPRC_PAGE,
-    noSession: true,
-    readyText: 'Whole chromosome',
-    readyTimeout: 120000,
-    // the app is 1344px once the haplotype's view opens under the graph, and
-    // the strip under it is where the captions sit rather than over its genes
-    viewportHeight: 1500,
-    steps: [
-      {
-        type: 'hover',
-        selector: MHC_GRAPH_LINK,
-        say: 'Each locus on the HPRC page opens as a graph',
-        hold: 1500,
-      },
-      { type: 'click', selector: MHC_GRAPH_LINK, opensTab: true },
-      {
-        type: 'waitForSelector',
-        selector: GRAPH_DRAWN,
-        timeout: 240000,
-        cut: true,
-      },
-      { type: 'hover', selector: WORDMARK, hold: 0 },
-      {
-        type: 'delay',
-        ms: 2500,
-        say: 'GRCh38 runs along the top row; lower rows are sequence it lacks',
-      },
-      {
-        type: 'hover',
-        anchor: { graphNode: HAPLOTYPE_NODE },
-        say: 'This allele under HLA-DRB5 came from one haplotype',
-        hold: 2500,
-      },
-      {
-        type: 'rightclick',
-        anchor: { graphNode: HAPLOTYPE_NODE },
-        say: "Open it on that haplotype's own chromosome 6",
-        hold: 900,
-      },
-      { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
-      { type: 'click', text: `Open in ${HAPLOTYPE}` },
-      // the hosted app's own track label is the gate, and hovering it brings
-      // the new view into frame
-      {
-        type: 'waitForText',
-        text: HAPLOTYPE_GENES_LABEL,
-        timeout: 180000,
-        cut: true,
-      },
-      { type: 'hover', text: HAPLOTYPE_GENES_LABEL, hold: 0 },
-      ...Array.from({ length: 6 }, (): VideoStep => ({
-        type: 'click',
-        selector: LAUNCHED_ZOOM_OUT,
-        hold: 350,
-      })),
-      { type: 'waitForAppSettled', timeout: 120000, cut: true },
-      { type: 'hover', selector: WORDMARK, hold: 0 },
-      {
-        type: 'delay',
-        ms: 3500,
-        say: 'This haplotype has no HLA-DRB5, the gene the allele sits under in GRCh38',
-      },
-    ],
-    tailMs: 3000,
-  },
-  // `## The graph moves with the view`, on the session the HPRC page's graph
-  // link opens. A gene in the MHC is on GRCh38's alt contigs as well, so the
-  // search raises the picker a reader meets too.
-  {
-    name: 'pangenome/hprc_follow_view',
-    description:
-      'The HLA / MHC graph session searched to C4A: the chr6 hit taken from the picker, two zoom-outs to take in C4B, and the graph track re-cut at each step to the bubble whose alleles run from 0 to 66 kb',
-    goal: 'Search a gene, and the graph track follows the view there',
-    url: portalGraphLaunch(),
-    readySelector: GRAPH_DRAWN,
-    readyTimeout: 240000,
-    // 940px of app, and the captions below it rather than over the graph
-    viewportHeight: 1100,
-    steps: [
-      { type: 'hover', selector: WORDMARK, hold: 0 },
-      {
-        type: 'type',
-        selector: LOCATION_BOX,
-        value: 'C4A',
-        clear: true,
-        say: 'Search C4A, one of the two complement C4 genes',
-      },
-      { type: 'press', key: 'Enter' },
-      { type: 'waitForText', text: 'Showing results for' },
-      {
-        type: 'click',
-        selector: FIRST_SEARCH_HIT,
-        say: 'GRCh38 also carries C4A on alt contigs; take chr6',
-      },
-      { type: 'waitForAppSettled', timeout: 180000, cut: true },
-      {
-        type: 'waitForSelector',
-        selector: GRAPH_DRAWN,
-        timeout: 180000,
-        cut: true,
-      },
-      { type: 'hover', selector: WORDMARK, hold: 1500 },
-      {
-        type: 'click',
-        selector: ZOOM_OUT,
-        say: 'Zoom out to take in C4B, the second copy',
-        hold: 400,
-      },
-      { type: 'click', selector: ZOOM_OUT, hold: 400 },
-      { type: 'waitForAppSettled', timeout: 180000, cut: true },
-      {
-        type: 'waitForSelector',
-        selector: GRAPH_DRAWN,
-        timeout: 180000,
-        cut: true,
-      },
-      { type: 'hover', selector: WORDMARK, hold: 0 },
-      {
-        type: 'delay',
-        ms: 4000,
-        say: 'One bubble: where GRCh38 has a 33 kb C4 module, alleles run 0 to 66 kb',
-      },
-    ],
-    tailMs: 3000,
   },
   // The node menu is flat — `Node details`, then one `Open in <assembly>` row
   // per assembly the session carries — which is what a reader hunting for a

@@ -122,9 +122,8 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   // The graph itself, which every projection above is a flattening of: the
   // segments track of a 2 kb K12 window drawn as a graph, under the genes and
   // the carriage lane of the same window. Both tracks read the two tabix
-  // indexes build_pggb_tabix.sh writes over mc/ecoli.gfa.gz. Genes grey for
-  // the reason local_subgraph gives: at the default goldenrod the gene boxes
-  // read as more graph nodes.
+  // indexes build_pggb_tabix.sh writes over mc/ecoli.gfa.gz. Genes grey,
+  // because at the default goldenrod the gene boxes read as more graph nodes.
   //
   // Force-directed, because the subject is the SHAPE — one long tube with the
   // rest of the graph passing it — and an anchored layout draws that arm flat

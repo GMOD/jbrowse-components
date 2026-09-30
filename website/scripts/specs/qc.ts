@@ -84,18 +84,15 @@ const SMN_HIGHLIGHT = [
 // absent scales to whatever few values survive and the collapse reads as an
 // ordinary wiggle.
 //
-// LEGIBLE AT ANY WIDTH, WITH `summaryScoreMode: 'min'` — which is the whole of
-// the answer to "should we show just plain mappability tracks?" and to the
-// round after it ("consider adding mappability again. is it really a bad idea?
-// i am confused why not"). The previous answer was that it is only readable at
-// the 30 kb panels, and that was true of the DEFAULT summarization and only of
-// that: a bigWig zoom bin carries min/avg/max, `avg` over a bin that is mostly
-// absent is the average of the few present positions, and the lane came out a
-// solid wall near 1 across a region where almost nothing maps. `min` over the
-// same bin is the worst position in it, so the lane sits on the floor for the
-// whole low-mappability block and steps to 1 at its edge — measured against the
-// read track in qc/smn_read_placement, where the step lands at the same
-// coordinate as the MAPQ 0 to MAPQ 60 transition and the gnomAD coverage step.
+// `summaryScoreMode: 'min'`: a bigWig zoom bin carries min/avg/max, and `avg`
+// over a bin that is mostly absent averages the few present positions, so the
+// lane comes out a solid wall near 1 across a region where almost nothing maps.
+// `min` is the worst position in the bin. In the read view (WIDE_LOC,
+// qc/smn_read_placement) the lane sits on the floor across the low-mappability
+// block and steps to 1 at its edge, at the same coordinate as the MAPQ 0 to
+// MAPQ 60 transition and the gnomAD coverage step. At the 2.5 Mb overview, about
+// a kilobase per pixel, `min` sits on the floor everywhere, so mappability_qc.md
+// has the reader read this lane in the read view.
 const mappabilityTrack = {
   trackId: 'hg38-umap100Quantitative',
   type: 'LinearWiggleDisplay',

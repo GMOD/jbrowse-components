@@ -301,7 +301,7 @@ Facts behind it, each measured rather than assumed:
   of where the cut sits; leaving it on gives PanSN a contig no linear view can
   open, and dropping it silently puts every extracted subgraph at the origin.
 - **The offline walk matches the in-app one on purpose**, so an indexed cut and
-  a file cut of the same window agree. Verified: at the `local_subgraph` window
+  a file cut of the same window agree. Verified: at chr:1,004,500-1,004,961
   all 36 intervals from `build_pggb_tabix.sh` match those `gfa_nodes_to_bed.py`
   derives from the `odgi extract` subgraph.
 
@@ -747,9 +747,9 @@ Sample+haplotype → GCA accession is `hprcSamples.json` in jb2hubs (haplotype 2
 of HG01433 is GCA_042027645.1). Measured on the hosted links index: HG01433.2
 is 42 of the donor link endpoints in the MHC class II window
 (chr6:32,500,000-32,560,000) against 9 for the next haplotype.
-`pangenome/hprc_haplotype_launch` and the `pangenome/hprc_browse` tour take the
-route on the HPRC page's own config, which declares all 464 haplotypes as
-chromosome-length assemblies aliased by their PanSN names.
+`pangenome/hprc_haplotype_launch` takes the route on the HPRC page's own
+config, which declares all 464 haplotypes as chromosome-length assemblies
+aliased by their PanSN names.
 
 What stays true: minigraph credits an allele to its FIRST contributor, so which
 haplotype a window offers is build order, and a backbone-to-backbone deletion
@@ -1100,11 +1100,11 @@ that plugin's repo, not this one.
   linear view's x): `hprc_abca7_repeat_units`, `hprc_abca7_disagreements`,
   `graph_kiv2_walk_rows`, `hprc_amylase_walk_rows`. On the hosted bundle
   already: `maf_hprc_pangenome` (still a separate graph view),
-  `genomes_hprc_loci` (the portal's rows changed), `hprc_mhc_anchored` (the
-  pre-move MHC window, no Highlight band), `hprc_haplotype_launch` (its menu
-  entry and box disagree). Several specs draw the test fixture where the
-  prose opens a portal launch: `hprc_whole_chromosome`,
-  `hprc_cluster_callset`, `hprc_graph_anatomy`.
+  `genomes_hprc_loci` (the portal's rows changed), `hprc_haplotype_launch` (its
+  menu entry and box disagree, and the published PNG predates the force layout
+  its spec draws). Several specs draw the test fixture where the prose opens a
+  portal launch: `hprc_whole_chromosome`, `hprc_cluster_callset`,
+  `hprc_graph_anatomy`.
 - **At ABCA7 every haplotype comes back as its walk plus a 0.2 kb piece**
   that walk rows draws as a `partial walk` row, in a named-sample cut and a
   cohort cut alike, on the hosted bundle and on 45f66d6. The measurement
@@ -1117,7 +1117,7 @@ that plugin's repo, not this one.
 - Smaller: the portal's bovine callset lacks `renderingMode: "phased"`;
   `ecoli_minigraph` has no hosted tier and `build_ecoli_pangenome_graph.sh`
   builds none; `pggb_bubble_tier`'s bubble labels overlap the backbone's length
-  labels; the ecoli, cactus, chrM, syri and host pages lead with a build.
+  labels; the ecoli, cactus, syri and host pages lead with a build.
 - **Colin's call: PangyPlot at v2 scale on chr1.** chr22 of v2.1 (3.12M nodes,
   1,131 walks) laid out in 32 minutes with gbz2layout's `perf` branch
   (`--balanced --updates-mult 100`, the init anchored on GRCh38; numbers in

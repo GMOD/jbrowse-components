@@ -8,9 +8,11 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-A per-transcript statistic goes into the GFF3 attribute column, and the gene
-track's color bins it, with a key listing each bin. We build that GFF3 from
-ENCODE quantifications, and the track configuration below reads it.
+Differential transcript usage tests whether a gene changes which of its isoforms
+it expresses between two conditions, here skeletal muscle and liver. We run the
+test with satuRn on ENCODE quantifications, write each transcript's statistic
+into the GFF3 attribute column, and color the gene track by it, with a key
+listing each bin.
 
 ## Prerequisites
 
@@ -52,12 +54,11 @@ with RSEM against GENCODE v29.
 
 ## Building the GFF3
 
-Four steps take the ENCODE quantifications to a GFF3 the gene glyph can paint.
-One [script](#reproduce-it-end-to-end) runs all four.
+The build takes the ENCODE quantifications to a colorable GFF3 in four steps,
+and one [script](#reproduce-it-end-to-end) runs all four.
 
-**Fetch the quantifications.** Eight RSEM per-transcript tables from ENCODE's
-ENTEx panel, skeletal muscle and liver, four donors each, quantified against
-GENCODE v29. The accessions are written into the script.
+**Fetch the quantifications.** The script downloads the eight RSEM tables listed
+above, with the accessions written into it.
 
 **Build the matrices.** One pass over those tables writes a count matrix and a
 TPM matrix: counts feed the model, TPM feeds the effect size.
@@ -99,15 +100,14 @@ se <- satuRn::testDTU(object = se, contrasts = L, sort = FALSE)
 res <- rowData(se)[["fitDTUResult_muscle_vs_liver"]]
 ```
 
-`res` carries the p-value, both FDRs and the model's estimates per transcript.
-The isoform fractions the color reads come from the TPM matrix rather than from
-this table.
+`res` holds the p-value, both FDRs and the model estimates per transcript. The
+script computes the isoform fractions for the color from the TPM matrix.
 
 **Write the statistics into GENCODE.** The annotation has to be the release the
 quantifications were made against. RSEM names each transcript with its version,
 `ENST00000356708.11`, and GENCODE raises that version whenever it revises the
 transcript, so joining these tables against a later release drops every
-transcript revised since without an error. ENCODE lists the release on each
+transcript revised since, with no error. ENCODE lists the release on each
 quantification's file page as its genome annotation, `V29` for all eight here.
 The script subsets the called genes out of the GENCODE v29 GFF3 and appends each
 transcript's numbers to its attribute column. The rows come out in coordinate
@@ -122,8 +122,8 @@ tabix -f -p gff dtu_muscle_vs_liver.gff3.gz
 
 ### The attribute column
 
-The track configuration reads its slots out of this column. A transcript row
-from the finished file looks like this, wrapped:
+The track configuration reads its values from this column. A transcript row from
+the finished file, wrapped:
 
 ```text
 chr10  HAVANA  transcript  7788129  7807815  .  +  .
@@ -133,10 +133,10 @@ chr10  HAVANA  transcript  7788129  7807815  .  +  .
   tpm_muscle=10.03;tpm_liver=28.88;dtu=liver;dif_called=-0.299
 ```
 
-The numbers sit on the transcript row and nothing below it; the exons, CDS and
-UTRs paint their transcript's value. The keys are lowercase because the GFF
-parser lowercases them, so a color field named `dIF` reads nothing and paints
-every transcript grey.
+The numbers sit on the transcript row alone, and the exons, CDS and UTRs take
+the transcript value. The keys are lowercase because the GFF parser lowercases
+them, so a color field named `dIF` reads nothing and paints every transcript
+grey.
 
 `dtu` is a flag with the values `muscle`, `liver` and `ns`, set by the same
 threshold the script reports on. `dif_called` is `dif` on the transcripts the
@@ -145,26 +145,27 @@ has no value to color and stays grey.
 
 ### The effect size and the FDR gate
 
-**Effect size from TPM, model fit on counts.** Isoform fraction is a molar
-quantity, and read counts scale with abundance times effective length, so a
-count-based fraction is biased toward long isoforms.
+The script computes the effect size from TPM and fits the model on counts.
+Isoform fraction is a molar quantity, and read counts scale with abundance times
+effective length, so a count-based fraction is biased toward long isoforms.
 
-**The gate is satuRn's regular FDR.** Its empirical FDR assumes most tests are
-null, which does not hold for this contrast: `locfdr` reports a misfit, and no
-transcript passes it. The script prints the minimum empirical FDR beside its
-count.
+The script gates on satuRn's regular FDR. satuRn's empirical FDR assumes most
+tests are null, and this contrast breaks that assumption: `locfdr` reports a
+misfit, and no transcript passes the empirical FDR. The script prints the
+minimum empirical FDR beside the regular-FDR count.
 
 ## Configuring the track
 
-`color` bins `dif_called` through a threshold scale: `domain` lists the cut
-points, `range` one color per interval between them, and `labels` what the key
-calls each interval, liver-preferred below zero and muscle-preferred above. A
-value on a cut takes the interval above it. The key lists every interval under
-its `title`, and a `(no value)` row for the uncalled transcripts. A UTR follows
-`color` unless `utrColor` is set. `labels.name` reads GENCODE's
-`transcript_name`, which also names the isoform under the cursor. `mouseover`
-resolves against the gene, so it summarizes the gene; an isoform's own numbers
-are in the details panel, one click away.
+`color` bins `dif_called` through a threshold scale. `domain` lists the cut
+points, `range` gives one color per interval between them, and `labels` gives
+the key's name for each interval, liver-preferred below zero and
+muscle-preferred above. A value on a cut takes the interval above it. The key
+lists every interval under the `title`, and a `(no value)` row for the uncalled
+transcripts. A UTR follows `color` unless `utrColor` is set.
+
+`labels.name` reads GENCODE's `transcript_name`, which also labels the isoform
+under the cursor. `mouseover` resolves against the gene and summarizes it;
+clicking an isoform opens its numbers in the details panel.
 
 ```json addtrack
 {
@@ -208,14 +209,13 @@ are in the details panel, one click away.
 }
 ```
 
-The track loads over the two coverage tracks at _ATP5F1C_. satuRn used no
-genomic coordinates, so the coverage lanes are an independent check on the
-color.
+Open the track over the two coverage tracks at _ATP5F1C_. satuRn used no genomic
+coordinates, so the coverage lanes are an independent check on the color.
 
-Each coverage lane scales to its own peak until they share an axis. **Score →
+Each coverage lane scales to its peak until the lanes share an axis. **Score →
 Autoscale with other tracks...** on one lane, with the other ticked, gives both
-one axis that follows the view, so the two tissues compare by height. A config
-names the same group on each track:
+one axis that follows the view, so the two tissues compare by height. In a
+config, each track names the same group:
 
 ```json addtrack
 {
@@ -237,7 +237,7 @@ names the same group on each track:
 
 ## Reproduce it end to end
 
-Every step above is wrapped in one script,
+One script wraps every step above,
 [`build_dtu_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dtu_demo.sh):
 
 ```bash
@@ -248,12 +248,12 @@ bash build_dtu_demo.sh dtu_build   # writes ./dtu_build/
 The script fetches the eight RSEM tables and the four coverage bigWigs from
 ENCODE, downloads the GENCODE v29 GFF3 those quantifications were made against,
 runs the satuRn fit, and writes `dtu_muscle_vs_liver.gff3.gz` with its `.tbi`
-index: the local build of the file the track configuration above loads from
-jbrowse.org. Point the adapter's `uri` at the local copy to open your own run
-instead. It needs [Prerequisites](#prerequisites) on your `PATH`.
+index, a local build of the file the track configuration above loads from
+jbrowse.org. Point the adapter's `uri` at the local copy to open your own run.
+The script needs [Prerequisites](#prerequisites) on your `PATH`.
 
-Along the way it prints the transcript and gene counts at each filtering step,
-and the minimum empirical FDR beside the regular-FDR count.
+Along the way the script prints the transcript and gene counts at each filtering
+step, and the minimum empirical FDR beside the regular-FDR count.
 
 ## See also
 

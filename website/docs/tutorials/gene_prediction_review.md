@@ -2,33 +2,28 @@
 title: Reviewing a gene prediction (Tiberius)
 sidebar_label: Gene prediction review
 description:
-  Sort the models a gene finder disagrees with an existing annotation about into
-  four kinds, and build a static review page that links each one back into
-  JBrowse
+  Compare gene predictions with an existing annotation, sort the disagreements
+  into four classes, and build a static review page that links each one back
+  into JBrowse
 guide_category: Tutorials
 tutorial_category: Genes & annotation
 ---
 
-A gene finder hands back tens of thousands of models and no way to tell which
-ones are wrong. Where an annotation already exists, comparing the two sorts the
-disagreements into four kinds, and only those need a person to look at them.
-Tiberius is the predictor here and GENCODE the reference, both hosted for hg38,
-and what comes out is a review portal linking each disagreement back into
-JBrowse.
+We compare Tiberius gene predictions on human chr22 with the GENCODE annotation,
+sort the models that disagree into four classes, and build a static review page
+with one card per model, each linking back into JBrowse. The pipeline is
+[cmdcolin/gene-review-portal](https://github.com/cmdcolin/gene-review-portal),
+and its README documents every option.
 
-Tiberius predicts from sequence alone, so the reference only checks the
-prediction. That also says where the method applies: re-annotating a genome
-whose species has an established annotation, or comparing a new predictor
-against one. A first annotation of a new assembly has nothing to disagree with,
-and there the RNA-seq evidence below is the sort key instead.
+The comparison needs an existing annotation, so it suits re-annotating a species
+that has one, or comparing a new predictor against it. For the first annotation
+of a new assembly, RNA-seq support across each predicted junction can order the
+models instead.
 
 ## Prerequisites
 
-- nothing to install to read along: the
-  [example portal](https://jbrowse.org/demos/tiberius_review/) is a link, and so
-  is every view inside it
-- to build one over your own genome: Node 23+, htslib for `tabix`, and the
-  JBrowse CLI
+- to build a portal over your own genome: Node 23+, pnpm, htslib for `tabix`,
+  and the JBrowse CLI
 
 ## Where the data comes from
 
@@ -43,30 +38,25 @@ against GENCODE 47 and the hg38 reference.
 - hg38 reference sequence:
   https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 
-## One model, to see what is at stake
+## A merged model
 
 Open the two annotations together at `chr22:49,987,402-50,067,759`. Tiberius
-draws one model, `g14001.t1`, across most of the window. GENCODE draws two genes
-under it, _IL17REL_ and _TTLL8_, with a gap between them. GENCODE's gene
-features carry `gene_name` but no `Name`, so the track labels them by accession:
+draws one model, `g14001.t1`, across most of the window, where GENCODE has two
+genes, _IL17REL_ and _TTLL8_, with a gap between them. The GENCODE gene features
+carry `gene_name` and no `Name`, so the track labels them by accession:
 _IL17REL_ is `ENSG00000188263` and _TTLL8_ is `ENSG00000138892`.
 
 <Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL (ENSG00000188263) and TTLL8 (ENSG00000138892), which GENCODE annotates as separate genes. MLC1 on the right gets a separate prediction." />
 
-The third gene on the right, _MLC1_, is the control sitting in the same frame:
-Tiberius gives it a model of its own, so whatever went wrong to the left is not
-a property of the locus.
-
-That is a merged model: the predictor ran two neighbouring genes together into
-one. An annotator fixes it by splitting the model in two, which is an edit, not
-a viewing decision. What the browser can do is find every locus that needs one.
+_MLC1_, on the right, gets a separate Tiberius model, so the merge is specific
+to the two genes on the left. An annotator would fix it by splitting the model
+in two.
 
 ## Sorting the models
 
 Tiberius predicts 559<!--m:tiberius-chr22-run.models-predicted.count--> models
-on chr22. Most of them share splice junctions with a GENCODE gene and need no
-attention; the rest disagree in one of four ways, and only those reach the
-portal.
+on chr22. The portal compares each with GENCODE and puts it in one of five
+classes, and every class except Agrees gets a card.
 
 | Class              | What it means                                                     | On chr22                                                   | What an annotator does   |
 | ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------ |
@@ -76,32 +66,17 @@ portal.
 | Novel locus        | predicted where the reference annotates nothing                   | 12<!--m:tiberius-chr22-classes.novel-locus.models-->       | assess, then create      |
 | Novel coding       | predicted coding where the reference has only non-coding features | 119<!--m:tiberius-chr22-classes.novel-coding.models-->     | assess coding potential  |
 
-A junction is shared with a gene when it is an intron of one of that gene's
-transcripts. Reading the gene's exons as one list instead is cheaper and wrong:
-it manufactures junctions no transcript has. The first version of this
-comparison did exactly that. Against RANBP1's 13 isoforms it matched none of
-Tiberius's five correct junctions, and 18 of the 21 structure conflicts it
-reported were that arithmetic rather than the prediction. Every number on this
-page comes out of the run, for the same reason: the paragraph you are reading
-would otherwise still say 21.
-
-Two rules keep merged models down to one entry. The comparison runs at exon
-level against genes on the same strand, and a fusion counts only when the genes
-it joins do not overlap each other.
-
-_PI4KA_ is the control for both. It spans 152 kb on the minus strand of chr22,
-and _SERPIND1_ sits inside one of its introns on the plus strand, so the two
-genes share every base of _PI4KA_'s span and not one exon. Tiberius predicts
-_PI4KA_ correctly, and the model stays off the list: overlapping genes are a
-fact about GENCODE rather than a mistake by the predictor. Reading exons rather
-than spans keeps _SERPIND1_ off the card. A readthrough gene such as
-`CHKB-CPT1B` is excluded for the same reason, being GENCODE's own fused model.
+A junction counts as shared when it is an intron of one of the gene's
+transcripts. The portal compares exons with genes on the same strand, and counts
+a merge only when the genes it joins do not overlap each other. _PI4KA_ is the
+control: it spans 152 kb on the minus strand, and _SERPIND1_ sits inside one of
+its introns on the plus strand. Tiberius predicts _PI4KA_ correctly, and the
+portal leaves it off the list. GENCODE readthrough genes such as `CHKB-CPT1B`
+overlap the genes they join, so the portal skips them too.
 
 ## Building the portal
 
-The pipeline is
-[cmdcolin/gene-review-portal](https://github.com/cmdcolin/gene-review-portal), a
-repository of its own:
+Clone the pipeline and install it:
 
 ```bash
 git clone https://github.com/cmdcolin/gene-review-portal
@@ -109,16 +84,13 @@ cd gene-review-portal
 pnpm install
 ```
 
-One command then reads the two annotations, classifies every model, captures a
+`make-portal.mjs` reads the two annotations, classifies every model, captures a
 JBrowse view at each candidate and writes the page:
 
 ```bash
-# --region keeps the scan to one chromosome, so the remote annotations are
-# fetched by tabix rather than downloaded whole
-# --with-app bundles JBrowse itself, so the output directory needs no network.
-# `jbrowse create` installs the latest RELEASE; --app-branch main bundles the
-# development build instead, for a portal showing unreleased work
-# --max caps how many candidates of each class are kept
+# --region: scan one chromosome, fetching the annotations with tabix
+# --max: candidates kept per class
+# --with-app: bundle JBrowse, so the output needs no network
 node bin/make-portal.mjs \
   --prediction https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz \
   --reference https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz \
@@ -127,78 +99,55 @@ node bin/make-portal.mjs \
   --with-app --out ./portal
 ```
 
-Everything it writes is a file: the page, a JBrowse config naming the data, one
-PNG per candidate, and with `--with-app` a copy of JBrowse. Copying the
-directory to a web server is the whole deployment.
+The output directory holds the page, a JBrowse config, one PNG per candidate
+and, with `--with-app`, a copy of JBrowse. Copy it to a web server to publish
+it.
 
-Adding `--rnaseq reads.bam` puts an alignment track under every model, in the
-captures and in the links both. That settles a novel locus that no reference
-gene supports: exons with reads across them are a candidate gene, and exons
-without them are a candidate false positive. Repeat the flag for more than one,
-and name each with `--rnaseq-name`. Two unlabelled tracks are "RNA-seq 1" and
-"RNA-seq 2", which does not identify the tissue.
-
-The example portal carries two, both from the
+`--rnaseq reads.bam` adds an alignment track under every model, in the captures
+and in the links; repeat it for more BAMs, and label each with `--rnaseq-name`.
+Reads across the exons of a novel locus support it as a gene. The
+[example portal](https://jbrowse.org/demos/tiberius_review/) carries two samples
+from the
 [Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/):
 Human Brain Reference and Universal Human Reference, a pool of ten cell lines.
-Two, because coverage splits both ways. The merged `IL17REL`/`TTLL8` model has
-1,770<!--m:tiberius-chr22-evidence.g14001-t1.rnaseq_1--> brain reads against
-228<!--m:tiberius-chr22-evidence.g14001-t1.rnaseq_2--> UHR, and `g13664.t1`,
-predicted coding over the lncRNA `FAM230I`, has
-188<!--m:tiberius-chr22-evidence.g13664-t1.rnaseq_2--> UHR against
-14<!--m:tiberius-chr22-evidence.g13664-t1.rnaseq_1--> brain. A model with reads
-in neither is the one worth doubting.
+The merged _IL17REL_/_TTLL8_ model has more reads in brain, and `g13664.t1`,
+predicted coding over the lncRNA `FAM230I`, has more in the cell-line pool.
 
-Tiberius has an evidence mode of its own, a Nextflow pipeline taking proteins,
-RNA-Seq and Iso-Seq, that folds evidence into the prediction. The released human
-annotation read here was made with default weights instead, so these tracks are
-evidence the reviewer judges the call against rather than an input the call was
-made from.
+Tiberius has an evidence mode, a Nextflow pipeline that folds proteins, RNA-Seq
+and Iso-Seq into the prediction. The released human annotation read here comes
+from a run with default weights, so the RNA-seq tracks are evidence a reviewer
+judges each model against. On a genome with no reference annotation, read
+support across each predicted junction orders the review queue in place of the
+four classes.
 
-On a genome with no reference annotation, that evidence is the only ranking
-left. Read support across each predicted junction orders the queue the way the
-four classes order it here, and a predictor that writes an annotation edit
-distance gives the same ordering without a browser: MAKER puts `_AED` on every
-mRNA, though Tiberius, AUGUSTUS, BRAKER and Helixer do not.
-
-## Reading it
+## The review page
 
 The [example portal](https://jbrowse.org/demos/tiberius_review/) covers chr22.
-Each card carries the class, the reference genes involved, the locus, and a
-picture of the two annotations at that locus. The filter chips narrow to one
-class, and the verdict buttons record what you decided.
+Each card shows the class, the reference genes, the locus and a capture of the
+two annotations. The filter chips narrow the list to one class, and the verdict
+buttons record what you decide. **Open in JBrowse** opens the same view live.
 
-**Open in JBrowse** on any card opens that same view live, at the same locus
-with the same tracks, so a card that needs more than a picture is one click from
-the real thing. Verdicts stay in your browser, and **Export decisions** writes
-them out as TSV to carry back to whatever produced the models.
+Verdicts stay in your browser, and **Export decisions** writes them out as TSV.
+Building with `--apollo <url>` adds a second link to every card that opens the
+same window in [Apollo](https://github.com/GMOD/Apollo3), the annotation editor,
+and an `apollo_url` column to the exported TSV.
 
-The triage ends there, because the fix does not belong in a viewer: splitting a
-merged model is an edit. Building with `--apollo <url>` gives every card a
-second link that opens the same window in
-[Apollo](https://github.com/GMOD/Apollo3), the annotation editor, and adds an
-`apollo_url` column to the exported TSV, so a triaged queue hands over as a
-spreadsheet of links.
+## Disagreements track
 
-## Which junction is the one in dispute
-
-A picture of a structure conflict is a plausible-looking model drawn over a
-stack of reference isoforms, and nothing in it marks where the two disagree. So
-the classifier writes down where it looked. Every capture and every live link
-carries a **Disagreements** track directly under the prediction, one short box
-per junction that differs, labelled with what moved:
+Every capture and live link has a **Disagreements** track under the prediction,
+with one box per junction that differs from the reference, labelled with what
+moved:
 
 ```text
 g13605.t1:donor-1048
 ```
 
-`g13605.t1` covers _CCDC116_ with two exons. Its acceptor is GENCODE's; its
-donor sits 1,048 bp away from any donor _CCDC116_ has. That is the sentence the
-box makes readable at a glance, and the card repeats it in words.
+`g13605.t1` covers _CCDC116_ with two exons. Its acceptor matches GENCODE, and
+its donor is 1,048 bp from any _CCDC116_ donor.
 
-The track reads `data/conflicts.bed`, which the portal writes alongside the
-captures. Plain BED6, so it opens in any browser and intersects with `bedtools`
-without going through the page at all:
+The track reads `data/conflicts.bed`, plain BED6, which also works with
+`bedtools`. The file also lists junction edits in models filed as Agrees, such
+as a model that shares four of its five junctions, which get no card.
 
 ```text
 chr22  21636314  21636431  g13605.t1:donor-1048     0  +
@@ -206,18 +155,9 @@ chr22  23977067  23977386  g13682.t1:acceptor+3025  0  -
 chr22  50012765  50018574  g14001.t1:split          0  -
 ```
 
-**The BED reaches further than the page does.** Cards exist only for the four
-flagged classes, so a model that shares four junctions out of five is filed as
-`agrees` and never gets one, while the fifth is still a real splice-site edit.
-On chr22 that is
-64<!--m:tiberius-chr22-run.agreeing-models-carrying-a-junction-edit.count-->
-models the page cannot show, among
-229<!--m:tiberius-chr22-run.records-in-conflicts-bed.count--> records in all.
-
 ## Checking the merge against the raw data
 
-The claim was that _IL17REL_ and _TTLL8_ are separate genes with a gap. Read it
-out of GENCODE:
+Query GENCODE for the two genes the Tiberius model merges:
 
 ```bash
 tabix https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz \
@@ -228,11 +168,8 @@ tabix https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaf
 ```
 
 `IL17REL` ends at 50,012,765 and `TTLL8` starts at 50,018,575, both on the minus
-strand:
-5,809<!--m:tiberius-chr22-run.widest-gap-inside-a-merged-model-bp.count--> bp
-apart, with the Tiberius model running straight through the gap. The same query
-at _PI4KA_ returns two genes on opposite strands, so that one stays off the
-list.
+strand, and the Tiberius model runs through the gap between them. The same query
+at _PI4KA_ returns two genes on opposite strands.
 
 ## See also
 

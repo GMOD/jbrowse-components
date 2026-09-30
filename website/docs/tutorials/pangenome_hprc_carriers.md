@@ -1,6 +1,6 @@
 ---
-title: 'Pangenome (HPRC): who carries each allele'
-sidebar_label: Pangenome (HPRC, who carries each allele)
+title: 'Pangenome (HPRC): allele carriers'
+sidebar_label: Pangenome (HPRC, allele carriers)
 description:
   Which of HPRC release 2's 464 haplotypes carry each allele, read from the
   release's callsets beside its graph, and checked against the multiple
@@ -10,20 +10,20 @@ tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
 ---
 
-A pangenome graph stores each allele once, credited to the first assembly that
-contributed it, so the graph alone cannot say who else carries it. The Human
-Pangenome Reference Consortium's release 2 publishes that answer beside its
-graph as a callset, one genotype per haplotype for all 464, and we open both
-from the consortium's page on genomes.jbrowse.org at the MHC class II locus. We:
+A pangenome graph stores each allele once and credits it to the first assembly
+that contributed it. The Human Pangenome Reference Consortium's release 2
+publishes who carries each allele beside its graph as a callset, one genotype
+per haplotype for all 464. We open the graph and the callset from the
+consortium's page on genomes.jbrowse.org at the MHC class II locus, and:
 
 - cluster the callset's haplotypes by the alleles they share
 - find who carries the _HLA-DRB5_ allele in the callset and the graph at once
-- read carriage at the graph's own granularity
-- check both against the multiple alignment they come from, and settle a 1q21.1
-  inversion the graph cannot
+- read carriage one record per bubble
+- check both against the multiple alignment they come from, and read an
+  inversion the graph flags at 1q21.1 off the haplotype alignments
 
-[Browsing the graph](/docs/tutorials/pangenome_hprc) traces that allele to the
-one haplotype the graph credits it to.
+[Browsing the graph](/docs/tutorials/pangenome_hprc) traces the _HLA-DRB5_
+allele to the haplotype the graph credits it to.
 
 :::caution Experimental
 
@@ -35,18 +35,17 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- the GraphGenomeView plugin, which the HPRC page's graph launches load; both
-  callsets are a URL any JBrowse reads with no plugin
+- the GraphGenomeView plugin, which the HPRC page's graph launches load; the
+  callsets load in any JBrowse
 - for [Reproduce it end to end](#reproduce-it-end-to-end):
   [minigraph](https://github.com/lh3/minigraph)
 
 ## Where the data comes from
 
-The data is [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
-JBrowse reads its callsets and its multiple alignment directly from S3, and
-reads the bubble projections from our host.
+[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), with bubble
+projections we host.
 
-- the decomposed variant callset, 464 haplotypes, read straight off S3:
+- the decomposed variant callset, 464 haplotypes:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz
 - the undecomposed, snarl-level carriage file, 462 haplotypes:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz
@@ -65,8 +64,7 @@ reads the bubble projections from our host.
 Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and
 press **variants** on the HLA / MHC row. JBrowse opens on the MHC class II
 window, `chr6:32,510,001-32,600,000`, with the release's decomposed callset as a
-matrix of haplotypes. To open the same 2.3 GB VCF in your own JBrowse, add this
-config:
+matrix of haplotypes. The same 2.3 GB VCF as a track:
 
 ```json addtrack
 {
@@ -88,16 +86,16 @@ config:
 ```
 
 `renderingMode: "phased"` splits each sample into its two haplotypes, one row
-each. The launch filters the fully decomposed VCF to the structural tier; open
-**Filter by... → Edit filters...** in the track menu to read it:
+each. The launch filters the VCF to the structural tier; open **Filter by... →
+Edit filters...** in the track menu to read the filter:
 
 ```text
 jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50
 ```
 
-`alleleLength` is the longest allele the record describes, over `end - start`
-since an insertion consumes no reference; `LV==0` keeps the top-level sites of
-vg's snarl tree, so a nested child does not paint twice.
+`alleleLength` is the length of the record's longest allele, which counts an
+insertion's inserted bases. `LV==0` keeps the top-level sites of vg's snarl
+tree, so each site paints once.
 
 Open the track menu again and take **Clustering → Cluster rows by genotype...**,
 then **Run clustering**: the rows reorder by genotype similarity with a
@@ -125,15 +123,15 @@ Cluster it, hide the bubbles and the allele inventory, pick **Layout →
 Force-directed layout**, and right-click the charcoal allele beside _HLA-DRB5_
 for **Highlight in hg38**.
 
-<Figure caption="One window, both products. The band is the HLA-DRB5 deletion site from the callset, over every haplotype clustered by genotype: grey where a haplotype matches the reference, blue where it carries the alt allele, red for another alt. Below, the force-directed graph, where an arrow runs from the band to the same deletion as the graph draws it, alleles in charcoal." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="The callset and the graph in one window. The band is the HLA-DRB5 deletion site from the callset, over every haplotype clustered by genotype: grey where a haplotype matches the reference, blue where it carries the alt allele, red for another alt. Below, the force-directed graph, where an arrow runs from the band to the same deletion as the graph draws it, alleles in charcoal." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
-## Carriage at the graph's own granularity
+## Snarl-level carriage
 
-vcfwave splits a snarl's alleles into smaller records, so a callset record need
-not line up with a bubble. Release 2 also publishes the undecomposed form, one
-record per **snarl**, as the `pgbi.vcf.gz` beside each build: read it to find
-who carries a given bubble, since its rows are the graph's own alleles. Add it
-to the same session:
+vcfwave splits a snarl's alleles into smaller records, so a callset record may
+cover part of a bubble. Release 2 also publishes the undecomposed form, one
+record per **snarl**, as the `pgbi.vcf.gz` beside each build. Its records are
+the graph's alleles, so it answers who carries a given bubble. Add it to the
+same session:
 
 ```json addtrack
 {
@@ -154,20 +152,19 @@ to the same session:
 }
 ```
 
-Its records are undecomposed, one per snarl, so size alone cuts the lane to the
-tier the graph's bubbles hold. Enter this from **Filter by... → Edit
-filters...**:
+With one record per snarl, size alone cuts the lane to the tier the graph's
+bubbles hold. Enter this from **Filter by... → Edit filters...**:
 
 ```text
 jexl:alleleLength(feature)>=50
 ```
 
-## The alignment underneath both {#the-alignment-underneath-both}
+## The alignment underneath both
 
-The graph and the callset both derive from the multiple alignment, and release
-2.1 publishes it too: `hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB, beside a `.tai`
-index written by [taffy](https://github.com/ComparativeGenomicsToolkit/taffy)
-that makes a locus one ranged read:
+The graph and the callset both derive from a multiple alignment, which release
+2.1 publishes as `hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB, beside a `.tai` index
+written by [taffy](https://github.com/ComparativeGenomicsToolkit/taffy) that
+makes a locus one ranged read:
 
 ```json addtrack
 {
@@ -182,27 +179,24 @@ that makes a locus one ranged read:
 }
 ```
 
-The `uri` shorthand resolves the sibling `.tai`. Release 2.0 publishes an
-earlier build of the alignment as a 5.9 GB TAF, read by `BgzipTaffyAdapter` with
-the same shorthand: a quarter of the bytes per locus, with more underalignment
-and unpatched centromeres.
+The `uri` shorthand resolves the sibling `.tai`.[^taf]
 
 Type the C4 window, `chr6:31,980,000-32,050,000`, and show three lanes over the
 graph track: the genes, the callset and this alignment. Clear the callset's
-filters from **Filter by... → Clear all filters**, since both clauses blank the
-lane here: the structural tier at C4 is nearly empty, and every record across
-_CYP21A1P_ and _TNXA_ nests under one top-level bubble. A row that drops out of
-the alignment belongs to a haplotype that does not carry that segment.
+filters from **Filter by... → Clear all filters**: the structural tier at C4 is
+nearly empty, and every record across _CYP21A1P_ and _TNXA_ nests under one
+top-level bubble, so both clauses blank the lane here. A white stretch in an
+alignment row is a segment that haplotype lacks.
 
 Order the rows with **Clustering → Cluster rows by genotype...** on the callset
-and **Clustering → Cluster rows by identity...** on the alignment (computed over
-the window in view, since HPRC's file ships no guide tree); **Reset row order**
-puts back the file's own order.
+and **Clustering → Cluster rows by identity...** on the alignment, which
+clusters over the window in view because HPRC's file ships no guide tree.
+**Reset row order** restores the order in the file.
 
-<Figure caption="C4 on one axis: the RefSeq genes, the callset's haplotypes clustered by genotype, a subtree of them as alignment rows clustered by identity, white where a haplotype has no aligned sequence, and the graph track drawing the window force-directed. The band marks the pseudogene pair between C4A and C4B, and the haplotypes with no sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="C4 with the RefSeq genes, the callset's haplotypes clustered by genotype, a subtree of them as alignment rows clustered by identity, and the graph track in the force-directed layout. The band marks the pseudogene pair between C4A and C4B, and the haplotypes with no sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
 
-The figure keeps thirty-two haplotype rows so each has the height for its name
-beside it; the track as configured above draws every haplotype.
+The figure keeps thirty-two alignment rows so each has room for its name; the
+track as configured above draws every haplotype.
 
 ## Inversions
 
@@ -214,13 +208,14 @@ orientation. Show the bubbles lane again, open **Edit filters**, and enter:
 jexl:feature.inversion
 ```
 
-Type `chr1:144,260,000-144,610,000`, the 1q21.1 locus. The lane's one flagged
-bubble cannot distinguish a polymorphic inversion from an inverted paralog in a
-segmental duplication, and the graph draws its breakpoints as two deletion arcs
-since its edges carry no orientation. The alignments settle it. The figure below
-slices a carrier and a non-carrier out of HPRC's all-vs-GRCh38 PAF, each with
-its CAT annotation ([Reproduce it end to end](#reproduce-it-end-to-end) builds
-it), and the hg38 row between them agrees with the non-carrier.
+Type `chr1:144,260,000-144,610,000`, the 1q21.1 locus, where the lane flags one
+bubble. The flag fits a polymorphic inversion and an inverted paralog in a
+segmental duplication equally, and the graph draws the breakpoints as two
+deletion arcs because its edges carry no orientation. The haplotype alignments
+tell the two apart. The figure below slices a carrier and a non-carrier out of
+HPRC's all-vs-GRCh38 PAF, each with its CAT annotation
+([Reproduce it end to end](#reproduce-it-end-to-end) builds it), and the hg38
+row between them agrees with the non-carrier.
 
 <Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. The pink ribbons are each haplotype's alignment to hg38, and a ribbon that crosses itself is an inversion. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. The boxed pair on each row is PPIAL4F and PPIAL4E, in opposite orders on the two haplotypes." src="/img/pangenome/hprc_inversion.png" />
 
@@ -232,9 +227,8 @@ bubbles lane in one command that runs on any rGFA; pointed at
 [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them records
 their provenance.
 
-We do not rebuild carriage here, since HPRC publishes it as
-[a file](#carriage-at-the-graphs-own-granularity). Rebuilding it takes a
-464-assembly download and a mapping run, one call per sample:
+HPRC publishes carriage as [a file](#snarl-level-carriage). Rebuilding it takes
+a 464-assembly download and a mapping run, one call per sample:
 
 <!-- from: scripts/build_minigraph_paths.sh -->
 
@@ -253,7 +247,7 @@ published all-vs-GRCh38 PAF:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_inversion_synteny.sh
-bash build_hprc_inversion_synteny.sh  # writes ./hprc_inversion_synteny_build/
+bash build_hprc_inversion_synteny.sh
 ```
 
 [`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
@@ -266,7 +260,6 @@ length and the CAT genes.
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/tutorials/pangenome_hprc_repeats)
-- [](/docs/tutorials/pangenome_chrm)
 - [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/multivariant_track)
@@ -283,3 +276,9 @@ length and the CAT genes.
   the bubbles this page reads.
 - [taffy](https://github.com/ComparativeGenomicsToolkit/taffy), which writes the
   `.tai` index that makes the alignment addressable by locus.
+
+[^taf]:
+    Release 2.0 publishes an earlier build of the alignment as a 5.9 GB TAF,
+    which `BgzipTaffyAdapter` reads with the same shorthand. The TAF reads a
+    quarter of the bytes per locus, and has more underalignment and unpatched
+    centromeres.

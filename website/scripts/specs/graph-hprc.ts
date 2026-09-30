@@ -33,8 +33,7 @@ import type {
 const HPRC_CONFIG = local('test_data/graphgenomeview/hprc.json')
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 
-// The off-reference allele the force half of pangenome/hprc_mhc_anchored
-// right-clicks, named rather than measured — see HOVERED_ALLELE. `node
+// The off-reference allele pangenome/hprc_mhc_layout_force right-clicks, named rather than measured — see HOVERED_ALLELE. `node
 // scripts/probe-graph-nodes.ts pangenome/hprc_mhc_layout_force` prints the
 // cut's ids with their lengths and ranks.
 //
@@ -281,138 +280,70 @@ const HG38_UNIPROT_DOMAINS_TRACK = {
 // columns. Same filter the hprc2 matrix figures use.
 const SV_FILTER = ['jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50']
 
-// The one node both halves circle, so the pair states its own correspondence
-// instead of asserting it in a caption (review: "IDEALLY this would even
-// circle things in the backbone view that match the force directed bandage
-// view"). Through release 2.0 this was the 12 kb reference node the allele
-// attaches across, the green one under the reference-position ramp, chosen
-// because it was also the interval `Highlight in hg38` writes; release 2.1
-// cuts that stretch into eleven segments, none of them a landmark, so the ring
-// moved onto the allele itself: the node the menu is open on, black because
-// it has no reference position, sitting under the band the menu left in the
-// linear view. The caption says which is which. ONE ring, not two (review:
-// "why are there three circles?"): the pair used to ring the allele's
-// reference node and the longest allele over it, drawn touching on the force
-// half, and the reader counted circles rather than reading them.
+// The one node the MHC figures ring: the allele itself, black under the
+// reference-position ramp because it has no reference position. Release 2.1
+// cuts the 12 kb it attaches across into eleven segments, none a landmark.
 const MHC_LANDMARK_NODES = [HPRC_ALLELE]
 
-// The layout trade, as one subgraph drawn twice — the halves of
-// pangenome/hprc_mhc_anchored. Both halves are the same window, the same tracks
-// and the same colors, differing only in layoutMode: the anchored one's
-// backbone draws under the linear view's own x, the force one does not and
-// shows the graph's shape instead.
-//
-// Each half is sized to its own content rather than to the taller of the two:
-// `+append` pads the shorter one, so the composite carries the difference as
-// background while each half stays a right-sized figure on its own live link.
-function mhcLayoutPartSpecs(): ScreenshotSpec[] {
-  const part = ({
-    name,
-    layoutMode,
-    viewportHeight,
-    // Only the force half sets one; the anchored half's height is its rank
-    // count.
-    paneHeight,
-    // The force half additionally carries the right-click route: the menu, the
-    // ring and the band the menu leaves behind.
-    nodeMenu,
-  }: {
-    name: string
-    layoutMode: 'auto' | 'force'
-    viewportHeight: number
-    paneHeight?: number
-    nodeMenu?: {
-      actions: ScreenshotAction[]
-      annotations: Annotation[]
-    }
-  }): ScreenshotSpec => ({
-    mode: 'url',
-    name,
-    ...(nodeMenu ? { actions: nodeMenu.actions } : {}),
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr6:32,500,000-32,560,000',
-          // No bubbles lane: at this window the class II bubble runs the whole
-          // width and the five small ones pack against the right edge, where
-          // their label lines are cut off. hprc_lpa_kiv2 carries the bubbles
-          // lane on a window where its labels fit.
-          tracks: [
-            hg38GeneLane(70),
-            graphTrack(SEGMENTS_TRACK, {
-              layoutMode,
-              colorScheme: 'reference-position',
-              showDeletionEdges: true,
-              // one subgraph in both halves, the window's
-              maxRegionBp: cutNear(60_000),
-              ...(paneHeight === undefined ? {} : { paneHeight }),
-            }),
-          ],
-        },
-      ],
-    }),
-    readySelector: GRAPH_DRAWN,
-    readyTimeout: 90000,
-    // half the composed width each
-    viewportWidth: 820,
-    viewportHeight,
-    hideTooltip: true,
-    // The node lengths the graph writes beside its longer nodes in both layouts
-    // are what tie a node on the left to the same node on the right, so the
-    // marks are the landmark ring and, on the force half, the right-click
-    // route's boxed menu item.
-    annotations: [
-      ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
-        type: 'circle',
-        anchor: { graphNode },
-        radius: 24,
-        strokeWidth: 3,
-      })),
-      ...(nodeMenu?.annotations ?? []),
-    ],
-  })
-  return [
-    part({
-      name: 'pangenome/hprc_mhc_layout_force',
-      layoutMode: 'force',
-      viewportHeight: 750,
-      // Below the 600 ceiling: the force drawing here is tall and narrow, a
-      // chain that turns down the pane and ends in a 9.4 kb loop, so it would
-      // take the whole ceiling. Lower, the drawing fits smaller and the node
-      // labels, drawn at a fixed size, stay the size they were.
-      paneHeight: 420,
-      // `Highlight in hg38` writes the node's reference interval into the
-      // linear view's own highlight list, where it stays — which is what lets
-      // one frame carry both the menu and its result: click the item, then
-      // right-click the same node again, so the menu stands over a band it
-      // already left behind.
-      nodeMenu: {
-        actions: [
-          // the auto-fit has to have finished before the anchor means anything
-          { type: 'delay', ms: 2000 },
-          { type: 'rightclick', anchor: { graphNode: HPRC_ALLELE } },
-          { type: 'waitForText', text: 'Highlight in hg38' },
-          { type: 'click', text: 'Highlight in hg38' },
-          { type: 'delay', ms: 1500 },
-          { type: 'rightclick', anchor: { graphNode: HPRC_ALLELE } },
-          { type: 'waitForText', text: 'Node details' },
-          { type: 'delay', ms: 500 },
-        ],
-        annotations: [
-          // the item that produced the band. Without it the frame holds a menu
-          // and a highlight with nothing joining them.
-          { type: 'box', anchor: { text: 'Highlight in hg38' } },
+// The MHC class II cut, force-directed, with the right-click route to
+// Highlight in hg38: the menu, the ring and the band the menu leaves behind.
+const mhcLayoutForceSpec: ScreenshotSpec = {
+  mode: 'url',
+  name: 'pangenome/hprc_mhc_layout_force',
+  // `Highlight in hg38` writes the node's reference interval into the linear
+  // view's own highlight list, where it stays, so one frame carries both the
+  // menu and its result: click the item, then right-click the same node again.
+  actions: [
+    // the auto-fit has to have finished before the anchor means anything
+    { type: 'delay', ms: 2000 },
+    { type: 'rightclick', anchor: { graphNode: HPRC_ALLELE } },
+    { type: 'waitForText', text: 'Highlight in hg38' },
+    { type: 'click', text: 'Highlight in hg38' },
+    { type: 'delay', ms: 1500 },
+    { type: 'rightclick', anchor: { graphNode: HPRC_ALLELE } },
+    { type: 'waitForText', text: 'Node details' },
+    { type: 'delay', ms: 500 },
+  ],
+  url: sessionSpec(HPRC_CONFIG, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: 'chr6:32,500,000-32,560,000',
+        // No bubbles lane: at this window the class II bubble runs the whole
+        // width and the five small ones pack against the right edge, where
+        // their label lines are cut off.
+        tracks: [
+          hg38GeneLane(70),
+          graphTrack(SEGMENTS_TRACK, {
+            layoutMode: 'force',
+            colorScheme: 'reference-position',
+            showDeletionEdges: true,
+            maxRegionBp: cutNear(60_000),
+            // The force drawing here is a tall narrow chain ending in a 9.4 kb
+            // loop, so it would take the whole 600 px ceiling; lower, it fits
+            // smaller and the fixed-size node labels stay the size they were.
+            paneHeight: 420,
+          }),
         ],
       },
-    }),
-    part({
-      name: 'pangenome/hprc_mhc_layout_anchored',
-      layoutMode: 'auto',
-      viewportHeight: 640,
-    }),
-  ]
+    ],
+  }),
+  readySelector: GRAPH_DRAWN,
+  readyTimeout: 90000,
+  viewportWidth: 820,
+  viewportHeight: 750,
+  hideTooltip: true,
+  annotations: [
+    ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
+      type: 'circle',
+      anchor: { graphNode },
+      radius: 24,
+      strokeWidth: 3,
+    })),
+    // the item that produced the band
+    { type: 'box', anchor: { text: 'Highlight in hg38' } },
+  ],
 }
 
 // ---------------------------------------------------------------------------
@@ -539,13 +470,12 @@ const launchedZoomOut = (clicks: number): ScreenshotAction[] =>
     { type: 'click' as const, selector: LAUNCHED_ZOOM_OUT },
     { type: 'waitForAppSettled' as const, timeout: 120000 },
   ]).flat()
-
-// What website/scripts/videos/pangenome.ts films on the human graph.
-export const hprcVideoFixtures = {
-  haplotype: HAPLOTYPE,
-  haplotypeNode: HPRC_ALLELE,
-  launchedZoomOutButton: LAUNCHED_ZOOM_OUT,
-}
+// The HLA / MHC launch as pangenome_hprc's reader has it by this step: at the
+// class II window it types, in the force layout it switched to at C4.
+const MHC_FORCE_LAUNCH = portalGraphLaunch({
+  loc: 'chr6:32,500,000-32,560,000',
+  layoutMode: 'force',
+})
 
 const HOSTED_HPRC_CONFIG = encodeURIComponent(
   'https://jbrowse.org/demos/hprc/config.json',
@@ -853,35 +783,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // pangenome/hprc_node_menu was here and is DELETED (reviewer: "may not need
-  // standalone figure combine with pangenome/hprc_mhc_anchored"). It was the
-  // same window, the same tracks and the same force drawing as that pair's left
-  // half, with a menu, one ring and the band the menu leaves behind on top —
-  // so those three things moved onto the half itself (see mhcLayoutPartSpecs)
-  // and the second capture of the MHC subgraph went away. The claim they carry
-  // is unchanged: `Highlight in hg38` on a 1.8 kb NA20809.2 allele writes the
-  // 12 kb of GRCh38 backbone it attaches across, which is HLA-DRB5,
-  // because an off-reference node is drawn over the reference it replaces and
-  // never over its own length.
-  ...mhcLayoutPartSpecs(),
-  {
-    mode: 'compose',
-    name: 'pangenome/hprc_mhc_anchored',
-    parts: [
-      'pangenome/hprc_mhc_layout_force',
-      'pangenome/hprc_mhc_layout_anchored',
-    ],
-    // LEFT AND RIGHT, not stacked. Review: "if this is a 'two part image'
-    // (refers to 'the same subgraph') may want to make it a split left+right
-    // image". It reads as a pair because the caption said "the same subgraph in
-    // the anchored layout" while the figure above it was a different locus
-    // (amylase, chr1) drawn force-directed — so the pair the prose promised did
-    // not exist and this figure was one half of it. Now both halves are the
-    // same subgraph, same window, same tracks, differing only in layoutMode, and
-    // side by side is the orientation for "two ways of drawing one thing":
-    // stacked, the second reads as the next step rather than as the alternative.
-    direction: 'horizontal',
-  },
+  mhcLayoutForceSpec,
   // The C4 cut with its parts named, above the page's end-to-end clip. Both
   // anchors come from `node scripts/probe-graph-nodes.ts
   // pangenome/hprc_graph_anatomy`: s352179+ is NA18948's 21 kb allele, the
@@ -1413,7 +1315,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/hprc_haplotype_launch',
-    url: portalGraphLaunch(),
+    url: MHC_FORCE_LAUNCH,
     readySelector: GRAPH_DRAWN,
     readyTimeout: 180000,
     viewportWidth: 1100,
@@ -1438,7 +1340,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        url: portalGraphLaunch(),
+        url: MHC_FORCE_LAUNCH,
         viewportHeight: 1330,
         actions: [
           { type: 'delay', ms: 2000 },

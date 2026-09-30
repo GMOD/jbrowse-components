@@ -8,150 +8,116 @@ guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
 
-A pangenome graph of nineteen mouse genomes shows where the strains differ from
-one another and by how much. This one is the GRCm39 reference plus eighteen
-inbred and wild-derived strains from the Mouse Genomes Project, aligned together
-with `minigraph`. Two things make it worth reading. The reference is itself one
-of the strains, which inverts the sign of the best-known variant in it. And
-nobody has published a locus list for this panel, so the loci have to come out
-of the graph.
+The mouse strain pangenome aligns eighteen inbred and wild-derived strains from
+the Mouse Genomes Project onto the GRCm39 reference with `minigraph`. GRCm39 is
+itself one of the strains, C57BL/6J, which inverts the sign of the best-known
+variant in the panel. No locus list has been published for these strains, so we
+rank the graph for its most variable loci and open the densest bubble. We:
 
-The graph is hosted at
-[staging.genomes.jbrowse.org/pangenomes/mouse](https://staging.genomes.jbrowse.org/pangenomes/mouse)
-(staging, until the graph plugin's JBrowse 5 host ships), and every step below
-starts from that page.
+- at _Nnt_, read a C57BL/6J deletion as sequence the other strains carry
+- rank the bubbles in the graph and open the densest one that fits in a window,
+  at _Dock2_
+- check the bubble against the hosted index
+
+Every step starts from the mouse graph page on
+[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/pangenomes/mouse),
+where it stays until a JBrowse 5 host for the graph plugin ships.
 
 :::caution Experimental
 
-The graph view is a beta plugin, and this tutorial covers experimental ideas.
-Where a step below says the view works a particular way today, the step
-describes a current limit of the view. We welcome your [feedback](/contact).
+The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 :::
 
 ## Prerequisites
 
-- htslib (`tabix`), to query the hosted indexes from the command line
+- htslib (`tabix`), to query the hosted index
+- [`minigraph`](https://github.com/lh3/minigraph), to build a graph like this
+  one
 
 ## Where the data comes from
 
-Each chromosome comes from one `minigraph` call over the reference followed by
-the strains. The reference goes first, which gives it rank 0.
+The reference is UCSC's mm39 and the strains are the Mouse Genomes Project
+assemblies as UCSC GenArk rehosts them. We host the graph, projected into the
+files below.
 
-<!-- from: scripts/build_mouse_pangenome.sh -->
-
-```bash
-# -xggs is the incremental-graph-construction preset, adding each genome onto
-# the growing graph in turn; -c adds base-level alignment, which minigraph
-# recommends for graph generation
-minigraph -cxggs -t "$THREADS" $(tr '\n' ' ' < "chrom/$c/order.txt")
-```
-
-The projections are hosted beside the graph:
-
-- the segment and link index:
-  https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz and
+- mm39 (GRCm39):
+  https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
+- the eighteen strains, one GenArk folder per GenBank accession:
+  https://hgdownload.soe.ucsc.edu/hubs/GCA/
+- segments:
+  https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz
+- links:
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.links.bed.gz
-- the bubble index:
+- bubbles:
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz
 - the allele inventory:
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz
-- the coarse tier:
+- the coarse tier, a prefix naming a `.segs.bed.gz` and a `.links.bed.gz`:
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000
 
-[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) describes
-what each of those files holds and how a graph produces them.
+[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) describes what
+each file holds.
 
-`minigraph` writes no path lines, so this graph records no carriage, meaning
-nothing in it records which strain carries a given allele, and `firstSeenIn` in
-the allele file is construction order. [](/docs/tutorials/pangenome_cattle) is
-the panel where path lines recover it.
+`minigraph` writes no path lines, so the graph records the assembly that first
+contributed each allele, and `firstSeenIn` in the allele file is that
+construction order. Which strains carry an allele is not in the graph.
+[](/docs/tutorials/pangenome_cattle) is a panel whose path lines give carriage.
 
 ## Open a chromosome
 
-On the [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse), the
-**Graph** line opens a whole chromosome and the **Loci** table the graph's most
-variable loci. Click **chr13** on the **Graph** line. JBrowse opens GRCm39's
-chromosome 13 with the genes, a curve of segments per bubble and the bubble tier
-as lanes, and under them the graph track, cut from the same tier at one node per
-bubble. It moves with the view like the lanes above it, and zoomed in past the
-handover its adapter names, it cuts the segments.
+On the [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse),
+click **chr13** on the **Graph** line. JBrowse opens GRCm39 chromosome 13 with
+the genes, a curve of segments per bubble and the bubble tier as lanes. Under
+them is the graph track, cut from the same tier at one node per bubble; zoomed
+in past the handover its adapter names, it cuts the segments.
 
 ## Nnt: a deletion that appears as an insertion
 
-Start at _Nnt_. Type `chr13:119,440,000-119,600,000`, and the graph track cuts
-the segments there. Pick **Layout → Force-directed layout** from its track menu
-and tick **Mark bubbles**. Turn on the bubbles track in the track selector to
-read the window lane by lane, as the figure does.
+Type `chr13:119,440,000-119,600,000`, and the graph track cuts the segments
+there. Pick **Layout → Force-directed layout** from its track menu and tick
+**Mark bubbles**. Turn on the bubbles track in the track selector.
 
-C57BL/6J carries a well-known multi-exon deletion at _Nnt_ that abolishes the
-protein and makes B6J mice glucose intolerant. **GRCm39 is C57BL/6J**, so the
-backbone of this graph is the strain with the deletion. The graph therefore
-shows the deletion as sequence that the _other_ strains carry and the reference
-lacks, the opposite sign from every description of it.
+C57BL/6J carries a multi-exon deletion at _Nnt_ that abolishes the protein and
+makes B6J mice glucose intolerant. **GRCm39 is C57BL/6J**, so the backbone of
+this graph is the strain with the deletion. The graph shows the deletion as
+sequence that the _other_ strains carry and the reference lacks, the opposite
+sign from the published descriptions.
 
 <Figure caption="The Nnt window with the RefSeq genes and the bubbles lane above the force-directed graph track. The loop hanging off the backbone beside Nnt is haloed and labelled as an insertion, because the reference is the strain that lacks the sequence." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
 ## Finding the loci
 
-_Nnt_ is a locus someone had already written about. The rest of this panel has
-no published literature to read, so the loci have to come from the graph. The
-coarse tier records how many segments each bubble holds. Ranking the tier by
-that count reports where the graph varies most, and intersecting the result with
+The coarse tier records how many segments each bubble holds. Ranking the tier by
+that count finds where the graph varies most, and intersecting the result with
 the reference annotation names the loci.
-
-The portal page's **Loci** table is that ranking. It recovers the vomeronasal
-receptor and Speer families and the immunoglobulin heavy chain locus without a
-curated list, and the rows above _Dock2_'s are bubbles hundreds of kilobases to
-megabases wide. _Dock2_'s row is the densest bubble that still fits in one cut,
-inside one intron at `chr11:34,516,044-34,560,497`. Click its **graph** link.
-The window opens with the genes, the bubbles and the allele inventory as lanes,
-and the graph track under them. Pick **Layout → Force-directed layout** from its
-track menu and tick **Mark bubbles**:
-
-<Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane shows only intron, the bubbles lane is a single row, the allele inventory draws each alternative path at its real size, and the graph carries one label naming the whole cut as a superbubble, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and every charcoal stretch is sequence it lacks, so each loop is a place where other strains depart from the reference." src="/img/pangenome/mouse_dock2.png" />
-
-Because the ranking reads the graph, the method repeats on a panel nobody has
-written about yet.
 [`generatePangenomeLoci.ts`](https://github.com/GMOD/jb2hubs/blob/main/website/generatePangenomeLoci.ts)
-in the genomes.jbrowse.org repo computes it.
+in the genomes.jbrowse.org repo computes the ranking.
 
-## One bubble, one label
+The **Loci** table on the portal page is that ranking. It recovers the
+vomeronasal receptor and Speer families and the immunoglobulin heavy chain
+locus, and the rows above the _Dock2_ row are bubbles hundreds of kilobases to
+megabases wide. The _Dock2_ row is the densest bubble that fits in one cut,
+inside one intron at `chr11:34,516,044-34,560,497`. Click its **graph** link,
+then pick **Layout → Force-directed layout** from the graph track menu and tick
+**Mark bubbles**:
 
-A bubble index has one row per bubble, and each row reports where the graph
-varies and how much. No index row describes the inside of a bubble, so draw the
-bubble as a force-directed graph and open it to see its contents.
+<Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one cut. The bubbles lane is a single row, the allele inventory draws each alternative path at its size, and the graph carries one superbubble label, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and each charcoal loop is sequence other strains carry and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
-The index lists the _Dock2_ window as a single bubble, so the whole cut the
-**graph** link made is that bubble. One label names it in the index's terms, the
-superbubble the figure under [Finding the loci](#finding-the-loci) carries, with
-its segment count and the span of its routes. A bubble that fills the whole
-drawing gets the label and no halo, because a halo around everything would mark
-nothing.
+## Opening the bubble
 
-The graph pins Dock2 under the backbone, and no exon stretch appears anywhere in
-the cut. The gene track drawn on the graph and the gene lane above it both show
-that the cut is intron.
+The bubble index lists the whole _Dock2_ window as one **superbubble**, the name
+the index gives a bubble too large to type as an insertion or deletion. Its
+label gives a segment count and the span of its routes. A bubble that fills the
+whole drawing gets the label and no halo.
 
-A superbubble is the index's name for a bubble too big to type. The label gives
-a segment count and a route range and no kind, since the row's numbers describe
-the whole region at once.
-
-## Open it, and open what is inside
-
-Click the label. The track cuts out the bubble's segments and lays out only
-those. It then derives bubbles from the popped graph. A backbone node that no
-edge jumps over is a boundary, and whatever lies between two boundaries is a
-bubble. Each derived bubble gets a halo and a label, and one of them opens in
-turn.
+Click the label. The track lays out the segments of that bubble alone and
+derives the bubbles inside it: a backbone node that no edge jumps over is a
+boundary, and the stretch between two boundaries is a bubble. Each derived
+bubble gets a halo and a label that opens in turn, and each level has a button
+back to the level above.
 [Repeat lengths across HPRC haplotypes](/docs/tutorials/pangenome_hprc_repeats#the-lpa-kringle-repeat)
-opens one such level in the same track.
-
-Each level has a button that returns to the level above, so you climb back out
-in the order you descended. The track types the labels at each level the way the
-index types a bubble. The type comes from the reference interval a bubble
-replaces and from the shortest and longest route through it. The layering gives
-those values for any anchored graph.
+opens one such level at _LPA_.
 
 ## The control
 
@@ -162,33 +128,44 @@ a plain insertion, and none of its labels is a superbubble.
 
 ## Check it against the index
 
-The _Dock2_ halo is one row of the hosted bubble index:
+The _Dock2_ bubble is one row of the hosted bubble index:
 
 ```bash
 tabix https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz \
   'mm39#0#chr11:34516044-34560497'
 ```
 
-The label printed this same segment count and route span. No file holds the
-bubbles inside it. The track derives them from the popped graph's layering each
-time the level opens, and discards them when the level closes.
+The row gives the segment count and route span the label printed. The track
+derives the bubbles inside it each time the level opens, so they appear in no
+file.
 
 ## Build it yourself
 
-[](/docs/tutorials/pangenome_prepare_graph) turns a finished graph into the
-files above with one command, `build_pangenome_graph.sh`. The mouse panel needs
-its graph built first, since nobody has published one.
+To build a graph like this one, run `minigraph` once per chromosome over the
+sequence for that chromosome from each assembly, reference first so that it
+takes rank 0:
+
+<!-- from: scripts/build_mouse_pangenome.sh -->
+
+```bash
+# -xggs: incremental graph construction, adding each genome in turn
+# -c: base-level alignment, which minigraph recommends for graph generation
+minigraph -cxggs -t 8 mm39.chr13.fa strain1.chr13.fa strain2.chr13.fa > chr13.gfa
+```
+
+[](/docs/tutorials/pangenome_prepare_graph) then turns the graph into the files
+above with one command, `build_pangenome_graph.sh`.
 [`build_mouse_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_mouse_pangenome.sh)
-downloads the assemblies, extracts one sequence per chromosome renamed to PanSN,
-runs `minigraph` per chromosome and joins the chromosomes with their segment ids
-renumbered, which is most of a day of alignment, before projecting the files.
+runs the whole build: it downloads the assemblies, extracts each chromosome
+renamed to PanSN, runs `minigraph` per chromosome, and joins the chromosomes
+with their segment ids renumbered, which is most of a day of alignment.
 
 The script writes a `README.txt` beside the data recording the source, the
-modifications, the tool versions and the audits that ran. Copy the audits into
-your own build. The build stops unless the reference path reproduces the
-reference chromosome lengths, and stops on a duplicate segment id after
-renumbering. Without these audits, either failure produces a graph with wrong
-coordinates, and every downstream check passes on it.
+modifications, the tool versions and the audits that ran. The build stops if the
+reference path does not reproduce the reference chromosome lengths, or if
+renumbering leaves a duplicate segment id; either failure produces a graph with
+wrong coordinates that every later check accepts. Copy these audits into your
+own build.
 
 ## See also
 

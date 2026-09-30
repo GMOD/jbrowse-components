@@ -45,7 +45,7 @@ Ensembl Plants release 63 as
   the sorghum-anchored Compara homology table, same release:
   https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/
 
-## Oat's three subgenomes and their homoeologs
+## Oat subgenomes and homoeologs
 
 Oat (_Avena sativa_) is an allohexaploid: three diploid grasses hybridized and
 the result kept all three genomes. Its 21 chromosomes are seven homoeologous
@@ -55,8 +55,8 @@ a comparative dataset from one assembly, so `MCScanBlocksAdapter` puts one
 genome on both axes.
 
 The karyotype shows where the copies sit, and a segment moved between groups
-leaves the diagonal. dN/dS is a per-pair measurement of how hard selection held
-each pair together, so it becomes a colour.
+leaves the diagonal. dN/dS measures the selection pressure on each pair of
+copies, and the dotplot draws it as a colour.
 
 ## Producing the data
 
@@ -75,12 +75,11 @@ awk -F'\t' '$1 ~ /^[1-7][ACD]$/' oat.all.bed > oat.bed
 
 The `awk` keeps the 21 chromosomes and drops the unplaced contigs.
 
-The proteome is translated from the CDS rather than taken from Ensembl's protein
-FASTA, which is keyed on protein ids where everything else here is a transcript
-id. The [end-to-end script](#reproduce-it-end-to-end) has the loop.
+The [end-to-end script](#reproduce-it-end-to-end) translates the proteome from
+the CDS, keeping the transcript ids the BED uses.
 
-The assembly is a `ChromSizesAdapter` built from the GFF3's own
-`##sequence-region` header, which is all a gene-level view reads. See
+The assembly is a `ChromSizesAdapter` built from the chromosome lengths in the
+GFF3's `##sequence-region` header. See
 [assemblies from a chrom.sizes](/docs/tutorials/orthofinder_synteny#assemblies-from-a-chromsizes).
 
 ### Syntenic anchors from a self-alignment
@@ -98,7 +97,7 @@ python -m jcvi.compara.catalog ortholog --no_strip_names --dbtype prot \
   --align_soft diamond_blastp --self_remove 100 --no_dotplot oat oat
 ```
 
-Two flags carry the run:
+Two flags matter here:
 
 - `--self_remove` defaults to 98 and discards every hit at or above that percent
   identity. Oat's A-D homoeologs sit above it, so this run sets 100
@@ -112,8 +111,8 @@ picks the file up by name and skips its alignment step.
 
 Chaining keeps an anchor only where its neighbours agree, which removes the
 off-diagonal noise of gene families' best hits. A self-comparison also chains
-each subgenome's own tandem and segmental duplicates; a homoeolog pair has its
-ends on different subgenomes, so the script filters on the chromosome name.
+the tandem and segmental duplicates within each subgenome; a homoeolog pair has
+its ends on different subgenomes, so the script filters on the chromosome name.
 
 Take `oat.oat.anchors`, not `oat.oat.lifted.anchors`. Liftover recruits extra
 pairs near an established block, and here their median dS is several times that
@@ -121,8 +120,8 @@ of the chained ones.
 
 ### dN and dS on each anchor
 
-Ensembl declares `dn` and `ds` in every homology export and fills neither, in
-any division, so they are computed here:
+Ensembl declares `dn` and `ds` in every homology export and leaves both empty in
+every division, so the script computes them:
 
 <!-- from: scripts/build_oat_homoeologs.sh -->
 
@@ -178,7 +177,7 @@ hexaploid self-alignments over the same three homoeologous groups.
 
 <Figure caption="Left, the bread wheat self-alignment; right, the oat one. Both hexaploids over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1. Wheat's cross-group pairs are the two 4A translocations the callout marks; oat's segments leave their group throughout." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
 
-The wheat panel comes from Ensembl Compara's own homoeolog calls
+The wheat panel comes from the Ensembl Compara homoeolog calls
 ([`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py)),
 so the two sides also differ in how the pairs were called.
 
@@ -250,9 +249,9 @@ the count clearing the test is close to what chance gives. The
 [primate walkthrough](/docs/tutorials/selection_pressure) goes through that
 arithmetic on a locus small enough to check by eye.
 
-The karyotype claim is a count of anchors joining chromosomes from _different_
-homoeologous groups. Wheat's translocations involve 4A; oat's segments leave
-their group repeatedly.
+Anchors joining chromosomes from _different_ homoeologous groups show how the
+two karyotypes differ. In wheat they are the two 4A translocations, and in oat
+they come from segments that leave their group repeatedly.
 
 ## Reproduce it end to end
 

@@ -11,17 +11,13 @@ tutorial_category: genomes.jbrowse.org
 genomes.jbrowse.org already carries UCSC's pairwise liftOver alignments for
 every genome, so you can turn one on in a linear genome view and launch a
 two-panel linear synteny view from any chain block. JBrowse resolves the mate
-genome on demand, so the second assembly needs no setup.
-
-## Prerequisites
-
-- nothing to install: this is a click-path through a hosted site, and no data,
-  config or second assembly is prepared by hand
+genome on demand, so the second assembly needs no setup. We compare hg38 against
+T2T-CHM13 (hs1) at _TNNT3_, a locus the two lay out differently.
 
 ## Where the data comes from
 
-genomes.jbrowse.org's own hosted configs for the three genomes this page
-compares, each already carrying UCSC's pairwise liftOver chains to the others.
+genomes.jbrowse.org hosts a config per genome, each carrying UCSC's pairwise
+liftOver chains to the others.
 
 - hg38: https://jbrowse.org/ucsc/hg38/config.json
 - Human (hs1, T2T-CHM13): https://jbrowse.org/ucsc/hs1/config.json
@@ -31,13 +27,6 @@ compares, each already carrying UCSC's pairwise liftOver chains to the others.
   [Many genomes at once](#many-genomes-at-once):
   https://jbrowse.org/ucsc/hg38/config-staging.json
 
-## The hosted configs
-
-[genomes.jbrowse.org](https://genomes.jbrowse.org) hosts a config for every UCSC
-genome, each carrying UCSC's pairwise liftOver alignments to the others. This
-page compares hg38 against T2T-CHM13 (hs1) at _TNNT3_, a locus the two lay out
-differently.
-
 ## Opening a liftOver track
 
 Open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org), find **Pairwise
@@ -45,9 +34,9 @@ alignments** → **liftOver** in the track selector and turn on **hg38 to Human
 (hs1) liftOver**. Type `TNNT3` into the location box; the hosted config ships a
 name index.
 
-The hg38 config declares only hg38. A track referencing an assembly JBrowse does
-not know is resolved through the `Core-handleUnrecognizedAssembly` extension
-point, where the site's hub plugin supplies the mate genome's config.
+The hg38 config declares one assembly, hg38. When a track names an assembly
+JBrowse does not know, the site's hub plugin supplies the config for that genome
+through the `Core-handleUnrecognizedAssembly` extension point.
 
 In a plain linear genome view the liftOver track draws one feature per chain
 block, laid out in rows.
@@ -78,8 +67,8 @@ session's synteny datasets align to it. See
 
 ## Ribbon display settings
 
-Two settings live in the synteny view's settings menu, the sliders button in its
-header:
+The synteny view's settings menu, the sliders button in its header, holds two
+ribbon settings:
 
 - **Curved lines** draws each ribbon as a curve, easier to follow across a gap
 - **CIGAR indels** → **Transparent indels** leaves insertions and deletions
@@ -102,7 +91,7 @@ off-color ribbon.
 
 ## Trying other pairs
 
-The same click-path works for any track under **Pairwise alignments** →
+The click-path above works for any track under **Pairwise alignments** →
 **liftOver**, one per chain file UCSC publishes against the genome you are in. A
 close pair gives long collinear blocks, a distant one short scattered ones.
 
@@ -114,8 +103,8 @@ an intron of _FTO_.
 The figure's last step switches to curves and **Transparent indels**
 ([above](#ribbon-display-settings)), which turns the one gap into a hole lining
 up against the RepeatMasker track. The element under it is an L1HS, the youngest
-human LINE-1 subfamily, and the chimp panel has every other repeat in the window
-but not that one.
+human LINE-1 subfamily. The chimp panel lacks that one element and holds every
+other repeat in the window.
 
 The chimp panel's track selector offers **NCBI RefSeq - RefSeq All** and
 **RepeatMasker**, brought in with the panTro6 hub. The rest of that hub loads
@@ -132,11 +121,11 @@ alignment exists.
 A liftOver track pairs hg38 with one other genome. hg38's staging config adds
 one track over all of hg38's liftOver chains, **hg38 vs 240 genomes (liftOver,
 multi-way)**, which draws hg38 on top and a lane per genome below it, each lane
-with that genome's own gene models. The track is on
-[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org) only until
-JBrowse 5 ships, since no released JBrowse has the display it opens in.
+with the gene models annotated on that genome. The track is on
+[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org) until JBrowse
+5 ships, because the display it opens in is new in JBrowse 5.
 
-The way into the multi-way track starts from a gene. Open
+The route into the multi-way track starts from a gene page. Open
 [the TNNT3 gene page](https://staging.genomes.jbrowse.org/gene/?gene=TNNT3) and
 scroll to **Conserved gene order**, which draws the genes around _TNNT3_ in the
 80 species nearest human. **☰ Multi-way synteny lanes** at the top of that
@@ -146,16 +135,16 @@ species the track holds.
 <Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 gene page on staging.genomes.jbrowse.org at its Conserved gene order section, with the Multi-way synteny lanes link boxed." />
 
 26 of the 80 species get a lane, since the track holds only genomes UCSC
-publishes a liftOver chain to. Where a row's own assembly has no chain, its lane
-is the newest build of that species that does. **[rev]** after a lane's
-coordinates marks a genome drawn reversed so that it reads in hg38's
-orientation.
+publishes a liftOver chain to. Where the gene page's assembly for a species has
+no chain, its lane is the newest build of that species that does. **[rev]**
+after a lane's coordinates marks a genome drawn reversed so that it reads in
+hg38's orientation.
 
 <Figure src="/img/genomes_synteny/star_lanes.png" caption="The view the link opens: hg38 at TNNT3 over 26 genomes. In every lane that names them, the genes around TNNT3 read in hg38's order, SYT8 to MRPL23; the platypus lane spreads over ten sequences and names none of them." />
 
 Each lane reads the same chain file as that genome's pairwise liftOver track, so
 the one view holds what 26 synteny views would. The ribbons between two lanes
-below hg38 pass through hg38, since each chain aligns its genome to hg38 alone.
+below hg38 pass through hg38, since each chain aligns one genome to hg38.
 [Reading the stack](/docs/tutorials/hg38_vertebrates_synteny#reading-the-stack)
 covers the lane labels, the ribbons and the lane menus.
 

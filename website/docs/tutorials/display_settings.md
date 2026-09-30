@@ -7,33 +7,34 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-Every setting in a track menu has a name, and JBrowse will tell you what it is.
-Change the setting by clicking, read the session JSON back, and the same key
-works in a shareable link, in a saved session file, and in `config.json`. We
-change three settings on one CRAM track and follow them into each of those.
+Every setting in a track menu has a name you can type into a config. We change
+three settings on one CRAM track by clicking, read their names back out of the
+session JSON, and use those names in a shareable link, a saved session file and
+`config.json`.
 
 ## Prerequisites
 
 - [JBrowse Web](/docs/quickstart_web) or
-  [JBrowse Desktop](/docs/quickstart_desktop). Both are covered at each step.
-- Nothing to download. The volvox demo data is hosted.
+  [JBrowse Desktop](/docs/quickstart_desktop). The steps follow JBrowse Web, and
+  a collapsed **In JBrowse Desktop** note covers each step that differs.
 
 ## Open the reads track
 
 Volvox is the small demo dataset the JBrowse test builds ship, and
-`volvox-sv (cram)` is its structural-variant CRAM.
-
-In **JBrowse Web**, open
+`volvox-sv (cram)` is its structural-variant CRAM. Open
 [volvox at ctgA:1-10,000](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-10000&tracks=volvox_sv_cram).
+The track opens as a pileup of short reads at the default height, in the default
+gray.
 
-In **JBrowse Desktop**, choose **File → Session → Open JBrowse Web link...** and
-paste that same URL, or **File → Session → Open config.json or .jbrowse
-file...** and give it
+<details>
+<summary>In JBrowse Desktop</summary>
+
+Choose **File → Session → Open JBrowse Web link...** and paste the link above,
+or **File → Session → Open config.json or .jbrowse file...** and give it
 `https://jbrowse.org/code/jb2/main/test_data/volvox/config.json`. Desktop leaves
 a config you open unchanged and saves your edits to a separate session file.
 
-In either app the track opens as a pileup of short reads at the default height,
-in the default gray.
+</details>
 
 ## Change three settings
 
@@ -50,19 +51,15 @@ of paired rows fits.
 
 <Figure caption="The volvox-sv (cram) track at ctgA:1-10,000 as a 250px-tall pileup, reads viewed as pairs and colored by insert size and orientation. The colored cluster at the left flags a structural variant." src="/img/display_settings_url_snapshot.png" />
 
-## Ask JBrowse what you just set
+## Read the setting names back
 
-Two menu clicks and a drag changed three settings, and each one has a name you
-can type into a config.
-
-Click **Share** in **JBrowse Web** and tick the **Show readable JSON** box below
-the link.
+Click **Share** and tick the **Show readable JSON** box below the link.
 
 <Video src="/media/config/settings_to_json.mp4" caption="Two settings chosen from the volvox-sv (cram) track menu, then the share dialog with Show readable JSON ticked to display the session." />
 
-The session JSON in that box lists the three settings under `trackConfigDeltas`,
-keyed by the id of the track you edited, because JBrowse Web saves an edit to a
-configured track as only the settings that changed:
+JBrowse Web saves an edit to a configured track as the settings that changed, so
+the session JSON lists the three settings under `trackConfigDeltas`, keyed by
+the id of the track you edited:
 
 ```json
 "trackConfigDeltas": {
@@ -79,23 +76,22 @@ configured track as only the settings that changed:
 }
 ```
 
-In **JBrowse Desktop**, choose **File → Session → Save session as...**, save a
-`volvox.jbrowse` file, and open it in a text editor. A `.jbrowse` file is a
-whole config with the session under `defaultSession`, and Desktop writes a track
-edit into that config, so the same three keys appear in the `volvox_sv_cram`
-entry of the file's `tracks` array.
+<details>
+<summary>In JBrowse Desktop</summary>
 
-`height`, `linkedReads` and `color` are the setting names in both apps, and
-every route below spells them the same way.
+Choose **File → Session → Save session as...**, save a `volvox.jbrowse` file,
+and open it in a text editor. A `.jbrowse` file is a whole config with the
+session under `defaultSession`. Desktop writes a track edit into that config, so
+the three keys appear in the `volvox_sv_cram` entry of the file's `tracks`
+array. Desktop autosaves the open session to the file about a second after each
+edit, and reopening the file restores every setting.
 
-Desktop autosaves the open session to `volvox.jbrowse` about a second after each
-edit, so a setting you change now shows up when you reread the file, and
-reopening the file restores every setting.
+</details>
 
-The [config schema docs](/docs/config_guide) list the same names per display
-(e.g. [](/docs/config/linearalignmentsdisplay),
-[](/docs/config/linearwiggledisplay)) with what each one accepts, which is where
-to go for a setting you have not clicked yet.
+`height`, `linkedReads` and `color` are the setting names in both apps. The
+[config schema docs](/docs/config_guide) list the names each display takes (e.g.
+[](/docs/config/linearalignmentsdisplay), [](/docs/config/linearwiggledisplay))
+and the values each accepts.
 
 ## Put the settings in displayDefaults
 
@@ -109,11 +105,7 @@ track's `displayDefaults` apply every time the track loads, and in a served
   "trackId": "volvox_sv_cram",
   "name": "volvox-sv (cram)",
   "assemblyNames": ["volvox"],
-  "adapter": {
-    "type": "CramAdapter",
-    "cramLocation": { "uri": "volvox-sv.cram" },
-    "craiLocation": { "uri": "volvox-sv.cram.crai" }
-  },
+  "adapter": { "type": "CramAdapter", "uri": "volvox-sv.cram" },
   "displayDefaults": {
     "height": 250,
     "linkedReads": "normal",
@@ -122,21 +114,17 @@ track's `displayDefaults` apply every time the track loads, and in a served
 }
 ```
 
-JBrowse routes each key in `displayDefaults` to the display that uses it. Spell
-out the full `displays` array when you are _selecting_ a non-default display
-type (`LinearMultiSampleVariantDisplay`, `LDTrackDisplay`, and so on); see
-[configuring tracks](/docs/config_guides/tracks) for both forms.
+The track then opens paired and colored. To select a non-default display type
+(`LinearMultiSampleVariantDisplay`, `LDTrackDisplay`), write a `displays` array;
+[configuring tracks](/docs/config_guides/tracks) covers both forms.
 
-The track then opens paired and colored, with no clicking.
+## When config and session disagree
 
-## Precedence when config and session disagree
-
-A session can set a key that a track's `displayDefaults` also sets. The volvox
-config ships a gene track, `gff3tabix_genes_shorthand_jexl`, whose
-`displayDefaults` set two keys: `color`, a jexl expression that draws
-plus-strand features blue and minus-strand ones red, and `labels`, which names
-each feature with its type in brackets. This session sets `color` on that track
-and nothing else:
+A session value overrides a track's `displayDefaults` one key at a time. The
+volvox config ships a gene track, `gff3tabix_genes_shorthand_jexl`, whose
+`displayDefaults` set `color`, a jexl expression that draws plus-strand features
+blue and minus-strand ones red, and `labels`, which names each feature with its
+type in brackets. This session sets `color` on that track and nothing else:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -156,19 +144,10 @@ and nothing else:
 }
 ```
 
-The features draw grey, and their labels still read `seg04 [match]`. A session
-value overrides `displayDefaults` one key at a time: the session's `color`
-replaces the config's, and `labels`, which the session does not set, still comes
-from `displayDefaults`. The alignments track above follows the same rule, so a
-session that sets `height: 100` on it draws the track 100px tall and keeps the
-paired coloring from its config.
-
-Each entry in a view's `tracks` array is either a plain `trackId` string or an
-object with `trackId` plus settings written alongside it, as above. The settings
-can equivalently be nested under an explicit `displaySnapshot` key
-(`{ "trackId": "...", "displaySnapshot": { "height": 100 } }`); the inline form
-is shorthand for it. Use the explicit form when you also need `trackSnapshot`
-for track-config fields.
+The session's `color` replaces the config's, so the features draw grey, and
+their labels still read `seg04 [match]` from `displayDefaults`.[^snapshot] The
+alignments track above follows the same rule: a session that sets `height: 100`
+on it draws the track 100px tall and keeps the paired coloring from its config.
 
 ## Where each route keeps the value
 
@@ -178,13 +157,17 @@ for track-config fields.
 | **Save session as...** (Desktop)   | the `.jbrowse` file | whoever opens that file |
 | `displayDefaults` in `config.json` | the config file     | everyone, every session |
 
-`?session=` URLs are a JBrowse Web feature, since Desktop has no session-URL
-server; Desktop's nearest equivalent is **File → Session → Export session to
-web...**, which uploads the session and gives you a web link with the settings
-encoded in it.
-
 [URL parameters](/docs/urlparams) has the full session-spec format, including
 `trackSnapshot` and multi-view specs.
+
+<details>
+<summary>In JBrowse Desktop</summary>
+
+Desktop has no address bar to paste a `?session=` URL into. **File → Session →
+Export session to web...** uploads the session and gives you a JBrowse Web link
+with the settings encoded in it.
+
+</details>
 
 ## In an embedded component
 
@@ -214,3 +197,10 @@ for the surrounding setup.
 - [](/docs/tutorials/cli_desktop)
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/config_guide)
+
+[^snapshot]:
+    Each entry in a view's `tracks` array is a plain `trackId` string or an
+    object with `trackId` and settings written beside it. The inline settings
+    are shorthand for a `displaySnapshot` key
+    (`{ "trackId": "...", "displaySnapshot": { "height": 100 } }`); write the
+    explicit form when you also need `trackSnapshot` for track-config fields.

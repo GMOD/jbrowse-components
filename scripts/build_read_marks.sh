@@ -95,6 +95,17 @@ if [ -n "$GENOME" ]; then
   READS_URI=$(basename "$READS")
 else
   jb add-assembly "$UCSC/hg38.2bit" --name hg38 --type twoBit --force --out "$APP"
+  # The CLI has no cytoband flag. The bands draw the ideogram in the view's
+  # overview, which places the centromere on the chromosome-wide scan.
+  node -e '
+    const fs = require("fs")
+    const [file, uri] = process.argv.slice(1)
+    const config = JSON.parse(fs.readFileSync(file, "utf8"))
+    config.assemblies.find(a => a.name === "hg38").cytobands = {
+      adapter: { type: "CytobandAdapter", uri },
+    }
+    fs.writeFileSync(file, JSON.stringify(config, null, 2))
+  ' "$APP/config.json" https://jbrowse.org/genomes/GRCh38/cytoBand.txt
   READS_URI="$READS"
 fi
 cp -f "$PAIRS" "$PAIRS.tbi" "$APP"/

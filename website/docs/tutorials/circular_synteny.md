@@ -13,13 +13,12 @@ tutorial_subcategory: Whole-genome alignments
 ---
 
 We lay the human and mouse chromosomes around one circle and draw UCSC's
-hg38-to-mm39 liftOver chain as a ribbon between the stretch each row covers in
-each genome, so where the autosomes have been shuffled and where the X has not
-is one picture. The chain comes straight from the indexed copy jbrowse.org
-keeps, the circle orders the mouse arc to follow the human one as it opens, a
-gene density ring per genome sits inside the ideogram, and the page ends by
-reading one ribbon and one ring value back out of the PIF and bigWig they came
-from. The circle is a circular genome view opened on two assemblies at once.
+hg38-to-mm39 liftOver chain as ribbons between them, so one picture shows where
+the autosomes have been shuffled and where the X has not. The circle is a
+circular genome view opened on both assemblies at once. It reads the chain from
+the indexed copy on jbrowse.org and orders the mouse arc to follow the human
+one. We add a gene density ring per genome, then read one ribbon and one ring
+value back out of the PIF and bigWig they came from.
 
 ## Prerequisites
 
@@ -58,14 +57,12 @@ without the build.
 
 ## Two genomes on one circle
 
-A whole-genome alignment between two species is usually read as a dotplot or as
-lanes under one locus. The Circos-style picture asks a different question: for
-each chromosome of one genome, which chromosomes of the other carry its
-sequence, and how much of each. Human and mouse are the textbook case. The
-autosomes have been cut and rejoined many times since the two lineages split,
-and the X chromosome has not, so a human autosome should fan out across several
-mouse chromosomes while the two X chromosomes hold one bundle between them. That
-expectation is the control the figures are read against.
+A Circos-style circle shows, for each chromosome of one genome, which
+chromosomes of the other carry its sequence and how much of each. In human and
+mouse the autosomes have been cut and rejoined many times since the lineages
+split, and the X chromosome has not, so a human autosome should fan out across
+several mouse chromosomes while the two X chromosomes hold one bundle between
+them. That expectation is the control the figures are read against.
 
 ## The chain as an indexed alignment
 
@@ -92,10 +89,9 @@ query is the genome it lifts to, so for hg38ToMm39 that is mouse:
 ```
 
 A liftOver chain set holds a few hundred chains that cover the genome and tens
-of thousands of short ones, most of them repeats and gene copies. The circle's
-**Min length** setting keeps those off the figure: the sessions below set
-`minAlignmentLength` to 100 kb, and the same control sits in the view's menu, so
-the cut can be moved without touching a file.
+of thousands of short ones, most of them repeats and gene copies. **Min length**
+in the view's menu keeps the short ones off the figure, and the sessions below
+set it to 100 kb with `minAlignmentLength`.
 
 ## The circle
 
@@ -103,9 +99,9 @@ The circular view's `assembly` takes a list, and each assembly lays its
 chromosomes out in turn: hg38 takes the first arc of the circle and mm39 the
 next, and a ribbon crosses between them. `displayedRegionNames` is resolved
 against each assembly separately, so one list of chromosome names keeps both
-genomes' unplaced contigs off the circle. The circle reorders the mouse arc as
-it opens, which the next section explains. The import form's Quick start opens
-the same circle from the chain track; as a session it is:
+genomes' unplaced contigs off the circle. The view reorders the mouse arc when
+it opens ([next section](#ordering-the-second-genome)). The import form's Quick
+start opens the same circle from the chain track; as a session it is:
 
 ```json session config=https://jbrowse.org/demos/circular_synteny/config.json
 {
@@ -152,10 +148,9 @@ mouse chromosomes follow, and the view's title bar names the two in that order.
 Each ribbon takes the ideogram colour of the human chromosome it leaves, so a
 human chromosome's pieces can be followed to every mouse chromosome that carries
 one, and a reverse alignment reads as a twist between its two ends. A row
-narrower than a pixel draws at the share of the pixel it covers, as the
-[linear synteny view](/docs/user_guides/linear_synteny_view) draws it, so the
-large blocks carry the picture and the short rows the filter lets through stay
-faint.
+narrower than a pixel draws at the share of the pixel it covers, as in the
+[linear synteny view](/docs/user_guides/linear_synteny_view), so the large
+blocks dominate and the short rows the filter lets through stay faint.
 
 <Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver row of 100 kb and over as a ribbon in the colour of the human chromosome it leaves. Each human autosome fans out to several mouse chromosomes; the two X arcs hold one bundle." />
 
@@ -179,7 +174,7 @@ round again, and the twists left on the figure are the inversions.
 **Re-order chromosomes** in the view's menu runs the same pass on demand, with a
 progress bar and a cancel; re-running it on a circle that is already ordered
 moves nothing. `"autoDiagonalize": false` on the view keeps each genome in its
-own contig order.
+native contig order.
 
 ## The mouse genome in human chromosomes
 
@@ -189,12 +184,12 @@ from one human chromosome is one colour, and one assembled from several is
 striped with them, so the mouse arc reads as the mouse karyotype in human
 pieces.
 
-Hover mouse chr11's band on the circle opened above. Every ribbon that misses it
-dims, and the tooltip lists each chromosome aligned to it with the share of it
-that chromosome covers, which on a mouse chromosome are the colours its band is
-painted in.
+Hover the mouse chr11 band on the circle opened above. Every ribbon that misses
+it dims, and the tooltip lists each chromosome aligned to it with the share of
+it that chromosome covers, which on a mouse chromosome are the colours its band
+is painted in.
 
-<Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon but its own, and the tooltip lists the human chromosomes it is assembled from, largest share first." />
+<Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon that does not touch it, and the tooltip lists the human chromosomes it is assembled from, largest share first." />
 
 ## Colouring the ribbons by strand
 
@@ -211,9 +206,9 @@ with.
 
 ## The X chromosome as the control
 
-Three chromosomes of each genome make the control readable. The two autosomes
-cross-wire between the genomes, and the X ribbons run between the two X arcs
-with nothing joining either X to an autosome.
+Narrowing `displayedRegionNames` to chr1, chr2 and chrX makes the control
+readable. The two autosomes cross-wire between the genomes, and the X ribbons
+run between the two X arcs with nothing joining either X to an autosome.
 
 <Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX in one half of the circle and the mouse three in the other, the mouse arc mirrored. The autosomes' ribbons cross between the genomes; the X ribbons stay between the two X arcs, and no ribbon leaves either X for an autosome." />
 
@@ -231,11 +226,11 @@ gene-rich stretches is one more track. `jbrowse make-density` counts a GFF3's
 top-level features per bin into a bigWig, so a gene is one count however many
 transcripts hang under it.
 
-A ring on a two-genome circle is drawn by one track that names both assemblies,
-so both genomes' densities go into one bigWig: each contig is prefixed with its
-genome before counting, and each assembly's alias table gains that spelling as
-an alias of the bare name, which is how the track's `chr1` request from the
-mouse arc reaches `mm39.chr1` and the human arc's reaches `hg38.chr1`.
+A ring on a two-genome circle comes from one track that names both assemblies,
+so both genomes' densities go into one bigWig. The script prefixes each contig
+with its genome before counting, and adds the prefixed name to each assembly's
+alias table as an alias of the bare name. A `chr1` request from the mouse arc
+then reaches `mm39.chr1`, and one from the human arc reaches `hg38.chr1`.
 
 <!-- from: scripts/build_circular_synteny.sh -->
 
@@ -265,20 +260,16 @@ is opened as a density strip whose colour is the average over each pixel's bins:
     "type": "BigWigAdapter",
     "uri": "https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw"
   },
-  "displays": [
-    {
-      "type": "LinearWiggleDisplay",
-      "displayId": "hg38ToMm39_gene_density-LinearWiggleDisplay",
-      "mark": "heatmap",
-      "summaryScoreMode": "avg",
-      "color": {
-        "field": "score",
-        "scale": "threshold",
-        "range": ["#e01e26", "#d95f02"]
-      },
-      "height": 40
-    }
-  ]
+  "displayDefaults": {
+    "mark": "heatmap",
+    "summaryScoreMode": "avg",
+    "color": {
+      "field": "score",
+      "scale": "threshold",
+      "range": ["#e01e26", "#d95f02"]
+    },
+    "height": 40
+  }
 }
 ```
 
@@ -324,20 +315,20 @@ before the synteny track:
 
 <Figure src="/img/circular_synteny/rings.png" caption="The same circle with the gene density ring inside the ideogram, dark where a stretch is gene-rich. The densest stretches sit on the small human chromosomes and their mouse counterparts, and both X arcs are pale along their length." />
 
-A mirrored arc's ring is mirrored with it, so a bin sits under the stretch of
-ideogram it belongs to whichever way round that chromosome is drawn.
+The ring under a mirrored arc is mirrored with it, so a bin sits under the
+stretch of ideogram it belongs to whichever way round that chromosome is drawn.
 
 ## Reading a ribbon back
 
 Hovering a ribbon fills it in the hover color, and a tooltip names the
 alignment: its span in each genome and which way round the two read. The widest
 ribbon on the three-chromosome circle is the X block that runs reverse between
-the two genomes, which is why it twists.
+the two genomes, so it twists.
 
 <Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered on the three-chromosome circle, filled grey. It crosses itself between the two X arcs, which is the reverse strand; the tooltip names its span in each genome." />
 
-The tooltip's two loci are the row the PIF holds. `tabix` returns it at the
-human coordinate the tooltip starts at:
+The two loci in the tooltip come from one row of the PIF. `tabix` returns that
+row at the human coordinate the tooltip starts at:
 
 ```bash
 # the t prefix asks for the row in hg38 coordinates; q would ask in mm39's
@@ -362,15 +353,14 @@ dark chr19 ring are the two counts side by side.
 
 ## Your own pair of genomes
 
-The script takes any UCSC pair by name, and the files it writes are what a
-reader's own pair has to satisfy:
+The script takes any UCSC pair by name. Your own pair needs the same files it
+writes:
 
 - an alignment as a PIF, sorted and tabix-indexed. jbrowse.org's copy of a UCSC
   liftOver chain opens as is, with `"csi": true` beside its URL; a pair with no
   hosted chain goes through `jbrowse make-pif` over a PAF from minimap2, wfmash
   or `chain2paf`. Whichever way, the synteny track's `assemblyNames` is
-  `[query, target]`. The reorder needs nothing beyond that: it reads the same
-  file
+  `[query, target]`, and the reorder reads the same file
 - both assemblies declared in the config, from a hub entry as here or from
   `jbrowse add-assembly genome.fa`
 - one bigWig per ring, naming the ring's assembly; for a ring that covers both

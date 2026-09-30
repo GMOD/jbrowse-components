@@ -9,9 +9,9 @@ guide_category: Tutorials
 tutorial_category: Automation
 ---
 
-Four requests to an AI agent align two fruit fly species nobody has compared,
-and inspect the result in JBrowse Desktop. Typed one at a time, they ask the
-agent to:
+An AI agent, given four requests in plain words, aligns two fruit fly species
+that have no published alignment and inspects the result in JBrowse Desktop.
+Typed one at a time, the requests ask the agent to:
 
 - align the two genomes with minimap2 and open them side by side, genes and all
 - add a dotplot of the pair, restricted to the six chromosome arms
@@ -50,12 +50,11 @@ track and a Trix text index.
 
 ## What the agent is driving
 
-Connected to JBrowse Desktop, the agent gets four tools, and only
-`run_javascript` matters here: it runs code against the session through a `jb`
-helper library, plus `open`, `screenshot` and `docs`.
+Connected to JBrowse Desktop, the agent gets four tools: `run_javascript`,
+`open`, `screenshot` and `docs`. The requests below go through `run_javascript`,
+which runs code against the session through a `jb` helper library.
 
-Set up the client as in [](/docs/agents), then run the four requests below. The
-app moves like this:
+Set up the client as in [](/docs/agents), then run the four requests below.
 
 <Video src="/media/mcp/agent_synteny_take1.mp4" caption="A Claude Code session driving JBrowse Desktop: the agent aligns the two genomes, builds the comparison and dotplot, and navigates to what it found." />
 
@@ -80,8 +79,9 @@ The aligner it runs:
 minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 ```
 
-A whole-genome alignment takes about seven minutes on 16 threads: past
-`run_javascript`'s two-minute timeout, hence the background request above.
+At `-t 16` the whole-genome alignment takes about seven minutes, longer than the
+two-minute timeout on `run_javascript`, so the request above runs it in the
+background.
 
 Indexing the PAF lets the browser read one region of it without parsing the
 whole file:
@@ -105,8 +105,9 @@ Check the order of `assemblyNames` on the adapter it wrote:
 }
 ```
 
-Query first, target second, matching the `minimap2` argument order, or no
-chromosome name resolves and the synteny band draws empty.
+The query (`sim.fa.gz`, the second `minimap2` argument) comes first and the
+target second, the order of the PAF columns. In the other order no chromosome
+name resolves and the synteny band draws empty.
 
 <Figure caption="Thirty kilobases of chr3R on both genomes: NCBI RefSeq on each row, the minimap2 alignment between them, colored red where the two run in the same direction. One block spans the window, and each gene meets its counterpart exon for exon." src="/img/agent_synteny/comparison_built.png" />
 
@@ -123,8 +124,8 @@ which interleave the axes if drawn. Naming the arms gives one diagonal:
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
-Ask it to quantify what restricting the axes drops. Set the coloring to strand:
-a reversed block then draws differently.
+Ask it to quantify what restricting the axes drops. Set the coloring to strand,
+so a reversed block draws in blue and a forward one in red.
 
 <Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, and a short reverse segment in blue where chr2R begins." src="/img/agent_synteny/dotplot_arms.png" />
 
@@ -186,16 +187,16 @@ and cleaner.
 ## Ask to be taken there
 
 ```text
-Take the synteny view to the 2R region, with the gene tracks on.
+Take the synteny view to the 2R region.
 ```
 
-Simulans's row navigates to `chr2R:1-2,400,000`, mauritiana's to
-`chr2R:500,000-3,800,000`.
+The agent opens the simulans row at `chr2R:1-2,400,000` and the mauritiana row
+at `chr2R:500,000-3,800,000`.
 
 <Figure caption="The 2R region on both rows with the gene tracks on. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
 
-Then take it to the first of the two X regions, `chrX:8,100,000-8,950,000` over
-`chrX:8,330,000-9,180,000`, where the same event reads cleanly:
+Then ask for the first of the two X regions, `chrX:8,100,000-8,950,000` over
+`chrX:8,330,000-9,180,000`, where the reverse blocks are fewer and longer:
 
 <Figure caption="The X region at the same settings. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
 
@@ -208,8 +209,8 @@ Three sentences, and each prevents a failure with no error message:
   that did not happen.
 - **Restrict the dotplot axes to the arms.** Otherwise a few hundred unplaced
   scaffolds interleave both axes.
-- **Answer counted from the alignment file.** Otherwise you get a description of
-  the dotplot, which answers nothing.
+- **Answer counted from the alignment file.** Otherwise the agent describes the
+  dotplot.
 
 Two more come up unprompted: screenshot what it builds, since a wrong track id
 or empty region still renders as a plausible browser, and say the numbers before

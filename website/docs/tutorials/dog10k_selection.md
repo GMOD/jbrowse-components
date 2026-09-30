@@ -21,8 +21,8 @@ variant track with a sample-metadata TSV, and cluster the rows.
 - the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
   [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
   is a config that loads it with its gene and repeat tracks, and the
-  [assemblies guide](/docs/config_guides/assemblies) builds one by hand. Only
-  its `chrom.sizes` is read by this track.
+  [assemblies guide](/docs/config_guides/assemblies) builds one by hand. This
+  track reads its `chrom.sizes` alone.
 - `bcftools` built with libcurl
 - `curl`
 - `python3`
@@ -44,7 +44,8 @@ directly over HTTP with no local copy of either callset.
   https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
 - the SNV/indel callset the _IGF1_ window is sliced from:
   https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
-- the sample table, breed panels and the wolf outgroup are derived from it:
+- the sample table, which the scripts derive the breed panels and the wolf
+  outgroup from:
   https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
 
 ## Scanning for a locus
@@ -113,22 +114,22 @@ WINDOW=20000 REGIONS=chr15:40600000-42600000 \
 
 <Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed significance line. Bottom: the wedge's span, two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band marks the 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
-Each point is a window, so a peak names a region. A genome-wide scan bins wide
-enough to hold down twelve thousand windows' worth of noise, and that binning
-makes the _IGF1_ peak a single bar.
+Each point is a window, so a peak marks a region. The genome-wide scan uses wide
+bins to keep the noise across twelve thousand windows down, so the _IGF1_ peak
+is a single bar.
 
 Fst has no p-value, so the threshold is a
 [reference line](/docs/config/valuescale/#slot-scalesyrules) at a quantile of
-the scan's own windows: the dashed line is the 99.9th percentile, printed by the
-build script alongside the ranked windows. It is a property of these windows at
-this size, so rebinning the scan means taking it again. The tallest labelled
-peak, on chr10, is _HMGA2_, one of the six variants
+the scan's windows. The dashed line is the 99.9th percentile, printed by the
+build script alongside the ranked windows. The percentile depends on the window
+size, so a rebinned scan needs a new one. The tallest labelled peak, on chr10,
+is _HMGA2_, one of the six variants
 [Rimbault et al. 2013](https://doi.org/10.1101/gr.157339.113) fit to about half
 the size variation across breeds.
 
 Each group is a set of closed populations, so drift inside one large breed
-scores the same way differentiation across the contrast does. A window has
-fourteen breeds against eleven behind it.
+scores the same way as differentiation between the groups. Each window pools
+fourteen breeds against eleven, which dilutes drift in any one breed.
 
 ## The IGF1 body-size locus
 
@@ -142,9 +143,9 @@ animals depart from their breed, and where the wolves fall.
 ## Choosing the panel
 
 The panel is the two groups the scan compared plus the twelve Greek gray wolves,
-taken from the Dog10K sample table by breed name: whole breeds, selected on
-breed, since the variation within a breed is part of what the clustering below
-has to recover, and several breeds depart from the pattern one animal at a time.
+taken from the Dog10K sample table by breed name. It holds whole breeds, because
+several breeds depart from the pattern one animal at a time and the clustering
+below has to show that variation.
 
 ## Slicing the locus out of the callset
 
@@ -156,7 +157,7 @@ beside it. `bcftools` reads only the window:
 ```bash
 SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 # --force-samples: proceed even if a name in igf1.samples isn't in the VCF's
-# own sample list, instead of exiting
+# sample list, instead of exiting
 # -f PASS: keep only sites that passed every quality filter
 # -q 0.05:minor (second pass): drop sites where the minor allele is under 5%
 # frequency in this panel, since most sites in a callset this size are rare
@@ -186,7 +187,7 @@ STBD000001	Saint Bernard	Giant
 CLUPGR000001	Greek gray wolf	Gray wolf
 ```
 
-`colorBy` names the column that paints the sidebar swatch:
+`rowColor` names the column that paints the sidebar swatch:
 
 ```json addtrack
 {
@@ -216,8 +217,8 @@ they start out grouped by breed. **Clustering → Cluster rows by genotype...** 
 the track menu, then **Run clustering**, reorders them by genotype similarity
 and draws a dendrogram in the sidebar.
 
-The clustering reads genotypes only. The swatch is applied afterwards from the
-sample table, so the two are independent.
+Clustering reads the genotypes, and the display applies the swatch afterwards
+from the sample table, so the swatch has no effect on the order.
 
 ## Framing the window
 
@@ -227,11 +228,11 @@ the two size classes, and this window is that span with a margin of
 undifferentiated sequence on each side; the Fst lane comes back down over that
 margin.
 
-Clustering reads the region on screen, and over the whole window the separating
-columns are diluted by the undifferentiated sites around them. Zoom to the core,
-cluster there, then widen back out: the order holds, because it is stored per
-sample name. A session can state it directly, since the display takes
-`clusterRegion` beside `runClustering`; the figure below does exactly that.
+Clustering reads the region on screen, and over the whole window the
+undifferentiated sites dilute the separating columns. Zoom to the core, cluster
+there, then widen back out. The display stores the order per sample name, so it
+holds. A session can set the region directly with `clusterRegion` beside
+`runClustering`, as the figure below does.
 
 <Video src="/media/dog10k/igf1_cluster_route.mp4" caption="The route on the differentiated core: rows in the panel's build order, the track menu's clustering run, and the same order held when the window widens back out. The size swatch starts as three breed blocks and ends interleaved." />
 
@@ -239,18 +240,18 @@ sample name. A session can state it directly, since the display takes
 
 <Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, size class as the sidebar swatch, under per-site Fst between the same two panels. Fst is near zero at both window edges and high across the gene." src="/img/dog10k-igf1-haplotype.png" />
 
-Clustering on genotypes alone recovers the size split, and the block's
-boundaries fall within the window, so its extent reads against the gene track
-above it. The two panels differ here by a shift in allele frequency, so the
-block is a run of columns where one class is enriched.
+Clustering on genotypes alone recovers the size split. The block's boundaries
+fall within the window, so the gene track above shows its extent. The two panels
+differ here by a shift in allele frequency, so the block is a run of columns
+where one class is enriched.
 
-The lane between them shows which columns are doing the work: the same Hudson
-Fst as the genome scan, between the same two panels, computed one site at a time
-over this VCF. Every point is one column of the matrix, though not the column
-directly beneath it, since the matrix gives each record equal width and the Fst
-lane keeps genomic spacing; the sloped lines between the two tie each column
-back to its coordinate. The scan reads the phased imputation panel and this lane
-reads the SNV callset, so the peak comes off two different files.
+The Fst lane above the matrix shows which columns separate the classes: the same
+Hudson Fst as the genome scan, between the same two panels, computed one site at
+a time over this VCF. Each point is one column of the matrix. The matrix gives
+each record equal width and the Fst lane keeps genomic spacing, so the sloped
+lines between them tie each column to its coordinate. The scan reads the phased
+imputation panel and this lane reads the SNV callset, so the peak appears in two
+different files.
 
 Rows depart from their swatch in both directions: single orange rows sit within
 the giant cluster and single blue rows within the small one. The build script
@@ -260,10 +261,10 @@ The wolves form a contiguous band, on the toy and small side of the split. In
 the other two Dog10K tutorials the wild canids carry none of the allele under
 study; here they carry part of the haplotype.
 
-## Where to go next
+## Scanning another trait
 
 The Fst scan and the IGF1 slice take the same two inputs, a pair of groups and a
-region, so any trait the sample table records can be substituted: change the
+region, so you can substitute any trait the sample table records: change the
 breed lists and rerun the scan to find new peaks, then change the region and the
 metadata column to draw one of them. The Dog10K paper's selection scan (its
 Fig. 8) lists peaks for five ancestry components, and the structural-variant

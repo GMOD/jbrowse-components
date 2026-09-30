@@ -13,7 +13,7 @@ lactase persistence left one long block of correlated variants. PLINK correlates
 the phased genotypes and JBrowse draws the triangle from its output. With that
 view we:
 
-- read the block's edges against Fst and a genetic map
+- read the edges of the block against Fst and a genetic map
 - compare the swept population's triangle against the pooled release
 - cluster a haplotype matrix into the block the triangle draws
 
@@ -76,14 +76,11 @@ Point an [`LDTrack`](/docs/config/ldtrack) at the r² table
     "type": "PlinkLDTabixAdapter",
     "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur.ld.gz"
   },
-  "displays": [
-    {
-      "type": "LDTrackDisplay",
-      "variantLayout": "genomic",
-      "showLegend": true,
-      "height": 360
-    }
-  ]
+  "displayDefaults": {
+    "variantLayout": "genomic",
+    "showLegend": true,
+    "height": 360
+  }
 }
 ```
 
@@ -94,9 +91,9 @@ which this table has.
 
 The block is a selective sweep. The allele that keeps lactase switched on into
 adulthood, `rs4988235`, rose in frequency and carried its neighbouring variants
-with it ([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)). Its
-[dbSNP report](https://www.ncbi.nlm.nih.gov/snp/rs4988235) carries the ClinVar
-entry and frequency table.
+with it ([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)). The
+[dbSNP report](https://www.ncbi.nlm.nih.gov/snp/rs4988235) for `rs4988235` lists
+the ClinVar entry and frequency table.
 
 ## Cut the region out of the VCF
 
@@ -106,9 +103,9 @@ the sweep happened in.
 <!-- from: scripts/build_lct_ld.sh -->
 
 ```bash
-# -r is a range request: 3.4 Mb costs 3.4 Mb, not the 2.5 GB chromosome.
+# -r fetches the 3.4 Mb region by range request from the 2.5 GB chromosome file
 # -e drops symbolic SV records, which are spans; the display correlates
-# allele indicators.
+# allele indicators
 bcftools view -r chr2:133800000-137200000 -S unrelated.samples \
   -e 'ALT[0]~"<"' -Oz -o pooled.vcf.gz \
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
@@ -126,20 +123,21 @@ keeps the table small enough for a browser to draw.
 <!-- from: scripts/build_lct_ld.sh -->
 
 ```bash
-# 0.35 is a high MAF floor, to keep the variants that tag the block.
+# 0.35 is a high MAF floor, to keep the variants that tag the block
 plink2 --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
   --set-missing-var-ids @:# --maf 0.35 --chr chr2 --write-snplist --out sel
 
-# dprime adds D' beside r2. --ld-window-r2 0 draws the uncorrelated pairs as
-# white cells too. --ld-window and --ld-window-kb both have to be raised, or
-# the defaults clip this block at 10 variants or 1 Mb.
+# dprime adds D' beside r2
+# --ld-window-r2 0 keeps the uncorrelated pairs, drawn as white cells
+# raise both --ld-window and --ld-window-kb, or the defaults clip this block at
+# 10 variants or 1 Mb
 plink --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
   --set-missing-var-ids @:# --extract sel.snplist \
   --r2 dprime --ld-window 999999 --ld-window-kb 4000 --ld-window-r2 0 \
   --out lct_1kg38_chr2_eur
 
-# tabix needs real tabs and a commented header; plink pads its columns with
-# spaces instead.
+# tabix needs tab-separated columns and a commented header; plink pads with
+# spaces
 awk 'NR==1{$1=$1; print "#" $0; next} {$1=$1; print}' OFS='\t' \
   lct_1kg38_chr2_eur.ld | bgzip > lct_1kg38_chr2_eur.ld.gz
 tabix -s 1 -b 2 -e 2 -f lct_1kg38_chr2_eur.ld.gz
@@ -153,14 +151,14 @@ as a bigWig for a [quantitative track](/docs/user_guides/quantitative_track):
 <!-- from: scripts/build_lct_fst_scan.sh -->
 
 ```bash
-# plink2 wants the two panels as one categorical phenotype, with FID beside
-# IID.
+# plink2 takes the two panels as one categorical phenotype, with FID beside IID
 { printf '#FID\tIID\tPOP\n'
   awk '{print $1"\t"$1"\tPANEL"}' panel.samples
   awk '{print $1"\t"$1"\tREST"}' rest.samples; } > fst_pops.txt
 
-# method=wc is Weir and Cockerham; plink2 defaults to Hudson, a different
-# number. --output-chr chrM spells the chromosome chr2, matching the file.
+# method=wc is Weir and Cockerham; the plink2 default, Hudson, gives a
+# different number
+# --output-chr chrM writes the chromosome as chr2, matching the file
 plink2 --vcf pooled.vcf.gz --double-id --output-chr chrM --pheno fst_pops.txt \
   --fst POP method=wc report-variants vcols=chrom,pos,fst --out fst_site
 
@@ -175,16 +173,16 @@ bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
 
 <Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, RefSeq genes and Weir and Cockerham Fst per variant across a wide span of chr2. Under the wedge, the same locus and allele-frequency floor twice, differing only in which samples went in, over that Fst lane at a separate scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
-- **Fst, top.** The most differentiated sites in the window sit inside the
-  block.
-- **Genetic map and triangles.** The block fills the flat span of the
-  [deCODE map](https://doi.org/10.1126/science.aau1043); pooling the swept panel
-  with populations it never reached pales the upper triangle.
+- In the Fst lane at the top, the most differentiated sites in the window sit
+  inside the block.
+- The block fills the flat span of the
+  [deCODE map](https://doi.org/10.1126/science.aau1043). Pooling the swept panel
+  with populations the sweep never reached lightens the upper triangle.
 
 ## The haplotypes behind the triangle
 
-The six-population VCF draws the haplotypes one lane below the triangle, in
-equal-width columns, one row per chromosome:
+A track over the six-population VCF, one lane below the triangle, draws the
+haplotypes in equal-width columns, one row per chromosome:
 
 ```json addtrack
 {
@@ -222,13 +220,11 @@ Run the clustering two ways:
 
 <Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle over the haplotypes it summarises: 1000 Genomes chromosomes at LCT/MCM6, one row each, clustered by genotype. The pale slab is one cluster of near-identical chromosomes, uniform across the block that fills the triangle above."/>
 
-- **Ordering makes a block visible.** In file order the matrix is a plaid;
-  clustering puts near-identical chromosomes together, so a swept haplotype
-  resolves into one slab.
-- **The ClinVar lane marks `rs4988235`** independently, since it falls below the
-  frequency floor.
-- **Narrow that lane or it marks nothing.** It is the hub's ClinVar track
-  filtered with `jexl:feature.phenotypeList=='LACTASE PERSISTENCE'`.
+- In file order the matrix is a plaid. Clustering puts near-identical
+  chromosomes together, so a swept haplotype forms one slab.
+- The ClinVar lane marks `rs4988235`, which falls below the frequency floor of
+  the matrix. The lane is the hub's ClinVar track filtered with
+  `jexl:feature.phenotypeList=='LACTASE PERSISTENCE'`.
 
 ### The subsample behind the figure {#rows-have-to-be-worth-a-pixel}
 
@@ -290,8 +286,8 @@ inversion, where the variants are thinned to a grid before correlation.
   [Characterizing mutagenic effects of recombination through a sequence-level genetic map](https://doi.org/10.1126/science.aau1043)
 
 [^plink19]:
-    The two are separate programs, not versions to choose between. plink2 gained
-    `--r2-phased` in its a6 alphas, absent on earlier builds, which is why the
-    r² step here is PLINK 1.9's. JBrowse's
-    [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) resolves either
-    program's column names from the header, so either build loads.
+    PLINK 1.9 and PLINK 2.0 are separate programs, and the page runs both.
+    plink2 gained `--r2-phased` in its a6 alphas, so on earlier builds the r²
+    step needs PLINK 1.9. The
+    [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads the column
+    names of either program from the header, so output from either loads.

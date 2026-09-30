@@ -343,9 +343,8 @@ export interface EmbeddedSpec extends CommonSpecFields {
 // - An arrow CAN now cross the seam, since both ends resolve in the same page.
 //   That does not make it the first choice: where the two halves share a
 //   landmark, a numbered `circle` on each part still says it without a line
-//   across the gutter (`pangenome/hprc_chm13_allele`'s two ① badges), and where
-//   the app already labels the landmark itself, prefer that and drop the
-//   numbers (`pangenome/hprc_mhc_anchored`'s bare rings).
+//   across the gutter, and where the app already labels the landmark itself,
+//   prefer that and drop the numbers.
 // - Sizes are in the composition's OWN pixels, which for a CLI part is 1x — so
 //   a `fontSize` that looks right on a 2x app capture reads half as large here.
 export interface ComposeSpec extends BaseSpecFields {

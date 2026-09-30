@@ -15,10 +15,10 @@ import type {
 // 3.9 kb call in an intron of EFCAB8.
 //
 // The demo config (demos/read_marks/config.json) carries the four finished
-// tracks and an hg38 whose sequence jbrowse.org serves: the CRAM decodes
-// against it, and the UCSC hub's 2bit stalled three captures in a row. Depth
-// and insert size are a track each, and so are the chromosome scan's points
-// and its per-bin counts — a mark display draws one y axis.
+// tracks and an hg38 whose sequence and cytobands jbrowse.org serves: the CRAM
+// decodes against it, and the UCSC hub's 2bit stalled three captures in a row.
+// Depth and insert size are a track each, and so are the chromosome scan's
+// points and its per-bin counts — a mark display draws one y axis.
 const CONFIG = 'https://jbrowse.org/demos/read_marks/config.json'
 const CRAM =
   'https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram'

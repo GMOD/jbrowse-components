@@ -9,12 +9,12 @@ tutorial_subcategory: Whole-genome alignments
 
 A synteny track shows which stretches of DNA correspond between genomes. We
 build a linear synteny view of five _E. coli_ strains from one all-vs-all PAF,
-the file minimap2 writes when every genome is aligned against every other:
+the file minimap2 writes when it aligns every genome against every other:
 
 - align the five strains against each other with `minimap2 -X` to build the PAF
 - load it with `MultiGenomePAFAdapter` and stack the five assemblies as rows
-- add each strain's gene track, then read one strain against the rest in a
-  single pileup
+- add a gene track per strain, then read one strain against the rest in a single
+  pileup
 
 ## Prerequisites
 
@@ -80,14 +80,14 @@ for strain in K12 Sakai CFT073 NCTC86 IAI39; do
 done > all.fa
 
 # -c: emit the base-level CIGAR the linear synteny view needs
-# -X: skip each sequence's own diagonal and the reciprocal half of every pair
+# -X: skip self-alignments and the reciprocal half of every pair
 minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 ```
 
 ## Setting up the five assemblies
 
-Each strain FASTA becomes an assembly whose name matches an entry in the track's
-`assemblyNames`:
+Each strain FASTA becomes an assembly whose name matches an entry in
+`assemblyNames` on the track:
 
 <!-- from: scripts/build_ecoli_pangenome_synteny.sh -->
 
@@ -122,13 +122,13 @@ the records whose PanSN prefixes match the pair each band draws:
 }
 ```
 
-`MultiGenomePAFAdapter` has to be named; a `.paf` guessed from its extension is
+`MultiGenomePAFAdapter` has to be named; from a `.paf` extension JBrowse guesses
 the pairwise `PAFAdapter`, which reads only two assembly names.
 
 If an assembly name differs from its PanSN sample prefix, map it with
 `assemblyNameToPanSN`, e.g. `{ "Ecoli_K12": "K12" }`. A haplotype-resolved
-pangenome can map each haplotype to its own assembly with a `sample#haplotype`
-prefix; see
+pangenome can map each haplotype to a separate assembly with a
+`sample#haplotype` prefix; see
 [PanSN depth](/docs/config_guides/synteny_track#pansn-depth-sample-or-haplotype).
 
 ## Large files: index with make-pif
@@ -167,9 +167,9 @@ Only the `adapter` block differs from the un-indexed version:
 ```
 
 `make-pif` emits a coarse zoomed-out tier by default. `--coarse` tunes that tier
-and `--csi` swaps the TBI index for sequences over ~512 Mb; raise the adapter's
+and `--csi` swaps the TBI index for sequences over ~512 Mb; raise
 [`coarseBpPerPxThreshold`](/docs/config/multigenomeindexedpafadapter#slot-coarsebpperpxthreshold)
-alongside it.
+on the adapter alongside it.
 
 ## Stacking the genomes
 
@@ -214,8 +214,8 @@ rows means four bands, so `tracks` has four entries:
 
 - `tracks` is one entry per band: `tracks[0]` connects rows 0-1, `tracks[1]`
   rows 1-2, and so on
-- `minAlignmentLength` hides minimap2's many short alignments, leaving the
-  shared backbone
+- `minAlignmentLength` hides the many short alignments minimap2 writes, leaving
+  the shared backbone
 - `collapseEmptyRows` gives a ribbon-only row a bare scalebar
 
 The
@@ -244,8 +244,8 @@ for strain in K12 Sakai CFT073 NCTC86 IAI39; do
 done
 ```
 
-Navigate Sakai's row to `chr:1,267,000-1,268,400` and the gap holds _stx2A_ and
-_stx2B_, the Shiga-toxin subunits, with no alignment to K-12.
+Navigate the Sakai row to `chr:1,267,000-1,268,400` and the gap holds _stx2A_
+and _stx2B_, the Shiga-toxin subunits, with no alignment to K-12.
 
 <Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The synteny ribbon runs out at the shared-backbone boundary, and everything right of it, stx2B included, has no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
 
@@ -267,8 +267,8 @@ Three track-menu items separate every alignment in the pileup by strain:
 
 The figure below adds the pangenome graph as a track under the lanes, the same
 window [the next section](#the-same-gap-drawn-as-a-graph) draws as a graph. The
-shaded band is K-12's phenylacetate (paa) operon, where three strains stop at
-its left edge and NCTC86 runs through.
+shaded band is the phenylacetate (paa) operon on K-12, where three strains stop
+at its left edge and NCTC86 runs through.
 
 <Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph, where the short arm beside the ringed node is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
@@ -278,23 +278,24 @@ stack above. For a real pangenome, index first with
 
 <Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps are where a strain has no alignment to the K-12 backbone. IAI39 sits directly below K-12, so its blue stretches and the blue crossings under them are the same inversions." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
-### Each strain's lane in its own coordinates
+### Lanes in strain coordinates
 
-On K-12's axis, a strain with no alignment to the backbone is a white gap.
-**Display types → Multi-way synteny display** redraws each strain's lane in its
-own coordinates;
+On the K-12 axis, a strain with no alignment to the backbone is a white gap.
+**Display types → Multi-way synteny display** redraws each lane in the
+coordinates of the strain it shows;
 [the ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
 walks through the same reading for gene names. With no gene names:
 
-- each PAF record is its own ribbon, keyed by the adapter's `syntenyId`
-- the gutters carry each **adjacent** pair's direct alignments from the same
-  file
+- each PAF record draws as one ribbon, keyed by the `syntenyId` the adapter
+  gives it
+- the gutters carry the direct alignments between each **adjacent** pair, from
+  the same file
 
 The pggb graph-depth wiggle above the lanes comes from the
 [E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli#pangenome-depth-projection-core-vs-accessory).
-The lanes' `color` sorts each gene into the island or not by its name, a jexl
-expression in `field`, and paints the island red in every lane with a key naming
-both:
+The `color` setting on the lanes sorts genes into the island by name, using a
+jexl expression in `field`. It paints the island genes red in every lane and
+adds a key naming both groups:
 
 ```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
 {
@@ -327,20 +328,21 @@ both:
 }
 ```
 
-<Figure caption="The paa operon island on K-12 with a flank on each side. Graph depth drops from five genomes to two across the island and comes back after it. In the all-vs-all lanes below, each genome's island genes (feaR, tynA and the paa operon) are red: K-12 and NCTC86 carry them, while CFT073, Sakai and IAI39 annotate none and go straight from one flank to the other." src="/img/multiway_synteny/ecoli_island_lanes.png" />
+<Figure caption="The paa operon island on K-12 with a flank on each side. Graph depth drops from five genomes to two across the island and comes back after it. In the all-vs-all lanes below, the island genes (feaR, tynA and the paa operon) are red in every lane: K-12 and NCTC86 carry them, while CFT073, Sakai and IAI39 annotate none and go straight from one flank to the other." src="/img/multiway_synteny/ecoli_island_lanes.png" />
 
 ### The gap in the graph {#the-same-gap-drawn-as-a-graph}
 
-In the graph, the island is a segment; each strain's walk goes through it or
-detours around it. The [graph genome view](/docs/user_guides/graph_genome_view)
-plugin draws a window of it beside the alignment. The ringed segment, `s502`, is
-the long node carrying the island.
+In the graph, the island is a segment; the walk for each strain goes through it
+or detours around it. The
+[graph genome view](/docs/user_guides/graph_genome_view) plugin draws a window
+of it beside the alignment. The ringed segment, `s502`, is the long node
+carrying the island.
 
 The lower band is blank across the island: each strain carries a distinct
 sequence there, the phenylacetate operon and a prophage on K-12, a set of nleG
 effector genes on Sakai.
 
-<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. Each strain's island is shaded in that strain's row and the band between them is blank across both, as a substitution appears from either side. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
+<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. A shaded box marks the island in each row, and the band between them is blank across both, as a substitution appears from either side. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
 
 ### Launching a stacked view at one locus
 
@@ -351,10 +353,10 @@ bottom. Ribbons draw between neighbouring rows only.
 Right-clicking a single alignment offers three routes under **Launch**: **Linear
 synteny view with Sakai** (or whichever strain the alignment names) opens that
 one pair, **Linear synteny view, all assemblies here** opens the same
-multi-strain dialog, and **Open Sakai at the matching region** opens that strain
-on its own coordinates.
+multi-strain dialog, and **Open Sakai at the matching region** opens a linear
+genome view of Sakai at that region.
 
-<Figure caption="Right-clicking one alignment in the one-vs-all lanes: the pair it describes, every strain aligning here, or that strain on its own, in one Launch submenu." src="/img/multiway_synteny/ecoli_alignment_menu.png" />
+<Figure caption="Right-clicking one alignment in the one-vs-all lanes: the pair it describes, every strain aligning here, or a linear view of that strain, in one Launch submenu." src="/img/multiway_synteny/ecoli_alignment_menu.png" />
 
 A launched view is a few kilobases wide, and the CIGAR `minimap2 -c` wrote draws
 each insertion and deletion where it falls. **CIGAR indels** in the settings
@@ -384,9 +386,9 @@ awk -F'\t' -v OFS='\t' '
 1274685	1275548
 ```
 
-The second line is the shared backbone the ribbon draws. Past a short scrap
-nothing aligns again until the fourth, so _stx2A_ and _stx2B_ fall in a stretch
-with no K-12 counterpart.
+The second line is the shared backbone the ribbon draws. The third is short, and
+the fourth starts at 1,274,685, so _stx2A_ and _stx2B_ fall in a stretch with no
+K-12 counterpart.
 
 ## Reproduce it end to end
 

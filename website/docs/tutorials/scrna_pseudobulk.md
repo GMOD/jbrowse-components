@@ -7,9 +7,12 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-Pool each cluster's cells into one coverage BigWig outside JBrowse, load the set
-as a single MultiWiggle track, and the browser shows one row per cell type. The
-same clustering also drives an embedded UMAP that filters those rows.
+Pooling the reads of each single-cell cluster and placing them on the genome
+shows which cell types express a marker gene, and where in the gene their reads
+land. We pool the 10x 5k PBMC dataset into one coverage BigWig per cell type
+outside JBrowse and load the set as one multi-wiggle track with a row per cell
+type. Then we add a row per cell underneath, and link the rows to a UMAP that
+filters them.
 
 ## Prerequisites
 
@@ -28,9 +31,10 @@ same clustering also drives an embedded UMAP that filters those rows.
 
 10x Genomics'
 [5k PBMC v3](https://www.10xgenomics.com/datasets/5-k-peripheral-blood-mononuclear-cells-pbm-cs-from-a-healthy-donor-v-3-chemistry-3-1-standard-3-0-2)
-experiment, streamed and pooled by cell type without landing on disk.
+experiment, which the build script streams and pools by cell type without
+writing the BAM to disk.
 
-- the barcoded alignments, read by region over HTTPS rather than downloaded:
+- the barcoded alignments, which the script reads by region over HTTPS:
   https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam
 - the filtered feature-barcode matrix the clustering runs on:
   https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_filtered_feature_bc_matrix.h5
@@ -45,8 +49,8 @@ lesser degree) spread coverage over the gene body.
 
 ## Generating per-cell-type BigWigs
 
-Clustering and labeling stay upstream, in Seurat, scanpy, or whatever produced
-the annotation. This page starts from a barcode-to-label table and the BAM.
+Clustering and labeling happen upstream, in Seurat, scanpy, or whatever produced
+the annotation. The build here starts from a barcode-to-label table and the BAM.
 
 Two decisions determine whether the rows can be compared:
 
@@ -80,7 +84,7 @@ for bam in *.bam; do
 done
 ```
 
-This writes a second copy of the BAM to disk, split N ways.
+The sinto route writes a second copy of the BAM to disk, split N ways.
 
 [`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
 instead reads the BAM by region over HTTPS, accumulating each cell type's
@@ -95,13 +99,14 @@ applies the normalization in its last step:
 awk -v total="$reads" -v OFS='\t' \
   '{print $1, $2, $3, $4 * 1e6 / total}' celltype.bg > celltype.cpm.bg
 
-# chromosomes in the chrom.sizes' own order, which for UCSC names is
-# lexicographic (chr1, chr10, ... chr2) and not the order reads stream in
+# chromosomes in chrom.sizes order, which for UCSC names is lexicographic
+# (chr1, chr10, ... chr2) and not the order reads stream in
 bedGraphToBigWig celltype.cpm.bg hg38.chrom.sizes celltype.bw
 ```
 
-One pass over a chromosome fills a row per cell type. The two decisions are the
-two `continue`s, and the splice-awareness is `get_blocks`:
+The script fills one row per cell type in one pass over each chromosome. The
+first `continue` applies the duplicate and uniqueness filters, and `get_blocks`
+makes the coverage splice-aware:
 
 <!-- from: scripts/build_scrna_pseudobulk.sh -->
 
@@ -114,8 +119,8 @@ cov = np.zeros((len(types), length // BIN + 1), dtype=np.uint32)
 for read in bam.fetch(chrom):
     # 0x400 is the duplicate flag, 0x100 secondary and 0x800 supplementary. The
     # first is the duplicate decision; the other two stop one read landing in
-    # several places at once. MAPQ 255 is what STAR emits for a unique
-    # alignment, which is the only kind CellRanger writes.
+    # several places at once. STAR emits MAPQ 255 for a unique alignment, the
+    # only kind CellRanger writes.
     if read.flag & SKIP_FLAGS or read.mapping_quality < MIN_MAPQ:
         continue
     try:
@@ -128,8 +133,8 @@ for read in bam.fetch(chrom):
         cov[t][start // BIN : (end - 1) // BIN + 1] += 1
 ```
 
-Each row is written out as a bedGraph, scaled by
-`1e6 / <that cell type's counted reads>`, and converted:
+The script writes each row as a bedGraph, scales it by
+`1e6 / <that cell type's counted reads>`, and converts it:
 
 <!-- from: scripts/build_scrna_pseudobulk.sh -->
 
@@ -189,39 +194,23 @@ stay adjacent and a row keeps the color its cluster had on the UMAP.
 
 <Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view, in the same order as the rows they mark. The signal runs down the diagonal." src="/img/scrna/marker_panel.png" />
 
-A marker gene reads as the height of its 3' spike from row to row. The axis is
-logarithmic because every row shares it.
+Each marker's expression shows as the height of its 3' spike from row to row.
+The axis is logarithmic because all nine rows share it.
 
 The `--multiwig` CLI form and the add-track UI build the same track without
 hand-writing it; both are covered on [](/docs/tutorials/scatac_pseudobulk).
 
 ## One row per cell
 
-A pseudobulk row is a sum over thousands of cells. The cells themselves can go
-under it, one row each, read from a cells-by-bins Zarr matrix.
+A pseudobulk row is a sum over thousands of cells. A cells-by-bins Zarr matrix
+puts the cells under it, one row each.
 
-<Figure caption="The nine pseudobulk rows at LYZ above the individual cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
-
-Summed, the lymphocyte rows are a low flat line beside the monocyte peak. Per
-cell, many of those cells carry a single UMI of a monocyte gene: ambient RNA in
-the droplet.
-
-Two settings decide whether the speckle is visible:
-
-- **Order the rows by cell type.** Thousands of rows in a few hundred pixels is
-  under a pixel each, so a block only reads if its cells are adjacent. The
-  `group` on each row seeds that and drives the sidebar tree
-- **Pin the score axis.** `scales.y` with a `domainMin` of 0 and a low
-  `domainMax` puts one UMI a visible fraction up the color ramp, as in
-  [](/docs/tutorials/population_cnv). Autoscale takes its maximum from the
-  tallest single cell in view
-
-The store is read by the `MultiWiggleZarrAdapter` from
-[`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr), the
-adapter [](/docs/tutorials/population_cnv) uses for the 1000 Genomes panel. The
-cell list, bin size and row colors are attributes of the store, written by the
-build step. The plugin is not in the plugin store yet, so this whole fragment,
-`plugins` and `tracks` together, goes into `config.json`:
+The `MultiWiggleZarrAdapter` from
+[`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) reads
+the store, the same adapter [](/docs/tutorials/population_cnv) uses for the 1000
+Genomes panel. The build step writes the cell list, bin size and row colors as
+attributes of the store. The plugin is not in the plugin store yet, so add this
+whole fragment, `plugins` and `tracks` together, to `config.json`:
 
 ```json
 {
@@ -252,15 +241,31 @@ build step. The plugin is not in the plugin store yet, so this whole fragment,
 }
 ```
 
-A relative `uri` resolves against the config that holds it, and nothing runs on
-the server.
+A relative `uri` resolves against the config that holds it, so the store is
+served as static files beside `config.json`.
 
-The store's bin axis lays each window end to end keyed by refName, one window
-per chromosome. Per-cell coverage is informative only where the cells have
-reads, so the store covers marker windows and stays under a megabyte.
+The bin axis of the store lays each window end to end keyed by refName, one
+window per chromosome. Per-cell coverage is informative only where the cells
+have reads, so the store covers marker windows and stays under a megabyte.
 
-An RNA set and an ATAC set stack in one view: the demo config carries a
-pseudobulk scATAC set over the same PBMCs beside the RNA one.
+<Figure caption="The nine pseudobulk rows at LYZ above the individual cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
+
+Summed, the lymphocyte rows are a low flat line beside the monocyte peak. Per
+cell, many of those cells carry a single UMI of a monocyte gene: ambient RNA in
+the droplet.
+
+Two settings in the config above decide whether the speckle is visible:
+
+- **Order the rows by cell type.** Thousands of rows in a few hundred pixels is
+  under a pixel each, so a block only reads if its cells are adjacent. The
+  `group` on each row seeds that and drives the sidebar tree
+- **Pin the score axis.** `scales.y` with a `domainMin` of 0 and a low
+  `domainMax` puts one UMI a visible fraction up the color ramp, as in
+  [](/docs/tutorials/population_cnv). Autoscale takes its maximum from the
+  tallest single cell in view
+
+The demo config also carries a pseudobulk scATAC set over the same PBMCs,
+stacked in one view beside the RNA set.
 
 ## Linking the UMAP to the tracks
 

@@ -19,9 +19,7 @@ other half of the 2-D Bandage picture rather than a replacement for it.
 Correspondence between the two panels is **visual** — matching colors, matching
 features — not a shared pixel axis. Do not chase pixel-exact alignment: the
 anchored layout's `zoomToFit` pads by 40 px and centers, so its reference axis
-runs ~7% narrower than the linear view above it (`pangenome/hprc_mhc_anchored`:
-backbone at CSS x 44-955 against the segments track's 7-991), and that is
-accepted.
+runs ~7% narrower than the linear view above it, and that is accepted.
 
 The closest existing per-sample linearized display is
 `plugins/maf/src/LinearMafDisplay` (including its `coverageInsertion.ts`).

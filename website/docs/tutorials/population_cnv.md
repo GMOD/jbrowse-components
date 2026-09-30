@@ -9,16 +9,15 @@ tutorial_category: Structural variation
 
 Copy number varies from person to person, and we show the whole 1000 Genomes
 panel at once: one heatmap row per individual, colored by how far that person
-strays from the diploid baseline of 2. JBrowse renders that live from per-sample
-BigWigs, and past a few hundred samples the per-file requests dominate, so the
-second half packs the values into one Zarr store.
+strays from the diploid baseline of 2. JBrowse draws the heatmap from per-sample
+BigWigs. Past a few hundred samples the per-file requests dominate the load
+time, so the second half of the page packs the values into one Zarr store.
 
 ## Prerequisites
 
 - a JBrowse instance to paste a track into (see the
-  [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop): every file here is a URL, so
-  Desktop needs nothing hosted)
+  [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop))
 - `node` 24 or newer, to [build a Zarr store](#build-the-store); the converter
   is one downloadable file that pulls two npm packages
 - QuicK-mer2 and a 30x alignment, to add
@@ -33,22 +32,22 @@ lab at the University of Michigan
 - the sample list across 26 populations, from the lab's UCSC track hub:
   https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt
 - the per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted
-  unmodified because the lab's own download share is offline. One file per
-  sample under its population, so HG00551 and HG00553 are
+  unmodified because the lab's download share is offline. Each file sits under
+  its population, so HG00551 and HG00553 are
   https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw
   and
   https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw
 - the same values packed into one Zarr store for the
-  [latency comparison](#scaling-past-one-population). This is a directory of
-  chunks, so it is the `uri` an adapter takes, not something to open in a
-  browser: https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
+  [whole panel](#a-zarr-store-for-the-whole-panel). The store is a directory of
+  chunks that 404s at its root, and the URL is what an adapter takes as `uri`:
+  https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
 
 ## The QuicK-mer2 estimates
 
 The [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) estimates come from the
-Kidd lab's [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track hub;
-this page reads the lab's raw per-sample bigWigs. QuicK-mer2 counts only k-mers
-that occur exactly once in the reference, so its estimates are per _paralog_.
+Kidd lab's [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track hub,
+and we read the lab's per-sample bigWigs. QuicK-mer2 counts k-mers that occur
+exactly once in the reference, so each estimate is specific to one _paralog_.
 
 ## Load the panel as one track
 
@@ -100,15 +99,15 @@ display settings turn that into a copy-number heatmap:
 Rows are in file order until **Clustering → Cluster rows by score...** in the
 track menu brings similar samples together.
 
-The same track is in `config_demo`, so
+The PUR track is also in `config_demo`, so
 [the panel opens on a copy-number-polymorphic window of chr3](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A162%2C275%2C163-163%2C360%2C944%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22height%22%3A420%2C%22defaultRendering%22%3A%22density%22%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainQuantile%22%3A1%7D%7D%2C%22showTree%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot)
 with these settings already applied.
 
-## Read the copy-number heatmap
+## Six individuals as profiles
 
-Six individuals across the range each appear below as a profile. We'll load them
-as a second track drawn as step lines on one pinned axis, so a plateau reads off
-the axis as a copy count:
+Navigate to `chr17:36,080,000-36,270,000`, around _CCL3L1_, and load six
+individuals spanning the range of copy number as a second track. The track draws
+step lines on one pinned axis, so each plateau lines up with a copy count:
 
 ```json addtrack
 {
@@ -160,7 +159,7 @@ the axis as a copy count:
 }
 ```
 
-<Figure caption="The same window as six stacked profiles on a shared 0-10 axis, from an individual carrying about nine copies down to one carrying none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
+<Figure caption="The CCL3L1 window as six stacked profiles on a shared 0-10 axis, from an individual carrying about nine copies down to one carrying none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
 Two paralogous blocks carry the variation. The right-hand one spans CCL3L1 and
 CCL4L1, chemokine genes that exist in a variable number of tandem copies. The
@@ -175,21 +174,22 @@ record, at chr17:36,108,706-36,155,499 with three symbolic alleles (`<CN2>`,
 widest range, and between 36,155,499 and 36,461,232 the GRCh38 release has no
 copy-number record.
 
-A VCF record is one interval with fixed breakpoints and a few symbolic alleles;
-nested multiallelic copy number does not fit that shape. Depth carries no
-genotype, allele frequency or phasing either. Where the variation fits the
-representation, they agree:
+A VCF record is one interval with fixed breakpoints and a few symbolic alleles,
+which cannot describe nested multiallelic copy number. Depth, for its part,
+gives no genotype, allele frequency or phasing. At a simple biallelic deletion
+the two sources agree. Navigate to _UGT2B17_ on chr4 with the same track
+settings:
 
 <Figure caption="UGT2B17 on chr4, a biallelic deletion, depth flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion. Same track settings as the CCL3L1 figure." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
-## Scaling past one population
+## A Zarr store for the whole panel
 
-The track above stops at 104 individuals.
+The PUR track above holds 104 individuals.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
-counts what filling this window costs at panel scale, all 2504 BigWigs against a
-store holding the same samples, using the readers the browser uses. It takes the
-same `name`/`group`/`url` TSV as the converter, which the
-[build script](#reproduce-it-end-to-end) writes:
+measures the requests, bytes and time needed to fill this window from all 2504
+BigWigs and from a Zarr store holding the same samples, using the readers the
+browser uses. It takes the same `name`/`group`/`url` TSV as the converter, which
+the [build script](#reproduce-it-end-to-end) writes:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/measure_signal_latency.ts
@@ -208,22 +208,20 @@ Against the hosted files, at a median range request of 25 ms:
 | bytes                                     | 48.39 MB     | 0.22 MB    |
 | wall clock                                | 24.5 s       | 0.2 s      |
 
-Each BigWig takes six reads; the Zarr store takes two metadata reads plus one
-chunk of 2504 samples by 256 bins. Every BigWig needs a few dependent reads to
-find where a region's values live, so the cost is a round trip times the number
-of files. The Zarr store is one array of samples by bins, so a single read
-covers every sample and the window loads in a couple of requests.
+Each BigWig needs six dependent reads to find and fetch a region's values, so
+the cost grows with the number of files. The Zarr store is one array of samples
+by bins: two metadata reads, then one chunk covering all 2504 samples across 256
+bins.
 
-[Zarr](https://zarr.dev/) v3 is that format and needs no tile server:
-[zarrita.js](https://github.com/manzt/zarrita.js) reads chunks off static
-hosting.
+[Zarr](https://zarr.dev/) v3 stores such arrays as chunk files on static
+hosting, which [zarrita.js](https://github.com/manzt/zarrita.js) reads directly.
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds a
-`MultiWiggleZarrAdapter`, and the display, clustering and settings above are
-unchanged.
+`MultiWiggleZarrAdapter`, which takes the same display settings as the BigWig
+track.
 
-The plugin is in **beta** and not in the
-[plugin store](/docs/user_guides/plugin_store) yet, but its built bundle is
-hosted (see [configuring plugins](/docs/config_guides/plugins)):
+The plugin is in beta and is not yet in the
+[plugin store](/docs/user_guides/plugin_store). Load its hosted bundle with a
+`plugins` entry (see [configuring plugins](/docs/config_guides/plugins)):
 
 ```json
 {
@@ -259,22 +257,22 @@ hosted (see [configuring plugins](/docs/config_guides/plugins)):
 }
 ```
 
-The adapter config gives only the store's location; the sample list, bin size
-and resolution levels are attributes of the store. A relative `uri` resolves
-against the config that holds it.
+The adapter config gives the store's location, and the store holds the sample
+list, bin size and resolution levels. A relative `uri` resolves against the
+config that holds it.
 
 <Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies. The CCL3L1/CCL4L1 block is flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
 
-Two requests are metadata, once per store; the rest are chunks, each carrying
-every sample across a range of bins, so a view's cost follows the width of the
-window.
+Past the two metadata reads, each request is a chunk carrying every sample
+across a range of bins, so the cost of a view follows the width of its window.
 
 ## A nested deletion
 
 The store also covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
-114 kb one. Clustering the panel there sorts individuals by which of the two
-they carry, and the long-read assembly calls of the Human Genome Structural
-Variation Consortium
+114 kb one. Navigate the Zarr track to `chr3:162,650,000-163,050,000` and run
+**Clustering → Cluster rows by score...**. The panel sorts individuals by which
+of the two deletions they carry, and the long-read assembly calls of the Human
+Genome Structural Variation Consortium
 ([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both:
 
 <Figure caption="All 2504 individuals over chr3:162.65-163.05 Mb, clustered, under HGSVC3 structural variants of 5 kb and longer. Each block of rows carries neither deletion, one or two copies of one of them, or one copy of each." src="/img/paper/cohort_cnv.png" />
@@ -284,7 +282,7 @@ Variation Consortium
 [`build_signal_zarr.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_signal_zarr.ts)
 turns a list of BigWigs into one store. It takes a TSV of `name` and `url`, with
 an optional `group` column between them (here the population, which labels and
-groups the rows). It imports two npm packages and nothing else:
+groups the rows). It imports two npm packages:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_signal_zarr.ts
@@ -300,8 +298,8 @@ node build_signal_zarr.ts \
   --levels 1000,10000
 ```
 
-The command above is the one behind the hosted store, run over all 2504 samples
-and the windows shown in its figures; the store lands at 2.4 MB.
+The command above built the hosted store from all 2504 samples, over the windows
+in the figures, and the result is 2.4 MB.
 
 `--levels` sets the resolution pyramid. Each entry is one samples-by-bins array,
 with coarser ones averaged from the finest. The adapter reads the coarsest level
@@ -316,10 +314,11 @@ averages alongside the mean.
 picks which a view draws, so an amplification narrower than a bin is visible
 under `max` and averaged away under `avg`.
 
-The finest level is held whole in memory while the rest derive from it. Without
-the `--region` flags this panel is a few GB at 10 kb bins and about 31 GB at the
-BigWigs' own 1 kb, so a whole-genome pyramid starts coarse. The converter prints
-that level's size before allocating and refuses when it will not fit.
+The converter holds the finest level in memory and derives the rest from it.
+Without the `--region` flags this panel takes a few GB at 10 kb bins and about
+31 GB at the 1 kb of the BigWigs, so start a whole-genome pyramid coarse. The
+converter prints the size of the finest level before allocating it, and exits if
+it will not fit.
 
 The output is a folder of files. Copy it to any static host with CORS enabled
 and point a track at it. To write a store from something other than BigWigs, the

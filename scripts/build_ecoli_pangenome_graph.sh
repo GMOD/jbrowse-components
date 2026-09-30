@@ -12,18 +12,16 @@
 #                  `odgi similarity` UPGMA tree
 #   depth          `odgi depth`, core vs accessory over K12 as a bigWig
 #   presence       `odgi pav`, one bigWig per strain as a MultiWiggle
-#
-# It also writes the `odgi viz` graph raster as a static comparison figure, and
-# the two subgraphs the graph genome view opens: a pggb window cut with `odgi
-# extract`, and a minigraph rGFA window cut with `gfatools view -R`.
+#   graph          `build_pangenome_graph.sh`, the whole graph as a track with
+#                  its coarse bubble tier, plus a lane colored by carriage
 #
 # It downloads the same five RefSeq E. coli chromosomes as the all-vs-all synteny
 # tutorial, PanSN-names a concatenated copy, runs pggb, converts each output to
 # the format its JBrowse track type reads, and writes a config.json with the
 # assemblies, per-strain gene tracks, the graph-derived tracks, and a default
 # session (a stacked synteny view plus the K12 reference lane). Everything
-# downstream of the STRAINS table is derived from it, so adding strains there is
-# the only edit an expanded pangenome needs.
+# downstream of the STRAINS table is derived from it, except the carriage lane's
+# five-strain legend.
 #
 # Everything is pinned (fixed RefSeq accessions, pinned pggb image + parameters),
 # so re-running reproduces the same graph and views.
@@ -42,8 +40,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so reroot_maf.py resolves after 
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.
-# build_pggb_tabix.sh fetches its own helper the same way.
-HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py build_pggb_tabix.sh
+# build_pangenome_graph.sh fetches its helpers the same way.
+HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py build_pangenome_graph.sh
   build_rgfa_tabix.sh build_rgfa_alleles.sh build_minigraph_paths.sh
   odgi_similarity_to_newick.py untangle_to_bed.py)
 # The JBrowse CLI, installed or via npx. Defined HERE rather than at the JBrowse
@@ -381,56 +379,7 @@ done
 # windows at full depth, 11.8% land in the top decile of degree, which is what
 # chance gives. See agent-docs/reference/PANGENOME_GRAPHS.md.
 
-# ── Graph overview: odgi viz (the "vs odgi viz" comparison figure) ────────────
-# pggb already renders its own 1D and 2D visualizations unless you pass -v, so
-# pggb/*.viz_*.png and pggb/*.lay.draw.png exist by the time this runs. This
-# re-runs viz only to size it for the tutorial figure (the multiqc rasters are
-# thumbnails); nobody reproducing this needs the command to see the picture.
-# A static raster of the graph itself: one row per strain, x-axis = graph node
-# order (the "pangenome sequence"), colored by path coverage. NOT a JBrowse track
-# — the tutorial contrasts this graph-native axis against the four reference-
-# anchored projections. Copy ecoli_pggb_graph.png into website/static/img/
-# pangenome/graph.png to render that figure.
-# -a 40 makes each of the (few) strain rows tall enough to read. -y is the TOTAL
-# image height and odgi expands past it to fit the path rows, so in practice it
-# sets how much room is left underneath them for the link band. This graph is
-# near-colinear and has almost no long-range links, so -y 260 spent most of the
-# figure on a band with nothing in it: measured on the shipped
-# static/img/pangenome/graph.png, the five path rows end at y=198 of 448, so 56%
-# of the picture was empty brackets. 20 keeps the band present — it is real
-# graph structure when there is any — without letting emptiness dominate a
-# figure whose point is the five strain rows. Same value and same reasoning as
-# build_ecoli_pangenome_cactus.sh.
-#
-# THE SHIPPED static/img/pangenome/graph.png STILL PREDATES THIS, and refreshing
-# it is a full demo rebuild rather than one odgi viz call. Measured on a rebuild
-# from these same accessions and this same pinned image:
-#
-#   -y does not touch the path rows. The five rows are byte-identical between
-#   -y 20 and -y 260 on one graph, so the change costs the figure nothing.
-#
-#   -y re-lays the link band out; it does not crop it. 34% of the band's pixels
-#   differ between the two, so taking the top 25 px off the shipped 448 px PNG
-#   is NOT the same picture — it keeps the innermost brackets and drops the
-#   long-range links, which are the ones worth drawing.
-#
-#   smoothxg is not deterministic. The rebuild came back with 606,509 nodes
-#   against the 605,544 recorded above and the same 8.34 Mb of graph sequence,
-#   and its raster differs from the shipped one in 24% of the path-row pixels —
-#   the same character, different detail. So a raster re-rendered on its own
-#   would no longer be a picture of the graph every other pggb figure on the
-#   page came from, which is what the page's odgi-viz-vs-projections comparison
-#   rests on. Refresh it when the demo is rebuilt end to end and all of them
-#   move together.
-#
-# Until then the tutorial's caption names the band, so the figure is not
-# carrying 56% unexplained.
-in_pggb odgi viz -i "/data/$GFA" -o /data/ecoli_pggb_graph.png -x 1500 -a 40 -y 20
-
-# ── Graph-view assets: two subgraphs for the Graph genome view ────────────────
-# Neither is a JBrowse track: both are GFA files the graph genome view plugin
-# opens directly, and they are what the tutorial's two graph figures show.
-#
+# ── Graph-view assets ────────────────────────────────────────────────────────
 # A pggb GFA carries no coordinates on its segments (the only reference
 # positions live in the P/W lines), so a window has to be cut out of the graph:
 # extract -E takes every node between the first and last in the range (the
@@ -441,26 +390,6 @@ in_pggb odgi viz -i "/data/$GFA" -o /data/ecoli_pggb_graph.png -x 1500 -a 40 -y 
 in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:1004500-1004900 -E -o - \
   | odgi sort -i - -o - -O \
   | odgi view -i - -g" > ecoli_pggb_subgraph.gfa
-
-# The IS5 bubble, cut as a file rather than from the tabix index. The index
-# rebuilds segments and links only, so a subgraph cut from it has no P lines and
-# the view's "Draw paths on edges" has nothing to draw; the file route keeps
-# them, which is what makes carriage visible at this locus -- K12 walks the
-# 1,199 bp element and the other four take the edge past it.
-in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:1299400-1300800 -E -o - \
-  | odgi sort -i - -o - -O \
-  | odgi view -i - -g" > ecoli_pggb_is5.gfa
-
-# A collapsed repeat, inside the 16S rRNA gene rrsB. -E is the wrong tool here
-# and expensively so: these segments are shared by rRNA copies right across the
-# five chromosomes, so following every node between the first and last in the
-# range walks out to all of them and returns >32,000 segments for a 500 bp
-# window. -d bounds the walk by bp instead, which is what keeps a repeat
-# cuttable. The cut is nine path intervals over five sequences -- odgi names
-# each visit for where it starts, so the repeat copies are distinguishable.
-in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:4166800-4167300 -d 500 -o - \
-  | odgi sort -i - -o - -O \
-  | odgi view -i - -g" > ecoli_pggb_rrna.gfa
 
 # That subgraph's nodes on the reference axis, so the graph view and a linear
 # view of the same locus are one picture rather than two colorings. Walking the
@@ -473,14 +402,12 @@ python3 "$SCRIPT_DIR/gfa_nodes_to_bed.py" ecoli_pggb_subgraph.gfa "${REF}#1#chr"
   | sort -k1,1 -k2,2n | bgzip > ecoli_pggb_subgraph_nodes.bed.gz
 tabix -f -p bed ecoli_pggb_subgraph_nodes.bed.gz
 
-# The same walk over the WHOLE pggb graph, which is what makes it browsable by
-# locus instead of one cut window at a time. rGFA states each segment's position
-# in tags and a plain GFA states it in path order, so this emits the two BEDs
-# RgfaTabixAdapter already reads and nothing downstream has to know the
-# difference: region query, the subgraph cut, both anchored layouts and hover
-# sync all work off these. Runs on the host (python3 only, no docker) in about
-# ten seconds on this graph.
-bash "$SCRIPT_DIR/build_pggb_tabix.sh" "$GFA" ecoli_pggb "$REF"
+# The same walk over the WHOLE pggb graph, so it is browsable by locus: the
+# segment and link indexes RgfaTabixAdapter reads, with each segment's carriers
+# as an SM:Z: tag, and the one-node-per-bubble tier (ecoli_pggb.tier50) cut from
+# the raw snarl VCF above. Runs on the host (python3 only, no docker).
+bash "$SCRIPT_DIR/build_pangenome_graph.sh" "$GFA" ecoli_pggb --reference "$REF" \
+  --snarls ecoli_pggb_snarls.vcf.gz
 
 # The rGFA counterpart. minigraph tags every segment with the stable sequence it
 # sits on, its offset there and its rank, so gfatools cuts a window by reference
@@ -794,9 +721,9 @@ cat > alleles_track.json <<'JSON'
 JSON
 jb add-track-json alleles_track.json --update --out "$APP"
 
-# The pggb subgraph's nodes on the K12 axis, the linear half of the graph-view
-# figure. No display config: the file's itemRgb is the view's own Depth ramp, so
-# the strip already paints in the graph's colors, and `collapsed` keeps it one
+# The pggb subgraph's nodes on the K12 axis. No display config: the file's
+# itemRgb is the graph view's Depth ramp, so the strip paints in the graph's
+# colors, and `collapsed` keeps it one
 # row of color rather than 36 numbered boxes.
 cp ecoli_pggb_subgraph_nodes.bed.gz ecoli_pggb_subgraph_nodes.bed.gz.tbi "$APP/"
 cat > subgraph_nodes_track.json <<'JSON'
@@ -815,11 +742,12 @@ cat > subgraph_nodes_track.json <<'JSON'
 JSON
 jb add-track-json subgraph_nodes_track.json --update --out "$APP"
 
-# The whole pggb graph as a track, off the two BEDs built above: the same
-# adapter and the same shape as the minigraph segments track, so the graph
-# draws at any locus rather than at a prepared window.
-cp ecoli_pggb.segs.bed.gz ecoli_pggb.segs.bed.gz.tbi \
-   ecoli_pggb.links.bed.gz ecoli_pggb.links.bed.gz.tbi "$APP/"
+# The whole pggb graph as a track, drawing from the bubble tier past one bp per
+# pixel; the tier as a separate track; and the segments colored by how many
+# strains walk each one.
+for p in ecoli_pggb ecoli_pggb.tier50; do
+  cp "$p".segs.bed.gz "$p".segs.bed.gz.tbi "$p".links.bed.gz "$p".links.bed.gz.tbi "$APP/"
+done
 cat > pggb_segments_track.json <<'JSON'
 {
   "type": "GraphTrack",
@@ -828,22 +756,64 @@ cat > pggb_segments_track.json <<'JSON'
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "ecoli_pggb"
+    "uri": "ecoli_pggb",
+    "coarse": { "uri": "ecoli_pggb.tier50", "aboveBpPerPx": 1 }
   },
+  "displayDefaults": { "showLabels": "none" },
   "displays": [
-    {
-      "type": "LinearGraphDisplay",
-      "displayId": "ecoli_pggb_segments-LinearGraphDisplay"
-    },
-    {
-      "type": "LinearBasicDisplay",
-      "displayId": "ecoli_pggb_segments-LinearBasicDisplay",
-      "showLabels": false
-    }
+    { "type": "LinearGraphDisplay" },
+    { "type": "LinearBasicDisplay" }
   ]
 }
 JSON
 jb add-track-json pggb_segments_track.json --update --out "$APP"
+cat > pggb_tier_track.json <<'JSON'
+{
+  "type": "GraphTrack",
+  "trackId": "ecoli_pggb_tier50",
+  "name": "pggb graph bubbles (coarse tier, one node per bubble)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "ecoli_pggb.tier50"
+  },
+  "displays": [
+    { "type": "LinearGraphDisplay" },
+    { "type": "LinearBasicDisplay" }
+  ]
+}
+JSON
+jb add-track-json pggb_tier_track.json --update --out "$APP"
+cat > pggb_carriage_track.json <<'JSON'
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_pggb_carriage",
+  "name": "pggb graph: segment carriage",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "ecoli_pggb"
+  },
+  "displayDefaults": {
+    "displayMode": "collapsed",
+    "showLabels": "none",
+    "color": {
+      "field": "carriers",
+      "domain": ["5", "4", "3", "2", "1"],
+      "range": ["#bdbdbd", "#fed976", "#feb24c", "#fd8d3c", "#e31a1c"],
+      "labels": [
+        "All 5 strains (core)",
+        "4 strains",
+        "3 strains",
+        "2 strains",
+        "1 strain (private)"
+      ],
+      "title": "Strains carrying"
+    }
+  }
+}
+JSON
+jb add-track-json pggb_carriage_track.json --update --out "$APP"
 
 # The adapter and the view both come from the graph genome view plugin, which is
 # not bundled in JBrowse Web and has no CLI command, so declare it directly. It
@@ -867,7 +837,7 @@ PY
 
 # ── Default session ──────────────────────────────────────────────────────────
 # view 1 stacks the strains for the synteny projection; view 2 is the reference
-# lane with the depth, complexity, variant and MAF projections beneath the genes.
+# lane with the depth, presence, variant and MAF projections beneath the genes.
 # Both are built from $STRAINS rather than listed, so an edit to the strain table
 # at the top of this script carries through to the session.
 panels=$(for strain in $STRAINS; do printf '{ "assembly": "%s" },' "$strain"; done | sed 's/,$//')
@@ -902,11 +872,4 @@ echo "tree, depth, per-strain presence). Serve it, e.g.:"
 echo "  npx serve $(pwd)/$APP"
 echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
 echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
-echo "The graph overview raster is ecoli_pggb_graph.png (odgi viz); pggb wrote its"
-echo "own 1D and 2D visualizations into pggb/ as well."
-echo "For the graph genome view, load ecoli_pggb_subgraph.gfa (pggb window),"
-echo "ecoli_pggb_is5.gfa (the IS5 bubble, with the paths that carry each arm),"
-echo "ecoli_pggb_rrna.gfa (the collapsed 16S rRNA repeat, nine copies on one"
-echo "run of graph), ecoli_rgfa_slice.gfa (minigraph rGFA window, laid out on"
-echo "K12 coordinates), or ecoli_paa_subgraph.gfa (the paa island and the four"
-echo "paths around it)."
+echo "pggb wrote its own 1D and 2D visualizations into pggb/."

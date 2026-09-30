@@ -101,7 +101,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/pangenome_hprc_carriers)
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/tutorials/pangenome_hprc_repeats)
-- [](/docs/tutorials/pangenome_chrm)
 
 ### Structural variation
 

@@ -18,6 +18,12 @@
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
         }
       },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+        }
+      },
       "geneticCodes": {
         "chrM": 2
       }

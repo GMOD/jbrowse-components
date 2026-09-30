@@ -11,13 +11,12 @@ tutorial_category: genomes.jbrowse.org
 A RepeatMasker track is one packed lane of colored blocks. The same file opened
 as a [multi-row feature display](/docs/user_guides/multirow_feature_track) is
 one labelled lane per class, whose height is that class's share of the window.
-The class is already in the file, and the display discovers the lanes from it.
+JBrowse reads the classes from the file, so no data preparation is needed. Every
+genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), and any other
+UCSC/GenArk hub config, carries a RepeatMasker track to try it on.
 
 ## Prerequisites
 
-- nothing to install to read along: the RepeatMasker track is already on any
-  genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), or on any other
-  UCSC/GenArk hub config
 - a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
   needs nothing hosted
@@ -40,19 +39,20 @@ jbrowse.org.
   [Reproduce it end to end](#reproduce-it-end-to-end) checks a home-built
   conversion against: https://jbrowse.org/ucsc/dm6/rmsk.bed.gz
 
-## Where the class lives in the file
+## Where the class is stored in the file
 
-The two hub pipelines store it differently:
+UCSC golden-path and GenArk hubs store the repeat class differently:
 
 - A **UCSC golden-path** assembly ships a BED whose header names its columns,
-  `repClass` among them. That is an attribute, so `rows` is just `"repClass"`.
-- A **GenArk** assembly ships a `bigRmskBed`, whose autoSql has no class column
-  at all. The class is encoded in the name as a suffix, `L1HS#LINE/L1`, so the
-  value has to be derived. That case is worked in
+  `repClass` among them. That column is a feature attribute, so `rows` is
+  `"repClass"`.
+- A **GenArk** assembly ships a `bigRmskBed`, whose autoSql has no class column.
+  The name carries the class as a suffix, `L1HS#LINE/L1`, so the value has to be
+  derived, as worked in
   [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column).
 
-Either way the rows are discovered from the values the loaded region holds, so a
-window with no satellite has no satellite lane.
+In both cases JBrowse builds the lanes from the values in the loaded region, so
+a window with no satellite repeats has no satellite lane.
 
 ## Switching the track over
 
@@ -72,10 +72,9 @@ fetch:
 
 ## Pinning the lanes in a track config
 
-A track config makes the partitioned view the track's default, and two more
-settings come with it: `rowColor` pairs a class with its color, so a lane keeps
-its color as the window's class list changes, and `rows.domain` fixes the lane
-order the same way.
+A track config can open the track in the partitioned view. Two more settings
+keep the lanes stable as the window's class list changes: `rowColor` pairs a
+class with a color, and `rows.domain` fixes the lane order.
 
 ```json addtrack
 {
@@ -87,7 +86,6 @@ order the same way.
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "rmsk_hg38_rows-LinearMultiRowFeatureDisplay",
       "rows": "repClass",
       "rowColor": {
         "domain": [
@@ -116,20 +114,15 @@ order the same way.
 A lane not named in `rowColor` takes a color from the categorical palette by its
 position in the stack, so its color moves as the window's class list changes.
 
-Two details in the config are easy to miss:
-
-- The display is not the track's default, so it needs a real `displays` entry:
-  the `displayDefaults` shorthand's `color` would reach the default display as
-  well.
-- Whichever display is listed **first** becomes the one the track opens with.
-  Putting a bare `{ "type": "LinearBasicDisplay", "displayId": ... }` ahead of
-  the multi-row entry keeps the packed form as the default and leaves the lanes
-  one menu click away.
+The multi-row display needs a `displays` entry because the track opens with the
+display listed **first**. Putting a bare `{ "type": "LinearBasicDisplay" }`
+ahead of the multi-row entry keeps the packed form as the default and leaves the
+lanes one menu click away.
 
 ## Checking the lanes against the file
 
-The lane heights are a claim about the window, so read the same numbers out of
-the file. Over the window in the figures:
+To check the lane heights, count the classes in the file over the window in the
+figures:
 
 ```bash
 tabix https://jbrowse.org/ucsc/hg38/rmsk.bed.gz chr17:45,700,000-45,750,000 |
@@ -140,31 +133,29 @@ tabix https://jbrowse.org/ucsc/hg38/rmsk.bed.gz chr17:45,700,000-45,750,000 |
 
 The classes it prints are the lanes on screen, and their bp totals are the area
 drawn in each lane. A lane in the picture with no line here, or the reverse,
-means the view is not showing the file you think it is.
+means the view is showing a different file.
 
-The `Unknown` lane is the control: no entry in the `rowColor` above and none in
-the cookbook's lookup table, and it is on screen anyway, because the lanes come
-from the file. Pan to a window whose output has no `Unknown` line and the lane
-goes away.
+The `Unknown` lane is the control. Neither the `rowColor` above nor the
+cookbook's lookup table names it, and it appears because the lanes come from the
+file. Pan to a window whose output has no `Unknown` line and the lane goes away.
 
-The same command with `$6` instead of `$7` counts `repFamily`, which is the
+The tabix command with `$6` instead of `$7` counts `repFamily`, which is the
 finer partition (`L1`, `Alu`, `MIR`) if the classes turn out to be too coarse
 for what you are reading.
 
 ## Serving your own RepeatMasker output
 
-Everything above reads a hub's track, whose BED already carries the `repClass`
-column the display partitions on. RepeatMasker's own `.out` does not have one:
-it writes a single `class/family` field, `LINE/L1` for a repeat with both and a
-bare `Simple_repeat` for one whose family is its class. Splitting that field in
-two, under a header naming the columns, is the whole difference between the
-`.out` and the file the track above is reading:
+A hub's RepeatMasker BED carries the `repClass` column the display partitions
+on. The RepeatMasker `.out` file instead writes a single `class/family` field,
+`LINE/L1` for a repeat with both and a bare `Simple_repeat` for one whose family
+is its class. Splitting that field in two, under a header naming the columns,
+turns the `.out` into the file the track above reads:
 
 <!-- from: scripts/build_repeatmasker_classes.sh -->
 
 ```bash
-# the header names the columns, which is what lets `rows: "repClass"`
-# name one the BED spec has never heard of
+# the header names the columns, so `rows: "repClass"` can name a column
+# outside the BED spec
 {
   printf '#genoName\tgenoStart\tgenoEnd\tname\tstrand\trepFamily\trepClass\tswScore\tmilliDiv\n'
   awk 'BEGIN { OFS = "\t" }
@@ -203,8 +194,7 @@ npx --yes serve repeatmasker_build/jbrowse2               # then open the printe
 It runs the conversion above, `samtools faidx` over the FASTA for the assembly,
 and `jbrowse add-track` with the display already set.
 
-Run the script on a genome UCSC masks too, and its output can be compared
-against UCSC's own:
+On a genome UCSC also masks, compare the output with the UCSC conversion:
 
 ```bash
 curl -o ucsc_rmsk.bed.gz https://jbrowse.org/ucsc/dm6/rmsk.bed.gz
@@ -212,10 +202,11 @@ diff <(gzip -dc repeatmasker_build/rmsk.bed.gz | grep -v '^#' | cut -f1-7 | sort
      <(gzip -dc ucsc_rmsk.bed.gz | grep -v '^#' | cut -f1-7 | sort)
 ```
 
-Silence means every interval, name, strand, family and class agrees with UCSC's
-conversion of the same `.out`. The two places this can disagree are both in the
-`.out` format: its coordinates are 1-based and inclusive where BED's are 0-based
-and half-open, and its strand column spells the minus strand `C`.
+No output means every interval, name, strand, family and class agrees with the
+UCSC conversion of the same `.out`. A disagreement usually comes from one of two
+quirks of the `.out` format, both handled by the awk above: its coordinates are
+1-based and inclusive where BED coordinates are 0-based and half-open, and its
+strand column spells the minus strand `C`.
 
 ## See also
 

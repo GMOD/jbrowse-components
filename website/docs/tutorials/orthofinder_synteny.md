@@ -36,7 +36,7 @@ builds `wheat` from that conversion.
 
 ## Where the data comes from
 
-Each set is one Ensembl division's protein FASTA and GFF3.
+Each set takes its protein FASTA and GFF3 files from one Ensembl division.
 
 - **`vertebrates`**, Ensembl release 113:
   https://ftp.ensembl.org/pub/release-113/
@@ -59,7 +59,7 @@ The `vertebrates` set is human, chicken, frog, spotted gar and zebrafish.
 
 For one locus, a
 [multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-draws a lane per genome, each in its own coordinates.
+draws a lane per genome, each in the coordinates of the genome it shows.
 
 ```json session config=https://jbrowse.org/demos/orthofinder_vertebrates/config.json
 {
@@ -106,16 +106,16 @@ The `wheat` set is six genomes of wheat's polyploid history:
 - **T. timopheevii**, a second tetraploid also tracing to the A donor
 
 **Show all regions - same bp per pixel** in the view menu (`sameScale` in a
-session spec) puts the rows on one bp/px, so a row's drawn length is its genome
+session spec) puts the rows on one bp/px, so row length on screen matches genome
 size.
 
-<Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order. All six rows are on one genomic scale, so a row's length is its genome size: the two diploid donors against the hexaploid they built, with the tetraploids between." src="/img/orthofinder_synteny/wheat.png" />
+<Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order. All six rows are on one genomic scale, so row length matches genome size: the two diploid donors against the hexaploid they built, with the tetraploids between." src="/img/orthofinder_synteny/wheat.png" />
 
 ### Reading one chromosome out of the stack
 
 Any pair opens as a two-row view; this one puts Aegilops tauschii's seven
-chromosomes over bread wheat 4A, colored by the palette button's **Query**,
-painting each link by its tauschii chromosome.
+chromosomes over bread wheat 4A, colored by **Query** in the palette button
+menu, painting each link by its tauschii chromosome.
 
 <Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track. Color by → Query gives each chromosome a distinct color, and 4A resolves into three blocks in order along it: 4D, then 5D, then 7D." src="/img/orthofinder_synteny/wheat_4a.png" />
 
@@ -125,16 +125,17 @@ painting each link by its tauschii chromosome.
 ## Drosophila: chromosome arms that outlast gene order {#drosophila}
 
 The `drosophila` set is _D. melanogaster_, close relatives _D. simulans_ and _D.
-yakuba_, and the distant _D. pseudoobscura_ and _D. virilis_. Flies keep their
-chromosome arms (Muller elements) but rewrite gene order inside them.
+yakuba_, and the distant _D. pseudoobscura_ and _D. virilis_. Across these flies
+the chromosome arms (Muller elements) keep their gene content, while inversions
+reorder the genes inside each arm.
 
-<Figure caption="Five Drosophila genomes stacked on OrthoFinder orthogroups: melanogaster, simulans, yakuba, pseudoobscura, virilis, on one bp/px. Each melanogaster arm's colour marks a single chromosome in every row below, and the bundles cross themselves where inversions have accumulated." src="/img/orthofinder_synteny/drosophila.png" />
+<Figure caption="Five Drosophila genomes stacked on OrthoFinder orthogroups: melanogaster, simulans, yakuba, pseudoobscura, virilis, on one bp/px. In each band the ribbons take the colour of the chromosome arm they leave in the row above, and the bundle from each arm stays together in the row below; inside a bundle the ribbons cross where inversions have reordered the genes." src="/img/orthofinder_synteny/drosophila.png" />
 
 ### One locus, one lane per fly
 
 Gene order needs a window. A
 [multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-draws a lane per fly in that fly's coordinates.
+draws a lane per fly, each in the coordinates of that fly genome.
 
 ```json session config=https://jbrowse.org/demos/orthofinder_drosophila/config.json
 {
@@ -172,7 +173,7 @@ Every fly keeps the melanogaster genes in this 3L window.
 ## Nightshades: the same genes over four times the DNA {#nightshades}
 
 The `solanaceae` set is tomato, potato, pepper, _Nicotiana attenuata_ and
-coffee. On one bp/px a row's length is its genome size.
+coffee. On one bp/px, row length matches genome size.
 
 <Figure caption="Five nightshade-family genomes stacked on OrthoFinder orthogroups: tomato, potato, pepper, Nicotiana attenuata, coffee, all on one bp per pixel. Pepper's row is by far the longest while matching tomato gene for gene, and coffee's is the shortest." src="/img/orthofinder_synteny/solanaceae.png" />
 
@@ -180,8 +181,8 @@ coffee. On one bp/px a row's length is its genome size.
 
 A
 [multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-fits each lane to the window's orthologs in its own coordinates, with the scale
-printed in the header.
+fits each lane, in the coordinates of the genome it shows, to the orthologs in
+the window, with the scale printed in the header.
 
 ```json session config=https://jbrowse.org/demos/orthofinder_solanaceae/config.json
 {
@@ -215,24 +216,25 @@ printed in the header.
 
 Every genome keeps the two dozen genes in this window.
 
-<Figure caption="A tomato window over potato, pepper, Nicotiana attenuata and coffee lanes from one orthogroups track, each lane in that genome's coordinates. Every lane spans more of its genome than the anchor window to hold the same genes, the pepper and N. attenuata lanes most of all, with the multiple in each header." src="/img/multiway_synteny/solanaceae_lanes.png" />
+<Figure caption="A tomato window over potato, pepper, Nicotiana attenuata and coffee lanes from one orthogroups track, each lane in the coordinates of the genome it shows. Every lane spans more of its genome than the anchor window to hold the same genes, the pepper and N. attenuata lanes most of all, with the multiple in each header." src="/img/multiway_synteny/solanaceae_lanes.png" />
 
-Every lane keeps the anchor's gene order except coffee, marked `[rev]`.
+Every lane except coffee, marked `[rev]`, keeps the tomato gene order.
 
-## Grasses: a whole-genome duplication only maize has {#grasses}
+## Grasses: the maize whole-genome duplication {#grasses}
 
 The `grasses` set is rice, sorghum, maize, brachypodium and foxtail millet.
 
-<Figure caption="Five grass genomes stacked on OrthoFinder orthogroups: rice, sorghum, maize, brachypodium, foxtail millet. Maize's whole-genome duplication shows up as visibly more ribbons per gene in its two bands than in the non-duplicated pairs." src="/img/orthofinder_synteny/grasses.png" />
+<Figure caption="Five grass genomes stacked on OrthoFinder orthogroups: rice, sorghum, maize, brachypodium, foxtail millet. The maize whole-genome duplication shows as more ribbons per gene in the two maize bands than in the other pairs." src="/img/orthofinder_synteny/grasses.png" />
 
-The ribbon count is set in
-[what to do with a duplicated gene](#what-to-do-with-a-duplicated-gene).
+The `--pick` option in
+[what to do with a duplicated gene](#what-to-do-with-a-duplicated-gene) sets how
+many ribbons a duplicated gene draws.
 
 ### One rice window, one lane per grass
 
-One window, as a
+Open the same five grasses as a
 [multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates),
-under rice's gene track:
+under the rice gene track:
 
 ```json session config=https://jbrowse.org/demos/orthofinder_grasses/config.json
 {
@@ -263,14 +265,14 @@ under rice's gene track:
 }
 ```
 
-A lane has one refName, so the maize lane shows only one copy.
+A lane follows one refName, so the maize lane shows one of the two copies.
 
-<Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane drawing that grass's gene models. The block is syntenic in all four, and the maize lane shows whichever of maize's two duplicated copies places more of the window." src="/img/multiway_synteny/grasses_rice_lanes.png" />
+<Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane drawing that grass's gene models. The block is syntenic in all four, and the maize lane shows whichever of the two maize copies places more of the window." src="/img/multiway_synteny/grasses_rice_lanes.png" />
 
 The stacked view shows both maize copies at once. **Launch → Linear synteny view
-(visible region)** in the lane track's menu offers a full row per grass.
+(visible region)** in the lane track menu offers a full row per grass.
 
-<Video src="/media/synteny/multiway_launch_stack.mp4" caption="The handoff from the grasses lane track: the track menu's launch entry, the dialog printing where each grass's row would open and offering a checkbox per row, and Replace current view swapping the lane view for the stack." />
+<Video src="/media/synteny/multiway_launch_stack.mp4" caption="The handoff from the grasses lane track: the launch entry in the track menu, the dialog printing where the row for each grass would open and offering a checkbox per row, and Replace current view swapping the lane view for the stack." />
 
 ## Producing the blocks table
 
@@ -300,13 +302,13 @@ python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
 ```
 
 `blockAssemblies` must match the column order the script prints.
-`--assembly COLUMN=NAME` renames a column; a typo there never fires, and a typo
-in `--bed` is an error.
+`--assembly COLUMN=NAME` renames a column; a misspelled column there renames
+nothing and raises no error, while a typo in `--bed` is an error.
 
 ### What to do with a duplicated gene
 
-A cell holds one genome's genes in the orthogroup, so two genes in one cell have
-no single synteny link. Three treatments:
+A cell holds the genes from one genome in the orthogroup, so two genes in one
+cell have no single synteny link. `--pick` chooses among three treatments:
 
 | `--pick`           | A rice gene with two maize orthologs                         | Use when                                                  |
 | ------------------ | ------------------------------------------------------------ | --------------------------------------------------------- |
@@ -316,15 +318,16 @@ no single synteny link. Three treatments:
 
 A cell over `--max-copies` counts as a family and contributes no row.
 
-Sorghum sits over rice as a control: same ancestry, no duplication.
+Sorghum sits over rice as a control, since it shares the ancestry and lacks the
+duplication.
 
-<Figure caption="One rice locus between sorghum and maize, off the same grasses_orthogroups track, with each genome's gene track under its row. Sorghum has one ortholog per rice gene and maize has two, one into each of the two maize regions, and the genes that kept only one maize copy sit among them." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
+<Figure caption="One rice locus between sorghum and maize, off the same grasses_orthogroups track, with a gene track under each row. Sorghum has one ortholog per rice gene and maize has two, one into each of the two maize regions, and the genes that kept only one maize copy sit among them." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
 
 ### Making the ids resolve
 
-Column 4 of each BED must match the table's ids exactly; the build script
+Column 4 of each BED must match the ids in the table exactly; the build script
 renames each protein to its gene id first. `--bed name=file` reports the share
-of ids placed, and none placed stops the conversion.
+of ids placed, and the conversion stops if it places none.
 
 ## Loading the orthogroups in JBrowse
 
@@ -366,18 +369,18 @@ One track backs every band of the stack:
 }
 ```
 
-`blockAssemblies` and `bedLocations` follow the table's columns, and the track
-draws every genome they name. A mismatch against the conversion's order reports
-a track error naming both lists.
+`blockAssemblies` and `bedLocations` follow the table columns, and the track
+draws every genome they name. A mismatch against the column order the conversion
+printed reports a track error naming both lists.
 
 An orthogroup is a set, so any two filled columns are a direct statement about
 that pair, and row order in the stack is free.
 
 ### Assemblies from a chrom.sizes
 
-A gene-level synteny view never reads a base, so each assembly is a
-[`ChromSizesAdapter`](/docs/config/chromsizesadapter) built from its GFF3's
-`##sequence-region` header.
+A gene-level synteny view reads no sequence, so each assembly is a
+[`ChromSizesAdapter`](/docs/config/chromsizesadapter) built from the
+`##sequence-region` header in its GFF3.
 
 <!-- from: scripts/build_orthofinder_synteny.sh -->
 
@@ -385,8 +388,8 @@ A gene-level synteny view never reads a base, so each assembly is a
 jbrowse add-assembly wheat.chrom.sizes --name wheat --load copy
 ```
 
-The script keeps only the sequences carrying the most genes; raise `MAXSEQ`
-where it would add whole chromosomes.
+The script keeps the `MAXSEQ` sequences carrying the most genes; raise it for a
+genome with more chromosomes than that.
 
 ## Reproduce it end to end
 
@@ -437,13 +440,13 @@ INSDC accessions, each from its
 
 ## Your own genomes
 
-A set name only tells the script which Ensembl files to download; your own
-genomes need a FASTA and a GFF3 per genome.
+A set name tells the script which Ensembl files to download. Your own genomes
+need a FASTA and a GFF3 per genome.
 [gffread](https://github.com/gpertea/gffread) translates each CDS into the
 proteome and prints the transcript-to-gene map and FASTA index alongside.
 
 Column 2 also takes a proteome directly (skipping translation); its headers then
-need a `gene:<id>` tag matching the GFF3's `ID=gene:<id>`.
+need a `gene:<id>` tag matching `ID=gene:<id>` in the GFF3.
 
 Name the files in a manifest, one line per genome:
 

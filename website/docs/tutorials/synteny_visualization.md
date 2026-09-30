@@ -9,9 +9,10 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
 ---
 
-Align two assemblies with `minimap2 -c --eqx`, load the PAF as a synteny track,
-and read it whole-genome in a dotplot and base-level in the linear synteny view.
-`add-track -a` takes `query,target`, the reverse of the minimap2 argument order.
+We compare three _Helicobacter pylori_ strains (26695, CHC155 and J99) by
+aligning their assemblies with minimap2. We read the alignment whole-genome in a
+dotplot and base by base in a linear synteny view, where the genes of the three
+strains line up. The steps work the same on any pair of assemblies.
 
 ## Prerequisites
 
@@ -50,12 +51,6 @@ RefSeq genes.
   open: https://jbrowse.org/demos/hpylori/26695_vs_j99.pif.gz and
   https://jbrowse.org/demos/hpylori/config.json
 
-## Three strains, stacked
-
-Three _Helicobacter pylori_ strains (26695, CHC155, and J99) go from their
-genome hubs to a stacked three-genome synteny view. The steps work the same on
-any pair of assemblies.
-
 ## Aligning the assemblies
 
 <!-- from: scripts/build_hpylori_synteny.sh -->
@@ -81,8 +76,8 @@ JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 
 Each strain's hub `config.json` holds a whole JBrowse assembly: the 2bit
 sequence, an alias table and the NCBI RefSeq gene track. The build copies each
-assembly entry and gene track into its own config as the hub wrote it, relabels
-the row, and adds the old short name as an alias so a session can still say
+assembly entry and gene track into one config as the hub wrote it, relabels the
+row, and adds the old short name as an alias so a session can still say
 `hpylori_26695`:
 
 ```json
@@ -158,23 +153,23 @@ above, then:
 
 A whole strain has about as many genes as its row has pixels, so zoom each row
 in once with its magnifier, then open each strain's gene track, **NCBI RefSeq -
-RefSeq All (GFF)**, from its own track selector.
+RefSeq All (GFF)**, from the track selector for that row.
 
 <Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, a zoom in on each row, and each strain's gene track from the track selector for that row." />
 
 <Figure caption="Three H. pylori strains stacked with a gene track on each genome. Ribbons connect aligned blocks between adjacent genomes, and genes such as prfB, fliR, cbf2 and efp line up across all three strains." src="/img/sv_synteny/linear_synteny_genes.png" />
 
-Each panel is a full linear genome view with its own search box, zoom and track
-selector. See [](/docs/user_guides/linear_synteny_view) for ribbon options and
-[URL parameters → linear synteny view](/docs/urlparams#linear-synteny-view) for
-building one from a URL.
+Each panel is a full linear genome view with a separate search box, zoom and
+track selector. See [](/docs/user_guides/linear_synteny_view) for ribbon options
+and [URL parameters → linear synteny view](/docs/urlparams#linear-synteny-view)
+for building one from a URL.
 
 ## Coloring genes by ortholog
 
 In bacteria the gene symbol is effectively the ortholog id, since NCBI reuses
 standardized symbols across strains. On each gene track, pick **Color by... →
-Attribute...** from the track menu and enter `gene`. Every distinct value gets
-its own color from one palette, chosen from the value itself, so an ortholog
+Attribute...** from the track menu and enter `gene`. JBrowse gives each distinct
+value a color from one palette, chosen from the value itself, so an ortholog
 carries one color down all three panels. Features with no value are grey; most
 genes here carry only a locus tag.
 
@@ -219,15 +214,16 @@ jbrowse add-track alignment.pif.gz -a query,target --load copy
 
 ## Troubleshooting
 
-`assemblyNames` in the wrong order is the common one. JBrowse checks at view
-load whether the top row's chromosome names belong to that assembly, and a
-warning in the view header names the remedy when they belong to the other row.
+A synteny track with its `assemblyNames` in the wrong order draws an empty band.
+JBrowse checks at view load whether the top row's chromosome names belong to
+that assembly, and a warning in the view header names the remedy when they
+belong to the other row.
 
 <Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the warning icon in the header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
-A view that scatters its blocks randomly comes from a preset too tight for the
-divergence, which leaves only short spurious anchors. Raise it, and check
-`-c --eqx` were passed.
+Blocks scattered at random come from a minimap2 preset too tight for the
+divergence, which leaves only short spurious anchors. Use a looser preset, such
+as `asm20` over `asm5`, and check that `-c --eqx` were passed.
 
 ## Reproduce it end to end
 

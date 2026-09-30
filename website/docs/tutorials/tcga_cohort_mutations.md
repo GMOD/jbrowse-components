@@ -18,13 +18,6 @@ subtype shares line up.
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop), which loads these tracks by
   URL with nothing to host) and the [JBrowse CLI](/docs/cli)
-- These files, hosted:
-
-| File                                                                                  | What                                  |
-| ------------------------------------------------------------------------------------- | ------------------------------------- |
-| `https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz`                           | the cohort's somatic mutations        |
-| `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`                               | per-tumor histology, receptors, stage |
-| `https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz` | per-gene mutation rate per subtype    |
 
 ## Where the data comes from
 
@@ -35,17 +28,17 @@ TCGA-BRCA open-access somatic mutation calls from the GDC
   the GDC API: https://api.gdc.cancer.gov/files
 - per-tumor clinical annotation, from harmonized case fields and each case's
   clinical XML: https://api.gdc.cancer.gov/cases
-- the cohort VCF, rehosted so the figures and their live links load without the
-  GDC round trip: https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz
+- the cohort VCF, rehosted so the figures and their live links load without a
+  GDC query: https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz
 - the recurrence track split by clinical group:
   https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz
-- the clinical table those groups come from:
+- the clinical table with per-tumor histology, receptor status and stage:
   https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
 
-The hg38 reference and gene track beside them are the hosted UCSC
-[hub](/docs/user_guides/hub_url)'s own entries.
+The hg38 reference and gene track come from the hosted UCSC
+[hub](/docs/user_guides/hub_url).
 
-## What the two files hold
+## Input files {#what-the-two-files-hold}
 
 The VCF is the GDC's per-tumor **Masked Somatic Mutation** calls merged into one
 multi-sample file, one column per tumor:
@@ -55,14 +48,14 @@ multi-sample file, one column per tumor:
 chr3   179234297 .   A   G    GENE=PIK3CA;HGVSP=p.H1047R... GT:AD:DP  0/1:81,29:110     0/0
 ```
 
-Two conventions bear on any figure read off that matrix:
+Two conventions affect how to read the matrix:
 
 - `0/0` marks a site the caller did not call, since a MAF carries no coverage
   record for one
 - every somatic call is written het, because a MAF gives no ploidy
 
-Read counts are kept in `AD`/`DP`. `INFO/CSQ` re-encodes the MAF's own VEP
-columns (`Consequence`, `IMPACT`, `HGVSp_Short`, SIFT, PolyPhen), so the track
+Read counts are kept in `AD`/`DP`. `INFO/CSQ` re-encodes the VEP columns from
+the MAF (`Consequence`, `IMPACT`, `HGVSp_Short`, SIFT, PolyPhen), so the track
 can color cells by consequence impact without running an annotator.
 
 The clinical TSV is one row per tumor barcode and one column per attribute:
@@ -98,8 +91,8 @@ jbrowse add-assembly https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz 
   --out $OUT
 ```
 
-The cohort itself is a `VariantTrack` whose adapter carries the clinical TSV,
-with the matrix display on top of it:
+The cohort is a `VariantTrack` whose adapter reads the clinical TSV, shown in
+the multi-sample matrix display:
 
 ```json addtrack
 {
@@ -126,7 +119,7 @@ with the matrix display on top of it:
 }
 ```
 
-Three settings there:
+The display config sets three things:
 
 - [`variantLayout: 'columns'`](/docs/user_guides/multivariant_track#matrix-best-for-snpindel-patterns)
   lays columns out by feature index, so a gene's mutations pack together however
@@ -137,9 +130,10 @@ Three settings there:
 - [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
   makes the clinical columns available to group and color rows by
 
-Rows auto-fit by dividing
-[`height`](/docs/config/linearmultisamplevariantdisplay/#slot-height). A row
-goes below a pixel, so a band's mutation density reads as how dark it is.
+The display divides
+[`height`](/docs/config/linearmultisamplevariantdisplay/#slot-height) among the
+rows, so each row is under a pixel tall and a band's mutation density shows as
+its darkness.
 
 ## Group the rows by clinical annotation
 
@@ -191,15 +185,15 @@ introns**, and **Replace current view** (see [](/docs/user_guides/gene_track)):
 
 <Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's context menu, and the 979-tumor matrix redrawn over the coding sequence." />
 
-Two more things in that figure travel to any gene-scale matrix:
+Two more settings apply to any gene-scale matrix:
 
 - [`lineZoneHeight`](/docs/config/linearmultisamplevariantdisplay/#slot-linezoneheight)
   (or the handle under the band) opens the connector band, which shows where in
   the transcript a gene's calls fall. _CDH1_'s fan lands in exon after exon, as
   a tumor suppressor's truncating calls do
 - A ClinVar track puts the germline record beside the somatic one on the same
-  coordinates. It reads at hotspot or single-exon zoom; across sixteen collapsed
-  exons the lane is a barcode
+  coordinates. It is readable at hotspot or single-exon zoom; across sixteen
+  collapsed exons its calls are too dense to tell apart
 
 The GDC's open mutation calls are exome only, so these figures are all
 gene-scale.
@@ -298,9 +292,8 @@ per group.
 ```
 
 [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin)/[`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax)
-pin every row to one axis. Open it above the matrix and each band has its own
-rate over it. _TP53_ climbs toward the triple-negative group where _PIK3CA_
-falls.
+pin every row to one axis. Open it above the matrix to read each band's rate
+over it. _TP53_ climbs toward the triple-negative group where _PIK3CA_ falls.
 
 `--impact` sets what counts as a hit, defaulting to the HIGH and MODERATE tiers,
 the ones `impactColor` paints. The rate has no background model, and gene length
@@ -310,10 +303,10 @@ enters directly: _TTN_ ranks near the top on passenger mutations alone.
 
 **Clustering → Cluster rows by genotype...** in the track menu orders the rows
 by genotype (see [](/docs/user_guides/clustering)), gathering every carrier into
-one block so a hotspot column becomes a solid bar. It replaces the clinical
-bands while on.
+one block so a hotspot column becomes a solid bar. Clustering replaces the
+clinical bands while it is on.
 
-## Thin the matrix down to recurrent mutations
+## Filter to recurrent mutations
 
 **Filter by... → Minor allele frequency** in the track menu (or the
 [`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantdisplay/#slot-minorallelefrequencyfilter)
@@ -333,11 +326,12 @@ cBioPortal study downloads, your own caller) whose rows have `Chromosome`,
 `Start_Position`, the two allele columns, `Tumor_Sample_Barcode`, and `CONTEXT`.
 For grouping, any TSV whose first column matches the VCF's sample names works.
 
-## Where to go next
+## The same tumors in other GDC data
 
 The [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) paints the same tumors
-one row each, and its
-[next steps](/docs/tutorials/tcga_cohort_cnv#where-to-go-next) apply here too.
+one row each, and the
+[other GDC data](/docs/tutorials/tcga_cohort_cnv#other-gdc-data) it lists loads
+the same way here.
 
 ## Reproduce it end to end
 
@@ -373,22 +367,22 @@ project. A third argument names the clinical column the recurrence track splits
 on; `subtype` is breast only, while `histology` and `stage` work for any
 project.
 
-Four steps decide whether the track is correct:
+Four steps in the script affect whether the track is correct:
 
-- **Open-access files only.** The Masked Somatic Mutation MAFs are the
-  aliquot-merged ensemble calls with germline sites masked out, and need no
-  dbGaP application
-- **The sample type comes off the barcode inside each MAF.** A GDC file query
-  filters on what a case has, so asking for `Primary Tumor` keeps a metastasis
-  MAF too. The merge step filters on the barcode's sample-type code (`01`,
-  primary solid tumor), the same tumors the
-  [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) paints
-- **Indels are anchored off the MAF's `CONTEXT` column.** A MAF writes a
-  deletion against a `-` alt, where VCF needs a shared preceding base. That base
-  is in `CONTEXT`, so no reference FASTA is fetched
-- **One MAF per sample barcode.** A few cases were sequenced twice under one
-  barcode, and the merge keeps one aliquot. Sample names are truncated to the
-  sample barcode, so a tumor is one row name in both tracks
+- The script downloads the open-access Masked Somatic Mutation MAFs, the
+  aliquot-merged ensemble calls with germline sites masked out, which need no
+  dbGaP application.
+- A GDC file query filters on what a case has, so a query for `Primary Tumor`
+  also returns a metastasis MAF. The merge step therefore filters on the
+  sample-type code in each MAF barcode (`01`, primary solid tumor), which
+  selects the same tumors the
+  [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) paints.
+- A MAF writes a deletion against a `-` alt, where VCF needs a shared preceding
+  base. The merge step takes that base from the `CONTEXT` column, so it fetches
+  no reference FASTA.
+- A few cases were sequenced twice under one barcode, and the merge keeps one
+  aliquot. It truncates sample names to the sample barcode, so a tumor has the
+  same row name in both tracks.
 
 ## See also
 

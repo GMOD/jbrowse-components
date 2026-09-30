@@ -1,6 +1,6 @@
 // Does a finished clip actually MOVE?
 //
-//   node scripts/probe-clip-motion.ts static/media/pangenome/pggb_layout_switch.mp4
+//   node scripts/probe-clip-motion.ts static/media/pangenome/pggb_subgraph_launch.mp4
 //
 // The question a duration cannot answer, and the one filming more than one tour
 // at a time raises: headless Chrome paints the foreground tab, so a screencast

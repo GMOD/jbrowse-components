@@ -521,7 +521,7 @@ with tempfile.TemporaryDirectory() as flare_dir:
 
 # gfa_nodes_to_bed.py: itemRgb has to be the graph view's own viridis Depth ramp
 # sampled over the subgraph's min/max, or the linear strip stops matching the
-# graph panel it is paired with in pangenome/local_subgraph.
+# graph view's Depth coloring of the same subgraph.
 gfa_nodes = load("scripts/gfa_nodes_to_bed.py", "gfa_nodes_to_bed")
 ramp = gfa_nodes.DEPTH_GRADIENT
 check("depth ramp is viridis 5-stop", [ramp[0], ramp[-1]], [(68, 1, 84), (253, 231, 37)])

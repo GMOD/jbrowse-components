@@ -9,9 +9,11 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
 ---
 
-dN/dS is a per-ortholog-pair measurement, so it is a colour on a synteny track.
-jcvi builds a human against rhesus macaque ortholog table, and
-`kaks_from_pairs.py` measures dN and dS on every pair.
+The ratio of non-synonymous to synonymous substitution rates, dN/dS, measures
+the selection pressure on a protein-coding gene between two species. jcvi builds
+a human against rhesus macaque ortholog table, `kaks_from_pairs.py` measures dN
+and dS on every pair, and JBrowse colours each ortholog link on a synteny track
+by the ratio. We then read the lysozyme neighbourhood on human chromosome 12.
 
 ## Prerequisites
 
@@ -24,13 +26,13 @@ jcvi builds a human against rhesus macaque ortholog table, and
 - `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-jcvi builds C extensions and will not install against every python. If
-`pip install jcvi` fails compiling them, `uv venv --python 3.12` followed by
-`uv pip install jcvi biopython` gets an interpreter it does build on.
+jcvi compiles C extensions at install time, and the compile fails on some Python
+versions. If `pip install jcvi` fails, `uv venv --python 3.12` followed by
+`uv pip install jcvi biopython` gives an interpreter it builds on.
 
 ## Where the data comes from
 
-The two assemblies are
+The assemblies are
 [GCA_000001405.29](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_000001405.29/)
 (human GRCh38) and
 [GCA_003339765.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_003339765.3/)
@@ -49,11 +51,10 @@ release 116.
 ## What dN/dS says
 
 A coding substitution is synonymous (the codon changes, the amino acid does not)
-or non-synonymous. Synonymous changes are nearly invisible to selection, so
-their rate dS approximates the mutation rate; non-synonymous changes are seen,
-so their rate dN carries what selection did. The ratio is read against 1: below
-it is purifying selection, where most genes sit, and above it takes positive
-selection to explain.
+or non-synonymous. Selection acts weakly on synonymous changes, so their rate dS
+approximates the mutation rate. Selection acts on non-synonymous changes, so
+their rate dN reflects it. A ratio below 1 indicates purifying selection, where
+most genes sit, and a ratio above 1 needs positive selection to explain.
 
 ## Producing the data
 
@@ -77,10 +78,10 @@ python -m jcvi.compara.catalog ortholog --no_strip_names --dbtype prot \
   --align_soft diamond_blastp --no_dotplot human rhesus
 ```
 
-Two traps:
+Two input mistakes leave jcvi with no orthologs:
 
 - the alignment file has to be **query = the first species, subject = the
-  second**. Reversed, every id is looked up in the wrong BED and the run ends
+  second**. Reversed, jcvi looks up every id in the wrong BED and the run ends
   with `A total of 0 anchor was found`
 - Ensembl **versions transcript ids in its FASTA and not in its GFF3**
   (`ENST00000641515.7` against `ENST00000641515`), so nothing matches. The
@@ -136,10 +137,10 @@ is the `.blocks` shape
 }
 ```
 
-`attributeColumns` names the columns after the two gene columns, and each
-becomes a feature attribute in the detail panel. `dn` and `ds` drive the palette
-button's **Color by value → dN/dS**, whose ramp has 1 at its middle and 2 at its
-top.
+`attributeColumns` names the columns after the two gene columns, and the detail
+panel lists each as a feature attribute. **Color by value → dN/dS** in the
+palette button menu reads `dn` and `ds`, on a ramp with 1 at the middle and 2 at
+the top.
 
 Two `LinearSyntenyView` properties matter for a view this sparse: `alpha`
 defaults to 0.2 for whole-genome views where ribbons overlap, and 0.95 shows the
@@ -147,12 +148,14 @@ colour as it is; `drawCurves` separates stacked neighbours.
 
 ## Reading the plot
 
+Open the collinear neighbourhood around _LYZ_ on human chromosome 12 and pick
+**Color by value → dN/dS**:
+
 <Figure caption="Human against rhesus macaque across a collinear neighbourhood on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
 
-The neighbourhood is collinear, so colour is the only thing that varies.
-Adaptive evolution of primate lysozyme is one of the older results in molecular
-evolution. The enzyme was recruited as a digestive protein in foregut
-fermenters.
+The neighbourhood is collinear, so colour is the only thing that varies. Messier
+and Stewart reported adaptive evolution of primate lysozyme in 1997.
+Foregut-fermenting primates use the enzyme as a digestive protein.
 
 Clicking the orange link shows a handful of synonymous differences and a Fisher
 p nowhere near significant. One pairwise comparison has little power; the
@@ -168,7 +171,7 @@ divergence time and land at opposite ends of the ramp. It is conserved and
 compact, so its dS is low while its synonymous count clears the floor.
 
 The [script](#reproduce-it-end-to-end) prints two genome-wide counts: pairs
-exceeding 1, and those surviving the Fisher test. The second is about what
+exceeding 1, and those surviving the Fisher test. The second count is about what
 chance gives at that many tests.
 
 ## Reproduce it end to end

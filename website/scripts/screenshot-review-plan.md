@@ -757,11 +757,11 @@ a gitignored copy of a tracked config drifts and nothing notices
 those tracks were absent and a figure failed on annotation anchors resolving to
 nothing — which reads as a regression in whatever you are testing).
 
-**Scraping a `--filter` list from `name:` properties misses compose parts.** Six
-part specs (`graph_context_none/_hop1`, `hprc_mhc_layout_*`, `local_subgraph_*`)
-are positional arguments to a `part(...)` helper, so a scraped list skips them
-and the parent silently recomposes from stale halves. Scrape every
-`'pangenome/...'` string literal instead.
+**Scraping a `--filter` list from `name:` properties misses compose parts.**
+`pangenome/graph_context_none` and `pangenome/graph_context_hop1` are positional
+arguments to a `part(...)` helper, so a scraped list skips them and the parent
+recomposes from stale halves. Scrape every `'pangenome/...'` string literal
+instead.
 
 **Escape does not close a JBrowse cascade menu.** Measured live: three presses
 with focus verifiably inside the list leave both levels and both modals

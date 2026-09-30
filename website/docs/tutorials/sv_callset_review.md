@@ -8,18 +8,16 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-`jb2export batch` renders every record of a somatic callset as an image, a
-junction as a breakpoint split view, so triage becomes a directory of images.
-The matched normal, rendered the same way, is the control.
+The COLO829 somatic structural-variant callset lists 135 junctions, and each one
+is worth checking against the reads. We render every junction as an image of the
+reads at both ends with `jb2export batch`, then render the matched normal the
+same way as the control.
 
 ## Prerequisites
 
 - [`@jbrowse/img`](/docs/jbrowse-img), which puts `jb2export` on your PATH
-- nothing to download: the callset, the tumor reads and the matched normal are
-  all hosted
-- a JBrowse, for [the last section](#opening-a-call-in-the-browser) only
-  ([Web](/docs/quickstart_web) or [Desktop](/docs/quickstart_desktop)); the
-  renders above need none
+- a JBrowse for [the last section](#opening-a-call-in-the-browser)
+  ([Web](/docs/quickstart_web) or [Desktop](/docs/quickstart_desktop))
 
 ```bash
 npm install -g @jbrowse/img
@@ -27,7 +25,7 @@ npm install -g @jbrowse/img
 
 ## Where the data comes from
 
-COLO829's somatic SV callset is the ONT open-data release's own
+The COLO829 somatic SV callset comes from the ONT open-data release's
 `wf-somatic-variation` run
 ([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)),
 rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv).
@@ -47,17 +45,16 @@ rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv).
 **COLO829** is a melanoma cell line with a matched normal, COLO829BL, and a
 community reference for somatic structural-variant calling. The
 [multi-hop tutorial](/docs/tutorials/cancer_sv) follows one event in this
-callset all the way down; this page renders every junction at a glance.
+callset in detail; here we render every junction.
 
 ## The contact sheet
 
-A junction joins two loci, which are the two panels of a breakpoint split view,
-so a callset renders straight into a review queue:
+A breakpoint split view shows the two loci a junction joins as two panels.
+`jb2export batch` renders one such view per record:
 
 ```bash
 curl -fO https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
-# --track takes the track id, then display settings as key:value pairs;
-# height:240 sets the track's height in pixels
+# --track: the track id, then display settings as key:value pairs
 jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
   --config https://jbrowse.org/demos/cancer_sv/config.json --assembly hg38 \
   --track COLO829_tumor_ont height:240 \
@@ -70,25 +67,26 @@ wrote 135/135 images to tumor
 ```
 
 A record that fits one window is drawn as a single panel: an insertion names one
-locus, and a deletion shorter than `--flank` has both ends in one frame. Each
-breakend pair is written twice and collapses to one.
+locus, and a deletion shorter than `--flank` has both ends in one frame. Callers
+write each breakend pair as two records, and `batch` renders the pair once.
 
-The ALT bracket is parsed with `@gmod/vcf` rather than by hand, which matters
-because hand-parsing it goes wrong four ways, none of them raising an error:
+`batch` parses the ALT bracket with `@gmod/vcf`, which handles four cases that a
+hand-written parser gets wrong without raising an error:
 
 - the replacement string may carry inserted sequence either side of the bracket
   (`GTGATGGATTCA[CHR12:72273112[`)
-- callers upper-case the mate contig, and `CHR12` is not a region hg38 has
+- callers upper-case the mate contig, and hg38 has no contig named `CHR12`
 - `END=` matches inside `CIEND=`, and the first hit wins
 - the two records of one breakend pair name the same translocation twice
 
-One image per row, named `002_chr1_33053494-chr6_2919922_r_0_0.png`: the
-filename opens with the index so the directory sorts in callset order, then the
-coordinates, then the caller's ID where the record has one.
+`batch` writes one image per record, named
+`002_chr1_33053494-chr6_2919922_r_0_0.png`. The filename starts with the
+record's index, so the directory sorts in callset order, then gives the
+coordinates and the caller's ID where the record has one.
 
-`--flank` frames the panel, since a breakend is one base. `--dryRun` prints the
-file and loci of every row and renders nothing, and `--limit 20` renders the
-first few, to check the framing before the whole callset.
+A breakend is one base, so `--flank` sets the window drawn around it. `--dryRun`
+prints the file and loci of every row and renders nothing, and `--limit 20`
+renders the first few, to check the framing before the whole callset.
 
 For a long run:
 
@@ -101,34 +99,34 @@ For a long run:
 - `--passOnly` drops records the caller filtered out. `--limit` takes the first
   N in file order, so on an unfiltered callset the two go together
 - `--jobs` sets how many processes render, each about a gigabyte. The default is
-  half the cores, up to four. Past the point where the reads arrive as fast as
-  the network carries them, more processes add nothing
+  half the cores, up to four. Once the network is the bottleneck, more processes
+  do not speed the run up
 
-The reads stream from the hosted CRAM, each process loads the module graph once
-for its share of the callset, and a `--config` URL or `--hub` is fetched once. A
-row that cannot be rendered is reported and the run continues, and `--resume`
-renders it again. Deep long reads can put even a `--flank` window over a track's
-size limit, which the app answers with a **Force load** button; `batch` loads
-every panel as if it had been pressed.
+`batch` streams the reads from the hosted CRAM and fetches a `--config` URL or
+`--hub` once. It reports a row it cannot render and carries on, and `--resume`
+retries that row. Deep long reads can put even a `--flank` window over a track's
+size limit, where the app would ask you to press **Force load**; `batch` loads
+every panel as if you had.
 
-A connector drawn dashed means the read has a segment at a locus the frame does
-not show. These reads also visit chr10, so this junction takes a third panel,
-and the control belongs beside it: one render per sample, the same `--loc` list
-and `--width`.
+A dashed connector marks a read with a segment at a locus outside the frame. The
+der(3) reads at chr3 also visit chr10, so the figure renders that event with
+`jb2export breakpoint` and one `--loc` per panel. The matched normal gets the
+same `--loc` list and `--width`, and sits beside it as the control.
 
 <Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumor nanopore reads carry a solid curve at every breakend and the matched normal carries none. On the right, the same three loci as one reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
 
-`featureHeight:super-compact` draws reads at 1 px apiece, which keeps six
-pileups on one screen.
+`featureHeight:super-compact` draws each read 1 px tall, which fits six pileups
+on one screen.
 
-A curve marks two loci as joined; a contig shows the order and orientation. The
+A curve shows that two loci are joined, and the reconstructed contig on the
+right shows the order and orientation of the pieces. The
 [multi-hop tutorial](/docs/tutorials/cancer_sv) builds that contig from these
-reads, and rendering it is another `jb2export` run with a different
+reads, and rendering it is another `jb2export` run with the contig as
 `--assembly`.
 
 ## The same export over the normal
 
-One directory per track:
+Render the matched normal into a second directory:
 
 ```bash
 jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
@@ -137,28 +135,25 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
   --outDir normal --flank 600 --width 1100
 ```
 
-Side by side, the somatic calls are the ones with curves in `tumor/` and none in
-`normal/`.
+A somatic call has curves in `tumor/` and none in `normal/`.
 
 ## Reading the sheet
 
-What each picture shows:
-
-- **a fan of curves at both breakends** is the junction as the reads describe it
-- **nothing connecting the panels** means the reads do not support the caller's
-  coordinates, which is either a false call or a breakpoint placed far enough
-  off that `--flank` missed it. Re-render that row wider
-- **curves in the normal too** means the variant is germline
-- **a dense fan in a region of ragged coverage** is usually a repeat. The
-  connectors are drawn from what the aligner reported, so a read mismapped into
-  a repeat contributes a confident-looking curve
+- A fan of curves at both breakends is the junction as the reads describe it.
+- With no curve between the panels, the reads give no support for the caller's
+  coordinates: either the call is false, or the breakpoint is far enough off
+  that `--flank` missed it. Re-render that row wider.
+- Curves in the normal as well mean the variant is germline.
+- A dense fan in a region of ragged coverage is usually a repeat. JBrowse draws
+  the connectors from the aligner's output, so a read mismapped into a repeat
+  adds a confident-looking curve.
 
 The manifest's `links` column counts those curves: the split reads with pieces
 in more than one panel of that image. Sorting `tumor/manifest.tsv` on it puts
 the calls no split read joins at the top, and the same column of
 `normal/manifest.tsv` says which calls the normal carries too. A deletion short
 enough for one alignment to carry draws a gap through both panels and no curve,
-so it counts as none with its support in plain sight.
+so it counts zero links although the reads support it.
 
 ## Opening a call in the browser
 
@@ -176,21 +171,21 @@ junctions across three chromosomes, and the
 Anything that writes breakends or symbolic SVs to a VCF goes through the same
 two commands:
 
-- **cuteSV, Sniffles, pbsv, Delly, Manta, GRIDSS** all write a VCF that `--vcf`
-  reads directly
-- **LINX** publishes clusters and chained links as TSVs. Convert the junction
-  columns to the six BEDPE columns with `awk`; one `--outDir` per cluster gives
-  a chromothripsis event as a contact sheet
-- **PURPLE** copy-number segments are not junctions. Convert the segment TSV to
-  a bedGraph, `bedGraphToBigWig` it, and add it as a `--bigwig` so every image
-  carries the copy number under the reads
+- cuteSV, Sniffles, pbsv, Delly, Manta and GRIDSS write a VCF that `--vcf` reads
+  directly.
+- LINX writes clusters and chained links as TSVs. Convert the junction columns
+  to the six BEDPE columns with `awk`; one `--outDir` per cluster renders a
+  chromothripsis event as one directory.
+- PURPLE writes copy-number segments. Convert the segment TSV to a bedGraph, run
+  `bedGraphToBigWig` on it, and add it as a `--bigwig` to draw the copy number
+  under the reads in every image.
 
-COLO829's callset leaves its junctions ungrouped, which is why der(3)'s third
-panel above took a hand-written `--loc` list. A caller that files the junctions
-of one rearrangement under VCF 4.4's `EVENT` key, as DRAGEN and the C-GIAB
-benchmark do, gets that image from `batch` itself: every event visiting more
-than two loci is drawn once more as `event_<n>_<label>`, one panel per locus in
-contig order. Severus writes the same grouping as `CLUSTERID`, and the
+The COLO829 callset does not group its junctions, so the der(3) figure above
+needed a hand-written `--loc` list. A caller that files the junctions of one
+rearrangement under VCF 4.4's `EVENT` key, as DRAGEN and the C-GIAB benchmark
+do, gets that image from `batch` itself: every event visiting more than two loci
+is drawn once more as `event_<n>_<label>`, one panel per locus in contig order.
+Severus writes the same grouping as `CLUSTERID`, and the
 [SV inspector guide](/docs/user_guides/sv_inspector_view#rearrangement-events)
 has the rename.
 
@@ -200,10 +195,10 @@ number and a centromere constraint.
 
 ## Reproduce it end to end
 
-Everything on this page is the commands above against hosted files. The figure
-is three `jb2export` invocations: two `breakpoint` renders with one `--loc` per
-panel, one per sample, and a plain render of the derivative assembly, which are
-the `sv_review_tumor`, `sv_review_normal` and `sv_review_derivative` specs in
+The commands above run against hosted files. The figure comes from three
+`jb2export` runs: two `breakpoint` renders with one `--loc` per panel, one per
+sample, and a plain render of the derivative assembly, which are the
+`sv_review_tumor`, `sv_review_normal` and `sv_review_derivative` specs in
 [`website/scripts/specs/jbrowse-img.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/specs/jbrowse-img.ts).
 
 ## See also

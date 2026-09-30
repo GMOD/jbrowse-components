@@ -7,15 +7,15 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
 ---
 
-jcvi's MCScan lines up orthologous genes across more than two genomes at once,
-into one wide table with a column per species. We load that table directly,
-stack grape, peach and cacao as rows of a single synteny view, and then read one
-grape locus across all seven plant genomes. With that view we:
+MCScan, from the jcvi toolkit, lines up orthologous genes across more than two
+genomes at once, into one wide table with a column per species. We load that
+table directly, stack grape, peach and cacao as rows of a single synteny view,
+and then read one grape locus across all seven plant genomes. With that view we:
 
 - stack three genomes from one MCScan `.blocks` file and zoom to a conserved
   block
 - read one grape locus against all seven genomes at once, one lane per genome
-- redraw the lanes in each genome's own coordinates
+- redraw each lane in the coordinates of the genome it shows
 
 ## Prerequisites
 
@@ -51,9 +51,9 @@ Seven RefSeq assemblies, one per species, each fetched by accession with the
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/512/215/GCF_036512215.1_SLM_r2.1/
 - citrus:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/493/195/GCF_000493195.1_Citrus_clementina_v1.0/
-- grape's, peach's and cacao's hub configs on genomes.jbrowse.org:
+- the grape, peach and cacao hub configs on genomes.jbrowse.org:
   https://jbrowse.org/hubs/genark/GCF/030/704/535/GCF_030704535.1/config.json
-  for grape, and peach and cacao at the same path under their own accessions
+  for grape, and peach and cacao at the same path under their accessions
 - the finished `.blocks` table, BEDs and config, rehosted:
   https://jbrowse.org/demos/grape_peach_cacao/config.json
 
@@ -69,15 +69,16 @@ grape02	peach02	cacao02
 grape03	.	.
 ```
 
-A real cell holds the annotation's own gene id (`rna-XM_007225519.2` for NCBI);
-the table carries no coordinates, so one `.bed` per genome places each id.
+A real cell holds the gene id from the annotation (`rna-XM_007225519.2` for
+NCBI); the table carries no coordinates, so one `.bed` per genome places each
+id.
 
 ### One reference, or all against all
 
-A table is **reference-anchored** when every row starts from one genome's gene,
-and **all against all** when a row is an orthogroup inferred across all genomes
-at once; the adapter loads either shape. jcvi's MCScan tables are anchored on
-column 0. [Direct vs transitive pairs](#direct-vs-transitive-pairs) measures
+A table is **reference-anchored** when every row starts from a gene in one
+genome, and **all against all** when a row is an orthogroup inferred across all
+genomes at once; the adapter loads either shape. jcvi MCScan anchors its tables
+on column 0. [Direct vs transitive pairs](#direct-vs-transitive-pairs) measures
 what that costs.
 
 ### A duplicated gene
@@ -95,7 +96,7 @@ grape03	.	.
 ```
 
 Name that column `peach` in `blockAssemblies` with `peach.bed` beside it, and
-both are drawn; the track's own `assemblyNames` still names peach once.
+the track draws both; `assemblyNames` on the track still names peach once.
 
 The other convention repeats the grape id, one row per copy:
 
@@ -127,9 +128,10 @@ for sp in grape peach cacao; do
 done
 ```
 
-`--key=ID` writes the mRNA's GFF3 id into BED column 4, matching the CDS name
-gffread wrote. An unresolved key becomes `mrna_494685`, unjoinable;
-`--key=transcript_id` and `--key=Name` give that same id on an NCBI annotation.
+`--key=ID` writes the GFF3 id of each mRNA into BED column 4, matching the CDS
+name gffread wrote. An unresolved key becomes an id like `mrna_494685` that
+joins nothing; `--key=transcript_id` and `--key=Name` give that same id on an
+NCBI annotation.
 
 Then catalog orthologs against the reference, MCScan each pair, and join:
 
@@ -155,7 +157,7 @@ The adapter reads `.blocks` and BED files plain or gzipped.
 
 ## Bringing your own ortholog table
 
-`MCScanBlocksAdapter` needs two inputs, neither of them MCScan-specific:
+`MCScanBlocksAdapter` needs two inputs:
 
 - a tab-delimited table, one row per orthogroup and one column per genome, each
   cell holding a single gene id (`.` or an empty cell for no ortholog)
@@ -181,8 +183,8 @@ the first `--species`; ties resolve to the best-scoring block. Given two
 `--species`, it writes `.anchors` files instead, which load a pair the table
 left out as a second track.
 
-`--blocks-score` appends the row's weakest pairing as a trailing column, which
-the adapter's `attributeColumns` names:
+`--blocks-score` appends the weakest pairing in each row as a trailing column,
+which `attributeColumns` on the adapter names:
 
 ```json addtrack
 {
@@ -200,8 +202,8 @@ the adapter's `attributeColumns` names:
 }
 ```
 
-Each named column becomes a feature attribute and an entry in the palette
-button's menu.
+Each named column becomes a feature attribute and an entry in the palette button
+menu.
 
 ### From OrthoFinder
 
@@ -228,9 +230,9 @@ python3 compara_to_blocks.py Compara.116.protein_default.homologies.tsv.gz \
 ```
 
 `attributeColumns` can name `identity`, `homology_identity` and `goc_score` the
-way the scored table above names `score`. A partner species the export lacks
-writes no table and raises no error, so check each `--species` name against the
-file's `homology_species` column.
+way the scored table above names `score`. For a partner species the export
+lacks, the script writes no table and exits without an error, so check each
+`--species` name against the `homology_species` column in the file.
 
 ### From reciprocal best BLAST hits
 
@@ -241,7 +243,7 @@ its best hit per query, then keep the pairs that agree both ways:
 # sort by bitscore (column 12) descending, keep the first hit per query
 sort -k1,1 -k12,12gr grape_vs_peach.tsv | awk '!seen[$1]++ {print $1 "\t" $2}' > g2p
 sort -k1,1 -k12,12gr peach_vs_grape.tsv | awk '!seen[$1]++ {print $1 "\t" $2}' > p2g
-# keep a pair only where each side's best hit is the other
+# keep a pair only where the two genes are each other's best hit
 awk 'NR == FNR {best[$1] = $2; next} best[$2] == $1' p2g g2p > grape_peach.rbh
 ```
 
@@ -252,29 +254,29 @@ against one reference genome and outer-join the results on the reference gene:
 ```bash
 export LC_ALL=C  # join and sort must agree on collation
 # -a1 -a2 keep a one-sided grape gene, -e . fills the gap; -o lists the join
-# field then each file's column 2: grape gene, peach ortholog, cacao ortholog
+# field then column 2 of each file: grape gene, peach ortholog, cacao ortholog
 join -t $'\t' -a1 -a2 -e . -o 0,1.2,2.2 \
   <(sort -k1,1 grape_peach.rbh) <(sort -k1,1 grape_cacao.rbh) > grape.blocks
 ```
 
 ### BED files
 
-Only the first six BED fields are read. From a GFF3:
+The adapter reads the first six BED fields. From a GFF3:
 
 ```bash
 # column 3 is the feature type; only gene rows become BED features
 awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=[^;]+/) {
   id = substr($9, RSTART + 3, RLENGTH - 3)  # strip the leading "ID="
   sub(/^gene:/, "", id)
-  # BED start is 0-based, so the GFF3's 1-based start shifts down by one
+  # BED start is 0-based, so the 1-based GFF3 start shifts down by one
   print $1, $4 - 1, $5, id, 0, $7
 }' grape.gff3 > grape.bed
 ```
 
 Ensembl namespaces its GFF3 ids (`ID=gene:VIT_00000001`); the `sub` strips that.
 
-Column 1 must use the JBrowse assembly's sequence names, and column 4 must match
-the table's gene ids
+Column 1 must use the sequence names the JBrowse assembly uses, and column 4
+must match the gene ids in the table
 ([adapter gotchas](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
 cover how ids get mangled; `--no_strip_names` stops jcvi dropping isoform
 suffixes). Column 6 is strand.
@@ -287,7 +289,7 @@ the table was built from. Each row takes its assembly entry and gene track from
 there:
 
 ```bash
-# a GenArk hub's path is its accession cut into threes
+# a GenArk hub path is the accession cut into threes
 curl -fO https://jbrowse.org/hubs/genark/GCF/000/346/465/GCF_000346465.2/config.json
 ```
 
@@ -318,7 +320,7 @@ alias, so a session can still say `peach`:
 }
 ```
 
-`refNameColumnHeaderName` makes the UCSC names canonical, naming peach's first
+`refNameColumnHeaderName` makes the UCSC names canonical, naming the first peach
 chromosome `chrG1` where the BED says `NC_034009.1`.
 
 ## Loading the blocks file with MCScanBlocksAdapter {#loading-it-in-jbrowse-with-mcscanblocksadapter}
@@ -374,17 +376,17 @@ dialog. The declarative equivalent, stacking peach-cacao-grape:
 }
 ```
 
-`tracks` is one entry per band. `autoDiagonalize` reorders and flips each row's
-chromosomes so the ribbons run along the diagonal, and
+`tracks` is one entry per band. `autoDiagonalize` reorders and flips the
+chromosomes in each row so the ribbons run along the diagonal, and
 `color: { "field": "reference" }` anchors every band on the middle row.
 
-<Figure caption="Three genomes stacked peach-cacao-grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal, and Color by → Reference anchors both bands on the shared middle row." src="/img/multiway_synteny/grape_peach_cacao.png" />
+<Figure caption="Three genomes stacked peach-cacao-grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped the chromosomes in each row so the ribbons run along the diagonal, and Color by → Reference anchors both bands on the shared middle row." src="/img/multiway_synteny/grape_peach_cacao.png" />
 
 ## Direct vs transitive pairs
 
-Only pairs including grape are direct: a peach-cacao link passes through a
+Pairs that include grape are direct, and a peach-cacao link passes through a
 shared grape gene. Put the reference in the middle (peach-grape-cacao) for every
-band to be direct; the demo above stacks grape at the bottom instead.
+band to be direct; the demo above stacks grape at the bottom.
 
 The [script](#reproduce-it-end-to-end) counts, per column pair, the rows where
 both cells resolve: a grape pair draws every row its mate fills, and peach-cacao
@@ -392,10 +394,10 @@ falls short by whatever grape lost.
 
 ## Zooming to a conserved block
 
-Zoom to one block with grape in the middle, and turn on each genome's gene track
-with **Show only genes**.
+Zoom to one block with grape in the middle, and turn on the gene track for each
+genome with **Show only genes**.
 
-<Figure caption="Gene-level view of the same block, peach over grape over cacao with each genome's gene track on. The orthologs step across all three in the same order until the ribbons fan, where three grape copies meet one peach and one cacao ortholog." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
+<Figure caption="Gene-level view of the same block, peach over grape over cacao with the gene track for each genome on. The orthologs step across all three in the same order until the ribbons fan, where three grape copies meet one peach and one cacao ortholog." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 
 ## One locus against all seven genomes
 
@@ -410,13 +412,14 @@ draws every mate at once:
 
 <Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, so the lanes read as presence and absence down a column: peach, cacao, poplar and citrus keep most of the block, while arabidopsis and tomato, the one asterid, keep a scattered few." src="/img/multiway_synteny/blocks_one_vs_all.png" />
 
-## Each genome in its own coordinates
+## Lanes in per-genome coordinates {#each-genome-in-its-own-coordinates}
 
-On grape's axis, every gene sits at grape's coordinate. **Display types →
-Multi-way synteny display** redraws the lanes in each genome's own coordinates:
+On the grape axis, every gene sits at its grape coordinate. **Display types →
+Multi-way synteny display** redraws the lanes, each in the coordinates of one
+genome:
 
-- each lane is fitted to the genome it shows, over the orthologs the window
-  brings in
+- the display fits each lane to the genome it shows, over the orthologs the
+  window brings in
 - one grey ribbon per ortholog group joins adjacent lanes, bridging past an
   empty one
 - any track whose features carry a `mate` per assembly feeds the same lanes,
@@ -461,19 +464,21 @@ The lanes above, as a `defaultSession`:
 }
 ```
 
-<Figure caption="The grape gene track over the same locus as a multi-way lane stack, one lane per genome from a single MCScan blocks track. The peach and cacao lanes draw the gene models from those genomes' gene tracks, the lanes without one draw the table's gene spans as boxes, and a chain bridges past a lane that places nothing to end at the last lane that does." src="/img/multiway_synteny/lgv_track_lanes.png" />
+<Figure caption="The grape gene track over the same locus as a multi-way lane stack, one lane per genome from a single MCScan blocks track. The peach and cacao lanes draw the gene models from the gene tracks for those genomes, the lanes without one draw the gene spans from the table as boxes, and a chain bridges past a lane that places nothing to end at the last lane that does." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
 ### What a lane header shows
 
 Each lane has a separate scale, shown in its header:
 
-- **Left**: where the lane starts, with `[rev]` where its gene order runs
-  against grape's
-- **Right**: the lane's span and its multiple of grape's span
-- **Ticks** fall at one interval shared by every mate lane
-- **The view's gridlines stop at the grape lane**, the only lane they fit
-- **A lane with no readable gene track** (GFF3, GTF, BigBed or BED) outlines the
-  table's gene spans, labeled `no annotation`
+- the left end shows where the lane starts, with `[rev]` where its gene order
+  runs against grape's
+- the right end shows how much sequence the lane spans, and that span as a
+  multiple of the grape span
+- the ticks fall at one interval shared by every mate lane
+
+The view gridlines stop at the grape lane, the one lane they fit. A lane with no
+readable gene track (GFF3, GTF, BigBed or BED) outlines the gene spans from the
+table, labeled `no annotation`.
 
 ### Ordering the lanes
 
@@ -486,8 +491,8 @@ Each lane has a separate scale, shown in its header:
 
 Cut the window to a few genes so each ribbon connects one gene to its ortholog,
 fanning where a copy-number difference exists. Hover a ribbon to highlight its
-ortholog group down every lane, click one to open the pair's details, and click
-empty canvas to clear the outline.
+ortholog group down every lane, click one to open the details for that pair, and
+click empty canvas to clear the outline.
 
 <Figure caption="The same lanes cut to a few genes, with one ribbon clicked. Each ribbon links one gene to its ortholog in the lane below; the clicked group carries an outline down the lanes that chain it, and the details panel opens on the pair the click landed on." src="/img/multiway_synteny/lgv_track_clicked.png" />
 
@@ -495,17 +500,19 @@ empty canvas to clear the outline.
 
 Two routes reach the stacked view from the lanes:
 
-- **From the lane track**, **Launch → Linear synteny view (visible region)** in
-  its track menu offers a row to every aligning genome
-- **From the scale bar**, drag-select a locus and pick **Launch → Linear synteny
+- from the lane track, **Launch → Linear synteny view (visible region)** in its
+  track menu offers a row to every aligning genome
+- from the scale bar, drag-select a locus and pick **Launch → Linear synteny
   view**. The dialog opens a row per genome, grape already seated between peach
   and cacao for the [reference-in-the-middle](#direct-vs-transitive-pairs)
   layout, with arrows to reorder them
-- **From a lane's header**, click the ⋮ or right-click its name. **Re-anchor on
-  peach** turns the track around on that genome, and **Open peach at the
-  matching region** opens it on its own with its gene track
 
-<Figure caption="A lane header's menu: reorder or hide the lane, open peach on its own at the span the lane is drawing, or re-anchor the whole track on it." src="/img/multiway_synteny/lane_header_menu.png" />
+The ⋮ on a lane header, or a right-click on its name, opens the lane menu.
+**Re-anchor on peach** turns the track around on that genome, and **Open peach
+at the matching region** opens peach in a linear genome view, with its gene
+track.
+
+<Figure caption="The lane header menu: reorder or hide the lane, open peach in a linear view at the span the lane is drawing, or re-anchor the whole track on it." src="/img/multiway_synteny/lane_header_menu.png" />
 
 <Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus, from the lane reading above: a scale-bar selection raises Launch, and the dialog lists a panel per genome with the reference between its two mates, naming the mates it can draw a lane for but not a panel." />
 

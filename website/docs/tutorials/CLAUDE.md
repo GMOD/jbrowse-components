@@ -255,3 +255,8 @@ Moving a figure off a page means moving its card's crop source in
   reviewer could not check and which had no negative control. `methylation.md`'s
   fiber-seq section is the pattern: the treated sample above its no-enzyme
   control in one figure.
+- `pangenome_chrm` (42d7fe8da6) was removed too. Its caption claimed clean
+  lineage clusters the matrix did not show, its legend offered heterozygous
+  dosage on a haploid genome, and a band at the start of the chromosome read as
+  the circular start mishandled. Clustering chrM haplotypes against Haplogrep
+  lineages is the one route no other page has.

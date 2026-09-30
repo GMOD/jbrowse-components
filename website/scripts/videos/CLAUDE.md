@@ -86,8 +86,8 @@ refilm and none of which the run reports.
   form labels `Genome name`. Read the label out of the frame.
 - **A gene search in GRCh38's MHC raises the results picker**, because the alt
   contigs carry the same genes: C4A has three hits and HLA-DRB1 six, with the
-  primary chromosome's first. `pangenome/hprc_follow_view` films the pick, which
-  is what a reader meets too.
+  primary chromosome's first. `pangenome_hprc` has the reader type `C4A` and
+  pick the chr6 hit, so a tour of that route films the picker too.
 - **A right-click anchored by locus lands on whatever the display DREW there**,
   which inside an alignment is often a CIGAR op rather than the feature. Over an
   indel wide enough to paint, the menu grows an "Open deletion details (N bp)"
@@ -125,13 +125,12 @@ refilm and none of which the run reports.
   edge once the tour has navigated onto it. Where the point is only WHERE the
   thing is, a `hover` is free: hovering a node syncs the same interval into the
   view above for as long as the pointer is on it, and leaves nothing behind.
-- **A `graphNode` anchor resolves halfway along the node's drawn line.** It used
-  to take the middle VERTEX, which for an anchored node's two-point line is its
-  left end, where it meets its neighbour, and the app's hit test there answered
-  the neighbour: `pangenome/hprc_browse` opened a 1 kb node beside the 1.8 kb
-  allele it named. On a chromosome-scale tier a node is narrower than a pixel,
-  so a click there can still land on the next one; cut the tier over a few
-  megabases, and leave the chromosome-scale picture to a figure.
+- **A `graphNode` anchor resolves halfway along the node's drawn line.** The
+  middle VERTEX of an anchored node's two-point line is its left end, where it
+  meets its neighbour, and the app's hit test there answers the neighbour. On a
+  chromosome-scale tier a node is narrower than a pixel, so a click there can
+  still land on the next one; cut the tier over a few megabases, and leave the
+  chromosome-scale picture to a figure.
 - **A node's `Open in <assembly>` navigates the linear view its graph track is
   in rather than adding one**, when that view carries the assembly, so a tour
   built on it keeps the frame it opened at. That is what makes the
@@ -157,11 +156,10 @@ refilm and none of which the run reports.
   `PAGE BACKGROUND UNDER THE APP` measures the TALLEST state against the frame,
   so a tour that grows the app in the middle and shrinks back reports clean
   while its last frame — and the poster taken from it — is a third page
-  background. `pggb_layout_switch` switched layout and switched back inside a
-  frame sized to the taller drawing and shipped that way past every run it was
-  ever in. Where two states differ by hundreds of pixels, END ON THE TALL ONE:
-  the slack then falls at the opening, which is the shorter half of the clip and
-  not the frame the poster comes from.
+  background: a tour that switches a graph's layout and back, in a frame sized
+  to the taller drawing, passes every run. Where two states differ by hundreds
+  of pixels, END ON THE TALL ONE: the slack then falls at the opening, which is
+  the shorter half of the clip and not the frame the poster comes from.
 - **A purple chip with a number in it over a MAF row is a rendered insertion**,
   not a tooltip left standing — `drawMafInsertions` centres the inserted length
   in the marker once the row is tall enough for letters, and it does not move

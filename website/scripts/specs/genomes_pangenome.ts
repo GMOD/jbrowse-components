@@ -1,5 +1,5 @@
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
-import { GRAPH_DRAWN, graphTrack } from './graph-fixtures.ts'
+import { graphTrack } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -7,7 +7,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // session is the one the page's graph link carries (graphRegionUrl in
 // ~/src/jb2hubs/website/src/components/pangenomeLinks.ts), so re-copy it when
 // that repo moves a window or a launch prop.
-export const HPRC_PAGE = 'https://staging.genomes.jbrowse.org/pangenomes/hprc'
+const HPRC_PAGE = 'https://staging.genomes.jbrowse.org/pangenomes/hprc'
 export const PORTAL_CONFIG = encodeURIComponent(
   'https://jbrowse.org/pangenome/hprc-grch38/config.json',
 )
@@ -15,16 +15,21 @@ export const PORTAL_CONFIG = encodeURIComponent(
 const MHC_WINDOW = { refName: 'chr6', start: 32510000, end: 32600000 }
 
 // The HLA / MHC row's graph link, the first link in the Loci table's first row.
-export const MHC_GRAPH_LINK = 'tbody tr:first-child td:last-child a'
+const MHC_GRAPH_LINK = 'tbody tr:first-child td:last-child a'
 
-export function portalGraphLaunch() {
+// `loc` and `layoutMode` move the launched session the way the tutorial's
+// reader moves it after the launch.
+export function portalGraphLaunch({
+  loc = `${MHC_WINDOW.refName}:${MHC_WINDOW.start + 1}-${MHC_WINDOW.end}`,
+  layoutMode = 'auto',
+}: { loc?: string; layoutMode?: 'auto' | 'force' } = {}) {
   return sessionSpec(PORTAL_CONFIG, {
     views: [
       {
         type: 'LinearGenomeView',
         displayName: 'HLA / MHC graph',
         assembly: 'hg38',
-        loc: `${MHC_WINDOW.refName}:${MHC_WINDOW.start + 1}-${MHC_WINDOW.end}`,
+        loc,
         tracks: [
           'hg38_ncbiRefSeq_ucsc',
           {
@@ -38,7 +43,7 @@ export function portalGraphLaunch() {
             height: 120,
           },
           graphTrack('hprc_minigraph_segments', {
-            layoutMode: 'auto',
+            layoutMode,
             colorScheme: 'reference-position',
           }),
         ],
@@ -120,15 +125,5 @@ export const genomesPangenomeSpecs: ScreenshotSpec[] = [
         strokeWidth: 3,
       },
     ],
-  },
-
-  {
-    mode: 'url',
-    name: 'pangenome/genomes_hprc_mhc_graph',
-    url: portalGraphLaunch(),
-    readySelector: GRAPH_DRAWN,
-    readyTimeout: 120000,
-    viewportHeight: 968,
-    hideTooltip: true,
   },
 ]

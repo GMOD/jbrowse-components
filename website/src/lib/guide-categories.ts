@@ -120,7 +120,6 @@ export const TUTORIAL_ORDER = [
   'pangenome_hprc_carriers',
   'pangenome_hprc_haplotypes',
   'pangenome_hprc_repeats',
-  'pangenome_chrm',
   'sv_multisamples',
   'population_cnv',
   'hic_structural_variants',

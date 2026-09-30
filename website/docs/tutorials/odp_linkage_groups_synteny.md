@@ -38,8 +38,8 @@ The genomes and the ortholog tables are the Dryad deposit behind Schultz et al.
 
 - Both tarballs, `genomes.tar.gz` and `supplementary_information.tar.gz`:
   https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47
-- The _Ephydatia_ assembly, which the deposit does not redistribute and its own
-  script fetches:
+- The _Ephydatia_ assembly, which a script in the deposit fetches from the
+  original host:
   https://bitbucket.org/EphydatiaGenome/ephydatiagenome/downloads/Emu_genome_v1.fa.gz
 
 ## The linkage-group label in the ortholog table
@@ -49,8 +49,7 @@ the bilaterians, cnidarians and sponges whose chromosomes carry them, and gave
 each a letter: A1a, A2, B1, and so on to R. A gene belongs to one of them or to
 none. odp ships the groups as a database of protein models, searches every
 proteome it is given against them, and writes the group each ortholog landed in
-beside the ortholog. That assignment is a column, and a synteny track can read a
-column.
+as a column beside it. A synteny track can read that column.
 
 The dotplot uses a jellyfish (`RES`, _Rhopilema esculentum_) and a freshwater
 sponge (`EMU`, _Ephydatia muelleri_). The stack at the end adds two comb jellies
@@ -70,9 +69,8 @@ rbh2way_EMU_RES_964    Em0019g38a    mRNA.RE04286   A1a         EMU19     180964
 rbh2way_EMU_RES_4123   Em0019g57a    mRNA.RE14076   None        EMU19     290216   RES8      13037026  ...  #000000
 ```
 
-Gene intervals come from odp's `.chrom` files rather than from the table's own
-position column, which is one coordinate per gene and would make every feature
-one base long:
+Gene intervals come from odp's `.chrom` files, since the table's position column
+holds one coordinate per gene and would make every feature one base long:
 
 <!-- from: scripts/build_odp_linkage_groups_synteny.sh -->
 
@@ -102,8 +100,8 @@ mRNA.RE14076  Em0019g57a  .    #000000
 
 `attributeColumns` makes the last two columns reachable. Each name in it becomes
 a color-by mode named after the column, so `gene_group` becomes a mode; `color`
-is the palette the file puts beside each label and is never offered as a mode of
-its own.
+is the palette the file puts beside each label, and the menu leaves it out of
+the modes.
 
 ```json addtrack
 {
@@ -162,24 +160,25 @@ Inside a block the points fill the square: the order of genes along each
 chromosome has been shuffled, and which chromosome each gene sits on has not.
 
 _Rhopilema_ and _Ephydatia_ are two of the genomes odp's group database was
-built from, so the blocks are the groups' definition drawn out. The stack below
-adds three genomes that took no part.
+built from, so these blocks follow from how the groups were defined. The stack
+below adds three genomes that took no part.
 
 ## Six genomes stacked
 
-The paper's first figure is the same tables stacked: one row per genome, the
-ribbons between neighbours colored by group. The linear synteny view does that
-with one pair's track per band. The build script loads the pairs for the paper's
-own order, two comb jellies over the jellyfish, amphioxus and two sponges, and
-the session below sets what the figure needs.
+Figure 1d of the paper stacks the same tables: one row per genome, the ribbons
+between neighbours colored by group. The linear synteny view does that with one
+pair's track per band. The build script loads the pairs in the paper's order,
+two comb jellies over the jellyfish, amphioxus and two sponges, and the session
+below sets what the figure needs.
 
 `autoDiagonalize` sorts each row against its neighbour, working outward from
 `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
 group sits on one chromosome. **Rows → Re-order chromosomes** on the view menu
 runs the same sort and asks for that row. **Hide unlabelled rows** on the
-palette menu (`hideUnlabelled`) draws only the orthologs in a group,
-`drawCurves` bundles the ribbons, and the fade a whole-genome view applies to
-sub-pixel ribbons is off, since the ribbons' color is the figure.
+palette menu (`hideUnlabelled`) draws only the orthologs in a group, and
+`drawCurves` bundles the ribbons. `fadeThinAlignmentsMode` turns off the fade a
+whole-genome view applies to sub-pixel ribbons, since their colors are what the
+figure shows.
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -219,12 +218,11 @@ sub-pixel ribbons is off, since the ribbons' color is the figure.
 }
 ```
 
-<Figure caption="Six genomes stacked in the order of the paper's figure 1d, ribbons colored by linkage group and only the grouped orthologs drawn. Between the two comb jellies each chromosome pairs with one chromosome. Between the comb jelly and the jellyfish every comb jelly chromosome fans out over several jellyfish chromosomes. From the jellyfish down through amphioxus and the two sponges the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
+<Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, with only the grouped orthologs drawn. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome fans out over several jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
 
-The band to read is the second one. The comb jelly chromosomes are each a
-mixture of groups, and the mixture is different from the one any jellyfish
-chromosome carries, so the ribbons cross. The two comb jellies agree with each
-other in the band above.
+In the second band, between _Hormiphora_ and the jellyfish, each comb jelly
+chromosome carries a mixture of groups that matches no jellyfish chromosome, so
+the ribbons cross. The two comb jellies agree with each other in the band above.
 
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
 running through them are expected. The cladorhizid took no part, and in the
@@ -232,9 +230,9 @@ bottom band the groups still reach it as bundles.
 
 ## Checking it against the table
 
-The pictures are the tables, so the counts behind them come out of the tables
-with no browser involved. For one group, tally the chromosomes its orthologs sit
-on in the genome a table's file name leads with:
+The counts behind the pictures come straight from the tables. For one group,
+tally the chromosomes its orthologs sit on in the genome a table's file name
+leads with:
 
 ```bash
 # gene_group is column 4; column 5 is the chromosome in the genome the
@@ -261,7 +259,7 @@ The _Ephydatia_ column shows every ortholog on its group's chromosome because
 the group database was built with _Ephydatia_ in it: an ortholog assigned to a
 group is on that group's _Ephydatia_ chromosome by definition. The cladorhizid
 took no part, and most of each group still sits on one of its chromosomes; H is
-the exception, and its own tally (`$4=="H"`) names two chromosomes sharing it.
+the exception, and a tally for H (`$4=="H"`) names two chromosomes sharing it.
 In _Hormiphora_ the chromosome holding most of a group holds a minority of it,
 which is the fan in the stack's second band.
 

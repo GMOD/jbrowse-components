@@ -95,28 +95,26 @@ bcftools query -r chr30:38261635-38261636 -f '%POS\t%REF\t%ALT\t%FILTER\t%AC\t%A
 
 ## Slicing the gene out of the callset
 
-The Dog10K SNV callset is a single 397 GB VCF over 1,987 canids, with a tabix
-index beside it, so one gene reads straight out of it:
+The Dog10K SNV callset is a single 397 GB VCF over 1,987 canids with a tabix
+index, so `bcftools` fetches one gene over HTTP:
 
 <!-- from: scripts/build_dog10k_cyp1a2.sh -->
 
 ```bash
 SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 # --force-samples: proceed even if a name in cyp.samples isn't in the VCF's
-# own sample list, instead of exiting
+# sample list, instead of exiting
 bcftools view -r chr30:38258000-38265000 -S cyp.samples --force-samples \
   -Oz -o dog10k_cyp1a2_snvs.vcf.gz "$SNVS"
 tabix -p vcf dog10k_cyp1a2_snvs.vcf.gz
 ```
 
-That is 490 SNVs across the gene for the chosen samples, in a few seconds.
-`cyp.samples` holds breeds that carry the allele, two that do not, and four
-Greek gray wolves.
+The slice holds 490 SNVs across the gene for the chosen samples. `cyp.samples`
+holds breeds that carry the allele, two that do not, and four Greek gray wolves.
 
 ## Loading the slice with breed labels
 
-An SNV VCF goes in as an ordinary `VariantTrack`, and the work is in what gets
-attached to the rows afterwards:
+An SNV VCF loads as an ordinary `VariantTrack`:
 
 ```json addtrack
 {
@@ -131,15 +129,14 @@ attached to the rows afterwards:
 }
 ```
 
-The display draws one row per sample, and the rows keep the Dog10K IDs, which
-mean nothing to a reader. Two mechanisms relabel them without touching the VCF:
-the display's `rows` labels for named animals ([](/docs/tutorials/dog10k_svs)),
-or a `samplesTsvLocation` for a panel too large to write one entry each for
-([Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)).
+The display draws one row per sample, labelled with the Dog10K IDs. Two settings
+relabel the rows without touching the VCF: the display's `rows` labels for named
+animals ([](/docs/tutorials/dog10k_svs)), or a `samplesTsvLocation` for a larger
+panel ([Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)).
 
-A SNV is one base wide however far you zoom out, so a whole-gene view of 490 of
-them is a field of ticks. Zoom to the codon: at base level each sample's call is
-a block, and the gene track still shows which exon it sits in.
+A whole-gene view of 490 SNVs is a field of one-pixel ticks, so zoom to the
+codon. At base level each sample's call is a block, and the gene track shows
+which exon it sits in.
 
 ## Reading the CYP1A2 genotypes
 
@@ -165,7 +162,6 @@ Three neighbours sit inside the same 101 bp, and the display filters them out:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "displayId": "dog10k_cyp1a2_snvs-LinearMultiSampleVariantDisplay",
       "filter": ["jexl:feature.start == 38261634"]
     }
   ]
@@ -178,46 +174,43 @@ column. The third sits 15 bp along, and every wolf here carries it.
 
 ## Copy number at CYP1A2
 
-The paper reports half the collection at three or more copies of _CYP1A2_, which
-is the other half of its figure. Those copy-number estimates were never
-published, and the SNV callset already carries a per-sample `DP` at every site,
-so one tabix slice of it, stripped to the depth field, covers every canid in the
-collection:
+The paper reports half the collection at three or more copies of _CYP1A2_, in
+the other half of its figure. The per-animal estimates are unpublished, but the
+SNV callset carries a per-sample `DP` at every site, so one slice of it,
+stripped to the depth field, covers every canid in the collection:
 
 <!-- from: scripts/build_dog10k_cyp1a2_cn.sh -->
 
 ```bash
-# -r reads only the locus over HTTP; -x drops everything but FORMAT/DP, which
-# is what keeps a 397 GB callset to a slice
+# -r reads only the locus over HTTP; -x keeps FORMAT/DP and drops the rest
 bcftools view -r chr30:38205000-38400000 -Ou "$SNVS" |
   bcftools annotate -x 'INFO,^FORMAT/DP' -Oz -o dp.vcf.gz
 bcftools query -l dp.vcf.gz > cohort.samples
 bcftools query -f '%POS[\t%DP]\n' dp.vcf.gz > cohort.dp
 ```
 
-The build script converts depth to copy number by comparison within each dog.
-The sequence around the element in that same dog is copy number two, so it is
-the denominator:
+The build script converts depth to copy number within each dog, taking the
+sequence around the element in that dog as two copies:
 
 ```text
 CN = 2 * depth over the element / depth over the sequence around it
 ```
 
-No separate copy-number caller runs; the check is built into the ratio, since
-that surrounding sequence has to come back out at two.
+Copy number comes from depth alone; the flanking sequence has to come back at
+two copies in every dog, which checks the ratio.
 
 Each window is 5 kb of depth stepped by 1 kb, so a call rests on 5 kb of
 evidence and is painted at 1 kb resolution.
 
 The callset records depth only where a variant was called, so the build script
-validates it against the 15 CRAMs the Dog10K share publishes: over the shared
-windows the two agree at r = 0.92 with no bias. That painting is in the config
-as `dog10k_cyp1a2_cn`.
+checks it against the 15 CRAMs the Dog10K share publishes. Over the shared
+windows the two depth sources agree at r = 0.92 with no bias. The CRAM-based
+painting is in the config as `dog10k_cyp1a2_cn`.
 
-The painting is a BED with the colour in its itemRgb column, a `sample` column
-and the rounded call in `copyNumber`. A multi-row track gives each sample a row,
-and an identity colour names the colours the file already carries, so the key
-reads as copy number:
+The output is a BED with the colour in the itemRgb column, a `sample` column and
+the rounded call in `copyNumber`. The multi-row display gives each sample a row,
+and the identity colour scale lists the colours in the file with a copy number
+label for each, so the legend reads as copy number:
 
 ```json addtrack
 {
@@ -266,40 +259,40 @@ reads as copy number:
 }
 ```
 
-The build script prints this `color` block from the palette it painted with,
-ready to paste. For named animals in a chosen order, `rows` takes
+The build script prints this `color` block from the palette it painted with. For
+named animals in a chosen order, `rows` takes
 `{ "field": "sample", "domain": [...] }` with the row names listed.
 
-Two lanes read below, each window colored by its rounded call with grey being
-two copies: named animals above, then all 1,987 canids clustered on their
-profiles.
+The figure has two lanes, each window coloured by its rounded call and grey at
+two copies: named animals above, and all 1,987 canids clustered on their
+profiles below.
 
 <Figure caption="Copy number over CYP1A2 and 185 kb around it, named animals above and the whole collection below. The expansion is a breed-level fact in some breeds and segregates one dog to the next in others." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
-The upper lane is whole groups: every Golden Retriever, Labrador Retriever and
-Boxer in the collection, plus the four wolves the figure above draws. Every
-Golden carries the expansion, every Boxer carries two copies, and the Labradors
-split one dog to the next. Row labels come from the sample column, the order
-from `domain`. The wolves rest on callset depth alone, since none of the dogs
-with published reads is a wolf.
+The upper lane holds every Golden Retriever, Labrador Retriever and Boxer in the
+collection, plus the four wolves from the genotype figure. Every Golden carries
+the expansion, every Boxer carries two copies, and the Labradors split one dog
+to the next. Row labels come from the sample column, the order from `domain`.
+The wolves rest on callset depth alone, since none of the dogs with published
+reads is a wolf.
 
 The white stripes through both lanes are windows with no call. A window whose
-median across the whole collection is not two is measuring the reference, so the
-build script drops it from every row. The widest one has its cause on the CpG
-island lane: high GC means low read depth in every canid, and a 5 kb window
-carries that over the blocks around it.
+median across the whole collection is not two copies measures a quirk of the
+reference, so the build script drops it from every row. The widest stripe sits
+on a CpG island: high GC lowers read depth in every canid, and each 5 kb window
+spreads that over the blocks around it.
 
-The lower lane is the same estimate over every canid, clustered on the profile
-each one carries across the window: **Clustering → Cluster rows by similarity**
-in the track menu, or `runClustering`. That groups on extents, so animals whose
-expansion starts and ends in the same place land together, and the blocks either
-side of the gene are the deletion polymorphisms there.
+The lower lane is the same estimate over every canid, clustered on each animal's
+profile across the window with **Clustering → Cluster rows by similarity** in
+the track menu, or `runClustering`. Clustering groups animals whose expansion
+starts and ends in the same place, and the blocks on either side of the gene are
+deletion polymorphisms.
 
-One number does not reproduce: this estimate puts far more of the collection at
-three or more copies than the paper reports, and the two depth sources agree too
-closely for that to be noise. The difference is which interval is counted:
-QuicK-mer2 over an element whose extent was never published, against the windows
-the collection itself puts above two.
+The depth-based estimate puts far more of the collection at three or more copies
+than the paper reports, and the two depth sources agree too closely for the gap
+to be noise. The two counts cover different intervals: the paper ran QuicK-mer2
+over an element whose extent is unpublished, and the build script counts the
+windows the collection puts above two.
 
 ## Reproduce it end to end
 
@@ -325,10 +318,10 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
 ```
 
-The script reads depth over this gene straight out of each published CRAM,
-paints the 15 dogs, then slices the callset's own depth field and paints the
-other 1,972. It prints each dog's copy number over the element beside the spread
-of the sequence around it, and the agreement between the two measurements.
+The script reads depth over this gene from each published CRAM, paints the 15
+dogs, then slices the callset's depth field and paints the other 1,972. It
+prints each dog's copy number over the element beside the spread of the sequence
+around it, and the agreement between the two measurements.
 
 ## See also
 

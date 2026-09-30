@@ -53,12 +53,12 @@ column lets the multi-row feature display draw a labeled sub-row per cell type,
 so 9 cell types (or 127) share one config, one adapter, and one fetch.
 
 HOXA is the window the build script opens on. The genes are transcribed in the
-order they sit in, so a cell type opens the stretch matching its own position
+order they sit in, so each cell type opens the stretch matching its position
 along the body axis and holds the rest under Polycomb. HUVEC and HSMM, the
 mesodermal pair, open the posterior genes; the keratinocyte, lung-fibroblast and
-mammary lines stop at HOXA7; GM12878 and K562 are blood and hold the whole
-cluster shut. H1-hESC's magenta is `3_Poised_Promoter`, the bivalent state HOX
-clusters are held in before a lineage commits.
+mammary lines stop at HOXA7; GM12878 and K562 are blood and keep the whole
+cluster repressed. H1-hESC's magenta is `3_Poised_Promoter`, the bivalent state
+HOX clusters are held in before a lineage commits.
 
 ## What the merged file holds
 
@@ -79,7 +79,7 @@ names from it. The merge is one pass:
 <!-- from: scripts/build_chromhmm_multirow.sh -->
 
 ```bash
-# awk appends each file's own name as the row label, so Gm12878.bed.gz labels
+# awk appends each file's name as the row label, so Gm12878.bed.gz labels
 # its segments Gm12878
 {
   printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
@@ -95,14 +95,14 @@ tabix -p bed multirow.bed.gz
 ```
 
 The ENCODE and Roadmap merged files are also hosted as bigBeds (see
-[Where the data comes from](#where-the-data-comes-from)), which take a
-[`BigBedAdapter`](/docs/config/bigbedadapter), as the second track config below
-does.
+[Where the data comes from](#where-the-data-comes-from)), which JBrowse reads
+with a [`BigBedAdapter`](/docs/config/bigbedadapter), as in the second track
+config below.
 
 ## Configure the multi-row feature display
 
-A `FeatureTrack` with a `BedTabixAdapter` and a `LinearMultiRowFeatureDisplay`
-partitioning on `cellType`. It references the `hg19` assembly; see the
+The track config below opens the merged file in a multi-row feature display
+partitioned on `cellType`. It references the `hg19` assembly; see the
 [assemblies configuration guide](/docs/config_guides/assemblies) to set one up:
 
 ```json addtrack
@@ -139,8 +139,9 @@ partitioning on `cellType`. It references the `hg19` assembly; see the
 }
 ```
 
-The `uri` shorthand resolves the `.bed.gz.tbi` beside the file.
-[`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) does the rest:
+The adapter finds the `.bed.gz.tbi` beside the file.
+[`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) sets up the
+sub-rows:
 
 - `field` is the attribute to split rows by; every distinct `cellType` becomes a
   labeled sub-row
@@ -150,14 +151,12 @@ The `uri` shorthand resolves the `.bed.gz.tbi` beside the file.
 [`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight) stays
 at its auto-fit default, dividing the track height across the rows.
 
-`field` names a column of the file and `domain` the order its values take. Every
-channel on a JBrowse display takes that pair, the `color` slot further down
-included, and [](/docs/tutorials/alu_age) draws a plot off a BED with nothing
-else.
+Every channel on a JBrowse display, `color` included, takes the same `field` and
+`domain` pair.
 
-The defline names the columns, so the adapter's
-[`columnNames`](/docs/config/bedtabixadapter/#slot-columnnames) is for files
-without one. A feature with an `itemRgb` is painted with it; the
+Because the defline names the columns, the adapter needs
+[`columnNames`](/docs/config/bedtabixadapter/#slot-columnnames) only for a file
+without one. JBrowse paints a feature with its `itemRgb`, and the
 [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) slot overrides
 that.
 
@@ -165,7 +164,7 @@ On [JBrowse Desktop](/docs/quickstart_desktop) point `uri` at the local path.
 
 ## The legend, filtering and row order
 
-The display derives the key from the state colors: one entry per distinct color,
+JBrowse builds the key from the state colors, one entry per distinct color,
 labeled with the first state name seen in it. States sharing a color collapse
 into one entry; in the Broad 15-state model that pairs `4_Strong_Enhancer` with
 `5_`, `6_Weak_Enhancer` with `7_`, `9_Txn_Transition` with `10_Txn_Elongation`,
@@ -176,8 +175,8 @@ which keeps the file's colors and relabels them in the key.
 
 Most of any segmentation is quiescent or heterochromatic. The track menu's
 **Categories** submenu has a checkbox per legend entry; unchecking the quiescent
-and repressed states leaves only promoters, enhancers and transcription. It
-applies at render time with no refetch.
+and repressed states leaves only promoters, enhancers and transcription. JBrowse
+applies the filter while drawing, with no refetch.
 
 Two more track-menu actions turn the painting into a comparison:
 
@@ -186,17 +185,17 @@ Two more track-menu actions turn the painting into a comparison:
 - Right-click a column and pick **Sort rows by color here** to rank the rows by
   the state each carries at that base
 
-## Scaling up: 127 epigenomes
+## The 127-epigenome Roadmap track
 
-The same recipe scales to the
+Merging the
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
-15-state model across 127 epigenomes: 127 input files, still one track and one
-fetch.
+15-state segmentations of 127 epigenomes the same way turns 127 input files into
+one track and one fetch.
 
-This track names its colors with `scale: "identity"`, because the Roadmap state
-names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`): the file's itemRgb still
-paints each block, and `labels` spells out the fifteen `domain` colors in order.
-The merged file is hosted, so the whole track is:
+The Roadmap state names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`), so this
+track labels its colors with `scale: "identity"`. The `itemRgb` in the file
+still paints each block, and `labels` spells out the fifteen `domain` colors in
+order. The merged file is hosted, so the whole track is:
 
 ```json addtrack
 {
@@ -282,19 +281,18 @@ of all 127 from the data at whatever locus is in view.
 
 <Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Clustering the 127-epigenome ChromHMM track over HOXA. The rows open in Roadmap's tissue order; the track menu's Cluster rows by similarity re-lays them out into blocks and draws the dendrogram beside them." />
 
-At this scale a row is a few pixels tall and carries no text, so the tissue
-names live in the stripe beside the painting. The
+At this scale a row is a few pixels tall and carries no text, so the stripe
+beside the painting marks the tissues. The
 [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) slot
 takes one `{ match, group, color }` per Roadmap tissue group and tints each
 matching row's sidebar swatch. The build script writes those from the `GROUP`
-and `COLOR` columns of `EID_metadata.tab`, an axis the clustering never saw.
+and `COLOR` columns of `EID_metadata.tab`, which the clustering does not use.
 
-**ENCODE2012 is a group in that list.** Roadmap folded the ENCODE 2012 reference
+The list includes an ENCODE2012 group. Roadmap folded the ENCODE 2012 reference
 epigenomes (GM12878, K562, HeLa-S3, HepG2, A549, HUVEC, NHEK and the rest) into
-the compendium under a group of their own, so that entry names where the data
-came from rather than a tissue, and its members span ten anatomies. The same
-file's `ANATOMY` column splits the epigenomes finer, and `TYPE` sorts them by
-how the sample was collected.
+the compendium as one group, so that entry names a data source, and its members
+span ten anatomies. The same file's `ANATOMY` column splits the epigenomes
+finer, and `TYPE` sorts them by how the sample was collected.
 
 ## Reproduce it end to end
 

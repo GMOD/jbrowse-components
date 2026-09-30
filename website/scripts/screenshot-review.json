@@ -1605,13 +1605,6 @@
     "note": "FIXED (data unblocked + rendered + embedded). Uploaded the three per-strain odgi-pav bigWigs to the demo bucket, added the ecoli_pggb_pav MultiQuantitativeTrack to the hosted config, invalidated CloudFront, regenerated. Whole-chromosome, no gene lane: three rows (Sakai/CFT073/NCTC86) each near 1 where present, dropping to 0 over that strain's own accessory stretches, with visibly different gap patterns per strain. Embedded as a new <Figure> in pangenome.md's per-strain-presence subsection (the reviewer's 'cant see any image here').",
     "reviewedAt": "2026-07-20T18:49:10.000Z"
   },
-  "pangenome/graph": {
-    "name": "pangenome/graph",
-    "status": "good",
-    "note": "FIXED (correspondence made explicit). Now that the depth and pav figures render just above it (both newly unblocked), the odgi viz caption ties them together directly: the odgi-viz white gaps ARE the same accessory stretches that drop to 0 in the pav track, only ordered by graph node order instead of K12 position. The existing prose bullets already map each JBrowse projection to an odgi-viz feature (depth=column coverage summed, per-strain presence=filled-vs-gap rows windowed, MAF=those rows at base resolution, variant matrix=branch points); with all four projections now having figures, the correspondence the reviewer asked for is visually walkable.",
-    "reviewedAt": "2026-07-25T23:06:19.068Z",
-    "hash": "836b331efdbc85cdd3886ef33ee3afb2dc8ab5cf"
-  },
   "pangenome/depth": {
     "name": "pangenome/depth",
     "status": "good",
@@ -1880,13 +1873,6 @@
     "reviewedAt": "2026-07-27T04:58:46.407Z",
     "hash": "9c150d0552a01987536817842e787b83a42469be"
   },
-  "pangenome/local_subgraph": {
-    "name": "pangenome/local_subgraph",
-    "status": "answered",
-    "note": "The callout now only says the ringed node's other link lands upstream, outside the cut. Widening the extraction to close it would take about 6,000 segments, so the advice is gone; the tutorial's odgi extract -c 1 is the fix. No multipart figure because it would need a new hosted GFA. The clipped bubble label is gone too.",
-    "reviewedAt": "2026-09-18T03:05:31.730Z",
-    "hash": "59648211cd898746a6f000a6d46633480a1d1cce"
-  },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
     "status": "answered",
@@ -1963,13 +1949,6 @@
     "note": "",
     "reviewedAt": "2026-08-24T05:45:01.422Z",
     "hash": "05e5bae0f3a2356242c9c55f469a13c3c7c0e9b0"
-  },
-  "pangenome/hprc_mhc_anchored": {
-    "name": "pangenome/hprc_mhc_anchored",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-17T22:05:16.500Z",
-    "hash": "d1736b7413ed4e5c851039b2910d92ed6afe5641"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2262,13 +2241,6 @@
     "reviewedAt": "2026-08-01T14:12:40.200Z",
     "hash": "e77554bdd3829657a0849566d08a942a6ad1b3f9"
   },
-  "pangenome/pggb_haplotype_paths": {
-    "name": "pangenome/pggb_haplotype_paths",
-    "status": "answered",
-    "note": "Deletion edges are off (the view default). Sakai is picked in the Walk menu, so the insH21 loop fades as the one stretch Sakai's walk skips.",
-    "reviewedAt": "2026-09-18T03:05:33.870Z",
-    "hash": "623af906744252cb92eff539b08a31d8b58598ca"
-  },
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
     "status": "good",
@@ -2464,13 +2436,6 @@
     "note": "",
     "reviewedAt": "2026-09-14T03:41:10.773Z",
     "hash": "6e0ab23d005b063cdb5c6e9c150713324ea1b959"
-  },
-  "pangenome/graph_resolution": {
-    "name": "pangenome/graph_resolution",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T14:20:59.708Z",
-    "hash": "ea6b8728dafa2a30c19092e2219ad612d4594d35"
   },
   "cancer_sv/realigned_reads": {
     "name": "cancer_sv/realigned_reads",
@@ -2772,13 +2737,6 @@
     "status": "good",
     "note": "NEW 2026-08-08: the 4-part round trip asked for on pangenome/rgfa_segment_neighbourhood -- graph -> linear on the left, linear -> graph on the right, each column reading down from the click to what it opened. Composed from the two existing two-stage captures, which keep their own live links.",
     "reviewedAt": "2026-08-08T22:30:00.000Z"
-  },
-  "pangenome/pggb_strain_launch": {
-    "name": "pangenome/pggb_strain_launch",
-    "status": "answered",
-    "note": "Now both sides of the deletion: K12 above with the bypassed seven-gene span boxed in blue, the CFT073 segment ringed in the graph, and the launched CFT073 view with that segment boxed in red between ssuE and pyrD. Graph pane shortened, bubble labels off.",
-    "reviewedAt": "2026-09-18T03:05:34.699Z",
-    "hash": "a8de33c369400fe7a6463a44767038b1a1f166d6"
   },
   "genomes_basics/multiz_alignment": {
     "name": "genomes_basics/multiz_alignment",
@@ -3142,20 +3100,6 @@
     "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
     "reviewedAt": "2026-08-15T22:56:21.551Z",
     "hash": "9857b64a8c2708b5aa4251e5a3b91f35008f405a"
-  },
-  "pangenome/graph_resolution_minigraph": {
-    "name": "pangenome/graph_resolution_minigraph",
-    "status": "good",
-    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
-    "reviewedAt": "2026-08-15T22:56:25.195Z",
-    "hash": "60d7edc04bb146417921d1e213eaa08a1714a90b"
-  },
-  "pangenome/graph_resolution_pggb": {
-    "name": "pangenome/graph_resolution_pggb",
-    "status": "good",
-    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
-    "reviewedAt": "2026-08-15T22:56:25.567Z",
-    "hash": "04721836c634a617c5f784425121821d995cdf9d"
   },
   "ld/lct_sweep_two_scales": {
     "name": "ld/lct_sweep_two_scales",
@@ -3562,13 +3506,6 @@
     "note": "DONE: the UI is jb2hubs' GraphRegionLauncher, not this repo, and it did change. /pangenomes/hprc folded into /pangenomes#hprc on 2026-09-01, and the chromosome row merged into the presets. I recaptured the form from staging with Draw as a graph boxed and rewrote the page to match. I left the jb2hubs UI alone; if it is still bad, the 24-chip chromosome wall is the likely target.",
     "reviewedAt": "2026-09-14T05:41:01.988Z",
     "hash": "af9b3005fcbe041798aa22d5488aa7642f6b8f06"
-  },
-  "pangenome/genomes_hprc_mhc_graph": {
-    "name": "pangenome/genomes_hprc_mhc_graph",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-18T03:35:42.619Z",
-    "hash": "b8d4a5c29f7a259be286c98486c4e0f12db1be81"
   },
   "pangenome/genomes_hprc_page": {
     "name": "pangenome/genomes_hprc_page",

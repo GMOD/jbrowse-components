@@ -9,14 +9,9 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC genome, and
-each one already carries that genome's UCSC track catalog. Any of those tracks
-is a checkbox away, with nothing to download, index or configure.
-
-## Prerequisites
-
-- nothing to install: this is a click-path through a hosted site, and no data,
-  config or index is prepared by hand
+genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC genome,
+carrying that genome's UCSC track catalog. We open hg38, find _TP53_, and turn
+on its conservation, regulation and variant tracks from the catalog.
 
 ## Where the data comes from
 
@@ -50,7 +45,7 @@ an accession, and covers both catalogs at once.
 
 <Figure src="/img/genomes_basics/site_search.png" caption="The header search box, mid-query. The dropdown mixes UCSC database names with GenArk accessions, since both catalogs are in the one index." />
 
-Picking one loads a JBrowse instance at a plain URL, shareable as a link.
+Picking a result opens its JBrowse instance at a URL you can share.
 
 ## Searching for a gene
 
@@ -61,9 +56,9 @@ ships a name index, so gene symbols resolve with no setup, and coordinates like
 
 <Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, found by the config's name index. Middle: what Enter opens, as many transcripts as the track's height holds, the gene labelled TP53 +20 more for the ones it does not, and the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
 
-RefSeq All draws each transcript on a separate row, and TP53 has more than the
+RefSeq All draws each transcript on a separate row, and _TP53_ has more than the
 track's height holds. The gene name reads **TP53 +20 more**, and the circled
-chip at the bottom right reads `Isoforms trimmed`. Two ways to see more:
+chip at the bottom right reads `Isoforms trimmed`. To see more:
 
 - Click **+20 more** to open that one gene
 - Click the chip for **Auto / All transcripts / Representative transcript**. The
@@ -72,7 +67,7 @@ chip at the bottom right reads `Isoforms trimmed`. Two ways to see more:
 ## Finding a track
 
 The track selector is the drawer down the right; the button at the top left of
-the view header closes and reopens it. It lists the catalog under UCSC's own
+the view header closes and reopens it. It lists the catalog under UCSC's
 categories, and **Filter tracks** searches all of them. Type `phyloP` and tick
 **Basewise Conservation (phyloP) - 100-way vertebrate alignment**, under
 Comparative Genomics.
@@ -86,16 +81,14 @@ after the parenthesis pick one out.
 ## Reading the phyloP track
 
 phyloP scores each base against the neutral rate the alignment implies. The
-score is signed: blue above the line changes more slowly than neutral, red below
-it faster.
-
-## Checking the score against the raw data
+score is signed: blue above the line marks a base that changes more slowly than
+neutral, and red below it one that changes faster.
 
 Zoom in until the sequence appears. The exon below is exon 7, which covers G245,
 R248 and R249, three of the codons most often mutated in human cancer.
 
 - Tick **Reference sequence**, which is off by default
-- Once its menu has been opened, the isoform chip shrinks to the icon circled
+- After you first open its menu, the isoform chip shrinks to the icon circled
   below, which opens the same options
 - At this zoom the default draws the codon row once per transcript
 
@@ -120,17 +113,17 @@ Most columns are blank, since every species matches human at those bases, and
 conserved columns give a positive score. phyloP counts substitution events on
 the tree:
 
-- **Under S240**, nearly every species differs from human, but all carry the
-  **same** base: one substitution on the human branch, and the score stays above
+- under S240, nearly every species differs from human, but all carry the _same_
+  base, which is one substitution on the human branch, so the score stays above
   the line
-- **Under T256 and G244**, fewer rows differ and those that do disagree with
-  each other, and the score goes red
+- under T256 and G244, fewer rows differ and those that do disagree with each
+  other, and the score goes red
 
-The track's zoom range has two limits: a MAF block carries a row per species, so
-a gene-wide view asks you to confirm before fetching, and zoomed further out it
-swaps to a precomputed summary with a conservation bar per species.
+A MAF block carries a row per species, so at gene-wide zoom the alignment track
+asks you to confirm before fetching. Further out it draws a precomputed summary
+with a conservation bar per species.
 
-## The regulatory end of the same gene
+## Regulatory tracks at the TP53 promoter
 
 Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 
@@ -140,34 +133,33 @@ Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 - **Layered H3K27Ac (hg19)**
 - **EPDnew Promoters - EPDnew v6**
 
-The two histone tracks each hold seven cell lines, one row each. **Track menu →
-Plot type → Overlapping** draws all seven in one plot box, which is UCSC's own
-layered arrangement; **Multi-row** beside it is the stack they open in. Their
-names carry hg19 because ENCODE3 released them on it; the files this config
-points at are the hg38 ones.
+The Layered H3K4Me3 and H3K27Ac tracks each hold seven cell lines, and open with
+one row per cell line (**Multi-row**). **Track menu → Plot type → Overlapping**
+draws all seven in one plot box, UCSC's layered arrangement. Their names carry
+hg19 because ENCODE3 released them on it; the config points at the hg38 files.
 
 <Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs coloured by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the two marks with their seven cell lines in one plot box, and the Plot type menu that separates them. Right: the same six tracks with a row per cell line." />
 
-The promoter is at the high-coordinate end because the gene is on the minus
-strand, and everything lands there together: the CpG island, a promoter-class
-cCRE, the EPDnew call and both histone marks. H3K4me3 marks a promoter and
-H3K27ac an active one; all seven cell lines carry both.
+_TP53_ is on the minus strand, so its promoter is at the high-coordinate end.
+The CpG island, a promoter-class cCRE, the EPDnew call and both histone marks
+all sit there. H3K4me3 marks a promoter and H3K27ac an active one, and all seven
+cell lines carry both.
 
 ## Filtering a dense track
 
 **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** under Variation and Repeats opens as
 several thousand records over _TP53_, one block of colour. **Track menu → Filter
-by...** takes the track's own columns as rows of field, operator and value. Type
+by...** takes rows of field, operator and value over the track's columns. Type
 the column name into the field box, which lists the file's columns with the
-description it gives each. A record has to pass every row:
+description the file gives each. A record has to pass every row:
 
-- **annot** is `pLoF` keeps gnomAD's predicted loss-of-function consequence
-  class (the others are missense, synonymous and other)
-- **AF** ≥ `0.001` keeps the variants standing in the population
+- `annot` is `pLoF` keeps gnomAD's predicted loss-of-function consequence class
+  (the others are missense, synonymous and other)
+- `AF` ≥ `0.001` drops the rarest variants
 
 <Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class row filled in." />
 
-The colours are the file's own, per consequence class, so the loss-of-function
+The file assigns one colour per consequence class, so the loss-of-function
 filter leaves a track drawn in one colour.
 
 <Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1.1 Exomes over TP53 and the filter dialog its track menu opens. One consequence-class row redraws the lane with the predicted loss-of-function records alone, in the one colour the file gives that class." />
@@ -175,9 +167,9 @@ filter leaves a track drawn in one colour.
 Once a filter is in effect the same menu row opens a submenu with **Edit
 filters...** and **Clear all filters**.
 
-A BigBed's extra fields arrive as fields, so filtering is limited to the columns
-the file carries. ClinVar's clinical classification is the column `clinSign`, so
-the row **clinSign** is `Pathogenic` cuts that catalog down the same way.
+The filter works on any column a BigBed carries. ClinVar's clinical
+classification is the column `clinSign`, so the row `clinSign` is `Pathogenic`
+filters that catalog the same way.
 
 ## Other tracks in the hg38 catalog
 
@@ -190,13 +182,13 @@ A few that come up often:
   associated with expression of nearby genes.
 - **Long-read SVs - CoLoRSdb 1427 SVs** (Variation and Repeats) covers the size
   range short reads call badly.
-- **liftOver** (Pairwise alignments) is a genome-to-genome alignment, and gets a
-  page of its own in [](/docs/tutorials/genomes_synteny).
+- **liftOver** (Pairwise alignments) is a genome-to-genome alignment, covered in
+  [](/docs/tutorials/genomes_synteny).
 
 Drag a track by the handle at the left of its header to reorder it; the `×`
 closes it.
 
-## What is actually downloaded
+## Where the track data is read from
 
 The config is hosted on jbrowse.org, but most UCSC track data resolves back to
 hgdownload, read by byte range. The track menu's **About track** prints the
@@ -204,9 +196,9 @@ adapter, which is where to look when a track is slow or missing.
 
 <Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu, with the icon that opens it circled and About track boxed. Right: the dialog it opens, naming the BigWig on hgdownload with UCSC's trackDb entry below it." />
 
-Only the blocks under the current view are fetched, which is why a genome-wide
-signal track opens at gene zoom without downloading it. The URL is the file
-itself, so anything that reads a BigWig by range can take it, such as
+JBrowse fetches only the blocks under the current view, so a genome-wide signal
+track opens at gene zoom without downloading the whole file. The URL is the file
+itself, and any program that reads a BigWig by range can open it, such as
 `rtracklayer` in R:
 
 ```r
@@ -221,22 +213,19 @@ The BigBeds behind the variant and annotation tracks read the same way.
 
 ## Trying another genome
 
-The GenArk assemblies behave the same way, with two differences:
+The GenArk configs carry a smaller track set than the UCSC ones. Their name
+index is built from NCBI RefSeq annotation, so a `GCF_` accession has gene
+tracks and resolves gene symbols, while a `GCA_` one generally has neither and
+takes coordinates.
 
-- **Their configs carry a smaller track set**
-- **Whether a gene symbol resolves depends on the accession.** The name index is
-  built from NCBI RefSeq annotation, so a `GCF_` accession carries gene tracks
-  and an index, while a `GCA_` one generally has neither and coordinates are the
-  way in
-
-An assembly released both ways appears under both accessions, and only the
-RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
+An assembly released both ways appears under both accessions, and gene search
+works on the RefSeq one. The axolotl `Mex_15411` is `GCF_040938575.1` and
 `GCA_040938575.1`.
 
 <Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession." />
 
-The same gene spans a few hundred kb here; the axolotl genome is one of the
-largest sequenced.
+_TP53_ spans a few hundred kb in axolotl, whose genome is one of the largest
+sequenced.
 
 ## See also
 

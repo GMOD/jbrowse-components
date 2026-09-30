@@ -5,25 +5,16 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-Embedding a genome browser in a web page takes one `<script>` tag and no build
-step. Drop `assembly`, `tracks`, and `view` into `<LinearGenomeView>` and the
-component runs the view engine, with nothing else to wire up.
+We embed a JBrowse linear genome view in a web page with one `<script>` tag and
+no build step. The `<LinearGenomeView>` component takes three objects,
+`assembly`, `tracks` and `view`, and draws the genome browser from them.
 
 ## Prerequisites
 
 - a text editor
-- a local HTTP server: opening the HTML file directly won't work, JBrowse needs
-  it served. `npx serve -S` in the folder works (`-S` resolves symlinks, so a
-  data file you symlink in still loads)
-
-## The finished embedded view
-
-<Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
-
-For other view types, a different bundler, or working demo repos, see
-[](/docs/embedded_components). The
-[LGV storybook](https://jbrowse.org/storybook/lgv/) has copy-pasteable examples
-for everything beyond a basic view.
+- a local HTTP server, because the page fetches its data over HTTP.
+  `npx serve -S` in the folder works (`-S` resolves symlinks, so a data file you
+  symlink in still loads)
 
 ## Quick start
 
@@ -87,9 +78,17 @@ from the file's extension, `assemblyNames` from the one `assembly` above (see
 npx serve -S .
 ```
 
-Open the URL it prints. Pin a version for production
-(`@jbrowse/react-linear-genome-view2@4.3.0/dist/...`) rather than always
-fetching latest from unpkg.
+Open the URL it prints.
+
+<Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
+
+The unversioned unpkg URL fetches the latest release, so pin a version for
+production (`@jbrowse/react-linear-genome-view2@4.3.0/dist/...`).
+
+For other view types, a different bundler, or working demo repos, see
+[](/docs/embedded_components). The
+[LGV storybook](https://jbrowse.org/storybook/lgv/) has copy-pasteable examples
+for everything beyond a basic view.
 
 Prep your own data files with the
 [web quickstart](/docs/quickstart_web#adding-tracks) recipes. For more tracks,
@@ -108,10 +107,11 @@ function GenomeBrowser() {
 }
 ```
 
-Props are read once on mount. To reach the view engine imperatively (navigate,
-show a track), take a `ref` or use `useCreateViewState`, which builds the same
-view state as a hook. It is `undefined` for the first frame, while the view and
-display types the options name load, so render nothing until then:
+The component reads its props once, on mount. To reach the view engine
+imperatively (navigate, show a track), take a `ref` or use `useCreateViewState`,
+which builds the same view state as a hook. The hook returns `undefined` for the
+first frame, while the view and display types the options name load, so render
+nothing until then:
 
 ```js
 import {
@@ -191,12 +191,13 @@ const view = {
 Drop these into the `index.html` from [Quick start](#quick-start) in place of
 the smaller `assembly`/`tracks`/`view`.
 
-- CRAM needs the assembly's sequence to decode reads, supplied automatically
+- CRAM decodes reads against the assembly's sequence, which the component takes
   from the enclosing assembly. See the
   [alignments track config guide](/docs/config_guides/alignments_track).
-- The index is assumed to sit next to the data file; add `index` or `type`
+- JBrowse looks for the index next to the data file; add `index` or `type`
   beside `uri` to override the guess.
-- `textSearching` on `ncbi_genes` powers name search; build your own index with
+- `textSearching` on `ncbi_genes` adds name search; build your own index with
+
   [`jbrowse text-index`](/docs/quickstart_web#indexing-feature-names-for-searching).
 
 </details>

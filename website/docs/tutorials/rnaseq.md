@@ -5,11 +5,13 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-An RNA-seq read mapped back to the genome jumps the introns spliced out of it,
-recorded in its CIGAR string, and in a stranded library the pair flags mark
-which strand the transcript came from. The CIGAR string and the pair flags are
-both already in the BAM, so splice arcs and strand coloring need no extra files
-and no configuration.
+An RNA-seq read mapped back to the genome jumps the introns spliced out of the
+transcript, and the aligner records each jump in the read's CIGAR string. In a
+stranded library the pair flags also mark which strand the transcript came from.
+JBrowse draws splice arcs and strand coloring from those two BAM fields, with no
+extra files or configuration. We read spliced alignments over _ACTB_, transcript
+strand at the surfeit locus, and then load a pipeline's junction table as a
+track.
 
 ## Prerequisites
 
@@ -58,11 +60,9 @@ into view:
 
 ## Spliced reads, CIGAR strings, and splice arcs
 
-RNA is spliced before sequencing, so a read mapped back to the genome skips the
-introns that were removed. A spliced aligner like
-[STAR](https://github.com/alexdobin/STAR) split-maps such a read and encodes the
-skip in its CIGAR string, the SAM/BAM field describing how a read aligns to the
-reference.
+A spliced aligner like [STAR](https://github.com/alexdobin/STAR) split-maps a
+read that crosses an intron and encodes the skip in its CIGAR string, the
+SAM/BAM field describing how a read aligns to the reference.
 
 A spliced read from the _ACTB_ pileup above (reads here are 51 bp) has a CIGAR
 like this, spaced out for readability:
@@ -71,33 +71,34 @@ like this, spaced out for readability:
 18M 95N 33M
 ```
 
-That means 18 bp (`M`, match) aligned to one exon, a 95 bp skip (`N`) across the
-intron, and 33 bp (`M`) aligned to the next. Every `N` in a read's CIGAR is one
-skipped intron.
+The CIGAR reads as 18 bp (`M`, match) aligned to one exon, a 95 bp skip (`N`)
+across the intron, and 33 bp (`M`) aligned to the next. Every `N` in a read's
+CIGAR is one skipped intron.
 
-JBrowse draws an arc for every read whose CIGAR contains a skip, on the fly. The
-arc takes its color from the transcript strand: `XS` and `TS` record it
-directly, while minimap2's `ts` records the orientation relative to the read,
-which JBrowse combines with the read's own strand. Red for forward, blue for
-reverse. A junction whose reads carry none of those tags, as in a BAM aligned by
-STAR without `--outSAMstrandField intronMotif`, takes its strand from the splice
-motif instead: JBrowse reads the first and last two bases of the intron off the
-reference, and GT-AG on the forward strand reads as CT-AC on the reverse. The
-neutral color is left for a junction whose reads disagree or whose motif is none
-of GT-AG, GC-AG and AT-AC. Hovering an arc shows the motif beside the read
-count.
+JBrowse computes the arcs on the fly from the skips in the reads in view, and
+colors each arc by transcript strand, red for forward and blue for reverse. The
+`XS` and `TS` tags record that strand directly; minimap2's `ts` records it
+relative to the read, and JBrowse combines it with the strand the read aligned
+to.
+
+A BAM aligned by STAR without `--outSAMstrandField intronMotif` carries none of
+those tags. JBrowse then reads the first and last two bases of the intron off
+the reference and takes the strand from the splice motif: GT-AG on the forward
+strand reads as CT-AC on the reverse. A junction whose reads disagree, or whose
+motif is none of GT-AG, GC-AG and AT-AC, draws in the neutral color. Hovering an
+arc shows the motif beside the read count.
 
 At Normal read height JBrowse draws each spliced read as two grey exon-aligned
-ends joined by a thin teal line across the skipped intron. That connector is
-drawn per read, separate from the red/blue arcs above it, which aggregate every
-read crossing a junction.
+ends joined by a thin teal line across the skipped intron. JBrowse draws one
+teal connector per read, and one red or blue arc per junction for all the reads
+crossing it.
 
 ## Strand-specific RNA-seq
 
-The arc colors above cover only spliced reads. A _strand-specific_ library
-records the transcript strand in which mate of the pair a read is, so every read
-carries it, which distinguishes genes sitting close together or overlapping on
-opposite strands.
+Arc colors give the strand of spliced reads. A _strand-specific_ library records
+the transcript strand in which mate of the pair a read is, so every read carries
+it, which separates genes sitting close together or overlapping on opposite
+strands.
 
 The surfeit locus packs genes tightly and alternates their strands (_RPL7A_,
 _SURF1_, _SURF2_, _SURF4_), so the coloring, which comes from the reads alone,
@@ -106,20 +107,20 @@ Paired end → First of pair strand**:
 
 <Figure caption="The surfeit locus colored by first-of-pair strand. The pileup splits into two colors, and the switch falls where the genes change strand: RPL7A forward, SURF1 reverse, SURF2 forward." src="/img/rnaseq/strand_specific.png" />
 
-Coloring answers the question one read at a time, and the coverage histogram
-answers it for a whole gene. Pick **Group by... → First-of-pair strand**, then
-turn off **Show... → Show pileup**. The display draws one band per group,
-computed from only that group's reads, leaving two histograms, forward and
-reverse, on one autoscaled axis.
+Coloring shows the strand of each read, and grouped coverage shows it over a
+whole gene. Pick **Group by... → First-of-pair strand**, then turn off **Show...
+→ Show pileup**. The display draws one band per group, computed from only that
+group's reads, leaving two histograms, forward and reverse, on one autoscaled
+axis.
 
 In the gene-dense MHC class III region, _NELFE_ and _SKIV2L_ sit back to back on
 opposite strands:
 
 <Figure caption="NELFE and SKIV2L, adjacent and on opposite strands, grouped by first-of-pair strand: each band shows signal over exactly one of the two genes." src="/img/rnaseq/strand_split_coverage.png" />
 
-Swapping to **Strand** groups on the read's own strand, which for a paired-end
-library sends the two mates of every pair to opposite bands, so neither band is
-the transcript strand.
+Grouping by **Strand** instead uses the strand each read aligned to. In a
+paired-end library that sends the two mates of every pair to opposite bands, so
+neither band follows the transcript strand.
 
 ## Short reads and long reads
 
@@ -134,8 +135,8 @@ connectors from those skips:
 ## Reading a deep pileup
 
 In a deep pileup, reads with a skip sit among many more that carry none, so the
-splicing evidence is hard to pick out. Three controls in the track menu pull it
-back out, and each is a setting on the track rather than a new file.
+splicing evidence is hard to pick out. Three settings in the track menu separate
+it.
 
 **Sort by... → Spliced reads first** gives every read whose CIGAR carries a skip
 the lowest rows, so the junction-spanning reads sit together at the top of the
@@ -158,9 +159,8 @@ supported by few reads.
 
 ## Loading your own RNA-seq data
 
-An aligned, sorted and indexed BAM or CRAM is an `AlignmentsTrack`, and the
-`uri` shorthand resolves the `.bai` or `.crai` beside it, so the adapter names
-one file:
+An aligned, sorted and indexed BAM or CRAM is an `AlignmentsTrack`. The adapter
+takes one `uri` and finds the `.bai` or `.crai` beside the file:
 
 ```json addtrack
 {
@@ -168,10 +168,7 @@ one file:
   "trackId": "my_rnaseq",
   "name": "My RNA-seq",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BamAdapter",
-    "uri": "https://yourhost/rnaseq.bam"
-  }
+  "adapter": { "type": "BamAdapter", "uri": "https://yourhost/rnaseq.bam" }
 }
 ```
 
@@ -188,15 +185,15 @@ strand-specific BigWig from the aligner, loads separately as a
 
 ## Junction files from the pipeline
 
-The arcs above come from the reads in view. A pipeline's own junction table
-carries what the browser cannot compute from one window: counts over the whole
-library, an annotated-or-novel flag, portcullis's filtering verdict. Every such
-table is a few columns away from BED, and a BED file of introns draws as arcs on
-a feature track, so the route is one `awk` line, then `bgzip` and `tabix`.
+JBrowse computes the arcs above from the reads in view. A pipeline's junction
+table adds values computed over the whole library: read counts, an
+annotated-or-novel flag, or portcullis's filtering verdict. One `awk` line
+converts each such table to BED, and a BED file of introns draws as arcs on a
+feature track.
 
-Each recipe writes one line per junction with the intron as the BED interval,
-the read count as the score, the strand, and the tool's own columns after them.
-Sorting and indexing is the same for all three:
+Each recipe below writes one line per junction with the intron as the BED
+interval, the read count as the score, the strand, and the columns specific to
+that tool after them. Sorting and indexing is the same for all three:
 
 ```bash
 sort -k1,1 -k2,2n junctions.bed | bgzip > junctions.bed.gz
@@ -204,7 +201,7 @@ tabix -p bed junctions.bed.gz
 ```
 
 **STAR** writes `SJ.out.tab` with the intron as 1-based inclusive coordinates,
-the strand as 0/1/2, the motif as STAR's own code (0 is non-canonical) and the
+the strand as 0/1/2, the motif as a STAR code (0 is non-canonical) and the
 annotated flag, then the unique and multi-mapping read counts:
 
 ```bash
@@ -228,9 +225,8 @@ awk -v OFS='\t' '{
 ```
 
 **portcullis** writes a header row naming its columns, so the recipe reads them
-by name rather than by position. `nb_raw_aln` is the raw supporting-read count,
-`canonical_ss` is `C`, `S` or `N` for canonical, semi-canonical and
-non-canonical:
+by name. `nb_raw_aln` is the raw supporting-read count, `canonical_ss` is `C`,
+`S` or `N` for canonical, semi-canonical and non-canonical:
 
 ```bash
 awk -F'\t' -v OFS='\t' '
@@ -243,9 +239,9 @@ awk -F'\t' -v OFS='\t' '
 ' 3-filt/portcullis_filtered.pass.junctions.tab > junctions.bed
 ```
 
-The track is a feature track drawn as a mark display, with the extra columns
-named so a colour can read them. This is the STAR file, coloured by its
-annotated flag:
+The junctions load as a feature track drawn by the mark display, with
+`columnNames` naming the extra columns so the colour encoding can read them.
+This config loads the STAR file, coloured by the annotated flag:
 
 ```json addtrack
 {
@@ -270,7 +266,6 @@ annotated flag:
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "star_junctions-LinearMarkDisplay",
       "transform": [{ "type": "filter", "expr": "jexl:feature.score >= 3" }],
       "marks": [
         {
@@ -297,8 +292,9 @@ annotated flag:
 Each junction is a `link` from its start to its end, stroked by its score
 through a log scale, with a `text` mark printing the score over it; the `filter`
 step is the same read-support floor the sashimi menu offers, applied to the
-file's whole-library counts. The colour names each value of `annotated` in the
-key, and lists them as strings because the extra columns arrive as text.
+whole-library counts in the file. The colour's `labels` name each value of
+`annotated` in the key, and `domain` lists the values as strings because the
+adapter reads extra columns as text.
 
 For the portcullis file, the colour's `field` is `canonical_ss`, its `domain`
 `["C", "S", "N"]`, and its `labels` canonical, semi-canonical and non-canonical,

@@ -72,20 +72,19 @@ the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and press
 **graph** on the LPA row. JBrowse opens on `chr6:160,525,000-160,655,000`. Pick
 **Layout → Force-directed layout** from the graph track's menu and tick **Mark
 bubbles**. The strip along the top of the track draws each reference segment at
-its bp in the colour its node has below, which ties the drawing back to the
-ruler.
+its position on the ruler, in the colour of its node below.
 
 <Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 Every loop in the knot is a different number of copies. Click the array's purple
 label to lay the bubble's segments out alone, with a button back to the window.
-This rGFA cut records only segments and links, so which haplotype takes which
-loop stays unanswered here.
+The rGFA cut holds segments and links. The route each haplotype takes through
+them is in the release's walks, which the next section reads.
 
 ## One haplotype's copies
 
 A **walk** is one haplotype's route through the graph, and the release publishes
-one per haplotype as a gbz-base database. Type the array's own window,
+one per haplotype as a gbz-base database. Type the array's window,
 `chr6:160,616,002-160,646,753`, put the rGFA graph track back to a segments lane
 with **Display types → Feature display**, and turn the gbz-base track on from
 the track selector. **Display types → Graph** in its track menu then cuts that
@@ -95,9 +94,9 @@ same track as a graph of the walks. Enter the eight lanes the track drew in the
 and pick **Layout → Force-directed layout**.
 
 A node draws thicker the more walks carry it (Bandage's depth as width), so the
-shared backbone is the thick line and one haplotype's own copies are the thin
-loops. Pick `HG00133` under **Walk**: its route keeps its ink while everything
-else fades, and a readout gives its length against the reference walk.
+shared backbone is the thick line and copies that one haplotype carries are thin
+loops. Pick `HG00133` under **Walk**: its route stays dark while everything else
+fades, and a readout gives its length against the reference walk.
 
 <Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Walk. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
@@ -114,19 +113,18 @@ GRCh38's, with no purple, is the shortest of the nine.
 
 ## Which copy is which
 
-Walk rows count copies, but they cannot say which copy is which. At KIV-2 each
-extra copy is new nodes rather than a loop back through the reference, and the
-GRCh38 copy the graph threads a copy through is the aligner's pick among
-near-identical sequences. A record that states each haplotype's copies can tell
-them apart.
+Walk rows count copies. At KIV-2 each extra copy is a run of new nodes, and the
+GRCh38 copy the graph aligns it to is the aligner's pick among near-identical
+sequences, so the walks leave open which copy is which. A record that lists each
+haplotype's copies tells them apart.
 
 The hosted config carries one. The **LPA KIV-2 copies by unit, eight HPRC
 haplotypes** track holds a single VCF 4.5 `<CNV:TR>` record at the array: each
 allele lists its runs of one unit and every copy's length, and a phased genotype
 puts each allele on its haplotype. Turn the track on, right-click the record and
 choose **Show repeat copies**. The TandemRepeat plugin, which the hosted config
-loads beside the graph plugin, opens a view with one bar per haplotype on its
-own bp axis, each copy coloured by its unit.
+loads beside the graph plugin, opens a view with one bar per haplotype, each on
+a separate bp axis, and each copy coloured by its unit.
 
 <Figure caption="The KIV-2 record under LPA, and the view its right-click item opens: one bar per haplotype, each copy coloured by its unit. GRCh38 carries six copies, the fourth of unit 2; HG00133 carries 27, all of unit 1. The dashed line marks GRCh38's length." src="/img/pangenome/hprc_kiv2_copies_by_unit.png" />
 
@@ -214,8 +212,8 @@ and the TRGT genotypes, over the gbz-base graph track cut for every haplotype
 ```
 
 Each row is one haplotype's walk between the flanking reference nodes, blue
-where it matches GRCh38 and purple where it does not; GRCh38's own walk is the
-short bar at the top.
+where it matches GRCh38 and purple where it does not; GRCh38's walk is the short
+bar at the top.
 
 ## TRGT's calls on the same bars
 
@@ -245,7 +243,6 @@ trgt genotype --genome GRCh38.fa --reads sample.bam \
 # genotype writes its VCF unsorted, and merge reads sorted, indexed input
 bcftools sort -Oz -o sample.sorted.vcf.gz sample.vcf.gz
 bcftools index -t sample.sorted.vcf.gz
-# one multi-sample VCF, which JBrowse reads unchanged
 trgt merge --vcf *.sorted.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf.gz
 ```
 
@@ -256,7 +253,7 @@ motif-length units, each walk gets a black tick at the allele TRGT called for it
 
 <Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first, with the TRGT record picked under Repeat. The catalogue lane marks the VNTR on GRCh38, whose walk is the short blue bar at the top. Each bar is tiled by the motif, and a black tick marks the allele TRGT called for that walk. A red readout is a walk far from its allele." src="/img/pangenome/hprc_abca7_repeat_units.png" />
 
-## The samples where they disagree
+## Samples where reads and assemblies disagree
 
 The session below cuts seven samples, named in `subgraphHaplotypes`, and shows
 their walks in pairs in the order `walkRowSamples` lists them:
@@ -346,15 +343,15 @@ its readout marks that walk partial.
 
 ## Check it against TRGT's genotypes
 
-Click the TRGT record: its sample table gives `AL`, the allele lengths behind
-each tick, and `SD`, the reads spanning each allele. HG02559's second allele has
-none, which is why its tick is grey.
+Click the TRGT record. Its sample table gives `AL`, the allele lengths behind
+each tick, and `SD`, the number of reads spanning each allele. HG02559's second
+allele has an `SD` of 0, the grey tick in the figure above.
 
 ## Reproduce it end to end
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_abca7_trgt.sh
-bash build_hprc_abca7_trgt.sh       # writes ./hprc_abca7_trgt_build/
+bash build_hprc_abca7_trgt.sh
 ```
 
 The TRGTdb is a directory of Parquet tables, and DuckDB reads a locus's calls

@@ -8,25 +8,23 @@ guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
 
-The bovine super-pangenome aligns twelve cattle assemblies against ARS-UCD1.2.
-The panel is unusually wide for a livestock pangenome, with taurine and indicine
-breeds beside yak, bison and gaur, so a locus that varies here varies across
-most of the genus.
+The bovine super-pangenome aligns twelve assemblies against the ARS-UCD1.2
+cattle reference: taurine and indicine breeds, yak, bison and gaur. Each
+assembly walks the graph as a named path, and `vg deconstruct` turns those paths
+into a VCF, so one locus reads both as a graph of where sequence is present and
+absent and as a callset naming who carries it. We:
 
-Each of those assemblies walks the graph as a named path, and `vg deconstruct`
-turns those paths into a VCF. The same locus then reads as a graph showing where
-sequence is present and absent, and as a callset naming who carries it.
+- read a whole chromosome at one node per bubble
+- at _HSPA1A_, compare the graph's allele inventory with the callset
+- find three published breed and species variants in the callset
 
-The graph and the callset are hosted at
-[staging.genomes.jbrowse.org/pangenomes/bovine](https://staging.genomes.jbrowse.org/pangenomes/bovine)
-(staging, until the graph plugin's JBrowse 5 host ships), and every step below
-starts from that page.
+Every step starts from the graph's page on
+[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/pangenomes/bovine),
+where it stays until the graph plugin's JBrowse 5 host ships.
 
 :::caution Experimental
 
-The graph view is a beta plugin, and this tutorial covers experimental ideas.
-Where a step below says the view works a particular way today, the step
-describes a current limit of the view. We welcome your [feedback](/contact).
+The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 :::
 
@@ -57,69 +55,54 @@ and OMIA supplies the curated causal variants:
 - OMIA's database dump, the source of the curated variant lane:
   https://omia.org/static/omia.sql.gz
 
-[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) describes
-what each of the graph files holds and how a graph produces them.
+[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) describes what
+each of the graph files holds and how a graph produces them.
 
-## A whole chromosome, off the coarse tier
+## A whole chromosome
 
-On the [portal page](https://staging.genomes.jbrowse.org/pangenomes/bovine), the
-**Graph** line opens a whole chromosome and the **Loci** table the graph's most
-variable loci, ranked off the coarse tier. Click **chr23** on the **Graph**
-line. JBrowse opens ARS-UCD1.2's chromosome 23 with the genes, the curve of
-segments per bubble and the bubble tier as lanes. The tier has one node per
-bubble, which makes a whole chromosome drawable. Over a full cattle chromosome
-the fine segments track refuses with "Too many features", and the tier draws.
+Click **chr23** on the **Graph** line of the
+[portal page](https://staging.genomes.jbrowse.org/pangenomes/bovine). JBrowse
+opens ARS-UCD1.2's chromosome 23 with the genes, the curve of segments per
+bubble and the bubble tier as lanes, and the graph track under them. The tier
+has one node per bubble, so a whole chromosome draws; the graph track names the
+tier in its adapter's `coarse` slot and cuts the segments once you zoom in past
+that slot's handover.
 
 <Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
 
-The portal's chr23 view also holds the graph as a track under the lanes, cut
-from the same tier. The graph track names the tier in its adapter's `coarse`
-slot, and past that slot's handover it cuts one node per bubble with no limit on
-the span. It moves with the view like the lanes above it, and zoomed in below
-the handover it cuts the segments.
-
-:::note
-
-The bovine pangenome holds a dozen assemblies. Its cuts are chains with a few
-loops, which the anchored layout the graph opens in draws well. Switch to the
-force layout where the bubbles lane reports a tangled window.
-
-:::
-
-BoLA came out of the same ranking the
+BoLA, the densest stretch of chr23, came out of the same ranking the
 [mouse page](/docs/tutorials/pangenome_mouse#finding-the-loci) describes, which
-ranks the coarse tier by segments per bubble and then names each entry off the
-reference annotation. It is the densest stretch of chr23 in the figure above,
-and the ranking found it without a curated list.
+ranks the coarse tier by segments per bubble and names each entry off the
+reference annotation.
 
-## Where the graph and the callset show different things
+## HSPA1A in the graph and the callset
 
 ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_ that
 carries _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it in
 every assembly they built. The **graph** holds that segment as alleles in the
-allele inventory, and it attributes them only by convention. These graphs record
-no construction rank, so `firstSeenIn` in the allele file names the first
-assembly in a fixed list, and that assembly need not carry the sequence.
+allele inventory. These graphs record no construction rank, so `firstSeenIn` in
+the allele file names the first assembly in a fixed list, which may not carry
+the sequence.
 
-The **callset** attributes each allele. One `vg deconstruct` call per chromosome
-over the same graph gives a genotype per assembly:
+The **callset** gives a genotype per assembly. We ran `vg deconstruct` once per
+chromosome over the same graph:
 
 <!-- from: scripts/build_bovine_pangenome.sh -->
 
 ```bash
-# -p writes vg's own PackedGraph format, which deconstruct reads
-vg convert -g "$TMPDIR/$k.renamed.gfa" -p > "$TMPDIR/$k.vg"
-# -p names the reference path to decompose against; -a processes nested
-# snarls too, so a bubble inside a bubble gets its own record
-vg deconstruct -p "chr$k" -a -t "$THREADS" "$TMPDIR/$k.vg" > "vcf/chr$k.vcf.tmp"
+# -p: vg's PackedGraph format, which deconstruct reads
+vg convert -g chr1.gfa -p > chr1.vg
+# -p: the reference path to decompose against
+# -a: nested snarls too, so a bubble inside a bubble gets a record
+vg deconstruct -p chr1 -a -t 8 chr1.vg > chr1.vcf
 ```
 
-The VCF names each assembly by the three-letter code its path carries in the
-graph. The sample table gives each code a breed and a lineage, so `rows.labels`
-writes the breed beside each row, `rowColor` tints the row by lineage, and
+The VCF names each assembly by the three-letter code on its path in the graph.
+The sample table gives each code a breed and a lineage, so `rows.labels` writes
+the breed beside each row, `rowColor` tints the row by lineage, and
 `rows.domain` lists the cattle breeds above the wild species. Every assembly is
 one haplotype, and `renderingMode: "phased"` draws one row per assembly with a
-second alternate allele in a colour of its own:
+second alternate allele in a separate colour:
 
 ```json addtrack
 {
@@ -137,7 +120,6 @@ second alternate allele in a colour of its own:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "displayId": "bovine_pangenome_vcf_regular",
       "renderingMode": "phased",
       "rows": {
         "domain": [
@@ -187,11 +169,10 @@ shows the three under the RefSeq genes.
 <Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. Every row but the yak carries the insertion the inventory lists without carriers, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
 
 The yak row carries the reference. Leonard et al. built no yak assembly, so
-their result has nothing to say about it.
+their result does not cover it.
 
-The mouse graph is the other end of this. `minigraph` writes no path lines at
-all, so there is no callset to deconstruct and nothing recovers carriage.
-[](/docs/tutorials/pangenome_mouse) works with what is left.
+A `minigraph` graph has no path lines and so no callset to deconstruct;
+[](/docs/tutorials/pangenome_mouse) reads one from the graph alone.
 
 ## Published variants in the callset
 
@@ -237,7 +218,7 @@ trait to a 14.3 kb segment repeated in tandem upstream of _KIT_: white-headed
 breeds carry extra copies, colour-headed breeds a deletion. The Hereford
 reference holds a collapsed copy. Open `chr6:70,080,000-70,180,000`.
 
-<Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes and the callset. The Simmental row carries its own allele across the repeat, and every other row carries the deletion." src="/img/pangenome/bovine_kit.png" />
+<Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes and the callset. The Simmental row carries a distinct allele across the repeat, and every other row carries the deletion." src="/img/pangenome/bovine_kit.png" />
 
 Click the Simmental cell to read its allele length against the reference.
 
@@ -269,15 +250,15 @@ runs:
 The whole build takes about half an hour after the download.
 
 The script writes a `README.txt` beside the data recording the source, the
-modifications, the tool versions and the audits that ran. Copy the audits into
-your own build. The build stops unless the reference path reproduces the
-reference chromosome lengths, and stops on a duplicate segment id after
-renumbering. Without these audits, either failure produces a graph with wrong
-coordinates, and every downstream check passes on it.
+modifications, the tool versions and the audits that ran. The build stops if the
+reference path does not reproduce the reference chromosome lengths, or if
+renumbering leaves a duplicate segment id; either failure produces a graph with
+wrong coordinates that every later check accepts. Copy these audits into your
+own build.
 
-For a graph of your own with path lines and no rGFA tags, the one command walks
-the paths itself and writes a carriage tag, which rGFA has no field for; the
-graph track then shows which samples cross each node.
+For a graph with path lines and no rGFA tags, `build_pangenome_graph.sh` walks
+the paths and writes a carriage tag per segment, so the graph track shows which
+samples cross each node.
 
 The OMIA lane comes from OMIA's nightly database dump.
 [`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)
@@ -286,7 +267,7 @@ every chromosome's coordinates, and writes them as GFF3:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_omia_cattle_variants.sh
-bash build_omia_cattle_variants.sh   # writes ./omia_cattle_build/
+bash build_omia_cattle_variants.sh
 ```
 
 ## See also

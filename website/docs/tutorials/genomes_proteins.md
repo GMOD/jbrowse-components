@@ -8,17 +8,11 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-genomes.jbrowse.org loads the protein3d and msaview plugins, so any gene in a
-linear genome view can be taken to a 3D structure or to a cross-species protein
-MSA with nothing prepared beforehand. Both views stay linked to the genome, so
-hovering a variant highlights the residue it lands on.
-
-## Prerequisites
-
-- nothing to install: this is a click-path through hosted sites, and no
-  sequence, structure, alignment or tree is prepared by hand
-- to add these views to your own JBrowse instead, see
-  [Adding the plugins to your own instance](#adding-the-plugins-to-your-own-instance)
+genomes.jbrowse.org loads the protein3d and msaview plugins, so you can open any
+gene in a linear genome view as a 3D structure or as a cross-species protein
+MSA. Both views stay linked to the genome, so hovering a variant highlights the
+residue it lands on. We open _TP53_ as an AlphaFold structure and _NLRP1_ as an
+MSA, then read the MSA's domains back on the genome.
 
 ## Where the data comes from
 
@@ -48,7 +42,7 @@ two launchers are in the menu. The rest of this page walks that route.
 The [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/) suits
 starting from a gene. Pick a species, type a gene symbol, and **Open in
 JBrowse** opens a session with all three views built and connected. It takes a
-`gene` and a `taxon` in its own URL, so
+`gene` and a `taxon` in the page URL, so
 [?gene=TP53&taxon=9606](https://gmod.org/JBrowseMSA/gene-explorer/?gene=TP53&taxon=9606)
 opens with the gene resolved.
 
@@ -74,13 +68,13 @@ isoform you right-clicked and picks which transcript becomes the query, tagging
 the isoforms whose translation matches the structure's residues. **Launch**
 renders the structure with [Mol\*](https://molstar.org/).
 
-The structure carries its own sequence, which often differs from the
-transcript's translation: an AlphaFold model covers one UniProt isoform, and a
-PDB entry can be a construct, a fragment or another species. When the two differ
-the dialog aligns them in the browser, with a local alignment that suits a
-structure covering part of the protein, before mapping any position. **Import
-manual alignment...** in the view menu afterwards takes a pairwise alignment of
-your own in Clustal format instead.
+A structure's sequence often differs from the transcript's translation: an
+AlphaFold model covers one UniProt isoform, and a PDB entry can be a construct,
+a fragment or another species. When the two differ the dialog aligns them in the
+browser, with a local alignment that suits a structure covering part of the
+protein, before mapping any position. **Import manual alignment...** in the view
+menu afterwards takes a pairwise alignment of your own in Clustal format
+instead.
 
 <Video src="/media/proteins/genomes_protein_launch.mp4" caption="TP53 on the hosted hg38 with NCBI RefSeq and ClinVar loaded: the right-click launcher, the dialog resolving a UniProt entry and an isoform, and the structure Launch renders. Hovering a coding position afterwards picks out its residue on the structure and in the alignment above it; the intron between the two exons picks out nothing." />
 
@@ -94,7 +88,7 @@ A genomic position maps to a residue through the transcript's CDS with
 residues the structure is missing highlight nothing. A missing residue shows as
 a gap in the **Pairwise alignment** panel above the structure, which carries the
 transcript row against the structure row with a consensus line. Folding the
-transcript's own sequence with AlphaFold gives an exact correspondence.
+transcript's translation with AlphaFold gives an exact correspondence.
 
 The lookup needs a gene feature carrying a recognizable protein or transcript
 ID, which the RefSeq gene tracks on the hosted configs carry.
@@ -124,8 +118,8 @@ add tracks to, so it is absent from the single-view embedded components.
 <Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, where everything it can build is listed, and the 1D annotation view. The view opens with none of its tracks on; DNA binding, Natural variant, AlphaFold confidence and AlphaMissense scores come on from Session tracks in the selector." />
 
 The dialog's other two tabs take a structure from elsewhere: **Foldseek search**
-finds structures resembling the protein's own, and **File or URL** takes a PDB
-or mmCIF file of yours.
+finds structures similar to the protein's, and **File or URL** takes a PDB or
+mmCIF file of yours.
 
 ## Launching an MSA
 
@@ -139,8 +133,8 @@ MSA. The dialog opens on its **Orthologs** tab, and three fields matter:
 - **Choose isoform** picks which transcript becomes the query row, the one the
   genome view stays linked to
 
-**MSA Algorithm** sets which aligner EBI runs, Clustal Omega by default, and it
-is where the wait is. The cost scales with the row count.
+**MSA Algorithm** sets which aligner EBI runs, Clustal Omega by default. The
+alignment takes most of the wait, and its run time grows with the row count.
 
 NCBI publishes one ortholog gene per species for most annotated genes. A gene
 with no resolvable symbol goes through the dialog's **BLAST query** tab.
@@ -184,7 +178,7 @@ Annotations → How to get a domain file...** opens the
 [walkthrough](https://gmod.org/JBrowseMSA/tutorials/protein_family), which also
 covers `interpro`, the instant path when the rows are UniProt accessions.
 
-### The same domains in genome coordinates
+### Domains in genome coordinates
 
 UniProt annotates the same proteins independently of NCBI's conserved-domain
 database, and UCSC projects those annotations onto the genome, so the hosted
@@ -204,9 +198,9 @@ the same projection of the rest of the record.
 
 ### Trying other genes
 
-The same click-path works on any gene whose symbol NCBI recognises, though how
-far down the tree the panel reaches varies by gene, read off the tree on the
-left. Every _NLRP1_ ortholog NCBI has is a mammal, so the panel stops at mammals
+The click-path works on any gene whose symbol NCBI recognises, though how far
+down the tree the panel reaches varies by gene, read off the tree on the left.
+Every _NLRP1_ ortholog NCBI has is a mammal, so the panel stops at mammals
 however high **Rows to align** is set, while _CFTR_ reaches birds, amphibians
 and fish. Genes annotated with an Ensembl identifier and no symbol fall through
 to the BLAST tab.
@@ -262,7 +256,9 @@ standalone structure, with no genome to exchange highlights with.
 - As an admin, add them to your `config.json` so they load for all users (see
   [configuring plugins](/docs/config_guides/plugins))
 
-Both plugins add view types launched from a gene's right-click menu in JBrowse
+The protein3d and msaview plugins add view types launched from a gene's
+right-click menu in JBrowse
+
 Web and Desktop. The single-view embedded components host only a linear genome
 view, so neither view type appears there. [](/docs/jbrowser)'s `JBrowseRApp`
 takes both runtime plugins and a `views` list, while

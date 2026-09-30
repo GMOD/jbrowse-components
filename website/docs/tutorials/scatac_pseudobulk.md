@@ -5,8 +5,11 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-Pool each cluster's cells into one coverage BigWig outside JBrowse, then load
-the whole set as a single MultiWiggle track, which draws one row per file.
+Single-cell ATAC-seq measures chromatin accessibility one cell at a time, and
+pooling the cells of each cluster gives one accessibility profile per cell type.
+We pool a clustered 10x PBMC dataset into one coverage BigWig per cell type
+outside JBrowse, load the set as a single multi-wiggle track that draws one row
+per file, and check the rows at T-cell and B-cell marker genes.
 
 ## Prerequisites
 
@@ -26,7 +29,7 @@ the whole set as a single MultiWiggle track, which draws one row per file.
 ## Where the data comes from
 
 SnapATAC2's annotated release of the 10x 5k PBMC scATAC dataset, already
-clustered and cell-type-labeled by that tool's own pipeline.
+clustered and cell-type-labeled by the SnapATAC2 pipeline.
 
 - the annotated `AnnData` that `snap.datasets.pbmc5k(type="annotated_h5ad")`
   downloads and caches:
@@ -41,17 +44,17 @@ coverage track is almost entirely zero. Pseudobulking pools every fragment
 belonging to a label into one profile, a dense track resembling a bulk ATAC
 experiment on that cell type. JBrowse stacks the files as rows of one track.
 
-PBMC markers are the check: at a T-cell marker the T-cell rows show the signal,
-and at a B-cell marker the B-cell rows light up.
+PBMC marker genes are the control. At a T-cell marker the T-cell rows carry
+signal and the B-cell rows stay flat, and at a B-cell marker the reverse.
 
 The BigWigs can also be viewed inline from the clustering environment through
 the [Python anywidget interface](/docs/jbrowse_anywidget) or [](/docs/jbrowser).
 
 ## Generating per-group BigWigs
 
-Clustering and cell-type labeling stay upstream, in Cell Ranger ATAC, ArchR,
-Signac, or SnapATAC2. Two settings decide whether the rows can be compared,
-whichever tool writes them:
+Clustering and cell-type labeling happen upstream, in Cell Ranger ATAC, ArchR,
+Signac, or SnapATAC2. Whichever tool writes the files, two settings decide
+whether the rows compare:
 
 - **Normalization.** Groups differ in cell count and total fragments, so each
   track needs normalizing (CPM / RPKM, or per-cell-count) for a peak's height to
@@ -84,7 +87,7 @@ snap.ex.export_coverage(
 ```
 
 `n_jobs` controls memory use: each worker holds a genome-wide coverage vector,
-and the writer dies partway through the groups when memory runs out. `groupby`
+and the writer fails partway through the groups when memory runs out. `groupby`
 picks the rows: the cluster column (`"leiden"`) for one per cluster, or the
 annotated column (`"cell_type"`) for one per cell type.
 
@@ -150,13 +153,13 @@ types:
 }
 ```
 
-Three fields in that list are worth setting by hand:
+Set three things in that list by hand:
 
-- **Order.** Subadapters draw in the order given, so group them by lineage
-- **`color`.** Take each row's from the cluster's color in your analysis, so a
-  cell type matches its UMAP color
-- **`group`.** What the sidebar tree branches on, and what
-  [](/docs/user_guides/clustering) reorders
+- the order: subadapters draw in the order given, so group them by lineage
+- `color`: copy the cluster color from your analysis, so a cell type matches its
+  UMAP color
+- `group`: the sidebar tree branches on it, and [](/docs/user_guides/clustering)
+  clusters rows within each group
 
 Without per-row names, colors or groups, the `bigWigs` shorthand takes a plain
 array of URLs and labels each row from its filename:
@@ -178,19 +181,19 @@ array of URLs and labels each row from its filename:
 }
 ```
 
-A published atlas needs no pipeline at all: [CATlas](https://www.catlas.org/)
-serves hg38 coverage from
+A published atlas loads the same way. [CATlas](https://www.catlas.org/) serves
+hg38 coverage from
 `https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`, one file
 per cell type. Percent-encode the `+` in a cell-type name
 (`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and the row loads
 with no data.
 
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) lists every drawing mode,
-and the track menu switches between them live. `bar` (the default, and the
-figures here) compares peak shape; `heatmap` maps score to color and fits more
-rows. [](/docs/user_guides/quantitative_track) covers the rest of the menu.
+and the track menu switches between them. `bar` (the default, and the figures
+here) compares peak shape; `heatmap` maps score to color and fits more rows.
+[](/docs/user_guides/quantitative_track) covers the rest of the menu.
 
-<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
+<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. The CD8, MAIT and NK rows carry signal at CD8A, and only the two B rows carry it at MS4A1." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 ### Building the subadapter list from files
 
@@ -209,8 +212,8 @@ jbrowse add-track --multiwig "$(find bw -name '*.bw' | sort | paste -sd,)" \
   --load copy --subDir bw --out /var/www/html/jbrowse2
 ```
 
-`--load copy --subDir bw` copies local files in beside `config.json`; both drop
-out for BigWigs already served over HTTP. For per-row names, colors and groups,
+`--load copy --subDir bw` copies local files in beside `config.json`; leave both
+off for BigWigs already served over HTTP. For per-row names, colors and groups,
 pass a `.json` file of subadapter objects instead of the comma list.
 
 ## Reproduce it end to end
@@ -229,7 +232,7 @@ tool's [standard pipeline](https://scverse.org/SnapATAC2/tutorials/pbmc.html)
 and
 [cell-type annotation](https://scverse.org/SnapATAC2/tutorials/annotation.html)
 tutorials produce: per-barcode fragments alongside an `obs["cell_type"]` call.
-The script's own work:
+The script then runs these steps:
 
 - `export_coverage(groupby="cell_type", bin_size=25, normalization="RPKM")`, one
   BigWig per cell type into `bw/`

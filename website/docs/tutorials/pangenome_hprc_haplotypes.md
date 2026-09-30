@@ -2,7 +2,7 @@
 title: 'Pangenome (HPRC): haplotypes against each other'
 sidebar_label: Pangenome (HPRC, haplotypes against each other)
 description:
-  Draw HPRC haplotypes as lanes in their own coordinates, aligned to each other
+  Draw HPRC haplotypes as lanes in assembly coordinates, aligned to each other
   by the release's pangenome graph, at a CFH deletion, a C4 duplication and the
   amylase copy-number array
 guide_category: Tutorials
@@ -11,8 +11,9 @@ tutorial_subcategory: HPRC release 2
 ---
 
 We draw human haplotypes from the Human Pangenome Reference Consortium's release
-2 side by side, each as a lane in its own coordinates, and use the pangenome
-graph to show where neighbouring lanes match. With that view we:
+2 side by side, one lane per haplotype in the coordinates of its assembly, and
+use the pangenome graph to show where neighbouring lanes match. With that view
+we:
 
 - at CFH, find haplotypes missing two genes
 - at C4, find two haplotypes sharing a copy GRCh38 lacks
@@ -216,8 +217,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_hprc_multiway_synteny.sh
 ```
 
-To host your own graph, see
-[hosting your own graph](/docs/tutorials/pangenome_prepare_graph#every-haplotypes-walk-a-gbz-base-database).
+[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-a-gbz-base-database)
+builds the gbz-base database for a graph of your own.
 
 ## See also
 

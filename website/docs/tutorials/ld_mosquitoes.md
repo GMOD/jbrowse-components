@@ -7,9 +7,11 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-A 22 Mb inversion reads as one block, from `plink2 --r2-phased` output through
-an [`LDTrack`](/docs/config/ldtrack). The same inversion also loads as a
-structural variant genotyped per mosquito.
+The 2La chromosomal inversion of the malaria mosquito _Anopheles gambiae_ spans
+about 22 Mb and suppresses crossing over, so linkage disequilibrium runs across
+it as one block. We compute the LD with `plink2 --r2-phased`, draw it with an
+[`LDTrack`](/docs/config/ldtrack), and load the inversion as a structural
+variant genotyped per mosquito beneath it.
 
 ## Prerequisites
 
@@ -53,10 +55,9 @@ or a data-access agreement.
 ## The 2La inversion as one LD block
 
 Crossing over is suppressed in a 2La heterokaryotype, so the segment travels as
-a unit. The inversion spans roughly 22 Mb of chromosome arm 2L in _Anopheles
-gambiae_, past what can be computed live from a VCF, so the LD is precomputed
-with PLINK and read through
-[`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
+a unit. The inversion spans roughly 22 Mb of chromosome arm 2L, past what
+JBrowse can compute live from a VCF, so we precompute the LD with PLINK and read
+it through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
 
 ## Precompute the LD with PLINK
 
@@ -67,28 +68,27 @@ family/individual pair plink asks for.
 <!-- from: scripts/build_ag1000g_ld.sh -->
 
 ```bash
-# the display uploads n(n-1)/2 cells, and ~800 SNPs across an arm is already at
-# screen resolution, so keep roughly one variant per 50 kb rather than every
-# variant the callset has
+# the display uploads n(n-1)/2 cells, and ~800 SNPs across an arm already
+# reach screen resolution, so keep roughly one variant per 50 kb
 plink2 --bfile common --allow-extra-chr --keep keep.CMgam.txt --maf 0.2 \
   --chr 2L --write-snplist --out sel
 awk -F'_' -v g=50000 '{p=$2+0; if (p >= nxt) {print $0; nxt = p + g}}' \
   sel.snplist > grid.snplist
 
-# --r2-phased is the haplotype-frequency estimate rather than a correlation
-# between dosages, which is what the display draws; dprimeabs adds D' beside it
-# as a magnitude, which is how the display reads a precomputed cell.
-# --ld-window-r2 0 keeps the uncorrelated pairs. On PLINK 1.9 the pair is one
-# flag, `--r2 dprime`, and the columns come out at the same offsets.
+# --r2-phased estimates r2 from haplotype frequencies, the statistic the
+# display draws
+# dprimeabs adds D' as a magnitude, the form the display reads
+# --ld-window-r2 0 keeps the uncorrelated pairs
+# PLINK 1.9 spells the pair `--r2 dprime`, with the columns at the same offsets
 plink2 --bfile common --allow-extra-chr --keep keep.CMgam.txt \
   --extract grid.snplist \
   --r2-phased cols=chrom,pos,id,dprimeabs \
   --ld-window 999999 --ld-window-kb 1000000 --ld-window-r2 0 \
   --out ag1000g_2L_CMgam
 
-# plink2 writes tabs and comments its own header, which is what `tabix -H`
-# returns. `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C with that `#` line
-# kept on top, which is what this table wants too: same first two columns.
+# plink2 writes tabs and a commented header, which `tabix -H` returns
+# sort-bed runs `sort -k1,1 -k2,2n` under LC_ALL=C and keeps the `#` line on
+# top; this table sorts on the same first two columns
 jbrowse sort-bed < ag1000g_2L_CMgam.vcor |
   bgzip > ag1000g_2L_CMgam.vcor.gz
 tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.vcor.gz
@@ -121,7 +121,7 @@ metric columns:
 
 ## The inversion genotyped per mosquito
 
-The same inversion loads as one `<INV>` record spanning the breakpoints,
+The 2La inversion also loads as one `<INV>` record spanning the breakpoints,
 genotyped across every mosquito. The
 [regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail)
 draws each genotype at the call's true span. The `karyotype` column names the
@@ -163,44 +163,46 @@ with a `LinearMultiSampleVariantDisplay` that bands (`facet`) and colors
 karyotype classes contiguous, with its `domain` stacking them in dosage order,
 and
 [`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
-`skip` fills the lane with the reference color and paints alt cells on top. Rows
-divide the lane's height between them, and the display draws a row for every
-sample in the file, which makes each population its own track.
+`skip` fills the lane with the reference color and paints alt cells on top. The
+display draws a row for every sample in the file and divides the lane height
+among them, so each population gets a separate track.
 
 ### The karyotype calls
 
-2La's breakpoints have been cloned and sequenced
-([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103)), and the call
-is drawn at that published extent
+The 2La breakpoints have been cloned and sequenced
+([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103)), and the
+build script draws the call at that published extent
 ([White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334) karyotyped
-single mosquitoes by PCR across the junctions). Each mosquito's karyotype here
-is scored from the tag SNPs, the in-silico method MalariaGEN ships for Ag3: the
-mean number of alternate alleles across the tags, rounded into a genotype. The
-score is trimodal, and the [reproduce script](#reproduce-it-end-to-end) prints
-the histogram and the karyotype breakdown per population.
+single mosquitoes by PCR across the junctions). The script scores the karyotype
+of each mosquito from the tag SNPs, the in-silico method MalariaGEN ships for
+Ag3: the mean number of alternate alleles across the tags, rounded into a
+genotype. The score is trimodal, and the
+[reproduce script](#reproduce-it-end-to-end) prints the histogram and the
+karyotype breakdown per population.
 
 ## The block on the karyotype lanes
 
-Each population's r² heatmap stacks over its own karyotype lane, one row per
-mosquito.
+Stack the r² track of each population over the karyotype track of the same
+population, one row per mosquito.
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in the Cameroon panel, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard arrangement."/>
 
-The block's edges land on the published breakpoint coordinates, and on the
-karyotype lane beneath, drawn at the same coordinates from a different file.
+The edges of the block line up with the published breakpoint coordinates and
+with the karyotype lane beneath, which draws from a different file.
 
-- **The second block is _Vgsc_**, at the low-coordinate end of the arm in both
-  panels: the sodium channel whose codon-995 substitutions confer pyrethroid
-  resistance ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845))
-- **Gabon's 2La span reads flat.** It is near-fixed for the standard
+- The second block, at the low-coordinate end of the arm in both panels, is
+  _Vgsc_, the sodium channel whose codon-995 substitutions confer pyrethroid
+  resistance ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
+- The 2La span is flat in Gabon. That population is near-fixed for the standard
   arrangement, so almost no chromosome pair is a heterokaryotype, and the few
-  2La chromosomes fall below the MAF floor with the variants that tag them
+  2La chromosomes fall below the MAF floor with the variants that tag them.
 
 ## Which metric recovers the breakpoints
 
-D' saturates wherever no recombinant haplotype has turned up, so it reads on
-where crossing over stops. The [reproduce script](#reproduce-it-end-to-end)
-switches to it to recover the 2La breakpoints from the table;
+D' saturates wherever the sample holds no recombinant haplotype, so it stays
+high up to where crossing over stops. The
+[reproduce script](#reproduce-it-end-to-end) switches to it to recover the 2La
+breakpoints from the table;
 [the guide](/docs/config_guides/variant_track#which-metric-and-how-far-to-thin)
 covers both metrics and the allele-frequency floor.
 

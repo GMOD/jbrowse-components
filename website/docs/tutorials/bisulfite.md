@@ -7,9 +7,11 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-Align WGBS/EM-seq short reads with bwameth, load the plain BAM, and JBrowse
-colors per-read methylation straight from the C→T conversion, with CpG, CHG, and
-CHH each selectable. The route needs no MM/ML tags and no methylation caller.
+Bisulfite sequencing (WGBS) and EM-seq measure DNA methylation with short reads.
+We align an _Arabidopsis thaliana_ WGBS run with bwameth, load the BAM, and
+color each read by its methylation in the CpG, CHG and CHH contexts. JBrowse
+computes the calls from the C→T changes in the reads, so the BAM needs no MM/ML
+tags and no methylation caller runs first.
 
 ## Prerequisites
 
@@ -42,16 +44,15 @@ European Nucleotide Archive, `DRR029742` (paired-end 150 bp).
 
 ## What bisulfite data looks like
 
-Bisulfite sequencing (WGBS) and its enzymatic cousin EM-seq read DNA methylation
-from short reads. A chemical (sodium bisulfite) or enzymatic (APOBEC) step
-converts every unmethylated cytosine to uracil, which reads as T, while a
-methylated cytosine still reads as C. Comparing each read to the reference
-recovers the methylation: a C→T change means unmethylated, and a retained C
-means methylated. JBrowse 2 makes that comparison per read at render time.
+A chemical (sodium bisulfite) or enzymatic (APOBEC, in EM-seq) step converts
+every unmethylated cytosine to uracil, which reads as T, and a methylated
+cytosine still reads as C. Comparing each read to the reference recovers the
+methylation: a C→T change means unmethylated, and a retained C means methylated.
+JBrowse makes that comparison per read as it draws.
 
 Plants methylate in three sequence contexts: CpG, CHG, and CHH (H is A, C, or
-T). JBrowse restricts the coloring to any one of them, so all three read off the
-same pileup. Everything below runs on _Arabidopsis thaliana_ data.
+T). JBrowse colors the reads by any one context at a time, so one pileup shows
+all three.
 
 ## Producing the BAM
 
@@ -61,9 +62,9 @@ TAIR10 reference and one wild-type Col-0 WGBS run
 bp) through Trim Galore to a sorted BAM.
 
 The aligner is [bwameth](https://github.com/brentp/bwa-meth), which C→T converts
-both reads and reference in silico and runs `bwa mem`. It emits an ordinary BAM
-carrying the original read sequences, so the C→T signal survives for JBrowse to
-read. Bismark's BAMs work the same way.
+both reads and reference in silico and runs `bwa mem`. It writes an ordinary BAM
+carrying the original read sequences, so the C→T changes are still in the reads
+for JBrowse to find. Bismark BAMs work the same way.
 
 Trimming and alignment, on any pair of WGBS or EM-seq FASTQs:
 
@@ -73,8 +74,7 @@ Trimming and alignment, on any pair of WGBS or EM-seq FASTQs:
 trim_galore --paired R1.fastq.gz R2.fastq.gz
 # index once per reference: bwameth aligns against a C->T copy of it
 bwameth.py index tair10.fa
-# no methylation flags anywhere: the BAM keeps the original read sequences,
-# and JBrowse makes the comparison at render time
+# the BAM keeps the original read sequences for JBrowse to compare
 bwameth.py --reference tair10.fa -t 8 R1_val_1.fq.gz R2_val_2.fq.gz \
   | samtools sort -o arabidopsis_wgbs.bam -
 samtools index arabidopsis_wgbs.bam
@@ -124,10 +124,10 @@ for ctx in CpG CHG CHH; do
 done
 ```
 
-One `MultiQuantitativeTrack` with a subadapter per context renders them as three
-labeled rows, the Aggregate methylation track in the figures below. This is the
-mechanism of the
-[DNA methylation tutorial's aggregate section](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl).
+One `MultiQuantitativeTrack` with a subadapter per context draws them as three
+labeled rows, the Aggregate methylation track in the figures below. The
+[long-read methylation tutorial](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl)
+loads its modkit aggregate the same way.
 
 ```json addtrack
 {
@@ -172,8 +172,8 @@ mechanism of the
 TAIR10 is a genome hub on [genomes.jbrowse.org](https://genomes.jbrowse.org),
 and a hub's `config.json` holds a whole JBrowse assembly: the 2bit sequence, an
 alias table, and the NCBI RefSeq genes. The view loads its assembly and gene
-track from there, so JBrowse reads only the BAM and the optional bigWigs from
-the pipeline:
+track from there, and the BAM and the optional bigWigs from the pipeline go in
+beside them:
 
 ```bash
 # a GenArk hub's path is its accession cut into threes
@@ -220,8 +220,8 @@ jbrowse add-track arabidopsis_wgbs.bam --assemblyNames GCF_000001735.4 \
   --name "Arabidopsis WGBS (bwameth)" --load copy
 ```
 
-The alignments track's `displayDefaults` decides which context it opens on, and
-the track menu switches it afterwards:
+The `displayDefaults` in the alignments track config set the context the track
+opens on, and the track menu switches it afterwards:
 
 ```json addtrack
 {
@@ -229,10 +229,7 @@ the track menu switches it afterwards:
   "trackId": "arabidopsis_wgbs",
   "name": "Arabidopsis WGBS (bwameth)",
   "assemblyNames": ["GCF_000001735.4"],
-  "adapter": {
-    "type": "BamAdapter",
-    "uri": "arabidopsis_wgbs.bam"
-  },
+  "adapter": { "type": "BamAdapter", "uri": "arabidopsis_wgbs.bam" },
   "displayDefaults": {
     "baseColor": { "field": "bisulfite" },
     "modifications": { "cytosineContext": "CG" }
@@ -255,7 +252,7 @@ unmethylated (blue)**, which paints converted sites blue to separate an
 unmethylated cytosine from a position with no cytosine. The figure and clip
 below leave it off.
 
-## Two methylation regimes
+## Gene body methylation and transposon silencing
 
 Plants run two unrelated methylation programs, and the three contexts
 distinguish them:
@@ -273,10 +270,10 @@ of each: the expressed gene AT1G12930 on the left, and a transposon on the
 right. The [reproduce script](#reproduce-it-end-to-end) prints the fraction per
 context for both regions.
 
-The RepeatMasker lane names the element: `META1_LTR#LTR/Copia`, an LTR
-retrotransposon, `AT1TE14315` in TAIR10's own transposable-element annotation.
-The RefSeq gene track has no transcript over it. The lane is the TAIR10 genome
-hub's own RepeatMasker track, filtered to repeats longer than 1 kb.
+The RepeatMasker lane names the element `META1_LTR#LTR/Copia`, an LTR
+retrotransposon, which is `AT1TE14315` in the TAIR10 transposable-element
+annotation. No RefSeq transcript overlaps it. The lane is the RepeatMasker track
+from the TAIR10 genome hub, filtered to repeats longer than 1 kb.
 
 <Figure caption="RefSeq genes, the RepeatMasker lane, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 
@@ -302,7 +299,7 @@ left out either way.
 
 On Debian/Ubuntu, `apt install wget curl samtools` covers several
 [prerequisites](#prerequisites). bwameth, Trim Galore and the NCBI `datasets`
-CLI install from their own instructions, and `node` from
+CLI install from the pages linked there, and `node` from
 [nodejs.org](https://nodejs.org/). The alignment step downloads a full WGBS run,
 so allow time and disk.
 

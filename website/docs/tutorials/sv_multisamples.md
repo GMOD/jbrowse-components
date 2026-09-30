@@ -15,8 +15,7 @@ same cohort whose coverage does none of that.
 
 ## Prerequisites
 
-- nothing to install: the demo instance already carries the callset and the
-  alignments
+- the JBrowse demo instance, which carries the callset and the alignments
 
 ## Where the data comes from
 
@@ -25,8 +24,8 @@ The 1000 Genomes 2022 high-coverage ensemble SV callset
 against three of the cohort's samples' CRAMs and QuicK-mer2 copy number for the
 whole cohort.
 
-- the ensemble SV callset, 3202 samples. EBI publishes it and nobody mirrors it,
-  so the demo reads our own byte-for-byte copy[^ebi]:
+- the ensemble SV callset, 3202 samples. EBI publishes it with no mirror, so the
+  demo reads a byte-for-byte copy on jbrowse.org[^ebi]:
   https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
 - HG00113 (homozygous alt) high-coverage CRAM:
   https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240129/HG00113.final.cram
@@ -36,7 +35,7 @@ whole cohort.
   https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240115/HG00097.final.cram
 - QuicK-mer2 copy number for the cohort, the store the
   [copy-number tutorial](/docs/tutorials/population_cnv) also reads. A directory
-  of chunks rather than a file, so it is the `uri` an adapter takes:
+  of chunks that 404s at its root, and the adapter takes it as its `uri`:
   https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
 
 ## The 1000 Genomes SV callset
@@ -53,9 +52,9 @@ of the RhD-negative blood type. The call is `PASS` and common enough to fill all
 three genotype classes, and read depth shows whether a gene is present twice,
 once, or not at all.
 
-The tracks are added with `jbrowse add-track`. The callset is bgzip-compressed
-and tabix-indexed, and the alignment tracks stream the CRAMs from the urls
-above.
+The demo config adds the tracks with `jbrowse add-track`. The callset is
+bgzip-compressed and tabix-indexed, and the alignment tracks stream the CRAMs
+from the urls above.
 
 In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset under
 **1000 Genomes → SV callsets**, <!-- menu-path-ok --> listed by its file name
@@ -80,33 +79,31 @@ track menu keys every row on the whole window and draws the dendrogram.
 Dark blue is no copy of _RHD_, light blue one, grey two, and the olive stripe is
 a separate nested call.
 
-A matrix cell marks that a sample carries something at that column, not which
-call. Loading the same VCF again in the ordinary variant display puts each
-record on its own row with its id, class and size. Cell coloring by **SV type**
-is the other way to ask, shown in the
-[multi-variant track guide](/docs/user_guides/multivariant_track).
+A matrix cell marks that a sample carries some call at that column. To see which
+call, load the same VCF again in the ordinary variant display, which draws each
+record on a separate row with its id, class and size. Colouring cells by **SV
+type** also tells the calls apart, as the
+[multi-variant track guide](/docs/user_guides/multivariant_track) shows.
 
-Three lanes read below, over NCBI RefSeq genes:
+The figure has three lanes over NCBI RefSeq genes:
 
 - the callset as a genotype matrix, one row per sample, sorted by genotype at
   the _RHD_ deletion
-- the same records drawn ordinarily and colored by SV class, so a band in the
-  matrix reads off a named record
+- the same records in the ordinary variant display, colored by SV class, so each
+  band in the matrix lines up with a named record
 - QuicK-mer2 copy number for 2504 individuals, one row each and clustered on
   this window, where blue is a copy lost against the diploid white and red a
   copy gained
-
-The olive no-call column is a copy-number gain in the lane beneath it.
 
 <Figure caption="The 1KGP ensemble SV callset over the RHD locus on chr1, with the panel's sequencing depth under it. The deletion draws as a wide block, splitting the cohort into three bands in the matrix and three levels in the depth." src="/img/multisv_rhd.png" />
 
 <Video src="/media/sv/multisample_sort.mp4" caption="On the callset shown in the figure above, a right-click on the deletion sorts the cohort by genotype there, resolving the callset order into three bands: both copies of RHD deleted, one, then neither." />
 
-The olive stripe is `HGSV_1823`, a small copy-number record inside the deletion,
-uncalled in most of the cohort. A no-call has a separate color. Copy number is a
-continuous quantity per bin taken from the reads, so the column that is olive
-above is red below. The [copy-number tutorial](/docs/tutorials/population_cnv)
-reads the same store.
+The olive stripe is `HGSV_1823`, a small copy-number record inside the deletion
+that the callset leaves as a no-call in most of the cohort. QuicK-mer2 measures
+copy number per bin from the reads, so the column that is an olive no-call in
+the matrix is a red gain in the copy-number lane. The
+[copy-number tutorial](/docs/tutorials/population_cnv) reads the same store.
 
 ## Reading the genotypes off the reads
 
@@ -115,7 +112,7 @@ genotype: HG00113 homozygous alt, HG00096 heterozygous, HG00097 homozygous
 reference. Two settings make them comparable:
 
 - Turn the pileup off from the track menu's **Show...** submenu, since at this
-  width the coverage curve carries the comparison
+  width the coverage curve shows the difference
 - Put the three lanes on one axis from **Coverage → Autoscale with other
   tracks...**, ticking the other two, so they compare by height
 
@@ -123,10 +120,10 @@ reference. Two settings make them comparable:
 
 ## A closer look at the empty span
 
-The top row's deleted span is not quite at zero. _RHCE_ sits just to the right
-of _RHD_ and is nearly identical, so with no _RHD_ to come from, some _RHCE_
-reads land in the empty footprint, and the aligner records its uncertainty in
-their mapping quality.
+Coverage over the deleted span in the top row sits just above zero. _RHCE_ sits
+just to the right of _RHD_ and is nearly identical, so with no _RHD_ to come
+from, some _RHCE_ reads land in the empty footprint, and the aligner records its
+uncertainty in their mapping quality.
 
 Open HG00113's pileup inside the deleted span and set **Color by... → Mapping
 quality**: the ramp runs dark blue at MAPQ 0 through grey to yellow at MAPQ 60,
@@ -136,14 +133,14 @@ called deletion turns up wherever the deleted sequence has a close paralog.
 
 ## A complex call read off the pair orientations
 
-Most structural variants leave the coverage alone. The demo carries a complex
-call on chromosome 1 in HG02768 whose profile looks like anywhere else on the
+Most structural variants leave the coverage unchanged. The demo carries a
+complex call on chromosome 1 in HG02768 whose coverage matches the rest of the
 arm.
 
 Put `1:39,658,200-39,661,800` in the location box and open HG02768's alignments
 from **1000 Genomes → Alignments**. Turn on **Track menu → Read connections → SV
 channels (pairs by orientation)**: the reads split into one band per orientation
-class, each with its own coverage curve and arcs.
+class, each with a separate coverage curve and arcs.
 
 - The normal band holds the flat profile
 - The two same-strand bands each draw a bundle of arcs on one pair of
@@ -153,10 +150,10 @@ class, each with its own coverage curve and arcs.
 
 <Figure caption="HG02768's reads at the complex call, split into one band per pair orientation. The two same-strand bands hold arc bundles ending on one pair of breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band is near empty. The last band holds reads whose mate is unmapped or on another chromosome, drawn as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
-The call also names a duplicated copy in its `INFO.CPX_INTERVALS`, and no band
-shows it. A copy landing beside its origin leaves pair orientation alone, so
-that half of the call is back to reading the coverage, at a size where the
-profile's noise is the same shape.
+The call also lists a duplicated copy in `INFO.CPX_INTERVALS`, which no band
+shows. A copy inserted beside its origin leaves pair orientation unchanged, so
+that half of the call rests on coverage. At this size the coverage noise makes
+bumps as wide as the duplication, so its step cannot be picked out from them.
 
 ## See also
 
@@ -174,6 +171,6 @@ profile's noise is the same shape.
 [^ebi]:
     The file EBI publishes is at
     https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
-    and our copy is byte-for-byte that. The CRAM urls above are the Registry of
-    Open Data mirror of the same 1000 Genomes ftp tree, which answers a range
-    request in a fraction of the time EBI takes.
+    and the jbrowse.org copy is byte-for-byte that. The CRAM urls above are the
+    Registry of Open Data mirror of the same 1000 Genomes ftp tree, which
+    answers a range request in a fraction of the time EBI takes.
