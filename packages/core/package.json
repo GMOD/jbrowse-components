@@ -312,7 +312,7 @@
     "@gmod/vcf": "^7.2.0",
     "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/jexl": "^6.0.0",
-    "@jbrowse/mobx-state-tree": "^6.6.1",
+    "@jbrowse/mobx-state-tree": "^6.7.0",
     "@jbrowse/quick-lru": "^7.3.5",
     "@jbrowse/render-core": "workspace:^",
     "@leeoniya/ufuzzy": "^1.0.19",

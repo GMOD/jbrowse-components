@@ -30,14 +30,14 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/tabix": "^3.8.3",
+    "@gmod/tabix": "^3.9.0",
     "@gmod/vcf": "^7.2.0",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/ld-core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.6.1",
+    "@jbrowse/mobx-state-tree": "^6.7.0",
     "@jbrowse/plugin-canvas": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
