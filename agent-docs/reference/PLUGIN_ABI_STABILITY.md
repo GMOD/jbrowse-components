@@ -837,6 +837,19 @@ author who lands on a behavior change can find the sentence that explains it.
   if they called `attachRenderingBackend` directly against the lint rule.
   **Opt-out: none; call `installUpload`, which answers it for you.**
 
+- **Closing a widget removes it from the session** (`hideWidget`,
+  `@jbrowse/product-core` `DrawerWidgetSessionMixin`). A closed widget used to
+  stay in `session.widgets` with everything it held, so a closed feature panel
+  on a large synteny alignment made a session too large to share (#3538).
+  `hideWidget` now detaches it and schedules the destroy (ADR-069), and
+  `hideAllWidgets` goes through the same path. An external widget that relied on
+  finding its old node in `session.widgets` after a close — to keep a form, a
+  filter or a job list across reopens — now gets a fresh one. Reopening through
+  `addWidget` with the same id already reset every MST property, so only
+  volatile state and nodes read back by id were ever carried across.
+  **Opt-out: `keepOnClose: true` on the `WidgetType`.** The track selector, the
+  add-track form and the jobs list set it in-tree.
+
 ## Follow-ups
 
 Smallest-useful-first; none committed — they need a scope decision and probably

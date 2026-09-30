@@ -3,7 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 
@@ -25,6 +25,21 @@ class TestWidgetPlugin extends Plugin {
           stateModel: types.model('TestWidget', {
             id: ElementId,
             type: types.literal('TestWidget'),
+            payload: types.frozen<unknown>(),
+          }),
+          ReactComponent: () => null,
+        }),
+    )
+    pm.addWidgetType(
+      () =>
+        new WidgetType({
+          name: 'TestKeptWidget',
+          heading: 'Test kept widget',
+          keepOnClose: true,
+          configSchema: ConfigurationSchema('TestKeptWidget', {}),
+          stateModel: types.model('TestKeptWidget', {
+            id: ElementId,
+            type: types.literal('TestKeptWidget'),
           }),
           ReactComponent: () => null,
         }),
@@ -245,4 +260,71 @@ test('closing the modal returns a popped-out widget, and closes one with no draw
   session.closeModalWidget()
   expect(session.visibleWidget).toBeUndefined()
   expect(session.modalWidgetVisible).toBe(false)
+})
+
+function addKeptWidget(session: ReturnType<typeof createSession>, id: string) {
+  return session.addWidget('TestKeptWidget', id)
+}
+
+// #3538: a closed feature panel on a large synteny alignment stayed in
+// `widgets`, and the session grew too large to share
+test('closing a widget takes it and what it holds out of the session', () => {
+  jest.useFakeTimers()
+  const session = createSession()
+  const widget = session.addWidget('TestWidget', 'details', {
+    payload: 'every CIGAR op of a large alignment',
+  })
+  session.showWidget(widget)
+  session.hideWidget(widget)
+  expect(session.widgets.has('details')).toBe(false)
+  expect(JSON.stringify(getSnapshot(session))).not.toContain('CIGAR')
+  expect(isAlive(widget)).toBe(true)
+  jest.runAllTimers()
+  expect(isAlive(widget)).toBe(false)
+  jest.useRealTimers()
+})
+
+test('a keepOnClose widget stays in the session after its close', () => {
+  const session = createSession()
+  const widget = addKeptWidget(session, 'kept')
+  session.showWidget(widget)
+  session.hideWidget(widget)
+  expect(session.visibleWidget).toBeUndefined()
+  expect(session.widgets.get('kept')).toBe(widget)
+})
+
+test('minimizing the drawer keeps every widget in the session', () => {
+  const session = createSession()
+  const widget = addTestWidget(session, 'first')
+  session.showWidget(widget)
+  session.minimizeWidgetDrawer()
+  expect(session.widgets.get('first')).toBe(widget)
+  expect(isAlive(widget)).toBe(true)
+})
+
+test('hideAllWidgets removes the widgets that are not keepOnClose', () => {
+  const session = createSession()
+  session.showWidget(addTestWidget(session, 'first'))
+  session.showWidget(addKeptWidget(session, 'kept'))
+  session.popoutWidget()
+  session.hideAllWidgets()
+  expect([...session.widgets.keys()]).toEqual(['kept'])
+  expect(session.activeWidgets.size).toBe(0)
+  expect(session.poppedOut).toBe(false)
+})
+
+test('reopening a closed widget id builds a fresh one', () => {
+  jest.useFakeTimers()
+  const session = createSession()
+  const closed = session.openWidget('TestWidget', 'details', { payload: 'a' })
+  session.hideWidget(closed)
+  session.hideWidget(closed)
+  const reopened = session.openWidget('TestWidget', 'details', {
+    payload: 'b',
+  })
+  jest.runAllTimers()
+  expect(isAlive(closed)).toBe(false)
+  expect(isAlive(reopened)).toBe(true)
+  expect(session.visibleWidget).toBe(reopened)
+  jest.useRealTimers()
 })

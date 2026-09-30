@@ -229,11 +229,11 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         ) {
           self.setFocusedViewId(undefined)
         }
-        // Every widget, not the active ones: a widget the user closed keeps
-        // its references and its autoruns. One that pointed into the view is
-        // now empty, so hide it rather than leave the panel showing what it no
-        // longer has.
-        for (const [, widget] of self.widgets) {
+        // Every widget, not the active ones: a `keepOnClose` widget the user
+        // closed keeps its references and its autoruns. One that pointed into
+        // the view is now empty, so close it rather than leave the panel
+        // showing what it no longer has.
+        for (const widget of [...self.widgets.values()]) {
           if (dropRefsInto(widget, view)) {
             self.hideWidget(widget)
           }

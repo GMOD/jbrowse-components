@@ -13,6 +13,7 @@ export default function AddTrackWidgetF(pluginManager: PluginManager) {
     return new WidgetType({
       name: 'AddTrackWidget',
       heading: 'Add a track',
+      keepOnClose: true,
       configSchema,
       stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazyWithPreload(

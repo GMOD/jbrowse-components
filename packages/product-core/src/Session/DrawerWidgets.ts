@@ -1,7 +1,12 @@
 import { isConfigurationModel } from '@jbrowse/core/configuration'
-import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import {
+  localStorageGetItem,
+  localStorageSetItem,
+  scheduleDetachedDestroy,
+} from '@jbrowse/core/util'
 import {
   addDisposer,
+  detach,
   getEnv,
   isAlive,
   isStateTreeNode,
@@ -225,11 +230,20 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
 
       /**
        * #action
+       * closes the widget and removes it from the session, unless its type
+       * sets `keepOnClose`. Minimizing the drawer is not closing.
        */
       hideWidget(widget: WidgetStateModel) {
         self.activeWidgets.delete(widget.id)
         if (self.activeWidgets.size === 0) {
           self.poppedOut = false
+        }
+        if (
+          self.widgets.get(widget.id) === widget &&
+          !pluginManager.getWidgetType(widget.type).keepOnClose
+        ) {
+          detach(widget)
+          scheduleDetachedDestroy(widget)
         }
       },
 
@@ -268,7 +282,9 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       hideAllWidgets() {
-        self.activeWidgets.clear()
+        for (const widget of [...self.activeWidgets.values()]) {
+          this.hideWidget(widget)
+        }
         self.poppedOut = false
       },
 

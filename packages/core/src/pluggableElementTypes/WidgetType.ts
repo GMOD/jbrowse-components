@@ -22,6 +22,13 @@ export default class WidgetType extends PluggableElementBase {
 
   helpText?: React.ReactNode
 
+  /**
+   * Closing the widget hides it rather than removing it from the session. Set
+   * it only for a widget whose state a user expects back when they reopen it:
+   * anything else rides along in every saved and shared session (#3538).
+   */
+  keepOnClose: boolean
+
   constructor(stuff: {
     name: string
     heading?: string
@@ -30,6 +37,7 @@ export default class WidgetType extends PluggableElementBase {
     stateModel: IAnyModelType
     ReactComponent: WidgetComponentType
     helpText?: React.ReactNode
+    keepOnClose?: boolean
   }) {
     super(stuff)
     this.heading = stuff.heading
@@ -38,5 +46,6 @@ export default class WidgetType extends PluggableElementBase {
     this.stateModel = stuff.stateModel
     this.ReactComponent = stuff.ReactComponent
     this.helpText = stuff.helpText
+    this.keepOnClose = stuff.keepOnClose ?? false
   }
 }

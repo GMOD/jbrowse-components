@@ -72,7 +72,9 @@ Every drawer action is on the session, so they read
 
 - [`showWidget`](/docs/models/drawerwidgetsessionmixin#action-showwidget) and
   [`hideWidget`](/docs/models/drawerwidgetsessionmixin#action-hidewidget) — one
-  widget at a time. Showing a widget un-minimizes the drawer.
+  widget at a time. Showing a widget un-minimizes the drawer. Hiding one removes
+  it from the session unless its type sets `keepOnClose`; minimizing the drawer
+  keeps every widget.
 - [`minimizeWidgetDrawer`](/docs/models/drawerwidgetsessionmixin#action-minimizewidgetdrawer)
   and
   [`showWidgetDrawer`](/docs/models/drawerwidgetsessionmixin#action-showwidgetdrawer)

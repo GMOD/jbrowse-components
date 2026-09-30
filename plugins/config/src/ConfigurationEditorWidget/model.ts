@@ -28,55 +28,58 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
       // (incompatible/inactive) displays start collapsed
       expandedDisplayId: undefined as string | undefined,
     }))
-    .actions(self => ({
-      setTarget(newTarget: AnyConfigurationModel | undefined) {
-        self.target = newTarget
-      },
-      setExpandedDisplayId(displayId: string | undefined) {
-        self.expandedDisplayId = displayId
-      },
-      afterCreate() {
-        let timeout: ReturnType<typeof setTimeout> | undefined
-        // Auto-save configuration changes with 400ms debounce. The autorun
-        // reacts to any changes in the target configuration model and persists
-        // them back to the session after a short delay via
-        // updateTrackConfiguration, which routes admin edits to the jbrowse
-        // config in place and everyone else's to a shareable per-track delta
-        // (trackConfigDeltas) against the admin base. It keys off trackId; in
-        // practice the widget is only opened on track configs. A config with no
-        // trackId (assembly/connection) degrades gracefully: updateTrackConfiguration
-        // finds no base/session/connection home and the edit just applies to the
-        // live MST node in memory for this session.
-        //
-        // BaseTrackModel's afterAttach runs a sibling debounced save (a reaction
-        // on the same config node) for direct setSlot quick-edits on a *shown*
-        // track. Both intentionally coexist: this widget also handles an unshown
-        // track edited from the selector, which has no BaseTrackModel. When both
-        // fire they compute an identical delta, deduped in updateTrackConfiguration
-        // — don't drop one to "simplify".
-        addDisposer(
-          self,
-          autorun(() => {
-            if (self.target) {
-              // track configs (the practical case) carry a trackId; a
-              // trackId-less snapshot degrades to an in-memory edit (see above)
-              const snapshot = getSnapshot(self.target) as {
-                trackId: string
-                [key: string]: unknown
+    .actions(self => {
+      type TrackSnapshot = { trackId: string; [key: string]: unknown }
+      let timeout: ReturnType<typeof setTimeout> | undefined
+      let unsaved: TrackSnapshot | undefined
+      function save() {
+        clearTimeout(timeout)
+        if (unsaved) {
+          const session = getSession(self) as SessionWithConfigEditing
+          session.updateTrackConfiguration(unsaved)
+          unsaved = undefined
+        }
+      }
+      return {
+        setTarget(newTarget: AnyConfigurationModel | undefined) {
+          self.target = newTarget
+        },
+        setExpandedDisplayId(displayId: string | undefined) {
+          self.expandedDisplayId = displayId
+        },
+        afterCreate() {
+          // Auto-save configuration changes with 400ms debounce, through
+          // updateTrackConfiguration, which routes admin edits to the jbrowse
+          // config in place and everyone else's to a shareable per-track delta
+          // (trackConfigDeltas) against the admin base. A config with no
+          // trackId (assembly/connection) finds no home there, so the edit
+          // stays on the live MST node for this session.
+          //
+          // BaseTrackModel's afterAttach runs a sibling debounced save for
+          // direct setSlot quick-edits on a *shown* track. Both intentionally
+          // coexist: this widget also handles an unshown track edited from the
+          // selector, which has no BaseTrackModel. When both fire they compute
+          // an identical delta, deduped in updateTrackConfiguration — don't
+          // drop one to "simplify".
+          addDisposer(
+            self,
+            autorun(() => {
+              if (self.target) {
+                unsaved = getSnapshot(self.target) as TrackSnapshot
+                clearTimeout(timeout)
+                timeout = setTimeout(save, 400)
               }
-              clearTimeout(timeout)
-              timeout = setTimeout(() => {
-                const session = getSession(self) as SessionWithConfigEditing
-                session.updateTrackConfiguration(snapshot)
-              }, 400)
-            }
-          }),
-        )
-        // ensure a pending debounced save can't fire after disposal, where
-        // getSession(self) would throw on the now-detached node
-        addDisposer(self, () => {
-          clearTimeout(timeout)
-        })
-      },
-    }))
+            }),
+          )
+          addDisposer(self, () => {
+            clearTimeout(timeout)
+          })
+        },
+        // closing the editor detaches it from the session, so an edit still
+        // inside the debounce saves now, while getSession(self) resolves
+        beforeDetach() {
+          save()
+        },
+      }
+    })
 }

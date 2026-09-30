@@ -44,7 +44,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | <span id="action-resizedrawer">**resizeDrawer**</span><br><code>(distance: number, availableWidth?: number) =&gt; number</code> |  |
 | <span id="action-addwidget">**addWidget**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(typeName: string, id: string, initialState?: any, conf?: unkno…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(typeName: string, id: string, initialState?: any, conf?: unknown) =&gt; any</code></pre></dialog></span> |  |
 | <span id="action-showwidget">**showWidget**</span><br><code>(widget: any) =&gt; void</code> |  |
-| <span id="action-hidewidget">**hideWidget**</span><br><code>(widget: any) =&gt; void</code> |  |
+| <span id="action-hidewidget">**hideWidget**</span><br><code>(widget: any) =&gt; void</code> | closes the widget and removes it from the session, unless its type sets `keepOnClose`. Minimizing the drawer is not closing. |
 | <span id="action-minimizewidgetdrawer">**minimizeWidgetDrawer**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-showwidgetdrawer">**showWidgetDrawer**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-popoutwidget">**popoutWidget**</span><br><code>() =&gt; void</code> | show the visible widget in a modal dialog, freeing the drawer column |

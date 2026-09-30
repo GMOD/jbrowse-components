@@ -67,6 +67,12 @@ alongside `id` and `type`, and receives them as `addWidget`'s third argument —
 `UcscResultsWidget` in the BLAT plugin is that shape, holding the hits its table
 renders.
 
+Closing a widget removes it from the session, so what it holds does not ride
+along in every session a user saves or shares. A widget whose state a user
+expects back on reopen — the track selector's collapsed categories, the
+add-track form half filled in — sets **`keepOnClose: true`** on its
+`WidgetType`, and closing only hides it.
+
 ## Opening a widget
 
 A widget is opened by the `name` its `WidgetType` was registered under. BLAT
