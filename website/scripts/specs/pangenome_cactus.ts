@@ -67,6 +67,9 @@ const MC_CARRIAGE_SESSION_TRACK = {
   adapter: MC_SEGMENTS_SESSION_TRACK.adapter,
 }
 
+const MC_MAF_TRACK = 'ecoli_cactus_maf'
+const MC_MAF_SESSION_TRACK = ecoliPageTrack(CACTUS_DOC, MC_MAF_TRACK)
+
 const K12_GENES_SESSION_TRACK = {
   type: 'FeatureTrack',
   trackId: 'K12_genes',
@@ -134,6 +137,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         K12_GENES_SESSION_TRACK,
         MC_SEGMENTS_SESSION_TRACK,
         MC_CARRIAGE_SESSION_TRACK,
+        MC_MAF_SESSION_TRACK,
       ],
       views: [
         {
@@ -173,6 +177,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               height: 150,
               ...CARRIAGE_DISPLAY,
             },
+            // which four: the carriage lane counts the strains, and the rows
+            // name them, alike for every small variant in the window
+            { trackId: MC_MAF_TRACK, type: 'LinearMafDisplay', height: 130 },
             graphTrack(MC_SEGMENTS_TRACK, {
               layoutMode: 'force',
               paneHeight: 600,
@@ -190,7 +197,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 1100,
+    viewportHeight: 1270,
     hideTooltip: true,
     // The dashed edge is one link with no bases; its bow is the force layout's
     // spring, so it reads as the biggest thing in the frame unless named.

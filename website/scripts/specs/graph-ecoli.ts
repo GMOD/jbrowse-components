@@ -1261,6 +1261,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         K12_GENES_SESSION_TRACK,
         K12_IS_SESSION_TRACK,
         PGGB_TIER_SESSION_TRACK,
+        PGGB_MAF_SESSION_TRACK,
         PGGB_SEGMENTS_SESSION_TRACK,
       ],
       views: [
@@ -1274,7 +1275,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
               refName: 'chr',
               start: 1299497,
               end: 1300697,
-              color: 'rgba(21,101,192,0.25)',
+              // light enough that the MAF rows under it still read blank
+              color: 'rgba(21,101,192,0.12)',
             },
           ],
           tracks: [
@@ -1296,6 +1298,15 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
               height: 50,
               color: referencePositionColor(PGGB_TIER_REGION),
             },
+            // which strains break across each bubble, where the tier says
+            // only that they differ
+            {
+              trackId: PGGB_MAF_TRACK,
+              type: 'LinearMafDisplay',
+              rows: { domain: PGGB_STRAIN_ROWS },
+              showCoverage: false,
+              height: 110,
+            },
             { ...pggbTierCut, geneTrackId: 'K12_genes' },
           ],
         },
@@ -1304,8 +1315,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readySelector: graphCutDrawn('coarse'),
     readyTimeout: 120000,
     viewportWidth: 1000,
-    // re-measure at the reshoot
-    viewportHeight: 700,
+    viewportHeight: 840,
     hideTooltip: true,
     // Charcoal in a tier is a bubble ON K12's coordinates, not an allele off
     // them: `bubbles_to_tier_bed.py` ranks every bubble 1 and every invariant

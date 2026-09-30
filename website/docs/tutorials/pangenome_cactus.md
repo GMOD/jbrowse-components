@@ -496,8 +496,10 @@ its track menu to see the element's shape. A second copy of the segments track,
 colored by the `SM:Z:` carriage the walk recorded, shows which segments those
 are; the pggb page gives
 [that track's config](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane).
+Show the [MAF track](#whole-genome-alignment-maf-projection) above the graph
+too: the carriage lane counts the strains, and the MAF's rows name them.
 
-<Figure caption="1.6 kb of K12 past flhD, as lanes above and as the graph track below, both reading the same two tabix indexes. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
+<Figure caption="1.6 kb of K12 past flhD, as lanes above and as the graph track below. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, the four non-K12 MAF rows carry it as a deletion, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
 
 The other four strains' route is a link from the node before the IS1 element to
 the node after it. **Show deletion edges** in the track menu draws that link

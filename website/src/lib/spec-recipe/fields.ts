@@ -1500,7 +1500,8 @@ export const trackFields: Record<string, FieldRecipe> = {
   showCoverage: (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
-    SHOW_SUBMENU_DISPLAYS.has(displayType)
+    (SHOW_SUBMENU_DISPLAYS.has(displayType) ||
+      displayType === 'LinearMafDisplay')
       ? {
           path: `${TRACK_MENU} → Show... → Show coverage (${value ? 'checked' : 'unchecked'})`,
         }

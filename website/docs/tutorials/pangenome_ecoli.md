@@ -673,7 +673,12 @@ any width:
 }
 ```
 
-<Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane above, and below it the graph track, which cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 carries and the other four skip." src="/img/pangenome/pggb_bubble_tier.png" />
+The tier marks where the strains differ, and the
+[MAF track](#whole-genome-alignment-maf-projection) says which: show it between
+the tier lane and the graph, and a strain's row breaks across each bubble it
+skips.
+
+<Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane, the MAF's strain rows, and the graph track, which cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 carries and the other four skip, their MAF rows breaking across it." src="/img/pangenome/pggb_bubble_tier.png" />
 
 Hover a node for the segments it collapsed. A tier node's **Open in K12** takes
 the view to the span it stands for, and the graph track cuts the segments there.
