@@ -33,6 +33,35 @@ function mouseEvent(
   } as unknown as React.MouseEvent
 }
 
+function pointerEvent(extra?: { pointerType?: string; shiftKey?: boolean }) {
+  const stopPropagation = jest.fn()
+  const event = {
+    button: 0,
+    pointerType: extra?.pointerType ?? 'mouse',
+    shiftKey: extra?.shiftKey ?? false,
+    target: { closest: () => null },
+    stopPropagation,
+  } as unknown as React.PointerEvent
+  return { event, stopPropagation }
+}
+
+test('a mouse press is kept from the view, which pans on pointerdown', () => {
+  const { result } = setup()
+  const { event, stopPropagation } = pointerEvent()
+  result.current.handlePointerDown(event)
+  expect(stopPropagation).toHaveBeenCalled()
+})
+
+test('a touch and a shift-press reach the view', () => {
+  const { result } = setup()
+  const touch = pointerEvent({ pointerType: 'touch' })
+  result.current.handlePointerDown(touch.event)
+  expect(touch.stopPropagation).not.toHaveBeenCalled()
+  const shift = pointerEvent({ shiftKey: true })
+  result.current.handlePointerDown(shift.event)
+  expect(shift.stopPropagation).not.toHaveBeenCalled()
+})
+
 test('press and release over the data area is a click', () => {
   const { onClick, result } = setup()
   act(() => {

@@ -88,6 +88,7 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
       factory={createMafBackend}
       testid="maf-display"
       ref={ref}
+      onPointerDown={drag.handlePointerDown}
       onMouseDown={drag.handleMouseDown}
       onMouseMove={drag.handleMouseMove}
       onMouseUp={drag.handleMouseUp}

@@ -62,24 +62,36 @@ export function useDragSelection(
     setState(s => ({ ...s, drag: undefined, showSelectionBox: false }))
   }
 
-  function handleMouseDown(e: React.MouseEvent) {
-    // Don't start a selection when the press lands on a control that claimed it
-    // (a resize handle, say): the container owns this invariant, so controls
-    // dropped into the chrome are non-selectable without each one needing to
-    // stopPropagation. Nor on a right button, whose release opens the context
-    // menu rather than clicking whatever is under it.
-    if (
+  // Don't start a selection when the press lands on a control that claimed it
+  // (a resize handle, say): the container owns this invariant, so controls
+  // dropped into the chrome are non-selectable without each one needing to
+  // stopPropagation. Nor on a right button, whose release opens the context
+  // menu rather than clicking whatever is under it.
+  function leavesPressToView(e: React.MouseEvent) {
+    return (
       e.button > 0 ||
       e.shiftKey ||
-      (e.target as Element).closest('[data-gesture-owner]')
-    ) {
+      !!(e.target as Element).closest('[data-gesture-owner]')
+    )
+  }
+
+  // The LGV pans on pointerdown (useSideScroll), and DisplayChrome spreads these
+  // handlers onto a div inside its TracksContainer, so a press the display keeps
+  // is stopped here, wherever it lands, including over the sidebar. A touch is
+  // left to the view: it raises no mouse events until it lifts, so it could
+  // never select, and a finger drag over the rows should still pan.
+  function handlePointerDown(e: React.PointerEvent) {
+    if (e.pointerType !== 'touch' && !leavesPressToView(e)) {
+      e.stopPropagation()
+    }
+  }
+
+  function handleMouseDown(e: React.MouseEvent) {
+    if (leavesPressToView(e)) {
       return
     }
     const { x, y } = relativeXY(ref, e)
-    // Swallow the press wherever it lands in the display, including over the
-    // sidebar: DisplayChrome spreads these handlers onto a div inside the LGV's
-    // TracksContainer, so an un-stopped mousedown starts the view's click-drag
-    // pan. Only the data area additionally begins a selection.
+    // the view's range select listens for mousedown on the same container
     e.stopPropagation()
     if (x > dataLeft) {
       setState({
@@ -189,6 +201,7 @@ export function useDragSelection(
     showSelectionBox,
     contextCoord,
     setContextCoord,
+    handlePointerDown,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
