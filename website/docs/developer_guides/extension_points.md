@@ -659,16 +659,14 @@ one naming the track type to draw it with. The `file` argument lets one adapter
 serve two track types — a `.bedmethyl.gz` and a plain `.bed.gz` are both read by
 `BedTabixAdapter`:
 
-<!-- include: packages/core/src/util/formatGuessers.ts#installFormatGuessers -->
+<!-- include: packages/core/src/CorePlugin.ts#installFormatGuessers -->
 
 ```typescript
-export function installFormatGuessers(pluginManager: PluginManager) {
+function installFormatGuessers(pluginManager: PluginManager) {
   addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
-    const spec = matchFormat(getFileName(file), adapterHint)?.spec
-    return spec &&
-      'adapterType' in spec &&
-      pluginManager.hasAdapterType(spec.adapterType)
-      ? adapterConfigFromSpec(spec, file, index)
+    const adapter = guessTrackConfFromTable(file, index, adapterHint)?.adapter
+    return adapter && pluginManager.hasAdapterType(adapter.type)
+      ? adapter
       : undefined
   })
   addTrackTypeGuesser(pluginManager, (adapterName, file) =>

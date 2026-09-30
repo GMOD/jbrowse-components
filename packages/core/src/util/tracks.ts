@@ -9,7 +9,17 @@ export { getFileName } from './getFileName.ts'
 // it. `fetchContext.ts` takes it from mstUtils instead, which is what keeps the
 // configuration schemas this file pulls in out of the fetch harness's graph.
 export { getRpcSessionId } from './parentWalk.ts'
+export { makeIndex } from './formatGuessers.ts'
 
+export {
+  isLooseTrackConfig,
+  type LooseTrackInput,
+} from '@jbrowse/add-track-core'
+
+import {
+  isLooseTrackConfig,
+  type LooseTrackInput,
+} from '@jbrowse/add-track-core'
 import {
   asModelType,
   getParent,
@@ -32,6 +42,7 @@ import {
   storeFileHandle,
   verifyPermission,
 } from './fileHandleStore.ts'
+import { makeIndex } from './formatGuessers.ts'
 import { getFileName } from './getFileName.ts'
 import {
   getContainingView,
@@ -408,33 +419,6 @@ export async function restoreFileHandlesFromSnapshot(
 }
 
 /**
- * creates a new location from the provided location including the appropriate
- * suffix and location type
- *
- * @param location - the FileLocation
- * @param suffix - the file suffix (e.g. .bam)
- * @returns the constructed location object from the provided parameters
- */
-export function makeIndex(location: FileLocation, suffix: string) {
-  if ('uri' in location) {
-    return {
-      uri: location.uri + suffix,
-      locationType: 'UriLocation',
-      // carry the parent's baseUri so a derived sibling index resolves against
-      // the same config location as the file it indexes
-      ...(location.baseUri ? { baseUri: location.baseUri } : {}),
-    }
-  } else if ('localPath' in location) {
-    return {
-      localPath: location.localPath + suffix,
-      locationType: 'LocalPathLocation',
-    }
-  } else {
-    return location
-  }
-}
-
-/**
  * constructs a potential index file (with suffix) from the provided file name
  *
  * @param name - the name of the index file
@@ -611,13 +595,6 @@ export function guessTrackType(
   return 'FeatureTrack'
 }
 
-export interface LooseTrackInput {
-  uri: string
-  index?: string
-  baseUri?: string
-  [key: string]: unknown
-}
-
 /**
  * Expand a loose track description — a bare data-file URI, or an object with
  * `uri` (and optional `index`) plus any extra config keys — into a full track
@@ -686,22 +663,6 @@ export function guessTrackConfForLocation(
     assemblyNames: assemblyName ? [assemblyName] : [],
     adapter,
   }
-}
-
-/**
- * Whether a track snapshot is the loose `{ uri, ... }` form — a data file with
- * no `adapter` — that {@link expandLooseTrackConfig} expands.
- */
-export function isLooseTrackConfig(
-  snap: unknown,
-): snap is LooseTrackInput & { trackId?: string } {
-  return (
-    typeof snap === 'object' &&
-    snap !== null &&
-    !Array.isArray(snap) &&
-    typeof (snap as { uri?: unknown }).uri === 'string' &&
-    !('adapter' in snap)
-  )
 }
 
 /**

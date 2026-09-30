@@ -76,6 +76,40 @@ test('adds every config in a pasted array', async () => {
   expect(openTrackIds(view).toSorted()).toEqual(['pasted1', 'pasted2'])
 })
 
+test('adds a pasted whole-track shorthand as the track its uri names', async () => {
+  const { session, view, widget } = setup()
+  await doPasteConfigSubmit({
+    model: widget,
+    jsonText: JSON.stringify({
+      trackId: 'reads',
+      uri: 'https://example.com/reads.bam',
+      assemblyNames: ['volMyt1'],
+    }),
+  })
+  expect(session.getTrackById('reads')).toMatchObject({
+    type: 'AlignmentsTrack',
+    name: 'reads.bam',
+    adapter: { type: 'BamAdapter' },
+  })
+  expect(openTrackIds(view)).toEqual(['reads'])
+})
+
+test('a pasted shorthand whose file no format claims errors and adds nothing', async () => {
+  const { session, view, widget } = setup()
+  await expect(
+    doPasteConfigSubmit({
+      model: widget,
+      jsonText: JSON.stringify({
+        trackId: 'calls',
+        uri: 'https://example.com/calls.xyz',
+        assemblyNames: ['volMyt1'],
+      }),
+    }),
+  ).rejects.toThrow(/could not infer a track type from "calls.xyz"/)
+  expect(session.getTrackById('calls')).toBeUndefined()
+  expect(openTrackIds(view)).toEqual([])
+})
+
 // addTrackConf silently returns the existing track on a trackId collision, so
 // pasting a config that reuses an id would otherwise be a confusing no-op
 test('rejects a config reusing an existing trackId, adding nothing', async () => {

@@ -2,6 +2,7 @@ import fs from 'node:fs'
 
 import {
   adapterTypesToTrackTypeMap,
+  fileNameOf,
   formats,
   matchFormat,
   resolveIndexType,
@@ -203,17 +204,6 @@ export function makeLocationProtocol(protocol: string) {
     }
     throw new Error(`invalid protocol ${protocol}`)
   }
-}
-
-/**
- * The bare filename the format table matches against — the same thing
- * `@jbrowse/core`'s `getFileName` hands the guesser chain, so a path and a URL
- * with a presigned query string both reduce to what the regexes expect.
- */
-export function fileNameOf(location: string) {
-  return (
-    location.replaceAll('\\', '/').split('/').at(-1)?.split(/[?#]/)[0] ?? ''
-  )
 }
 
 // resolves the file-layout spec that both the adapter config and the copied

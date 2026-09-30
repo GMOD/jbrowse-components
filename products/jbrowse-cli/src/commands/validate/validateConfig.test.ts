@@ -93,6 +93,31 @@ describe('validateConfig', () => {
     expect(errorsOf(config)).toEqual([])
   })
 
+  it('reports a loose track whose file no format claims, as JBrowse fails to load it', () => {
+    const config = baseConfig()
+    // @ts-expect-error the loose form declares neither type nor adapter
+    config.tracks[0] = { trackId: 'sample_bam', uri: 'https://x/c.xyz?a=1' }
+    expect(errorsOf(config)).toEqual([
+      expect.objectContaining({
+        where: 'tracks[0].uri',
+        message: expect.stringContaining('"c.xyz"'),
+      }),
+    ])
+    // @ts-expect-error as above
+    config.tracks[0] = { trackId: 'sample_bam', uri: 'calls.vcf.idx' }
+    expect(errorsOf(config).map(e => e.where)).toEqual(['tracks[0].uri'])
+  })
+
+  it('only warns about an unclaimed file when a declared plugin could guess it', () => {
+    const config = { ...baseConfig(), plugins: [{ name: 'P', url: 'p.js' }] }
+    // @ts-expect-error the loose form declares neither type nor adapter
+    config.tracks[0] = { trackId: 'sample_bam', uri: 'calls.xyz' }
+    expect(errorsOf(config)).toEqual([])
+    expect(validateConfig(config).problems.map(p => p.where)).toContain(
+      'tracks[0].uri',
+    )
+  })
+
   it('accepts a search index written as just a .ix uri, on a track and config-wide', () => {
     const config = {
       ...baseConfig(),

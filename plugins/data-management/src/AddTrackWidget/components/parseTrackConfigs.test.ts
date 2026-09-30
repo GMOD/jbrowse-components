@@ -36,6 +36,19 @@ test('reports a missing type', () => {
   )
 })
 
+test('takes the whole-track shorthand, whose type comes from its uri', () => {
+  const shorthand = { trackId: 't1', uri: 'reads.bam', assemblyNames: ['hg38'] }
+  expect(parseTrackConfigs(JSON.stringify(shorthand))).toEqual([shorthand])
+})
+
+test('still wants a type beside an adapter', () => {
+  expect(() =>
+    parseTrackConfigs(
+      '{"trackId":"t1","uri":"reads.bam","adapter":{"type":"BamAdapter"}}',
+    ),
+  ).toThrow(/missing a "type"/)
+})
+
 test('throws on a duplicate trackId within the pasted configs', () => {
   expect(() =>
     parseTrackConfigs(

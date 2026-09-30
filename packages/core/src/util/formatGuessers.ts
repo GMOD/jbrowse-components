@@ -5,12 +5,37 @@ import {
 } from '@jbrowse/add-track-core'
 
 import { getFileName } from './getFileName.ts'
-import { addAdapterGuesser, addTrackTypeGuesser, makeIndex } from './tracks.ts'
 
-import type PluginManager from '../PluginManager.ts'
 import type { AdapterConfig } from './tracks.ts'
 import type { FileLocation } from './types/data.ts'
 import type { AdapterSpec } from '@jbrowse/add-track-core'
+
+/**
+ * creates a new location from the provided location including the appropriate
+ * suffix and location type
+ *
+ * @param location - the FileLocation
+ * @param suffix - the file suffix (e.g. .bam)
+ * @returns the constructed location object from the provided parameters
+ */
+export function makeIndex(location: FileLocation, suffix: string) {
+  if ('uri' in location) {
+    return {
+      uri: location.uri + suffix,
+      locationType: 'UriLocation',
+      // carry the parent's baseUri so a derived sibling index resolves against
+      // the same config location as the file it indexes
+      ...(location.baseUri ? { baseUri: location.baseUri } : {}),
+    }
+  } else if ('localPath' in location) {
+    return {
+      localPath: location.localPath + suffix,
+      locationType: 'LocalPathLocation',
+    }
+  } else {
+    return location
+  }
+}
 
 /**
  * The adapter config one format-table entry describes: the data file under the
@@ -60,33 +85,23 @@ export function adapterConfigFromSpec(
 }
 
 /**
- * Guess every format `@jbrowse/add-track-core`'s table describes — the same
- * table `@jbrowse/cli`'s `add-track` reads, so a file resolves to the same
- * adapter config in the app and on the command line.
- *
- * Whether a build can open a format is decided by `hasAdapterType`, not by the
- * table: guessing `BamAdapter` in a build with no alignments plugin writes a
- * track config that fails at render. A plugin therefore registers its adapters
- * and nothing else — there is no format list to keep in step. ADR-077.
- *
- * `CorePlugin` installs this first, so any `addAdapterGuesser` a plugin
- * registers is later in the chain and wins over the table. That is how a format
- * the table cannot express is added, and how a third-party plugin claims one.
+ * The track the format table makes of a file: its adapter, the track type that
+ * draws it, and the file name as its name. `undefined` for a file no format
+ * claims, which is where `guessTrackConf` throws.
  */
-// #region installFormatGuessers
-export function installFormatGuessers(pluginManager: PluginManager) {
-  addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
-    const spec = matchFormat(getFileName(file), adapterHint)?.spec
-    return spec &&
-      'adapterType' in spec &&
-      pluginManager.hasAdapterType(spec.adapterType)
-      ? adapterConfigFromSpec(spec, file, index)
-      : undefined
-  })
-  addTrackTypeGuesser(pluginManager, (adapterName, file) =>
-    pluginManager.hasAdapterType(adapterName)
-      ? trackTypeForAdapter(adapterName, file && getFileName(file))
-      : undefined,
-  )
+export function guessTrackConfFromTable(
+  file: FileLocation,
+  index?: FileLocation,
+  adapterHint?: string,
+) {
+  const name = getFileName(file)
+  const spec = matchFormat(name, adapterHint)?.spec
+  const adapter = spec && adapterConfigFromSpec(spec, file, index)
+  return adapter
+    ? {
+        type: trackTypeForAdapter(adapter.type, name) ?? 'FeatureTrack',
+        name,
+        adapter,
+      }
+    : undefined
 }
-// #endregion

@@ -1,6 +1,8 @@
+import { isLooseTrackConfig } from '@jbrowse/core/util/tracks'
+
 export interface PastedTrackConf {
   trackId: string
-  type: string
+  type?: string
   name?: string
   assemblyNames?: string[]
 }
@@ -13,8 +15,10 @@ function asTrackConf(value: unknown, label: string): PastedTrackConf {
   if (typeof trackId !== 'string' || !trackId) {
     throw new Error(`Track config${label} is missing a "trackId" string`)
   }
-  if (typeof type !== 'string' || !type) {
-    throw new Error(`Track config${label} is missing a "type" string`)
+  if ((typeof type !== 'string' || !type) && !isLooseTrackConfig(value)) {
+    throw new Error(
+      `Track config${label} is missing a "type" string, or a "uri" to infer it from`,
+    )
   }
   return value as PastedTrackConf
 }

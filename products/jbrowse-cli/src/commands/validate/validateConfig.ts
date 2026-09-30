@@ -9,6 +9,12 @@
 //
 // Pure: no filesystem, no process exit. The command wrapper owns both.
 
+import {
+  fileNameOf,
+  isLooseTrackConfig,
+  matchFormat,
+} from '@jbrowse/add-track-core'
+
 import { configManifest } from './configManifest.generated.ts'
 import { displayDefaultsForTrackType } from './displayDefaultKeys.ts'
 import { isRecord, liftToSnapshot } from './liftConfig.ts'
@@ -185,7 +191,7 @@ function checkTrack(
   ctx: Ctx,
 ) {
   const where = `tracks[${index}]`
-  const loose = typeof track.uri === 'string' && !('adapter' in track)
+  const loose = isLooseTrackConfig(track)
 
   const trackId = track.trackId
   if (typeof trackId === 'string' && trackId) {
@@ -214,6 +220,22 @@ function checkTrack(
           `${where}.assemblyNames`,
           `assembly "${name}" is not defined in this config, and no connection here supplies one — though a connection added at runtime can${didYouMean(name, [...ctx.assemblyNames])}`,
         )
+      }
+    }
+  }
+
+  if (loose) {
+    const file = fileNameOf(track.uri)
+    const spec = matchFormat(file)?.spec
+    if (!spec || !('adapterType' in spec)) {
+      const message = `JBrowse infers no track from "${file}", so the track fails to load: give it an "adapter"`
+      if (ctx.declaresPlugins) {
+        report.warn(
+          `${where}.uri`,
+          `${message}, unless a plugin it declares guesses this extension`,
+        )
+      } else {
+        report.error(`${where}.uri`, message)
       }
     }
   }

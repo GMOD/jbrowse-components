@@ -8,7 +8,7 @@ summary: "One format table both the app and the CLI read, and the adapter regist
 ## Status
 
 Accepted (2026-08). The table is `packages/add-track-core`; the guesser is
-`installFormatGuessers` in `packages/core/src/util/formatGuessers.ts`.
+`installFormatGuessers` in `packages/core/src/CorePlugin.ts`, over `guessTrackConfFromTable` in `packages/core/src/util/formatGuessers.ts`.
 
 ## Context
 

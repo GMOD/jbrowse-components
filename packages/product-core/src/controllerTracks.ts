@@ -1,6 +1,6 @@
 import { getEnv } from '@jbrowse/core/util'
 import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
-import { guessTrackConf } from '@jbrowse/core/util/tracks'
+import { guessTrackConf, isLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { resolveLocalFileUris } from './localFiles.ts'
@@ -45,7 +45,7 @@ export interface ControllerSession extends IStateTreeNode {
 export function isLooseTrack(
   track: TrackInput,
 ): track is string | LooseTrackInput {
-  return typeof track === 'string' || (!('adapter' in track) && 'uri' in track)
+  return typeof track === 'string' || isLooseTrackConfig(track)
 }
 
 /**

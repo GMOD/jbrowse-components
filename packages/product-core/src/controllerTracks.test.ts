@@ -24,4 +24,5 @@ test('a bare URL and a { uri } object are loose; a full config is not', () => {
   expect(isLooseTrack({ trackId: 't', adapter: { type: 'X', uri: 'y' } })).toBe(
     false,
   )
+  expect(isLooseTrack({ trackId: 't', uri: 42 })).toBe(false)
 })
