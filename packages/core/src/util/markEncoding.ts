@@ -130,6 +130,7 @@ export interface MarkEncodingInput {
   x?: FieldRef | ChannelReader
   x2?: FieldRef | LocusRef | ChannelReader
   y?: FieldRef | ChannelReader
+  y2?: FieldRef | ChannelReader
   row?: FieldRef | ChannelReader | ArrayLike<number>
   color?: ColorEncoding | ChannelReader<number>
   shape?: ShapeEncoding | ChannelReader<number>
@@ -609,6 +610,7 @@ export function encodeFeatures<L extends LaneName>(
   const {
     x2: x2Encoding,
     y: yEncoding,
+    y2: y2Encoding,
     row: rowEncoding,
     text: textEncoding,
     size: sizeEncoding,
@@ -644,6 +646,21 @@ export function encodeFeatures<L extends LaneName>(
   if (ySource && y) {
     for (let k = 0; k < count; k++) {
       const v = y[k]!
+      if (v < yMin) {
+        yMin = v
+      }
+      if (v > yMax) {
+        yMax = v
+      }
+    }
+  }
+
+  const y2 =
+    has('y2') && y2Encoding !== undefined ? new Float32Array(count) : undefined
+  if (y2 && y2Encoding !== undefined) {
+    fillNumbers(y2, numberSource(table, y2Encoding, jexl), kept, count)
+    for (let k = 0; k < count; k++) {
+      const v = y2[k]!
       if (v < yMin) {
         yMin = v
       }
@@ -931,6 +948,9 @@ export function encodeFeatures<L extends LaneName>(
   if (y) {
     encoded.y = y
   }
+  if (y2) {
+    encoded.y2 = y2
+  }
   if (row) {
     encoded.row = row
   }
@@ -1179,6 +1199,7 @@ export function encodedChannelTransferables(c: EncodedChannels) {
   for (const lane of [
     c.featureIndex,
     c.y,
+    c.y2,
     c.row,
     typeof c.color === 'number' ? undefined : c.color,
     c.colorValue,

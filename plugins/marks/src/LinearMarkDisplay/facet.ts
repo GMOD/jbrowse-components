@@ -192,6 +192,7 @@ function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
     row: gather(moved, kept),
     featureIndex: featureIndex ? gather(featureIndex, kept) : kept,
     color: typeof color === 'object' ? gather(color, kept) : color,
+    y2: layer.y2 && gatherFloats(layer.y2, kept),
     colorValue: layer.colorValue && gatherFloats(layer.colorValue, kept),
     glyph: layer.glyph && gather(layer.glyph, kept),
     text: text && Array.from(kept, i => text[i]!),

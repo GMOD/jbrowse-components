@@ -409,6 +409,7 @@ function hoverCheck(bars: EncodedChannels, region: Region, bpPerPx: number) {
     canvasHeight: 100,
     bpPerPx,
     origin: 0,
+    standsOnY2: [],
     minWidthPx: 0,
     markSizes: [0],
     sizeScales: [],

@@ -46,6 +46,9 @@ export const DEFAULT_BIN_AS = ['start', 'end'] as const
 /** What a `bin` over `fields` writes on each piece: the bases of its interval inside its bin. */
 export const BIN_OVERLAP_FIELD = 'overlap'
 export const DEFAULT_COVERAGE_AS = 'coverage'
+/** What a `stack` writes: the running total below each row, and the total through it. */
+export const DEFAULT_STACK_AS = ['y0', 'y1'] as const
+export const DEFAULT_STACK_FIELD = 'count'
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export const DEFAULT_CELLS_FIELD = 'seq'
 /** What a `cells` step writes: `state` on every cell, `base` on a mismatch or an insertion, `match` off a gap, `length` on an insertion. */

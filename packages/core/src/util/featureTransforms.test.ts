@@ -537,6 +537,54 @@ test("a facet on a dotted path names it on the section's made rows", () => {
   ])
 })
 
+test('coverage by a field cuts every group at the same stretches, and a stack stands them on each other', () => {
+  const reads = [
+    feature(0, 10, { strand: 1 }),
+    feature(5, 15, { strand: -1 }),
+    feature(5, 20, { strand: 1 }),
+  ]
+  const runs = runTransforms(reads, [{ type: 'coverage', groupby: ['strand'] }])
+  expect(rows(runs, 'start', 'end', 'strand', 'coverage')).toEqual([
+    [0, 5, 1, 1],
+    [5, 10, 1, 2],
+    [5, 10, -1, 1],
+    [10, 15, 1, 1],
+    [10, 15, -1, 1],
+    [15, 20, 1, 1],
+  ])
+  const stacked = runTransforms(reads, [
+    { type: 'coverage', groupby: ['strand'] },
+    { type: 'stack', field: 'coverage', by: 'strand' },
+  ])
+  expect(rows(stacked, 'start', 'strand', 'y0', 'y1')).toEqual([
+    [0, 1, 0, 1],
+    [5, 1, 0, 2],
+    [5, -1, 2, 3],
+    [10, 1, 0, 1],
+    [10, -1, 1, 2],
+    [15, 1, 0, 1],
+  ])
+  expect(stacked[2]!.toJSON()).toMatchObject({ y0: 2, y1: 3, strand: -1 })
+})
+
+test('a stack follows the order its by field takes, and a value that is no number adds nothing', () => {
+  const out = runTransforms(
+    [
+      feature(0, 10, { kind: 'b', count: 2 }),
+      feature(0, 10, { kind: 'a', count: 'x' }),
+      feature(0, 10, { kind: 'a', count: 3 }),
+      feature(10, 20, { kind: 'b', count: 4 }),
+    ],
+    [{ type: 'stack', by: 'kind', as: ['lo', 'hi'] }],
+  )
+  expect(rows(out, 'kind', 'lo', 'hi')).toEqual([
+    ['b', 3, 5],
+    ['a', 0, 0],
+    ['a', 0, 3],
+    ['b', 0, 4],
+  ])
+})
+
 // The encoder reads each feature's own fields, and the row beside it.
 test('a faceted layer hands on its features as its steps left them', () => {
   const features = [

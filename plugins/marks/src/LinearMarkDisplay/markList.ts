@@ -106,6 +106,8 @@ export interface MarkRenderState extends MarkFrame {
   colorScales: (MarkColorScale | undefined)[]
   bpPerPx: number
   origin: number
+  /** Whether mark `i`'s bars stand on their `y2` lane rather than on `origin`. */
+  standsOnY2: boolean[]
   minWidthPx: number
   /** Mark `i`'s `encoding.size` number: a point's diameter, a rule's thickness or a link's stroke in px. */
   markSizes: number[]
@@ -289,6 +291,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           symlogConstant: s.symlogConstantY,
           colorScale: s.colorScales[i],
           origin: s.origin,
+          standsOnY2: s.standsOnY2[i],
           minWidthPx: s.minWidthPx,
           seamPx: CANVAS_SEAM_PX,
           rowHeight: s.rowHeight,

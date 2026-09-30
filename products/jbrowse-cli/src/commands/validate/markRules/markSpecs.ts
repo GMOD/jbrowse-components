@@ -2,7 +2,14 @@
 import type { MarkType } from './markVocabulary.ts'
 
 /** An encoding channel a mark reads, besides `x` and `x2`. */
-export type MarkChannel = 'y' | 'row' | 'color' | 'shape' | 'text' | 'size'
+export type MarkChannel =
+  | 'y'
+  | 'y2'
+  | 'row'
+  | 'color'
+  | 'shape'
+  | 'text'
+  | 'size'
 
 /**
  * A lane the worker fills: a channel, a ramp's raw values, the point painter's
@@ -64,7 +71,7 @@ export interface MarkSpec {
  */
 export const MARK_SPECS = {
   bar: {
-    channels: ['y', 'row', 'color'],
+    channels: ['y', 'y2', 'row', 'color'],
     value: 'required',
     ramp: 'display',
     hit: 'rows',

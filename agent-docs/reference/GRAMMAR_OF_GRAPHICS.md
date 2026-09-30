@@ -609,13 +609,16 @@ the row axis in the vocabulary above, and none is a new channel.
 
 ## Gaps against the grammar
 
-- **`stack` is absent, and so are `median` and a weighted `coverage`.** A
-  stacked histogram by category (ggplot2's `position_stack`, GenomeSpy's
-  `stack` writing `y0`/`y1`) needs a bar drawn between two values, which is
-  the `y2` channel declined on captures for the range bar
-  (§"Against GenomeSpy and Gosling"); a
-  bar mark per category drawn from the origin gives the overlay the Alu
-  tutorial draws. `aggregate` takes `count`, `sum`, `mean`, `min` and `max`
+- **`median` and a weighted `coverage` are absent.** A stack is not: `stack`
+  writes `y0`/`y1` as GenomeSpy's does, `coverage` takes a `groupby` so a
+  depth per strand or per haplotype comes cut at one set of stretches, and a
+  `bar` reads `y2` as the value it stands on. The `y2` lane is packed for
+  every bar, named or not, at 4 bytes an instance
+  (`packages/render-core/benches/barY2.bench.ts`: 6.5 to 7.5 ms and 20 to
+  24 MB per million bars, the painter at parity); a stack over a million
+  reads' coverage runs costs 0.8 s in the worker beside the 0.4 s of the
+  grouped coverage (`packages/core/benches/stackSteps.bench.ts`), and over
+  bins nothing that shows. `aggregate` takes `count`, `sum`, `mean`, `min` and `max`
   where Vega-Lite and GenomeSpy add `median` and the quartiles, and
   `coverage` counts features where GenomeSpy's takes a `weight` field. Each
   is an arm in `runTransforms` and a slot on its step, and each waits on a
@@ -732,10 +735,10 @@ vocabulary; its lead is the browser around it and scaling past the fetch budget.
 | | JBrowse marks | GenomeSpy v0.88 | Gosling 1.0.5 |
 | --- | --- | --- | --- |
 | Marks | bar, point, rule, line, span, text, link | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
-| Channels | x, x2, y, row, color, shape, text, size (a field on a link) | adds y2, opacity, stroke, angle, tooltip | adds ye, opacity, stroke |
+| Channels | x, x2, y, y2, row, color, shape, text, size (a field on a link) | adds opacity, stroke, angle, tooltip | adds ye, opacity, stroke |
 | y scales | linear, log, symlog | 13 kinds, incl. symlog and sqrt | none on y |
 | Named colour ramps | 10 (`COLOR_SCHEMES`), incl. viridis and two diverging | the d3 set | — |
-| Transforms | 8 | ~27, incl. window, lookup, stack, regexExtract | ~10 |
+| Transforms | 9 | ~27, incl. window, lookup, regexExtract | ~10 |
 | y shared across tracks | yes, `scales.y.autoscaleGroup` | yes, `resolve.scale.y: "shared"` | same `domain` pinned by hand |
 | Selections, conditional colour | no | yes, compiled to shaders | hover/select styles only |
 | Legend title / axis title | yes / yes | yes / yes | yes / no |
@@ -750,12 +753,11 @@ holds each shape's painter, shader and hit test to each other
 
 The gaps a user meets first, in order:
 
-1. **No `y2` channel**, declined on captures (2026-09-23): on the COLO829
-   tumour coverage over 1 Mb of hg19 chr17, a BigWig tier's min-to-max range
-   bar read worse to Colin than the same `minScore`/`maxScore` (ADR-123) as two
-   point marks over the mean, and than wiggle's whisker band. `origin` stays
-   the display's slot, and the channel reopens on a config whose picture two
-   point marks cannot give.
+1. **`y2` reached a bar on 2026-09-30** for the picture two point marks
+   cannot give, a count per bin per category stacked (the 2026-09-23 decline
+   was on a min-to-max range bar over the COLO829 tumour coverage, which read
+   worse than two point marks over the mean). `origin` stays the display's
+   slot, and a bar naming no `y2` stands on it.
 2. **In-app authoring reaches the whole plot, and stops at the display's own
    steps.** **Edit plot...** is `facet`, `rows` and the axis (`scales.y` title,
    type, ends, grid) above the mark list, and per mark its type, its steps and

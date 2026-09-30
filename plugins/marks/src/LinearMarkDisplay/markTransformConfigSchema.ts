@@ -16,6 +16,7 @@ import {
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
+  DEFAULT_STACK_AS,
 } from './markVocabulary.ts'
 
 import type { StepSnapshot } from './markProblems.ts'
@@ -203,6 +204,70 @@ const coverage = ConfigurationSchema(
       defaultValue: DEFAULT_COVERAGE_AS,
       description: 'depth field',
     },
+    /**
+     * #slot coverage.groupby
+     * Fields whose distinct values each get their own depth: one run per
+     * value per stretch, every value's runs cut at the same stretches, each
+     * run carrying the value, so a `stack` behind it stands the depths on
+     * each other. `strand` or `tags.HP` over reads is coverage per strand or
+     * per haplotype. Empty counts every feature together.
+     */
+    groupby: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'fields each of whose values gets its own depth',
+    },
+  },
+  STEP,
+)
+
+const stack = ConfigurationSchema(
+  'stack',
+  {
+    /**
+     * #slot stack.field
+     * The field summed up the stack. Empty reads what the steps before it
+     * wrote: a `coverage`'s depth or an `aggregate`'s one summary, `count`
+     * with neither.
+     */
+    field: {
+      type: 'string',
+      defaultValue: '',
+      description: 'field summed; empty follows a preceding step',
+    },
+    /**
+     * #slot stack.groupby
+     * The fields whose shared values make one stack. Empty takes the edges
+     * the last `bin` before it wrote, or `start` and `end`, so the runs a
+     * `coverage` cut alike stack without restatement.
+     */
+    groupby: {
+      type: 'stringArray',
+      defaultValue: [],
+      description:
+        'fields whose shared values make one stack; empty follows a preceding bin',
+    },
+    /**
+     * #slot stack.by
+     * The field whose values order each stack, bottom first, in the order
+     * the field's own vocabulary or a colour's `domain` gives them. Empty
+     * stacks the rows in the order they came.
+     */
+    by: {
+      type: 'string',
+      defaultValue: '',
+      description: 'field ordering each stack, bottom first',
+    },
+    /**
+     * #slot stack.as
+     * The two fields written: the running total below each row and the
+     * total through it, which a bar reads as `y2` and `y`.
+     */
+    as: {
+      type: 'stringArray',
+      defaultValue: DEFAULT_STACK_AS,
+      description: 'the fields the lower and upper bounds are written to',
+    },
   },
   STEP,
 )
@@ -365,6 +430,7 @@ export const markTransformStep = ConfigurationSchemaUnion('MarkTransform', {
   bin,
   aggregate,
   coverage,
+  stack,
   flatten,
   cells,
   pileup,

@@ -79,6 +79,7 @@ const state: MarkRenderState = {
   canvasHeight: 400,
   bpPerPx: 1.25,
   origin: 0,
+  standsOnY2: [],
   minWidthPx: 1,
   markSizes: [4, 4, 4, 4],
   sizeScales: [],

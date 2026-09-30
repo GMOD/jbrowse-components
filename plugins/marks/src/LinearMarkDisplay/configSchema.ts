@@ -200,6 +200,19 @@ const markEncodingSchema = ConfigurationSchema(
       description: 'value field, or jexl expression; empty follows a step',
     },
     /**
+     * #slot marks.encoding.y2
+     * For a bar: the feature field, or jexl expression, whose value the bar
+     * stands on in place of the display's `origin`, so a `stack` step's
+     * running total below each row stacks the bars and a low and a high
+     * field draw a range. Empty reads the lower bound a `stack` before this
+     * mark's encode wrote, and the origin where none did.
+     */
+    y2: {
+      type: 'featureField',
+      defaultValue: '',
+      description: 'field a bar stands on; empty follows a stack step',
+    },
+    /**
      * #slot marks.encoding.row
      * The feature field, or jexl expression, naming the band the mark stands in,
      * an integer from 0; a feature with nothing there sits on band 0. Empty

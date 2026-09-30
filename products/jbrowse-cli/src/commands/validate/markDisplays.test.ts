@@ -743,7 +743,7 @@ describe('a transform step in a config file', () => {
 
   it('names a type the list has', () => {
     expect(stepProblems({ type: 'fliter', expr: 'jexl:true' })).toEqual([
-      `${STEP}.type: expected one of "filter", "formula", "bin", "aggregate", "coverage", "flatten", "cells", "pileup", "mate", got "fliter"`,
+      `${STEP}.type: expected one of "filter", "formula", "bin", "aggregate", "coverage", "stack", "flatten", "cells", "pileup", "mate", got "fliter"`,
     ])
   })
 

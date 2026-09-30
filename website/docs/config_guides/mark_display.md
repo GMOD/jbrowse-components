@@ -92,6 +92,8 @@ one.
 | a stepped key, highest first | `guide_legend(reverse = TRUE)` | | `descending` on a threshold colour |
 | a horizontal line at a value | `geom_hline(yintercept)` | `"mark": "rule"` with a `datum` | `scales.y.rules` |
 | a histogram | `geom_histogram(binwidth)` | `{"bin": {"step"}}` then `{"aggregate": [{"op": "count"}]}` | `{"type": "bin", "step"}` then `{"type": "aggregate", "ops": [{"op": "count"}]}` |
+| bars stacked by a category | `geom_col(position = "stack")` | `{"stack": "count", "groupby": [...], "as": ["y0", "y1"]}` then `"y": "y1", "y2": "y0"` | `{"type": "stack", "by": "strand"}`, which a bar's `y` and `y2` then follow |
+| a bar between two values | `geom_rect(aes(ymin, ymax))` | `"y"` and `"y2"` | `"encoding": {"y": "high", "y2": "low"}` |
 | a summary per bin | `stat_summary_bin(fun = mean)` | `bin` then `aggregate` with `"op": "mean"` | `bin` then `aggregate` with `"op": "mean"` |
 | keep some of the rows | `filter()` before the plot | `{"filter": …}` | `{"type": "filter", "expr": …}`, or the display's `filter` |
 | one row per element of a list field, or per entry of a keyed record | `tidyr::unnest()` | `{"flatten": [field]}` | `{"type": "flatten", "field"}`, with the entry's key in `key` |
@@ -111,11 +113,11 @@ Two names mean something else here. Vega-Lite's `row` is a facet channel; on
 this display `encoding.row` is the band a feature stands in, the integer a
 `pileup` step writes, and the facet is the display's own `facet`. And a
 positional channel is a bare field where Vega-Lite's carries a scale, because
-the y scale is the display's `scales.y` and every mark reads one axis. Stacked
-bars and an `opacity` channel have no row: a bar stands on its own from the
-baseline. A mark's size is `encoding.size`, as its colour is `encoding.color`: a
-number is a point's diameter, a rule's thickness or a link's stroke, and a field
-maps a link's width.
+the y scale is the display's `scales.y` and every mark reads one axis. An
+`opacity` channel has no row: a colour with an alpha is the constant or a
+`range` entry. A mark's size is `encoding.size`, as its colour is
+`encoding.color`: a number is a point's diameter, a rule's thickness or a link's
+stroke, and a field maps a link's width.
 
 ## The encoding
 
@@ -126,6 +128,7 @@ Each mark's `encoding` maps feature fields to the channels its type reads:
 | `x`     | every mark                             | a field holding the left edge in bp; `start` by default                                                                                                                                                      |
 | `x2`    | every mark                             | the right edge; `end` by default                                                                                                                                                                             |
 | `y`     | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand in the middle of its band |
+| `y2`    | `bar`                                  | the field the bar stands on in place of the display's `origin`: a `stack` step's lower bound, a range's low end. Left empty it follows the last `stack` before it, and the origin where none                 |
 | `row`   | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                         |
 | `color` | every mark                             | a field through a scale (below), or a constant `{ "value": … }` holding a CSS colour or a jexl callback returning one; a bare string is a field                                                              |
 | `shape` | `point`                                | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                        |
@@ -214,6 +217,33 @@ of a multiscale pair.
 
 `title` is optional: unset, the axis has no caption. A plot banded by `facet` or
 `rows` carries the one caption beside its bands.
+
+## Stacks
+
+A count per bin per category, or a depth per strand or per haplotype, is one bar
+standing on another. `coverage` with a `groupby` cuts every group's depth at the
+same stretches, and a `stack` behind it writes where each group's bar starts and
+ends; a bar naming neither `y` nor `y2` reads both off the stack. `by` orders
+the stack, bottom first, in the field's own order, the order the colour key
+lists:
+
+```json
+{
+  "mark": "bar",
+  "transform": [
+    { "type": "coverage", "groupby": ["strand"] },
+    { "type": "stack", "by": "strand" }
+  ],
+  "encoding": { "color": "strand" }
+}
+```
+
+Over a BAM that is the depth per strand; `"groupby": ["tags.HP"]` with a
+`formula` lifting the tag first is the depth per haplotype. The same stack
+stands on binned counts: a `bin`, an `aggregate` grouped by the bin's edges and
+the category, then `{ "type": "stack", "by": "strand" }`. A bar reads any two
+fields as its ends, so `"encoding": { "y": "maxScore", "y2": "minScore" }` over
+a BigWig tier draws its range.
 
 ## Two quantities
 
@@ -725,9 +755,10 @@ belonging to another step is refused where the config is read:
 | `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                                                                                                                                                                                                                                       |
 | `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's                                                                                                                                                                            |
-| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                                                                                                                                                                                                                    |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`); `groupby` names fields each of whose values gets its own depth, every value's runs cut at the same stretches and carrying the value                                                                                                                                                                                                                               |
 | `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`) or per entry of a record keyed by name (a VCF's `samples`, a MAF block's `alignments`), each reading its parent for what it lacks, with its position in the field `index` names and its key in the field `key` names; `keepEmpty` holds on to a feature whose field is empty                                                                                                         |
 | `cells`     | replaces each aligned row with its runs of columns in one `state` — `match`, `mismatch` or `gap` — against the reference, reading the row's `field` (`seq`) and the same field on the feature the row was fanned out of, and one interbase `insertion` per run of inserted bases, at the reference base it precedes; a mismatch run carries its `base`, an insertion its bases in `base` and their count in `length`, and a match or mismatch run `match` as 1 or 0 |
+| `stack`     | stands each group's values on each other: the rows sharing the `groupby` fields (the last `bin`'s edges, or `start` and `end`), in the order `by`'s values take, each get the running total below them and through them in the two fields `as` names (`y0`, `y1`), which a bar's `y2` and `y` then read; `field` is what is summed, the value the steps before wrote by default                                                                                     |
 | `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                                                                                                                                                                                                                  |
 
 A field a step reads is a name or a dotted path into a structured field, so a

@@ -154,6 +154,11 @@ export interface MarkEncoding {
   /** A field, or a {@link LocusRef} where the far end may lie on another sequence. */
   x2?: FieldRef | LocusRef
   y?: FieldRef
+  /**
+   * The value a `bar` stands on in place of the display's origin: a stack's
+   * lower bound, a range's low end. Read by a bar alone.
+   */
+  y2?: FieldRef
   row?: FieldRef
   color?: ColorEncoding
   shape?: ShapeEncoding
@@ -174,6 +179,7 @@ export interface MarkEncoding {
  */
 export type LaneName =
   | 'y'
+  | 'y2'
   | 'color'
   | 'colorValue'
   | 'glyph'
@@ -338,6 +344,8 @@ export interface EncodedChannels {
   x2: Uint32Array
   featureIndex?: Uint32Array
   y?: Float32Array
+  /** Each feature's `y2`, for a bar standing on a value rather than the origin. */
+  y2?: Float32Array
   /**
    * Each instance's packed ABGR, or one number every instance paints where
    * the colour is a constant; {@link colorAt} reads either.
@@ -502,6 +510,30 @@ export interface AggregateStep {
 export interface CoverageStep {
   type: 'coverage'
   as?: string
+  /**
+   * Fields whose distinct values each get their own depth: one run per
+   * group per stretch, every group's runs cut at the same stretches, so a
+   * `stack` behind it stands them on each other.
+   */
+  groupby?: FieldRef[]
+}
+
+/**
+ * #api
+ * Stand each group's values on each other: the rows sharing the `groupby`
+ * fields, in the order `by`'s values take, each get the running total below
+ * them and the total through them in the two fields `as` names (`y0`, `y1`),
+ * so a bar reading `y` as the second and `y2` as the first draws a stack.
+ */
+export interface StackStep {
+  type: 'stack'
+  /** The field summed, `count` by default. */
+  field?: FieldRef
+  /** The fields whose shared values make a stack; the last `bin`'s edges by default. */
+  groupby?: FieldRef[]
+  /** The field whose values order the stack, bottom first, in the field's own order; empty or absent keeps the rows' order. */
+  by?: FieldRef
+  as?: [string, string]
 }
 
 /**
@@ -588,6 +620,7 @@ export type TransformStep =
   | BinStep
   | AggregateStep
   | CoverageStep
+  | StackStep
   | PileupStep
   | MateStep
 

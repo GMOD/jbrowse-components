@@ -6211,6 +6211,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/FeatureField",
           "default": ""
         },
+        "y2": {
+          "description": "field a bar stands on; empty follows a stack step.",
+          "$ref": "#/$defs/FeatureField",
+          "default": ""
+        },
         "row": {
           "description": "band field; empty follows a pileup step.",
           "$ref": "#/$defs/FeatureField",
@@ -6404,6 +6409,55 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "depth field.",
           "$ref": "#/$defs/PlainString",
           "default": "coverage"
+        },
+        "groupby": {
+          "description": "fields each of whose values gets its own depth.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkTransform.stack": {
+      "title": "MarkTransform.stack",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "stack"
+        },
+        "field": {
+          "description": "field summed; empty follows a preceding step.",
+          "$ref": "#/$defs/PlainString",
+          "default": ""
+        },
+        "groupby": {
+          "description": "fields whose shared values make one stack; empty follows a preceding bin.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "by": {
+          "description": "field ordering each stack, bottom first.",
+          "$ref": "#/$defs/PlainString",
+          "default": ""
+        },
+        "as": {
+          "description": "the fields the lower and upper bounds are written to.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "y0",
+            "y1"
+          ]
         }
       },
       "patternProperties": {
@@ -6524,6 +6578,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "bin",
             "aggregate",
             "coverage",
+            "stack",
             "flatten",
             "cells",
             "pileup",
@@ -6613,6 +6668,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/MarkTransform.coverage"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "stack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.stack"
           }
         },
         {

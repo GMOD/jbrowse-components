@@ -26,13 +26,13 @@ export const UNIFORM_OFFSET_F32 = {
   rampMax: 10,
   rampMidNorm: 11,
   originYPx: 60,
-  rowHeight: 61,
-  rowBandPx: 62,
-  rowOffsetPx: 63,
-  zero: 64,
-  minCellDenomPx: 65,
-  minWidthPx: 66,
-  devicePixelRatio: 67,
+  rowHeight: 62,
+  rowBandPx: 63,
+  rowOffsetPx: 64,
+  zero: 65,
+  minCellDenomPx: 66,
+  minWidthPx: 67,
+  devicePixelRatio: 68,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
@@ -40,7 +40,8 @@ export const UNIFORM_OFFSET_I32 = {
   valueScaleType: 6,
   rampMode: 8,
   colorCutCount: 12,
-  rowTableKeys: 68,
+  y2Mode: 61,
+  rowTableKeys: 69,
 } as const
 
 
@@ -101,6 +102,7 @@ export interface Uniforms {
   colorCuts: [[number, number, number, number], [number, number, number, number]]
   colorBands: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
   originYPx: number
+  y2Mode: number
   rowHeight: number
   rowBandPx: number
   rowOffsetPx: number
@@ -172,22 +174,24 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[58] = uniforms.colorBands[8][2]
   f32[59] = uniforms.colorBands[8][3]
   f32[60] = uniforms.originYPx
-  f32[61] = uniforms.rowHeight
-  f32[62] = uniforms.rowBandPx
-  f32[63] = uniforms.rowOffsetPx
-  f32[64] = uniforms.zero
-  f32[65] = uniforms.minCellDenomPx
-  f32[66] = uniforms.minWidthPx
-  f32[67] = uniforms.devicePixelRatio
-  i32[68] = uniforms.rowTableKeys
+  i32[61] = uniforms.y2Mode
+  f32[62] = uniforms.rowHeight
+  f32[63] = uniforms.rowBandPx
+  f32[64] = uniforms.rowOffsetPx
+  f32[65] = uniforms.zero
+  f32[66] = uniforms.minCellDenomPx
+  f32[67] = uniforms.minWidthPx
+  f32[68] = uniforms.devicePixelRatio
+  i32[69] = uniforms.rowTableKeys
 }
 
-export const INSTANCE_STRIDE_BYTES = 20
-export const INSTANCE_STRIDE_WORDS = 5
+export const INSTANCE_STRIDE_BYTES = 24
+export const INSTANCE_STRIDE_WORDS = 6
 
 // Word indices into a Float32Array view over the instance buffer.
 export const INSTANCE_OFFSET_F32 = {
   y: 2,
+  y2: 5,
 } as const
 
 // Word indices into a Uint32Array view over the instance buffer.
@@ -204,6 +208,7 @@ export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_y', components: 1, type: 'float', offsetBytes: 8, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_row', components: 1, type: 'uint', offsetBytes: 16, integer: true },
+  { name: 'a_y2', components: 1, type: 'float', offsetBytes: 20, integer: false },
 ]
 
 export interface InstanceArrays {
@@ -212,6 +217,7 @@ export interface InstanceArrays {
   y: ArrayLike<number>
   color: ArrayLike<number>
   row: ArrayLike<number>
+  y2: ArrayLike<number>
 }
 
 export function packInstances(
@@ -221,7 +227,7 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { x, x2, y, color, row } = arrays
+  const { x, x2, y, color, row, y2 } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = x[i]!
@@ -229,6 +235,7 @@ export function packInstances(
     f32[o + 2] = y[i]!
     u32[o + 3] = color[i]!
     u32[o + 4] = row[i]!
+    f32[o + 5] = y2[i]!
   }
   return buf
 }
@@ -276,6 +283,15 @@ export function getInstanceRow(u32: Uint32Array, i: number) {
 
 export function setInstanceRow(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 4] = v
+}
+
+// Instance `i`'s `y2`.
+export function getInstanceY2(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 5]!
+}
+
+export function setInstanceY2(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 5] = v
 }
 
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.

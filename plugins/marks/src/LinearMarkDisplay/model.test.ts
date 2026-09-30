@@ -1020,7 +1020,7 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
       { mark: 'bar', encoding: { y: 'score' }, transform: [{ step: 1000 }] },
     ]).createDisplay(),
   ).toThrow(
-    'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, flatten, cells, pileup and mate, and names none',
+    'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, stack, flatten, cells, pileup and mate, and names none',
   )
   expect(() =>
     createTestEnvironment([
@@ -1185,8 +1185,8 @@ test("a transform list reaches the worker as its own layer's steps, every slot w
         { op: 'mean', field: 'twice', as: 'm' },
       ],
     },
-    { type: 'coverage', as: 'coverage' },
-    { type: 'coverage', as: 'depth' },
+    { type: 'coverage', as: 'coverage', groupby: [] },
+    { type: 'coverage', as: 'depth', groupby: [] },
     {
       type: 'flatten',
       field: 'subfeatures',

@@ -1293,6 +1293,9 @@ export function stateModelFactory(
             canvasHeight,
             bpPerPx: self.host.bpPerPx,
             origin: self.origin,
+            standsOnY2: self.layerRequests.map(
+              r => r.encoding.y2 !== undefined,
+            ),
             minWidthPx: self.minWidthPx,
             markSizes: self.markSizes,
             sizeScales: this.sizeScales,

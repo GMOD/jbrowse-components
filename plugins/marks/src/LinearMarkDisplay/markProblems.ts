@@ -26,6 +26,7 @@ import {
   CELLS_FIELDS,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
+  DEFAULT_STACK_AS,
   DEFAULT_TEXT_FIELD,
   DEFAULT_X2,
   MATE_FIELDS,
@@ -161,7 +162,14 @@ export type StepSnapshot =
       as?: string[]
     }
   | { type: 'aggregate'; groupby?: string[]; ops?: OpSnapshot[] }
-  | { type: 'coverage'; as?: string }
+  | { type: 'coverage'; as?: string; groupby?: string[] }
+  | {
+      type: 'stack'
+      field?: string
+      groupby?: string[]
+      by?: string
+      as?: string[]
+    }
   | {
       type: 'flatten'
       field?: string
@@ -209,6 +217,7 @@ export type MarkSnapshot = {
     x?: string
     x2?: string | { pos?: string; chrom?: string }
     y?: string
+    y2?: string
     row?: string
     color?: ColorSlots
     shape?: unknown
@@ -403,6 +412,14 @@ function fieldRefs(step: StepSnapshot): [string, string | undefined][] {
           [`ops.${k}.weight`, o.weight],
         ]),
       ]
+    case 'coverage':
+      return list('groupby', step.groupby)
+    case 'stack':
+      return [
+        ['field', step.field],
+        ['by', step.by],
+        ...list('groupby', step.groupby),
+      ]
     default:
       return []
   }
@@ -428,7 +445,15 @@ function pairSlots(step: StepSnapshot) {
             reads: DEFAULT_PILEUP_FIELDS.join(' and '),
           },
         ]
-      : []
+      : step.type === 'stack'
+        ? [
+            {
+              slot: 'as',
+              names: step.as,
+              reads: DEFAULT_STACK_AS.join(' and '),
+            },
+          ]
+        : []
 }
 
 type Steps = readonly (StepSnapshot | undefined)[]
@@ -502,6 +527,9 @@ function madeFields(steps: readonly StepSnapshot[]) {
   const fields = new Set(['refName', 'start', 'end'])
   if (last.type === 'coverage') {
     fields.add(last.as ?? DEFAULT_COVERAGE_AS)
+    for (const field of last.groupby ?? []) {
+      fields.add(field)
+    }
   } else if (last.type === 'aggregate') {
     const bin = steps
       .slice(0, made)
@@ -521,6 +549,10 @@ function madeFields(steps: readonly StepSnapshot[]) {
   for (const step of steps.slice(made + 1)) {
     if (step.type === 'formula') {
       fields.add(step.as ?? DEFAULT_FORMULA_AS)
+    } else if (step.type === 'stack') {
+      for (const field of step.as?.length === 2 ? step.as : DEFAULT_STACK_AS) {
+        fields.add(field)
+      }
     } else if (step.type === 'pileup') {
       fields.add(step.as ?? DEFAULT_PILEUP_AS)
     } else if (step.type === 'flatten') {
@@ -650,12 +682,21 @@ function channelFields(
   spec: MarkSpec,
 ): [slot: string, field: string][] {
   const encoding = mark.encoding ?? {}
-  const { x, x2, row, color = {}, shape, text = DEFAULT_TEXT_FIELD } = encoding
+  const {
+    x,
+    x2,
+    y2,
+    row,
+    color = {},
+    shape,
+    text = DEFAULT_TEXT_FIELD,
+  } = encoding
   const reads = (channel: MarkChannel) => spec.channels.includes(channel)
   const named: [string, string | undefined][] = [
     ['encoding.x', x],
     ['encoding.x2', typeof x2 === 'string' ? x2 : x2?.pos],
     ['encoding.x2.chrom', typeof x2 === 'object' ? x2.chrom : undefined],
+    ['encoding.y2', reads('y2') ? y2 : undefined],
     ['encoding.row', reads('row') ? row : undefined],
     [
       'encoding.color.field',

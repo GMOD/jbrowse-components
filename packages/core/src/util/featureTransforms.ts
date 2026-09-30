@@ -48,6 +48,7 @@ import type {
   FieldRef,
   FlattenStep,
   PileupStep,
+  StackStep,
   TransformStep,
 } from './markEncodingTypes.ts'
 import type { Feature, SimpleFeatureSerialized } from './simpleFeature.ts'
@@ -58,6 +59,8 @@ export const DEFAULT_BIN_FIELD = 'start'
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export const DEFAULT_CELLS_FIELD = 'seq'
 export const DEFAULT_COVERAGE_AS = 'coverage'
+export const DEFAULT_STACK_FIELD = 'count'
+export const DEFAULT_STACK_AS: [string, string] = ['y0', 'y1']
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS: [string, string] = ['start', 'end']
 
@@ -1337,8 +1340,15 @@ function groupRows(
   const firstRow: number[] = []
   const sectionOf: number[] = []
   const last = reads.length - 1
+  // the row before's values and group, so a run of rows sharing them — a
+  // coverage's runs per stretch, an aggregate's groups per bin — files under
+  // it without a lookup
+  const previous = new Array<unknown>(reads.length)
+  const values = new Array<unknown>(reads.length)
+  let previousGroup = -1
   for (let s = 0; s + 1 < bounds.length; s++) {
     const root: Trie = new Map()
+    previousGroup = -1
     for (let i = bounds[s]!; i < bounds[s + 1]!; i++) {
       let g: number
       if (reads.length === 0) {
@@ -1352,27 +1362,38 @@ function groupRows(
           sectionOf.push(s)
         }
       } else {
-        let node = root
-        for (let l = 0; l < last; l++) {
+        let same = previousGroup >= 0
+        for (let l = 0; l <= last; l++) {
           const raw = reads[l]!(i)
           const v = normalize && typeof raw !== 'object' ? raw : groupKey(raw)
-          let next = node.get(v) as Trie | undefined
-          if (!next) {
-            next = new Map()
-            node.set(v, next)
+          values[l] = v
+          same &&= v === previous[l]
+        }
+        if (same) {
+          g = previousGroup
+        } else {
+          let node = root
+          for (let l = 0; l < last; l++) {
+            let next = node.get(values[l]) as Trie | undefined
+            if (!next) {
+              next = new Map()
+              node.set(values[l], next)
+            }
+            node = next
           }
-          node = next
+          let at = node.get(values[last]) as number | undefined
+          if (at === undefined) {
+            at = firstRow.length
+            node.set(values[last], at)
+            firstRow.push(i)
+            sectionOf.push(s)
+          }
+          g = at
+          for (let l = 0; l <= last; l++) {
+            previous[l] = values[l]
+          }
+          previousGroup = g
         }
-        const raw = reads[last]!(i)
-        const v = normalize && typeof raw !== 'object' ? raw : groupKey(raw)
-        let at = node.get(v) as number | undefined
-        if (at === undefined) {
-          at = firstRow.length
-          node.set(v, at)
-          firstRow.push(i)
-          sectionOf.push(s)
-        }
-        g = at
       }
       groupOf[i] = g
     }
@@ -1542,7 +1563,125 @@ function pileup({ table, bounds }: Staged, step: PileupStep): Staged {
  * of equal depth, where the depth is not zero. A sweep over the sorted edges,
  * so the input need not be sorted.
  */
-function coverage({ table, bounds }: Staged, step: CoverageStep): Staged {
+function coverage(staged: Staged, step: CoverageStep): Staged {
+  return step.groupby?.length
+    ? groupedCoverage(staged, step, step.groupby)
+    : coverageRuns(staged, step)
+}
+
+/**
+ * Coverage per group: every group's runs are cut at the same stretches, the
+ * stretches where any group's depth changes, so a `stack` behind it stands
+ * them on each other. A stretch a group covers nothing of has no run for it.
+ */
+function groupedCoverage(
+  { table, bounds }: Staged,
+  step: CoverageStep,
+  groupby: readonly FieldRef[],
+): Staged {
+  const as = step.as ?? DEFAULT_COVERAGE_AS
+  const n = table.length
+  const keyed = groupby.some(field => !isPlainFieldRef(field))
+  const reads = groupby.map(field =>
+    keyed
+      ? stepReader(table, field, 'a coverage')
+      : readerOf(table.column(field)),
+  )
+  const { groupOf, firstRow, sectionOf } = groupRows(n, bounds, reads, !keyed)
+  const groups = firstRow.length
+  const readStart = numberReaderOf(table.column('start'))
+  const readEnd = numberReaderOf(table.column('end'))
+  const readRefName = readerOf(table.column('refName'))
+  // Each stretch between two edges holds a run per group at most.
+  const capacity = 2 * n * Math.max(1, groups)
+  const outStart = new Float64Array(capacity)
+  const outEnd = new Float64Array(capacity)
+  const outDepth = new Float64Array(capacity)
+  const outGroup = new Uint32Array(capacity)
+  const outSection = new Uint32Array(capacity)
+  const sectionRef: unknown[] = []
+  const out = new Uint32Array(bounds.length)
+  const depth = new Float64Array(groups)
+  // an edge and its group in one number, so the edges sort as numbers do
+  const G = Math.max(1, groups)
+  let k = 0
+  for (let s = 0; s + 1 < bounds.length; s++) {
+    out[s] = k
+    const lo = bounds[s]!
+    const hi = bounds[s + 1]!
+    const starts = new Float64Array(hi - lo)
+    const ends = new Float64Array(hi - lo)
+    let m = 0
+    for (let i = lo; i < hi; i++) {
+      const start = readStart(i)
+      const end = readEnd(i)
+      if (Number.isFinite(start) && Number.isFinite(end)) {
+        const g = groupOf[i]!
+        starts[m] = start * G + g
+        ends[m] = end * G + g
+        m++
+      }
+    }
+    sectionRef.push(m > 0 ? readRefName(lo) : undefined)
+    if (m === 0) {
+      continue
+    }
+    const byStart = starts.subarray(0, m).sort()
+    const byEnd = ends.subarray(0, m).sort()
+    const sectionGroups = firstRow.flatMap((_, g) =>
+      sectionOf[g] === s ? [g] : [],
+    )
+    let runStart = Math.floor(byStart[0]! / G)
+    let si = 0
+    let ei = 0
+    while (si < m || ei < m) {
+      const nextStart = si < m ? Math.floor(byStart[si]! / G) : Infinity
+      const nextEnd = ei < m ? Math.floor(byEnd[ei]! / G) : Infinity
+      const at = Math.min(nextStart, nextEnd)
+      if (at > runStart) {
+        for (const g of sectionGroups) {
+          if (depth[g]! > 0) {
+            outStart[k] = runStart
+            outEnd[k] = at
+            outDepth[k] = depth[g]!
+            outGroup[k] = g
+            outSection[k] = s
+            k++
+          }
+        }
+      }
+      runStart = at
+      while (si < m && Math.floor(byStart[si]! / G) === at) {
+        depth[byStart[si]! - at * G]!++
+        si++
+      }
+      while (ei < m && Math.floor(byEnd[ei]! / G) === at) {
+        depth[byEnd[ei]! - at * G]!--
+        ei++
+      }
+    }
+  }
+  out[bounds.length - 1] = k
+  const section = outSection.slice(0, k)
+  const group = outGroup.slice(0, k)
+  const columns = new Map<string, Column>([
+    ['refName', { kind: 'value', read: i => sectionRef[section[i]!] }],
+    ['start', { kind: 'number', values: outStart.slice(0, k), at: undefined }],
+    ['end', { kind: 'number', values: outEnd.slice(0, k), at: undefined }],
+    [as, { kind: 'number', values: outDepth.slice(0, k), at: undefined }],
+  ])
+  groupby.forEach((field, f) => {
+    const read = reads[f]!
+    const keys = firstRow.map(i => groupKey(read(i)))
+    columns.set(field, { kind: 'value', read: i => keys[group[i]!] })
+  })
+  return {
+    table: new MadeTable(k, columns, i => `#${group[i]}`),
+    bounds: out,
+  }
+}
+
+function coverageRuns({ table, bounds }: Staged, step: CoverageStep): Staged {
   const as = step.as ?? DEFAULT_COVERAGE_AS
   const readStart = numberReaderOf(table.column('start'))
   const readEnd = numberReaderOf(table.column('end'))
@@ -1627,6 +1766,145 @@ function coverage({ table, bounds }: Staged, step: CoverageStep): Staged {
   }
 }
 
+/**
+ * The running total below and through each row of a stack: rows sharing the
+ * `groupby` values, summed in the order `by`'s values take, or as they came.
+ * A row whose value is no number adds nothing and stands where the total
+ * was. The rows keep their order; only the two written fields say where each
+ * stands.
+ */
+// Whether the rows come sorted by the fields, each a number lane, so a group
+// is a run of rows sharing them: a coverage's runs and an aggregate's groups
+// arrive so, and a stack over them then files no key.
+function rowsSortedBy(
+  table: FeatureTable,
+  fields: readonly FieldRef[],
+  bounds: Bounds,
+) {
+  const lanes = fields.map(f =>
+    isPlainFieldRef(f) ? table.column(f) : NO_COLUMN,
+  )
+  if (lanes.some(c => c.kind !== 'number')) {
+    return false
+  }
+  const reads = lanes.map(c => numberReaderOf(c))
+  for (let s = 0; s + 1 < bounds.length; s++) {
+    for (let i = bounds[s]! + 1; i < bounds[s + 1]!; i++) {
+      for (const read of reads) {
+        const d = read(i) - read(i - 1)
+        if (d > 0) {
+          break
+        }
+        if (d < 0 || Number.isNaN(d)) {
+          return false
+        }
+      }
+    }
+  }
+  return true
+}
+
+// Each run of rows sharing every field's value as one group, for rows sorted
+// by the fields
+function runsOfRows(
+  n: number,
+  bounds: Bounds,
+  reads: readonly ((i: number) => unknown)[],
+) {
+  const groupOf = new Uint32Array(n)
+  const firstRow: number[] = []
+  const sectionOf: number[] = []
+  for (let s = 0; s + 1 < bounds.length; s++) {
+    for (let i = bounds[s]!; i < bounds[s + 1]!; i++) {
+      let same = i > bounds[s]!
+      for (let l = 0; same && l < reads.length; l++) {
+        same = reads[l]!(i) === reads[l]!(i - 1)
+      }
+      if (!same) {
+        firstRow.push(i)
+        sectionOf.push(s)
+      }
+      groupOf[i] = firstRow.length - 1
+    }
+  }
+  return { groupOf, firstRow, sectionOf }
+}
+
+function stack({ table, bounds }: Staged, step: StackStep): Staged {
+  const {
+    field = DEFAULT_STACK_FIELD,
+    groupby = DEFAULT_BIN_AS,
+    by,
+    as = DEFAULT_STACK_AS,
+  } = step
+  const n = table.length
+  const keyed = groupby.some(f => !isPlainFieldRef(f))
+  const reads = groupby.map(f =>
+    keyed ? stepReader(table, f, 'a stack') : readerOf(table.column(f)),
+  )
+  const { groupOf } = rowsSortedBy(table, groupby, bounds)
+    ? runsOfRows(n, bounds, reads)
+    : groupRows(n, bounds, reads, !keyed)
+  const readValue = stepNumberReader(table, field, 'a stack')
+  // each row's place in its stack: its `by` value's rank, then its order
+  const rank = new Uint32Array(n)
+  let ranks = 1
+  if (by) {
+    const categories = categoricalField(by)
+    const readBy = stepReader(table, by, 'a stack')
+    // the field takes few values, so each raw value files once
+    const keyOfRaw = new Map<unknown, string>()
+    const keys = new Array<string>(n)
+    for (let i = 0; i < n; i++) {
+      const raw = readBy(i)
+      let key = keyOfRaw.get(raw)
+      if (key === undefined) {
+        key = categories.key(raw)
+        if (typeof raw !== 'object') {
+          keyOfRaw.set(raw, key)
+        }
+      }
+      keys[i] = key
+    }
+    const order = [...new Set(keys)].sort(categories.compare)
+    const rankOf = new Map(order.map((key, r) => [key, r]))
+    for (let i = 0; i < n; i++) {
+      rank[i] = rankOf.get(keys[i]!)!
+    }
+    ranks = order.length
+  }
+  // the rows by stack, then by rank, then as they came: one number each,
+  // exact while the product stays under 2^53
+  const sorted = new Float64Array(n)
+  for (let i = 0; i < n; i++) {
+    sorted[i] = (groupOf[i]! * ranks + rank[i]!) * n + i
+  }
+  sorted.sort()
+  const low = new Float64Array(n)
+  const high = new Float64Array(n)
+  let total = 0
+  let current = -1
+  for (let j = 0; j < n; j++) {
+    const i = sorted[j]! % n
+    const g = groupOf[i]!
+    if (g !== current) {
+      current = g
+      total = 0
+    }
+    const v = readValue(i)
+    low[i] = total
+    if (Number.isFinite(v)) {
+      total += v
+    }
+    high[i] = total
+  }
+  const written = new Map<string, Column>([
+    [as[0], { kind: 'number', values: low, at: undefined }],
+    [as[1], { kind: 'number', values: high, at: undefined }],
+  ])
+  return { table: new WithTable(table, written), bounds }
+}
+
 function runStep(
   staged: Staged,
   step: TransformStep,
@@ -1653,6 +1931,9 @@ function runStep(
     }
     case 'coverage': {
       return coverage(staged, step)
+    }
+    case 'stack': {
+      return stack(staged, step)
     }
     case 'pileup': {
       return pileup(staged, step)
@@ -1948,6 +2229,9 @@ function writes(step: TransformStep): readonly string[] | undefined {
     }
     case 'cells': {
       return ['start', 'end', 'state', 'base', 'match', 'length']
+    }
+    case 'stack': {
+      return step.as ?? DEFAULT_STACK_AS
     }
     default: {
       return undefined

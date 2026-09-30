@@ -3,6 +3,7 @@ import {
   DEFAULT_AGGREGATE_OP,
   DEFAULT_COVERAGE_AS,
   DEFAULT_PILEUP_AS,
+  DEFAULT_STACK_AS,
 } from './markVocabulary.ts'
 
 import type { AggregateOpName } from './markVocabulary.ts'
@@ -18,6 +19,8 @@ export const MATE_X2 = { chrom: 'mate.refName', pos: 'mate.start' } as const
  */
 export interface StepChannels {
   y?: string
+  /** The lower bound a `stack` wrote, which a bar stands on. */
+  y2?: string
   row?: string
   x2?: typeof MATE_X2
 }
@@ -65,6 +68,14 @@ export function stepChannels(
                 }),
               }
             : {}
+        break
+      }
+      case 'stack': {
+        const as =
+          Array.isArray(step.as) && step.as.length === 2
+            ? step.as
+            : DEFAULT_STACK_AS
+        channels = { ...channels, y2: as[0]!, y: as[1]! }
         break
       }
       case 'pileup': {

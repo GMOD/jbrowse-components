@@ -23,6 +23,8 @@ import {
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
+  DEFAULT_STACK_AS,
+  DEFAULT_STACK_FIELD,
   DEFAULT_X2,
 } from './markVocabulary.ts'
 import { valueColorOf } from './valueColor.ts'
@@ -49,6 +51,7 @@ export function encodingOf(
 ): MarkEncoding {
   const { x, shape, color, text, size } = mark.encoding
   const y = mark.encoding.y || filled.y
+  const y2 = mark.encoding.y2 || filled.y2
   const row = mark.encoding.row || filled.row
   const spec: MarkSpec = MARK_SPECS[mark.mark]
   const channels = spec.channels as readonly string[]
@@ -82,6 +85,7 @@ export function encodingOf(
     // axis type and its bounds in the fetch's inputs, so a menu toggle
     // between linear and log would refetch every region to no effect.
     y: reads('y') && y ? y : undefined,
+    y2: reads('y2') && y2 ? y2 : undefined,
     row: (reads('row') && row) || undefined,
     // A quantitative colour over the plotted field is the display's to
     // resolve off the `y` lane (`valueColor.ts`), so it crosses as the
@@ -189,6 +193,8 @@ export function stepsOf(
   bpPerPx: number,
   binEdges?: [string, string],
 ): TransformStep[] {
+  // the value the steps so far wrote, which a stack naming no field sums
+  let value: string | undefined
   return steps.map((step): TransformStep => {
     switch (step.type) {
       case 'filter':
@@ -212,22 +218,42 @@ export function stepsOf(
               as: binEdges,
             }
       }
-      case 'aggregate':
+      case 'aggregate': {
+        const ops = step.ops.map((o): AggregateOp => {
+          const op = {
+            op: o.op,
+            field: o.field || undefined,
+            weight: o.weight || undefined,
+          }
+          return { ...op, as: o.as || aggregateFieldName(op) }
+        })
+        value = ops.length === 1 ? ops[0]!.as : undefined
         return {
           type: 'aggregate',
           groupby:
             step.groupby.length > 0 ? [...step.groupby] : (binEdges ?? []),
-          ops: step.ops.map((o): AggregateOp => {
-            const op = {
-              op: o.op,
-              field: o.field || undefined,
-              weight: o.weight || undefined,
-            }
-            return { ...op, as: o.as || aggregateFieldName(op) }
-          }),
+          ops,
         }
-      case 'coverage':
-        return { type: 'coverage', as: step.as || DEFAULT_COVERAGE_AS }
+      }
+      case 'coverage': {
+        value = step.as || DEFAULT_COVERAGE_AS
+        return { type: 'coverage', as: value, groupby: [...step.groupby] }
+      }
+      case 'stack': {
+        const as = pairOf(step.as, DEFAULT_STACK_AS)
+        const field = step.field || value || DEFAULT_STACK_FIELD
+        value = as[1]
+        return {
+          type: 'stack',
+          field,
+          groupby:
+            step.groupby.length > 0
+              ? [...step.groupby]
+              : (binEdges ?? [...DEFAULT_BIN_AS]),
+          by: step.by,
+          as,
+        }
+      }
       case 'flatten':
         return {
           type: 'flatten',
@@ -297,6 +323,7 @@ export function markLayerRequest(
   const lanes = markLanes(mark.mark).filter(
     lane =>
       (lane !== 'y' || marksValue(mark, channels)) &&
+      (lane !== 'y2' || !!(mark.encoding.y2 || channels.y2)) &&
       (lane !== 'size' || mark.encoding.size.field !== '') &&
       ((lane !== 'color' && lane !== 'colorValue') || !valueColored),
   )

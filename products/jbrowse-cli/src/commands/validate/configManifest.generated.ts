@@ -4641,6 +4641,10 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     },
                     {
+                      "name": "y2",
+                      "type": "string"
+                    },
+                    {
                       "name": "row",
                       "type": "string"
                     },
@@ -4819,7 +4823,7 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "transform",
-                  "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+                  "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | stackConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
                 },
                 {
                   "name": "source",
@@ -6035,6 +6039,10 @@ export const configManifest: ConfigManifest = {
                   "type": "string"
                 },
                 {
+                  "name": "y2",
+                  "type": "string"
+                },
+                {
                   "name": "row",
                   "type": "string"
                 },
@@ -6213,7 +6221,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "transform",
-              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | stackConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             },
             {
               "name": "source",
@@ -6239,7 +6247,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "transform",
-          "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+          "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | stackConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
         },
         {
           "name": "facet",
@@ -6256,7 +6264,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "transform",
-              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | stackConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
           "shorthand": {
@@ -6531,6 +6539,10 @@ export const configManifest: ConfigManifest = {
                   "type": "string"
                 },
                 {
+                  "name": "y2",
+                  "type": "string"
+                },
+                {
                   "name": "row",
                   "type": "string"
                 },
@@ -6709,7 +6721,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "transform",
-              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | stackConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             },
             {
               "name": "source",
@@ -6727,7 +6739,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "transform",
-          "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+          "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | stackConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
         },
         {
           "name": "facet",
@@ -6744,7 +6756,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "transform",
-              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | stackConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
           "shorthand": {

@@ -57,6 +57,7 @@ const STATE: MarkRenderState = {
   canvasHeight: 360,
   bpPerPx: 1.25,
   origin: 0,
+  standsOnY2: [],
   // a bar floored at a width past its bp puts ink neither lookup reaches
   minWidthPx: 0,
   markSizes: [3, 3, 3],

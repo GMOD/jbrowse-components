@@ -2,6 +2,8 @@
 // absolute genomic coords, standing between the `origin` value and the
 // instance's own `y` on the shared `valueScale` — the quantitative bar a BED
 // score column, a CNV segment ratio or a bedGraph-shaped interval draws as.
+// Under `y2Mode` it stands on its own `y2` instead: a stack's running total
+// below it, or a range's low end.
 //
 // The scale is `valueScale`'s and the anchor is this shape's own (ADR-097): the
 // point shape centres a glyph on the value, this one grows from the baseline to
@@ -46,6 +48,7 @@ struct BarMarkInstance {
   float y     : ATTR2;
   uint  color : ATTR3;
   uint  row   : ATTR4;
+  float y2    : ATTR5;
 };
 
 struct Uniforms {
@@ -71,6 +74,8 @@ struct Uniforms {
   // The baseline, in CSS px below the band's top: `origin` through the same
   // scale `y` reads, resolved on the CPU because the whole draw shares it.
   float  originYPx;
+  // 1 stands each bar on its own `y2` through the value scale; 0 on the origin.
+  int    y2Mode;
   // CSS px per row band; the canvas height where every instance is on row 0.
   float  rowHeight;
   // CSS px the value scale runs over inside a row, and how far below the
@@ -147,7 +152,9 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   }
 
   float valueY = bandTop + valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
-  float originY = bandTop + u.originYPx;
+  float originY = bandTop + (u.y2Mode != 0
+    ? valueToYPxScaled(inst.y2, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant)
+    : u.originYPx);
   float topPx = min(valueY, originY);
   float botPx = max(valueY, originY);
   float vy = lerp(botPx + padPx, topPx - padPx, q.y);

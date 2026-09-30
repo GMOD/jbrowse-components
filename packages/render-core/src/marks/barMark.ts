@@ -29,12 +29,14 @@ import type { MarkValueScale } from './valueScale.ts'
 
 /**
  * The `bar` shape's channels: a rectangle from `x` to `x2` standing between
- * the baseline and `y` on the value scale, in the band of its `row`.
+ * the baseline and `y` on the value scale, in the band of its `row`; with a
+ * `y2` lane, between `y2` and `y`, a stack's or a range's bar.
  */
 export interface BarChannels extends ColorChannel, RowChannel {
   x: Uint32Array
   x2: Uint32Array
   y: Float32Array
+  y2?: Float32Array
   count: number
 }
 
@@ -43,6 +45,8 @@ export interface BarParams extends RowParams, MarkValueScale {
   colorScale?: MarkColorScale
   /** The value bars grow from; a bar below it hangs down. */
   origin: number
+  /** Whether the bars stand on their `y2` lane rather than on `origin`. */
+  standsOnY2?: boolean
   /**
    * Narrowest a bar is painted, in CSS px, grown off the start edge. Zero is
    * a no-op for a caller whose bars tile.
@@ -64,6 +68,12 @@ function barBand(params: BarParams, canvasHeight: number, slot: number) {
 }
 
 type YScale = ReturnType<typeof valueScaleUniforms>
+
+// The `y2` lane packed for a caller standing every bar on the origin: zeros
+// the shader never reads, as `rowLane` fills for a rowless caller.
+function y2Lane(y2: Float32Array | undefined, count: number) {
+  return y2 ?? new Float32Array(count)
+}
 
 // Where the baseline sits inside a band, in CSS px below its top.
 function originYPx(
@@ -89,12 +99,14 @@ function barSpan(
 }
 
 // The rect one instance paints, in the frame's CSS px, or undefined for a bar
-// with no height — which draws nothing and so cannot be hovered.
+// with no height — which draws nothing and so cannot be hovered. `base` is
+// the instance's own `y2`, or the origin where it stands on none.
 function barRect(
   bpToPx: (bp: number) => number,
   x: number,
   x2: number,
   y: number,
+  base: number | undefined,
   bandTop: number,
   band: number,
   params: BarParams,
@@ -105,7 +117,11 @@ function barRect(
   const [domainMin, domainMax] = params.domain
   const valueY =
     bandTop + valueToYPxScaled(y, domainMin, domainMax, band, st, c)
-  const originY = bandTop + originYPx(params, band, yScale)
+  const originY =
+    bandTop +
+    (base === undefined
+      ? originYPx(params, band, yScale)
+      : valueToYPxScaled(base, domainMin, domainMax, band, st, c))
   const top = Math.min(valueY, originY)
   const height = Math.abs(valueY - originY)
   return height === 0 ? undefined : { left, top, width, height }
@@ -142,7 +158,12 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
     ...slangPass({ id: 'bar', mod: shader }),
     pack: c =>
       shader.packInstances(
-        { ...c, color: colorBits(c, c.count), row: rowLane(c.row, c.count) },
+        {
+          ...c,
+          color: colorBits(c, c.count),
+          row: rowLane(c.row, c.count),
+          y2: y2Lane(c.y2, c.count),
+        },
         c.count,
       ),
   },
@@ -158,6 +179,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       ...yScale,
       ...rampUniforms(params.colorScale),
       originYPx: originYPx(params, band, yScale),
+      y2Mode: params.standsOnY2 ? 1 : 0,
       rowHeight: bandHeightPx(params, frame.canvasHeight),
       rowBandPx: band,
       rowOffsetPx: params.rowOffsetPx ?? 0,
@@ -172,7 +194,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
   textures: rowTableTextures,
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { x, x2, y, row, count } = channels
+    const { x, x2, y, y2, row, count } = channels
     const color = paintColors(channels, count, params.colorScale)
     const bpToPx = makeBpMapper(block)
     const setFill = makeAbgrFill(ctx)
@@ -186,7 +208,17 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
         continue
       }
       const { top, band } = barBand(params, frame.canvasHeight, slot)
-      const r = barRect(bpToPx, x[i]!, x2[i]!, y[i]!, top, band, params, yScale)
+      const r = barRect(
+        bpToPx,
+        x[i]!,
+        x2[i]!,
+        y[i]!,
+        y2?.[i],
+        top,
+        band,
+        params,
+        yScale,
+      )
       if (r) {
         setFill(rowColor(color[i]!, row, i, table))
         ctx.fillRect(r.left, r.top, r.width + params.seamPx, r.height)
@@ -223,7 +255,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
   },
 
   ink(channels, block, frame, params, i) {
-    const { x, x2, y, row } = channels
+    const { x, x2, y, y2, row } = channels
     const slot = rowSlot(row, i, params.rowTable)
     if (slot === undefined) {
       return undefined
@@ -234,8 +266,17 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
     const bpToPx = makeBpMapper(block)
     const yScale = valueScaleUniforms(params)
     return (
-      barRect(bpToPx, x[i]!, x2[i]!, y[i]!, top, band, params, yScale) ??
-      stripRect(bpToPx, x[i]!, x2[i]!, y[i]!, top, band, params, yScale)
+      barRect(
+        bpToPx,
+        x[i]!,
+        x2[i]!,
+        y[i]!,
+        y2?.[i],
+        top,
+        band,
+        params,
+        yScale,
+      ) ?? stripRect(bpToPx, x[i]!, x2[i]!, y[i]!, top, band, params, yScale)
     )
   },
 

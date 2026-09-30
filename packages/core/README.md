@@ -1759,6 +1759,15 @@ carries its own draw rect beside the stack.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
+### StackStep
+
+Stand each group's values on each other: the rows sharing the `groupby` fields,
+in the order `by`'s values take, each get the running total below them and the
+total through them in the two fields `as` names (`y0`, `y1`), so a bar reading
+`y` as the second and `y2` as the first draws a stack.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ### stopsFromRampLut
 
 `n` evenly spaced legend stops read straight out of a buildColorRampLut byte

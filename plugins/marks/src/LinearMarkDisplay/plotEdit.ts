@@ -252,7 +252,10 @@ export function stepSummary(step: StepSnapshot): string {
       return `aggregate ${names.join(', ') || 'count'}`
     }
     case 'coverage': {
-      return `coverage as ${step.as || DEFAULT_COVERAGE_AS}`
+      return `coverage as ${step.as || DEFAULT_COVERAGE_AS}${step.groupby?.length ? ` per ${step.groupby.join(', ')}` : ''}`
+    }
+    case 'stack': {
+      return `stack ${step.field || 'the value'}${step.by ? ` by ${step.by}` : ''}`
     }
     case 'pileup': {
       return `pileup into ${step.as || DEFAULT_PILEUP_AS}`

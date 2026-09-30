@@ -45,7 +45,7 @@ test('an emptied step slot leaves the worker its default, which the channel read
     ],
   })
   expect(stepsOf(mark.transform, 1)).toEqual([
-    { type: 'coverage', as: 'coverage' },
+    { type: 'coverage', as: 'coverage', groupby: [] },
     { type: 'pileup', as: 'row', fields: ['start', 'end'], padding: 0 },
     { type: 'formula', expr: 'jexl:1', as: 'value' },
     {
