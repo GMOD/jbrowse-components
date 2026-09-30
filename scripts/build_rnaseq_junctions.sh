@@ -52,6 +52,6 @@ awk -F'\t' -v OFS='\t' 'NR > 1 { print $1, $2, $3 - 1, $4, $5, $6, $7, $14 }' \
   annotated.tsv > junctions.bed
 
 sort -k1,1 -k2,2n junctions.bed | bgzip > junctions.bed.gz
-tabix -p bed junctions.bed.gz
+tabix -f -p bed junctions.bed.gz
 
 echo "Wrote $OUTDIR/junctions.bed.gz"
