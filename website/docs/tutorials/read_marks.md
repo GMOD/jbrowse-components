@@ -55,7 +55,9 @@ each chromosome's banding in the view's overview.
 {
   "name": "hg38",
   "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
-  "refNameAliases": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
   "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
 }
 ```

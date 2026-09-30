@@ -122,6 +122,10 @@ const ABSENT_ON_PURPOSE = new Map([
   ['maxRegionBp', 'PANGENOME_GRAPHS, a graph plugin model prop, the same move'],
   ['maxGraphNodes', 'PANGENOME_GRAPHS, the same move'],
   [
+    'referencePath',
+    'PANGENOME_GRAPHS, a graph plugin model prop, the same move',
+  ],
+  [
     'carriedBy',
     'PANGENOME_GRAPHS names the node popup field, the same move — the figure spec that quoted it here was retired with the duplicate pggb figures',
   ],
