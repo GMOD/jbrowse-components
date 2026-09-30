@@ -725,6 +725,7 @@ restores natively:
 | [`minIdentity`](/docs/models/dotplotview#property-minidentity) | Hide alignments whose sequence identity is below this fraction (0-1), enforced per feature in buildLineSegments beside minAlignmentLength. A feature carrying no identity at all is kept at every threshold — the alternative blanks a plot whose adapter simply never reported one. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
 | [`showGridlines`](/docs/models/dotplotview#property-showgridlines) | carry each axis' ruler ticks across the plot as faint lines, the way LinearGenomeView's gridlines carry its own down over the tracks |
+| [`showTickLabels`](/docs/models/dotplotview#property-showticklabels) | number each axis' major ticks; off keeps the tick marks and the chromosome names |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `color: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
 | [`trackSelectorType`](/docs/models/dotplotview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and share links persist it. |
 | [`vview`](/docs/models/dotplotview#property-vview) | the vertical axis, the counterpart to `hview`. A spec writes `views[1]`. |

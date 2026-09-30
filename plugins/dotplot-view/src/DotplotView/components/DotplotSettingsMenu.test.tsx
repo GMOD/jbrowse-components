@@ -178,17 +178,16 @@ function isTicked(name: string | RegExp) {
   return checkboxRow(name).getAttribute('aria-checked') === 'true'
 }
 
-// Both checkboxes came out of the ⋮ menu's "Show..." submenu, which filed them
-// by widget kind while their synteny twins were already settings. Asserted in
-// both polarities, since a row rendering its glyph from a constant passes
-// either one alone.
+// Asserted in both polarities, since a row rendering its glyph from a constant
+// passes either one alone.
 test.each([
   ['CIGAR indels', 'setDrawCigar', 'drawCigar'],
   // matched loosely because the label carries `withHint`, which appends an
   // aside at a zoom with no ruler to cast
   [/^Gridlines/, 'setShowGridlines', 'showGridlines'],
+  ['Tick labels', 'setShowTickLabels', 'showTickLabels'],
 ] as const)(
-  'a row moved out of the ⋮ menu reports the model and writes it back',
+  'a checkbox row reports the model and writes it back',
   async (name, setter, prop) => {
     const view = await openMenu()
     expect(isTicked(name)).toBe(true)

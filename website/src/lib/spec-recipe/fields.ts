@@ -1946,6 +1946,12 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
+  showTickLabels: (value, { viewType }) => {
+    const path = settingsPath(viewType, 'Tick labels')
+    return typeof value === 'boolean' && path && viewType === 'DotplotView'
+      ? { path: `${path} (${value ? 'checked' : 'unchecked'})` }
+      : undefined
+  },
   // Applied by initHelpers as levels[i].setHeight(h), and the only thing that
   // calls setHeight from the UI is the ResizeHandle bar under each level
   // (LinearComparativeRenderArea) — there is no menu entry or dialog for it.

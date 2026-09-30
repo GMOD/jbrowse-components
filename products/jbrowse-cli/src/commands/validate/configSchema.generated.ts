@@ -18979,6 +18979,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "showGridlines": {
           "type": "boolean"
         },
+        "showTickLabels": {
+          "type": "boolean"
+        },
         "lockAspectRatio": {
           "type": "boolean"
         },

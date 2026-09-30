@@ -264,6 +264,12 @@ export default function stateModelFactory(pm: PluginManager) {
           showGridlines: types.stripDefault(types.boolean, true),
           /**
            * #property
+           * number each axis' major ticks; off keeps the tick marks and the
+           * chromosome names
+           */
+          showTickLabels: types.stripDefault(types.boolean, true),
+          /**
+           * #property
            * When true, hview and vview are kept at the same bpPerPx so the
            * dotplot stays square. Wheel zoom already preserves the ratio;
            * box-zoom and other independent ops trigger an autorun resync.
@@ -972,6 +978,12 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setShowGridlines(flag: boolean) {
           self.showGridlines = flag
+        },
+        /**
+         * #action
+         */
+        setShowTickLabels(flag: boolean) {
+          self.showTickLabels = flag
         },
         /**
          * #action

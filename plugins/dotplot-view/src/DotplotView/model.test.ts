@@ -567,3 +567,30 @@ test('the synteny view a dragged rect opens paints and filters as the plot does'
   expect(synteny.minAlignmentLength).toBe(500)
   expect(synteny.lodMode).toBe('coarse')
 })
+
+test('hiding tick labels gives their margin back to the plot', async () => {
+  const region = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 12_345_678,
+  }
+  const session = (await createTestSessionAsync({
+    sessionSnapshot: {
+      views: [
+        {
+          type: 'DotplotView',
+          height: 600,
+          assemblyNames: ['volvox', 'volvox'],
+          hview: { bpPerPx: 1, offsetPx: 0, displayedRegions: [region] },
+          vview: { bpPerPx: 1, offsetPx: 0, displayedRegions: [region] },
+        },
+      ],
+    },
+  })) as any
+  const model = session.views[0]
+  const { borderX, borderY } = model
+  model.setShowTickLabels(false)
+  expect(model.borderX).toBeLessThan(borderX)
+  expect(model.borderY).toBeLessThan(borderY)
+})

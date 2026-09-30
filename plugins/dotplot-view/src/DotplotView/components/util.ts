@@ -166,10 +166,11 @@ export const MIN_BORDER = 50
 const LABEL_PX = 12
 
 // Axis margin px, sized to the widest label — the longer of each region's
-// (truncated) refName or its exact end-coordinate tick. Only regions at least
-// LABEL_PX tall on screen count: smaller ones (unplaced *_random contigs at
-// whole-genome zoom) are collision-hidden and must not inflate the margin. A
-// contig you zoom into grows past LABEL_PX and reclaims its space.
+// (truncated) refName or, with tick labels drawn, its exact end-coordinate
+// tick. Only regions at least LABEL_PX tall on screen count: smaller ones
+// (unplaced *_random contigs at whole-genome zoom) are collision-hidden and
+// must not inflate the margin. A contig you zoom into grows past LABEL_PX and
+// reclaims its space.
 //
 // Reads regions + zoom and never viewport width, which makes the SAME-AXIS edge
 // acyclic (viewWidth = width - borderX). It does not make the margin acyclic:
@@ -192,13 +193,21 @@ export function axisBorderPx(
   regions: { refName: string; start: number; end: number }[],
   bpPerPx: number,
   labels: Map<string, string>,
+  tickLabels: boolean,
 ) {
   const labelWidth = max(
     regions.flatMap(r =>
       (r.end - r.start) / bpPerPx >= LABEL_PX
         ? [
             measureText(labels.get(r.refName)!, AXIS_LABEL_FONT),
-            measureText(getTickDisplayStr(r.end, bpPerPx), AXIS_LABEL_FONT),
+            ...(tickLabels
+              ? [
+                  measureText(
+                    getTickDisplayStr(r.end, bpPerPx),
+                    AXIS_LABEL_FONT,
+                  ),
+                ]
+              : []),
           ]
         : [],
     ),

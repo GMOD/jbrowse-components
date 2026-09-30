@@ -29,11 +29,13 @@ function region(refName: string, end: number, start = 0) {
 function border(
   regions: { refName: string; start: number; end: number }[],
   bpPerPx: number,
+  tickLabels = true,
 ) {
   return axisBorderPx(
     regions,
     bpPerPx,
     truncateRefNames(regions.map(r => r.refName)),
+    tickLabels,
   )
 }
 
@@ -267,6 +269,14 @@ describe('axisBorderPx', () => {
     const fine = border([region('chr1', 1_234_567)], 1)
     const coarse = border([region('chr1', 1_234_567)], 1_000)
     expect(fine).toBeGreaterThan(coarse)
+  })
+
+  test('with tick labels off only the names size the border', () => {
+    const regions = [region('chr1', 123_456_789), region('chr2', 1_000)]
+    expect(border(regions, 1, false)).toBeLessThan(border(regions, 1))
+    expect(border(regions, 1, false)).toBe(
+      border([region('chr1', 1), region('chr2', 1)], 1 / 20, false),
+    )
   })
 
   // the elide is off when it would collide, so the margin has to grow with it:

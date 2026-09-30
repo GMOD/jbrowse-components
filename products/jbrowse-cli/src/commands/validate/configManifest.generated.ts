@@ -7435,6 +7435,7 @@ export const configManifest: ConfigManifest = {
         "assemblyNames",
         "drawCigar",
         "showGridlines",
+        "showTickLabels",
         "lockAspectRatio",
         "lineWidth",
         "minIdentity",

@@ -6,6 +6,7 @@ import {
   fakeDotplotInstanceData,
   fakeDotplotRpcData,
 } from '../../DotplotDisplay/testUtils.ts'
+import { tickLabel } from '../components/util.ts'
 import { renderToSvg } from './SVGDotplotView.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -241,4 +242,23 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
   // legend, since the plot prints plenty of other numbers.
   expect(legend).toContain('>75<')
   expect(legend).toContain('>0<')
+}, 20000)
+
+test('with tick labels off the export keeps the tick marks and names but prints no coordinates', async () => {
+  const { view } = await setup()
+  const numbered = view.hview.visibleTickPositions.filter(t => t.labeled)
+  expect(numbered.length).toBeGreaterThan(0)
+  const labels = numbered.map(({ tick }) => tickLabel(tick, view.hview.bpPerPx))
+  const on = await renderToSvg(view, {})
+  for (const label of labels) {
+    expect(on).toContain(`>${label}</text>`)
+  }
+
+  view.setShowTickLabels(false)
+  const off = await renderToSvg(view, {})
+  for (const label of labels) {
+    expect(off).not.toContain(`>${label}</text>`)
+  }
+  expect(off).toContain('>ctgA</text>')
+  expect(off.match(/<line/g)?.length).toBe(on.match(/<line/g)?.length)
 }, 20000)

@@ -63,6 +63,17 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
                 "Carry each axis' ruler ticks across the plot. An axis with no room to number itself draws none.",
             },
           ),
+          toggleItem(
+            'Tick labels',
+            model.showTickLabels,
+            flag => {
+              model.setShowTickLabels(flag)
+            },
+            {
+              helpText:
+                'Number the ruler ticks along each axis. Off keeps the tick marks and chromosome names.',
+            },
+          ),
           ...lodMenuItems(model),
           opacityMenuItem(model),
           makeSizeSubMenu({

@@ -17951,6 +17951,9 @@
         "showGridlines": {
           "type": "boolean"
         },
+        "showTickLabels": {
+          "type": "boolean"
+        },
         "lockAspectRatio": {
           "type": "boolean"
         },

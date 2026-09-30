@@ -99,20 +99,6 @@ const Dotplot1DView = Base1DView.extend(self => {
 
       /**
        * #getter
-       * The margin this axis' labels need beside the plot. Derived from regions
-       * and zoom only — never from the plot size — so it can't feed back
-       * through the plot size into a render loop.
-       */
-      get labelMarginPx() {
-        return axisBorderPx(
-          self.displayedRegions,
-          self.bpPerPx,
-          this.refNameLabels,
-        )
-      },
-
-      /**
-       * #getter
        */
       get ticks() {
         return makeTicks(self.staticBlocks.contentBlocks, self.bpPerPx)
@@ -181,6 +167,7 @@ interface DotplotAxisParent {
   lockAspectRatio: boolean
   sharedFitBpPerPx: number
   showGridlines: boolean
+  showTickLabels: boolean
 }
 
 // One axis of the plot, as long as the plot dimension it runs along. The
@@ -208,6 +195,18 @@ function plotAxis(length: 'viewWidth' | 'viewHeight') {
         return parent.lockAspectRatio
           ? parent.sharedFitBpPerPx
           : self.fitBpPerPx
+      },
+
+      // The margin this axis' labels need beside the plot. Derived from regions
+      // and zoom only — never from the plot size — so it can't feed back
+      // through the plot size into a render loop.
+      get labelMarginPx() {
+        return axisBorderPx(
+          self.displayedRegions,
+          self.bpPerPx,
+          self.refNameLabels,
+          getParent<DotplotAxisParent>(self).showTickLabels,
+        )
       },
 
       toScreenPx(alongPx: number) {
