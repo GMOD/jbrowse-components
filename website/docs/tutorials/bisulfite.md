@@ -274,6 +274,25 @@ retrotransposon, which is `AT1TE14315` in the TAIR10 transposable-element
 annotation. No RefSeq transcript overlaps it. The lane is the RepeatMasker track
 from the TAIR10 genome hub, filtered to repeats longer than 1 kb.
 
+The figure puts the three contexts side by side by opening the same reads as
+three tracks, which share one file and differ in `trackId` and in the context
+their `displayDefaults` pin. The CHG copy looks like this, and the CpG and CHH
+copies change the `trackId`, the name and `cytosineContext`:
+
+```json addtrack
+{
+  "trackId": "arabidopsis_wgbs_chg",
+  "name": "Per-read WGBS, CHG context",
+  "uri": "https://jbrowse.org/demos/bisulfite/arabidopsis_wgbs_bisulfite.cram",
+  "assemblyNames": ["GCF_000001735.4"],
+  "displayDefaults": {
+    "baseColor": { "field": "bisulfite" },
+    "modifications": { "cytosineContext": "CHG" },
+    "showCoverage": false
+  }
+}
+```
+
 <Figure caption="RefSeq genes, the RepeatMasker lane, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 
 <Video src="/media/epigenomics/bisulfite_contexts.mp4" caption="One WGBS pileup recolored CpG, then CHG, then CHH from the track menu, under the RefSeq genes, the RepeatMasker lane and the aggregate MethylDackel rows: the LTR element stays red in all three contexts, and the gene body is red only in CpG." />
