@@ -159,9 +159,15 @@ export function freezeAnimations(page: Page) {
 // different flags.
 const TRUSTED_PLUGIN_URLS = [
   'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js',
-  // demos/alphagenome/config.json, pinned to a content-addressed build — see
-  // that demo's README for why the pin is there and what bumping it means here
-  'https://jbrowse.org/demos/alphagenome-plugin/1e7b10385f41/jbrowse-plugin-alphagenome.umd.js',
+  // read from the demo config, whose pin moves with every plugin build
+  ...(
+    JSON.parse(
+      fs.readFileSync(
+        new URL('../../demos/alphagenome/config.json', import.meta.url),
+        'utf8',
+      ),
+    ) as { plugins: { umdUrl: string }[] }
+  ).plugins.map(p => p.umdUrl),
 ]
 
 // Pre-approve the cross-origin plugin warning, which otherwise covers the whole

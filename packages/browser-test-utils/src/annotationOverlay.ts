@@ -746,12 +746,19 @@ export function drawAnnotationOverlay(
     // anchors sharing a locus give you) has a zero-width box, and measured as
     // an area it has none wherever it sits: an arrow in the middle of the frame
     // reported as invisible and failed its whole figure.
-    if (
-      right >= 0 &&
-      left <= window.innerWidth &&
-      bottom >= 0 &&
-      top <= window.innerHeight
-    ) {
+    //
+    // A pill is the exception to leaving partial clips alone: nothing clamps
+    // it, so any part past the edge is cut text.
+    const inside = isPill(a.type)
+      ? left >= -1 &&
+        right <= window.innerWidth + 1 &&
+        top >= -1 &&
+        bottom <= window.innerHeight + 1
+      : right >= 0 &&
+        left <= window.innerWidth &&
+        bottom >= 0 &&
+        top <= window.innerHeight
+    if (inside) {
       return
     }
     offFrame.push(

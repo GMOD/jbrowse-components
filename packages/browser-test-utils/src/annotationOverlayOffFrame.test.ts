@@ -152,6 +152,52 @@ test('a vertical arrow that is genuinely off frame still reports', () => {
 // The clamp that keeps a box's stroke inside the frame is what makes a partial
 // clip deliberate rather than a bug, so an element flush against the edge must
 // not report — this is the case a "mostly visible" threshold would fire on.
+// A pill is not clamped the way a box is, so a label hanging past the edge is
+// cut text: pangenome/rgfa_paa_bubble shipped reading "ey: the routes past the
+// island" once its node moved left. jsdom has no getBBox; 10 px a character
+// stands in for the measured text.
+function pillAt(x: number): PayloadAnnotation {
+  return {
+    type: 'text',
+    text: 'grey: the routes past the island',
+    anchor: {
+      graphNode: 'n',
+      rect: { left: x, top: 300, width: 0, height: 0 },
+    },
+  }
+}
+
+describe('a text pill', () => {
+  beforeAll(() => {
+    Object.defineProperty(SVGElement.prototype, 'getBBox', {
+      configurable: true,
+      value(this: SVGElement) {
+        const x = Number(this.getAttribute('x') ?? 0)
+        const y = Number(this.getAttribute('y') ?? 0)
+        const width = this.textContent.length * 10
+        return { x, y: y - 20, width, height: 24 }
+      },
+    })
+  })
+  afterAll(() => {
+    Reflect.deleteProperty(SVGElement.prototype, 'getBBox')
+  })
+
+  test('says nothing when it sits inside the frame', () => {
+    expect(draw([pillAt(400)]).offFrame).toEqual([])
+  })
+
+  test('reports one hanging past the left edge', () => {
+    const { unresolved, offFrame } = draw([pillAt(-40)])
+    expect(unresolved).toEqual([])
+    expect(offFrame).toHaveLength(1)
+  })
+
+  test('reports one hanging past the right edge', () => {
+    expect(draw([pillAt(900)]).offFrame).toHaveLength(1)
+  })
+})
+
 test('says nothing about a box clamped to the frame edge', () => {
   const { offFrame } = draw([
     {
