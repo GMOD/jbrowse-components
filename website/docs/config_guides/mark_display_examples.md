@@ -478,9 +478,10 @@ similarity...** in the track menu.
 
 ## Percent identity along an alignment
 
-A PAF's `SyntenyTrack` takes the mark display too, and each alignment's
-`identity` is the fraction of its columns that match. A `rule` at that value
-across each alignment is a percent identity plot, the picture
+A PAF's `SyntenyTrack` takes the mark display too. Each alignment's `identity`
+comes from minimap2's `de` divergence tag, or from its match count over its
+alignment length in a PAF without one. A `rule` at that value across each
+alignment is a percent identity plot, the picture
 [PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes.
 Stretches with no rule are where nothing aligned.
 
