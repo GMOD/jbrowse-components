@@ -1438,6 +1438,59 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
     ],
   },
+  // TRGT's ABCA7 alleles rewritten as <CNV:TR> records by the TandemRepeat
+  // plugin's trgt-to-cnv-tr.mjs, opened by clicking the record
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_abca7_tandem_repeat_alleles',
+    url: sessionSpec(HOSTED_HPRC_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'VariantTrack',
+          trackId: 'hprc_abca7_cnvtr',
+          name: 'TRGT alleles at ABCA7 as repeat records, 94 HPRC samples',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: 'https://jbrowse.org/demos/hprc/hprc_abca7_cnvtr.vcf.gz',
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr19:1,049,000-1,050,500',
+          tracks: [
+            {
+              trackId: 'hprc_abca7_cnvtr',
+              type: 'LinearVariantDisplay',
+              height: 40,
+            },
+          ],
+        },
+      ],
+    }),
+    viewportWidth: 1400,
+    viewportHeight: 760,
+    hideTooltip: true,
+    actions: [
+      { type: 'waitForAppSettled', timeout: 120000 },
+      {
+        type: 'click',
+        anchor: {
+          locus: 'chr19:1,049,750',
+          track: 'hprc_abca7_cnvtr',
+          fracY: 0.2,
+        },
+      },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="tandem-repeat-view"]',
+      },
+      { type: 'delay', ms: 500 },
+    ],
+  },
   {
     mode: 'url',
     name: 'pangenome/hprc_abca7_repeat_units',

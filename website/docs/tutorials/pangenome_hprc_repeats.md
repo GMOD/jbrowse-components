@@ -42,6 +42,9 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
   JBrowse
 - for your own samples: [TRGT](https://github.com/PacificBiosciences/trgt) and
   `bcftools`
+- for
+  [The ABCA7 alleles across 94 samples](#the-abca7-alleles-across-94-samples):
+  Node, to run the conversion script
 - for [Reproduce it end to end](#reproduce-it-end-to-end):
   [DuckDB](https://duckdb.org)
 
@@ -346,6 +349,59 @@ its readout marks that walk partial.
 Click the TRGT record. Its sample table gives `AL`, the allele lengths behind
 each tick, and `SD`, the number of reads spanning each allele. HG02559's second
 allele has an `SD` of 0, the grey tick in the figure above.
+
+## The ABCA7 alleles across 94 samples
+
+TRGT writes each allele as its full sequence, so the record above lists 167 ALT
+alleles of up to 8.6 kb each, and the details are a wall of `CCCCGTGAGC`. The
+TandemRepeat plugin's script rewrites the same record as `<CNV:TR>` alleles,
+each a run of the locus's 51 bp motif:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/main/scripts/trgt-to-cnv-tr.mjs
+```
+
+```bash
+# the hosted record has no MS field, TRGT's per-run spans, so each allele
+# becomes one run of the motif, its copies the allele's length over 51 bp
+node trgt-to-cnv-tr.mjs hprc_abca7_trgt.vcf.gz > hprc_abca7_cnvtr.vcf
+```
+
+[Sort, bgzip and index](/docs/quickstart_web#preparing-your-data) the output,
+then add it as a track:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "hprc_abca7_cnvtr",
+  "name": "TRGT alleles at ABCA7 as repeat records, 94 HPRC samples",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_cnvtr.vcf.gz"
+  }
+}
+```
+
+Open `chr19:1,049,000-1,050,500` and click the record. A **Tandem repeat** card
+opens above the details. With 94 samples the card starts on **By allele**: one
+bar per allele instead of one per haplotype, each labelled with the share of the
+188 called alleles that carry it, most common first.
+
+<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each bar is one of TRGT's alleles as copies of the 51 bp motif, with its share of the 188 called alleles at left and its length and copy count at right. ALT 1 is the most common at 2.1%, a 387 bp allele of 7.6 copies." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
+
+Almost no allele repeats: 148 of the 167 are carried once, 18 twice, and ALT 1
+four times. They run from 383 bp to 8.6 kb, 7.5 to 169 copies of the motif, and
+no sample carries GRCh38's 689 bp allele. Click the ALT 1 bar: the other bars
+fade and the **Samples** card narrows to the samples that carry it. **By
+haplotype** swaps the bars for the first 30 called alleles, each labelled with
+its sample.
+
+## Check the alleles against TRGT's lengths
+
+HG00099's genotype in the sample table is `1/2` with `AL` `387,3161`. The card's
+ALT 1 bar reads 387 bp and its ALT 2 bar reads 3.2 kb, so the alleles' lengths
+match what TRGT measured.
 
 ## Reproduce it end to end
 
