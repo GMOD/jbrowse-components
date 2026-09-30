@@ -190,9 +190,9 @@ and cleaner.
 Close the gene tracks and take the synteny view to the 2R region.
 ```
 
-The agent closes both gene tracks, leaving the whole-genome alignment between
-the rows, and opens the simulans row at `chr2R:1-2,400,000` and the mauritiana
-row at `chr2R:500,000-3,800,000`.
+The agent closes both gene tracks, so the view draws the whole-genome alignment
+alone, and opens the simulans row at `chr2R:1-2,400,000` and the mauritiana row
+at `chr2R:500,000-3,800,000`.
 
 <Figure caption="The 2R region, the alignment alone between the two rows. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
 

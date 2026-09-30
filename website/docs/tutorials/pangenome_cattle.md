@@ -102,7 +102,10 @@ The sample table gives each code a breed and a lineage, so `rows.labels` writes
 the breed beside each row, `rowColor` tints the row by lineage, and
 `rows.domain` lists the cattle breeds above the wild species. Every assembly is
 one haplotype, and `renderingMode: "phased"` draws one row per assembly with a
-second alternate allele in a separate colour:
+second alternate allele in a separate colour. `showVariantLane` draws each call
+once in a lane above the rows, across the reference span it replaces, labelled
+with its VCF ID (the graph nodes that bound it) and the allele change, so a
+reader sees what a call is before reading who carries it:
 
 ```json addtrack
 {
@@ -206,7 +209,7 @@ OMIA curates as OMIA 000483-9913. Add OMIA's cattle records as a lane:
 
 Then open `chr1:2,424,000-2,436,000`.
 
-<Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset. Only the Angus row carries the insertion under the record." src="/img/pangenome/bovine_polled.png" />
+<Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset, whose variant lane names the call and its allele change. Only the Angus row carries the insertion under the record." src="/img/pangenome/bovine_polled.png" />
 
 OMIA also records the Friesian polled allele, an 80 kb duplication 200 kb
 further along, which Holstein cattle carry. The panel has no Holstein, and the

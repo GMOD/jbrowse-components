@@ -129,7 +129,11 @@ yakuba_, and the distant _D. pseudoobscura_ and _D. virilis_. Across these flies
 the chromosome arms (Muller elements) keep their gene content, while inversions
 reorder the genes inside each arm.
 
-<Figure caption="Five Drosophila genomes stacked on OrthoFinder orthogroups: melanogaster, simulans, yakuba, pseudoobscura, virilis, on one bp/px. In each band the ribbons take the colour of the chromosome arm they leave in the row above, and the bundle from each arm stays together in the row below; inside a bundle the ribbons cross where inversions have reordered the genes." src="/img/orthofinder_synteny/drosophila.png" />
+The stack repeats melanogaster between the other four flies, so every band sets
+one fly against melanogaster, and **Reference** in the palette button menu
+paints each ribbon by the melanogaster arm it leaves.
+
+<Figure caption="simulans, yakuba, pseudoobscura and virilis stacked on OrthoFinder orthogroups with melanogaster between each pair, on one bp/px. Each ribbon takes the colour of its melanogaster arm in every band, so one colour follows one arm down the stack; the bundle from each arm stays together in every fly, and inside a bundle the ribbons cross where inversions have reordered the genes." src="/img/orthofinder_synteny/drosophila.png" />
 
 ### One locus, one lane per fly
 
