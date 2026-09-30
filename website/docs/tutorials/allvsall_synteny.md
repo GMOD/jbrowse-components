@@ -318,7 +318,7 @@ The config below is that plot written out, with one addition:
 }
 ```
 
-<Figure caption="K-12 against each other strain, one row per strain, each alignment a line at its identity." src="/img/multiway_synteny/ecoli_identity_rows.png" />
+<Figure caption="K-12 against each other strain, one row per strain, each alignment a line at its identity. NCTC86 runs closest to K-12, and the short, less similar alignments fall at the same places in every row." src="/img/multiway_synteny/ecoli_identity_rows.png" />
 
 ### Lanes in strain coordinates
 
