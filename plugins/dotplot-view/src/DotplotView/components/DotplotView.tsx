@@ -136,7 +136,6 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
     <div>
       <Header model={model} interaction={interaction} />
       <div className={classes.root}>
-        <ChromeLegend model={model} />
         <div className={classes.container}>
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
@@ -153,6 +152,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
           </div>
           <SelectionContextMenu model={model} interaction={interaction} />
         </div>
+        <ChromeLegend model={model} />
         <ResizeHandle grip onDrag={n => model.setHeight(model.height + n)} />
       </div>
     </div>
