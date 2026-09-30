@@ -40,6 +40,7 @@ import { hg002HaplotypeSpecs } from './specs/hg002_haplotypes.ts'
 import { hicSpecs } from './specs/hic.ts'
 // jbrowse-img CLI example figures (products/jbrowse-img/README.md)
 import {
+  jbrowseImgBatchRowSpecs,
   jbrowseImgComposedSpecs,
   jbrowseImgSpecs,
 } from './specs/jbrowse-img.ts'
@@ -120,6 +121,7 @@ export const specs: ScreenshotSpec[] = [
   ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,
+  ...jbrowseImgBatchRowSpecs,
   ...jbrowseImgComposedSpecs,
 ]
 

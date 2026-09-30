@@ -85,6 +85,11 @@ const SV_SHEET_SAMPLES = {
   normal: 'COLO829BL_normal_ont',
 }
 
+// Exported apart from `jbrowseImgSpecs`, which sync-img-readme.ts walks to
+// give every entry a README command: these are rows of a batch run, and the
+// command a reader types for them is the `batch` one the tutorial shows.
+export const jbrowseImgBatchRowSpecs: CliSpec[] = svSheetSpecs()
+
 function svSheetSpecs() {
   return Object.entries(SV_SHEET_ROWS).flatMap(([row, { locs }]) =>
     Object.entries(SV_SHEET_SAMPLES).map(([sample, trackId]) =>
@@ -811,7 +816,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--width',
     '1000',
   ]),
-  ...svSheetSpecs(),
 ]
 
 // The one composed jbrowse-img figure. Separate from `jbrowseImgSpecs`, which is
