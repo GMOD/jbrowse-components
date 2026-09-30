@@ -121,6 +121,7 @@ second alternate allele in a separate colour:
     {
       "type": "LinearMultiSampleVariantDisplay",
       "renderingMode": "phased",
+      "showVariantLane": true,
       "rows": {
         "domain": [
           "ANG",

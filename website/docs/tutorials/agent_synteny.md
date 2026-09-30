@@ -187,18 +187,19 @@ and cleaner.
 ## Ask to be taken there
 
 ```text
-Take the synteny view to the 2R region.
+Close the gene tracks and take the synteny view to the 2R region.
 ```
 
-The agent opens the simulans row at `chr2R:1-2,400,000` and the mauritiana row
-at `chr2R:500,000-3,800,000`.
+The agent closes both gene tracks, leaving the whole-genome alignment between
+the rows, and opens the simulans row at `chr2R:1-2,400,000` and the mauritiana
+row at `chr2R:500,000-3,800,000`.
 
-<Figure caption="The 2R region on both rows with the gene tracks on. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
+<Figure caption="The 2R region, the alignment alone between the two rows. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
 
 Then ask for the first of the two X regions, `chrX:8,100,000-8,950,000` over
 `chrX:8,330,000-9,180,000`, where the reverse blocks are fewer and longer:
 
-<Figure caption="The X region at the same settings. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
+<Figure caption="The X region, the alignment alone between the two rows. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
 
 ## What you had to tell it
 

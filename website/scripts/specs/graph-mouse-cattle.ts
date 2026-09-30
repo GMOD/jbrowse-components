@@ -168,6 +168,7 @@ const dock2Spec: ScreenshotSpec = {
 const bovineVariantLane = (height: number) => ({
   trackId: 'bovine_pangenome_vcf',
   type: 'LinearMultiSampleVariantDisplay',
+  showVariantLane: true,
   height,
 })
 
@@ -215,24 +216,24 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
   bovineLocusSpec(
     'pangenome/bovine_polled',
     'chr1:2,424,000-2,436,000',
-    [bovineOmia, bovineVariantLane(220)],
-    540,
+    [bovineOmia, bovineVariantLane(260)],
+    580,
   ),
-  // 260, not the 220 the other loci take: these two windows hold other-alt
+  // 300, not the 260 the other loci take: these two windows hold other-alt
   // and no-call cells, so their key runs two rows longer and lost yak off the
-  // lane's bottom edge at 220.
+  // lane's bottom edge at 260.
   bovineLocusSpec(
     'pangenome/bovine_kit',
     'chr6:70,080,000-70,180,000',
-    [bovineGenes, bovineVariantLane(260)],
-    600,
+    [bovineGenes, bovineVariantLane(300)],
+    640,
   ),
   {
     ...bovineLocusSpec(
       'pangenome/bovine_tas2r46',
       'chr5:98,575,000-98,615,000',
-      [bovineGenes, bovineVariantLane(260)],
-      600,
+      [bovineGenes, bovineVariantLane(300)],
+      640,
     ),
     annotations: [
       {
@@ -260,7 +261,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
       'chr23:27,508,000-27,536,000',
       [
         bovineGenes,
-        bovineVariantLane(220),
+        bovineVariantLane(260),
         {
           trackId: 'bovine_minigraph_alleles',
           type: 'LinearPileupDisplay',
@@ -274,7 +275,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           maxRegionBp: cutNear(28_000),
         }),
       ],
-      1150,
+      1190,
     ),
     readySelector: GRAPH_DRAWN,
     annotations: [

@@ -2749,6 +2749,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // alpha 0.15 rather than the vertebrates figure's 0.3: these five are
   // one-to-one enough that the links arrive as tight bundles, the same reason
   // the grasses figure below takes 0.15.
+  //
+  // melanogaster repeats between the other four, as the launch dialog's "Repeat
+  // anchor between panels" lays a star out, so every band touches it and
+  // 'reference' (the assembly bordering the most bands) is melanogaster. In a
+  // five-row chain it was simulans, and the bands below yakuba painted by their
+  // own upper row.
   {
     mode: 'url',
     name: 'orthofinder_synteny/drosophila',
@@ -2761,10 +2767,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearSyntenyView',
             views: [
-              { assembly: 'melanogaster' },
               { assembly: 'simulans' },
+              { assembly: 'melanogaster' },
               { assembly: 'yakuba' },
+              { assembly: 'melanogaster' },
               { assembly: 'pseudoobscura' },
+              { assembly: 'melanogaster' },
               { assembly: 'virilis' },
             ],
             tracks: [
@@ -2772,12 +2780,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['drosophila_orthogroups'],
               ['drosophila_orthogroups'],
               ['drosophila_orthogroups'],
+              ['drosophila_orthogroups'],
+              ['drosophila_orthogroups'],
             ],
             color: { field: 'reference' },
             autoDiagonalize: true,
+            diagonalizeAnchorRow: 1,
             sameScale: true,
             collapseEmptyRows: true,
-            levelHeights: [180, 180, 180, 180],
+            levelHeights: [150, 150, 150, 150, 150, 150],
             alpha: 0.15,
             drawCurves: false,
           },
@@ -2786,7 +2797,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    viewportHeight: 1000,
+    viewportHeight: 1240,
   },
 
   // orthofinder_synteny.md: rice/sorghum/maize/brachypodium/foxtail millet.

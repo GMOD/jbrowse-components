@@ -32,16 +32,20 @@ const ARMS = ['chr2L', 'chr2R', 'chr3L', 'chr3R', 'chr4', 'chrX']
 function flySynteny(
   sim: string,
   mau: string,
-  extra: Record<string, unknown> = {},
+  {
+    genes = false,
+    ...extra
+  }: { genes?: boolean } & Record<string, unknown> = {},
 ) {
   return {
     type: 'LinearSyntenyView',
     views: [
-      { assembly: SIM, loc: sim, tracks: [SIM_GENES] },
-      { assembly: MAU, loc: mau, tracks: [MAU_GENES] },
+      { assembly: SIM, loc: sim, ...(genes ? { tracks: [SIM_GENES] } : {}) },
+      { assembly: MAU, loc: mau, ...(genes ? { tracks: [MAU_GENES] } : {}) },
     ],
     tracks: [[PIF]],
-    levelHeights: [200],
+    collapseEmptyRows: !genes,
+    levelHeights: [360],
     drawCurves: false,
     // Red forward, blue reverse, which is the one thing the colinear frame and
     // the inversion frames differ by.
@@ -58,9 +62,7 @@ const SYNTENY_FRAME = {
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 120000,
   viewportWidth: 1400,
-  // 620 cut 41 css px off the mauritiana gene row, per the run's own CONTENT
-  // CLIPPED report
-  viewportHeight: 664,
+  viewportHeight: 560,
 } as const
 
 export const agentSyntenySpecs: ScreenshotSpec[] = [
@@ -75,7 +77,7 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
         flySynteny(
           'chr3R:16,090,000-16,120,000',
           'chr3R:16,826,000-16,856,000',
-          { levelHeights: [140] },
+          { genes: true, levelHeights: [140] },
         ),
       ],
     }),
