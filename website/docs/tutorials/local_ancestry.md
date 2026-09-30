@@ -288,8 +288,9 @@ tracts ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 **Clustering** → **Cluster rows by similarity...** in the track menu derives the
 order from the blocks themselves, and on the full 243-animal painting it puts
-the held-out wolves and the wolfdogs on one branch. Clustering runs over the
-region in view, and a chip in the corner of the tree shows the locus.
+the held-out wolves on a small branch with the wolfdog haplotypes that carry the
+most wolf, apart from the breed dogs. Clustering runs over the region in view,
+and a chip in the corner of the tree shows the locus.
 
 ## Other row fields
 
