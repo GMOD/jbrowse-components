@@ -457,8 +457,8 @@ region)** (the model's `trackMenuItems`), the stacked view §2.3 costs out.
 **Data.** `JC/website/docs/tutorials/ecoli_orthologs_synteny.md`: a gene-symbol
 join over RefSeq GFF3s (`symbols_to_blocks.py`) written as an MCScan `.blocks`
 table with 44 columns; hosted at `jbrowse.org/demos/ecoli_orthologs/`. Measured
-on 2026-09-06: 44 assemblies (each a `ChromSizesAdapter`), 45 tracks,
-`ecoli.blocks.gz` 503 KB, blocks plus 44 BEDs 2.6 MB total, display
+on 2026-09-30: 44 assemblies (each a `ChromSizesAdapter`), 45 tracks,
+`ecoli.blocks.gz` 60 KB, blocks plus 44 BEDs 2.3 MB total, display
 `height: 1500` (44 × 34 px, the floor with gene names; `MW/laneStack.test.ts`
 pins that every checked-in demo sizes its track to the whole stack). Every lane's genes come
 from its own tabix GFF3.
@@ -469,8 +469,10 @@ and `bridgeSkippedLanes` (`buildRibbonGeometry`) carries a group past
 a lane that lacks it; the lane-genes fetch gives every lane real exon structure;
 colour by ortholog group (`{ field: 'cluster' }`) makes a
 conserved gene one colour down the stack; the O-antigen figure is an honest
-negative (each lane draws its own cluster and no ribbon). The adapter loads
-2.6 MB once and answers every window from memory.
+negative (the flanks, the _rfb_ genes and PGAP's _wzx_/_wzy_ chain where a strain
+carries them, and the serotype-specific genes between draw grey, since a K-12
+window draws only rows holding a K-12 gene). The adapter loads 2.3 MB once and
+answers every window from memory.
 
 **What it does badly here.**
 
@@ -478,7 +480,7 @@ negative (each lane draws its own cluster and no ribbon). The adapter loads
   legible as a barcode, not as gene models. Past ~500 kb "the stack is
   unreadable and no figure should try: the display has no coarse tier, and at
   44 lanes the bridged ribbons of any sparse lane sweep the whole track"
-  ([DEMO_DATASETS.md](DEMO_DATASETS.md)`:300-302`).
+  ([DEMO_DATASETS.md](DEMO_DATASETS.md)).
 - *Order is density, not phylogeny.* Densest-first (`rowAssembliesOf`) puts the
   K-12 derivatives on top at the O-antigen locus only because they share the
   most symbols; the reader is told "the reduced Shigella genomes fall toward the

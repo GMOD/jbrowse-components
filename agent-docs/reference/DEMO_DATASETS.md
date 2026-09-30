@@ -282,7 +282,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **`demos/primate_orthologs` is a gene-symbol join, no aligner**
   (`build_primate_orthologs.sh`, `symbols_to_blocks.py`): GRCh38.p14, the six
   NHGRI T2T apes and T2T macaque, RefSeq GFF3 only, ~290 MB downloaded, and
-  every lane 93-97% full because one annotation pipeline named the orthologs.
+  every lane 91-98% full because one annotation pipeline named the orthologs.
   Each lane's assembly and gene track are its genomes.jbrowse.org hub's,
   verbatim but for the label, with the short name (`chimp`) as an alias. Human
   is `hg38`: the portal's GenArk hub for GCF_000001405.40 names files UCSC
@@ -303,9 +303,10 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   for PGAP's locus tags. Lane names come from the report's strain field, not
   the script. Loci: the atp operon `NC_000913.3:3,910,000-3,925,000` (every
   lane places), the O-antigen cluster `NC_000913.3:2,095,000-2,115,000` as
-  the accessory-genome negative (the six K-12 derivatives fill 15 of its 20
-  anchor genes, the next lane 12). Past about 500 kb the stack is unreadable
-  and no figure should try: the display has no coarse tier, and at 44 lanes
+  the accessory-genome negative (19 of its 20 anchor genes have a row, `insH7`
+  the exception; the six K-12 derivatives fill all 19, WCHEC050613 16 and the
+  rest 7-15, the serotype-specific genes drawing grey). Past about 500 kb the
+  stack is unreadable and no figure should try: the display has no coarse tier, and at 44 lanes
   the bridged ribbons of any sparse lane sweep the whole track.
 - **`demos/hprc_multiway` is the CFH panel's eight haplotypes taken
   whole-genome, unpacked from the graph** (`build_hprc_multiway_synteny.sh`):
