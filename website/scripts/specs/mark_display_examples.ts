@@ -206,7 +206,23 @@ const TRACKS = {
         type: 'LinearMarkDisplay',
         displayId: 'hpylori_identity-LinearMarkDisplay',
         scales: { y: { domainMin: 0.5, domainMax: 1, title: 'Identity' } },
-        marks: [{ mark: 'rule', encoding: { y: 'identity', size: 2 } }],
+        marks: [
+          {
+            mark: 'rule',
+            encoding: {
+              y: 'identity',
+              size: 4,
+              color: {
+                field: 'identity',
+                scale: 'linear',
+                scheme: 'viridis',
+                domainMin: 0.7,
+                domainMax: 1,
+                title: 'Identity',
+              },
+            },
+          },
+        ],
       },
     ],
   },
@@ -295,15 +311,10 @@ export const markDisplayExampleSpecs: ScreenshotSpec[] = [
     height: 300,
     viewportHeight: 510,
   }),
-  exampleSpec(
-    'identity',
-    'hpylori_identity',
-    'NC_018939.1:1,035,000-1,080,000',
-    {
-      config: HPYLORI_CONFIG,
-      assembly: 'GCF_000307795.1',
-      height: 200,
-      viewportHeight: 410,
-    },
-  ),
+  exampleSpec('identity', 'hpylori_identity', 'NC_018939.1:330,000-560,000', {
+    config: HPYLORI_CONFIG,
+    assembly: 'GCF_000307795.1',
+    height: 200,
+    viewportHeight: 410,
+  }),
 ]

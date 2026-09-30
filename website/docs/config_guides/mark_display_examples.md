@@ -483,9 +483,10 @@ comes from minimap2's `de` divergence tag, or from its match count over its
 alignment length in a PAF without one. A `rule` at that value across each
 alignment is a percent identity plot, the picture
 [PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes.
-Stretches with no rule are where nothing aligned.
+Stretches with no rule are where nothing aligned, and colouring each rule by the
+same value separates short alignments that overlap.
 
-```json addtrack config=https://jbrowse.org/demos/hpylori/config.json loc=NC_018939.1:1,035,000-1,080,000
+```json addtrack config=https://jbrowse.org/demos/hpylori/config.json loc=NC_018939.1:330,000-560,000
 {
   "type": "SyntenyTrack",
   "trackId": "hpylori_identity",
@@ -503,13 +504,29 @@ Stretches with no rule are where nothing aligned.
       "scales": {
         "y": { "domainMin": 0.5, "domainMax": 1, "title": "Identity" }
       },
-      "marks": [{ "mark": "rule", "encoding": { "y": "identity", "size": 2 } }]
+      "marks": [
+        {
+          "mark": "rule",
+          "encoding": {
+            "y": "identity",
+            "size": 4,
+            "color": {
+              "field": "identity",
+              "scale": "linear",
+              "scheme": "viridis",
+              "domainMin": 0.7,
+              "domainMax": 1,
+              "title": "Identity"
+            }
+          }
+        }
+      ]
     }
   ]
 }
 ```
 
-<Figure src="/img/mark_display_examples/identity.png" caption="H. pylori 26695 against J99, one line per alignment at its identity: a run of short alignments between two long ones, most of them more similar than either, with gaps where nothing aligned." />
+<Figure src="/img/mark_display_examples/identity.png" caption="H. pylori 26695 against J99, one line per alignment at its identity and coloured by it, with gaps where nothing aligned." />
 
 A PAF line carries one identity for the whole alignment, so a long alignment
 draws as one flat line however its identity varies along its length. An
