@@ -135,7 +135,13 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
   --outDir normal --flank 600 --width 1100
 ```
 
-A somatic call has curves in `tumor/` and none in `normal/`.
+A somatic call has curves in `tumor/` and none in `normal/`. The same file name
+in both directories puts each call beside its control:
+
+<Figure caption="Three rows of the two batch directories, tumor on the left and the matched normal on the right, each labelled with its file name. The chr7 junction has a fan of curves in the tumor and none in the normal. The chr1 to chr19 junction has curves in both. The chr2 deletion has no curve in either; one tumor read carries it as a gap through both panels." src="/img/jbrowse-img/sv_callset_sheet.png" />
+
+The caller filed the chr1 to chr19 junction as somatic, and the normal's curves
+say it is germline.
 
 ## Reading the sheet
 
@@ -195,11 +201,13 @@ number and a centromere constraint.
 
 ## Reproduce it end to end
 
-The commands above run against hosted files. The figure comes from three
+The commands above run against hosted files. The der(3) figure comes from three
 `jb2export` runs: two `breakpoint` renders with one `--loc` per panel, one per
 sample, and a plain render of the derivative assembly, which are the
 `sv_review_tumor`, `sv_review_normal` and `sv_review_derivative` specs in
 [`website/scripts/specs/jbrowse-img.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/specs/jbrowse-img.ts).
+The contact sheet's `sv_sheet` specs in the same file render three rows of the
+two `batch` runs, each with the `--loc` list `batch` builds for that row.
 
 ## See also
 
