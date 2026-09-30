@@ -533,14 +533,14 @@
       }
     },
     {
-      "name": "tolC-",
+      "name": "tolC",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "tolC--ReferenceSequenceTrack",
+        "trackId": "tolC-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "tolC-.chrom.sizes",
+            "uri": "tolC.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -1382,18 +1382,18 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "tolC-_genes",
-      "name": "tolC- genes (RefSeq)",
-      "assemblyNames": ["tolC-"],
+      "trackId": "tolC_genes",
+      "name": "tolC genes (RefSeq)",
+      "assemblyNames": ["tolC"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "tolC-.gff.gz",
+          "uri": "tolC.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "tolC-.gff.gz.tbi",
+            "uri": "tolC.gff.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
@@ -1543,7 +1543,7 @@
         "M19",
         "S30",
         "S56",
-        "tolC-",
+        "tolC",
         "WCHEC050613",
         "MGY",
         "C43_DE3",
@@ -1595,7 +1595,7 @@
           "M19",
           "S30",
           "S56",
-          "tolC-",
+          "tolC",
           "WCHEC050613",
           "MGY",
           "C43_DE3",
@@ -1756,7 +1756,7 @@
             "locationType": "UriLocation"
           },
           {
-            "uri": "tolC-.bed.gz",
+            "uri": "tolC.bed.gz",
             "locationType": "UriLocation"
           },
           {
@@ -1819,7 +1819,7 @@
           "M19",
           "S30",
           "S56",
-          "tolC-",
+          "tolC",
           "WCHEC050613",
           "MGY",
           "C43_DE3",
@@ -1831,7 +1831,9 @@
         {
           "type": "MultiWaySyntenyDisplay",
           "displayId": "ecoli_orthologs-MultiWaySyntenyDisplay",
-          "color": { "field": "cluster" },
+          "color": {
+            "field": "cluster"
+          },
           "height": 1500
         }
       ]

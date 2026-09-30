@@ -8,9 +8,9 @@
 # annotations on the gene symbol with symbols_to_blocks.py, the route
 # build_primate_orthologs.sh takes for eight primates, so the download is a
 # GFF3 and a sequence report per genome and the table builds in seconds. What
-# the join cannot see is the accessory genome: at the O-antigen cluster the
-# genes that differ between strains share no symbol, and the lanes draw their
-# own genes there with no ribbon between them.
+# the join cannot see is a gene two annotations named differently, so at the
+# O-antigen cluster the serotype-specific genes draw grey under K-12 and join
+# only once a strain carrying them is the anchor.
 #
 # The accession list is what survived a screen, not a list picked by name. A
 # hundred RefSeq E. coli accessions were tried on 2026-09-02: 18 no longer
@@ -44,9 +44,9 @@ done
 
 OUTDIR="${1:-ecoli_orthologs_build}"
 
-# RefSeq accessions. The first is the anchor: every row of the table is one of
-# its genes, and K-12 MG1655 is the strain the rest are described against in
-# the literature.
+# RefSeq accessions. The first is the anchor: the table's rows start with its
+# genes, and K-12 MG1655 is the strain the rest are described against in the
+# literature.
 ANCHOR=MG1655
 read -r -d '' ACCESSIONS <<'LIST' || true
 GCF_000005845.2
@@ -225,14 +225,15 @@ PY
   echo "prepared $name: $(cut -f1 "$name.chrom.sizes") $(cut -f2 "$name.chrom.sizes") bp, $named named genes"
 done < strains.tsv
 
-# ── The ortholog table: one row per K-12 gene, one column per genome ─────────
+# ── The ortholog table: a row per K-12 gene, then the symbols K-12 lacks ─────
 # PGAP writes the locus tag into Name= for a gene it could not name, so
 # without --unnamed every hypothetical protein would look named and join
-# nothing. The helper prints the column order it wrote, which is the order
-# blockAssemblies and bedLocations below have to list.
+# nothing. --merge-cited joins a gene PGAP renamed (gndA) to the gene it was
+# annotated from (K-12's gnd). The helper prints the column order it wrote,
+# which is the order blockAssemblies and bedLocations below have to list.
 # shellcheck disable=SC2046  # NAME=GFF pairs are a built argument list
 BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/symbols_to_blocks.py" \
-  --anchor "$ANCHOR" -o ecoli.blocks --unnamed '_RS[0-9]+$' \
+  --anchor "$ANCHOR" -o ecoli.blocks --unnamed '_RS[0-9]+$' --merge-cited \
   $(for n in $NAMES; do printf '%s=%s.gff.gz ' "$n" "$n"; done))
 # the adapter reads each file whole and unzips it itself, and the plain text
 # was 14 MB before a lane drew
