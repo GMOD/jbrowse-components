@@ -36,6 +36,10 @@
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^"
   },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
+  },
   "publishConfig": {
     "access": "public",
     "main": "esm/index.js",

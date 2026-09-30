@@ -98,6 +98,7 @@
     "@jbrowse/text-indexing-core": "workspace:^",
     "@mui/icons-material": "^9.4.0",
     "@mui/material": "^9.4.0",
+    "@mui/system": "^9.4.0",
     "@mui/x-data-grid": "^9.14.0",
     "electron-debug": "^5.0.0",
     "electron-updater": "^6.8.9",

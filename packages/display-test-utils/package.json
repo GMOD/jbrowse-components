@@ -18,6 +18,8 @@
     "mobx": "^7.0.5"
   },
   "peerDependencies": {
-    "@testing-library/react": "^16.3.3"
+    "@testing-library/react": "^16.3.3",
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
   }
 }

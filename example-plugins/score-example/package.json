@@ -39,7 +39,8 @@
     "mobx-react": "^10.0.2"
   },
   "peerDependencies": {
-    "react": ">=19.0.0"
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
   },
   "//publishConfig": "Never published (private). pnpm applies publishConfig when packing, so these fields are what component_tests/plugin-vite resolves against — the same exports shape a real plugin ships.",
   "publishConfig": {
