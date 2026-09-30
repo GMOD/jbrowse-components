@@ -83,9 +83,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        ctgA:3..102 (+)
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            ctgA:3..102 (+)
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
@@ -99,9 +105,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        ctgA_3_555_0:0:0_2:0:0_102d
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            ctgA_3_555_0:0:0_2:0:0_102d
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
@@ -115,9 +127,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        100
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            100
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
@@ -131,9 +149,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        match
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            match
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <hr
@@ -158,9 +182,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
@@ -177,9 +207,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        37
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            37
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
@@ -196,18 +232,24 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <button
-                        type="button"
+                      <div
+                        class="css-HASH"
                       >
-                        Copy
-                      </button>
-                      <button
-                        type="button"
-                      >
-                        Show more
-                      </button>
-                      <div>
-                        17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 1...
+                        <div>
+                          <button
+                            type="button"
+                          >
+                            Copy
+                          </button>
+                          <button
+                            type="button"
+                          >
+                            Show more
+                          </button>
+                          <div>
+                            17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 1...
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -223,9 +265,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        37
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            37
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
@@ -242,9 +290,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        100M
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            100M
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
@@ -259,9 +313,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        100
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            100
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
@@ -278,9 +338,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        0
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            0
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div
@@ -297,9 +363,15 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <span>
-                        100
-                      </span>
+                      <div
+                        class="css-HASH"
+                      >
+                        <div>
+                          <span>
+                            100
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div

@@ -1,18 +1,30 @@
-import { isValidElement } from 'react'
+import { isValidElement, useState } from 'react'
 
 import { Link } from '@mui/material'
 
 import { SanitizedHTML } from '../../ui/index.ts'
 import { isObject } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
+import useMeasure from '../../util/useMeasure.ts'
+
+const CLAMP_HEIGHT = 300
 
 const useStyles = makeStyles()(theme => ({
   fieldValue: {
     wordBreak: 'break-word',
-    maxHeight: 300,
     fontSize: 12,
     padding: theme.spacing(0.5),
-    overflow: 'auto',
+    minWidth: 0,
+  },
+  clip: {
+    overflowX: 'auto',
+    overflowY: 'hidden',
+  },
+  clamped: {
+    maxHeight: CLAMP_HEIGHT,
+  },
+  faded: {
+    maskImage: 'linear-gradient(to bottom, black 75%, transparent)',
   },
 }))
 
@@ -41,10 +53,38 @@ export function ValueText({ text }: { text: string }) {
 }
 
 export default function BasicValue({ value }: { value: unknown }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
+  const [expanded, setExpanded] = useState(false)
+  const [ref, { height }] = useMeasure('height')
+  const overflows = height !== undefined && height > CLAMP_HEIGHT
   return (
     <div className={classes.fieldValue}>
-      {isValidElement(value) ? value : <ValueText text={valueText(value)} />}
+      <div
+        className={cx(
+          classes.clip,
+          !expanded && classes.clamped,
+          !expanded && overflows && classes.faded,
+        )}
+      >
+        <div ref={ref}>
+          {isValidElement(value) ? (
+            value
+          ) : (
+            <ValueText text={valueText(value)} />
+          )}
+        </div>
+      </div>
+      {overflows ? (
+        <Link
+          component="button"
+          variant="caption"
+          onClick={() => {
+            setExpanded(v => !v)
+          }}
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </Link>
+      ) : null}
     </div>
   )
 }

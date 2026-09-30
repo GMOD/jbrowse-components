@@ -76,9 +76,15 @@ exports[`open up a widget 1`] = `
                   <div
                     class="css-HASH"
                   >
-                    <span>
-                      ctgA:3..102 (+)
-                    </span>
+                    <div
+                      class="css-HASH"
+                    >
+                      <div>
+                        <span>
+                          ctgA:3..102 (+)
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div
@@ -92,9 +98,15 @@ exports[`open up a widget 1`] = `
                   <div
                     class="css-HASH"
                   >
-                    <span>
-                      100
-                    </span>
+                    <div
+                      class="css-HASH"
+                    >
+                      <div>
+                        <span>
+                          100
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <hr
@@ -117,9 +129,15 @@ exports[`open up a widget 1`] = `
                   <div
                     class="css-HASH"
                   >
-                    <span>
-                      37
-                    </span>
+                    <div
+                      class="css-HASH"
+                    >
+                      <div>
+                        <span>
+                          37
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div
