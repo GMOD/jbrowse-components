@@ -1,5 +1,5 @@
 // The graph tours, on the pangenome pages: loading a graph and reading it at a
-// locus, the layout switch, and the HPRC page's routes.
+// locus, and the HPRC page's routes.
 import { menuCascade, sessionSpec } from '../screenshot-spec-helpers.ts'
 import {
   HPRC_PAGE,
@@ -13,14 +13,7 @@ import {
 import { GRAPH_DRAWN } from '../specs/graph-fixtures.ts'
 import { hprcClusterFixtures, hprcVideoFixtures } from '../specs/graph-hprc.ts'
 import { cactusVideoFixtures } from '../specs/pangenome_cactus.ts'
-import {
-  cascade,
-  displayReady,
-  leaveMenu,
-  LOCATION_BOX,
-  trackMenu,
-  zoomToSteps,
-} from './shared.ts'
+import { displayReady, LOCATION_BOX, trackMenu, zoomToSteps } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -28,12 +21,9 @@ const {
   config: PGGB_CONFIG,
   genesTrack,
   segmentsTrack,
-  segmentsTrackId,
   locusWindow,
   tourWindow: PGGB_TOUR_WINDOW,
   rowsWindow,
-  rowsLocus,
-  locusSession,
   pangenomeConfig: PGGB_PANGENOME_CONFIG,
   strainLaunchNode: PGGB_STRAIN_NODE,
   strainGraph: PGGB_STRAIN_GRAPH,
@@ -152,9 +142,6 @@ function addGraphTrackSteps(json: string): VideoStep[] {
 
 // A pasted config with no `displayId` gets `<trackId>-<displayType>`.
 const K12_GENES_READY = displayReady('K12_genes-LinearBasicDisplay')
-const ROWS_DRAWN = `body:has([data-testid="graph-row-label"]) ${GRAPH_DRAWN}`
-const FORCE_LAYOUT_ROW = cascade('menuitem', 'Force-directed layout')
-const FORCE_DRAWN = `body:not(:has([data-testid="graph-row-label"])) [data-testid="linear-graph-display"][data-layout="force"][data-node-count]`
 
 export const pangenomeVideos: VideoSpec[] = [
   {
@@ -245,53 +232,6 @@ export const pangenomeVideos: VideoSpec[] = [
       },
     ],
     tailMs: 2500,
-  },
-  // Ends on the force drawing, the taller state, so the frame's slack falls at
-  // the opening rather than under the poster.
-  {
-    name: 'pangenome/pggb_layout_switch',
-    description:
-      "The same 460 bp of the pggb graph in both layouts: sample rows through the graph track's Layout menu to force-directed",
-    goal: 'See the same 460 bp of graph in two layouts',
-    url: locusSession('samplerows', {
-      region: rowsLocus,
-      window: rowsWindow,
-      mafLane: true,
-    }),
-    viewportHeight: 1250,
-    readySelector: ROWS_DRAWN,
-    readyTimeout: 120000,
-    steps: [
-      { type: 'hover', selector: WORDMARK },
-      {
-        type: 'delay',
-        ms: 2500,
-        say: 'Sample rows: one row per strain, on the reference axis',
-      },
-      {
-        type: 'click',
-        selector: trackMenu(segmentsTrackId),
-        say: 'Switch the layout to force-directed from the track menu',
-        hold: 800,
-      },
-      { type: 'waitForSelector', selector: cascade('submenu', 'Layout') },
-      { type: 'click', selector: cascade('submenu', 'Layout'), hold: 800 },
-      { type: 'waitForSelector', selector: FORCE_LAYOUT_ROW },
-      { type: 'click', selector: FORCE_LAYOUT_ROW, hold: 800 },
-      ...leaveMenu(FORCE_LAYOUT_ROW),
-      {
-        type: 'waitForSelector',
-        selector: FORCE_DRAWN,
-        timeout: 120000,
-        cut: true,
-      },
-      {
-        type: 'delay',
-        ms: 3500,
-        say: 'The same nodes, placed by the shape of the graph instead',
-      },
-    ],
-    tailMs: 3000,
   },
   // The HPRC page's graph launch is a target="_blank" link, so the tour follows
   // it into the new tab.

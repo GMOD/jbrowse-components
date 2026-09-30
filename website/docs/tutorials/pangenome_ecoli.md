@@ -696,9 +696,7 @@ the segments it takes instead, in the MAF's row order.
 <Figure caption="460 bp at the ycbF/pyrD boundary in Sample rows, under the MAF lane. CFT073's row is the long bar running off the left edge, and its MAF row is empty over the same span." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
 **Layout → Force-directed layout** redraws the same nodes by their shape, with
-no reference axis, until **Layout → Sample rows** puts them back on K12's:
-
-<Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the track menu's Layout submenu. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing drops the axis, and the alternate routes extend from the backbone where the rows had flattened them." />
+no reference axis.
 
 #### Who carries a segment
 
