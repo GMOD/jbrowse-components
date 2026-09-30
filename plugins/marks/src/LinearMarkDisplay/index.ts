@@ -30,7 +30,8 @@ export default function LinearMarkDisplayF(pluginManager: PluginManager) {
       // `maxScore` beside it, and a multi-BigWig's rows carry `source`, the
       // field a `facet` bands them by (ADR-126). A MAF block is one feature
       // with an `alignments` record per species, which a `flatten` with
-      // `key` fans out into a row each.
+      // `key` fans out into a row each. A PAF row's `identity` is its
+      // alignment's identity, which a `y` makes a PipMaker plot.
       trackType: [
         'FeatureTrack',
         'AlignmentsTrack',
@@ -38,6 +39,7 @@ export default function LinearMarkDisplayF(pluginManager: PluginManager) {
         'QuantitativeTrack',
         'MultiQuantitativeTrack',
         'MafTrack',
+        'SyntenyTrack',
       ],
       viewType: 'LinearGenomeView',
       ReactComponent,

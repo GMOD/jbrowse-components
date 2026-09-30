@@ -1,3 +1,4 @@
+import { getEnv } from '@jbrowse/core/util'
 import { layerTables } from '@jbrowse/core/util/featureTransforms'
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -61,15 +62,30 @@ export function workerResult(
   feats: readonly Feature[],
 ): EncodedLayersResult {
   const { layers, transform, facet } = display.rpcProps()
-  const tables = layerTables(feats, {
-    transform,
-    facet,
-    layers: layers.map(l => ({ transform: l.transform, row: l.encoding.row })),
-  })
+  const { jexl } = getEnv(display).pluginManager
+  const tables = layerTables(
+    feats,
+    {
+      transform,
+      facet,
+      layers: layers.map(l => ({
+        transform: l.transform,
+        row: l.encoding.row,
+      })),
+    },
+    jexl,
+  )
   return {
     layers: layers.map((request, i) => {
       const { table, row } = tables.layers[i]!
-      return encodeFeatures(table, { ...request.encoding, row }, request.lanes)
+      return encodeFeatures(
+        table,
+        { ...request.encoding, row },
+        request.lanes,
+        {
+          jexl,
+        },
+      )
     }),
     facet: tables.sections,
   }
