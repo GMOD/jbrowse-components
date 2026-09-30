@@ -154,13 +154,15 @@ export function keepRampValues(
 }
 
 /**
- * The interval a value is in on a threshold: how many of the ascending cuts it
- * is at or past, `thresholdIndex`'s rule and the shader's `thresholdBand`.
+ * The interval a lane value is in on a threshold: how many of the ascending
+ * cuts it is at or past, `thresholdIndex`'s rule and the shader's
+ * `thresholdBand`. The value is a float32 and so is each cut in the shader's
+ * uniform, so a cut compares as one here: 0.7 off a lane is at a cut of 0.7.
  */
 export function thresholdBandOf(value: number, cuts: readonly number[]) {
   let band = 0
   for (const cut of cuts) {
-    if (value >= cut) {
+    if (value >= Math.fround(cut)) {
       band++
     }
   }

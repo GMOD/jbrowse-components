@@ -255,6 +255,13 @@ test('the threshold bake paints each value the colour of its interval, as the sh
   expect(isThreshold(ramp)).toBe(false)
 })
 
+test('a lane value at a cut no float32 holds exactly is at that cut', () => {
+  const atCut = new Float32Array([0.7])[0]!
+  expect(atCut).toBeLessThan(0.7)
+  expect(thresholdBandOf(atCut, [0.7])).toBe(1)
+  expect(thresholdBandOf(new Float32Array([0.69])[0]!, [0.7])).toBe(0)
+})
+
 test('a moved cut redoes the threshold bake and an unchanged one reuses it', () => {
   const c = bars([10, 25])
   const first = paintColors(c, 2, threshold)
