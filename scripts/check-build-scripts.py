@@ -1489,6 +1489,13 @@ check("a symbol past --max-copies is a gene family and empties its cell",
       [["h1", ".", "g1"]])
 check("a symbol only one genome names is dropped",
       sy.symbol_rows([["h1"], [], []], "expand", 4), [])
+check("NCBI's CnHmorfK homolog spelling reads as the human CmorfK",
+      [sy.human_symbol(s) for s in
+       ("C1H1orf35", "C2AH2orf40", "c16h15orf48", "CXHXorf49B", "CYHYorf15a")],
+      ["C1orf35", "C2orf40", "C15orf48", "CXorf49B", "CYorf15A"])
+check("a symbol outside that spelling is left as written",
+      [sy.human_symbol(s) for s in ("C1orf35", "CHORF1", "sorF", "EBAG9UORF", None)],
+      ["C1orf35", "CHORF1", "sorF", "EBAG9UORF", None])
 
 # an orthogroup is a set, not a reference-anchored row: unlike a jcvi .blocks
 # table no column anchors the others, so a pair that skips column 0 is a row

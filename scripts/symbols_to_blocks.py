@@ -14,6 +14,11 @@ symbols in the other joins nothing. Unnamed genes are skipped by --unnamed,
 which defaults to NCBI's LOC ids; a PGAP bacterial annotation wants
 --unnamed '_RS[0-9]+$' for its locus tags.
 
+NCBI names a non-human gene after its human ortholog, except that human
+C1orf35 becomes C1H1orf35 in chimp, "chromosome 1 C1orf35 homolog", with the
+species' own chromosome first (C2AH2orf40 on chimp 2A, CXHXorf1 on X). The
+table undoes that spelling, so the ortholog joins and draws as C1orf35.
+
 Each BED names a gene by its symbol, so the table's cells, and the ortholog
 groups JBrowse builds from them, read as gene names. A gene with no symbol is
 named by its locus tag, and a symbol's second and later copies in one genome
@@ -53,6 +58,12 @@ import sys
 from collections import Counter, OrderedDict
 
 CITED = re.compile(r'similar to AA sequence:RefSeq:([A-Z]{2}_[0-9]+\.[0-9]+)')
+HUMAN_ORF_HOMOLOG = re.compile(r'^C(?:[0-9]+[A-Z]?|X|Y)H([0-9]+|X|Y)orf([0-9]+[A-Z]*)$', re.I)
+
+
+def human_symbol(symbol):
+    m = symbol and HUMAN_ORF_HOMOLOG.match(symbol)
+    return f'C{m.group(1).upper()}orf{m.group(2).upper()}' if m else symbol
 
 
 def open_text(path):
@@ -82,7 +93,7 @@ def read_gff(path, biotype, with_cds):
                 if gid:
                     genes.append({
                         'ref': f[0], 'start': int(f[3]) - 1, 'end': int(f[4]),
-                        'id': gid, 'strand': f[6], 'symbol': attr(f[8], 'Name'),
+                        'id': gid, 'strand': f[6], 'symbol': human_symbol(attr(f[8], 'Name')),
                         'locus_tag': attr(f[8], 'locus_tag'),
                     })
             elif with_cds:
