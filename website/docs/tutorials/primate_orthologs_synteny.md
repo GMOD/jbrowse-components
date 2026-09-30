@@ -108,9 +108,12 @@ placeholder. The pseudoautosomal genes are an exception, annotated on both X and
 Y, so each Y copy gets a separate row. The helper prints how much of each column
 it filled; for these eight the lanes come back nearly full, because the
 annotations share one naming pipeline. It also writes a row for each symbol
-human lacks, which a window anchored on human does not draw. Most are ape genes
-RefSeq names as the homolog of a human open reading frame, _C1H1orf35_ for human
-_C1orf35_, a spelling the join cannot match.
+human lacks, which a window anchored on human does not draw. RefSeq names an ape
+gene after its human ortholog except for an open reading frame, where human
+_C1orf35_ becomes chimp _C1H1orf35_, so the helper reads that spelling back and
+the chimp gene joins the _C1orf35_ row under the human name. The rows human
+lacks are then genes human carries only as a pseudogene or non-coding RNA,
+_CMAH_ among them, and genes the ape annotations name differently from human's.
 
 ## Setting up the assemblies
 

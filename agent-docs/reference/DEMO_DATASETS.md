@@ -282,7 +282,9 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **`demos/primate_orthologs` is a gene-symbol join, no aligner**
   (`build_primate_orthologs.sh`, `symbols_to_blocks.py`): GRCh38.p14, the six
   NHGRI T2T apes and T2T macaque, RefSeq GFF3 only, ~290 MB downloaded, and
-  every lane 91-98% full because one annotation pipeline named the orthologs.
+  every lane 92-99% full because one annotation pipeline named the orthologs.
+  The join reads NCBI's ape `C1H1orf35` as human `C1orf35`; without that,
+  ~1,400 ape genes sit in rows human lacks.
   Each lane's assembly and gene track are its genomes.jbrowse.org hub's,
   verbatim but for the label, with the short name (`chimp`) as an alias. Human
   is `hg38`: the portal's GenArk hub for GCF_000001405.40 names files UCSC
