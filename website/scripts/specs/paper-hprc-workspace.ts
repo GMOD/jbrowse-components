@@ -117,7 +117,7 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
     name: 'paper/hprc_lanes_graph_anchored',
     url: session('auto', 440),
     viewportWidth: 1900,
-    viewportHeight: 950,
+    viewportHeight: 1000,
     ...gates,
   },
   {
@@ -125,7 +125,7 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
     name: 'paper/hprc_lanes_graph_stacked',
     url: session('auto'),
     viewportWidth: 1500,
-    viewportHeight: 1000,
+    viewportHeight: 1040,
     ...gates,
   },
   {
@@ -133,7 +133,7 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
     name: 'paper/hprc_lanes_graph_stacked_force',
     url: session('force', 460, 50),
     viewportWidth: 1500,
-    viewportHeight: 1230,
+    viewportHeight: 1300,
     ...gates,
     annotations: callouts,
   },

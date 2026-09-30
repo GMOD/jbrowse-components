@@ -426,9 +426,10 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     ),
   },
 
-  // chr17:39.0-40.5Mb, spanning ERBB2 (39.69-39.73Mb), the HER2 of HER2-positive
-  // breast cancer. Clustering runs on the visible window only, so the cohort
-  // sorts into its copy-number classes at this locus rather than genome-wide.
+  // Clustered on chr17:39.0-40.5Mb, spanning ERBB2 (39.69-39.73Mb), the HER2 of
+  // HER2-positive breast cancer, via `clusterRegion`, so the cohort sorts into its
+  // copy-number classes at this locus as the page's fence window does. The view
+  // then shows 1.5 Mb either side, so each band's call reads against its flanks.
   //
   // Note the banding is qualitative, not proportional: 1104 rows in a few
   // hundred px puts each tumor well under 1px, so rows alias and the saturated
@@ -453,7 +454,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '17:39,000,000-40,500,000',
+          loc: '17:37,500,000-42,000,000',
           // band over ERBB2 itself (ncbiRefSeq chr17:39,688,094-39,728,658), so
           // the amplified column is tied to the gene rather than left for the
           // reader to locate against the ruler
@@ -480,6 +481,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
               type: 'LinearMultiRowFeatureDisplay',
               height: 700,
               runClustering: true,
+              clusterRegion: '17:39,000,000-40,500,000',
               showTree: true,
             },
           ],
@@ -524,9 +526,8 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         text: 'amplified',
         anchor: {
           track: 'tcga_brca_cnv',
-          fracY: 0.17,
-          alignX: 'left',
-          dx: 180,
+          locus: '17:39,150,000',
+          fracY: 0.06,
         },
       },
     ],
