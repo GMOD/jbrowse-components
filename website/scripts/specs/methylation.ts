@@ -591,8 +591,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 150000,
-    // cpg(40) + gene(90) + depth rows(180) + reads(400) + chrome
-    viewportHeight: 810,
+    // cpg(40) + gene(90) + depth rows(180) + reads(400) + chrome, sized
+    // from the run's clipped-below-the-fold report
+    viewportHeight: 1050,
   },
 
   {
