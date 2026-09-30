@@ -199,6 +199,7 @@ export function applyLayoutToRegion(
   layoutMap: Map<string, number>,
   layoutHeights: Map<string, number>,
   droppedLabelIds: ReadonlySet<string>,
+  unlabeledIds: ReadonlySet<string>,
   densityFadeIds: ReadonlySet<string>,
 ) {
   const featureOffsets = new Float32Array(data.flatbushItems.length)
@@ -234,7 +235,8 @@ export function applyLayoutToRegion(
   }
 
   // A decimated feature keeps its entry and loses only `nameLabel`, the one
-  // label whose row went unreserved.
+  // label whose row went unreserved; an unlabeled one loses its description
+  // too.
   for (const [key, labelData] of data.floatingLabelsData) {
     const layoutKey = labelData.parentFeatureId ?? labelData.featureId
     const offset = layoutMap.get(layoutKey)
@@ -242,8 +244,11 @@ export function applyLayoutToRegion(
       data.floatingLabelsData.delete(key)
       continue
     }
-    if (droppedLabelIds.has(layoutKey)) {
+    if (droppedLabelIds.has(layoutKey) || unlabeledIds.has(layoutKey)) {
       delete labelData.nameLabel
+    }
+    if (unlabeledIds.has(layoutKey)) {
+      delete labelData.descriptionLabel
     }
     labelData.topY += offset
   }

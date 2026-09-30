@@ -99,7 +99,11 @@ mode's label suppression. The multi-sample variant lane takes it: the band is 40
 holding a whole callset, its records are meant to share pixels rather than each
 claim a row, and stacking them honestly needs 68px — which cost the band every
 name through the fit ladder. Its old flatness came from the reservation bug, so
-this is the same picture asked for rather than inherited. A `displayMode:
+this is the same picture asked for rather than inherited. One row has nowhere to
+move a colliding label, so the packer drops it instead: in pack order, a record
+keeps its name and description only where their strip, its whole body span
+included, clears every strip already kept. The first version kept every label
+and overprinted nested pangenome bubbles (`pangenome/bovine_kit`). A `displayMode:
 'collapsed'` that keeps its names generally is `ideas/waiting-on-a-call/collapsed-mode-labels.md`,
 still parked.
 

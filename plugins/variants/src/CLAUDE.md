@@ -259,6 +259,10 @@ displays — and the band cannot drift from the display it stands in for.
   `showVariantLane` stays a render-tier setting a toggle must not refetch. The
   pass is per record (thousands), not per cell (millions), and plugin-canvas
   packs main-thread anyway.
+- **The lane is one row** (`flattenRows`, ADR-037), so a nested record cannot
+  stack under the one holding it. The packer drops a record's name and
+  description where they would overprint a kept one, and a long record's labels
+  claim its whole span, since a label that fits inside slides with the viewport.
 - **The color crosses over as a per-feature jexl.** `buildLaneRenderData` stamps
   each rebuilt feature with the `laneColor` attribute the display already
   resolved for the alt cells, and the lane's `color` slot is a jexl reading it —

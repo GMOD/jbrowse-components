@@ -475,6 +475,86 @@ function bookPileReservations(
   }
 }
 
+// The box a feature claims, and the strip below its body its labels claim:
+// the whole row span under the text, since a label that fits inside its
+// feature slides along it with the viewport.
+function reservedBoxPx(
+  ext: PackedExtent,
+  geom: FeatureGeometry,
+  bpPerPx: number,
+) {
+  // Through `renderedSpanPx`, so the packer and the density collapse agree
+  // where a sub-pixel mark sits.
+  const [spanLeftPx, spanRightPx] = renderedSpanPx(
+    { startBp: ext.layoutStartBp, endBp: ext.layoutEndBp },
+    bpPerPx,
+  )
+  const [bodyLeftPx, bodyRightPx] = renderedSpanPx(ext, bpPerPx)
+  // Only where the arrow paints, past the body's end: reserving one for
+  // every stranded mark packed 5000 sub-pixel marks 46 rows deep instead
+  // of 2, and a name reaching past it already covers it.
+  const { left: arrowLeft, right: arrowRight } = strandArrowReachPx(
+    geom.strand,
+    bodyRightPx - bodyLeftPx,
+  )
+  const leftPx = Math.min(spanLeftPx, bodyLeftPx - arrowLeft)
+  const rightPx = Math.max(spanRightPx, bodyRightPx + arrowRight)
+  // A name never starts before its body's edge, the right one in a flipped
+  // region, and its rows keep LABEL_LEAD_PX clear there. They start at the
+  // first grid row wholly below the text, so what sits beside the body can
+  // overlap the text box by at most ROW_PADDING - LABEL_TOP_GAP_PX.
+  const labelRows =
+    ext.labelTopPx === undefined
+      ? undefined
+      : {
+          top: ext.labelTopPx + LABEL_TOP_GAP_PX,
+          left: geom.hasNonReversed
+            ? Math.min(leftPx, bodyLeftPx - LABEL_LEAD_PX)
+            : leftPx,
+          right: geom.hasReversed
+            ? Math.max(rightPx, bodyRightPx + LABEL_LEAD_PX)
+            : rightPx,
+        }
+  return { leftPx, rightPx, labelRows }
+}
+
+// One row has no row to move a colliding label to, so the label goes: in
+// pack order, a feature keeps its names and descriptions only where their
+// strip clears every strip already kept.
+function packSingleRow(
+  packed: ReadonlyMap<string, PackedExtent>,
+  features: PackPrep['features'],
+  inputs: LayoutInputs,
+  rowPadding: number,
+) {
+  const { bpPerPx, pinnedFeatureIds } = inputs
+  const layoutMap = new Map<string, number>()
+  const layoutHeights = new Map<string, number>()
+  const unlabeledIds = new Set<string>()
+  const kept: [number, number][] = []
+  // Collapsed mode reserves no labels, so it skips the sort.
+  const ordered = [...packed.values()].some(e => e.labelTopPx !== undefined)
+    ? byPackPriority(packed, pinnedFeatureIds)
+    : packed
+  for (const [id, ext] of ordered) {
+    layoutMap.set(id, 0)
+    const strip = reservedBoxPx(ext, features.get(id)!, bpPerPx).labelRows
+    if (
+      strip &&
+      kept.some(([left, right]) => strip.left < right && left < strip.right)
+    ) {
+      unlabeledIds.add(id)
+      layoutHeights.set(id, ext.labelTopPx! + rowPadding)
+    } else {
+      if (strip) {
+        kept.push([strip.left, strip.right])
+      }
+      layoutHeights.set(id, ext.height)
+    }
+  }
+  return { layoutMap, layoutHeights, unlabeledIds }
+}
+
 export function packPreparedRef(
   prep: PackPrep,
   trims: PackTrims,
@@ -492,19 +572,17 @@ export function packPreparedRef(
     inputs,
     metrics,
   )
-  const layoutMap = new Map<string, number>()
-  const layoutHeights = new Map<string, number>()
 
-  // A whole-function early-out: the row grid and the priority sort are both
-  // dead in collapsed mode and neither is cheap.
   if (singleRow) {
-    for (const [id, ext] of packed) {
-      layoutMap.set(id, 0)
-      layoutHeights.set(id, ext.height)
+    return {
+      ...packSingleRow(packed, features, inputs, metrics.rowPadding),
+      droppedLabelIds,
+      trimPlan,
     }
-    return { layoutMap, layoutHeights, droppedLabelIds, trimPlan }
   }
 
+  const layoutMap = new Map<string, number>()
+  const layoutHeights = new Map<string, number>()
   // pitchY shrinks with the mode or compact features cannot pack below one
   // 10px grid cell. pitchX 1: at 10, two label spans overlapping by under
   // 10px fall into one bucket and their labels pile onto one row.
@@ -516,44 +594,16 @@ export function packPreparedRef(
   const sorted = byPackPriority(packed, pinnedFeatureIds, prevYByFeatureId)
 
   for (const [id, ext] of sorted) {
-    const geom = features.get(id)!
     if (collapsedFeatureIds.has(id)) {
       layoutMap.set(id, 0)
       layoutHeights.set(id, ext.height)
       continue
     }
-    // Through `renderedSpanPx`, so the packer and the density collapse agree
-    // where a sub-pixel mark sits.
-    const [spanLeftPx, spanRightPx] = renderedSpanPx(
-      { startBp: ext.layoutStartBp, endBp: ext.layoutEndBp },
+    const { leftPx, rightPx, labelRows } = reservedBoxPx(
+      ext,
+      features.get(id)!,
       bpPerPx,
     )
-    const [bodyLeftPx, bodyRightPx] = renderedSpanPx(ext, bpPerPx)
-    // Only where the arrow paints, past the body's end: reserving one for
-    // every stranded mark packed 5000 sub-pixel marks 46 rows deep instead
-    // of 2, and a name reaching past it already covers it.
-    const { left: arrowLeft, right: arrowRight } = strandArrowReachPx(
-      geom.strand,
-      bodyRightPx - bodyLeftPx,
-    )
-    const leftPx = Math.min(spanLeftPx, bodyLeftPx - arrowLeft)
-    const rightPx = Math.max(spanRightPx, bodyRightPx + arrowRight)
-    // A name never starts before its body's edge, the right one in a flipped
-    // region, and its rows keep LABEL_LEAD_PX clear there. They start at the
-    // first grid row wholly below the text, so what sits beside the body can
-    // overlap the text box by at most ROW_PADDING - LABEL_TOP_GAP_PX.
-    const labelRows =
-      ext.labelTopPx === undefined
-        ? undefined
-        : {
-            top: ext.labelTopPx + LABEL_TOP_GAP_PX,
-            left: geom.hasNonReversed
-              ? Math.min(leftPx, bodyLeftPx - LABEL_LEAD_PX)
-              : leftPx,
-            right: geom.hasReversed
-              ? Math.max(rightPx, bodyRightPx + LABEL_LEAD_PX)
-              : rightPx,
-          }
     // A null top means the stack passed GranularRectLayout's own 10000px
     // `maxHeight`, not the display's slot; `countTruncatedFeatures` owns up
     // to it.
@@ -562,5 +612,11 @@ export function packPreparedRef(
     layoutHeights.set(id, ext.height)
   }
 
-  return { layoutMap, layoutHeights, droppedLabelIds, trimPlan }
+  return {
+    layoutMap,
+    layoutHeights,
+    droppedLabelIds,
+    unlabeledIds: new Set<string>(),
+    trimPlan,
+  }
 }

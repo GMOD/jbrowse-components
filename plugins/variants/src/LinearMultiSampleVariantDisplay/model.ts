@@ -806,7 +806,9 @@ export function stateModelFactory(
             // are meant to share pixels rather than each claim a row: stacking
             // them honestly needs 68px, which costs the band every name through
             // the fit ladder. Names survive because this flattens the rows
-            // without `displayMode: 'collapsed'`'s label suppression.
+            // without `displayMode: 'collapsed'`'s label suppression; the
+            // packer drops a record's labels where they would overprint a
+            // kept one.
             flattenRows: true,
           }
         },
@@ -814,10 +816,10 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * One fit candidate: the lane's stack packed with the given label
-         * reservation. plugin-canvas's packer, so overlapping SVs stack instead
-         * of overdrawing, a label is placed by the layout that reserved room for
-         * it, and paint order is the order the hit test resolves by.
+         * One fit candidate: the lane's row packed with the given label
+         * reservation. plugin-canvas's packer, so a label is placed by the
+         * layout that reserved room for it, and paint order is the order the
+         * hit test resolves by.
          *
          * Non-incremental, unlike that display's four memos: those exist so a
          * GPU upload diff stays small across a pan over a stack of hundreds of

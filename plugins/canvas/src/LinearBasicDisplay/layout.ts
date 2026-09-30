@@ -188,6 +188,7 @@ function mergeSections(
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
   const droppedLabelIds = new Set<string>()
+  const unlabeledIds = new Set<string>()
   const trims = new Map<string, IsoformTrim>()
   const badges = new Map<string, IsoformBadge>()
   const gapSpreads = new Map<string, IsoformGapSpread>()
@@ -202,6 +203,9 @@ function mergeSections(
     }
     for (const fid of pack.droppedLabelIds) {
       droppedLabelIds.add(fid)
+    }
+    for (const fid of pack.unlabeledIds) {
+      unlabeledIds.add(fid)
     }
     for (const [fid, trim] of pack.trimPlan.trims) {
       trims.set(fid, trim)
@@ -231,6 +235,7 @@ function mergeSections(
     layoutMap,
     layoutHeights,
     droppedLabelIds,
+    unlabeledIds,
     trimPlan: { trims, badges },
     gapSpreads,
     features,
@@ -313,6 +318,7 @@ function layoutRefGroups(
         merged.layoutMap,
         merged.layoutHeights,
         merged.droppedLabelIds,
+        merged.unlabeledIds,
         densityFadeIds,
       )
       out.set(n, cloned)

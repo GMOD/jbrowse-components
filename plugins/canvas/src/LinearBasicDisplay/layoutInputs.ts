@@ -52,7 +52,9 @@ export interface LayoutInputs {
   // grouping that issued them, so the set is dropped when it changes.
   hiddenGroupKeys?: ReadonlySet<string>
   // Row 0 for everything without collapsed mode's label suppression, for a
-  // fixed-height density band whose records are meant to share pixels.
+  // fixed-height density band whose records are meant to share pixels. A
+  // label whose strip meets one already kept is dropped, name and
+  // description both.
   flattenRows?: boolean
   // The worker counts these rows and the main thread spends them at
   // `labelFontPx`, which is what makes this a layout input rather than a

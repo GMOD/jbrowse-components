@@ -1810,29 +1810,70 @@ test('a hotspot does not drag the marks chained to it onto row 0', () => {
   expect(spreadTops.filter(t => t > 0).length).toBeGreaterThan(20)
 })
 
-test('flattenRows packs a density band onto one row without dropping names', () => {
-  const features = Array.from({ length: 12 }, (_, i) => ({
-    featureId: `f${i}`,
-    startBp: 100 + i * 3,
-    endBp: 101 + i * 3,
-    height: 10,
-  }))
-  const data = labeledFeatureData(features)
-  const flat = computeLaidOutData(new Map([[0, data]]), {
+function flatten(data: LayoutRegionData, showDescriptions = false) {
+  return computeLaidOutData(new Map([[0, data]]), {
     bpPerPx: 20,
     showLabels: true,
-    showDescriptions: false,
+    showDescriptions,
     reversedRegions: new Set<number>(),
     displayMode: 'normal',
     pinnedFeatureIds: new Set<string>(),
     flattenRows: true,
   }).get(0)!
+}
+
+function namedIds(data: FeatureDataResult) {
+  return [...data.floatingLabelsData.values()]
+    .filter(l => l.nameLabel)
+    .map(l => l.featureId)
+}
+
+// One row has nowhere to move a colliding name, so it goes: the first of a
+// pile keeps its name, and so does every record clear of it.
+test('flattenRows packs a band onto one row, naming only what clears', () => {
+  const pile = Array.from({ length: 6 }, (_, i) => ({
+    featureId: `f${i}`,
+    startBp: 100 + i * 3,
+    endBp: 101 + i * 3,
+    height: 10,
+  }))
+  const spread = Array.from({ length: 4 }, (_, i) => ({
+    featureId: `g${i}`,
+    startBp: 5000 + i * 2000,
+    endBp: 5001 + i * 2000,
+    height: 10,
+  }))
+  const data = labeledFeatureData([...pile, ...spread])
+  const flat = flatten(data)
   expect(flat.flatbushItems.every(it => it.topPx === 0)).toBe(true)
-  expect(flat.floatingLabelsData.size).toBe(12)
+  expect(namedIds(flat)).toEqual(['f0', 'g0', 'g1', 'g2', 'g3'])
   const stacked = layout(new Map([[0, data]]), 20).get(0)!
   expect(
     new Set(stacked.flatbushItems.map(it => it.topPx)).size,
   ).toBeGreaterThan(1)
+})
+
+// A description reaches as far as a name does, and a record that lost the
+// strip loses both lines: a description alone at the row would overprint the
+// one that kept it.
+test('flattenRows drops the description with the name', () => {
+  const data = labeledFeatureData([
+    { featureId: 'a', startBp: 100, endBp: 101, height: 10 },
+    { featureId: 'b', startBp: 1300, endBp: 1301, height: 10 },
+  ])
+  for (const label of data.floatingLabelsData.values()) {
+    label.descriptionLabel = {
+      text: 'a long description',
+      relativeY: 11,
+      textWidth: 200,
+    }
+  }
+  const withDescriptions = flatten(data, true)
+  expect(namedIds(withDescriptions)).toEqual(['a'])
+  expect(
+    withDescriptions.floatingLabelsData.get('b')?.descriptionLabel,
+  ).toBeUndefined()
+  expect(namedIds(flatten(data))).toEqual(['a', 'b'])
 })
 
 // The pack spends no rows under `flattenRows`, so a collapse plan is work with

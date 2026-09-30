@@ -143,12 +143,12 @@ const VariantLaneInteraction = observer(function VariantLaneInteraction({
  * that holds the rows is what puts it in the band `topBands` reserved.
  *
  * The band is `paintFeatureBand` — that plugin's own band composition, geometry
- * then labels — over a stack its packer laid out and its fit ladder compacted
- * into `laneHeight` (see `laneFitStage`). So overlapping SVs stack onto rows
- * instead of overdrawing, paint order is what the hit test resolves by, and a
- * label is placed by the layout that reserved room for it rather than culled left
- * to right by a rule of the lane's own. The export runs the same call, which is
- * what stops the two from lettering the same records differently.
+ * then labels — over a row its packer laid out and its fit ladder compacted
+ * into `laneHeight` (see `laneFitStage`). So paint order is what the hit test
+ * resolves by, and a label is placed, or dropped, by the layout that reserved
+ * room for it rather than by a rule of the lane's own. The export runs the same
+ * call, which is what stops the two from lettering the same records
+ * differently.
  *
  * Every observable the draw needs is read here in the render body rather than
  * inside the closure, because `OverlayCanvas` calls `draw` from an effect where
