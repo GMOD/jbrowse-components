@@ -8,3 +8,5 @@ export const STEM_HALF_H_PX = 0.5
 export const HEAD_HALF_H_PX = 2.5
 
 export const ARROW_MIN_FEATURE_WIDTH_PX = 14
+
+export const GENE_ARROW_MIN_FEATURE_WIDTH_PX = 7

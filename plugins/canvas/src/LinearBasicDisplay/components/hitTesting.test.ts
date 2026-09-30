@@ -497,6 +497,22 @@ test("the strand arrow's tip, 7px past the 3' end, answers hover", () => {
   expect(hitAt(minus, 206)).toBeUndefined()
 })
 
+test("a gene's arrow answers hover below the repeat gate", () => {
+  const item = makeFlatbushItem({
+    featureId: 'gene',
+    startBp: 100,
+    endBp: 110,
+    bottomPx: 20,
+    strand: 1,
+    gene: true,
+  })
+  const region = makeRegion(0, 0, 1000, 0, 1000)
+  const hitAt = (i: FlatbushItem, x: number) =>
+    hit(new Map([[0, makeData([i])]]), [region], x, 10)?.feature.featureId
+  expect(hitAt(item, 116)).toBe('gene')
+  expect(hitAt({ ...item, gene: false }, 116)).toBeUndefined()
+})
+
 test('forward base zoom resolves each pixel column to the base painted there', () => {
   const data = makeData([makeItem('gene1', 1000, 1010, 0, 20)])
   const region = makeRegion(0, 1000, 1010, 0, 100)

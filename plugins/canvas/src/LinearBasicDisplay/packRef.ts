@@ -500,6 +500,7 @@ function reservedBoxPx(
   const { left: arrowLeft, right: arrowRight } = strandArrowReachPx(
     geom.strand,
     bodyRightPx - bodyLeftPx,
+    geom.gene,
   )
   const leftPx = Math.min(spanLeftPx, bodyLeftPx - arrowLeft)
   const rightPx = Math.max(spanRightPx, bodyRightPx + arrowRight)

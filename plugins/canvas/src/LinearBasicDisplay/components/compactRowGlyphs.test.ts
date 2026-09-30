@@ -30,6 +30,7 @@ const EMPTY = {
   arrowYs: new Float32Array(),
   arrowHeights: new Float32Array(),
   arrowWidthsBp: new Uint32Array(),
+  arrowGene: new Uint8Array(),
   arrowDirections: new Int8Array(),
   arrowColors: new Uint32Array(),
 } satisfies RegionRenderData
@@ -102,6 +103,7 @@ function drawTranscriptRow(rowTop: number, bodyHeight: number) {
     arrowYs: new Float32Array([rowTop + bodyHeight / 2]),
     arrowHeights: new Float32Array([bodyHeight]),
     arrowWidthsBp: new Uint32Array([400]),
+    arrowGene: new Uint8Array([0]),
     arrowDirections: new Int8Array([1]),
     arrowColors: new Uint32Array([0xff_00_00_00]),
   }

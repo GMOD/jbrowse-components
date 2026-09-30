@@ -254,6 +254,7 @@ function trimPrimitiveKind(
     data.arrowXs = pick(data.arrowXs, kept, 1)
     data.arrowDirections = pick(data.arrowDirections, kept, 1)
     data.arrowWidthsBp = pick(data.arrowWidthsBp, kept, 1)
+    data.arrowGene = pick(data.arrowGene, kept, 1)
   }
 }
 

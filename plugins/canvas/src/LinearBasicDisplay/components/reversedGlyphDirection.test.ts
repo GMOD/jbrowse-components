@@ -64,6 +64,7 @@ const EMPTY: RegionRenderData = {
   arrowYs: new Float32Array(),
   arrowHeights: new Float32Array(),
   arrowWidthsBp: new Uint32Array(),
+  arrowGene: new Uint8Array(),
   arrowDirections: new Int8Array(),
   arrowColors: new Uint32Array(),
 }
@@ -127,6 +128,7 @@ test('strand arrowheads follow the screen axis', () => {
     arrowHeights: new Float32Array([10]),
     // 40px at this block's 1 bp/px, past the narrow-feature gate.
     arrowWidthsBp: new Uint32Array([40]),
+    arrowGene: new Uint8Array([0]),
     arrowDirections: new Int8Array([1]),
     arrowColors: new Uint32Array([0xff_00_00_00]),
   }

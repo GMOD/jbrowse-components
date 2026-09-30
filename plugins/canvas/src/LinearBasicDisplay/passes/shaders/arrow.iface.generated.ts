@@ -60,8 +60,8 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[11] = uniforms.rightIsCanvasEdge
 }
 
-export const INSTANCE_STRIDE_BYTES = 24
-export const INSTANCE_STRIDE_WORDS = 6
+export const INSTANCE_STRIDE_BYTES = 28
+export const INSTANCE_STRIDE_WORDS = 7
 
 // Word indices into a Float32Array view over the instance buffer.
 export const INSTANCE_OFFSET_F32 = {
@@ -75,6 +75,7 @@ export const INSTANCE_OFFSET_U32 = {
   x: 0,
   color: 3,
   widthBp: 5,
+  gene: 6,
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
@@ -84,6 +85,7 @@ export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_height', components: 1, type: 'float', offsetBytes: 16, integer: false },
   { name: 'a_widthBp', components: 1, type: 'uint', offsetBytes: 20, integer: true },
+  { name: 'a_gene', components: 1, type: 'uint', offsetBytes: 24, integer: true },
 ]
 
 export interface InstanceArrays {
@@ -93,6 +95,7 @@ export interface InstanceArrays {
   color: ArrayLike<number>
   height: ArrayLike<number>
   widthBp: ArrayLike<number>
+  gene: ArrayLike<number>
 }
 
 export function packInstances(
@@ -102,7 +105,7 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { x, y, direction, color, height, widthBp } = arrays
+  const { x, y, direction, color, height, widthBp, gene } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = x[i]!
@@ -111,6 +114,7 @@ export function packInstances(
     u32[o + 3] = color[i]!
     f32[o + 4] = height[i]!
     u32[o + 5] = widthBp[i]!
+    u32[o + 6] = gene[i]!
   }
   return buf
 }
@@ -167,4 +171,13 @@ export function getInstanceWidthBp(u32: Uint32Array, i: number) {
 
 export function setInstanceWidthBp(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 5] = v
+}
+
+// Instance `i`'s `gene`.
+export function getInstanceGene(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 6]!
+}
+
+export function setInstanceGene(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 6] = v
 }

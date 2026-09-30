@@ -99,7 +99,7 @@ export function buildFeatureFlatbushIndex(
   const index = new Flatbush(items.length)
   for (const item of items) {
     const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
-    const arrow = strandArrowReachPx(item.strand, featureWidthPx)
+    const arrow = strandArrowReachPx(item.strand, featureWidthPx, !!item.gene)
     let hitStartBp = item.startBp - Math.max(HIT_PAD_PX, arrow.left) * bpPerPx
     let hitEndBp = item.endBp + Math.max(HIT_PAD_PX, arrow.right) * bpPerPx
     const labelData = floatingLabelsData.get(item.featureId)

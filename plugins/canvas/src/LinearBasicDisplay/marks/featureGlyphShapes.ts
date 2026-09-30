@@ -118,6 +118,7 @@ export interface ArrowChannels {
   y: Float32Array
   height: Float32Array
   widthBp: Uint32Array
+  gene: Uint8Array
   direction: Int8Array
   color: Uint32Array
   count: number
@@ -436,7 +437,8 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
   writeUniforms: writeFeatureGlyphUniforms,
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { x: xs, y: ys, height, widthBp, direction, color, count } = channels
+    const { x: xs, y: ys, height, widthBp, gene } = channels
+    const { direction, color, count } = channels
     const { scrollY } = params
     const { canvasHeight } = frame
     const toX = makeBpMapper(block)
@@ -453,7 +455,7 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
       const cx = toX(xBp)
       // A feature too narrow to be worth a direction marker gets none, so a
       // dense repeat run does not drown in overlapping arrowheads.
-      if (!arrowDraws(Math.abs(toX(otherEndBp) - cx))) {
+      if (!arrowDraws(Math.abs(toX(otherEndBp) - cx), gene[i] === 1)) {
         continue
       }
       const y = snapBoxCenterYPx(ys[i]!, scrollY)
@@ -482,7 +484,7 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
   // Stem and head together: `STEM_LENGTH_PX` out from the feature's end, as
   // tall as the taller of the two.
   ink(channels, block, frame, params, i) {
-    const { x: xs, y: ys, height, widthBp, direction } = channels
+    const { x: xs, y: ys, height, widthBp, gene, direction } = channels
     if (
       !centeredRowVisible(
         params.scrollY,
@@ -498,7 +500,7 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
     const otherEndBp = rawDir === 1 ? xBp - widthBp[i]! : xBp + widthBp[i]!
     const toX = makeBpMapper(block)
     const cx = toX(xBp)
-    if (!arrowDraws(Math.abs(toX(otherEndBp) - cx))) {
+    if (!arrowDraws(Math.abs(toX(otherEndBp) - cx), gene[i] === 1)) {
       return undefined
     }
     const dir = block.reversed ? -rawDir : rawDir

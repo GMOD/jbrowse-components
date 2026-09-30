@@ -2,7 +2,7 @@
 // 9 vertices per arrow: 6 stem vertices (two triangles) + 3 arrowhead
 // triangle vertices dispatched via vertex ID.
 //! targets: wgsl, glsl
-//! export-consts: STEM_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX, ARROW_MIN_FEATURE_WIDTH_PX
+//! export-consts: STEM_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX, ARROW_MIN_FEATURE_WIDTH_PX, GENE_ARROW_MIN_FEATURE_WIDTH_PX
 //! js-export: arrowDraws, arrowHeadHalfHeightPx
 
 import hpmath;
@@ -25,19 +25,22 @@ static const float HEAD_HALF_H_PX = 2.5;
 // an annotation that doesn't fit is dropped, never shrunk.
 static const float ARROW_MIN_FEATURE_WIDTH_PX = 14.0;
 
-// Whether a feature this wide gets its direction marker, from the gate above.
-//
-// A one-comparison function, and it earns being one because it has THREE
-// callers in two processes and they measure `featureWidthPx` differently on
-// purpose: this shader from `widthBp / bpPerPx`, `drawArrows` through the
-// block's own bp→px mapper, and — main-thread, before either renderer exists —
-// `strandArrowPadding` in layout.ts, which reserves the arrow's 8px of packing
-// room only where one will paint. That third caller is why the boundary is
-// load-bearing rather than cosmetic: reserved-but-unpainted room is what packed
-// 5000 sub-pixel stranded marks 46 rows deep instead of 2, and it is
-// `>=` vs `>` at exactly 14px that decides it.
-public bool arrowDraws(float featureWidthPx) {
-  return featureWidthPx >= ARROW_MIN_FEATURE_WIDTH_PX;
+// A gene's direction is its main fact and genes are sparse next to repeats, so
+// a gene keeps its arrow down to one arrow length: below that the marker would
+// be longer than the gene it marks. Not lower, because a sub-pixel gene would
+// reserve 9px of packing room instead of 2.
+static const float GENE_ARROW_MIN_FEATURE_WIDTH_PX = 7.0;
+
+// Whether a feature this wide gets its direction marker. One function because
+// four sites must agree: this shader, the Canvas2D/SVG arrow mark, and the two
+// main-thread readers of `strandArrowReachPx` (layout reserves the room where an
+// arrow paints, hit-testing reaches it). They measure `featureWidthPx`
+// differently on purpose, and a disagreement is either reserved-but-unpainted
+// room — what packed 5000 sub-pixel stranded marks 46 rows deep instead of 2 —
+// or a painted arrow with no room.
+public bool arrowDraws(float featureWidthPx, bool gene) {
+  float minWidthPx = gene ? GENE_ARROW_MIN_FEATURE_WIDTH_PX : ARROW_MIN_FEATURE_WIDTH_PX;
+  return featureWidthPx >= minWidthPx;
 }
 
 // Half-height of the arrowhead, never more than half the box it comes off.
@@ -62,6 +65,8 @@ struct ArrowInstance {
   // pixel decision, and bpPerPx is only known at draw time. A length, not a
   // coordinate, so it needs no hp splitting.
   uint  widthBp   : ATTR5;
+  // 1 when the feature is a gene, which takes the lower width gate.
+  uint  gene      : ATTR6;
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
@@ -76,7 +81,7 @@ static const float4 OFFSCREEN = float4(2.0, 2.0, 0.0, 1.0);
 
 [shader("vertex")]
 VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
-  if (!arrowDraws(float(inst.widthBp) / u.bpPerPx)) {
+  if (!arrowDraws(float(inst.widthBp) / u.bpPerPx, inst.gene != 0u)) {
     VsOut culled;
     culled.position = OFFSCREEN;
     culled.color = float4(0.0);

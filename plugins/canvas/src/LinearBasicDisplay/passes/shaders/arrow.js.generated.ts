@@ -8,8 +8,14 @@ function _min(a: number, b: number) {
   return b < a || Number.isNaN(a) ? b : a
 }
 
-export function arrowDraws(featureWidthPx: number): boolean {
-  return (featureWidthPx >= 14.0)
+export function arrowDraws(featureWidthPx: number, gene: boolean): boolean {
+  let minWidthPx: number
+  if (gene) {
+    minWidthPx = 7.0
+  } else {
+    minWidthPx = 14.0
+  }
+  return (featureWidthPx >= minWidthPx)
 }
 
 function snapBoxHeightPx(heightPx: number): number {

@@ -26,6 +26,7 @@ const EMPTY = {
   arrowYs: new Float32Array(),
   arrowHeights: new Float32Array(),
   arrowWidthsBp: new Uint32Array(),
+  arrowGene: new Uint8Array(),
   arrowDirections: new Int8Array(),
   arrowColors: new Uint32Array(),
 } satisfies RegionRenderData

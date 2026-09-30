@@ -34,7 +34,7 @@ export interface ArrowData extends PrimitiveBase {
   // Height of the box this arrow comes off, which caps its head.
   height: number
   // In bp, because the worker never sees bpPerPx: the renderers drop the arrow
-  // when this comes out narrower than ARROW_MIN_FEATURE_WIDTH_PX on screen.
+  // when this comes out narrower than its width gate on screen (`arrowDraws`).
   widthBp: number
   direction: number
 }
@@ -114,6 +114,7 @@ export function packRenderArrays(
   arrows: ArrowData[],
   regionStart: number,
   regionEnd: number,
+  flatbushItems: readonly { gene?: boolean }[] = [],
 ): PackedPrimitives {
   const visibleRects = rects.filter(r =>
     spanInWindow(r.start, r.end, regionStart, regionEnd),
@@ -174,6 +175,7 @@ export function packRenderArrays(
   const arrowYs = new Float32Array(visibleArrows.length)
   const arrowHeights = new Float32Array(visibleArrows.length)
   const arrowWidthsBp = new Uint32Array(visibleArrows.length)
+  const arrowGene = new Uint8Array(visibleArrows.length)
   const arrowDirections = new Int8Array(visibleArrows.length)
   const arrowColors = new Uint32Array(visibleArrows.length)
   const arrowColorClasses = colorClassArray(visibleArrows)
@@ -186,6 +188,7 @@ export function packRenderArrays(
     arrowYs[i] = arrow.y
     arrowHeights[i] = arrow.height
     arrowWidthsBp[i] = arrow.widthBp
+    arrowGene[i] = flatbushItems[arrow.flatbushIdx]?.gene ? 1 : 0
     arrowDirections[i] = arrow.direction
     arrowColors[i] = arrow.color
     arrowFeatureIndices[i] = arrow.flatbushIdx
@@ -215,6 +218,7 @@ export function packRenderArrays(
     arrowYs,
     arrowHeights,
     arrowWidthsBp,
+    arrowGene,
     arrowDirections,
     arrowColors,
     arrowColorClasses,

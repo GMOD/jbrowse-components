@@ -41,6 +41,7 @@ function regionData(numRects: number, over: Partial<RegionRenderData> = {}) {
     arrowYs: new Float32Array(0),
     arrowHeights: new Float32Array(0),
     arrowWidthsBp: new Uint32Array(0),
+    arrowGene: new Uint8Array(0),
     arrowDirections: new Int8Array(0),
     arrowColors: new Uint32Array(0),
     ...over,
@@ -150,6 +151,7 @@ describe('draw passes', () => {
       arrowYs: new Float32Array(2),
       arrowHeights: new Float32Array(2).fill(10),
       arrowWidthsBp: new Uint32Array(2).fill(50),
+      arrowGene: new Uint8Array(2),
       arrowDirections: new Int8Array(2).fill(1),
       arrowColors: new Uint32Array(2).fill(0xff00_00ff),
     })

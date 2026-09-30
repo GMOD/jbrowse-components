@@ -1099,3 +1099,22 @@ describe("a glyph's own palette is the default the track's color beats", () => {
     expect(key).toEqual([])
   })
 })
+
+describe('collectRenderData arrow gene lane', () => {
+  const boxOf = (type: string) =>
+    collect(boxLayout(mockFeature({ type, id: 'f1', start: 100, end: 110 })))
+      .arrowGene
+
+  it('flags the arrow of a gene-type feature', () => {
+    expect([...boxOf('gene')]).toEqual([1])
+  })
+
+  it('leaves the arrow of a repeat or an alignment unflagged', () => {
+    expect([...boxOf('repeat_region')]).toEqual([0])
+    expect([...boxOf('cDNA_match')]).toEqual([0])
+  })
+
+  it('flags each transcript arrow of a stacked gene', () => {
+    expect([...collect(geneWithTwoTranscripts()).arrowGene]).toEqual([1, 1])
+  })
+})

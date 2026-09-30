@@ -46,6 +46,7 @@ decides the question:
 | line | `lineYs`, `lineColors`, `lineColorClasses`, `lineFeatureIndices`, `lineLabelRows`, `lineChildOrdinals` | as the rect's |
 | arrow | `arrowXs` | derived: `strand === 1 ? end : start` — a point, not a span |
 | arrow | `arrowWidthsBp` | derived: `end - start`, carried in bp because the worker never sees `bpPerPx` |
+| arrow | `arrowGene` | derived: the feature's `flatbushItems` `gene` bit, which picks the arrow's width gate ([ADR-200](adr-200-a-gene-keeps-its-strand-arrow-down-to-one-arrow-length.md)); a thirtieth lane the counts and measurement below predate |
 | arrow | `arrowDirections` | derived: strand |
 | arrow | `arrowYs`, `arrowHeights`, `arrowColors`, `arrowColorClasses`, `arrowFeatureIndices`, `arrowLabelRows`, `arrowChildOrdinals` | as the rect's |
 

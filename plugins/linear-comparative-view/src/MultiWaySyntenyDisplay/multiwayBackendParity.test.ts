@@ -67,6 +67,7 @@ const glyphs: LaneGlyphData = {
   arrowYs: Float32Array.of(GLYPH_CENTRE),
   arrowHeights: Float32Array.of(GLYPH_H),
   arrowWidthsBp: Uint32Array.of(160),
+  arrowGene: Uint8Array.of(1),
   arrowDirections: Int8Array.of(1),
   arrowColors: Uint32Array.of(0xff333333),
   outlineColor: 0,

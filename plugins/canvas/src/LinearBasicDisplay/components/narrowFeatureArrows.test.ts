@@ -4,7 +4,10 @@
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
-import { ARROW_MIN_FEATURE_WIDTH_PX } from './sharedRendererConstants.ts'
+import {
+  ARROW_MIN_FEATURE_WIDTH_PX,
+  GENE_ARROW_MIN_FEATURE_WIDTH_PX,
+} from './sharedRendererConstants.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -26,6 +29,7 @@ const EMPTY = {
   arrowYs: new Float32Array(),
   arrowHeights: new Float32Array(),
   arrowWidthsBp: new Uint32Array(),
+  arrowGene: new Uint8Array(),
   arrowDirections: new Int8Array(),
   arrowColors: new Uint32Array(),
 } satisfies RegionRenderData
@@ -81,13 +85,14 @@ function countArrowheads(region: RegionRenderData, reversed: boolean) {
 }
 
 // `x` is the arrow's anchor: the feature's end on +, its start on -.
-function arrowRegion(x: number, widthBp: number, strand: 1 | -1) {
+function arrowRegion(x: number, widthBp: number, strand: 1 | -1, gene = false) {
   return {
     ...EMPTY,
     arrowXs: new Uint32Array([x]),
     arrowYs: new Float32Array([20]),
     arrowHeights: new Float32Array([10]),
     arrowWidthsBp: new Uint32Array([widthBp]),
+    arrowGene: new Uint8Array([gene ? 1 : 0]),
     arrowDirections: new Int8Array([strand]),
     arrowColors: new Uint32Array([0xff_00_00_00]),
   } satisfies RegionRenderData
@@ -112,4 +117,22 @@ test('the gate measures the same feature on either strand', () => {
   const wide = ARROW_MIN_FEATURE_WIDTH_PX + 1
   expect(countArrowheads(arrowRegion(100, narrow, -1), false)).toBe(0)
   expect(countArrowheads(arrowRegion(100, wide, -1), false)).toBe(1)
+})
+
+// Genes are sparse next to repeats and their direction is the main fact, so
+// they keep the arrow below the repeat gate, down to one arrow length.
+test.each([false, true])(
+  'a gene between its own gate and the repeat gate keeps its arrow (reversed %s)',
+  reversed => {
+    const width = GENE_ARROW_MIN_FEATURE_WIDTH_PX + 1
+    expect(width).toBeLessThan(ARROW_MIN_FEATURE_WIDTH_PX)
+    expect(countArrowheads(arrowRegion(100, width, 1, true), reversed)).toBe(1)
+    expect(countArrowheads(arrowRegion(100, width, -1, true), reversed)).toBe(1)
+    expect(countArrowheads(arrowRegion(100, width, 1, false), reversed)).toBe(0)
+  },
+)
+
+test('a gene shorter than one arrow draws no arrow', () => {
+  const width = GENE_ARROW_MIN_FEATURE_WIDTH_PX - 1
+  expect(countArrowheads(arrowRegion(100, width, 1, true), false)).toBe(0)
 })

@@ -700,6 +700,7 @@ class GlyphBuilder {
       arrowYs: Float32Array.from(this.arrowYs),
       arrowHeights: Float32Array.from(this.arrowHeights),
       arrowWidthsBp: Uint32Array.from(this.arrowWidths),
+      arrowGene: new Uint8Array(this.arrowXs.length).fill(1),
       arrowDirections: Int8Array.from(this.arrowDirections),
       arrowColors: Uint32Array.from(this.arrowColors),
       outlineColor: this.outlineColor,
@@ -920,7 +921,7 @@ export function buildLaneCells({
     for (const [x1, x2] of full) {
       glyphs.rect(x1, x2, row.top, row.height, fill.packed)
     }
-    // the passes cull an arrow below ARROW_MIN_FEATURE_WIDTH_PX themselves
+    // every lane here is a gene, so the passes cull an arrow below the gene gate
     if (pxDir !== 0) {
       glyphs.arrow(
         pxDir === 1 ? right : left,

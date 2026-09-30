@@ -9,8 +9,9 @@ import { arrowDraws } from '../passes/shaders/arrow.js.generated.ts'
 export function strandArrowReachPx(
   strand: number | undefined,
   featureWidthPx: number,
+  gene: boolean,
 ) {
-  const reach = strand && arrowDraws(featureWidthPx) ? STEM_LENGTH_PX : 0
+  const reach = strand && arrowDraws(featureWidthPx, gene) ? STEM_LENGTH_PX : 0
   return {
     left: strand === -1 ? reach : 0,
     right: strand === 1 ? reach : 0,

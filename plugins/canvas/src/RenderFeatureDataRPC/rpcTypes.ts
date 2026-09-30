@@ -134,8 +134,10 @@ export interface FeatureDataResult {
   // so a 3px body does not carry a marker taller than itself.
   arrowHeights: Float32Array
   // Carried as bp because the worker never sees bpPerPx; both renderers drop
-  // the arrow below ARROW_MIN_FEATURE_WIDTH_PX on screen.
+  // the arrow below its width gate on screen.
   arrowWidthsBp: Uint32Array
+  // 1 for an arrow off a gene, which takes the lower gate (`arrowDraws`).
+  arrowGene: Uint8Array
   arrowDirections: Int8Array
   arrowColors: Uint32Array
   arrowColorClasses: Uint8Array

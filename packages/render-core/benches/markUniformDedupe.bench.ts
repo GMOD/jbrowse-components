@@ -328,6 +328,7 @@ const GLYPH_REGION = {
   arrowYs: new Float32Array(N),
   arrowHeights: new Float32Array(N),
   arrowWidthsBp: new Uint32Array(N),
+  arrowGene: new Uint8Array(N),
   arrowDirections: new Int8Array(N),
   arrowColors: new Uint32Array(N),
 }
@@ -366,6 +367,7 @@ const arrowLens = (d: GlyphRegion) => ({
   y: d.arrowYs,
   height: d.arrowHeights,
   widthBp: d.arrowWidthsBp,
+  gene: d.arrowGene,
   direction: d.arrowDirections,
   color: d.arrowColors,
   count: d.arrowYs.length,

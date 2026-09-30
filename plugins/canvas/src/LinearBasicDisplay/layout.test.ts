@@ -907,6 +907,44 @@ test('a feature too narrow to draw its arrow reserves no room for one', () => {
   expect(tops(10)).toEqual([0, 0])
 })
 
+test('a gene reserves arrow room down to one arrow length, a repeat does not', () => {
+  const tops = (widthBp: number, gene: boolean) =>
+    layout(
+      new Map([
+        [
+          0,
+          makeFeatureData({
+            features: [
+              {
+                featureId: 'f1',
+                startBp: 100,
+                endBp: 100 + widthBp,
+                height: 20,
+                strand: 1,
+                gene,
+              },
+              {
+                featureId: 'f2',
+                startBp: 103 + widthBp,
+                endBp: 103 + 2 * widthBp,
+                height: 20,
+                strand: 1,
+                gene,
+              },
+            ],
+          }),
+        ],
+      ]),
+      1,
+    )
+      .get(0)!
+      .flatbushItems.map(f => f.topPx)
+
+  expect(tops(10, true)[1]).toBeGreaterThan(0)
+  expect(tops(10, false)).toEqual([0, 0])
+  expect(tops(6, true)).toEqual([0, 0])
+})
+
 test('unstranded features without arrow padding can share a row when close', () => {
   const data = makeFeatureData({
     features: [

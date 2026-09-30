@@ -41,6 +41,7 @@ export function collectRenderData(
     collector.arrows,
     regionStart,
     regionEnd,
+    collector.flatbushItems,
   )
 
   const labelKinds = { name: false, description: false, subfeature: false }
