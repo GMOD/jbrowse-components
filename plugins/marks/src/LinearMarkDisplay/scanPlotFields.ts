@@ -40,7 +40,7 @@ export interface PlotFields {
    * How the scanned features state a second locus, where any of them do: the
    * `mate` a paired adapter filled, or a breakend or symbolic `ALT`.
    */
-  mated?: 'mate' | 'alt'
+  mated?: 'mate' | 'alt' | 'pair'
   /** Every scanned feature carries SAM `flags`: they are aligned reads. */
   reads?: true
 }

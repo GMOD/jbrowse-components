@@ -917,6 +917,40 @@ test('mate reads a symbolic allele off END and CHR2, and names its kind where IN
   expect(out.map(f => f.id())).toEqual(['sv100', 'sv500', 'sv700'])
 })
 
+test('mate answers a read pair once, from the read met first, where the file places its next segment', () => {
+  const read = (
+    id: string,
+    start: number,
+    mate: [string, number] | undefined,
+  ) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'ctgA',
+      start,
+      end: start + 100,
+      flags: mate ? 1 : 0,
+      ...(mate ? { next_ref: mate[0], next_pos: mate[1] } : {}),
+    })
+  const out = runTransforms(
+    [
+      read('a1', 100, ['ctgA', 400]),
+      read('lone', 150, undefined),
+      read('a2', 400, ['ctgA', 100]),
+      read('b1', 500, ['ctgB', 50]),
+    ],
+    [{ type: 'mate' }],
+  )
+  expect(out.map(f => f.id())).toEqual(['a1', 'b1'])
+  expect(out.map(f => f.get('mate'))).toEqual([
+    { refName: 'ctgA', start: 400, end: 401, mateDirection: 0 },
+    { refName: 'ctgB', start: 50, end: 51, mateDirection: 0 },
+  ])
+  expect(rows(out, 'start', 'flags', 'svType')).toEqual([
+    [100, 1, undefined],
+    [500, 1, undefined],
+  ])
+})
+
 // a breakend's ALT says only that it is one; the class the record declares
 // is the event, and each allele of a record keeps its own
 test('mate names each link the class its allele states', () => {

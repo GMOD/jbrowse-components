@@ -455,10 +455,21 @@ Splice junctions from a STAR file, stroked by read support and labelled with it:
 ```
 
 A paired record names its other end elsewhere: a BEDPE or STAR-Fusion adapter
-fills a `mate` field, and a VCF states each end in an `ALT`. The `mate` step
-reads either into `mate.refName`, `mate.start` and `mate.end`, one feature per
-end, with `svType` beside them; `x2` then names those as a locus, so a mate on
-another chromosome draws wherever the view shows it.
+fills a `mate` field, a VCF states each end in an `ALT`, and a paired read
+carries its mate's position as `next_ref` and `next_pos`. The `mate` step reads
+any of them into `mate.refName`, `mate.start` and `mate.end`, one feature per
+end and a read pair once, with `svType` beside a variant's; `x2` then names
+those as a locus, so a mate on another chromosome draws wherever the view shows
+it. Over a BAM that is the read-pair arcs of the alignments track's band, one
+curve per pair, coloured by whatever field the reads carry:
+
+```json
+{
+  "mark": "link",
+  "transform": [{ "type": "mate" }],
+  "encoding": { "color": "pair_orientation" }
+}
+```
 
 **A track whose records name a mate draws the links with nothing configured**:
 pick **Marks** from the track menu's display types over a BEDPE, a STAR-Fusion

@@ -1099,23 +1099,37 @@ function mateFields(
   }
 }
 
+// A paired read's mate, where the file places one: the sequence and position
+// its next segment aligns to, one base of it.
+function pairedMate(f: Feature): MateEnd | undefined {
+  const refName = f.get('next_ref')
+  const pos = f.get('next_pos')
+  return typeof refName === 'string' && typeof pos === 'number' && pos >= 0
+    ? { refName, start: pos, end: pos + 1, mateDirection: 0 }
+    : undefined
+}
+
 /**
  * #api
  * How a record states its other end, or undefined where it states none: the
- * `mate` a paired adapter fills (BEDPE, STAR-Fusion), or an `ALT` the breakend
- * and symbolic-SV readers resolve. The `mate` step admits exactly the features
- * this names one for, so a caller deciding whether links are the picture a
- * track wants asks here rather than re-reading the fields.
+ * `mate` a paired adapter fills (BEDPE, STAR-Fusion), an `ALT` the breakend
+ * and symbolic-SV readers resolve, or a read's `next_ref` and `next_pos`. The
+ * `mate` step admits exactly the features this names one for, so a caller
+ * deciding whether links are the picture a track wants asks here rather than
+ * re-reading the fields.
  */
 export function matedBy(f: Feature) {
   if (statedMate(f)) {
     return 'mate' as const
   }
   const alts = f.get('ALT')
-  return Array.isArray(alts) &&
+  if (
+    Array.isArray(alts) &&
     (alts as string[]).some((alt, i) => junctionEnds(f, alt, i))
-    ? ('alt' as const)
-    : undefined
+  ) {
+    return 'alt' as const
+  }
+  return pairedMate(f) ? ('pair' as const) : undefined
 }
 
 /**
@@ -1168,13 +1182,11 @@ function mates({ table, bounds }: Staged): Staged {
     const seen = new Set<string>()
     const admit = (
       i: number,
-      f: Feature,
-      mate: MateEnd,
+      here: string,
+      there: string,
       written: Record<string, unknown>,
       id?: string,
     ) => {
-      const here = `${f.get('refName')}:${f.get('start')}-${f.get('end')}`
-      const there = `${mate.refName}:${mate.start}-${mate.end}`
       const key = here < there ? `${here}|${there}` : `${there}|${here}`
       if (!seen.has(key)) {
         seen.add(key)
@@ -1183,17 +1195,36 @@ function mates({ table, bounds }: Staged): Staged {
         ids.push(id)
       }
     }
+    const span = (f: Feature, mate: MateEnd) =>
+      [
+        `${f.get('refName')}:${f.get('start')}-${f.get('end')}`,
+        `${mate.refName}:${mate.start}-${mate.end}`,
+      ] as const
     for (let i = bounds[s]!; i < bounds[s + 1]!; i++) {
       const f = table.row(i)
       const stated = statedMate(f)
       if (stated) {
         const ends = junctionEnds(f)!
         const mate = { ...stated, mateDirection: ends.mate.keeps }
-        admit(i, f, mate, mateFields(f, undefined, mate, ends.own.keeps))
+        admit(
+          i,
+          ...span(f, mate),
+          mateFields(f, undefined, mate, ends.own.keeps),
+        )
         continue
       }
       const alts = f.get('ALT')
       if (!Array.isArray(alts)) {
+        // each read of a pair names the other's start, so the pair is one key
+        const pair = pairedMate(f)
+        if (pair) {
+          admit(
+            i,
+            `${f.get('refName')}:${f.get('start')}`,
+            `${pair.refName}:${pair.start}`,
+            { mate: pair, mateDirection: 0 },
+          )
+        }
         continue
       }
       for (const [a, alt] of (alts as string[]).entries()) {
@@ -1209,8 +1240,7 @@ function mates({ table, bounds }: Staged): Staged {
         }
         admit(
           i,
-          f,
-          mate,
+          ...span(f, mate),
           mateFields(f, alt, mate, ends.own.keeps, a),
           alts.length > 1 ? `${f.id()}#${a}` : undefined,
         )

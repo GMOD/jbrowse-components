@@ -163,6 +163,21 @@ test('a paired record draws links, whichever way it names its other end', () => 
   expect(defaultPlotMarks(breakends)).toEqual(defaultPlotMarks(bedpe))
 })
 
+test('paired reads name their other end, and still draw their depth by default', () => {
+  const reads = scanPlotFields(
+    features([
+      { flags: 99, score: 60, next_ref: 'ctgA', next_pos: 400 },
+      { flags: 147, score: 60, next_ref: 'ctgA', next_pos: 100 },
+    ]),
+    { listedSources: 0 },
+  )
+  expect(reads.mated).toBe('pair')
+  expect(reads.reads).toBe(true)
+  expect(defaultPlotMarks(reads)).toEqual([
+    { mark: 'bar', transform: [{ type: 'coverage' }] },
+  ])
+})
+
 test('an ordinary VCF names no other end, so its default is what its fields say', () => {
   const snvs = scanPlotFields(
     features([
