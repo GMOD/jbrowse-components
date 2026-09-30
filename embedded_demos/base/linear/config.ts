@@ -7,76 +7,53 @@ export const config = {
     },
     geneticCodes: { chrM: 2 },
   },
+  // Whole-track shorthand: the type and adapter come from each file's extension
   tracks: [
     {
-      type: 'FeatureTrack',
       trackId: 'genes',
       name: 'NCBI RefSeq Genes',
       assemblyNames: ['hg38'],
       category: ['Genes'],
-      adapter: {
-        type: 'Gff3TabixAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
       textSearching: {
         textSearchAdapter:
           'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
       },
     },
     {
-      type: 'FeatureTrack',
       trackId: 'repeats_hg38',
       name: 'Repeats',
       assemblyNames: ['hg38'],
       category: ['Annotation'],
-      adapter: {
-        type: 'BigBedAdapter',
-        uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
-      },
+      uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
     },
     {
-      type: 'AlignmentsTrack',
       trackId: 'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
       name: 'NA12878 Exome',
       assemblyNames: ['hg38'],
       category: ['1000 Genomes', 'Alignments'],
-      adapter: {
-        type: 'CramAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
     },
     {
-      type: 'VariantTrack',
       trackId:
         'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
       name: '1000 Genomes Variant Calls',
       assemblyNames: ['hg38'],
       category: ['1000 Genomes', 'Variants'],
-      adapter: {
-        type: 'VcfTabixAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
     },
     {
-      type: 'QuantitativeTrack',
       trackId: 'hg38.100way.phyloP100way',
       name: 'hg38.100way.phyloP100way',
       category: ['Conservation'],
       assemblyNames: ['hg38'],
-      adapter: {
-        type: 'BigWigAdapter',
-        uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
-      },
+      uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
     },
     {
-      type: 'AlignmentsTrack',
       trackId: 'skbr3_pacbio',
       name: 'SKBR3 pacbio',
       assemblyNames: ['hg38'],
-      adapter: {
-        type: 'BamAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam',
     },
   ],
   defaultSession: {

@@ -43,6 +43,70 @@ that defines it. A `jexl:` prefix turns any slot into a per-feature callback
 ([using jexl callbacks](/docs/config_guides/jexl)). **About → Copy config** on a
 track writes out what you set in the app.
 
+## Shorthand and longhand
+
+The one-line `{ trackId, uri }` track above is the **whole-track shorthand**.
+JBrowse unpacks a shorthand one layer at a time until it reaches the longhand
+the engine reads, and every layer is also a valid config to write yourself. A
+key written at any layer wins over what the layers below would fill in.
+
+The shortest form names the file:
+
+```json addtrack
+{
+  "trackId": "genes",
+  "uri": "volvox.sort.gff3.gz",
+  "assemblyNames": ["volvox"]
+}
+```
+
+The first unpacking reads the extension and adds the track `type`, the adapter
+with its `uri`, and a `name` from the file name:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes",
+  "name": "volvox.sort.gff3.gz",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" }
+}
+```
+
+The second unpacking is the adapter's own `uri` shorthand, which becomes its
+location slot and the `.tbi` index beside it:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes",
+  "name": "volvox.sort.gff3.gz",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "volvox.sort.gff3.gz",
+      "locationType": "UriLocation"
+    },
+    "index": {
+      "location": {
+        "uri": "volvox.sort.gff3.gz.tbi",
+        "locationType": "UriLocation"
+      },
+      "indexType": "TBI"
+    }
+  }
+}
+```
+
+All three describe one track. Write the layer that says what you mean: the
+shortest for a file the extension describes, the middle for a different `type`
+or a `displays` array, the last for an index that does not sit beside its file.
+An assembly unpacks the same way, `{ "name": "volvox", "uri": "volvox.2bit" }`
+becoming a `sequence` adapter
+([file types](/docs/config_guides/file_types#the-whole-track-shorthand) lists
+the extensions).
+
 ## A complete config
 
 A config.json with the settings people usually reach for: a track of each common

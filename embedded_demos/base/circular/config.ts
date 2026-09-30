@@ -7,17 +7,14 @@ export const config = {
       uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
     },
   },
+  // Whole-track shorthand: the type and adapter come from each file's extension
   tracks: [
     {
-      type: 'VariantTrack',
       trackId: 'pacbio_sv_vcf',
       name: 'HG002 Pacbio SV (VCF)',
       assemblyNames: ['hg19'],
       category: ['GIAB'],
-      adapter: {
-        type: 'VcfTabixAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz',
-      },
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz',
     },
   ],
   defaultSession: {
