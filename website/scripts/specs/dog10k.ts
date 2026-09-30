@@ -880,16 +880,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // group swatch legend and the genotype legend under it. Both halves stay
     // the same height, since the pair is read across.
     viewportHeight: 1323,
-    // The gene's name, because the RefSeq row cannot supply it, plus the caveat
-    // that is the reason this locus is on the page at all: the column is
-    // presence/absence, and the measurement AMY2B is known for is copies. A
-    // reader who takes "1/1" for "the published high copy number" has drawn the
-    // wrong conclusion from a correct figure. The pill sits left of the block
-    // over lane that paints nothing, so no cell is covered.
+    // The gene's name, because the RefSeq row cannot supply it, and what a cell
+    // records: AMY2B is known for its copy number, and a "1/1" here marks a
+    // carrier of the duplication. The pill sits left of the block over lane
+    // that paints nothing, so no cell is covered.
     annotations: [
       {
         type: 'text',
-        text: 'LOC607460 is AMY2B.\nPresence or absence,\nnot copy number.',
+        text: 'LOC607460 is AMY2B.\nCells mark carriers\nof the duplication.',
         fontSize: 22,
         maxWidth: 300,
         // `textAlign: 'end'` so the offset places the pill's RIGHT edge, which
@@ -970,16 +968,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyText: 'chr15',
     readyTimeout: 90000,
     viewportHeight: 1323,
-    // Same two facts as the AMY2B pill and the same height in the lane, so the
-    // pair reads as one figure: what the LOC symbol is, and which way this one
-    // runs. The offsets are smaller than the AMY2B part's because the anchor is
+    // The same height in the lane as the AMY2B pill, so the pair reads as one
+    // figure; the caption says who carries it. The offsets are smaller than the AMY2B part's because the anchor is
     // an insertion near the middle of a 5.5 kb window rather than a block whose
     // left breakpoint is most of the way across a 36 kb one, so -430 there and
     // -430 here are not the same distance from the sidebar.
     annotations: [
       {
         type: 'text',
-        text: 'LOC475395 is RNASE1.\nHere the wolves are\nthe carriers.',
+        text: 'LOC475395 is RNASE1.',
         fontSize: 22,
         maxWidth: 300,
         // Right-aligned for the same reason as the AMY2B pill: the offset has
