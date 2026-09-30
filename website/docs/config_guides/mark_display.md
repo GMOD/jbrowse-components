@@ -259,8 +259,10 @@ or overlapping spans stay readable.
   Each distinct value takes a colour derived from itself, so every region paints
   it alike. `domain` lists values in legend order and spends `range` from the
   first entry; values it leaves out follow, sorted. One row per colour, so two
-  values painted alike share a row. A key of one colour, or over 20 rows, is not
-  drawn.
+  values painted alike share a row. Two unlisted values can derive one colour;
+  the track's corner notice says which, and **Pin distinct colors** in the track
+  menu writes every value the key lists into `domain`, so each spends its own. A
+  key of one colour, or over 20 rows, is not drawn.
 
 - **linear** or **log** —
   `{ "field": "signal", "scale": "linear", "domainMin": 0, "domainMax": 50, "range": ["white", "red"] }`
@@ -315,7 +317,9 @@ are the shapes themselves:
 ```
 
 A scale is a lookup from the field's value into `domain` and `range`, so it
-costs a fraction of the per-feature jexl callback it replaces.
+costs a fraction of the per-feature jexl callback it replaces. With three shapes
+to hand out, two unlisted values often derive the same one; the corner notice
+names them, and **Pin distinct shapes** writes the key's values into `domain`.
 
 ## Several marks
 

@@ -126,6 +126,7 @@ import {
   DEFAULT_LINE_WIDTH_PX,
   DEFAULT_LINK_STROKE_PX,
 } from './markVocabulary.ts'
+import { sharedKeyNotice, sharedKeysOf } from './pinDistinct.ts'
 import { defaultPlotMarks } from './plotDefault.ts'
 import {
   drawnKeysOf,
@@ -1426,11 +1427,24 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The config problems as lines, and `dataNotices`: what the corner's
-         * problems notice lists. The skipped count has a chip of its own.
+         * The keys whose unlisted values collide on one colour or shape, each
+         * with the domain Pin distinct colors or shapes writes.
+         */
+        get sharedKeys() {
+          return sharedKeysOf(this.legendSections)
+        },
+        /**
+         * #getter
+         * The config problems as lines, `dataNotices`, and the keys whose
+         * values collide: what the corner's problems notice lists. The
+         * skipped count has a chip of its own.
          */
         get cornerNotices(): string[] {
-          return [...this.configProblems.map(problemText), ...this.dataNotices]
+          return [
+            ...this.configProblems.map(problemText),
+            ...this.dataNotices,
+            ...this.sharedKeys.map(sharedKeyNotice),
+          ]
         },
         /**
          * #getter
@@ -1850,6 +1864,26 @@ export function stateModelFactory(
           for (const mark of self.conf.marks) {
             if (mark.mark === 'point') {
               setConf(mark, ['encoding', 'size', 'value'], val)
+            }
+          }
+        },
+        /**
+         * #action
+         * The categorical analogue of the min/max dialog's "Use current
+         * range": every value a colliding key lists goes into the channel's
+         * `domain`, in key order after what it already lists, so each spends
+         * a slot of its own.
+         */
+        pinDistinct(channel: 'color' | 'shape') {
+          for (const key of self.sharedKeys) {
+            if (key.channel === channel) {
+              for (const i of key.markIndexes) {
+                setConf(
+                  self.conf.marks[i]!,
+                  ['encoding', channel, 'domain'],
+                  key.pinned,
+                )
+              }
             }
           }
         },
