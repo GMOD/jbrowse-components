@@ -47,6 +47,9 @@ ADR-197), and lacks the rest.
     1.70-2.57x<!--m:interval-bin-maf-identity.fusedVsMaf.range--> its time; the
     declared identity takes the one-walk kernel behind its `cells`, `bin` and
     `aggregate` steps, as ADR-197's fusion took the bin and the aggregate.
+    Landed as [ADR-201](adr-201-a-cells-step-bins-as-it-walks.md), at
+    0.97-1.58x<!--m:cells-walk-maf-identity.walkVsMaf.range--> the MAF
+    display's time.
 - **The mark display keeps drawing MAF** for a declared plot (`marks_maf_cells`,
   `marks_maf_identity`). What it lacks against the MAF display — a band stack,
   a coarse tier of per-row records, height-gated per-base text, the insertion

@@ -1,0 +1,107 @@
+{
+  "id": "cells-walk-maf-identity",
+  "measured": "2026-09-30",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "npx esbuild plugins/maf/benches/mafOnMarks.bench.ts --bundle --platform=node --format=esm --outfile=/tmp/mafOnMarks.mjs --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && node --expose-gc --max-old-space-size=14000 /tmp/mafOnMarks.mjs --rounds=9 --identity --json",
+    "notes": "On ada (24 cores, load 13-16), a collection before each arm. One fetched region of the synthetic MAF-tabix fixture per shape, identity per species over 64 bp bins. MAF display is the worker's pack, placeMafRegionData and buildIdentityRuns; control is the same declared again. Cells then bin is the declared identity with `cells` writing its runs and ADR-197's bin-and-aggregate kernel binning them (the bench's bin-fused-typed-identity arm); walk is the same declaration as the display runs it, `cells`, bin and aggregate as binnedCellMatches (typed-identity). Both include mafFeatureTableOf, the species split and the encode as a bar's y. Interleaved round-robin with the order rotated, MIN across rounds. Error is the distance from bases matched over bases compared per species and bin, counted off the text; the walk's rows are checked equal to the three steps' before timing. A second run the same hour put walk vs cells then bin at 0.56-0.73x and walk vs MAF display at 0.92-1.58x."
+  },
+  "columns": [
+    {
+      "key": "shape",
+      "label": "region"
+    },
+    {
+      "key": "bins",
+      "label": "bins",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "mafIdentityMs",
+      "label": "MAF display",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlIdentityMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "binFusedIdentityMs",
+      "label": "cells then bin",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "typedIdentityMs",
+      "label": "walk",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "walkVsBinned",
+      "label": "walk vs cells then bin",
+      "format": "x",
+      "precision": 2,
+      "derived": "typedIdentityMs / binFusedIdentityMs",
+      "align": "right"
+    },
+    {
+      "key": "walkVsMaf",
+      "label": "walk vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "typedIdentityMs / mafIdentityMs",
+      "align": "right"
+    },
+    {
+      "key": "pipelineWorst",
+      "label": "worst error",
+      "format": "ratio",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "shape": "26 species, 1600 blocks of 250 columns",
+        "bins": 194792,
+        "mafIdentityMs": 117.2,
+        "controlIdentityMs": 115.5,
+        "binFusedIdentityMs": 284.6,
+        "typedIdentityMs": 185.4,
+        "pipelineWorst": 0
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 20000 blocks of 8 columns",
+        "bins": 81250,
+        "mafIdentityMs": 239.3,
+        "controlIdentityMs": 243.1,
+        "binFusedIdentityMs": 308.1,
+        "typedIdentityMs": 232.2,
+        "pipelineWorst": 0
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 200 blocks of 250 columns",
+        "bins": 440390,
+        "mafIdentityMs": 256.9,
+        "controlIdentityMs": 240.3,
+        "binFusedIdentityMs": 605.6,
+        "typedIdentityMs": 352.5,
+        "pipelineWorst": 0
+      }
+    }
+  ]
+}

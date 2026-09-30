@@ -70,17 +70,20 @@ span over narrow MAF-tabix blocks to
 0.78x<!--m:maf-parse-into-packer.26-species-20000-blocks-of-8-columns-maftabixadapter.typedDirectVsFeatures-->
 of its time and leaves wide blocks and 470 species level.
 
-One lever is left on the data path, measured:
-
-- **The `cells` walk** is 133 ms of the 220 ms request on ada, a byte kernel
-  the MAF display's `buildMafChannels` also pays. A `cells` that bins as it
-  walks, where a `bin` follows it, is the obvious fusion for the identity,
-  which makes runs and then bins them where `buildIdentityRuns` counts matches
-  in one walk. The declared identity, the bin and aggregate already one
-  kernel (ADR-197), takes
-  468.9ms<!--m:interval-bin-maf-identity.470-species-200-blocks-of-250-columns.typedIdentityMs-->
-  against the MAF display's
-  182.6ms<!--m:interval-bin-maf-identity.470-species-200-blocks-of-250-columns.mafIdentityMs-->.
+The identity lever on the data path landed as
+[ADR-201](../architecture-decision-records/adr-201-a-cells-step-bins-as-it-walks.md):
+a `cells` ahead of the interval bin and the weighted mean of `match` runs as
+one walk over the bytes, counting each bin's matches as `buildIdentityRuns`
+does. At 470 species the declared identity takes
+352.5ms<!--m:cells-walk-maf-identity.470-species-200-blocks-of-250-columns.typedIdentityMs-->
+against the MAF display's
+256.9ms<!--m:cells-walk-maf-identity.470-species-200-blocks-of-250-columns.mafIdentityMs-->,
+where `cells` then the bin kernel took
+605.6ms<!--m:cells-walk-maf-identity.470-species-200-blocks-of-250-columns.binFusedIdentityMs-->
+on the same run. What is left is the aggregate's rows, ids and hover JSON the
+walk answers, where the MAF display fills a lane. The `cells` walk itself is
+still 133 ms of the 220 ms `marks_maf_cells` request on ada, a byte kernel the
+MAF display's `buildMafChannels` also pays.
 
 ## Where it is going
 
@@ -101,12 +104,12 @@ track needs it rather than to retire the MAF display.
    The identity heatmap and X-Y plot are declarable since ADR-197: `bin`
    over `fields: ['start', 'end']` cuts each run at the bin edges and an
    `aggregate` `mean` of `match` weighted by `overlap` is exact against a
-   count off the text, fused into one kernel (the `marks_maf_identity`
-   track). `bin` by `field` still counts starts, as the density sidecar
-   does. Still open: sub-pixel sampling (`binBp`) and the cross-block flank
-   (`rowFlank.ts`), the two things the MAF painters do that the steps do
-   not; `bin: auto`'s 1-2-5 ladder differs from MAF's power-of-two `binBp`;
-   and the time, which is the `cells` walk's (the lever below).
+   count off the text, the three steps one walk since ADR-201 (the
+   `marks_maf_identity` track). `bin` by `field` still counts starts, as
+   the density sidecar does. Still open: sub-pixel sampling (`binBp`) and
+   the cross-block flank (`rowFlank.ts`), the two things the MAF painters
+   do that the steps do not; `bin: auto`'s 1-2-5 ladder differs from MAF's
+   power-of-two `binBp`.
 3. ~~Per-display row geometry: a fixed px `rowHeight` with virtual scroll,
    and `rowProportion`.~~ Landed: the mark display composes `RowHeightMixin`,
    pins a row under `rows` and fits it elsewhere, and scrolls the rows past
