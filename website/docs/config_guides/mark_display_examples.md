@@ -483,8 +483,9 @@ comes from minimap2's `de` divergence tag, or from its match count over its
 alignment length in a PAF without one. A `rule` at that value across each
 alignment is a percent identity plot, the picture
 [PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes.
-Stretches with no rule are where nothing aligned, and colouring each rule by the
-same value separates short alignments that overlap.
+Stretches with no rule are where nothing aligned. Colouring each rule by the
+same value separates short alignments that overlap, and `showLegend` is off
+because the axis already reads the colour.
 
 ```json addtrack config=https://jbrowse.org/demos/hpylori/config.json loc=NC_018939.1:330,000-560,000
 {
@@ -501,6 +502,7 @@ same value separates short alignments that overlap.
     {
       "type": "LinearMarkDisplay",
       "displayId": "hpylori_identity-LinearMarkDisplay",
+      "showLegend": false,
       "scales": {
         "y": { "domainMin": 0.5, "domainMax": 1, "title": "Identity" }
       },

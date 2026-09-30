@@ -205,6 +205,7 @@ const TRACKS = {
       {
         type: 'LinearMarkDisplay',
         displayId: 'hpylori_identity-LinearMarkDisplay',
+        showLegend: false,
         scales: { y: { domainMin: 0.5, domainMax: 1, title: 'Identity' } },
         marks: [
           {
