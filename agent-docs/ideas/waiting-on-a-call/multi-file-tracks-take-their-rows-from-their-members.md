@@ -1,44 +1,59 @@
 ---
 name: multi-file-tracks-take-their-rows-from-their-members
-description: Where the multi-row add-track plan grows once one of its accepted loose edges is reported — files spelling chromosomes differently, a row missing while its file has nothing in view, the per-feature copy, one bad file blanking the stack, the CLI and jbrowse-img staying BigWig-only. The full design behind it, reviewed four times; handoffs/multi-row-add-track.md is what is being built. One multi-file adapter in core replaces MultiWiggleAdapter and exposes its members, each display's worker loops over them the way wiggle's typed-array path already does, rows come from the adapter's listing through shared code, a region carries its chromosome aliases so files may spell chromosomes differently, and one generated combine table serves the add-track form, the track selector, jb.addTrack, `jbrowse add-track` and jbrowse-img. Read before touching MultiWiggleAdapter, the multi-wiggle add-track workflow, "Create multi-wiggle track", `--multiwig`, refName renaming, or a row display's source of rows.
+description: Where the multi-row add-track plan grows once one of its accepted loose edges is reported — files spelling chromosomes differently, a row missing while its file has nothing in view, the per-feature copy, one bad file blanking the stack, the CLI and jbrowse-img staying BigWig-only. The full design behind it, reviewed four times; the simple plan landed on 2026-09-30 instead, and this doc lists the edges it left. One multi-file adapter in core replaces MultiWiggleAdapter and exposes its members, each display's worker loops over them the way wiggle's typed-array path already does, rows come from the adapter's listing through shared code, a region carries its chromosome aliases so files may spell chromosomes differently, and one generated combine table serves the add-track form, the track selector, jb.addTrack, `jbrowse add-track` and jbrowse-img. Read before touching MultiWiggleAdapter, the "Add multi-row track" workflow, "Create multi-row track", `--multiwig`, refName renaming, or a row display's source of rows.
 ---
 
 # Multi-file tracks take their rows from their members
 
-**Not the plan being built.** On 2026-09-30 Colin chose four small changes to
-existing code, loose edges accepted, over this design:
-[handoffs/multi-row-add-track.md](../../handoffs/multi-row-add-track.md). This
-doc is where that plan grows, one piece at a time, when a user reports the edge
-the piece fixes: the alias stamp for files spelling chromosomes differently, the
-shared listing for a row missing while its file has nothing in view, the member
-loop for the per-feature copy and per-file errors, the generated combine table
-for the CLI and jbrowse-img. Build no piece on its own merit.
+**Not the plan that was built.** On 2026-09-30 Colin chose four small changes
+to existing code over this design, loose edges accepted, and they landed that
+day. "Add multi-row track" guesses each file's format, names each file it
+refuses, and stacks feature files as a `FeatureTrack` on
+`LinearMultiRowFeatureDisplay` with `rows: 'source'`, still over
+`MultiWiggleAdapter`. "Create multi-row track..." in the track selector does
+the same for checked tracks. This doc is where that grows, one piece at a time,
+when a user reports the edge the piece fixes: the alias stamp for files
+spelling chromosomes differently, the shared listing for a row missing while
+its file has nothing in view, the member loop for the per-feature copy and
+per-file errors, the generated combine table for the CLI and jbrowse-img. Build
+no piece on its own merit.
+
+## The loose edges accepted on 2026-09-30
+
+- Every file in a stack must spell chromosomes alike. A `chr1` BED stacked with
+  a `1` BED draws one of them blank, with no warning. This is the one to watch.
+- `MultiWiggleAdapter.sourceFeatures` copies each feature to stamp `source`.
+- A file with nothing in view has no row until data appears.
+- The multi-row display sorts its rows by name, not in the order the files were
+  listed.
+- One unreachable file blanks the whole stack, with an error naming it.
+- In a stack of GFFs the stamp hides GFF's own `source` column.
+- A `.bed.gz` dropped on JBrowse Web is refused, since a drop brings no `.tbi`;
+  it goes in as a pasted URL. Desktop reads a dropped file by its path, so the
+  index beside it is found.
+- The byte gate sums every member's estimate against the display's one
+  `fetchSizeLimit`, so a twenty-file stack trips it at a twentieth of each
+  file's share.
+- The adapter is still `MultiWiggleAdapter` under a BED track.
+- `jb.addTrack`, `jbrowse add-track --multiwig` and `jbrowse-img --multiwig`
+  stay BigWig-only.
 
 ## What is wrong today
 
-Five routes stack several files into one track, and each has its own rule:
+The routes that stack several files into one track still disagree:
 
-- **The add-track workflow** makes every pasted line and dropped file a
-  `BigWigAdapter` (`urlToSubadapter` and `fileToTrackItem`,
-  `MultiWiggleAddTrackWorkflow/util.ts:62,83`). A BED passes the form without a
-  word and fails after submit as `Subtrack "x": Error: not a BigWig/BigBed
-  file`. `mapWithConcurrency` rejects on the first failure, so one bad file
-  blanks every row. A BigBed passes bbi's magic check and draws its zoom
-  summaries as a signal until the view zooms in.
-- **"Create multi-wiggle track..."** in the track selector drops every selected
-  track that is not a `QuantitativeTrack`
-  (`CreateMultiWiggleExtension/index.ts:66`), and offers nothing when only
-  feature tracks are checked.
+- **The add-track form and the track selector** check each member, but
+  `mapWithConcurrency` rejects on the first failure, so one bad file blanks
+  every row.
 - **`jb.addTrack([...])`** refuses anything but `.bw` (`jbApi.ts:1311`), so it
-  refuses the bedGraph the selector accepts.
+  refuses the bedGraph and BED files the form accepts.
 - **`jbrowse add-track --multiwig`** (`jbrowse-cli/.../add-track-utils/multiwig.ts:41`)
   and **`jbrowse-img --multiwig`** (`jbrowse-img/src/makeConfigs.ts:317`)
   hard-code `MultiWiggleAdapter` over `BigWigAdapter`.
 
-Nothing stacks feature files. `LinearMultiRowFeatureDisplay` paints one row per
-value of a column in ONE file (`rows: 'sample'` over the BXD, volvox and dog10k
-BEDs in `test_data`), so twenty per-sample peak BEDs have to be merged on the
-command line first.
+A feature stack's rows are a label stamped on each feature, not the members:
+`LinearMultiRowFeatureDisplay` partitions on the `source` value
+`MultiWiggleAdapter` writes on a copy of every feature.
 
 And every file in a stack must spell chromosomes alike. `loadRefNameMap.ts:86`
 maps each canonical name to one spelling, the last one the union of the files'
@@ -63,9 +78,9 @@ BigWig assumptions:
 
 - `subadapters: [{ ...adapterConfig, name?, color?, ...attributes }]` and
   `samplesTsvLocation`. A member's default name is its primary location's
-  basename, read for any format — `getFilenameFromAdapterConfig` reads
-  `bigWigLocation` alone (`MultiWiggleAdapter.ts:73`), so a bedGraph member is
-  named by a hash today. `disambiguateSources` moves with it.
+  basename, read for any format through the add-track format table
+  (`MultiWiggleAdapter/memberLocation.ts`); it and `disambiguateSources` move
+  with the class.
 - `getMembers(regions, opts)` → `{ name, adapter, regions }[]`: the members the
   samples table admits, narrowed by `opts.sources`, as `getFilteredAdapters`
   does (`MultiWiggleAdapter.ts:193-200`), each with its regions spelled the way
@@ -81,8 +96,9 @@ BigWig assumptions:
 - `getRefNames` is the union, under the same concurrency cap as the fetches;
   today's unbounded `Promise.all` (`MultiWiggleAdapter.ts:187`) downloads every
   index before the first paint.
-- `getRegionByteSize` sums the members that estimate; `getZoomRange`
-  intersects; `getRegionQuantitativeStats` aggregates.
+- `getRegionByteSize` sums the members that estimate, as
+  `MultiWiggleAdapter`'s does; `getZoomRange` intersects;
+  `getRegionQuantitativeStats` aggregates.
 - `listRowSources` lists every member with its label, colour and attributes,
   plus a `warnings` member, which `RowSourceListing` lacks
   (`rowSources.ts`). Today's listing strips everything but label and colour
@@ -129,9 +145,7 @@ found rows sorted.
 
 The worker's automatic row field prefers the listing's field whenever the
 adapter lists rows, so a multi-file track draws one row per file with no `rows`
-written into its config. `source` sits in `NON_PARTITION_TAGS`
-(`packMultiRowFeatures.ts:83-94`), which hides it from "Partition by..."; a
-listed field is exempt.
+written into its config, where the form writes `rows: 'source'` today.
 
 Multi-row gains the listing; the mark display keeps what it has by moving onto
 the mixin. Wiggle already keeps a row with nothing in view, since a
