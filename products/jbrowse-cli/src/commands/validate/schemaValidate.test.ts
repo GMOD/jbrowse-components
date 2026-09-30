@@ -4,6 +4,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
+import { isLooseTrackConfig } from '@jbrowse/add-track-core'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 
 import { configManifest } from './configManifest.generated.ts'
@@ -747,7 +748,7 @@ describe('the schema against the tree', () => {
         const obj = parsed as Record<string, unknown>
         const wrapped = Array.isArray(obj.assemblies)
           ? obj
-          : obj.trackId && obj.adapter
+          : obj.trackId && (obj.adapter || isLooseTrackConfig(obj))
             ? { assemblies: [], tracks: [obj] }
             : obj.name && (obj.sequence ?? obj.uri)
               ? { assemblies: [obj] }

@@ -54,6 +54,7 @@ import {
   isSession,
 } from '../src/lib/remark-config-cli-tabs.ts'
 import { docsMatching, reportProblems } from './check-utils.ts'
+import { configBlockShape } from './configBlockShape.ts'
 import { docRelative, docsDir } from './paths.ts'
 
 // A doc block is one track or one assembly, so wrap it in the smallest config
@@ -137,31 +138,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-// A parsed block is a complete track config when it carries the three things
-// `tracks` entries always have; an assembly when it has a name plus a sequence
-// (or the flattest `uri` shorthand for one); a view when its `type` names one,
-// which is the session spec's unit and has `tracks` of its own.
-function shape(obj: Record<string, unknown>) {
-  const type = typeof obj.type === 'string' ? obj.type : ''
-  const keys = Object.keys(obj)
-  return type.endsWith('View')
-    ? 'view'
-    : Array.isArray(obj.assemblies) || Array.isArray(obj.tracks)
-      ? 'config'
-      : type.endsWith('Adapter')
-        ? 'adapter'
-        : type.endsWith('Display')
-          ? 'display'
-          : obj.trackId && obj.adapter && obj.type
-            ? 'track'
-            : obj.name && (obj.sequence ?? obj.uri)
-              ? 'assembly'
-              : keys.length > 0 &&
-                  keys.every(k => k === 'displayDefaults' || k === 'displays')
-                ? 'fragment'
-                : 'other'
-}
-
 const problems: string[] = []
 // Weaker than `node.lang === 'json'`, which is read off this same fence line.
 const JSON_FENCE = /^\s*(?:```|~~~)json\b/m
@@ -188,7 +164,7 @@ for (const { file, text } of docsMatching(docsDir, JSON_FENCE)) {
     }
     const where = `${rel}:${node.position?.start.line ?? 0}`
     const id = parsed.trackId ?? parsed.name
-    const kind = shape(parsed)
+    const kind = configBlockShape(parsed)
     const tagged = isAddtrack(node) || isAddassembly(node)
     if ((kind === 'adapter' || kind === 'display') && !tagged) {
       problems.push(
@@ -253,7 +229,7 @@ for (const { file, text } of docsMatching(docsDir, JSON_FENCE)) {
         )
       }
     }
-    // `shape` reads a lone `defaultSession` as 'other', so this is its own
+    // `configBlockShape` reads a lone `defaultSession` as 'other', so this is its own
     // branch rather than a case there. The derivation is the gate for the same
     // reason it is above: a block carrying more than the session (a whole
     // config.json, or one paired with preConfiguredSessions) has no command

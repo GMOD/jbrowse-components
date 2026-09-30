@@ -19,85 +19,23 @@ import {
   loadFlag,
   nonEmpty,
 } from './derive-cli-command.ts'
+import {
+  expandTrackShorthand,
+  guessAdapterType,
+  guessTrackType,
+  isLooseTrackConfig,
+  syntenyAdapterTypes,
+} from './infer-track.ts'
 
 export { asRecord }
-
-// extension -> adapterType, mirroring guessAdapterFromFileName in
-// products/jbrowse-cli/src/commands/add-track-utils/adapter-utils.ts. Kept to
-// the formats the docs actually use; an unmatched extension just forces an
-// explicit --adapterType, which is always correct.
-const EXT_ADAPTER: [RegExp, string][] = [
-  [/\.bam$/i, 'BamAdapter'],
-  [/\.cram$/i, 'CramAdapter'],
-  [/\.gff3?\.b?gz$/i, 'Gff3TabixAdapter'],
-  [/\.gtf?\.b?gz$/i, 'GtfTabixAdapter'],
-  [/\.vcf\.b?gz$/i, 'VcfTabixAdapter'],
-  [/\.bed\.b?gz$/i, 'BedTabixAdapter'],
-  [/\.(bw|bigwig)$/i, 'BigWigAdapter'],
-  [/\.(bb|bigbed)$/i, 'BigBedAdapter'],
-  [/\.hic$/i, 'HicAdapter'],
-  // the synteny family, longest extension first so .anchors.simple isn't read
-  // as .anchors. An all-vs-all adapter over one of these files is reached with
-  // --adapterType: the CLI reuses the extension's file layout under the given
-  // type name rather than dropping the location.
-  [/\.pif\.b?gz$/i, 'PairwiseIndexedPAFAdapter'],
-  [/\.paf(\.gz)?$/i, 'PAFAdapter'],
-  [/\.anchors\.simple(\.gz)?$/i, 'MCScanSimpleAnchorsAdapter'],
-  [/\.anchors(\.gz)?$/i, 'MCScanAnchorsAdapter'],
-  [/\.chain(\.gz)?$/i, 'ChainAdapter'],
-  [/\.delta(\.gz)?$/i, 'DeltaAdapter'],
-]
-
-function inferredAdapterType(uri: string) {
-  return EXT_ADAPTER.find(([re]) => re.test(uri))?.[1]
-}
-
-// adapterType -> trackType, mirroring adapterTypesToTrackTypeMap /
-// guessTrackType in the same CLI source. Anything unlisted resolves to
-// FeatureTrack, so add-track needs an explicit --trackType whenever the config
-// declares a different type over that adapter (a bed.gz served as a
-// MultiQuantitativeTrack, a GWASAdapter as a GWASTrack, ...).
-const ADAPTER_TRACK_TYPE: Record<string, string> = {
-  BamAdapter: 'AlignmentsTrack',
-  CramAdapter: 'AlignmentsTrack',
-  BigWigAdapter: 'QuantitativeTrack',
-  VcfTabixAdapter: 'VariantTrack',
-  VcfAdapter: 'VariantTrack',
-  BedpeAdapter: 'VariantTrack',
-  BedAdapter: 'FeatureTrack',
-  HicAdapter: 'HicTrack',
-  PAFAdapter: 'SyntenyTrack',
-  PairwiseIndexedPAFAdapter: 'SyntenyTrack',
-  MultiGenomePAFAdapter: 'SyntenyTrack',
-  MultiGenomeIndexedPAFAdapter: 'SyntenyTrack',
-  ChainAdapter: 'SyntenyTrack',
-  DeltaAdapter: 'SyntenyTrack',
-  MashMapAdapter: 'SyntenyTrack',
-  BlastTabularAdapter: 'SyntenyTrack',
-  MCScanAnchorsAdapter: 'SyntenyTrack',
-  MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
-  MCScanBlocksAdapter: 'SyntenyTrack',
-}
-
-// add-track writes `assemblyNames` onto the adapter itself for every adapter
-// that resolves to a SyntenyTrack (addSyntenyAssemblyNames in the CLI), taking
-// them from -a. Such an adapter slot is therefore derivable rather than an
-// extra, but only when it matches the track's own list.
-const SYNTENY_ADAPTERS = new Set(
-  Object.entries(ADAPTER_TRACK_TYPE)
-    .filter(([, trackType]) => trackType === 'SyntenyTrack')
-    .map(([adapterType]) => adapterType),
-)
-
-function inferredTrackType(adapterType: string) {
-  return ADAPTER_TRACK_TYPE[adapterType] ?? 'FeatureTrack'
-}
 
 // The `add-track` argv (without the `jbrowse` program name) equivalent to a
 // track config, or null when the config isn't CLI-clean. Returning the argv
 // array rather than a shell string lets the check script run the real CLI
 // without re-parsing quoting.
 export function deriveAddTrackArgs(config: unknown): string[] | null {
+  const source = asRecord(config)
+  const loose = isLooseTrackConfig(source)
   const {
     trackId,
     name,
@@ -108,10 +46,11 @@ export function deriveAddTrackArgs(config: unknown): string[] | null {
     displayDefaults,
     type: trackType,
     ...restTop
-  } = asRecord(config)
+  } = expandTrackShorthand(source)
   // `baseUri` is deliberately *not* pulled out here: add-track emits a bare
   // UriLocation, so a config carrying one isn't CLI-clean. It counts as an
-  // extra adapter slot and falls through to the verbatim add-track-json tab.
+  // extra slot and falls through to the verbatim add-track-json tab. A
+  // shorthand's adapter is the table's guess, which add-track writes itself.
   const {
     type: adapterType,
     uri,
@@ -119,7 +58,14 @@ export function deriveAddTrackArgs(config: unknown): string[] | null {
     bed1,
     bed2,
     ...adapterExtra
-  } = asRecord(adapter)
+  } = loose
+    ? {
+        type: asRecord(adapter).type,
+        uri: source.uri,
+        ...(source.baseUri === undefined ? {} : { baseUri: source.baseUri }),
+      }
+    : asRecord(adapter)
+  const index = loose ? nonEmpty(source.index) : undefined
   const defaults = asRecord(displayDefaults)
 
   const id = nonEmpty(trackId)
@@ -128,16 +74,15 @@ export function deriveAddTrackArgs(config: unknown): string[] | null {
   const file = nonEmpty(uri)
   const adapterName = nonEmpty(adapterType)
   const assemblies = commaList(assemblyNames)
-  // add-track can only place the data file for a recognized extension; an
-  // unknown one (e.g. .ld.gz) yields an adapter with no location
-  const guessedAdapter = file && inferredAdapterType(file)
+  // add-track can only place the data file for a recognized extension
+  const guessedAdapter = file && guessAdapterType(file)
   // the CLI derives a synteny adapter's own assemblyNames from -a, so that slot
   // is derivable exactly when it repeats the track's list; anything else (an
   // assemblyNameToPanSN map, a differing list) is an extra slot
   const derivableAssemblies =
     adapterAssemblies === undefined ||
     (adapterName !== undefined &&
-      SYNTENY_ADAPTERS.has(adapterName) &&
+      syntenyAdapterTypes.has(adapterName) &&
       commaList(adapterAssemblies) === assemblies)
   const noExtraSlots =
     displays === undefined &&
@@ -162,13 +107,14 @@ export function deriveAddTrackArgs(config: unknown): string[] | null {
         label,
         '--assemblyNames',
         assemblies,
+        ...flag('--indexFile', index),
         ...flag(
           '--adapterType',
           guessedAdapter === adapterName ? undefined : adapterName,
         ),
         ...flag(
           '--trackType',
-          inferredTrackType(adapterName) === type ? undefined : type,
+          guessTrackType(adapterName, file) === type ? undefined : type,
         ),
         ...flag('--category', commaList(category)),
         // the MCScan adapters pair genes by name, so each takes a BED per

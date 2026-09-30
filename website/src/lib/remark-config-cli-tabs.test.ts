@@ -138,3 +138,14 @@ test('a fence nested in a list item still renders', () => {
   configCliTabs(tree, () => {})
   expect(flatten(tree)).toContain('data-tab-kind="desktop"')
 })
+
+test('a whole-track shorthand fence gets the add-track tab and its synteny note', () => {
+  const { html } = render('addtrack', {
+    trackId: 'grape_peach',
+    uri: 'https://example.com/grape_peach.paf',
+    assemblyNames: ['peach', 'grape'],
+  })
+  expect(html).toContain('CLI (add-track)')
+  expect(html).toContain('--name grape_peach.paf')
+  expect(html).toContain('For the synteny view')
+})

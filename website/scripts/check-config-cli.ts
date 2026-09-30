@@ -54,6 +54,7 @@ import {
   defaultSessionObject,
   sessionStdin,
 } from '../src/lib/derive-set-default-session.ts'
+import { expandTrackShorthand } from '../src/lib/infer-track.ts'
 import {
   isAddassembly,
   isAddtrack,
@@ -123,6 +124,10 @@ function adapterUri(adapter: Record<string, unknown>) {
     : Object.values(adapter)
         .map(v => asRecord(v).uri)
         .find(v => typeof v === 'string')
+}
+
+function indexUri(adapter: Record<string, unknown>) {
+  return asRecord(asRecord(adapter.index).location).uri
 }
 
 function basename(uri: unknown) {
@@ -224,10 +229,12 @@ async function runCli(
 }
 
 // Run add-track for one block and return the mismatch reason, or '' on success.
+// A whole-track shorthand is compared as the track it expands to.
 async function roundTrip(
-  config: Record<string, unknown>,
+  block: Record<string, unknown>,
   args: string[],
 ): Promise<string> {
+  const config = expandTrackShorthand(block)
   try {
     // force `--load inPlace`; match on the flag rather than the literal 'copy',
     // which could equally be a track's name or id
@@ -245,7 +252,10 @@ async function roundTrip(
           diff('type', track.type, config.type),
           diff('name', track.name, config.name),
           diff('adapter', got.type, src.type),
-          diff('uri', basename(adapterUri(got)), basename(src.uri)),
+          diff('uri', basename(adapterUri(got)), basename(adapterUri(src))),
+          indexUri(src) === undefined
+            ? ''
+            : diff('index', basename(indexUri(got)), basename(indexUri(src))),
           diff(
             'displayDefaults',
             JSON.stringify(track.displayDefaults ?? {}),
@@ -484,6 +494,23 @@ for (const fixture of FALLBACK_FIXTURES) {
   })
 }
 
+// No doc fence names a shorthand's index, so --indexFile is reached only here.
+const INDEXED_SHORTHAND = {
+  trackId: 'fixture_indexed_shorthand',
+  uri: 'https://example.com/reads.bam',
+  index: 'https://example.com/reads.bam.csi',
+  assemblyNames: ['hg19'],
+}
+cases.push({
+  where: `  shorthand fixture (${INDEXED_SHORTHAND.trackId})`,
+  run: async () => {
+    const args = deriveAddTrackArgs(INDEXED_SHORTHAND)
+    return args === null
+      ? 'expected an add-track command for this fixture'
+      : roundTrip(INDEXED_SHORTHAND, args)
+  },
+})
+
 // An assembly config the derivation refuses gets no CLI tab, so nothing in the
 // docs exercises that branch. This fixture stands in for it: a legacy
 // multi-location sequence, which add-assembly builds itself and no flag set
@@ -626,7 +653,7 @@ if (errorLines.length) {
     `Found addtrack/addassembly/session blocks whose derived command doesn't round-trip:\n`,
   )
 }
-const fixtures = FALLBACK_FIXTURES.length + 1 + UNDERIVABLE_SESSIONS.length
+const fixtures = FALLBACK_FIXTURES.length + 2 + UNDERIVABLE_SESSIONS.length
 reportProblems(
   errorLines,
   `All ${checked} addtrack/addassembly/session block(s) + ${fixtures} fixture(s) + ${recipeTracks.size} figure-recipe session track(s) round-trip through jbrowse add-track / add-track-json / add-assembly / set-default-session.`,

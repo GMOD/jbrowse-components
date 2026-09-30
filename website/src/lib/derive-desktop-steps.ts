@@ -14,6 +14,7 @@
 import { addRelativeUris } from '../../../packages/core/src/util/addRelativeUris.ts'
 import { aliasesUri } from './derive-add-assembly.ts'
 import { asRecord, nonEmpty } from './derive-cli-command.ts'
+import { expandTrackShorthand } from './infer-track.ts'
 
 import type { Code, List, Paragraph, PhrasingContent, RootContent } from 'mdast'
 
@@ -211,7 +212,8 @@ export function desktopTrackNodes(
   config: Record<string, unknown>,
   json: string,
 ): RootContent[] {
-  const form = graphFormNodes(config)
+  const track = expandTrackShorthand(config)
+  const form = graphFormNodes(track)
   if (form) {
     return form
   }
@@ -228,7 +230,7 @@ export function desktopTrackNodes(
     ]),
     { type: 'code', lang: 'json', value: json } satisfies Code,
     ...relativeUriNote(config),
-    ...(config.type === 'SyntenyTrack'
+    ...(track.type === 'SyntenyTrack'
       ? [
           paragraph([
             text('That shows it in the linear view. For the synteny view, open '),
