@@ -42,6 +42,9 @@ export interface TandemRepeat {
   units: RepeatUnit[]
   // one per called haplotype, or one per ALT allele of a record with no samples
   alleles: RepeatAllele[]
+  // called haplotypes with a drawable allele, of which `alleles` holds the first
+  // MAX_ROWS
+  haplotypeCount: number
   // one per allele the samples carry, most frequent first; undefined without
   // called samples
   byAllele?: RepeatAllele[]
@@ -78,6 +81,8 @@ function strings(value: unknown) {
 const IUPAC = /^[ACGTURYSWKMBDHVN]+$/i
 const TANDEM_REPEAT = '<CNV:TR>'
 
+export const MAX_ROWS = 30
+
 interface ParsedRun {
   key: string
   length: number
@@ -110,7 +115,7 @@ function tandemAlleles(f: VCFFeatureSerialized) {
       const bp = rb[k]
       const count =
         ruc[k] ?? (length && bp !== undefined ? bp / length : undefined)
-      if (length && count !== undefined) {
+      if (length && count !== undefined && count > 0) {
         const copyBp =
           counted && rub.length > 0 ? rub.slice(copy, copy + count) : undefined
         runs.push({
@@ -177,6 +182,7 @@ function sampleAlleles(
   const out: DrawnAllele[] = []
   const counts = new Map<number, number>()
   let calledAlleles = 0
+  let haplotypeCount = 0
   for (const [sample, fields] of Object.entries(f.samples ?? {})) {
     const gt = strings(fields.GT)[0] ?? ''
     const phased = gt.includes('|')
@@ -198,10 +204,16 @@ function sampleAlleles(
       ]
     })
     for (const { k, ...allele } of called) {
-      out.push({ label: labelOf(sample, k, called.length, phased), ...allele })
+      haplotypeCount++
+      if (out.length < MAX_ROWS) {
+        out.push({
+          label: labelOf(sample, k, called.length, phased),
+          ...allele,
+        })
+      }
     }
   }
-  return { haplotypes: out, counts, calledAlleles }
+  return { haplotypes: out, haplotypeCount, counts, calledAlleles }
 }
 
 export function formatPercent(count: number, total: number) {
@@ -247,15 +259,18 @@ function byAlleleOf(
 export function tandemRepeatOf(
   f: VCFFeatureSerialized,
 ): TandemRepeat | undefined {
+  if (!f.ALT?.includes(TANDEM_REPEAT)) {
+    return undefined
+  }
   const alleles = tandemAlleles(f)
   if (!alleles.some(runs => runs !== undefined)) {
     return undefined
   }
   const refName = f.refName
   const start = f.start + 1
-  const svlen = numbers(info(f, 'SVLEN'))[f.ALT?.indexOf(TANDEM_REPEAT) ?? 0]
+  const svlen = numbers(info(f, 'SVLEN'))[f.ALT.indexOf(TANDEM_REPEAT)]
   const end = svlen === undefined ? f.end : start + Math.abs(svlen)
-  const { haplotypes, counts, calledAlleles } = sampleAlleles(
+  const { haplotypes, haplotypeCount, counts, calledAlleles } = sampleAlleles(
     f,
     alleles,
     end - start,
@@ -299,6 +314,7 @@ export function tandemRepeatOf(
     unitLength: unitLengthOf(f),
     units: units.map(({ key: _key, ...unit }) => unit),
     alleles: drawn.map(withUnits),
+    haplotypeCount: haplotypes.length > 0 ? haplotypeCount : drawn.length,
     ...(calledAlleles > 0
       ? {
           byAllele: byAlleleOf(alleles, counts, calledAlleles, end - start).map(

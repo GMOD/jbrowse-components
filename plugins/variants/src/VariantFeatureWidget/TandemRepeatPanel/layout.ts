@@ -1,5 +1,9 @@
 import type { RepeatAllele, RepeatUnit } from './tandemRepeat.ts'
 
+// a run stating more copies than this draws as one box, so a corrupt count
+// cannot allocate a box per copy
+const MAX_COPIES = 50_000
+
 export interface CopyBox {
   // bp from the allele's left end
   start: number
@@ -14,6 +18,11 @@ export function copiesOf(allele: RepeatAllele, units: RepeatUnit[]) {
   const boxes: CopyBox[] = []
   let at = 0
   for (const run of allele.runs ?? []) {
+    if (run.count > MAX_COPIES) {
+      boxes.push({ start: at, bp: run.bp, unit: run.unit })
+      at += run.bp
+      continue
+    }
     const n = Math.ceil(run.count)
     const each = Number.isInteger(run.count)
       ? run.bp / n
@@ -67,7 +76,10 @@ export function formatBp(bp: number) {
   if (bp < 1000) {
     return `${Math.round(bp)} bp`
   }
-  return `${(bp / 1000).toFixed(bp < 10_000 ? 1 : 0)} kb`
+  if (bp < 1_000_000) {
+    return `${(bp / 1000).toFixed(bp < 10_000 ? 1 : 0)} kb`
+  }
+  return `${(bp / 1_000_000).toFixed(bp < 10_000_000 ? 1 : 0)} Mb`
 }
 
 function formatCount(n: number) {

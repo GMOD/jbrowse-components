@@ -64,7 +64,7 @@ test("a <CNV:TR> record's alleles take their runs off RN, RUS, RUC, RB and RUB",
   ])
 })
 
-test('one row per allele stands for every haplotype that carries it', () => {
+test('a cohort keeps its first 30 haplotypes and counts the rest; one row per allele stands for all of them', () => {
   const samples = Object.fromEntries(
     Array.from({ length: 1000 }, (_, i) => [
       `S${i}`,
@@ -72,7 +72,8 @@ test('one row per allele stands for every haplotype that carries it', () => {
     ]),
   )
   const repeat = tandemRepeatOf({ ...tandem, samples })!
-  expect(repeat.alleles).toHaveLength(2000)
+  expect(repeat.alleles).toHaveLength(30)
+  expect(repeat.haplotypeCount).toBe(2000)
   expect(repeat.byAllele?.map(a => [a.label, a.count])).toEqual([
     ['REF · 90%', 1800],
     ['ALT 1 · 10%', 200],
@@ -149,4 +150,14 @@ test('called alleles outside <CNV:TR> stay in the frequency denominator', () => 
   })!
   expect(repeat.calledAlleles).toBe(2)
   expect(repeat.byAllele?.map(a => a.label)).toEqual(['ALT 2 · 50%'])
+})
+
+test('a run that states a non-positive or non-numeric count is not drawn', () => {
+  expect(
+    tandemRepeatOf({
+      ...base,
+      ALT: ['<CNV:TR>'],
+      INFO: { SVLEN: [30], RN: [1], RUL: [10], RUC: [-3], RB: [30] },
+    }),
+  ).toBeUndefined()
 })

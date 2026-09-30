@@ -298,3 +298,21 @@ test('a record with no ID does not repeat its locus in the panel header', async 
     ),
   ).toBeTruthy()
 })
+
+test('a record with more units than colours notes the ones that share', async () => {
+  const units = Array.from({ length: 12 }, (_, i) => 'A'.repeat(i + 3))
+  const { findByText } = renderWidget({
+    ...cohortRecord,
+    uniqueId: 'many-units',
+    ALT: ['<CNV:TR>'],
+    INFO: {
+      SVLEN: [30],
+      RN: [12],
+      RUS: units,
+      RUC: units.map(() => 2),
+      RB: units.map(u => u.length * 2),
+    },
+    samples: { S1: { GT: ['1'] } },
+  })
+  await findByText('2 more units share these colours')
+})

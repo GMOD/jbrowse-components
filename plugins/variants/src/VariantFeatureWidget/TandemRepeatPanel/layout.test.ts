@@ -115,3 +115,23 @@ test('a copy count that disagrees with its bases never draws a negative copy', (
 test('a span of a few bp gets whole-bp ticks', () => {
   expect(axisTicks(3)).toEqual([0, 1, 2, 3])
 })
+
+test('a corrupt copy count draws as one box instead of allocating a box per copy', () => {
+  const boxes = copiesOf(
+    {
+      label: 'a',
+      altIndex: 1,
+      bp: 1e13,
+      runs: [{ unit: 0, count: 1e9, bp: 1e13 }],
+    },
+    [{ length: 10_000, copies: 1e9 }],
+  )
+  expect(boxes).toEqual([{ start: 0, bp: 1e13, unit: 0 }])
+})
+
+test('bp reads in bp, kb or Mb', () => {
+  expect(formatBp(387)).toBe('387 bp')
+  expect(formatBp(30751)).toBe('31 kb')
+  expect(formatBp(1_500_000)).toBe('1.5 Mb')
+  expect(formatBp(147_000_000)).toBe('147 Mb')
+})

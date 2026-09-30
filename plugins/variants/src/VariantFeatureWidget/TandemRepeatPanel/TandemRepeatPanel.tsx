@@ -16,6 +16,7 @@ import {
   mergeNarrowCopies,
   readout,
 } from './layout.ts'
+import { MAX_ROWS } from './tandemRepeat.ts'
 
 import type { RepeatAllele, TandemRepeat } from './tandemRepeat.ts'
 
@@ -55,16 +56,18 @@ const legendRow = {
 
 function Legend({
   repeat,
+  alleles,
   referenceBp,
 }: {
   repeat: TandemRepeat
+  alleles: RepeatAllele[]
   referenceBp: number
 }) {
   const theme = useTheme()
-  const unstated = repeat.alleles.some(a => !a.runs)
+  const unstated = alleles.some(a => !a.runs)
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
-      {repeat.units.map((unit, i) => (
+      {repeat.units.slice(0, UNIT_COLORS.length).map((unit, i) => (
         <div key={i} style={legendRow}>
           <div style={{ ...swatch, backgroundColor: unitColor(i) }} />
           <span>
@@ -72,6 +75,14 @@ function Legend({
           </span>
         </div>
       ))}
+      {repeat.units.length > UNIT_COLORS.length ? (
+        <div style={legendRow}>
+          <span>
+            {repeat.units.length - UNIT_COLORS.length} more units share these
+            colours
+          </span>
+        </div>
+      ) : null}
       {unstated ? (
         <div style={legendRow}>
           <div style={{ ...swatch, backgroundColor: NO_RUNS }} />
@@ -205,8 +216,7 @@ function Row({
 const FALLBACK_WIDTH = 360
 // per-haplotype rows up to this many read as a sample list; beyond it the panel
 // opens on one row per allele, whose frequency stands in for the sample names
-const SAMPLE_ROWS_MAX = 24
-const ROWS_MAX = 30
+const SAMPLE_MAX_ROWS = 24
 
 type Mode = 'sample' | 'allele'
 
@@ -226,12 +236,12 @@ export default function TandemRepeatPanel({
   const mode: Mode =
     byAllele &&
     (chosen ??
-      (repeat.alleles.length > SAMPLE_ROWS_MAX ? 'allele' : 'sample')) ===
+      (repeat.alleles.length > SAMPLE_MAX_ROWS ? 'allele' : 'sample')) ===
       'allele'
       ? 'allele'
       : 'sample'
   const all = mode === 'allele' ? byAllele! : repeat.alleles
-  const alleles = all.slice(0, ROWS_MAX)
+  const alleles = all.slice(0, MAX_ROWS)
   const referenceBp = end - start
   const readouts = alleles.map(a => readout(a, referenceBp, repeat.unitLength))
   const labelPx = Math.max(...alleles.map(a => a.label.length)) * CHAR_PX + PAD
@@ -245,6 +255,7 @@ export default function TandemRepeatPanel({
   const text = theme.palette.text.primary
   const faint = theme.palette.text.secondary
   const gap = theme.palette.background.paper
+  const total = mode === 'sample' ? repeat.haplotypeCount : all.length
   const noun = mode === 'sample' && byAllele ? 'haplotype' : 'allele'
   const undrawn =
     mode === 'allele'
@@ -269,8 +280,8 @@ export default function TandemRepeatPanel({
               </>
             ) : null}
             {refName}:{(start + 1).toLocaleString()}-{end.toLocaleString()} ·{' '}
-            {all.length.toLocaleString()} {noun}
-            {all.length === 1 ? '' : 's'}
+            {total.toLocaleString()} {noun}
+            {total === 1 ? '' : 's'}
             {mode === 'allele'
               ? ` across ${repeat.calledAlleles.toLocaleString()} called`
               : ''}
@@ -291,7 +302,7 @@ export default function TandemRepeatPanel({
               <ToggleButton value="sample">By haplotype</ToggleButton>
             </ToggleButtonGroup>
           ) : null}
-          <Legend repeat={repeat} referenceBp={referenceBp} />
+          <Legend repeat={repeat} alleles={alleles} referenceBp={referenceBp} />
         </div>
         <svg
           width={width}
@@ -354,10 +365,9 @@ export default function TandemRepeatPanel({
             />
           ))}
         </svg>
-        {all.length > alleles.length ? (
+        {total > alleles.length ? (
           <Typography variant="caption" component="div">
-            {(all.length - alleles.length).toLocaleString()} more {noun}s not
-            drawn
+            {(total - alleles.length).toLocaleString()} more {noun}s not drawn
           </Typography>
         ) : null}
         {undrawn > 0 ? (
