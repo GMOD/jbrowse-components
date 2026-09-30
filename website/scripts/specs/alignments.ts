@@ -1771,7 +1771,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'FOLH1',
     readyTimeout: 60000,
-    viewportHeight: 600,
+    viewportHeight: 528,
   },
 
   strandSpecificSpec(),
