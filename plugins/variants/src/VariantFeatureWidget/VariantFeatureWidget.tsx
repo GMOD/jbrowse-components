@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useMemo } from 'react'
 
 import {
   FeatureDetailsFrame,
@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 
 import { getTraMate, parseFiniteNumber } from '../VcfFeature/util.ts'
 import AltFormatter from './AltFormatter.tsx'
+import { tandemRepeatOf } from './TandemRepeatPanel/tandemRepeat.ts'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { isSvLaunchType } from './svLaunchType.ts'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
@@ -28,6 +29,9 @@ const LaunchBreakendPanel = lazy(
 )
 const LaunchSvPanel = lazy(
   () => import('./LaunchBreakendPanel/LaunchSvPanel.tsx'),
+)
+const TandemRepeatPanel = lazy(
+  () => import('./TandemRepeatPanel/TandemRepeatPanel.tsx'),
 )
 const VariantConsequenceDataGrid = lazy(
   () => import('./VariantConsequence/VariantConsequenceDataGrid.tsx'),
@@ -129,6 +133,7 @@ const FeatDefined = observer(function FeatDefined({
   // can carry '.' for a missing entry, so coerce per ALT index rather than
   // requiring the whole array to be numeric (which dropped the span entirely)
   const svlens = Array.isArray(INFO?.SVLEN) ? INFO.SVLEN : []
+  const repeat = useMemo(() => tandemRepeatOf(feat), [feat])
   const display = jexlFilterDisplay(model.track)
   const fieldActions = display
     ? (path: string[], value: unknown) =>
@@ -137,6 +142,9 @@ const FeatDefined = observer(function FeatDefined({
 
   return (
     <Paper data-testid="variant-side-drawer">
+      <Suspense fallback={null}>
+        {repeat ? <TandemRepeatPanel repeat={repeat} /> : null}
+      </Suspense>
       <FeatureDetails
         feature={rest}
         unformatted={model.unformattedFeatureData}

@@ -200,3 +200,40 @@ test('swapping to another variant washes the panel', () => {
   })
   expect(queryByTestId('feature-details-wash')).toBeTruthy()
 })
+
+test('draws a <CNV:TR> record as a tandem repeat panel', async () => {
+  const { findByTestId, getByText } = renderWidget({
+    uniqueId: 'kiv2',
+    refName: 'chr6',
+    start: 160616002,
+    end: 160616003,
+    name: 'KIV-2',
+    REF: 'A',
+    ALT: ['<CNV:TR>'],
+    INFO: {
+      SVLEN: [30],
+      RN: [1],
+      RUS: ['ACGTACGTAC'],
+      RUC: [3],
+      RB: [30],
+    },
+    samples: { HG00128: { GT: ['1|0'] } },
+  })
+  await findByTestId('tandem-repeat-view')
+  expect(getByText('Tandem repeat')).toBeTruthy()
+  expect(getByText('HG00128#1')).toBeTruthy()
+  expect(getByText('HG00128#2')).toBeTruthy()
+})
+
+test('a copy number record stating no repeat gets no tandem repeat panel', () => {
+  const { queryByText } = renderWidget({
+    uniqueId: 'cnv',
+    refName: 'chr6',
+    start: 100,
+    end: 5100,
+    REF: 'A',
+    ALT: ['<CNV>'],
+    INFO: { SVLEN: [5000] },
+  })
+  expect(queryByText('Tandem repeat')).toBeNull()
+})
