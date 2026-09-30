@@ -612,12 +612,12 @@ the row axis in the vocabulary above, and none is a new channel.
 - **`stack` is absent by choice, and so are `median` and a weighted
   `coverage`.** A stacked histogram by category (ggplot2's `position_stack`,
   GenomeSpy's `stack` writing `y0`/`y1`) was built and measured on
-  2026-09-30 — `coverage.groupby`, a `stack` step and a bar `y2` lane, branch
-  `worktree-stack-spike`, the lane at 1 ms and 4 MB per million bars unnamed
+  2026-09-30 — `coverage.groupby`, a `stack` step and a bar `y2` lane, commits
+  dd6589d019 and 5c5f071cd1, the lane at 1 ms and 4 MB per million bars unnamed
   — and declined on its captures: Colin is "not really a huge fan of stacked
   bar charts", and prefers the mirror (two bars, a `formula` negating one)
   and the rows form (`rows` over a `coverage`), both of which draw today.
-  Don't re-propose a stack; the branch holds the range bar too, which the
+  Don't re-propose a stack; those commits hold the range bar too, which the
   2026-09-23 capture declined. `aggregate` takes `count`, `sum`, `mean`, `min` and `max`
   where Vega-Lite and GenomeSpy add `median` and the quartiles, and
   `coverage` counts features where GenomeSpy's takes a `weight` field. Each
