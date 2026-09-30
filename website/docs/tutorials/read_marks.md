@@ -319,7 +319,7 @@ edges the `bin` step above it wrote.
 
 Open both tracks on the whole of `chr20`.
 
-<Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20 end to end. Every pair with an insert under 20 kb is a point at its insert size, and the red bars on the track under it count the pairs between 2 and 10 kb per bin. The centromere, from 26 to 32 Mb, saturates both; outside it the bars rise in a handful of places, each under a short stack of dark points." />
+<Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20 end to end. Every pair with an insert under 20 kb is a point at its insert size, and the red bars on the track under it count the pairs between 2 and 10 kb per bin. The centromere, pinched in the banding above the ruler, and the repeats flanking it saturate both; outside them the bars rise in a handful of places, each under a short stack of dark points." />
 
 The bar at 34.2 Mb is a homozygous deletion, and the one at 32.9 Mb is the
 _EFCAB8_ intron above.
