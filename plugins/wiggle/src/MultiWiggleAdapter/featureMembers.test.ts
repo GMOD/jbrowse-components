@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'

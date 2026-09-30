@@ -5,10 +5,10 @@ guide_category: Plugins
 ---
 
 Register a React component in the "Add track" widget for tracks that need custom
-logic. The Multi-wiggle track does this, producing a textbox to paste a list of
+logic. The multi-row track does this, producing a textbox to paste a list of
 files.
 
-The multi-wiggle workflow is the whole registration:
+The multi-row workflow is the whole registration:
 
 <!-- include: plugins/wiggle/src/MultiWiggleAddTrackWorkflow/index.ts -->
 
@@ -24,8 +24,8 @@ export default function MultiWiggleAddTrackWorkflowF(pm: PluginManager) {
   pm.addAddTrackWorkflowType(
     () =>
       new AddTrackWorkflowType({
-        name: 'Multi-wiggle track',
-        displayName: 'Add multi-wiggle track',
+        name: 'Multi-row track',
+        displayName: 'Add multi-row track',
         ReactComponent: lazy(() => import('./AddTrackWorkflow.tsx')),
         stateModel: types.model({}),
       }),

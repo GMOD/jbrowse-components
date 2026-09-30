@@ -1,19 +1,21 @@
 import { FileDropZone } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-import { fileToTrackItem } from './util.ts'
+import { classifyFile } from './util.ts'
 
-import type { TrackItem } from './util.ts'
+import type { Guessers, Member, Refusal } from './util.ts'
 
 const DropZone = observer(function DropZone({
-  addTracks,
+  guessers,
+  addClassified,
 }: {
-  addTracks: (items: TrackItem[]) => void
+  guessers: Guessers
+  addClassified: (classified: (Member | Refusal)[]) => void
 }) {
   return (
     <FileDropZone
       onDrop={accepted => {
-        addTracks(accepted.map(fileToTrackItem))
+        addClassified(accepted.map(file => classifyFile(file, guessers)))
       }}
     />
   )

@@ -405,7 +405,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
   // multiquantitative_track.md: the track-selector selection workflow for
   // building a multi-wiggle. Two stacked frames: (1) a category's "..." menu
   // with "Add to selection" boxed, (2) after adding the category, the shopping
-  // cart's "Create multi-wiggle track" item boxed.
+  // cart's "Create multi-row track" item boxed.
   {
     mode: 'url',
     name: 'multiwig/trackselector',
@@ -453,16 +453,16 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           { type: 'delay', ms: 600 },
           // the shopping cart appears once the selection is non-empty
           { type: 'click', selector: '[data-testid="hts-shopping-cart"]' },
-          { type: 'waitForText', text: 'Create multi-wiggle track' },
+          { type: 'waitForText', text: 'Create multi-row track' },
         ],
         annotations: [
-          { type: 'box', anchor: { text: 'Create multi-wiggle track' } },
+          { type: 'box', anchor: { text: 'Create multi-row track' } },
           {
             type: 'text',
             x: 60,
             y: 330,
             maxWidth: 300,
-            text: 'Open the selection cart and click Create multi-wiggle track',
+            text: 'Open the selection cart and click Create multi-row track',
           },
         ],
       },
@@ -494,24 +494,24 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', text: 'Add a track from file or URL' },
-          { type: 'waitForText', text: 'Add multi-wiggle track' },
+          { type: 'waitForText', text: 'Add multi-row track' },
           { type: 'delay', ms: 800 },
         ],
         annotations: [
-          { type: 'box', anchor: { text: 'Add multi-wiggle track' } },
+          { type: 'box', anchor: { text: 'Add multi-row track' } },
           {
             type: 'text',
-            text: 'The workflow dropdown reaches the multi-wiggle form',
+            text: 'The workflow dropdown reaches the multi-row form',
             maxWidth: 320,
             leader: true,
-            anchor: { text: 'Add multi-wiggle track', alignX: 'left' },
+            anchor: { text: 'Add multi-row track', alignX: 'left' },
             dx: -60,
           },
         ],
       },
       {
         actions: [
-          { type: 'click', text: 'Add multi-wiggle track' },
+          { type: 'click', text: 'Add multi-row track' },
           { type: 'waitForText', text: 'Add' },
           { type: 'delay', ms: 1200 },
         ],

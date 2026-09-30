@@ -8,8 +8,12 @@ import {
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
 
-import { addMultiWiggleTrack } from '../MultiWiggleAddTrackWorkflow/util.ts'
+import {
+  addMultiRowTrack,
+  stackKindOf,
+} from '../MultiWiggleAddTrackWorkflow/util.ts'
 
+import type { StackKind } from '../MultiWiggleAddTrackWorkflow/util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -19,6 +23,7 @@ const ConfirmDialog = lazy(() => import('./ConfirmDialog.tsx'))
 interface MakeTrackArg {
   name: string
   tracks: AnyConfigurationModel[]
+  kind: StackKind
 }
 
 // The two things this menu item reads off the track selector, structurally:
@@ -36,13 +41,14 @@ function makeTrack({
   model: TrackSelectorSelf
   arg: MakeTrackArg
 }) {
-  const { name, tracks } = arg
+  const { name, tracks, kind } = arg
   const session = getSession(model)
   if (isSessionWithAddSessionTrack(session)) {
-    addMultiWiggleTrack({
+    addMultiRowTrack({
       session,
       view: model.view,
       name,
+      kind,
       // #region readConfObject
       // `tracks` are the selected track *configs*, not track models, so these
       // are readConfObject reads rather than getConf ones
@@ -63,17 +69,19 @@ function makeTrack({
 // #region register
 export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
   addMultiTrackMenuItems(pm, ({ session, model }) => {
-    const tracks = model.selection.filter(t => t.type === 'QuantitativeTrack')
+    const tracks = model.selection.filter(t => stackKindOf(t.type))
+    const leftOut = model.selection.filter(t => !stackKindOf(t.type))
     // contributing nothing is `undefined`, not an empty array to spread into
     // someone else's — the accumulated items are not this callback's to see
     return isSessionWithAddSessionTrack(session) && tracks.length > 0
       ? {
-          label: 'Create multi-wiggle track...',
+          label: 'Create multi-row track...',
           onClick: () => {
             getDialogHost(model).queueDialog(handleClose => [
               ConfirmDialog,
               {
                 tracks,
+                leftOut,
                 onClose: (result?: MakeTrackArg) => {
                   if (result) {
                     makeTrack({ model, arg: result })

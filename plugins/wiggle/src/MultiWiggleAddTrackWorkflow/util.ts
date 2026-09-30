@@ -1,14 +1,53 @@
 import {
   addAndShowTrack,
   fileToLocation,
+  getEnv,
   makeTrackId,
 } from '@jbrowse/core/util'
+import { guessAdapter, guessTrackType } from '@jbrowse/core/util/tracks'
 
+import {
+  adapterSpec,
+  getFilenameFromAdapterConfig,
+} from '../MultiWiggleAdapter/memberLocation.ts'
 import { getFilename } from '../util.ts'
 
+import type { MemberConfig } from '../MultiWiggleAdapter/memberLocation.ts'
 import type { SessionWithAddSessionTrack } from '@jbrowse/core/util'
+import type { FileLocation } from '@jbrowse/core/util/types'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export type TrackItem = string | Record<string, unknown>
+
+export type StackKind = 'quantitative' | 'feature'
+
+export interface Member {
+  name: string
+  conf: MemberConfig
+  kind: StackKind
+}
+
+export interface Refusal {
+  name: string
+  reason: string
+}
+
+export interface Guessers {
+  guessAdapter: (location: FileLocation) => MemberConfig
+  guessTrackType: (adapterType: string, location?: FileLocation) => string
+  hasAdapterType: (adapterType: string) => boolean
+}
+
+export function sessionGuessers(model: IStateTreeNode): Guessers {
+  const { pluginManager } = getEnv(model)
+  return {
+    guessAdapter: location =>
+      guessAdapter(location, undefined, undefined, model),
+    guessTrackType: (adapterType, location) =>
+      guessTrackType(adapterType, model, location),
+    hasAdapterType: adapterType => pluginManager.hasAdapterType(adapterType),
+  }
+}
 
 function lineSplit(val: string) {
   return val
@@ -23,9 +62,6 @@ export function parseItems(val: string): TrackItem[] {
     if (Array.isArray(parsed)) {
       return parsed as TrackItem[]
     }
-    // A single JSON object is one subadapter config — wrap it rather than
-    // letting it fall through to line-splitting, which would shred the JSON
-    // text into junk track rows.
     if (typeof parsed === 'object' && parsed !== null) {
       return [parsed as Record<string, unknown>]
     }
@@ -33,112 +69,189 @@ export function parseItems(val: string): TrackItem[] {
   return lineSplit(val)
 }
 
-// Mirror MultiWiggleAdapter's filename derivation so a source-less pasted
-// subadapter shows (and later resolves to) the same basename the adapter would
-// pick, rather than the bare 'unnamed' fallback.
-function locationName(item: Record<string, unknown>) {
-  const loc = item.bigWigLocation
-  if (loc && typeof loc === 'object') {
-    const l = loc as Record<string, unknown>
-    const path =
-      (typeof l.uri === 'string' ? l.uri : undefined) ??
-      (typeof l.localPath === 'string' ? l.localPath : undefined)
-    if (path) {
-      return getFilename(path)
+export function stackKindOf(trackType: string): StackKind | undefined {
+  return trackType === 'QuantitativeTrack'
+    ? 'quantitative'
+    : trackType === 'FeatureTrack'
+      ? 'feature'
+      : undefined
+}
+
+function isBlob(location: FileLocation) {
+  return !('uri' in location) && !('localPath' in location)
+}
+
+function needsSidecar(adapterType: string) {
+  const kind = adapterSpec(adapterType)?.kind
+  return kind === 'indexed' || kind === 'sidecar'
+}
+
+function member(
+  name: string,
+  conf: MemberConfig & { type: string },
+  trackType: string,
+): Member | Refusal {
+  const kind = stackKindOf(trackType)
+  return kind
+    ? { name, conf, kind }
+    : { name, reason: `${trackType} data does not stack into rows` }
+}
+
+function classifyLocation(
+  location: FileLocation,
+  name: string,
+  guessers: Guessers,
+  extra: Record<string, unknown> = {},
+) {
+  const conf = guessers.guessAdapter(location)
+  const { type } = conf
+  if (!type || !guessers.hasAdapterType(type)) {
+    return { name, reason: 'not a file format JBrowse recognizes' }
+  } else if (isBlob(location) && needsSidecar(type)) {
+    return {
+      name,
+      reason: 'needs its index beside it; paste the file URL instead',
     }
+  } else {
+    return member(
+      name,
+      { ...conf, type, ...extra },
+      guessers.guessTrackType(type, location),
+    )
   }
-  return undefined
 }
 
 export function itemToName(item: TrackItem) {
   return typeof item === 'string'
     ? getFilename(item)
-    : `${item.source ?? item.name ?? locationName(item) ?? 'unnamed'}`
+    : `${item.source ?? item.name ?? getFilenameFromAdapterConfig(item) ?? 'unnamed'}`
 }
 
-// A bare URL with no explicit source is left source-less so the adapter derives
-// the subtrack name from the filename (basename), matching the `bigWigs`
-// shorthand. Only a user-supplied rename pins an explicit source.
-export function urlToSubadapter(uri: string, source?: string) {
-  return {
-    type: 'BigWigAdapter',
-    bigWigLocation: { uri },
-    ...(source === undefined ? {} : { source }),
+export function classifyItem(item: TrackItem, guessers: Guessers) {
+  const name = itemToName(item)
+  if (typeof item === 'string') {
+    return classifyLocation(
+      { uri: item, locationType: 'UriLocation' },
+      name,
+      guessers,
+    )
   }
+  const { type } = item
+  return typeof type === 'string' && guessers.hasAdapterType(type)
+    ? member(name, { ...item, type }, guessers.guessTrackType(type))
+    : { name, reason: `unknown adapter type "${type}"` }
 }
 
-// Pins an edited name as the subtrack `source`; an unedited item is left as it
-// came, so a URL keeps the compact `bigWigs` form and the adapter derives the
-// same name itself.
-export function applyName(item: TrackItem, name: string): TrackItem {
-  return name === itemToName(item)
-    ? item
-    : typeof item === 'string'
-      ? urlToSubadapter(item, name)
-      : { ...item, source: name }
+// A dropped file pins its name as `source`, since a blob location carries no
+// path for the adapter to derive one from once the session reloads.
+export function classifyFile(file: File, guessers: Guessers) {
+  const name = getFilename(file.name)
+  return classifyLocation(fileToLocation(file), name, guessers, {
+    source: name,
+  })
 }
 
-// Strip the extension so a dropped file names its subtrack the same way a
-// pasted URL with the same basename would (both derive from getFilename).
-export function fileToTrackItem(file: File): TrackItem {
-  return {
-    type: 'BigWigAdapter',
-    bigWigLocation: fileToLocation(file),
-    source: getFilename(file.name),
+export function partition(classified: (Member | Refusal)[]) {
+  const members: Member[] = []
+  const refusals: Refusal[] = []
+  for (const c of classified) {
+    if ('reason' in c) {
+      refusals.push(c)
+    } else {
+      members.push(c)
+    }
   }
+  return { members, refusals }
+}
+
+export function stackKind(kinds: StackKind[]) {
+  const distinct = new Set(kinds)
+  return distinct.size > 1 ? 'mixed' : kinds[0]
+}
+
+export const MIXED_MESSAGE =
+  'Quantitative and feature data do not stack together; remove one kind'
+
+export function applyName({ name, conf }: Member, newName: string) {
+  return newName === name ? conf : { ...conf, source: newName }
 }
 
 export function canSubmit({
-  tracks,
+  kind,
   trackName,
   assembly,
 }: {
-  tracks: unknown[]
+  kind: StackKind | 'mixed' | undefined
   trackName: string
   assembly: string | undefined
 }) {
-  return tracks.length > 0 && trackName.trim().length > 0 && !!assembly
+  return (
+    kind !== undefined &&
+    kind !== 'mixed' &&
+    trackName.trim().length > 0 &&
+    !!assembly
+  )
 }
 
-export function buildAdapterPayload(items: TrackItem[]) {
-  if (items.every(i => typeof i === 'string')) {
-    return { bigWigs: items }
-  }
-  return {
-    subadapters: items.map(i =>
-      typeof i === 'string' ? urlToSubadapter(i) : i,
-    ),
-  }
+function bareBigWigUri(conf: MemberConfig) {
+  const loc = conf.bigWigLocation as Record<string, unknown> | undefined
+  return conf.type === 'BigWigAdapter' &&
+    Object.keys(conf).length === 2 &&
+    loc &&
+    typeof loc.uri === 'string' &&
+    Object.keys(loc).every(k => k === 'uri' || k === 'locationType') &&
+    (loc.locationType ?? 'UriLocation') === 'UriLocation'
+    ? loc.uri
+    : undefined
+}
+
+export function buildAdapterPayload(confs: MemberConfig[]) {
+  const uris = confs.map(bareBigWigUri)
+  return uris.every(uri => uri !== undefined)
+    ? { bigWigs: uris }
+    : { subadapters: confs }
 }
 
 /**
- * A MultiQuantitativeTrack config around a MultiWiggleAdapter. Shared between
- * the add-track workflow and the track-selector "Create multi-wiggle track"
- * extension, which add it two different ways — the workflow through the widget
- * (which also dismisses itself), the extension straight into its own view.
+ * A stack of files as one track: quantitative files as a
+ * MultiQuantitativeTrack, feature files as a FeatureTrack painting one row per
+ * file. Shared by the add-track workflow and the track selector's "Create
+ * multi-row track".
  */
-export function buildMultiWiggleTrackConf({
+export function buildMultiRowTrackConf({
   name,
   assemblyNames,
   adapter,
+  kind,
 }: {
   name: string
   assemblyNames: string[]
   adapter: Record<string, unknown>
+  kind: StackKind
 }) {
-  return {
-    trackId: makeTrackId({ name }),
-    type: 'MultiQuantitativeTrack',
+  const trackId = makeTrackId({ name })
+  const base = {
+    trackId,
     name,
     assemblyNames,
-    adapter: {
-      type: 'MultiWiggleAdapter',
-      ...adapter,
-    },
+    adapter: { type: 'MultiWiggleAdapter', ...adapter },
   }
+  return kind === 'quantitative'
+    ? { ...base, type: 'MultiQuantitativeTrack' }
+    : {
+        ...base,
+        type: 'FeatureTrack',
+        displays: [
+          {
+            type: 'LinearMultiRowFeatureDisplay',
+            displayId: `${trackId}-LinearMultiRowFeatureDisplay`,
+            rows: 'source',
+          },
+        ],
+      }
 }
 
-export function addMultiWiggleTrack({
+export function addMultiRowTrack({
   session,
   view,
   ...rest
@@ -148,6 +261,7 @@ export function addMultiWiggleTrack({
   name: string
   assemblyNames: string[]
   adapter: Record<string, unknown>
+  kind: StackKind
 }) {
-  addAndShowTrack(session, buildMultiWiggleTrackConf(rest), view)
+  addAndShowTrack(session, buildMultiRowTrackConf(rest), view)
 }

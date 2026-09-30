@@ -1060,24 +1060,26 @@ Add menu items to the "shopping cart" in the header of the hierarchical track
 menu when tracks are added to the selection.
 
 `CreateMultiWiggleExtension`, which turns a multi-track selection into one
-multi-wiggle track, is the whole registration:
+multi-row track, is the whole registration:
 
 <!-- include: plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#register -->
 
 ```typescript
 export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
   addMultiTrackMenuItems(pm, ({ session, model }) => {
-    const tracks = model.selection.filter(t => t.type === 'QuantitativeTrack')
+    const tracks = model.selection.filter(t => stackKindOf(t.type))
+    const leftOut = model.selection.filter(t => !stackKindOf(t.type))
     // contributing nothing is `undefined`, not an empty array to spread into
     // someone else's — the accumulated items are not this callback's to see
     return isSessionWithAddSessionTrack(session) && tracks.length > 0
       ? {
-          label: 'Create multi-wiggle track...',
+          label: 'Create multi-row track...',
           onClick: () => {
             getDialogHost(model).queueDialog(handleClose => [
               ConfirmDialog,
               {
                 tracks,
+                leftOut,
                 onClose: (result?: MakeTrackArg) => {
                   if (result) {
                     makeTrack({ model, arg: result })

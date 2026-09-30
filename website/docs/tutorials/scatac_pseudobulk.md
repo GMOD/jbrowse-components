@@ -199,9 +199,10 @@ here) compares peak shape; `heatmap` maps score to color and fits more rows.
 
 Two workflows write the list from a set of files.
 
-"Add multi-wiggle track", in the "Add track" workflow, takes BigWig URLs one per
+"Add multi-row track", in the "Add track" workflow, takes BigWig URLs one per
 line, or a JSON array of subadapter objects. Exporting the session gets the JSON
-config back out. On JBrowse Desktop it reads local `.bw` files directly.
+config back out. On JBrowse Desktop it reads local `.bw` files directly. The
+same form stacks BED or BigBed files, one row of features per file.
 
 `jbrowse add-track --multiwig` takes the whole set of BigWigs in place of the
 single positional file, labeling rows from the filenames:

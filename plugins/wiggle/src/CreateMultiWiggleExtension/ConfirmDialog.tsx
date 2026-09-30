@@ -4,32 +4,57 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { SanitizedHTML, SubmitDialog } from '@jbrowse/core/ui'
 import { measureGridWidth } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { IconButton, TextField } from '@mui/material'
+import { Alert, IconButton, TextField } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
+import {
+  MIXED_MESSAGE,
+  stackKind,
+  stackKindOf,
+} from '../MultiWiggleAddTrackWorkflow/util.ts'
+
+import type { StackKind } from '../MultiWiggleAddTrackWorkflow/util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const ConfirmDialog = ({
   tracks: initialTracks,
+  leftOut,
   onClose,
 }: {
   tracks: AnyConfigurationModel[]
-  onClose: (result?: { name: string; tracks: AnyConfigurationModel[] }) => void
+  leftOut: AnyConfigurationModel[]
+  onClose: (result?: {
+    name: string
+    tracks: AnyConfigurationModel[]
+    kind: StackKind
+  }) => void
 }) => {
-  const [val, setVal] = useState('MultiWiggle')
+  const [val, setVal] = useState('Multi-row track')
   const [tracks, setTracks] = useState(initialTracks)
+  const kind = stackKind(tracks.flatMap(t => stackKindOf(t.type) ?? []))
   return (
     <SubmitDialog
       open
-      title="Create multi-wiggle track"
-      submitDisabled={tracks.length === 0 || !val.trim()}
+      title="Create multi-row track"
+      submitDisabled={!kind || kind === 'mixed' || !val.trim()}
       onCancel={() => {
         onClose()
       }}
       onSubmit={() => {
-        onClose({ name: val.trim(), tracks })
+        if (kind === 'quantitative' || kind === 'feature') {
+          onClose({ name: val.trim(), tracks, kind })
+        }
       }}
     >
+      {leftOut.length > 0 ? (
+        <Alert severity="warning">
+          Left out, since only quantitative and feature tracks stack:{' '}
+          {leftOut.map(t => readConfObject(t, 'name')).join(', ')}
+        </Alert>
+      ) : null}
+      {kind === 'mixed' ? (
+        <Alert severity="error">{MIXED_MESSAGE}</Alert>
+      ) : null}
       <DataGrid
         autoHeight
         rows={tracks}
