@@ -176,6 +176,28 @@ function channelReader(
   return i => read(table.row(i))
 }
 
+// A text channel's reader, printing a float32 lane's value at the digits the
+// lane holds rather than the double it widens to: 0.3865, not 0.3865000009.
+function textChannelReader(
+  table: FeatureTable,
+  ref: FieldRef | ChannelReader,
+  jexl: JexlInstance | undefined,
+): RowReader<string> {
+  const read = channelReader(table, ref, jexl)
+  const column =
+    typeof ref !== 'function' && isPlainFieldRef(ref)
+      ? table.column(ref)
+      : undefined
+  return column?.kind === 'number' && column.values instanceof Float32Array
+    ? i => {
+        const v = read(i)
+        return typeof v === 'number' && !Number.isInteger(v)
+          ? String(Number(v.toPrecision(7)))
+          : valueText(v)
+      }
+    : i => valueText(read(i))
+}
+
 function numberChannelReader(
   table: FeatureTable,
   ref: FieldRef | ChannelReader,
@@ -692,10 +714,10 @@ export function encodeFeatures<L extends LaneName>(
     if (textEncoding === undefined) {
       text.fill('')
     } else {
-      const read = channelReader(table, textEncoding, jexl)
+      const read = textChannelReader(table, textEncoding, jexl)
       for (let k = 0; k < count; k++) {
         report?.(k)
-        text[k] = valueText(read(rowAt(k)))
+        text[k] = read(rowAt(k))
       }
     }
   }

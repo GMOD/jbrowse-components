@@ -1277,6 +1277,24 @@ test('whole-number lanes place every row, so the payload ships no index', () => 
   expect(encodedChannelTransferables(r)).toHaveLength(3)
 })
 
+test('a text over a float32 lane prints the digits the lane holds', () => {
+  const table = new ColumnTable(
+    3,
+    new Map([
+      ['start', lane(Uint32Array.from([0, 10, 20]))],
+      ['end', lane(Uint32Array.from([5, 15, 25]))],
+      ['score', lane(Float32Array.from([0.3865, 100, -0.8213]))],
+    ]),
+    String,
+  )
+  expect(new Float32Array([0.3865])[0]).not.toBe(0.3865)
+  expect(encodeFeatures(table, { text: 'score' }, ['text']).text).toEqual([
+    '0.3865',
+    '100',
+    '-0.8213',
+  ])
+})
+
 test('a lane read through its index, with rows skipped, names each instance by its row', () => {
   const at = Uint32Array.from([3, 2, 1, 0])
   const table = new ColumnTable(
