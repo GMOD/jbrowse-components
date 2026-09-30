@@ -1756,6 +1756,24 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     parts: ['rnaseq/sashimi_all_junctions', 'rnaseq/sashimi_canonical_only'],
   },
 
+  // The whole-library junction table (scripts/build_rnaseq_junctions.sh) at
+  // FOLH1's 5' end, the strongest junction in the library whose donor and
+  // acceptor are both RefSeq's but which no RefSeq transcript joins, beside
+  // the annotated junctions sharing its acceptor.
+  {
+    mode: 'url',
+    name: 'rnaseq/junction_track',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr11:49,220,500-49,231,500',
+      trackLabels: 'offset',
+      tracks: ['ncbi_gff_hg19', 'rnaseq_junctions_hg19'],
+    }),
+    readyText: 'FOLH1',
+    readyTimeout: 60000,
+    viewportHeight: 600,
+  },
+
   strandSpecificSpec(),
 
   // Strand-split coverage: grouping splits the coverage band as well as the

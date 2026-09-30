@@ -4514,6 +4514,66 @@
       "assemblyNames": ["hg19"]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "rnaseq_junctions_hg19",
+      "name": "Splice junctions (regtools)",
+      "category": ["RNA-seq"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz",
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "splice_site",
+          "known_junction"
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "rnaseq_junctions_hg19-LinearMarkDisplay",
+          "transform": [
+            {
+              "type": "filter",
+              "expr": "jexl:feature.score >= 3 && feature.splice_site in ['GT-AG', 'GC-AG', 'AT-AC']"
+            }
+          ],
+          "marks": [
+            {
+              "mark": "link",
+              "encoding": {
+                "size": {
+                  "field": "score",
+                  "scale": "log",
+                  "range": [1, 8]
+                },
+                "color": {
+                  "field": "known_junction",
+                  "scale": "categorical",
+                  "domain": ["1", "0"],
+                  "range": ["#377eb8", "#e41a1c"],
+                  "labels": ["annotated", "novel"],
+                  "title": "RefSeq"
+                }
+              }
+            },
+            {
+              "mark": "text",
+              "encoding": {
+                "text": "score"
+              },
+              "maxBpPerPx": 50
+            }
+          ]
+        }
+      ]
+    },
+    {
       "type": "VariantTrack",
       "trackId": "NA12878_LINE1",
       "name": "NA12878_LINE1",

@@ -213,15 +213,23 @@ awk -v OFS='\t' '{
 }' SJ.out.tab > junctions.bed
 ```
 
-**regtools** `junctions extract` already writes BED12, but its interval is the
-anchor span, the reads' aligned flanks around the intron. The two block sizes
-trim it back to the intron:
+**regtools** reads the junctions straight out of the BAM, then annotates each
+against a GTF with its splice-site motif and whether an annotated transcript
+joins that donor to that acceptor. The annotated table has a header row and
+gives the last base of one exon and the first base of the next, so the intron
+ends one base before `end`:
+
+<!-- from: scripts/build_rnaseq_junctions.sh -->
 
 ```bash
-awk -v OFS='\t' '{
-  split($11, b, ",")
-  print $1, $2 + b[1], $3 - b[2], $4, $5, $6
-}' regtools_junctions.bed > junctions.bed
+# -s FR: a stranded library whose first read runs along the transcript;
+#   RF for a dUTP library
+regtools junctions extract -s FR rnaseq.bam -o regtools.bed
+# annotate reads a plain GTF, not a gzipped one
+regtools junctions annotate regtools.bed genome.fa genes.gtf -o annotated.tsv
+# column 7 is the motif, column 14 the known-junction flag
+awk -F'\t' -v OFS='\t' 'NR > 1 { print $1, $2, $3 - 1, $4, $5, $6, $7, $14 }' \
+  annotated.tsv > junctions.bed
 ```
 
 **portcullis** writes a header row naming its columns, so the recipe reads them
@@ -241,17 +249,19 @@ awk -F'\t' -v OFS='\t' '
 
 The junctions load as a feature track drawn by the mark display, with
 `columnNames` naming the extra columns so the colour encoding can read them.
-This config loads the STAR file, coloured by the annotated flag:
+This config loads the regtools file built from this page's BAM, coloured by the
+known-junction flag against RefSeq:
 
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "star_junctions",
-  "name": "Splice junctions (STAR)",
-  "assemblyNames": ["hg38"],
+  "trackId": "rnaseq_junctions_hg19",
+  "name": "Splice junctions (regtools)",
+  "category": ["RNA-seq"],
+  "assemblyNames": ["hg19"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://yourhost/junctions.bed.gz",
+    "uri": "https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz",
     "columnNames": [
       "chrom",
       "chromStart",
@@ -259,26 +269,32 @@ This config loads the STAR file, coloured by the annotated flag:
       "name",
       "score",
       "strand",
-      "motif",
-      "annotated"
+      "splice_site",
+      "known_junction"
     ]
   },
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "transform": [{ "type": "filter", "expr": "jexl:feature.score >= 3" }],
+      "displayId": "rnaseq_junctions_hg19-LinearMarkDisplay",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "jexl:feature.score >= 3 && feature.splice_site in ['GT-AG', 'GC-AG', 'AT-AC']"
+        }
+      ],
       "marks": [
         {
           "mark": "link",
           "encoding": {
             "size": { "field": "score", "scale": "log", "range": [1, 8] },
             "color": {
-              "field": "annotated",
+              "field": "known_junction",
               "scale": "categorical",
               "domain": ["1", "0"],
               "range": ["#377eb8", "#e41a1c"],
               "labels": ["annotated", "novel"],
-              "title": "STAR junction"
+              "title": "RefSeq"
             }
           }
         },
@@ -290,16 +306,25 @@ This config loads the STAR file, coloured by the annotated flag:
 ```
 
 Each junction is a `link` from its start to its end, stroked by its score
-through a log scale, with a `text` mark printing the score over it; the `filter`
+through a log scale, with a `text` mark printing the score over it. The `filter`
 step is the same read-support floor the sashimi menu offers, applied to the
-whole-library counts in the file. The colour's `labels` name each value of
-`annotated` in the key, and `domain` lists the values as strings because the
-adapter reads extra columns as text.
+whole-library counts in the file, and it keeps the canonical motifs, which drops
+the copies of each junction that reads from the wrong strand put on the other
+one. The colour's `labels` name each value of `known_junction` in the key, and
+`domain` lists the values as strings because the adapter reads extra columns as
+text.
 
-For the portcullis file, the colour's `field` is `canonical_ss`, its `domain`
-`["C", "S", "N"]`, and its `labels` canonical, semi-canonical and non-canonical,
-with a third colour in `range`. **Edit plot...** in the track menu edits the
-same marks, colours and filter on a track already open.
+At the 5' end of _FOLH1_ the file separates what RefSeq annotates from what this
+library also splices:
+
+<Figure caption="The 5' end of FOLH1 on hg19: RefSeq transcripts above, the library's junctions below, blue where an annotated transcript joins the two ends and red where none does. The red arc joins a donor and an acceptor RefSeq uses, skipping the exons between them, and it is about as thick as the blue arcs beside it." src="/img/rnaseq/junction_track.png" links="Open this view=rnaseq/junction_track" />
+
+For the STAR file, the `columnNames` end in `motif` and `annotated`, and the
+colour's `field` is `annotated`. For the portcullis file, the colour's `field`
+is `canonical_ss`, its `domain` `["C", "S", "N"]`, and its `labels` canonical,
+semi-canonical and non-canonical, with a third colour in `range`. **Edit
+plot...** in the track menu edits the same marks, colours and filter on a track
+already open.
 
 A per-transcript result, such as a differential transcript usage test, goes into
 the gene track's GFF3 instead, and
