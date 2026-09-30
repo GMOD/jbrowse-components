@@ -509,7 +509,7 @@ Stretches with no rule are where nothing aligned.
 }
 ```
 
-<Figure src="/img/mark_display_examples/identity.png" caption="H. pylori 26695 against J99, one line per alignment at its identity: two long alignments either side of a run of short, more similar ones, with gaps where nothing aligned." />
+<Figure src="/img/mark_display_examples/identity.png" caption="H. pylori 26695 against J99, one line per alignment at its identity: a run of short alignments between two long ones, most of them more similar than either, with gaps where nothing aligned." />
 
 A PAF line carries one identity for the whole alignment, so a long alignment
 draws as one flat line however its identity varies along its length. An

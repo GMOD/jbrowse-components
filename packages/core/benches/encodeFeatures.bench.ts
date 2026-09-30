@@ -37,7 +37,7 @@
 // feature, so there is no per-arm garbage to skew a later round.
 //
 // A second table prices the multiscale pair: a raw mark and a zoom-following
-// binned count declared together, as `defaultPlotMarks` writes them. The
+// binned count declared together, as `defaultPlot` writes them. The
 // display sends both layers whatever the zoom (`layerRequests`), so the worker
 // encodes the one the zoom range excludes. `raw` and `binned` are each layer
 // alone and `pair` is the request as sent; the excluded layer's price is the

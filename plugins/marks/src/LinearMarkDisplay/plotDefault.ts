@@ -13,29 +13,33 @@ const IDENTITY_FIELD = 'identity'
  * and an SV VCF are each a pair of loci before they are anything else and a
  * bar of a paired record's score says nothing about what it pairs. Alignments
  * to other genomes draw each alignment at its identity, a row per genome, as
- * PipMaker's percent identity plot did; their mate is on another assembly, so
- * a link to it would land on the wrong genome. Otherwise
+ * PipMaker's percent identity plot did, on an axis spanning the identities
+ * alone; their mate is on another assembly, so a link to it would land on the
+ * wrong genome. Otherwise
  * bars of `score` where most features carry a numeric one, and nothing where
  * they do not — there is no second column every format agrees on, and
  * guessing one would draw a picture the user did not ask for, as a score on
  * one feature in a hundred would.
  */
-export function defaultPlotMarks(
+export function defaultPlot(
   fields: PlotFields,
-): MarkSnapshot[] | undefined {
+): { marks: MarkSnapshot[]; zero?: false } | undefined {
   if (fields.reads) {
-    return [{ mark: 'bar', transform: [{ type: 'coverage' }] }]
+    return { marks: [{ mark: 'bar', transform: [{ type: 'coverage' }] }] }
   }
   if (fields.genomes) {
     return fields.numeric.includes(IDENTITY_FIELD)
-      ? [{ mark: 'rule', encoding: { y: IDENTITY_FIELD, size: 2 } }]
-      : [{ mark: 'span' }]
+      ? {
+          marks: [{ mark: 'rule', encoding: { y: IDENTITY_FIELD, size: 2 } }],
+          zero: false,
+        }
+      : { marks: [{ mark: 'span' }] }
   }
   if (fields.mated) {
-    return [{ mark: 'link', transform: [{ type: 'mate' }] }]
+    return { marks: [{ mark: 'link', transform: [{ type: 'mate' }] }] }
   }
   return fields.numeric.includes(DEFAULT_PLOT_FIELD) &&
     !fields.sparse?.includes(DEFAULT_PLOT_FIELD)
-    ? [{ mark: 'bar', encoding: { y: DEFAULT_PLOT_FIELD } }]
+    ? { marks: [{ mark: 'bar', encoding: { y: DEFAULT_PLOT_FIELD } }] }
     : undefined
 }

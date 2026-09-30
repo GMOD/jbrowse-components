@@ -32,7 +32,7 @@ import MarkFacetChips from './components/MarkFacetChips.tsx'
 import { configSchemaFactory } from './configSchema.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import { stateModelFactory } from './model.ts'
-import { defaultPlotMarks } from './plotDefault.ts'
+import { defaultPlot } from './plotDefault.ts'
 import { placeTextMarks } from './textMarks.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
@@ -2617,7 +2617,7 @@ test('nothing declared draws nothing, and the default rule is a bar of score', (
   expect(display.rpcProps().layers).toEqual([])
   display.conf.setSubschema(
     'marks',
-    defaultPlotMarks({ numeric: ['score'], categorical: ['name'] })!,
+    defaultPlot({ numeric: ['score'], categorical: ['name'] })!.marks,
   )
   expect(display.markTypes).toEqual(['bar'])
   expect(display.rpcProps().layers[0]!.encoding.y).toBe('score')
@@ -2739,6 +2739,32 @@ test('a scan finding no numeric field answers only for the window it read', asyn
   view.setNewView(1, 3_000_000)
   await display.ensurePlotFields()
   expect(scanned).toHaveLength(2)
+})
+
+test('a display declaring nothing over genome alignments draws each genome its identity, on an axis off 0', async () => {
+  const { createDisplay } = createTestEnvironment(
+    [],
+    REGION,
+    'BedAdapter',
+    {},
+    (_sessionId, method) =>
+      method === 'MarkScanPlotFields'
+        ? Promise.resolve({
+            numeric: ['identity'],
+            categorical: ['mate.assemblyName'],
+            rows: 'mate.assemblyName',
+            genomes: ['CFT073', 'Sakai'],
+            mated: 'mate',
+          })
+        : new Promise(() => {}),
+  )
+  const { display } = createDisplay()
+  await waitFor(() => {
+    expect(display.markTypes).toEqual(['rule'])
+  })
+  expect(display.rpcProps().layers[0]!.encoding.y).toBe('identity')
+  expect(display.rowsField).toBe('mate.assemblyName')
+  expect(display.scaleZero).toBe(false)
 })
 
 test('a scan a newer one aborted answers with the newer one', async () => {

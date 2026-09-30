@@ -1,6 +1,6 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { defaultPlotMarks } from './plotDefault.ts'
+import { defaultPlot } from './plotDefault.ts'
 import { scanPlotFields } from './scanPlotFields.ts'
 
 function features(recs: Record<string, unknown>[]) {
@@ -38,7 +38,7 @@ test('aligned reads draw their depth, whatever score each read carries', () => {
     { listedSources: 0 },
   )
   expect(reads.reads).toBe(true)
-  expect(defaultPlotMarks(reads)).toEqual([
+  expect(defaultPlot(reads)?.marks).toEqual([
     { mark: 'bar', transform: [{ type: 'coverage' }] },
   ])
   const peaks = scanPlotFields(features([{ score: 5 }, { score: 9 }]), {
@@ -49,10 +49,10 @@ test('aligned reads draw their depth, whatever score each read carries', () => {
 
 test('the default is a bar of score, and nothing where the features carry none', () => {
   expect(
-    defaultPlotMarks({ numeric: ['score', 'qual'], categorical: [] }),
+    defaultPlot({ numeric: ['score', 'qual'], categorical: [] })?.marks,
   ).toEqual([{ mark: 'bar', encoding: { y: 'score' } }])
   expect(
-    defaultPlotMarks({ numeric: ['qual'], categorical: ['name'] }),
+    defaultPlot({ numeric: ['qual'], categorical: ['name'] })?.marks,
   ).toBeUndefined()
 })
 
@@ -65,7 +65,7 @@ test('an adapter listing more than one source names source as the rows field, wh
     { listedSources: 2 },
   )
   expect(multi.rows).toBe('source')
-  expect(defaultPlotMarks(multi)).toEqual([
+  expect(defaultPlot(multi)?.marks).toEqual([
     { mark: 'bar', encoding: { y: 'score' } },
   ])
   const single = scanPlotFields(
@@ -76,7 +76,7 @@ test('an adapter listing more than one source names source as the rows field, wh
     { listedSources: 1 },
   )
   expect(single.rows).toBeUndefined()
-  expect(defaultPlotMarks(single)).toEqual([
+  expect(defaultPlot(single)?.marks).toEqual([
     { mark: 'bar', encoding: { y: 'score' } },
   ])
 })
@@ -88,7 +88,7 @@ test('a score most features lack is offered but draws no default plot', () => {
   )
   expect(fields.numeric).toEqual(['score'])
   expect(fields.sparse).toEqual(['score'])
-  expect(defaultPlotMarks(fields)).toBeUndefined()
+  expect(defaultPlot(fields)?.marks).toBeUndefined()
 })
 
 test("a GFF3 record's source column is a colour field, not a facet", () => {
@@ -148,7 +148,7 @@ test('a paired record draws links, whichever way it names its other end', () => 
   expect(bedpe.mated).toBe('mate')
   // a score of its own does not make a paired record a bar chart
   expect(bedpe.numeric).toContain('score')
-  expect(defaultPlotMarks(bedpe)).toEqual([
+  expect(defaultPlot(bedpe)?.marks).toEqual([
     { mark: 'link', transform: [{ type: 'mate' }] },
   ])
 
@@ -160,7 +160,7 @@ test('a paired record draws links, whichever way it names its other end', () => 
     { listedSources: 0 },
   )
   expect(breakends.mated).toBe('alt')
-  expect(defaultPlotMarks(breakends)).toEqual(defaultPlotMarks(bedpe))
+  expect(defaultPlot(breakends)?.marks).toEqual(defaultPlot(bedpe)?.marks)
 })
 
 test('paired reads name their other end, and still draw their depth by default', () => {
@@ -173,7 +173,7 @@ test('paired reads name their other end, and still draw their depth by default',
   )
   expect(reads.mated).toBe('pair')
   expect(reads.reads).toBe(true)
-  expect(defaultPlotMarks(reads)).toEqual([
+  expect(defaultPlot(reads)?.marks).toEqual([
     { mark: 'bar', transform: [{ type: 'coverage' }] },
   ])
 })
@@ -187,7 +187,7 @@ test('an ordinary VCF names no other end, so its default is what its fields say'
     { listedSources: 0 },
   )
   expect(snvs.mated).toBeUndefined()
-  expect(defaultPlotMarks(snvs)).toEqual([
+  expect(defaultPlot(snvs)?.marks).toEqual([
     { mark: 'bar', encoding: { y: 'score' } },
   ])
 })
@@ -210,9 +210,10 @@ test('alignments to other genomes draw their identity, a row per genome', () => 
   )
   expect(fields.genomes).toEqual(['CFT073', 'Sakai'])
   expect(fields.rows).toBe('mate.assemblyName')
-  expect(defaultPlotMarks(fields)).toEqual([
-    { mark: 'rule', encoding: { y: 'identity', size: 2 } },
-  ])
+  expect(defaultPlot(fields)).toEqual({
+    marks: [{ mark: 'rule', encoding: { y: 'identity', size: 2 } }],
+    zero: false,
+  })
 })
 
 test('a pairwise alignment is one row, and one with no identity draws its spans', () => {
@@ -223,5 +224,5 @@ test('a pairwise alignment is one row, and one with no identity draws its spans'
   const blocks = scanPlotFields(features([alignment('J99')]), {
     listedSources: 0,
   })
-  expect(defaultPlotMarks(blocks)).toEqual([{ mark: 'span' }])
+  expect(defaultPlot(blocks)?.marks).toEqual([{ mark: 'span' }])
 })

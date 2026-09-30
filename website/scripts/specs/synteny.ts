@@ -536,6 +536,29 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
 // figure raises no Launch submenu at all. This view has ecoli_ava open, so it has
 // the offer -- and the lanes it draws are the reading the section that carries
 // the figure is about.
+const ECOLI_STRAINS = ['K12', 'Sakai', 'CFT073', 'NCTC86', 'IAI39']
+const ECOLI_IDENTITY_TRACK = {
+  type: 'SyntenyTrack',
+  trackId: 'ecoli_ava_identity',
+  name: 'K-12 against each strain, identity',
+  assemblyNames: ECOLI_STRAINS,
+  adapter: {
+    type: 'MultiGenomePAFAdapter',
+    uri: 'https://jbrowse.org/demos/ecoli_pangenome/all_vs_all.paf.gz',
+    assemblyNames: ECOLI_STRAINS,
+  },
+  displays: [
+    {
+      type: 'LinearMarkDisplay',
+      displayId: 'ecoli_ava_identity-LinearMarkDisplay',
+      rows: 'mate.assemblyName',
+      filter: ["jexl:feature.mate.assemblyName != 'K12'"],
+      scales: { y: { zero: false } },
+      marks: [{ mark: 'rule', encoding: { y: 'identity', size: 2 } }],
+    },
+  ],
+}
+
 const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
   encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
   {
@@ -3740,9 +3763,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
   },
 
-  // allvsall_synteny.md §"Percent identity per strain": the same track switched
-  // to Marks with nothing declared, so the figure is the default plot a reader
-  // gets from the Display types menu.
+  // allvsall_synteny.md §"Percent identity per strain": the page's own fence,
+  // which is the Display types -> Marks default written out plus the filter
+  // dropping K-12's alignments to itself.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_identity_rows',
@@ -3751,19 +3774,24 @@ export const syntenySpecs: ScreenshotSpec[] = [
         'https://jbrowse.org/demos/ecoli_pangenome/config.json',
       ),
       {
+        sessionTracks: [ECOLI_IDENTITY_TRACK],
         views: [
           {
             type: 'LinearGenomeView',
             assembly: 'K12',
             loc: 'chr:1-4,641,652',
             tracks: [
-              { trackId: 'ecoli_ava', type: 'LinearMarkDisplay', height: 420 },
+              {
+                trackId: 'ecoli_ava_identity',
+                type: 'LinearMarkDisplay',
+                height: 400,
+              },
             ],
           },
         ],
       },
     ),
-    viewportHeight: 640,
+    viewportHeight: 620,
     readySelector: displayPainted('mark-display'),
     readyTimeout: 120000,
   },

@@ -127,7 +127,7 @@ import {
   DEFAULT_LINK_STROKE_PX,
 } from './markVocabulary.ts'
 import { sharedKeyNotice, sharedKeysOf } from './pinDistinct.ts'
-import { defaultPlotMarks } from './plotDefault.ts'
+import { defaultPlot } from './plotDefault.ts'
 import {
   drawnKeysOf,
   drawnRegion,
@@ -2018,8 +2018,8 @@ export function stateModelFactory(
           })
           // Nothing declared draws nothing, and the Display types menu offers
           // this display on every feature, alignments and variant track. So the
-          // first time it is shown with an empty `marks`, the features decide:
-          // bars of a numeric `score`, or the dialog where they carry none.
+          // first time it is shown with an empty `marks`, the features decide
+          // (`defaultPlot`), or the dialog opens where they decide nothing.
           addDisposer(
             self,
             autorun(async () => {
@@ -2037,9 +2037,12 @@ export function stateModelFactory(
               if (!isAlive(self) || !fields || self.conf.marks.length > 0) {
                 return
               }
-              const marks = defaultPlotMarks(fields)
-              if (marks) {
-                setConf(self.conf, 'marks', marks)
+              const plot = defaultPlot(fields)
+              if (plot) {
+                setConf(self.conf, 'marks', plot.marks)
+                if (plot.zero === false) {
+                  self.setScaleZero(false)
+                }
                 self.splitByPlotRows(fields)
               } else {
                 self.openMarkPlotDialog()

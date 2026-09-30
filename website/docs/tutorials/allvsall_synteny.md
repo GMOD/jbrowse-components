@@ -284,12 +284,15 @@ The same track can draw each alignment as a line at its identity, one row per
 strain, the percent identity plot
 [PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes. In
 the track menu, **Display types → Marks** draws it with nothing to configure.
-The config below is the same plot written out:
+The config below is that plot written out, with one addition:
 
 - `rows` splits the alignments by the strain each one aligns to, which the PAF
   adapter puts in `mate.assemblyName`
 - a `rule` mark draws a line across each alignment at its `identity`, which
   comes from minimap2's `de` divergence tag
+- `zero: false` fits the axis to the identities instead of running it down to 0
+- `filter` drops K-12's alignments to itself, which otherwise take a row of
+  their own
 
 ```json addtrack config=https://jbrowse.org/demos/ecoli_pangenome/config.json loc=chr
 {
@@ -307,6 +310,8 @@ The config below is the same plot written out:
       "type": "LinearMarkDisplay",
       "displayId": "ecoli_ava_identity-LinearMarkDisplay",
       "rows": "mate.assemblyName",
+      "filter": ["jexl:feature.mate.assemblyName != 'K12'"],
+      "scales": { "y": { "zero": false } },
       "marks": [{ "mark": "rule", "encoding": { "y": "identity", "size": 2 } }]
     }
   ]
