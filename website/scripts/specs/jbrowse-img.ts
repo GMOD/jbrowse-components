@@ -58,6 +58,54 @@ function svReviewHalf(trackId: string) {
   ]
 }
 
+// One image of the `jb2export batch` run sv_callset_review.md teaches, over
+// COLO829.somatic-sv.vcf.gz at --flank 600 --width 1100. A spec renders one
+// PNG, so each row is the argv batch builds for that record (runBatch.ts:
+// `force:true` ahead of the track's modifiers, one --loc per panel), which
+// draws the same image batch writes under `file`. The three rows were picked
+// from the tumor and normal manifests' `links` column, one per "Reading the
+// sheet" case: 056 a fan in the tumor only, 009 a fan in both (a germline
+// insertion the caller filed as somatic), 013 no curve in either.
+const SV_SHEET_ROWS = {
+  '056': {
+    file: '056_chr7_104844620-chr7_104971854_r_138.png',
+    locs: ['chr7:104844021-104845221', 'chr7:104971255-104972455'],
+  },
+  '009': {
+    file: '009_chr1_168055349-chr19_23850381_r_2_0.png',
+    locs: ['chr1:168054750-168055950', 'chr19:23849782-23850982'],
+  },
+  '013': {
+    file: '013_chr2_20405765-chr2_20408702_d_78.png',
+    locs: ['chr2:20405166-20406366', 'chr2:20408103-20409303'],
+  },
+}
+const SV_SHEET_SAMPLES = {
+  tumor: 'COLO829_tumor_ont',
+  normal: 'COLO829BL_normal_ont',
+}
+
+function svSheetSpecs() {
+  return Object.entries(SV_SHEET_ROWS).flatMap(([row, { locs }]) =>
+    Object.entries(SV_SHEET_SAMPLES).map(([sample, trackId]) =>
+      cliSpec(`sv_sheet_${row}_${sample}`, [
+        'breakpoint',
+        '--config',
+        'https://jbrowse.org/demos/cancer_sv/config.json',
+        '--assembly',
+        'hg38',
+        '--track',
+        trackId,
+        'force:true',
+        'height:240',
+        ...locs.flatMap(loc => ['--loc', loc]),
+        '--width',
+        '1100',
+      ]),
+    ),
+  )
+}
+
 export const jbrowseImgSpecs: CliSpec[] = [
   // Headline (README "## Screenshot"): a multi-track human view from public
   // files — NCBI RefSeq genes, ClinGen gene-disease, phyloP conservation,
@@ -763,6 +811,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--width',
     '1000',
   ]),
+  ...svSheetSpecs(),
 ]
 
 // The one composed jbrowse-img figure. Separate from `jbrowseImgSpecs`, which is
@@ -843,5 +892,37 @@ export const jbrowseImgComposedSpecs: ScreenshotSpec[] = [
         },
       },
     ],
+  },
+
+  // The contact sheet sv_callset_review.md shows: each row one call, the tumor
+  // image beside the matched normal's, as `batch` wrote them into tumor/ and
+  // normal/. A pill names each row's file, since the file name is what a reader
+  // sorts and greps the directory by.
+  ...Object.keys(SV_SHEET_ROWS).map((row): ScreenshotSpec => ({
+    mode: 'compose',
+    name: `jbrowse-img/sv_sheet_${row}`,
+    parts: Object.keys(SV_SHEET_SAMPLES).map(
+      sample => `jbrowse-img/sv_sheet_${row}_${sample}`,
+    ),
+    direction: 'horizontal',
+  })),
+  {
+    mode: 'compose',
+    name: 'jbrowse-img/sv_callset_sheet',
+    parts: Object.keys(SV_SHEET_ROWS).map(row => `jbrowse-img/sv_sheet_${row}`),
+    gutter: 40,
+    annotations: Object.values(SV_SHEET_ROWS).map(({ file }, i) => ({
+      type: 'text' as const,
+      text: file,
+      maxWidth: 800,
+      fontSize: 22,
+      anchor: {
+        selector: `[data-part="${i}"]`,
+        alignX: 'left' as const,
+        alignY: 'bottom' as const,
+        dx: 20,
+        dy: -20,
+      },
+    })),
   },
 ]
