@@ -686,7 +686,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'protein/connected',
     viewportWidth: 2000,
-    viewportHeight: 890,
+    viewportHeight: 632,
     url: sessionSpec(PROTEIN3D_CONFIG, {
       views: [
         {

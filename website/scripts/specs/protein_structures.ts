@@ -76,7 +76,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     }),
     ...READY,
     viewportWidth: 2000,
-    viewportHeight: 1000,
+    viewportHeight: 912,
     annotations: [
       {
         type: 'text',
@@ -115,7 +115,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     }),
     ...READY,
     viewportWidth: 2000,
-    viewportHeight: 1000,
+    viewportHeight: 880,
     actions: [
       {
         type: 'click',
@@ -165,7 +165,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     ...READY,
     readyTimeout: 240000,
     viewportWidth: 2000,
-    viewportHeight: 1000,
+    viewportHeight: 912,
     // the seed frames the camera on the helices; Reset Zoom fits the whole
     // ensemble, frayed ends included, once that focus has finished moving
     actions: [
