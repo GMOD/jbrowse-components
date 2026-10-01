@@ -36,8 +36,8 @@ describe('SvgRowLabels', () => {
     })
     const rects = [...c.querySelectorAll('rect')]
     expect(rects[0]?.getAttribute('height')).toBe('60')
-    expect(rects.slice(1).map(r => r.getAttribute('y'))).toEqual(['20', '40'])
-    expect(rects.slice(1).every(r => r.getAttribute('height') === '1')).toBe(
+    expect(rects.slice(2).map(r => r.getAttribute('y'))).toEqual(['20', '40'])
+    expect(rects.slice(2).every(r => r.getAttribute('height') === '1')).toBe(
       true,
     )
   })
