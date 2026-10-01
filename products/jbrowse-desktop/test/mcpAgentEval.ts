@@ -379,8 +379,14 @@ const briefing = (
   })
 ).value as { members: string[]; help: string }
 const routes = briefedRoutes(briefing.help, briefing.members)
+// A usage limit or a login prompt answers every remaining run the same way, in
+// a second and for nothing, which would read as the surface failing
+let refusal: string | undefined
 try {
   for (const task of tasks) {
+    if (refusal) {
+      break
+    }
     for (let run = 1; run <= runs; run++) {
       let events: StreamEvent[] = []
       let counted = count(events, routes)
@@ -404,9 +410,15 @@ try {
         const prompt = task.prompt.replaceAll('DATA', repoRoot)
         events = await runAgent(prompt, cwd, mcpConfig)
         counted = count(events, routes)
+        if (counted.usd === 0 && counted.tokensOut === 0) {
+          refusal = counted.answer || 'no result event'
+        }
         verdict = await grade(session.client, task.grade, counted.answer)
       } catch (e) {
         verdict = { pass: false, detail: { harnessError: `${e}` } }
+      }
+      if (refusal) {
+        break
       }
       const row: RunMetrics = {
         task: task.name,
@@ -434,6 +446,12 @@ try {
   }
 } finally {
   session.stop()
+}
+
+if (refusal) {
+  throw new Error(
+    `claude -p answered "${refusal}" without running the model; stopped rather than record that as a failure`,
+  )
 }
 
 const passed = metrics.filter(m => m.pass).length
