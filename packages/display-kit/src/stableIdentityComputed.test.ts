@@ -1,6 +1,6 @@
 import { autorun, observable, runInAction } from 'mobx'
 
-import { stableIdentityComputed } from './stableIdentityComputed.ts'
+import { sameAsLast, stableIdentityComputed } from './stableIdentityComputed.ts'
 
 function rowsOver(regions: Map<number, string[]>) {
   return stableIdentityComputed(() =>
@@ -38,17 +38,15 @@ describe('stableIdentityComputed', () => {
     expect(second).toEqual([{ name: 'a' }, { name: 'c' }])
     dispose()
   })
+})
 
-  // A pointer handler or a test reads with nothing observing, and mobx keeps
-  // no value between such reads.
-  it('hands back the same value across reads nothing observes', () => {
-    const regions = observable.map<number, string[]>([[0, ['a']]])
-    const rows = rowsOver(regions)
-    const first = rows.get()
-    expect(rows.get()).toBe(first)
-    runInAction(() => {
-      regions.set(1, ['a'])
-    })
-    expect(rows.get()).toBe(first)
+describe('sameAsLast', () => {
+  it('hands back the value it last saw while each new one is equal to it', () => {
+    const keep = sameAsLast<{ name: string }[]>()
+    const first = keep([{ name: 'a' }])
+    expect(keep([{ name: 'a' }])).toBe(first)
+    const second = keep([{ name: 'b' }])
+    expect(second).not.toBe(first)
+    expect(keep([{ name: 'b' }])).toBe(second)
   })
 })

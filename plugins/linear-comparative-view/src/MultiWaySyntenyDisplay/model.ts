@@ -41,7 +41,7 @@ import {
   colorFieldOf,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
+import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { getFeatureName } from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -2347,11 +2347,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => {
-      const colors = stableIdentityComputed(() =>
-        self.configuration.laneLayers.map(layer =>
-          layer.marks.map(m => markColorOf(m, stepChannels(m.transform))),
-        ),
-      )
+      const sameColors = sameAsLast<MarkColor[][]>()
       return {
         /**
          * #getter
@@ -2369,7 +2365,11 @@ export function stateModelFactory(
          * the mark display resolves its own
          */
         get laneLayerColors(): MarkColor[][] {
-          return colors.get()
+          return sameColors(
+            self.configuration.laneLayers.map(layer =>
+              layer.marks.map(m => markColorOf(m, stepChannels(m.transform))),
+            ),
+          )
         },
       }
     })

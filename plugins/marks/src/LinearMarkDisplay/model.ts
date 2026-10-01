@@ -47,7 +47,10 @@ import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
+import {
+  sameAsLast,
+  stableIdentityComputed,
+} from '@jbrowse/display-kit/stableIdentityComputed'
 import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
 import {
@@ -819,13 +822,13 @@ export function stateModelFactory(
             self.hiddenGroupKeys,
           )
         })
-        const markColors = stableIdentityComputed(() => self.markColors)
+        const sameColors = sameAsLast<MarkColor[]>()
         // Each colour is stamped onto each region here, before the rows are
         // keyed or the sections offset, so everything downstream reads the
         // lane and the table as though the worker had filled them.
         const colored = createEncodeMemo(
           () => self.featurePayloads,
-          () => markColors.get(),
+          () => sameColors(self.markColors),
           withMarkColors,
         )
         const keyed = createEncodeMemo(

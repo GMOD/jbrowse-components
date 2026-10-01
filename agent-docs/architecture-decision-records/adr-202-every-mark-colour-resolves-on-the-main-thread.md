@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display resolves every colour but a `jexl:` callback on the main thread, so no colour edit refetches. The worker reads only what a colour needs from each feature: a categorical field's keys, as `colorKey`, each instance's index into the categorical table's entries (ADR-167's index, on the encoder); a quantitative field other than `y` as raw `colorValue`, crossing as a threshold with no cuts so the worker builds no ramp table; and nothing for a constant, which crosses as the default and is stamped as the number every instance paints (ADR-198's scalar). `withMarkColors` replaces `withValueColors`. A text mark's ramp moves off the worker onto the scale the display unions, so `unpinned-text-ramp` and `MarkSpec.ramp` go. `stableIdentityComputed` holds its last value across unobserved reads. Extends ADR-185 from a colour over `y` to every colour"
+summary: "The mark display resolves every colour but a `jexl:` callback on the main thread, so no colour edit refetches. The worker reads only what a colour needs from each feature: a categorical field's keys, as `colorKey`, each instance's index into the categorical table's entries (ADR-167's index, on the encoder); a quantitative field other than `y` as raw `colorValue`, crossing as a threshold with no cuts so the worker builds no ramp table; and nothing for a constant, which crosses as the default and is stamped as the number every instance paints (ADR-198's scalar). `withMarkColors` replaces `withValueColors`. A text mark's ramp moves off the worker onto the scale the display unions, so `unpinned-text-ramp` and `MarkSpec.ramp` go. The stamp's input keeps its identity across unobserved reads (`sameAsLast`). Extends ADR-185 from a colour over `y` to every colour"
 ---
 
 # ADR-202: Every mark colour resolves on the main thread
@@ -51,10 +51,10 @@ regions unless both ends were pinned, which `unpinned-text-ramp` warned about.
   render-core's `paintColors` against `state.colorScales`, so a label and a bar
   over one field and one declaration take one colour. `MarkSpec.ramp`,
   `rampResolvesPerRegion` and the `unpinned-text-ramp` rule go.
-- **`stableIdentityComputed` holds its last value**, so its identity survives
-  an unobserved read as it survives an observed recomputation. The stamp's
-  input is the colour list, and an unobserved read of a fresh list re-stamped
-  every region, allocating a colour lane per categorical layer per read.
+- **The stamp's input keeps its identity across unobserved reads**, through
+  display-kit's `sameAsLast`. An unobserved computed hands out a fresh colour
+  list per read, which re-stamped every region and allocated a colour lane per
+  categorical layer per read.
 
 ## Consequences
 
@@ -74,6 +74,11 @@ regions unless both ends were pinned, which `unpinned-text-ramp` warned about.
   still sends its colour encoding in `rpcProps()`.
 
 ## Rejected alternatives
+
+- **`stableIdentityComputed` holding its last value for every reader.** It
+  kept the colour list's identity, and it walked canvas's settings payload on
+  every unobserved read of its fetch inputs, which `perFrameStoreCost.test.ts`
+  forbids on a pan. The colour lists are small, so the keeper is theirs alone.
 
 - **Remapping the worker's colour lane by colour.** Two keys can take one
   palette colour, so a lane of colours cannot be repainted per key.
