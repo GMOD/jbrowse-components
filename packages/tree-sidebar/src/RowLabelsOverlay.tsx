@@ -120,6 +120,7 @@ export const RowLabelsOverlay = memo(function RowLabelsOverlay({
             labelOffset={labelOffset + (bands.length ? BAND_LABEL_WIDTH : 0)}
             scrollTop={scrollTop}
             availableHeight={height}
+            opaque={labelOffset > 0}
           />
         ) : null}
       </svg>

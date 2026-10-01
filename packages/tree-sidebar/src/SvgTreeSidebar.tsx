@@ -64,6 +64,7 @@ export function SvgTreeSidebar({
           labelOffset={labelOffset + (bands.length ? BAND_LABEL_WIDTH : 0)}
           scrollTop={scrollTop}
           availableHeight={availableHeight}
+          opaque={!!drawnTree}
         />
       ) : null}
       {drawnTree ? (

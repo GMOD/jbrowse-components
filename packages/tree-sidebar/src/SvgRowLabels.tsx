@@ -33,17 +33,19 @@ export function SvgRowLabels({
   labelOffset,
   scrollTop = 0,
   availableHeight,
+  opaque = false,
 }: {
   sources: RowLabelSource[]
   rowHeight: number
   labelOffset: number
   scrollTop?: number
   availableHeight?: number
+  opaque?: boolean
 }) {
   const palette = usePalette()
   const fontSize = Math.min(rowHeight, 12)
-  const stripWash = alpha(palette.background.paper, 0.75)
-  const stripTint = alpha(palette.text.primary, 0.06)
+  const stripWash = alpha(palette.background.paper, opaque ? 1 : 0.9)
+  const stripTint = alpha(palette.text.primary, opaque ? 0 : 0.04)
   const separator = alpha(palette.text.primary, 0.12)
   const textFits = rowLabelsCarryText(rowHeight)
   // Without a tint there is nothing left once the text is gone, so a track whose
