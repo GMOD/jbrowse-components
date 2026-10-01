@@ -8,6 +8,7 @@ import {
 import { scaleExtent } from '@jbrowse/core/util/quantileExtent'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
+import { MAX_COLOR_CUTS } from '@jbrowse/render-core/shaders/markColorConsts'
 
 import { plotsValue } from './markSpecs.ts'
 
@@ -117,7 +118,8 @@ function valueScaleTable(
     return {
       kind: 'threshold',
       field: color.field,
-      domain: thresholdCuts(color.domain ?? []),
+      // the cuts the shader holds, so the key lists the bands that paint
+      domain: thresholdCuts(color.domain ?? []).slice(0, MAX_COLOR_CUTS),
       ...(color.range ? { range: [...color.range] } : {}),
       ...met,
     }

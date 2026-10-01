@@ -466,6 +466,9 @@ describe('a marks list in a config file', () => {
     expect(cuts(['0.1', '0.5'])).toEqual([])
     expect(cuts([0.5, 0.1])).toEqual([`warning threshold-cuts ${domain}`])
     expect(cuts(['low', 'high'])).toEqual([`warning threshold-cuts ${domain}`])
+    expect(cuts(Array.from({ length: 9 }, (_, i) => i))).toEqual([
+      `warning threshold-cut-count ${domain}`,
+    ])
     expect(
       found(
         colored('point', {

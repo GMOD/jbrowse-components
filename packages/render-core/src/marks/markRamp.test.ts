@@ -123,6 +123,17 @@ test('a constant colour expands once for Canvas2D and never for the pack', () =>
   expect(Array.from(paintColors(longer, 3, undefined))).toEqual([7, 7, 7])
 })
 
+test('a threshold past the uniform block bakes in the band the shader paints', () => {
+  const cuts = Array.from({ length: 10 }, (_, i) => (i + 1) * 10)
+  const scale: MarkThreshold = {
+    cuts,
+    colors: Uint32Array.from({ length: 11 }, (_, i) => i),
+  }
+  expect(rampUniforms(scale).colorCutCount).toBe(8)
+  const colors = paintColors(bars([5, 85, 95, 200]), 4, scale) as Uint32Array
+  expect([...colors]).toEqual([0, 8, 8, 8])
+})
+
 test('the bake reads the LUT at the value fraction, floors and ceilings clamped', () => {
   const c = bars([-10, 0, 50, 100, 200])
   const colors = paintColors(c, 5, ramp) as Uint32Array

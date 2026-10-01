@@ -219,10 +219,7 @@ export function paintColors(
   const colors = new Uint32Array(count)
   const bits = rampValueBits(colorValue)
   const colorOf = isThreshold(scale)
-    ? (value: number) =>
-        Number.isFinite(value)
-          ? scale.colors[thresholdBandOf(value, scale.cuts)]!
-          : scale.colors[value > 0 ? scale.cuts.length : 0]!
+    ? thresholdColorOf(scale)
     : rampColorOf(scale)
   for (let i = 0; i < count; i++) {
     const value = colorValue[i]!
@@ -245,6 +242,16 @@ function constantColors(c: ColorChannel, color: number, count: number) {
   const colors = new Uint32Array(count).fill(color)
   c.constantBake = colors
   return colors
+}
+
+// The cuts the shader's uniform block holds, so Canvas2D paints a value past
+// the last of them in the band the GPU does.
+function thresholdColorOf(scale: MarkThreshold) {
+  const cuts = scale.cuts.slice(0, MAX_COLOR_CUTS)
+  return (value: number) =>
+    Number.isFinite(value)
+      ? scale.colors[thresholdBandOf(value, cuts)]!
+      : scale.colors[value > 0 ? cuts.length : 0]!
 }
 
 function rampColorOf(ramp: MarkRamp) {

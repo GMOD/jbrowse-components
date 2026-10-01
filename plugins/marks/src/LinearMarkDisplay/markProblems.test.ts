@@ -1,9 +1,11 @@
 import fs from 'node:fs'
 
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { MAX_COLOR_CUTS } from '@jbrowse/render-core/shaders/markColorConsts'
 
 import { configSchemaFactory } from './configSchema.ts'
 import { MARK_RULES, markProblems, problemText } from './markProblems.ts'
+import { MAX_THRESHOLD_CUTS } from './markVocabulary.ts'
 
 import type {
   FacetSnapshot,
@@ -638,6 +640,27 @@ test('threshold cuts written high to low are told which way they are read', () =
   expect(found(cuts(['low', 'high']))).toHaveLength(1)
   expect(found(cuts(['0.5', '0.5']))).toEqual([
     'warning threshold-cuts mark 0 encoding.color.domain',
+  ])
+})
+
+test('a threshold past the cuts the GPU holds is told where the rest paint', () => {
+  expect(MAX_THRESHOLD_CUTS).toBe(MAX_COLOR_CUTS)
+  const threshold = (n: number) => [
+    {
+      mark: 'point',
+      encoding: {
+        y: 'score',
+        color: {
+          field: 'score',
+          scale: 'threshold',
+          domain: Array.from({ length: n }, (_, i) => String(i)),
+        },
+      },
+    },
+  ]
+  expect(found(threshold(MAX_THRESHOLD_CUTS))).toEqual([])
+  expect(found(threshold(MAX_THRESHOLD_CUTS + 1))).toEqual([
+    'warning threshold-cut-count mark 0 encoding.color.domain',
   ])
 })
 

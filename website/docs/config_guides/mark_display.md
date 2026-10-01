@@ -965,6 +965,7 @@ each reported under its id:
 | `span-density-source` | warning | `source: "density"` on a `span`, a `text` or a `link`, which cannot draw the sidecar's bins. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-no-cuts` | warning | A threshold colour naming no cut, so every value paints one colour. |
+| `threshold-cut-count` | warning | A threshold colour naming more cuts than it paints, so a value past the eighth takes the ninth colour. |
 | `threshold-range` | warning | A threshold `range` not one colour longer than its cuts. |
 | `ramp-domain` | warning | A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. |
 | `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a colour ramp's, a width's or `scales.y`'s. |

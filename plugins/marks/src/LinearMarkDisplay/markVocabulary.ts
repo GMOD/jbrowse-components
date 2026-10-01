@@ -33,6 +33,9 @@ export const DEFAULT_LINK_STROKE_PX = 2
 /** The fraction of its row a span fills where its `rowProportion` is left unwritten. */
 export const DEFAULT_ROW_PROPORTION = 1
 
+/** The cuts a threshold colour paints, render-core's `MAX_COLOR_CUTS`. */
+export const MAX_THRESHOLD_CUTS = 8
+
 export const SIZE_SCALES = ['linear', 'log'] as const
 export type SizeScaleName = (typeof SIZE_SCALES)[number]
 

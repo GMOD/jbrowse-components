@@ -29,6 +29,7 @@ import {
   DEFAULT_TEXT_FIELD,
   DEFAULT_X2,
   MATE_FIELDS,
+  MAX_THRESHOLD_CUTS,
 } from './markVocabulary.ts'
 import { stepChannels } from './stepChannels.ts'
 
@@ -73,6 +74,8 @@ export const MARK_RULES = {
   'threshold-cuts': 'warning',
   /** A threshold colour naming no cut, so every value paints one colour. */
   'threshold-no-cuts': 'warning',
+  /** A threshold colour naming more cuts than it paints, so a value past the eighth takes the ninth colour. */
+  'threshold-cut-count': 'warning',
   /** A threshold `range` not one colour longer than its cuts. */
   'threshold-range': 'warning',
   /** A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. */
@@ -784,6 +787,16 @@ function ownProblems(
         'threshold-no-cuts',
         'encoding.color.domain',
         'a threshold names its cut points in domain, and with none every value paints the first colour',
+      ),
+    )
+  }
+  const cutCount = (color.domain ?? []).length
+  if (colorScaleOf(color) === 'threshold' && cutCount > MAX_THRESHOLD_CUTS) {
+    problems.push(
+      found(
+        'threshold-cut-count',
+        'encoding.color.domain',
+        `a threshold paints ${MAX_THRESHOLD_CUTS} cuts, and these ${cutCount} leave a value past the ${MAX_THRESHOLD_CUTS}th in the ${MAX_THRESHOLD_CUTS + 1}th colour`,
       ),
     )
   }
