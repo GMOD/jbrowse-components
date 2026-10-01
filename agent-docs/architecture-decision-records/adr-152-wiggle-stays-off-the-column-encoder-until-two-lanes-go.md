@@ -225,5 +225,5 @@ arm runs at 1.09x<!--m:scalar-colour-bigwig.raw.headVsWiggle--> wiggle there,
 and a quieter A/B read it level with the lane's 1.12x; what remains is the
 encode's copy of the positions and its admit pass over `y`. Two conditions remain: a multi-wiggle's `row` as a
 per-layer constant, the question ADR-198 answered for colour
-([wiggle-onto-bar-and-point](../ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md)),
+([wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md)),
 and a `pileup` kernel that sorts without a comparator.

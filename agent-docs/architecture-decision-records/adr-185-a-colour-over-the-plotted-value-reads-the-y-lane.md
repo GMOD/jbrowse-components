@@ -85,7 +85,7 @@ it plots.
   keyless rows follow the values met, not the colours packed.
 - `markColor.slang` still has no symlog ramp, and wiggle's per-source colour
   and row are still the open call in
-  [wiggle-onto-bar-and-point](../ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md).
+  [wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md).
 
 ## Rejected alternatives
 

@@ -9,7 +9,7 @@ Colin, 2026-09-28, after the span gained its colour scale: "we can try to make
 maf leverage the new wiggle display marks". The first two items below landed that
 evening as [ADR-186](../architecture-decision-records/adr-186-flatten-fans-out-a-record-keyed-by-name.md)
 and [ADR-187](../architecture-decision-records/adr-187-a-cells-step-reads-a-row-against-the-block-it-came-from.md).
-The wiggle port's own state is in [grammar-next-steps](grammar-next-steps.md).
+The wiggle port's own state is in [grammar-unity](grammar-unity.md).
 An Opus inventory the same day read `plugins/maf/src` against
 `plugins/marks/src/LinearMarkDisplay`; what follows is its findings with the
 file pointers to re-read.
