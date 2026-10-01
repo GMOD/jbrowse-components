@@ -1075,45 +1075,74 @@ export default function baseStateModelFactory(
         }
         return map
       },
-
-      /**
-       * #getter
-       */
-      // MobX caches this only because afterAttach keeps an autorun
-      // subscribed: an unobserved computed is suspended and re-evaluates on
-      // every read, which rebuilt a Hilbert-sorted index per mousemove.
-      // `coarseBpPerPx`, not live `bpPerPx`, matching the geometry the rows
-      // were packed at.
-      get flatbushIndexes() {
-        const bpPerPx = containingLgv(self).coarseBpPerPx
-        const labels = {
-          showLabels: self.renderedShowLabels,
-          showDescriptions: self.renderedShowDescriptions,
-          fontSize: self.renderedLabelFontSize,
-        }
-        const result = new Map<number, FlatbushRegionIndexes>()
-        for (const [idx, data] of self.laidOutDataMap) {
-          result.set(idx, {
-            feature: buildFeatureFlatbushIndex(
-              data.flatbushItems,
-              data.floatingLabelsData,
-              bpPerPx,
-              self.reversedRegions.has(idx),
-              labels,
-            ),
-            subfeature: buildSubfeatureFlatbushIndex(data.subfeatureInfos),
-          })
-        }
-        return result
-      },
-      /**
-       * #method
-       */
-      async renderSvg(opts?: ExportSvgDisplayOptions) {
-        const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self, opts)
-      },
     }))
+    .views(self => {
+      const heldIndexes = new Map<
+        number,
+        { inputs: unknown[]; indexes: FlatbushRegionIndexes }
+      >()
+      return {
+        /**
+         * #getter
+         */
+        // `coarseBpPerPx`, not live `bpPerPx`, matching the geometry the rows
+        // were packed at. Held per region, since the incremental layout keeps
+        // an unchanged region's object and a rebuild costs a Hilbert sort.
+        get flatbushIndexes() {
+          const bpPerPx = containingLgv(self).coarseBpPerPx
+          const {
+            renderedShowLabels: showLabels,
+            renderedShowDescriptions: showDescriptions,
+            renderedLabelFontSize: fontSize,
+            laidOutDataMap,
+            reversedRegions,
+          } = self
+          const labels = { showLabels, showDescriptions, fontSize }
+          const result = new Map<number, FlatbushRegionIndexes>()
+          for (const [idx, data] of laidOutDataMap) {
+            const reversed = reversedRegions.has(idx)
+            const inputs = [
+              data,
+              bpPerPx,
+              reversed,
+              showLabels,
+              showDescriptions,
+              fontSize,
+            ]
+            const held = heldIndexes.get(idx)
+            if (held?.inputs.every((v, i) => v === inputs[i])) {
+              result.set(idx, held.indexes)
+              continue
+            }
+            const indexes = {
+              feature: buildFeatureFlatbushIndex(
+                data.flatbushItems,
+                data.floatingLabelsData,
+                bpPerPx,
+                reversed,
+                labels,
+              ),
+              subfeature: buildSubfeatureFlatbushIndex(data.subfeatureInfos),
+            }
+            heldIndexes.set(idx, { inputs, indexes })
+            result.set(idx, indexes)
+          }
+          for (const idx of heldIndexes.keys()) {
+            if (!laidOutDataMap.has(idx)) {
+              heldIndexes.delete(idx)
+            }
+          }
+          return result
+        },
+        /**
+         * #method
+         */
+        async renderSvg(opts?: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self, opts)
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

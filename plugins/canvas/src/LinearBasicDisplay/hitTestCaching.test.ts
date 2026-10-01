@@ -112,6 +112,24 @@ describe('flatbushIndexes caching', () => {
     expect(index()).not.toBe(first)
     dispose()
   })
+
+  it("keeps a region's index when another region arrives", () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    const ctgB = { ...ctgA, refName: 'ctgB' }
+    view.setDisplayedRegions([ctgA, ctgB])
+    const dispose = autorun(() => void display.flatbushIndexes)
+    display.setRpcData(0, regionData(50), ctgA)
+    const laid = display.laidOutDataMap.get(0)
+    const indexes = display.flatbushIndexes.get(0)
+
+    display.setRpcData(1, regionData(50, 10, 8, 'g'), ctgB)
+
+    expect(display.flatbushIndexes.size).toBe(2)
+    expect(display.laidOutDataMap.get(0)).toBe(laid)
+    expect(display.flatbushIndexes.get(0)).toBe(indexes)
+    dispose()
+  })
 })
 
 describe('a squeezed fit track across a settle', () => {
