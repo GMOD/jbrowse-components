@@ -8,6 +8,8 @@ import { toArray } from 'rxjs/operators'
 
 import Gff3Adapter from '../../../gff3/src/Gff3Adapter/Gff3Adapter.ts'
 import gff3ConfigSchema from '../../../gff3/src/Gff3Adapter/configSchema.ts'
+import Gff3TabixAdapter from '../../../gff3/src/Gff3TabixAdapter/Gff3TabixAdapter.ts'
+import gff3TabixConfigSchema from '../../../gff3/src/Gff3TabixAdapter/configSchema.ts'
 import { buildFeatureRenderData } from '../RenderFeatureDataRPC/buildFeatureRenderData.ts'
 import { findGlyph } from '../RenderFeatureDataRPC/glyphs/findGlyph.ts'
 import {
@@ -87,6 +89,61 @@ describe.each(MODES)('SARS-CoV-2 ORF1ab, geneGlyphMode %s', mode => {
     ])
   })
 })
+
+// The genomes.jbrowse.org GenArk hub's copy: position-sorted, so the gene line
+// follows its CDS lines, and read one tabix window at a time.
+describe.each([
+  [0, 29903],
+  [265, 21555],
+  [13000, 17000],
+  [15000, 16000],
+  [21000, 21600],
+])(
+  'SARS-CoV-2 ORF1ab from the hosted tabix GFF, window %i-%i',
+  (start, end) => {
+    it('folds pp1ab whichever lines the window reads', async () => {
+      const adapter = new Gff3TabixAdapter(
+        gff3TabixConfigSchema.create({
+          gffGzLocation: {
+            localPath:
+              require.resolve('../../../gff3/src/test_data/GCF_009858895.2_genomic.gff.gz'),
+          },
+          index: {
+            indexType: 'CSI',
+            location: {
+              localPath:
+                require.resolve('../../../gff3/src/test_data/GCF_009858895.2_genomic.gff.gz.csi'),
+            },
+          },
+        }),
+      )
+      const features = await firstValueFrom(
+        adapter
+          .getFeatures({
+            assemblyName: 'GCF_009858895.2',
+            refName: 'NC_045512.2',
+            start,
+            end,
+          })
+          .pipe(toArray()),
+      )
+      const layout = layoutGene(
+        geneNamed(features, 'ORF1ab'),
+        configFor('auto'),
+      )
+      expect(
+        layout.children.map(c => [
+          c.feature.get('product'),
+          ...extent(c.feature),
+          c.children.length,
+        ]),
+      ).toEqual([
+        ['ORF1ab polyprotein', 265, 21555, 15],
+        ['ORF1a polyprotein', 265, 13483, 11],
+      ])
+    })
+  },
+)
 
 describe('SARS-CoV-2 ORF1ab translation', () => {
   it('reads pp1ab through the -1 frameshift and overlays nsp12 without a gap or a repeat', async () => {
