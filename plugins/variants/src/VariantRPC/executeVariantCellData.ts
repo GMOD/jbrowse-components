@@ -41,7 +41,7 @@ function paintedLegendFlags(passes: { paintedCategories: number }[]) {
   }
 }
 
-interface CellDataBase {
+export interface CellDataBase {
   samplePloidy: Record<string, number>
   // Names the worker's row list, aligned to the `cellRowIndices` the cell arrays
   // carry: `rowNames[cellRowIndices[i]]` is the row cell `i` belongs to. The
