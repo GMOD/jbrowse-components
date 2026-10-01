@@ -877,10 +877,13 @@ export function encodeFeatures<L extends LaneName>(
           thresholdPalette(cuts.length + 1, thresholdEncoding.range),
           c => cssColorToABGR(c),
         )
+        // in float32 on both sides, as the shader and the key compare, so a
+        // value off a float32 lane sits at a cut like 0.7 rather than under it
+        const cuts32 = cuts.map(cut => Math.fround(cut))
         for (let k = 0; k < count; k++) {
           report?.(k)
           const v = read(rowAt(k))
-          const bin = thresholdIndex(v, cuts)
+          const bin = thresholdIndex(Math.fround(numericValue(v)), cuts32)
           if (bin >= 0) {
             color[k] = binColors[bin]!
           } else if (isMissing(v)) {

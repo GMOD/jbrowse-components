@@ -1378,6 +1378,25 @@ test('a categorical over a category column lists only the labels its placed rows
   ).toEqual(['a'])
 })
 
+test('a packed threshold compares in float32, so a float32 value at a cut takes the band above it, as the shader paints it', () => {
+  const table = new ColumnTable(
+    2,
+    new Map<string, Column>([
+      ['start', lane(Uint32Array.from([0, 10]))],
+      ['end', lane(Uint32Array.from([5, 15]))],
+      ['score', lane(Float32Array.from([0.7, 0.69]))],
+    ]),
+    String,
+  )
+  const r = encodeFeatures(
+    table,
+    { color: { field: 'score', scale: 'threshold', domain: [0.7] } },
+    ['color'],
+  )
+  const [below, above] = thresholdPalette(2).map(c => cssColorToABGR(c))
+  expect([...colorLane(r.color)]).toEqual([above, below])
+})
+
 test('a colorKey lane names each instance by its entry and paints nothing', () => {
   const r = encodeFeatures(
     features,
