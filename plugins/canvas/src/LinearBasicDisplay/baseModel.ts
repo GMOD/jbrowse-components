@@ -742,33 +742,61 @@ export default function baseStateModelFactory(
       },
     }))
     .views(fitLadderViews)
-    .views(self => ({
-      /**
-       * #getter
-       * Uniform vertical scale for fit mode; below 1 only while the stack is
-       * squeezed to fit.
-       */
-      get fitScale() {
-        return self.fitStage.scale
-      },
-      /**
-       * #getter
-       * What every consumer (hit test, GPU upload, React render) reads: the
-       * resolved fit layout, cloned and scaled only when squeezed.
-       */
-      get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
-        const { layout, scale } = self.fitStage
-        const { facet } = self
-        return self.coarseTierStandsIn
-          ? EMPTY_LAID_OUT_DATA
-          : scale === 1
-            ? layout
-            : scaleLaidOutData(
+    .views(self => {
+      let squeezed:
+        | {
+            layout: ReadonlyMap<number, FeatureDataResult>
+            scale: number
+            facet: FeatureFacet | undefined
+            out: ReadonlyMap<number, FeatureDataResult>
+          }
+        | undefined
+      return {
+        /**
+         * #getter
+         * Uniform vertical scale for fit mode; below 1 only while the stack
+         * is squeezed to fit.
+         */
+        get fitScale() {
+          return self.fitStage.scale
+        },
+        /**
+         * #getter
+         * What every consumer (hit test, GPU upload, React render) reads: the
+         * resolved fit layout, cloned and scaled only when squeezed.
+         */
+        // A settle re-resolves the fit stage onto the same layout and scale,
+        // and fresh clones would re-index and re-upload every region.
+        get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
+          const { layout, scale } = self.fitStage
+          const { facet } = self
+          if (self.coarseTierStandsIn) {
+            return EMPTY_LAID_OUT_DATA
+          }
+          if (scale === 1) {
+            return layout
+          }
+          if (
+            squeezed?.layout !== layout ||
+            squeezed.scale !== scale ||
+            squeezed.facet !== facet
+          ) {
+            squeezed = {
+              layout,
+              scale,
+              facet,
+              out: scaleLaidOutData(
                 layout,
                 scale,
                 facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
-              )
-      },
+              ),
+            }
+          }
+          return squeezed.out
+        },
+      }
+    })
+    .views(self => ({
       /**
        * #getter
        * The stacked sections in stacking order, each with the chip row
@@ -778,7 +806,7 @@ export default function baseStateModelFactory(
       get groupSections(): FeatureGroupSection[] {
         const { facet } = self
         return facet
-          ? featureGroupSections(this.laidOutDataMap, facet, GROUP_LABEL_HEIGHT)
+          ? featureGroupSections(self.laidOutDataMap, facet, GROUP_LABEL_HEIGHT)
           : []
       },
       /**
@@ -793,7 +821,7 @@ export default function baseStateModelFactory(
         }
         const sectionOf = sectionIdsOf(facet)
         const ids = new Set<string>()
-        for (const data of this.laidOutDataMap.values()) {
+        for (const data of self.laidOutDataMap.values()) {
           for (const item of data.flatbushItems) {
             if (hiddenGroupKeys.has(sectionOf(item).key)) {
               ids.add(item.featureId)

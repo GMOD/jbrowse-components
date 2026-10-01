@@ -6,11 +6,13 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-function regionData(n: number) {
+const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
+
+function regionData(n: number, spacing = 10, length = 8, prefix = 'f') {
   const features = Array.from({ length: n }, (_, i) => ({
-    featureId: `f${i}`,
-    startBp: i * 10,
-    endBp: i * 10 + 8,
+    featureId: `${prefix}${i}`,
+    startBp: i * spacing,
+    endBp: i * spacing + length,
   }))
   return makeFeatureData({
     flatbushItems: features.map(f =>
@@ -36,12 +38,7 @@ function regionData(n: number) {
 function setup() {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
-  display.setRpcData(0, regionData(50), {
-    assemblyName: 'volvox',
-    refName: 'ctgA',
-    start: 0,
-    end: 10_000,
-  })
+  display.setRpcData(0, regionData(50), ctgA)
   // Nothing here observes flatbushIndexes; only the model's CanvasHitIndexes
   // autorun does, and that subscription is what makes MobX cache it.
   const dispose = autorun(() => {
@@ -101,12 +98,7 @@ describe('flatbushIndexes caching', () => {
   it('rebuilds when the laid-out data changes', () => {
     const { display, index, dispose } = setup()
     const first = index()
-    display.setRpcData(0, regionData(60), {
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-      start: 0,
-      end: 10_000,
-    })
+    display.setRpcData(0, regionData(60), ctgA)
     expect(index()).not.toBe(first)
     dispose()
   })
@@ -116,13 +108,54 @@ describe('flatbushIndexes caching', () => {
     const first = index()
     display.dropLoadedRegion(0)
     expect(display.flatbushIndexes.size).toBe(0)
-    display.setRpcData(0, regionData(50), {
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-      start: 0,
-      end: 10_000,
-    })
+    display.setRpcData(0, regionData(50), ctgA)
     expect(index()).not.toBe(first)
+    dispose()
+  })
+})
+
+describe('a squeezed fit track across a settle', () => {
+  function setup() {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, regionData(500, 20, 400), ctgA)
+    const dispose = autorun(() => {
+      void display.renderDataMap
+      void display.flatbushIndexes
+    })
+    return { display, view, dispose }
+  }
+
+  it('keeps its scaled regions and their index when the settle moves no row', () => {
+    const { display, view, dispose } = setup()
+    expect(display.fitScale).toBeLessThan(1)
+    const { layout, scale } = display.fitStage
+    const measured = display.fitMeasureFeatureIds
+    const laid = display.laidOutDataMap
+    const index = display.flatbushIndexes.get(0)
+
+    view.scrollTo(view.offsetPx + 50)
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+
+    expect(display.fitMeasureFeatureIds).not.toEqual(measured)
+    expect(display.fitStage.layout).toBe(layout)
+    expect(display.fitScale).toBe(scale)
+    expect(display.laidOutDataMap).toBe(laid)
+    expect(display.renderDataMap).toBe(laid)
+    expect(display.flatbushIndexes.get(0)).toBe(index)
+    dispose()
+  })
+
+  it('rescales once the track height moves the squeeze', () => {
+    const { display, dispose } = setup()
+    const scale = display.fitScale
+    const laid = display.laidOutDataMap
+
+    display.setHeight(display.height + 40)
+
+    expect(display.fitScale).toBeGreaterThan(scale)
+    expect(display.fitScale).toBeLessThan(1)
+    expect(display.laidOutDataMap).not.toBe(laid)
     dispose()
   })
 })
