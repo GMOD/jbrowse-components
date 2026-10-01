@@ -1621,7 +1621,7 @@ export function stateModelFactory(
           const track = tracks.get(lane)
           const source = track
             ? (readConfObject(track, 'trackId') as string)
-            : `description:${lane}`
+            : `adapter:${JSON.stringify(adapters.get(lane))}`
           return `${source}@${regions.map(regionKey).join(',')}`
         }
         if (view.initialized) {

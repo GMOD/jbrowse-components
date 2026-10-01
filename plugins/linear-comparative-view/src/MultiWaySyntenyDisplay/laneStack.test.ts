@@ -359,6 +359,18 @@ describe('the baseline', () => {
       expect(batches).toEqual([['hg002']])
     })
 
+    test("a described lane's gene fetch is keyed on its adapter, so a changed description refetches", async () => {
+      const display = await describedDisplay()
+      const key = () =>
+        display.laneGenesFetchSpecs.find(spec => spec.lane === 'hg002')?.key
+      const before = key()
+      expect(before).toBeDefined()
+      display.endDescribingLanes(['hg002'], {
+        hg002: { assembly: HG002, geneAdapter: { type: 'OtherGenesAdapter' } },
+      })
+      expect(key()).not.toEqual(before)
+    })
+
     test('a description still out holds readiness, and one that lands after the deadline still labels the lane', async () => {
       let answer: (
         value: Record<string, AssemblyDescription>,

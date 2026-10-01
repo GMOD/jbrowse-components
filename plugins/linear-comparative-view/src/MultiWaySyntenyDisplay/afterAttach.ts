@@ -361,12 +361,10 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     fetchSpecs: () => self.laneLinksFetchSpecs,
     state: () => self.laneLinks,
     fetchOne: async (spec, ctx) => {
-      const haplotypes = self.fetchLaneSelection
       const { features: links, ops } = await ctx.callRpc(
         'MultiWayGetFeatures',
         {
           adapterConfig: self.adapterConfig,
-          ...(haplotypes === undefined ? {} : { haplotypes }),
           regions: spec.onAnchor
             ? spec.regions
             : await laneRegions(
