@@ -46,24 +46,59 @@ export function recordKeyColor(
 /**
  * What the worker reads off each variant for the alt cells' hue: the colour a
  * `jexl:` callback returns, or a field's value as text. Undefined where the
- * hue needs nothing from the record: the genotype colours and a constant.
+ * hue needs nothing from the record.
  */
 export type CellHueRead = string | { field: string } | undefined
 
 /**
- * The fetch's share of a `color` encoding. A field crosses without its scale,
- * so recolouring one refetches nothing.
+ * Where the alt cells' hue comes from: `read`, what the worker reads off each
+ * variant, a field without its scale so recolouring one refetches nothing;
+ * `hueOf`, a read value's colour; `keyOf`, the key row it files under; and
+ * `constant`, the hue of every alt cell with no value of its own. No paint
+ * member set paints the genotype colours.
  */
-export function cellHueRead(encoding: ColorEncoding | undefined): CellHueRead {
-  if (typeof encoding === 'string') {
-    return isJexl(encoding) ? encoding : undefined
+export interface CellHue {
+  read: CellHueRead
+  constant?: string
+  hueOf?: (value: string) => string
+  keyOf?: (value: string) => string
+}
+
+/**
+ * The hue a `color` encoding paints. `keptField` is the field a setting keeps
+ * under `scale: 'none'` for the way back: its values are read while a
+ * constant or the genotype colours paint, so returning to it refetches
+ * nothing. A phase set is the exception, since reading it paints it.
+ */
+export function cellHueOf(
+  encoding: ColorEncoding | undefined,
+  keptField?: string,
+): CellHue {
+  if (typeof encoding === 'string' && isJexl(encoding)) {
+    return { read: encoding, hueOf: css => css }
   }
   const field = cellHueField(encoding)
-  return field === IMPACT_FIELD ||
-    field === PHASE_SET_FIELD ||
-    recordHueField(encoding)
-    ? { field: field! }
-    : undefined
+  if (field === IMPACT_FIELD) {
+    return { read: { field }, hueOf: getImpactColor, keyOf: tier => tier }
+  }
+  if (field === PHASE_SET_FIELD) {
+    return { read: { field } }
+  }
+  const record = recordHueField(encoding)
+  if (record) {
+    return {
+      read: { field: record.field },
+      hueOf: value => recordKeyColor(record, record.key(value)),
+      keyOf: value => record.key(value),
+    }
+  }
+  return {
+    read:
+      keptField && keptField !== PHASE_SET_FIELD
+        ? { field: keptField }
+        : undefined,
+    constant: typeof encoding === 'string' ? encoding : undefined,
+  }
 }
 
 export function sameHueRead(a: CellHueRead, b: CellHueRead) {
@@ -116,9 +151,19 @@ export function cellHueReaderOf(
 }
 
 /**
- * The distinct values a cell loop read, and which of them a variant carrying
- * an alt cell had. `add` answers a variant's one-based index into `values`, 0
- * where it read none.
+ * What a cell loop read for the hue: `featureColorValues` is each variant's
+ * one-based index into `colorValues`, 0 where it read none, and
+ * `paintedColorValues` the indices a variant with an alt cell carried.
+ */
+export interface CellHueValues {
+  featureColorValues: Uint32Array
+  colorValues: string[]
+  paintedColorValues: number[]
+}
+
+/**
+ * Collects {@link CellHueValues} as a cell loop walks: `add` answers a
+ * variant's index into the values.
  */
 export function makeHueValueTable() {
   const indexOf = new Map<string, number>()
@@ -143,31 +188,4 @@ export function makeHueValueTable() {
       return { colorValues: values, paintedColorValues: [...painted] }
     },
   }
-}
-
-/**
- * How the main thread paints the values the worker read: `hueOf` a value's
- * colour, `keyOf` the key row it files under, and `constant` the hue of every
- * alt cell with no value of its own. All unset paints the genotype colours.
- */
-export interface CellPaint {
-  constant?: string
-  hueOf?: (value: string) => string
-  keyOf?: (value: string) => string
-}
-
-export function cellPaintOf(encoding: ColorEncoding | undefined): CellPaint {
-  if (typeof encoding === 'string') {
-    return isJexl(encoding) ? { hueOf: css => css } : { constant: encoding }
-  }
-  if (cellHueField(encoding) === IMPACT_FIELD) {
-    return { hueOf: getImpactColor, keyOf: tier => tier }
-  }
-  const field = recordHueField(encoding)
-  return field
-    ? {
-        hueOf: value => recordKeyColor(field, field.key(value)),
-        keyOf: value => field.key(value),
-      }
-    : {}
 }

@@ -34,6 +34,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorEncodingOf,
   colorForField,
+  paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
@@ -55,12 +56,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
-import {
-  cellHueField,
-  cellHueRead,
-  cellPaintOf,
-  sameHueRead,
-} from './cellHue.ts'
+import { cellHueField, cellHueOf, sameHueRead } from './cellHue.ts'
 import {
   HIDDEN_ROW,
   INTERNAL_SOURCE_KEYS,
@@ -1123,6 +1119,25 @@ export default function MultiSampleVariantBaseModelF(
           return base?.map(resolveSampleName).sort()
         },
       }))
+      .views(self => {
+        // compared by value, so editing the key's title or labels repaints
+        // nothing
+        const hueInput = stableIdentityComputed(() => ({
+          encoding: paintedColorEncoding(self.colorEncoding),
+          keptField: self.colorSetting.field,
+        }))
+        return {
+          /**
+           * #getter
+           * Where the alt cells' hue comes from: what the worker reads and how
+           * the main thread paints it (`cellHueOf`).
+           */
+          get cellHue() {
+            const { encoding, keptField } = hueInput.get()
+            return cellHueOf(encoding, keptField)
+          },
+        }
+      })
       .views(self => ({
         // Payload for MultiSampleVariantGetCellData. SettingsInvalidate watches
         // this — any change clears loaded data and triggers a refetch.
@@ -1140,30 +1155,16 @@ export default function MultiSampleVariantBaseModelF(
             maxMissingnessFilter: self.maxMissingnessFilter,
             filters: self.filters,
             renderingMode: self.renderingMode,
-            color: cellHueRead(self.colorEncoding),
+            color: self.cellHue.read,
           }
         },
         /**
          * #getter
-         * How the main thread paints the values the worker read for the alt
-         * cells' hue (`paintCells`).
+         * Whether the held payload's colour values were read for the current
+         * `color`; one read for another paints as though it read none.
          */
-        get cellPaint() {
-          return cellPaintOf(self.colorEncoding)
-        },
-        /**
-         * #getter
-         * The options `paintCells` paints the held payload with.
-         */
-        get cellPaintOptions() {
-          return {
-            phased: self.renderingMode === 'phased',
-            shade: self.shadeByDosage,
-            valuesRead: sameHueRead(
-              self.cellData?.colorRead,
-              cellHueRead(self.colorEncoding),
-            ),
-          }
+        get cellHueValuesRead() {
+          return sameHueRead(self.cellData?.colorRead, self.cellHue.read)
         },
       }))
       .views(self => ({
@@ -1174,12 +1175,12 @@ export default function MultiSampleVariantBaseModelF(
          */
         get paintedDomain(): string[] {
           const { cellData } = self
-          return cellData && self.cellPaintOptions.valuesRead
+          return cellData && self.cellHueValuesRead
             ? paintedColorKeys(
                 cellData.mode === 'regular'
                   ? Object.values(cellData.perRegionCellData)
                   : [cellData],
-                self.cellPaint,
+                self.cellHue,
               )
             : []
         },

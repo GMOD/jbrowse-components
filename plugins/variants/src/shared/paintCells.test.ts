@@ -1,8 +1,12 @@
 import { ALT_HUE, cellFill } from './cellFill.ts'
-import { paintCells, paintedColorKeys } from './paintCells.ts'
+import {
+  paintCellColors,
+  paintFeatureColors,
+  paintedColorKeys,
+} from './paintCells.ts'
 import { getCachedABGR } from './variantWebglUtils.ts'
 
-import type { CellPaint } from './cellHue.ts'
+import type { CellHue } from './cellHue.ts'
 import type { PaintableCells } from './paintCells.ts'
 
 const REF = 0x11111111
@@ -30,10 +34,13 @@ function cells(): PaintableCells {
     refCellCount: 3,
     featureColorValues: Uint32Array.from([1, 2, 0]),
     colorValues: ['a', 'b'],
+    paintedColorValues: [],
   }
 }
 
-const byValue: CellPaint = {
+const none: CellHue = { read: undefined }
+const byValue: CellHue = {
+  read: undefined,
   hueOf: v => (v === 'a' ? '#aa0000' : '#0000aa'),
   keyOf: v => v.toUpperCase(),
 }
@@ -41,10 +48,21 @@ const alleleCount = { phased: false, shade: true, valuesRead: true }
 const phased = { phased: true, shade: true, valuesRead: true }
 const het = (hue: string) => getCachedABGR(cellFill(hue, 128, true))
 
+function paintCells(
+  data: PaintableCells,
+  hue: CellHue,
+  options: { phased: boolean; shade: boolean; valuesRead: boolean },
+) {
+  return {
+    cellColors: paintCellColors(data, hue, options),
+    featureColors: paintFeatureColors(data, hue, options.valuesRead),
+  }
+}
+
 test('the default hands back the worker colours untouched', () => {
   const data = cells()
-  expect(paintCells(data, {}, alleleCount).cellColors).toBe(data.cellColors)
-  expect(paintCells(data, {}, phased).cellColors).toBe(data.cellColors)
+  expect(paintCells(data, none, alleleCount).cellColors).toBe(data.cellColors)
+  expect(paintCells(data, none, phased).cellColors).toBe(data.cellColors)
 })
 
 test('allele-count alt cells take their value hue, shaded by dosage', () => {
@@ -70,7 +88,7 @@ test('shading off paints the bare hue, the default one included', () => {
   expect(cellColors[3]).toBe(getCachedABGR('#aa0000'))
   expect(cellColors[7]).toBe(getCachedABGR(ALT_HUE))
   expect(
-    paintCells(cells(), {}, { ...alleleCount, shade: false }).cellColors[3],
+    paintCells(cells(), none, { ...alleleCount, shade: false }).cellColors[3],
   ).toBe(getCachedABGR(ALT_HUE))
 })
 
@@ -83,7 +101,7 @@ test('phased alt cells a hue paints take it; the rest keep their allele colour',
 })
 
 test('a constant paints every alt cell, with or without values', () => {
-  const constant = { constant: '#00aa00' }
+  const constant = { read: undefined, constant: '#00aa00' }
   const { cellColors, featureColors } = paintCells(cells(), constant, phased)
   expect([cellColors[3], cellColors[5], cellColors[7]]).toEqual(
     new Array(3).fill(getCachedABGR('#00aa00')),
@@ -121,5 +139,7 @@ test('the key lists the values a variant with an alt cell carried', () => {
     { colorValues: ['b', 'c'], paintedColorValues: [0, 1] },
   ]
   expect(paintedColorKeys(regions, byValue)).toEqual(['B', 'C'])
-  expect(paintedColorKeys(regions, { hueOf: v => v })).toEqual([])
+  expect(paintedColorKeys(regions, { read: undefined, hueOf: v => v })).toEqual(
+    [],
+  )
 })

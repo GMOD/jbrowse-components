@@ -44,7 +44,7 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   sampleFilter?: string[]
   renderingMode: string
   referenceDrawingMode?: string
-  // What the alt cells' hue reads off each variant (`cellHueRead`).
+  // What the alt cells' hue reads off each variant (`CellHue.read`).
   color?: CellHueRead
   mode: 'regular' | 'matrix'
   displayedRegionIndices?: number[]

@@ -437,6 +437,8 @@ describe('the painted record reports what this pass emitted', () => {
     })
     expect(result.colorValues).toEqual(['HIGH', 'MODERATE'])
     expect([...result.featureColorValues]).toEqual([1, 2])
-    expect(paintedColorKeys([result], { keyOf: v => v })).toEqual(['HIGH'])
+    expect(
+      paintedColorKeys([result], { read: undefined, keyOf: v => v }),
+    ).toEqual(['HIGH'])
   })
 })

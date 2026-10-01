@@ -68,11 +68,12 @@ Each channel carries one variable through one scale.
   is also what makes a legend swatch and a hom cell the same colour. The
   `shadeByDosage` slot turns it off.
 - **The main thread paints the hue and the shade (ADR-203).** The worker reads
-  what the hue needs off each variant (`cellHueRead`: a field's value as text,
-  or a `jexl:` callback's colour) and ships it beside each cell's
-  `altDosageByte`; `paintCells` repaints the alt cells and the lane from them.
-  So the dosage is the byte, in the cells and the key's het swatch
-  (`HET_DOSAGE`) alike. A phase-set hue is per cell and stays the worker's.
+  what the hue needs off each variant (`cellHueOf`'s `read`: a field's value as
+  text, or a `jexl:` callback's colour) and ships it beside each cell's
+  `altDosageByte`; `shared/paintCells.ts` repaints the alt cells and the lane
+  from them, each colour map a computed apart from row placement. So the dosage
+  is the byte, in the cells and the key's het swatch (`HET_DOSAGE`) alike. A
+  phase-set hue is per cell and stays the worker's.
 - **A scale's domain has no gaps**: a record with no structural class files
   under the SV key's `''`, which core's vocabulary names `SNV/indel`, and an
   unannotated record is `UNANNOTATED_IMPACT`. Without those the mode was class

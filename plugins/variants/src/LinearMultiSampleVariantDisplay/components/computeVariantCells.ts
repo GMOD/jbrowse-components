@@ -5,11 +5,12 @@ import { makeHueValueTable } from '../../shared/cellHue.ts'
 import { makeSiteStyler } from '../../shared/variantCellStyles.ts'
 import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 
+import type { CellHueValues } from '../../shared/cellHue.ts'
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
-export interface VariantCellData extends CellColorValues {
+export interface VariantCellData extends CellHueValues {
   // Absolute genomic positions in uint32 (start, end) interleaved.
   // The renderer + shader split via hpSplitUint against the per-block
   // bpRangeX; no region origin is shipped separately.
@@ -52,18 +53,6 @@ export interface VariantCellData extends CellColorValues {
   // legend is built from it, so an entry means "in the fetched cell data"
   // rather than "the site could carry one".
   paintedCategories: number
-}
-
-/**
- * What the alt cells' hue reads off each variant (`cellHueReaderOf`), for the
- * main thread to paint (`paintCells`): `featureColorValues` is each feature's
- * one-based index into `colorValues`, 0 where it read none, and
- * `paintedColorValues` the indices a variant with an alt cell carried.
- */
-export interface CellColorValues {
-  featureColorValues: Uint32Array
-  colorValues: string[]
-  paintedColorValues: number[]
 }
 
 function getShapeType(featureType: string) {

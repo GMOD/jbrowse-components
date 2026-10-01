@@ -5,14 +5,11 @@ import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 
 import VariantsPlugin from '../index.ts'
 import { ALT_HUE } from './cellFill.ts'
-import {
-  cellHueRead,
-  cellHueReaderOf,
-  cellPaintOf,
-  sameHueRead,
-} from './cellHue.ts'
+import { cellHueOf, cellHueReaderOf, sameHueRead } from './cellHue.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
+import { paintFeatureColors } from './paintCells.ts'
 import { IMPACT_FIELD, getVariantImpactColor } from './variantConsequence.ts'
+import { getCachedABGR as abgr } from './variantWebglUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
@@ -33,54 +30,63 @@ function variant(info: Record<string, unknown>, id = 'v') {
   })
 }
 
+const read = (encoding: ColorEncoding | undefined, keptField?: string) =>
+  cellHueOf(encoding, keptField).read
+
 function reader(
   encoding: ColorEncoding | undefined,
   renderingMode = 'alleleCount',
 ) {
-  return cellHueReaderOf(cellHueRead(encoding), {
+  return cellHueReaderOf(read(encoding), {
     jexl: pluginManager.jexl,
     renderingMode,
   })
 }
 
-// What the worker reads off a variant, painted the way the main thread does
+// What the worker reads off one variant, painted as the main thread paints
+// the lane
 function hue(encoding: ColorEncoding | undefined) {
   const { value } = reader(encoding)
-  const paint = cellPaintOf(encoding)
   return (feature: Feature) => {
-    const read = value?.(feature)
-    return read !== undefined && paint.hueOf
-      ? paint.hueOf(read)
-      : paint.constant
+    const v = value?.(feature)
+    return paintFeatureColors(
+      {
+        featureColorValues: Uint32Array.from([v === undefined ? 0 : 1]),
+        colorValues: v === undefined ? [] : [v],
+        paintedColorValues: [],
+      },
+      cellHueOf(encoding),
+      true,
+    )[0]
   }
 }
 
 function key(encoding: ColorEncoding | undefined) {
   const { value } = reader(encoding)
-  const { keyOf } = cellPaintOf(encoding)
+  const { keyOf } = cellHueOf(encoding)
   return (feature: Feature) => keyOf?.(value!(feature)!)
 }
 
 describe('what the worker reads', () => {
   test('nothing for the genotype colours or a constant', () => {
-    expect(cellHueRead(undefined)).toBeUndefined()
-    expect(cellHueRead('#123456')).toBeUndefined()
+    expect(read(undefined)).toBeUndefined()
+    expect(read('#123456')).toBeUndefined()
     expect(reader('#123456')).toEqual({})
   })
 
   test('a jexl callback whole, since only the worker can run it', () => {
-    expect(cellHueRead("jexl:'#abcdef'")).toBe("jexl:'#abcdef'")
+    expect(read("jexl:'#abcdef'")).toBe("jexl:'#abcdef'")
     expect(reader("jexl:'#abcdef'").value?.(variant({}))).toBe('#abcdef')
   })
 
   test('a field without its scale, so recolouring it refetches nothing', () => {
-    const categorical = cellHueRead({
+    const categorical = read({
       field: 'INFO.AF',
       scale: 'categorical',
       domain: ['0.1'],
       range: ['#aa0000'],
     })
-    const threshold = cellHueRead({
+    const threshold = read({
       field: 'INFO.AF',
       scale: 'threshold',
       domain: ['0.01'],
@@ -91,26 +97,34 @@ describe('what the worker reads', () => {
     expect(sameHueRead(categorical, undefined)).toBe(false)
   })
 
+  test('the field kept for the way back, so returning to it refetches nothing', () => {
+    expect(read('#123456', 'INFO.AF')).toEqual({ field: 'INFO.AF' })
+    expect(read(undefined, 'INFO.AF')).toEqual({ field: 'INFO.AF' })
+    expect(read(undefined, PHASE_SET_FIELD)).toBeUndefined()
+    expect(cellHueOf('#123456', 'INFO.AF').constant).toBe('#123456')
+    expect(cellHueOf(undefined, 'INFO.AF').hueOf).toBeUndefined()
+  })
+
   test('the phaseSet preset is a flag, and only in phased mode', () => {
     const field = { field: PHASE_SET_FIELD, scale: 'categorical' as const }
     expect(reader(field, 'phased')).toEqual({ byPhaseSet: true })
     expect(reader(field)).toEqual({ byPhaseSet: false })
-    expect(cellPaintOf(field)).toEqual({})
+    expect(cellHueOf(field)).toEqual({ read: { field: PHASE_SET_FIELD } })
   })
 })
 
 test('a CSS colour paints every variant', () => {
-  expect(hue('#123456')(variant({}))).toBe('#123456')
+  expect(hue('#123456')(variant({}))).toBe(abgr('#123456'))
 })
 
 test('a jexl callback paints the colour it returns', () => {
-  expect(hue("jexl:'#abcdef'")(variant({}))).toBe('#abcdef')
+  expect(hue("jexl:'#abcdef'")(variant({}))).toBe(abgr('#abcdef'))
 })
 
 test('the impact preset paints the consequence tier colours', () => {
   const encoding = { field: IMPACT_FIELD, scale: 'categorical' as const }
   const v = variant({ ANN: ['T|missense_variant|MODERATE|G'] })
-  expect(hue(encoding)(v)).toBe(getVariantImpactColor(v))
+  expect(hue(encoding)(v)).toBe(abgr(getVariantImpactColor(v)))
   expect(key(encoding)(v)).toBe('MODERATE')
 })
 
@@ -124,8 +138,8 @@ test('svType paints the class colours, and a record with no class the alt hue', 
     svType: 'DEL',
   })
   expect(key(encoding)(del)).toBe('DEL')
-  expect(hue(encoding)(del)).toBe('#e41a1c')
-  expect(hue(encoding)(variant({}))).toBe(ALT_HUE)
+  expect(hue(encoding)(del)).toBe(abgr('#e41a1c'))
+  expect(hue(encoding)(variant({}))).toBe(abgr(ALT_HUE))
 })
 
 describe('a record field', () => {
@@ -148,13 +162,13 @@ describe('a record field', () => {
   // lifted it, so a record the field says nothing about keeps the alt hue.
   test('leaves a variant with no value on the default alt hue', () => {
     const color = hue(clnsig)(variant({}))
-    expect(color).toBe(ALT_HUE)
-    expect(color).not.toBe(NO_CATEGORY_COLOR)
+    expect(color).toBe(abgr(ALT_HUE))
+    expect(color).not.toBe(abgr(NO_CATEGORY_COLOR))
   })
 
   test('honours a declared domain and range', () => {
     const color = hue({ ...clnsig, domain: ['Pathogenic'], range: ['#aa0000'] })
-    expect(color(variant({ CLNSIG: ['Pathogenic'] }))).toBe('#aa0000')
+    expect(color(variant({ CLNSIG: ['Pathogenic'] }))).toBe(abgr('#aa0000'))
   })
 
   test('cuts a number into the threshold bins from the value as text', () => {
@@ -166,11 +180,11 @@ describe('a record field', () => {
     }
     const color = hue(encoding)
     expect(key(encoding)(variant({ AF: [0.0005] }))).toBe('< 0.001')
-    expect(color(variant({ AF: [0.0005] }))).toBe('#aa0000')
-    expect(color(variant({ AF: [0.005] }))).toBe('#00aa00')
-    expect(color(variant({ AF: [0.2] }))).toBe('#0000aa')
-    expect(color(variant({ AF: [1e-7] }))).toBe('#aa0000')
-    expect(color(variant({ AF: [undefined] }))).toBe(ALT_HUE)
+    expect(color(variant({ AF: [0.0005] }))).toBe(abgr('#aa0000'))
+    expect(color(variant({ AF: [0.005] }))).toBe(abgr('#00aa00'))
+    expect(color(variant({ AF: [0.2] }))).toBe(abgr('#0000aa'))
+    expect(color(variant({ AF: [1e-7] }))).toBe(abgr('#aa0000'))
+    expect(color(variant({ AF: [undefined] }))).toBe(abgr(ALT_HUE))
   })
 
   test('reads a jexl expression as the field', () => {

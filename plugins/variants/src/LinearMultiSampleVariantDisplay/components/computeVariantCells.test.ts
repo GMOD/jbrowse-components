@@ -2,13 +2,17 @@ import VcfParser from '@gmod/vcf'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import VcfFeature from '../../VcfFeature/index.ts'
-import { cellPaintOf } from '../../shared/cellHue.ts'
+import { cellHueOf } from '../../shared/cellHue.ts'
 import {
   buildSampleIndex,
   decodeGenotype,
   internGenotype,
 } from '../../shared/genotypeCodec.ts'
-import { paintCells, paintedColorKeys } from '../../shared/paintCells.ts'
+import {
+  paintCellColors,
+  paintFeatureColors,
+  paintedColorKeys,
+} from '../../shared/paintCells.ts'
 import { computeVariantCells } from './computeVariantCells.ts'
 
 import type { ProcessedSource } from '../../shared/types.ts'
@@ -347,12 +351,18 @@ describe('computeVariantCells per-variant hue', () => {
       hueValue: () => override,
       ...genotypeArgs([feature]),
     })
-  const painted = (shade: boolean) =>
-    paintCells(cells(), cellPaintOf(`jexl:'${override}'`), {
-      phased: false,
-      shade,
-      valuesRead: true,
-    })
+  const painted = (shade: boolean) => {
+    const data = cells()
+    const hue = cellHueOf(`jexl:'${override}'`)
+    return {
+      cellColors: paintCellColors(data, hue, {
+        phased: false,
+        shade,
+        valuesRead: true,
+      }),
+      featureColors: paintFeatureColors(data, hue, true),
+    }
+  }
 
   test('the worker ships the value and paints the default alt hue', async () => {
     const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
@@ -1124,36 +1134,8 @@ describe('the painted record reports what this pass emitted', () => {
     })
     expect(result.colorValues).toEqual(['HIGH', 'MODERATE'])
     expect([...result.featureColorValues]).toEqual([1, 2])
-    expect(paintedColorKeys([result], { keyOf: v => v })).toEqual(['HIGH'])
+    expect(
+      paintedColorKeys([result], { read: undefined, keyOf: v => v }),
+    ).toEqual(['HIGH'])
   })
-})
-
-// The lane mark takes the alt hue whether the cells under it paint by allele
-// or by phase set, so it names "alt" in every phased coloring.
-test('the lane takes the alt hue in phased mode, phase sets or not', async () => {
-  const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-  const { ALT_HUE } = await import('../../shared/cellFill.ts')
-  const sources: ProcessedSource[] = [
-    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
-    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
-  ]
-  const feature = vcfFeature('1\t101\tv1\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:77', [
-    'S1',
-  ])
-  const run = (colorByPhaseSet: boolean) =>
-    paintCells(
-      computeVariantCells({
-        filteredVariants: [{ feature, mostFrequentAlt: '1' }],
-        sources,
-        renderingMode: 'phased',
-        referenceDrawingMode: 'skip',
-        colorByPhaseSet,
-        ...genotypeArgs([feature]),
-      }),
-      cellPaintOf(undefined),
-      { phased: true, shade: true, valuesRead: true },
-    ).featureColors[0]
-
-  expect(run(true)).toBe(getCachedABGR(ALT_HUE))
-  expect(run(false)).toBe(getCachedABGR(ALT_HUE))
 })

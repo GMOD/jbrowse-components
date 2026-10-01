@@ -31,7 +31,7 @@ import {
   clampLineZoneHeight,
 } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
-import { paintCells } from '../shared/paintCells.ts'
+import { paintCellColors, paintFeatureColors } from '../shared/paintCells.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import {
   VARIANT_LANE_BOUNDS,
@@ -365,92 +365,137 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Each fetched region with its alt cells and lane colours painted
-         * through the current `color` (`paintCells`). Independent of the rows,
-         * so a reorder repaints nothing and a recolour refetches nothing.
+         * How the held payload's alt cells paint (`paintCellColors`).
          */
-        get paintedRegionCells() {
-          const { cellData, cellPaint, cellPaintOptions } = self
-          const out = new Map<
-            number,
-            ShippedRegionData & { featureColors: Uint32Array }
-          >()
+        get cellPaintOptions() {
+          return {
+            phased: self.renderingMode === 'phased',
+            shade: self.shadeByDosage,
+            valuesRead: self.cellHueValuesRead,
+          }
+        },
+        /**
+         * #getter
+         * Each fetched region's cell colours through the current `color`.
+         * Apart from the rows, so a reorder repaints nothing, and a recolour
+         * re-places nothing and refetches nothing.
+         */
+        get regionCellColors() {
+          const { cellData, cellHue } = self
+          const options = this.cellPaintOptions
+          const out = new Map<number, Uint32Array>()
           if (cellData?.mode === 'regular') {
             for (const k in cellData.perRegionCellData) {
               const data = cellData.perRegionCellData[k]!
-              out.set(Number(k), {
-                ...data,
-                ...paintCells(data, cellPaint, cellPaintOptions),
-              })
+              out.set(Number(k), paintCellColors(data, cellHue, options))
             }
           }
           return out
         },
         /**
          * #getter
-         * The column layout's payload with its alt cells painted.
+         * The column layout's cell colours, the counterpart of
+         * `regionCellColors`.
          */
-        get paintedMatrixCells() {
-          const { cellData, cellPaint, cellPaintOptions } = self
+        get matrixCellColors() {
+          const { cellData, cellHue } = self
           return cellData?.mode === 'matrix'
-            ? {
-                ...cellData,
-                cellColors: paintCells(cellData, cellPaint, cellPaintOptions)
-                  .cellColors,
-              }
+            ? paintCellColors(cellData, cellHue, this.cellPaintOptions)
+            : undefined
+        },
+        /**
+         * #getter
+         * Each fetched region's lane colours, which neither shading nor the
+         * phased mode moves.
+         */
+        get regionFeatureColors() {
+          const { cellData, cellHue, cellHueValuesRead } = self
+          const out = new Map<number, Uint32Array>()
+          if (cellData?.mode === 'regular') {
+            for (const k in cellData.perRegionCellData) {
+              const data = cellData.perRegionCellData[k]!
+              out.set(
+                Number(k),
+                paintFeatureColors(data, cellHue, cellHueValuesRead),
+              )
+            }
+          }
+          return out
+        },
+        /**
+         * #getter
+         * Each fetched region with its rows placed on screen. A computed apart
+         * from the colours, so a recolour leaves it standing.
+         */
+        get placedRegionRows() {
+          const { cellData, rowRemap } = self
+          const out = new Map<number, Placed<ShippedRegionData>>()
+          // No rowRemap means no data has landed: an empty map is the same
+          // "nothing to draw" every consumer already handles. Never fall back to
+          // identity placement — the worker's row order is its own.
+          if (cellData?.mode === 'regular' && rowRemap) {
+            for (const k in cellData.perRegionCellData) {
+              out.set(
+                Number(k),
+                placeVariantRows(cellData.perRegionCellData[k]!, rowRemap),
+              )
+            }
+          }
+          return out
+        },
+        /**
+         * #getter
+         * The column layout's payload with its rows placed on screen.
+         */
+        get placedMatrixRows() {
+          const { cellData, rowRemap } = self
+          return cellData?.mode === 'matrix' && rowRemap
+            ? placeVariantRows(cellData, rowRemap)
             : undefined
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * The one walk of `perRegionCellData`, and the point where a fetched
-         * cell becomes a *placed* cell. Every regular-mode consumer reads this
-         * map, so "does the glyph overlay see the same regions, and the same
-         * rows, as the canvas" has a single answer — the placed payload
-         * structurally satisfies `VariantUploadData` (GPU/Canvas upload) and
-         * `VariantInsertionGlyphData` (overlay), and carries `featureIndexData`
-         * for the hit-test index plus `cellWorkerRowIndices` for its lookup.
+         * The one walk of `perRegionCellData` every regular-mode consumer
+         * reads: each region placed (`placedRegionRows`) and painted
+         * (`regionCellColors`). So "does the glyph overlay see the same
+         * regions, and the same rows and colours, as the canvas" has a single
+         * answer — the payload structurally satisfies `VariantUploadData`
+         * (GPU/Canvas upload) and `VariantInsertionGlyphData` (overlay), and
+         * carries `featureIndexData` for the hit-test index plus
+         * `cellWorkerRowIndices` for its lookup.
          *
          * This is the display's "derived region map" in the sense of
-         * ARCHITECTURE.md's re-upload-without-refetch pattern: the arrays are
-         * freshly allocated per region and never mutated in place, so a row
-         * reorder changes each entry's identity, `createRegionUploadSync` sees
-         * the change and re-uploads, and no RPC is involved. Rows are the only
-         * thing derived here — the worker's numbering is arbitrary and must not
-         * reach a painter.
+         * ARCHITECTURE.md's re-upload-without-refetch pattern: a reorder or a
+         * recolour changes each entry's identity, `createRegionUploadSync`
+         * sees the change and re-uploads, and no RPC is involved.
          *
          * A computed returning a plain Map, for the same reason the multi-row
          * display's is: the overlay draws inside an effect, where nothing it
          * reads is tracked, so the read has to happen here for a refetch to
-         * repaint. Rebuilding is cheap (typical view shows 1-3 regions); MobX
-         * caches the computed so only a payload, a recolour or a reorder
-         * invalidates it.
+         * repaint.
          */
         get perRegionCellMap() {
-          const { paintedRegionCells, rowRemap } = self
+          const { placedRegionRows, regionCellColors } = self
           const out = new Map<number, Placed<ShippedRegionData>>()
-          // No rowRemap means no data has landed: an empty map is the same
-          // "nothing to draw" every consumer already handles. Never fall back to
-          // identity placement — the worker's row order is its own.
-          if (rowRemap) {
-            for (const [k, data] of paintedRegionCells) {
-              out.set(k, placeVariantRows(data, rowRemap))
-            }
+          for (const [k, placed] of placedRegionRows) {
+            out.set(k, {
+              ...placed,
+              cellColors: regionCellColors.get(k) ?? placed.cellColors,
+            })
           }
           return out
         },
-      }))
-      .views(self => ({
         /**
          * #getter
-         * The column layout's payload with its rows placed on screen, the
-         * counterpart of `perRegionCellMap`.
+         * The column layout's payload placed and painted, the counterpart of
+         * `perRegionCellMap`.
          */
         get placedMatrixData(): PlacedMatrixData | undefined {
-          const { paintedMatrixCells, rowRemap } = self
-          return paintedMatrixCells && rowRemap
-            ? placeVariantRows(paintedMatrixCells, rowRemap)
+          const { placedMatrixRows, matrixCellColors } = self
+          return placedMatrixRows && matrixCellColors
+            ? { ...placedMatrixRows, cellColors: matrixCellColors }
             : undefined
         },
       }))
@@ -767,7 +812,8 @@ export function stateModelFactory(
          *
          * See `buildLaneRenderData` for why this is main-thread and costs no
          * second fetch. A MobX computed, rebuilt when the payload or the label
-         * mode changes: keyed off `paintedRegionCells`, not the row-placed
+         * mode or the lane colours change: keyed off the fetched
+         * `perRegionCellData` and `regionFeatureColors`, not the row-placed
          * `perRegionCellMap`, since a record's mark does not move with the
          * rows, and off the **displayed regions'** bounds, never
          * `visibleRegions`, which the LGV rebuilds on every pan and zoom frame.
@@ -779,22 +825,29 @@ export function stateModelFactory(
           const out = new Map<number, LayoutRegionData>()
           // the payload is read only once the band is on, so an arrival
           // wakes nothing downstream while it is off
-          if (self.canRender && self.topBands.laneHeight > 0) {
+          const cellData =
+            self.canRender && self.topBands.laneHeight > 0
+              ? self.cellData
+              : undefined
+          if (cellData?.mode === 'regular') {
             const config = self.laneDisplayConfig
             const { jexl } = getEnv<{ pluginManager: PluginManager }>(
               self,
             ).pluginManager
             const { displayedRegions } = self.view
-            for (const [
-              displayedRegionIndex,
-              data,
-            ] of self.paintedRegionCells) {
+            const featureColors = self.regionFeatureColors
+            for (const k in cellData.perRegionCellData) {
+              const displayedRegionIndex = Number(k)
+              const data = cellData.perRegionCellData[k]!
               const region = displayedRegions[displayedRegionIndex]
               if (region && data.featureIdList.length) {
                 out.set(
                   displayedRegionIndex,
                   buildLaneRenderData({
-                    data,
+                    data: {
+                      ...data,
+                      featureColors: featureColors.get(displayedRegionIndex)!,
+                    },
                     region: {
                       displayedRegionIndex,
                       assemblyName: region.assemblyName,

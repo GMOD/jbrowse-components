@@ -2,9 +2,9 @@ import { getInsertedBp } from '../../shared/alleleLength.ts'
 import { makeHueValueTable } from '../../shared/cellHue.ts'
 import { makeSiteStyler } from '../../shared/variantCellStyles.ts'
 
+import type { CellHueValues } from '../../shared/cellHue.ts'
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
-import type { CellColorValues } from '../components/computeVariantCells.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
 type FeatureData = VariantFeatureInfo & { featureId: string }
@@ -32,7 +32,7 @@ function makeFeatureData(
   }
 }
 
-export interface MatrixCellData extends CellColorValues {
+export interface MatrixCellData extends CellHueValues {
   cellFeatureIndices: Float32Array
   cellRowIndices: Uint32Array
   cellColors: Uint32Array

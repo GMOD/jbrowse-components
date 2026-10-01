@@ -121,12 +121,4 @@ describe('getAlleleColor: dosage over CALLED alleles', () => {
     expect(getAlleleColor('0/0', false)).toBe('')
     expect(getAlleleColor('0/1', false)).not.toBe('')
   })
-
-  it('takes the override hue, and shades it the same way', () => {
-    expect(getAlleleColor('1/1', true, '#d32f2f')).toBe('#d32f2f')
-    expect(getAlleleColor('0/1', true, '#d32f2f')).toBe(
-      shadeByDosage('#d32f2f', HET_DOSAGE),
-    )
-    expect(getAlleleColor('0/1', true, '#d32f2f', false)).toBe('#d32f2f')
-  })
 })

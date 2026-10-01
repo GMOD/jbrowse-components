@@ -1,113 +1,125 @@
 import { ALT_HUE, cellFill } from './cellFill.ts'
 import { getCachedABGR } from './variantWebglUtils.ts'
 
-import type { CellPaint } from './cellHue.ts'
+import type { CellHue, CellHueValues } from './cellHue.ts'
 
-export interface PaintableCells {
+export interface PaintableCells extends CellHueValues {
   cellColors: Uint32Array
   cellAltDosage: Uint8Array
   cellFeatureIndices: ArrayLike<number>
   numCells: number
   refCellCount: number
-  featureColorValues: Uint32Array
-  colorValues: string[]
 }
 
-export interface CellPaintOptions {
-  phased: boolean
-  shade: boolean
-  // Whether the payload's values were read for the current `color`; a payload
-  // read for another one paints as though it read none.
-  valuesRead: boolean
-}
-
-/**
- * Each alt cell's colour and each variant's lane colour, painted on the main
- * thread from the values the worker read, so a recolour refetches nothing.
- *
- * Only alt cells change, and only through `fill = shade(hue, dosage)`: in
- * allele-count mode every alt cell, in phased mode those a hue paints, the rest
- * keeping the worker's allele colours. Every other cell keeps the worker's
- * colour, and so does every cell while no hue is set and shading is on, the
- * default, which hands back the worker's array.
- */
-export function paintCells(
-  data: PaintableCells,
-  paint: CellPaint,
-  options: CellPaintOptions,
-) {
-  const { phased, shade, valuesRead } = options
-  const { colorValues, featureColorValues, cellAltDosage, cellFeatureIndices } =
-    data
-  const hueIndex = new Map<string | undefined, number>([[paint.constant, 0]])
-  const hues: (string | undefined)[] = [paint.constant]
+// Each distinct hue the values paint, `hues[0]` the hue of a variant with no
+// value, and each value's index into them, `valueHue[0]` for no value. Values
+// read for another `color` paint as though none were read.
+function hueTable(data: CellHueValues, hue: CellHue, valuesRead: boolean) {
+  const { colorValues } = data
+  const hues: (string | undefined)[] = [hue.constant]
   const valueHue = new Uint32Array(colorValues.length + 1)
-  if (valuesRead && paint.hueOf) {
+  if (valuesRead && hue.hueOf) {
+    const indexOf = new Map(hues.map((h, i) => [h, i]))
     for (let v = 0; v < colorValues.length; v++) {
-      const hue = paint.hueOf(colorValues[v]!)
-      let h = hueIndex.get(hue)
+      const css = hue.hueOf(colorValues[v]!)
+      let h = indexOf.get(css)
       if (h === undefined) {
-        h = hues.push(hue) - 1
-        hueIndex.set(hue, h)
+        h = hues.push(css) - 1
+        indexOf.set(css, h)
       }
       valueHue[v + 1] = h
     }
   }
+  return { hues, valueHue }
+}
 
-  const huePacked = hues.map(hue => getCachedABGR(hue ?? ALT_HUE))
-  const numFeatures = featureColorValues.length
-  const featureColors = new Uint32Array(numFeatures)
-  for (let f = 0; f < numFeatures; f++) {
-    featureColors[f] = huePacked[valueHue[featureColorValues[f]!]!]!
+/** Each variant's lane colour: its hue at full dose, the alt hue by default. */
+export function paintFeatureColors(
+  data: CellHueValues,
+  hue: CellHue,
+  valuesRead: boolean,
+) {
+  const { hues, valueHue } = hueTable(data, hue, valuesRead)
+  const packed = hues.map(css => getCachedABGR(css ?? ALT_HUE))
+  const { featureColorValues } = data
+  const featureColors = new Uint32Array(featureColorValues.length)
+  for (let f = 0; f < featureColorValues.length; f++) {
+    featureColors[f] = packed[valueHue[featureColorValues[f]!]!]!
   }
+  return featureColors
+}
 
+/**
+ * Each cell's colour, painted from the values the worker read so a recolour
+ * refetches nothing. Only alt cells change, through
+ * `fill = shade(hue, dosage)`: in allele-count mode every one, in phased mode
+ * those a hue paints, the rest keeping the worker's allele colours. With no
+ * hue and shading on, the default, the worker's array comes back as it is.
+ */
+export function paintCellColors(
+  data: PaintableCells,
+  hue: CellHue,
+  {
+    phased,
+    shade,
+    valuesRead,
+  }: { phased: boolean; shade: boolean; valuesRead: boolean },
+) {
+  const { hues, valueHue } = hueTable(data, hue, valuesRead)
   if (hues.length === 1 && hues[0] === undefined && (phased || shade)) {
-    return { cellColors: data.cellColors, featureColors }
+    return data.cellColors
   }
-
+  const { featureColorValues, cellAltDosage, cellFeatureIndices } = data
+  const featureHue = new Uint32Array(featureColorValues.length)
+  for (let f = 0; f < featureColorValues.length; f++) {
+    featureHue[f] = valueHue[featureColorValues[f]!]!
+  }
   const cellColors = data.cellColors.slice()
   const { numCells, refCellCount } = data
   if (phased) {
+    const packed = hues.map(css =>
+      css === undefined ? -1 : getCachedABGR(css),
+    )
     for (let i = refCellCount; i < numCells; i++) {
       if (cellAltDosage[i]) {
-        const h = valueHue[featureColorValues[cellFeatureIndices[i]!]!]!
-        if (hues[h] !== undefined) {
-          cellColors[i] = huePacked[h]!
+        const abgr = packed[featureHue[cellFeatureIndices[i]!]!]!
+        if (abgr !== -1) {
+          cellColors[i] = abgr
         }
       }
     }
-    return { cellColors, featureColors }
+    return cellColors
   }
-
-  // one shade per (hue, dosage byte), filled as the cells meet them
-  const shades = new Uint32Array(hues.length * 256)
-  const shaded = new Uint8Array(hues.length * 256)
+  // one fill per (hue, dosage byte), made as the cells meet them; 0 is unmade,
+  // so a fill that packs to 0, a transparent black, is only remade each time
+  const fills = new Uint32Array(hues.length * 256)
+  for (let f = 0; f < featureHue.length; f++) {
+    featureHue[f] = featureHue[f]! << 8
+  }
   for (let i = refCellCount; i < numCells; i++) {
     const dosage = cellAltDosage[i]!
     if (dosage) {
-      const h = valueHue[featureColorValues[cellFeatureIndices[i]!]!]!
-      const slot = h * 256 + dosage
-      if (!shaded[slot]) {
-        shades[slot] = getCachedABGR(
-          cellFill(hues[h] ?? ALT_HUE, dosage, shade),
+      const slot = featureHue[cellFeatureIndices[i]!]! + dosage
+      let abgr = fills[slot]!
+      if (abgr === 0) {
+        abgr = getCachedABGR(
+          cellFill(hues[slot >> 8] ?? ALT_HUE, dosage, shade),
         )
-        shaded[slot] = 1
+        fills[slot] = abgr
       }
-      cellColors[i] = shades[slot]!
+      cellColors[i] = abgr
     }
   }
-  return { cellColors, featureColors }
+  return cellColors
 }
 
 /** The key rows the values an alt cell carried file under. */
 export function paintedColorKeys(
-  payloads: Iterable<
-    Pick<PaintableCells, 'colorValues'> & { paintedColorValues: number[] }
-  >,
-  paint: CellPaint,
+  payloads: Iterable<Pick<CellHueValues, 'colorValues' | 'paintedColorValues'>>,
+  hue: CellHue,
 ) {
   const keys = new Set<string>()
-  const { keyOf } = paint
+  const { keyOf } = hue
   if (keyOf) {
     for (const { colorValues, paintedColorValues } of payloads) {
       for (const v of paintedColorValues) {

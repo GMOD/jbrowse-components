@@ -57,7 +57,9 @@ interface CellDataBase {
   // unphased fill, a no-call fill. Each drives its legend entry, so the entry
   // means one is in the fetched cell data rather than that the data could
   // produce one. Merged across every fetched region, which for the regular
-  // display is wider than the viewport.
+  // display is wider than the viewport. A secondary alt counts whether or not
+  // a `color` hue repaints it; the key lists it under the genotype colours
+  // alone.
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   hasNoCall: boolean
@@ -179,9 +181,6 @@ export async function executeVariantCellData({
     v => v.feature,
   )
   const simplifiedFeatures = simplifyFeatures(filteredVariants)
-  // Resolved after the analysis because the SV-type preset's palette is
-  // dealt over the types actually present.
-  //
   // Phase-set hues are gated on phased mode here rather than in each cell loop:
   // a phase set is a per-haplotype fact and only the phased loop paints one.
   // `getVariantColorScales` resolves the same combination the same way, so the
