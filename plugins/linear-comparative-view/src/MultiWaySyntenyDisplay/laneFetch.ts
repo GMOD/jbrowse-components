@@ -96,7 +96,7 @@ export function laneFetchAwaits(
   )
 }
 
-/** MultiPairwiseSyntenyAdapter's header `anchorAssemblyName` */
+/** a star source's header `anchorAssemblyName` */
 export function starAnchorOf(header: unknown) {
   return typeof header === 'object' &&
     header !== null &&

@@ -503,3 +503,20 @@ test('getHeader reports the coarse tier of a headerless two-tier file', async ()
     hasCoarseTier: true,
   })
 })
+
+test('a file whose every row queries one haplotype names it as the star anchor', async () => {
+  const header = await makeDiploidAdapter(
+    HAP_ASSEMBLIES,
+    HAP_TO_PANSN,
+  ).getHeader()
+  expect(header).toMatchObject({ anchorAssemblyName: 'grapeHap1' })
+})
+
+test('an all-vs-all file, or a star with one spoke, names no anchor', async () => {
+  expect(
+    await makeAdapter(['grape', 'peach', 'cacao']).getHeader(),
+  ).not.toHaveProperty('anchorAssemblyName')
+  expect(await makeDiploidAdapter().getHeader()).not.toHaveProperty(
+    'anchorAssemblyName',
+  )
+})

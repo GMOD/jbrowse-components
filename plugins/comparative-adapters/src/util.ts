@@ -116,6 +116,35 @@ export function assemblyForPanSNName(
 }
 
 /**
+ * The assembly every alignment shares when one side of the file names only it
+ * and the other side names two or more others: haplotypes against one reference
+ * are a star on that reference, and two of its mates share no record.
+ */
+export function panSNStarAnchor(
+  asmByPrefix: Record<string, string>,
+  targets: string[],
+  queries: string[],
+) {
+  const assembliesOf = (names: string[]) =>
+    new Set(names.map(name => assemblyForPanSNName(asmByPrefix, name)))
+  const t = assembliesOf(targets)
+  const q = assembliesOf(queries)
+  for (const [hub, spokes] of [
+    [t, q],
+    [q, t],
+  ] as const) {
+    const [anchor] = hub
+    if (
+      hub.size === 1 &&
+      [...spokes].filter(name => name !== anchor).length >= 2
+    ) {
+      return anchor
+    }
+  }
+  return undefined
+}
+
+/**
  * What PanSN names a file actually carries: every prefix a query can be
  * addressed by (both depths, so `grape` and `grape#1`), the sample-level ones on
  * their own for reporting, and whether any name is PanSN at all. A sample name

@@ -25,7 +25,10 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * whole-genome pangenome alignments that do not fit in memory. Semantics match
  * `MultiGenomePAFAdapter`: the file may state any set of pairs (a complete
  * all-vs-all or a star against one reference), one-vs-all in a plain LGV,
- * single-pair when the synteny view supplies a `targetAssemblyName`.
+ * single-pair when the synteny view supplies a `targetAssemblyName`. When every
+ * row targets one assembly, or every row queries from one, the header names it
+ * as the star's anchor, and a multi-way display composes its lanes' links
+ * through it instead of asking for each pair.
  *
  * #example
  * ```js

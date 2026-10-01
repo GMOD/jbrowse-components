@@ -12,6 +12,7 @@ import {
   makeIndexedSyntenyFeature,
   markReciprocalDuplicates,
   panSNInventory,
+  panSNStarAnchor,
   resolvePanSNQuery,
   resolveCoarseTier,
   resolvePanSNPrefix,
@@ -70,8 +71,21 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
     },
   })
 
-  getHeader(opts?: ComparativeOptions) {
-    return this.pif.info(opts)
+  async getHeader(opts?: ComparativeOptions) {
+    const [info, names] = await Promise.all([
+      this.pif.info(opts),
+      this.pif.refSeqNames(opts),
+    ])
+    const side = (letter: string) =>
+      names.filter(n => n.startsWith(letter)).map(n => n.slice(1))
+    const anchorAssemblyName = panSNStarAnchor(
+      assemblyByPanSNPrefix(this),
+      side('t'),
+      side('q'),
+    )
+    return anchorAssemblyName === undefined
+      ? info
+      : { ...info, anchorAssemblyName }
   }
 
   // What the file holds, for the message a query naming an unknown assembly
