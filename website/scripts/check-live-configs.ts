@@ -26,44 +26,6 @@ import { videoLiveUrls } from './video-specs.ts'
 
 const network = process.argv.includes('--network')
 
-// Repo configs also published under jbrowse.org/demos, which is a stable URL a
-// doc can hand a reader ("open the whole thing") without it depending on which
-// build the docs point at. `--network` asserts the copy still matches the file,
-// since nothing else would notice a track added here and not there.
-//
-// THE REPO COPY IS `demos/<name>/config.json`, which is what deploy-demo.sh
-// uploads and therefore the only file the hosted one can be compared with. This
-// named the screenshot FIXTURE for the HPRC entry, and the fixture is a
-// different config on purpose: it carries the CFHR and inversion synteny
-// tracks, their CAT gene slices and an hs1, all of which read files that exist
-// only in this repo, so the demo cannot serve them and is right to be narrower.
-// The check therefore reported a ten-track difference that was never going to
-// close — and under that permanent red, the one-line difference that mattered
-// (a stale plugin pin) was invisible.
-//
-// The README.txt beside a demo's data states where that data came from and how
-// it was built, and it is the only place that provenance is written down. All
-// six were hand-written and hand-uploaded until 2026-09-11, so a correction had
-// no diff and a drift had no reader.
-const HOSTED_MIRRORS: Record<string, string> = {
-  'demos/alphagenome/config.json':
-    'https://jbrowse.org/demos/alphagenome/config.json',
-  'demos/alphagenome_test.bed':
-    'https://jbrowse.org/demos/alphagenome_test.bed',
-  'demos/hprc/config.json': 'https://jbrowse.org/demos/hprc/config.json',
-  'demos/hprc/README.txt': 'https://jbrowse.org/demos/hprc/README.txt',
-  'demos/hprc_multiway/README.txt':
-    'https://jbrowse.org/demos/hprc_multiway/README.txt',
-  'demos/hprc_multiway/README_gfa.txt':
-    'https://jbrowse.org/demos/hprc_multiway/README_gfa.txt',
-  'demos/hprc_multiway/README_graph.txt':
-    'https://jbrowse.org/demos/hprc_multiway/README_graph.txt',
-  'demos/bovine_pangenome/README.txt':
-    'https://jbrowse.org/demos/bovine_pangenome/README.txt',
-  'demos/mouse_pangenome/README.txt':
-    'https://jbrowse.org/demos/mouse_pangenome/README.txt',
-}
-
 // Every config, demo or screenshot fixture, names the plugin's `latest/` url on
 // jbrowse.org, where jbrowse-plugin-list rehosts the store's pinned release
 // (`GraphGenomeView`). A demo is a session a
@@ -211,18 +173,31 @@ if (network) {
     }
   }
 
+  // Every file under demos/ but a README.md, the repo's own note on a demo, is
+  // the copy of the same path under jbrowse.org/demos that deploy-demo.sh
+  // uploads, and nothing else compares them: a track added here and not there,
+  // or a README.txt corrected and not re-sent, stays invisible to every other
+  // check.
+  const demosDir = join(repoRoot, 'demos')
+  const mirrors = [...tracked]
+    .filter(
+      path => path.startsWith(`${demosDir}/`) && !path.endsWith('/README.md'),
+    )
+    .map(path => relative(repoRoot, path))
+    .sort()
   await Promise.all(
-    Object.entries(HOSTED_MIRRORS).map(async ([file, url]) => {
-      const local = readFileSync(join(repoRoot, file), 'utf8')
+    mirrors.map(async file => {
+      const url = `https://jbrowse.org/${file}`
+      const local = readFileSync(join(repoRoot, file))
       const res = await fetch(url)
-      const hosted = res.ok ? await res.text() : undefined
-      // A config compares by value, so reformatting it is not a drift. A README
-      // is prose, where a moved line is the whole change.
-      const normalize = file.endsWith('.json')
-        ? (s: string) => JSON.stringify(JSON.parse(s))
-        : (s: string) => s
+      const hosted = res.ok ? Buffer.from(await res.arrayBuffer()) : undefined
+      // A config compares by value, so reformatting it is not a drift.
       const same =
-        hosted !== undefined && normalize(hosted) === normalize(local)
+        hosted !== undefined &&
+        (file.endsWith('.json')
+          ? JSON.stringify(JSON.parse(hosted.toString('utf8'))) ===
+            JSON.stringify(JSON.parse(local.toString('utf8')))
+          : hosted.equals(local))
       if (same) {
         console.log(`✓ mirror  ${url}`)
       } else {

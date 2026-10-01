@@ -166,15 +166,6 @@ lane that places nothing for a group (`bridgeSkippedLanes`). The stacked
 gap between `views[level]` and `views[level + 1]` in ten files, so a track that
 joins row 0 to row 2 across row 1 is a level with a span, not a setting.
 
-**Naming the star anchor for a multi-genome PIF.** Only
-`MultiPairwiseSyntenyAdapter`'s header names a star's anchor; a multi-genome
-PIF's header is its `#pif` line, so the HPRC demo's star
-(`hprc_multiway_gfa.pif.gz`, GRCh38 its only target) asks every adjacent
-haplotype pair on each lane-window move and holds first load
-(`awaitingDependentData`) until those empty answers land. The adapter could
-name the anchor when its seqid index holds one target sample; time the
-tutorial's first load before building it.
-
 **The bytes at a zoomed-in star.** The eight hosted hg38
 liftOver PIFs carry a coarse tier since their 2026-09-11 rebuild, worth 49× on a
 whole-genome pass (1.31 MB against 64.23 MB over a 130 MB PIF,
@@ -222,14 +213,6 @@ no multiway section at all. `GbzBaseSyntenyAdapter`'s slots are documented by
 in another repository. Per-lane pan/zoom stays deliberately absent: the lanes
 re-fit to the anchor's viewport by design, and the launch to a linear synteny
 view is the route to a lane you drive yourself.
-
-**Left open by the 2026-09-20 review.** The E. coli and primate tutorials,
-build scripts and repo configs colour genes by `{ field: 'cluster' }`; the
-hosted configs keep the `jexl:` hash of the name until the hosted app is on v5.
-Then one `deploy-demo.sh` of each, and a reshoot of the five figures on those
-two pages, whose specs load the hosted configs. The next reshoot also changes
-`lane_header_menu` (the grape page, which gains **Flip lane**) and any figure
-showing the **Color by...** menu, which now has Genes and Ribbons sections.
 
 **A synced per-lane view.** A lane hosts one annotation plus the layers
 [ADR-180](../../architecture-decision-records/adr-180-a-multiway-lane-is-a-layer-list-under-its-frame.md)

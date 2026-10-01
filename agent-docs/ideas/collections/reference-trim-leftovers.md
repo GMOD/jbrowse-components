@@ -29,8 +29,7 @@ has been re-checked since the cut.
 - **`tcga/cnv_recurrence_genome`** dies with "frame got detached" above
   `viewportHeight` 860, and its `screenshot-review.json` note is stale
   (FIGURE_CAPTURE).
-- **HOSTING:** orphaned `ecoli_minigraph.tier*` objects (delete or wire up);
-  `demos/ecoli_orthologs` config drift needs a deploy (`HOSTED_MIRRORS`).
+- **HOSTING:** orphaned `ecoli_minigraph.tier*` objects (delete or wire up).
 
 ## Unbuilt follow-ups
 
