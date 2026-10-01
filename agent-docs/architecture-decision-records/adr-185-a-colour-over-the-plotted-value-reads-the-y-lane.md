@@ -104,6 +104,6 @@ it plots.
 
 [ADR-202](adr-202-every-mark-colour-resolves-on-the-main-thread.md) carries
 this ADR's main-thread resolution to every colour but a `jexl:` callback.
-`valueColor.ts`, `valueColorOf` and `withValueColors` are gone into
-`markColor.ts`'s `markColorOf` and `withMarkColors`, and the text mark reads
-the display's scale as the others do.
+`valueColor.ts` became `markColor.ts`: `valueColorOf` is `markColorOf` and
+`withValueColors` is `withMarkColors`, and the text mark reads the display's
+scale as the others do.

@@ -561,8 +561,9 @@ export function colorSection(sections: MarkLegendSection[], markIndex: number) {
 
 /**
  * The scale a mark's shapes paint through, off its colour key's table: a ramp
- * over the domain the key unioned across the regions, its middle stop a
- * value, or a threshold's cuts and the packed colour of each interval.
+ * over the domain the key unioned across the regions, `domainMid` the value
+ * its middle stop sits at, or a threshold's cuts and the packed colour of each
+ * interval.
  */
 export function paintScaleOf(
   table: ScaleTable | undefined,
@@ -589,7 +590,7 @@ export function paintScaleOf(
 
 /**
  * Each of `markCount` marks' paint scale over `regions`, for a display that
- * draws marks with no key of its own: multi-way synteny's lane layers.
+ * draws marks but builds no legend: multi-way synteny's lane layers.
  */
 export function paintScalesOver(
   regions: Iterable<MarkRegionData>,

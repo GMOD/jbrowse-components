@@ -149,6 +149,14 @@ describe('the bars a payload draws', () => {
     expect(barCellOf(channels!, [30, 50])).not.toBe(cell)
   })
 
+  test('are one cell per ramp table, whatever domain the ramp spans', () => {
+    const [channels] = held(0, [40, 45]).channels
+    const lut = new Uint8Array(1024)
+    const cell = barCellOf(channels!, [30, 60], lut)
+    expect(barCellOf(channels!, [30, 60], lut)).toBe(cell)
+    expect(barCellOf(channels!, [30, 60], new Uint8Array(1024))).not.toBe(cell)
+  })
+
   test('a bar grows from zero where the domain holds it, else from the nearer end', () => {
     expect(laneLayerOrigin([-2, 5])).toBe(0)
     expect(laneLayerOrigin([35, 60])).toBe(35)
@@ -385,9 +393,7 @@ describe('a template layer', () => {
     })
     await when(() => display.laneLayerCells.cells.size > 0, { timeout: 5000 })
     const scales = () =>
-      [...display.laneLayerCells.cells.values()].map(cell =>
-        cell.kind === 'bars' ? cell.colorScale : undefined,
-      )
+      display.laneLayerCells.layers.map(layer => layer.colorScale)
     const [blue, red] = ['blue', 'red'].map(c => cssColorToABGR(c))
     expect(scales().length).toBeGreaterThan(0)
     for (const scale of scales()) {
@@ -406,6 +412,9 @@ describe('a template layer', () => {
     expect(display.laneLayersFetchSpecs.map(spec => spec.key)).toEqual(keys)
     for (const scale of scales()) {
       expect(scale).toMatchObject({ domain: [0, 3], scale: 'linear' })
+    }
+    for (const cell of display.laneLayerCells.cells.values()) {
+      expect(cell.kind === 'bars' && cell.lut).toBeInstanceOf(Uint8Array)
     }
   })
 

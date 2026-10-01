@@ -37,7 +37,7 @@ colour needs; the main thread turns that data into colours through the config.
   what came back, before rows are keyed or sections offset.
 - **Categories cross as the field alone**, and the encoder fills a `colorKey`
   lane in place of `color`: each instance's index into `scale.entries`, the
-  keys the region met in the field's own order. The main thread paints each key
+  keys the region met, in the order the field's own compare puts them. The main thread paints each key
   through the declared `domain` and `range` with `categoricalField`, the
   function the worker used, and reorders the entries by the declaration.
 - **Numbers over another field cross as `{ field, scale: 'threshold' }`**, a
@@ -57,29 +57,36 @@ colour needs; the main thread turns that data into colours through the config.
 - **A region the worker read for another kind of colour stays drawn while its
   refetch is on the way**: held keys in their field's default colours, held
   numbers through a linear ramp over themselves, and the default colour where
-  it holds no colour data (`colorWhileRefetching`).
+  it holds no colour data (`colorWhileRefetching`). Regions refetch one by one,
+  so for a moment one region can hold numbers and another finished colours;
+  each picks its own scale (`regionColorScale`): the mark's for numbers, its
+  own table's where the mark's is of another kind, and none for finished
+  colours, so both backends draw what each region holds.
 - **The colour list keeps its identity across reads nothing observes**,
   through display-kit's `sameAsLast`. An unobserved computed hands out a fresh
   list per read, which recoloured every region and allocated a colour lane per
   categorical layer per read.
 - **Multi-way synteny's lane layers colour their bars the same way.** They
   build their requests with `markLayerRequest`, so `coloredLaneLayer` colours
-  each held payload through `withMarkColor`, and `laneLayerColorScales` hands
-  the bars one ramp or threshold per mark, a ramp's range spanning every lane,
-  through legend.ts's `paintScalesOver`, the step the mark display's
-  `paintScales` takes through `paintScaleOf`. Before this the bars drew a ramp
-  or threshold colour blank or as noise.
+  each held payload through `withMarkColor`, and `laneLayerColorScales` gives
+  the bars one ramp or threshold per mark, a ramp's domain covering every drawn
+  lane, through legend.ts's `paintScalesOver`, the step the mark display's
+  `paintScales` takes through `paintScaleOf`. The scale rides the bar layer
+  the pass reads per block and the cell keeps only the ramp's cached lookup
+  table, so a landing that widens the ramp rebuilds no cell. Before this the
+  bars drew a ramp or threshold colour blank or as noise.
 
 ## Consequences
 
 - An edit that keeps what the worker reads refetches nothing: a constant, a
   palette, a domain, a threshold's cuts, a ramp's ends or scale type over one
-  number field, and a switch between a constant and a colour over `y`. An edit
-  that asks the worker for something new refetches: a `jexl:` callback, a new
-  field, or a switch between categories and numbers.
-- A categorical layer holds a colour lane on the main thread beside the
-  `colorKey` lane it came with, 4 bytes an instance each; the wire carries the
-  same 4 bytes it did.
+  number field, a key's labels, and a switch between a constant and a colour
+  over `y`. An edit that changes what the worker reads refetches: a `jexl:`
+  callback, a field named or dropped, or a switch between categories and
+  numbers.
+- The worker's payload keeps its `colorKey` lane and the coloured copy adds a
+  colour lane, 4 bytes an instance each; the wire carries the same 4 bytes it
+  did.
 - A text mark's ramp domain grows as the user pans, as every other mark's
   does (ADR-124).
 - A region read under a constant paints the default colour until a

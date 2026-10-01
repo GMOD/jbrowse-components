@@ -49,7 +49,7 @@ export type MultiWayCell =
   | { kind: 'ribbons'; data: SyntenyInstanceData }
   | ({ kind: 'outline' } & SyntenyOutlineChannels)
   | { kind: 'glyphs'; data: LaneGlyphData }
-  | { kind: 'bars'; data: BarChannels; colorScale?: MarkColorScale }
+  | { kind: 'bars'; data: BarChannels; lut?: Uint8Array }
 
 export interface RibbonLayer {
   kind: 'ribbons'
@@ -91,6 +91,8 @@ export interface BarLayer {
   height: number
   domain: [number, number]
   origin: number
+  /** the ramp or threshold the bars paint numbers through, if any */
+  colorScale?: MarkColorScale
   start: number
   end: number
   px: readonly [number, number]

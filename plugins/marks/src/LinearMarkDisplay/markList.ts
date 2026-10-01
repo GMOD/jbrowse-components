@@ -11,6 +11,7 @@ import {
   withPassId,
 } from '@jbrowse/render-core/marks'
 
+import { paintScaleOf } from './legend.ts'
 import { MARK_SPECS } from './markSpecs.ts'
 import { DEFAULT_LINE_INTERPOLATE } from './markVocabulary.ts'
 
@@ -251,6 +252,26 @@ function rampLut(scale: MarkColorScale | undefined) {
   return scale && !isThreshold(scale) ? scale.lut : undefined
 }
 
+/**
+ * The ramp or threshold one region's layer `i` paints through. Every region
+ * of a mark normally holds the same kind of colour data, and this is the
+ * mark's scale. While a colour change is refetching, some regions may still
+ * hold the old kind, so the choice is the region's own: a layer holding
+ * numbers paints through the mark's scale, or through its own table where
+ * the mark's scale is of another kind, and a layer holding finished colours
+ * paints them and takes none. Both backends then draw what each region holds.
+ */
+export function regionColorScale(
+  s: MarkRenderState,
+  d: MarkRegionData,
+  i: number,
+): MarkColorScale | undefined {
+  const layer = d.layers[i]
+  return layer?.colorValue
+    ? (s.colorScales[i] ?? paintScaleOf(layer.scale))
+    : undefined
+}
+
 function withMarkIndex(
   mark: Mark<MarkRegionData, MarkRenderState>,
   markIndex: number,
@@ -283,11 +304,11 @@ function shapeMark(entry: MarkEntry, i: number) {
         shape: withPassId(barMark, id),
         channels: (d: MarkRegionData) =>
           withLanes(d.layers[i], MARK_VALUE_LANES.bar),
-        params: (s: MarkRenderState) => ({
+        params: (s: MarkRenderState, d: MarkRegionData) => ({
           domain: s.domainY,
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
-          colorScale: s.colorScales[i],
+          colorScale: regionColorScale(s, d, i),
           origin: s.origin,
           minWidthPx: s.minWidthPx,
           seamPx: CANVAS_SEAM_PX,
@@ -295,8 +316,8 @@ function shapeMark(entry: MarkEntry, i: number) {
           rowOffsetPx: -s.scrollTop,
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({
-          colorRamp: rampLut(s.colorScales[i]),
+        textures: (s: MarkRenderState, d: MarkRegionData) => ({
+          colorRamp: rampLut(regionColorScale(s, d, i)),
         }),
         enabled,
       })
@@ -306,19 +327,19 @@ function shapeMark(entry: MarkEntry, i: number) {
         shape: withPassId(pointMark, id),
         channels: (d: MarkRegionData) =>
           withLanes(d.layers[i], MARK_VALUE_LANES.point),
-        params: (s: MarkRenderState) => ({
+        params: (s: MarkRenderState, d: MarkRegionData) => ({
           domain: s.domainY,
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
-          colorScale: s.colorScales[i],
+          colorScale: regionColorScale(s, d, i),
           diameterPx: s.markSizes[i]!,
           insetPx: s.valueInsetPx,
           rowHeight: s.rowHeight,
           rowOffsetPx: -s.scrollTop,
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({
-          colorRamp: rampLut(s.colorScales[i]),
+        textures: (s: MarkRenderState, d: MarkRegionData) => ({
+          colorRamp: rampLut(regionColorScale(s, d, i)),
         }),
         enabled,
       })
@@ -328,11 +349,11 @@ function shapeMark(entry: MarkEntry, i: number) {
         shape: withPassId(ruleMark, id),
         channels: (d: MarkRegionData) =>
           withLanes(d.layers[i], MARK_VALUE_LANES.rule),
-        params: (s: MarkRenderState) => ({
+        params: (s: MarkRenderState, d: MarkRegionData) => ({
           domain: s.domainY,
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
-          colorScale: s.colorScales[i],
+          colorScale: regionColorScale(s, d, i),
           sizePx: s.markSizes[i]!,
           minWidthPx: s.minWidthPx,
           insetPx: s.valueInsetPx,
@@ -340,8 +361,8 @@ function shapeMark(entry: MarkEntry, i: number) {
           rowOffsetPx: -s.scrollTop,
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({
-          colorRamp: rampLut(s.colorScales[i]),
+        textures: (s: MarkRenderState, d: MarkRegionData) => ({
+          colorRamp: rampLut(regionColorScale(s, d, i)),
         }),
         enabled,
       })
@@ -354,19 +375,19 @@ function shapeMark(entry: MarkEntry, i: number) {
         ),
         channels: (d: MarkRegionData) =>
           withLanes(d.layers[i], MARK_VALUE_LANES.line),
-        params: (s: MarkRenderState) => ({
+        params: (s: MarkRenderState, d: MarkRegionData) => ({
           domain: s.domainY,
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
-          colorScale: s.colorScales[i],
+          colorScale: regionColorScale(s, d, i),
           origin: s.origin,
           lineWidth: s.markSizes[i]!,
           rowHeight: s.rowHeight,
           rowOffsetPx: -s.scrollTop,
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({
-          colorRamp: rampLut(s.colorScales[i]),
+        textures: (s: MarkRenderState, d: MarkRegionData) => ({
+          colorRamp: rampLut(regionColorScale(s, d, i)),
         }),
         enabled,
       })
@@ -376,8 +397,8 @@ function shapeMark(entry: MarkEntry, i: number) {
         shape: withPassId(spanMark, id),
         channels: (d: MarkRegionData) =>
           withLanes(d.layers[i], MARK_VALUE_LANES.span),
-        params: (s: MarkRenderState) => ({
-          colorScale: s.colorScales[i],
+        params: (s: MarkRenderState, d: MarkRegionData) => ({
+          colorScale: regionColorScale(s, d, i),
           rowHeight: s.rowHeight,
           rowProportion: s.rowProportions[i]!,
           minWidthPx: s.minWidthPx,
@@ -385,8 +406,8 @@ function shapeMark(entry: MarkEntry, i: number) {
           scrollTop: s.scrollTop,
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({
-          colorRamp: rampLut(s.colorScales[i]),
+        textures: (s: MarkRenderState, d: MarkRegionData) => ({
+          colorRamp: rampLut(regionColorScale(s, d, i)),
         }),
         enabled,
       })
@@ -396,11 +417,11 @@ function shapeMark(entry: MarkEntry, i: number) {
         shape: withPassId(linkMark, id),
         channels: (d: MarkRegionData) =>
           withLanes(d.layers[i], MARK_VALUE_LANES.link),
-        params: (s: MarkRenderState) => ({
+        params: (s: MarkRenderState, d: MarkRegionData) => ({
           domain: s.domainY,
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
-          colorScale: s.colorScales[i],
+          colorScale: regionColorScale(s, d, i),
           regions: s.linkRegions,
           linkShape: entry.linkShape,
           valued: entry.valued,
@@ -411,8 +432,8 @@ function shapeMark(entry: MarkEntry, i: number) {
           rowOffsetPx: -s.scrollTop,
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({
-          colorRamp: rampLut(s.colorScales[i]),
+        textures: (s: MarkRenderState, d: MarkRegionData) => ({
+          colorRamp: rampLut(regionColorScale(s, d, i)),
         }),
         enabled,
       })

@@ -4,6 +4,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { isThreshold } from '@jbrowse/render-core/marks'
 
+import { regionColorScale } from './markList.ts'
 import {
   REGION,
   createTestEnvironment,
@@ -379,4 +380,38 @@ test('a region holding no colour paints the default while a categorical refetch 
 
   expect(layerOf(display).color).toBe(cssColorToABGR(DEFAULT_MARK_COLOR))
   expect(layerOf(display).scale).toBeUndefined()
+})
+
+// A colour change refetches region by region, so for a moment one region holds
+// the new kind of colour data and another the old; each paints what it holds,
+// on the GPU as on Canvas2D, rather than one scale misreading the other.
+test('regions holding different kinds of colour data each paint through what they hold', () => {
+  const REGION_B = { ...REGION, refName: 'ctgB' }
+  const { display } = createTestEnvironment(
+    {
+      marks: [
+        {
+          mark: 'bar',
+          encoding: { y: 'score', color: { field: 'depth', scale: 'linear' } },
+        },
+      ],
+    },
+    [REGION, REGION_B],
+  ).createDisplay()
+  display.setRpcData(0, workerResult(display, SCORES), REGION)
+  display.setRpcData(1, workerResult(display, SCORES), REGION_B)
+
+  editColor(display, 'field', 'type')
+  editColor(display, 'scale', 'categorical')
+  display.setRpcData(0, workerResult(display, SCORES), REGION)
+
+  const { renderState } = display
+  const landed = display.rpcDataMap.get(0)!
+  const held = display.rpcDataMap.get(1)!
+  expect(landed.layers[0]!.color).toBeInstanceOf(Uint32Array)
+  expect(regionColorScale(renderState, landed, 0)).toBeUndefined()
+  expect(regionColorScale(renderState, held, 0)).toMatchObject({
+    scale: 'linear',
+    domain: [1, 8],
+  })
 })

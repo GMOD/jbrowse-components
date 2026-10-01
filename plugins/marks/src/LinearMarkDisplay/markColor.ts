@@ -23,7 +23,10 @@ import {
 } from '@jbrowse/core/util/markEncoding'
 import { scaleExtent } from '@jbrowse/core/util/quantileExtent'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
-import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  featureColorEncoding,
+  paintedColorEncoding,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { MAX_COLOR_CUTS } from '@jbrowse/render-core/shaders/markColorConsts'
 
 import { plotsValue } from './markSpecs.ts'
@@ -48,7 +51,11 @@ export type ValueColor = ContinuousRef | ThresholdRef
 export type ColorSource =
   /** One colour for every feature; the worker reads nothing for it. */
   | { kind: 'constant'; color: number }
-  /** A colour per category; the worker sends each feature's category key. */
+  /**
+   * A colour per category; the worker sends each feature's category as an
+   * index into the categories it met, and each is painted here through the
+   * config's `domain` and `range`.
+   */
   | { kind: 'categories'; encoding: CategoricalRef & { range?: string[] } }
   /**
    * A ramp or threshold over a number; the worker sends the numbers, unless
@@ -62,7 +69,10 @@ export function markColorOf(
   mark: MarkConfig,
   channels: StepChannels,
 ): ColorSource {
-  const encoding = featureColorEncoding(mark.encoding.color)
+  // a key's labels change what the legend says, not what any feature paints
+  const encoding = paintedColorEncoding(
+    featureColorEncoding(mark.encoding.color),
+  )
   if (typeof encoding !== 'object') {
     const value = encoding ?? DEFAULT_MARK_COLOR
     return isJexl(value)
@@ -81,11 +91,12 @@ export function markColorOf(
 }
 
 /**
- * What the worker is asked to read for the colour: the field alone for a
- * scale, and the default colour, which it ignores, where it reads nothing.
- * A number field is asked for as a threshold with no cuts: that reads the
- * numbers and flags missing ones without building a ramp, whose cached
- * lookup table would be copied on every fetch.
+ * What the colour asks the worker to read: a `jexl:` expression whole, a
+ * scale's field alone, and `DEFAULT_MARK_COLOR` where it reads nothing, which
+ * the encoder ignores with no colour lane to fill. A number field is asked
+ * for as a threshold with no cuts: that reads the numbers and flags missing
+ * ones without building a ramp, whose cached lookup table would be copied on
+ * every fetch.
  */
 export function wireColorOf(color: ColorSource): ColorEncoding {
   switch (color.kind) {
@@ -210,8 +221,9 @@ function colorByKeys<L extends EncodedChannels>(
 
 const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
 
-// A region the worker read for another kind of colour, drawn while its refetch is
-// on the way: whatever it holds coloured as plainly as it can be, so the mark
+// A region the worker read for another kind of colour, drawn under the loading
+// scrim while its refetch is on the way: whatever it holds coloured as plainly
+// as it can be, so the mark
 // stays on screen. Keys take their field's default colours, numbers a linear
 // ramp over themselves, an expression's colours stay, and a region holding no
 // colour data takes the default colour.
@@ -274,6 +286,7 @@ export function withMarkColor<L extends EncodedChannels>(
       }
       return {
         ...layer,
+        color: undefined,
         colorValue: values,
         colorKey: undefined,
         scale:

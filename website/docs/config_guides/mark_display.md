@@ -328,9 +328,9 @@ or overlapping spans stay readable.
 
 The display paints every colour from the data it already loaded, so a change to
 a constant colour, a palette, a domain, a threshold's cuts or a ramp's ends
-redraws without fetching again. A change that needs new data from each feature
-does fetch again: a new field, a switch between categories and numbers, or a
-`jexl:` colour.
+redraws without fetching again. A change to what is read from each feature does
+fetch again: a field named or dropped, a switch between categories and numbers,
+or a `jexl:` colour.
 
 `title` heads the key and has the axis `title`'s three states: unset reads the
 `field` name, text is that text, `""` draws no heading. Marks share one key only

@@ -6,7 +6,7 @@ import { paintColors, rowColor, rowSlot } from '@jbrowse/render-core/marks'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { pointYPx } from '@jbrowse/render-core/shaders/pointMark'
 
-import { markDrawsAt } from './markList.ts'
+import { markDrawsAt, regionColorScale } from './markList.ts'
 
 import type {
   MarkRegionData,
@@ -111,7 +111,7 @@ export function placeTextMarks(
       const { x, x2, y, row, count } = layer
       const values = entry.valued ? y : undefined
       const colors = entry.ownColor
-        ? paintColors(layer, count, state.colorScales[markIndex])
+        ? paintColors(layer, count, regionColorScale(state, region, markIndex))
         : undefined
       for (let i = 0; i < count; i++) {
         const label = text[i]
