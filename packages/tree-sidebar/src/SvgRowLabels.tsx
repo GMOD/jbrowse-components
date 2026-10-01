@@ -42,8 +42,8 @@ export function SvgRowLabels({
 }) {
   const palette = usePalette()
   const fontSize = Math.min(rowHeight, 12)
-  const stripBackground = alpha(palette.text.primary, 0.06)
-  const separator = alpha(palette.text.primary, 0.12)
+  const stripBackground = alpha(palette.text.primary, 0.09)
+  const separator = alpha(palette.text.primary, 0.16)
   const textFits = rowLabelsCarryText(rowHeight)
   // Without a tint there is nothing left once the text is gone, so a track whose
   // rows carry no color draws nothing rather than a bare stripe of the default
