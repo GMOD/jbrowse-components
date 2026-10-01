@@ -7,6 +7,7 @@ import { NEARLY_ALL, preferIncumbent } from '../syntenyHysteresis.ts'
 import { groupRunsOnRow, rowFrameX } from './layoutMultiWay.ts'
 
 import type {
+  FetchRegion,
   MultiWayGroup,
   MultiWayPlacement,
   RowFrame,
@@ -42,10 +43,11 @@ export interface LaneFlipPin {
   flipped: boolean
 }
 
-/** decisions in `anchor`'s coordinates */
+/** decisions in `anchor`'s coordinates; `window` is what the view showed */
 export interface FrozenLanes {
   anchor: string
   decisions: Record<string, LaneDecision>
+  window: FetchRegion[]
 }
 
 /** Moves `d`'s content `dxPx` screen px right; its pivot anchor stays put. */

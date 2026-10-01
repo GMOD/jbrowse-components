@@ -94,22 +94,19 @@ test('a slide draws through the lane map, then lands in the frozen frame once', 
   expect(display.laneDecisions.get(C)).toBe(display.frozenDecisions.get(C))
 })
 
-test('a slide moves the lane as drawn once its frozen pivot has left the view', async () => {
+test('the lanes unfreeze once the view leaves the window they froze on', async () => {
   const display = await setup()
-  display.setLanesFrozen(true)
-  display.lgv.setDisplayedRegions([
-    { refName: 'ctgB', start: 0, end: 1000, assemblyName: A },
+  const view = display.lgv
+  view.setDisplayedRegions([
+    { refName: 'ctgA', start: 0, end: 50_000, assemblyName: A },
   ])
-  display.setFeatures(
-    STARTS.map((s, i) => record(`b${i}`, `g${i}`, s, 40_000 + s, 'ctgB')),
-  )
-  const before = slipOf(display)
-  expect(before.length).toBeGreaterThan(0)
+  display.setLanesFrozen(true)
+  view.horizontalScroll(view.width / 2)
+  expect(display.lanesFrozen).toBe(true)
 
-  display.setLaneDragPx(C, 40)
-  display.endLaneDrag(C)
-  expect(slipOf(display)).toEqual(before.map(d => d + 40))
-  expect(display.frozenDecisions.get(C)!.pivotAnchor.refName).toBe('ctgB')
+  view.horizontalScroll(view.width)
+  expect(display.lanesFrozen).toBe(false)
+  expect(display.frozenLanes).toBeUndefined()
 })
 
 test('only a frozen mate lane is slidable, and only over its own rows', async () => {

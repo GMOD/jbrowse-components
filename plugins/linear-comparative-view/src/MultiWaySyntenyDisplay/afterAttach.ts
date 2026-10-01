@@ -219,6 +219,20 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
   )
 }
 
+function installFreezeExpiry(self: MultiWaySyntenyDisplayModel) {
+  addDisposer(
+    self,
+    autorun(
+      () => {
+        if (self.lgv.initialized && self.frozenLanes && !self.lanesFrozen) {
+          self.setLanesFrozen(false)
+        }
+      },
+      { name: 'MultiWayFreezeExpiry' },
+    ),
+  )
+}
+
 // captures the session, since `getSession` finds none once the view detaches
 function installLaneAssemblies(self: MultiWaySyntenyDisplayModel) {
   const session = getSession(self)
@@ -301,6 +315,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     name: 'MultiWayClearHoverOnLaneRelayout',
   })
   installLaneFrameDecision(self)
+  installFreezeExpiry(self)
   installAnimationDeadline(
     self,
     () => {

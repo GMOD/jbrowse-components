@@ -319,6 +319,25 @@ describe('a template layer', () => {
     expect(display.laneLayerTitles[0]!.text).toMatch(/ · zoom in$/)
   })
 
+  test('a frozen lane zoomed in far from its fit is left out once its fetch region passes the cap', async () => {
+    const display = await templateDisplay(GC)
+    const view = display.lgv
+    view.setDisplayedRegions([
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 2 * LANE_TEMPLATE_MAX_BP,
+        assemblyName: 'volvox',
+      },
+    ])
+    view.showAllRegions()
+    display.setLanesFrozen(true)
+    view.zoomTo(1)
+    view.scrollTo(1.5 * LANE_TEMPLATE_MAX_BP)
+    expect(display.lanesFrozen).toBe(true)
+    expect(reads(display).map(read => read.lane)).toEqual(['volvox'])
+  })
+
   // The worker reads no colour a lane layer's mark declares, so the bars take
   // it from the display's stamp, and an edit repaints what is held.
   test("a layer's bars paint its mark's colour, and a recolour refetches nothing", async () => {

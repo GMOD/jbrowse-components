@@ -1360,13 +1360,23 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * true only when the lanes were frozen on the anchor the view is on
+       * true only while the view, on the anchor the lanes froze on, still shows
+       * part of the window they froze on
        */
       get lanesFrozen(): boolean {
         const frozen = self.frozenLanes
         return (
           frozen !== undefined &&
-          self.laneKey(frozen.anchor) === self.laneKey(self.anchorAssemblyName)
+          self.laneKey(frozen.anchor) ===
+            self.laneKey(self.anchorAssemblyName) &&
+          self.lgv.dynamicBlocks.contentBlocks.some(block =>
+            frozen.window.some(
+              r =>
+                r.refName === block.refName &&
+                r.start < block.end &&
+                block.start < r.end,
+            ),
+          )
         )
       },
     }))
@@ -1423,7 +1433,7 @@ export function stateModelFactory(
         } else {
           delete decisions[assemblyName]
         }
-        self.frozenLanes = { anchor: self.anchorAssemblyName, decisions }
+        self.frozenLanes = { ...self.frozenLanes!, decisions }
       }
       function setLaneDragPx(assemblyName: string, dxPx: number | undefined) {
         const next = new Map(self.laneDragPx)
@@ -1480,6 +1490,9 @@ export function stateModelFactory(
                   [...self.laneDecisions].filter(
                     (entry): entry is [string, LaneDecision] => !!entry[1],
                   ),
+                ),
+                window: mergeContiguousRegions(
+                  self.lgv.dynamicBlocks.contentBlocks,
                 ),
               }
             : undefined
@@ -1780,7 +1793,8 @@ export function stateModelFactory(
           }
           if (
             from.template &&
-            laneFetchRegionMaxBp(spanBp) > LANE_TEMPLATE_MAX_BP
+            (laneFetchRegionMaxBp(spanBp) > LANE_TEMPLATE_MAX_BP ||
+              regions.some(r => r.end - r.start > LANE_TEMPLATE_MAX_BP))
           ) {
             pastCap[layer] = true
             return
