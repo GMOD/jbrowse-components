@@ -34,17 +34,19 @@ function processFeatureData(
   // translations if included)
   const featureType = feature.type?.toLowerCase()
   const isMatureProteinRegion = featureType === 'mature_protein_region_of_cds'
+  const ofType = (type: string) =>
+    children.filter(sub => sub.type?.toLowerCase() === type)
+  // A frameshift polyprotein's CDS carries its reading frames as CDS rows beside
+  // its cleavage products; a single-frame one has only the products.
+  const codingRows = ofType('cds')
   const cds = isMatureProteinRegion
     ? [{ start: 0, end: feature.end - feature.start, type: 'CDS' }]
     : filterSuccessiveElementsWithSameStartAndEndCoord(
-        children.filter(sub => {
-          const type = sub.type?.toLowerCase()
-          return type === 'cds' || type === 'mature_protein_region_of_cds'
-        }),
+        codingRows.length > 0
+          ? codingRows
+          : ofType('mature_protein_region_of_cds'),
       )
-  const exons = filterSuccessiveElementsWithSameStartAndEndCoord(
-    children.filter(sub => sub.type?.toLowerCase() === 'exon'),
-  )
+  const exons = filterSuccessiveElementsWithSameStartAndEndCoord(ofType('exon'))
   // annotated UTRs are deliberately not read: a UTR is just the exonic sequence
   // outside the CDS, so the renderer derives the split from cds+exons. Trusting
   // the annotation meant a transcript that named only one of its UTRs lost the
