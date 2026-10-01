@@ -2,7 +2,7 @@
 // 9 vertices per arrow: 6 stem vertices (two triangles) + 3 arrowhead
 // triangle vertices dispatched via vertex ID.
 //! targets: wgsl, glsl
-//! export-consts: STEM_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX, ARROW_MIN_FEATURE_WIDTH_PX, GENE_ARROW_MIN_FEATURE_WIDTH_PX
+//! export-consts: ARROW_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX, ARROW_MIN_FEATURE_WIDTH_PX, GENE_ARROW_MIN_FEATURE_WIDTH_PX
 //! js-export: arrowDraws, arrowHeadHalfHeightPx
 
 import hpmath;
@@ -11,7 +11,7 @@ import featureGlyphUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 9u;
-static const float STEM_LENGTH_PX = 7.0;
+static const float ARROW_LENGTH_PX = 7.0;
 static const float STEM_HALF_H_PX = 0.5;
 static const float HEAD_HALF_H_PX = 2.5;
 
@@ -20,7 +20,7 @@ static const float HEAD_HALF_H_PX = 2.5;
 // the neighbor. Below this width the direction marker would occupy more space
 // than the thing whose direction it marks, so it is dropped entirely — a run of
 // repeats packed a few px apart reads as boxes, not as a mess of overlapping
-// arrowheads. Set to 2x the arrow's own footprint (STEM_LENGTH_PX). Same
+// arrowheads. Set to 2x the arrow's own footprint (ARROW_LENGTH_PX). Same
 // principle as chevron.slang's short-line gate and the label decimation ladder:
 // an annotation that doesn't fit is dropped, never shrunk.
 static const float ARROW_MIN_FEATURE_WIDTH_PX = 14.0;
@@ -92,7 +92,7 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
 
   float cy = snapBoxCenterY(inst.y, u.scrollY, u.canvasHeight);
 
-  float stemLength = pxToClipW(STEM_LENGTH_PX, u);
+  float arrowLength = pxToClipW(ARROW_LENGTH_PX, u);
   float stemHalf = pxToClipH(STEM_HALF_H_PX, u);
   float headHalf = pxToClipH(arrowHeadHalfHeightPx(inst.height), u);
 
@@ -104,18 +104,18 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
     float2 q = quadLocal(vid);
     float localX = q.x;
     float localY = 1.0 - 2.0 * q.y;
-    sx = cx + localX * stemLength * 0.5 * dir;
+    sx = cx + localX * arrowLength * 0.5 * dir;
     sy = cy + localY * stemHalf;
   } else {
     uint hvid = vid - 6u;
     if (hvid == 0u) {
-      sx = cx + stemLength * 0.5 * dir;
+      sx = cx + arrowLength * 0.5 * dir;
       sy = cy + headHalf;
     } else if (hvid == 1u) {
-      sx = cx + stemLength * 0.5 * dir;
+      sx = cx + arrowLength * 0.5 * dir;
       sy = cy - headHalf;
     } else {
-      sx = cx + stemLength * dir;
+      sx = cx + arrowLength * dir;
       sy = cy;
     }
   }

@@ -1,4 +1,4 @@
-import { STEM_LENGTH_PX } from '../passes/shaders/arrow.consts.generated.ts'
+import { ARROW_LENGTH_PX } from '../passes/shaders/arrow.consts.generated.ts'
 import { arrowDraws } from '../passes/shaders/arrow.js.generated.ts'
 
 /**
@@ -11,7 +11,7 @@ export function strandArrowReachPx(
   featureWidthPx: number,
   gene: boolean,
 ) {
-  const reach = strand && arrowDraws(featureWidthPx, gene) ? STEM_LENGTH_PX : 0
+  const reach = strand && arrowDraws(featureWidthPx, gene) ? ARROW_LENGTH_PX : 0
   return {
     left: strand === -1 ? reach : 0,
     right: strand === 1 ? reach : 0,

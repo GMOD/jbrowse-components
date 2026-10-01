@@ -23,6 +23,7 @@ import {
 } from '@jbrowse/render-core/shaders/hpmath'
 
 import {
+  ARROW_LENGTH_PX,
   CHEVRON_H_PX,
   CHEVRON_THICKNESS_PX,
   CHEVRON_VERTS,
@@ -34,7 +35,6 @@ import {
   CONT_TRI_W_PX,
   MIN_DENSITY_ALPHA,
   STEM_HALF_H_PX,
-  STEM_LENGTH_PX,
   canvasEdgeFlags,
   chevronSlotBudget,
 } from '../components/sharedRendererConstants.ts'
@@ -462,7 +462,7 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
       const dir = block.reversed ? -rawDir : rawDir
       setFill(color[i]!)
 
-      const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
+      const stemEndX = cx + ARROW_LENGTH_PX * 0.5 * dir
       ctx.fillRect(
         Math.min(cx, stemEndX),
         y - STEM_HALF_H_PX,
@@ -470,7 +470,7 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
         STEM_HALF_H_PX * 2,
       )
 
-      const headTipX = cx + STEM_LENGTH_PX * dir
+      const headTipX = cx + ARROW_LENGTH_PX * dir
       const headHalf = arrowHeadHalfHeightPx(height[i]!)
       ctx.beginPath()
       ctx.moveTo(stemEndX, y - headHalf)
@@ -481,7 +481,7 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
     }
   },
 
-  // Stem and head together: `STEM_LENGTH_PX` out from the feature's end, as
+  // Stem and head together: `ARROW_LENGTH_PX` out from the feature's end, as
   // tall as the taller of the two.
   ink(channels, block, frame, params, i) {
     const { x: xs, y: ys, height, widthBp, gene, direction } = channels
@@ -505,12 +505,12 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
     }
     const dir = block.reversed ? -rawDir : rawDir
     const y = snapBoxCenterYPx(ys[i]!, params.scrollY)
-    const tipX = cx + STEM_LENGTH_PX * dir
+    const tipX = cx + ARROW_LENGTH_PX * dir
     const half = Math.max(STEM_HALF_H_PX, arrowHeadHalfHeightPx(height[i]!))
     return {
       left: Math.min(cx, tipX),
       top: y - half,
-      width: STEM_LENGTH_PX,
+      width: ARROW_LENGTH_PX,
       height: 2 * half,
     }
   },

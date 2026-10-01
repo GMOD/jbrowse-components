@@ -18,7 +18,7 @@ product's row at once. The arrow's y is `topPx + height / 2`
 the CDS top. The transcript call two hundred lines up in the same file passes
 `transcript.height`, one row.
 
-**Verified**: the arrow is drawn at a fixed pixel size (`STEM_LENGTH_PX`,
+**Verified**: the arrow is drawn at a fixed pixel size (`ARROW_LENGTH_PX`,
 `HEAD_HALF_H_PX`), so `height` reaches only `snapBoxCenterYPx` and
 `centeredRowVisible`. This is a position bug or nothing, never a size one.
 

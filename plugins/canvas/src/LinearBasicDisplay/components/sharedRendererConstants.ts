@@ -50,10 +50,10 @@ export { CHEVRON_SPACING_PX }
 // No HEAD_HALF_H_PX: `arrowHeadHalfHeightPx` clamps the arrowhead to the box it
 // comes off, and re-exporting the raw ceiling is how a caller reaches past it.
 export {
+  ARROW_LENGTH_PX,
   ARROW_MIN_FEATURE_WIDTH_PX,
   GENE_ARROW_MIN_FEATURE_WIDTH_PX,
   STEM_HALF_H_PX,
-  STEM_LENGTH_PX,
 } from '../passes/shaders/arrow.consts.generated.ts'
 export {
   CONT_EDGE_MARGIN_PX,
