@@ -7,7 +7,13 @@ import {
   SubmitDialog,
 } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, DialogContentText, Tooltip, Typography } from '@mui/material'
+import {
+  Button,
+  Collapse,
+  DialogContentText,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { Plot, PlotExample } from '@jbrowse/core/configuration'
@@ -31,6 +37,11 @@ export interface PlotDialogHost {
 const EDIT_PLOT_GUIDE = 'https://jbrowse.org/jb2/docs/user_guides/edit_plot/'
 
 const useStyles = makeStyles()(theme => ({
+  links: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+  },
   examples: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -79,6 +90,7 @@ const PlotDialog = observer(function PlotDialog({
   const [text, setText] = useState(() =>
     JSON.stringify({ ...model.plot, ...seed }, null, 2),
   )
+  const [showHelp, setShowHelp] = useState(false)
   const { plot, problems, summary, error } = readDraft(model, text)
   const { openPlotForm } = model
 
@@ -111,23 +123,32 @@ const PlotDialog = observer(function PlotDialog({
         }
       }}
     >
-      <DialogContentText component="div">
-        The plot as a config file writes it:
-        <ul>
-          {model.plotKeys.map(key => (
-            <li key={key}>
-              <code>{key}</code>, {PLOT_VOCABULARY[key]}
-            </li>
-          ))}
-        </ul>
-        A setting left out stays as it is, an object replaces the setting whole,
-        and <code>null</code> resets it.{' '}
-        <ExternalLink href={model.configDocsUrl}>
-          Every setting this display takes
-        </ExternalLink>
-        {' · '}
-        <ExternalLink href={EDIT_PLOT_GUIDE}>How Edit plot works</ExternalLink>
-      </DialogContentText>
+      <div className={classes.links}>
+        <ExternalLink href={EDIT_PLOT_GUIDE}>User guide</ExternalLink>
+        <ExternalLink href={model.configDocsUrl}>Config reference</ExternalLink>
+        <Button
+          size="small"
+          onClick={() => {
+            setShowHelp(!showHelp)
+          }}
+        >
+          {showHelp ? 'Hide help' : 'Show help'}
+        </Button>
+      </div>
+      <Collapse in={showHelp}>
+        <DialogContentText component="div">
+          The plot as a config file writes it:
+          <ul>
+            {model.plotKeys.map(key => (
+              <li key={key}>
+                <code>{key}</code>, {PLOT_VOCABULARY[key]}
+              </li>
+            ))}
+          </ul>
+          A setting left out stays as it is, an object replaces the setting
+          whole, and <code>null</code> resets it.
+        </DialogContentText>
+      </Collapse>
       {model.plotExamples.length ? (
         <div className={classes.examples}>
           <Typography variant="body2" color="text.secondary">

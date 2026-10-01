@@ -578,7 +578,7 @@ export const uiVideos: VideoSpec[] = [
       { type: 'click', text: 'Group by...' },
       { type: 'waitForText', text: 'Edit plot...' },
       { type: 'click', text: 'Edit plot...', hold: 800 },
-      { type: 'waitForText', text: 'The plot as a config file writes it' },
+      { type: 'waitForSelector', selector: '[data-testid="plot-json"]' },
       { type: 'delay', ms: 2000 },
       {
         type: 'type',

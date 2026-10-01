@@ -17,10 +17,10 @@ there but not yet applied.
 
 ## What the box shows
 
-The box lists the settings this display has, each with a line saying what it
-holds, and the text holds their current values. A setting at its default is left
-out, as it would be in a config file. Which settings appear depends on the
-display:
+The text holds the current values of this display's settings. A setting at its
+default is left out, as it would be in a config file. Show help lists the
+settings, each with a line saying what it holds. Which settings appear depends
+on the display:
 
 | Display                              | Settings                                                              |
 | ------------------------------------ | --------------------------------------------------------------------- |
@@ -34,9 +34,8 @@ display:
 | Multi-way synteny                    | `color`, `ribbonColor`, `laneLayers`                                  |
 | Mark plot, Manhattan                 | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `filter` |
 
-The dialog links each display's page in the
-[config reference](/docs/config_guide), which lists every member each setting
-takes.
+The Config reference link opens the display's page in the
+[config reference](/docs/config_guide), which spells out each setting's members.
 
 ## Examples
 

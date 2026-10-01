@@ -55,6 +55,13 @@ it('opens on the declared plot', () => {
   expect(screen.getByText('No changes')).toBeInTheDocument()
 })
 
+it('keeps the help hidden until asked', () => {
+  setup()
+  expect(screen.getByText('marks')).not.toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Show help' }))
+  expect(screen.getByText('marks')).toBeVisible()
+})
+
 it("names and explains only the display's plot keys", () => {
   setup({ host: { plotKeys: ['rows', 'color'] } })
   expect(screen.getByText('rows')).toBeInTheDocument()
@@ -83,7 +90,7 @@ it('an example button fills the text over the plot as it stands', () => {
 it("links the display's config reference", () => {
   setup()
   expect(
-    screen.getByRole('link', { name: /Every setting this display takes/ }),
+    screen.getByRole('link', { name: /Config reference/ }),
   ).toHaveAttribute(
     'href',
     'https://jbrowse.org/jb2/docs/config/lineartestdisplay/',
