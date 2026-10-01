@@ -148,25 +148,23 @@ function valueScaleTable(
 }
 
 // Each key the worker met, painted through the declaration and ordered by it;
-// a region still holding another field's keys while its refetch is pending
-// paints them as the worker's table did.
+// keys of another field, or under no categorical declaration, paint as the
+// worker's table did.
 function categoricalLayer<L extends EncodedChannels>(
   layer: L,
   colorKey: Uint32Array,
-  encoding: CategoricalRef & { range?: string[] },
+  encoding?: CategoricalRef & { range?: string[] },
 ): L {
   const read = layer.scale
   if (read?.kind !== 'categorical') {
     return layer
   }
   const { field } = read
-  const declared =
-    field === encoding.field
-      ? categoricalField(field, {
-          domain: encoding.domain?.map(String),
-          range: encoding.range,
-        })
-      : categoricalField(field)
+  const own = encoding?.field === field ? encoding : undefined
+  const declared = categoricalField(field, {
+    domain: own?.domain?.map(String),
+    range: own?.range,
+  })
   const palette = Uint32Array.from(read.entries, e =>
     cssColorToABGR(declared.color(e.value)),
   )
@@ -185,13 +183,18 @@ function categoricalLayer<L extends EncodedChannels>(
       kind: 'categorical',
       field,
       domain: [...declared.domain],
-      ...(field === encoding.field && encoding.range
-        ? { range: [...encoding.range] }
-        : {}),
+      ...(own?.range ? { range: [...own.range] } : {}),
       ...(read.numericKeys ? { numericKeys: true } : {}),
       entries,
     },
   }
+}
+
+// A layer fetched under another form of colour, while its refetch is pending:
+// its keys painted as the worker's table did, so it stays drawn, and any
+// other lane as it came.
+function heldLayer<L extends EncodedChannels>(layer: L): L {
+  return layer.colorKey ? categoricalLayer(layer, layer.colorKey) : layer
 }
 
 /**
@@ -204,11 +207,20 @@ export function withMarkColor<L extends EncodedChannels>(
 ): L {
   switch (color.kind) {
     case 'worker':
-      return layer
+      return heldLayer(layer)
     case 'constant':
-      return layer.color === color.color
+      return layer.color === color.color &&
+        !layer.colorValue &&
+        !layer.colorKey &&
+        !layer.scale
         ? layer
-        : { ...layer, color: color.color }
+        : {
+            ...layer,
+            color: color.color,
+            colorValue: undefined,
+            colorKey: undefined,
+            scale: undefined,
+          }
     case 'categorical':
       return layer.colorKey
         ? categoricalLayer(layer, layer.colorKey, color.encoding)
@@ -218,7 +230,7 @@ export function withMarkColor<L extends EncodedChannels>(
       const read = layer.scale
       const values = readsY ? layer.y : layer.colorValue
       if (!values || (!readsY && read?.field !== encoding.field)) {
-        return layer
+        return heldLayer(layer)
       }
       return {
         ...layer,

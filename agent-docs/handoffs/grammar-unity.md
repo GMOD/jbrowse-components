@@ -255,6 +255,9 @@ Colin rather than work:
 
 - The multi-sample variant and reference-sequence displays keep their plots.
 - The 84 domain actions with no mark-display counterpart stay put.
+- Multi-way synteny's lane layers paint a ramp or threshold colour as nothing
+  useful: `multiwayMarks.ts` hands `barMark` no colour scale. It predates
+  ADR-202, which stamps the values and table they would read.
 - Alignments' `filterBy` stays its own; Hi-C, LD and MAF keep their colour
   objects until their trigger.
 - `addDisplayMenuItems` matches a display by its registered name

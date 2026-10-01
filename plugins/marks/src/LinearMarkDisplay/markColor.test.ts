@@ -41,7 +41,14 @@ function colorLane(display: LinearMarkDisplayModel) {
 
 function editColor(
   display: LinearMarkDisplayModel,
-  slot: 'value' | 'scale' | 'domain' | 'range' | 'domainMin' | 'domainMax',
+  slot:
+    | 'value'
+    | 'field'
+    | 'scale'
+    | 'domain'
+    | 'range'
+    | 'domainMin'
+    | 'domainMax',
   value: unknown,
 ) {
   setConf(display.conf.marks[0]!, ['encoding', 'color', slot], value)
@@ -300,4 +307,30 @@ test('a text ramp with open ends follows the domain the regions union', () => {
   ])
   expect(display.notices).toEqual([])
   expect((display.paintScales[0] as MarkRamp).domain).toEqual([1, 8])
+})
+
+// A colour edit that changes what the worker reads refetches, and until the
+// refetch lands each region paints what it holds.
+test('a region holding keys under a ramp still draws them, and a constant clears what it held', () => {
+  const display = loaded([
+    {
+      mark: 'bar',
+      encoding: { y: 'score', color: { field: 'type', scale: 'categorical' } },
+    },
+  ])
+  const keys = colorLane(display)
+
+  editColor(display, 'field', 'depth')
+  editColor(display, 'scale', 'linear')
+
+  expect(colorLane(display)).toEqual(keys)
+  expect(layerOf(display).colorKey).toBeUndefined()
+
+  editColor(display, 'scale', 'none')
+  editColor(display, 'value', 'red')
+
+  const layer = layerOf(display)
+  expect(layer.color).toBe(cssColorToABGR('red'))
+  expect(layer.scale).toBeUndefined()
+  expect(display.legendSections).toEqual([])
 })

@@ -66,6 +66,10 @@ regions unless both ends were pinned, which `unpinned-text-ramp` warned about.
   same 4 bytes it did.
 - A text mark's ramp domain grows as the user pans, as every other mark's
   does (ADR-124).
+- While a refetch for a new form of colour is pending, a region paints what it
+  holds: categorical keys in the field's own colours, a constant at once. One
+  fetched under a constant paints the default colour until a categorical's
+  keys arrive, since the constant never reached the worker.
 - The encoder's `colorKey` lane has the mark display as its one caller; the
   multi-sample variant display, the second half of the handoff's step 2,
   still sends its colour encoding in `rpcProps()`.

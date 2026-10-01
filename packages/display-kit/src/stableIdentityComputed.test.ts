@@ -38,4 +38,17 @@ describe('stableIdentityComputed', () => {
     expect(second).toEqual([{ name: 'a' }, { name: 'c' }])
     dispose()
   })
+
+  // A pointer handler or a test reads with nothing observing, and mobx keeps
+  // no value between such reads.
+  it('hands back the same value across reads nothing observes', () => {
+    const regions = observable.map<number, string[]>([[0, ['a']]])
+    const rows = rowsOver(regions)
+    const first = rows.get()
+    expect(rows.get()).toBe(first)
+    runInAction(() => {
+      regions.set(1, ['a'])
+    })
+    expect(rows.get()).toBe(first)
+  })
 })
