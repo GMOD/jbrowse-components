@@ -8656,7 +8656,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ],
       "properties": {
         "type": {
-          "const": "LinearMarkDisplay"
+          "enum": [
+            "LinearMarkDisplay",
+            "LinearArcDisplay",
+            "LinearPairedArcDisplay"
+          ]
         },
         "displayId": {
           "type": "string"
@@ -14353,7 +14357,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "object",
             "properties": {
               "type": {
-                "const": "LinearMarkDisplay"
+                "enum": [
+                  "LinearMarkDisplay",
+                  "LinearArcDisplay",
+                  "LinearPairedArcDisplay"
+                ]
               }
             },
             "required": [
@@ -16297,7 +16305,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ],
       "properties": {
         "type": {
-          "const": "LinearMarkDisplay"
+          "enum": [
+            "LinearMarkDisplay",
+            "LinearArcDisplay",
+            "LinearPairedArcDisplay"
+          ]
         },
         "id": {
           "type": "string"
@@ -17160,7 +17172,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "object",
             "properties": {
               "type": {
-                "const": "LinearMarkDisplay"
+                "enum": [
+                  "LinearMarkDisplay",
+                  "LinearArcDisplay",
+                  "LinearPairedArcDisplay"
+                ]
               }
             },
             "required": [

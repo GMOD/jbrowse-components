@@ -1297,7 +1297,7 @@ export const figureFrames: Record<
   },
   "protein/connected": {
     "width": 2000,
-    "height": 890
+    "height": 632
   },
   "protein/annotation_1d": {
     "width": 1500,
@@ -1305,15 +1305,15 @@ export const figureFrames: Record<
   },
   "protein/tp53_hotspot": {
     "width": 2000,
-    "height": 1000
+    "height": 912
   },
   "protein/tp53_mapped_chain": {
     "width": 2000,
-    "height": 1000
+    "height": 880
   },
   "protein/tp53_nmr_ensemble": {
     "width": 2000,
-    "height": 1000
+    "height": 912
   },
   "top_level_menus": {
     "width": 1500,

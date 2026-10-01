@@ -6928,6 +6928,10 @@ export const configManifest: ConfigManifest = {
         "minimalTicks",
         "jexlFilters"
       ],
+      "aliases": [
+        "LinearArcDisplay",
+        "LinearPairedArcDisplay"
+      ],
       "stateModelProps": [
         "id",
         "type",

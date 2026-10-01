@@ -8194,7 +8194,11 @@
       ],
       "properties": {
         "type": {
-          "const": "LinearMarkDisplay"
+          "enum": [
+            "LinearMarkDisplay",
+            "LinearArcDisplay",
+            "LinearPairedArcDisplay"
+          ]
         },
         "displayId": {
           "type": "string"
@@ -13605,7 +13609,11 @@
             "type": "object",
             "properties": {
               "type": {
-                "const": "LinearMarkDisplay"
+                "enum": [
+                  "LinearMarkDisplay",
+                  "LinearArcDisplay",
+                  "LinearPairedArcDisplay"
+                ]
               }
             },
             "required": ["type"]
@@ -15437,7 +15445,11 @@
       ],
       "properties": {
         "type": {
-          "const": "LinearMarkDisplay"
+          "enum": [
+            "LinearMarkDisplay",
+            "LinearArcDisplay",
+            "LinearPairedArcDisplay"
+          ]
         },
         "id": {
           "type": "string"
@@ -16235,7 +16247,11 @@
             "type": "object",
             "properties": {
               "type": {
-                "const": "LinearMarkDisplay"
+                "enum": [
+                  "LinearMarkDisplay",
+                  "LinearArcDisplay",
+                  "LinearPairedArcDisplay"
+                ]
               }
             },
             "required": ["type"]
