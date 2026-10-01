@@ -75,6 +75,7 @@ function pointerEvent(
     button: rest.button ?? 0,
     shiftKey: rest.shiftKey ?? false,
     pointerId: 1,
+    isPrimary: true,
     clientX: x,
     target: rest.on ?? null,
     currentTarget: target,
@@ -261,4 +262,36 @@ test('a host can name its own touch-action, or keep the hook off it', () => {
   untouched.current.style.touchAction = 'manipulation'
   renderHook(() => usePanZoom(untouched, makeView(), { touchAction: false }))
   expect(untouched.current.style.touchAction).toBe('manipulation')
+})
+
+test('a second pointer neither takes over the pan nor ends it', () => {
+  const { view, result, target } = setupDrag()
+  const { onPointerDown, onPointerMove, onPointerUp } =
+    result.current.containerProps
+  const withId = (e: React.PointerEvent<HTMLElement>, id: number) =>
+    Object.assign(e, {
+      pointerId: id,
+      isPrimary: id === 1,
+    }) as React.PointerEvent<HTMLElement>
+  act(() => {
+    onPointerDown(withId(pointerEvent(100, target), 1))
+  })
+  act(() => {
+    onPointerDown(withId(pointerEvent(500, target), 2))
+  })
+  act(() => {
+    onPointerMove(withId(pointerEvent(90, target), 1))
+  })
+  expect(view.horizontalScroll.mock.calls).toEqual([[10]])
+
+  act(() => {
+    onPointerMove(withId(pointerEvent(300, target), 2))
+  })
+  act(() => {
+    onPointerUp(withId(pointerEvent(300, target), 2))
+  })
+  act(() => {
+    onPointerMove(withId(pointerEvent(80, target), 1))
+  })
+  expect(view.horizontalScroll.mock.calls).toEqual([[10], [10]])
 })

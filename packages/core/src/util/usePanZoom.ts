@@ -131,7 +131,9 @@ export function usePanZoom(
 ) {
   // `x` is the last position a pan was applied from; `panning` is whether the
   // press has travelled far enough to be a drag at all
-  const dragRef = useRef<{ x: number; panning: boolean } | undefined>(undefined)
+  const dragRef = useRef<
+    { x: number; panning: boolean; pointerId: number } | undefined
+  >(undefined)
   useWheelZoom(ref, view)
 
   // restores rather than clears on the way out: the element may outlive this
@@ -153,6 +155,9 @@ export function usePanZoom(
   }, [ref, touchAction])
 
   function endDrag(event: React.PointerEvent<HTMLElement>) {
+    if (dragRef.current?.pointerId !== event.pointerId) {
+      return
+    }
     dragRef.current = undefined
     // release only what the move handler took — a press that stayed under the
     // threshold never captured anything
@@ -172,7 +177,7 @@ export function usePanZoom(
         // lands on an icon inside the control. Shift is left alone too: it is
         // what a range-select of the host's own would want, and it is what
         // JBrowse's own view uses it for.
-        if (event.button !== 0 || event.shiftKey) {
+        if (!event.isPrimary || event.button !== 0 || event.shiftKey) {
           return
         }
         if (
@@ -184,11 +189,15 @@ export function usePanZoom(
           return
         }
         // Note what this does *not* do: capture the pointer. See onPointerMove.
-        dragRef.current = { x: event.clientX, panning: false }
+        dragRef.current = {
+          x: event.clientX,
+          panning: false,
+          pointerId: event.pointerId,
+        }
       },
       onPointerMove(event: React.PointerEvent<HTMLElement>) {
         const drag = dragRef.current
-        if (!drag) {
+        if (!drag || drag.pointerId !== event.pointerId) {
           return
         }
         if (!drag.panning) {

@@ -83,3 +83,28 @@ test('no read means no yielding', () => {
   jest.advanceTimersByTime(5000)
   expect(value).toBe(100)
 })
+
+test('sub-millisecond frames still advance the simulation', () => {
+  let now = 0
+  jest.spyOn(performance, 'now').mockImplementation(() => now)
+  const frames: FrameRequestCallback[] = []
+  const rafSpy = jest
+    .spyOn(window, 'requestAnimationFrame')
+    .mockImplementation(cb => frames.push(cb))
+  let value = 0
+  const [animate] = springAnimate({
+    from: 0,
+    to: 100,
+    write: v => {
+      value = v
+    },
+  })
+  animate()
+  for (let i = 0; i < 40; i++) {
+    now += 0.5
+    frames.shift()?.(now)
+  }
+  rafSpy.mockRestore()
+  jest.mocked(performance.now).mockRestore()
+  expect(value).toBeGreaterThan(0)
+})

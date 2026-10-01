@@ -42,13 +42,20 @@ const TimeTraveller = types
   .volatile(() => ({
     history: [] as unknown[],
     notTrackingUndo: false,
+    hasPendingRecord: false,
   }))
   .views(self => ({
     get canUndo() {
-      return self.undoIdx > 0 && !self.notTrackingUndo
+      return (
+        (self.undoIdx > 0 || self.hasPendingRecord) && !self.notTrackingUndo
+      )
     },
     get canRedo() {
-      return self.undoIdx < self.history.length - 1 && !self.notTrackingUndo
+      return (
+        self.undoIdx < self.history.length - 1 &&
+        !self.hasPendingRecord &&
+        !self.notTrackingUndo
+      )
     },
   }))
   .actions(self => {
@@ -123,7 +130,22 @@ const TimeTraveller = types
       }
     }
 
+    let recordPending: (() => void) | undefined
+
     return {
+      setHasPendingRecord(value: boolean) {
+        self.hasPendingRecord = value
+      },
+      flushPendingRecord() {
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
+          debounceTimer = undefined
+        }
+        if (self.hasPendingRecord) {
+          self.hasPendingRecord = false
+          recordPending?.()
+        }
+      },
       stopTrackingUndo() {
         self.notTrackingUndo = true
       },
@@ -176,15 +198,18 @@ const TimeTraveller = types
         skipNextUndoState = false
         self.history = []
         self.undoIdx = -1
+        self.hasPendingRecord = false
 
         // read the target's current state rather than a snapshot captured per
         // change: any change inside the debounce window re-times it, so when it
         // does fire the two agree
         const record = () => {
+          this.setHasPendingRecord(false)
           if (targetStore) {
             this.addUndoState(getSnapshot(targetStore))
           }
         }
+        recordPending = record
 
         // onPatch, not onSnapshot: this only needs to know *that* the target
         // changed, and the snapshot is taken once per debounce window below.
@@ -216,19 +241,31 @@ const TimeTraveller = types
               clearTimeout(debounceTimer)
               debounceTimer = undefined
             }
+            this.setHasPendingRecord(false)
             return
           }
 
+          if (!self.hasPendingRecord) {
+            this.setHasPendingRecord(true)
+          }
           armRecording(record)
         })
 
         this.addUndoState(getSnapshot(targetStore))
       },
       undo() {
+        this.flushPendingRecord()
+        if (self.undoIdx <= 0) {
+          return
+        }
         self.undoIdx--
         applyHistoryState(self.undoIdx)
       },
       redo() {
+        this.flushPendingRecord()
+        if (self.undoIdx >= self.history.length - 1) {
+          return
+        }
         self.undoIdx++
         applyHistoryState(self.undoIdx)
       },

@@ -185,22 +185,55 @@ test('re-initializing for a new session resets history', () => {
   expect(root.session.value).toBe(100)
 })
 
-test('undo during pending debounce does not record the undone change', () => {
-  // If the user makes a change (debounce starts) then immediately undoes,
-  // the debounce should be cancelled — we must not add the change to history.
+test('undo during pending debounce records the pending edit first, and the debounce does not fire again', () => {
   const { target, undo } = makeStores()
 
   target.setValue(1)
   flushDebounce()
-  // history: [0, 1], undoIdx=1
-
   target.setValue(2)
-  // debounce is now pending but not yet fired
 
   undo.undo()
-  // undo to value=0, debounce must be cancelled
+  expect(target.value).toBe(1)
+  flushDebounce()
+  expect(target.value).toBe(1)
+  expect(undo.history).toHaveLength(3)
+})
 
-  // don't flush — if debounce still fired it would add value=2 back
+test('undo inside the debounce window keeps the pending edit as a step', () => {
+  const { target, undo } = makeStores()
+  target.setValue(1)
+  expect(undo.canUndo).toBe(true)
+  undo.undo()
   expect(target.value).toBe(0)
-  expect(undo.history).toHaveLength(2) // only [0, 1], not [0, 1, 2]
+  expect(undo.canRedo).toBe(true)
+  undo.redo()
+  expect(target.value).toBe(1)
+})
+
+test('undo with a pending edit goes to the last recorded state, not past it', () => {
+  const { target, undo } = makeStores()
+  target.setValue(1)
+  flushDebounce()
+  target.setValue(2)
+  undo.undo()
+  expect(target.value).toBe(1)
+  undo.redo()
+  expect(target.value).toBe(2)
+})
+
+test('redo is unavailable while an edit is pending, and redo records that edit instead', () => {
+  const { target, undo } = makeStores()
+
+  target.setValue(1)
+  flushDebounce()
+  undo.undo()
+  expect(undo.canRedo).toBe(true)
+
+  target.setValue(5)
+  expect(undo.canRedo).toBe(false)
+  expect(undo.canUndo).toBe(true)
+
+  undo.redo()
+  expect(target.value).toBe(5)
+  expect(undo.history).toHaveLength(2)
 })

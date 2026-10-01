@@ -103,7 +103,7 @@ export function springAnimate({
       animationFrameId = requestAnimationFrame(() => {
         update({
           lastPosition: position,
-          lastTime: time,
+          lastTime: lastTime + numSteps,
           lastVelocity: velocity,
         })
       })

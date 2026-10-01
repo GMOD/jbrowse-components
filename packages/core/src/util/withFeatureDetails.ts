@@ -1,5 +1,6 @@
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
+import { isAbortException } from './aborting.ts'
 import { notifyFeatureDetailsMiss } from './openFeatureWidget.ts'
 import { getNotificationSink } from './sessionServices.ts'
 
@@ -56,6 +57,9 @@ export async function withFeatureDetails(
       onMiss()
     }
   } catch (e) {
+    if (isAbortException(e)) {
+      return
+    }
     // Logged whatever happened, and only toasted while the display is still
     // there: `getSession` throws on a detached node, and a message naming a
     // track the user has already closed is noise they cannot act on.

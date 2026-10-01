@@ -108,3 +108,15 @@ test('unmount cancels a pending commit', () => {
 
   expect(onCommit).not.toHaveBeenCalled()
 })
+
+test('schedule still requests a frame after the effect cleanup ran', () => {
+  const onCommit = jest.fn()
+  const { unmount } = render(<Harness onCommit={onCommit} />)
+  api.schedule(1)
+  const { schedule } = api
+  unmount()
+  expect(rafMap.size).toBe(0)
+
+  schedule(2)
+  expect(rafMap.size).toBe(1)
+})

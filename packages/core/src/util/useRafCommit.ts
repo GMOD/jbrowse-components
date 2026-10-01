@@ -21,6 +21,7 @@ export function useRafCommit(commit: (value: number) => void) {
       const pending = pendingRef.current
       if (pending) {
         cancelAnimationFrame(pending.id)
+        pendingRef.current = undefined
       }
     },
     [],
