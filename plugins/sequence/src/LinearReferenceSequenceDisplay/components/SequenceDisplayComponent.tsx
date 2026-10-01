@@ -43,7 +43,7 @@ const SequenceBody = observer(function SequenceBody({
   model: LinearReferenceSequenceDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
 }) {
-  const { placeholderMessage } = model
+  const { placeholderMessage, canvasWidthPx, height } = model
   return placeholderMessage ? (
     <TrackOverlayPortal>
       <Alert severity="info">{placeholderMessage}</Alert>
@@ -52,7 +52,7 @@ const SequenceBody = observer(function SequenceBody({
     <>
       <canvas
         ref={canvasRef}
-        style={{ width: '100%', height: '100%', display: 'block' }}
+        style={{ width: canvasWidthPx, height, display: 'block' }}
       />
       <SequenceLetters model={model} />
     </>

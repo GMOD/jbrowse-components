@@ -21,9 +21,11 @@ import type { MarkFrame, MarkShape } from '@jbrowse/render-core/marks'
 export const BORDER_COLOR = 'rgb(85,85,85)'
 const BORDER_ABGR = cssColorToABGR(BORDER_COLOR)
 
-// What each fill reaches past its right edge on Canvas2D, closing the hairline
-// two antialiased fillRects leave where abutting cells meet on a fractional
-// pixel. The GPU tiles exactly and needs none.
+// What each fill reaches past its edge toward the next cell painted, closing the
+// hairline two antialiased fillRects leave where abutting cells of different
+// colours meet on a fractional pixel; the next cell then paints over it, so the
+// overdraw goes left on a reversed block. Same-coloured neighbours are painted
+// as one run. The GPU tiles exactly and needs neither.
 const SEAM_PX = 0.4
 
 export interface SequenceMarkState extends MarkFrame {
@@ -41,14 +43,9 @@ interface CellBox {
   width: number
 }
 
-function placeCell(
-  c: SequenceCellChannels,
-  g: BpProjection,
-  i: number,
-  box: CellBox,
-) {
-  const xa = projectBp(g, c.x[i]!)
-  const xb = projectBp(g, c.x2[i]!)
+function placeSpan(g: BpProjection, x: number, x2: number, box: CellBox) {
+  const xa = projectBp(g, x)
+  const xb = projectBp(g, x2)
   box.width = Math.abs(xb - xa)
   box.left = spanLeft(xa, xb, box.width)
 }
@@ -79,22 +76,35 @@ export const sequenceCellShape: MarkShape<
     const g = bpProjection(block)
     const box = { left: 0, width: 0 }
     const setFill = makeAbgrFill(ctx)
-    for (let i = 0; i < c.count; i++) {
-      placeCell(c, g, i, box)
-      setFill(c.color[i]!)
+    const seamLeft = block.reversed ? SEAM_PX : 0
+    for (let i = 0; i < c.count;) {
+      const color = c.color[i]!
+      const row = c.row[i]!
+      let j = i + 1
+      while (
+        j < c.count &&
+        c.color[j] === color &&
+        c.row[j] === row &&
+        c.x[j] === c.x2[j - 1]
+      ) {
+        j++
+      }
+      placeSpan(g, c.x[i]!, c.x2[j - 1]!, box)
+      setFill(color)
       ctx.fillRect(
-        box.left,
-        c.row[i]! * rowHeight,
+        box.left - seamLeft,
+        row * rowHeight,
         box.width + SEAM_PX,
         rowHeight,
       )
+      i = j
     }
     if (showBorders) {
       ctx.strokeStyle = BORDER_COLOR
       ctx.lineWidth = shader.CELL_BORDER_PX
       for (let i = 0; i < c.count; i++) {
         if (c.bordered[i]) {
-          placeCell(c, g, i, box)
+          placeSpan(g, c.x[i]!, c.x2[i]!, box)
           ctx.strokeRect(box.left, c.row[i]! * rowHeight, box.width, rowHeight)
         }
       }
@@ -103,13 +113,15 @@ export const sequenceCellShape: MarkShape<
 
   ink(c, block, _frame, { rowHeight, showBorders }, i) {
     const box = { left: 0, width: 0 }
-    placeCell(c, bpProjection(block), i, box)
+    placeSpan(bpProjection(block), c.x[i]!, c.x2[i]!, box)
     const top = c.row[i]! * rowHeight
     const half = showBorders && c.bordered[i] ? shader.CELL_BORDER_PX / 2 : 0
+    const left = Math.max(half, block.reversed ? SEAM_PX : 0)
+    const right = Math.max(half, block.reversed ? 0 : SEAM_PX)
     return {
-      left: box.left - half,
+      left: box.left - left,
       top: top - half,
-      width: box.width + half + Math.max(SEAM_PX, half),
+      width: box.width + left + right,
       height: rowHeight + 2 * half,
     }
   },

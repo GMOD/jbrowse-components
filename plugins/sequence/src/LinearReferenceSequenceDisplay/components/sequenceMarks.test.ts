@@ -192,34 +192,61 @@ describe('sequence cell hit test', () => {
 })
 
 describe('sequence cell geometry on a reversed block', () => {
-  function firstFill(reversed: boolean, mark = BASE_MARK) {
-    const { ctx, calls } = recordingContext()
-    mark.paintBlock(ctx, encode(reversed, true), block(reversed), {
-      ...state,
-      showLetters: false,
-    })
-    return calls
+  const unbordered = { ...state, showLetters: false }
+
+  // within half a pixel: the ink carries the painter's seam, and a one-base
+  // error is 20px
+  function leftOf(
+    channels: SequenceCellChannels,
+    i: number,
+    reversed: boolean,
+  ) {
+    return CELL_MARK.ink!(channels, block(reversed), unbordered, i)!.left
   }
 
   test('the base at START sits at the low edge forward, the high edge reversed', () => {
-    expect(firstFill(false)[0]!.x).toBeCloseTo(0)
-    expect(firstFill(true)[0]!.x).toBeCloseTo(BLOCK_WIDTH - PX_PER_BP)
+    const at = (reversed: boolean) =>
+      leftOf(encode(reversed).bases, 0, reversed)
+    expect(at(false)).toBeCloseTo(0, 0)
+    expect(at(true)).toBeCloseTo(BLOCK_WIDTH - PX_PER_BP, 0)
   })
 
   // START % 3 === 1, so frame +1's grid starts 2 bases in: the first whole
   // codon is [START+2, START+5), and reversed its leftmost edge is its end.
   test('a codon is anchored at its end on a reversed block', () => {
     for (const reversed of [false, true]) {
+      const { codons } = encode(reversed, true)
       const s = { showForward: true, showReverse: true, showTranslation: true }
       const slot = rowLayout(s, reversed).findIndex(
         r => r.type === 'translation' && r.frame === 1,
       )
-      const codon = firstFill(reversed, CODON_MARK).find(
-        r => r.y === slot * state.rowHeight && r.w > 3 * PX_PER_BP - 0.001,
-      )!
-      expect(codon.x).toBeCloseTo(
+      const i = [...codons.x].findIndex(
+        (x, k) => codons.row[k] === slot && x === START + 2,
+      )
+      expect(leftOf(codons, i, reversed)).toBeCloseTo(
         reversed ? BLOCK_WIDTH - 5 * PX_PER_BP : 2 * PX_PER_BP,
+        0,
       )
     }
+  })
+
+  test('the painter fills a run of same-coloured cells as one rect', () => {
+    const { ctx, calls } = recordingContext()
+    const cells = encodeSequenceCells(
+      { seq: 'AAAC', start: START, geneticCodeId: 1 },
+      {
+        showForward: true,
+        showReverse: false,
+        showTranslation: false,
+        isDna: true,
+        palette,
+      },
+      true,
+    )
+    CELL_MARK.paintBlock(ctx, cells.bases, block(true), unbordered)
+    expect(calls.map(r => [r.x, r.w])).toEqual([
+      [BLOCK_WIDTH - 3 * PX_PER_BP - 0.4, 3 * PX_PER_BP + 0.4],
+      [BLOCK_WIDTH - 4 * PX_PER_BP - 0.4, PX_PER_BP + 0.4],
+    ])
   })
 })

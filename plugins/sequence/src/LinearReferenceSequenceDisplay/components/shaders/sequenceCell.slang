@@ -1,7 +1,8 @@
 // One cell of the reference sequence stack: a base, a codon, or the partial
 // codon at a region's edge, filled across [x, x2) on its row. Once letters
-// show, a bordered cell also draws its half of the 1px grid line Canvas2D's
-// `strokeRect` centres on each edge; the neighbour draws the other half.
+// show, a bordered cell also draws its half of the 1px line Canvas2D's
+// `strokeRect` centres on each edge, at the coverage that stroke gives a
+// pixel; the neighbour draws the other half.
 //! targets: wgsl, glsl
 //! instance-writer
 //! export-consts: CELL_BORDER_PX
@@ -68,11 +69,12 @@ VsOut vs_main(SequenceCellInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
-  if (v.bordered != 0u) {
-    float2 edge = min(v.localPx, v.sizePx - v.localPx);
-    if (min(edge.x, edge.y) < CELL_BORDER_PX * 0.5) {
-      return unpackRGBA(u.borderColor);
-    }
+  // derivatives before the branch: `bordered` varies per instance
+  float2 cssPerDevicePx = max(fwidth(v.localPx), float2(1e-6));
+  if (v.bordered == 0u) {
+    return v.color;
   }
-  return v.color;
+  float2 edge = min(v.localPx, v.sizePx - v.localPx);
+  float2 cover = saturate((CELL_BORDER_PX * 0.5 - edge) / cssPerDevicePx + 0.5);
+  return lerp(v.color, unpackRGBA(u.borderColor), max(cover.x, cover.y));
 }
