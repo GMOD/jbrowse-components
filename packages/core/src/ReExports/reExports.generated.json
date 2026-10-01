@@ -5021,6 +5021,7 @@
         "linkMark",
         "makeAbgrFill",
         "nearestMarkHit",
+        "paintColors",
         "paintMarkBlocks",
         "planMarks",
         "pointInsetPx",
