@@ -125,12 +125,9 @@ gzip -dc strain.gff.gz | awk -F'\t' '$3 == "gene" && $9 ~ /;gene=/' | wc -l
 One `SyntenyTrack` names all forty-four assemblies, each of which is a
 `ChromSizesAdapter` over its chromosome's length, since the lanes never read
 sequence. `blockAssemblies` and `bedLocations` are positional against the
-table's columns, in the order the helper printed; the list below is cut to the
-first four for the page. The adapter decompresses the gzipped table and BEDs
-itself, reading each file whole before the first lane draws. At the default
-height the display keeps every lane at a readable pitch and scrolls the stack
-inside the track; the `height` here sizes the track to the whole stack, so the
-figure below shows every lane at once:
+table's columns, in the order the helper printed; the config below keeps the
+four genomes the command above joined. The adapter decompresses the gzipped
+table and BEDs itself, reading each file whole before the first lane draws:
 
 ```json addtrack
 {
@@ -152,8 +149,7 @@ figure below shows every lane at once:
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
-      "color": { "field": "cluster" },
-      "height": 970
+      "color": { "field": "cluster" }
     }
   ]
 }
@@ -171,7 +167,9 @@ in the top right turns a color back into a group's name, and _Show legend_ on
 the track menu puts it away. The display leaves it out where it would run to a
 list, which is any window holding more than thirty groups. Lanes stack densest
 first, so the genomes placing the most of the window sit at the top and the
-reduced Shigella genomes fall toward the bottom without anything naming them.
+reduced Shigella genomes fall toward the bottom without anything naming them. At
+the default height the display scrolls the stack inside the track; the session
+below sets a `height` that fits every lane:
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {
@@ -186,7 +184,7 @@ reduced Shigella genomes fall toward the bottom without anything naming them.
           {
             "trackId": "ecoli_orthologs",
             "type": "MultiWaySyntenyDisplay",
-            "height": 970
+            "height": 1500
           }
         ]
       }
@@ -212,7 +210,29 @@ Every O-antigen cluster carries a flippase and a polymerase under those names,
 though their sequences differ between serotypes, and O-serotype PCR typing
 relies on that difference. The genes between them draw grey below the K-12
 derivatives: they are the serotype's sugar pathway, and a window anchored on
-K-12 draws only the rows holding a K-12 gene.
+K-12 draws only the rows holding a K-12 gene. Open the cluster:
+
+```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
+{
+  "defaultSession": {
+    "name": "The O-antigen cluster across 44 genomes",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "MG1655",
+        "loc": "NC_000913.3:2,095,000-2,115,000",
+        "tracks": [
+          {
+            "trackId": "ecoli_orthologs",
+            "type": "MultiWaySyntenyDisplay",
+            "height": 1500
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
 <Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, gnd, ugd and wzzB chains run through, the rfb genes, wzx and wzy join where a strain carries them, and the serotype-specific genes between them are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
