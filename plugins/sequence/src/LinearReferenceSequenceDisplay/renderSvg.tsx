@@ -2,11 +2,15 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
-import { drawSequenceBlocks } from './components/drawSequence.ts'
+import { drawSequenceLetters } from './components/drawSequenceLetters.ts'
+import { encodeSequenceCells } from './components/sequenceCells.ts'
 import { buildColorPalette } from './components/sequenceGeometry.ts'
+import { SEQUENCE_MARKS } from './components/sequenceMarks.ts'
 
-import type { DrawSequenceState } from './components/drawSequence.ts'
+import type { SequenceRenderState } from './components/drawSequenceLetters.ts'
+import type { CellEncoding } from './components/sequenceCells.ts'
 import type { SequenceRegionData } from './model.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -20,7 +24,8 @@ interface SequenceDisplayModel extends SvgExportable {
   view: LinearGenomeViewModel
   height: number
   sequenceData: ReadonlyMap<number, SequenceRegionData>
-  renderState: DrawSequenceState
+  renderState: SequenceRenderState
+  cellEncoding: CellEncoding
   // terminal static-message state (zoomed past base resolution, or every row
   // toggled off), folded into svgReady via fetchInert; still read
   // here to skip painting bases
@@ -50,7 +55,7 @@ function SequenceSvgBody({
 
   // The export theme can differ from the session theme, so rebuild the palette
   // here and reuse the rest of the live renderState.
-  const state: DrawSequenceState = {
+  const state: SequenceRenderState = {
     ...model.renderState,
     // canvasWidth is the block scissor bound, so it has to be the width this
     // layer is actually painted at — see LgvSvgBodyProps.canvasWidth.
@@ -61,15 +66,25 @@ function SequenceSvgBody({
     ),
   }
 
-  // Sequence is text-heavy; routed through PaintLayer so rasterizeLayers can
-  // PNG-embed when set, but the default (vector) path keeps letters crisp.
+  const encoding = { ...model.cellEncoding, palette: state.palette }
+  const { displayedRegions } = model.view
+  const cells = new Map(
+    [...sequenceData].map(([key, data]) => [
+      key,
+      encodeSequenceCells(data, encoding, !!displayedRegions[key]?.reversed),
+    ]),
+  )
+
+  // routed through PaintLayer so rasterizeLayers can PNG-embed when set, but
+  // the default (vector) path keeps letters crisp
   return (
     <PaintLayer
       width={canvasWidth}
       height={height}
       opts={opts}
       paint={ctx => {
-        drawSequenceBlocks(ctx, sequenceData, renderBlocks, state)
+        paintMarkBlocks(ctx, SEQUENCE_MARKS, cells, renderBlocks, state)
+        drawSequenceLetters(ctx, sequenceData, renderBlocks, state)
       }}
     />
   )

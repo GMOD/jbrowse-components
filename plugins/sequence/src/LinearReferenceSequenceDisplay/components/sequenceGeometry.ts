@@ -143,6 +143,11 @@ export function rowCount(visibility: RowVisibility) {
   return rowLayout(visibility, false).length
 }
 
+/** Whether a base is wide enough, in px, to carry a border and a letter. */
+export function showsLetters(bpPerPx: number) {
+  return 1 / bpPerPx >= 12
+}
+
 const startsSet = new Set(defaultStarts)
 
 export type CodonKind = 'start' | 'stop' | 'normal'

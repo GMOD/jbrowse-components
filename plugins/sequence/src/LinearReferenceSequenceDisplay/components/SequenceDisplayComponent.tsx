@@ -2,13 +2,37 @@ import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer, TrackOverlayPortal } from '@jbrowse/display-ui'
+import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { SequenceRenderer } from './Canvas2DSequenceRenderer.ts'
+import { drawSequenceLetters } from './drawSequenceLetters.ts'
+import { SEQUENCE_MARKS } from './sequenceMarks.ts'
 
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
 import type { SequenceHover } from './sequenceHover.ts'
+
+function createSequenceBackend(canvas: HTMLCanvasElement) {
+  return createMarkBackend(canvas, SEQUENCE_MARKS)
+}
+
+const SequenceLetters = observer(function SequenceLetters({
+  model,
+}: {
+  model: LinearReferenceSequenceDisplayModel
+}) {
+  const { sequenceData, renderBlocks, renderState } = model
+  return renderState.showLetters ? (
+    <OverlayCanvas
+      width={renderState.canvasWidth}
+      height={renderState.canvasHeight}
+      draw={ctx => {
+        drawSequenceLetters(ctx, sequenceData, renderBlocks, renderState)
+      }}
+    />
+  ) : null
+})
 
 const SequenceBody = observer(function SequenceBody({
   model,
@@ -23,10 +47,13 @@ const SequenceBody = observer(function SequenceBody({
       <Alert severity="info">{placeholderMessage}</Alert>
     </TrackOverlayPortal>
   ) : (
-    <canvas
-      ref={canvasRef}
-      style={{ width: '100%', height: '100%', display: 'block' }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        style={{ width: '100%', height: '100%', display: 'block' }}
+      />
+      <SequenceLetters model={model} />
+    </>
   )
 })
 
@@ -70,7 +97,7 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
   return (
     <DisplayChrome
       model={model}
-      factory={SequenceRenderer}
+      factory={createSequenceBackend}
       testid="sequence-display"
       style={{ width: '100%' }}
     >

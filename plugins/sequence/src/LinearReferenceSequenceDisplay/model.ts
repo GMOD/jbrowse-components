@@ -25,16 +25,18 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
+import { encodeSequenceCells } from './components/sequenceCells.ts'
 import {
   buildColorPalette,
   rowCount,
   rowLayout,
+  showsLetters,
 } from './components/sequenceGeometry.ts'
 import { hoverDetailForRow } from './components/sequenceHover.ts'
 
 import type { ReferenceSeqTrackConfigModel } from '../ReferenceSequenceTrack/configSchema.ts'
-import type { Canvas2DSequenceRenderer } from './components/Canvas2DSequenceRenderer.ts'
-import type { DrawSequenceState } from './components/drawSequence.ts'
+import type { SequenceRenderState } from './components/drawSequenceLetters.ts'
+import type { CellEncoding, SequenceCells } from './components/sequenceCells.ts'
 import type {
   ColorPalette,
   RowVisibility,
@@ -44,6 +46,7 @@ import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.t
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 /**
  * `sequenceType` is the ReferenceSequenceTrack's own slot, not a base track
@@ -293,17 +296,28 @@ export function modelFactory(
     .views(self => ({
       /**
        * #getter
-       * everything the Canvas2D backend needs to paint a frame
+       * everything the marks and the letters need to paint a frame
        */
-      get renderState(): DrawSequenceState {
+      get renderState(): SequenceRenderState {
         return {
           ...self.rowVisibility,
-          bpPerPx: self.host.bpPerPx,
+          showLetters: showsLetters(self.host.bpPerPx),
           isDna: self.isDna,
           rowHeight: self.rowHeight,
           palette: self.colorPalette,
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
+        }
+      },
+      /**
+       * #getter
+       * What the cells' encode reads beyond the sequence itself
+       */
+      get cellEncoding(): CellEncoding {
+        return {
+          ...self.rowVisibility,
+          isDna: self.isDna,
+          palette: self.colorPalette,
         }
       },
     }))
@@ -333,16 +347,21 @@ export function modelFactory(
     .actions(self => ({
       /**
        * #action
-       * Called by `useRenderingBackend` (via DisplayChrome) once the canvas
-       * backend is created. Streams each fetched region into the backend and
-       * draws every frame from `renderState`.
        */
-      startRenderingBackend(backend: Canvas2DSequenceRenderer) {
+      startRenderingBackend(
+        backend: PerRegionRenderingBackend<SequenceCells, SequenceRenderState>,
+      ) {
         installUpload(self, backend, {
           cells: () => self.sequenceData,
-          render: (b, regions) =>
+          inputs: () => ({
+            encoding: self.cellEncoding,
+            reversed: self.view.displayedRegions.map(r => !!r.reversed),
+          }),
+          encode: (data, { encoding, reversed }, key) =>
+            encodeSequenceCells(data, encoding, !!reversed[key]),
+          render: (b, encoded) =>
             self.rendersCanvas &&
-            b.renderBlocks(self.renderBlocks, regions, self.renderState),
+            b.renderBlocks(self.renderBlocks, encoded, self.renderState),
         })
       },
       async fetchNeeded(needed: IndexedRegion[]) {
