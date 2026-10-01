@@ -349,6 +349,51 @@ describe('cachedSetup', () => {
     // joining mid-download still gets told what it is waiting on
     expect(second).toEqual(['Downloading index', ''])
   })
+
+  it('hands byte progress to a caller that rejoined after the starter aborted', async () => {
+    let report: ((current: number, total?: number) => void) | undefined
+    let land: (v: string) => void = () => {}
+    const setup = cachedSetup({
+      label: 'Downloading index',
+      setup: (_opts, onProgress) =>
+        new Promise<string>(resolve => {
+          report = onProgress
+          land = resolve
+        }),
+    })
+    const a = new AbortController()
+    const first = setup({ signal: a.signal, statusCallback: () => {} })
+    a.abort()
+    await expect(first).rejects.toMatchObject({ name: 'AbortError' })
+    const seen: RpcStatus[] = []
+    const rejoined = setup({
+      statusCallback: s => {
+        seen.push(s)
+      },
+    })
+    report!(50, 100)
+    land('index')
+    await rejoined
+    expect(seen).toContainEqual(
+      expect.objectContaining({
+        message: 'Downloading index',
+        current: 50,
+        total: 100,
+      }),
+    )
+  })
+
+  it('hands no progress reporter to a setup without a label', async () => {
+    let received: unknown = 'unset'
+    const setup = cachedSetup({
+      setup: async (_opts, onProgress) => {
+        received = onProgress
+        return 'records'
+      },
+    })
+    await setup({ statusCallback: () => {} })
+    expect(received).toBeUndefined()
+  })
 })
 
 describe('createSharedSetup', () => {

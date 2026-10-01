@@ -47,7 +47,9 @@ export const ABANDONED_SETUP_GRACE_MS = 100
  * a whole-file fetch driving its own download bar — since two labels for one
  * download is worse than one, and phases nest (see `openPhase` in progress.ts).
  * `onProgress` is for handing to an index reader that can upgrade the label to a
- * determinate bar.
+ * determinate bar; like the status, it fans out to every live waiter. It is
+ * undefined without a `label`, so a setup that narrates itself never opts its
+ * reads into streamed progress.
  */
 export function cachedSetup<T>({
   setup,
@@ -59,11 +61,7 @@ export function cachedSetup<T>({
   let flight: Flight<T> | undefined
   let resident: { value: T } | undefined
 
-  const launch = (
-    started: Flight<T>,
-    opts: BaseOptions,
-    onProgress?: OnProgress,
-  ) =>
+  const launch = (started: Flight<T>, opts: BaseOptions) =>
     setup(
       {
         ...opts,
@@ -74,7 +72,13 @@ export function cachedSetup<T>({
           }
         },
       },
-      onProgress,
+      label === undefined
+        ? undefined
+        : (current, total) => {
+            for (const report of started.reporters.keys()) {
+              report(current, total)
+            }
+          },
     ).then(
       value => {
         clearTimeout(started.grace)
@@ -104,17 +108,14 @@ export function cachedSetup<T>({
     const started: Flight<T> = (flight ??= {
       controller: new AbortController(),
       waiting: new Map(),
+      reporters: new Map(),
       live: 0,
     })
     clearTimeout(started.grace)
     started.live++
-    if (statusCallback) {
-      started.waiting.set(
-        statusCallback,
-        (started.waiting.get(statusCallback) ?? 0) + 1,
-      )
-    }
-    const promise = (started.promise ??= launch(started, opts, onProgress))
+    count(started.waiting, statusCallback)
+    count(started.reporters, onProgress)
+    const promise = (started.promise ??= launch(started, opts))
     return new Promise<T>((resolve, reject) => {
       let joined = true
       const leave = () => {
@@ -122,14 +123,8 @@ export function cachedSetup<T>({
           joined = false
           signal?.removeEventListener('abort', onAbort)
           started.live--
-          if (statusCallback) {
-            const count = started.waiting.get(statusCallback)! - 1
-            if (count > 0) {
-              started.waiting.set(statusCallback, count)
-            } else {
-              started.waiting.delete(statusCallback)
-            }
-          }
+          uncount(started.waiting, statusCallback)
+          uncount(started.reporters, onProgress)
         }
       }
       const onAbort = () => {
@@ -158,9 +153,27 @@ export function cachedSetup<T>({
   }
 }
 
+function count<K>(counts: Map<K, number>, key: K | undefined) {
+  if (key) {
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+}
+
+function uncount<K>(counts: Map<K, number>, key: K | undefined) {
+  if (key) {
+    const left = counts.get(key)! - 1
+    if (left > 0) {
+      counts.set(key, left)
+    } else {
+      counts.delete(key)
+    }
+  }
+}
+
 interface Flight<T> {
   controller: AbortController
   waiting: Map<StatusCallback, number>
+  reporters: Map<OnProgress, number>
   live: number
   grace?: ReturnType<typeof setTimeout>
   promise?: Promise<T>
