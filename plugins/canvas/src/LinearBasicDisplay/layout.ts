@@ -66,8 +66,7 @@ function sectionOrder(inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>) {
 }
 
 function sectionAssignment(
-  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
-  inputs: LabelRoomFactorFreeInputs,
+  inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>,
 ) {
   const facet = effectiveFacet(inputs)
   return facet ? sectionIdsOf(facet) : undefined
@@ -277,7 +276,7 @@ function layoutRefGroups(
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
   const metrics = displayModeMetrics(inputs)
-  const sectionOf = sectionAssignment(rpcDataMap, inputs)
+  const sectionOf = sectionAssignment(inputs)
   const out = new Map<number, FeatureDataResult>()
   const collapsedIds = new Set<string>()
   const refs = [...groupRawByRef(rpcDataMap).values()].map(regions => ({
@@ -407,7 +406,7 @@ export function createPackHeightProbe(
     if (!prepared || prepared.bodyScale !== bodyScale) {
       const prepInputs: PackPrepInputs = { ...inputs, bodyScale }
       const metrics = displayModeMetrics(prepInputs)
-      const sectionOf = sectionAssignment(rpcDataMap, prepInputs)
+      const sectionOf = sectionAssignment(prepInputs)
       prepared = {
         bodyScale,
         metrics,

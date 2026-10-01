@@ -6,6 +6,7 @@ import {
   resolveFeatureHighlights,
   warnUnresolvedHighlights,
 } from './featureHighlight.ts'
+import { createMembershipMemo } from './layoutQueries.ts'
 
 import type {
   FeatureHighlight,
@@ -34,7 +35,7 @@ export interface FeatureHoverHost {
 }
 
 export function featureHighlightViews(self: FeatureHighlightHost) {
-  let heldPinned: ReadonlySet<string> | undefined
+  const samePinned = createMembershipMemo()
   return {
     /**
      * #getter
@@ -87,13 +88,7 @@ export function featureHighlightViews(self: FeatureHighlightHost) {
       if (highlighted.size === 0) {
         return self.pinnedFeatureIdSet
       }
-      const next = new Set([...self.pinnedFeatureIds, ...highlighted])
-      const held = heldPinned
-      if (held?.size === next.size && [...next].every(id => held.has(id))) {
-        return held
-      }
-      heldPinned = next
-      return next
+      return samePinned(new Set([...self.pinnedFeatureIds, ...highlighted]))
     },
 
     /**

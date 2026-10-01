@@ -24,8 +24,6 @@ import {
 } from './labelReservation.ts'
 import { bodyHeightPx } from './layoutInputs.ts'
 import { strandArrowReachPx } from './marks/strandArrow.ts'
-// Safe from this eager module: a `.js.generated.ts` holds the lifted scalar
-// functions only, never the shader source.
 import { OFFSCREEN_Y } from './rowPlacement.ts'
 
 import type {
