@@ -1,7 +1,9 @@
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 
 import {
   baseRowComplemented,
+  buildColorPalette,
   codonKind,
   frameShiftBounds,
   rowCount,
@@ -155,4 +157,16 @@ test('codonKind stops follow the genetic code (vertebrate mitochondrial)', () =>
   expect(codonKind('AGG', vertebrateMito)).toBe('stop')
   // ATG start highlighting is unchanged across codes
   expect(codonKind('ATG', vertebrateMito)).toBe('start')
+})
+
+test('translation rows letter mid greys in black', () => {
+  const { frames } = buildColorPalette(resolvePalette(), false)
+  for (const frame of [1, 2, 3, -1, -2, -3] as const) {
+    expect(frames.get(frame)!.text).toBe('rgba(0, 0, 0, 0.87)')
+  }
+})
+
+test('dark-mode translation rows keep white letters', () => {
+  const { frames } = buildColorPalette(resolvePalette({ mode: 'dark' }), false)
+  expect(frames.get(3)!.text).toBe('#fff')
 })

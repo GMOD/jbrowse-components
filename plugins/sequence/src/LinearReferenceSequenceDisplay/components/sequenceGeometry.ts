@@ -1,4 +1,4 @@
-import { getContrastText } from '@jbrowse/core/ui/palette'
+import { getContrastRatio, getContrastText } from '@jbrowse/core/ui/palette'
 import { defaultStarts } from '@jbrowse/core/util'
 
 import type { ColorQuad, JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -41,6 +41,20 @@ function fromString(fill: string): SeqColor {
   return { fill, text: getContrastText(fill) }
 }
 
+// The translation rows are mid greys, where the palette's 3:1 rule picks white
+// though black reads twice as well, so these take whichever reads better.
+function fromFrameQuad({ main }: ColorQuad): SeqColor {
+  const dark = 'rgba(0, 0, 0, 0.87)'
+  const light = '#fff'
+  return {
+    fill: main,
+    text:
+      getContrastRatio(main, '#000') >= getContrastRatio(main, light)
+        ? dark
+        : light,
+  }
+}
+
 export function buildColorPalette(
   palette: JBrowsePalette,
   colorByCDS: boolean,
@@ -65,7 +79,7 @@ export function buildColorPalette(
     frames: new Map(
       ([1, 2, 3, -1, -2, -3] as Frame[]).map(frame => [
         frame,
-        fromQuad(framePalette.at(frame)!),
+        fromFrameQuad(framePalette.at(frame)!),
       ]),
     ),
     start: fromString(palette.startCodon),
