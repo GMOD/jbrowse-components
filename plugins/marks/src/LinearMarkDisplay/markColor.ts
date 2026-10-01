@@ -89,11 +89,16 @@ export function wireColorOf(color: MarkColor): ColorEncoding {
   }
 }
 
-/** The lanes the worker fills for the colour. */
+/**
+ * The lanes the worker fills for the colour: none for a constant, which the
+ * stamp writes whole, so a switch between a constant and a colour over `y`
+ * asks the worker for nothing new.
+ */
 export function colorLanesOf(color: MarkColor): MarkLane[] {
   switch (color.kind) {
-    case 'worker':
     case 'constant':
+      return []
+    case 'worker':
       return ['color']
     case 'categorical':
       return ['colorKey']
@@ -190,11 +195,30 @@ function categoricalLayer<L extends EncodedChannels>(
   }
 }
 
-// A layer fetched under another form of colour, while its refetch is pending:
-// its keys painted as the worker's table did, so it stays drawn, and any
-// other lane as it came.
+const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
+
+// A layer fetched under another form of colour, while its refetch is pending,
+// stays drawn as the field it holds reads on its own: keys in the field's own
+// colours, numbers through a linear ramp over them, and the default colour
+// where it holds none; a `jexl:` callback's colours as they came.
 function heldLayer<L extends EncodedChannels>(layer: L): L {
-  return layer.colorKey ? categoricalLayer(layer, layer.colorKey) : layer
+  const read = layer.scale
+  if (layer.colorKey) {
+    return categoricalLayer(layer, layer.colorKey)
+  }
+  if (layer.colorValue && read) {
+    const own: ContinuousRef = { field: read.field, scale: 'linear' }
+    return {
+      ...layer,
+      scale:
+        layer.count > 0
+          ? valueScaleTable(layer.colorValue, layer.count, own, read)
+          : undefined,
+    }
+  }
+  return layer.color === undefined && !layer.colorValue
+    ? { ...layer, color: DEFAULT_ABGR }
+    : layer
 }
 
 /**
@@ -224,7 +248,7 @@ export function withMarkColor<L extends EncodedChannels>(
     case 'categorical':
       return layer.colorKey
         ? categoricalLayer(layer, layer.colorKey, color.encoding)
-        : layer
+        : heldLayer(layer)
     case 'value': {
       const { readsY, encoding } = color
       const read = layer.scale
@@ -235,6 +259,7 @@ export function withMarkColor<L extends EncodedChannels>(
       return {
         ...layer,
         colorValue: values,
+        colorKey: undefined,
         scale:
           layer.count > 0
             ? valueScaleTable(values, layer.count, encoding, read)

@@ -14,7 +14,6 @@ import {
   pluralize,
 } from '@jbrowse/core/util'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { rampDomain } from '@jbrowse/core/util/colorRamp'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
@@ -32,7 +31,6 @@ import {
 import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
-import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
@@ -108,6 +106,7 @@ import {
   keySettingOf,
   markColorScales,
   markConstantColor,
+  paintScaleOf,
 } from './legend.ts'
 import { createLinkOwners, withMateRegions } from './linkOwners.ts'
 import { baselineReached, layerSpans } from './markAutoscale.ts'
@@ -1208,27 +1207,9 @@ export function stateModelFactory(
          */
         get paintScales(): (MarkColorScale | undefined)[] {
           const sections = this.legendSections
-          return self.conf.marks.map((_, i) => {
-            const table = colorSection(sections, i)?.scale
-            if (table?.kind === 'ramp') {
-              return {
-                domain: table.domain,
-                scale: table.scale,
-                lut: table.lut,
-                mid: table.domainMid,
-              }
-            }
-            if (table?.kind === 'threshold') {
-              return {
-                cuts: table.domain,
-                colors: Uint32Array.from(
-                  thresholdPalette(table.domain.length + 1, table.range),
-                  c => cssColorToABGR(c),
-                ),
-              }
-            }
-            return undefined
-          })
+          return self.conf.marks.map((_, i) =>
+            paintScaleOf(colorSection(sections, i)?.scale),
+          )
         },
         /**
          * #getter

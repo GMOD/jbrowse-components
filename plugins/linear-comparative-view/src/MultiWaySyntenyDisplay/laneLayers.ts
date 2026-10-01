@@ -8,7 +8,7 @@ import type {
   LayerRequest,
 } from '@jbrowse/core/util/markEncoding'
 import type { MarkColor } from '@jbrowse/plugin-marks'
-import type { BarChannels } from '@jbrowse/render-core/marks'
+import type { BarChannels, MarkColorScale } from '@jbrowse/render-core/marks'
 
 export const LANE_LAYER_GAP_PX = 2
 
@@ -103,19 +103,35 @@ export function laneLayerChannels(channels: EncodedChannels, color: MarkColor) {
 
 const barCells = new WeakMap<
   EncodedChannels,
-  { lo: number; hi: number; cell: MultiWayCell | undefined }
+  {
+    lo: number
+    hi: number
+    colorScale: MarkColorScale | undefined
+    cell: MultiWayCell | undefined
+  }
 >()
 
-/** one cell per payload and domain, so a settle re-uploads nothing */
-export function barCellOf(channels: EncodedChannels, domain: [number, number]) {
+/**
+ * one cell per payload, domain and colour scale, so a settle re-uploads
+ * nothing
+ */
+export function barCellOf(
+  channels: EncodedChannels,
+  domain: [number, number],
+  colorScale?: MarkColorScale,
+) {
   const [lo, hi] = domain
   const held = barCells.get(channels)
-  if (held?.lo === lo && held.hi === hi) {
+  if (held?.lo === lo && held.hi === hi && held.colorScale === colorScale) {
     return held.cell
   }
   const data = barChannelsOf(channels, domain)
-  const cell: MultiWayCell | undefined = data && { kind: 'bars', data }
-  barCells.set(channels, { lo, hi, cell })
+  const cell: MultiWayCell | undefined = data && {
+    kind: 'bars',
+    data,
+    colorScale,
+  }
+  barCells.set(channels, { lo, hi, colorScale, cell })
   return cell
 }
 

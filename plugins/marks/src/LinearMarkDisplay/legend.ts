@@ -36,6 +36,7 @@ import type {
   ShapeScaleTable,
   ScaleTable,
 } from '@jbrowse/core/util/markEncoding'
+import type { MarkColorScale } from '@jbrowse/render-core/marks'
 
 const RAMP_STOPS = 8
 
@@ -555,6 +556,48 @@ export function markColorScales(
 export function colorSection(sections: MarkLegendSection[], markIndex: number) {
   return sections.find(
     s => s.channel === 'color' && s.markIndexes.includes(markIndex),
+  )
+}
+
+/**
+ * The scale a mark's shapes paint through, off its colour key's table: a ramp
+ * over the domain the key unioned across the regions, its middle stop a
+ * value, or a threshold's cuts and the packed colour of each interval.
+ */
+export function paintScaleOf(
+  table: ScaleTable | undefined,
+): MarkColorScale | undefined {
+  if (table?.kind === 'ramp') {
+    return {
+      domain: table.domain,
+      scale: table.scale,
+      lut: table.lut,
+      mid: table.domainMid,
+    }
+  }
+  if (table?.kind === 'threshold') {
+    return {
+      cuts: table.domain,
+      colors: Uint32Array.from(
+        thresholdPalette(table.domain.length + 1, table.range),
+        c => cssColorToABGR(c),
+      ),
+    }
+  }
+  return undefined
+}
+
+/**
+ * Each of `markCount` marks' paint scale over `regions`, for a display that
+ * draws marks with no key of its own: multi-way synteny's lane layers.
+ */
+export function markPaintScales(
+  regions: Iterable<MarkRegionData>,
+  markCount: number,
+) {
+  const sections = buildMarkLegend(regions)
+  return Array.from({ length: markCount }, (_, i) =>
+    paintScaleOf(colorSection(sections, i)?.scale),
   )
 }
 

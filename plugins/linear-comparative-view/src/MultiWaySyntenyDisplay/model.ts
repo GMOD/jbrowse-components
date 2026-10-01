@@ -48,6 +48,7 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   markColorOf,
   markLayerRequest,
+  markPaintScales,
   stepChannels,
 } from '@jbrowse/plugin-marks'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -212,6 +213,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
+import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
 import type { ColorScaleName } from '@jbrowse/display-kit/colorConfigSchema'
 import type {
   HighlightRect,
@@ -220,6 +222,7 @@ import type {
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { MarkColor } from '@jbrowse/plugin-marks'
+import type { MarkColorScale } from '@jbrowse/render-core/marks'
 import type {
   AttributeRange,
   DeclaredLane,
@@ -2371,6 +2374,29 @@ export function stateModelFactory(
             ),
           )
         },
+        /**
+         * #getter
+         * each layer's marks' colour scales, a ramp's domain unioned over
+         * every lane it holds, so one value takes one colour in every lane
+         */
+        get laneLayerPaintScales(): (MarkColorScale | undefined)[][] {
+          const colors = this.laneLayerColors
+          const regions = colors.map(
+            () => [] as { layers: EncodedChannels[] }[],
+          )
+          for (const held of self.laneLayerData.held?.values() ?? []) {
+            const marks = colors[held.layer]
+            regions[held.layer]?.push({
+              layers: held.channels.map((channels, mark) => {
+                const color = marks?.[mark]
+                return color ? laneLayerChannels(channels, color) : channels
+              }),
+            })
+          }
+          return regions.map((held, layer) =>
+            markPaintScales(held, colors[layer]!.length),
+          )
+        },
       }
     })
     .views(self => ({
@@ -2399,6 +2425,7 @@ export function stateModelFactory(
         const layers: BarLayer[] = []
         const domains = self.laneLayerDomains
         const colors = self.laneLayerColors
+        const paintScales = self.laneLayerPaintScales
         for (const {
           specLane,
           held,
@@ -2417,6 +2444,7 @@ export function stateModelFactory(
             const cell = barCellOf(
               color ? laneLayerChannels(channels, color) : channels,
               domain,
+              paintScales[held.layer]?.[mark],
             )
             if (cell) {
               const key = `bars:${specLane}:${mark}`

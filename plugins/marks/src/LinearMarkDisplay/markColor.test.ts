@@ -60,6 +60,7 @@ test('a constant colour crosses as the default and paints from the main thread',
   ])
   const [request] = display.layerRequests
   expect(request!.encoding.color).toBe(DEFAULT_MARK_COLOR)
+  expect(request!.lanes).not.toContain('color')
   expect(layerOf(display).color).toBe(cssColorToABGR('red'))
   const before = JSON.stringify(display.rpcProps())
 
@@ -67,6 +68,12 @@ test('a constant colour crosses as the default and paints from the main thread',
 
   expect(JSON.stringify(display.rpcProps())).toBe(before)
   expect(layerOf(display).color).toBe(cssColorToABGR('green'))
+
+  editColor(display, 'field', 'score')
+  editColor(display, 'scale', 'linear')
+
+  expect(JSON.stringify(display.rpcProps())).toBe(before)
+  expect(layerOf(display).colorValue).toBe(layerOf(display).y)
 })
 
 test('a categorical colour crosses as its field, and its domain and range repaint the keys met', () => {
@@ -333,4 +340,43 @@ test('a region holding keys under a ramp still draws them, and a constant clears
   expect(layer.color).toBe(cssColorToABGR('red'))
   expect(layer.scale).toBeUndefined()
   expect(display.legendSections).toEqual([])
+})
+
+test('a region holding another field’s numbers paints them through a ramp over that field', () => {
+  const display = loaded([
+    {
+      mark: 'point',
+      encoding: {
+        y: 'score',
+        color: { field: 'depth', scale: 'threshold', domain: [4] },
+      },
+    },
+  ])
+
+  editColor(display, 'field', 'type')
+  editColor(display, 'scale', 'categorical')
+  editColor(display, 'domain', [])
+
+  expect(layerOf(display).scale).toMatchObject({
+    kind: 'ramp',
+    field: 'depth',
+    extent: [1, 8],
+  })
+  expect(display.paintScales[0]).toMatchObject({ domain: [1, 8] })
+})
+
+test('a region holding no colour paints the default while a categorical refetch is pending', () => {
+  const display = loaded([
+    {
+      mark: 'bar',
+      encoding: { y: 'score', color: { field: 'score', scale: 'linear' } },
+    },
+  ])
+  expect(layerOf(display).color).toBeUndefined()
+
+  editColor(display, 'field', 'type')
+  editColor(display, 'scale', 'categorical')
+
+  expect(layerOf(display).color).toBe(cssColorToABGR(DEFAULT_MARK_COLOR))
+  expect(layerOf(display).scale).toBeUndefined()
 })

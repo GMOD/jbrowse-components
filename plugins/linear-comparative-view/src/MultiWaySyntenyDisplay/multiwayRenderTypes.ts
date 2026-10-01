@@ -9,7 +9,7 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 import type { PaintedFill } from './geneColor.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { RegionRenderData } from '@jbrowse/plugin-canvas'
-import type { BarChannels } from '@jbrowse/render-core/marks'
+import type { BarChannels, MarkColorScale } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { FrameDimensions } from '@jbrowse/render-core/renderingBackendBase'
 
@@ -49,7 +49,7 @@ export type MultiWayCell =
   | { kind: 'ribbons'; data: SyntenyInstanceData }
   | ({ kind: 'outline' } & SyntenyOutlineChannels)
   | { kind: 'glyphs'; data: LaneGlyphData }
-  | { kind: 'bars'; data: BarChannels }
+  | { kind: 'bars'; data: BarChannels; colorScale?: MarkColorScale }
 
 export interface RibbonLayer {
   kind: 'ribbons'

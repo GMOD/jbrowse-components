@@ -127,7 +127,7 @@ const CTX_MENU_READ = {
 // per-read strand there is nothing in the pileup that says which of two abutting
 // genes a read came from.
 //
-// This was one frame with the Color by... -> Paired end -> First of pair strand
+// This was one frame with the Color by... -> Paired end -> First-of-pair strand
 // cascade open over it, teaching the click path and its result at once. The
 // cascade is three menus wide and covered most of the pileup underneath, so the
 // result had nowhere to show. The click path is not lost: it is in the recipe

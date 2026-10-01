@@ -664,6 +664,22 @@ test('a threshold past the cuts the GPU holds is told where the rest paint', () 
   ])
 })
 
+test('a cut that is no number counts toward no cut-count, as it paints no band', () => {
+  const colored = (domain: string[]) => [
+    {
+      mark: 'point',
+      encoding: {
+        y: 'score',
+        color: { field: 'score', scale: 'threshold', domain },
+      },
+    },
+  ]
+  const eight = Array.from({ length: MAX_THRESHOLD_CUTS }, (_, i) => String(i))
+  expect(found(colored([...eight, 'x']))).not.toContain(
+    'warning threshold-cut-count mark 0 encoding.color.domain',
+  )
+})
+
 test('a threshold naming no cut is told it paints one colour', () => {
   const noCuts = {
     mark: 'point',

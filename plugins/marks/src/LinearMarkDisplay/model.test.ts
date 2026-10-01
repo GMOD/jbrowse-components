@@ -221,9 +221,9 @@ test('a text mark asks the worker for the text lane and no hit index, and takes 
   const [text, bar] = display.rpcProps().layers
   expect(text).toMatchObject({
     encoding: { y: 'score', text: 'name' },
-    lanes: ['y', 'row', 'color', 'text'],
+    lanes: ['y', 'row', 'text'],
   })
-  expect(bar!.lanes).toEqual(['y', 'row', 'color'])
+  expect(bar!.lanes).toEqual(['y', 'row'])
   expect(display.markList.map(m => [m.pass.id, m.markIndex])).toEqual([
     ['bar#1', 1],
   ])
@@ -245,7 +245,7 @@ test("a text mark's values fold into the axis, and one naming no y asks for no y
     valued: false,
     ownColor: false,
   })
-  expect(banded.rpcProps().layers[0]!.lanes).toEqual(['row', 'color', 'text'])
+  expect(banded.rpcProps().layers[0]!.lanes).toEqual(['row', 'text'])
   banded.setRpcData(0, result([{ y: [] }]), REGION)
   expect(banded.domain).toBeUndefined()
 })
@@ -1062,7 +1062,7 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
       row: 'sampleIndex',
       color: DEFAULT_MARK_COLOR,
     },
-    lanes: ['row', 'color'],
+    lanes: ['row'],
   })
   display.setRpcData(0, result([{ y: [0, 0, 0], row: [0, 2, 1] }]), REGION)
   expect(display.rowCount).toBe(3)
@@ -2856,7 +2856,7 @@ test('a link mark sends its far foot as a locus, its size as a scale, and asks f
       x2: { chrom: 'mate.refName', pos: 'mate.start' },
       size: { field: 'score', scale: 'log', range: [1, 8] },
     },
-    lanes: ['row', 'color', 'size', 'x2Ref', 'index'],
+    lanes: ['row', 'size', 'x2Ref', 'index'],
     transform: [{ type: 'mate' }],
   })
   expect(display.markList.map(m => m.pass.id)).toEqual(['link#0'])
@@ -2867,7 +2867,7 @@ test('a link mark sends its far foot as a locus, its size as a scale, and asks f
   ]).createDisplay().display
   expect(plain.rpcProps().layers[0]).toMatchObject({
     encoding: { x2: 'mate.start' },
-    lanes: ['row', 'color', 'x2Ref', 'index'],
+    lanes: ['row', 'x2Ref', 'index'],
   })
   expect(plain.markSizes).toEqual([3])
   expect(plain.markEntries[0]).toMatchObject({

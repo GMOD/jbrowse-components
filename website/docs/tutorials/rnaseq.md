@@ -103,7 +103,7 @@ strands.
 The surfeit locus packs genes tightly and alternates their strands (_RPL7A_,
 _SURF1_, _SURF2_, _SURF4_), so the coloring, which comes from the reads alone,
 has an annotation to agree with. Open the track menu and pick **Color by... →
-Paired end → First of pair strand**:
+Paired end → First-of-pair strand**:
 
 <Figure caption="The surfeit locus colored by first-of-pair strand. The pileup splits into two colors, and the switch falls where the genes change strand: RPL7A forward, SURF1 reverse, SURF2 forward." src="/img/rnaseq/strand_specific.png" />
 

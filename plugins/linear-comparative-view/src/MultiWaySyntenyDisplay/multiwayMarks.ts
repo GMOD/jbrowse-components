@@ -3,7 +3,7 @@ import {
   featureGlyphMarks,
 } from '@jbrowse/plugin-canvas'
 import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
-import { barMark, defineMark } from '@jbrowse/render-core/marks'
+import { barMark, defineMark, isThreshold } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
 import { syntenyRibbonMarks } from '../LinearSyntenyDisplay/syntenyRibbonMarks.ts'
@@ -61,7 +61,7 @@ export const MULTIWAY_MARKS = [
     shape: barMark,
     channels: (cell: MultiWayCell) =>
       cell.kind === 'bars' ? cell.data : undefined,
-    params: (state: MultiWayRenderState, _cell: MultiWayCell, block) => {
+    params: (state: MultiWayRenderState, cell: MultiWayCell, block) => {
       const layer = state.layers.get(block.displayedRegionIndex)
       const bars = layer?.kind === 'bars' ? layer : undefined
       return {
@@ -71,6 +71,13 @@ export const MULTIWAY_MARKS = [
         seamPx: CANVAS_SEAM_PX,
         rowHeight: bars?.height ?? 0,
         rowOffsetPx: (bars?.top ?? 0) - state.scrollTopPx,
+        colorScale: cell.kind === 'bars' ? cell.colorScale : undefined,
+      }
+    },
+    textures: (_state: MultiWayRenderState, cell: MultiWayCell) => {
+      const scale = cell.kind === 'bars' ? cell.colorScale : undefined
+      return {
+        colorRamp: scale && !isThreshold(scale) ? scale.lut : undefined,
       }
     },
   }),

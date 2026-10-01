@@ -353,6 +353,62 @@ describe('a template layer', () => {
     expect(new Set(barColors())).toEqual(new Set([cssColorToABGR('green')]))
   })
 
+  test("a layer's ramp or threshold colour reaches its bars, one scale across the lanes", async () => {
+    const scores = [1, 2, 3].map(
+      i =>
+        new SimpleFeature({
+          uniqueId: `s${i}`,
+          refName: 'ctgA',
+          start: 100 * i,
+          end: 100 * i + 50,
+          score: i,
+        }),
+    )
+    const display = await templateDisplay(GC, {
+      rpc: async (name, args) =>
+        name === 'CoreGetEncodedLayers'
+          ? {
+              layers: (args.layers as LayerRequest[]).map(l =>
+                encodeFeatures(scores, l.encoding, l.lanes),
+              ),
+            }
+          : [],
+    })
+    setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
+      y: 'score',
+      color: {
+        field: 'score',
+        scale: 'threshold',
+        domain: ['2'],
+        range: ['blue', 'red'],
+      },
+    })
+    await when(() => display.laneLayerCells.cells.size > 0, { timeout: 5000 })
+    const scales = () =>
+      [...display.laneLayerCells.cells.values()].map(cell =>
+        cell.kind === 'bars' ? cell.colorScale : undefined,
+      )
+    const [blue, red] = ['blue', 'red'].map(c => cssColorToABGR(c))
+    expect(scales().length).toBeGreaterThan(0)
+    for (const scale of scales()) {
+      expect(scale).toEqual({
+        cuts: [2],
+        colors: Uint32Array.from([blue, red]),
+      })
+    }
+    const keys = display.laneLayersFetchSpecs.map(spec => spec.key)
+
+    setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
+      y: 'score',
+      color: { field: 'score', scale: 'linear', domainMin: 0 },
+    })
+
+    expect(display.laneLayersFetchSpecs.map(spec => spec.key)).toEqual(keys)
+    for (const scale of scales()) {
+      expect(scale).toMatchObject({ domain: [0, 3], scale: 'linear' })
+    }
+  })
+
   // The band is white in every theme, and a dark theme's palette text is white.
   test('the title is band ink, whatever the theme', async () => {
     const display = await templateDisplay(GC)

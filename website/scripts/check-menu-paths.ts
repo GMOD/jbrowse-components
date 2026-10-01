@@ -1,7 +1,7 @@
 // Flags a UI menu path written with anything but the corpus separator, `→`.
 //
 // A menu path is prose that walks a reader through the app: **Color by... →
-// Paired end → First of pair strand**. 20 files spell that with `→` and a
+// Paired end → First-of-pair strand**. 20 files spell that with `→` and a
 // handful had drifted to `>`, `▸`, `->` and the `&rarr;` entity, sometimes
 // inside backticks instead of bold. Nothing enforced it, and the spelling is
 // invisible to a reader of any single page, so drift only surfaces when someone

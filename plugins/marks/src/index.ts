@@ -12,6 +12,7 @@ export {
   markListSchema,
 } from './LinearMarkDisplay/configSchema.ts'
 export { markColorOf, withMarkColor } from './LinearMarkDisplay/markColor.ts'
+export { markPaintScales } from './LinearMarkDisplay/legend.ts'
 export { markLayerRequest } from './LinearMarkDisplay/markRequest.ts'
 export { stepChannels } from './LinearMarkDisplay/stepChannels.ts'
 export type {
