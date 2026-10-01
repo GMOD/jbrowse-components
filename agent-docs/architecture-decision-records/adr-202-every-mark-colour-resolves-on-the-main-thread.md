@@ -54,14 +54,14 @@ colour needs; the main thread turns that data into colours through the config.
   render-core's `paintColors` against `state.colorScales`, so a label and a bar
   over one field and one declaration take one colour. `MarkSpec.ramp`,
   `rampResolvesPerRegion` and the `unpinned-text-ramp` rule go.
-- **A region the worker read for another kind of colour stays drawn while its
-  refetch is on the way**: held keys in their field's default colours, held
-  numbers through a linear ramp over themselves, and the default colour where
-  it holds no colour data (`colorWhileRefetching`). Regions refetch one by one,
-  so for a moment one region can hold numbers and another finished colours;
-  each picks its own scale (`regionColorScale`): the mark's for numbers, its
-  own table's where the mark's is of another kind, and none for finished
-  colours, so both backends draw what each region holds.
+- **A region the worker read for an earlier colour stays drawn**, coloured
+  from what it holds (`colorWhileRefetching`): keys in their field's default
+  colours, numbers through a linear ramp over themselves, the default colour
+  where it holds no colour data. Only the regions in view refetch, so one
+  scrolled away can hold the earlier colour's data indefinitely. Such a layer
+  is flagged `heldColor`: it paints through its own table (`regionColorScale`)
+  and stays out of the legend, so the mark's scale and key come only from
+  regions read for the colour as it now stands, on both backends.
 - **The colour list keeps its identity across reads nothing observes**,
   through display-kit's `sameAsLast`. An unobserved computed hands out a fresh
   list per read, which recoloured every region and allocated a colour lane per
@@ -72,9 +72,10 @@ colour needs; the main thread turns that data into colours through the config.
   the bars one ramp or threshold per mark, a ramp's domain covering every drawn
   lane, through legend.ts's `paintScalesOver`, the step the mark display's
   `paintScales` takes through `paintScaleOf`. The scale rides the bar layer
-  the pass reads per block and the cell keeps only the ramp's cached lookup
-  table, so a landing that widens the ramp rebuilds no cell. Before this the
-  bars drew a ramp or threshold colour blank or as noise.
+  the pass reads per block, and a cell is kept per payload and per the arrays
+  and ramp table it uploads, so a landing that widens the ramp or an edit to a
+  scale's ends or cuts rebuilds no cell. Before this the bars drew a ramp or
+  threshold colour blank or as noise.
 
 ## Consequences
 

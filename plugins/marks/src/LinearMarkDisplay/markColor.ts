@@ -221,21 +221,32 @@ function colorByKeys<L extends EncodedChannels>(
 
 const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
 
-// A region the worker read for another kind of colour, drawn under the loading
-// scrim while its refetch is on the way: whatever it holds coloured as plainly
-// as it can be, so the mark
-// stays on screen. Keys take their field's default colours, numbers a linear
-// ramp over themselves, an expression's colours stay, and a region holding no
-// colour data takes the default colour.
+/**
+ * Set on a layer coloured from data the worker read for an earlier colour:
+ * a region not yet refetched since the colour changed, such as one scrolled
+ * off screen. It paints through its own table and stays out of the legend,
+ * so the mark's scale comes only from regions read for the colour as it now
+ * stands.
+ */
+export interface HeldColor {
+  heldColor?: boolean
+}
+
+// A region the worker read for another kind of colour, whatever it holds
+// coloured as plainly as it can be so it stays drawn: keys in their field's
+// default colours, numbers through a linear ramp over themselves, and the
+// default colour where it holds no colour data. An expression's or the
+// density tier's own colours stay as they came.
 function colorWhileRefetching<L extends EncodedChannels>(layer: L): L {
   const read = layer.scale
   if (layer.colorKey) {
-    return colorByKeys(layer, layer.colorKey)
+    return { ...colorByKeys(layer, layer.colorKey), heldColor: true }
   }
   if (layer.colorValue && read) {
     const ramp: ContinuousRef = { field: read.field, scale: 'linear' }
     return {
       ...layer,
+      heldColor: true,
       scale:
         layer.count > 0
           ? numberScaleTable(layer.colorValue, layer.count, ramp, read)
@@ -243,7 +254,7 @@ function colorWhileRefetching<L extends EncodedChannels>(layer: L): L {
     }
   }
   return layer.color === undefined && !layer.colorValue
-    ? { ...layer, color: DEFAULT_ABGR }
+    ? { ...layer, heldColor: true, color: DEFAULT_ABGR }
     : layer
 }
 

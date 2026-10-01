@@ -106,19 +106,23 @@ export function coloredLaneLayer(
 }
 
 const barCells = new WeakMap<
-  EncodedChannels,
+  Uint32Array,
   {
     lo: number
     hi: number
     lut: Uint8Array | undefined
+    color: EncodedChannels['color']
+    colorValue: Float32Array | undefined
     cell: MultiWayCell | undefined
   }
 >()
 
 /**
- * one cell per payload, domain and ramp table, so a settle re-uploads
- * nothing; the ramp's domain and a threshold's cuts ride the bar layer, which
- * the pass reads per block, so a new lane widening the ramp rebuilds no cell
+ * One cell per payload, keyed on what it uploads: its positions, its colour
+ * data, the y domain it is squished into and the ramp's lookup table. The
+ * ramp's domain and a threshold's cuts ride the bar layer the pass reads per
+ * block, so a settle, a landing that widens the ramp and an edit to a scale's
+ * ends or cuts rebuild no cell.
  */
 export function barCellOf(
   channels: EncodedChannels,
@@ -126,13 +130,20 @@ export function barCellOf(
   lut?: Uint8Array,
 ) {
   const [lo, hi] = domain
-  const held = barCells.get(channels)
-  if (held?.lo === lo && held.hi === hi && held.lut === lut) {
+  const { x, color, colorValue } = channels
+  const held = barCells.get(x)
+  if (
+    held?.lo === lo &&
+    held.hi === hi &&
+    held.lut === lut &&
+    held.color === color &&
+    held.colorValue === colorValue
+  ) {
     return held.cell
   }
   const data = barChannelsOf(channels, domain)
   const cell: MultiWayCell | undefined = data && { kind: 'bars', data, lut }
-  barCells.set(channels, { lo, hi, lut, cell })
+  barCells.set(x, { lo, hi, lut, color, colorValue, cell })
   return cell
 }
 

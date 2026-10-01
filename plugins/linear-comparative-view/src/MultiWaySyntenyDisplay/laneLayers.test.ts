@@ -99,6 +99,8 @@ function held(layer: number, ...values: number[][]): HeldLaneLayer {
       v =>
         ({
           count: v.length,
+          x: new Uint32Array(v.length),
+          x2: new Uint32Array(v.length),
           y: new Float32Array(v),
         }) as EncodedChannels,
     ),
@@ -403,6 +405,27 @@ describe('a template layer', () => {
       })
     }
     const keys = display.laneLayersFetchSpecs.map(spec => spec.key)
+    const cells = [...display.laneLayerCells.cells.values()]
+
+    setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
+      y: 'score',
+      color: {
+        field: 'score',
+        scale: 'threshold',
+        domain: ['3'],
+        range: ['blue', 'red'],
+      },
+    })
+
+    expect([...display.laneLayerCells.cells.values()]).toEqual(cells)
+    for (const [i, cell] of [
+      ...display.laneLayerCells.cells.values(),
+    ].entries()) {
+      expect(cell).toBe(cells[i])
+    }
+    for (const scale of scales()) {
+      expect(scale).toMatchObject({ cuts: [3] })
+    }
 
     setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
       y: 'score',

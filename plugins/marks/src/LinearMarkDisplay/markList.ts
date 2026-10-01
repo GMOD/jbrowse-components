@@ -16,6 +16,7 @@ import { MARK_SPECS } from './markSpecs.ts'
 import { DEFAULT_LINE_INTERPOLATE } from './markVocabulary.ts'
 
 import type { MarkType } from './configSchema.ts'
+import type { HeldColor } from './markColor.ts'
 import type { MarkSpec } from './markSpecs.ts'
 import type { LineInterpolation, LinkShape } from './markVocabulary.ts'
 import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
@@ -36,14 +37,15 @@ import type {
   RowTable,
 } from '@jbrowse/render-core/marks'
 
-export type StoredLayer = HitIndexed<EncodedChannels> & {
-  /**
-   * The displayed region each `x2` lies on, resolved on the main thread from
-   * the worker's `x2Ref` against the view's regions; `LINK_NO_REGION` for
-   * none. Present on a link's layer alone.
-   */
-  x2Region?: Uint32Array
-}
+export type StoredLayer = HitIndexed<EncodedChannels> &
+  HeldColor & {
+    /**
+     * The displayed region each `x2` lies on, resolved on the main thread from
+     * the worker's `x2Ref` against the view's regions; `LINK_NO_REGION` for
+     * none. Present on a link's layer alone.
+     */
+    x2Region?: Uint32Array
+  }
 
 type ChannelLane = Exclude<LaneName, 'index'> | 'x2Region'
 
@@ -253,13 +255,11 @@ function rampLut(scale: MarkColorScale | undefined) {
 }
 
 /**
- * The ramp or threshold one region's layer `i` paints through. Every region
- * of a mark normally holds the same kind of colour data, and this is the
- * mark's scale. While a colour change is refetching, some regions may still
- * hold the old kind, so the choice is the region's own: a layer holding
- * numbers paints through the mark's scale, or through its own table where
- * the mark's scale is of another kind, and a layer holding finished colours
- * paints them and takes none. Both backends then draw what each region holds.
+ * The ramp or threshold one region's layer `i` paints through: the mark's
+ * scale, which the legend builds from the regions read for the colour as it
+ * now stands. A region still holding data read for an earlier colour
+ * (`heldColor`) paints through its own table instead, and a layer holding
+ * finished colours takes none, so both backends draw what each region holds.
  */
 export function regionColorScale(
   s: MarkRenderState,
@@ -267,9 +267,11 @@ export function regionColorScale(
   i: number,
 ): MarkColorScale | undefined {
   const layer = d.layers[i]
-  return layer?.colorValue
-    ? (s.colorScales[i] ?? paintScaleOf(layer.scale))
-    : undefined
+  return !layer?.colorValue
+    ? undefined
+    : layer.heldColor
+      ? paintScaleOf(layer.scale)
+      : s.colorScales[i]
 }
 
 function withMarkIndex(

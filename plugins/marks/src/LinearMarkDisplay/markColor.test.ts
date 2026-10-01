@@ -358,12 +358,16 @@ test('a region holding another field’s numbers paints them through a ramp over
   editColor(display, 'scale', 'categorical')
   editColor(display, 'domain', [])
 
-  expect(layerOf(display).scale).toMatchObject({
+  const region = display.rpcDataMap.get(0)!
+  expect(region.layers[0]!.scale).toMatchObject({
     kind: 'ramp',
     field: 'depth',
     extent: [1, 8],
   })
-  expect(display.paintScales[0]).toMatchObject({ domain: [1, 8] })
+  expect(regionColorScale(display.renderState, region, 0)).toMatchObject({
+    domain: [1, 8],
+  })
+  expect(display.legendSections).toEqual([])
 })
 
 test('a region holding no colour paints the default while a categorical refetch is pending', () => {
@@ -413,5 +417,50 @@ test('regions holding different kinds of colour data each paint through what the
   expect(regionColorScale(renderState, held, 0)).toMatchObject({
     scale: 'linear',
     domain: [1, 8],
+  })
+})
+
+// Only the regions in view refetch after a colour change, so one loaded
+// earlier and scrolled away can hold the old colour's data indefinitely. It
+// must not reach the mark's scale or the legend, which the landed regions,
+// read for the colour as it now stands, paint through.
+test('a region still holding an earlier colour shapes neither the scale nor the key', () => {
+  const REGION_B = { ...REGION, refName: 'ctgB' }
+  const { display } = createTestEnvironment(
+    {
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: { field: 'depth', scale: 'threshold', domain: [4] },
+          },
+        },
+      ],
+    },
+    [REGION, REGION_B],
+  ).createDisplay()
+  const withGc = features([
+    { start: 0, end: 100, score: 2, depth: 1, gc: 30 },
+    { start: 200, end: 300, score: 6, depth: 5, gc: 60 },
+  ])
+  display.setRpcData(0, workerResult(display, withGc), REGION)
+
+  editColor(display, 'field', 'gc')
+  editColor(display, 'domain', ['50'])
+  display.setRpcData(1, workerResult(display, withGc), REGION_B)
+
+  const { renderState } = display
+  expect(display.legendSections.map(s => s.scale)).toEqual([
+    expect.objectContaining({ kind: 'threshold', field: 'gc', domain: [50] }),
+  ])
+  const landed = display.rpcDataMap.get(1)!
+  const held = display.rpcDataMap.get(0)!
+  expect(regionColorScale(renderState, landed, 0)).toMatchObject({
+    cuts: [50],
+  })
+  expect(regionColorScale(renderState, held, 0)).toMatchObject({
+    scale: 'linear',
+    domain: [1, 5],
   })
 })
