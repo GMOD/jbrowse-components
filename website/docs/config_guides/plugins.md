@@ -51,12 +51,13 @@ format and in what the path resolves against:
 | `esmUrl` | ESM           | index.html                |
 | `esmLoc` | ESM           | config.json               |
 
-`umdLoc`/`esmLoc` suit a plugin file that lives beside config.json. UMD is what
-the plugin store publishes and the only format an RPC worker can load, so it is
-the format to reach for unless you are loading a plugin you build yourself.
+`umdLoc`/`esmLoc` suit a plugin file that lives beside config.json. Both formats
+load on the main thread and in the RPC workers. An ESM build can split into
+chunks that load when first used, which a UMD build cannot; see
+[](/docs/developer_guides/plugin_load_cost).
 
 Add `integrity` beside a UMD url to have the browser check the bytes against the
-hash before running them; the store publishes one per build.
+hash before running them; the store publishes one for each UMD build.
 
 A url is an answer computed on the day the config was written. `storePlugin`
 defers it to load time instead, and the two can ride together — the ref for a
@@ -69,7 +70,7 @@ when the store cannot be reached:
     {
       "storePlugin": "MsaView",
       "name": "MsaView",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.umd.production.min.js"
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/3.10.0/dist/jbrowse-plugin-msaview.umd.production.min.js"
     }
   ]
 }

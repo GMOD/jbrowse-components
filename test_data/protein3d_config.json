@@ -1,10 +1,5 @@
 {
-  "plugins": [
-    {
-      "name": "Protein3d",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/latest/dist/jbrowse-plugin-protein3d.umd.production.min.js"
-    }
-  ],
+  "plugins": [{ "storePlugin": "Protein3d" }],
   "assemblies": [
     {
       "name": "hg38",

@@ -46,12 +46,10 @@ export const PTEN_RNASEQ_ADAPTER = {
   },
 }
 
-// hg38 + NCBI RefSeq + ClinVar, loading the Protein3d plugin from the
-// version-agnostic jbrowse.org plugin-store `latest/` path (served no-cache), so
-// there's no pinned version to bump on a protein3d release. The protein-feature
-// data-testid clicks in the spec below need protein3d >= v0.4.14, which `latest/`
-// satisfies. Rendered against the *local* build (bare ?config=), which has the
-// workspaces split API (session `init`) the side-by-side launch needs.
+// hg38 + NCBI RefSeq + ClinVar, naming Protein3d by its store entry, so it
+// resolves to the current release with no version to bump. Rendered against the
+// *local* build (bare ?config=), which has the workspaces split API (session
+// `init`) the side-by-side launch needs.
 export const PROTEIN3D_CONFIG = 'test_data/protein3d_config.json'
 
 // The volvox Apple3 mRNA, which two figures below open the feature-details panel
