@@ -13,8 +13,8 @@ shared scale ([ADR-180](../architecture-decision-records/adr-180-a-multiway-lane
 Template layers and lanes the session lacks are built (`7700ccb6bb`): a
 described lane is a temporary assembly, so its sequence reaches an adapter
 only through renaming, and never through an RPC by hand
-(`reference/MULTIWAY_SYNTENY_DISPLAY.md` §"Lanes the session lacks",
-§"Lane layers"). Driven on hg38's hosted star at TP53: all nine lanes draw
+(`reference/MULTIWAY_SYNTENY_DISPLAY.md` §"Settled invariants",
+§"Where things live"). Driven on hg38's hosted star at TP53: all nine lanes draw
 their own genome's GC, and "Open in new view" hands a lane to its hub's
 connection without losing it.
 

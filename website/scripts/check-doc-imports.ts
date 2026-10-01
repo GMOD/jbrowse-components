@@ -461,7 +461,7 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // repo, since several of these docs are
 // about a boundary with one: `@gmod/bam`'s and `@gmod/cram`'s options, and the
 // graph plugin's launcher, which lives in jbrowse-plugin-graphgenomeviewer.
-// One real find: CONFIG_PATTERN.md's "Key functions" table listed a
+// One real find: the former CONFIG_PATTERN.md "Key functions" table listed a
 // `createRenderConfigContext` that no longer exists, which is the one shape the
 // exemption is genuinely bad at — a table of CURRENT API, where the idiom that
 // justifies the exemption cannot apply.

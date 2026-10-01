@@ -101,3 +101,62 @@ has been re-checked since the cut.
   contain colons (SV_MULTIHOP).
 - Firefox `el.screenshot()` adds 37 px of header chrome, fixed by
   `captureElementPng` (FIGURE_CAPTURE).
+
+## Second pass (2026-09-30)
+
+Open items the second, harder trim removed from the docs.
+
+- **Config and catalog:** `bpUtils.bpToPx` shares a name with `Base1DUtils.bpToPx`
+  (CONFIG_PATTERN, TRACK_REGISTRATION).
+- **Synteny:** a coarse-tier ratio in the `#pif` header; a slimmer coarse row
+  without the minimap2 chaining tags; a per-pixel-column occupancy pass
+  (SYNTENY_LOD).
+- **BAM** (BAM_STACK_INTEGRATION): read-through-gaps and a per-host concurrency
+  cap are untested; `BgzfWorkerPoolClient` copies compressed input once more per
+  chunk, unmeasured; an end-to-end render measurement would reopen the fused tag
+  walk.
+- **Perf:** staggering the coarse tick across tracks and a wider gene-label
+  census fixture (INTERACTION_PERF); a canvas wider than the viewport, CSS-
+  translated during scroll, to pass the ~28 fps wheel-event cap (BENCHMARKING).
+- **Session spec:** CLI modifiers could lower onto slot names and remove a
+  parser dialect (SESSION_SPEC_FORMAT).
+- **GPU docs:** no GPU explainer for a non-specialist or paper audience remains
+  (GPU_GLOSSARY).
+- **Desktop capture** (FIGURE_CAPTURE): the app can die mid-run with
+  `NoSuchSessionError`; figures render on Canvas2D under `--disable-gpu`
+  (untested flag swap); a rare 845x763 capture is unexplained. Accessibility:
+  key bindings need a modifier, nothing covers zoom-to-region, the track menu or
+  search, and views on one assembly share a name via the `viewTitle` fallback.
+- **Upstream abort support** (NETWORK_ABORT): `@gmod/indexedfasta` does not
+  forward the signal to sequence reads; `HicAdapter` does not pass it into
+  `@gmod/hic`; only upstream tests cover `joinChunk`'s foreign-abort retry.
+- **Modification tags** (MODIFICATION_TAGS): nothing exposes the third state for
+  `HTS_MOD_REPORT_UNCHECKED`; over-long MM tags clamp silently; an MM/MN length
+  mismatch drops the tag silently.
+- **Memory:** `@gmod/bgzf-filehandle` reaps idle pools, which reclaims resting
+  memory but not the peak.
+- **Datasets and demos** (DEMO_DATASETS, HPRC_RELEASE2): great ape HSA16
+  all-vs-all PAF (`-c` with `-P` runs out of memory); bovine pggb/cactus and
+  mouse `minigraph -cxasm --call` routes to real carriage; switch the
+  Ensembl-sourced build scripts to NCBI IDs (`build_grape_peach_anchors.sh`
+  first); whether the K562 BCR-ABL1 acceptor is alternative splicing or an
+  alignment artefact is unestablished.
+- **Lint:** migrate oxlint-owned suppressions to `oxlint-disable` (TOOLCHAIN).
+- **MAF** (MAF_LARGE_BLOCKS): a per-line safety valve that names the oversized
+  block instead of running out of memory; a `--max-ref-span` option on
+  `scripts/maf_to_bed.py`; an identity plot confined below the summary
+  threshold.
+- **Grammar** (GRAMMAR_OF_GRAPHICS): a stacked band per mark with a free y
+  (`ValueScale.bandTops`); a rule layer carrying `minBpPerPx`/`maxBpPerPx` and a
+  row field.
+- **Tree sidebar** (CLUSTERING_WORKFLOW): clade collapse, highlight, node labels,
+  extra panels.
+- **Multiway** (MULTIWAY_SYNTENY_DISPLAY): send `GraphNode.samples` to
+  `setSelectedLanes` as a cheap `launchFromGraph` bridge; `LaneSelectionDialog`
+  is a flat list that stays slow at thousands of haplotypes.
+- **Orthologs** (ORTHOLOG_TABLES): Ensembl Compara and OrthoFinder per-pair TSVs
+  as all-vs-all producers.
+- **R export** (R_EXPORT): `GRanges` `[[` and label-decimation parity traps.
+- **SV** (SV_MULTIHOP): seven unexplained HG008-T misses.
+- **Desktop isolation** (DESKTOP_CONTEXT_ISOLATION): the `isNode` claim is
+  unprobed.

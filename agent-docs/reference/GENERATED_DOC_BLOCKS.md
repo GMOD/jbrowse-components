@@ -1,6 +1,6 @@
 ---
 name: generated-doc-blocks
-description: The marker pairs that bracket a generated markdown block, which generator writes each one, and the generated index of every block in the tree. Read before hand-editing a table in a doc, or when adding a generator.
+description: What marker pairs bracket a generated markdown block, how to find the generator behind one, and where the index of every block lives? Read before hand-editing a table in a doc, or when adding a generator.
 audience: internal
 kind: operations
 ---
@@ -12,27 +12,18 @@ generated from one scan by `pnpm autogen`. **A generated block is bracketed by a
 marker pair in one of two spellings**, `<!-- NAME START -->` / `<!-- NAME END -->`
 or `<!-- BEGIN GENERATED NAME -->` / `<!-- END GENERATED NAME -->`, and neither is
 hand-editable. The spelling only records which generator wrote it. `pnpm autogen
---check` names every block it owns; one it does not name is hand-written. Blocks
-with prose-level provenance:
-
-| Marker | Renders | From |
-| --- | --- | --- |
-| `DISPLAY_FOUNDATIONS` / `DISPLAY_FOUNDATION_STACKS` | which displays compose which foundation ([Display stacks](../ARCHITECTURE.md#display-stacks)) | the `#displayFoundation` / `#displayFoundationDef` tags, plus each foundation's `types.compose(...)` |
-| `CROSS_CUTTING_MIXINS` | which displays compose which cross-cutting mixin ([Cross-cutting mixins](../ARCHITECTURE.md#cross-cutting-mixins-orthogonal-to-the-fetch-foundation)); the same block renders in `creating_display.md` | the `#crossCuttingMixin` tags, plus every `types.compose(...)` in the tree — no consumer-side tag |
-| `FETCH_AUTORUNS` | the fetch-lifecycle autoruns ([Data fetching pipeline](../ARCHITECTURE.md#data-fetching-pipeline)) | the install sites in `MultiRegionDisplayMixin.ts` and their `#autorun` tags |
-| `DISPLAY_STATE_CENSUS` | how many slots, properties and volatiles each display declares ([Where a display's state lives](../ARCHITECTURE.md#where-a-displays-state-lives)) | the `#slot` / `#property` / `#volatile` tags in each display directory, the set of directories being those whose `index.ts` calls `pluginManager.addDisplayType` |
-| `DISPLAY_HOOK_OVERRIDES` | which display overrides which hook, and what the default does for one that doesn't ([The hooks](DISPLAY_HOOKS.md#display-hooks-and-their-defaults)) | the override sites, scanned and attributed by directory. The hook list and its default text are a curated `HOOKS` array in the generator — no scan can find them — whose `owner` file is asserted to still declare the default |
-| `DISPLAY_CHROME_ADOPTION` | which displays render the shared chrome, on screen and on export (in [DISPLAYCHROME.md](DISPLAYCHROME.md), not here) | each LGV display registration: `ReactComponent` for the on-screen column, the state model's `renderSvg` for the export one |
-| `PALETTE_KEYS` | the settable theme palette keys | the `Palette` / `StringColors` interfaces |
-| `HELPER_PACKAGES` | the standalone npm helper packages | `packages/*/package.json` |
-| `REEXPORT_MODULES` | the `@jbrowse` packages a plugin gets the host's copy of, with how much of each the RPC worker serves for real | `ReExports/reExports.generated.json`, itself generated from the exports maps |
+--check` names every block it owns; one it does not name is hand-written.
+Grep the marker name in `website/scripts` to find its generator;
+`website/scripts/api-docs/README.md` is how to write one. The hook-override
+generator (`DISPLAY_HOOK_OVERRIDES`) keeps its hook list and default text in a
+curated `HOOKS` array no scan can find, and asserts each `owner` file still
+declares the default.
 
 A row joins a block by existing in the source, never by being written down; the
 rule is in [CLAUDE.md](../CLAUDE.md#frontmatter-and-generated-tables). The index
 below is generated off `<!-- NAME START -->` pairs only, so the `BEGIN GENERATED`
 blocks (`DISPLAY_HOOK_OVERRIDES`, `DISPLAY_STATE_CENSUS`, `DISPLAY_CHROME_ADOPTION`,
-`MEASUREMENT`) are absent from it. Grep the marker name in `website/scripts` to
-find its generator; `website/scripts/api-docs/README.md` is how to write one.
+`MEASUREMENT`) are absent from it.
 
 <!-- MARKER_INDEX START -->
 

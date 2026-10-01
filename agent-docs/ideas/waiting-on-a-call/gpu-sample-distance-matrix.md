@@ -116,7 +116,7 @@ are a user pointing the app at a full phase 3 chromosome, the public URL
   the half the kernel writes. Its per-merge body is its own wasm function so
   the first call in a worker tiers up, the way the distance build already did.
   That entry is also what moves the heap wall
-  (`reference/CLUSTERING_WORKFLOW.md` §"Where the memory goes"): handed
+  (`reference/CLUSTERING_WORKFLOW.md` §"Performance regimes"): handed
   distances, the wasm never sees the N×V input at all. The fallback still does,
   so the wall is the fallback's.
 - **Same gate and fallback pattern as LD.** `MIN_WORK` of 10^9 pair-elements,

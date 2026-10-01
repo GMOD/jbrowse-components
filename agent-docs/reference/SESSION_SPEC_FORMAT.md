@@ -1,53 +1,47 @@
 ---
 name: session-spec-format
 audience: internal
-description: What the session spec is, a census of what the figure corpus writes into it, and the assessment against Gosling and GenomeSpy: keep the flat format-typed form, one published JSON Schema (ADR-120), decline a grammar. Read before extending the spec.
+description: What is the session spec, what does the figure corpus write into it, and why does it stay flat and format-typed with one published JSON Schema (ADR-120) instead of a grammar? Read before extending the spec.
 kind: spec
 ---
 
 # The session spec, measured, and the grammar-of-graphics question
 
-Is the JSON the figure corpus is built from a good format, and would a
-grammar-of-graphics form (the shape Gosling and GenomeSpy publish) be better, for
-readers or as a way to hold the codebase's complexity down? This doc answers from a
-census of the corpus. ADR-089 through ADR-091 are the in-tree experiment with marks that
-the codebase half of the question already ran.
+Would a grammar-of-graphics form (the shape Gosling and GenomeSpy publish) serve
+readers, or hold the codebase's complexity down, better than the flat session
+spec? This doc answers from a census of the figure corpus. ADR-089 through
+ADR-091 are the in-tree experiment with marks that ran the codebase half.
 
 ## What the format is
 
-A session spec is a session with its views written as **launch arguments** rather than
-state snapshots: `views[]` carries each view's launch keys flat (`assembly`, `loc`,
-`tracks`, per-view settings such as `color` on a synteny view), and nesting (`views`,
-`levels`) composes linear views into a synteny or breakpoint-split layout. The URL form is
-`&session=spec-{json}`, `defaultSession` puts the same keys under `init`, and
-[urlparams](../../website/docs/urlparams.md) renders each view type's keys from the
-launcher's own declaration (`SPEC_KEYS` blocks, generated).
+A session spec is a session with its views written as **launch arguments**:
+`views[]` carries each view's launch keys flat (`assembly`, `loc`, `tracks`,
+per-view settings), and nesting (`views`, `levels`) composes linear views into a
+synteny or breakpoint-split layout. The URL form is `&session=spec-{json}`,
+`defaultSession` puts the same keys under `init`, and
+[urlparams](../../website/docs/urlparams.md) renders each view type's keys from
+the launcher's own declaration (`SPEC_KEYS` blocks, generated).
 
-A track entry is a bare `trackId`, a one-element tuple (the synteny levels form), or an
-object whose non-`trackId` keys are display settings written inline:
+A track entry is a bare `trackId`, a one-element tuple (the synteny levels form),
+or an object whose non-`trackId` keys are display settings written inline.
+`normalizeTrackInit` folds those keys into the display snapshot and
+`showTrackGeneric` routes every real config slot onto the display's config
+through `applyConfSettings` (`packages/core/src/configuration/getConf.ts`). So
+the vocabulary of a track entry IS the display's config slot table, and
+`jbrowse validate` checks it from `configManifest.generated.ts`. **A key that is
+neither a slot nor a state-model property is dropped silently**, which is what
+the validator exists for.
 
-```json
-{ "trackId": "hg002_ont", "type": "LinearAlignmentsDisplay", "color": { "field": "tags.HP" }, "height": 400 }
-```
-
-`normalizeTrackInit` folds those keys into the display snapshot and `showTrackGeneric`
-routes every real config slot onto the display's config through `applyConfSettings`
-(`packages/core/src/configuration/getConf.ts`). So the vocabulary of a track entry IS the
-display's config slot table, the same names the track menu writes, the config pages
-document, and `jbrowse validate` checks from `configManifest.generated.ts`. **A key that is
-neither a slot nor a state-model property is dropped silently**, which is what the
-validator exists for.
-
-The same document has three front ends (URL param, `defaultSession`, and the jb2export
-CLI's `color:tag:HP height:400` modifiers), and the CLI is a separate parser
-(`products/jbrowse-img/src/applyTrackOpts.ts`) rather than a lowering onto slot names.
-That is the one structural drift left open: lowering the modifiers onto slot names would
-remove a dialect, and today the corpus's `cli` spec and `url` specs exercise two parsers.
+The jb2export CLI's `color:tag:HP height:400` modifiers are a separate parser
+(`products/jbrowse-img/src/applyTrackOpts.ts`), not a lowering onto slot names:
+the one structural drift left open.
 
 ## What the corpus writes
 
-`website/scripts/spec-key-census.ts` decodes every `session=` in the figure specs and
-tallies the keys; `--write` refreshes the two records below.
+`website/scripts/spec-key-census.ts` decodes every `session=` in the figure specs
+and tallies the keys; `--write` refreshes the two records below. The census
+counts keys as the corpus spelled them when the record was written, so rows lag
+merges.
 
 <!-- BEGIN GENERATED MEASUREMENT session-spec-corpus -->
 
@@ -100,141 +94,76 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT session-spec-vocabulary -->
 
-- **An entry is small.** Half the object entries set two keys or fewer; the largest are
-  alignments displays stacking connections, coverage and a legend. Nothing fights the
-  format for room.
-- **The shared vocabulary already reads as channels.** About a quarter of distinct keys
-  appear on two or more display types, exactly the set a grammar calls encoding and scale:
-  `height`, `color`, `colorBy`, `groupBy`, `scales`, `jexlFilters`, and row order
-  (`runClustering` / `sortRowsBy` / `domain`).
-- **The census counts keys as the corpus spelled them when the record was written**, so
-  rows lag merges: `scales` is one key on three display types
-  ([ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)) where it
-  was five flat keys; `defaultRendering`, `summaryScoreMode` and `displayCrossHatches` left
-  with the quantitative merge
-  ([ADR-143](../architecture-decision-records/adr-143-one-quantitative-display-and-facet-is-the-layout.md)),
-  `posColor`/`negColor` with the colour object
-  ([ADR-144](../architecture-decision-records/adr-144-one-colour-object-on-the-quantitative-display.md)).
-  `facet` names one mechanism, `"strand" | { field, domain }` (GRAMMAR_OF_GRAPHICS.md, "The
-  facet stage"); the multi-sample variant row banding that answered to `groupBy` is `facet`
-  now, and per-subtrack rows, `layout`, `subtreeFilter` and the multi-row feature display's
-  attribute are `rows` ([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)).
-- **The long tail names mechanisms, not aesthetics** (`readConnections`,
-  `showSoftClipping`, `conservationMode`, `hideSelfAlignments`, `maxMissingnessFilter`). A
-  grammar has no channel for them and would carry them as mark-specific options one level
-  deeper.
+- **An entry is small**, so nothing fights the format for room.
+- **The shared vocabulary already reads as channels**: `height`, `color`,
+  `colorBy`, `groupBy`, `scales`, `jexlFilters` and row order (`runClustering` /
+  `sortRowsBy` / `domain`). The long tail names mechanisms, not aesthetics
+  (`readConnections`, `showSoftClipping`, `conservationMode`), which a grammar
+  would carry as mark-specific options one level deeper.
 
-Pairs that look like drift but are not: `filter` is the config slot and `filterSetting`
-the display's session override (`core/util/jexlFilters.ts` says which wins); `color` vs
-`rowColor` on the multi-sample variant display is cell hue vs the tint beside each row
-label; `sortedBy` is a config slot naming a genomic column that the layout pass ranks each
-pileup section's reads by on every relayout (`sortLayout.ts`, main-thread despite the
-directory, [ADR-053](../architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md)),
-while `sortRowsBy` is a one-shot launch spec ordering an already-fixed row set once its
-region loads, then clearing itself (`rows.domain`, or `layout` on MAF;
-`packages/tree-sidebar/src/rowSortAutorun.ts`). `domain` is the shared word for the
-declared order a facet or `rows` object stacks in. The pair that is just two spellings
-(`showTree` / `showRowLabels`) is a rename through `legacyKeys` in a `preProcessSnapshot`
-that needs no grammar.
-
-## What the grammars do
-
-Both competitors are Vega-Lite descendants and put the genomics into **transforms over rows
-already in memory**. A mark count needs its denominator, or two correct censuses disagree.
-
-- **Gosling**: a `Mark` union (point, line, area, bar, rect, text, links, rule, triangles,
-  brush), channels `x`/`xe`/`y`/`ye`/`row`/`color`/`size`/`stroke`/`opacity`/`text`, data
-  types (`bam`, `vcf`, `bed`, `gff`, `bigwig`, `multivec`, `csv`, `json`), and transforms
-  (`filter`, `displace` (the pileup), `coverage`, `exonSplit`, ...). Views compose by
-  `views` with `arrangement`, in `layout: linear` or `circular`.
-- **GenomeSpy**: a handful of marks (`rect`, `point`, `rule`, `tick`, `text`, `link`,
-  `arrow`), `encoding` + `scales` + `transform`, composition by `layer`/`vconcat`/`hconcat`,
-  lazy genomic sources, and transforms including `pileup`, `coverage`, `flattenCigar`,
-  `alignmentMismatches`. It publishes a generated JSON Schema
-  (`@genome-spy/core/dist/schema.json`) and every example starts with `$schema`. Its marks
-  compose scales as this tree does
-  ([ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)):
-  hand-written vertex GLSL calls generated `getScaled_<channel>()` accessors, with domains
-  on uniforms so pan and zoom never touch a vertex buffer.
-
-GenomeSpy does have a pileup, as a per-view transform. It lacks what costs this codebase its
-lines: a layout stable across region boundaries under pan, a level-of-detail tier that
-changes what is fetched, and the worker-side packing those need. Authoring an alignments
-track from marks is large there (its BAM example is a 532-line spec); reusing one is cheap.
-A track type is authored once there in spec and once here in code
-(`LinearAlignmentsDisplay`), and a reader reusing one writes about 40 lines there and 16
-here (`variant_with_pileup`).
+Pairs that look like drift but are not: `filter` is the config slot and
+`filterSetting` the display's session override (`core/util/jexlFilters.ts` says
+which wins); `color` vs `rowColor` on the multi-sample variant display is cell
+hue vs the tint beside each row label; `sortedBy` is a config slot that the
+layout pass applies on every relayout (`sortLayout.ts`, main-thread,
+[ADR-053](../architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md)),
+while `sortRowsBy` is a one-shot launch spec that clears itself
+(`packages/tree-sidebar/src/rowSortAutorun.ts`). The pair that is just two
+spellings (`showTree` / `showRowLabels`) is a rename through `legacyKeys` in a
+`preProcessSnapshot` and needs no grammar.
 
 ## The assessment
 
-**A grammar is not a mechanism for this codebase's complexity.** A grammar controls
-complexity where a picture is datum × channel × mark and marks are few and interchangeable.
-ADR-091 measured that this codebase's cost is elsewhere: a declaration table across four
-display models eliminated zero getters, because the getters hold layout, tiering, fetch
-shape and per-display meaning (alignments' `colorBy` is a six-variant union carrying a
-six-field `modifications` object that no channel table holds without a nested escape
-hatch). The transform half is an inference from where the lines sit (`sortLayout.ts` and
-`plugins/canvas/src/LinearBasicDisplay/layout.ts`). The framing is
-[mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md): every track type
-runs one decision sequence (too-large gate, fetch tier, layout, height, backend ladder,
-layer lists, overlays), and plugins differ in what a **row** means and what a **colour**
-means. That is a pipeline with two pluggable nouns, not a grammar.
+**A grammar is not a mechanism for this codebase's complexity.** A grammar
+controls complexity where a picture is datum x channel x mark and marks are few
+and interchangeable. ADR-091 measured that the cost is elsewhere: a declaration
+table across four display models eliminated zero getters, because the getters
+hold layout, tiering, fetch shape and per-display meaning (alignments' `colorBy`
+is a six-variant union no channel table holds without a nested escape hatch). The
+framing is [mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md):
+every track type runs one decision sequence, and plugins differ in what a **row**
+means and what a **colour** means. That is a pipeline with two pluggable nouns.
 
-**For the spec a reader writes, the flat form is right, and the reason is the unit.**
-Gosling and GenomeSpy are mark-typed: a track is a mark plus channels, with a file wired
-in. JBrowse is format-typed: a track is a file format and the display pairs the mark,
-layout and fetch strategy that format wants. The reader never picks a mark, so "any channel
-on any mark" has nothing to attach to. What survives at the reader's level is the vocabulary
-observation: `height`, `color`, `colorBy`, `groupBy` and the score scale should keep spelling
-the same across displays.
+**For the spec a reader writes, the flat form is right, and the reason is the
+unit.** Gosling and GenomeSpy are mark-typed: a track is a mark plus channels.
+JBrowse is format-typed: a track is a file format and the display pairs the mark,
+layout and fetch strategy that format wants. The reader never picks a mark, so
+"any channel on any mark" has nothing to attach to. What survives is the
+vocabulary rule: `height`, `color`, `colorBy`, `groupBy` and the score scale keep
+spelling the same across displays.
 
 **The published schema the grammars had and this format lacked is
 [ADR-120](../architecture-decision-records/adr-120-one-json-schema-for-config-and-session-spec.md).**
-`scripts/generateConfigManifest.ts` walks the live `ConfigurationSchema` objects and state
-models into one draft 2020-12 JSON Schema at
-`https://jbrowse.org/jb2/schema/v5/config.json`, bundled in the CLI. Each type is a `$defs`
-entry dispatched on `type`; slots carry description, default and enum members and admit
-`jexl:`; `frozen`/`maybeFrozen` slots stay open with the reason in their description; a
-session spec's `views[]` takes each view type's launch keys from its runtime registration.
-`jbrowse validate` runs the schema first and keeps only what a schema cannot express (an
-unknown `trackId`, an undefined assembly) plus migration warnings. The URL's major segment is
-the format version.
+`scripts/generateConfigManifest.ts` walks the live `ConfigurationSchema` objects
+and state models into one JSON Schema at
+`https://jbrowse.org/jb2/schema/v5/config.json`, bundled in the CLI; a session
+spec's `views[]` takes each view type's launch keys from its runtime
+registration. `jbrowse validate` runs the schema first and keeps only what a
+schema cannot express (an unknown `trackId`, an undefined assembly). The URL's
+major segment is the format version.
 
 **Declined, with the evidence each rests on:**
 
-- *A uniform `encoding` block.* Cross-display channels exist and are flat; per-display keys
-  are mechanisms with no channel. For the quantitative class the block exists:
-  `LinearMarkDisplay`'s `marks[].encoding`, evaluated once in the worker
-  ([ADR-107](../architecture-decision-records/adr-107-the-quantitative-class-is-authored-in-config.md)).
-  The feature display's categorical channels are two settings, `facet` and `color`, each one
-  config object with a string shorthand
-  ([ADR-131](../architecture-decision-records/adr-131-a-categorical-channel-is-one-config-object.md));
-  **Edit as JSON...** stores no block of its own.
-- *First-class `Scale` objects, across displays.* **Taken**: every quantitative display writes
-  `scales.y` from one factory in `@jbrowse/wiggle-core`
-  ([ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md), generalising
-  [ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)). The declined
-  half was a fixed object shared by all, which puts `autoscale` on Manhattan and `symlog` where no
-  shader places one.
-- *View combinators (`layer`, `concat`).* A view composes tracks, a session composes views, and
-  `views`/`levels` nesting is the combinator every synteny and breakpoint figure uses. Layering
-  inside a track is a display's business; exposing it is the mark-typed design again.
-- *Marks as a published unit.* Run and reversed as a spec field (ADR-090, ADR-091), then adopted
-  as a display's own declaration
+- *A uniform `encoding` block.* Cross-display channels exist and are flat;
+  per-display keys are mechanisms with no channel. The quantitative class has
+  `LinearMarkDisplay`'s `marks[].encoding`
+  ([ADR-107](../architecture-decision-records/adr-107-the-quantitative-class-is-authored-in-config.md)),
+  and the feature display's categorical channels are `facet` and `color`, one
+  config object each
+  ([ADR-131](../architecture-decision-records/adr-131-a-categorical-channel-is-one-config-object.md)).
+- *A fixed `Scale` object shared by all displays.* It puts `autoscale` on
+  Manhattan and `symlog` where no shader places one. Every quantitative display
+  writes `scales.y` from one factory in `@jbrowse/wiggle-core` instead
+  ([ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)).
+- *View combinators (`layer`, `concat`).* `views`/`levels` nesting is the
+  combinator every synteny and breakpoint figure uses. Layering inside a track is
+  a display's business; exposing it is the mark-typed design again.
+- *Marks as a published unit.* Run and reversed as a spec field (ADR-090,
+  ADR-091), then adopted as a display's own declaration
   ([ADR-106](../architecture-decision-records/adr-106-a-display-declares-its-marks.md)).
   ADR-091's "what would reopen this" still governs a factory.
 
-**The answer differs below the display.** A shape-and-scale vocabulary inside `render-core`
-registers nothing, holds no config slot and crosses no RPC boundary, so ADR-091's reopening
-condition does not govern it
+**The answer differs below the display.** A shape-and-scale vocabulary inside
+`render-core` registers nothing, holds no config slot and crosses no RPC
+boundary, so ADR-091's reopening condition does not govern it
 ([ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)).
-The spec form, the authoring surface and the shader library got different answers on different
-evidence.
-
-## What the manuscript can say
-
-The session spec is a launch document, format-typed, in which a track entry is a trackId plus the
-display's own config slots inline; a figure's spec is typically under twenty lines; and the site's
-figures render from such documents. Against the grammar-based browsers the difference is where the
-pileup lives (a transform in the reader's spec there, the display type here), and the parity item
-both had, a published JSON Schema, is closed (ADR-120).

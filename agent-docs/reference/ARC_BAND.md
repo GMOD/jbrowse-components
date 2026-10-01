@@ -32,13 +32,13 @@ on screen. Three things ride on that, each a silently wrong picture if missed:
 - **Arc mode only.** The read cloud's Y axis is insert size, and an
   interchromosomal pair has none (TLEN 0), so `computeArcShape` falls back to the
   endpoint gap, which `arcsYDomainBp` maxes and the ruler prints as an insert
-  size. Arc mode's axis is genomic radius, where `INTERCHROM_ARC_YBP` is the
-  band ceiling.
+  size. Arc mode's axis is genomic radius, where `INTERCHROM_ARC_YBP` is the band
+  ceiling.
 - **`drawInter` and `minInterchromSupport` gate both marks** from one hoisted
   condition, so neither mark escapes the setting or the mismapping floor.
 - **The hover needs two refNames.** `formatArcTooltip` builds a range from the
-  min and max of the two bp, which across chromosomes names one chromosome with
-  a coordinate from the other. `endRefName` switches it to two positions and no
+  min and max of the two bp, which across chromosomes names one chromosome with a
+  coordinate from the other. `endRefName` switches it to two positions and no
   distance.
 
 ## Where each connection draws from
@@ -52,44 +52,24 @@ region at a different extrapolated place.
 crosses a seam whole. A far foot on no displayed region places along its own
 region's axis, and the arc draws block by block under that block's clip
 (`ARC_CLIPPED_MARKS`) so it runs off the window edge rather than onto a region
-that does not hold its mate. An arc with neither foot in its filing region
-crosses that block the same way. In an ordinary LGV the displayed region is the
-whole chromosome, so only multi-locus views reach these cases.
+that does not hold its mate.
 
-**Arc mode plots genomic radius** on a linear axis at the view's px per bp
-(`arcBandYScale`). The read cloud plots |TLEN| on a log axis, and
-`computeInsertSizeTicks` places the ruler through the same scale.
-
-## A far pair keeps its direction for three screen widths
-
-`LINK_FAR_SCREEN_WIDTHS` is 3, not 1. Past the threshold a pair's ellipse becomes
-a circle and the band clips it to near-vertical legs at each foot, which discards
-the pair's direction: a circle's tangent at its foot is vertical whatever its
-radius. At 3 the pair still draws as a fan of arcs that lean toward the mate.
-
-The width is the canvas the link draws across, never a block's (ADR-163). Against
-a block the threshold moves as a region edge scrolls, and a settled arc would
-repaint as a different mark mid-pan.
-
-The limit is tessellation, not geometry. An ellipse spends its 64 segments over
-its whole half, so the share on the visible slice near the foot falls as
-`2/(PI*sqrt(N))`. A far circle dodges that with `legSweepAngle` and avoids float32
-cancellation; neither is needed at 3. The hull is not a limit: `arcHull.test.ts`
-covers aspects from 1x100 to 3000x8.
+**A far pair keeps its direction for three screen widths**
+(`LINK_FAR_SCREEN_WIDTHS`, 3 not 1). Past the threshold a pair's ellipse becomes
+a circle and the band clips it to near-vertical legs, which discards the pair's
+direction. The width is the canvas the link draws across, never a block's
+(ADR-163): against a block the threshold moves as a region edge scrolls, and a
+settled arc would repaint as a different mark mid-pan.
 
 ## Paint order is an interest ranking, not a data order
 
 - Between marks, in `ARC_BAND_MARKS`: ticks paint under everything, and both
   renderers draw each mark over every region's feed before the next mark, so no
-  region's ticks paint over another region's arcs. On deep short-read data
-  mismapped pairs put a full-height vertical at many loci, straight through the
-  arcs that carry insert size and orientation.
+  region's ticks paint over another region's arcs.
 - Within arcs, in `arcPaintOrder`: `arcPaintRank` (categorized over
   uncategorized), then `support`, then dedup key. A deep pileup is overwhelmingly
   concordant pairs painting the baseline slot, so support alone let grey punch
-  through the few arcs that mean something. Cross-region arcs follow their
-  region's own arcs in its feed; the cloud's dashed split connectors paint after
-  its solid bars.
+  through the few arcs that mean something.
 
 `resolveArcBandHover` is the single entry point for the band. It asks each mark's
 hit test through `nearestMarkHit`, last mark first, so a tie goes to the mark
@@ -99,77 +79,67 @@ highlight lies on what was painted.
 ## What may hide an arc
 
 **"Concordant" has one definition.** `isConcordantPairRead`
-(`packages/alignments-core/src/orientation.ts`) is the aligner's verdict: flagged
-proper, not supplementary, mates facing. The worker's "Show proper pairs" filter
-(`isProperPairChain`) and the "Show concordant-pair arcs" filter (`resolveArcs`)
-both call it, and `concordantPairParity.test.ts` holds them together.
-
-The arc filter also requires the arc to paint the baseline colour slot
-(`arcPaintRank`), so nothing coloured is hidden as routine and "hidden" equals
+(`packages/alignments-core/src/orientation.ts`) is the aligner's verdict. The
+worker's "Show proper pairs" filter (`isProperPairChain`) and the "Show
+concordant-pair arcs" filter (`resolveArcs`) both call it, and
+`concordantPairParity.test.ts` holds them together. The arc filter also requires
+the arc to paint the baseline colour slot (`arcPaintRank`), so "hidden" equals
 "grey" under any `colorByType`. The read cloud's `isConcordantFRPair` is a
 different, deliberate reading: |TLEN| in the modal band.
 
 **A support floor exists only for interchromosomal mate links** (either mark),
 not for same-chromosome arcs or split junctions. `minInterchromSupport` counts a
 mate link's reads over a window of one fragment length on both sides
-(`clusteredInterchromSupport`, window from `stats.upper`), never at a coordinate:
-mates straddle a breakpoint, so `arcKey`'s exact count is 1 for nearly every
-interchromosomal pair and a floor over it would delete real translocations.
-Clusters count over every lane at once (`interchromClusters`), since grouping by
-strand scatters a breakpoint's pairs. The same floor on same-chromosome arcs was
-measured and declined as a density filter, not an evidence filter
+(`clusteredInterchromSupport`), never at a coordinate: mates straddle a
+breakpoint, so `arcKey`'s exact count is 1 for nearly every interchromosomal pair
+and a floor over it would delete real translocations. Clusters count over every
+lane at once (`interchromClusters`), since grouping by strand scatters a
+breakpoint's pairs. The same floor on same-chromosome arcs was measured and
+declined as a density filter, not an evidence filter
 ([DEEP_COVERAGE.md](DEEP_COVERAGE.md)).
 
-**The floor shares the window's axis.** `windowFor` splits mate links (windowed)
-from split junctions (window 0); `clearsInterchromFloor` applies the same split
-and exempts split junctions. A chimeric read crosses the breakpoint rather than
-scattering around it, so "fewer than N reads at this exact base" is not evidence
-the count can support, and the mate floor would draw nothing for a translocation
-carried by one split read, the only evidence on unpaired long-read data.
-
-**The floor applies differently per mark.** An arc is one cluster, so its gate
-tests the number `arcStrokeScale` spends. A tick sums the clusters reaching its
-coordinate, so testing each addend would rewrite what the hover says about the
-data. Ticks push unfiltered and the floor tests `line.support` after coalescing.
-`arcClustering.test.ts` holds both.
-
-**Clustering is single-linkage over both coordinates at once.** Hierarchical
-clustering on one axis then the other is not symmetric in the two contigs: which
-coordinate is `bpA` depends on which contig name sorts first, and the same three
-connections scored `[2, 1]` one way round and `[1, 1, 1]` transposed. The window
-bounds the gap, not the diameter, so a chain of pairs a window apart could merge;
-measured on HG002 300x, the chain does not form because partner coordinates
-spread over many contigs. `benches/interchromClusters.probe.ts` re-measures it
-against the fixed-cell alternative, which agrees within one cluster but cuts a
-real translocation wherever a cell boundary falls.
+- **The floor shares the window's axis.** `windowFor` splits mate links
+  (windowed) from split junctions (window 0); `clearsInterchromFloor` exempts
+  split junctions. A chimeric read crosses the breakpoint rather than scattering
+  around it, so the mate floor would draw nothing for a translocation carried by
+  one split read, the only evidence on unpaired long-read data.
+- **The floor applies differently per mark.** An arc is one cluster, so its gate
+  tests the number `arcStrokeScale` spends. A tick sums the clusters reaching its
+  coordinate, so testing each addend would rewrite what the hover says about the
+  data. Ticks push unfiltered and the floor tests `line.support` after
+  coalescing. `arcClustering.test.ts` holds both.
+- **Clustering is single-linkage over both coordinates at once.** Hierarchical
+  clustering on one axis then the other is not symmetric in the two contigs
+  (which coordinate is `bpA` depends on which contig name sorts first). The window
+  bounds the gap, not the diameter, but measured on real deep data the chain does
+  not form. `benches/interchromClusters.probe.ts` re-measures it against the
+  fixed-cell alternative, which cuts a real translocation wherever a cell
+  boundary falls.
 
 ## Support, and why a tick can hide behind an arc's foot
 
 **Both families carry `support`** and spend it through `arcStrokeScale`, the link
-mark's size scale that every backend, the export and the hit test read. Coalescing
-without keeping the count drew a 40-read translocation like one mismapped pair.
+mark's size scale that every backend, the export and the hit test read.
+Coalescing without keeping the count drew a 40-read translocation like one
+mismapped pair.
 
 **Counting differs by evidence, not by mark.** A window suits a mate link, whose
 reads straddle a breakpoint they never land on, and misleads for a split
-junction, whose read knows the breakpoint to the base. So an interchromosomal mate
-link is windowed, which keeps the drawn number and the floor's number equal, and
-everything else counts exact coincidences. A split junction is never windowed on
-either chromosome: chaining acceptors under a fragment-length window answers "is
-this a real alternative acceptor" for the reader (K562 BCR-ABL1 is one donor and
-24 acceptors over ~154 kb, [DEMO_DATASETS.md](DEMO_DATASETS.md)). Window 0 through
-the same single-linkage walk gives a split junction `arcKey`'s count while the
-floor, arc weight and tick sum read one number. The clustering pass runs at every
-setting, not only above the floor.
+junction, whose read knows the breakpoint to the base. A split junction is never
+windowed on either chromosome: chaining acceptors under a fragment-length window
+answers "is this a real alternative acceptor" for the reader
+([DEMO_DATASETS.md](DEMO_DATASETS.md)'s K562 BCR-ABL1). Window 0 through the same
+single-linkage walk gives a split junction `arcKey`'s count while the floor, arc
+weight and tick sum read one number. The clustering pass runs at every setting,
+not only above the floor.
 
 **An interchromosomal tick sums the distinct clusters reaching its coordinate.**
-A tick is half a junction and, with `partnerRefNames` plural, possibly several far
-sides. Reads at the coordinate read 1 for nearly every mate pair, and one
-cluster's size misreports where two singleton events share a base; each cluster
-contributing its size once survives both, so `clusteredInterchromSupport` returns
-a cluster identity per connection, not a count.
-
-Ticks matter more than arcs here. A translocation is usually viewed from one
-chromosome, where both feet cannot be on screen, so the mark is a tick.
+Reads at the coordinate read 1 for nearly every mate pair, and one cluster's size
+misreports where two singleton events share a base; each cluster contributing its
+size once survives both, so `clusteredInterchromSupport` returns a cluster
+identity per connection, not a count. Ticks matter more than arcs here: a
+translocation is usually viewed from one chromosome, where both feet cannot be on
+screen.
 
 **Open call:** an N-pair event emits N marks per side, each stroked and hovered as
 carrying all N reads, and `compute.test.ts` pins that. Whether to draw one mark
@@ -182,9 +152,8 @@ two land on the same x when a breakpoint has one acceptor the view shows and
 another it does not, and both draw `ARC_COLOR_INTERCHROM` at band height, so a
 junction with six times the arc's support hid behind the arc's apparent leg. The
 tick was dashed to solve this and is solid again by Colin's call (2026-09-02).
-**Do not re-dash it without asking.** Support cannot separate them either:
-`arcStrokeScale` caps at 4x base width near 44 reads. The read cloud's `[3, 3]`
-split connector is the only dashed mark in the band.
+**Do not re-dash it without asking.** The read cloud's `[3, 3]` split connector is
+the only dashed mark in the band.
 
 The hover carries the claim in words: `partnerOffView` on
 `ArcLineTooltipPayload` prints "Outside the displayed regions". The claim is safe
@@ -196,35 +165,24 @@ branches on.
 
 A flat mark whose partner is outside every loaded region collapses onto the end
 the view can place and sits at the floor of the band's scale
-(`ARC_SHAPE_FLAT_UNPLACED`), half a square inside the band edge
-(`ARC_BAND_INSET_PX`). Otherwise the bar extrapolates off the screen edge to a
-coordinate nothing covers, and the same connection's span sets `arcsYDomainBp`,
-which every lane shares and the insert-size axis prints. On HG002 300x, pairs
-more than 1 Mb apart were about 7% of cloud arcs, spread uniformly, and past 10 Mb
-none had two other pairs agreeing: mismapped mates that squeezed every real pair
-into the top third of the axis.
+(`ARC_SHAPE_FLAT_UNPLACED`, inset `ARC_BAND_INSET_PX`). Otherwise the bar
+extrapolates off the screen edge to a coordinate nothing covers, and that span
+sets `arcsYDomainBp`, which every lane shares: mismapped mates squeezed every
+real pair into the top third of the axis.
 
-**It is a placement test, not a span threshold.** A pair 5 Mb apart with both ends
-in displayed regions draws between two real pixels and belongs on the axis; a
-pair 30 kb apart in a 20 kb window does not. No span ordering reproduces both.
-
-**Ask the loaded list, not `displayedRegions`.** An ordinary LGV's one displayed
-region is the whole chromosome, so every mate would read as placeable.
-`cloudUnplaced.test.ts` pins the distinction.
-
-**The test reaches past the loaded list by `CLOUD_OFFSCREEN_REACH` times the
-fetched span**, so a real event just off the window edge still draws. The reach
-sweep and its table are in `cloudReachBp`; 20x sits inside the band where only
-clustered evidence is admitted.
+- **It is a placement test, not a span threshold.** A pair 5 Mb apart with both
+  ends in displayed regions draws between two real pixels and belongs on the
+  axis; a pair 30 kb apart in a 20 kb window does not.
+- **Ask the loaded list, not `displayedRegions`.** An ordinary LGV's one displayed
+  region is the whole chromosome, so every mate would read as placeable.
+  `cloudUnplaced.test.ts` pins the distinction.
+- **The test reaches past the loaded list by `CLOUD_OFFSCREEN_REACH` times the
+  fetched span**, so a real event just off the window edge still draws; the sweep
+  is in `cloudReachBp`.
 
 The collapse happens in bp in `resolveArcs`, before projection, so the marks draw
-it with no geometry of their own: the link widens a zero-length line to
-`LINK_LINE_MIN_PX`, the squares land on each other and the hit test measures the
-same stub. The hover reports the far coordinate as a distance
-(`unplacedPartnerBp`).
-
-`plotsOnInsertSizeAxis` is the other half: `maxFlatArcSpanBp` reads the shapes
-that plot on the axis, not `isFlatArcShape`.
+it with no geometry of their own. `plotsOnInsertSizeAxis` is the other half:
+`maxFlatArcSpanBp` reads the shapes that plot on the axis, not `isFlatArcShape`.
 
 ## Questions asked of the band, and of the lanes
 
@@ -232,11 +190,10 @@ that plot on the axis, not `isFlatArcShape`.
 is off-region carries ticks and no arcs.
 
 **A question asked across lanes is answered by `computeArcsByGroup`**, not a walk
-of `arcsByGroup`: `inkGroupKeys`, `colorSlots` and `maxFlatArcSpanBp`. Cross-region
-arcs live outside that feed, so "which arcs does this lane draw" has no single
-walk. `ArcsByGroupResult` explains why all three compute after regionization: an
-arc reaching no displayed region is dropped, and a pre-regionization set would
-name colours nothing draws.
+of `arcsByGroup`: `inkGroupKeys`, `colorSlots` and `maxFlatArcSpanBp`.
+Cross-region arcs live outside that feed. `ArcsByGroupResult` explains why all
+three compute after regionization: an arc reaching no displayed region is
+dropped, and a pre-regionization set would name colours nothing draws.
 
 **Three shape predicates answer three questions.** `isFlatArcShape` asks whether
 it draws as a bar; `plotsOnInsertSizeAxis` whether it sizes the axis; only
@@ -253,10 +210,9 @@ inversion.
 
 - **Scope.** Every interchromosomal connection paints `ARC_COLOR_INTERCHROM`, so
   orientation has no other channel. Same-chromosome arcs keep theirs
-  (`unpairedOrientationColor`, and the pair-arc colours in the legend), and
-  every foot would land on the baseline, a rule under the band rather than a set
-  of directions. Widening feet to pair arcs was measured and declined. The ticks
-  deserve feet and are filed:
+  (`unpairedOrientationColor`, and the pair-arc colours in the legend), and every
+  foot would land on the baseline. Widening feet to pair arcs was measured and
+  declined. The ticks deserve feet and are filed:
   [ideas/collections/arc-band-open-calls.md](../ideas/collections/arc-band-open-calls.md)
   §"Give the interchromosomal ticks breakend feet too".
 - **Interchromosomal is always cross-region**, so `buildArcBandFeeds` sets the
@@ -270,20 +226,18 @@ inversion.
 - **The arm, not the foot's own aligned body.** A split junction's endpoint is the
   junction, so `connectionEndpointBps` passes `dir1`/`dir2` through. A mate link's
   endpoint is the fragment's outer edge with the read body pointing back at it, so
-  `pairOuterDir` negates the read's direction. Mirroring the two ternaries drew
-  FR pairs "duplication" while split reads over the same junction drew
-  "deletion". `arcBreakendFeet.test.ts` holds the families against each other.
+  `pairOuterDir` negates the read's direction. Mirroring the two ternaries drew FR
+  pairs "duplication" while split reads over the same junction drew "deletion".
+  `arcBreakendFeet.test.ts` holds the families against each other.
 
 The feet live in the link mark, so painter, hit test and hover highlight all draw
 them. Their sign is the opposite of `tangentSign` (`core/util/bezierConnector.ts`),
 the direction a per-read connector leaves the endpoint: a foot lies over the
 retained arm and the curve departs across the junction. Neither should be "fixed"
-to match the other.
-
-A foot is at most `LINK_FOOT_PX` from its anchor and clips to its own region's
-screen extent (`linkFootLenPx`), so a foot near a seam stops at the seam. Two close
-feet merge into one bar, which is correct, so a foot never bounds on the other
-foot's anchor. `linkMark.test.ts` holds the seam clip.
+to match the other. A foot clips to its own region's screen extent
+(`linkFootLenPx`), and two close feet merge into one bar, which is correct, so a
+foot never bounds on the other foot's anchor. `linkMark.test.ts` holds the seam
+clip.
 
 ## The gesture guard
 
@@ -296,16 +250,13 @@ interbase menu while the tooltip said "Read connection".
 
 - `hoverStateForResult` does not compile without `case 'arc'` (TS2366); that is
   the only compile-time enforcement.
-- `handleClick` matches no pileup case for an arc, so it does nothing. The explicit
-  `case 'arc': return` guards against a future `default:`.
+- `handleClick` matches no pileup case for an arc; the explicit `case 'arc':
+  return` guards against a future `default:`.
 - `contextMenuTargetForHit` returns `undefined` for an arc, so the browser's menu
-  opens. A mark with no items falls through, as `'none'` does. `ArcMarkHit` narrows
-  to `{tooltip, highlight}` and drops the `ArcBandHit` behind it. The missing items
-  are filed: [An arc's right-click offers nothing](../ideas/collections/arc-band-open-calls.md).
+  opens. The missing items are filed:
+  [An arc's right-click offers nothing](../ideas/collections/arc-band-open-calls.md).
 
 `arcGestureGuard.test.ts` works the one pixel where an arc's ink lies over an
-interbase bar, finding it by asking the hover rather than projecting the dome, and
-states each case against a control with `readConnections` off. `mouseGestures.test.ts`
-covers `handleMouseDown` and `handleMouseLeave`; its `cancelAnimationFrame` stub is
-load-bearing, since stubbing only `requestAnimationFrame` lets the held callback
-run. `createTestAlignmentsDisplay` (`testUtils.ts`) is the shared harness.
+interbase bar, finding it by asking the hover rather than projecting the dome.
+`mouseGestures.test.ts`'s `cancelAnimationFrame` stub is load-bearing, since
+stubbing only `requestAnimationFrame` lets the held callback run.

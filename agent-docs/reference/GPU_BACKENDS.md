@@ -13,39 +13,20 @@ is the hub; the uploads and lifecycle that call these backends are in
 
 ## RenderingBackend interfaces per plugin
 
-Each plugin specializes `PerRegionRenderingBackend` on its payload and render
-state, declares what it draws as a mark list, and builds the backend from it:
-
-```ts
-export type XxxRenderingBackend = PerRegionRenderingBackend<XxxData, XxxRenderState>
-
-export const XXX_MARKS = [
-  defineMark({ shape: xxxShape, channels: d => …, params: s => … }),
-]
-
-// in the lazily loaded component, the one import that reaches the HAL
-const createXxxBackend = (canvas: HTMLCanvasElement) =>
-  createMarkBackend(canvas, XXX_MARKS)
-```
-
-`createMarkBackend` is `createRenderingBackend` over `GpuMarkBackend` and
-`Canvas2DMarkBackend`, which walk the same list. `createRenderingBackend` calls
-`createGpuHal` and builds the GPU backend if a HAL comes back, else Canvas2D.
-A mark's shape is `spanMark`, `pointMark`, or the display's own `MarkShape`
-beside its shader; `example-plugins/score-example` is the worked third-party
-form. Alignments still calls `createRenderingBackend` with renderer classes of
-its own, for the sectioned frame scaffold its pileup needs.
+Each plugin declares what it draws as a mark list (`defineMark`) and builds the
+backend with `createMarkBackend(canvas, XXX_MARKS)`, which is
+`createRenderingBackend` over `GpuMarkBackend` and `Canvas2DMarkBackend`, walking
+the same list. `example-plugins/score-example` is the third-party form.
+Alignments calls `createRenderingBackend` with renderer classes of its own, for
+the sectioned frame its pileup needs.
 
 ### Canvas2D is the floor; GPU is the optional accelerator
 
 Every canvas-drawing display **must** ship a Canvas2D painter, because SVG export
 goes through it ([SVG_EXPORT.md](SVG_EXPORT.md)). A shape's `paintBlock` is that
-painter, so a mark-layer display has it by construction. A drawing that is not
-instances of a shape (the reference sequence's letters) is **Canvas2D-only**: a
-hand-written `Canvas2DPerRegionRenderingBackend` subclass and a factory that
-skips the HAL ladder, `createCanvas2DBackend(canvas, c => new Canvas2DXxxRenderer(c))`.
-The lifecycle is backend-agnostic, so nothing downstream notices.
-`plugins/sequence`'s `SequenceRenderer` is the last hand-written one.
+painter. A drawing that is not instances of a shape (the reference sequence's
+letters) is **Canvas2D-only** via `createCanvas2DBackend`; `plugins/sequence`'s
+`SequenceRenderer` is the last hand-written one.
 
 ### Keeping the two backends in parity
 
@@ -79,12 +60,9 @@ kept by construction. Preserve whichever of these the display uses:
   Change the shared function, not one caller.
 - **One registry, exhaustively keyed.** Multi-layer displays list layers,
   z-order and gating once and map each id per backend through a
-  `Record<LayerId, …>`, so a half-added layer is a compile error. "The layers
-  aren't 1:1" is no reason to skip it: a registry shares the list, not the calls,
-  and what it prevents is a layer existing in one backend only, which also loses
-  it from SVG export. Alignments' three bands are three mark lists
-  (`PILEUP_MARKS`, `ALIGNMENTS_COVERAGE_MARKS`, `ARC_BAND_MARKS`); two bands with
-  different draw signatures warrant a second list, never a second backend
+  `Record<LayerId, …>`, so a half-added layer is a compile error rather than a
+  layer in one backend only, which also loses it from SVG export. Two bands with
+  different draw signatures warrant a second mark list, never a second backend
   registry.
 
   **A pass drawn but never uploaded fails silently and on the GPU only**, since
@@ -97,10 +75,6 @@ kept by construction. Preserve whichever of these the display uses:
   count past the bytes reads off the end with no throw. Where a worker packs the
   buffer and the main thread counts a parallel array, pin the two where they are
   joined (`packCoverageArea.test.ts`).
-
-  **Use this at the scale that needs it.** `LinearBasicDisplay`'s five passes
-  are one mark list (`CANVAS_FEATURE_MARKS`; `bufferOf` marks the two that borrow
-  a buffer). Don't add registries to a renderer you can check by reading.
 
   **A pass `id` names a slot**: the descriptor a draw uses, the buffer in
   `RegionRegistry` and the pass's texture. Two passes sharing one collide in all
@@ -115,17 +89,11 @@ kept by construction. Preserve whichever of these the display uses:
   mechanism here catches this, so state **the input range the budget covers where
   the number is**, measured. `MAX_VISIBLE_CHEVRONS_PER_LINE`
   (`sharedRendererConstants.ts`) is the worked example; read its figures there.
-- **`SYNC:` comments are the fallback.** Where a value must match across files
-  and none of the above applies, a `SYNC:`/`mirrors` comment names the
-  counterpart. First check whether the thing mirrored is a constant
-  (`export-consts`), a scalar decision (`js-export`), or an equivalence two
-  implementations must preserve while differing (a numeric oracle test, as
-  `syntenyShaderParity.test.ts`). **The tag means an unshared duplication and only
-  that**: grepping it is meant to find where we gave up, so a tag on a shared
-  function or self-tested threshold is over-reporting. Grep the counterpart
-  before trusting a tag. Count with `grep -rn 'SYNC:' --include='*.ts' packages
-  plugins products`; [SHADER_JS_CODEGEN.md](SHADER_JS_CODEGEN.md) §"The two
-  sweeps" says how to re-run the survey.
+- **`SYNC:` comments are the fallback.** Use one only where a value must match
+  across files and neither `export-consts`, `js-export` nor a numeric oracle test
+  (`syntenyShaderParity.test.ts`) applies. **The tag means an unshared
+  duplication and only that**: grepping it finds where we gave up, so a tag on a
+  shared function is over-reporting.
 
 **Intentional divergences — do NOT "fix" these into parity.** GPU rasterization
 is watertight while Canvas2D antialiases each primitive independently.
@@ -147,83 +115,47 @@ is watertight while Canvas2D antialiases each primitive independently.
 
 ### Shared per-region streamed contract
 
-Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle), the
-whole-view ones over one canvas-wide block (hic, LD, the variant matrix) and the
-shared-canvas ones over a block per cell (dotplot, both synteny displays) all
-declare a mark list that `createMarkBackend` turns into both backends.
+Every mark-list display, whether per-region, whole-view or shared-canvas, gets
+both backends from `createMarkBackend`. A display whose x axis is not the
+block's bp span builds blocks with `canvasWideBlock` / `canvasWideBlocks`
+(`render-core/renderBlock`); its marks read screen x off the payload through the
+display's own transform.
 
-A display whose x axis is not the block's bp span builds blocks with
-`canvasWideBlock` / `canvasWideBlocks` (`render-core/renderBlock`). Its marks read
-screen x off the payload's own coordinates through the display's own transform
-(`panPx` fold for dotplot and synteny; `viewScale`/`viewOffsetX` for hic and LD),
-so the block carries only its key and the identity bp span that keeps `clipBlock`
-well-formed. The multi-way stack mixes both: gutters take a canvas-wide block,
-glyph lanes a bp-span one off `glyphBlockRange`.
+**Hit testing.** A box-instance shape declares `ink(...)`, and `defineMark`
+derives `hitNearest` from it (`shapeHitNearest`); the same `ink` drives the
+chrome's highlight (`inkOfInstances`, ADR-110). A shape whose ink is not a box
+keeps its own `hitNearest`.
 
-**Hit testing.** A box-instance shape declares `ink(channels, block, frame,
-params, i)`, the rect its painter fills (undefined when culled), and
-`defineMark` derives `hitNearest` from it (`shapeHitNearest` in
-`render-core/marks/hit`; only a strictly nearer candidate replaces the best, so
-back-to-front candidates give the top mark). The same `ink` drives the chrome's
-highlight (`inkOfInstances`, ADR-110). `nearestMarkHit` is the hover walk over
-the candidates the display names per mark; `valueWindow` bounds `bar` and
-`point`. A shape whose ink is not a box keeps its own `hitNearest`: synteny
-ribbons, arcs, dotplot's capsule, the pileup marks (bp containment), and `point`
-(nearest glyph centre).
-
-Both halves extend abstract bases in
-`@jbrowse/render-core/perRegionRenderingBackend`:
-
-- `Canvas2DPerRegionRenderingBackend` owns `canvas` + `ctx`, the concrete
-  `renderBlocks` (hi-DPI `prepareCanvas` sizing and the `painted` answer around
-  the subclass's abstract `draw`; **overriding `renderBlocks` silently drops
-  both**), and no-op `upload`/`release`/`dispose`.
-- `GpuPerRegionRenderingBackend` owns `hal`, a uniform scratch `ArrayBuffer`,
-  `release` via `hal.deleteRegion`, `dispose` via `hal.dispose`, and `upload` over
-  the `regionPasses` the subclass declares. A pass that draws off a sibling's
-  buffer (wiggle's density, canvas's chevron) is absent from `regionPasses`;
-  `createMarkBackend` derives it from the marks with no `bufferOf`.
-
-Two invariants keep renderers small: `renderBlocks` receives the model's data
-map as its second argument and the renderer holds no map of its own; and
-`hal.drawPass` short-circuits when a region has no buffer, so renderers draw
-unconditionally. The optional fourth type parameter `RenderData` lets the upload
-and render payloads diverge; nothing uses it today.
+Both halves extend abstract bases in `@jbrowse/render-core/perRegionRenderingBackend`.
+**Overriding `Canvas2DPerRegionRenderingBackend.renderBlocks` silently drops**
+the hi-DPI `prepareCanvas` sizing and the `painted` answer; subclass `draw`
+instead. `GpuPerRegionRenderingBackend` uploads over the `regionPasses` the
+subclass declares, and a pass that draws off a sibling's buffer is absent from
+it (`createMarkBackend` derives that from marks with no `bufferOf`).
+`renderBlocks` receives the model's data map, so the renderer holds none, and
+`hal.drawPass` short-circuits on a missing buffer, so renderers draw
+unconditionally.
 
 Whole-map synced plugins (alignments) define their own backend interface; see
 [GPU_DISPLAY_LIFECYCLE.md](GPU_DISPLAY_LIFECYCLE.md) §"Upload patterns".
 
 ## Wiggle-family contract
 
-Displays with a score axis (wiggle, Manhattan, marks) share types, scale
-utilities and score-plot pieces across two packages.
+`@jbrowse/wiggle-core` is the cross-plugin contract for score-axis displays
+(wiggle, Manhattan, marks); importing it avoids a dependency on the wiggle
+plugin's MST factories or RPC methods. **Chrome and SVG frame are subpaths
+(`ScorePlotChrome`, `ScorePlotSvgFrame`), not the barrel**: a config schema
+imports the barrel at plugin install, and `index.eager.test.ts` fails if the
+barrel reaches them.
 
-`@jbrowse/wiggle-core` is the cross-plugin contract; importing it avoids a
-dependency on the wiggle plugin's MST factories or RPC methods. It holds
-`renderingBackendTypes.ts`, `dataTypes.ts`, `normalize.ts` (scale-type codes,
-`makeScoreNormalizer` re-exported from `@jbrowse/render-core/scoreScale`),
-`displayModel.ts`, `scale.ts`/`autoscale.ts`, `scoreMenuItems.ts`
-(`makeScoreSubMenu`), `pointMarker.ts`, `resolveRenderState.ts`,
-`transferables.ts`, `WiggleScoreConfigMixin` / `ScoreFieldConfigMixin`
-(`ScoreFieldConfigMixin` adds `scoreField`; the mark display uses the base), and
-the subpaths `ScorePlotChrome` / `ScorePlotSvgFrame`. **Chrome and SVG frame are
-subpaths, not the barrel**: a config schema imports the barrel at plugin install,
-and `index.eager.test.ts` fails if the barrel reaches them.
-
-`@jbrowse/plugin-wiggle` holds the wiggle displays' own pieces.
-`linearWiggleDisplayConfigSchema` comes off the barrel; the model factory
-**cannot**, because the display registers a state model loader and a value edge
-from the eager barrel would undo it. Import
-`@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel` from inside the
-composing display's own lazy loader. `WiggleCommonMixin()` adds palette,
-rendering type, summary mode and resolution; its zoom rule is the adapter's
-`zoomRange`
+`@jbrowse/plugin-wiggle`'s `linearWiggleDisplayConfigSchema` comes off the
+barrel; the model factory **cannot**, because a value edge from the eager barrel
+undoes the state model loader. Import
+`@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel` from the composing
+display's own lazy loader. The zoom rule is the adapter's `zoomRange`
 ([ADR-125](../architecture-decision-records/adr-125-the-adapter-declares-the-zoom-range-its-answer-serves.md)).
-
 GWAS's Manhattan is the mark display with a default plot
 ([ADR-178](../architecture-decision-records/adr-178-manhattan-is-the-mark-display-with-a-default-plot.md)).
-It is zoom-independent: the same `rpcProps` at every zoom and no `zoomRange` on
-the payload.
 
 ## Renderers stay stateless
 

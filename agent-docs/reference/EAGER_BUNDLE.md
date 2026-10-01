@@ -12,8 +12,7 @@ Everything else is eager only by accident, and the accident almost always has
 one shape: **a module that must be evaluated eagerly names a React component**
 (or another heavy value), and the component's whole graph rides along. tsc,
 lint and jest stay green through every instance, so each guard below is a
-dedicated test or a bundle measurement. A config naming a runtime store plugin
-adds that plugin's whole file on top, which has its own section.
+dedicated test or a bundle measurement.
 
 ## The number
 
@@ -40,36 +39,25 @@ never used. Pin 6 was measured on Desktop in raw bytes, so it has no row here.
 
 ## Where it went
 
-Six pins. The first five are the shape above at different scales; the sixth is
-the one exception to "registration is not reducible".
-
 ### 1. `LinearGenomeViewPlugin.exports`
 
-The LGV registered its component with `ReactComponent: lazy(...)` and then named
-the same component in the plugin's `exports` object, which is evaluated when the
-class is defined. **A `lazy()` at a registration site holds only if nothing else
-in an eagerly evaluated module names the same component.** The `exports` objects
-are gone on v5 (PLUGIN_ABI_STABILITY.md §"What has left the session and the
-plugin `exports` objects").
+**A `lazy()` at a registration site holds only if nothing else in an eagerly
+evaluated module names the same component.** The LGV named its component in the
+plugin's `exports` object too. The `exports` objects are gone on v5
+(PLUGIN_ABI_STABILITY.md §"What has left the session and the plugin `exports`
+objects").
 
 ### 2. A view model naming its own Header
 
-`LinearGenomeView/model.ts` imported `Header.tsx` to serve the
-`HeaderComponent()` / `MiniControlsComponent()` methods, which put the search
-box, the zoom slider and `@jbrowse/core/ui` into every host's first paint. The
-fix deleted both methods (nothing overrode or called them), and the components
-are plain imports inside the already-lazy view component. `model.eager.test.ts`
-pins the rule: **the eagerly evaluated model statically imports no `.tsx`.**
+**The eagerly evaluated model statically imports no `.tsx`**
+(`LinearGenomeView/model.eager.test.ts`). The header components are plain
+imports inside the already-lazy view component.
 
-Declined: a second `lazy()` around the header. It saved about 1 KB, because the
-view component is already lazy, and it shipped a visible defect: with
-`fallback={null}` the header measured 0 while its chunk was in flight, so the
-sticky scalebar floated over the first track and then snapped back. Two rules
-carry over:
+Declined: a second `lazy()` around the header. It saved about 1 KB and shipped
+a visible defect, the sticky scalebar floating over the first track until the
+header chunk arrived. Two rules carry over:
 
-- **A `lazy()` inside an already-lazy subtree costs a frame, not bytes.** Ask
-  what it defers relative to the outer boundary; `lazy()` cannot fetch before
-  React first renders it.
+- **A `lazy()` inside an already-lazy subtree costs a frame, not bytes.**
 - **`fallback={null}` is a layout claim** that the component occupies no space
   until it arrives. True for a dialog, false for anything a sibling's geometry
   is computed from.
@@ -80,57 +68,40 @@ The registry (`ReExports/`, generated from the exports maps by
 `scripts/generateReExports.ts`, ADR-128) is the ABI runtime plugins link
 against. It spreads `import * as` namespaces, and **a namespace spread names
 every export**, so nothing behind those barrels tree-shakes. `PluginManager`
-used to import it statically, putting most of `@jbrowse/core/ui` and its
-Material UI into every host, including those that load no runtime plugin.
-
-Nothing can call `jbrequire` before a runtime plugin exists, and only the async
-`PluginLoader.load()` makes one. So `publishReExports`, at the top of
-`loadSettled` and before any plugin script evaluates, fetches the registry and
-parks it in `ReExports/registry.ts` for the synchronous `jbrequire`.
-`PluginLoader.test.ts` pins it, including an end-to-end install of
-`test_data/no_build_plugin/esmplugin.js`.
+therefore never imports it statically: `publishReExports`, at the top of
+`PluginLoader`'s `loadSettled`, fetches it and parks it in
+`ReExports/registry.ts` for the synchronous `jbrequire`.
+`PluginLoader.test.ts` pins it.
 
 **Lazy is not confined.** Tree-shaking is whole-build: a host whose bundle holds
-the registry at all keeps every export of every served module, and a module
-eager code also imports carries all of them onto first paint. Two routes put
-build-your-own far over budget the day the generated maps landed:
+the registry at all keeps every export of every served module.
 
 - **A cycle.** The map serves `@jbrowse/core/PluginLoader`, and PluginLoader
-  `import()`ed the map. Rolldown kept the loop though no page reached it. The
-  loader now comes from the caller, so a product's entry files are the only
+  once `import()`ed the map; Rolldown kept the loop though no page reached it.
+  The loader now comes from the caller, so a product's entry files are the only
   importers of a generated map. Keep it that way.
 - **The barrel spread.** Under rolldown the map's `import * as` of
   `@jbrowse/core/ui` materializes the barrel wherever eager code imports it.
-  Per-name imports would fix it; not adopted, since with the cycle gone the site
-  bundles no registry and webpack marks the same set used either way. A
-  rolldown embedder that calls `loadPlugins` still pays it.
+  Per-name imports would fix it; not adopted, since webpack marks the same set
+  used either way. A rolldown embedder that calls `loadPlugins` still pays it.
 
-The worker's stub-or-real split is derived in the same generator run: a module
-is stubbed when its own source graph names react-dom, a Material UI component,
-the data grid or floating-ui. `ui/theme.ts` imports from `@mui/material/styles`
-rather than the barrel for that reason, and its style engine is the worker's
-residual rendering stack (the exemption ADR-128 took).
+The worker's stub-or-real split comes from the same generator run: a module is
+stubbed when its own source graph names react-dom, a Material UI component, the
+data grid or floating-ui. `ui/theme.ts` imports from `@mui/material/styles`
+rather than the barrel for that reason (the exemption ADR-128 took).
 
 **Quote registry sizes from `scripts/registryBundleSizes.json`**, which
-`pnpm measure-registry-bundle` writes and CI gates. A number written anywhere
-else is one the next commit can falsify.
+`pnpm measure-registry-bundle` writes and CI gates.
 
 ### 4. The `@jbrowse/core/ui` barrel
 
-Once pin 3's spread was gone, the barrel tree-shook per export under rolldown
-and the eager menu modules turned out to name few, mostly free symbols. This
-pass is about keeping the barrel from becoming a pipe again:
-
-- **`@jbrowse/core/ui/menuItems`** is a React-free entry for the row builders
-  eager code needs (`checkboxItem`, `toggleItem`, `radioItem`, `radioItems`) and
-  the menu types. The rule: *menu builders from here, components from
-  `@jbrowse/core/ui`*.
-- **A trailing control is a row description, not an element.** Construction
-  lives in `menuItemAdornment.tsx`, where the menu is drawn; `endAdornment`
-  stays for arbitrary content such as synteny's colour swatch
-  ([ADR-111](../architecture-decision-records/adr-111-display-type-defaults-backed-out.md)
-  removed the pin that motivated it).
-- **`makeSizeMenu`'s slider row is behind `lazy()`.** `type: 'custom'` made
+- **Menu builders from `@jbrowse/core/ui/menuItems`, components from
+  `@jbrowse/core/ui`.** `menuItems` is the React-free entry for `checkboxItem`,
+  `toggleItem`, `radioItem`, `radioItems` and the menu types.
+- **A trailing control is a row description, not an element**
+  (`menuItemAdornment.tsx` builds it where the menu is drawn). `endAdornment`
+  stays for arbitrary content.
+- **`makeSizeMenu`'s slider row is behind `lazy()`**: `type: 'custom'` makes
   `render` a thunk, which is lazy at call time and eager in the module graph.
 
 `menuItems.purity.test.ts` walks the entry's static graph, `import` **and**
@@ -140,171 +111,111 @@ tracer over `ui/index.ts` and requires it to *fail*: the first version missed
 
 ### 5. Dialogs named by the models that open them
 
-The LD display's model, and `plugins/authentication`'s `HTTPBasicModel` and
-`ExternalTokenModel`, named their dialogs at module scope, pulling Material UI's
-whole form cluster into every host. They now go through
-`plugins/variants/src/shared/lazyDialogs.ts` and
-`plugins/authentication/src/lazyLoginForms.ts`, following the LGV's
-`lazyDialogs.ts`.
+A model that names its dialog at module scope pulls Material UI's form cluster
+into every host. Models go through `lazyDialogs.ts` (LGV, variants) or
+`plugins/authentication/src/lazyLoginForms.ts`.
 
 **A dialog opened through `session.queueDialog` can always be `lazy()`**:
-`DialogQueue` (`packages/app-core/src/ui/App/DialogQueue.tsx`) already renders
-it inside `Suspense`. One that isn't is an oversight.
-
-`lazy()` infers a type naming the component's props, so a props interface local
-to the dialog module fails declaration emit with TS4023. Export the interface.
+`DialogQueue` already renders it inside `Suspense`. `lazy()` infers a type
+naming the component's props, so a props interface local to the dialog module
+fails declaration emit with TS4023. Export the interface.
 
 ### 6. Desktop's start screen
 
 **A screen that renders no session does not need the registry before it
-paints.** The registry is eager relative to reading a session snapshot, not to
-first paint, so a start screen, config picker or login can paint without it;
-what usually prevents that is one static import on a module with no other
-reason to be heavy.
+paints.** Desktop's `StartScreen/util.tsx` is a facade that reaches
+`StartScreen/pluginManagers.tsx` through `import()`;
+`pluginManagers.eager.test.ts` guards it, because one static import puts the
+whole plugin graph back into `main.js` and nothing in the diff says so.
 
-Desktop's `StartScreen/util.tsx` is a facade that reaches the heavy half,
-`StartScreen/pluginManagers.tsx`, through `import()`; its entry points were
-already async. `StartScreen/pluginManagers.eager.test.ts` guards it, because one
-static import puts the whole plugin graph back into `main.js` and nothing in the
-diff says so.
-
-Splitting `createStartScreenPluginManager` (which needs no core plugins) into its
-own module, to defer the graph past the start screen entirely, saved no bytes and
-broke the packaged app: the RPC worker never answered. Unit tests use
+Splitting `createStartScreenPluginManager` into its own module saved no bytes
+and broke the packaged app: the RPC worker never answered. Unit tests use
 `MainThreadRpc` and stayed green; only
-`pnpm package:linux:no-installer && pnpm test:e2e:headless` caught it. The
-suspected cause, `src/util.tsx` shared with the worker entry, has since been
-deleted, so a retry is possible but must run that gate.
+`pnpm package:linux:no-installer && pnpm test:e2e:headless` caught it. A retry
+must run that gate.
 
 ## Theme-free `makeStyles`
 
-`makeStyles` hands a component `ui/styleTheme.ts`'s `JBrowseStyleTheme`, plain
-data read through `useStyleTheme()`, instead of Material UI's `Theme`. It is a
-deliberate *subset* (palette, spacing, shape, type scale), so a call site
-reaching further is a compile error naming the file; layering lives in
-`ui/zIndexes.ts`. `palette.ts` carries `error`, `warning`, `info`, `success`, the
-grey scale and the `action` opacities at Material's values, so a config `theme`
-reaches them too.
-
+`makeStyles` hands a component `ui/styleTheme.ts`'s `JBrowseStyleTheme`, a
+deliberate subset of Material's `Theme` (palette, spacing, shape, type scale).
 The values must equal Material's, because a `makeStyles` row sits next to a
-`<Typography>`. `styleTheme.test.ts` asserts that against a real MUI theme,
-including under a config `theme` that sets `spacing` or `typography.fontSize`.
+`<Typography>`; `styleTheme.test.ts` asserts that against a real MUI theme and
 `util/tss-react/muiFree.test.ts` fails if anything reachable from `makeStyles`
-imports `@mui/*`.
-
-The change saved about 1 KB, because `ui/theme.ts` holds
-`@mui/material/styles` independently. The next section is why.
+imports `@mui/*`. The change saved about 1 KB, because `ui/theme.ts` holds
+`@mui/material/styles` independently.
 
 ## What still holds Material UI in the eager set
 
 `pnpm probe-eager-graph` lists every first-party eager module importing Material
-UI; checking one suspected holder finds that holder and no others. The holder
-groups overlap, so **Material UI leaves the eager set only if every group
-does**:
-
-- `@mui/icons-material/*` named by menu-item modules, plugin indexes and state
-  models
-- the SVG export path reached from the LGV plugin index (`useTheme`,
-  `ThemeProvider`)
-- `ui/theme.ts`'s `createTheme`, for the session's `theme` getter
-- `ui/InlineMenuControls.tsx` and wiggle-core's `ResolutionStepper.tsx`
-  (`Tooltip`, `IconButton`, `Button`, `Typography`)
-- the two authentication account icons (`SvgIcon`)
-
-`alpha`, `lighten`, `darken` and `getLuminance` come from `ui/palette` and
-`util/color`, not Material.
+UI. The holder groups overlap, so **Material UI leaves the eager set only if
+every group does**: `@mui/icons-material/*` named by menu-item modules, plugin
+indexes and state models; the SVG export path reached from the LGV plugin index;
+`ui/theme.ts`'s `createTheme` for the session's `theme` getter; the inline
+menu controls; two authentication icons.
 
 **A named import from a package barrel records an edge to the barrel**, not to
 the component, so asking which module imports `@mui/material/Button/Button.mjs`
 returns only node_modules. `probe-eager-graph --holds` reports the barrel
 importers as a shortlist for that reason.
 
-The two hard groups are the SVG export path (its components are value exports
-of the LGV plugin index, so deferring them is an ABI change) and `session.theme`
-(a synchronous getter, so deferring it moves theme construction into the
-products). Neither is worth starting without deciding both.
-
-Declined: an icon-name registry. With `ui/theme.ts` holding
-`@mui/material/styles` anyway it is worth only the icons' own source, under
-10 KB gzipped, for a public ABI change. If the whole knot is ever cut, follow
-`TrackControlIcon` (`packages/display-ui/src/trackControl/types.ts`): a closed
-string union with a `satisfies Record<Name, unknown>` map per implementation,
-the field widened to `React.ElementType | MenuIconName`, and the resolver on the
-already-lazy render side (`CascadingMenu`, `MenuItems`).
+The SVG export path (value exports of the LGV plugin index, so deferring it is
+an ABI change) and `session.theme` (a synchronous getter) are the two hard
+groups. Declined: an icon-name registry, worth under 10 KB gzipped for a public
+ABI change. If the knot is ever cut, follow `TrackControlIcon`
+(`packages/display-ui/src/trackControl/types.ts`): a closed string union with a
+`satisfies Record<Name, unknown>` map per implementation.
 
 ## "0 Material elements" and "no Material UI" are different claims
 
-`MUI_BUDGET` in the examples sites' `smoke.mjs` counts **rendered elements**:
-outermost `Mui*` classes in the DOM. It measures an embedder's *look* and cannot
-see the bundle: `alpha()`, `useTheme()` and an imported-but-unmounted component
-draw nothing. A page can score 0 there and ship hundreds of KB of Material UI.
-**Say which axis when recording a win.**
+`MUI_BUDGET` in the examples sites' `smoke.mjs` counts **rendered elements**
+(outermost `Mui*` classes in the DOM). It measures an embedder's *look* and
+cannot see the bundle: `alpha()`, `useTheme()` and an imported-but-unmounted
+component draw nothing. **Say which axis when recording a win.**
 
 ## A duplicate is how a bundling split looks from the inside
 
 `breakpoint-split-view`'s `components/overlayGeometry.ts` duplicates four small
-helpers from `../util.ts` on purpose. The state-model chunk and the components
+helpers from `../util.ts` on purpose: the state-model chunk and the components
 chunk load at different times, and a module shared between them merges one into
-the other's load. A duplication sweep that pointed the lazy side at `../util.ts`
-passed tsc, jest and lint and broke the synteny page's budget; only `pnpm smoke`
-on a full Astro build saw it. `eagerBoundary.test.ts` now greps `components/`
-for that import.
+the other's load. A duplication sweep passed tsc, jest and lint and broke the
+synteny page's budget; only `pnpm smoke` on a full Astro build saw it.
+`eagerBoundary.test.ts` greps `components/` for that import.
 
 **Identical trivial copies are the expected shape of a deliberate split.** Read
-the file header before deleting one. If a helper genuinely needs sharing, move
-it to a *third* module neither side's eager entry imports. Any other module pair
-holding such a split deserves its own boundary test.
+the file header before deleting one. If a helper needs sharing, move it to a
+*third* module neither side's eager entry imports.
 
 ## A state model is a loader, and its subgraph is not eager
 
 Every view and display type registers its state model as a loader
 (`stateModel: () => import('./model.ts').then(f => f.default(configSchema))`).
-`ViewType`/`DisplayType` memoize the load and queue any
-`extendViewType`/`extendDisplayType` that arrives first; the pluggable MST
-unions filter on membership. What stays eager per display is its registration
-and its **config schema**, which the config editor, the track config union and
-the `displayDefaults` merge need at install.
-
-`Core-extendPluggableElement` fires for a lazy element when its loader
-resolves. The v4 form `elt.stateModel = extend(elt.stateModel)` keeps working,
-because `stateModel` has a setter and the read sees a loaded model. A callback
-cannot change anything the host reads before the model loads, above all the
-config schema. protein3d and msaview still duck-type `extendStateModel`, because
-v5.0.0-beta.2 shipped the loaders without fire-on-load.
+What stays eager per display is its registration and its **config schema**,
+which the config editor, the track config union and the `displayDefaults` merge
+need at install. A `Core-extendPluggableElement` callback cannot change anything
+the host reads before the model loads, above all the config schema.
 
 **Nothing in the eager graph may hold a value edge into a model module.** A
 plugin barrel re-exporting a model factory is exactly that edge, and it is
-invisible to tsc, lint and jest. A display that composes another plugin's model
-is itself lazily registered and imports through an `exports` subpath, not the
-barrel:
-
-- `@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel`
-- `@jbrowse/plugin-canvas/LinearBasicDisplay/stateModel` and `.../baseStateModel`
-- `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel`
-
-Two consequences for callers:
+invisible to tsc, lint and jest. A display composing another plugin's model is
+itself lazily registered and imports through an `exports` subpath
+(`@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel`, and the canvas
+and wiggle equivalents), not the barrel.
 
 - **Showing a track is async.** `launchTrack`/`launchToggleTrack` load the
-  display's model, show it and resolve the track. The synchronous `showTrack`
-  still works on an unloaded display (it starts the load and returns
-  `undefined`), because every published embedding recipe and prebuilt plugin
-  bundle calls it; the packed-tarball `component_tests/lgv-vite` is that recipe.
-  `addView` of a lazy view type throws, naming `launchView`, since its typed
-  return is used at nearly every call site.
+  display's model first. The synchronous `showTrack` still works on an unloaded
+  display (it starts the load and returns `undefined`) because published
+  embedding recipes call it. `addView` of a lazy view type throws, naming
+  `launchView`.
 - **A snapshot naming a type must be preloaded.** `await
   pluginManager.preloadSessionTypes(snapshot)` before any synchronous
-  `setSession`/`cast`. It loads every registered type any `type` string in the
-  snapshot names, under any key (`heldForMissingPlugins` and display configs in
-  `sessionTracks` included), resolving display aliases. The setters call
-  `assertSessionTypesLoaded`, so a missed preload is an actionable error rather
-  than a union mismatch that reads as a corrupt session.
+  `setSession`/`cast`. The setters call `assertSessionTypesLoaded`, so a missed
+  preload is an actionable error rather than a union mismatch that reads as a
+  corrupt session.
 
-`pnpm measure-web-bundle` measures jbrowse-web in headless Chrome (every script
-fetched before the app-ready marker, gzipped; `--time` over a throttled link,
-`--files <prefix>` for a census, `--worker` for the worker's own fetches).
-`pnpm --filter byo-examples-site measure-eager-bundle --check` holds the
-examples-site budgets and fails on a page that drifted far enough *under* its
-budget to mean the figure is stale.
+`pnpm measure-web-bundle` measures jbrowse-web in headless Chrome (`--time`,
+`--files <prefix>`, `--worker`). `pnpm --filter byo-examples-site
+measure-eager-bundle --check` holds the examples-site budgets and fails on a
+page that drifted far enough *under* its budget to mean the figure is stale.
 
 ## A namespace import is the unit, so a module is as eager as its cheapest consumer
 
@@ -312,13 +223,9 @@ budget to mean the figure is stale.
 includes or excludes `m` **whole**. If any eager module imports one name from
 it, first paint pays for all of it.
 
-`pnpm gen:shaders` therefore emits three modules per shader: the shader module
-with its `SOURCE` loaders (`x.generated.ts`), the layout and packers
-(`x.iface.generated.ts`), and the `//! export-consts` integers
-(`x.consts.generated.ts`), re-exporting one way (shader → iface → consts) so a
-render path's namespace import still sees everything. The consts module exists
-because every site importing a shader constant wanted nothing else from that
-module.
+`pnpm gen:shaders` therefore emits three modules per shader: `x.generated.ts`
+(`SOURCE` loaders), `x.iface.generated.ts` (layout and packers) and
+`x.consts.generated.ts` (the `//! export-consts` integers).
 
 - **A shader constant comes from `x.consts.generated.ts`.** Importing it from
   `x.generated.ts` compiles, passes every test, and drags the layout and packers.
@@ -327,48 +234,31 @@ module.
 
 ## Shader text loads when a HAL is built
 
-`<base>.generated.ts` holds the layout and consts re-exports plus `SOURCE`: one
-`import()` per target of `<base>.wgsl.generated.ts` /
-`<base>.glsl.generated.ts`, modules that hold the strings and nothing else.
-`slangPass` carries `SOURCE` onto the descriptor, and each consumer awaits its
-own target at an async point it already had: `WebGPUHal.create` per pass during
-pipeline resolution, `WebGL2Hal.create` for every declared pass (a draw cannot
-wait), and the compute cache when it builds. Both HALs load before claiming the
-canvas context, so a failed load falls down the ladder like any rung failure. A
-WebGPU session never evaluates GLSL, Canvas2D neither, and the RPC worker loads
-text only for a compute pass it actually runs (tree-sidebar's distance kernel).
-
-Before this, a mark or pass declared at module scope (`slangPass({ mod })` read
-`mod.WGSL_SOURCE` synchronously) made its text exactly as eager as the plugin
-registering it, in every realm. The layout stays eager on purpose: the packers
-run synchronously in the encode and in the worker.
-
-A display's first paint waits for the text of every pass it declares, fetched in
-parallel with its data, with no blank frame ahead of it
+`<base>.generated.ts` holds `SOURCE`: one `import()` per target of
+`<base>.wgsl.generated.ts` / `<base>.glsl.generated.ts`, modules that hold the
+strings and nothing else. Each HAL awaits its own target before claiming the
+canvas context, so a failed load falls down the ladder like any rung failure.
+The layout stays eager on purpose: the packers run synchronously in the encode
+and in the worker. A display's first paint waits for the text of every pass it
+declares, fetched in parallel with its data
 (`firstPaintAwaitsShaderText.test.ts`).
 
 **How it fails quietly, and what catches it:**
 
 - A loader pointing at the wrong module fails at HAL creation, which the ladder
   reads as an unavailable rung: Canvas2D and a console warning.
-  `shaderSources.test.ts` checks every shader's `SOURCE` names exactly the
-  `.slang`'s targets, each loader resolves to its own strings alone, and the
-  imported module exports none.
+  `shaderSources.test.ts` checks every `SOURCE` against the `.slang`'s targets.
 - A static import of a text module puts it back in every realm.
   `noShaderTextImport` in `eslint.config.mjs` refuses one outside tests, benches
   and probes.
 - A text module served in an `exports` map, or imported statically by a
   generator, is invisible to lint. `measureRegistryBundle.ts` fails, printing
-  the chain, when either registry or jbrowse-web's `rpcWorker.ts` reaches a
-  module exporting `WGSL_SOURCE` or `GLSL_*`.
-- A HAL that drew before its text arrived would paint an empty frame. The
-  first-paint test holds the text back and fails if it loads in the background.
+  the chain, when a registry or jbrowse-web's `rpcWorker.ts` reaches one.
 
 **Declined:** one text module for both targets (WebGPU would evaluate GLSL);
-loading at display attach (the rung is not chosen yet, and a display that never
-mounts a canvas would load for nothing); grouping a plugin's text into one chunk
-(`webpackChunkName` is one bundler's hint, and first paint waits on data anyway,
-below); a lazy layout (the packers are synchronous).
+loading at display attach (the rung is not chosen yet); grouping a plugin's text
+into one chunk (`webpackChunkName` is one bundler's hint, and first paint waits
+on data anyway); a lazy layout (the packers are synchronous).
 
 <!-- BEGIN GENERATED MEASUREMENT shader-text-first-paint -->
 
@@ -386,76 +276,51 @@ layout eager in every registry realm; only its text is deferred.
 
 ## A multi-page site's budgets are coupled: adding a page moves all of them
 
-Each examples-site page's eager figure is ratcheted in `eagerBundleSizes.json`,
-but rolldown cuts chunks by which pages reach a module together, so adding or
-removing a page re-partitions the whole site and moves every page's figure. A
-page's eager chunks are still its own imports; what a neighbour changes is
-where the cuts fall and how well they compress. **When a budget moves on a page
+`eagerBundleSizes.json` ratchets each examples-site page's eager figure, but
+rolldown cuts chunks by which pages reach a module together, so adding or
+removing a page re-partitions the whole site. **When a budget moves on a page
 nobody touched, check whether a page was added or removed before hunting an
 import**, and attribute the step with
 `pnpm probe-eager-graph --page <page> --holds <pkg>`.
 
-A third cause moves every page at once with no page added: ordinary feature
-work landing in state-model mixins, which are eager the moment a display
-composes them. Run `pnpm probe-eager-graph` first: a `.tsx` in the eager set is
-a pin; otherwise `git diff --numstat <baseline>..HEAD` over the eager modules
-says whether the growth is diffuse, and the answer is to re-bank.
+Ordinary feature work landing in state-model mixins moves every page at once
+too. Run `pnpm probe-eager-graph` first: a `.tsx` in the eager set is a pin;
+otherwise the growth is diffuse and the answer is to re-bank.
 
-**The noise is larger than the band.** A page addition moves every other page
-by more than `OVER_KB`, so it fails the check everywhere and a real regression
-of the same size looks identical. The probe's own-graph uncompressed total moves
-far less, though treeshaking granularity keeps it from reaching zero. Declined:
-building each page as its own bundle, which costs a build per page and measures
-a bundle nobody ships. Open: gating on a proportional (~1%) ratchet over the
-own-graph figure while still reporting delivered gzip.
+**The noise is larger than the band.** A page addition moves every other page by
+more than `OVER_KB`, so a real regression of the same size looks identical.
+Declined: building each page as its own bundle, which measures a bundle nobody
+ships. Open: gating on a proportional (~1%) ratchet over the probe's own-graph
+figure while still reporting delivered gzip.
 
 ## The eager UI is the boot shell, and the barrel that looks like a pin is not one
 
-On jbrowse-web's emptiest page (volvox, one `LinearGenomeView`) every `.tsx` in
-the fetched set is on screen: the app shell, the LGV chrome and the track
-selector volvox's `defaultSession` opens. Nothing is left there to defer.
+On jbrowse-web's emptiest page every `.tsx` in the fetched set is on screen, so
+nothing is left there to defer. **`scripts/eager-import-closure.ts` is a
+candidate list, not a census**: it follows a barrel edge whole where a bundler
+resolves the re-export to the leaf. The census is `pnpm measure-web-bundle
+--files <prefix>`.
 
-**`scripts/eager-import-closure.ts` is a candidate list, not a census.** It
-follows a barrel edge whole where a bundler resolves the re-export to the leaf,
-so it overstates an app or worker closure several times over. The census is
-`pnpm measure-web-bundle --files <prefix>`, or a source-map walk over the
-fetched chunks.
+**`import * as coreUi` in `ReExports/coreModules.generated.ts` is the reason,
+and removing it costs more than it saves.** webpack's used-exports analysis is
+global, so any chunk holding `ui/index.ts` holds every module under it, and
+jbrowse-web fetches that chunk before app-ready whenever the config names a
+plugin. Declined: deleting the entry (ABI-breaking); per-export shaking, which
+splits Material UI into many small chunks that are all still fetched; raising
+`splitChunks.minSize`, which turns the fragments into duplicates.
+`products/jbrowse-web/CLAUDE.md` records `chunks: 'all'` failing the same way.
+The remaining lever is the component half of the barrel behind `lazy()` with
+**one shared `webpackChunkName`**, an ABI change (every served component becomes
+Suspense-wrapped, the hazard `MuiReExports.ts`'s header describes).
 
-### `import * as coreUi` is the reason, and removing it costs more than it saves
-
-`ReExports/coreModules.generated.ts` holds `import * as` of `../ui/index.ts`.
-webpack's used-exports analysis is global, so **any chunk holding `ui/index.ts`
-holds every module under it**, and jbrowse-web fetches that chunk before
-app-ready whenever the config names a plugin. So components with no first-party
-importer sit in the empty page's download.
-
-Declined: deleting the entry (ABI-breaking, run as a diagnostic). Per-export
-shaking splits the shared Material UI into many small chunks that are all still
-fetched, several duplicating `FilledInput`/`OutlinedInput`, and the page gets
-bigger; raising `splitChunks.minSize` turns the fragments into duplicates
-inside the parents, bigger again. `products/jbrowse-web/CLAUDE.md` records
-`chunks: 'all'` failing the same way.
-
-The remaining lever is putting the component half of the barrel behind `lazy()`
-with **one shared `webpackChunkName`**, so the deferred components land in a
-single chunk nobody fetches at boot. It is an ABI change: every served core/ui
-component becomes Suspense-wrapped (the hazard `MuiReExports.ts`'s header
-describes), so menu and overlay members stay eager case by case.
-
-### MST rides in on the lazy Loader chunk
-
-`setTypeChecking(true)` is called at the top of `components/Loader.tsx`, not in
-`index.tsx`. In `index.tsx` it put the MST fork and mobx into `main.js`, the one
-script the browser parses before it can discover the Loader chunk.
+**`setTypeChecking(true)` lives at the top of `components/Loader.tsx`**, not in
+`index.tsx`, where it put the MST fork and mobx into `main.js`.
 
 ## What a runtime plugin costs at boot
 
 A store plugin ships as one file, so a config naming it evaluates all of it
-before anything draws and pays the parse again in every RPC worker. A handful of
-store entries (MsaView, Apollo, TView, Ideogram, Protein3d) are large enough to
-rival the host's own empty page; the rest are a few KB.
-
-The three cuts, measured on MsaView with the same source, esbuild and machine:
+before anything draws and pays the parse again in every RPC worker. The three
+cuts, measured on MsaView with the same source, esbuild and machine:
 
 <!-- BEGIN GENERATED MEASUREMENT runtime-plugin-boot-cost -->
 
@@ -472,63 +337,45 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 - **The host floor.** A plugin's `esbuild.mjs` intersects
   `@jbrowse/core/ReExports/list` with a host-floor file naming what the
-  **oldest supported host** serves, so one bundle runs everywhere. Every
-  specifier only a newer host serves is bundled rather than externalized, and a
-  bundled `@jbrowse` module drags its relative closure, which is how MUI,
-  floating-ui and rxjs arrive. Source-map attribution puts roughly a third of
-  MsaView, TView and Protein3d in that host-servable share. Two passengers that
-  look like plugin dependencies are core's own: `source-map-js` (via
-  `core/esm/ui/mapStackTrace.js`) and `dompurify` (via
-  `core/esm/ui/DOMPurifySanitizedHTML.js`). One bundle is not required: the
-  store publishes a per-version `jbrowseRange`, so a v5-floor build at
-  `>=5.0.0` beside the old one costs the plugin a second artifact and nothing
-  else. Today every entry declares `*`, so `resolvePlugin` never has two
-  builds to choose between.
-- **Splitting, and the module-scope edges that defeat it.** MsaView writes
-  `lazy(() => import('./components/MsaViewPanel'))`, which buys nothing in a
-  one-file build: esbuild inlines an internal dynamic import unless `splitting`
-  is on. Turning splitting on moved little, because two module-scope edges in
-  the plugin's own source name the deferred side:
-  `LaunchMsaViewExtensionPoint/index.ts` imports `expandSpec` from
-  `react-msaview`, and `AddHighlightModel/index.tsx` imports
-  `MsaViewPanel/model.ts`. This is the recurring pin of the host sections above
-  reproduced in a runtime plugin, and a `stateModel` thunk changes nothing while
-  `AddHighlightModel` reaches the model anyway.
-- **The classic RPC worker does not block ESM.** Splitting needs ESM. Every
-  product's `makeWorkerInstance` builds a **classic** worker, which cannot take
-  an ES module as its entry script, but dynamic `import()` inside a classic
-  worker works (probed in Chrome). Each product's `rpcWorker.ts` passes
-  `fetchESM: url => import(url)` to `initializeWorker`, jbrowse.org serves
-  plugins with `access-control-allow-origin: *`, and `publishReExports` sets the
-  global before any plugin module evaluates. **Not verified on Firefox.** Check
-  before recommending ESM to a plugin author.
+  **oldest supported host** serves. Every specifier only a newer host serves is
+  bundled rather than externalized, and a bundled `@jbrowse` module drags its
+  relative closure, which is how MUI, floating-ui and rxjs arrive. One bundle is
+  not required: the store publishes a per-version `jbrowseRange`, so a
+  v5-floor build beside the old one costs the plugin a second artifact.
+- **Splitting, and the module-scope edges that defeat it.** `lazy(() =>
+  import(...))` buys nothing in a one-file build: esbuild inlines an internal
+  dynamic import unless `splitting` is on, and splitting moves little while
+  module-scope edges in the plugin's own source (MsaView's
+  `LaunchMsaViewExtensionPoint` and `AddHighlightModel`) name the deferred side.
+  This is the recurring pin above reproduced in a runtime plugin, and a
+  `stateModel` thunk changes nothing while another module reaches the model.
+- **The classic RPC worker does not block ESM.** A classic worker cannot take an
+  ES module as its entry script, but dynamic `import()` inside it works. Each
+  product's `rpcWorker.ts` passes `fetchESM: url => import(url)` to
+  `initializeWorker`. **Not verified on Firefox.** Check before recommending ESM
+  to a plugin author.
 
 What taking it costs:
 
 - **A UMD bundle can carry an integrity hash and an ESM one cannot**, since
-  dynamic import takes no integrity attribute. `definitionFrom` mints ESM
-  definitions without one, so the store's SRI covers the UMD arm only.
-- **A lazy `stateModel` makes `addView` throw**, naming `launchView`
-  (`MultipleViews.ts`). A plugin whose own launcher calls `addView`, as
-  MsaView's does, has to move.
+  dynamic import takes no integrity attribute. The store's SRI covers the UMD
+  arm only.
+- **A lazy `stateModel` makes `addView` throw**, naming `launchView`. A plugin
+  whose own launcher calls `addView` has to move.
 - **The last table row holds react-msaview out entirely.** A real split leaves
-  it a chunk that a user opening the view still downloads. What moves is the
-  boot path, and the parse in every worker that only wanted the adapter.
+  it a chunk that a user opening the view still downloads; what moves is the
+  boot path and the parse in every worker that only wanted the adapter.
 
-`packages/product-core/src/Session/splitRuntimePlugin.test.ts` over
-`test_data/split_plugin/` pins the host half: a two-module plugin installs its
-entry, registers its view, and leaves the second module unevaluated until
-`launchView`. It fails if the fixture registers eagerly.
+`splitRuntimePlugin.test.ts` over `test_data/split_plugin/` pins the host half.
 `scripts/check-published-plugins.ts` reads what published bundles take **off**
-the ABI. Nothing reads what they failed to take off it, which is the host-floor
+the ABI; nothing reads what they failed to take off it, which is the host-floor
 share above.
 
 ## What is not worth chasing
 
 **Plugin registration.** Models, adapters and config schemas for every core
-plugin, plus React and MST: that is the engine, and `createViewState`'s contract
-is that all of it is registered before a session snapshot can be read. A host
-that chooses its own plugin set is a separate question
+plugin, plus React and MST, are the engine. A host that chooses its own plugin
+set is a separate question
 ([host-chosen-plugin-sets-for-embedded-products.md](../ideas/waiting-on-a-number/host-chosen-plugin-sets-for-embedded-products.md)).
 
 **Building config schemas.**
@@ -546,17 +393,17 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT config-schema-construction -->
 
-`createBaseTrackConfig(pluginManager)` runs once per track type and rebuilds the
-base slots, so 1,197<!--m:config-schema-construction.all-three.slots--> slot
-types are built for 222<!--m:config-schema-construction.all-three.distinct-->
-distinct ones. Declined: interning `ConfigSlot` on `(type, model, defaultValue)`.
-Prototyped, it removes the duplicates and registration time does not move; the
-ceiling is the 32.7ms<!--m:config-schema-construction.plugin-registration.ms-->
+`createBaseTrackConfig(pluginManager)` rebuilds the base slots once per track
+type, so 1,197<!--m:config-schema-construction.all-three.slots--> slot types are
+built for 222<!--m:config-schema-construction.all-three.distinct-->
+distinct ones. Declined: interning `ConfigSlot` on `(type, model,
+defaultValue)`. Prototyped, it removes the duplicates and registration time does
+not move; the ceiling is the 32.7ms<!--m:config-schema-construction.plugin-registration.ms-->
 the whole phase takes.
 
-Config time goes to node instantiation, which is per track rather than per track
-type, and builds no types (`configSchemaCost.test.ts` pins that). In a production
-build it scales linearly:
+Config time goes to node instantiation, which is per track and builds no types
+(`configSchemaCost.test.ts` pins that). In a production build it scales
+linearly:
 
 <!-- BEGIN GENERATED MEASUREMENT config-nodes-in-browser -->
 
@@ -569,72 +416,52 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT config-nodes-in-browser -->
 
-That is the number to weigh if config time is ever chased. The MST fork's own
-profile of ~20k unions per session load is a different workload: a session
-builds 3,415<!--m:config-schema-construction.all-three.types--> MST types in
-total.
+The MST fork's own profile of ~20k unions per session load is a different
+workload: a session builds 3,415<!--m:config-schema-construction.all-three.types-->
+MST types in total.
 
-**A synteny renderer behind its own `import()`.** Its text is already lazy
-(above), and on build-your-own only the synteny page carries the renderer, so
-deferring it moves bytes down the same waterfall rather than off it.
-jbrowse-web already fetches it only when a synteny view opens.
-`SyntenyRendererFactory` is `(canvas) => Promise<Backend>`, so it takes an
-`await import()` with no other change if a reason appears.
+**A synteny renderer behind its own `import()`.** On build-your-own only the
+synteny page carries the renderer, so deferring it moves bytes down the same
+waterfall rather than off it. `SyntenyRendererFactory` is `(canvas) =>
+Promise<Backend>`, so it takes an `await import()` if a reason appears.
 
 ## The RPC worker's React stack, and two ways of removing it that lose
 
-ADR-043 records why the worker still parses UI code. Two things removed most of
-what the worker fetched on its own:
+ADR-043 records why the worker still parses UI code. Declined, both measured
+worse on jbrowse-web:
 
-- The callers build no `PluginLoader` for an empty definition list, so a config
-  naming no runtime plugin publishes no registry in any realm.
-- The worker entry no longer imports mobx-react's `enableStaticRendering`
-  (react-dom for update batching; a worker has no observers), and
-  `util/renderToStaticMarkup.ts` left the `util` barrel and its ABI entry.
-
-Declined, both measured worse on jbrowse-web:
-
-- **Repointing eager modules from the `core/ui` barrel to leaf subpaths.** Under
-  webpack's default chunking a module ejected from the `corePlugins`
-  concatenation becomes its own chunk the main thread still downloads, and more,
-  smaller chunks compress worse.
+- **Repointing eager modules from the `core/ui` barrel to leaf subpaths.** A
+  module ejected from the `corePlugins` concatenation becomes its own chunk the
+  main thread still downloads, and more, smaller chunks compress worse.
 - **Stubbing every `@mui/*` and `@emotion/*` edge out of the worker graph.** The
-  chunks holding that UI are downloaded by the page anyway, so the worker's
-  marginal cost was never the UI in them.
+  page downloads those chunks anyway, so the worker's marginal cost was never
+  the UI in them.
 
 When a config names a UMD plugin, the worker publishes its product's
 `workerReExports.generated.ts`: the same keys, with every module whose source
-graph names no rendering library real. A UI entry that is a single value on the
-main thread is `uiStub`, a callable proxy whose every read and call is itself. A
-UI entry that is a namespace (react-dom, mobx-react, Material UI, the core `ui`
-barrel) is `uiNamespace(names)`, a plain object with one real own property per
-real export name. A plugin bundle is one file for both realms and reads UI at
-module scope (`styled(Box)(...)`, `observer(C)`), so every key must exist and
+graph names no rendering library real. A single-value UI entry is `uiStub`, a
+callable proxy whose every read and call is itself; a namespace entry (react-dom,
+mobx-react, Material UI, the core `ui` barrel) is `uiNamespace(names)`, a plain
+object with one real own property per real export name. A plugin bundle reads UI
+at module scope (`styled(Box)(...)`, `observer(C)`), so every key must exist and
 every read and call must succeed.
 
 ### A proxy that answers any key is not the same shape as the module it stands in
 
 Bundler ESM-interop helpers *enumerate* a module's own keys: esbuild's
-`__toESM` (which every published plugin's global-externals build runs),
-`for...in` + `hasOwnProperty`, `Object.keys`, `Object.assign({}, mod)`. A proxy
-over a bare function has no real own properties, so each copied nothing, a
-module-scope `const { makeStyles } = ...` got `undefined`, and the throw took
-down every runtime plugin loading beside it. A `getPrototypeOf` trap fixed
-`__toESM` by name and nothing else; `uiNamespace` fixes the shape.
-
-`workerModules.test.ts` compares each stub's own keys to the real module's
-(`scripts/generateReExports.ts` writes the names), exercises esbuild's,
-Babel/webpack's and bare `Object.assign` interop, and fails naming any module
-the worker would stub and the specifiers that did it. Declined: a load-time
-throw in `modules.ts` on a key mismatch, since a react-dom or MUI bump adding
-an export would white-screen the app instead of failing a test.
+`__toESM`, `for...in` + `hasOwnProperty`, `Object.keys`, `Object.assign({}, mod)`.
+A proxy over a bare function has no real own properties, so each copied nothing,
+a module-scope `const { makeStyles } = ...` got `undefined`, and the throw took
+down every runtime plugin loading beside it. `workerModules.test.ts` compares
+each stub's own keys to the real module's and exercises the three interop
+styles. Declined: a load-time throw in `modules.ts` on a key mismatch, since a
+react-dom or MUI bump adding an export would white-screen the app instead of
+failing a test.
 
 **Removing a served name can break a published plugin that boots fine.**
 react-msaview read `renderToStaticMarkup` off `@jbrowse/core/util` for SVG
-export, so jbrowse-plugin-msaview and -tview loaded normally on a v5 host and
-threw on the first SVG export. Booting published plugins cannot see a caller off
-the boot path; `scripts/check-published-plugins.ts` reads the bundles' bytes
-for exactly that reason. The fix went to react-msaview, which now owns its own
-`renderToStaticMarkup`. Declined: serving the name on the main thread only,
-which would make `@jbrowse/core/util` the one ABI module neither wholly shared
-nor wholly UI.
+export, so the msaview and tview plugins loaded normally on a v5 host and threw
+on the first SVG export. Booting published plugins cannot see a caller off the
+boot path; `scripts/check-published-plugins.ts` reads the bundles' bytes for
+that reason. Declined: serving the name on the main thread only, which would
+make `@jbrowse/core/util` the one ABI module neither wholly shared nor wholly UI.

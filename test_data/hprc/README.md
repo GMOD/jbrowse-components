@@ -12,10 +12,8 @@ rows, 464 haplotypes, whole genome. Rebuild it with
 `scripts/build_hprc_maf_summary.sh`, whose header carries the failure mode worth
 knowing before touching it.
 
-What it is worth (`agent-docs/reference/HPRC_RELEASE2.md` § "What the zoom-out
-tier is worth"): whole chr6 goes from 3.19 GB refused to 464 rows drawn from a
-150 kB read. A whole-chromosome read costs 73 kB (chrM) to 212 kB (chr1) against
-a 5 MB budget.
+What it is worth: `agent-docs/reference/HPRC_RELEASE2.md` § "What the zoom-out
+tier is worth".
 
 All 195 contigs. The v2.0 build of this file had 152: the 43 missing were
 `chrUn_*` unplaced scaffolds of 970 bp - 15 kb, each with a single `.tai` entry,

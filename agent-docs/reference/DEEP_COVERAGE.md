@@ -10,81 +10,66 @@ Measured on **HG002 300x** (GIAB
 `NHGRI_Illumina300X_AJtrio_novoalign_bams/HG002.hs37d5.300x.bam`), over a 20 kb
 window at GRCh37 1:1,000,000 and a 200 kb window at 1:2,000,000. Neither holds a
 structural variant, so both show what the display does when there is nothing to
-find. The library is tight: median |TLEN| 571, MAD 94, and no |TLEN| above
-1,141 in the 200 kb window.
-
-`samtools view <url> 1:2000000-2200000` against the GIAB HTTP URL reproduces the
-offline numbers with no download.
+find. `samtools view <url> 1:2000000-2200000` against the GIAB HTTP URL
+reproduces the offline numbers with no download.
 
 ## The rule these share
 
 **A cut calibrated as a FRACTION of the sample flags a fixed fraction of it,
-however deep the pileup gets.** Every default below looked fine at 30x and
-washed out at 300x. When adding a threshold to this plugin, ask what it does
-when the sample is 10x larger.
+however deep the pileup gets.** Every default below looked fine at 30x and washed
+out at 300x. When adding a threshold to this plugin, ask what it does when the
+sample is 10x larger.
 
 ## Insert-size colouring: the band needed a floor
 
 `getInsertSizeStats` is median ± 3·1.4826·MAD. On the 200 kb window that paints
 ~1% of records long-insert, 81% of them in the library's own right tail, with no
-deletion present.
-
-`widenBandToEventScale` (`shared/insertSizeStats.ts`) floors the band to 2x /
-0.5x the typical fragment: the colour means an event comparable in size to the
-fragment, which is scale-free across library types. A deletion shorter than
-about one fragment no longer separates by colour, which at this depth it could
-not anyway. The floor is a `max`, so a shallow pileup keeps the tighter raw band.
+deletion present. `widenBandToEventScale` (`shared/insertSizeStats.ts`) floors the
+band to 2x / 0.5x the typical fragment: the colour means an event comparable in
+size to the fragment, which is scale-free across library types. The floor is a
+`max`, so a shallow pileup keeps the tighter raw band.
 
 ## Interchromosomal ticks: scattered, and that is the criterion
 
-Clustering the window's interchromosomal connections on both sides (own and
-partner position within W, same partner contig) barely changes anything: 99% are
-singletons at any W up to 2 kb, and the largest cluster is two reads. They are
-scattered mismapping.
+Clustering the window's interchromosomal connections on both sides barely changes
+anything: 99% are singletons at any window up to 2 kb. They are scattered
+mismapping.
 
 **The window is still required.** A real translocation at 300x recruits ~100
 pairs, and mates straddle the breakpoint, scattering across a fragment length.
 Under `arcKey`'s exact count every one is a singleton, so a naive `support >= 2`
-floor deletes the real event with the noise. `clusteredInterchromSupport`
-counts over one fragment length on both sides, with the window taken from
-`stats.upper` so it tracks the library. At the default (min 2) it drops 98.2% of
-the window's connections.
+floor deletes the real event with the noise. `clusteredInterchromSupport` counts
+over one fragment length on both sides, with the window taken from `stats.upper`
+so it tracks the library.
 
 ## Same-chromosome discordant arcs: windowed support does NOT work
 
-Declined — don't re-propose. Windowed support on same-chr discordant pairs
-yields clusters of 10–24 "supporting" reads, but their TLENs form a smooth
-continuum starting at the band cut: a distribution tail being sliced, not a
-mode. A real deletion would cluster tightly at its own size. At 300x a 600 bp
-window holds ~1,200 pairs, so a fraction of a percent of tail flags several per
-window and single-linkage chains them. Support there is a density filter that
-grows more aggressive where coverage is deepest; the insert-size floor already
-controls that family.
+Declined — don't re-propose. Windowed support on same-chr discordant pairs yields
+clusters of 10–24 "supporting" reads, but their TLENs form a smooth continuum
+starting at the band cut: a distribution tail being sliced, not a mode. A real
+deletion would cluster tightly at its own size. Support there is a density filter
+that grows more aggressive where coverage is deepest; the insert-size floor
+already controls that family.
 
 ## The coverage band's SNP colours
 
 At 300x a 1% sequencing error rate is three reads at every position, so an
-un-floored band carries a permanent sliver of every base. The pileup always
-faded these through `featureFrequencyThreshold`; the band did not.
+un-floored band carries a permanent sliver of every base. The pileup always faded
+these through `featureFrequencyThreshold`; the band did not.
+`coverageSnpMinFrequency` (Coverage → "Color SNPs above...") is the band's floor,
+0 by default because a floor at 30x would hide real low-frequency variants in a
+somatic or pooled sample. It is a draw-time test in both backends against each
+segment's `segHeight`, so changing it repaints rather than refetches.
 
-`coverageSnpMinFrequency` (Coverage → "Color SNPs above...") is the band's
-floor, 0 by default because a floor at 30x would hide real low-frequency variants
-in a somatic or pooled sample. It is a draw-time test in both backends against
-each segment's `segHeight` (the allele's share of depth), so changing it
-repaints rather than refetches.
-
-### Three rules answer "is this event real", calibrated differently
-
-| rule | shape | what it gates |
-| --- | --- | --- |
-| `featureFrequencyThreshold` | depth-ramped, stricter at low depth | the pileup's mismatch / indel / clip frequency bytes, zeroed in the worker |
-| `coverageSnpMinFrequency` | flat, user-set, 0 by default | the band's coloured segments, at draw time in both backends |
-| `MINIMUM_INDICATOR_READ_DEPTH` + `INDICATOR_THRESHOLD` | absolute depth floor, then a flat fraction | whether an interbase position earns an indicator triangle |
-
-Two surprises follow. **Below the depth floor no indicator triangle is emitted**,
-whatever the evidence. And the pileup ramp can zero a heterozygote at low depth
-(a 50% allele first clears it at ~22x), while the band, floored at 0, still
-colours it — which is the argument for keeping the band's floor at 0.
+Three rules answer "is this event real", calibrated differently:
+`featureFrequencyThreshold` (depth-ramped, stricter at low depth; zeroes the
+pileup's frequency bytes in the worker), `coverageSnpMinFrequency` (flat, user-set,
+at draw time), and `MINIMUM_INDICATOR_READ_DEPTH` + `INDICATOR_THRESHOLD` (an
+absolute depth floor, then a flat fraction, for the interbase indicator
+triangle). **Below the depth floor no indicator triangle is emitted**, whatever
+the evidence. And the pileup ramp can zero a heterozygote at low depth while the
+band, floored at 0, still colours it — which is the argument for keeping the
+band's floor at 0.
 
 **On a log axis the coloured fraction is the allele proportion, not a count off
 the y-axis.** The segments are linear slices of a log-scaled bar
@@ -93,22 +78,13 @@ the axis in would need a repack on every autoscale change.
 
 ## Arc paint order and concordant pairs
 
-In the running app at `1:2,000,000-2,005,000`, baseline (normal-insert) arcs
-outnumber every categorized arc by over 100:1, and arc strokes are opaque, so
-paint order is an interest ranking (`arcPaintRank`, ticks under arcs in
-`ARC_PASSES`). Long-insert falls to ~0.2% of arcs with the band floor, matching
-the offline prediction.
-
-`drawProperPairArcs` ("Show concordant-pair arcs") off hides ~99% of arcs and
-leaves the categorized set untouched. It hides an arc only when the pair is
-proper (`isConcordantPairRead`, shared with the "Show proper pairs" read filter)
-**and** the arc paints the baseline slot. The flag alone would also hide
-proper-flagged pairs whose |TLEN| falls below the band and paint short-insert,
-which would read as a bug.
-
-`maxHeight` is not reached at 300x in that window, so no lane is
-`ceilingClipped`.
+Baseline (normal-insert) arcs outnumber every categorized arc by over 100:1 and
+arc strokes are opaque, so paint order is an interest ranking (`arcPaintRank`,
+ticks under arcs in `ARC_PASSES`). `drawProperPairArcs` ("Show concordant-pair
+arcs") off hides an arc only when the pair is proper (`isConcordantPairRead`,
+shared with the "Show proper pairs" read filter) **and** the arc paints the
+baseline slot. The flag alone would also hide proper-flagged pairs whose |TLEN|
+falls below the band and paint short-insert, which would read as a bug.
 
 To reproduce in the app: a `ChromSizesAdapter` assembly with plain `1`/`2`/…
-contigs (the BAM is hs37d5), and a raised `fetchSizeLimit` or Force Load — 5 kb
-at this depth exceeds the byte gate.
+contigs (the BAM is hs37d5), and a raised `fetchSizeLimit` or Force Load.

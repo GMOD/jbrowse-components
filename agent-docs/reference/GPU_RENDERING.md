@@ -23,33 +23,17 @@ JSX SVG on both the on-screen and export paths composes none of it.
 | What is a pass, a UBO, MSAA? | [GPU_GLOSSARY.md](GPU_GLOSSARY.md) |
 | How many WebGL2 contexts, and what limits does a GPU guarantee? | [GPU_PORTABILITY.md](GPU_PORTABILITY.md) |
 
-## Package layout
+## Package map
 
-`@jbrowse/render-core` (`packages/render-core`) holds the HAL,
-`RenderLifecycleMixin`, the backend base classes, the React backend hooks and the
-clip/canvas/hp-math utilities. It is a leaf package (no `@jbrowse/core`), so a
-third-party display can depend on it directly.
-
-Shader codegen lives in `packages/shader-tools/src/build-shaders.ts` plus
-`slangPass` in render-core. The display-integration layer
-(`MultiRegionDisplayMixin`, `GlobalFetchMixin`, `DisplayChrome`) lives in
-`packages/display-kit/src/`. Per-display shaders and passes live under
-`plugins/<plugin>/src/<display>/{shaders,passes}`. The host serves the GPU API
-to runtime plugins like every bundled `@jbrowse` package
+`packages/render-core` holds the HAL, `RenderLifecycleMixin`, the backend base
+classes and hooks; it is a leaf package (no `@jbrowse/core`), so a third-party
+display can depend on it directly. `packages/display-kit/src/` holds
+`MultiRegionDisplayMixin`, `GlobalFetchMixin` and `DisplayChrome`; shader codegen
+is `packages/shader-tools/src/build-shaders.ts`. The host serves the GPU API to
+runtime plugins like every bundled `@jbrowse` package
 ([ADR-128](../architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md)).
-
-## Life of a frame
-
-- `useRenderingBackend` mounts, creates the HAL, resolves a backend and calls
-  `model.startRenderingBackend(backend)`.
-- The mixin sets `currentRenderingBackend` and spawns two autoruns.
-- The upload autorun reads the backend, uploads, and bumps `renderTick`.
-- The render autorun reads the backend and `renderTick`, calls `render`, and
-  flips `canvasDrawn` on `true`. `clearAllRpcData` resets it.
-- Any observable an autorun touches becomes a dependency.
-
-[GPU_DISPLAY_LIFECYCLE.md](GPU_DISPLAY_LIFECYCLE.md) §"The core contract" has the
-wiring and §"Context-loss recovery" the loop's failure path.
+The frame loop (`useRenderingBackend`, the upload and render autoruns) is
+[GPU_DISPLAY_LIFECYCLE.md](GPU_DISPLAY_LIFECYCLE.md) §"The core contract".
 
 ## `displayedRegionIndex`
 
@@ -66,11 +50,8 @@ uploaded under, not always an index.
 
 The public
 [GPU displays guide](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/creating_gpu_display.md)
-walks this checklist ([Plotting
-features](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/plotting_features.md)
-covers the shared-shape version); keep them in step with any change here.
+walks this checklist; keep it in step with any change here.
 
-- **Types** — `MyData`, `MyRenderState`, `MyRenderingBackend`.
 - **Shape** — `spanMark` or `pointMark` where one fits. Otherwise a `MarkShape`
   beside `my.slang` (`pnpm gen:shaders` emits `my.generated.ts`; `slangPass()`
   builds the descriptor) with its `writeUniforms`, its `paintBlock` (also the SVG
@@ -97,14 +78,10 @@ covers the shared-shape version); keep them in step with any change here.
   `@jbrowse/display-kit/DisplayChrome`) with `model`, the backend `factory` and a
   `testid`. It owns the overlays, so the component lays out only its canvas(es)
   via the render-prop child `({ canvasRef }) => <canvas ref={canvasRef} />`.
-- **Wiggle-style displays** — to reuse the whole LinearWiggleDisplay model,
-  compose `stateModelFactory` from the `LinearWiggleDisplay/stateModel` subpath.
-  To borrow only the score machinery, compose `WiggleScoreConfigMixin` +
-  `makeScoreSubMenu` and render `ScorePlotChrome` from its subpath. One plotting
-  a configured field composes `ScoreFieldConfigMixin` (`plugins/gwas`); one naming
-  a field per mark keeps the base (`plugins/marks`). Implement
-  `WiggleRenderingBackend`. A zoom-independent display needs no cache override:
-  the adapter's `zoomRange` is the zoom rule (ADR-125).
+- **Wiggle-style displays** — compose `stateModelFactory` from the
+  `LinearWiggleDisplay/stateModel` subpath, or only `WiggleScoreConfigMixin` +
+  `makeScoreSubMenu` and `ScorePlotChrome`. A zoom-independent display needs no
+  cache override: the adapter's `zoomRange` is the zoom rule (ADR-125).
 - **Tests** — unit (`MockHal`); browser (Puppeteer,
   `--backend=webgl|webgpu|canvas2d`).
 

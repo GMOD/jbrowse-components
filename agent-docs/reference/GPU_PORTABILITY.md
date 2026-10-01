@@ -6,95 +6,50 @@ kind: spec
 
 # GPU portability: what is guaranteed, and what is one laptop
 
-Every GPU number this repo records comes from one integrated-GPU machine.
-[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) says so in each entry's
-provenance line. This doc answers the other question, **what is true on hardware
-we have never seen?**, by comparing the published spec minimums against what the
-tree queries or bakes in; none of that needs hardware. The last half covers the
-one limit that is browser policy rather than hardware, the WebGL2 context
-ceiling, and what reaches it.
-
-The floors below come from the WebGPU limits table and the OpenGL ES 3.0
-implementation-dependent values that WebGL2 inherits. Check them against current
-spec text before resting a decision on one, because WebGPU has renamed limits.
-Everything said about this tree is re-derivable by grep.
-
-## The short answer
+Every GPU number this repo records comes from one integrated-GPU machine
+([ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) says so per entry). This doc
+covers what holds on hardware we have never seen. Check spec floors against
+current spec text before resting a decision on one, because WebGPU has renamed
+limits.
 
 - **WebGPU is safe by construction.** The HAL reads every device limit it
   depends on from `device.limits`, and nothing requests a limit above the spec
   floor.
 - **WebGL2 rests on convention in one place**: `MAX_CANVAS_DIM_PX` (8192), which
-  the spec floor (2048) does not back. ARCHITECTURAL_LIMITS.md owns the entry.
-- **The 16-context ceiling is browser policy, not a GPU limit.** It varies by
-  browser and version, so no graphics hardware changes it. Only Chrome has been
-  measured; the Firefox figure in circulation is a guess, and measuring it with
-  the `--tracks` harness (§"Measuring it" below) is the cheapest outstanding GPU
-  measurement.
+  the WebGL2 spec floor (2048) does not back.
+- **The 16-context ceiling is browser policy, not a GPU limit.** Only Chrome has
+  been measured; the Firefox figure in circulation is a guess, and measuring it
+  with the `--tracks` harness is the cheapest outstanding GPU measurement.
 
 ## What the code queries
 
 A queried limit cannot be wrong on unseen hardware: the worst case is a smaller
-budget and an earlier, legible refusal.
-
-<!-- prettier-ignore -->
-| limit | spec floor | where the tree reads it | what happens at the floor |
-| --- | --- | --- | --- |
-| `maxTextureDimension2D` | 8192 | `webgpuHal.recreateMsaaTexture`, the data-texture path | `OomReporter` shows "zoom in", not a blank canvas |
-| `maxBufferSize` | 256 MiB | `webgpuHal` vertex upload guard | same refusal, lower threshold |
-| `minUniformBufferOffsetAlignment` | 256 | `WebGPUHal` constructor, ring slot size | nothing; hardware can only beat the default |
-| `MAX_TEXTURE_SIZE` (WebGL2) | 2048 | `webgl2Hal`, before `texImage2D` | refuses with the measured max in the message |
-
+budget and an earlier, legible refusal (`OomReporter` shows "zoom in").
+`maxTextureDimension2D`, `maxBufferSize` and `minUniformBufferOffsetAlignment`
+are read in `webgpuHal`, `MAX_TEXTURE_SIZE` in `webgl2Hal` before `texImage2D`.
 `gpuDevice.acquire` requests `maxStorageBufferBindingSize` and `maxBufferSize` at
 the adapter's own maxima, so a machine at the floor gets a device at the floor
 rather than a failed `requestDevice`.
 
 ## What the code assumes
 
-<!-- prettier-ignore -->
-| assumption | spec floor | verdict |
-| --- | --- | --- |
-| `MAX_CANVAS_DIM_PX` (`canvas2dUtils.ts`) | WebGPU 8192, WebGL2 2048 | Equals the WebGPU floor. On WebGL2 it rests on "at least 8192 on essentially all real hardware", which the spec does not guarantee. |
-| `MAX_VERTEX_BUFFER_BYTES` (`webgl2Hal.ts`) | not queryable in WebGL2 | Pins WebGPU's spec default because WebGL2 exposes no equivalent. The unguarded alternative is a dropped context. |
-| `SampleCount` is `1 \| 4` | 4 is the only multisample count WebGPU permits | The type is the spec, not a choice. |
-| 4x MSAA on the preferred canvas format | `maxColorAttachmentBytesPerSample` 32 | One 4-byte attachment. |
+- `MAX_CANVAS_DIM_PX` (`canvas2dUtils.ts`) equals the WebGPU floor; on WebGL2 it
+  rests on "at least 8192 on essentially all real hardware".
+- `MAX_VERTEX_BUFFER_BYTES` (`webgl2Hal.ts`) pins WebGPU's spec default because
+  WebGL2 exposes no equivalent; the unguarded alternative is a dropped context.
+- `SampleCount` is `1 | 4`: 4 is the only multisample count WebGPU permits.
+- WebGL2 is not always "the stricter of the two": at the WebGPU floor both
+  backends refuse at 256 MiB.
 
-ARCHITECTURAL_LIMITS.md calls WebGL2 "the stricter of the two". That holds only
-where the adapter reports a large `maxBufferSize`. At the WebGPU floor both
-backends refuse at 256 MiB. The guard is safe either way; the asymmetry is
-machine-dependent.
-
-## Shader headroom
-
-Re-take these from `**/*.iface.generated.ts` (`awk '/VERTEX_ATTRIBUTES/,/^]/'`)
-when a pass grows a dimension:
-
-<!-- prettier-ignore -->
-| quantity | floor | widest pass |
-| --- | --- | --- |
-| vertex attributes in one pass | 16 | alignments' pileup (`read.iface.generated.ts`) |
-| vertex buffer stride | 2048 bytes | `wiggleBand.iface.generated.ts` |
-| uniform block size | WebGPU 64 KiB binding, WebGL2 16 KiB block | `linkMark.iface.generated.ts` |
-| color attachments | 8 | all passes use 1 |
-
-Vertex attributes are the one to watch: the pileup pass has gained attributes
-more than once.
+**Shader headroom.** Vertex attributes per pass (floor 16) are the one to watch;
+the pileup pass has gained attributes more than once. Re-take the widths from
+`**/*.iface.generated.ts` when a pass grows a dimension.
 
 ## The number that generalizes badly: MSAA target size
 
-ARCHITECTURAL_LIMITS.md gives the formula: canvas area x dpr² x 4 samples x 4
-bytes. **dpr enters squared**, so a retina panel costs 4x for the same CSS box.
-`getDpr()` caps at `MAX_DPR = 2`, so the factor cannot exceed 4. Each row below
-is a single track.
-
-<!-- prettier-ignore -->
-| case | device px | MSAA target |
-| --- | --- | --- |
-| dpr 1, 1266 px window, 4100 px tall (the measured anchor) | 1266 x 4100 | 79.2 MiB |
-| 27" retina window (2560 CSS px, dpr 2), height at the clamp | 5120 x 8192 | 640.0 MiB |
-| both axes at the clamp, absolute ceiling | 8192 x 8192 | 1024.0 MiB |
-
-The session counts none of this memory. The measured dpr 1 vs dpr 2 comparison:
+The target is canvas area x dpr² x 4 samples x 4 bytes, and `getDpr()` caps at
+`MAX_DPR = 2`, so a retina panel costs up to 4x for the same CSS box. The
+session counts none of this memory.
 
 <!-- BEGIN GENERATED MEASUREMENT msaa-target-dpr -->
 
@@ -108,36 +63,24 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT msaa-target-dpr -->
 
-**These are sizes the descriptors ask for, not necessarily memory held.** The
-numbers come from immediate-mode GPUs, where a render attachment is an
-allocation. `beginFrame` attaches the MSAA view with `storeOp: 'discard'` and a
-`resolveTarget`, which a tiler (Apple Silicon) may keep in tile memory and never
-commit. Nobody has profiled that;
+These are sizes the descriptors ask for, not necessarily memory held: a tiler
+(Apple Silicon) may keep the discarded MSAA view in tile memory. Nobody has
+profiled that;
 [../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md)
 ranks the residency check first.
 
 **`maxTextureDimension2D` never refuses a clamped canvas.** `syncCanvasSize`
-clamps the backing store at `MAX_CANVAS_DIM_PX` before the HAL checks, so a
-device whose limit is exactly 8192 never sees an oversize request and a display
-past the clamp draws at reduced resolution. ARCHITECTURAL_LIMITS.md §"A canvas
-past `MAX_CANVAS_DIM_PX` renders wrong, not smaller" has the mechanism.
-
-## Other browser-policy limits
-
-- Whether WebGPU is available at all is a browser and driver-allowlist decision.
-- Whether `WEBGL_debug_renderer_info` is exposed varies: Firefox with
-  `privacy.resistFingerprinting` withholds it, which is why
-  `graphicsCapabilities.glRenderer` is optional.
+clamps at `MAX_CANVAS_DIM_PX` before the HAL checks, so a display past the clamp
+draws at reduced resolution. ARCHITECTURAL_LIMITS.md §"A canvas past
+`MAX_CANVAS_DIM_PX` renders wrong, not smaller" has the mechanism.
 
 ## Finding out what real machines give
 
-`logGpuCapabilities` (`gpuDevice.ts`) `console.warn`s the adapter identity,
-`maxTextureDimension2D`, `maxBufferSize` and `maxStorageBufferBindingSize` on
-every WebGPU device acquisition, to a console nobody reads.
-`graphicsCapabilities.ts` already travels (About widget, stack-trace dialog, one
-analytics bit) but reports which GPU, never what it allows.
+`graphicsCapabilities.glRenderer` is optional because Firefox with
+`privacy.resistFingerprinting` withholds `WEBGL_debug_renderer_info`.
+`logGpuCapabilities` (`gpuDevice.ts`) only `console.warn`s the device limits;
 [../ideas/ready/gpu-limits-in-bug-reports.md](../ideas/ready/gpu-limits-in-bug-reports.md)
-parks adding those limits to the stack-trace dialog's capability object.
+parks sending them with bug reports.
 
 ## The WebGL2 context budget
 
@@ -147,26 +90,16 @@ wedges the main thread rather than degrading. One display owns one context
 (`WebGL2Hal` takes its own `getContext('webgl2')`, no pooling), so the budget is
 a budget of open GPU tracks.
 
-Walking `--tracks` up on one LGV (Chrome, contexts created / unforced losses;
-the +1 is the `getGraphicsCapabilities` probe, made only when WebGPU is absent):
-
-| tracks | real GPU | SwiftShader |
-| ------ | -------- | ----------- |
-| 16     | 17 / 0   | 17 / 0      |
-| 17     | 31 / 15  | 26 / 10     |
-| 20     | 57 / 41  | 25 / 9      |
-| 24     | 73 / 57  | 33 / 9      |
-
-The ceiling is identical on both, so it is a browser property; what happens past
-it is not.
+Walking `--tracks` up on one LGV, Chrome creates and loses contexts identically
+on a real GPU and on SwiftShader at 17 tracks, so the ceiling is a browser
+property; what happens past it is not.
 
 ### The many-view freeze, and what it left behind
 
-The many-view freeze ("can't scroll") was fixed by view-level lazy mount
-(`useViewVisibility.ts`): each view's body mounts only while an
-IntersectionObserver says it is on screen. The freeze is container-independent
-and backend-wide. If it is reported again, ask which build the report predates
-and what the reporter's `chrome://gpu` says.
+View-level lazy mount (`useViewVisibility.ts`) fixed the many-view freeze: each
+view's body mounts only while an IntersectionObserver says it is on screen. If
+the freeze is reported again, ask which build the report predates and what the
+reporter's `chrome://gpu` says.
 
 Three shapes the lazy mount does not bound:
 
@@ -181,19 +114,10 @@ Three shapes the lazy mount does not bound:
 
 ### Software rendering: Canvas2D wins, and the ladder steps around WebGL2
 
-Per scroll pass, 12 views × 3 tracks:
-
-| backend  | SwiftShader | real GPU  |
-| -------- | ----------- | --------- |
-| webgl2   | 9.8-12.0 s  | 1.4-1.5 s |
-| canvas2d | 0.21-0.45 s | 1.8-3.2 s |
-
-Canvas2D is ~25x cheaper than WebGL under software rendering and ~2x dearer on
-a real GPU. The cost is shader compilation (`getShaderParameter` for
-COMPILE_STATUS dominates a CPU trace): programs are per-context, and compiling on
-a CPU rasterizer is slow. Churn flatters that ratio, but the crossover holds with
-no churn at all — one view, three tracks, where the load-time pipeline build
-alone produces multi-second tasks on WebGL2 and none over 500 ms on Canvas2D
+Per scroll pass, 12 views x 3 tracks, Canvas2D is ~25x cheaper than WebGL under
+software rendering and ~2x dearer on a real GPU. The cost is shader compilation
+on a CPU rasterizer, and it holds with no churn: one view, three tracks already
+produces multi-second tasks on WebGL2
 (`node browser-tests/workspaces-freeze-stress.ts --views=1 --tracks=3 --mode=classic`).
 
 So `createGpuHal` steps over the WebGL2 rung when the rasterizer is software and
@@ -227,20 +151,15 @@ rasterizer must never read as software. Analytics gets only the coarse
 
 ### WebGPU on a box whose Chrome has none
 
-Chrome + puppeteer does not render WebGPU canvases, so
-`browser-tests/runner.ts` sends `--backend=webgpu` through Firefox Nightly, which
-acquires a device on the same integrated GPU. "We cannot check the WebGPU path
-here" is wrong: `node browser-tests/runner.ts --backend=webgpu --filter=<suite>`
-is the check, and `--backend=all --gate-only` adds the drift comparison.
-The logged `maxBufferSize` is the adapter's, not the spec default (see "What the
-code queries"), and moves with driver and browser version.
-
-Past the ceiling a scroll-zoom on WebGL2 spends much of its main thread on
-context recovery; WebGPU shares one device across canvases and paces 28 tracks
-like 8. Two traps when re-measuring headed in Firefox: under Wayland it stops
-`requestAnimationFrame` for a window the compositor deems hidden, so launch with
-`MOZ_ENABLE_WAYLAND=0 GDK_BACKEND=x11`; and real pointer events on a desktop in
-use flip the wheel controller's pointer-presence gate.
+Chrome + puppeteer does not render WebGPU canvases, so `browser-tests/runner.ts`
+sends `--backend=webgpu` through Firefox Nightly. "We cannot check the WebGPU
+path here" is wrong: `node browser-tests/runner.ts --backend=webgpu
+--filter=<suite>` is the check, and `--backend=all --gate-only` adds the drift
+comparison. Past the context ceiling WebGPU shares one device across canvases and
+paces 28 tracks like 8. Two traps when re-measuring headed in Firefox: under
+Wayland it stops `requestAnimationFrame` for a window the compositor deems
+hidden, so launch with `MOZ_ENABLE_WAYLAND=0 GDK_BACKEND=x11`; and real pointer
+events on a desktop in use flip the wheel controller's pointer-presence gate.
 
 ### The probe's own context
 
@@ -254,40 +173,21 @@ oldest-first** — a page holding 24 contexts loses exactly indices 0-7 — so t
 probe's context is the first one evicted, and nothing draws to or re-acquires
 it. That is a Blink property, so the SwiftShader measurement holds.
 
-### Measuring it: pass `--headed=true`
+### Measuring it
 
-`products/jbrowse-web/browser-tests/workspaces-freeze-stress.ts`, after a build.
-Real tracks are required; empty views come back clean.
-
-```
-node browser-tests/workspaces-freeze-stress.ts --views=1 --tracks=17 --headed=true
-node browser-tests/workspaces-freeze-stress.ts --mode=classic --headed=true
-node browser-tests/workspaces-freeze-stress.ts --mode=tiled --panels=4 --headed=true
-```
-
-**Headless Chrome renders WebGL on SwiftShader**, ~10x slower on exactly this
-cost, so a headless run measures software rendering, not what a user sees. The
-same warning is in [TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md). Compare modes in separate processes; the harness header says why.
+`products/jbrowse-web/browser-tests/workspaces-freeze-stress.ts`, after a build,
+with real tracks and **`--headed=true`**: headless Chrome renders WebGL on
+SwiftShader, ~10x slower on exactly this cost
+([TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md)). Compare modes in separate
+processes; the harness header says why.
 
 ### Fixes measured and eliminated
 
-Redistributing when a pipeline is built does not help: building one costs a
-context and a shader recompile, holding one costs against the ceiling.
-
-- **Layout write amplification** (the dockview echo, gone with ADR-068). The
-  Canvas2D control with the same writes costs a fraction, so writes were not it.
-- **Releasing the context on dispose** (`loseContext()` in `webgl2Hal.dispose`):
-  contexts created unchanged, long tasks the same or worse. Acquiring costs, not
-  holding.
-- **Dropping the eager COMPILE_STATUS / LINK_STATUS queries**: the driver blocks
-  at link or first draw instead.
-- **Hysteresis on the mount band** (rooting the observer at the scroll port so
-  `rootMargin` applies): a wash on scroll cost, roughly double the live
-  contexts.
-
-What remains is structural: pool contexts, share one across displays (one
-canvas, scissored draws), or WebGPU. Track-level mount/release is the cheap
-version, and the ceiling says it is worth building.
+Layout write amplification, releasing the context on dispose (`loseContext()`),
+dropping the eager COMPILE_STATUS / LINK_STATUS queries, and hysteresis on the
+mount band each measured as no help: acquiring a context costs, holding one
+costs against the ceiling. What remains is structural: pool contexts, share one
+across displays, or WebGPU. Track-level mount/release is the cheap version.
 
 Related: [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"One WebGL2 context
 per display canvas", [GPU_HAL.md](GPU_HAL.md) §"WebGL2 contexts are a page-level budget",

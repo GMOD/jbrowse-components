@@ -8,27 +8,19 @@ kind: spec
 
 Runtime plugins share the host's singletons (React, MST, `@jbrowse/core`), so
 every name the host serves is ABI, and a removal fails at the plugin's runtime,
-not at the host's build. In-tree consumers get the compiler as their contract
-test; external plugins, built against a published `@jbrowse/*` and running in
-deployments nobody observes, get nothing. This doc lists the surfaces, what
-guards each, what already left, and the behavior changes external plugins
-inherit, then the standing decisions from the 2026-07 community-plugin-API
-proposal (RFC-001). It is not a formal stability policy; the proposal deferred
-one.
+not at the host's build. In-tree consumers get the compiler; external plugins,
+built against a published `@jbrowse/*`, get nothing. This is not a formal
+stability policy; RFC-001 deferred one.
 
 ## The surfaces and their guards
 
 - **The runtime registry is the exports maps**
   ([ADR-128](../architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md)).
-  `scripts/generateReExports.ts` writes `reExports.generated.json` and the
-  module maps from the `exports` maps of `@jbrowse/core` and the display
-  toolkit. A removal is a diff in that committed file. The `ABI_REMOVED_NAMES`
-  table (`website/scripts/generate-abi-removals.ts`) fails `pnpm autogen
-  --check` on a name the previous release served and the manifest no longer
-  does, until someone describes it. `scripts/check-published-plugins.ts` reads
-  what the store bundles take off `JBrowseExports`, weekly.
-  `scripts/check-plugin-porosity.ts` builds the exemplar plugin the way the
-  template does and fails on any workspace source in its bundle.
+  `scripts/generateReExports.ts` writes `reExports.generated.json`; a removal is
+  a diff there, and `ABI_REMOVED_NAMES` (`website/scripts/generate-abi-removals.ts`)
+  fails `pnpm autogen --check` until someone describes it.
+  `scripts/check-published-plugins.ts` and `scripts/check-plugin-porosity.ts`
+  cover store bundles and the exemplar plugin.
 - **`@jbrowse/core`'s published `exports` map, which nobody writes.**
   `packages/core/scripts/generateExports.mjs` derives it from import
   specifiers under `packages plugins products example-plugins`. A subpath
@@ -45,11 +37,8 @@ one.
   callback returns its own single-element array in place of everyone else's
   entries. Nothing throws, and the plugins that lose entries are the other ones.
 
-**A baseline per surface was tried and dropped.** Removals-only baselines for
-the plugin `exports` objects, the session and core's `exports` map existed
-briefly. At this plugin count, maintaining a baseline per refactor costs more
-than the removals it catches, and the baseline itself was the kind of
-hand-kept list that rots. Only `preservedExports` survives.
+**A baseline per surface was tried and dropped.** Maintaining one per refactor
+costs more than the removals it catches. Only `preservedExports` survives.
 
 **The signature is as public as the name.** A required second argument breaks
 a duck-typed caller as deleting the member does, so add plugin-facing
@@ -152,81 +141,43 @@ Neither surface is checked against a published bundle.
 
 ## The real cure: bound what external plugins can reach
 
-An internal is safe to refactor only when it is unreachable, and nothing in
-tree can prove an external plugin does not use it. Four moves, by leverage:
-
-1. **Split the runtime surface into published and not.** ADR-128 took this the
-   other way round: the published set is every exports-map subpath, the
-   snapshot is `reExports.generated.json`, and the diff is the removals table.
-   Anything unpublished is bundled, not host-bound.
-2. **Version the contract and fail loud** at load time on a mismatch, so breakage lands on a major with a guide. Not built.
-3. **Instrument deprecations at runtime** with a warning getter. Telemetry sees only observed deployments, so use it to accelerate removal, never to gate it. Not built.
-4. **Make the blessed extension points good enough that nobody reaches into internals.** `BaseLinearDisplay` leaked into plugins because no stable custom-display API existed.
-
-Deep reach is part of JBrowse's value, so the goal is a small stable blessed
-surface plus an explicit, may-break opt-in for the rest, not lockdown. When the
-GPU rewrite made the legacy block stack untenable, the project removed it and
-accepted the gdc/icgc breakage rather than taking the graceful path, so
-"nothing is removed" is not an iron law.
+An internal is safe to refactor only when it is unreachable, and nothing in tree
+can prove an external plugin does not use it. By leverage: (1) split the runtime
+surface into published and not, which ADR-128 did by making the published set
+every exports-map subpath; (2) version the contract and fail loud at load time,
+not built; (3) instrument deprecations with a warning getter, not built, and
+only to accelerate removal, since telemetry sees only observed deployments; (4)
+make the blessed extension points good enough that nobody reaches into
+internals (`BaseLinearDisplay` leaked because no stable custom-display API
+existed). "Nothing is removed" is not an iron law: the GPU rewrite removed the
+legacy block stack and accepted the gdc/icgc breakage.
 
 ## Community plugin API decisions
 
-The 2026-07 RFC-001 proposed a stable API for community plugins in the
-WebGPU/WebGL2/Canvas2D era. The mixin/lifecycle pass and the legacy-renderer
-deletion landed; a Canvas2D-as-peer-path library and a shared shader-pass
-library did not. The decisions that stand:
+The 2026-07 RFC-001 decisions that stand:
 
 - **Names as shipped.** `RenderLifecycleMixin` (`packages/render-core/`),
   `attachRenderingBackend`, `stopRenderingBackend`, `useRenderingBackend` and
-  `createRenderingBackend` replaced the RFC's `GpuRenderingBackendLifecycleSlotMixin`,
-  `installGpuDisplay`, `stopGpuRenderingBackendLifecycle`, `useGpuModelLifecycle`
-  and `initDualRenderingBackend`. Canvas2D paths compose the same
-  `attachRenderingBackend({ upload, render })` shape as GPU, so
-  `installCanvas2DDisplay` and `useCanvas2DModelLifecycle` do not exist.
-  [GPU_RENDERING.md](GPU_RENDERING.md) indexes the docs that own the
-  lifecycle, HAL and upload patterns.
+  `createRenderingBackend` replaced the RFC's GPU-specific names. Canvas2D
+  composes the same `attachRenderingBackend({ upload, render })` shape.
+  [GPU_RENDERING.md](GPU_RENDERING.md) indexes the lifecycle docs.
 - **Cross-plugin coupling is a static import plus esbuild `globalExternals`.**
-  `pluginManager.getPlugin('X').exports` is removed for new plugin code. The
-  RFC deferred semver, `api-extractor` and versioned mixins as premature;
-  the section above argues the deferral has a cost, since an unbounded,
-  invisible runtime surface ossifies with or without a policy.
+  `pluginManager.getPlugin('X').exports` is removed for new plugin code.
 - **Canvas2D or GPU.** GPU earns its keep above roughly 100K features per
   frame. Below that, Canvas2D is simpler, spends no context budget
-  ([GPU_PORTABILITY.md](GPU_PORTABILITY.md)) and is the path SVG export
-  reuses. The backend decides, not the display type; both are one
-  `attachRenderingBackend({ upload, render })`.
-- **Primitives, not a framework.** Each mark keeps its varying part explicit
-  rather than inheriting a generalized vertex-generation helper
+  ([GPU_PORTABILITY.md](GPU_PORTABILITY.md)) and is the path SVG export reuses.
+  The backend decides, not the display type.
+- **Primitives, not a framework.** No glyph-registration, spec-grammar or DSL
+  layer: it would lose per-feature batching, conditional paths and custom
+  hit-testing, and each mark keeps its varying part explicit
   ([ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md)).
-  The `rect`, `line`, `arrow` and `chevron` passes stay in
-  `plugins/canvas/src/LinearBasicDisplay/passes/` with no second consumer.
-- **No glyph-registration, spec-grammar or DSL layer.** The canvas plugin's
-  config covers simple rect, arrow and line cases, and complex ones (Manhattan,
-  methylation matrices) need the full mixin/RPC/render shape regardless. A
-  registration API would lose per-feature batching, conditional paths and
-  custom hit-testing.
-- **No backwards compatibility for plugins built against the legacy API**
-  (`linearWiggleDisplayModelFactory`, `FeatureRendererType`,
-  `pluginManager.getPlugin().exports`). External plugins are few, and the
-  trade was getting the API right once.
-- **Non-LGV display types are out of scope.**
+- **No backwards compatibility for legacy-API plugins**
+  (`linearWiggleDisplayModelFactory`, `FeatureRendererType`).
 - **`bpPerPx` stays the MST single source of truth, with no decoupled 60fps
-  zoom animation.** The scalebar, gridlines, ruler, RPC fetch invalidation and
-  every React overlay depend on it. Three approaches failed: a volatile
-  `pendingBpPerPx` with a debounced commit, animating only the
-  `bpRangeX`/`viewBp` uniform, and a discrete fetch-level tile model with a
-  continuous GPU transform. Perf work inside the invariant is fine.
+  zoom animation.** Three approaches failed: a volatile `pendingBpPerPx` with a
+  debounced commit, animating only the `bpRangeX`/`viewBp` uniform, and a
+  discrete fetch-level tile model with a continuous GPU transform.
   **Decoupling needs its own ADR and an explicit go-ahead.**
-- **Not built:** the Canvas2D-as-peer-path API and a shared shader-pass
-  library.
-
-## The same disease rots the docs
-
-Architecture docs encode incidental current membership ("these four displays
-are GPU") instead of durable contracts, and nothing checks them. State
-invariants, not enumerations; generate any enumeration from source with
-`pnpm autogen`; put a test or generated region between a claim that matters and
-drift.
 
 ## Measured: what v5 cost one out-of-tree plugin
 

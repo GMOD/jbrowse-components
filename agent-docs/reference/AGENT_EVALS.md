@@ -38,24 +38,17 @@ fail an agent that invents a track or reports a setting it could not write.
 
 ## The route report
 
-The route report is desktop-only; `webAgentEval.ts` does not record it. Each
-desktop run records which briefed routes its `run_javascript` code named. The
-routes come from the live object (`Object.keys(jb)`) and from every `jb.x`,
-`view.x`, `track.x`, `session.x` and `activeDisplay.x` in `jb.help`
-(`scripts/agent-evals/jbUsage.ts`), so a new route is measured with no list
-kept beside them. The summary prints calls, errors and the pass/fail split per
-route, then the routes no run reached.
+The route report is desktop-only. It records which briefed routes each run's
+`run_javascript` code named, with the routes derived from the live object and
+from `jb.help` (`scripts/agent-evals/jbUsage.ts`), so a new route needs no list
+kept beside it.
 
 A route no task reaches needs a task before it needs a verdict. A route every
 task can do without, once the suite covers the briefing, is a cut candidate,
 and the eval is the test of the cut: hide the route and compare pass rate,
 turns and dollars, not characters removed.
 
-## Reading more than one run
-
-`--runs N` prints `passes/runs` per task and how many tasks passed every run.
-One run per task hides a flaky task: at a 75% pass rate, three passes in a row
-happen about 42% of the time.
+`--runs N` reports `passes/runs` per task; one run hides a flaky task.
 
 ## The agents that count
 

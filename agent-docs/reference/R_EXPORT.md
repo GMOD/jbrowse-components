@@ -11,15 +11,9 @@ An LGV view exports as a self-contained `.R` that redraws it from source in `rtr
 
 ## Where the code is
 
-| branch | holds |
-| --- | --- |
-| `r-export` | the mark-display translator, its `Rscript` suite and `pnpm gen:rhelpers` |
-| `r-export4-rebase` | `rhelpers/*.R`, `exportR.ts` (assembler, helper-dependency closure), nine per-display `exportRCode.ts` fragments, the equivalence oracles, a figure gallery |
-| `r-export-rewrite` (**no remote**) | `rplot.ts` (now also on `r-export`), plus `emitR.ts` and `figureSpec.ts`, which exist nowhere else |
+`r-export` holds the mark-display translator, its `Rscript` suite and `pnpm gen:rhelpers`. `r-export4-rebase` holds `rhelpers/*.R`, `exportR.ts` (assembler, helper-dependency closure), nine per-display `exportRCode.ts` fragments and the equivalence oracles. `r-export-rewrite` (**no remote**) holds `emitR.ts` and `figureSpec.ts`, which exist nowhere else; check before deleting an unpushed branch. `R_export4` and `R_export4-pre-rebase` are superseded.
 
-`R_export4` and `R_export4-pre-rebase` are superseded by `r-export4-rebase`; the remote `R_export4` was force-updated and is not a backup of the local ref. Check before deleting an unpushed branch.
-
-Main invalidated only the per-display `exportRCode.ts` family, since each reads one display model's getters and several of those displays are gone: the multi-wiggle folded into `LinearWiggleDisplay` ([ADR-143](../architecture-decision-records/adr-143-one-quantitative-display-and-facet-is-the-layout.md), `facet` half superseded by [ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)), the multi-sample matrix display folded into `LinearMultiSampleVariantDisplay`, and the arc displays became a `link` mark ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)). The R helpers, assembler, oracles and `rplot.ts` are R-side or format-side and survive. Pull those across rather than rebasing.
+Main invalidated only the per-display `exportRCode.ts` family, since each reads one display model's getters and several of those displays are gone ([ADR-143](../architecture-decision-records/adr-143-one-quantitative-display-and-facet-is-the-layout.md), [ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md), [ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)). The R helpers, assembler, oracles and `rplot.ts` survive. Pull those across rather than rebasing.
 
 ## Settled decisions
 
@@ -44,7 +38,7 @@ Reversing one means re-running the experiment that settled it.
 
 ## The R helper library
 
-One `.R` file per helper, named for the helper it defines, regenerated into a `HELPERS` table by `pnpm gen:rhelpers` with a `--check` mode in CI. Real `.R` files avoid TS-template escaping, and the test R-`parse()`s every file and `sys.source()`s the library to prove each defines exactly its own helper. The assembler reads needed helpers off the emitted code (every `HELPERS` name called in frames, plots, region layout, then in those helpers' bodies), so no dependency declaration can miss one.
+One `.R` file per helper, named for the helper it defines, regenerated into a `HELPERS` table by `pnpm gen:rhelpers` with a `--check` mode in CI. The assembler reads needed helpers off the emitted code, so no dependency declaration can miss one.
 
 A reader takes `(uri, chrom, start, end)` and returns a **genomic**-coordinate frame plus the fields the display names: `fieldsRead` collects every plain field a channel, step, facet or rows reads, and `frameFor` hands them over as GFF3 attributes (case-insensitive, as JBrowse matches) or VCF INFO keys under the dotted `INFO.DP` spelling. A column whose values all parse as numbers comes back numeric. A contig the index lacks reads as no rows, as the browser draws it. `read_gff` reads through the tabix index. `read_regions` is the only place genomic → cumulative happens; it clips features to the region only where there is more than one region, since the browser hands its transforms the unclipped feature.
 
@@ -65,34 +59,16 @@ Each cost a wrong figure to find.
 - **rtracklayer returns 1-based inclusive coords.** Every reader converts to 0-based half-open; one that did not left a 1bp hole between BigWig bins that antialiased into white seams.
 - **`ggsave()` refuses a dimension over 50 inches**, and figure height is the unbounded sum of panel weights. Clamp it, or a large cohort dies at the script's last line after every read.
 - **A one-row feature panel needs `expand_limits(y = 4)`**; a glyph is a fixed fraction of a row, so a short y-range lets the CDS rect fill the panel solid.
-- **Labels decimate like `fitWidth`:** centre-to-centre against combined half-widths, since long features stacked in one window have near-identical centres however wide each box is.
-- **`GRanges` has no `[[`**; read metadata via `mcols(g)[[nm]]`.
 
 ## Verification
 
-Codegen string checks miss the bugs that matter. Run the *actual* generated script through `Rscript` against `test_data/volvox/*`, assert the figure exists, then run a second probe script that calls one helper and asserts a known biological fact (the ctgA:1693 C-SNP, the `RG:Z:4` split in `volvox-rg.bam`).
+Codegen string checks miss the bugs that matter. Run the *actual* generated script through `Rscript` against `test_data/volvox/*`, assert the figure exists, then run a probe script that calls one helper and asserts a known biological fact. Cross-implementation oracles run the real JS and the R helpers over identical data and assert read-for-read agreement (`computeSortedLayout` against `sorted_pileup_layout`, the modification readings against `bam_modifications`, `read_base_counts` against `Rsamtools::pileup()`). Stripping MD from a BAM and requiring the reference path to reproduce the MD path's mismatches is the mismatch oracle. One layout difference is intended: `placeRect` leaves a 2bp gap between reads sharing a row and the R helper packs on strict overlap.
 
-Cross-implementation oracles run the real JS and the R helpers over identical data and assert read-for-read agreement: `computeSortedLayout` against `sorted_pileup_layout`, both of the browser's modification readings against `bam_modifications` over every modBAM in `test_data`, `mod_coverage` against `computeModificationCoverage`, `read_base_counts` against `Rsamtools::pileup()`. Stripping MD from a BAM and requiring the reference path to reproduce the MD path's mismatches is the mismatch oracle.
-
-One layout difference is intended: `placeRect` leaves a 2bp gap between reads sharing a row and the R helper packs on strict overlap, so equivalence fixtures span the sort column to give every read its own row.
-
-`rScriptRun.test.ts` uses one R session for every case, since attaching Bioconductor is slow, and skips itself where R is absent, **which is every CI run**: treat it as a local gate. Pure string assertions would have caught none of its defects (CSS-versus-hex ramp colour, `df_1 <- df_1`, a dropped base read, an aggregate naming `start` twice). `probeFrame` builds the frame a mark reads and asks R what it holds.
+`rScriptRun.test.ts` uses one R session for every case, since attaching Bioconductor is slow, and skips itself where R is absent, **which is every CI run**: treat it as a local gate.
 
 ## What the grammar supplies
 
-A mark display's config is a ggplot spec in another dialect, so the exporter no longer needs a dialect per display ([ADR-159](../architecture-decision-records/adr-159-a-mark-is-spelt-as-vega-lite-spells-one.md) names it Vega-Lite's way, the same lineage as ggplot2):
-
-| config | ggplot2 |
-| --- | --- |
-| `marks[].mark`, `linkShape` | `geom_*` |
-| `marks[].encoding.{x,y,color,shape,size,text}` | `aes()` |
-| a channel's `{scale, domain, range, scheme}` | `scale_<aes>_*` |
-| `transform[]` (`bin`, `aggregate`, `coverage`, `pileup`) | base R over the frame the layer reads |
-| `facet` | `facet_wrap` |
-| `scales.y` | `scale_y_*`, `coord_cartesian` |
-| `rows`, `rowColor` | the row axis and its second colour scale |
-
-What stays hand-written per display is what is not a channel (layout, tiering, fetch shape; [SESSION_SPEC_FORMAT.md](SESSION_SPEC_FORMAT.md) §"The assessment") plus alignments, whose overlays join by `read_index` and cannot use the generic region reader.
+A mark display's config is a ggplot spec in another dialect ([ADR-159](../architecture-decision-records/adr-159-a-mark-is-spelt-as-vega-lite-spells-one.md)): marks map to `geom_*`, encoding channels to `aes()`, channel scales to `scale_<aes>_*`, `transform[]` to base R over the frame the layer reads, `facet` to `facet_wrap`. What stays hand-written per display is what is not a channel (layout, tiering, fetch shape; [SESSION_SPEC_FORMAT.md](SESSION_SPEC_FORMAT.md) §"The assessment") plus alignments, whose overlays join by `read_index` and cannot use the generic region reader.
 
 ## The mark translator's rules
 

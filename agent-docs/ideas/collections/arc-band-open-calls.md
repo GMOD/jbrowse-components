@@ -12,7 +12,7 @@ does not answer. All are visual calls, which is why they are filed rather than
 fixed — a fixture test cannot settle what a reader concludes. Two measurements
 this list carried — whether single-linkage chains a cluster past its window,
 and how many arcs cross a seam at 300x — were read on 2026-09-10; the first
-lives in ARC_BAND.md §"Support". The band now draws on render-core's link and
+lives in ARC_BAND.md §"Support, and why a tick can hide behind an arc's foot". The band now draws on render-core's link and
 point marks (ADR-170), so the costs below are priced against those.
 
 ## Marks and geometry

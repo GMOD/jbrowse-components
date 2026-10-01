@@ -20,46 +20,34 @@ leaves the other three axes naming what used to be there.
 
 ## Who installs the clear
 
-`installClearHoverOnViewportChange` is a `reaction`, so its effect can read hover
-state without a hover write re-firing it.
+`installClearHoverOnViewportChange` is a `reaction`, so its effect can read
+hover state without a hover write re-firing it.
 
-- **`MultiRegionDisplayMixin` installs it**, so a per-region display does not. It
-  clears through `BaseDisplay.clearHoveredFeature`, the writing twin of
-  `hoveredFeature`, which defaults to a no-op: a display that stores a hover
-  overrides that one action, and a display that derives one does nothing.
+- **`MultiRegionDisplayMixin` installs it**, through
+  `BaseDisplay.clearHoveredFeature`, the writing twin of `hoveredFeature`. It
+  defaults to a no-op: a display that stores a hover overrides that one action.
 - **`installGlobalFetchAutorun` installs it too.** A storer outside both
   foundations owes its own.
 - **A view that owns a shared surface** uses `installClearHoverOnSurfaceMove`
-  (`@jbrowse/core/util`): a `reaction` on the model that owns the surface (the
-  view or level, since one action fans a hit across every display on it) over one
-  value carrying every number that moves the picture, plus a `clear` callback.
-  Dotplot passes `plotTransform`; synteny's level passes `bandTransformKey`, each
-  row's `offsetPx` and `bpPerPx`, and the band height. Neither has a per-display
-  scroll or a too-large banner. The breakpoint split view draws an SVG overlay
-  across stacked LGV rows, so its `overlayTransformKey` also carries each
-  matched track's `scrollTop`, `height` and `regionTooLarge`.
-
-`clear` is a callback rather than a duck-typed `setHoveredFeature` because the
-owners store different things: a synteny pick hit, a dotplot feature index, an
-overlay curve id.
-
-Synteny shows why the rule matters. Its fetch key is snapped and zoom-bucketed,
-so a pan inside the buffer left the tooltip naming a ribbon that had moved, and
-a wheel over the canvas zooms both rows while suppressing the hover handler.
+  (`@jbrowse/core/util`): a `reaction` on the model that owns the surface over
+  one value carrying every number that moves the picture, plus a `clear`
+  callback (the owners store different things, so no duck-typed setter).
+  Dotplot passes `plotTransform`, synteny's level `bandTransformKey`, and the
+  breakpoint split view `overlayTransformKey`, which also carries each matched
+  track's `scrollTop`, `height` and `regionTooLarge`.
 
 ## Deriving is the other correct design
 
 MAF's tooltip stores no hit: its body re-runs `mafHitTest` from the live pointer
-on every render, so an observer re-resolves under a moving viewport. The row
-under the pointer is stored, through `StoredHoverMixin`, and takes the same
-clear.
+on every render. The row under the pointer is stored through `StoredHoverMixin`
+and takes the same clear.
 
 ## Publish it as `hoveredFeature`
 
-`hoveredFeature` is an overridable getter on `BaseDisplay` (default `undefined`).
-`LinearGenomeViewContainer` reads it off every display to feed `session.hovered`,
-the view-wide "what is the user pointing at" channel. A cross-display consumer
-can only read a name the base declares, as with `FetchMixin.fetchInert`.
+`hoveredFeature` is an overridable getter on `BaseDisplay`;
+`LinearGenomeViewContainer` reads it off every display to feed
+`session.hovered`. A cross-display consumer can only read a name the base
+declares.
 
 **A volatile cannot instantiate over a base computed**, so a display that stores
 its hit stores it under another name and answers the hook with a getter over it.

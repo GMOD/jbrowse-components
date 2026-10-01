@@ -30,17 +30,13 @@ direction rather than a measurement. Counts are discussions plus issues.
 | Conservation and MAF | 0 + 1 | |
 | Tandem repeats and STRs | 0 + 0 | |
 
-- **Annotation loading and gene search is the largest cluster**, and recent:
-  GFF/GTF plus text-index plus "why can't I search for my gene". The answers are
-  scattered across `quickstart_web.md`, the FAQ and `config_guides/`, and no
+- **Annotation loading and gene search is the largest cluster**, and recent; no
   tutorial ends with `jbrowse text-index` making a gene set searchable.
-- **Embedding demand is large but mostly answered**, by
-  `embed_linear_genome_view.md` plus the storybook, and falling. The gap is
-  currency (framework versions, React 19) rather than a new page.
-- **A low count on hosting and CORS is not low value.** Those questions have FAQ
-  entries that rank in search, and someone who finds the answer never files.
-- **A zero on a new feature is no baseline, not no demand.** Sequence tools,
-  GWAS and conservation score near zero, and the sequence tools are new.
+- **Embedding demand is large but mostly answered**; the gap is currency
+  (framework versions, React 19), not a new page.
+- **A low count on hosting and CORS is not low value**: FAQ entries rank in
+  search, and someone who finds the answer never files.
+- **A zero on a new feature is no baseline, not no demand.**
 
 Re-run: `gh issue list --repo GMOD/jbrowse-components --state all --limit 600
 --json title,createdAt,labels` plus a `gh api graphql` discussions query.
