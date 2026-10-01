@@ -95,7 +95,7 @@ export async function createRenderingBackend<TRenderingBackend>(
  * `DisplayChrome` machinery as a GPU display — the lifecycle is backend-
  * agnostic, so nothing downstream knows or cares there's no HAL.
  *
- * Reference: `plugins/sequence`'s `SequenceRenderer`. Promote to the dual-path
+ * No in-tree display uses it. Promote to the dual-path
  * `createRenderingBackend` only once a profile shows Canvas2D can't keep 60fps
  * at the display's real feature counts (≳100K features/frame — see
  * agent-docs/reference/PLUGIN_ABI_STABILITY.md §Canvas2D or GPU).

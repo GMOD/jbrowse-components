@@ -715,24 +715,16 @@ function ScoreSvgBody({
 The model's `renderSvg` action loads it lazily.
 [](/docs/developer_guides/svg_export) has the pipeline.
 
-## A Canvas2D-only display
+## Letters over marks
 
-A drawing that is not instances of a shape — the reference sequence's letters —
-skips the mark layer, writes a Canvas2D backend by hand and returns it through
-`createCanvas2DBackend`, with no shader and no GPU ladder. `plugins/sequence` is
-the one in-tree display still built that way:
+Per-base text is not instances of a shape. The reference sequence display
+declares its cells as marks and paints its letters on an `OverlayCanvas` above
+the backend, one Canvas2D function the SVG export calls after `paintMarkBlocks`:
 
-<!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/components/Canvas2DSequenceRenderer.ts#factory -->
+<!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/components/SequenceDisplayComponent.tsx#letters -->
 
-```ts
-// A Canvas2D-only display needs no separate factory file and no HAL ladder:
-// createCanvas2DBackend just wraps the backend in the Promise DisplayChrome
-// awaits. Swap in createRenderingBackend (and its createGpuBackend option) only
-// once a profile shows Canvas2D can't hold 60fps.
-export function SequenceRenderer(canvas: HTMLCanvasElement) {
-  return createCanvas2DBackend(canvas, c => new Canvas2DSequenceRenderer(c))
-}
-```
+A display with no shape at all can still skip the mark layer and return a
+hand-written Canvas2D backend through `createCanvas2DBackend`.
 
 ## Writing your own shape
 
@@ -755,8 +747,8 @@ to each other by a sweep test. See
   a shape of its own (`cellMark.ts`) beside its shader
 - `plugins/canvas/src/LinearBasicDisplay/` - the fullest reference: the generic
   feature display, five marks over one payload
-- `plugins/sequence/src/LinearReferenceSequenceDisplay/` - the one Canvas2D-only
-  display, with no shape
+- `plugins/sequence/src/LinearReferenceSequenceDisplay/` - a plugin-local shape
+  under two marks, with its letters on an overlay
 
 ## See also
 

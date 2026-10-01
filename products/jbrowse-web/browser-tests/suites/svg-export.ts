@@ -245,7 +245,7 @@ const suite: TestSuite = {
         await waitForLoadingToComplete(page)
         await delay(2000)
 
-        // The sequence layer is canvas-drawn (drawSequence) and routed through
+        // The sequence layer (marks and letters) is routed through
         // paintLayer, so the default SVG export rasterizes it into an <image>
         // (the old monospace <text> path no longer exists).
         const svg = await exportSvgAndSave(

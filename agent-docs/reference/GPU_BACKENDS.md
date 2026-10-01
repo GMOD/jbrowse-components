@@ -24,9 +24,11 @@ the sectioned frame its pileup needs.
 
 Every canvas-drawing display **must** ship a Canvas2D painter, because SVG export
 goes through it ([SVG_EXPORT.md](SVG_EXPORT.md)). A shape's `paintBlock` is that
-painter. A drawing that is not instances of a shape (the reference sequence's
-letters) is **Canvas2D-only** via `createCanvas2DBackend`; `plugins/sequence`'s
-`SequenceRenderer` is the last hand-written one.
+painter. Text dense enough to be per-base (the reference sequence's letters,
+the alignments mismatch letters, MAF's codon letters) is not a shape: an
+`OverlayCanvas` over the backend paints it on every backend, and the export calls
+the same function after `paintMarkBlocks`. `createCanvas2DBackend` remains for a
+third-party display with no shape at all; no in-tree display uses it.
 
 ### Keeping the two backends in parity
 

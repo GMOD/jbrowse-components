@@ -87,7 +87,8 @@ itself. A rendering backend is built, never registered: the plugin ABI has no
 rendering-backend element type, so the display declares what it draws as a mark
 list and its component calls `createMarkBackend`, which walks the WebGPU →
 WebGL2 → Canvas2D ladder over that list — or `createCanvas2DBackend` for a
-drawing that is not instances of a shape.
+drawing that is not instances of a shape. Per-base text over marks, such as the
+reference sequence's letters, is an `OverlayCanvas` beside the backend.
 
 ## Display foundations
 

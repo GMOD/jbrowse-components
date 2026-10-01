@@ -17,6 +17,7 @@ function createSequenceBackend(canvas: HTMLCanvasElement) {
   return createMarkBackend(canvas, SEQUENCE_MARKS)
 }
 
+// #region letters
 const SequenceLetters = observer(function SequenceLetters({
   model,
 }: {
@@ -33,6 +34,7 @@ const SequenceLetters = observer(function SequenceLetters({
     />
   ) : null
 })
+// #endregion
 
 const SequenceBody = observer(function SequenceBody({
   model,

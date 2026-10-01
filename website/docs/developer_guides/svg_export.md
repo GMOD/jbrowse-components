@@ -253,10 +253,9 @@ A display on the mark layer gets this for nothing: `paintMarkBlocks` runs each
 mark's `paintBlock` against the SVG context, so its body is one call over the
 same list the on-screen backend draws —
 `example-plugins/score-example/src/LinearScoreDisplay/renderSvg.tsx` is the
-whole of one. A display with no shape writes its drawing function against
-`Ctx2D` and calls it from both the on-screen renderer and `renderSvg` — the
-sequence body above calls the same `drawSequenceBlocks` its Canvas2D renderer
-does:
+whole of one. Drawing that is not a shape is a function written against `Ctx2D`
+and called from both the on-screen layer and `renderSvg` — the sequence body
+above calls the same `drawSequenceLetters` its letters overlay does:
 
 <!-- include: packages/core/src/util/paintLayer.tsx#ctx2d -->
 
@@ -271,8 +270,8 @@ export type Ctx2D = CanvasRenderingContext2D | SvgCanvas
 
 Simplest to most complex:
 
-- `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` - text
-  only
+- `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` - marks
+  and a letters layer
 - `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` - score plot with scale
   bar
 - `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` - features + labels
