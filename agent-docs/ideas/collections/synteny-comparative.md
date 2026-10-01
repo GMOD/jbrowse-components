@@ -69,7 +69,7 @@ not.
 coordinate maps to that target coordinate" and there is no way to get the two numbers:
 markers are excluded from the pick index by construction — both their edges are single
 points, so the `max(|sx2-sx1|, |sx4-sx3|) >= 1` filter that makes `buildPickIndex` cheap
-drops them (`reference/SYNTENY_PICKING.md`). A tooltip would need proximity-to-a-line
+drops them (`reference/SYNTENY_LOD.md`). A tooltip would need proximity-to-a-line
 picking, i.e. a second index shape, for a job that is partly done already: the scalebar
 labels the query end, and an exact correspondence takes the
 `SyntenyResolveMatchingRegion` round trip. Worth it only if reading shear off the ticks

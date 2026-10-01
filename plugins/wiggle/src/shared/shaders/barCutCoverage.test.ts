@@ -215,7 +215,7 @@ describe('xyplot bar cut coverage', () => {
     // Pinned, not fixed. It is bounded, it only shows on flat runs, and it is
     // smaller than the 0.277 device px of quantisation the ramp removes from
     // every column. A fix means one primitive per bar run, which is the
-    // rewrite GPU_RENDERING.md §"What the coverage band cannot antialias"
+    // rewrite GPU_SHADERS.md §"What the coverage band cannot antialias"
     // describes for the other family.
     const dpr = 2
     const topPx = 20 + 0.5 / dpr

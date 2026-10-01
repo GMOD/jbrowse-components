@@ -19,11 +19,10 @@ Four questions:
 - **the cell** — what colour one aligned base takes.
 - **the layout** — how a species becomes a placed row, and how tall it is.
 
-Where the worker's time goes is
-[reference/MAF_WORKER_PIPELINE.md](../reference/MAF_WORKER_PIPELINE.md); why long
-alignment blocks are expensive and why clipping them is the wrong fix is
-[reference/MAF_LARGE_BLOCKS.md](../reference/MAF_LARGE_BLOCKS.md). The depth on
-both stays there.
+Where the worker's time goes, why long alignment blocks are expensive and why
+clipping them is the wrong fix are all in
+[reference/MAF_LARGE_BLOCKS.md](../reference/MAF_LARGE_BLOCKS.md). The depth
+stays there.
 
 ## The tier
 

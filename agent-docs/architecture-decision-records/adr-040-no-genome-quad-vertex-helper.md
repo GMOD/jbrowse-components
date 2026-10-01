@@ -8,7 +8,8 @@ summary: "No shared genome-quad vertex helper; hpmath atoms are the right granul
 ## Status
 
 Accepted (2026-07). Continues [ADR-005](adr-005-shader-codegen-slang.md) (Slang
-codegen) and RFC-001 §5b ("primitives, not a framework"). This ADR is the single
+codegen) and the "primitives, not a framework" stance in
+[PLUGIN_ABI_STABILITY.md](../reference/PLUGIN_ABI_STABILITY.md). This ADR is the single
 decision of record for **both** shapes the idea can take: the plain composition
 helper (option 2 below) and the higher-risk generic vertex skeleton (option 1).
 Neither is being built today. The generic skeleton's spike-and-migration
@@ -66,7 +67,7 @@ correct. They could not use `genomeSpanX`.
 **do not run the generic vertex-skeleton spike** either — at least for now.
 Keep the reusable atoms shared in `hpmath` and let each mark compose them inline
 with its own variations (min-width value, whether to snap, direction, flip
-stage). The varying part stays explicit per mark, which is exactly RFC-001 §5b's
+stage). The varying part stays explicit per mark, which is exactly that
 stance.
 
 ### The generic skeleton (option 1), specifically
@@ -222,7 +223,7 @@ rejected the composition helper as single-consumer.
   `packages/shader-tools/src/shader-codegen/assertVertexInputs.ts`, run by
   `pnpm gen:shaders`. A `vertexAttributeSync.test.ts` in jbrowse-web was the
   weaker half of this pair and is gone.
-- Prior decisions: `agent-docs/reference/RFC-001-community-plugin-api.md` §5,
+- Prior decisions: `agent-docs/reference/PLUGIN_ABI_STABILITY.md` §"Community plugin API decisions",
   `agent-docs/architecture-decision-records/adr-005-shader-codegen-slang.md`.
 - Standardized `bpRangeX` uniform write: `writeBpRangeUniforms(...)` across the
   five offset-poke genome renderers (`packages/render-core/src/blockClipUtils.ts`),

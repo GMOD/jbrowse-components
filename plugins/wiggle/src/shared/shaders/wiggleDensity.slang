@@ -14,7 +14,7 @@
 // horizontal cuts are row boundaries that TILE with the row above and below —
 // the one case where per-fragment alpha on both sides of a shared edge sums to
 // 0.75 where 1.0 is right and leaves a seam down every boundary
-// (GPU_RENDERING.md §"Antialiasing ramps", "Tiled cells"). It also has no datum
+// (GPU_SHADERS.md §"Antialiasing ramps", "Tiled cells"). It also has no datum
 // on those cuts: density encodes its score in the COLOR, so a soft row boundary
 // would cost the seam and buy nothing. `rowRect` draws hard-edged quads, which
 // is exactly that.

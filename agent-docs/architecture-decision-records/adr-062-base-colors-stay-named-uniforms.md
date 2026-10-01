@@ -8,7 +8,7 @@ summary: "colorBaseA/C/G/T/N stay five named uniforms read under two index space
 ## Status
 
 Rejected (2026-08). Bounds the "indexed palettes beat branch chains" rule in
-[reference/SLANG_UNIFORM_ARRAYS.md](../reference/SLANG_UNIFORM_ARRAYS.md), which
+[reference/SHADER_JS_CODEGEN.md](../reference/SHADER_JS_CODEGEN.md), which
 is otherwise correct and was applied twice on purpose. This ADR is the decision
 of record for the one candidate that keeps looking like the next application and
 is not.
@@ -92,7 +92,7 @@ shared uploaded table.
 
 ## Consequences
 
-- The `SLANG_UNIFORM_ARRAYS.md` rule keeps applying to *new* palettes; this is a
+- The `SHADER_JS_CODEGEN.md` rule keeps applying to *new* palettes; this is a
   bounded exception, and the boundary is the runtime mutation. A palette the CPU
   can name once per block render is the shape that rule is about. A palette
   something overwrites conditionally at write time is not.
@@ -110,7 +110,7 @@ shared uploaded table.
 
 ## Related
 
-- [reference/SLANG_UNIFORM_ARRAYS.md](../reference/SLANG_UNIFORM_ARRAYS.md) —
+- [reference/SHADER_JS_CODEGEN.md](../reference/SHADER_JS_CODEGEN.md) —
   the rule this bounds, and the `float4[N]`-not-scalar-array requirement behind
   any palette upload.
 - [ADR-051](adr-051-shader-js-codegen-is-scalar-only.md) — the other GPU↔Canvas2D

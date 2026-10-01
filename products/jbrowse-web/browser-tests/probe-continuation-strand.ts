@@ -10,7 +10,7 @@
 // chosen so several features run past BOTH viewport edges on BOTH strands, and
 // the »/« markers pinned at each edge must agree with the strand arrows drawn
 // on the same glyph. Read the PNGs; the diff numbers are the second oracle
-// (GPU_RENDERING.md §"Which backend disagreement is evidence").
+// (GPU_SHADERS.md §"Which backend disagreement is evidence").
 //
 // The proof that a backend ran is the display canvas's own committed context
 // kind, read back with `getContext` — never the URL, which `?renderer=` pins

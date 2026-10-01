@@ -27,7 +27,7 @@ export interface RenderCanvasHandle {
  * render-prop body on the same value for the displays on the chrome, which it
  * does *not* get for free from the `renderError` unmount (that covers only a
  * reported loss — see the `canvasKey` note in useRenderingBackend.ts).
- * GPU_RENDERING.md said so and ended with "any new consumer rendering its own
+ * GPU_DISPLAY_LIFECYCLE.md said so and ended with "any new consumer rendering its own
  * banner must too" — a rule enforced by remembering to read the doc. Rendering
  * the element here makes it structural instead: there is no way to mount this
  * canvas without the key.

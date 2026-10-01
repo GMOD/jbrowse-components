@@ -104,7 +104,7 @@ async function climbLadder(
   // volvox tracks, and *no scroll churn at all* — headless Chrome (SwiftShader),
   // three runs each: WebGL2 blocks the main thread for 1.3-5.5 s in a single
   // task and 2.1-8.8 s in total, while Canvas2D never exceeds 339 ms and never
-  // once produces a task over 500 ms. GPU_CONTEXT_BUDGET.md has the churn case
+  // once produces a task over 500 ms. GPU_PORTABILITY.md has the churn case
   // at ~25x; this is the floor, and it is the load-time pipeline build rather
   // than the per-pass rebuild the churn number measures.
   //

@@ -98,7 +98,7 @@ export async function createRenderingBackend<TRenderingBackend>(
  * Reference: `plugins/sequence`'s `SequenceRenderer`. Promote to the dual-path
  * `createRenderingBackend` only once a profile shows Canvas2D can't keep 60fps
  * at the display's real feature counts (≳100K features/frame — see
- * RFC-001 §3a).
+ * agent-docs/reference/PLUGIN_ABI_STABILITY.md §Canvas2D or GPU).
  */
 export function createCanvas2DBackend<TRenderingBackend>(
   canvas: HTMLCanvasElement,

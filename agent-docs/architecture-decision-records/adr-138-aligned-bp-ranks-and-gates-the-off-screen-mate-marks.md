@@ -8,7 +8,7 @@ summary: "Aligned bp is the one measure the off-screen mate strip decides by, be
 ## Status
 
 Accepted (2026-09-18).
-[reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTENY_MATES.md)
+[reference/SYNTENY_LOD.md](../reference/SYNTENY_LOD.md)
 carries the operational description.
 
 ## Context

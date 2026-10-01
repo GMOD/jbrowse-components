@@ -1044,7 +1044,7 @@ export default function MultiSampleVariantBaseModelF(
          * keep their `undefined`, because there it is genuinely load-bearing:
          * `sampleFilter` and `fetchNeeded` both read `sourcesBase`, and its
          * `undefined` → list transition is what wakes the fetch autorun
-         * (reference/FETCH_SKELETON.md §"The global-fetch trigger list must be
+         * (reference/FETCH_KEYS.md §"The global-fetch trigger list must be
          * read unconditionally").
          */
         get sources(): ProcessedSource[] {

@@ -4,7 +4,7 @@ import path from 'path'
 import { markdownTable, rewriteMarkerBlock } from './util.ts'
 
 // Which shared `.slang` module in render-core each shader imports, rendered
-// into SHADER_SHAPE_LIBRARY.md from the import lines themselves.
+// into SHADER_JS_CODEGEN.md from the import lines themselves.
 //
 // That doc shipped with the table hand-written and a sentence under it telling
 // the reader to re-derive it with a grep — which is the shape

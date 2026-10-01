@@ -7,7 +7,7 @@
 //     --file=test_data/volvox/volvox-sorted.bam.coverage.bw \
 //     --refName=ctgA --start=20000 --bpPerPx=3.25
 //
-// The ground truth is `MAF_SUBPIXEL_CELLS.md`'s: the same geometry with nothing
+// The ground truth is `MAF_LARGE_BLOCKS.md`'s: the same geometry with nothing
 // floored, supersampled and box-downsampled, which is the bp-weighted mix a
 // pixel should hold. A CSS-px floor does not shrink away at high dpr the way
 // MAF's device-px one did, so the supersampled arm is the UNFLOORED geometry

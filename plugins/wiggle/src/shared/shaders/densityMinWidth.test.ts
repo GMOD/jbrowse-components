@@ -20,7 +20,7 @@ import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 // Density writes `MIN_FILL_WIDTH_PX` into `rowRect`'s `minCellPx`, which the
 // shape documents as what a caller whose marks do NOT tile writes. Reviews keep
-// reading that as a bug against `MAF_SUBPIXEL_CELLS.md`, so the two halves of
+// reading that as a bug against `MAF_LARGE_BLOCKS.md`, so the two halves of
 // the answer are pinned here.
 //
 // On a tiling the floor changes no pixel: each quad grows off its own start
@@ -216,7 +216,7 @@ function downsample(row: Float64Array, factor: number) {
   return out
 }
 
-// Ink, the density analogue of MAF_SUBPIXEL_CELLS' chroma: the ramp runs white
+// Ink, the density analogue of MAF_LARGE_BLOCKS' chroma: the ramp runs white
 // to the track colour, so max-min over the channels is how much colour the row
 // carries.
 function ink(row: Float64Array) {

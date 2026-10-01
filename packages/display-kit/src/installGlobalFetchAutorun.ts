@@ -152,7 +152,7 @@ function globalFetchPlan<TArgs, TResult>(
  *   banner, and `gateSkipsMeasuredViewport` (whose own reads move with the
  *   viewport) limits that to one run. Each gate term is an observable that
  *   flips on the transition the autorun should wake on, so a gated decline is
- *   safe — see reference/FETCH_SKELETON.md §"The global-fetch trigger list must be read
+ *   safe — see reference/FETCH_KEYS.md §"The global-fetch trigger list must be read
  *   unconditionally". Liveness is not a term here: `installFetch` checks it
  *   above every gate, because `host` is a parent walk and so is nearly every
  *   other gate in the tree.

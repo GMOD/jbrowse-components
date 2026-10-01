@@ -1720,7 +1720,7 @@ export default function stateModelFactory(
             // The config's mapping first. Failing one, a sample whose id IS an
             // assembly the session already holds — the pangenome MAFs are built
             // from PanSN-named strains loaded under those same names. This is
-            // not the name resolution MAF_CROSS_VIEW_NAVIGATION.md rules out:
+            // not the name resolution MAF_LARGE_BLOCKS.md rules out:
             // nothing is looked up against a portal, and an assembly present
             // under the exact id is the config author's own statement of which
             // genome it is.

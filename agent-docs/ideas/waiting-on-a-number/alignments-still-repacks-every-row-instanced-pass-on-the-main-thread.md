@@ -45,7 +45,7 @@ shipping the rest through a main-thread packer, cheapest first:
 
 **Measure before building.** Nobody has profiled the split between `pack*`,
 `uploadBuffer` and `cloneWithLayout` on this tree; the instrumentation pattern is
-[reference/PERF_INSTRUMENTATION.md](../../reference/PERF_INSTRUMENTATION.md). Do it at a deep
+[reference/BENCHMARKING.md](../../reference/BENCHMARKING.md). Do it at a deep
 pileup with per-base quality on, which is where the per-base passes (one instance
 per base per read) dominate — at gene-scale defaults the read pass alone may not
 justify any of this.

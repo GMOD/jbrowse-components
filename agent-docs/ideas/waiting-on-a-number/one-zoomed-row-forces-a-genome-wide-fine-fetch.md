@@ -13,6 +13,6 @@ tier the same way. The wire table in
 cost per tier on hs1 vs mm39.
 
 A per-axis tier needs the bidirectional fetch
-([TWO_AXIS_SYNTENY_FETCH.md](../../reference/TWO_AXIS_SYNTENY_FETCH.md)), so each
+([SYNTENY_LOD.md](../../reference/SYNTENY_LOD.md)), so each
 row can be served at its own tier and joined on `syntenyId`. Measure on a real
 hub file how often the two rows straddle the threshold before building it.

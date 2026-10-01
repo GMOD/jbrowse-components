@@ -141,7 +141,7 @@ are a user pointing the app at a full phase 3 chromosome, the public URL
   view). Neither needs another kernel. The matrix currently comes back to the
   worker and goes to hclust; keeping it resident is the next step.
 - **WebGPU only, by construction.** Storage buffers have no GLSL ES 3.0 target
-  (`reference/GPU_RENDERING.md`), so the wasm path is not optional.
+  (`reference/GPU_HAL.md`), so the wasm path is not optional.
 
 ## Row ordering at MAF scale: the cap, not the kernel
 

@@ -58,9 +58,9 @@ const ABSENT_ON_PURPOSE = new Map([
     'BAR_OVERDRAW_PX',
     'CROSS_BACKEND_GATE names the GWAS bar pad whose removal it measures, as the worked example of what the gate cannot see',
   ],
-  ['beginUpload', 'GPU_RENDERING names the retired upload transaction'],
-  ['endUpload', 'GPU_RENDERING, the same sentence'],
-  ['retainRegion', 'GPU_RENDERING, the same sentence'],
+  ['beginUpload', 'the GPU docs named the retired upload transaction'],
+  ['endUpload', 'the GPU docs, the same sentence'],
+  ['retainRegion', 'the GPU docs, the same sentence'],
   [
     'readCachedConfig',
     'CONFIG_PATTERN lists it under what the pattern dropped',
@@ -98,11 +98,11 @@ const ABSENT_ON_PURPOSE = new Map([
   ],
   [
     'warnIfMidFrame',
-    "GPU_RENDERING names the warning WebGPUHal's deferred destroy replaced",
+    "the GPU docs named the warning WebGPUHal's deferred destroy replaced",
   ],
   [
     'KeyedRenderingBackend',
-    'GPU_RENDERING names the third backend contract adr-088 retired, whose survivor is sharedBackendKey',
+    'the GPU docs named the third backend contract adr-088 retired, whose survivor is sharedBackendKey',
   ],
   ['cacheIdleTimeoutMs', 'an upstream option deliberately not plumbed'],
   [
@@ -117,7 +117,7 @@ const ABSENT_ON_PURPOSE = new Map([
   ['DiagonalizeRpcBase', 'a base class that left the plugin ABI'],
   [
     'GetSubgraph',
-    'PANGENOME_GRAPHS and REGION_VIEW_LAUNCH name the RPC, which left with plugins/graph for jbrowse-plugin-graphgenomeviewer',
+    'PANGENOME_GRAPHS and VIEW_INIT name the RPC, which left with plugins/graph for jbrowse-plugin-graphgenomeviewer',
   ],
   ['maxRegionBp', 'PANGENOME_GRAPHS, a graph plugin model prop, the same move'],
   ['maxGraphNodes', 'PANGENOME_GRAPHS, the same move'],

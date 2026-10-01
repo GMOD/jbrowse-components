@@ -92,5 +92,5 @@ floor on every load.
 - [](/docs/developer_guides/optimizations)
 - [](/docs/developer_guides/simple_plugin)
 - [](/docs/developer_guides/imports_and_reexports)
-- [The measured version of this page](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/RUNTIME_PLUGIN_BOOT_COST.md),
+- [The measured version of this page](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/EAGER_BUNDLE.md),
   taking one published plugin through all three

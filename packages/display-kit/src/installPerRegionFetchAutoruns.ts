@@ -190,7 +190,7 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
     self,
     view => {
       // Both pure triggers, read unconditionally and above every gate — see
-      // reference/FETCH_SKELETON.md §"The global-fetch trigger list must be read
+      // reference/FETCH_KEYS.md §"The global-fetch trigger list must be read
       // unconditionally". A fetch bumps `fetchGeneration` at every end;
       // `reload()` normally re-fires this through `clearAllRpcData`'s bump, but
       // an override that clears nothing would then not re-run the body at all,

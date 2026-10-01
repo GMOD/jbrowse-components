@@ -14,7 +14,7 @@ Accepted (2026-09-09). Amends
 says the mark system was removed. ADR-091's rejection of the `defineDisplay`
 factory and of a declared settings table stands untouched; its "what would
 reopen this" clause still governs a replacement for the display stack.
-[reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md) §"Shared
+[reference/GPU_BACKENDS.md](../reference/GPU_BACKENDS.md) §"Shared
 per-region streamed contract" and `packages/render-core/CLAUDE.md` §Upload and
 §Drawing are the operational docs; this file holds the decision and the record
 those three ADRs lack.

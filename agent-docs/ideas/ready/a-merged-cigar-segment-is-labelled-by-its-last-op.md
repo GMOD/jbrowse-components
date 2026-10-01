@@ -37,7 +37,7 @@ transparent mode emits no ribbon instances for the feature at all. Built through
 150 bp deletions emits 700 `KIND_CIGAR_D` quads plus a full-span base in colored
 mode and **nothing but location markers** in transparent mode: invisible, and so
 also unhoverable, since the pick engine's feature bodies
-([SYNTENY_PICKING.md](../../reference/SYNTENY_PICKING.md)) are built from tiles that
+([SYNTENY_LOD.md](../../reference/SYNTENY_LOD.md)) are built from tiles that
 do not exist. A repeat-expansion locus is the realistic shape of that.
 
 ## Why it is parked rather than fixed

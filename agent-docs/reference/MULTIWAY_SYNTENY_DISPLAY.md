@@ -355,7 +355,7 @@ N is the number of mate lanes drawn after selection.
   and 2N glyph layers, a draw per mark, about ten draw calls per lane whatever
   is on screen. Nothing culls layers scrolled out of the viewport. The pick does
   not draw: `pickRibbonAt` walks `ribbonRegions` through `createSyntenyPicker`
-  ([SYNTENY_PICKING.md](SYNTENY_PICKING.md)).
+  ([SYNTENY_LOD.md](SYNTENY_LOD.md)).
 - **Pixels and session:** a scrolled stack is still fully drawn. A lane draws
   genes only if the session holds its assembly (`holdsAssembly`) or a plugin
   describes it, so a cohort config without a describing plugin needs one assembly

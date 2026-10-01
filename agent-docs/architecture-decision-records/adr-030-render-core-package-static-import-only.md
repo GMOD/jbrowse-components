@@ -139,7 +139,7 @@ bundled plugin started with `gpuOverride = null` and kept it: the user pins the
 page away from the GPU, or clicks the one recovery affordance offered after a
 crash, and the plugin takes WebGPU anyway. Plus two devices per page, each with
 its own `.lost` handling, both spending from a WebGL2 context budget that is
-per-page (`reference/GPU_CONTEXT_BUDGET.md`) while the accounting was per-copy.
+per-page (`reference/GPU_PORTABILITY.md`) while the accounting was per-copy.
 
 The fix is a `globalThis` cell in `gpuDevice.ts`, and it is worth naming *why
 that rather than the obvious two*, because the ReExports-vs-bundle framing in

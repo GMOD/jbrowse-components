@@ -288,7 +288,7 @@ here is what they owe the chrome's contracts.
   is the sanctioned drop-to-primitive path. Their canvas stays mounted through an
   error, so both render **`RenderCanvas`** (`@jbrowse/render-core/RenderCanvas`),
   which owns `key={canvasKey}`: every re-init needs an element that never held a
-  context, since a canvas's context kind is permanent (GPU_RENDERING.md
+  context, since a canvas's context kind is permanent (GPU_DISPLAY_LIFECYCLE.md
   "Context-loss recovery"). `retry()` bumps `canvasKey`; wire it to
   `ErrorBanner`'s `onReset`.
 - **Main-thread SVG with radial banners: `circular-view`.** It has no
@@ -299,7 +299,7 @@ here is what they owe the chrome's contracts.
   flight, flashing a chordless circle. Its banner carries a `Retry` tspan
   (`chord_retry`) calling `reload()`, which bumps the `reloadCounter` the autorun
   reads above every gate
-  ([FETCH_SKELETON.md](FETCH_SKELETON.md#the-global-fetch-trigger-list-must-be-read-unconditionally)).
+  ([FETCH_KEYS.md](FETCH_KEYS.md#the-global-fetch-trigger-list-must-be-read-unconditionally)).
 
 ## One element per display: testid, id, phase, drawn
 

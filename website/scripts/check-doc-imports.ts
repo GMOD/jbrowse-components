@@ -578,7 +578,7 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // before root-action gating, named to say it had an untestable false
   // positive and was replaced. Gone with the snap-back snackbar it explained.
   'handNudged',
-  // reference/GPU_RENDERING.md §"Release is per key, never an active-set
+  // reference/GPU_DISPLAY_LIFECYCLE.md §"Release is per key, never an active-set
   // prune": the HAL method the per-key release replaced, named to say why the
   // prune shape cannot come back on a shared canvas.
   'pruneRegions',

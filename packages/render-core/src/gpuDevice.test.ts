@@ -336,7 +336,7 @@ test('two copies share one GPUDevice rather than taking one each', async () => {
 
   // Same device, and no second `requestAdapter`. A per-copy memo would take a
   // second physical device with its own `.lost` handling, and spend from the
-  // page's WebGL2 context budget (reference/GPU_CONTEXT_BUDGET.md) where the
+  // page's WebGL2 context budget (reference/GPU_PORTABILITY.md) where the
   // host's accounting cannot see it.
   expect(await plugin.getGpuDevice()).toBe(device)
   expect(requestAdapter).toHaveBeenCalledTimes(1)

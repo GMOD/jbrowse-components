@@ -103,7 +103,7 @@ async function probeWebgpu() {
  * moment this returns and the browser reclaims the context on GC, the same
  * release the HAL relies on. A page that then reaches the 16-context ceiling
  * evicts this one first (it is the oldest, and nothing draws to it or
- * re-acquires it), so the eviction cascade in GPU_CONTEXT_BUDGET.md cannot
+ * re-acquires it), so the eviction cascade in GPU_PORTABILITY.md cannot
  * start here.
  *
  * The driver string comes off the same context, so it is free where it matters:

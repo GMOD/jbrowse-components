@@ -111,7 +111,7 @@ instead of rediscovering that slangc has no ES profile.
 
 - [ADR-005](adr-005-shader-codegen-slang.md) — why shaders are authored in Slang
   and cross-compiled at all.
-- [reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md) — the pass/UBO
+- [reference/GPU_SHADERS.md](../reference/GPU_SHADERS.md) — the pass/UBO
   model and the generated-artifact rules around this path.
 - [reference/SHADER_JS_CODEGEN.md](../reference/SHADER_JS_CODEGEN.md) — the third
   generated target (Canvas2D twins), settled by

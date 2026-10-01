@@ -8,7 +8,7 @@ kind: spec
 
 SVG export and on-screen rendering share the same pure Canvas2D draw functions.
 **The GPU shader path is an accelerator; the Canvas2D draw function is the
-source of truth, and SVG export runs it.** See `GPU_RENDERING.md` §"Keeping the
+source of truth, and SVG export runs it.** See `GPU_BACKENDS.md` §"Keeping the
 two backends in parity".
 
 ## Two draw-API shapes

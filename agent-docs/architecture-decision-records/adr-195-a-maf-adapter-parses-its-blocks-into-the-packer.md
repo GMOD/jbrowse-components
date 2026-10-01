@@ -20,7 +20,7 @@ built a record and a string per species, filed the records in a dictionary per
 block, and handed the packer a feature to walk again with `for...in`. The
 typed table was level with the `Feature` path at 470 species and ahead over
 narrow blocks: the pack cost what the `MafFeature` reads saved.
-[MAF_WORKER_PIPELINE.md](../reference/MAF_WORKER_PIPELINE.md) had measured
+[MAF_LARGE_BLOCKS.md](../reference/MAF_LARGE_BLOCKS.md) had measured
 the worker's upstream half at 83% of its time on narrow blocks, where each
 block is a few columns and every cost is per row.
 

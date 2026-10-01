@@ -78,7 +78,7 @@ re-opening this: the renderer now skips regions whose payload is
 reference-identical (the `uploaded` memo in `GpuAlignmentsRenderer`), and the
 per-read color bake is its own computed downstream of layout, so a recolor no
 longer re-places rows — see
-[GPU_RENDERING.md](../reference/GPU_RENDERING.md), "skipping a region without
+[GPU_DISPLAY_LIFECYCLE.md](../reference/GPU_DISPLAY_LIFECYCLE.md), "skipping a region without
 leaving stale buffers".
 
 ## Consequences

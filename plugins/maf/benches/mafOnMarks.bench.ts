@@ -184,7 +184,7 @@ const parse = process.argv.includes('--parse')
 const readers = process.argv.includes('--readers')
 const onlyIdentity = process.argv.includes('--identity')
 
-// The first shape is MAF_WORKER_PIPELINE.md's profile, the second the narrow
+// The first shape is MAF_LARGE_BLOCKS.md's profile, the second the narrow
 // blocks MAF_LARGE_BLOCKS.md measures real files at, and the third a 470-way
 // alignment's species count, the hg38 track the mark display's MAF example
 // reads, over a 200 kb stretch.

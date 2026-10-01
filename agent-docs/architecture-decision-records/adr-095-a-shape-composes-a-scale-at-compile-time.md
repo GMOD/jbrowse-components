@@ -11,7 +11,7 @@ Accepted (2026-08-29). This ADR records the composition work that acted on
 [ADR-094](adr-094-colour-cardinality-is-one-channel-not-four-shapes.md)'s rule —
 the plan ran as `ideas/a-shape-composes-a-scale.md` during 2026-08-28/29 and is
 closed; this file is its record. The library itself is documented in
-[reference/SHADER_SHAPE_LIBRARY.md](../reference/SHADER_SHAPE_LIBRARY.md), which
+[reference/SHADER_JS_CODEGEN.md](../reference/SHADER_JS_CODEGEN.md), which
 stays the operational doc (what each shape draws, who imports it, how to add
 one). This ADR holds the decision, the measured gates, and the grammar position.
 
@@ -123,7 +123,7 @@ their definition.
   butt-capped, ink neither Canvas2D nor SVG drew. They now measure
   `buttSegmentCoverage`; `buttSegmentCoverage.test.ts` pins the cut and the
   wiring. The cap split (one named coverage per cap style, no `capStyle` flag)
-  is documented in SHADER_SHAPE_LIBRARY.md.
+  is documented in SHADER_JS_CODEGEN.md.
 
 ## The grammar position, as one ladder
 
@@ -184,6 +184,6 @@ because a rule describing five shaders is a census, not a mechanism.
   stack, which neither a shape library nor a mark list is.
 - The layout boundary holds: placement, tiering and the fetch stay imperative
   and per-display. Nothing in this work touched `sortLayout.ts` or `layout.ts`.
-- [reference/SHADER_SHAPE_LIBRARY.md](../reference/SHADER_SHAPE_LIBRARY.md) is
+- [reference/SHADER_JS_CODEGEN.md](../reference/SHADER_JS_CODEGEN.md) is
   the living doc — the consumer table there is generated, and a shape or
   consumer added later changes that page, not this record.

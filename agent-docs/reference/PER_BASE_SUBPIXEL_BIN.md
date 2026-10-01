@@ -53,7 +53,8 @@ the two displays cannot drift on `MIN_BINNED_BP_PER_PX`.
   `SettingsInvalidate` that drops every fetched region
   ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) §"How the verdict is built").
   `zoomFetchArgs` carries the per-region half, and `dataSuperseded` keeps an SVG
-  export from sampling data the settled zoom has moved past.
+  export from sampling data the settled zoom has moved past
+  ([FETCH_KEYS.md](FETCH_KEYS.md#per-region-zoom-staleness)).
 
 The count is bounded by `4-8 x canvasWidthPx x depth`.
 
@@ -183,14 +184,14 @@ This measured the pre-[ADR-122](../architecture-decision-records/adr-122-cancell
 checker gate, which let a stopped fetch run to completion. The gate is gone and
 `report()` reads the signal on every call; not re-measured.
 
-[RENDERER_BENCHMARKS.md](RENDERER_BENCHMARKS.md) and `optimizations.md` name
+[BENCHMARKING.md](BENCHMARKING.md) §"Whole-app benchmarks" and `optimizations.md` name
 per-base as the exception to "zoom never refetches".
 
 ## Scope: what the bin does not touch
 
 Every **sparse** mark: mismatches, indels, SNP columns, modifications, arcs.
 `featureFrequencyThreshold`, the frequency lerp and `extendToMinWidthX` already
-handle them, and [MAF_SUBPIXEL_CELLS.md](MAF_SUBPIXEL_CELLS.md) records why a
+handle them, and [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) records why a
 point event stays opaque when a screen holds more bases than pixels.
 
 Open: what a per-base wall should look like at wide zoom. The per-window

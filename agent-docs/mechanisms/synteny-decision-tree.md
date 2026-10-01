@@ -11,9 +11,8 @@ systems, and every decision below follows from that. Four of them: **which
 surface** draws the alignments, **what a fetch asks for** at this zoom, **what
 colour** an alignment takes, and **how a ribbon is built, painted and picked**.
 
-Depth: [synteny-lod](../reference/SYNTENY_LOD.md) for the tiers,
-[synteny-picking](../reference/SYNTENY_PICKING.md) for what the pick index can
-and cannot discriminate, [shared-canvas-views](../reference/SHARED_CANVAS_VIEWS.md)
+Depth: [synteny-lod](../reference/SYNTENY_LOD.md) for the tiers and for what
+the pick index can and cannot discriminate, [shared-canvas-views](../reference/SHARED_CANVAS_VIEWS.md)
 for why these displays own their fetch and share a container's canvas.
 
 ## Which surface

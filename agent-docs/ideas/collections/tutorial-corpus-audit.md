@@ -24,8 +24,8 @@ is `driver.takeScreenshot()`, Electron's chromedriver has no CDP window commands
 and "every in-app affordance there goes through the native file picker".
 
 First two hold. The third does not — `products/jbrowse-desktop/test/screenshots.ts`
-drives `AddGenomePane` by pasting URLs, and `reference/DESKTOP_SCREENSHOTS.md`
-§"Opening the volvox genome" is a page about doing exactly that.
+drives `AddGenomePane` by pasting URLs, and `reference/FIGURE_CAPTURE.md`
+§"Opening the volvox genome" is a section about doing exactly that.
 
 What is missing is a recorder, and the harness already runs on an X server:
 

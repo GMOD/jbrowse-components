@@ -17,7 +17,7 @@
 // are sparse intervals with nothing beside them, so it floors; MAF's cells
 // never gap and it passes 0; wiggle density tiles at most zooms and gaps where
 // its source does, so it floors and pays nothing for it on the tiling. Both
-// halves measured — `agent-docs/reference/MAF_SUBPIXEL_CELLS.md`.
+// halves measured — `agent-docs/reference/MAF_LARGE_BLOCKS.md`.
 //! export-consts: MIN_DRAWN_ROW_PX, MULTI_ROW_MIN_CELL_PX
 //! js-export: drawnRowHeightPx, rowBandOffsetPx
 module rowRect;
@@ -68,7 +68,7 @@ public struct RowRectVsOut {
 // There is no X-axis twin. A row is a container the reader is counting, so
 // losing one loses a species; a cell is a sample of a tiling, so losing one to
 // the blend is the honest answer and flooring it invents ink
-// (`agent-docs/reference/MAF_SUBPIXEL_CELLS.md`). The caller that does want an X
+// (`agent-docs/reference/MAF_LARGE_BLOCKS.md`). The caller that does want an X
 // floor names its own width, below.
 static const float MIN_DRAWN_ROW_PX = 1.0;
 

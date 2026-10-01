@@ -1,6 +1,6 @@
 ---
 name: plugin-abi-stability
-description: Why plugin exports ossify into permanent ABI, and the fixes. Read when removing or renaming a plugin export.
+description: What counts as plugin ABI, what guards each surface, what has left it, which behavior changes external plugins inherit, and which community-plugin-API decisions stand? Read when removing, renaming or reshaping a plugin-facing name.
 kind: spec
 ---
 
@@ -12,7 +12,9 @@ not at the host's build. In-tree consumers get the compiler as their contract
 test; external plugins, built against a published `@jbrowse/*` and running in
 deployments nobody observes, get nothing. This doc lists the surfaces, what
 guards each, what already left, and the behavior changes external plugins
-inherit. RFC-001 §7 deferred a formal policy; this is not one.
+inherit, then the standing decisions from the 2026-07 community-plugin-API
+proposal (RFC-001). It is not a formal stability policy; the proposal deferred
+one.
 
 ## The surfaces and their guards
 
@@ -166,6 +168,57 @@ surface plus an explicit, may-break opt-in for the rest, not lockdown. When the
 GPU rewrite made the legacy block stack untenable, the project removed it and
 accepted the gdc/icgc breakage rather than taking the graceful path, so
 "nothing is removed" is not an iron law.
+
+## Community plugin API decisions
+
+The 2026-07 RFC-001 proposed a stable API for community plugins in the
+WebGPU/WebGL2/Canvas2D era. The mixin/lifecycle pass and the legacy-renderer
+deletion landed; a Canvas2D-as-peer-path library and a shared shader-pass
+library did not. The decisions that stand:
+
+- **Names as shipped.** `RenderLifecycleMixin` (`packages/render-core/`),
+  `attachRenderingBackend`, `stopRenderingBackend`, `useRenderingBackend` and
+  `createRenderingBackend` replaced the RFC's `GpuRenderingBackendLifecycleSlotMixin`,
+  `installGpuDisplay`, `stopGpuRenderingBackendLifecycle`, `useGpuModelLifecycle`
+  and `initDualRenderingBackend`. Canvas2D paths compose the same
+  `attachRenderingBackend({ upload, render })` shape as GPU, so
+  `installCanvas2DDisplay` and `useCanvas2DModelLifecycle` do not exist.
+  [GPU_RENDERING.md](GPU_RENDERING.md) indexes the docs that own the
+  lifecycle, HAL and upload patterns.
+- **Cross-plugin coupling is a static import plus esbuild `globalExternals`.**
+  `pluginManager.getPlugin('X').exports` is removed for new plugin code. The
+  RFC deferred semver, `api-extractor` and versioned mixins as premature;
+  the section above argues the deferral has a cost, since an unbounded,
+  invisible runtime surface ossifies with or without a policy.
+- **Canvas2D or GPU.** GPU earns its keep above roughly 100K features per
+  frame. Below that, Canvas2D is simpler, spends no context budget
+  ([GPU_PORTABILITY.md](GPU_PORTABILITY.md)) and is the path SVG export
+  reuses. The backend decides, not the display type; both are one
+  `attachRenderingBackend({ upload, render })`.
+- **Primitives, not a framework.** Each mark keeps its varying part explicit
+  rather than inheriting a generalized vertex-generation helper
+  ([ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md)).
+  The `rect`, `line`, `arrow` and `chevron` passes stay in
+  `plugins/canvas/src/LinearBasicDisplay/passes/` with no second consumer.
+- **No glyph-registration, spec-grammar or DSL layer.** The canvas plugin's
+  config covers simple rect, arrow and line cases, and complex ones (Manhattan,
+  methylation matrices) need the full mixin/RPC/render shape regardless. A
+  registration API would lose per-feature batching, conditional paths and
+  custom hit-testing.
+- **No backwards compatibility for plugins built against the legacy API**
+  (`linearWiggleDisplayModelFactory`, `FeatureRendererType`,
+  `pluginManager.getPlugin().exports`). External plugins are few, and the
+  trade was getting the API right once.
+- **Non-LGV display types are out of scope.**
+- **`bpPerPx` stays the MST single source of truth, with no decoupled 60fps
+  zoom animation.** The scalebar, gridlines, ruler, RPC fetch invalidation and
+  every React overlay depend on it. Three approaches failed: a volatile
+  `pendingBpPerPx` with a debounced commit, animating only the
+  `bpRangeX`/`viewBp` uniform, and a discrete fetch-level tile model with a
+  continuous GPU transform. Perf work inside the invariant is fine.
+  **Decoupling needs its own ADR and an explicit go-ahead.**
+- **Not built:** the Canvas2D-as-peer-path API and a shared shader-pass
+  library.
 
 ## The same disease rots the docs
 

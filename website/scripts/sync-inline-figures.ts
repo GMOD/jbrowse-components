@@ -4,7 +4,7 @@
 // half, and the one that catches the failure a table generator structurally
 // cannot: prose restating a cell from the table directly above it.
 //
-//   "12.5ms is inside a 16ms frame"                 (SYNTENY_PICKING.md)
+//   "12.5ms is inside a 16ms frame"                 (SYNTENY_LOD.md)
 //   "203 KB gzipped and 166 chunks were reachable"  (EAGER_BUNDLE.md, subtracted)
 //   "So 1.35-1.45x on a big multi-sample VCF"       (BGZF_WORKER_POOL.md)
 //

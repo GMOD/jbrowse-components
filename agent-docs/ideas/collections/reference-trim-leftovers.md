@@ -43,7 +43,7 @@ has been re-checked since the cut.
   channel (seam 1); move `nameLength`/`copyNameInto` onto `BamRecord` upstream
   (seam 6); test the `stopIndex` fix against S3 and in a browser (seam 7); an
   MD-skip design for the tag walk, unbuilt (seam 5).
-- **RFC-001 §12b:** the `writeUniforms` contract, `Promise.allSettled` in
+- **HAL hardening:** the `writeUniforms` contract, `Promise.allSettled` in
   `resolvePipelines`, and a `MAX_UNIFORM_SLOTS` test.
 - **WebGL2 context losses** (ARCHITECTURAL_LIMITS): an interim fallback to
   Canvas2D after K losses.
@@ -63,7 +63,7 @@ has been re-checked since the cut.
   instance encoding, staggering the coarse tick, `setMouseCoord` re-renders,
   IndexedFasta abort support, and the measurements behind the wheel-backlog
   redesign.
-- **MAF_SUBPIXEL_CELLS:** re-measure the Canvas2D row; only 2 of the 6
+- **MAF_LARGE_BLOCKS:** re-measure the Canvas2D row; only 2 of the 6
   `MAF Track` tests pixel-compare.
 - **CROSS_BACKEND_GATE:** `Mark Display` scenes have no goldens in
   `snapshots.lock`; refresh the drifted goldens on a quiet worktree.
@@ -85,10 +85,10 @@ has been re-checked since the cut.
   (ARCHITECTURAL_LIMITS).
 - Software rendering skips the WebGL2 rung. Scroll-zoom painted frames fell
   from 435 to 107 going from 8 to 28 tracks, with 18 context losses
-  (GPU_CONTEXT_BUDGET).
+  (GPU_PORTABILITY).
 - `showOffscreenMates` defaults on because a hidden feature reports nothing — a
   2026-08-19 user decision; 73% of peach chr1 anchors have a mate on another
-  grape contig (OFFSCREEN_SYNTENY_MATES).
+  grape contig (SYNTENY_LOD.md).
 - A per-block longest-run bound beats an index for deletions; the `.tai` read
   cost is span times depth (MAF_LARGE_BLOCKS).
 - Apollo's measured v5 cost: about 500 errors naming no cause plus a silent

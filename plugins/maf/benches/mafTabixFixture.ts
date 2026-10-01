@@ -1,4 +1,4 @@
-// The synthetic MAF-tabix BED that reference/MAF_WORKER_PIPELINE.md describes
+// The synthetic MAF-tabix BED that reference/MAF_LARGE_BLOCKS.md describes
 // under "Reproducing it", built here rather than left as prose so a bench can
 // depend on it: 1600 blocks x 26 species x 250 columns, ~4% dashes in the
 // reference, divergence graded 2-20% across the species.
@@ -47,7 +47,7 @@ const BASES = 'ACGT'
 
 /**
  * Divergence graded across the species rather than uniform: the profile this
- * fixture reproduces depends on the mismatch count, and MAF_WORKER_PIPELINE.md
+ * fixture reproduces depends on the mismatch count, and MAF_LARGE_BLOCKS.md
  * records that a uniform rate gets it wrong in both directions.
  */
 function divergenceFor(species: number, count: number) {

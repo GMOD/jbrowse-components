@@ -271,7 +271,7 @@ test('a body loses to a feature drawn over it', () => {
 })
 
 test('a body thinner than a pixel is no more pickable than a tile', () => {
-  // The whole-genome exclusion is what keeps the index small (SYNTENY_PICKING.md
+  // The whole-genome exclusion is what keeps the index small (SYNTENY_LOD.md
   // — `kept` is 0 at that zoom), and a body has to obey it too: this feature is
   // 4px of query span smeared over 600px of travel, which every backend draws as
   // a hairline rather than a band.

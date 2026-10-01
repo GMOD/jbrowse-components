@@ -208,7 +208,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     //
     // The VERTICAL cuts stay hard on purpose. Bins tile, so two neighbours split
     // one pixel column, and per-fragment alpha on both sides of that shared edge
-    // composites to less than full ink — the seam GPU_RENDERING.md refuses for
+    // composites to less than full ink — the seam GPU_SHADERS.md refuses for
     // hi-C.
     //
     // The horizontal cuts conflate too, and the bound is worth knowing rather

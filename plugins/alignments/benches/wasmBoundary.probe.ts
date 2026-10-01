@@ -51,7 +51,7 @@
 // A second module multiplies that again, for a walk that is a fraction of one
 // phase of one adapter's parse.
 //
-// So: not a no forever, but not this. `MAF_WORKER_PIPELINE.md` already says the
+// So: not a no forever, but not this. `MAF_LARGE_BLOCKS.md` already says the
 // first wasm kernel needs more than one customer to amortize the build step, and
 // after this the mod path is a WEAKER customer than it looked, not a stronger
 // one — the cheap JS win took the margin that would have justified it.

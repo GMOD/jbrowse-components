@@ -132,7 +132,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const strips = model.offscreenMateStrips
   const hover = hoveredMark?.strips === strips ? hoveredMark : undefined
   // One pick per frame: a pick is under 0.1ms on collinear data but ~12.5ms on
-  // an all-vs-all PAF (SYNTENY_PICKING.md), where a mouse reporting faster
+  // an all-vs-all PAF (SYNTENY_LOD.md), where a mouse reporting faster
   // than the display would otherwise spend the whole frame budget on hovers
   // nothing draws.
   const { queue: queueHover, cancel: cancelHover } =

@@ -8,7 +8,7 @@
 // them.
 //
 // Nothing distinguished the two, so "cited by nobody" read the same either way.
-// RENDERER_BENCHMARKS.md is what that costs: the only whole-app measurement
+// BENCHMARKING.md is what that costs: the only whole-app measurement
 // against a released JBrowse, with the caveat that stops it being quoted as a
 // speedup, and no page under `website/docs/` linked it — while
 // `optimizations.md` opened by saying everything on it was measured.

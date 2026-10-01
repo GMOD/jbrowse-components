@@ -41,7 +41,7 @@ export const MAF_ROW_MARK = defineMark({
     // as part of the run around it, and widening one to a whole pixel paints
     // ink the alignment does not contain: measured at 2.3x the colour of a
     // supersampled ground truth, against 1.05x for no floor
-    // (agent-docs/reference/MAF_SUBPIXEL_CELLS.md).
+    // (agent-docs/reference/MAF_LARGE_BLOCKS.md).
     minWidthPx: 0,
     seamPx: GAP_STROKE_OFFSET,
     scrollTop: s.scrollTop - s.rowsTop,

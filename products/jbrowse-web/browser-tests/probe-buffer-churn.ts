@@ -2,7 +2,7 @@
 // How much GPU buffer allocation a pan with alignments open actually does.
 //
 // `uploadBuffer` destroys and recreates one buffer per `(regionKey, passId)`
-// per upload, and GPU_RENDERING.md §"What this architecture deliberately does
+// per upload, and GPU_HAL.md §"What this architecture deliberately does
 // not have" files buffer pooling as the one unmeasured entry on that list: the
 // number that decides it is the allocation churn on a pan with alignments
 // open. This is that number.

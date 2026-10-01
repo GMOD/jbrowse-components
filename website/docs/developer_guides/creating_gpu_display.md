@@ -178,7 +178,7 @@ name (`import hpmath;`), not file path. The shared helpers are in
 `packages/render-core/src/shaders/` also holds the shared _shapes_ (`capsule`,
 `rowRect`, `pointGlyph`, `diagonalGrid`). Each carries a mark's geometry
 together with its antialias contract.
-[The shader shape library](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SHADER_SHAPE_LIBRARY.md)
+[The shader shape library](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SHADER_JS_CODEGEN.md)
 lists what each shape draws, who imports it, and which parts are deliberately
 not shared. The example declares its uniforms inline. If several passes share a
 struct, put it in a sibling module (`scoreUniforms.slang`, starting
@@ -653,7 +653,7 @@ Compose `MultiRegionDisplayMixin` (which includes `RenderLifecycleMixin` and the
 fetch autoruns), store the worker output in an `rpcDataMap`, and wire the render
 lifecycle with `installUpload`. This is the **per-region streamed** upload
 pattern from the
-[architecture spec's upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#upload-patterns),
+[architecture spec's upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_DISPLAY_LIFECYCLE.md#upload-patterns),
 which fits when each region's data is independent (no cross-region layout
 coupling).
 
@@ -684,7 +684,7 @@ startRenderingBackend(backend: ScoreRenderingBackend) {
 ```
 
 `installUpload` wires the
-[render lifecycle](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-core-contract)
+[render lifecycle](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_DISPLAY_LIFECYCLE.md#the-core-contract)
 for you. It remembers what it last sent for each key and uploads only what
 changed, so N regions streaming in cost N uploads rather than N². The key is
 whatever your map is keyed by. Here it is a `displayedRegionIndex`. On a canvas
@@ -961,6 +961,12 @@ section of the architecture spec is the full quick-scan list.
 - [](/docs/developer_guides/rpc_workers)
 - [](/docs/developer_guides/creating_display)
 - [](/docs/developer_guides/svg_export)
-- [GPU_CONTEXT_BUDGET.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_CONTEXT_BUDGET.md)
+- [GPU_RENDERING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md)
+  — the hub for the lifecycle, backend, HAL and shader reference docs:
+  [GPU_BACKENDS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_BACKENDS.md),
+  [GPU_HAL.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_HAL.md)
+  and
+  [GPU_SHADERS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_SHADERS.md)
+- [GPU_PORTABILITY.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_PORTABILITY.md)
   — the WebGL2 context ceiling one display spends against, what reaches it, and
   the four fixes already measured and eliminated

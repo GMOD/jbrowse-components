@@ -120,28 +120,28 @@ is declared in `STATES_NO_RULES`.
   friends must be read unconditionally, above the bail-outs — a read inside the
   gate drops out of the dependency set on the run that declines, and nothing
   ever wakes the autorun again. Every fetch carries one; see [the
-  trigger list](reference/FETCH_SKELETON.md#the-global-fetch-trigger-list-must-be-read-unconditionally).
+  trigger list](reference/FETCH_KEYS.md#the-global-fetch-trigger-list-must-be-read-unconditionally).
 - Don't override `fetchNeeded` to return early *without* fetching unless
   something `FetchVisibleRegions` already tracks will wake it. A fetch bumps
   `fetchGeneration`; an early return that skips the fetch breaks that chain and
   must supply its own wake path. See [the trigger
-  list](reference/FETCH_SKELETON.md#the-global-fetch-trigger-list-must-be-read-unconditionally).
+  list](reference/FETCH_KEYS.md#the-global-fetch-trigger-list-must-be-read-unconditionally).
 - Don't give a new fetch installer its first run at the install call. It owes
   that run to a microtask: a model is routinely built and then configured in the
   same synchronous block, and a fetch issued between those two lines is issued
   against un-configured state and reissued. Install order then stops mattering.
-  See [the leading edge](reference/FETCH_SKELETON.md#every-fetch-autorun-runs-on-the-leading-edge).
+  See [the leading edge](reference/FETCH_KEYS.md#every-fetch-autorun-runs-on-the-leading-edge).
 - Don't leave something downstream of a fetch that is only correct because the
   fetch is slower than it. That is a coupling nobody has stated, and the
   empty-versus-stale distinction is where it bites — an empty block list is not
   a stale domain but the fallback one. `settledDynamicBlocks` is the in-tree
-  fix. See [the leading edge](reference/FETCH_SKELETON.md#every-fetch-autorun-runs-on-the-leading-edge).
+  fix. See [the leading edge](reference/FETCH_KEYS.md#every-fetch-autorun-runs-on-the-leading-edge).
 - Don't read something `untracked` because tracking it looks expensive. The
   test is whether the decision branches on it: if it does, it is tracked
   whatever the idle-run cost, and the only three grounds are a self-write, an
   effect input and a dev-only check. `no-restricted-syntax` fails a bare
   `untracked(` and each site names its ground. See [`untracked` names its
-  ground](reference/FETCH_SKELETON.md#untracked-names-its-ground-and-a-perf-guard-is-not-one).
+  ground](reference/FETCH_KEYS.md#untracked-names-its-ground-and-a-perf-guard-is-not-one).
 - Don't measure bytes anywhere but in the feature RPC. `gateEnabled` is the
   one opt-in and `byteLimit` in the call is the whole display-side contract;
   a separate estimate round trip is the pre-flight path no display issues
@@ -171,13 +171,13 @@ is declared in `STATES_NO_RULES`.
   order](reference/FETCH_KEYS.md#row-order-is-not-a-fetch-input).
 - Don't write a `zoomFetchArgs` that reads no observable. The foundation reads
   it inside a computed, and args over non-observable state are memoized for the
-  display's life — the first fetch is cached forever and nothing refetches it. See [per-region zoom-staleness](reference/ZOOM_FETCH_KEYS.md#per-region-zoom-staleness).
+  display's life — the first fetch is cached forever and nothing refetches it. See [per-region zoom-staleness](reference/FETCH_KEYS.md#per-region-zoom-staleness).
 - Don't spell a second tier as a `zoomFetchArgs` field, or as a `regionHasData`
   answer over a second map stamped into `loadedRegions`. A coarse tier is its
   own store with its own span (`CoarseTierMixin`); an input naming it reads as
   stale the moment the display swaps tiers and refetches the tier it already
   holds, and a shared stamp narrows the coarse span to the detail's. See
-  [per-region zoom-staleness](reference/ZOOM_FETCH_KEYS.md#per-region-zoom-staleness), and [the hook
+  [per-region zoom-staleness](reference/FETCH_KEYS.md#per-region-zoom-staleness), and [the hook
   table](reference/DISPLAY_HOOKS.md#display-hooks-and-their-defaults) for what every other
   unoverridden hook leaves you with.
 - Don't restate the zoom tier in a second derivation. The foundation compares
@@ -187,7 +187,7 @@ is declared in `STATES_NO_RULES`.
   args gain next, latches true, and every export of that display waits out
   `awaitSvgReady`'s backstop instead of failing.
   `LinearAlignmentsDisplay`'s `dataSuperseded` is the worked example. See
-  [per-region zoom-staleness](reference/ZOOM_FETCH_KEYS.md#per-region-zoom-staleness).
+  [per-region zoom-staleness](reference/FETCH_KEYS.md#per-region-zoom-staleness).
 
 ### Upload and render
 
@@ -195,9 +195,9 @@ is declared in `STATES_NO_RULES`.
   belongs in the MST autorun pair spawned by `attachRenderingBackend`. See [GPU
   rendering](#gpu-rendering-architecture).
 - Don't destructure model methods; call on the model
-  ([GPU_RENDERING.md](reference/GPU_RENDERING.md)).
+  ([GPU_DISPLAY_LIFECYCLE.md](reference/GPU_DISPLAY_LIFECYCLE.md)).
 - Don't use `useMemo` for observable-dependent values; use a cached MST view
-  ([GPU_RENDERING.md](reference/GPU_RENDERING.md)).
+  ([GPU_DISPLAY_LIFECYCLE.md](reference/GPU_DISPLAY_LIFECYCLE.md)).
 - Don't mutate per-region values in place; emit fresh objects. See [derived
   region maps](reference/FETCH_KEYS.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
 - Don't build a per-region map with a bare `observable.map<number, …>()`. Use
@@ -234,15 +234,15 @@ is declared in `STATES_NO_RULES`.
 - Don't make a renderer class the *owner* of per-region data. The model's
   `rpcDataMap` / `laidOutDataMap` is the single source of truth, passed in per
   frame; a renderer-held map is legal only under the conditions in
-  [GPU_RENDERING.md § Renderers stay
-  stateless](reference/GPU_RENDERING.md#renderers-stay-stateless), which
+  [GPU_BACKENDS.md § Renderers stay
+  stateless](reference/GPU_BACKENDS.md#renderers-stay-stateless), which
   alignments alone meets.
 - Don't add or redefine volatiles/actions owned by the slot mixin (`canvasDrawn`,
   `renderTick`, `currentRenderingBackend`, `renderError`, `markCanvasDrawn`,
   `resetCanvasDrawn`, `renderNow`, `setRenderError`, `stopRenderingBackend`, etc.).
   `renderError` in particular is the single source for the `renderError` terminal
   phase — don't fork it into a display-local volatile. See
-  [GPU_RENDERING.md](reference/GPU_RENDERING.md).
+  [GPU_DISPLAY_LIFECYCLE.md](reference/GPU_DISPLAY_LIFECYCLE.md).
 
 ### Chrome, readiness and export
 
@@ -304,7 +304,7 @@ is declared in `STATES_NO_RULES`.
   `.slang` and run `pnpm gen:shaders`; CI's `git diff --exit-code` catches stale
   outputs. Consume generated constants by name from TS — never copy a literal
   offset into a renderer. See
-  [GPU_RENDERING.md](reference/GPU_RENDERING.md).
+  [GPU_SHADERS.md](reference/GPU_SHADERS.md).
 - Don't hand-edit a generated markdown block either. Both marker spellings are
   live — `<!-- NAME START -->` and `<!-- BEGIN GENERATED NAME -->` — and `pnpm
   autogen` overwrites the edit at the next run; change the source it scans. See
@@ -314,14 +314,14 @@ is declared in `STATES_NO_RULES`.
   caps how many the shader can address and the Canvas2D path has no such cap, so
   past the budget the GPU silently drops marks the other backend still draws.
   State the range, measured, beside the number. See
-  [GPU_RENDERING.md § Keeping the two backends in parity](reference/GPU_RENDERING.md#keeping-the-two-backends-in-parity).
+  [GPU_BACKENDS.md § Keeping the two backends in parity](reference/GPU_BACKENDS.md#keeping-the-two-backends-in-parity).
 - Don't diverge the two render backends. Import shader constants into TS rather
   than retyping them, put shared glyph geometry/color math in one draw helper, and
   keep multi-layer order/gating in one exhaustively-keyed registry. And don't go
   the other way: a Canvas2D sub-pixel *overdraw* (fudge factor / `f2`) or
   stroke-vs-fill swap is deliberate AA compensation with no shader equivalent —
   don't port it into a `.slang`. See
-  [GPU_RENDERING.md § Keeping the two backends in parity](reference/GPU_RENDERING.md#keeping-the-two-backends-in-parity).
+  [GPU_BACKENDS.md § Keeping the two backends in parity](reference/GPU_BACKENDS.md#keeping-the-two-backends-in-parity).
 
 ## Workspace tiers
 
@@ -457,7 +457,7 @@ on `BaseDisplay`, all sharing `baseLinearDisplayConfigSchema` as their config
 base. Which mixins a display composes is the primary axis of code sharing;
 *how* it renders (GPU vs Canvas2D) is a separate axis chosen per frame at the
 backend factory
-([GPU_RENDERING.md § RenderingBackend interfaces per plugin](reference/GPU_RENDERING.md#renderingbackend-interfaces-per-plugin)).
+([GPU_BACKENDS.md § RenderingBackend interfaces per plugin](reference/GPU_BACKENDS.md#renderingbackend-interfaces-per-plugin)).
 
 The table is **generated** — both columns. **Displays** comes from the
 `#displayFoundation` tags and **Composes** is read off each foundation's own
@@ -487,7 +487,7 @@ first installs its autoruns for every display that composes it — one
 `installPerRegionFetchAutoruns(self)` from the mixin's `afterAttach` — while on
 the other two each display installs its own via `installGlobalFetchAutorun` /
 `installComparativeFetchAutorun`, both declarations over the same
-`installFetch` skeleton ([reference/FETCH_SKELETON.md](reference/FETCH_SKELETON.md)).
+`installFetch` skeleton ([reference/FETCH_KEYS.md](reference/FETCH_KEYS.md)).
 The comparative shape — uploads keyed by `sharedBackendKey(self.id)`, an
 unconditional repaint, readiness as a required prop — is
 [reference/SHARED_CANVAS_VIEWS.md](reference/SHARED_CANVAS_VIEWS.md).
@@ -571,9 +571,9 @@ and the prerequisite reads — runs on one latest-wins skeleton, `installFetch`
 / `runFetchOnce` (`@jbrowse/core/util/installFetch`). What the skeleton owns,
 which of an autorun's reads are tracked, why every installer's first run is a
 microtask, and why every fetch reads a pure "go again" signal above its gates:
-[reference/FETCH_SKELETON.md](reference/FETCH_SKELETON.md). What stales a
+[reference/FETCH_KEYS.md](reference/FETCH_KEYS.md#the-fetch-skeleton-one-latest-wins-machine-one-phase-contract). What stales a
 region under zoom, and how a coarse tier is a second store rather than a key:
-[reference/ZOOM_FETCH_KEYS.md](reference/ZOOM_FETCH_KEYS.md).
+[reference/FETCH_KEYS.md](reference/FETCH_KEYS.md#per-region-zoom-staleness).
 
 ### The region-too-large gate (summary)
 
@@ -679,20 +679,19 @@ host serves it to runtime plugins like every bundled `@jbrowse` package
 ([ADR-128](architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md),
 superseding ADR-030's static-import-only rule).
 
-Full detail is [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md):
+[reference/GPU_RENDERING.md](reference/GPU_RENDERING.md) is the hub; the depth is
+in four docs:
 
-| Section | Read when |
+| Doc and section | Read when |
 | --- | --- |
-| The core contract / The API / What the mixin owns | Wiring a new display's render lifecycle |
-| Life of a frame | Debugging "why didn't it redraw", context loss, tab visibility |
-| RenderingBackend interfaces per plugin | Declaring a mark list; going Canvas2D-only |
-| Keeping the two backends in parity | Touching either a `.slang` or a Canvas2D draw fn |
-| Upload patterns / `installUpload` | Choosing what a display keys its payloads by; O(N²) upload bugs |
-| HAL / Renderers stay stateless | Touching `packages/render-core/src/hal/` or renderer state |
-| Shaders (Slang codegen) | Editing a `.slang` or a generated module |
-| Canvas scaling & hi-DPI / `displayedRegionIndex` | Blurry canvases; region↔buffer join keys |
-| What this architecture deliberately does not have | Before proposing a render graph, indirect draws, GPU culling, or SSBOs |
-| Adding a new GPU display type | The end-to-end checklist |
+| [GPU_DISPLAY_LIFECYCLE.md](reference/GPU_DISPLAY_LIFECYCLE.md): The core contract / What the mixin owns | Wiring a new display's render lifecycle |
+| GPU_DISPLAY_LIFECYCLE.md: Context-loss recovery | Debugging "why didn't it redraw", context loss, tab visibility |
+| GPU_DISPLAY_LIFECYCLE.md: Upload patterns / `installUpload` | Choosing what a display keys its payloads by; O(N²) upload bugs |
+| [GPU_BACKENDS.md](reference/GPU_BACKENDS.md): RenderingBackend interfaces per plugin | Declaring a mark list; going Canvas2D-only |
+| GPU_BACKENDS.md: Keeping the two backends in parity / Renderers stay stateless | Touching either a `.slang` or a Canvas2D draw fn, or renderer state |
+| [GPU_HAL.md](reference/GPU_HAL.md): The HAL / What this architecture deliberately does not have | Touching `packages/render-core/src/hal/`; before proposing a render graph, indirect draws, GPU culling, or SSBOs |
+| [GPU_SHADERS.md](reference/GPU_SHADERS.md): Shaders (Slang codegen) / Canvas scaling & hi-DPI | Editing a `.slang` or a generated module; blurry canvases |
+| GPU_RENDERING.md: `displayedRegionIndex` / Adding a new GPU display type | Region↔buffer join keys; the end-to-end checklist |
 
 The chrome around the canvas — phase precedence, the retry contract, why a
 terminal state early-returns its own root — is

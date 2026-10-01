@@ -130,7 +130,7 @@ rows with the CIGAR folded, which took it from 133 MB to 7.3 MB.
   regions a circle may show (256 there), and the circle's scale needs no table.
 - **`linkMark` with a polar mode.** Its curve is a half-ellipse over a baseline,
   not a chord bowing toward the centre, and a mode flag on a shape is what
-  SHADER_SHAPE_LIBRARY.md refuses. The chord keeps the link's channel names, so
+  SHADER_JS_CODEGEN.md refuses. The chord keeps the link's channel names, so
   an encoding written for one reads for the other.
 - **4x MSAA.** On WebGL2 it made the oat circle's rotation frame 146 ms.
 - **A ribbon mark in render-core.** One consumer; ADR-040's bar is two.

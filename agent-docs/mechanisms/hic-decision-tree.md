@@ -20,7 +20,7 @@ Three questions:
 - **the colour** — what a raw count saturates against.
 
 The GPU lifecycle around all of it is
-[reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md); the rotated-triangle
+[reference/GPU_DISPLAY_LIFECYCLE.md](../reference/GPU_DISPLAY_LIFECYCLE.md); the rotated-triangle
 forward/inverse pair is the shared
 `packages/display-kit/src/triangleTransform.ts`
 (the LD heatmap draws and hit-tests through the same pair, plus the connector

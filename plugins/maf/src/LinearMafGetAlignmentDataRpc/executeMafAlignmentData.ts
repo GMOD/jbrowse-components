@@ -111,7 +111,7 @@ export async function executeMafAlignmentData({
   // region's records — and that intermediate, not the memcpy, is what dominates
   // the shape real files have. Buffering to size the arena measured
   // **1.18x slower** and **491 MB against 263 MB** of peak RSS on 20000 blocks
-  // of 8 columns; agent-docs reference/MAF_WORKER_PIPELINE.md has the table and
+  // of 8 columns; agent-docs reference/MAF_LARGE_BLOCKS.md has the table and
   // the profile behind it.
   const visible = visibleSamples(subtreeFilter, configSamples)
   const sink = new MafRegionSink(visible)

@@ -221,7 +221,7 @@ function ribbonFillShape(
  * its own loop, where it already holds the projected corners and the fill/stroke
  * decision the outline is gated on — so painting here would be the second copy
  * of that, drawn from an outline cell that does not know which of its instances
- * the painter chose to fill. `GPU_RENDERING.md` §"Intentional divergences"
+ * the painter chose to fill. `GPU_BACKENDS.md` §"Intentional divergences"
  * carries the rest.
  */
 function ribbonEdgeShape(

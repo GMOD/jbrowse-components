@@ -315,7 +315,7 @@ infrastructure staying in place regardless.
   feature-detection context until 2026-08-12**, where it had the same effect
   (opening the About widget mid-session could blank live tracks) plus a console
   line users reported as a fault; see
-  [GPU_CONTEXT_BUDGET.md](../reference/GPU_CONTEXT_BUDGET.md) §"The probe's own
+  [GPU_PORTABILITY.md](../reference/GPU_PORTABILITY.md) §"The probe's own
   context".
 - Slang entry-point names default to camelCase (`vsMain`), but the HAL hardcodes
   `vs_main` / `fs_main`. Authored `.slang` sources use the snake_case form to

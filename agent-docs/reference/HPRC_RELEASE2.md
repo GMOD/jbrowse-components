@@ -171,8 +171,8 @@ would silently lose its per-haplotype base rows to presence bands (verified:
 `coarseTierActive: true` with the summary configured). A cost-based swap is a
 design question, since the deciding estimate is the detail tier's, which
 `byteGateAdapterConfig` points away from once the tier is on
-(`gateMeasuresCoarse`). [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"What the LOD
-lesson actually points at" predicted this gap.
+(`gateMeasuresCoarse`). [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"Fetch dominates at
+470-way" predicted this gap.
 
 Traps in the summary build, none specific to HPRC:
 
@@ -223,6 +223,6 @@ needs gains, this is the lane.
 
 - [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"A `.tai` is not a tier": why both
   MAF adapters take a `summaryAdapter` slot.
-- [MAF_WORKER_PIPELINE.md](MAF_WORKER_PIPELINE.md): what one region costs after
-  the bytes arrive.
+- [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"The worker pipeline": what one
+  region costs after the bytes arrive.
 - [PANGENOME_GRAPHS.md](PANGENOME_GRAPHS.md): the graph side of the same data.

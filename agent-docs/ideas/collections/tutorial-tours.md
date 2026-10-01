@@ -164,7 +164,7 @@ packaged binary (`products/jbrowse-desktop/test/screenshots.ts`), whose only
 capture call is `driver.takeScreenshot()`; `scripts/generate-video.ts` drives a
 page in puppeteer Chrome and films with `page.screencast`. Electron's
 chromedriver does not expose the CDP-backed window commands
-(`reference/DESKTOP_SCREENSHOTS.md:208-210`), So `quickstart_desktop.md`, which carries
+(`reference/FIGURE_CAPTURE.md` §"Capture size"), So `quickstart_desktop.md`, which carries
 the heaviest click-narration in the docs and is the page a tour would gut, is
 out of reach.
 

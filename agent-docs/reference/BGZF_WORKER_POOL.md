@@ -112,14 +112,16 @@ context".
 
 ## Benchmark traps
 
-General rules are in [BENCHMARKING.md](BENCHMARKING.md). The ones specific to
+[BENCHMARKING.md](BENCHMARKING.md) holds the general rules. The ones specific to
 this pool:
 
 - **Six rounds minimum.** The HTTP cache warms for several rounds, and a min over
   the unplateaued series once read the pool as a 0.74x slowdown.
-- **Node cannot measure it.** No global `Worker` or Blob URLs, so the
-  in-process path runs and every node bench reports parity.
-  `packages/core/src/util/bgzfWorkerPool.test.ts` pins that property.
+- **Node cannot measure it, and this doc owns that trap.** `getSharedWorkerPool()`
+  needs a global `Worker` plus Blob URLs, so it resolves to `undefined`, the
+  in-process path runs and every node bench reports parity. The same holds for
+  any worker-shaped question. `packages/core/src/util/bgzfWorkerPool.test.ts`
+  pins the property.
 - **Jest suite time is not a signal for import weight.** The helper imports
   dynamically so the inlined worker blob stays out of the initial bundle. A
   claimed jest-time win for that did not reproduce; it was a cold transform

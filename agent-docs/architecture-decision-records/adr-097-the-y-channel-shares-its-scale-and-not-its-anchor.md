@@ -151,6 +151,6 @@ one-paragraph verdicts were recorded and later dropped.
   single-caller clause is what refused the Manhattan uniforms, and ADR-051's
   "drawn and exported are one boundary" is what makes the degenerate-domain value
   a pinned one rather than an implementation detail.
-- [reference/SHADER_SHAPE_LIBRARY.md](../reference/SHADER_SHAPE_LIBRARY.md)
+- [reference/SHADER_JS_CODEGEN.md](../reference/SHADER_JS_CODEGEN.md)
   §"What is deliberately NOT shared" carries the anchor row; the atoms list is
   unchanged, because no module joined.

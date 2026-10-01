@@ -27,7 +27,7 @@ The bench fetches one region of the synthetic MAF-tabix fixture once, since
 same features: the MAF display's pack, placement and `buildMafChannels`, and
 the `marks_maf_cells` declaration as `CoreGetEncodedLayers` runs it. Two
 shapes are 26 species at the wide blocks
-[MAF_WORKER_PIPELINE.md](../reference/MAF_WORKER_PIPELINE.md) profiles and at
+[MAF_LARGE_BLOCKS.md](../reference/MAF_LARGE_BLOCKS.md) profiles and at
 the narrow blocks real files have; the third is 470 species, the hg38 track the
 mark display's MAF example reads, over 200 kb. The MAF arms leave out the
 worker's coverage and encode every base where the display samples one per

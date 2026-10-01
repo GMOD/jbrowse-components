@@ -290,7 +290,7 @@ that one comparison. **The 4.5x was the semantic change, priced.**
 Decomposition did move the walk: the largest single item in the per-cell body
 was a bounds test answering a question about the whole block, and hoisting it to
 a per-block scan is 1.13-1.24x across eight shapes.
-[MAF_WORKER_PIPELINE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_WORKER_PIPELINE.md)
+[MAF_LARGE_BLOCKS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_LARGE_BLOCKS.md)
 has the method — measure the bare loop against the loop-plus-output, sweep the
 working set, peel the body one operation at a time.
 
@@ -335,7 +335,7 @@ modes are the exception: their worker output is sampled at the zoom's sub-pixel
 bin, so a zoom-in that crosses an octave refetches — at most once per octave,
 two or three calls over a seven-octave gesture, each a subset of the last
 ([PER_BASE_SUBPIXEL_BIN.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PER_BASE_SUBPIXEL_BIN.md)).
-[RENDERER_BENCHMARKS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/RENDERER_BENCHMARKS.md)
+[BENCHMARKING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/BENCHMARKING.md)
 carries the whole table, why it is imported from a sibling checkout instead of
 measured here, and the two of its neighbours that are not publishable.
 
@@ -442,20 +442,20 @@ The hierarchical track selector rebuilds on every filter keystroke, re-reads
 configs, re-sorts and re-flattens. A keystroke over 2000 tracks costs well under
 a millisecond of model work; mounting the rows costs about 1.4 ms each. So
 dropping one MUI wrapper per row pays, and caching the tree does not. Two
-alternating A/B rounds, min and median agreeing, one DOM node per row removed:
+alternating A/B rounds that agree, one DOM node per row removed:
 
 <!-- BEGIN GENERATED MEASUREMENT track-selector-row-cost -->
 
-| n=1000 tracks               | before min | before median | after min | after median |
-| --------------------------- | ---------: | ------------: | --------: | -----------: |
-| mount, min of 9             |     1656ms |        1631ms |    1460ms |       1401ms |
-| toggle re-render, min of 18 |     80.6ms |        73.6ms |    63.3ms |       66.1ms |
-| DOM nodes                   |     21,506 |             — |    20,505 |            — |
+| n=1000 tracks               | before, round 1 | before, round 2 | after, round 1 | after, round 2 |
+| --------------------------- | --------------: | --------------: | -------------: | -------------: |
+| mount, min of 9             |          1656ms |          1631ms |         1460ms |         1401ms |
+| toggle re-render, min of 18 |          80.6ms |          73.6ms |         63.3ms |         66.1ms |
+| DOM nodes                   |          21,506 |               — |         20,505 |              — |
 
 <!-- END GENERATED MEASUREMENT track-selector-row-cost -->
 
 Three model-side optimizations measured null, and
-[TRACK_SELECTOR_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/TRACK_SELECTOR_PERF.md)
+[BENCHMARKING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/BENCHMARKING.md)
 records them so nobody spends a second session on them: caching the unfiltered
 hierarchy and pruning per keystroke, preserving node identity so memoized items
 bail out, and resolving each track's name and categories once instead of per
@@ -507,7 +507,7 @@ extents span the canvas, the index returns all of them, and each one costs a
 projection and a test. 12.5ms<!--m:synteny-pick-random.1-10k.warmPickMs--> fits
 inside a 16 ms frame and leaves nothing for anything else, so the hover feels
 sluggish. The
-[measurement page](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_PICKING.md)
+[measurement page](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_LOD.md#synteny-picking-measured)
 also records what is not worth trying against it.
 
 ## The load clock
@@ -590,7 +590,7 @@ where the next attempt starts.
   adapter. That makes the inflate pool worth having and is also a ceiling.
 - **A hover over an all-vs-all comparison** costs what the picking table says,
   and the index cannot fix it
-  ([SYNTENY_PICKING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_PICKING.md)).
+  ([SYNTENY_LOD.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_LOD.md#synteny-picking-measured)).
 - **A dense whole-genome synteny view is bound by the number of alignments**,
   and only a file that already carries binned alignments reaches the dominant
   two-thirds of that cost
@@ -598,7 +598,7 @@ where the next attempt starts.
 - **Dropping small mismatches** would cut the MAF worker's largest remaining
   emission. It trades fidelity for speed, so it is held back deliberately while
   free performance remains
-  ([MAF_WORKER_PIPELINE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_WORKER_PIPELINE.md)).
+  ([MAF_LARGE_BLOCKS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_LARGE_BLOCKS.md)).
 
 One of these is also an architectural limit rather than a slow path: the sticky
 worker assignment has a retire condition, and
@@ -633,10 +633,8 @@ with the bogus figure it actually reported. The four that recur:
   figures taken while the box is descheduling are not properties of the code.
 
 Taking a first measurement at all is a different problem from not faking one,
-and
-[PERF_INSTRUMENTATION.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PERF_INSTRUMENTATION.md)
-carries the patterns for the frame clock — what to instrument for a render or a
-scroll that feels slow, validated against a real jank report.
+and the same doc carries the patterns for the frame clock — what to instrument
+for a render or a scroll that feels slow, validated against a real jank report.
 
 The parser libraries each keep their own equivalent of this page, and the fetch
 half of the path is theirs. Each ends with a "what the consumer has to do"

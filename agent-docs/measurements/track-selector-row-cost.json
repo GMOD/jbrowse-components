@@ -3,45 +3,45 @@
   "measured": "2026-07-29",
   "source": {
     "kind": "hand",
-    "repro": "Two alternating A/B rounds over a 1000-track selector, taking min and median of each; DOM nodes counted once, since the count is exact.",
-    "notes": "Split into min and median columns during the move to a record; the doc wrote each arm as `1656 / 1631 ms` in one cell. DOM nodes carries no median because it does not vary — one fewer node per row."
+    "repro": "Two alternating A/B rounds over a 1000-track selector, the minimum of each round per cell; DOM nodes counted once, since the count is exact.",
+    "notes": "The original doc wrote each arm as `1656 / 1631 ms`, one value per round; an earlier record mislabelled them min and median. DOM nodes carries one value because the count is exact."
   },
   "columns": [
     { "key": "metric", "label": "n=1000 tracks" },
-    { "key": "beforeMin", "label": "before min", "align": "right" },
-    { "key": "beforeMedian", "label": "before median", "align": "right" },
-    { "key": "afterMin", "label": "after min", "align": "right" },
-    { "key": "afterMedian", "label": "after median", "align": "right" }
+    { "key": "beforeRound1", "label": "before, round 1", "align": "right" },
+    { "key": "beforeRound2", "label": "before, round 2", "align": "right" },
+    { "key": "afterRound1", "label": "after, round 1", "align": "right" },
+    { "key": "afterRound2", "label": "after, round 2", "align": "right" }
   ],
   "rows": [
     {
       "format": "ms",
       "values": {
         "metric": "mount, min of 9",
-        "beforeMin": 1656,
-        "beforeMedian": 1631,
-        "afterMin": 1460,
-        "afterMedian": 1401
+        "beforeRound1": 1656,
+        "beforeRound2": 1631,
+        "afterRound1": 1460,
+        "afterRound2": 1401
       }
     },
     {
       "format": "ms",
       "values": {
         "metric": "toggle re-render, min of 18",
-        "beforeMin": 80.6,
-        "beforeMedian": 73.6,
-        "afterMin": 63.3,
-        "afterMedian": 66.1
+        "beforeRound1": 80.6,
+        "beforeRound2": 73.6,
+        "afterRound1": 63.3,
+        "afterRound2": 66.1
       }
     },
     {
       "format": "int",
       "values": {
         "metric": "DOM nodes",
-        "beforeMin": 21506,
-        "beforeMedian": null,
-        "afterMin": 20505,
-        "afterMedian": null
+        "beforeRound1": 21506,
+        "beforeRound2": null,
+        "afterRound1": 20505,
+        "afterRound2": null
       }
     }
   ]

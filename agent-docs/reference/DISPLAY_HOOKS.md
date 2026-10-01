@@ -69,5 +69,5 @@ fetch, whose zoom rule is whatever `zoomRange` the adapter puts on the payload).
 
 **Render path is a separate axis.** GPU-canvas vs Canvas2D is chosen per frame at
 the backend factory
-([GPU_RENDERING.md § RenderingBackend interfaces per plugin](GPU_RENDERING.md#renderingbackend-interfaces-per-plugin)),
+([GPU_BACKENDS.md § RenderingBackend interfaces per plugin](GPU_BACKENDS.md#renderingbackend-interfaces-per-plugin)),
 not by foundation.

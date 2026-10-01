@@ -91,7 +91,7 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
 ## Rendering, keyboard
 
 - **Only the shown tab is mounted** — a display costs a WebGL2 context, ceiling
-  16 (`agent-docs/reference/GPU_CONTEXT_BUDGET.md`). Hence manual keyboard
+  16 (`agent-docs/reference/GPU_PORTABILITY.md`). Hence manual keyboard
   activation, the documented exception to the WAI tabs pattern.
 - Strip hides its scrollbar: wheel is translated (larger axis), and a tab made
   current _without being touched_ scrolls itself in.

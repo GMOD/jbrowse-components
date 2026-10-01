@@ -13,7 +13,7 @@ The ceiling is **16 live contexts** and one LGV with 17 GPU tracks crosses it �
 measured 2026-08-05, same on a real Intel GPU and on SwiftShader, so it is a
 browser property. See [reference/ARCHITECTURAL_LIMITS.md](../../reference/ARCHITECTURAL_LIMITS.md)
 §"One WebGL2 context per display canvas" for the walk and
-[reference/GPU_CONTEXT_BUDGET.md](../../reference/GPU_CONTEXT_BUDGET.md) for the
+[reference/GPU_PORTABILITY.md](../../reference/GPU_PORTABILITY.md) for the
 harness and the fixes already eliminated.
 That was the number this entry used to ask for, and it answers the question it
 was gating: an unremarkable session reaches the ceiling, so **track-level
@@ -28,7 +28,7 @@ tracks and no churn — WebGL2 blocks the main thread 1.3-5.5 s in a single task
 Canvas2D never exceeds 0.34 s and never once exceeds 500 ms. Both the numbers and
 the two things that must not break (the cross-backend gate, the figure corpus)
 are in
-[reference/GPU_CONTEXT_BUDGET.md](../../reference/GPU_CONTEXT_BUDGET.md).
+[reference/GPU_PORTABILITY.md](../../reference/GPU_PORTABILITY.md).
 
 **So re-measure the population before building the structural work.** The
 remaining group is *hardware* GL with no WebGPU and 17+ tracks: a machine with

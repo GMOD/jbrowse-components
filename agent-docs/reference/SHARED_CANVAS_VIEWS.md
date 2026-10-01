@@ -62,7 +62,7 @@ only a user gesture moves either:
 
 - `reloadCounter`: after a failure every input is unchanged, so `prepare` recomputes the
   same key and nothing refires; this is why clearing the error left Retry inert
-  ([FETCH_SKELETON.md](FETCH_SKELETON.md#the-global-fetch-trigger-list-must-be-read-unconditionally);
+  ([FETCH_KEYS.md](FETCH_KEYS.md#the-global-fetch-trigger-list-must-be-read-unconditionally);
   "reload() refires the fetch with no input change" pins it).
 - `fetchCanceled`, which CLOSES the gate while a cancel stands. `reload()` is the only
   thing that reopens it, so a `reload()` bumping the counter without clearing the flag
@@ -79,7 +79,7 @@ pan buffer and snapped to a buffer-sized grid, so a pan inside the buffer neithe
 refetches nor exposes an unfetched strip. Synteny scopes its query axis, dotplot its h
 axis. Synteny's `showOffscreenMates` adds a second query on the target axis
 (`targetFetchRegions`), flipped into the query perspective before drawing
-(TWO_AXIS_SYNTENY_FETCH.md).
+(SYNTENY_LOD.md § The second synteny fetch, on the target axis).
 
 ## The canvas belongs to the container, not the display
 

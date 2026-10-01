@@ -24,7 +24,7 @@ function simulateLoaded(
 
 // Worker output is absolute genomic uint32, so alignment data stays valid under
 // zoom: outside the per-base schemes `zoomFetchArgs` is constant, and no zoom
-// stales a region it has loaded — see reference/ZOOM_FETCH_KEYS.md
+// stales a region it has loaded — see reference/FETCH_KEYS.md
 // §"Per-region zoom-staleness". These pin the consequence: a zoom that stays
 // inside the fetched buffer must not drop into the loading phase.
 // BreakpointSplitView's overlays depend on it — a cleared `rpcDataMap` empties

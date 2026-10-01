@@ -76,7 +76,7 @@ that acquisition evicts another, and the cascade wedges the main thread. WebGPU
 removes the per-canvas cost entirely, because
 `packages/render-core/src/gpuDevice.ts` holds one `GPUDevice` for the whole page
 that every canvas configures against, so an added track costs a swap chain.
-[GPU_CONTEXT_BUDGET.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_CONTEXT_BUDGET.md)
+[GPU_PORTABILITY.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_PORTABILITY.md)
 owns the measurement and the fixes it eliminated.
 
 Three smaller differences also reach the code. WGSL reads instance data from a

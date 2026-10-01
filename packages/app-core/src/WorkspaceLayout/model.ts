@@ -371,7 +371,7 @@ export function WorkspaceLayoutMixin() {
            *
            * Mounts no views that were not mounted — it is the same cell showing
            * the same tab — and unmounts every other cell's, so the WebGL2
-           * context ceiling (`agent-docs/reference/GPU_CONTEXT_BUDGET.md`) can
+           * context ceiling (`agent-docs/reference/GPU_PORTABILITY.md`) can
            * only go down. That is the reason it is this and not a `display:
            * none` over a still-mounted workspace.
            */

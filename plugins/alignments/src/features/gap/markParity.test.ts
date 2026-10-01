@@ -12,7 +12,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Draw against hit test, which is the gate this repo did not have: every parity
-// mechanism in GPU_RENDERING.md and CROSS_BACKEND_GATE.md compares the GPU with
+// mechanism in GPU_SHADERS.md and CROSS_BACKEND_GATE.md compares the GPU with
 // Canvas2D, and the third copy of a feature — the hit test — drifted against
 // both under comments rather than under a check. Both marks now come off one
 // declaration (`gapMark`), so this pins the property that made that worth doing.

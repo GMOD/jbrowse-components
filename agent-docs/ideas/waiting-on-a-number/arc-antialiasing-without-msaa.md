@@ -171,7 +171,7 @@ the arc plugin that stroked a main-thread Canvas2D is gone.
 ### Which GPU marks have their own AA, and which lean on the target
 
 `packages/render-core/src/shaders/antialias.slang` is the shared rule, and
-[reference/GPU_RENDERING.md](../../reference/GPU_RENDERING.md) §"Antialiasing
+[reference/GPU_SHADERS.md](../../reference/GPU_SHADERS.md) §"Antialiasing
 ramps" is the writeup. Classifying every fragment shader by **the substitution
 in §"The short answer"** — the geometry's own boundary put through the
 fragment's coverage — and not by whether it computes a coverage at all. That
@@ -297,7 +297,7 @@ deterministic under the HAL's 4x MSAA*. At 1x it is unchanged.
   directive — is the shape the rest of them would reach.
 
 The Hi-C / LD family is the interesting one, because it is not an oversight.
-GPU_RENDERING.md's own list of AA-width cases ends with "**Tiled cells** (hi-C
+GPU_SHADERS.md's own list of AA-width cases ends with "**Tiled cells** (hi-C
 bins): no per-quad AA at all, deliberately. Bins share exact edges after a linear
 transform, and antialiasing them individually produces seams", and
 hic's `drawHicBlocks.ts` header records the same finding from the other
@@ -455,7 +455,7 @@ a distance, and for a conic we have an exact one.
   `length(float2(ddx, ddy))` for exactly this reason, and so does WebRender
   (`inversesqrt(0.5 * dot(w, w))` in
   [`shared.glsl`](https://github.com/servo/webrender/blob/main/webrender/res/shared.glsl)).
-  Independent agreement with GPU_RENDERING.md §"Antialiasing ramps".
+  Independent agreement with GPU_SHADERS.md §"Antialiasing ramps".
 - **The linear ramp is the box-filter-exact answer**, not a parity preference:
   exact for an axis-aligned edge and within ~4.3% at any angle, where the
   smoothstep shoulder is up to 9.6% out on the axis. Loop-Blinn's `a = ½ − sd`,
@@ -687,7 +687,7 @@ tree:
     bars and a flat-topped run over-inks its fringe row by up to 0.375. MSAA got
     that case free. It is still the right trade against 0.277 device px of
     quantisation everywhere, and
-    [reference/GPU_RENDERING.md](../../reference/GPU_RENDERING.md) §"A bar's top
+    [reference/GPU_SHADERS.md](../../reference/GPU_SHADERS.md) §"A bar's top
     edge is the datum" carries the table — but whoever costs a flip needs the
     real number, not the claim that the case cannot arise.
   - **Density, and the whole alignments coverage family, cannot take it.**
@@ -701,7 +701,7 @@ tree:
     makes for hi-C, arrived at from a third direction, and it means **turning
     MSAA off costs the coverage band its edges no matter what a shader does** —
     the only fix is the one-primitive-per-stack rewrite §5 describes.
-    [reference/GPU_RENDERING.md](../../reference/GPU_RENDERING.md) §"What the
+    [reference/GPU_SHADERS.md](../../reference/GPU_SHADERS.md) §"What the
     coverage band cannot antialias" carries the worked composites.
 - **Read ends.** `read.slang`'s pointed terminus is a triangle; `chevron.slang`
   in the canvas plugin is the same shape with `aaRamp(coreHalfPx - abs(dist),
@@ -723,7 +723,7 @@ compile leaves the stale `.generated.ts` and everything downstream passes off it
 ### 5. Do NOT give Hi-C or LD per-cell analytic AA
 
 Recorded as an option so it stays refused. hic's `drawHicBlocks.ts` and
-GPU_RENDERING.md both carry the finding, from independent attempts. A tiled
+GPU_SHADERS.md both carry the finding, from independent attempts. A tiled
 diamond grid wants either exclusive sample coverage (MSAA) or hard edges; per
 fragment alpha on both sides of a shared edge gives 0.75 where 1.0 is right, and
 the seam is more visible than the staircase.
@@ -772,7 +772,7 @@ Concretely, in the order to take it:
 - **The wiggle family is the flip to make first**, because it is the one whose
   cost has been paid: the xyplot bar's horizontal cuts are analytic and
   measurably identical at 1 sample and at 4
-  ([reference/GPU_RENDERING.md](../../reference/GPU_RENDERING.md) §"A bar's top
+  ([reference/GPU_SHADERS.md](../../reference/GPU_SHADERS.md) §"A bar's top
   edge is the datum, and it is measured"). What it still loses at 1 is the
   soft fringe on the *vertical* edge between two bars of different heights —
   silhouette, not datum, and the thing to actually look at before flipping.

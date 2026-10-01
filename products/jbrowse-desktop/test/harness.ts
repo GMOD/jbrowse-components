@@ -743,7 +743,7 @@ export async function startStaticServer(
 // up as a `LocalPathLocation` under the profile's `fai/` dir), and that step
 // hangs often enough to fail a run — the assembly sits `initialized: false` with
 // no error and the import form reads "Loading" forever. Send the `.fai` with it
-// or send a 2bit; see agent-docs/reference/DESKTOP_SCREENSHOTS.md.
+// or send a 2bit; see agent-docs/reference/FIGURE_CAPTURE.md.
 export async function openVolvoxGenome(
   driver: WebDriver,
   sequenceUrls: string | string[],

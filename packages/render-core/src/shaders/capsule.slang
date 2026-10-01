@@ -2,7 +2,7 @@
 // `capsuleDist` and nowhere else: the edge ramp over that distance is
 // `antialias`'s one `edgeCoverage`, shared with every butt-capped stroke in the
 // tree. Consumers, and which half each takes:
-// agent-docs/reference/SHADER_SHAPE_LIBRARY.md.
+// agent-docs/reference/SHADER_JS_CODEGEN.md.
 //
 // `capsuleQuadLocal` pads by exactly `aaHalfPx(dpr)` past the ink. Pad less and
 // the ramp is clipped at the quad edge — coverage falls to 0.5 at the boundary,

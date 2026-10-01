@@ -4032,7 +4032,7 @@ export default function stateModelFactory(
         startRenderingBackend(backend: AlignmentsRenderingBackend) {
           installUpload(self, backend, {
             // A fresh object every run, so every run reaches the renderer: it
-            // holds the memo of what it last sent (GPU_RENDERING.md, the
+            // holds the memo of what it last sent (GPU_DISPLAY_LIFECYCLE.md, the
             // whole-map sync), and this layer's diff has nothing to add to it.
             cells: () =>
               oneCell('sources', {

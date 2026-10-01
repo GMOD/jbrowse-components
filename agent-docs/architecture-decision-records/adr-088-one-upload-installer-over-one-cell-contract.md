@@ -63,13 +63,13 @@ and the three `create*UploadSync` helpers under them are deleted, not wrapped.
 the two synteny displays — each turned out to be a per-region backend over one
 canvas-wide block per key, so the render signature that "genuinely differed"
 did not. What survives is `sharedBackendKey`, on a subpath of its own, and the
-render-side taxonomy in `reference/GPU_RENDERING.md` is two rows rather than
+render-side taxonomy in `reference/GPU_DISPLAY_LIFECYCLE.md` is two rows rather than
 three.
 
 ## Consequences
 
 - A display's rendering wiring is one call whose only per-family decision is
-  what its map is keyed by. The table in `reference/GPU_RENDERING.md` is by key.
+  what its map is keyed by. The table in `reference/GPU_DISPLAY_LIFECYCLE.md` is by key.
 - The shared-canvas rule ("never prune siblings") is gone rather than restated:
   the mechanism cannot express the mistake.
 - `render-core`'s public surface: 39 subpaths to 38, and one installer concept

@@ -379,6 +379,10 @@ mouseoverExtraInformation: undefined as string[] | undefined,
  * from this display, read by the LGV crosshair overlay
  */
 sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
+/**
+ * #volatile
+ */
+onScreenIdsMemo: createMembershipMemo(),
 ```
 
 `undefined as T | undefined` is the idiom for a volatile whose type MST cannot

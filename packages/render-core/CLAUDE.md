@@ -4,9 +4,9 @@ The HAL, the draw-lifecycle mixin, backend base classes, clip/canvas geometry,
 React backend hooks.
 
 `agent-docs/ARCHITECTURE.md` ("What not to do") and `reference/GPU_RENDERING.md`
-(lifecycle, the upload cells and the one installer that drives them, backend
-parity, HAL, shaders) own the rules those two state; don't restate them. What
-follows is this package's own.
+(the hub for lifecycle, the upload cells and the one installer that drives them,
+backend parity, HAL, shaders) own the rules those two state; don't restate them.
+What follows is this package's own.
 
 **@experimental** — third-party plugins should pin an exact version.
 

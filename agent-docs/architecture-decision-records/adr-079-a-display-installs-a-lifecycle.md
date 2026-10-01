@@ -55,7 +55,7 @@ what a display reaches for; `sharedBackendKey` moves beside
 ## Consequences
 
 - **A display's rendering wiring is one call**, and the four upload patterns in
-  `reference/GPU_RENDERING.md` say which installer they take. Adding a display
+  `reference/GPU_DISPLAY_LIFECYCLE.md` say which installer they take. Adding a display
   no longer requires deciding between four helpers and a primitive.
 - **The "build the closure outside the call" rule is gone**, not restated. There
   is nowhere left to build it wrongly, and the three docstrings that carried the

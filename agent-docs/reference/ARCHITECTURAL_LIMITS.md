@@ -35,8 +35,9 @@ Budget one context per open GPU track: each display owns one canvas, and
 `WebGL2Hal` takes its own context with no pooling. Past the browser's ceiling,
 eviction and re-acquisition cascade and wedge the main thread rather than
 degrading, and a single ordinary LGV can reach it. Tracks inside a mounted view
-are not virtualized. [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md) owns the
-numbers, the harness and the fixes already measured and eliminated.
+are not virtualized. [GPU_PORTABILITY.md](GPU_PORTABILITY.md) §"The WebGL2
+context budget" owns the numbers, the harness and the fixes already measured and
+eliminated.
 
 Chromosomes are free on this axis: a whole-genome track is one canvas with one
 buffer per `displayedRegionIndex`. The view's block math is not free — see
@@ -54,11 +55,10 @@ Mitigations, both bounding rather than fixing:
   `RECOVERY_WINDOW_MS` passes, so the cap bounds a flap. `reset` runs only on a
   genuine `webglcontextrestored` or a manual Retry.
 
-`createGpuHal` already skips WebGL2 for a software rasterizer when nothing was
-pinned.
-
-**Retire when** WebGL2 retires (RFC-001 §13a) or track-level mount/release
-lands.
+**Retire when** WebGL2 retires or track-level mount/release lands. WebGL2
+retires when the `vulkanGlslToWebgl2.ts` post-processor needs frequent
+maintenance from Slang regressions, or WebGPU coverage on the genomics user
+base (non-HTTPS deployments and aging Linux/Mesa included) exceeds ~97%.
 
 ### WebGPU shares one device across every display
 
@@ -103,10 +103,9 @@ that generalizes badly" holds the measured sizes;
 `probe-msaa-resize-cost.ts` (`--tracks=N`) takes the census by patching
 `createTexture`/`destroy`, which is the shape an in-tree counter would take.
 
-**The figures are what the descriptor asks for, not what is resident.**
-`beginFrame` attaches the target with `storeOp: 'discard'` and a
-`resolveTarget`, which a tiler may keep in tile memory — so on Apple Silicon the
-cost may be near zero. Profile residency before spending anything on size:
+**The figures are what the descriptor asks for, not what is resident**, and a
+tiler may never commit the target (GPU_PORTABILITY.md has the mechanism). Profile
+residency before spending anything on size:
 [arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md).
 
 **The sample count is a per-display property**:
@@ -348,7 +347,7 @@ and one byte cache serve every RPC worker over a `MessagePort`.
 
 ### Worker payloads are collect-then-return
 
-**Status:** Accepted (deferred, RFC-001 §13b).
+**Status:** Accepted (deferred).
 
 Workers assemble a whole typed-array payload and return it in one message, so
 peak memory is the full payload. Fine for every in-tree display; a real cost
@@ -600,7 +599,7 @@ the file.
 **Still silent:**
 
 - **A fetch installer's triggers must be read above its gate**, since MobX
-  rebuilds the dep set per run ([FETCH_SKELETON.md](FETCH_SKELETON.md) §"The
+  rebuilds the dep set per run ([FETCH_KEYS.md](FETCH_KEYS.md) §"The
   global-fetch trigger list must be read unconditionally"). Each installer reads
   its own triggers unconditionally, so the exposure is a `prepare()` that returns
   `undefined` above a read only it makes. Every in-tree `prepare` bails on

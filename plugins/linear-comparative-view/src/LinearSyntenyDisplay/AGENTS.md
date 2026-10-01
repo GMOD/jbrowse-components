@@ -79,7 +79,7 @@
 - **The outline is the pair's one asymmetry.** `drawSyntenyTrack` strokes the
   clicked feature's side edges inside its own loop, where it already holds the
   projected corners and the fill/stroke verdict the outline is gated on, so the
-  edge marks paint nothing on Canvas2D. `GPU_RENDERING.md` §"Intentional
+  edge marks paint nothing on Canvas2D. `GPU_BACKENDS.md` §"Intentional
   divergences" carries it.
 - `instanceInterleave.ts` hand-writes the pack loop instead of calling the
   generated `packInstances`, because `featureId` is `instanceFeatureIdx[i] + 1`

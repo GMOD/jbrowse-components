@@ -125,7 +125,7 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
   // to place, and a format to infer from neither of them alone. It reaches
   // IndexedFastaAdapter directly, so it never touches the indexFasta handler
   // whose hang (roughly one run in two, unattended, per agent-docs/reference/
-  // DESKTOP_SCREENSHOTS.md) is why this used to send a 2bit instead. That is a
+  // FIGURE_CAPTURE.md) is why this used to send a 2bit instead. That is a
   // property of the pair, not luck: a `.fai` in the set is exactly what stops
   // classifyAssemblyFiles falling back to the self-indexing FastaAdapter.
   //

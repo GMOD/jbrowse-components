@@ -24,7 +24,7 @@
  * wiggle, synteny's outline) and `ramp(d) - ramp(d - h)` (synteny's
  * vertCoverage).
  *
- * GPU_RENDERING.md's antialiasing section summarizes the result; rerun this
+ * GPU_SHADERS.md's antialiasing section summarizes the result; rerun this
  * for the numbers.
  */
 

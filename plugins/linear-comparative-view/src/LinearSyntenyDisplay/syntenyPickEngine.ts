@@ -77,7 +77,7 @@ export interface PickIndex {
 // How far the two views may drift APART (px) before the index is rebuilt. A pan
 // that moves both views equally never widens the query. The widened query is
 // paid per mousemove, the rebuild once; measurements in
-// agent-docs/reference/SYNTENY_PICKING.md.
+// agent-docs/reference/SYNTENY_LOD.md.
 const MAX_PAN_SKEW_PX = 2000
 
 // Boxes are projected at the build-time pan and reused across later pans (the
@@ -150,7 +150,7 @@ const MAX_PAN_SKEW_PX = 2000
 // `syntenyTiledPick.test.ts` states the whole of this as one requirement: sweep
 // a hover across a feature in both cigar modes and get the same answer at every
 // position, because which mode shades indels is not a question about what is
-// hoverable. agent-docs/reference/SYNTENY_PICKING.md carries the rest.
+// hoverable. agent-docs/reference/SYNTENY_LOD.md carries the rest.
 function buildPickIndex(
   data: SyntenyInstanceData,
   t: ComputedTransform,

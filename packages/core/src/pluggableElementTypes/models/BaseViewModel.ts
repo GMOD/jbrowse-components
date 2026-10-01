@@ -70,7 +70,7 @@ const BaseViewModel = types
      *
      * `ViewContainer` mounts a view's body only while an IntersectionObserver
      * says it is on screen, to hold the app under the WebGL2 context ceiling
-     * (`reference/GPU_CONTEXT_BUDGET.md`). A view below the fold therefore has
+     * (`reference/GPU_PORTABILITY.md`). A view below the fold therefore has
      * no canvas, so nothing ever calls `markCanvasDrawn` and the pre-first-paint
      * term of `displayPhase` pins every display in it at `loading` with nothing
      * left to resolve it — which parks `[data-app-phase="ready"]` for the whole
