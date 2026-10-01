@@ -8,9 +8,9 @@ import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
 import {
   labelOffset,
+  leftLabelRaised,
   trackBoxOffsets,
   trackLabelMode,
-  trackSidebarWidth,
 } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -81,7 +81,8 @@ export default function SVGTracks({
               fontSize={fontSize}
               textHeight={textHeight}
               trackLabels={trackLabelMode(track, trackLabels)}
-              trackLabelOffset={trackLabelOffset - trackSidebarWidth(track)}
+              trackLabelOffset={trackLabelOffset}
+              raised={leftLabelRaised(track, trackLabels)}
               x={x + trackLabelOffset}
             />
           </g>

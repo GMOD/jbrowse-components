@@ -3,6 +3,7 @@ import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
 
 import {
+  rowLabelBoxHeight,
   rowLabelFontSize,
   rowLabelFullText,
   rowLabelText,
@@ -64,28 +65,23 @@ export function SvgRowLabels({
   }
 
   const boxWidth = rowLabelsBoxWidth(sources, rowHeight)
+  const boxHeight = rowLabelBoxHeight(rowHeight)
+  const boxInset = (rowHeight - boxHeight) / 2
+  const boxesAbut = boxHeight === rowHeight
+  const rows = textFits
+    ? sources
+        .map((source, idx) => ({ source, idx, y: idx * rowHeight - scrollTop }))
+        .filter(({ y }) => !offscreen(y, rowHeight))
+    : []
+  const boxes = rows
+    .map(({ y }) => `M0 ${y + boxInset}h${boxWidth}v${boxHeight}h${-boxWidth}z`)
+    .join('')
 
   return textFits ? (
     <g transform={`translate(${labelOffset} 0)`}>
-      <rect
-        x={0}
-        y={-scrollTop}
-        width={boxWidth}
-        height={sources.length * rowHeight}
-        {...getFillProps(stripWash)}
-      />
-      <rect
-        x={0}
-        y={-scrollTop}
-        width={boxWidth}
-        height={sources.length * rowHeight}
-        {...getFillProps(stripTint)}
-      />
-      {sources.map((source, idx) => {
-        const y = idx * rowHeight - scrollTop
-        if (offscreen(y, rowHeight)) {
-          return null
-        }
+      <path d={boxes} {...getFillProps(stripWash)} />
+      <path d={boxes} {...getFillProps(stripTint)} />
+      {rows.map(({ source, idx, y }) => {
         // Per-source labelColor tints the label box (identity coding for
         // multirow/density tracks); text auto-contrasts against it.
         const lc = source.labelColor
@@ -97,13 +93,13 @@ export function SvgRowLabels({
             {lc ? (
               <rect
                 x={0}
-                y={y}
+                y={y + boxInset}
                 width={boxWidth}
-                height={rowHeight}
+                height={boxHeight}
                 {...getFillProps(lc)}
               />
             ) : null}
-            {idx > 0 ? (
+            {boxesAbut && idx > 0 ? (
               <rect
                 x={0}
                 y={y}

@@ -11,10 +11,12 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 function drawTracks({
   trackLabels = 'hidden',
   trackLabelOffset = 0,
+  textHeight = 0,
   displays,
 }: {
   trackLabels?: 'hidden' | 'left'
   trackLabelOffset?: number
+  textHeight?: number
   displays: Record<string, unknown>[]
 }) {
   const session = createTestSession({
@@ -40,7 +42,7 @@ function drawTracks({
       <svg>
         <SVGTracks
           model={model}
-          textHeight={0}
+          textHeight={textHeight}
           fontSize={10}
           trackLabels={trackLabels}
           trackLabelOffset={trackLabelOffset}
@@ -82,13 +84,22 @@ test('a display drawing its own too-large body keeps its separators', () => {
   ).toBe(2)
 })
 
-test('a left track name right-aligns past its own sidebar, not the widest one', () => {
+test('a left track name right-aligns in one column, raised above a track with a sidebar', () => {
   const container = drawTracks({
     trackLabels: 'left',
     trackLabelOffset: 300,
+    textHeight: 20,
     displays: [{}, { svgSidebarWidth: () => 100 }],
   })
+  const texts = [...container.querySelectorAll('text')]
+  expect(texts.map(t => t.getAttribute('x'))).toEqual([
+    String(300 - TRACK_LABEL_GAP),
+    String(300 - TRACK_LABEL_GAP),
+  ])
+  expect(Number(texts[1]!.getAttribute('y'))).toBeLessThan(20)
   expect(
-    [...container.querySelectorAll('text')].map(t => t.getAttribute('x')),
-  ).toEqual([String(300 - TRACK_LABEL_GAP), String(200 - TRACK_LABEL_GAP)])
+    [...container.querySelectorAll('[data-testid="body"]')].map(b =>
+      b.parentElement!.getAttribute('transform'),
+    ),
+  ).toEqual(['translate(300 0)', 'translate(300 20)'])
 })

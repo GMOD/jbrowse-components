@@ -28,22 +28,31 @@ describe('SvgRowLabels', () => {
     const tint = [...c.querySelectorAll('rect')].find(
       r => r.getAttribute('fill') === dog,
     )
-    expect(tint?.getAttribute('height')).toBe('20')
+    expect(tint?.getAttribute('height')).toBe('16')
+    expect(tint?.getAttribute('y')).toBe('2')
     expect(c.querySelector('text')?.textContent).toBe('Collie 1')
   })
 
-  it('draws one strip behind the rows and a separator between them', () => {
-    const c = draw({
-      sources: [{ name: 'a' }, { name: 'b' }, { name: 'c' }],
-      rowHeight: 20,
-      labelOffset: 0,
-    })
-    const rects = [...c.querySelectorAll('rect')]
-    expect(rects[0]?.getAttribute('height')).toBe('60')
-    expect(rects.slice(2).map(r => r.getAttribute('y'))).toEqual(['20', '40'])
-    expect(rects.slice(2).every(r => r.getAttribute('height') === '1')).toBe(
-      true,
+  it('boxes each label one line tall, centered in a tall row, with no separator', () => {
+    const sources = [{ name: 'a' }, { name: 'b' }]
+    const c = draw({ sources, rowHeight: 40, labelOffset: 0 })
+    const w = rowLabelsBoxWidth(sources, 40)
+    expect(c.querySelector('path')?.getAttribute('d')).toBe(
+      `M0 12h${w}v16h${-w}zM0 52h${w}v16h${-w}z`,
     )
+    expect(c.querySelectorAll('rect')).toHaveLength(0)
+  })
+
+  it('abuts the boxes of rows no taller than a line, with a separator between them', () => {
+    const sources = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
+    const c = draw({ sources, rowHeight: 12, labelOffset: 0 })
+    const w = rowLabelsBoxWidth(sources, 12)
+    expect(c.querySelector('path')?.getAttribute('d')).toBe(
+      [0, 12, 24].map(y => `M0 ${y}h${w}v12h${-w}z`).join(''),
+    )
+    const rects = [...c.querySelectorAll('rect')]
+    expect(rects.map(r => r.getAttribute('y'))).toEqual(['12', '24'])
+    expect(rects.every(r => r.getAttribute('height') === '1')).toBe(true)
   })
 
   it('draws a narrow color swatch, and no text, below the text threshold', () => {
@@ -165,8 +174,8 @@ describe('SvgRowLabels', () => {
     expect(texts[1]?.querySelector('title')?.textContent).toBe(long)
     expect(texts[1]?.lastChild?.textContent).toMatch(/^protein_coding.*…$/)
     expect(rowLabelsBoxWidth(sources, 20)).toBe(ROW_LABEL_MAX_TEXT_WIDTH + 10)
-    expect(c.querySelector('rect')?.getAttribute('width')).toBe(
-      String(ROW_LABEL_MAX_TEXT_WIDTH + 10),
+    expect(c.querySelector('path')?.getAttribute('d')).toContain(
+      `h${ROW_LABEL_MAX_TEXT_WIDTH + 10}`,
     )
   })
 })

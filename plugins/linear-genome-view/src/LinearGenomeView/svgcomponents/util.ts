@@ -16,7 +16,11 @@ import type { ReactNode } from 'react'
 // Just the per-track heights that the vertical-layout math needs; every track
 // shape fed into these helpers (including SvgDisplayResult.track) satisfies it.
 interface TrackHeights {
-  displays: { height: number; prefersOffset?: boolean }[]
+  displays: {
+    height: number
+    prefersOffset?: boolean
+    svgSidebarWidth?: () => number
+  }[]
 }
 
 // A rendered track body plus the track it came from, as produced by each
@@ -267,13 +271,27 @@ export function trackLabelMode(
     : trackLabels
 }
 
-// space the label pushes a track's body down by; only 'offset' mode does
+// Whether a 'left' name sits in a band above its track's rows rather than
+// beside the first of them: the gutter beside the rows holds the track's own
+// sidebar, so the name heads it instead of standing off to its left.
+export function leftLabelRaised(
+  track: Pick<TrackHeights, 'displays'>,
+  trackLabels: TrackLabelMode,
+) {
+  return trackLabels === 'left' && trackSidebarWidth(track) > 0
+}
+
+// space the label pushes a track's body down by: an 'offset' label, or a raised
+// 'left' one
 export function labelOffset(
   track: TrackHeights,
   trackLabels: TrackLabelMode,
   textHeight: number,
 ) {
-  return trackLabelMode(track, trackLabels) === 'offset' ? textHeight : 0
+  return trackLabelMode(track, trackLabels) === 'offset' ||
+    leftLabelRaised(track, trackLabels)
+    ? textHeight
+    : 0
 }
 
 interface SidebarTrack {
@@ -288,7 +306,9 @@ interface SidebarTrack {
 export const TRACK_LABEL_GAP = 40
 
 // Horizontal gutter left of the track bodies: the widest of each track's
-// sidebar plus, in 'left' mode, its name and TRACK_LABEL_GAP. Takes an
+// sidebar and, in 'left' mode, its name plus TRACK_LABEL_GAP. A sidebar and a
+// name share the column because the name rises above the sidebar
+// (leftLabelRaised). Takes an
 // already-minimized-filtered track list, so the reserved width matches the
 // labels that actually get drawn.
 //
@@ -320,20 +340,20 @@ export function trackLabelLeftOffset({
   session: TrackCatalog
 }) {
   return max(
-    tracks.map(
-      t =>
-        trackSidebarWidth(t) +
-        (trackLabels === 'left'
+    tracks.map(t =>
+      Math.max(
+        trackSidebarWidth(t),
+        trackLabels === 'left'
           ? measureText(svgTrackName(t, session), fontSize, fontFamily) +
-            TRACK_LABEL_GAP
-          : 0),
+              TRACK_LABEL_GAP
+          : 0,
+      ),
     ),
     0,
   )
 }
 
-// Px of tree and row labels a track's display draws left of its body. A 'left'
-// track name right-aligns past it, so each name sits beside its own track.
+// Px of tree and row labels a track's display draws left of its body.
 export function trackSidebarWidth(track: Pick<SidebarTrack, 'displays'>) {
   return track.displays[0]?.svgSidebarWidth?.() ?? 0
 }
