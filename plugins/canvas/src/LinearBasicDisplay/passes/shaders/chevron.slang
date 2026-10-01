@@ -1,11 +1,7 @@
-// Directional chevrons rendered along the intron lines to indicate strand.
-// Uses the same vertex buffer as line.slang (see lineInstance.slang). The
-// renderer issues drawPass(chevron, region, bufferPassId=line) so the
-// attribute layout here must stay identical to line's.
-//
-// One line produces up to MAX_VISIBLE_CHEVRONS_PER_LINE chevrons; each
-// chevron is two arms of CHEVRON_ARM_VERTS each, dispatched via vertex ID.
-// Per-chevron positioning is computed in the shader from viewport + line span.
+// Strand chevrons along intron lines, drawn from line's vertex buffer
+// (lineInstance.slang). Each instance is one line and covers up to the pass's
+// per-line chevron budget; the vertex ID picks the chevron and its arm, and the
+// shader places each chevron from the viewport and the line span.
 //! targets: wgsl, glsl
 //! export-consts: CHEVRON_SPACING_PX, CHEVRON_W_PX, CHEVRON_H_PX, CHEVRON_THICKNESS_PX, CHEVRON_VERTS
 //! js-export: showChevrons, chevronCount, chevronOffset, chevronFirstVisible, chevronLastVisible
@@ -21,12 +17,8 @@ static const float CHEVRON_W_PX        = 4.0;
 static const float CHEVRON_H_PX        = 4.0;
 static const float CHEVRON_THICKNESS_PX = 1.0;
 
-// One chevron is two arms, each an ordinary 6-vertex quad (2 triangles), so
-// `vs_main` splits `SV_VertexID` by both numbers below. The pass's per-instance
-// vertex count is CHEVRON_VERTS times the renderer's own cap on chevrons per
-// line, which is why this is `export-consts`ed rather than left a literal:
-// `makeChevronPass` was spelling the 12 a second time, and neither copy could
-// see the other.
+// Two 6-vertex quad arms per chevron. The pass's per-instance vertex count is
+// CHEVRON_VERTS times the renderer's per-line chevron budget, hence the export.
 static const uint CHEVRON_ARM_VERTS = 6u;
 static const uint CHEVRON_VERTS = CHEVRON_ARM_VERTS * 2u;
 
@@ -41,63 +33,34 @@ struct VsOut {
 // Off-clip vertex; the GPU culls any triangle that contains it.
 static const float4 OFFSCREEN = float4(2.0, 2.0, 0.0, 1.0);
 
-// How a line's chevrons are laid out along it. The three decisions below are
-// the whole of it, and both backends have to answer them identically or the
-// strand marks land in different places on a GPU machine and a Canvas2D one —
-// which nothing would catch, because each looks plausible alone. They were
-// stated inline here and again in Canvas2DFeatureRenderer's `drawLines` until
-// adr-051; `//! js-export` now generates that second copy.
-//
-// Deliberately unit-agnostic: this shader measures the line in bp (it has an
-// hp-split start to add an offset to) and Canvas2D measures it in px. Only
-// `showChevrons` and `chevronCount` are px, because the thresholds they compare
-// against are.
+// Chevron layout along a line, js-exported so Canvas2D places chevrons where
+// this shader does (adr-051). The shader measures the line in bp and Canvas2D
+// in px, so these take either unit, except `showChevrons` and `chevronCount`,
+// whose thresholds are px.
 
-// Whether a line hosts chevrons at all. Too short to fit one with reasonable
-// margins (half the nominal spacing) and it gets none, rather than one crammed
+// A line shorter than half the spacing gets no chevron, rather than one crammed
 // against its ends.
 public bool showChevrons(float lineWidthPx) {
   return lineWidthPx >= CHEVRON_SPACING_PX * 0.5;
 }
 
-// How many, at least one for any line that clears `showChevrons`. Float rather
-// than int so the count can be multiplied straight back into `chevronOffset`
-// without either backend rounding it a second time; both truncate it to an
-// index type at the point they iterate.
+// At least one. A float, so it feeds `chevronOffset` without a second rounding;
+// each backend truncates it to an index where it iterates.
 public float chevronCount(float lineWidthPx) {
   return max(1.0, floor(lineWidthPx / CHEVRON_SPACING_PX));
 }
 
-// Distance from the line's start to chevron `index`, in whatever unit `span` is.
-// N chevrons sit in N+1 evenly-sized gaps, so neither end is flush — both `+1`s
-// are here, once, instead of being spelled on each side.
+// Distance from the line's start to chevron `index`, in `span`'s unit. N
+// chevrons sit in N+1 equal gaps, so neither end is flush.
 public float chevronOffset(float span, float count, float index) {
   return span / (count + 1.0) * (index + 1.0);
 }
 
-// Which chevron indices can put ink on screen: the first and last of the
-// inclusive window, given the viewport measured from the LINE'S START and the
-// chevron's own half-width, both in whatever unit `spacing` is. Empty when the
-// last comes out below the first, which is a line entirely off screen.
-//
-// `chevronOffset` solved for the index, then widened by `reach`: chevron `i`
-// sits at `spacing * (i + 1)`, so it is on screen when
-// `spacing * (i + 1) + reach >= viewportStart` and
-// `spacing * (i + 1) - reach <= viewportEnd`.
-//
-// The window is over the chevron's ARMS, not its centre, and that is the whole
-// reason this is a function. Both backends had written it out inline — the
-// shader here in bp, `drawLines` in px — and only the GPU's copy allowed for the
-// arms (by padding a whole spacing at each end, which is also why the vertex
-// budget below covers less block than it looks like it should). A chevron
-// straddling the viewport edge therefore drew on the GPU and vanished on
-// Canvas2D and in the SVG export. The three decisions above were lifted out of
-// `vs_main` for exactly this reason and this one was left behind, where nothing
-// that inventories shader FUNCTIONS could see it.
-//
-// Two scalars rather than one pair: the two ends share no branch, so splitting
-// them costs neither backend a recomputation (contrast `rectSpanPx`, where the
-// right edge is defined in terms of the left).
+// First and last index of the chevrons that can put ink on screen, given the
+// viewport measured from the line's start and a chevron's half-width `reach`,
+// all in `spacing`'s unit. Chevron `i` sits at `spacing * (i + 1)`, and
+// widening by `reach` keeps one whose arms straddle the viewport edge. Last
+// below first means the line is entirely off screen.
 public float chevronFirstVisible(float viewportStart, float spacing, float reach) {
   return max(0.0, ceil((viewportStart - reach) / spacing - 1.0));
 }
@@ -114,8 +77,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float lineLengthBp = float(inst.startEnd.y - inst.startEnd.x);
   float lineWidthPx = lineLengthBp / u.bpPerPx;
 
-  // color/dist are seeded for the OFFSCREEN early-outs below, whose culled
-  // triangles never read a varying; the drawn path overwrites both.
+  // The OFFSCREEN early-outs never read these; the drawn path overwrites both.
   VsOut o;
   o.color = float4(0.0);
   o.dist = 0.0;
@@ -134,10 +96,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float viewportStartBp = min(viewStartFromLine, viewEndFromLine);
   float viewportEndBp   = max(viewStartFromLine, viewEndFromLine);
 
-  // The arms reach CHEVRON_W_PX * 0.5 SCREEN px to each side of the centre, and
-  // this window is measured in bp — so the reach converts, exactly as
-  // lineWidthPx above converts the other way. Both terms of `chevronFirstVisible`
-  // must be in one unit or the widening is meaningless.
+  // The window is in bp, so the arms' px reach converts too.
   float reachBp = CHEVRON_W_PX * 0.5 * u.bpPerPx;
   int firstVisible =
     int(chevronFirstVisible(viewportStartBp, bpSpacing, reachBp));
@@ -162,11 +121,8 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float coreHalfThickness = pxToClipH(CHEVRON_THICKNESS_PX * 0.5, u);
   float aaPad = pxToClipH(1.0, u);
   float extHalfThickness = coreHalfThickness + aaPad;
-  // Half-extent of the `dist` varying: signed *vertical* px offset from the
-  // arm's centerline, ±(core half-thickness + aaPad). The fragment divides by
-  // the measured gradient, which folds in the arm's slant, so the drawn arm
-  // lands within a few hundredths of a px of the Canvas2D path's
-  // CHEVRON_THICKNESS_PX stroke.
+  // `dist` is the signed vertical px offset from the arm's centerline, so the
+  // extruded edges sit at ±armHalfPx.
   float armHalfPx = CHEVRON_THICKNESS_PX * 0.5 + 1.0;
   float dir = flipX(inst.direction, u);
 
@@ -179,8 +135,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
   float sx;
   float sy;
-  // Both ends centred on the arm's line, the tip on `cy` and the outer end on
-  // `cy + armY`, where the Canvas2D path strokes it.
+  // Tip on `cy`, outer end on `cy + armY`, where the Canvas2D path strokes it.
   float outerSide = isTopArm ? extHalfThickness : -extHalfThickness;
   switch (qv) {
     case 0u: sx = outerX; sy = cy + armY + outerSide; break;
@@ -203,17 +158,9 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // `dist` is a vertical offset, not a perpendicular distance, so the ramp
-  // width has to be measured — with `aaGradient`, not `fwidth`. An arm rises
-  // CHEVRON_H_PX / 2 over its CHEVRON_W_PX run, so |ddx| is half |ddy| and
-  // fwidth, their sum, overstates the true gradient by a third.
-  //
-  // The half-max contour does not move — that is `coreHalfPx - |dist| == 0`,
-  // which no ramp width touches. What moves is how much of the arm reaches full
-  // ink, so fwidth would wash the chevrons out rather than fatten them.
-  //
-  // Measured rather than analytic because this shader has no dpr uniform —
-  // see antialias.slang for which of the two a shader gets to use.
+  // `dist` is a vertical offset, not a perpendicular distance, so the ramp width
+  // is measured with `aaGradient`. On these slanted arms `fwidth` overstates the
+  // gradient by a third and would wash the chevrons out.
   float coreHalfPx = CHEVRON_THICKNESS_PX * 0.5;
   float alpha =
     aaRamp(coreHalfPx - abs(fragIn.dist), aaGradient(fragIn.dist));

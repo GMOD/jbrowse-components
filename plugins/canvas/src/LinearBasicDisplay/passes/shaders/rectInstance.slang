@@ -1,14 +1,9 @@
-// Shared per-instance layout for the rect and continuation shaders —
-// continuation re-reads the same vertex buffer as rect
-// (drawPass(continuation, region, bufferPassId=rect)), so both must declare
-// identical attribute locations and types. Same arrangement as
-// lineInstance.slang, which line and chevron share.
+// Per-instance layout shared by rect and continuation. Continuation draws from
+// rect's vertex buffer, so both must declare identical attribute locations and
+// types; lineInstance.slang does the same for line and chevron.
 //
-// The two consumers read overlapping-but-different subsets, and each ignores
-// one field: rect never reads `strand`, continuation never reads `densityFade`.
-// That is cheaper than it looks — one 28-byte instance instead of two 24-byte
-// ones — and it is what removes the second full per-region pack + upload the
-// continuation pass used to need (GpuCanvasFeatureRenderer).
+// Each pass ignores one field, rect `strand` and continuation `densityFade`. One
+// 28-byte instance spares continuation a second per-region pack and upload.
 module rectInstance;
 
 public struct RectInstance {
@@ -16,13 +11,10 @@ public struct RectInstance {
   public float y        : ATTR1;
   public float height   : ATTR2;
   public uint  color    : ATTR3;
-  // 1 = collapsed row-0 box sharing pixels with another collapsed box — only
-  // these fade; 0 = anything else — a gene subfeature rect, a stacked box, or a
-  // collapsed mark with room around it — stays opaque. Read by rect, ignored by
-  // continuation.
+  // 1 for a collapsed row-0 box sharing pixels with others, which fades; 0 for
+  // everything else, which stays opaque.
   public uint  densityFade : ATTR4;
-  // Genomic strand (-1, 0 or +1) so the continuation markers can point the way
-  // the feature runs; 0 falls back to outward arrows. Read by continuation,
-  // ignored by rect.
+  // Genomic strand (-1, 0 or +1), which the continuation markers point along; 0
+  // points them out of the edge.
   public float strand   : ATTR5;
 };

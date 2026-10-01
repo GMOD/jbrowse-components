@@ -411,8 +411,7 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
  * strokes its chevrons per line.
  *
  * `maxChevronsPerLine` is what the pass registers; each draw asks instead for
- * the slots this frame's canvas can hold — 49 of the 128 at 1920 CSS px, and
- * more than 128 past 5077, where a fixed budget dropped a line's far chevrons.
+ * the slots this frame's canvas can hold (`chevronSlotBudget`).
  */
 export function makeChevronShape(
   maxChevronsPerLine: number,
@@ -481,8 +480,8 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
     }
   },
 
-  // Stem and head together: `ARROW_LENGTH_PX` out from the feature's end, as
-  // tall as the taller of the two.
+  // `ARROW_LENGTH_PX` out from the feature's end, as tall as the taller of stem
+  // and head.
   ink(channels, block, frame, params, i) {
     const { x: xs, y: ys, height, widthBp, gene, direction } = channels
     if (

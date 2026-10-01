@@ -1,4 +1,4 @@
-// All four passes share the `FeatureGlyphUniforms` UBO, so a rect or line
+// All five passes share the `FeatureGlyphUniforms` UBO, so a rect or line
 // needing a different uniform set authors its own shader rather than bending
 // this one.
 
@@ -53,7 +53,5 @@ export const ContinuationPass: PipelineDescriptor = slangPass({
   mod: continuationShader,
 })
 
-// The `.slang` draw dimensions and clamps stay out of this barrel: it
-// namespace-imports the shader string modules, so anything reachable through it
-// drags the WGSL/GLSL along. The display side reads them from each shader's own
-// `.consts.generated.ts`.
+// Display code reads the `.slang` draw dimensions and clamps from each shader's
+// own `.consts.generated.ts`, not through this barrel, which builds every pass.

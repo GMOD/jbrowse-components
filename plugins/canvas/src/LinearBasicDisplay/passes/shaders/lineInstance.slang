@@ -1,6 +1,5 @@
-// Shared per-instance layout for line and chevron shaders — chevron re-reads
-// the same vertex buffer as line (drawPass(chevron, region, bufferPassId=line)),
-// so both must declare identical attribute locations and types.
+// Per-instance layout shared by line and chevron. Chevron draws from line's
+// vertex buffer, so both must declare identical attribute locations and types.
 module lineInstance;
 
 public struct LineInstance {

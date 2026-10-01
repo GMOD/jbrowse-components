@@ -32,10 +32,8 @@ export function canvasEdgeFlags(
   }
 }
 
-// Take these from each shader's `.consts.generated.ts`, never from
-// `passes/index.ts`: this module is eager, and a namespace import of the pass
-// barrel marks every export used, dragging the whole shader source into the
-// always-loaded chunk.
+// From each shader's `.consts.generated.ts`, never `passes/index.ts`, so this
+// eager module doesn't pull in every pass descriptor and its packer.
 export {
   MIN_DENSITY_ALPHA,
   MIN_RECT_WIDTH_PX,
