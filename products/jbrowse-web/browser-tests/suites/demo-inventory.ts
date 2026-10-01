@@ -158,6 +158,17 @@ const localDemos: TestSuite = {
       loc: 'NC_045512.2:1-29903',
       tracks: ['sequence'],
     }),
+    // ORF1ab's CDS is two lines across the -1 frameshift; it draws as pp1ab,
+    // one row per cleavage product, ahead of ORF1a.
+    lgvSnapshotTest({
+      name: 'SARS-CoV2 polyprotein demo screenshot',
+      snapshot: 'demo-sars-cov2-polyprotein',
+      config: 'test_data/sars-cov2/config.json',
+      assembly: 'Wuhan-Hu-1',
+      loc: 'NC_045512.2:266-21555',
+      tracks: ['ncbi_genes_with_mature_peptides'],
+      viewOptions: { colorByCDS: true },
+    }),
     // Guards the repeat_region glyph: the intact LTR retrotransposon must render
     // its overlapping subparts (LTRs/TSDs/internal element) rather than collapse
     // to a flat box. This glyph silently regressed once in the canvas refactor.

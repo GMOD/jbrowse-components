@@ -84,6 +84,8 @@ export interface LgvSnapshotOpts extends SnapshotTestCommon {
   // override the snapshot target when it isn't the display's `canvas` child
   // (e.g. a paired-arc display whose painted element IS the canvas)
   snapshotSelector?: string
+  // further session-spec view fields, e.g. `{ colorByCDS: true }`
+  viewOptions?: Record<string, unknown>
 }
 
 // Collapses the overwhelmingly common "open a LinearGenomeView at <loc> with
@@ -100,6 +102,7 @@ export function lgvSnapshotTest({
   config,
   displayTestId,
   snapshotSelector,
+  viewOptions,
   readySelector,
   threshold,
   assertContent,
@@ -115,7 +118,17 @@ export function lgvSnapshotTest({
     fn: page =>
       snapshotViewBody(
         page,
-        { views: [{ type: 'LinearGenomeView', assembly, loc, tracks }] },
+        {
+          views: [
+            {
+              ...viewOptions,
+              type: 'LinearGenomeView',
+              assembly,
+              loc,
+              tracks,
+            },
+          ],
+        },
         {
           config,
           waitSelector: snapshotSelector ?? canvasSelector,
