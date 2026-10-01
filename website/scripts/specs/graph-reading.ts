@@ -211,10 +211,10 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
       anchor: {
         track: 'hprc_minigraph_bubbles',
         locus: KIV2_BUBBLE_WINDOW,
-        alignX: 'left',
+        alignX: 'right',
         fracY: 0,
-        dx: -16,
-        dy: 20,
+        dx: -48,
+        dy: 44,
       },
     },
   ],
