@@ -4,12 +4,18 @@ import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
 import SVGTracks from './SVGTracks.tsx'
+import { TRACK_LABEL_GAP } from './util.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-function separatorCount(display: {
-  regionTooLarge?: boolean
-  drawsWhenTooLarge?: boolean
+function drawTracks({
+  trackLabels = 'hidden',
+  trackLabelOffset = 0,
+  displays,
+}: {
+  trackLabels?: 'hidden' | 'left'
+  trackLabelOffset?: number
+  displays: Record<string, unknown>[]
 }) {
   const session = createTestSession({
     sessionSnapshot: {
@@ -36,24 +42,30 @@ function separatorCount(display: {
           model={model}
           textHeight={0}
           fontSize={10}
-          trackLabels="hidden"
-          trackLabelOffset={0}
+          trackLabels={trackLabels}
+          trackLabelOffset={trackLabelOffset}
           leftBuffer={0}
           legendWidth={0}
-          displayResults={[
-            {
-              track: {
-                configuration: { trackId: 't1', name: 't1' },
-                displays: [{ height: 40, ...display }],
-              } as any,
-              result: <g data-testid="body" />,
-            },
-          ]}
+          displayResults={displays.map((display, i) => ({
+            track: {
+              configuration: { trackId: `t${i}`, name: `t${i}` },
+              displays: [{ height: 40, ...display }],
+            } as any,
+            result: <g data-testid="body" />,
+          }))}
         />
       </svg>
     </ThemeProvider>,
   )
-  return container.querySelectorAll('rect[width="3"]').length
+  return container
+}
+
+function separatorCount(display: {
+  regionTooLarge?: boolean
+  drawsWhenTooLarge?: boolean
+}) {
+  return drawTracks({ displays: [display] }).querySelectorAll('rect[width="3"]')
+    .length
 }
 
 test('a track with data gets a separator at each region end', () => {
@@ -68,4 +80,15 @@ test('a display drawing its own too-large body keeps its separators', () => {
   expect(
     separatorCount({ regionTooLarge: true, drawsWhenTooLarge: true }),
   ).toBe(2)
+})
+
+test('a left track name right-aligns past its own sidebar, not the widest one', () => {
+  const container = drawTracks({
+    trackLabels: 'left',
+    trackLabelOffset: 300,
+    displays: [{}, { svgSidebarWidth: () => 100 }],
+  })
+  expect(
+    [...container.querySelectorAll('text')].map(t => t.getAttribute('x')),
+  ).toEqual([String(300 - TRACK_LABEL_GAP), String(200 - TRACK_LABEL_GAP)])
 })

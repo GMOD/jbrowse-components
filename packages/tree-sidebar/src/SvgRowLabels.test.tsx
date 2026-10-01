@@ -1,6 +1,10 @@
 import { render } from '@testing-library/react'
 
 import { SvgRowLabels } from './SvgRowLabels.tsx'
+import {
+  ROW_LABEL_MAX_TEXT_WIDTH,
+  rowLabelsBoxWidth,
+} from './rowLabelsBoxWidth.ts'
 
 function draw(props: Parameters<typeof SvgRowLabels>[0]) {
   const { container } = render(
@@ -149,5 +153,20 @@ describe('SvgRowLabels', () => {
       availableHeight: 2,
     })
     expect(c.querySelectorAll('rect')).toHaveLength(1)
+  })
+
+  it('cuts a label past the cap with an ellipsis, whole in its title, and stops the strip at the cap', () => {
+    const long = 'protein_coding_primary_transcript_variant_1'
+    const sources = [{ name: 'a' }, { name: long }]
+    const c = draw({ sources, rowHeight: 20, labelOffset: 0 })
+    const texts = [...c.querySelectorAll('text')]
+    expect(texts[0]?.textContent).toBe('a')
+    expect(texts[0]?.querySelector('title')).toBeNull()
+    expect(texts[1]?.querySelector('title')?.textContent).toBe(long)
+    expect(texts[1]?.lastChild?.textContent).toMatch(/^protein_coding.*…$/)
+    expect(rowLabelsBoxWidth(sources, 20)).toBe(ROW_LABEL_MAX_TEXT_WIDTH + 10)
+    expect(c.querySelector('rect')?.getAttribute('width')).toBe(
+      String(ROW_LABEL_MAX_TEXT_WIDTH + 10),
+    )
   })
 })

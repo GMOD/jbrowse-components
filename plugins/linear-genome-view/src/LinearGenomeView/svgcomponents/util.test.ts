@@ -1,3 +1,5 @@
+import { measureText } from '@jbrowse/core/util'
+
 import { SVG_SCALEBAR_CAP } from '../consts.ts'
 import { REF_NAME_LABEL_FONT_SIZE } from '../util.ts'
 import {
@@ -10,7 +12,8 @@ import {
   offsetLabelBaselineY,
   refNameLabelBaselineY,
   refNameLabelBoxHeight,
-  sidebarGutter,
+  TRACK_LABEL_GAP,
+  trackLabelLeftOffset,
 } from './util.ts'
 
 // Chrome reports a 13px Latin string's ink box as 15px tall (12 above the
@@ -143,16 +146,46 @@ test.each(fontSizes)(
   },
 )
 
-describe('sidebarGutter', () => {
-  const track = (width?: number) => ({
-    displays: [width === undefined ? {} : { svgSidebarWidth: () => width }],
+describe('trackLabelLeftOffset', () => {
+  const session = { assemblies: [], tracks: [], getTrackById: () => undefined }
+  const track = (name: string, sidebar?: number) => ({
+    configuration: { name } as never,
+    displays: [sidebar === undefined ? {} : { svgSidebarWidth: () => sidebar }],
+  })
+  const width = (name: string) => measureText(name, 13) + TRACK_LABEL_GAP
+
+  it('sizes the gutter from the widest name-plus-sidebar, not the sum of the widest of each', () => {
+    const tracks = [track('a much longer track name'), track('wig', 100)]
+    expect(
+      trackLabelLeftOffset({
+        tracks,
+        trackLabels: 'left',
+        fontSize: 13,
+        session,
+      }),
+    ).toBe(Math.max(width('a much longer track name'), width('wig') + 100))
   })
 
-  it('is the widest sidebar among the tracks', () => {
-    expect(sidebarGutter([track(40), track(120), track()])).toBe(120)
+  it('is the widest sidebar when the names are not on the left', () => {
+    const tracks = [track('a', 40), track('b', 120), track('c')]
+    expect(
+      trackLabelLeftOffset({
+        tracks,
+        trackLabels: 'offset',
+        fontSize: 13,
+        session,
+      }),
+    ).toBe(120)
   })
 
-  it('is 0 when no display draws a sidebar', () => {
-    expect(sidebarGutter([track(), track()])).toBe(0)
+  it('is 0 with no tracks', () => {
+    expect(
+      trackLabelLeftOffset({
+        tracks: [],
+        trackLabels: 'left',
+        fontSize: 13,
+        session,
+      }),
+    ).toBe(0)
   })
 })

@@ -51,9 +51,10 @@ export function treeSidebarConfigSchemaFields({
     },
     /**
      * #slot
-     * Drawn as an overlay on the plot rather than in a gutter beside it, and
-     * each label is as wide as its own text — so on a wide view the left of
-     * every row sits under its own name. That is what this exists to turn off.
+     * Drawn as an overlay on the plot rather than in a gutter beside it, in a
+     * strip as wide as the widest name up to 120px, past which a name is cut
+     * with an ellipsis — so on a wide view the left of every row sits under
+     * the strip. That is what this exists to turn off.
      */
     showRowLabels: {
       type: 'boolean',

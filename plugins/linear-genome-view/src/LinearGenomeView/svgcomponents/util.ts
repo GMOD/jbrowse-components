@@ -287,9 +287,10 @@ interface SidebarTrack {
 // gutter it was measured for.
 export const TRACK_LABEL_GAP = 40
 
-// Horizontal gutter reserved for 'left' track labels (0 in every other mode).
-// Takes an already-minimized-filtered track list, so the reserved width matches
-// the labels that actually get drawn.
+// Horizontal gutter left of the track bodies: the widest of each track's
+// sidebar plus, in 'left' mode, its name and TRACK_LABEL_GAP. Takes an
+// already-minimized-filtered track list, so the reserved width matches the
+// labels that actually get drawn.
 //
 // `fontFamily` is the export's own font option, and it has to reach the ruler
 // here: the labels are drawn in it (wrapSvgExport puts it on the root <svg>,
@@ -318,27 +319,23 @@ export function trackLabelLeftOffset({
   fontFamily?: string
   session: TrackCatalog
 }) {
-  // no labels means no gutter, and that includes having no tracks to label: the
-  // gap alone would push the whole figure right of a margin nothing is drawn in
-  const names =
-    trackLabels === 'left' && tracks.length > 0
-      ? max(
-          tracks.map(t =>
-            measureText(svgTrackName(t, session), fontSize, fontFamily),
-          ),
-          0,
-        ) + TRACK_LABEL_GAP
-      : 0
-  return names + sidebarGutter(tracks)
-}
-
-// The widest tree-and-labels sidebar among these tracks. It sits between the
-// 'left' track names and the track bodies, so the names right-align ahead of it.
-export function sidebarGutter(tracks: Pick<SidebarTrack, 'displays'>[]) {
   return max(
-    tracks.map(t => t.displays[0]?.svgSidebarWidth?.() ?? 0),
+    tracks.map(
+      t =>
+        trackSidebarWidth(t) +
+        (trackLabels === 'left'
+          ? measureText(svgTrackName(t, session), fontSize, fontFamily) +
+            TRACK_LABEL_GAP
+          : 0),
+    ),
     0,
   )
+}
+
+// Px of tree and row labels a track's display draws left of its body. A 'left'
+// track name right-aligns past it, so each name sits beside its own track.
+export function trackSidebarWidth(track: Pick<SidebarTrack, 'displays'>) {
+  return track.displays[0]?.svgSidebarWidth?.() ?? 0
 }
 
 // vertical box a single track occupies. Shared by totalHeight (sum) and

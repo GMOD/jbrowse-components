@@ -1,8 +1,9 @@
 import { render } from '@testing-library/react'
 
 import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
-import { BAND_LABEL_WIDTH, fittedLabel } from './SvgBandLabels.tsx'
+import { BAND_LABEL_WIDTH } from './SvgBandLabels.tsx'
 import { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
+import { fittedLabel } from './fittedLabel.ts'
 
 const sources = ['a', 'b', 'c', 'd'].map(name => ({ name }))
 
@@ -86,8 +87,8 @@ describe.each([
 })
 
 test('a label cuts to the longest prefix that fits, or to nothing', () => {
-  expect(fittedLabel('Parents', 100)).toBe('Parents')
-  expect(fittedLabel('Parents', 22)).toBe('Pa…')
-  expect(fittedLabel('(no group)', 36)).toBe('(no gr…')
-  expect(fittedLabel('EUR', 5)).toBe('')
+  expect(fittedLabel('Parents', 100, 11)).toBe('Parents')
+  expect(fittedLabel('Parents', 22, 11)).toBe('Pa…')
+  expect(fittedLabel('(no group)', 36, 11)).toBe('(no gr…')
+  expect(fittedLabel('EUR', 5, 11)).toBe('')
 })

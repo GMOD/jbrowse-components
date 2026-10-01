@@ -2,7 +2,12 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
 
-import { rowLabelFontSize, rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
+import {
+  rowLabelFontSize,
+  rowLabelFullText,
+  rowLabelText,
+  rowLabelsBoxWidth,
+} from './rowLabelsBoxWidth.ts'
 import { rowLabelsCarryText } from './rowLabelsCarryText.ts'
 import { rowRuns } from './rowRuns.ts'
 
@@ -78,11 +83,16 @@ export function SvgRowLabels({
       />
       {sources.map((source, idx) => {
         const y = idx * rowHeight - scrollTop
+        if (offscreen(y, rowHeight)) {
+          return null
+        }
         // Per-source labelColor tints the label box (identity coding for
         // multirow/density tracks); text auto-contrasts against it.
         const lc = source.labelColor
         const fg = lc ? getContrastText(lc) : palette.text.primary
-        return offscreen(y, rowHeight) ? null : (
+        const full = rowLabelFullText(source)
+        const text = rowLabelText(source, rowHeight)
+        return (
           <g key={source.name}>
             {lc ? (
               <rect
@@ -107,9 +117,11 @@ export function SvgRowLabels({
               y={y + rowHeight / 2}
               fontSize={fontSize}
               dominantBaseline="central"
+              style={text === full ? undefined : { pointerEvents: 'auto' }}
               {...getFillProps(fg)}
             >
-              {source.label ?? source.name}
+              {text === full ? null : <title>{full}</title>}
+              {text}
             </text>
           </g>
         )

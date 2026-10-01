@@ -1,6 +1,8 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
-import { getFillProps, measureText } from '@jbrowse/core/util'
+import { getFillProps } from '@jbrowse/core/util'
+
+import { fittedLabel } from './fittedLabel.ts'
 
 import type { RowBand } from './arrangeRows.ts'
 
@@ -9,20 +11,6 @@ export const BAND_LABEL_WIDTH = 14
 
 const FONT_SIZE = 11
 const TEXT_PAD = 6
-
-/** `label` if it fits in `room` px, else its longest prefix that fits with an ellipsis. */
-export function fittedLabel(label: string, room: number) {
-  if (measureText(label, FONT_SIZE) <= room) {
-    return label
-  }
-  for (let n = label.length - 1; n > 0; n--) {
-    const cut = `${label.slice(0, n).trimEnd()}…`
-    if (measureText(cut, FONT_SIZE) <= room) {
-      return cut
-    }
-  }
-  return ''
-}
 
 /**
  * The bands' strip in the margin: one column beside the tree, each band's name
@@ -70,7 +58,7 @@ export function SvgBandLabels({
         if (offscreen) {
           return null
         }
-        const text = fittedLabel(band.label, height - TEXT_PAD)
+        const text = fittedLabel(band.label, height - TEXT_PAD, FONT_SIZE)
         const cy = y + height / 2
         return (
           <g key={band.key} style={{ pointerEvents: 'auto' }}>
