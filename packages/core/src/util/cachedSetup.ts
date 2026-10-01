@@ -1,3 +1,4 @@
+import { checkAbortSignal, makeAbortError } from './aborting.ts'
 import { downloadStatus } from './progress.ts'
 
 import type { BaseOptions } from '../data_adapters/BaseAdapter/types.ts'
@@ -5,6 +6,13 @@ import type { StatusCallback } from './progress.ts'
 
 /** byte-granularity progress reporter to hand an index reader's `onProgress` */
 type OnProgress = (current: number, total?: number) => void
+
+/**
+ * How long a setup with no live waiter keeps running before its signal aborts:
+ * `createAbortRotation.begin()` aborts the superseded call before it posts the
+ * replacement, which joins within this window instead of restarting from byte 0.
+ */
+export const ABANDONED_SETUP_GRACE_MS = 100
 
 /**
  * Memoize an adapter's one-time setup (open the file, read the header, build a
@@ -22,11 +30,13 @@ type OnProgress = (current: number, total?: number) => void
  *   moment that fetch was superseded — the display's latest-wins guard gates the
  *   old callback off — so the fetch replacing it awaited a multi-GB parse behind
  *   a blank loading overlay.
- * - **`signal` is withheld from the shared work.** Honoring one caller's
- *   cancel would abort a parse the caller replacing it is already waiting on,
- *   and reject them both. A superseded fetch just stops listening. Cancellation
- *   stays with the per-call work (indexed range queries), which no one else is
- *   waiting on.
+ * - **Cancellation is shared, not per caller.** The setup gets one signal that
+ *   aborts once its last live waiter has aborted and nobody rejoins within
+ *   {@link ABANDONED_SETUP_GRACE_MS}, so a superseded fetch cannot cancel a
+ *   parse its replacement is waiting on, yet a download nobody awaits stops.
+ *   Each caller's own await rejects the moment its own signal aborts. An
+ *   abandoned setup leaves the memo first, so the next call starts afresh and
+ *   an abandoned run's late statuses reach no one.
  * - **`label` is shown only while the *first* attempt is in flight.** Re-entry
  *   on pan/zoom (every getFeatures and byte estimate awaits the loader) would
  *   otherwise re-flash "Downloading index" over an index that is already
@@ -46,51 +56,114 @@ export function cachedSetup<T>({
   setup: (opts: BaseOptions, onProgress?: OnProgress) => Promise<T>
   label?: string
 }) {
-  const waiting = new Set<StatusCallback>()
-  let cached: Promise<T> | undefined
-  let ready = false
+  let flight: Flight<T> | undefined
+  let resident: { value: T } | undefined
 
-  const run = (opts: BaseOptions, onProgress?: OnProgress) => {
-    cached ??= setup(
+  const launch = (
+    started: Flight<T>,
+    opts: BaseOptions,
+    onProgress?: OnProgress,
+  ) =>
+    setup(
       {
         ...opts,
-        signal: undefined,
+        signal: started.controller.signal,
         statusCallback: status => {
-          for (const cb of waiting) {
+          for (const cb of started.waiting.keys()) {
             cb(status)
           }
         },
       },
       onProgress,
-    )
-      .then(result => {
-        ready = true
-        return result
-      })
-      .catch((e: unknown) => {
-        cached = undefined
+    ).then(
+      value => {
+        clearTimeout(started.grace)
+        if (flight === started) {
+          resident = { value }
+        }
+        return value
+      },
+      (e: unknown) => {
+        clearTimeout(started.grace)
+        if (flight === started) {
+          flight = undefined
+        }
         throw e
-      })
-    return cached
+      },
+    )
+
+  const abandon = (started: Flight<T>) => {
+    if (flight === started) {
+      flight = undefined
+      started.controller.abort()
+    }
+  }
+
+  const join = (opts: BaseOptions, onProgress?: OnProgress) => {
+    const { signal, statusCallback } = opts
+    const started: Flight<T> = (flight ??= {
+      controller: new AbortController(),
+      waiting: new Map(),
+      live: 0,
+    })
+    clearTimeout(started.grace)
+    started.live++
+    if (statusCallback) {
+      started.waiting.set(
+        statusCallback,
+        (started.waiting.get(statusCallback) ?? 0) + 1,
+      )
+    }
+    const promise = (started.promise ??= launch(started, opts, onProgress))
+    return new Promise<T>((resolve, reject) => {
+      let joined = true
+      const leave = () => {
+        if (joined) {
+          joined = false
+          signal?.removeEventListener('abort', onAbort)
+          started.live--
+          if (statusCallback) {
+            const count = started.waiting.get(statusCallback)! - 1
+            if (count > 0) {
+              started.waiting.set(statusCallback, count)
+            } else {
+              started.waiting.delete(statusCallback)
+            }
+          }
+        }
+      }
+      const onAbort = () => {
+        leave()
+        reject(makeAbortError())
+        if (started.live === 0) {
+          started.grace = setTimeout(() => {
+            abandon(started)
+          }, ABANDONED_SETUP_GRACE_MS)
+        }
+      }
+      signal?.addEventListener('abort', onAbort, { once: true })
+      promise.finally(leave).then(resolve, reject)
+    })
   }
 
   return async (opts: BaseOptions = {}) => {
-    const { statusCallback } = opts
-    if (statusCallback) {
-      waiting.add(statusCallback)
+    if (resident) {
+      return resident.value
     }
-    try {
-      return await (label === undefined || ready
-        ? run(opts)
-        : downloadStatus(label, statusCallback, onProgress =>
-            run(opts, onProgress),
-          ))
-    } finally {
-      if (statusCallback) {
-        waiting.delete(statusCallback)
-      }
-    }
+    checkAbortSignal(opts.signal)
+    const wait = (onProgress?: OnProgress) => join(opts, onProgress)
+    return label === undefined
+      ? wait()
+      : downloadStatus(label, opts.statusCallback, wait)
   }
+}
+
+interface Flight<T> {
+  controller: AbortController
+  waiting: Map<StatusCallback, number>
+  live: number
+  grace?: ReturnType<typeof setTimeout>
+  promise?: Promise<T>
 }
 
 /**

@@ -28,7 +28,9 @@ refuses an already-aborted signal before and after `serializeArguments`.
   reads the signal but does not yield.
 - A loop that can run for seconds takes `createAbortBreakpoint(signal)`
   (`if (breakpoint.due()) await breakpoint.yield()`). ADR-122 lists the loops of that shape.
-- Whole-file parses run under `cachedSetup`, which withholds the signal from shared work.
+- Whole-file parses run under `cachedSetup`, whose shared signal aborts only after its
+  last waiter aborts and none rejoins within `ABANDONED_SETUP_GRACE_MS`. A signal-less
+  caller pins the setup.
 
 ## Which readers take the signal
 

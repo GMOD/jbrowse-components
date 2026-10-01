@@ -211,9 +211,9 @@ export function createAbortRotation(
       // Opened before the superseded slot retires, so the window is never idle
       // across the handover and the label on screen survives it (ADR-080).
       // Retired here rather than left to the superseded run's `finally`, which
-      // comes only when its work settles — and a CRAM record read or a shared
-      // parse the signal is withheld from runs on past the abort, its last
-      // reading summed into this fetch's bar the whole time.
+      // comes only when its work settles — and a CRAM record read, or a shared
+      // `cachedSetup` parse the replacement rejoins, runs on past the abort,
+      // its last reading summed into this fetch's bar the whole time.
       const stream = statusWindow.open({ isCurrent })
       openStream?.clear()
       openStream = stream

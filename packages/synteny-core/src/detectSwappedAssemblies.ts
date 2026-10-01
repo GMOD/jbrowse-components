@@ -99,13 +99,10 @@ export function detectDisplayAssembliesSwapped(
     topAssembly,
     bottomAssembly,
     getAdapterRefNames: name =>
-      // No handles, and neither is an oversight. On the adapters that make this
-      // slow — a whole-file PAF — `getRefNames` awaits the same
-      // `cachedSetup` parse the band fetch is already awaiting and
-      // already narrating, so a second report here would be two labels for one
-      // download; and cancelling that parse is what `cachedSetup`
-      // deliberately refuses, since the fetch waiting on it would be rejected
-      // too. This is a one-shot check at view load, off the per-render path.
+      // No handles. On a whole-file PAF, `getRefNames` awaits the same
+      // `cachedSetup` parse the band fetch is already narrating, so a report
+      // here would be a second label for one download. Having no signal, this
+      // call pins that parse until it lands, even if every band fetch aborts.
       // eslint-disable-next-line no-restricted-syntax
       rpcManager.call(sessionId, 'CoreGetRefNames', {
         adapterConfig,

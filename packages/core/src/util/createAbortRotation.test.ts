@@ -313,7 +313,7 @@ describe('a host that owns its own window', () => {
 })
 
 // A superseded run whose work ignores the abort — a CRAM record read, a shared
-// whole-file parse the signal is withheld from — reaches its `finally` only when
+// whole-file parse its replacement rejoins — reaches its `finally` only when
 // that work ends. Its last reading must not be summed into its successor's bar
 // meanwhile: two slots at 2/10 and 6/10 read 40%, for a load that is at 60%.
 test('a superseded run stops voting before it reaches its finally', () => {

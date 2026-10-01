@@ -75,8 +75,6 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
           return true
         },
         opts.statusCallback,
-        // no signal: cachedSetup drops it deliberately, since this parse is
-        // shared and one caller's cancel would reject the caller replacing it
         { label: 'Processing alignments' },
       )
 

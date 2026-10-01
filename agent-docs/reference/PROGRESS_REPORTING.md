@@ -68,9 +68,10 @@ An adapter that parses a whole file caches the work in one promise; hand-memoizi
 it captures the *first* caller's `opts`, so once that fetch is superseded the
 replacement awaits the same promise in silence behind a blank overlay.
 `createSharedSetup(run)` (`packages/core/src/util/cachedSetup.ts`) fans progress
-out to the live waiter set and clears the memo on failure. It **drops `signal` on
-purpose**: honoring one caller's cancel would abort a parse the replacement is
-waiting on. Cancellation belongs to per-call work (indexed range queries).
+out to the live waiter set and clears the memo on failure. **One caller's cancel
+never aborts the parse**: the shared signal aborts only after the last waiter
+aborts and none rejoins within `ABANDONED_SETUP_GRACE_MS`, so a superseded
+fetch's replacement keeps the parse, and a signal-less caller pins it.
 
 ## Concurrent fetches share one field: aggregate, don't clobber
 
