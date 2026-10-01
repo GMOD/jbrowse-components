@@ -29,6 +29,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { MAX_COLOR_CUTS } from '@jbrowse/render-core/shaders/markColorConsts'
 
+import { paintScaleOf } from './legend.ts'
 import { plotsValue } from './markSpecs.ts'
 
 import type { MarkConfig } from './configSchema.ts'
@@ -43,6 +44,7 @@ import type {
   EncodedChannels,
   ThresholdRef,
 } from '@jbrowse/core/util/markEncoding'
+import type { MarkColorScale } from '@jbrowse/render-core/marks'
 
 /** A colour over a number: a ramp, or a threshold's bands. */
 export type ValueColor = ContinuousRef | ThresholdRef
@@ -222,22 +224,24 @@ function colorByKeys<L extends EncodedChannels>(
 const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
 
 /**
- * Set on a layer coloured from data the worker read for an earlier colour:
- * a region not yet refetched since the colour changed, such as one scrolled
- * off screen. It paints through its own table and stays out of the legend,
- * so the mark's scale comes only from regions read for the colour as it now
- * stands.
+ * Set on a layer coloured from data the worker read for an earlier `color`
+ * declaration: a region its refetch has not reached yet, or never will while
+ * it stays off screen. It paints through its own scale table, the ramp or
+ * threshold built over its own values, and stays out of the legend, so the
+ * mark's scale and key come only from regions read for the declaration as it
+ * now stands.
  */
 export interface HeldColor {
   heldColor?: boolean
 }
 
-// A region the worker read for another kind of colour, whatever it holds
-// coloured as plainly as it can be so it stays drawn: keys in their field's
-// default colours, numbers through a linear ramp over themselves, and the
-// default colour where it holds no colour data. An expression's or the
-// density tier's own colours stay as they came.
-function colorWhileRefetching<L extends EncodedChannels>(layer: L): L {
+// Colours a layer the worker read for an earlier `color` declaration from
+// what it holds, and flags it `heldColor`: keys in their field's default
+// colours, numbers through a linear ramp over themselves, and the default
+// colour where it holds no colour data. Packed colours, an expression's or
+// the density tier's single one, stay as they came and unflagged: they carry
+// no table for the key or the scale to take.
+function colorAsHeld<L extends EncodedChannels>(layer: L): L {
   const read = layer.scale
   if (layer.colorKey) {
     return { ...colorByKeys(layer, layer.colorKey), heldColor: true }
@@ -259,6 +263,23 @@ function colorWhileRefetching<L extends EncodedChannels>(layer: L): L {
 }
 
 /**
+ * The scale a layer paints through: the mark's, for a layer read for the
+ * colour as it now stands; its own table, for one still holding an earlier
+ * declaration's data (`heldColor`); and none for a layer of packed colours,
+ * one per instance, which it paints as they are.
+ */
+export function layerColorScale(
+  layer: (EncodedChannels & HeldColor) | undefined,
+  markScale: MarkColorScale | undefined,
+) {
+  return layer?.colorValue
+    ? layer.heldColor
+      ? paintScaleOf(layer.scale)
+      : markScale
+    : undefined
+}
+
+/**
  * One layer, as the worker sent it, with its colour worked out from `color`:
  * the colour lane and scale table the painters, the legend and the hover read.
  * Exported for multi-way synteny's lane layers, which hold layers outside a
@@ -270,7 +291,7 @@ export function withMarkColor<L extends EncodedChannels>(
 ): L {
   switch (color.kind) {
     case 'expression':
-      return layer.color === undefined ? colorWhileRefetching(layer) : layer
+      return layer.color === undefined ? colorAsHeld(layer) : layer
     case 'constant':
       return layer.color === color.color &&
         !layer.colorValue &&
@@ -285,16 +306,18 @@ export function withMarkColor<L extends EncodedChannels>(
             scale: undefined,
           }
     case 'categories':
-      return layer.colorKey
+      return layer.colorKey && layer.scale?.field === color.encoding.field
         ? colorByKeys(layer, layer.colorKey, color.encoding)
-        : colorWhileRefetching(layer)
+        : colorAsHeld(layer)
     case 'numbers': {
       const { fromY, encoding } = color
       const read = layer.scale
       const values = fromY ? layer.y : layer.colorValue
       if (!values || (!fromY && read?.field !== encoding.field)) {
-        return colorWhileRefetching(layer)
+        return colorAsHeld(layer)
       }
+      // which values were missing is the worker's word on this field alone
+      const met = read?.field === encoding.field ? read : undefined
       return {
         ...layer,
         color: undefined,
@@ -302,7 +325,7 @@ export function withMarkColor<L extends EncodedChannels>(
         colorKey: undefined,
         scale:
           layer.count > 0
-            ? numberScaleTable(values, layer.count, encoding, read)
+            ? numberScaleTable(values, layer.count, encoding, met)
             : undefined,
       }
     }

@@ -441,6 +441,56 @@ describe('a template layer', () => {
     }
   })
 
+  // A colour on a new field refetches every lane; until it lands, each lane
+  // paints the values it holds through a ramp over them.
+  test('a lane holding the numbers of an earlier colour paints them while the refetch is on the way', async () => {
+    const scores = [1, 2, 3].map(
+      i =>
+        new SimpleFeature({
+          uniqueId: `s${i}`,
+          refName: 'ctgA',
+          start: 100 * i,
+          end: 100 * i + 50,
+          score: i,
+          depth: 10 * i,
+        }),
+    )
+    const display = await templateDisplay(GC, {
+      rpc: async (name, args) =>
+        name === 'CoreGetEncodedLayers'
+          ? {
+              layers: (args.layers as LayerRequest[]).map(l =>
+                encodeFeatures(scores, l.encoding, l.lanes),
+              ),
+            }
+          : [],
+    })
+    setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
+      y: 'score',
+      color: { field: 'depth', scale: 'linear' },
+    })
+    await when(
+      () =>
+        display.laneLayerCells.layers.length > 0 &&
+        display.laneLayerCells.layers.every(l => l.colorScale),
+      { timeout: 5000 },
+    )
+
+    setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
+      y: 'score',
+      color: { field: 'gc', scale: 'linear' },
+    })
+
+    const { layers, cells } = display.laneLayerCells
+    expect(layers.length).toBeGreaterThan(0)
+    for (const layer of layers) {
+      expect(layer.colorScale).toMatchObject({ domain: [10, 30] })
+    }
+    for (const cell of cells.values()) {
+      expect(cell.kind === 'bars' && cell.lut).toBeInstanceOf(Uint8Array)
+    }
+  })
+
   // The band is white in every theme, and a dark theme's palette text is white.
   test('the title is band ink, whatever the theme', async () => {
     const display = await templateDisplay(GC)

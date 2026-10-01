@@ -46,6 +46,7 @@ import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { getFeatureName } from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
+  layerColorScale,
   markColorOf,
   markLayerRequest,
   paintScalesOver,
@@ -2447,7 +2448,10 @@ export function stateModelFactory(
           }
           const { start, end } = held.region
           self.coloredLayersOf(held).forEach((channels, mark) => {
-            const colorScale = colorScales[held.layer]?.[mark]
+            const colorScale = layerColorScale(
+              channels,
+              colorScales[held.layer]?.[mark],
+            )
             const cell = barCellOf(
               channels,
               domain,

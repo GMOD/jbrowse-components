@@ -54,14 +54,18 @@ colour needs; the main thread turns that data into colours through the config.
   render-core's `paintColors` against `state.colorScales`, so a label and a bar
   over one field and one declaration take one colour. `MarkSpec.ramp`,
   `rampResolvesPerRegion` and the `unpinned-text-ramp` rule go.
-- **A region the worker read for an earlier colour stays drawn**, coloured
-  from what it holds (`colorWhileRefetching`): keys in their field's default
+- **A region the worker read for an earlier `color` declaration stays drawn**,
+  coloured from what it holds (`colorAsHeld`): keys in their field's default
   colours, numbers through a linear ramp over themselves, the default colour
-  where it holds no colour data. Only the regions in view refetch, so one
-  scrolled away can hold the earlier colour's data indefinitely. Such a layer
-  is flagged `heldColor`: it paints through its own table (`regionColorScale`)
-  and stays out of the legend, so the mark's scale and key come only from
-  regions read for the colour as it now stands, on both backends.
+  where it holds no colour data, and packed colours as they came.
+  Only the regions in view refetch, so one scrolled away can hold the earlier
+  declaration's data indefinitely. A held layer with keys or numbers is
+  flagged `heldColor`: it
+  paints through its own table (`layerColorScale`, read by the mark display
+  and the multi-way lane layers alike) and stays out of the legend, so the
+  mark's scale and key come only from regions read for the declaration as it
+  now stands. While every visible region is held the mark has no key, under
+  the loading scrim.
 - **The colour list keeps its identity across reads nothing observes**,
   through display-kit's `sameAsLast`. An unobserved computed hands out a fresh
   list per read, which recoloured every region and allocated a colour lane per

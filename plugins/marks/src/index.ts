@@ -11,7 +11,11 @@ export {
   configSchemaFactory as linearMarkDisplayConfigSchemaFactory,
   markListSchema,
 } from './LinearMarkDisplay/configSchema.ts'
-export { withMarkColor, markColorOf } from './LinearMarkDisplay/markColor.ts'
+export {
+  layerColorScale,
+  markColorOf,
+  withMarkColor,
+} from './LinearMarkDisplay/markColor.ts'
 export { paintScalesOver } from './LinearMarkDisplay/legend.ts'
 export { markLayerRequest } from './LinearMarkDisplay/markRequest.ts'
 export { stepChannels } from './LinearMarkDisplay/stepChannels.ts'
@@ -25,7 +29,11 @@ export type {
   StepSnapshot,
 } from './LinearMarkDisplay/markProblems.ts'
 export type { SharedKey } from './LinearMarkDisplay/pinDistinct.ts'
-export type { ColorSource, ValueColor } from './LinearMarkDisplay/markColor.ts'
+export type {
+  ColorSource,
+  HeldColor,
+  ValueColor,
+} from './LinearMarkDisplay/markColor.ts'
 
 export default class MarksPlugin extends Plugin {
   name = 'MarksPlugin'

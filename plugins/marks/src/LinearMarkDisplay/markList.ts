@@ -11,7 +11,7 @@ import {
   withPassId,
 } from '@jbrowse/render-core/marks'
 
-import { paintScaleOf } from './legend.ts'
+import { layerColorScale } from './markColor.ts'
 import { MARK_SPECS } from './markSpecs.ts'
 import { DEFAULT_LINE_INTERPOLATE } from './markVocabulary.ts'
 
@@ -255,23 +255,16 @@ function rampLut(scale: MarkColorScale | undefined) {
 }
 
 /**
- * The ramp or threshold one region's layer `i` paints through: the mark's
- * scale, which the legend builds from the regions read for the colour as it
- * now stands. A region still holding data read for an earlier colour
- * (`heldColor`) paints through its own table instead, and a layer holding
- * finished colours takes none, so both backends draw what each region holds.
+ * The ramp or threshold one region's layer `i` paints through
+ * (`layerColorScale`), read by both backends' lenses and the text layer, so
+ * each region draws what it holds.
  */
 export function regionColorScale(
   s: MarkRenderState,
   d: MarkRegionData,
   i: number,
 ): MarkColorScale | undefined {
-  const layer = d.layers[i]
-  return !layer?.colorValue
-    ? undefined
-    : layer.heldColor
-      ? paintScaleOf(layer.scale)
-      : s.colorScales[i]
+  return layerColorScale(d.layers[i], s.colorScales[i])
 }
 
 function withMarkIndex(

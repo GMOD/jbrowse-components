@@ -464,3 +464,48 @@ test('a region still holding an earlier colour shapes neither the scale nor the 
     domain: [1, 5],
   })
 })
+
+test('keys read for another categorical field are held, and leave the key to the field as it stands', () => {
+  const REGION_B = { ...REGION, refName: 'ctgB' }
+  const { display } = createTestEnvironment(
+    {
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: { field: 'type', scale: 'categorical' },
+          },
+        },
+      ],
+    },
+    [REGION, REGION_B],
+  ).createDisplay()
+  const withKind = features([
+    { start: 0, end: 100, score: 2, type: 'gene', kind: 'a' },
+    { start: 200, end: 300, score: 6, type: 'exon', kind: 'b' },
+  ])
+  display.setRpcData(0, workerResult(display, withKind), REGION)
+
+  editColor(display, 'field', 'kind')
+  display.setRpcData(1, workerResult(display, withKind), REGION_B)
+
+  expect(display.rpcDataMap.get(0)!.layers[0]!.heldColor).toBe(true)
+  expect(display.rpcDataMap.get(1)!.layers[0]!.heldColor).toBeUndefined()
+  expect(display.legendSections.map(s => s.scale.field)).toEqual(['kind'])
+})
+
+test('a held region read for another field takes none of its missing-value flags into a colour over y', () => {
+  const display = loaded([
+    {
+      mark: 'bar',
+      encoding: { y: 'score', color: { field: 'gc', scale: 'linear' } },
+    },
+  ])
+  expect(layerOf(display).scale).toMatchObject({ missing: true })
+
+  editColor(display, 'field', 'score')
+
+  expect(layerOf(display).scale).toMatchObject({ field: 'score' })
+  expect(layerOf(display).scale).not.toHaveProperty('missing')
+})

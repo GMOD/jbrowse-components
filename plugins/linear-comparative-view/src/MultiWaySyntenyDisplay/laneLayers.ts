@@ -118,11 +118,12 @@ const barCells = new WeakMap<
 >()
 
 /**
- * One cell per payload, keyed on what it uploads: its positions, its colour
- * data, the y domain it is squished into and the ramp's lookup table. The
- * ramp's domain and a threshold's cuts ride the bar layer the pass reads per
- * block, so a settle, a landing that widens the ramp and an edit to a scale's
- * ends or cuts rebuild no cell.
+ * One cell per payload, keyed on what it uploads. `x` stands for the payload,
+ * since every recolouring of one payload shares it; its colour lanes, the y
+ * domain it is squished into and the ramp's lookup table then say whether
+ * anything uploaded moved. The ramp's domain and a threshold's cuts ride the
+ * bar layer the pass reads per block, so a settle, a landing that widens the
+ * ramp and an edit to a scale's ends or cuts rebuild no cell.
  */
 export function barCellOf(
   channels: EncodedChannels,

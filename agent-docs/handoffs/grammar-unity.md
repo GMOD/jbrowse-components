@@ -255,6 +255,11 @@ Colin rather than work:
 
 - The multi-sample variant and reference-sequence displays keep their plots.
 - The 84 domain actions with no mark-display counterpart stay put.
+- A mark's shape key still unions every loaded region's shape table, so a
+  region scrolled away before a shape field change keeps the old field's
+  shapes in the key until it is refetched. Colour has the fix shape
+  (`heldColor` in `markColor.ts`); shape resolves in the worker and predates
+  ADR-202.
 - Multi-way synteny's lane layers draw every bar through one pass, so two
   layers with different colour ramps swap that pass's ramp texture within a
   frame, which `MarkTextureBinder` answers with a new texture each time; the
