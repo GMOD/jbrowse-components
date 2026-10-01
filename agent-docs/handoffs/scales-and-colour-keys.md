@@ -1,6 +1,6 @@
 ---
 name: scales-and-colour-keys
-description: "What the 2026-09-26 scales.y and colour-key round left open: the wiggle figures the clip-strip reshoot (ADR-183) declined to publish, and the two it could not shoot."
+description: "What the 2026-09-26 scales.y and colour-key round left open: the wiggle figures the clip-strip reshoot (ADR-183) declined to publish."
 ---
 
 ## Open
@@ -15,13 +15,6 @@ shows something other than the strip:
   now reads ~350 where it read ~220, flattening the karyotype.
 - **`genomes_basics/promoter_regulation`**: the second frame shows the
   overlapping plot again, so the Multi-row XY choice no longer lands.
-- **`mark_display/edit_plot`**: the redesigned dialog runs past the frame and
-  loses its Apply row; the spec wants a taller window.
 - **`jbrowse-img/remote_files`** and **`jbrowse-img/1`**: ClinVar draws
   unlabelled stacks and the gene descriptions are gone, both off the strip's
   subject; confirm they are intended before publishing.
-- **`alphagenome/splice_junctions`** does not shoot: the hosted alphagenome
-  plugin's track config names `LinearArcDisplay`, which main no longer
-  registers and the mark display has no `retiredTypes` entry for.
-- **`embed_linear_genome_view/final`** was not shot: ada's worktree has no
-  `@jbrowse/react-linear-genome-view2` UMD build.

@@ -28,7 +28,7 @@ ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore reads),
 rendered straight from public files in a single command (`--aliases` reconciles
 the `1` / `chr1` / `NC_000001.10` refname styles across the files):
 
-![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://jbrowse.org/jb2-figures/jbrowse-img/1.2f958bc60f92.png)
+![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://jbrowse.org/jb2-figures/jbrowse-img/1.325b21c2873e.png)
 
 <!-- jb2export: 1 -->
 
@@ -86,7 +86,7 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --loc 1:48,683,542-48,907,531 --width 1200 --out remote_files.png
 ```
 
-![ClinVar variants above NCBI RefSeq genes across a 220 kb window of hg19 chromosome 1, every file streamed from a public URL](https://jbrowse.org/jb2-figures/jbrowse-img/remote_files.99f319ecd069.png)
+![ClinVar variants above NCBI RefSeq genes across a 220 kb window of hg19 chromosome 1, every file streamed from a public URL](https://jbrowse.org/jb2-figures/jbrowse-img/remote_files.1495a910f238.png)
 
 ### Hosted assemblies (genomes.jbrowse.org)
 
@@ -501,7 +501,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:60 \
   --loc chr2:162,000,000-162,300,000 --width 1400 --out scatac_multiwiggle.png
 ```
 
-![CATlas single-cell ATAC accessibility across 16 cell types over the GCG locus, with the Alpha (glucagon) row showing cell-type-specific open chromatin](https://jbrowse.org/jb2-figures/jbrowse-img/scatac_multiwiggle.d2d85abc5bb1.png)
+![CATlas single-cell ATAC accessibility across 16 cell types over the GCG locus, with the Alpha (glucagon) row showing cell-type-specific open chromatin](https://jbrowse.org/jb2-figures/jbrowse-img/scatac_multiwiggle.a36902997081.png)
 
 ### Variant tracks
 
@@ -1248,7 +1248,7 @@ jb2export --config data/config.json --session data/skbr3/session.json \
   --assembly hg19 --width 1400 --out skbr3_session.png
 ```
 
-![SKBR3 whole-genome read coverage, restored from a saved session file](https://jbrowse.org/jb2-figures/jbrowse-img/skbr3_session.85650a9cc9cd.png)
+![SKBR3 whole-genome read coverage, restored from a saved session file](https://jbrowse.org/jb2-figures/jbrowse-img/skbr3_session.325e8668f0a6.png)
 
 The session names its tracks by trackId, so the `--config` you pass has to be
 the one those ids come from — `data/config.json` here, which defines hg19 and
