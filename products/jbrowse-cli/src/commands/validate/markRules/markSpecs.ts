@@ -122,7 +122,7 @@ export function hitsByIndex(type: MarkType) {
 
 /**
  * The lanes a mark asks the worker to fill: its type's channels, the colour
- * as `colorLanes` says its declaration reads, and the hit index where the
+ * lanes `colorLanesOf` chose for its declaration, and the hit index where the
  * mark answers a hover through one.
  */
 export function markLanes(
