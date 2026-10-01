@@ -8,8 +8,7 @@ description: What the grammar thread does next as of 2026-09-27 - wiggle onto th
 ADR-181 (a centred point and a `rule` mark), ADR-179's 2026-09-27 amendment
 (each quantile end clips its own tail), ADR-182 (`scales.y.zero`, the axis's
 0 as a slot and a Score-menu tick) and ADR-183 (the red clip strip) landed
-that day. Figure reshoots wait on ada
-and are listed in [scales-and-colour-keys](scales-and-colour-keys.md).
+that day. Their figures were reshot and published on 2026-09-30.
 
 ## Next, ranked
 

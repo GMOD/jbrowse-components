@@ -142,6 +142,20 @@ describe('the CDS strip keys itself', () => {
     ])
   })
 
+  // At base level each identity cell is one base, red or blue, so the key
+  // names those two rather than a ramp whose middle nothing draws.
+  it('keys base-level identity with its two colours', () => {
+    const { display } = framesEnv().createDisplay()
+    seed(display, false)
+    display.setRowRendering('identity')
+    display.setRowIdentityAutoZoom(false)
+    expect(display.zoomedToBaseLevel).toBe(true)
+    expect(display.legendSpec.sections[0]!.items.map(i => i.label)).toEqual([
+      'Conserved (base matches)',
+      'Divergent (base differs)',
+    ])
+  })
+
   // The key decodes what is on screen. Panning off the CDS takes the strip with
   // it, and a key for an overlay that is not there is the dead chrome the band
   // getters exist to avoid.
