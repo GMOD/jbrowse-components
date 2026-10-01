@@ -2,6 +2,7 @@ import { mockDisplayConfig } from '../testUtils.ts'
 import { layoutBox } from './box.ts'
 import { layoutCrisprGuide } from './crisprGuide.ts'
 import { findGlyph } from './findGlyph.ts'
+import { layoutMatureProteinRegion } from './matureProteinRegion.ts'
 import { layoutMotif } from './motif.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutRepeatRegion } from './repeatRegion.ts'
@@ -24,134 +25,168 @@ function mockFeature(opts: {
   return f
 }
 
-const config = mockDisplayConfig({
-  transcriptTypes: ['mRNA'],
-  containerTypes: ['proteoform_orf'],
-})
-
-describe('findGlyph structural dispatch', () => {
-  it('routes a leaf feature to Box', () => {
-    expect(findGlyph(mockFeature({ type: 'match' }), config)).toBe(layoutBox)
-  })
-
-  it('routes an mRNA with a CDS child to ProcessedTranscript', () => {
-    const mRNA = mockFeature({
-      type: 'mRNA',
-      subfeatures: [
-        mockFeature({ type: 'exon' }),
-        mockFeature({ type: 'CDS' }),
-      ],
+describe.each(['auto', 'all', 'longestCoding'] as const)(
+  'findGlyph structural dispatch, geneGlyphMode %s',
+  geneGlyphMode => {
+    const config = mockDisplayConfig({
+      transcriptTypes: ['mRNA'],
+      containerTypes: ['proteoform_orf'],
+      geneGlyphMode,
     })
-    expect(findGlyph(mRNA, config)).toBe(layoutProcessedTranscript)
-  })
 
-  it('routes a coding type absent from transcriptTypes to ProcessedTranscript', () => {
-    for (const type of ['V_gene_segment', 'some_org_specific_transcript']) {
-      const feature = mockFeature({
-        type,
+    it('routes a leaf feature to Box', () => {
+      expect(findGlyph(mockFeature({ type: 'match' }), config)).toBe(layoutBox)
+    })
+
+    it('routes an mRNA with a CDS child to ProcessedTranscript', () => {
+      const mRNA = mockFeature({
+        type: 'mRNA',
         subfeatures: [
           mockFeature({ type: 'exon' }),
           mockFeature({ type: 'CDS' }),
         ],
       })
-      expect(findGlyph(feature, config)).toBe(layoutProcessedTranscript)
-    }
-  })
-
-  it('routes a prokaryotic gene with a direct CDS child to ProcessedTranscript', () => {
-    const gene = mockFeature({
-      type: 'gene',
-      subfeatures: [mockFeature({ type: 'CDS' })],
+      expect(findGlyph(mRNA, config)).toBe(layoutProcessedTranscript)
     })
-    expect(findGlyph(gene, config)).toBe(layoutProcessedTranscript)
-  })
 
-  it('routes a discontinuous top-level CDS to ProcessedTranscript', () => {
-    const cds = mockFeature({
-      type: 'CDS',
-      subfeatures: [mockFeature({ type: 'CDS' }), mockFeature({ type: 'CDS' })],
+    it('routes a coding type absent from transcriptTypes to ProcessedTranscript', () => {
+      for (const type of ['V_gene_segment', 'some_org_specific_transcript']) {
+        const feature = mockFeature({
+          type,
+          subfeatures: [
+            mockFeature({ type: 'exon' }),
+            mockFeature({ type: 'CDS' }),
+          ],
+        })
+        expect(findGlyph(feature, config)).toBe(layoutProcessedTranscript)
+      }
     })
-    expect(findGlyph(cds, config)).toBe(layoutProcessedTranscript)
-  })
 
-  it('routes a gene whose children are containers to Subfeatures', () => {
-    const gene = mockFeature({
-      type: 'gene',
-      subfeatures: [
-        mockFeature({
-          type: 'mRNA',
-          subfeatures: [mockFeature({ type: 'CDS' })],
-        }),
-      ],
+    it('routes a prokaryotic gene with a direct CDS child to ProcessedTranscript', () => {
+      const gene = mockFeature({
+        type: 'gene',
+        subfeatures: [mockFeature({ type: 'CDS' })],
+      })
+      expect(findGlyph(gene, config)).toBe(layoutProcessedTranscript)
     })
-    expect(findGlyph(gene, config)).toBe(layoutSubfeatures)
-  })
 
-  it('routes a container of leaf children to Segments', () => {
-    const feature = mockFeature({
-      type: 'match',
-      subfeatures: [
-        mockFeature({ type: 'match_part' }),
-        mockFeature({ type: 'match_part' }),
-      ],
-    })
-    expect(findGlyph(feature, config)).toBe(layoutSegments)
-  })
-
-  it('routes an intact repeat_region to RepeatRegion', () => {
-    const feature = mockFeature({
-      type: 'repeat_region',
-      subfeatures: [
-        mockFeature({ type: 'long_terminal_repeat' }),
-        mockFeature({ type: 'target_site_duplication' }),
-      ],
-    })
-    expect(findGlyph(feature, config)).toBe(layoutRepeatRegion)
-  })
-
-  it('routes a guide_rna to CrisprGuide', () => {
-    const feature = mockFeature({
-      type: 'guide_rna',
-      subfeatures: [mockFeature({ type: 'PAM' })],
-    })
-    expect(findGlyph(feature, config)).toBe(layoutCrisprGuide)
-  })
-
-  it('matches the semantic types case-insensitively', () => {
-    expect(findGlyph(mockFeature({ type: 'Motif' }), config)).toBe(layoutMotif)
-    expect(
-      findGlyph(
-        mockFeature({
-          type: 'Guide_RNA',
-          subfeatures: [mockFeature({ type: 'PAM' })],
-        }),
-        config,
-      ),
-    ).toBe(layoutCrisprGuide)
-    expect(
-      findGlyph(
-        mockFeature({
-          type: 'Repeat_Region',
-          subfeatures: [mockFeature({ type: 'long_terminal_repeat' })],
-        }),
-        config,
-      ),
-    ).toBe(layoutRepeatRegion)
-  })
-
-  // `featureAdmission` lowercases the same slot into the gene-like set
-  // `showOnlyGenes` admits by. The fixture's children are leaves, so
-  // `hasContainerChildren` cannot rescue it and the slot alone decides.
-  it('matches containerTypes case-insensitively too', () => {
-    const orf = (type: string) =>
-      mockFeature({
-        type,
+    it('routes a discontinuous top-level CDS to ProcessedTranscript', () => {
+      const cds = mockFeature({
+        type: 'CDS',
         subfeatures: [
           mockFeature({ type: 'CDS' }),
           mockFeature({ type: 'CDS' }),
         ],
       })
-    expect(findGlyph(orf('proteoform_orf'), config)).toBe(layoutSubfeatures)
-    expect(findGlyph(orf('Proteoform_ORF'), config)).toBe(layoutSubfeatures)
-  })
-})
+      expect(findGlyph(cds, config)).toBe(layoutProcessedTranscript)
+    })
+
+    it('routes a CDS carrying cleavage products to MatureProteinRegion', () => {
+      const cds = mockFeature({
+        type: 'CDS',
+        subfeatures: [mockFeature({ type: 'mature_protein_region_of_CDS' })],
+      })
+      expect(findGlyph(cds, config)).toBe(layoutMatureProteinRegion)
+    })
+
+    // gff-nostream folds a frameshift polyprotein (SARS-CoV-2 ORF1ab) into one CDS
+    // carrying a CDS row per reading frame beside its cleavage products.
+    it('routes a frameshift polyprotein CDS to MatureProteinRegion, nested or not', () => {
+      const cds = mockFeature({
+        type: 'CDS',
+        subfeatures: [
+          mockFeature({ type: 'CDS' }),
+          mockFeature({ type: 'CDS' }),
+          mockFeature({ type: 'mature_protein_region_of_CDS' }),
+        ],
+      })
+      const gene = mockFeature({ type: 'gene', subfeatures: [cds] })
+      expect(findGlyph(cds, config)).toBe(layoutMatureProteinRegion)
+      expect(findGlyph(cds, config, false)).toBe(layoutMatureProteinRegion)
+      expect(findGlyph(gene, config)).toBe(layoutSubfeatures)
+    })
+
+    it('routes a gene whose children are containers to Subfeatures', () => {
+      const gene = mockFeature({
+        type: 'gene',
+        subfeatures: [
+          mockFeature({
+            type: 'mRNA',
+            subfeatures: [mockFeature({ type: 'CDS' })],
+          }),
+        ],
+      })
+      expect(findGlyph(gene, config)).toBe(layoutSubfeatures)
+    })
+
+    it('routes a container of leaf children to Segments', () => {
+      const feature = mockFeature({
+        type: 'match',
+        subfeatures: [
+          mockFeature({ type: 'match_part' }),
+          mockFeature({ type: 'match_part' }),
+        ],
+      })
+      expect(findGlyph(feature, config)).toBe(layoutSegments)
+    })
+
+    it('routes an intact repeat_region to RepeatRegion', () => {
+      const feature = mockFeature({
+        type: 'repeat_region',
+        subfeatures: [
+          mockFeature({ type: 'long_terminal_repeat' }),
+          mockFeature({ type: 'target_site_duplication' }),
+        ],
+      })
+      expect(findGlyph(feature, config)).toBe(layoutRepeatRegion)
+    })
+
+    it('routes a guide_rna to CrisprGuide', () => {
+      const feature = mockFeature({
+        type: 'guide_rna',
+        subfeatures: [mockFeature({ type: 'PAM' })],
+      })
+      expect(findGlyph(feature, config)).toBe(layoutCrisprGuide)
+    })
+
+    it('matches the semantic types case-insensitively', () => {
+      expect(findGlyph(mockFeature({ type: 'Motif' }), config)).toBe(
+        layoutMotif,
+      )
+      expect(
+        findGlyph(
+          mockFeature({
+            type: 'Guide_RNA',
+            subfeatures: [mockFeature({ type: 'PAM' })],
+          }),
+          config,
+        ),
+      ).toBe(layoutCrisprGuide)
+      expect(
+        findGlyph(
+          mockFeature({
+            type: 'Repeat_Region',
+            subfeatures: [mockFeature({ type: 'long_terminal_repeat' })],
+          }),
+          config,
+        ),
+      ).toBe(layoutRepeatRegion)
+    })
+
+    // `featureAdmission` lowercases the same slot into the gene-like set
+    // `showOnlyGenes` admits by. The fixture's children are leaves, so
+    // `hasContainerChildren` cannot rescue it and the slot alone decides.
+    it('matches containerTypes case-insensitively too', () => {
+      const orf = (type: string) =>
+        mockFeature({
+          type,
+          subfeatures: [
+            mockFeature({ type: 'CDS' }),
+            mockFeature({ type: 'CDS' }),
+          ],
+        })
+      expect(findGlyph(orf('proteoform_orf'), config)).toBe(layoutSubfeatures)
+      expect(findGlyph(orf('Proteoform_ORF'), config)).toBe(layoutSubfeatures)
+    })
+  },
+)

@@ -35,12 +35,16 @@ export function findGlyph(
   if (typeGlyph) {
     return typeGlyph
   }
-  // A CDS whose rows are CDS is a discontinuous top-level one, and draws its
-  // segments below as any coding transcript does.
-  if (isCDS(feature) && !hasCDSSubfeature(feature)) {
-    return hasMatureProteinChildren(feature)
-      ? layoutMatureProteinRegion
-      : layoutBox
+  // A frameshift polyprotein's CDS carries a CDS segment per reading frame
+  // beside its cleavage products, and still draws the products. A CDS whose
+  // rows are only CDS is a discontinuous one, drawn below as a transcript.
+  if (isCDS(feature)) {
+    if (hasMatureProteinChildren(feature)) {
+      return layoutMatureProteinRegion
+    }
+    if (!hasCDSSubfeature(feature)) {
+      return layoutBox
+    }
   }
   if (subfeatures.length > 0) {
     const { containerTypes } = config

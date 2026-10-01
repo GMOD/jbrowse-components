@@ -32,8 +32,9 @@ import {
   repeatSubpartColor,
   strokeColor,
 } from './glyphColors.ts'
-import { aminoAcidsByFeature, aminoAcidsInRange } from './peptideMapping.ts'
+import { aminoAcidsByFeature, aminoAcidsInSpans } from './peptideMapping.ts'
 
+import type { Span } from '../../shared/mergeSpans.ts'
 import type { TranscriptCoords } from '../rpcTypes.ts'
 import type { FeatureLayout, GlyphType } from '../types.ts'
 import type {
@@ -204,12 +205,15 @@ function registerSubfeature(
     ownsLabelRow?: boolean
     displayLabel: string | undefined
     transcript?: TranscriptCoords
+    // The bp span the floating label anchors on, the feature's own by default;
+    // null draws none, for a line whose row another line already labels.
+    labelSpan?: Span | null
   },
   ctx: RenderContext,
   collector: Collector,
 ) {
   const { feature, parentFeatureId, type, topPx, heightPx, displayLabel } = args
-  const { labelRowsAbove, ownsLabelRow, transcript } = args
+  const { labelRowsAbove, ownsLabelRow, transcript, labelSpan } = args
   const startBp = feature.get('start')
   const endBp = feature.get('end')
   collector.subfeatureInfos.push({
@@ -226,20 +230,23 @@ function registerSubfeature(
     displayLabel,
     transcript,
   })
-  emitSubfeatureLabel(
-    {
-      featureId: feature.id(),
-      displayLabel,
-      featureHeight: heightPx,
-      minX: startBp,
-      maxX: endBp,
-      topY: topPx,
-      labelRowsAbove,
-      parentFeatureId,
-    },
-    ctx,
-    collector,
-  )
+  if (labelSpan !== null) {
+    const [minX, maxX] = labelSpan ?? [startBp, endBp]
+    emitSubfeatureLabel(
+      {
+        featureId: feature.id(),
+        displayLabel,
+        featureHeight: heightPx,
+        minX,
+        maxX,
+        topY: topPx,
+        labelRowsAbove,
+        parentFeatureId,
+      },
+      ctx,
+      collector,
+    )
+  }
 }
 
 // The strand arrow draws unconditionally, unlike a leaf glyph's: an enclosing
@@ -265,30 +272,31 @@ function processMatureProteinLayout(
   // apart; a single-polyprotein gene would just repeat one suffix on every row.
   const disambiguateWithCds = collectPolyproteinCDS(rootFeature).length > 1
 
-  for (const [i, childLayout] of layout.children.entries()) {
-    const childFeature = childLayout.feature
-    const topPx = baseTopPx + childLayout.y
-    const labelRowsAbove =
-      place.labelRowsAbove + (childLayout.labelRowsAbove ?? 0)
+  for (const [i, row] of layout.children.entries()) {
+    const lines = row.children.length > 0 ? row.children : [row]
+    const rowFeature = row.feature
+    const topPx = baseTopPx + row.y
+    const labelRowsAbove = place.labelRowsAbove + (row.labelRowsAbove ?? 0)
     const glyphDefault = matureProteinColor(i)
-    const cStart = childFeature.get('start')
-    const cEnd = childFeature.get('end')
-    const childAminoAcids =
-      aminoAcids && aminoAcidsInRange(aminoAcids, cStart, cEnd)
+    const spans = lines.map(({ feature }): Span => [
+      feature.get('start'),
+      feature.get('end'),
+    ])
+    const rowAminoAcids = aminoAcids && aminoAcidsInSpans(aminoAcids, spans)
 
-    if (childAminoAcids?.length) {
+    if (rowAminoAcids?.length) {
       emitCodonRects(
         {
-          aminoAcids: childAminoAcids,
+          aminoAcids: rowAminoAcids,
           baseColor: boxColor(
-            childFeature,
+            rowFeature,
             ctx,
             collector.colorKey,
-            childFeature,
+            rowFeature,
             glyphDefault,
           ),
           topPx,
-          height: childLayout.height,
+          height: row.height,
           strand: cdsFeature.get('strand') ?? 0,
           flatbushIdx,
           labelRowsAbove,
@@ -296,43 +304,52 @@ function processMatureProteinLayout(
         collector,
       )
     } else {
-      pushBoxRect(
+      for (const { feature } of lines) {
+        pushBoxRect(
+          {
+            feature,
+            topPx,
+            height: row.height,
+            flatbushIdx,
+            labelRowsAbove,
+            glyphDefault,
+          },
+          ctx,
+          collector,
+        )
+      }
+    }
+    const rowLabel = subfeatureLabelText(rowFeature, ctx.config, ctx.jexl)
+    const displayLabel =
+      disambiguateWithCds &&
+      rowLabel &&
+      cdsLabel &&
+      cdsLabel !== rowLabel &&
+      cdsLabel !== cdsFeature.id()
+        ? `${rowLabel} (${cdsLabel})`
+        : rowLabel
+    const labelSpan: Span = [
+      Math.min(...spans.map(([start]) => start)),
+      Math.max(...spans.map(([, end]) => end)),
+    ]
+
+    for (const [j, { feature }] of lines.entries()) {
+      registerSubfeature(
         {
-          feature: childFeature,
+          feature,
+          parentFeatureId: rootFeature.id(),
+          type: featureType(feature),
           topPx,
-          height: childLayout.height,
-          flatbushIdx,
+          heightPx: row.height,
           labelRowsAbove,
-          glyphDefault,
+          ownsLabelRow: row.ownsLabelRow,
+          displayLabel,
+          labelSpan: j === 0 ? labelSpan : null,
         },
         ctx,
         collector,
       )
     }
-    const childLabel = subfeatureLabelText(childFeature, ctx.config, ctx.jexl)
-    const displayLabel =
-      disambiguateWithCds &&
-      childLabel &&
-      cdsLabel &&
-      cdsLabel !== childLabel &&
-      cdsLabel !== cdsFeature.id()
-        ? `${childLabel} (${cdsLabel})`
-        : childLabel
-
-    registerSubfeature(
-      {
-        feature: childFeature,
-        parentFeatureId: rootFeature.id(),
-        type: featureType(childFeature),
-        topPx,
-        heightPx: childLayout.height,
-        labelRowsAbove,
-        ownsLabelRow: childLayout.ownsLabelRow,
-        displayLabel,
-      },
-      ctx,
-      collector,
-    )
   }
   emitStrandArrow(
     {

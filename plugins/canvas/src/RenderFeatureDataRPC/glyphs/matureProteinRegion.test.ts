@@ -20,6 +20,7 @@ function mockFeature(opts: {
   end: number
   strand?: number
   product?: string
+  gffId?: string
   subfeatures?: ReturnType<typeof mockFeature>[]
   parentFeature?: Feature
 }): Feature {
@@ -29,6 +30,7 @@ function mockFeature(opts: {
     end,
     strand = 1,
     product,
+    gffId,
     subfeatures = [],
     parentFeature,
   } = opts
@@ -37,6 +39,7 @@ function mockFeature(opts: {
       const map: Record<string, unknown> = {
         type,
         name: `${type}-${start}-${end}`,
+        id: gffId,
         start,
         end,
         strand,
@@ -602,5 +605,100 @@ describe('collectRenderData for mature protein regions', () => {
     expect(result.subfeatureInfos.map(s => s.featureId)).toEqual(
       matures.map(m => m.id()),
     )
+  })
+})
+
+// NCBI's ORF1ab shape after gff-nostream folds it: the CDS carries one CDS row
+// per reading frame, overlapping by the slipped base, and its cleavage
+// products. nspB straddles the frameshift, so NCBI writes it as two lines under
+// one ID.
+describe('a frameshift polyprotein CDS', () => {
+  const product = (start: number, end: number, gffId: string) =>
+    mockFeature({
+      type: 'mature_protein_region_of_CDS',
+      start,
+      end,
+      gffId,
+      product: gffId,
+    })
+  const frameshiftCDS = () =>
+    mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 160,
+      subfeatures: [
+        mockFeature({ type: 'CDS', start: 100, end: 130 }),
+        mockFeature({ type: 'CDS', start: 129, end: 160 }),
+        product(100, 115, 'nspA'),
+        product(115, 130, 'nspB'),
+        product(129, 157, 'nspB'),
+      ],
+    })
+  const config = mockDisplayConfig({
+    subfeatureLabels: 'below',
+    labels: { name: "jexl:get(feature,'product')", description: '' },
+  })
+  const render = (translated: boolean) => {
+    const feature = frameshiftCDS()
+    return collectRenderData({
+      layouts: [findGlyph(feature, config)({ feature, config, jexl })],
+      regionStart: 0,
+      regionEnd: 1000,
+      config,
+      colorByCDS: translated,
+      peptideDataMap: translated
+        ? new Map([[feature.id(), { protein: 'MABCDEFGHIJKLMNOPQRS*' }]])
+        : undefined,
+      jexl,
+    })
+  }
+
+  it('draws a row per product and none for the reading frames', () => {
+    const feature = frameshiftCDS()
+    const layout = findGlyph(feature, config)({ feature, config })
+    expect(layout.glyphType).toBe('MatureProteinRegion')
+    expect(layout.children.map(r => r.feature.get('product'))).toEqual([
+      'nspA',
+      'nspB',
+    ])
+    expect(
+      layout.children[1]!.children.map(l => [
+        l.feature.get('start'),
+        l.feature.get('end'),
+      ]),
+    ).toEqual([
+      [115, 130],
+      [129, 157],
+    ])
+    expect(layout.labelRows).toBe(2)
+  })
+
+  it('gives a multi-line product one colour and one label over its whole span', () => {
+    const result = render(false)
+    expect(new Set(result.rectYs).size).toBe(2)
+    expect(new Set(result.rectColors).size).toBe(2)
+    expect(
+      [...result.floatingLabelsData.values()].map(l => [
+        l.subfeatureLabel?.text,
+        l.minX,
+        l.maxX,
+      ]),
+    ).toEqual([
+      ['nspA', 100, 115],
+      ['nspB', 115, 157],
+    ])
+    expect(result.subfeatureInfos.map(s => s.displayLabel)).toEqual([
+      'nspA',
+      'nspB',
+      'nspB',
+    ])
+  })
+
+  it('draws each residue of a multi-line product once, across the frameshift', () => {
+    const overlay = render(true).aminoAcidOverlay!
+    const rowY = Math.max(...overlay.map(a => a.topPx))
+    expect(
+      overlay.filter(a => a.topPx === rowY).map(a => a.proteinIndex),
+    ).toEqual([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
   })
 })

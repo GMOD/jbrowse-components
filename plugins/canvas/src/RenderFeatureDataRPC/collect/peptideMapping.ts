@@ -2,6 +2,7 @@ import { transcriptCDS } from '@jbrowse/core/util/translateTranscript'
 
 import { aminoAcidsBySegment } from '../peptides/aggregateAminoAcids.ts'
 
+import type { Span } from '../../shared/mergeSpans.ts'
 import type {
   AggregatedAminoAcid,
   CdsSegment,
@@ -37,11 +38,13 @@ export function aminoAcidsByFeature(feature: Feature, ctx: RenderContext) {
 
 // A cleavage falls between residues, so each codon belongs to exactly one
 // product: a codon straddling a non-codon-aligned boundary goes to the product
-// its start lands in, never to both.
-export function aminoAcidsInRange(
+// its start lands in, never to both. A product over several lines takes each
+// residue once.
+export function aminoAcidsInSpans(
   aminoAcids: AggregatedAminoAcid[],
-  start: number,
-  end: number,
+  spans: Span[],
 ) {
-  return aminoAcids.filter(aa => aa.startBp >= start && aa.startBp < end)
+  return aminoAcids.filter(aa =>
+    spans.some(([start, end]) => aa.startBp >= start && aa.startBp < end),
+  )
 }
