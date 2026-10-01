@@ -270,12 +270,12 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Show...', 'Show as genotype matrix']),
+      ...menuCascade(['Show...', 'One column per variant']),
     ],
     annotations: [
       {
         type: 'box',
-        anchor: { text: 'Show as genotype matrix' },
+        anchor: { text: 'One column per variant' },
       },
     ],
   },

@@ -48,9 +48,9 @@ export const variantVideos: VideoSpec[] = [
       { type: 'click', selector: trackMenu(vcfTrackId), hold: 1200 },
       { type: 'waitForText', text: 'Show...' },
       { type: 'click', text: 'Show...', hold: 1200 },
-      { type: 'waitForText', text: 'Show as genotype matrix' },
-      { type: 'click', text: 'Show as genotype matrix' },
-      ...leaveMenu('::-p-text(Show as genotype matrix)'),
+      { type: 'waitForText', text: 'One column per variant' },
+      { type: 'click', text: 'One column per variant' },
+      ...leaveMenu('::-p-text(One column per variant)'),
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
       { type: 'delay', ms: 3000 },
       {

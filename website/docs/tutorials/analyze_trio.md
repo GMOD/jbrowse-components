@@ -61,7 +61,7 @@ paste its URL into **File → Open track...**, which infers the adapter and the
 
 Switch the track to the
 [multi-sample variant display](/docs/user_guides/multivariant_track), and check
-**Show... → Show as genotype matrix** in its track menu. Each sample becomes a
+**Show... → One column per variant** in its track menu. Each sample becomes a
 row and each variant a column, with black lines tying the columns back to their
 genomic positions.
 
