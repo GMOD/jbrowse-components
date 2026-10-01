@@ -6,39 +6,13 @@ kind: measurement
 
 # The MAF plugin: fetch, worker pipeline, sub-pixel cells, navigation
 
-What a session touching `plugins/maf` needs before it measures or redesigns
-anything.
-
 ## Fetch cost of megabase blocks
-
-MAF-tabix is one BED line per alignment block with every species' gapped
-sequence in column 6 (`maf_to_bed.py`, read by `MafTabixAdapter`). Tabix returns
-whole overlapping lines, so a query touching one base of a 1 Mb block downloads,
-decompresses, splits and ships the whole block. Cost quantizes by block, not by
-view, and zooming in does not help.
-
-The fetch-cost work is parked: the widest line in every in-tree MAF-tabix file is
-about 20 kb, so nothing here reproduces the reported problem. Before building
-anything, check a reporter's file with `bgzip -dc their.bed.gz | awk '{print
-$3-$2}' | sort -n | tail -5`. Long blocks come from the producer (`hal2maf`
-without chunking, pairwise chains converted to MAF).
 
 **Rejected: clip blocks to the visible region.** Clipping pays only after the
 expensive layers (the line is downloaded, decompressed and split first, and
 finding the column range is the same O(columns) walk), makes loaded data
 zoom-dependent so `isBlockCovered` cannot reuse it across zoom, and leaves
 tooltips and FASTA export reading wrong per-species coordinates.
-
-What works: TAF (`BgzipTaffyAdapter`'s `.tai` makes cost O(visible span)), or
-splitting at conversion time (`scripts/maf_to_bed.py`, cutting only at columns
-where no row including the reference has a gap, since a cut inside a gap run
-splits an insertion marker or a deletion). A per-line safety valve in the adapter
-that names the block instead of running out of memory is unbuilt.
-
-The byte gate takes a real measurement at the viewport being judged and has no
-span floor, so a block-quantized file shows "Requested too much data" and the user
-chooses; `ByteEstimate.zoomIneffective` stops the banner advising "zoom in"
-([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)).
 
 ### The zoom-out tier is opt-in
 
@@ -53,12 +27,6 @@ A `.tai` is not a tier. It bounds the span a read covers, not its depth, and a
 read costs span x depth: over HPRC's published `.tai` files at 464 haplotypes the
 ceiling against the default `fetchSizeLimit` is a few hundred kb of MAF and about
 10x that of TAF, which does not buy a chromosome.
-
-The `src` column joins the display's rows with no mapping (`parseAssemblyAndChr`,
-`rowIndexBySrc`). When the join fails the track reports loaded with no bars.
-`maf2bed` v0.6.0 or later has `--summary`; v0.5.x ignores every argument after the
-first and silently writes no summary, so check the file exists before wiring the
-slot.
 
 ### Fetch dominates at 470-way
 
@@ -76,10 +44,6 @@ memory fix, not a speed fix: they remove a full duplicate copy of every species'
 sequence leaving the worker.
 
 ## The worker pipeline
-
-The worker reads and parses blocks, packs them into the columnar arena
-(`MafWirePacker`), then runs `computeMafCoverage`, `computeSNPCoverage` and
-`computeInterbaseCoverage`.
 
 **The ranking depends on block shape.** Upstream of coverage pays per row;
 coverage pays per cell. "`computeMafCoverage` is half the worker" is true of wide
@@ -99,7 +63,7 @@ Byte-native tabix lines (`GMOD/tabix-js#156`) were declined (GMOD/tabix-js ADR
 
 ### Two kernels that look like wins and are not
 
-The JSDoc on `computeMafCoverage` carries both. The transpose to one sequential
+The transpose to one sequential
 scan per row measures 0.92x-1.06x. SWAR (reading the arena as `Uint32`) measures
 4.5x only by testing "is a base" as `folded >= 0x40`, which reclassifies `.` and
 `*`; the output-identical walk is 0.51x. A hoisted `uniformRows` scan is 1.13-1.24x
@@ -110,11 +74,6 @@ across eight shapes.
 borrow flags a lane holding 1 beside a lane holding 0). Use
 `~(((v & 0x7f7f7f7f) + 0x7f7f7f7f) | v | 0x7f7f7f7f)`. Miscounting one base in a
 million never shows in a coverage bar.
-
-Decompose a hot loop before declaring it finished: counting per-cell operations
-said nothing was left because the loop was never ALU bound.
-`plugins/maf/benches/mafCoverage.bench.ts` measures the bare loop against
-loop-plus-output and peels the body one operation at a time.
 
 Declined: mismatch decimation (the largest remaining win, a fidelity compromise
 held back by preference; the tooltip also wants per-position detail) and a
@@ -130,25 +89,15 @@ holds the passes and their numbers. Three lessons generalize:
 - **A cull has to be at the granularity the walk emits at.** `paintedBpRange` and
   its marker-side twin cover on-screen bp only; a block-level cull protects
   nothing once one stanza spans the buffer.
-- **A memo is only a memo if its key stops moving.** `sourceChromRanks` keyed on
-  `renderBlocks`, rebuilt every pan tick. `sourceChromRanks.test.ts` pins it by
-  identity under an `autorun`, since MobX does not cache an unobserved computed.
 
 **The per-region event index** (`mafRowEvents.ts`) serves insertions and
 inversions, deliberately not deletions, so overlays project it instead of
 re-deriving from alignment bytes.
 
-- Build per block on first touch; eager indexing makes the first frame after a
-  fetch proportional to the buffered span.
 - Deletions want a bound, not an index: millions per region. The per-block
   longest run (`regionDeletionRunBounds`) must cover all rows, and must store a
   length, not "does this label", or zooming in loses labels. Neither shows in a
   bench whose viewport never leaves row 0.
-- `plugins/maf/benches/mafOverlays.bench.ts` A/Bs against a prior ref and fails
-  unless markers match as a multiset. Its traps: reference gaps every 29 columns
-  capped every deletion run so the overlay emitted nothing while the bench kept
-  timing the walk, and choosing the pan position by round index made `min` across
-  rounds a min across different workloads.
 
 Identity plot and conservation band paint a mean and need the whole sample, so
 decimation does not transfer (`binning.ts`). Costed and declined: subsampling the
@@ -183,18 +132,6 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT maf-subpixel-floor -->
 
-- A floor over-states: every short run claims a whole pixel, so a noisy stretch
-  becomes hard bars.
-- A device-px floor moves with the monitor (0.5 CSS px at dpr 2).
-- Floor + span alpha still spreads each run over a pixel it does not occupy.
-- 4x MSAA does not drop sub-pixel cells: adjacent cells are non-overlapping
-  primitives.
-
-The Canvas2D row predates the change that feeds one `span` mark to both backends;
-re-measure before quoting it. `products/jbrowse-web/browser-tests/probe-maf-subpixel.ts`
-re-takes it and needs a real GPU (`--use-gl=angle`), since SwiftShader is a
-different rasteriser.
-
 ### Wiggle density's 1.5 px floor is the same picture on a tiling
 
 `wiggleDensity.slang` floors bins that tile the row. `extendToMinWidthX` grows a
@@ -224,17 +161,7 @@ buys the only legibility those marks have, since unfloored a 0.25 px mark misses
 every pixel centre. `plugins/wiggle/src/shared/shaders/densityMinWidth.test.ts`
 pins both halves.
 
-`sizeAlpha` is not the analogue. `plugins/alignments` ships floor+alpha
-(`alignmentsUniforms.slang`) for indels only; a mismatch is a point event that
-stays opaque. `sizeAlpha` gives back the ink a widened mark took, so on a cell
-already drawn at natural width it double-counts the narrowness.
-
 ## MAF row to other genome navigation
-
-A MAF row knows its species' own coordinates (`chr`, `srcStart`, `strand`,
-`srcSize`); when the session can load that genome, right-click a row opens it in a
-new LinearGenomeView ([VIEW_INIT.md](VIEW_INIT.md) §"Launching a view on a
-region").
 
 **The sample to assembly mapping does not belong in the plugin.** Sample ids come
 as UCSC db names, scientific names that map to several assemblies (the alignment
@@ -243,28 +170,7 @@ lab-internal ids. The mapping is provenance from whoever built the alignment, so
 `Sample` (`plugins/maf/src/types.ts`) carries an optional `assemblyName` in the
 track config; unset means not navigable.
 
-Under `plugins/maf/src/LinearMafDisplay/`: `components/findRowSpan.ts` computes
-the row's locus and shares `forwardPos` with `findRowHover.ts`, so the `-`-strand
-mirror agrees between tooltip and target; `stateModel.ts::rowNavigationTargets`
-returns spans per row; `components/sampleNavigationItems.ts` adds the menu
-entries; `openSampleInNewView.ts` keys the view `<displayId>_<assemblyName>`.
-
-- **`assemblyConfigLocation`** lets a portal-scale site (one config per genome)
-  work. `ensureAssembly` fetches that config and `addSessionAssembly`s it with
-  `addRelativeUris`; it is a `UriLocation` so a config can point at a sibling by
-  relative path.
 - **`ensureAssembly` probes with `assemblyManager.has()`, never `get()`.** `get()`
   on an unknown name reports to `Core-handleUnrecognizedAssembly`, which made the
   Hubs plugin connect to a nonexistent config and show a 404 over a navigation
   that worked.
-- `rowNavigationTargets` falls back to the sample id when `assemblyManager.has(id)`;
-  a config mapping still wins.
-- Reproduce without a portal: `test_data/volvox/config_maf_navigation.json`.
-
-**The synteny view, cut from the columns.** `launchMafRowSynteny.ts` builds a
-session `SyntenyTrack` over a `FromConfigAdapter` from the fetched blocks' gapped
-columns (`addSessionTrackConf`, since the user stood it up). `FromConfigAdapter`
-filters by refName alone, so mate copies are not stored: on the E. coli pangenome
-every contig is `chr`, and a mate copy would answer the reference row's query too.
-The all-samples stack is not offered; a 464-haplotype MAF needs a row picker
-first.

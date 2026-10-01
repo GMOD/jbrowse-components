@@ -68,7 +68,7 @@ Codegen string checks miss the bugs that matter. Run the *actual* generated scri
 
 ## What the grammar supplies
 
-A mark display's config is a ggplot spec in another dialect ([ADR-159](../architecture-decision-records/adr-159-a-mark-is-spelt-as-vega-lite-spells-one.md)): marks map to `geom_*`, encoding channels to `aes()`, channel scales to `scale_<aes>_*`, `transform[]` to base R over the frame the layer reads, `facet` to `facet_wrap`. What stays hand-written per display is what is not a channel (layout, tiering, fetch shape; [SESSION_SPEC_FORMAT.md](SESSION_SPEC_FORMAT.md) §"The assessment") plus alignments, whose overlays join by `read_index` and cannot use the generic region reader.
+A mark display's config is a ggplot spec in another dialect ([ADR-159](../architecture-decision-records/adr-159-a-mark-is-spelt-as-vega-lite-spells-one.md)): marks map to `geom_*`, encoding channels to `aes()`, channel scales to `scale_<aes>_*`, `transform[]` to base R over the frame the layer reads, `facet` to `facet_wrap`. What stays hand-written per display is what is not a channel (layout, tiering, fetch shape) plus alignments, whose overlays join by `read_index` and cannot use the generic region reader.
 
 ## The mark translator's rules
 

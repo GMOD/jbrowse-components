@@ -28,11 +28,6 @@ registered view type's property list (including a property `extendViewType`
 composes). **Declaring a property is declaring it authorable**; no per-setting
 arm exists to forget.
 
-Each view type registers its launch keys as
-`Record<keyof Commands, LaunchKeySpec>`, so a command the view interprets and
-nobody registered is a compile error. LGV's keys are `InitState`
-(`plugins/linear-genome-view/src/LinearGenomeView/types.ts`).
-
 ## An assembly name read off a track config: canonical, **and** screened
 
 Any assembly name from a track config's `assemblyNames` reaching an
@@ -44,12 +39,6 @@ Any assembly name from a track config's `assemblyNames` reaching an
 - **present** — `assemblyManager.has`, never
   `getCanonicalAssemblyName(...) !== undefined`. A missing name sets the view's
   error, and `showImportForm` replaces the user's stack with an import form.
-
-Keep one derivation per path (`connectedEndpoints`, `syntenyTrackRows`). Nothing
-renames assembly names at the RPC boundary, so unlike refNames there is no
-worker-side exception. [REFNAME_NAMESPACES.md](REFNAME_NAMESPACES.md)
-§"Assembly names are a third namespace" owns the follow and mate-dictionary side
-of the same defect.
 
 ## The partition
 
@@ -68,63 +57,12 @@ the partition captured (`reportUnknownKeys`, `reportMalformedRows`).
   replaces `CustomC`, so a `.props()` added after it is invisible to
   `SnapshotIn`.
 
-`tracks` and `views` name both an authored recipe and built state, so each
-colliding key registers a discriminator that splits one array per entry
-(`trackEntries`: a string or `'trackId' in entry`, since `BaseTrackModel`
-declares no `trackId` and specs write display types inline; `rows`: an entry
-with no `type`). A **row** list cannot be split: `views` indexes against
-`levels` and per-level `tracks`, so a mixed list goes whole to the bucket
-`afterAttach` reports, and the view comes up on its import form rather than a
-misaligned stack.
-
-**`replay`**: a launch key that IS a declared property, but whose launch needs an
-ordered imperative step beyond the property write, lands on the prop and rides in
-the blob too. The deciding question: _on an already-materialized view, does
-writing the property alone produce the correct picture?_ `sameScale` is the only
-member: writing it alone skips `applySharedScale()`, which has to run after
-`autoDiagonalize` re-centres the rows. `launchInput.test.ts` beside each view
-pins its registration.
-
-## The registration is the one declaration
-
-`ViewType.acceptedKeys` — state model properties, launch keys and `passThrough`
-— answers "what may an author write on this view". Its consumers are
-`loadSessionSpec` (a spec never becomes a snapshot, so it reports through
-`unknownKeysMessage` as an error), `jbrowse validate` (ADR-120),
-`check-build-scripts.py`, the URL parameters page's `SPEC_KEYS` marker blocks,
-and the compiler through `ViewTypeRegistry`: `ViewSnapshotInput<N>` makes
-`session.addView('LinearGenomeView', { asembly })` a compile error at the
-literal site. A new view earns this by augmenting `ViewTypeRegistry` and
-annotating its model (`const stateModel: ViewTypeRegistry['X'] = …`). A spec
-built in a variable annotates itself, and a deliberately out-of-contract row list
-says so with `addView<string>(…)`.
-
-**An out-of-tree view that registers nothing keeps MST's silent drop**, and a
-spec built through untyped indirection still needs the runtime path and the
-validator.
-
-## The flow
-
-The launcher sorts nothing: `LaunchLinearGenomeViewF` validates `assembly` and
-hands the rest to `addView`, which is what makes a spec, a `defaultSession` view
-and an `addView` literal one shape. LGV's `afterAttach` `setupInitAutorun`
-waits for `initialized`, then applies tracklist → loc | displayedRegionNames |
-all regions → tracks → nav → highlights, then clears. A highlight-only launch
-must not clobber existing navigation, but an explicit `displayedRegionNames`
-navigates even when regions exist. A bare string where an array belongs
-(`tracks: 'genes'`) is one entry, not its characters.
-
 **The URL wire layer restates the param list.** `LgvUrlInit` is an all-string
 shape, and app-core cannot import the LGV plugin, so adding a URL param means
 touching both it and `InitState`. jbrowse-web's `buildLgvInit` is annotated with
 the real type, and that is where the two are checked against each other.
 
 ## The shared state machine
-
-`installInitAutorun(self, { name, ready, materialized, apply })`
-(`packages/core/src/util/installInitAutorun.ts`) owns the re-entry guard, the
-serialized drain, the identity-checked clear and the failure policy for LGV,
-dotplot, synteny, circular and spreadsheet. Its doc comment carries the policy.
 
 ### Mid-apply waits, and why there is no timeout
 
@@ -148,14 +86,6 @@ modal-drawer layouts. Use MobX's `when(..., { timeout })`, which disposes its
 timer, never `Promise.race([when(cond), setTimeout])`, whose losing timer
 outlives the race.
 
-- **Anything `apply` sets up front must be re-declared by the next pass.** A
-  superseded apply can stop between its first write and the step that resolves
-  it (`beginAutoDiagonalize` declares `pendingAutoDiagonalize` for the current
-  pass).
-- **A readiness gate must cover its own apply window.** Both comparative views
-  fold `initPending` into `settled`: rows exist several awaits before their
-  tracks, and an empty one settles vacuously.
-
 ## The loading state machine (`model.ts` getters)
 
 Every gate reads `pendingLaunch(self.launch)`, never the raw property: **a
@@ -164,10 +94,6 @@ to launch**, and a view that thought otherwise would wait on an assembly nobody
 named. It returns the blob itself, never a copy, because the autorun clears by
 identity. `awaitingInitNavigation` is `!!pendingLaunch && !hasDisplayedRegions`,
 not the comparative views' `initPending`, which is the bare `!!pendingLaunch`.
-
-`withLaunchInput`'s `postProcessSnapshot` keeps the blob only while the view's
-`materialized` predicate says no, so an autosave before navigation does not
-save a view that reloads onto its import form.
 
 ## A nested view's `bodyMounted` reads true while it is out of the DOM
 
@@ -214,22 +140,7 @@ graph is a track of the linear view and launches nothing).
    Hardcoded adapter names left the graph launcher dead when those adapters were
    removed. Check registration first: `getAdapterType` throws on an unregistered
    type.
-4. **Name the dataset the launch reads from, where it fits.** With 0 capable
-   tracks, show no menu item. A **bounded list** gets one entry whose submenu
-   names each, a single track included (`launchTargetsMenuItem`,
-   `@jbrowse/core/ui`). An **unbounded list** gets a flat entry with the dataset
-   as a field of the dialog; a cascading submenu of every capable track is worse
-   than the unnamed item. A launcher with **no dialog** owes the submenu.
-5. **Offer a launch on the one assembly the source can be cut on, greyed out
-   elsewhere naming it.** A graph track names its reference first, so the view
-   refuses the rest and an old saved session cannot draw in the wrong frame.
-   Offering all framed a GRCh38 backbone on a haplotype's own contig with no
-   error.
-6. **Never push a launch entry into a menu top level.** Group with
-   `pushLaunchViewMenuItem` (`@jbrowse/core/ui`); in the rubberband menu extend
-   `rubberBandLaunchMenuItems()`, which `LinearGenomeView/menuItems.ts` wraps in
-   a "Launch" submenu.
-7. **Take the widest block, never the first.** `dynamicBlocks.contentBlocks` and
+4. **Take the widest block, never the first.** `dynamicBlocks.contentBlocks` and
    `getSelectedRegions()` return display order, and a rubberband dragged across a
    region boundary puts a sliver first, so `[0]` frames 3 bp of the region the
    user left. `widestRegion` (`regionLaunchMenuItems.ts`) and `widestBlock`
@@ -238,30 +149,6 @@ graph is a track of the linear view and launches nothing).
    item renders enabled and cuts a degenerate graph. **No figure can cover this**
    (no spec has a multi-region view); the unit tests are the coverage.
 
-### Where the launchers diverge
-
-**The dialog split is real.** A subgraph is fully determined by
-`(region, trackId)`; the set of assemblies aligning to a locus is only knowable
-by fetching, and their order changes which comparisons exist (ribbons draw
-between *adjacent* panels only). Persistence differs too: the graph writes a plain
-snapshot the view resolves on mount (`loadedTrackId` + `loadedRegion`); synteny
-bakes resolved locstrings into `init`, so a reload cannot re-derive and the
-dialog does the RPC up front. Persisting `(trackId, region, ordered assembly
-list)` and letting the view resolve would align them.
-
-### Not built, roughly by value
-
-- **A synteny size guard.** The *visible region* entry at whole-chromosome zoom
-  is a whole-genome `CoreGetFeatures` against an all-vs-all track. Measure before
-  picking a cap; copy the graph pattern (disabled item carrying the size in
-  `disabledHelpText`).
-- **`connectedViewId` for synteny**, so a launched stack can highlight back into
-  its LGV.
-- **The closed-track case.** The objection to session-wide discovery was the
-  preselection, not the offer: an entry shown when no synteny track is open, with
-  the dataset select empty and required, restores "browsing genes, want to
-  compare". A product call.
-
 ### Launcher gotchas
 
 - **A CIGAR-less alignment is still clipped to the selection, by
@@ -269,17 +156,6 @@ list)` and letting the view resolve would align them.
   is one and interpolates otherwise. Framing on the whole block ignored the
   selection. Not an edge case: PAF without `-c`, MashMap, MCScan and the coarse
   PIF tier carry no `cg`.
-- **A panel is every block its mate aligns the region with, not the widest.**
-  `pickMatesForRegion` groups and `resolvePanel` unions spans, since an HSP table
-  is one row per hit. Three rules bound the union: the mate **contig** covering
-  most of the region wins; the panel opens reversed only when the minus strand
-  carries most of it; and `keepNearMedian` (shared with the multi-way lane frame)
-  drops a hit further than 1.5 regions from the length-weighted median as repeat
-  noise.
-- **Only coordinates cross the RPC.** `SyntenyDiscoverMates` returns
-  `ResolvedPanel[]`, since the CIGAR is unbounded. **Round outward, in
-  `resolvePanel` and nowhere else**: a span rounded in opens inside the row the
-  user read.
 - **A mate that is not a declared assembly is dropped from the launch, and the
   dialog has to say so.** `assemblyForPanSNName` falls back to the bare PanSN
   sample name, so an all-vs-all file yields mates the display draws and the
@@ -292,37 +168,7 @@ list)` and letting the view resolve would align them.
   `RpcMethodTypeWithRenameRegion`; see
   [REFNAME_NAMESPACES.md](REFNAME_NAMESPACES.md)). Hosted GRCh38 FASTAs use bare
   `1`/`6` names while graph stable names are `GRCh38#0#chr6`.
-- **The graph adapters live in the plugin repo.** A subgraph comes from an
-  adapter declaring `getSubgraph` (`RgfaTabixAdapter`, `GbzBaseSyntenyAdapter`);
-  `MinigraphBubbleAdapter` reads a summary index and cannot cut one.
-- **Menu rows have stable testids** from `makeTestId` (`CascadingMenu.tsx`):
-  `cascading-submenu-<label>` / `cascading-menuitem-<label>`. Use them, not text:
-  a track's name is usually also its view label and a text match resolves to that.
-- **Launching by `session.addView` bypasses invariants.** Synteny routes through
-  `launchSyntenyView` (`packages/synteny-core`), which owns the "≥2 views"
-  check.
 - **`getSession()` throws on a track *config* node.** Session-wide discovery
   hands back `AnyConfigurationModel`s outside the session tree; pass the session
   in. It fails as `no session model found!` rendered inside the dialog, looking
   like an empty result.
-
-### Verifying a launcher
-
-The jsdom test `products/jbrowse-web/src/tests/LGVSynteny.test.tsx` drives
-`view.rubberBandMenuItems()` and still missed that nothing *rendered*; generating
-the figure (`multiway_synteny/ecoli_launch_from_selection`; regen loop in
-`website/scripts/screenshot-review-plan.md`) caught the rest. Pick the demo
-window with care: a window inside the paa operon island makes discovery return
-one mate and degenerates to the pairwise case. Graph figure specs assert only a
-picture, so review by eye:
-
-- **Pick the clicked feature from the index.** A segment with no rank>0
-  neighbour cuts a straight run of backbone.
-- **Target the rendered label, not a coordinate**:
-  `[data-testid="feature-name-<label text>"]`.
-- **A graph canvas is too sparse for the content-stable diff gate.** Regenerate a
-  deliberate layout change with `--force`.
-
-**Figures cover only what is published.** The tutorials load the plugin from the
-plugin list's `latest/` url, a code-split bundle: grep the entry *and every chunk
-it references* and diff the entry's md5 against the local `dist/`.

@@ -46,7 +46,7 @@
 // against a measured 1.4-1.8x that is forty lines.
 //
 // **And the carrying cost is known here rather than hypothetical.**
-// ARCHITECTURAL_LIMITS.md's entry on the inflate pool is 20 workers each holding
+// The inflate pool is 20 workers each holding
 // their own grow-only `WebAssembly.Memory`, invisible to `Runtime.getHeapUsage`.
 // A second module multiplies that again, for a walk that is a fraction of one
 // phase of one adapter's parse.

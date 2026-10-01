@@ -129,19 +129,17 @@ is declared in `STATES_NO_RULES`.
 - Don't give a new fetch installer its first run at the install call. It owes
   that run to a microtask: a model is routinely built and then configured in the
   same synchronous block, and a fetch issued between those two lines is issued
-  against un-configured state and reissued. Install order then stops mattering.
-  See [the leading edge](reference/FETCH_KEYS.md#every-fetch-autorun-runs-on-the-leading-edge).
+  against un-configured state and reissued. Install order then stops mattering. See [the fetch skeleton](reference/FETCH_KEYS.md#the-fetch-skeleton-one-latest-wins-machine-one-phase-contract).
 - Don't leave something downstream of a fetch that is only correct because the
   fetch is slower than it. That is a coupling nobody has stated, and the
   empty-versus-stale distinction is where it bites — an empty block list is not
   a stale domain but the fallback one. `settledDynamicBlocks` is the in-tree
-  fix. See [the leading edge](reference/FETCH_KEYS.md#every-fetch-autorun-runs-on-the-leading-edge).
+  fix. See [the fetch skeleton](reference/FETCH_KEYS.md#the-fetch-skeleton-one-latest-wins-machine-one-phase-contract).
 - Don't read something `untracked` because tracking it looks expensive. The
   test is whether the decision branches on it: if it does, it is tracked
   whatever the idle-run cost, and the only three grounds are a self-write, an
   effect input and a dev-only check. `no-restricted-syntax` fails a bare
-  `untracked(` and each site names its ground. See [`untracked` names its
-  ground](reference/FETCH_KEYS.md#untracked-names-its-ground-and-a-perf-guard-is-not-one).
+  `untracked(` and each site names its ground. See [the fetch skeleton](reference/FETCH_KEYS.md#the-fetch-skeleton-one-latest-wins-machine-one-phase-contract).
 - Don't measure bytes anywhere but in the feature RPC. `gateEnabled` is the
   one opt-in and `byteLimit` in the call is the whole display-side contract;
   a separate estimate round trip is the pre-flight path no display issues
@@ -684,7 +682,7 @@ in four docs:
 
 | Doc and section | Read when |
 | --- | --- |
-| [GPU_DISPLAY_LIFECYCLE.md](reference/GPU_DISPLAY_LIFECYCLE.md): The core contract / What the mixin owns | Wiring a new display's render lifecycle |
+| [GPU_DISPLAY_LIFECYCLE.md](reference/GPU_DISPLAY_LIFECYCLE.md): The core contract | Wiring a new display's render lifecycle |
 | GPU_DISPLAY_LIFECYCLE.md: Context-loss recovery | Debugging "why didn't it redraw", context loss, tab visibility |
 | GPU_DISPLAY_LIFECYCLE.md: Upload patterns / `installUpload` | Choosing what a display keys its payloads by; O(N²) upload bugs |
 | [GPU_BACKENDS.md](reference/GPU_BACKENDS.md): RenderingBackend interfaces per plugin | Declaring a mark list; going Canvas2D-only |

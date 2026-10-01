@@ -9,8 +9,7 @@
 // path never binds one) and shows up only as garbled geometry — so the view is
 // chosen so several features run past BOTH viewport edges on BOTH strands, and
 // the »/« markers pinned at each edge must agree with the strand arrows drawn
-// on the same glyph. Read the PNGs; the diff numbers are the second oracle
-// (GPU_SHADERS.md §"Which backend disagreement is evidence").
+// on the same glyph. Read the PNGs; the diff numbers are the second oracle.
 //
 // The proof that a backend ran is the display canvas's own committed context
 // kind, read back with `getContext` — never the URL, which `?renderer=` pins

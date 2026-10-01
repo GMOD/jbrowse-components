@@ -99,9 +99,8 @@ async function buildPipeline(
   })
 }
 
-// Every declared pass up front, unlike WebGL2's first-draw link; see
-// ARCHITECTURAL_LIMITS.md §"Every WebGPU display resolves its whole pass list
-// before it can paint". Each pass compiles as soon as its own WGSL arrives.
+// Every declared pass up front, unlike WebGL2's first-draw link. Each pass
+// compiles as soon as its own WGSL arrives.
 async function resolvePipelines(
   device: GPUDevice,
   descriptors: PipelineDescriptor[],

@@ -60,8 +60,8 @@ test('an arrival uploads before anything paints, whether or not render reads the
   }
 })
 
-// The same question for the indirect shape, because ARCHITECTURAL_LIMITS named
-// it as the one that could not be fixed by deleting a direct read: a display
+// The same question for the indirect shape, the one that could not be fixed by
+// deleting a direct read: a display
 // whose render callback reaches the data through a computed chain
 // (`renderState` → lanes → the map) rather than reading it. Both reactions are
 // woken by the same write, and the upload still lands first.

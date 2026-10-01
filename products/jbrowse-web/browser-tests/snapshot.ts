@@ -455,8 +455,7 @@ async function waitForMorphIdle(page: Page, timeout = 10000) {
 // toolbar divs and ruler into the canvas rectangle. That is 3-4% drift on the
 // targeted alignments pairs and 16-27% on the full-page ones — the scroll
 // outlives the call, so the `page.screenshot()` that follows photographs a
-// scrolled app. The render was never wrong; see
-// reference/FIGURE_CAPTURE.md, "`el.screenshot()` scrolls the element first".
+// scrolled app. The render was never wrong.
 //
 // So measure the rectangle and clip to it, which is all `el.screenshot()` does
 // after the scroll it is being avoided for. Capturing where the page already

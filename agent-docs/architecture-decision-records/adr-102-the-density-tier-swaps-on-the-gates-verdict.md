@@ -7,8 +7,7 @@ summary: "Where the region-too-large gate refuses, a display with a density sour
 
 ## Status
 
-Accepted (2026-09). The mechanism is documented in
-[REGION_TOO_LARGE.md § The density tier](../reference/REGION_TOO_LARGE.md).
+Accepted (2026-09).
 
 ## Context
 

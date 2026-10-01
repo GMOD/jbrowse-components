@@ -67,9 +67,7 @@ what `inputs` reads changes, which is the invalidation the display means.
   nothing. Getting `inputs` wrong is now the only way to rebuild every region,
   and `inputs` is one declaration per display rather than a property of a
   closure. `installPerRegionLifecycle.test.ts` pins both halves.
-- **A region arrival stops painting twice**, which is why
-  `reference/ARCHITECTURAL_LIMITS.md` §"A region arrival draws twice" shrank to
-  what is still unexplained. An `autorun` created inside a running reaction is
+- **A region arrival stops painting twice**. An `autorun` created inside a running reaction is
   *scheduled*, not run inline, so the per-key autorun that owned the upload could
   never run in the pass that spawned it: a render callback observing the map
   painted the pre-upload state, and the real state followed on the `renderTick`

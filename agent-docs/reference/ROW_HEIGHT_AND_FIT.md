@@ -27,10 +27,6 @@ presets)` and the one `SetRowHeightDialog`. `rowProportion` is the optional
 second axis: a display that exposes `rowProportion` / `setRowProportion` gets a
 second dialog field.
 
-**`sources` is the row list and is a resolved array on every row display**,
-never `undefined`. An empty `sources` means "no rows to draw"; "no fetch has
-landed" is `sourcesKnown` / `loadedRegions` / `displayPhase`.
-
 `effectiveRowHeight` is the cross-plugin ABI. `applyRowResizeWheel.ts` (core)
 and `TreeDrawingModel` (tree-sidebar `types.ts`) read it by that name off a model
 they were handed, so the duck types stay even though the mixin declares the
@@ -50,15 +46,6 @@ value (consumers divide by it), and in drawing code widening a sub-pixel band
 the floor, called once from `RowHeightMixin`; `RowHeightMixin.test.ts` is the one
 set of assertions.
 
-### `setFitToHeight` seeds the height slot only where `height` is derived
-
-maf and canvas re-seed the `height` slot on entering fit; variants does not. maf
-and canvas **override the `height` getter** to a content-derived value, so in
-fixed mode `self.height` is not what the slot holds, and skipping the re-seed
-drops the rows onto a stale value. Ask which `height` the display has, not which
-neighbour it resembles. That is why `setFitToHeight` stays per display while
-`setRowHeight` lives on the mixin.
-
 ### Drag-resize leaves a fixed height alone
 
 Resizing the track writes `height` and nothing else. In fit mode the rows
@@ -73,39 +60,3 @@ row height, and `setHeight` re-fixes it at `newHeight / nrow`. Canvas overrides
 height, keeping the `resolveRowHeight` call inside the override. The mark display
 overrides it because its bands are rows only under `rows`.
 
-### The rows viewport has a name per display
-
-`autoRowHeight` divides the height available to rows, and each display subtracts
-different chrome: canvas `fitTargetHeight`, maf `rowsHeight` (bounded by
-`maxRowsHeight`), variants `availableHeight`, marks `scrollViewportHeight`.
-
-## `squashToHeight` is a different concept
-
-`hic/LinearHicDisplay` and `variants/LDDisplay` have a **boolean**
-`squashToHeight` slot that squashes a triangle vertically to the display height;
-no rows are involved. The name differs from `setFitToHeight()` on purpose: the
-two once shared a name with different arity and meaning.
-
-## Why a flat slot, not a member of `rows`
-
-`rowHeight` is Vega-Lite's `height: {step}`, a property of the view beside
-`height`, not of the row encoding. `rows` is a channel a settings bag replaces
-whole on three displays, so a `rows.step` written through a session spec or agent
-call would erase the order, labels, tree and focus.
-[ADR-194](../architecture-decision-records/adr-194-a-spans-row-proportion-is-the-marks-and-row-height-stays-the-displays.md)
-records the call.
-
-## Why one number with a sentinel, not a mode enum
-
-Track height uses a `heightMode` enum behind `HeightModeMixin`; row height uses
-one number with `0` as fit. An enum would not remove `effectiveRowHeight` or the
-`resolveRowHeight` floor (the viewport can be 0px). Not planned.
-
-## Where the values live
-
-`rowHeight` is a config slot, not a display-instance prop, so a fixed height
-survives unticking and reticking the track. `rowHeightResolution.test.ts` pins
-that the value lands on `configuration.rowHeight` and not in the display
-snapshot. `CONFIG_PATTERN.md` lists a fit-to-height sentinel as state for a
-bespoke prop; that guidance concerns the **naming** half (a sentinel-bearing
-value needs a distinct resolved getter), not avoiding the config node.

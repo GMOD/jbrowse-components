@@ -326,7 +326,7 @@ export function findLongDescriptions({
     .sort((a, b) => b.size - a.size)
 }
 
-// every section hydrates a whole engine on load: EXAMPLES_SITES.md §"Pages and groups"
+// every section hydrates a whole engine on load
 export const MAX_SECTIONS_PER_PAGE = 4
 
 export function findCrowdedPages(

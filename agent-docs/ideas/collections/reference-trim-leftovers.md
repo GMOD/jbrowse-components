@@ -160,3 +160,51 @@ Open items the second, harder trim removed from the docs.
 - **SV** (SV_MULTIHOP): seven unexplained HG008-T misses.
 - **Desktop isolation** (DESKTOP_CONTEXT_ISOLATION): the `isNode` claim is
   unprobed.
+
+## Third pass (2026-09-30)
+
+Items the whole-unit cuts removed. Same caveat: unverified since the cut.
+
+- **BAM** (BAM_STACK_INTEGRATION): no bgzf worker-pool sharing across RPC
+  workers (seam 1); the MD-tag rescan fix belongs in `@gmod/bam` (seam 5); a
+  QNAME-write API belongs on `BamRecord` (seam 6); remote 300x BAM fetches issue
+  many range requests (seam 7).
+- **Synteny** (SYNTENY_LOD): slim the coarse row and write a coarse/fine ratio
+  into the `#pif` header; an unindexed-hull fix for all-vs-all picking; three
+  parked per-candidate picking ideas.
+- **View init** (VIEW_INIT): a synteny size guard; `connectedViewId` for
+  synteny; show the launcher when no synteny track is open.
+- **Pangenome** (PANGENOME_GRAPHS): a linearized deletion track; release-2 files
+  nothing reads yet; the abandoned gfa-to-tabix lessons.
+- **Desktop isolation** (DESKTOP_CONTEXT_ISOLATION): the six-step isolation
+  order; probe whether a page-built Worker inherits `nodeIntegrationInWorker`;
+  argument validation; the `.cjs` preload note.
+- **ARC_BAND:** draw one mark per cluster.
+- **TOOLCHAIN:** the list of lint rules measured and rejected.
+- **Session and fetch** (SESSION_SPEC_FORMAT, REGION_TOO_LARGE): spreadsheet
+  rows leave the session snapshot silently and a local import cannot restore
+  them; no fetch prioritization or back-pressure; per-JS-context pools multiply
+  by the RPC worker count; the linear region walk has no cumulative index; no
+  keyboard path to features; the `LGVSyntenyDisplay` gate is inert; no BigWig
+  size estimate; the density-axis extrapolation is non-monotone.
+- **Pangenome reader** (HPRC_RELEASE2, MULTIWAY_SYNTENY_DISPLAY): the reader's
+  `align()` and `gfa_to_pairwise_paf.py` emit different CIGARs and nothing
+  measures it; `launchFromGraph` never builds a MultiWay display (send
+  `GraphNode.samples` to `setSelectedLanes`); the `SyntenyFollow` and
+  `RowFrame` shapes do not unify.
+- **MAF** (MAF_LARGE_BLOCKS): a per-line safety valve in the adapter; the
+  fetch-cost work is parked; the all-samples synteny stack is not offered.
+- **Bundle** (EAGER_BUNDLE): a ~1% ratchet over the probe's own-graph figure;
+  verify ESM workers in Firefox; a synteny renderer behind its own `import()`.
+- **Grammar** (GRAMMAR_OF_GRAPHICS): migrate `rowGroups[].color` to
+  `rowColor` (step 4 of one-row-model-for-displays-that-stack-by-a-key).
+- **ABI** (PLUGIN_ABI_STABILITY): the removal list for the session,
+  `product-core` Session barrel and plugin `exports` objects; the `getReferring`
+  signature trap (takes a `trackId` string, not the config object);
+  `createTimeGate`, the shader `SOURCE`/`BINDINGS` and `releaseTargets` ledger
+  entries.
+- **Gate** (CROSS_BACKEND_GATE): the AA-ramp prediction note, closed
+  unfalsified.
+- **Misc:** the K562 BCR-ABL1 acceptor cause; the Firefox WebGL2 context
+  ceiling; the per-base wall at wide zoom; the per-base cancel-overrun figure is
+  stale (pre-ADR-122).

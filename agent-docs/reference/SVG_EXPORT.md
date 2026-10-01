@@ -11,48 +11,24 @@ SVG export and on-screen rendering share the same pure Canvas2D draw functions.
 source of truth, and SVG export runs it.** See `GPU_BACKENDS.md` §"Keeping the
 two backends in parity".
 
-## Two draw-API shapes
-
-- **Direct**: `drawXxxBlocks(ctx, regions, blocks, state)` is the only entry
-  point; the on-screen `Canvas2DXxxRenderer` and `renderSvg.tsx` both call it.
-- **Builder wrapper**: when fetched data needs encode/filter/merge first, add
-  `drawXxxToCtx(ctx, sources, blocks, state)` for `renderSvg.tsx`. Add it only
-  for that, not for per-block versus monolithic upload.
-
-Every entry point takes any 2D-context-shaped surface (`Ctx2D`). SVG export never
-instantiates a Canvas2D backend, which requires a canvas at construction.
-
 ## The renderSvg.tsx shape (every LGV display)
 
 `renderSvg` is optional. A display without one drops from the export like a
 minimized track, and `notifySkippedSvgTracks` names it.
 
-`renderDisplaySvg` (`packages/display-kit/src/renderDisplaySvg.tsx`) awaits
-readiness, resolves view geometry once and mounts terminal-state chrome. A
-display writes only the body (`LgvSvgBodyProps`, usually a `PaintLayer`).
-
 - The body is a **component**, not a callback returning JSX: `SvgChrome` renders
   its terminal box instead of its children, so the body never runs in a terminal
   state and never re-detects one from empty data.
-- `renderBlocks` and `canvasWidth` come off the props; a body never re-derives
-  them.
 - `overlays` is false under `plotOnly` (the circular view's ring export), so a
   body drops labels, trees, arcs and other overlays the screen draws over it.
 - Never re-inline `when(() => ...)` or mount `SvgChrome` by hand. Duck-typed model
   interfaces `extends SvgExportable`, so a missing field fails the build.
 - Render empty naturally. Never gate a body on data size: it wrongly drops a
   legitimate empty render.
-- Non-LGV displays (dotplot, synteny, circular) keep their own wrapper and call
-  `awaitSvgReady` themselves.
 
 **The export canvas width is `view.width`**, not `renderState.canvasWidth`
 (`view.trackWidthPx`, 2px narrower). Reusing the on-screen width clips the last
 column; a body reusing `model.renderState` overrides `canvasWidth`.
-
-**The one permitted body guard is a TypeScript narrow**, only when destructuring
-fields off a single nullable object. It is runtime-unreachable in export. When a
-`renderState` getter's only `undefined` trigger is `!view.initialized`, make it
-non-nullable instead.
 
 ## The `svgReady` gate
 
@@ -64,28 +40,6 @@ datum (partial multi-region export) and stays true through an in-place refetch
 `svgReady` excludes `canvasDrawn`: an off-screen export runs on a display whose
 canvas may never have painted (headless jbrowse-img), so gating on the paint flag
 hangs forever.
-
-`computeSvgReady(terminals, dataCurrent)` (`@jbrowse/core/svg/svgReady`) is the
-one formula. `dataCurrent` is a thunk so a banner-covered display does not
-subscribe to view churn. `fetchCanceled` is a required terminal: a user cancel is
-a resting state that an export never releases. `foundationSvgReady(self)` holds
-the field mapping for the two LGV foundations.
-
-Every foundation answers `dataCurrent` (does the held data match the screen?) by
-one of two mechanisms; consumers read the name, never the mechanism:
-
-- `MultiRegionDisplayMixin`: spatial coverage, `viewportWithinLoadedData &&
-  loadedRegions.size > 0`.
-- Signature compare (`GlobalFetchMixin`, `KeyedFetchMixin`, synteny, dotplot):
-  `isDataCurrent(loaded, current)`. Presence alone (`rpcData !== null`) lets a
-  pan/zoom export resolve on the pre-pan matrix, and `displayPhase !== 'loading'`
-  captures an empty render because the trigger is a debounced autorun. The
-  default `viewSignature` (`undefined`) never fetches and never exports, so a
-  forgotten override hangs the export deliberately: stale ships wrong pixels.
-
-**An empty viewport is terminal.** `viewportEmpty` makes it terminal inside
-`foundationSvgReady`'s freshness thunk and feeds `computeActivityPhase` and
-`paintInert`, so the three "finished" answers cannot disagree.
 
 #### Who answers `dataCurrent` by signature
 
@@ -136,54 +90,7 @@ leaves it declining forever:
   `setError`, not `notifyError`; retriable ones run from an autorun on
   `reloadCounter`. Cover an empty binsize list too.
 - **The containing view is empty** (chord display's `extraTerminal`).
-- **The loading overlay is the on-screen twin**: `!fetchLanded && !error` spins
-  forever. Answer once and read one getter everywhere, as
-  `LinearSyntenyDisplay.fetchInert` does.
-- **Cross-display readers** (`displaysSettled`) read `fetchInert` too, which is
-  why it is an overridable `FetchMixin` hook defaulting to `false`; the strict
-  default hangs, which is diagnosable, rather than reporting done with nothing
-  drawn.
-
-### View geometry is measured after the displays' waits
-
-Read canvas size on the line after the `Promise.all` of display waits. Dotplot
-rects and the circular figure's size, centre and rotation move during the wait.
-The circular view's export padding is `max(paddingPx, measured label width)`,
-measured in `rulerLabels.ts`.
-
-### Displays outside the two LGV mixins
-
-- **Multi-LGV synteny** (`BaseDisplay`, own fetch) calls `computeSvgReady` with
-  `dataCurrent = ready && !refetching && dataCurrent`; `!refetching` covers the
-  in-flight RPC and `dataCurrent` covers the 500ms debounce window.
-- **Dotplot** reads `instanceData`, not `geometry`, because the export polls
-  outside a reactive context and `geometry` recomputes every segment colour per
-  poll.
-- **Circular rings** skip up front, named through `notifySkippedSvgTracks`, where
-  no image decoder exists (node, jsdom).
-
-Synteny and dotplot draw **no `SvgChrome`**: every display in a level paints the
-same band, so a box would cover its siblings. Views fan out through
-`awaitSvgRenders` so one export names every broken track.
-
-## On-screen capture gate (`settled` -> `*_canvas_done`)
-
-`settled` gates the on-screen GPU canvas for screenshots and browser tests. It is
-`canvasDrawn && !initPending && !pendingAutoDiagonalize &&
-displaysSettled(displays)`.
-
-- `dataCurrent` is needed because dotplot's init-time autoDiagonalize reorders
-  the query axis with no fetch in flight, so stale data draws against new axes.
-- `pendingAutoDiagonalize`: a skipped or errored diagonalize never reorders; the
-  flag makes `settled` wait for the reorder.
-- `initPending`: before the apply adds displays, `every` over none is true and
-  the gate would open on a cleared canvas.
-
 ## PaintLayer: raster-vs-vector dispatch
-
-`PaintLayer` (`@jbrowse/core/util/paintLayer`) renders a 2x DPR raster
-(`opts.rasterizeLayers`) or an `SvgCanvas`. Omitting `opts` pins a layer to
-vector.
 
 - **A scale that rounds to zero must not go in the ctx matrix.** `serializeSvg`
   rounds every `transform` to 2 decimals, so a `ctx.scale` below 0.005 exports
@@ -204,17 +111,9 @@ match, so the second clipped group renders unclipped, which surfaces only when
 two panels share a document. `exportAndVerifySvg` asserts no duplicate ids.
 Prefer `SvgClipRect`.
 
-`SvgCanvas.clip()` is the exception: no MST node is in scope, so it mints ids
-from a module-level counter. Do not change it to `.id`. `withFreshSvgClipIds` in
-`serializeSvg` restarts the numbering per document so exports are deterministic;
-it must stay on a synchronous boundary, since a reset across an `await` collides.
-
 ## Serialization: `serializeSvg`
 
 - **XML entities only.** U+00A0 becomes `&#160;`; `&nbsp;` breaks the `.svg`, the
   PNG path and `rsvg-convert`.
-- **SVG 1.1 colours.** `splitPaintAlpha` splits theme `rgba()` into `rgb()` plus
-  `*-opacity`.
-
 Every export tree mounts `SvgThemeProviders`, or a `usePalette` body draws in the
 default light theme.

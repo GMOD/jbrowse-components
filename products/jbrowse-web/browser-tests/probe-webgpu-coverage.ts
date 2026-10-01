@@ -1,7 +1,6 @@
 // Why the alignments coverage strip is missing from the webgpu capture while
-// every read below it is pixel-identical. The attribution is settled and
-// written up in agent-docs/reference/FIGURE_CAPTURE.md, "`el.screenshot()` scrolls
-// the element first"; this file is the instrument that settled it and the one that now checks
+// every read below it is pixel-identical. The attribution is settled;
+// this file is the instrument that settled it and the one that now checks
 // the fix.
 //
 // The pixel evidence cannot tell a render bug from a capture bug: a strip that

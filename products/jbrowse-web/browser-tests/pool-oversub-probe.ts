@@ -14,7 +14,7 @@
 //
 // The stand-in is NOT free, and the direction of its bias is what makes this
 // worth running. workerCount=1 also serializes every track's PARSE onto one
-// thread (ARCHITECTURAL_LIMITS "Worker assignment is sticky per adapter"), so it
+// thread, so it
 // carries a handicap a real shared pool would not. If it still wins under a
 // constrained core count, oversubscription is real and dominates. If it loses,
 // that is not evidence either way — the handicap could be what lost it.

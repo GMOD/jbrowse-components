@@ -16,9 +16,6 @@ chromosome downloads whatever it holds. Since the collapse onto one measurement
 path this costs nothing per fetch — the executor measures inside the fetch it
 was going to make anyway — so what is left is only the missing bound.
 
-Recorded as a decision (inert, known) in
-[REGION_TOO_LARGE.md](../../reference/REGION_TOO_LARGE.md) §"What is not gated".
-
 ## The cheap half
 
 `PifFile` is `TabixIndexedFile`-backed, so the estimate is the same one-liner

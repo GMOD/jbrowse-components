@@ -99,9 +99,7 @@ chromosome navigation with 8 invalidated regions on one track:
   coarser cancellation unit (one stop token for 8 regions instead of 8).
 
 The residual cost is that **parse** of the 8 regions is single-threaded, since
-they share a worker — a real limit, tracked in
-[ARCHITECTURAL_LIMITS.md](../reference/ARCHITECTURAL_LIMITS.md) §"Worker
-assignment is sticky per adapter". Batching does not improve it (same thread, plus
+they share a worker — a real limit. Batching does not improve it (same thread, plus
 serialized I/O). The only lever is sharding a track across workers, at the cost of
 duplicated adapter caches.
 

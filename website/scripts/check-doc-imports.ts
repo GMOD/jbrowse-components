@@ -548,11 +548,6 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // rather than cited.
   'withSuppressedPanelRemoval',
   'layoutsEqual',
-  // ARCHITECTURAL_LIMITS.md §"A region arrival draws twice wherever the render
-  // autorun observes the data": the name for a deferred-tick fix that was
-  // built, measured and found not to work. The entry exists to stop the next
-  // reader trying it, so the method must stay unwritten.
-  'renderSoon',
   // reference/DISPLAY_HOVER.md: the per-family name the container used
   // to read, quoted to say why a base-declared getter replaced it — three
   // display families spelled it three ways, so the channel carried a third of
@@ -569,10 +564,6 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // computed MAF bridged its own `color` field with, named because that bridge
   // is why three adapter schemas advertised a slot reaching no renderer.
   'labelSources',
-  // ARCHITECTURAL_LIMITS.md §"Worker payloads are collect-then-return": the
-  // retired streaming renderer path contrasted with the current collect-then-
-  // return shape. Gone with the whole renderer registry.
-  'FeatureRendererType',
   // plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md §"A gesture on
   // a followed row takes the anchor": the drag-vs-navigation heuristic tried
   // before root-action gating, named to say it had an untestable false
@@ -608,16 +599,6 @@ const DOC_THIRD_PARTY = new Set([
   // a page worse) so nobody pulls it again. Naming the option is the whole
   // point of the note, and it is not ours to define.
   'advancedChunks',
-  // ARCHITECTURAL_LIMITS.md §"Every WebGPU display resolves its whole pass list
-  // before it can paint": the synchronous half of the WebGPU pipeline API,
-  // named because the entry accepts the eager build specifically to avoid it.
-  // Its async sibling `createRenderPipelineAsync` we do call, so only this one
-  // is absent.
-  'createRenderPipeline',
-  // ARCHITECTURAL_LIMITS.md §"Per-JS-context scoping multiplies by the RPC
-  // pool": the platform primitive the unbuilt fix would be built on, in the
-  // retire condition. Naming it is what makes that condition checkable.
-  'MessagePort',
   // ARCHITECTURAL_LIMITS.md §"A canvas past `MAX_CANVAS_DIM_PX` renders wrong": the DOMException the browser throws, quoted because the guard
   // exists to keep it from being thrown. The name is the browser's.
   'InvalidStateError',
