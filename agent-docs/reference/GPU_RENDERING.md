@@ -6,94 +6,68 @@ kind: spec
 
 # GPU rendering architecture
 
-How a display gets bytes onto the GPU and pixels onto the screen. Split out of
-[ARCHITECTURE.md](../ARCHITECTURE.md), which remains the front door: read its
-overview, **Display stacks**, and **Data fetching pipeline** first for how a
-display is composed and how data reaches the main thread. This doc picks up at
-the point where the model has data and needs to draw it.
+How a display gets bytes onto the GPU and pixels onto the screen.
+[ARCHITECTURE.md](../ARCHITECTURE.md) is the front door: read its **Display
+stacks** and **Data fetching pipeline** first. This doc picks up where the model
+has data and needs to draw it.
 
 Everything here applies to displays that draw to a canvas. A display that paints
-JSX SVG on both the on-screen and export paths composes none of it — the arc
-classes today; see ARCHITECTURE.md §"Display stacks".
+JSX SVG on both the on-screen and export paths composes none of it.
 
 ## Package layout
 
-The rendering primitives live in **`@jbrowse/render-core`**
-(`packages/render-core`): the HAL, `RenderLifecycleMixin`, the backend base
-classes, the React backend hooks, and the clip/canvas/hp-math utilities. It is a
-leaf package (deps: `mobx` + `@jbrowse/mobx-state-tree` + `react` peer; **no**
-`@jbrowse/core`), so a third-party display can depend on it directly.
+`@jbrowse/render-core` (`packages/render-core`) holds the HAL,
+`RenderLifecycleMixin`, the backend base classes, the React backend hooks and the
+clip/canvas/hp-math utilities. It is a leaf package (no `@jbrowse/core`), so a
+third-party display can depend on it directly.
 
-Shader codegen (`packages/shader-tools/src/build-shaders.ts`, plus `slangPass` in
-render-core) and the display-integration layer (`MultiRegionDisplayMixin` /
-`GlobalFetchMixin` / `DisplayChrome`, in `packages/display-kit/src/`) stay where they
-are. Per-display shaders/passes live per-plugin under
-`plugins/<plugin>/src/<display>/{shaders,passes}`. The host serves the GPU API to
-runtime plugins like every bundled `@jbrowse` package; see
-[ADR-128](../architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md),
-which superseded ADR-030's static-import-only rule.
+Shader codegen lives in `packages/shader-tools/src/build-shaders.ts` plus
+`slangPass` in render-core. The display-integration layer
+(`MultiRegionDisplayMixin`, `GlobalFetchMixin`, `DisplayChrome`) lives in
+`packages/display-kit/src/`. Per-display shaders and passes live under
+`plugins/<plugin>/src/<display>/{shaders,passes}`. The host serves the GPU API
+to runtime plugins like every bundled `@jbrowse` package
+([ADR-128](../architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md)).
 
-HAL is the hardware abstraction layer (WebGL2 vs WebGPU). Full vocabulary +
-Canvas2D→GPU primer: [GPU_GLOSSARY.md](GPU_GLOSSARY.md), whose §8 maps standard
-real-time-graphics terms (PSO, bind group, staging buffer, SSBO…) onto the
-identifiers used here.
+The HAL is the hardware abstraction layer (WebGL2 vs WebGPU). Vocabulary and a
+Canvas2D-to-GPU primer: [GPU_GLOSSARY.md](GPU_GLOSSARY.md).
 
 ## The core contract
 
 Each GPU display is an MST model that composes `RenderLifecycleMixin` and, in
-its `startRenderingBackend(backend)` action, calls render-core's one upload
-installer, `installUpload` (ADR-088); the installer is what calls the mixin's
-`attachRenderingBackend`, and `noHandRolledAttach` errors on a display calling
-it by hand. Underneath, the mixin spawns two autoruns tied to the model's
-lifetime — one runs the upload callback, one the render callback. MobX
-auto-tracks every observable read inside each callback, so changes re-fire the
-right autorun with no manual dependency declarations. React components are thin
-bridges: create a canvas, hand the backend to the model via
+`startRenderingBackend(backend)`, calls render-core's one upload installer,
+`installUpload` (ADR-088). The installer calls the mixin's
+`attachRenderingBackend`; `noHandRolledAttach` errors on a display calling it by
+hand. The mixin spawns two autoruns tied to the model's lifetime, one running
+the upload callback and one the render callback. MobX tracks every observable
+read inside each, so no dependency is declared by hand. React components are
+thin bridges: create a canvas, hand the backend to the model via
 `useRenderingBackend`, render JSX.
 
-## The API
-
 ```ts
-interface RenderingBackend {
-  // plugin-defined upload/render methods
-  dispose(): void
-}
-
-// In the plugin's MST model (a per-region display; a shared canvas or a
-// whole-view display hands over a map keyed differently, and nothing else):
 startRenderingBackend(backend: RenderingBackend) {
   installUpload(self, backend, {
     cells: () => self.rpcDataMap,
-    // The upload half is the installer's diff over `cells`; an `encode` option
-    // is where a display transforms a region's payload on the way up.
-    // `renderState` is a plain resolved getter — never `undefined`. "The view
-    // isn't measured yet" is the mixins' `canRender` gate (see below), not a
-    // nullable render state.
-    //
-    // renderBlocks answers "did real content reach the canvas"; forward it. On
-    // true the mixin calls markCanvasDrawn() → canvasDrawn flips true → isReady
-    // becomes true once isLoading also clears.
-    //
-    // Don't re-derive that answer here (`rpcDataMap.size === 0` and friends).
-    // Per ADR-009 the backend owns it: it holds the regions map, and a
-    // model-side predicate both duplicates it and drifts — the two displays
-    // that gated on nothing used to flip canvasDrawn over a blank canvas.
-    // Add a guard only for something the backend genuinely cannot see, and say
-    // what that is (alignments' zero-group grouped fetch, MAF's "no fetch has
-    // landed yet" first-paint gate).
     render: (b, dataMap) =>
       b.renderBlocks(self.renderBlocks, dataMap, self.renderState),
   })
 }
 ```
 
-That is the shape for a display that owns its canvas. The two views whose canvas
-is **shared by several displays** (dotplot, the synteny level) repaint
-unconditionally, because nothing else repaints that canvas and an empty frame is
-what erases a hidden track. Synteny's `render` inverts the gate outright and
-returns `true`; dotplot's frame scaffold clears the same way and still answers
-off the blocks it drew, saying "a plot with no tracks has finished" through
-`paintInert` instead. See ADR-009's scope clause and
+- `renderState` is a plain resolved getter, never `undefined`. "The view isn't
+  measured yet" is the mixin's `canRender` gate.
+- **Forward `renderBlocks`' answer; don't re-derive it** (`rpcDataMap.size === 0`
+  and friends). The backend holds the regions map and owns "did real content
+  reach the canvas" (ADR-009). Add a guard only for something the backend cannot
+  see (alignments' zero-group fetch, MAF's first-paint gate).
+- On `true` the mixin calls `markCanvasDrawn()`, and `isReady` follows once
+  `isLoading` clears.
+
+The two views whose canvas is **shared by several displays** (dotplot, the
+synteny level) repaint unconditionally, because nothing else repaints that
+canvas and an empty frame is what erases a hidden track. Synteny's `render`
+returns `true`; dotplot answers off the blocks it drew and says "a plot with no
+tracks has finished" through `paintInert`. See ADR-009's scope clause and
 [SHARED_CANVAS_VIEWS.md](SHARED_CANVAS_VIEWS.md#the-empty-frame-is-load-bearing).
 
 ## What the mixin owns
@@ -101,46 +75,35 @@ off the blocks it drew, saying "a plot with no tracks has finished" through
 ```
 RenderLifecycleMixin
   .volatile
-    canvasDrawn: boolean          set true only after render() returns true with real data
-    currentRenderingBackend       stored backend; autoruns read it each tick
-    renderTick: number            bumped by renderNow() and after an upload that changed a buffer
-    autorunsInstalled: boolean    guards attachRenderingBackend (idempotent)
-    renderError: unknown          render-backend init / context-loss error; single source for the 'renderError' terminal phase
+    canvasDrawn         true only after render() returns true with real data
+    currentRenderingBackend
+    renderTick          bumped by renderNow() and after an upload that changed a buffer
+    autorunsInstalled   makes attachRenderingBackend idempotent
+    renderError         init / context-loss error; source of the 'renderError' phase
   .views
-    canRender: boolean            overridable precondition, default true; while false BOTH autoruns skip their
-                                  callback. The LGV mixins override it with view.initialized — before the view is
-                                  measured its geometry throws by design (view.width, so visibleRegions /
-                                  trackWidthPx too), and the render autorun routes a throw to renderError, i.e.
-                                  "not measured yet" would surface as the GPU error banner. Gated once there, so a
-                                  display's renderState stays a resolved getter and its render callback gates only
-                                  on its own data ("no fetch has landed") — never on view geometry.
+    canRender           overridable, default true; while false BOTH autoruns skip
   .actions
-    markCanvasDrawn()             idempotent flip to true
-    resetCanvasDrawn()            flip to false (called by clearAllRpcData)
-    stopRenderingBackend()        clears currentRenderingBackend + resets canvasDrawn → autoruns idle
-    renderNow()                   bumps renderTick → render autorun re-fires
-    setRenderError(error)         set/clear renderError
-    attachRenderingBackend(setup)  spawns upload + render autoruns (once), each recorded by name
-                                  for `reactionDependencies` (namedReactions.ts);
-                                  takes a setup thunk run once per attach, so
-                                  callback-local state is rebuilt with the
-                                  backend on context-loss recovery
+    markCanvasDrawn / resetCanvasDrawn / stopRenderingBackend / renderNow /
+    setRenderError / attachRenderingBackend(setup)
 
 MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
   .views
-    canRender: boolean            view.initialized (see above); GlobalFetchMixin overrides it through the same foundationCanRender
-    viewportWithinLoadedData      every visible block ⊆ a loaded region
-    displayPhase                  'renderError' | 'tooLarge' | 'error' | 'canceled' | 'loading' | 'ready'
-                                  computeDisplayPhase(self, () => computeActivityPhase({...}, () =>
-                                    self.viewportWithinLoadedData))
-                                  (this family supplies the staleness axis; `GlobalFetchMixin` calls the same
-                                   foundationDisplayPhase with a constant-true staleness axis;
-                                   customize via the fetchInert hook, never by overriding this getter)
+    canRender               view.initialized
+    viewportWithinLoadedData  every visible block is inside a loaded region
+    displayPhase            'renderError' | 'tooLarge' | 'error' | 'canceled' | 'loading' | 'ready'
 ```
 
-Loading-scrim visibility is derived once by `DisplayChrome` as `displayPhase`
-`loading` or `canceled` and passed to `DisplayLoadingOverlay` as a `visible` prop
-— not re-encoded per model.
+**`canRender` exists because view geometry throws before the view is measured**
+(`view.width`, so `visibleRegions` and `trackWidthPx` too), and the render
+autorun routes a throw to `renderError` — "not measured yet" would surface as
+the GPU error banner. The LGV mixins gate it once, so a display's `renderState`
+stays a resolved getter and its render callback gates only on its own data.
+`GlobalFetchMixin` overrides it through the same `foundationCanRender`.
+
+`attachRenderingBackend(setup)` takes a thunk run once per attach, so
+callback-local state rebuilds with the backend on context-loss recovery.
+Each autorun is recorded by name for `reactionDependencies`
+(`namedReactions.ts`).
 
 **The activity phase is one expression, `computeActivityPhase`**
 (`@jbrowse/render-core/displayPhase`), evaluated by every foundation:
@@ -154,208 +117,114 @@ isMinimized || fetchInert || viewportEmpty ? 'ready'
   : 'ready'
 ```
 
-Each family constants out the axis it doesn't have — per-region passes
-`viewportCurrent = () => viewportWithinLoadedData`, global passes
-`viewportCurrent = () => true`, and both read `rendersCanvas` as
-`!fetchInert` — so the only per-family difference is the staleness axis
-described below. It was two
-hand-written expressions that had drifted three ways, equivalent only by
-accident; adding a term now reaches every display. `viewportCurrent` stays a
-**thunk** because it is the only input reading the containing view; the rest
-are flags on the display. Parity against both replaced expressions is
-pinned in `displayPhase.test.ts`, and the wiring on a real display in
-`plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts`.
+Each family constants out the axis it lacks. Per-region passes
+`viewportCurrent = () => viewportWithinLoadedData`; global passes
+`() => true`; both read `rendersCanvas` as `!fetchInert`. Customize through the
+`fetchInert` hook, never by overriding `displayPhase`. `viewportCurrent` is a
+**thunk** because it is the only input reading the containing view. Parity is
+pinned in `displayPhase.test.ts` and `displayPhaseWiring.test.ts`.
 
-Every canvas-drawing display renders through the shared `DisplayChrome`, which
-calls `useRenderingBackend(factory, model)` internally, so a display can't bury
-the backend hook where the chrome can't see it. The chrome owns every terminal
-state via the single `displayPhase` getter: `renderError` and `tooLarge`
-early-`return` their own component, `error`, `canceled` and `loading` are overlays over the
-still-mounted canvas. It takes a render-prop child
-`({ canvasRef, canvas }) => ReactNode`, so it is agnostic to how many canvases a
-display draws, and a required `testid` base it publishes unchanged
-([DISPLAYCHROME.md](DISPLAYCHROME.md) §"One element per display").
+- `isLoading` and `rendersCanvas && !canvasDrawn` cover track-open through the
+  fetch cycle, hiding once the first frame paints. The `!canvasDrawn` clause
+  also covers the window before `isLoading` flips (HiC cannot fetch until
+  `CoreGetInfo` resolves).
+- `viewportWithinLoadedData` re-shows the scrim when the viewport extends past
+  loaded data, such as the debounce after a zoom-out. It is a separate getter
+  for tracking reasons (`packages/display-kit/CLAUDE.md`).
+- The global family has no staleness axis: it keeps the last frame up during a
+  refetch, since worker output is genomic and draws correctly under the live
+  view transform.
+- `rendersCanvas` is overridable so a display showing a static non-canvas
+  placeholder (sequence, zoomed out) does not sit under the scrim. Rendering the
+  placeholder outside `DisplayChrome` was rejected because it disposes and
+  re-initializes the backend on every toggle
+  ([ADR-026](../architecture-decision-records/adr-026-displaychrome-layering-stays.md)).
+- `stopRenderingBackend` resets `canvasDrawn` so the scrim recovers after
+  context loss.
 
-The `loading` phase folds in both fetch- and paint-readiness. The
-`isLoading` and `rendersCanvas && !canvasDrawn` terms cover track-open
-through the fetch cycle (hiding once the first frame paints);
-`viewportWithinLoadedData` re-shows the overlay when the viewport extends past
-loaded data — e.g. the pre-refetch debounce after a zoom-out, where the first two
-are already satisfied but stale data is still on screen (separate getter for
-tracking reasons — see packages/display-kit/CLAUDE.md). `stopRenderingBackend`
-resets `canvasDrawn` so the overlay recovers after WebGL context loss.
-
-That `rendersCanvas && !canvasDrawn` clause covers the window between component
-mount and `isLoading` flipping true, in both families. On HiC that window is
-real: the fetch can't start until `CoreGetInfo` resolves the file's resolution
-list, so `isLoading` is false with nothing painted for that round-trip, and
-without `!canvasDrawn` the track reads as blank. The global family does NOT fold
-in a staleness axis the way MultiRegion does — it keeps the last frame up during
-a refetch (worker output is genomic, so it draws correctly under the live view
-transform), so a pan shows no scrim
-beyond the `isLoading` window.
-
-`rendersCanvas` (`!fetchInert` in both families, overridable) gates the clause so a display showing a static
-non-canvas placeholder — the sequence display zoomed out — doesn't sit permanently
-under the scrim. It is an overridable hook rather than inlined because the
-pre-paint scrim needs both "nothing painted yet" and "not a deliberate empty
-placeholder", and only the display knows the second. The alternative that removes
-it — rendering the placeholder *outside* `DisplayChrome` — was rejected for
-disposing and re-initializing the GPU backend on every toggle
-([ADR-026](../architecture-decision-records/adr-026-displaychrome-layering-stays.md)).
-LD carries no override of its own: both foundations derive it from `fetchInert`.
+`DisplayChrome` derives scrim visibility from `displayPhase` (`loading` or
+`canceled`). It calls `useRenderingBackend(factory, model)` itself, so a display
+cannot bury the hook. `renderError` and `tooLarge` early-return their own
+component; `error`, `canceled` and `loading` are overlays over the mounted
+canvas. It takes a render-prop child `({ canvasRef, canvas }) => ReactNode` and
+a required `testid` base ([DISPLAYCHROME.md](DISPLAYCHROME.md) §"One element per
+display").
 
 `installGlobalFetchAutorun` schedules **leading-edge**: the first fetch fires
-immediately, and only subsequent refetches debounce by `delay`. MobX's built-in
-`{ delay }` is trailing-only, deferring even the initial run, so on cold open the
-first data would wait a full `delay` for no interaction to coalesce, stacked on
-the `CoreGetInfo` RTT. A `primed` flag drives a custom `scheduler` that runs
-immediately until the first fetch.
-
-All backend-specific plumbing lives in the plugin; all reactivity plumbing lives
-in the mixin.
+immediately and later refetches debounce by `delay`. MobX's `{ delay }` is
+trailing-only and would stall cold open, so a `primed` flag drives a custom
+`scheduler`.
 
 ## Life of a frame
 
-- React hook (`useRenderingBackend`) mounts, creates the HAL, resolves a backend,
-  calls `model.startRenderingBackend(backend)`.
-- Mixin sets `currentRenderingBackend = backend`, spawns two autoruns via
-  `addDisposer(self, autorun(...))`.
-- Upload autorun fires: reads `currentRenderingBackend`, calls `cbs.upload(b)`,
-  bumps `renderTick` so render re-fires after any upload.
-- Render autorun fires: reads `currentRenderingBackend` + `renderTick`, calls
-  `cbs.render(b)`. If it returns `true`, flips `canvasDrawn` to `true`.
-  `clearAllRpcData` resets `canvasDrawn = false` so the flag is only set after the
-  canvas has real content.
-- Any observable touched by `upload` or `render` becomes a dep — when it changes,
-  MobX re-fires that autorun. No manual invalidation.
+- `useRenderingBackend` mounts, creates the HAL, resolves a backend and calls
+  `model.startRenderingBackend(backend)`.
+- The mixin sets `currentRenderingBackend` and spawns two autoruns.
+- The upload autorun reads the backend, uploads, and bumps `renderTick`.
+- The render autorun reads the backend and `renderTick`, calls `render`, and
+  flips `canvasDrawn` on `true`. `clearAllRpcData` resets it.
+- Any observable an autorun touches becomes a dependency.
 
-**Context-loss recovery.** GPU contexts can be lost. `useRenderingBackend` listens
-for `webglcontextlost`/`restored` and `device.lost`, rebuilds the backend, and
-calls `model.startRenderingBackend(newBackend)`. The mixin sees
-`autorunsInstalled === true`, skips re-installation, and just reassigns
-`currentRenderingBackend`. Both autoruns re-fire against the new backend. No
-special code path.
+### Context-loss recovery
 
-A **WebGL** loss is more than a rebuild, on two counts. It is silent — calls on a
-lost context are no-ops that never throw, so nothing routes to `renderError` and
-the canvas holds stale pixels — and it is unfixable in place, since
-`getContext('webgl2')` keeps handing back that same lost context. So the hook
-waits a grace window for `webglcontextrestored`, which recovers invisibly, and
-otherwise reports `createGpuContextLostError()` into `renderError` — the phase
-that unmounts the canvas, freeing the context for the page and letting the
-remount get a live one. Bounded auto-recovery then clears it and stops at the
-manual Retry.
+`useRenderingBackend` listens for `webglcontextlost`/`restored` and
+`device.lost`, rebuilds the backend and calls `startRenderingBackend` again. The
+mixin sees `autorunsInstalled`, skips installation and reassigns
+`currentRenderingBackend`; both autoruns re-fire.
 
-**The recovery budget is windowed, not lifetime** (`RecoveryBudget`, 2 within
-60 s). The cap exists for a context that recovers and immediately re-loses, and
-that flap happens within seconds. Two unrelated losses an hour apart are not one
-flap, and a lifetime counter cannot tell them apart — it spends the second
-loss's budget on the first and leaves a long-lived tab unable to auto-recover at
-all. A successful re-init does not reset it, since every flap contains one; only
-a genuine `webglcontextrestored` or a manual Retry does.
+- **A WebGL loss is silent and unfixable in place.** Calls on a lost context are
+  no-ops that never throw, and `getContext('webgl2')` keeps returning the lost
+  context. The hook waits a grace window for `webglcontextrestored`, then reports
+  `createGpuContextLostError()` into `renderError`, which unmounts the canvas and
+  frees the context.
+- **The recovery budget is windowed** (`RecoveryBudget`, 2 within 60 s). The cap
+  targets a context that recovers and re-loses within seconds; a lifetime counter
+  would spend a second loss an hour later on the first. A successful re-init does
+  not reset it, since every flap contains one; a real `webglcontextrestored` or
+  manual Retry does.
+- **A WebGPU device loss shares the budget** and needs it more: that path
+  re-inits invisibly and reports nothing, so uncapped it re-initializes against a
+  dying device for the life of the tab. On give-up it sets
+  `createGpuDeviceLostError()`.
+- `pagehide` tears the backend down and drops any pending report, since a bfcache
+  thaw fires the timer after `pageshow` rebuilt the backend. A loss while merely
+  hidden reports and recovers in the background.
+- The cause is usually page-wide: Chrome allows ~16 live WebGL contexts and each
+  display canvas takes one (see §"WebGL2 contexts are a page-level budget"). The
+  `renderError` banner offers `setGpuOverride('canvas2d')`, the switch
+  `?renderer=canvas2d` sets. `isGpuRenderingDisabled()` is the one read for "GPU
+  is off page-wide", and the button is scoped to context-loss errors.
 
-**A WebGPU device loss is capped by the same budget**, and needs the cap more
-than WebGL does. That path re-inits invisibly — `gpuDevice` has already dropped
-the dead device and the next `getGpuDevice()` acquires a fresh one, so there is
-no grace window and no `renderError` — which means nothing reports it. Uncapped,
-a display re-initializes against a dying device silently for as long as the tab
-is open. On give-up it sets `createGpuDeviceLostError()`, carrying the same
-`gpuContextLost` flag: different cause, same remedy on offer.
+**Every re-init needs a canvas element that never held a context.**
+`getContext('webgl2')` returns the same lost context, and `getContext('2d')`
+returns `null` on any element that once had WebGL. **A canvas's context kind is
+permanent**, so a re-init whose HAL ladder lands on a different rung is stuck.
 
-Navigating away is not one of these: `pagehide` tears the backend down and drops
-any pending report, since a bfcache freeze thaws the timer *after* `pageshow`
-rebuilt the backend. A loss while the tab is merely hidden does report and
-auto-recover in the background, so the user returns to a redrawn track or a Retry
-banner rather than a permanently blank one.
-
-The cause is usually **page-wide**: Chrome allows ~16 live WebGL contexts and we
-create one per display canvas, so past the cap it force-loses the oldest and
-recovery evicts another (see `project_workspaces_freeze_gpu_context`; view-level
-lazy mount in `useViewVisibility` is the pressure reducer). For that, the
-`renderError` banner offers `setGpuOverride('canvas2d')` — the same switch
-`?renderer=canvas2d` sets, so every backend built afterwards is the Canvas2D one.
-`isGpuRenderingDisabled()` is the single read for "GPU is off page-wide";
-`DisplayRenderErrorOverlay` hides the button when it's already true, and the
-button is scoped to context-loss errors (an over-allocation error's remedy is to
-zoom in, not to change backend).
-
-**Every re-init needs a canvas element that never held a context**, verified in
-Chrome: `getContext('webgl2')` returns the same lost context (the HAL ctor then
-throws in shader compile, `getShaderParameter` reporting null), _and_
-`getContext('2d')` returns **null** on any element that once had WebGL — so not
-even the Canvas2D fallback can bind there, turning a recoverable loss into
-"Canvas 2D context not available". More generally: **a canvas's context kind is
-permanent**, so any re-init whose HAL ladder lands on a different rung than last
-time is stuck — a WebGPU device loss that cannot re-acquire a device falls to
-WebGL2 and finds the element already committed to `webgpu`. When that happens
-the error now says so, instead of reporting "WebGL2 not supported" on a machine
-that supports WebGL2 fine (`canvasContext.ts`, below).
-
-**Both families get the fresh element unconditionally, and the reasoning that
-used to distinguish them was wrong.** "DisplayChrome consumers get it free,
-since `renderError` unmounts the canvas" holds only for a *reported* loss —
-three re-init paths bump `canvasKey` and deliberately set **no** `renderError`
-at all (`webglcontextrestored`, WebGPU `onDeviceLost`, a bfcache `pageshow`),
-and on those the element was reused. Usually harmless, since the same rung is
-normally re-acquirable; the device-loss case is the one that isn't.
-`DisplayChromeBase` therefore keys the render-prop body itself
-(`<Fragment key={canvasKey}>`), so no display has to know any of this. The
-overlays sit **outside** that key on purpose: remounting the loading scrim would
-reset the 250 ms anti-flash delay it holds in component state.
-`DisplayChrome.test.tsx` pins both halves under "fresh canvas element per
-re-init", driving the real `webglcontextrestored` event rather than a mock.
-
-The drop-to-primitive consumers keep their canvas mounted through an error by
-design (ADR-025's mount-lifetime rule, written for a _live_ context), so theirs
-must be keyed at the mount site. **That is structural too, not a rule to
-remember**: they render `RenderCanvas`
-(`@jbrowse/render-core/RenderCanvas`), which owns the `key={canvasKey}` and
-forwards everything else, so there is no way to mount that canvas without the
-key. The same component publishes their `data-display-drawn` as a **required**
-prop, because the enumerated list it replaced had quietly omitted dotplot.
-`RenderCanvas.test.tsx` pins both halves — a changed key mounts a fresh element,
-an unrelated prop change does not — driven from a stable parent rather than
-RTL's `rerender()`, which remounts the tree here and would make the key
-assertion pass with the key deleted.
-
-It owns the key and nothing else. There used to be a readiness convention to
-fold in as well and there is not any more: ADR-065 deleted both spellings
-(`DisplayChrome`'s `-done`, these two views' `_done`) in favour of that
-attribute. Their readiness *flag* still differs — `settled`, not `canvasDrawn`,
-since a shared canvas repaints unconditionally (ADR-009's scope clause) — which
-is a real distinction rather than a naming one, so `drawn` is passed at the call
-site.
-
-**`getContext` returns one undifferentiated `null` for every failure**, which is
-why the ladder used to report the wrong cause. `canvasContext.ts` records the
-kind each canvas was committed to (a `WeakMap`, since the platform gives no way
-to ask an element what it holds) and turns that `null` into a reason: either
-"already committed to a WebGPU context, this is a re-init on a reused element,
-mount it with `RenderCanvas`" or an honest statement of the two possibilities
-when we never took a context on that element. Every acquisition goes through it
-— `acquireCanvas2D` replaced four hand-written copies of the
-`getContext('2d')` + throw ritual, three of them belonging to the consumers
-whose canvas never unmounts.
-
-**A ladder that fails at every rung reports every rung.** Falling through a rung
-is ordinary and stays a `console.warn`, but Canvas2D cannot be fallen back from,
-so when it fails too, `createRenderingBackend` throws an `AggregateError`
-carrying each rung's reason. That is not decoration: core's `formatErrorStack`
-already walks `.errors` and `.cause`, so the stack-trace dialog shows why WebGPU
-and WebGL2 declined — previously visible only in a console the person reporting
-the bug never had open. A lone Canvas2D failure with nothing collected is
-rethrown bare rather than wrapped, so the one real cause doesn't sink a level.
-
-**Tab visibility.** `useTabVisibilityRerender` calls `model.renderNow()` on
-`visibilitychange`, bumping `renderTick`. WebGPU swap-chain textures are reissued
-by the `render` callback.
+- Three re-init paths bump `canvasKey` and set no `renderError`
+  (`webglcontextrestored`, WebGPU `onDeviceLost`, bfcache `pageshow`), so
+  `renderError`'s unmount does not cover them. `DisplayChromeBase` keys the
+  render-prop body (`<Fragment key={canvasKey}>`) and leaves the overlays outside
+  the key, since remounting the loading scrim resets its 250 ms anti-flash delay.
+  `DisplayChrome.test.tsx` pins this.
+- Drop-to-primitive consumers keep their canvas mounted through an error
+  (ADR-025), so they render `RenderCanvas` (`@jbrowse/render-core/RenderCanvas`),
+  which owns `key={canvasKey}` and publishes `data-display-drawn` as a required
+  prop. Their readiness flag is `settled`, not `canvasDrawn`, because a shared
+  canvas repaints unconditionally; ADR-065 retired the `-done`/`_done` spellings.
+- `getContext` returns one undifferentiated `null` for every failure.
+  `canvasContext.ts` records the kind each canvas committed to (a `WeakMap`) and
+  turns the `null` into a reason. Every acquisition goes through it
+  (`acquireCanvas2D`).
+- A ladder that fails at every rung throws an `AggregateError` carrying each
+  rung's reason, which `formatErrorStack` walks into the stack-trace dialog. A
+  lone Canvas2D failure is rethrown bare.
+- `useTabVisibilityRerender` calls `model.renderNow()` on `visibilitychange`;
+  WebGPU swap-chain textures are reissued by the `render` callback.
 
 ## RenderingBackend interfaces per plugin
 
-Each plugin specializes `PerRegionRenderingBackend` on its own payload and
-render state, declares what it draws as a mark list, and its component builds
-the backend from that list — one call, both implementations:
+Each plugin specializes `PerRegionRenderingBackend` on its payload and render
+state, declares what it draws as a mark list, and builds the backend from it:
 
 ```ts
 export type XxxRenderingBackend = PerRegionRenderingBackend<XxxData, XxxRenderState>
@@ -370,1347 +239,716 @@ const createXxxBackend = (canvas: HTMLCanvasElement) =>
 ```
 
 `createMarkBackend` is `createRenderingBackend` over `GpuMarkBackend` and
-`Canvas2DMarkBackend`, which walk the same list; `createRenderingBackend` calls
-`createGpuHal`, and if a HAL is returned the GPU backend is constructed,
-otherwise Canvas2D. The shape a mark names is either one of the two shared ones
-(`spanMark`, `pointMark`) or the display's own `MarkShape` beside its shader —
-§"Shared per-region streamed contract" below has the members and
-`example-plugins/score-example` is the worked third-party form. Alignments is
-the one display still calling `createRenderingBackend` with renderer classes
-of its own, for the sectioned frame scaffold its pileup needs.
+`Canvas2DMarkBackend`, which walk the same list. `createRenderingBackend` calls
+`createGpuHal` and builds the GPU backend if a HAL comes back, else Canvas2D.
+A mark's shape is `spanMark`, `pointMark`, or the display's own `MarkShape`
+beside its shader; `example-plugins/score-example` is the worked third-party
+form. Alignments still calls `createRenderingBackend` with renderer classes of
+its own, for the sectioned frame scaffold its pileup needs.
 
 ### Canvas2D is the floor; GPU is the optional accelerator
 
-Every display that draws to a canvas **must** ship a Canvas2D painter
-regardless — SVG export goes through it (see
-[SVG_EXPORT.md](SVG_EXPORT.md)). A shape's `paintBlock` is that painter, so a
-display on the mark layer has it by construction and gets the GPU path with
-it. A drawing that is not instances of a shape — the reference sequence's
-letters — is **Canvas2D-only**: no shape, no `.slang`, a hand-written
-`Canvas2DPerRegionRenderingBackend` subclass, and a factory that skips the HAL
-ladder:
-
-```ts
-export function XxxRenderer(canvas: HTMLCanvasElement) {
-  return createCanvas2DBackend(canvas, c => new Canvas2DXxxRenderer(c))
-}
-```
-
-The backend plugs into the same `RenderLifecycleMixin` / `DisplayChrome`
-machinery — the lifecycle is backend-agnostic, so nothing downstream knows
-there's no HAL. Reference: `plugins/sequence`'s `SequenceRenderer`, the last
-hand-written Canvas2D backend in tree.
+Every canvas-drawing display **must** ship a Canvas2D painter, because SVG export
+goes through it ([SVG_EXPORT.md](SVG_EXPORT.md)). A shape's `paintBlock` is that
+painter, so a mark-layer display has it by construction. A drawing that is not
+instances of a shape (the reference sequence's letters) is **Canvas2D-only**: a
+hand-written `Canvas2DPerRegionRenderingBackend` subclass and a factory that
+skips the HAL ladder, `createCanvas2DBackend(canvas, c => new Canvas2DXxxRenderer(c))`.
+The lifecycle is backend-agnostic, so nothing downstream notices.
+`plugins/sequence`'s `SequenceRenderer` is the last hand-written one.
 
 ### Keeping the two backends in parity
 
-A dual-path display renders the same pixels two ways (`.slang` shader vs a
-Canvas2D draw fn), and SVG export runs the Canvas2D path — so a shader-only tweak
-silently diverges the export. Parity is kept by construction, not vigilance. When
-touching either path, preserve whichever of these the display uses:
+A dual-path display renders the same pixels two ways, and SVG export runs the
+Canvas2D path, so a shader-only tweak silently diverges the export. Parity is
+kept by construction. Preserve whichever of these the display uses:
 
-- **Constants live in the shader, TS re-exports them.** `//! export-consts:` in a
-  `.slang` emits the value into its `*.generated.ts`; the Canvas2D side imports it
-  (e.g. `sharedRendererConstants.ts` pulls `MIN_RECT_WIDTH_PX`, `CHEVRON_*`,
-  `MIN_DENSITY_ALPHA`). Never retype a shader constant as a TS literal.
-- **Scalar *decisions* live in the shader too, and TS is generated from them.**
-  `//! js-export: fnA, fnB` emits `<base>.js.generated.ts` — TypeScript twins
-  transliterated from slangc's own WGSL, so the Canvas2D and SVG paths run the
-  shader's math rather than a hand-port of it. `hpmath.slang` exports
-  `snapBoxHeightPx` / `snapBoxCenterYPx` / `extendToMinWidthPx` this way;
-  `scoreScale.slang` its count→ramp mapping (`normalizeScore`), `insertion.slang` its marker width (to
-  another package, via `//! js-export-out:`). The subset is **scalar only** — no
-  vectors, swizzles, loops or indexing — and every gap an export reaches throws
-  at `pnpm gen:shaders`. Less limiting than it sounds: a color- or
-  struct-returning function is nearly always a scalar decision inside a packaging
-  wrapper, so authoring the scalar core pure and wrapping the conversion around
-  it is what makes it exportable, and is the better shape anyway. Retire the
-  hand-written twin only behind a differential sweep —
-  `alphaShaderParity.test.ts` is the pattern.
+- **Constants live in the shader, TS re-exports them.** `//! export-consts:`
+  emits the value into the `*.generated.ts`; the Canvas2D side imports it
+  (`sharedRendererConstants.ts`). Never retype a shader constant as a TS literal.
+- **Scalar decisions live in the shader too.** `//! js-export: fnA, fnB` emits
+  `<base>.js.generated.ts`, TypeScript twins transliterated from slangc's WGSL,
+  so Canvas2D and SVG run the shader's math. The subset is **scalar only** (no
+  vectors, swizzles, loops or indexing); any gap an export reaches throws at
+  `pnpm gen:shaders`. Author the scalar core pure and wrap the colour or struct
+  conversion around it. Retire a hand-written twin only behind a differential
+  sweep (`alphaShaderParity.test.ts`).
   [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md)
-  covers why this stops at scalars and why a vertex/fragment stage is never
-  transpiled;
-  [SHADER_JS_CODEGEN.md](SHADER_JS_CODEGEN.md) is how to add an
-  export and retire its twin.
-- **A hit test is a consumer of those scalars too**, not a third description of
-  the mark beside the shader's and the painter's. The pileup read's strand
-  arrowhead picks through `readChevron.slang`'s exported `chevronContains`, under
-  the same generated `showChevron` gate the two painters draw it by; the dotplot
-  pick measures the cursor with `capsule.slang`'s `capsuleDistPx`. Hover slack is
-  then a named tolerance compared against the shader's own distance, never a
-  second shape traced around the first. A Canvas2D-vs-GPU pixel diff cannot see
-  that second shape at all — it draws nothing — which is the same blind spot
-  `reversedGlyphDirection.test.ts` records for the reversed-strand case. (The
-  other axis, a layer drawn but not hoverable, is `defineMark`'s: one `enabled`
-  gates the paint and the `hitNearest` alike, so it is about gates, not
-  geometry.) A predicate no draw path reaches has to be
-  authored in a `module` shader: slangc eliminates it before the emitter runs
-  otherwise.
-- **One draw helper, both consumers.** Marker/glyph geometry and color math that
-  both paths (or the on-screen overlay + SVG export) need lives in one function:
-  `drawMafInsertionMarker`, `appendPointMarker` (wiggle scatter + Manhattan),
-  `normalizeScore`, synteny's `syntenyRibbonPath` geometry (shared by the Canvas2D
-  backend, the SVG export, and the CPU pick engine). Change the shared fn,
-  not one caller. The same trick covers shared *predicates*, not just geometry —
-  canvas's `canvasEdgeFlags` derives the continuation-marker edge gates for both
-  backends so the 0.5px epsilon can't drift from `continuation.slang`'s.
-- **One registry, exhaustively keyed — and count the wiring points before
-  trusting it.** Multi-layer displays list layers/z-order/gating once and map
-  each id to a per-backend mechanism through a `Record<LayerId, …>`, which makes
-  a half-added layer a compile error; `coverageParity.test.ts` cross-checks
-  output. Alignments' three bands are three mark lists (`PILEUP_MARKS`,
-  `ALIGNMENTS_COVERAGE_MARKS`, `ARC_BAND_MARKS`), the same mechanism with the
-  per-backend record folded into each shape. Two bands with different draw
-  signatures is a reason for a second list, never for a second backend keeping
-  its own.
+  says why it stops at scalars; [SHADER_JS_CODEGEN.md](SHADER_JS_CODEGEN.md) says
+  how to add an export.
+- **A hit test consumes those scalars too**, rather than being a third
+  description of the mark. The pileup strand arrowhead picks through
+  `chevronContains` under the same generated `showChevron` gate the painters use;
+  the dotplot pick measures with `capsuleDistPx`. Hover slack is a named
+  tolerance against the shader's own distance. A Canvas2D-vs-GPU pixel diff
+  cannot see a divergent hit shape, since it draws nothing. A predicate no draw
+  path reaches must live in a `module` shader, or slangc eliminates it.
+- **One draw helper, both consumers.** Geometry and colour math both paths (or
+  overlay and SVG export) need lives in one function: `drawMafInsertionMarker`,
+  `appendPointMarker`, `normalizeScore`, `syntenyRibbonPath`, `canvasEdgeFlags`.
+  Change the shared function, not one caller.
+- **One registry, exhaustively keyed.** Multi-layer displays list layers,
+  z-order and gating once and map each id per backend through a
+  `Record<LayerId, …>`, so a half-added layer is a compile error. "The layers
+  aren't 1:1" is no reason to skip it: a registry shares the list, not the calls,
+  and what it prevents is a layer existing in one backend only, which also loses
+  it from SVG export. Alignments' three bands are three mark lists
+  (`PILEUP_MARKS`, `ALIGNMENTS_COVERAGE_MARKS`, `ARC_BAND_MARKS`); two bands with
+  different draw signatures warrant a second list, never a second backend
+  registry.
 
-  **"The layers aren't 1:1" is not a reason to skip this**, and it read like one
-  for two months. A registry shares the LIST, not the calls: a backend's record
-  entry is free to be a shim calling two functions, or one call with a different
-  sixth argument. What a shared list buys is that a layer cannot exist in one
-  backend and not the other — and that gap costs correctness, since the missing
-  half is also the SVG export. agent-docs/architecture-decision-records/ has the decline and its
-  overturn.
+  **A pass drawn but never uploaded fails silently and on the GPU only**, since
+  Canvas2D still paints it and the result reads as a GPU bug. Make the pass and
+  its packer one object, `{ ...slangPass({…}), pack }` (`InstancePass`,
+  `@jbrowse/render-core/instancePass`), so registration is not a wiring point and
+  `ALIGNMENTS_PASSES` is derived. **The instance count comes with it:**
+  `uploadPass` derives it as `buf.byteLength / pass.instanceStride`, because a
+  separate count is a second expression for a number the buffer states, and a
+  count past the bytes reads off the end with no throw. Where a worker packs the
+  buffer and the main thread counts a parallel array, pin the two where they are
+  joined (`packCoverageArea.test.ts`).
 
-  **A pass that is drawn but never uploaded fails silently and on the GPU
-  backend only**, so the Canvas2D half of a parity comparison still paints it and
-  the result reads as a GPU bug rather than a missing entry. Alignments hit that
-  with FOUR wiring points per pass — a hand-kept `ALIGNMENTS_PASSES`, layer→pass
-  id, layer→upload fn, and the packer — only two of them keyed by the layer
-  union.
+  **Use this at the scale that needs it.** `LinearBasicDisplay`'s five passes
+  are one mark list (`CANVAS_FEATURE_MARKS`; `bufferOf` marks the two that borrow
+  a buffer). Don't add registries to a renderer you can check by reading.
 
-  Keying the third is the weaker fix: two exhaustive records over the layer
-  ids still state the correspondence twice, and two statements can disagree. **The
-  one that holds is to make the pass and its packer one object** —
-  `{ ...slangPass({…}), pack }`, the `InstancePass` type in
-  `@jbrowse/render-core/instancePass`. No constructor wraps that spread, since it
-  also has to serve a descriptor built somewhere payload-agnostic, and
-  `{ ...RectPass, pack }` is the same line. The layer→pass map is then the
-  layer→upload map, the arc and coverage bands are the same shape, and
-  `ALIGNMENTS_PASSES` is derived rather than hand-listed — so registration stops
-  being a wiring point at all. Four became one. Where a display has no layer
-  union to key on, the ordered pass list with its gates *is* the registry.
+  **A pass `id` names a slot**: the descriptor a draw uses, the buffer in
+  `RegionRegistry` and the pass's texture. Two passes sharing one collide in all
+  three. The id does not key the compile, so a second id over one shader
+  (`withPassId`, a ring view's eight rings) costs a descriptor and no pipeline.
+  `assertUniquePassIds` runs in `createRenderingBackend` and `MockHal`.
+- **A per-instance vertex budget is a cap the other backend lacks.** Where one
+  instance draws an unbounded number of marks (canvas's chevron pass), the
+  pipeline's `verticesPerInstance` fixes how many the shader can address and
+  every instance pays for every slot. Raise it and all pay; leave it and a large
+  input silently loses marks past it while Canvas2D keeps drawing them. No other
+  mechanism here catches this, so state **the input range the budget covers where
+  the number is**, measured. `MAX_VISIBLE_CHEVRONS_PER_LINE`
+  (`sharedRendererConstants.ts`) is the worked example; read its figures there.
+- **`SYNC:` comments are the fallback.** Where a value must match across files
+  and none of the above applies, a `SYNC:`/`mirrors` comment names the
+  counterpart. First check whether the thing mirrored is a constant
+  (`export-consts`), a scalar decision (`js-export`), or an equivalence two
+  implementations must preserve while differing (a numeric oracle test, as
+  `syntenyShaderParity.test.ts`). **The tag means an unshared duplication and only
+  that**: grepping it is meant to find where we gave up, so a tag on a shared
+  function or self-tested threshold is over-reporting. Grep the counterpart
+  before trusting a tag. Count with `grep -rn 'SYNC:' --include='*.ts' packages
+  plugins products`; [SHADER_JS_CODEGEN.md](SHADER_JS_CODEGEN.md) §"The two
+  sweeps" says how to re-run the survey.
 
-  **The instance count comes with it, and that half is not optional.**
-  `uploadPass` derives the count as `buf.byteLength / pass.instanceStride`,
-  because a count arriving separately is a second expression for a number the
-  buffer already states, and a count past what the bytes hold reads off the end —
-  undefined pixels, no throw. Alignments had 17 such second expressions, one
-  commented as needing to agree with the packer's own. If a worker packs the
-  buffer and the main thread would count a parallel array, pin the two where they
-  are joined (`packCoverageArea.test.ts`, over the real packers, one length per
-  pass so a crossed pairing fails) — not at the upload, which should not be
-  asking.
+**Intentional divergences — do NOT "fix" these into parity.** GPU rasterization
+is watertight while Canvas2D antialiases each primitive independently.
 
-  **Reach for this at the scale that needs it.** What broke alignments was 17
-  passes and 250 lines between upload and draw. `LinearBasicDisplay`'s five
-  passes are a mark list (`CANVAS_FEATURE_MARKS`): the two that borrow a
-  buffer say so with `bufferOf`, and `createMarkBackend` derives what uploads
-  and what draws from that one declaration. Don't add registries to a renderer
-  you can check by reading.
-
-  **The `id` is the last unkeyed thing, and it names a slot.** A pass id names
-  the descriptor a draw uses, the instance buffer in `RegionRegistry` and the
-  pass's texture, so two passes sharing one collide in all three: the later
-  descriptor answers both ids' draws, both upload to a single buffer, and the
-  wider stride reads off the end of it. It no longer keys the compile, so a
-  second id over one shader — a marks display's `withPassId` clone, a ring
-  view's eight rings — costs a descriptor and no pipeline. `assertUniquePassIds`
-  runs in `createRenderingBackend` and in `MockHal`'s constructor — the latter
-  being what puts it in front of the backend suites, which all build one from
-  their display's real pass list.
-- **A per-instance vertex budget is a cap, and the other backend has no such
-  cap.** Where one instance draws an unbounded number of marks — canvas's chevron
-  pass, whose instance is an intron line and whose marks are the strand chevrons
-  along it — the pipeline's `verticesPerInstance` fixes how many the shader can
-  address, and every slot costs its vertices on every instance whether it draws or
-  not. So the number is a budget with two edges: raise it and every instance pays,
-  leave it and a large enough input silently loses the marks past it, while the
-  Canvas2D path — which loops in px and has no budget — keeps drawing them.
-
-  None of the four mechanisms above catches this: the divergence is in neither
-  path's arithmetic but in the range over which they agree. So a budget needs
-  **the input range it covers, stated where the number is**, measured rather than
-  reasoned — sweep the shader's own window arithmetic and record the threshold
-  and the cost of moving it. `MAX_VISIBLE_CHEVRONS_PER_LINE`
-  (`sharedRendererConstants.ts`) is the worked example: it carries the CSS-px
-  window it covers, the numbers either side, and the cost of widening — read the
-  figure there, not here, since a copy of it in this doc has already gone stale
-  once. A budget
-  with no stated range reads as a limit nobody will hit, and there is nothing to
-  check it against.
-- **`SYNC:` comments anchor formulas** — the fallback, not a mechanism. Where a
-  value must match across files and none of the above applies, a
-  `SYNC:`/`mirrors` comment names the counterpart; grep the tag before editing
-  either side. Before adding one, check whether the thing being mirrored is a
-  constant (`export-consts`), a scalar decision (`js-export`), or an equivalence
-  two implementations must preserve while staying different (a numeric oracle
-  test, as `syntenyShaderParity.test.ts` does for the bezier). Also grep the
-  counterpart before trusting an existing tag — five named shader branches that
-  had been deleted.
-
-  **The tag means an UNSHARED duplication, and only that.** Nearly half the
-  registry once didn't: a predicate two callers reach through one exported
-  function, a threshold with its own agreement test, a deliberate narrowing of a
-  generated shader predicate, a producer of uniforms its "counterpart" merely
-  consumes. None of those can drift, and the whole point of grepping the tag is
-  to find where you gave up — so over-reporting is what it costs. Say what the
-  coupling is in prose; spend the tag only on genuinely two copies. Count the
-  survivors with `grep -rn 'SYNC:' --include='*.ts' packages plugins products`
-  rather than restating a number;
-  [SHADER_JS_CODEGEN.md](SHADER_JS_CODEGEN.md) §"The two sweeps" says how to
-  re-run the survey.
-
-**Intentional divergences — do NOT "fix" these into parity.** The two backends
-legitimately differ where GPU rasterization is watertight but Canvas2D
-antialiases each primitive independently. Canvas2D adds a sub-pixel *overdraw* to
-close seams the GPU never produces (`CANVAS_SEAM_PX` 0.8px, the
-variant-matrix `f2`), and swaps a thin fill for a 1px centerline stroke (synteny
-sub-pixel ribbons); the shader instead scales coverage alpha. These are
-per-backend AA compensation, not drift — a shader has no equivalent to a Canvas2D
-fudge factor, and porting one in over-widens GPU glyphs. Min-width floors, by
-contrast, *are* mirrored (both clamp to the same px) — those keep sub-pixel
-features visible and must stay in step.
-
-A `band` on `defineMark` carries one of its own, at the sub-device-pixel edge:
-the GPU scissor rounds each edge to a device row independently and skips the
-mark when both land on the same one, where Canvas2D's clip takes
-`strip.height > 0` and paints an antialiased sliver. `{top: 10.6, height: 0.3}`
-at dpr 1 is the case. Every other band edge agrees in visible pixels — zero and
-negative heights skip on both, a band off either canvas edge draws nothing on
-both, a band taller than the canvas clamps on both — so this is the one row
-where a band mid-height-drag can differ.
-
-Synteny carries two more of these, both surviving the mark port unchanged.
-`perpCoverage` measures a per-fragment width from the two edges' own
-foreshortenings where `ribbonPerpWidth` measures the whole ribbon's from its
-corners, and each is right for the decision it feeds. And the **clicked outline
-is GPU-only as a mark**: `drawSyntenyTrack` strokes it inside its own loop,
-where it already holds the projected corners and the fill/stroke verdict the
-outline is gated on, so the `edgeStraight`/`edgeCurve` marks paint nothing on
-Canvas2D and their cell exists for the GPU pass alone.
+- Canvas2D adds a sub-pixel *overdraw* to close seams (`CANVAS_SEAM_PX`, the
+  variant-matrix `f2`) and swaps a thin fill for a 1px centerline stroke
+  (synteny sub-pixel ribbons); the shader scales coverage alpha instead.
+  Porting a Canvas2D fudge factor into a shader over-widens GPU glyphs.
+  Min-width floors, by contrast, are mirrored and must stay in step.
+- A `band` on `defineMark` differs at the sub-device-pixel edge: the GPU scissor
+  rounds each edge to a device row independently and skips the mark when both
+  land on one, where Canvas2D's clip paints an antialiased sliver
+  (`{top: 10.6, height: 0.3}` at dpr 1). Every other band edge agrees.
+- Synteny: `perpCoverage` measures a per-fragment width from the two edges'
+  foreshortenings where `ribbonPerpWidth` measures the whole ribbon from its
+  corners, each right for its own decision. The clicked outline is **GPU-only as
+  a mark**: `drawSyntenyTrack` strokes it inside its own loop, so the
+  `edgeStraight`/`edgeCurve` marks paint nothing on Canvas2D.
 
 ### Shared per-region streamed contract
 
 Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle), the
-whole-view ones over a single canvas-wide block (hic, LD, the variant matrix)
-and the shared-canvas ones over a block per cell (dotplot, both synteny
-displays) specialize one generic type and declare a **mark list**, which
-`createMarkBackend` turns into both backends — the passes are the marks' own and
-each backend walks the same list:
+whole-view ones over one canvas-wide block (hic, LD, the variant matrix) and the
+shared-canvas ones over a block per cell (dotplot, both synteny displays) all
+declare a mark list that `createMarkBackend` turns into both backends.
 
-```ts
-// Plugin specializes the interface (used in model + React code):
-export type XxxRenderingBackend = PerRegionRenderingBackend<XxxUploadData, XxxRenderState>
+A display whose x axis is not the block's bp span builds blocks with
+`canvasWideBlock` / `canvasWideBlocks` (`render-core/renderBlock`). Its marks read
+screen x off the payload's own coordinates through the display's own transform
+(`panPx` fold for dotplot and synteny; `viewScale`/`viewOffsetX` for hic and LD),
+so the block carries only its key and the identity bp span that keeps `clipBlock`
+well-formed. The multi-way stack mixes both: gutters take a canvas-wide block,
+glyph lanes a bp-span one off `glyphBlockRange`.
 
-// One mark per shape: its pass and packer, its uniform write, its painter:
-export const XXX_MARKS = [
-  defineMark({ shape: xxxShape, channels: d => …, params: s => … }),
-]
+**Hit testing.** A box-instance shape declares `ink(channels, block, frame,
+params, i)`, the rect its painter fills (undefined when culled), and
+`defineMark` derives `hitNearest` from it (`shapeHitNearest` in
+`render-core/marks/hit`; only a strictly nearer candidate replaces the best, so
+back-to-front candidates give the top mark). The same `ink` drives the chrome's
+highlight (`inkOfInstances`, ADR-110). `nearestMarkHit` is the hover walk over
+the candidates the display names per mark; `valueWindow` bounds `bar` and
+`point`. A shape whose ink is not a box keeps its own `hitNearest`: synteny
+ribbons, arcs, dotplot's capsule, the pileup marks (bp containment), and `point`
+(nearest glyph centre).
 
-// The component's factory, from `@jbrowse/render-core/marks/backend`:
-const createXxxBackend = (canvas: HTMLCanvasElement) =>
-  createMarkBackend(canvas, XXX_MARKS)
-```
+Both halves extend abstract bases in
+`@jbrowse/render-core/perRegionRenderingBackend`:
 
-A display whose x axis is not the block's bp span builds its blocks with
-`canvasWideBlock` / `canvasWideBlocks` (`render-core/renderBlock`) — hic and LD
-one block, dotplot and the two synteny displays one per cell. Their marks read
-screen x off the payload's own coordinates through a transform of the display's
-own — dotplot and the synteny ribbons fold a `panPx` from the fetch-time base,
-hic and LD apply the diagonal `viewScale`/`viewOffsetX` — so the block carries
-nothing but its key and the identity bp span that keeps `clipBlock` well-formed.
-The multi-way stack is the mixed case: its ribbon gutters take a canvas-wide
-block and its glyph lanes a real bp-span one off `glyphBlockRange`, which is
-what lets one mark list serve both. It was four
-per-plugin copies of that until 2026-09-08.
+- `Canvas2DPerRegionRenderingBackend` owns `canvas` + `ctx`, the concrete
+  `renderBlocks` (hi-DPI `prepareCanvas` sizing and the `painted` answer around
+  the subclass's abstract `draw`; **overriding `renderBlocks` silently drops
+  both**), and no-op `upload`/`release`/`dispose`.
+- `GpuPerRegionRenderingBackend` owns `hal`, a uniform scratch `ArrayBuffer`,
+  `release` via `hal.deleteRegion`, `dispose` via `hal.dispose`, and `upload` over
+  the `regionPasses` the subclass declares. A pass that draws off a sibling's
+  buffer (wiggle's density, canvas's chevron) is absent from `regionPasses`;
+  `createMarkBackend` derives it from the marks with no `bufferOf`.
 
-A shape whose instance is a box declares `ink(channels, block, frame, params,
-i)` — the rect its painter fills, undefined when culled — and `defineMark`
-derives `hitNearest` from it (`shapeHitNearest` in `render-core/marks/hit`:
-`inkOnRect` says where the box is nearest the cursor and how far, and
-`nearestInk` keeps the closest — only a STRICTLY nearer candidate replaces the
-best, so a caller handing candidates back to front gets the mark on top). The
-same `ink` is what the chrome's highlight draws for the instances a display
-names (`inkOfInstances`, ADR-110), and `nearestMarkHit` beside it is the hover's
-walk: every block the grab radius reaches, marks on top asked first, over the
-candidates the display names per mark — what a (bp, value) Flatbush finds in
-the reach, whose value bounds are the shape's `valueWindow` (`bar`, `point`),
-or every instance. The mark display, Manhattan and the score example call it. A shape whose ink is not a box keeps a
-`hitNearest` of its own: the synteny ribbons, the arcs, dotplot's capsule
-(`capsuleDistPx`, the shader's own metric), the pileup marks (bp containment,
-though they declare `ink` beside it), and `point`, whose glyph cluster resolves
-to the nearest centre where every box contains the cursor.
+Two invariants keep renderers small: `renderBlocks` receives the model's data
+map as its second argument and the renderer holds no map of its own; and
+`hal.drawPass` short-circuits when a region has no buffer, so renderers draw
+unconditionally. The optional fourth type parameter `RenderData` lets the upload
+and render payloads diverge; nothing uses it today.
 
-Both halves `createMarkBackend` builds extend one of two abstract base classes
-in `@jbrowse/render-core/perRegionRenderingBackend`
-(`GpuPerRegionRenderingBackend`, `Canvas2DPerRegionRenderingBackend`), and a
-display writing one by hand is now the exception rather than the shape — the
-reference sequence's Canvas2D renderer is the last of them.
-
-The bases own everything that's truly shared:
-
-- `Canvas2DPerRegionRenderingBackend` owns `canvas` + `ctx` (constructor throws if
-  no 2D context), owns the concrete `renderBlocks` (hi-DPI `prepareCanvas`
-  sizing and the `painted` answer, around the abstract `draw` the subclass
-  implements — overriding `renderBlocks` instead silently drops both), and stubs
-  `upload` / `release` / `dispose` as no-ops,
-  since the source of truth is the `regions` map.
-- `GpuPerRegionRenderingBackend` owns the `hal` reference and a pre-allocated
-  uniform scratch `ArrayBuffer`. Default `release(key)` delegates to
-  `hal.deleteRegion(key)`; default `dispose()` calls `hal.dispose()`. It also
-  owns `upload`, over the `regionPasses` the subclass declares — six
-  subclasses used to write that method, each restating an instance count the
-  packed buffer already stated and each spelling the empty case differently. A
-  pass registered but never uploaded to — wiggle's density and canvas's
-  chevron, which draw off a sibling's buffer — is simply absent from
-  `regionPasses`, which `createMarkBackend` derives from the marks that declare
-  no `bufferOf`.
-
-Two invariants keep the renderer implementations small and uniform:
-
-- `renderBlocks` receives the model's data map as its second argument — the
-  renderer holds no `Map<number, ...>` field of its own. GPU buffer lifecycle
-  delegates to `hal.deleteRegion(key)` per departed key; Canvas2D backends read
-  everything from `regions` at render time.
-- `hal.drawPass` short-circuits when the region has no buffer for that pass, so
-  GPU renderers issue draws unconditionally — no per-region flag cache.
-
-`PerRegionRenderingBackend`'s optional fourth type param `RenderData` (defaults
-to `UploadData`) lets the upload payload and the render-side payload diverge;
-no per-region display uses it today. MAF used to — its upload carried a
-pre-encoded buffer and the render side re-read `rpcDataMap` — until the rows
-became `span` channels both backends draw from.
-
-Whole-map synced plugins (alignments) define their own backend interface because
-their upload shape differs — see "Upload patterns." The whole-view displays
-(HiC, LD, the variant matrix), dotplot and both synteny displays are per-region
-backends over canvas-wide blocks, which is what lets them declare marks.
+Whole-map synced plugins (alignments) define their own backend interface; see
+§"Upload patterns".
 
 #### Whole-map synced: skipping a region without leaving stale buffers
 
-`sync(sources)` is a full rebuild by contract, and two `deleteRegion` calls are
-what make that safe with no HAL-side transaction: a key absent this sync is
-swept by the departed-key loop, and a key whose payload changed is wiped whole
-at the head of the rebuild branch before its unconditional re-uploads — so a
-pass (or a whole half: pileup gone, arcs toggled off) whose data went empty
-can't leave stale bytes. The wipe is cost-neutral because `uploadBuffer`
-destroys-and-recreates each pass's buffer anyway (no buffer pooling — see "What
-this architecture deliberately does not have"). The skip exists because the
-upload autorun fires on far more than new data — alignments' `sourceSections`
-is derived through `sections`, so every band-resize drag frame and arc-mode
-flip repacked ~9 passes per region to write the same bytes back. Two rules:
+`sync(sources)` is a full rebuild by contract. Two `deleteRegion` calls make that
+safe with no HAL-side transaction: a key absent this sync is swept, and a key
+whose payload changed is wiped whole before its unconditional re-uploads, so a
+pass whose data went empty cannot leave stale bytes. The wipe is cost-neutral
+because `uploadBuffer` destroys and recreates each buffer anyway. The skip
+exists because the upload autorun fires on far more than new data (a band-resize
+drag frame re-derives `sourceSections`).
 
 - **The wipe, like the skip, is whole-region.** A per-pass decision would need
-  each caller to enumerate the passes it writes; a region with any change
-  rebuilds all of it, which is what preserves the emptied-pass guarantee.
-- **Forget a key when it leaves** — the sweep deletes the HAL buffers and the
-  memo entry together, or a region that returns with a reference-identical
-  payload skips an upload onto buffers the sweep destroyed.
+  each caller to enumerate its passes.
+- **Forget a key when it leaves**: delete the HAL buffers and the memo entry
+  together, or a returning region with an identical payload skips an upload onto
+  destroyed buffers.
+- The memo lives on the renderer (`GpuAlignmentsRenderer.uploaded`), so it drops
+  exactly when the buffers do on context loss. It stores array identities only,
+  so an evicted region is not held alive.
+- **The one sub-region exception is the recolor.** `readYs` identity means "same
+  layout run" (layout allocates it fresh; the colour tier spreads over it), so
+  same bytes except the two per-read colour arrays rewrites the read pass alone.
+  This needs the model to bake colour in its own computed downstream of layout
+  (`laidOutByGroupUncolored` → `laidOutByGroupFramed` → `laidOutByGroup`); see
+  `syntenyInstanceCache` in FETCH_KEYS.md, "`gpuProps()` and derived region maps".
 
-(`beginUpload`/`endUpload`/`retainRegion` — a HAL-side write-recording
-transaction whose sweep destroyed every buffer not rewritten or retained — was
-the previous answer here; the wipe-plus-sweep replaced it 2026-08-21, deleting
-the three methods from `GpuHal` and the recording from `RegionRegistry`.)
-
-The memo lives on the renderer (`GpuAlignmentsRenderer.uploaded`), not in a
-model-side memo in `installUpload`: this pattern's upload is one `sources` cell
-owning every section, and the renderer is rebuilt with its HAL on a context loss,
-so the memo drops exactly when the buffers do — the part a hand-rolled model-side
-memo forgets. It stores array identities only, never the payload, so an evicted
-region isn't held alive by upload bookkeeping.
-
-The one sub-region exception is the **recolor**, and it rides on a narrower fact:
-`readYs` identity means "same layout run", because layout allocates it fresh
-(`cloneWithLayout`) and the color tier spreads over the result without touching
-it. Same bytes everywhere but the two per-read color arrays ⇒ skip the region
-and rewrite the read pass alone. Same split as
-`syntenyInstanceCache`'s geometry/color token (FETCH_KEYS.md,
-"`gpuProps()` and derived region maps"). It requires the model to keep the color bake in its own
-computed downstream of layout — the `laidOutByGroupUncolored` →
-`laidOutByGroupFramed` → `laidOutByGroup` chain.
-
-Synteny additionally has a level-of-detail axis upstream of all this: which PIF
-tier the fetch reads from. That's a fetch/adapter concern, not a backend one —
-[SYNTENY_LOD.md](SYNTENY_LOD.md).
+Synteny's level-of-detail axis is a fetch concern: [SYNTENY_LOD.md](SYNTENY_LOD.md).
 
 ### Wiggle-family contract
 
-Displays with a score axis (wiggle, Manhattan, marks) share types,
-scale utilities and score-plot pieces across two packages:
+Displays with a score axis (wiggle, Manhattan, marks) share types, scale
+utilities and score-plot pieces across two packages.
 
-`@jbrowse/wiggle-core` — the cross-plugin contract. A plugin imports from here
-so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
+`@jbrowse/wiggle-core` is the cross-plugin contract; importing it avoids a
+dependency on the wiggle plugin's MST factories or RPC methods. It holds
+`renderingBackendTypes.ts`, `dataTypes.ts`, `normalize.ts` (scale-type codes,
+`makeScoreNormalizer` re-exported from `@jbrowse/render-core/scoreScale`),
+`displayModel.ts`, `scale.ts`/`autoscale.ts`, `scoreMenuItems.ts`
+(`makeScoreSubMenu`), `pointMarker.ts`, `resolveRenderState.ts`,
+`transferables.ts`, `WiggleScoreConfigMixin` / `ScoreFieldConfigMixin`
+(`ScoreFieldConfigMixin` adds `scoreField`; the mark display uses the base), and
+the subpaths `ScorePlotChrome` / `ScorePlotSvgFrame`. **Chrome and SVG frame are
+subpaths, not the barrel**: a config schema imports the barrel at plugin install,
+and `index.eager.test.ts` fails if the barrel reaches them.
 
-- `renderingBackendTypes.ts` — `WiggleRenderingBackend`, `WiggleGPURenderState`, `SourceRenderData`
-- `dataTypes.ts` — `WiggleDataResult`, `WiggleSourceData`, `WiggleFeatureArrays`
-- `normalize.ts` — `SCALE_TYPE_LINEAR`, `SCALE_TYPE_LOG`, `SCALE_TYPE_SYMLOG`, `resolveSymlogConstant`, and `makeScoreNormalizer` re-exported from `@jbrowse/render-core/scoreScale`, where `scaleTypeCode` turns a scale name into the code
-- `displayModel.ts` — `WiggleGpuDisplayModel<TRenderingBackend>`: model↔component contract
-- `scale.ts` / `autoscale.ts` — `getNiceDomain`, `getScale`, autoscale helpers
-- `scoreMenuItems.ts` — `makeScoreSubMenu(self, opts)` + `ScoreScaleModel`: the shared Score submenu
-- `pointMarker.ts` / `resolveRenderState.ts` / `transferables.ts` / `YScaleBar` (`packages/display-ui/src/YScaleBar.tsx`) — the shared scatter glyph (wiggle + Manhattan), render-state resolution, worker transfer-list collection, and the Y-axis overlay
-- `WiggleScoreConfigMixin` / `ScoreFieldConfigMixin` — the score-plot config: the axis (`ScoreScaleMixin`, which the alignments coverage band composes alone), the cross-hatch toggle and the point size; the second adds `scoreField` for a display plotting one configured field, which the mark display does not
-- `@jbrowse/wiggle-core/ScorePlotChrome` / `@jbrowse/wiggle-core/ScorePlotSvgFrame` — the on-screen chrome and the SVG-export body of a display drawing a mark list on the score axis. Subpaths, not the barrel: a config schema imports the barrel at plugin install, and `index.eager.test.ts` fails if the barrel reaches the chrome or the SVG export again
+`@jbrowse/plugin-wiggle` holds the wiggle displays' own pieces.
+`linearWiggleDisplayConfigSchema` comes off the barrel; the model factory
+**cannot**, because the display registers a state model loader and a value edge
+from the eager barrel would undo it. Import
+`@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel` from inside the
+composing display's own lazy loader. `WiggleCommonMixin()` adds palette,
+rendering type, summary mode and resolution; its zoom rule is the adapter's
+`zoomRange`
+([ADR-125](../architecture-decision-records/adr-125-the-adapter-declares-the-zoom-range-its-answer-serves.md)).
 
-`@jbrowse/plugin-wiggle` — the wiggle displays' own model pieces:
-
-- `linearWiggleDisplayConfigSchema` / `stateModelFactory` — the full
-  LinearWiggleDisplay config + model, for a plugin composing it **wholesale**;
-  GC content draws through the display itself, over its own adapter. The
-  config schema comes off the plugin barrel; the
-  model factory does **not** and cannot — it is
-  `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel`, because the display
-  registers a state model loader and a value edge from the eager barrel would
-  undo that. A display composing it is itself lazily registered, so it reaches
-  the subpath from inside its own loader.
-- `WiggleCommonMixin()` — `ScoreFieldConfigMixin` plus wiggle's palette,
-  rendering type, summary mode and resolution. Its zoom rule is the `zoomRange`
-  the adapter puts on each payload
-  ([ADR-125](../architecture-decision-records/adr-125-the-adapter-declares-the-zoom-range-its-answer-serves.md)).
-
-GWAS's Manhattan is the mark display with a default plot: its model composes
-`LinearMarkDisplay`'s and its schema takes that display's as its base
+GWAS's Manhattan is the mark display with a default plot
 ([ADR-178](../architecture-decision-records/adr-178-manhattan-is-the-mark-display-with-a-default-plot.md)).
-It draws through the mark display's backend and is zoom-independent: a plot
-with no binning step sends the same `rpcProps` at every zoom and a GWAS
-payload carries no `zoomRange`, so no zoom invalidates a region it has
-loaded.
+It is zoom-independent: the same `rpcProps` at every zoom and no `zoomRange` on
+the payload.
 
 ### Upload patterns
 
-**One installer, one contract.** A display's rendering wiring is one call from
-its `startRenderingBackend`, `installUpload(self, backend, { cells, inputs?,
-encode?, render })`, and nothing else; `attachRenderingBackend` is render-core's
-own and a lint rule says so ([ADR-088](../architecture-decision-records/adr-088-one-upload-installer-over-one-cell-contract.md)).
+**One installer, one contract.** A display's wiring is one call,
+`installUpload(self, backend, { cells, inputs?, encode?, render })`
+([ADR-088](../architecture-decision-records/adr-088-one-upload-installer-over-one-cell-contract.md)).
 `cells` is a map of immutable payloads. The installer diffs it by reference on
 every commit, encodes and uploads what moved, releases what left, and re-uploads
-everything into a fresh backend after a context loss. Every backend implements
-the same two verbs, `upload(key, data)` and `release(key)`, so what is left per
-display is **what its map is keyed by**:
+everything into a fresh backend after context loss. Every backend implements
+`upload(key, data)` and `release(key)`, so what remains per display is **what its
+map is keyed by**:
 
-| Key | Contract | Render | Use when | Examples |
-|---|---|---|---|---|
-| `displayedRegionIndex` | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | each region's data is independent, or a whole-map computed hands back per-region payloads | canvas, wiggle, MAF, manhattan, sequence, multi-variant |
-| a slot name, via `oneCell` | `PerRegionRenderingBackend` over one canvas-wide block | `renderBlocks(blocks, regions, state)` | the display holds one payload for the whole view | HiC, LD, the variant matrix; alignments' whole-map `sources` |
-| a sibling display's `sharedBackendKey`, over one canvas-wide block each | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | one canvas paints several displays and each has a block of its own | dotplot (a block per display), the synteny level (a block per track's ribbons and per clicked outline), multi-way synteny (a block per gutter, outline and lane) |
+| Key | Contract | Use when | Examples |
+|---|---|---|---|
+| `displayedRegionIndex` | `PerRegionRenderingBackend` | each region's data is independent, or a whole-map computed hands back per-region payloads | canvas, wiggle, MAF, manhattan, sequence, multi-variant |
+| a slot name, via `oneCell` | same, over one canvas-wide block | one payload for the whole view | HiC, LD, variant matrix; alignments' `sources` |
+| a sibling's `sharedBackendKey`, one canvas-wide block each | same | one canvas paints several displays | dotplot, the synteny level, multi-way synteny |
 
-**A cell keyed on a value reads that value from its own computed.** The diff is
-by reference, so a cell built from anything a per-frame render-state getter
-returns is a re-upload per frame — synteny's clicked-outline cell read
-`clickedFeatureId` off `renderParams`, which carries the two rows' `offsetPx`,
-and so re-packed and re-uploaded on every pan frame and every hover for as long
-as a ribbon stayed selected. **No rendering gate can see this**: the picture is
-identical, and a cross-backend drift table compares pictures. The check is a
-test that pans with a selection live and counts `upload` calls
-(`LinearSyntenyDisplay/outlineUploadSchedule.test.ts`).
-
-**Release is per key, never an active-set prune.** The diff knows exactly which
-keys departed, so a per-key release does the same job on a display's own map as
-the HAL's old `pruneRegions(active)` did, and it is the only correct shape on a
-shared canvas, where a prune computed from one display's map would wipe its
-siblings' buffers. That one fact is why the three installers this used to be
-(per-region, keyed, global — ADR-079) collapsed to one.
-
-**A display with two cells of different kinds** keys them by name and lets
-`encode` see the key — `encode(data, props, key)` — while the backend's
-`upload` tells them apart by the cell's type. HiC and LD were the two, each
-carrying its colour ramp beside its matrix; both are one cell now, the ramp
-being the mark's `texture` (§"A pass that samples a colour ramp"), which the
-backend re-uploads on the bytes' identity alone.
-
-**Absence is absence.** A whole-view display with nothing fetched yet leaves the
-key out (`oneCell(0, self.rpcData)` does), so the key is released rather than
-uploaded as `undefined` and the frame clears. What it must NOT leave out is a
-fetch that came back empty: with the payload in the map `renderBlocks` answers
-true, which is the answer an empty-but-finished matrix needs — the cleared
-canvas is its whole picture and nothing later will upload bytes for it, so
-`canvasDrawn` has to flip or the scrim never lifts.
-
-There used to be a third contract here, `KeyedRenderingBackend` — one canvas, a
-key per display, `render(state)` painting every key in one frame. Dotplot and
-the two synteny displays were its consumers and all three are the last row now,
-so it is gone; `sharedBackendKey` is what survives it, on its own subpath.
-
-The move is the same one each time. A dotplot segment's screen x is not a
-block's bp span — it comes from the payload's own absolute cumBp through a
-`panPx` fold — and a synteny corner's is the same fold over a window-relative
-bp, so a canvas-wide block per cell is an identity clip and what is left is
-exactly the map-plus-blocks a per-region frame takes. The key stays
-`sharedBackendKey(self.id)`; it rides on `displayedRegionIndex`, which is what a
-block calls the key it was uploaded under. The multi-way stack keys its own
-named layers through the same hash, which is what lets its gutters and its lanes
-be one map.
-
-MAF is **per-region**, not whole-map: its blocks are independent, with no
-main-thread Y-layout coupling adjacent regions, so each region's upload
-re-encodes in isolation. Alignments' whole-map `sources` cell exists *only*
-because pileup Y-rows must be assigned consistently across `displayedRegions` —
-a read spanning a region boundary needs the same Y row in both — which forces
-the upload to rebuild the whole map whenever any region's input changes; its
-renderer holds the memo of what it last sent, and this layer's diff has nothing
-to add to it.
+- **A cell keyed on a value reads it from its own computed.** The diff is by
+  reference, so a cell built from a per-frame render-state getter re-uploads per
+  frame. Synteny's clicked-outline cell once read `clickedFeatureId` off
+  `renderParams` and re-packed on every pan frame. **No rendering gate sees this**
+  (the picture is identical); a test that pans with a selection live and counts
+  `upload` calls does (`outlineUploadSchedule.test.ts`).
+- **Release is per key, never an active-set prune.** The diff knows which keys
+  departed, and a prune computed from one display's map would wipe its siblings'
+  buffers on a shared canvas (the HAL's old `pruneRegions(active)`). That is why
+  the three installers (ADR-079) collapsed to one.
+- **A display with two cells of different kinds** keys them by name; `encode`
+  sees the key (`encode(data, props, key)`) and the backend's `upload` tells them
+  apart by type.
+- **Absence is absence.** A whole-view display with nothing fetched leaves the
+  key out (`oneCell(0, self.rpcData)` does), so the key is released and the frame
+  clears. A fetch that came back *empty* must stay in the map, so `renderBlocks`
+  answers true and `canvasDrawn` flips; otherwise the scrim never lifts.
+- `sharedBackendKey(self.id)` rides on `displayedRegionIndex`, the key a block
+  was uploaded under. The multi-way stack keys its named layers through the same
+  hash so gutters and lanes share one map. A dotplot or synteny corner's screen x
+  is a `panPx` fold, so a canvas-wide block per cell is an identity clip.
+- MAF is **per-region**: its blocks are independent, so each upload re-encodes in
+  isolation. Alignments' whole-map `sources` cell exists only because pileup Y
+  rows must be consistent across `displayedRegions` (a read spanning a boundary
+  needs one row in both); its renderer holds the memo of what it last sent.
 
 #### Every backend extends a base, and the reason is the error channel
 
-`GpuRenderingBackendBase` / `Canvas2DRenderingBackendBase` hold what every
-backend has: the `hal` + uniform scratch (or `canvas` + 2D context), `dispose`,
-and `setErrorHandler` — the last of which routes a HAL over-limit allocation to
-the display's `renderError`, which is what raises the "too much data to render
-on this GPU — zoom in" banner instead of leaving a blank canvas.
-
-Three backends used to implement their interfaces standalone: **alignments,
-dotplot and multi-LGV synteny** (only alignments still does; the other two are
-mark lists now). None declared `setErrorHandler`, and
-`useRenderingBackend` called it as `r.setErrorHandler?.()` — so the three largest
-vertex-buffer allocators in the app were exactly the three whose OOMs reached
-nobody. The HAL reported, `OomReporter`'s handler was null, the console got a
-line and the view painted blank, with the banner built and wired the whole time.
-
-`setErrorHandler` is **required** on `RenderingBackend` now and the `?.` is gone,
-so a backend that doesn't extend a base is a compile error rather than a display
-silently forgoing its error channel. `?.` on a capability every implementer
-should have reads as tolerance and spends as silence.
+`GpuRenderingBackendBase` / `Canvas2DRenderingBackendBase` hold `hal` + uniform
+scratch (or `canvas` + 2D context), `dispose` and `setErrorHandler`, which routes
+a HAL over-limit allocation to `renderError` and raises the "too much data to
+render on this GPU — zoom in" banner. `setErrorHandler` is **required** on
+`RenderingBackend`, so a backend that skips a base is a compile error. It used to
+be optional (`r.setErrorHandler?.()`), and the three largest vertex-buffer
+allocators were exactly the three whose OOMs reached nobody: the console got a
+line and the view painted blank. `?.` on a capability every implementer needs
+reads as tolerance and spends as silence.
 
 #### One autorun and a diff (`installUpload`)
 
-**Plain English:** The naive implementation re-uploads every chromosome to the
-GPU each time any chromosome finishes loading — 300 uploads instead of 24 for a
-whole-genome wiggle track. The helper remembers what it last sent for each
-chromosome and sends only what changed. When chromosome 5 arrives, chromosome 5
-uploads. When the user changes a color setting, all 24 re-encode and re-upload —
-which is the right behavior, and is why the display has to *declare* that the
-color is an encode input.
+The helper remembers what it last sent per key, so chromosome 5 arriving uploads
+chromosome 5, not all 24. A settings change re-encodes and re-uploads all of
+them, which is why a display must *declare* what its encode depends on.
 
 ```ts
-startRenderingBackend(backend: XxxRenderingBackend) {
-  installUpload(self, backend, {
-    cells: () => self.rpcDataMap,
-    inputs: () => self.gpuProps(),     // omit for an encode that needs nothing
-    encode: (data, props) => encode(data, props),  // omit if there is nothing
-    render: (b, encoded) =>            // to encode — see below
-      b.renderBlocks(
-        self.renderBlocks,
-        /* rpcDataMap or `encoded` */,
-        self.renderState,
-      ),
-  })
-}
+installUpload(self, backend, {
+  cells: () => self.rpcDataMap,
+  inputs: () => self.gpuProps(),                 // omit if encode needs nothing
+  encode: (data, props) => encode(data, props),  // omit if payload == backend input
+  render: (b, encodedOrMap) => b.renderBlocks(self.renderBlocks, encodedOrMap, self.renderState),
+})
 ```
 
-**Omit `encode` when the payload the display holds is the payload the backend
-takes**, which most per-region displays are. It is not the same code with an
-identity default filled in: the helper skips the encode step, so the two mirror
-maps it otherwise keeps — one payload reference and one source reference per
-loaded key — are never allocated, and `render` receives the display's own map.
+- **Omit `encode` when the held payload is what the backend takes.** The helper
+  then skips the step and allocates neither mirror map; `render` receives the
+  display's own map.
+- A cell re-encodes when its own entry is replaced or `inputs` changes identity,
+  and re-uploads when its encoded payload changes.
+  [ADR-078](../architecture-decision-records/adr-078-one-upload-autorun-and-a-diff.md)
+  has the reasoning.
+- **`inputs` is the whole contract.** `encode`'s own reads wake the autorun but
+  invalidate nothing, so a wide read there re-runs the diff and encodes nothing.
+  Anything a settings change must reach the buffer through goes in `inputs`,
+  which the helper memoizes as a computed.
+- **This fixes uploads and encodes only. Draws stay O(N²)**: `renderBlocks`
+  clears and redraws every loaded region. Read
+  [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md#a-region-arrival-draws-twice-wherever-the-render-autorun-observes-the-data)
+  before chasing the rest.
 
-One upload autorun runs over the whole map with two reference diffs under it: a
-cell re-encodes when its own entry is replaced or when `inputs` changes
-identity, and re-uploads when its encoded payload changes. A new key costs one
-encode and one upload; a settings change costs N of each. The quadratic term left
-is N `Map.get`s per arrival. [ADR-078](../architecture-decision-records/adr-078-one-upload-autorun-and-a-diff.md)
-has the reasoning, including why ADR-017's per-key autoruns are gone.
+**Why `LinearBasicDisplay` and alignments are whole-map rather than streamed:**
+they lay features into Y rows across all loaded regions, so any arrival can
+change everything already loaded. A whole-map computed (`laidOutDataMap` /
+`laidOutPileupMap`) is the upload payload, with no encode step, handed to the
+same installer (`cells: () => self.renderDataMap`). Layout therefore stays on the
+main thread; ADR-053 settles that for alignments and says what to attack
+instead. `LinearBasicDisplay` recovers O(N) through `createIncrementalLayout`
+(`plugins/canvas/src/LinearBasicDisplay/layout.ts`), which memoizes per
+ref-group ([ADR-017](../architecture-decision-records/adr-017-wiggle-per-key-autoruns.md),
+[ADR-011](../architecture-decision-records/adr-011-canvas-flatbush-immutable-offsets.md)).
 
-**`inputs` is the whole contract.** `encode`'s own reads still run inside the
-upload autorun, so they wake it, but they invalidate nothing — a wide read there
-re-runs the diff and encodes nothing. Anything a settings change must reach the
-buffer through therefore goes in `inputs`, which the helper memoizes as a
-computed.
-
-**This fixes uploads and encodes only. Draws keep the O(N²) shape.**
-`renderBlocks` clears the canvas and redraws every loaded region, so N sequential
-arrivals still cost about N²/2 block draws. Each arrival no longer draws *twice*
-— the upload happens inside the upload autorun's own run, so there is no pass
-where the map holds a region the backend does not — but read
-[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md#a-region-arrival-draws-twice-wherever-the-render-autorun-observes-the-data)
-before chasing the rest: 24 regions cost 72 draws, the double draw explains 24 of
-them, and removing two thirds moved no user-visible number.
-
-**Why `LinearBasicDisplay` / alignments are whole-map rather than streamed:** those
-lay out features into Y-rows across all loaded regions together (a gene spanning
-two adjacent regions lands on the same row in both), so any new arrival can in
-principle change the layout of everything already loaded. They route through a
-whole-map MobX computed (`laidOutDataMap` / `laidOutPileupMap`) that invalidates
-on any `rpcDataMap` change, and their upload payload *is* that computed's output
-— no encode step, so nothing to declare `inputs` for. Both hand that computed's
-map to the same installer (`cells: () => self.renderDataMap`), which diffs it
-against the last upload by reference, so only regions whose data object actually
-changed re-upload. This cross-region coupling is load-bearing (collapsed-intron
-views split one chromosome into many displayed regions, and a long gene must
-hold the same Y row in each) and is why layout runs on the main thread — row
-assignment needs the union of all visible regions' features. For alignments that
-placement is settled by
-[ADR-053](../architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md),
-which also says what to attack instead when the main-thread pack shows up in a
-trace.
-
-`LinearBasicDisplay` recovers O(N) anyway via `createIncrementalLayout`
-(`plugins/canvas/src/LinearBasicDisplay/layout.ts`), which memoizes the pure
-layout **per ref-group** so unchanged chromosomes return prior output by reference
-and only changed regions re-upload. Alignments/synteny keep the plain whole-map
-form (N is only 4–8 buffered regions at their gene-level zoom). Full derivation of
-the incremental-layout memo and its chain-mode wrinkle: [ADR-017](../architecture-decision-records/adr-017-wiggle-per-key-autoruns.md), [ADR-011](../architecture-decision-records/adr-011-canvas-flatbush-immutable-offsets.md).
-
-**A shared-canvas backend wants the same kind of memo one level down: the
-color-lane patch.** A genuine recolor (the view's `color`, `opacityByIdentity`, a track
-palette shift) does produce a fresh `colors` array, and the `geometry` getter
-then hands the backend a fresh object over the *same* coordinate arrays — which
-is exactly what `installUpload`'s reference diff is meant to catch, but a
-naive backend re-packs every lane to change one. So both mark lists hold a
-`createInstanceCache` (`@jbrowse/render-core/instanceCache`) inside the shape's
-`pack`, which memoizes the packed bytes on `(one geometry array's identity,
-colors' identity)` and patches the color lane in place when only the latter
-moved. The GPU re-upload still
-happens — the HAL has no partial-buffer update — but the CPU interleave, which
-dominates at 10⁵–10⁶ instances, does not. Each plugin supplies an
-`InstanceCacheOpts` naming its geometry token, its color accessor and the stride
-and color offset the patch has to write at; any new shared-canvas backend whose
-palette is a separate main-thread pass wants the same. The
-model-side half of this split — why the colors array is fresh in the first place,
-and why opacity is *not* in it — is
-[ARCHITECTURE.md § gpuProps and derived region
-maps](../reference/FETCH_KEYS.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
+**A shared-canvas backend wants the memo one level down: the colour-lane
+patch.** A recolor yields a fresh `colors` array over the same coordinate
+arrays. Both synteny mark lists hold a `createInstanceCache`
+(`@jbrowse/render-core/instanceCache`) inside the shape's `pack`, memoizing on
+`(geometry identity, colors identity)` and patching the colour lane in place.
+The GPU re-upload still happens (no partial-buffer update in the HAL), but the
+CPU interleave, which dominates at 10⁵–10⁶ instances, does not. A plugin
+supplies `InstanceCacheOpts` (geometry token, colour accessor, stride, colour
+offset). The model-side half is
+[FETCH_KEYS.md](FETCH_KEYS.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
 
 ## HAL (Hardware Abstraction Layer)
 
-Hides the WebGPU/WebGL2 difference. Lives in `packages/render-core/src/hal/`.
+The HAL hides the WebGPU/WebGL2 difference and lives in
+`packages/render-core/src/hal/`. The full interface is `hal/types.ts`.
 
 ### The remaining "pass" names mean the pipeline, not WebGPU's render pass
 
-Read this before reading any HAL method name, because the word collides with
-WebGPU's own and the collision inverts what two of them appear to do.
+**`PipelineDescriptor` is a pipeline state object.** It carries shader source,
+vertex layout, blend state, topology and texture bindings, and compiles to one
+`GPURenderPipeline` (`resolvePipelines`, `webgpuHal.ts`) or one linked program +
+VAO (`link`, `webgl2Hal.ts`). **The identifiers around it still say "pass"**
+(`passId`, `drawPass`, `slangPass`, `InstancePass`, `*_PASSES`); read each as
+"pipeline". The rename stopped at the type because `passId` is a join key spelled
+identically across hundreds of call sites.
 
-**`PipelineDescriptor` is a pipeline state object (PSO).** It carries shader
-source, the vertex input layout, blend state, primitive topology and texture
-bindings, and it compiles to one `GPURenderPipeline` (`resolvePipelines`,
-`webgpuHal.ts`) or one linked program + VAO (`link`, `webgl2Hal.ts`), shared by
-every descriptor that differs from it only in `id`.
-
-**The two HALs build them at opposite times, and that is not cosmetic.** WebGL2
-builds a pass on its first *draw* (`getPass`), keeping one canary link in the
-constructor so a GL stack that cannot compile our shaders at all still falls to
-Canvas2D; a three-track LGV declares 29 programs and links 14. Its text is
-loaded for every declared pass before that, since a draw cannot wait. WebGPU
-resolves the whole declared list before `WebGPUHal.create` returns, so a track's
-first paint waits on loading and compiling every pass it could ever draw.
-Measured, the compile costs less than it reads: the 23 resolve concurrently,
-so the batch is ~22 ms of wall time and none of it on the main thread. And
-pipelines are **shared across displays** —
-`hal/deviceGpuCache.ts` memoizes them per device, so a four-track session built
-23 of them, not 92. Both numbers, and why going lazy here would cost more than
-it saves, are in
-[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md#every-webgpu-display-resolves-its-whole-pass-list-before-it-can-paint).
-
-**Both HALs key a compile by what it compiles, never by the pass id.** WebGPU
-keys a `PipelineRecipe` — WGSL, vertex buffer layout, blend, topology, textured
-or not, sample count — and `buildPipeline` reads nothing else, so the key cannot
-miss an input. WebGL2 keeps the same kind of map per context, because a program
-belongs to the context that linked it: vertex source, fragment source, attribute
-names and sampler unit. Every id over one shader shares the compile —
-alignments' skip and deletion, the circular view's eight ring passes.
-`deviceGpuCache.test.ts` and `webgl2HalPrograms.test.ts` pin both keys.
-
-The type says so; the **identifiers around it still say "pass"** — `passId`,
-`drawPass`, `slangPass`, `InstancePass`, every plugin's `*_PASSES` array. Those
-all mean *this* pipeline, and the rest of this section is about reading them
-that way.
-
-**WebGPU's render pass is the `beginFrame`/`endFrame` bracket.** There is
-exactly one per frame: `beginFrame` calls `beginRenderPass` with the MSAA
-attachment and its resolve target, every draw in the frame is encoded into it,
-and `endFrame` ends it and submits a single command buffer. Batching the whole
-frame into one pass is deliberate — it makes MSAA resolve once instead of per
-draw, which is what keeps intermediate-resolve artifacts out.
-
-So, concretely:
+**WebGPU's render pass is the `beginFrame`/`endFrame` bracket**: exactly one per
+frame, with the MSAA attachment and resolve target. Batching the frame into one
+pass resolves MSAA once instead of per draw.
 
 | Reads like | Actually is |
 |---|---|
-| `drawPass(passId, regionKey)` | bind PSO `passId`, bind that region's vertex buffer, issue **one instanced draw call**. It does not begin a pass. |
-| `beginFrame` / `endFrame` | open and close **the** render pass, plus the command encoder and submit |
-| `PipelineDescriptor.blend` | one field of the PSO's fragment target state |
+| `drawPass(passId, regionKey)` | bind PSO `passId`, bind that region's vertex buffer, issue **one instanced draw**; does not begin a pass |
+| `beginFrame` / `endFrame` | open and close **the** render pass, plus command encoder and submit |
 
-**Why the rename stopped at the type.** A type name is read in isolation, by
-someone deciding what the thing *is*, which is where the wrong word costs most —
-and it is one declaration plus its imports. `passId` is not in that position: it
-is a join key spelled identically in the HAL's buffer registry, `drawPass`'s
-signature, `InstancePass` and every plugin's pass array, so renaming it touches
-hundreds of call sites to restate what the type now says once. Read `passId` as
-"pipeline id" and the whole interface follows.
+**The two HALs build pipelines at opposite times.** WebGL2 builds on first
+*draw* (`getPass`), keeping one canary link in the constructor so a GL stack that
+cannot compile our shaders falls to Canvas2D. WebGPU resolves the whole declared
+list before `WebGPUHal.create` returns, so first paint waits on every pass;
+measured, that is cheap (concurrent, off the main thread), and
+`hal/deviceGpuCache.ts` memoizes pipelines per device so displays share them.
+Why going lazy would cost more:
+[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md#every-webgpu-display-resolves-its-whole-pass-list-before-it-can-paint).
+
+**Both HALs key a compile by what it compiles, never by the pass id.** WebGPU
+keys a `PipelineRecipe` (WGSL, vertex layout, blend, topology, textured, sample
+count), so the key cannot miss an input. WebGL2 keeps a per-context map (a
+program belongs to its context) keyed on vertex source, fragment source,
+attribute names and sampler unit. `deviceGpuCache.test.ts` and
+`webgl2HalPrograms.test.ts` pin both.
 
 ```
 createGpuHal(canvas, { passes, sampleCount }): Promise<GpuHal | null>
-  ?renderer=canvas2d|canvas  → return null                 (Canvas2D backend)
+  ?renderer=canvas2d|canvas  → null                     (Canvas2D backend)
   ?renderer=webgl            → skip WebGPU, try WebGL2 → null on failure
   ?renderer=webgpu           → WebGPU only, error on failure
-  otherwise                  → try WebGPU → WebGL2 (not on a software rasterizer) → null
+  otherwise                  → WebGPU → WebGL2 (not on a software rasterizer) → null
 ```
 
-**Key methods** (full interface: `packages/render-core/src/hal/types.ts`):
+**`?renderer=webgpu` pins that rung and does not fall past it.** A pinned
+renderer that silently substitutes another makes every comparison wrong, so
+`createGpuHal` raises a `renderError` naming the pin, with "use Canvas2D" as the
+way out. Prove which backend ran by asserting on the HAL, not the URL.
 
-- *Frame lifecycle* — `beginFrame(...)` / `endFrame()` bracket a render pass.
-- *Data* — `uploadBuffer(regionKey, passId, data, count)`,
-  `getBufferCount(regionKey, passId)`, `uploadTexture(...)`,
-  `writeUniforms(data)`.
-- *Draw* — `drawPass(passId, regionKey, bufferPassId?)`, `setScissor` /
-  `clearScissor`, `setViewport` / `clearViewport`.
-- *Lifecycle* — `deleteBuffer(regionKey, passId)`, `deleteRegion(key)`,
-  `resize(width, height)`, `setErrorHandler(handler)`, `dispose()`.
-
-`drawPass` short-circuits when the region has no buffer for that pass (or count is
-zero), so callers issue draws unconditionally without tracking which regions have
-data.
-
-`bufferPassId` is how one pass draws off another's instance buffer: chevron
-reads line's and continuation reads rect's, each pair declaring one shared
-struct (`lineInstance.slang`, `rectInstance.slang`) so their attribute layouts
-cannot drift — `sharedInstanceBuffers.test.ts` pins that. What no unit test can
-see is whether each HAL then binds the offsets it was handed (WebGL2 through
-`vertexAttribPointer`/`vertexAttribIPointer`, WebGPU through `vertex.buffers`),
-which would show only as garbled geometry on a GPU machine. That headed check
-was done 2026-09-02 at d477a80121 with
-`browser-tests/probe-continuation-strand.ts`: volvox `gff3tabix_genes` at
-`ctgA:5500..5900`, where + and − features run past both viewport edges, on an
-Intel UHD Graphics 630 (macOS 15.6) through puppeteer's Chrome 152.0.7977.54 —
-WebGL2 via ANGLE Metal, WebGPU via Dawn Metal, both headless (`--use-gl=angle`,
-`--enable-unsafe-webgpu`; the `runner.ts` claim that Chrome cannot render a
-WebGPU canvas under puppeteer did not hold there). Each backend was proved by the
-display canvas's own committed context kind. The »/« markers matched the strand
-arrows on every glyph on all three backends, and the frames differed by 0.04% of
-pixels (webgl vs canvas2d, webgpu vs canvas2d, antialiasing on the chevron
-outline) and 0.00% (webgl vs webgpu).
+`bufferPassId` on `drawPass` lets one pass draw off another's instance buffer
+(chevron off line's, continuation off rect's). Each pair declares one shared
+struct (`lineInstance.slang`, `rectInstance.slang`) and
+`sharedInstanceBuffers.test.ts` pins the layout. No unit test sees whether each
+HAL binds the offsets it was handed (`vertexAttribPointer` for WebGL2,
+`vertex.buffers` for WebGPU); that shows only as garbled geometry on a GPU
+machine, and `browser-tests/probe-continuation-strand.ts` checks it.
 
 **An empty upload IS the release.** Every HAL deletes the pass's prior buffer
-*before* looking at the count, so `uploadBuffer(key, pass, data, 0)` is the
-"this pass has nothing this time" instruction, and `uploadPass` passes an empty
-pack through rather than skipping it. What a caller must not do is skip the call
-to save an upload: that leaves the previous frame's bytes on the GPU. A guard
-that *deletes* first and returns is merely the same instruction spelled twice —
-hic's GPU renderer carried one until 2026-08-21, harmless and a second place to
-state the release.
+before looking at the count, so `uploadBuffer(key, pass, data, 0)` means "nothing
+this time", and `uploadPass` passes an empty pack through. Skipping the call to
+save an upload leaves the previous frame's bytes on the GPU.
 
-**Replacing a buffer mid-frame is legal, because WebGPU defers the release.**
-A `destroy()` is validated against `queue.submit`, not against the moment the
-draw was encoded, so freeing a vertex buffer an open render pass already drew
-from fails validation for the **whole** command buffer — one region's re-upload
-blanks every track drawn in that frame, and the only symptom is a console
-validation error after the submit. `WebGPUHal` therefore pushes every release
-onto `pendingDestroy` while `currentEncoder` is non-null and drains it after the
-submit in `endFrame` (and on that method's throwing path, and in `dispose`).
-It runs through the `RegionRegistry` destroy hook, so `uploadBuffer`,
-`deleteBuffer`, `deleteRegion` and `dispose` all get it without
-a per-call-site guard, and `uploadTexture`'s replacement goes the same way.
-WebGL2 needs none of this: it is immediate-mode, and the driver has already
-consumed the bytes by the time `deleteBuffer` runs.
-
-This replaced a `warnIfMidFrame` console warning, which had it backwards on both
-sides — it fired for synteny's lazy per-mode upload deleting a pass the open frame
-never referenced (safe), and it did not fire at all for the case that actually
-dropped frames, alignments' selection-frame overlay (since moved to the
-chrome's highlight guide) re-uploading its per-frame quads once per section
-inside the block loop, because that release comes from `uploadBuffer` rather
-than from `deleteBuffer`. `MockHal.replacedWhileDrawn()`
-is where a renderer test says which of the two shapes it has.
+**Replacing a buffer mid-frame is legal because WebGPU defers the release.**
+`destroy()` is validated against `queue.submit`, so freeing a buffer an open pass
+already drew from fails the **whole** command buffer, blanking every track in the
+frame with only a console validation error. `WebGPUHal` pushes every release onto
+`pendingDestroy` while `currentEncoder` is non-null and drains it after submit in
+`endFrame` (also on the throwing path, and in `dispose`), through the
+`RegionRegistry` destroy hook. WebGL2 is immediate-mode and needs none of this.
+`MockHal.replacedWhileDrawn()` is where a renderer test says which shape it has.
 
 **Implementations:** `WebGPUHal` (4× MSAA, device-lost recovery), `WebGL2Hal`
 (`antialias` above one sample, VAO + UBO, context-loss recovery), `MockHal`
-(tests). Both take the display's sample count, 1 where every pass declares
-`//! coverage: analytic`.
-
-**All three extend `GpuHalBase`**, which owns the half of a HAL that was only
-ever mirrored: the descriptor map, the `RegionRegistry` over `(region, pass)`,
-the `uploadBuffer` and `uploadTexture` shells with their over-limit refusals and
-the one wording those use, the four registry passthroughs, `setErrorHandler`,
-and the once-only `dispose` guard. A leaf supplies `limits()`, `createBuffer`,
-`destroyBuffer`, `createTexture` and `releaseResources` — so the deferred
-destroy above stays WebGPU's alone (it is what its `destroyBuffer` does), and so
-does everything else that genuinely differs: the frame bracket, uniform ring vs
-UBO, the scissor Y-flip, MSAA, and lazy vs eager pipeline build. `MockHal`
-overrides the shells to log and then calls `super`, so a unit test watches the
-same lifecycle the GPU runs. `gpuHalBase.test.ts` pins the refusals, which no
-backend test could reach without a GPU large enough to hit the real limits.
+(tests). Both real HALs take the display's sample count, 1 where every pass
+declares `//! coverage: analytic`. All three extend `GpuHalBase`, which owns the
+descriptor map, the `RegionRegistry`, the `uploadBuffer`/`uploadTexture` shells
+with their over-limit refusals, `setErrorHandler` and the once-only `dispose`. A
+leaf supplies `limits()`, `createBuffer`, `destroyBuffer`, `createTexture` and
+`releaseResources`. `MockHal` overrides the shells to log and then calls
+`super`. `gpuHalBase.test.ts` pins the refusals.
 
 ### WebGL2 contexts are a page-level budget, one per display
 
-`WebGL2Hal`'s constructor takes its own `canvas.getContext('webgl2')` with no
-pooling, and each display owns one backend canvas (`DisplayChrome` hands out a
-single `canvasRef`; extra canvases its child renders are 2D overlays). So the
-count to watch is **open GPU tracks**. `WebGPUHal` has no equivalent cap, since
-every display shares the `gpuDevice.ts` singleton; **that is a primary reason the
-GPU path targets WebGPU.**
+`WebGL2Hal` takes its own `getContext('webgl2')` with no pooling, and each
+display owns one backend canvas. The count to watch is **open GPU tracks**;
+chromosomes are free (a whole-genome view is one canvas, one buffer per
+`displayedRegionIndex`, drawn as scissored blocks). `WebGPUHal` has no cap, since
+every display shares the `gpuDevice.ts` singleton, **a primary reason the GPU
+path targets WebGPU.**
 
-Chromosomes are free: a whole-genome view of one track is one canvas holding one
-buffer per `displayedRegionIndex`, drawn as several scissored blocks. Practical
-consequences:
+- `stopRenderingBackend` + `dispose()` on unmount returns a context. Views
+  lazy-mount (`useViewVisibility.ts`); tracks within a view do not yet.
+- `?renderer=canvas2d` allocates none.
 
-- Mounting a canvas is not free, and `stopRenderingBackend` + `dispose()` on
-  unmount is what returns a context. Views lazy-mount for this reason
-  (`useViewVisibility.ts`); tracks within a view do **not** yet.
-- `?renderer=canvas2d` allocates none, which is why it is the fallback for
-  many-track sessions.
-
-The cap itself, what happens past it, and the mitigation state are in
+The cap, what happens past it and the mitigations:
 [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md) and
 [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"One WebGL2 context per
-display canvas". Don't restate the numbers here — they have been wrong in three
-places at once before.
+display canvas". Don't restate the numbers here.
 
 **A failed device acquisition is cached, except after a loss.** `getGpuDevice()`
-memoizes its promise, so a null result normally means "no WebGPU on this machine"
-and every later backend skips the rung for free. But the re-init following
-`device.lost` asks for an adapter within a frame of the loss, and on a sleep/wake
-or driver reset that is precisely when `requestAdapter` still declines — not a
-rare race there but the expected timing. Caching *that* pins the whole page to
-WebGL2 until a reload, silently. So `gpuDevice.ts` tracks whether a device has
-ever been acquired (`hadDevice`) and past that point retries (3 × 700 ms) and
-never caches a failure. A machine that genuinely lacks WebGPU declines on the
-first ask and waits for nothing.
-
-**Renderer override** (query param `?renderer=`). Four values are
-recognized (`createHal.ts` + `getGpuDevice`): `canvas2d` / `canvas` force the
-Canvas2D backend, `webgl` skips the WebGPU attempt, and `webgpu` pins that rung
-(below). Omitted → auto-detect, which also skips WebGL2 for Canvas2D when the
-browser reports a software rasterizer.
-
-**`?renderer=webgpu` pins that rung and does not fall past it.** A pinned
-renderer that silently substitutes another makes every comparison against it
-wrong, so `createGpuHal` fails visibly instead — a `renderError` naming the pin
-it could not honor, with the banner's "use Canvas2D" as the way out. This
-paragraph used to say the value was unrecognized and fell back like an omitted
-param; both halves are false. A test or bug report still proves which backend
-ran by asserting on the HAL rather than reading the URL.
+memoizes its promise, so null normally means "no WebGPU here". But the re-init
+after `device.lost` asks for an adapter within a frame of the loss, when
+`requestAdapter` still declines on sleep/wake or a driver reset, and caching that
+pins the page to WebGL2 until reload. `gpuDevice.ts` tracks `hadDevice` and past
+that point retries (3 × 700 ms) and never caches a failure.
 
 ### A WebGPU canvas's configuration belongs to the element, not to the HAL
 
-`canvas.getContext('webgpu')` hands back the **same** `GPUCanvasContext` object
-every time, so the swap chain a HAL configures is per-element state. Two HALs can
-end up sharing one — a display whose `model` prop swaps under it, an init that
-overlaps the cancelled one before it — and then `WebGPUHal.dispose()`'s
-`unconfigure()` releases whatever is configured, which may be the live HAL's.
-Firefox answers every later frame with `InvalidStateError:
-GPUCanvasContext.getCurrentTexture: Canvas not configured`, and because there is
-**no context-lost event for it**, none of `useRenderingBackend`'s recovery ever
-runs: the throw leaves the render autorun, becomes `renderError`, and the display
-banners the raw DOMException until the tab is reloaded. Reported from a
-five-row pangenome synteny view, where every band showed it at once.
+`canvas.getContext('webgpu')` returns the **same** `GPUCanvasContext` every time,
+so the swap chain is per-element state. Two HALs can share one (a `model` prop
+swap, an init overlapping a cancelled one), and `WebGPUHal.dispose()`'s
+`unconfigure()` then releases the live HAL's. Firefox answers every later frame
+with `InvalidStateError: ... Canvas not configured`, and there is **no
+context-lost event** for it, so recovery never runs and the raw DOMException
+banners until reload. `unconfigure()` is the only thing that drops the
+configuration; `device.destroy()`, detach/reattach, resize, `display: none` and
+a hidden tab do not.
 
-Two guards, in `webgpuHal.ts`: `canvasConfiguredBy` (`canvasContext.ts`) records
-which HAL holds a canvas's configuration so `dispose()` releases only its own,
-and a frame that finds the swap chain gone rebuilds it and paints rather than
-throwing. A rebuild that does not restore it is reported once through the
-display's error handler — not retried, since every later frame would rebuild to
-no effect, and Retry is what builds a fresh HAL.
-
-**What actually drops a configuration, measured in Firefox Nightly** (the WebGPU
-browser here — `runner.ts --backend=webgpu` routes to it):
-
-| action | still configured? |
-| --- | --- |
-| `unconfigure()` | **no** |
-| `device.destroy()` | yes |
-| `canvas.remove()` (detached), then re-attached | yes |
-| `canvas.width = …` (resize) | yes |
-| ancestor `display: none` | yes |
-| tab hidden 1 / 3 / 10 s | yes |
-
-So `unconfigure()` is the only producer of that message, and reconfiguring
-recovers the context in full. `getCurrentTexture` is the only call that reports
-it. Reproduce the whole path against the built app with
-`products/jbrowse-web/browser-tests/swapchain-steal-probe.ts`, which steals a
-real band's swap chain and reads the canvas back: unguarded, the band goes to
-zero inked pixels and stays there under the banner.
+Two guards in `webgpuHal.ts`: `canvasConfiguredBy` (`canvasContext.ts`) lets
+`dispose()` release only its own configuration, and a frame that finds the swap
+chain gone rebuilds it and paints. A rebuild that fails is reported once through
+the error handler, not retried. Reproduce with
+`products/jbrowse-web/browser-tests/swapchain-steal-probe.ts`.
 
 ### Renderers stay stateless
 
-GPU renderer classes own only what is intrinsically per-instance:
+A GPU renderer owns only the `GpuHal` reference, pre-allocated uniform scratch,
+and save/restore UBO scratch where a pass mutates uniforms. Do NOT keep:
 
-- the `GpuHal` reference
-- pre-allocated uniform scratch buffers reused across frames to avoid per-frame GC
-  churn
-- save/restore UBO scratch where a pass mutates uniforms (alignments arc/overlay)
+- **Region-lifecycle bookkeeping.** `installUpload` releases each departed key
+  through `hal.deleteRegion(key)`; the HAL is the authority on which regions
+  have buffers.
+- **Per-region metadata derivable from `rpcDataMap`** (`hasRects`, `outlineColor`).
+  `drawPass` skips missing buffers, and per-region scalars reach uniforms through
+  a mark's `params(state, region)` (`outlineColor` in `canvasFeatureMarks.ts`).
+- **Write-only mirror copies** of upload data.
 
-What does NOT belong as renderer instance state:
+Anything the upload callback knows from observable inputs can be looked up at
+render time too, and less local state means fewer divergence points.
 
-- **Region-lifecycle bookkeeping** — `installUpload` releases each departed
-  key through `hal.deleteRegion(key)`; don't mirror HAL's region map in a
-  renderer-side `Map<number, ...>`. HAL is the authoritative owner of "which
-  regions have GPU buffers."
-- **Per-region metadata derivable from `rpcDataMap`** — `hasRects` / `hasLines` /
-  `outlineColor` style fields. `drawPass` skips missing buffers so the boolean
-  flags aren't needed; per-region scalars used in uniforms should be passed into
-  `renderBlocks` from the MST model rather than cached on the renderer. A
-  mark's `params(state, region)` is where such a scalar reaches the uniforms
-  (`outlineColor` in `canvasFeatureMarks.ts`).
-- **Write-only mirror copies of upload data** — if a value lives in
-  `rpcDataMap[idx].foo`, don't also store it as `LocalRegion.foo`.
-
-Rule of thumb: anything the upload callback knows from observable inputs can be
-looked up at render time too, and less local state means fewer divergence points
-when the source of truth shifts.
-
-**The one legal renderer-held region map, and what makes it legal.** The model's
-`rpcDataMap` / `laidOutDataMap` is the single source of truth, and most displays
-pass it in per frame — that is the default to reach for. A renderer-held `private
-regions` map is legal only when written **exclusively by the upload callback**
-and never mutated in place: `RenderLifecycleMixin` bumps `renderTick` after every
-upload, so the render autorun re-fires and the cache cannot stale. Alignments is
-the one display built that way, its GPU side having to hold buffers anyway. Still
-forbidden: a cache populated from anywhere else, one whose entries get patched in
-place, and mirroring HAL's region map instead of letting `installUpload`
-release each departed key.
+**The one legal renderer-held region map** is a private `regions` map written
+**exclusively by the upload callback** and never mutated in place:
+`RenderLifecycleMixin` bumps `renderTick` after every upload, so the cache cannot
+stale. Alignments is the one display built that way. Still forbidden: a cache
+populated elsewhere, entries patched in place, and mirroring the HAL's region map.
 
 ## Shaders (Slang codegen)
 
-Production draw shaders are authored as `.slang`, compiled to WGSL (WebGPU) and
-GLSL ES 3.00 (WebGL2) by `packages/shader-tools/src/build-shaders.ts`.
-
-**slangc compiles both backends; it just has no GLSL ES target.** Its profile
-list runs `glsl_110` … `glsl_460` — desktop only, no `*_es` profile and no ES
-capability (checked against the pinned 2026.5.2: `-profile glsl_300_es` is
-`unknown profile`). So `-target glsl` yields Vulkan-flavoured desktop GLSL —
-`#version 460`, `gl_VertexIndex`/`gl_BaseVertex`, `layout(binding=N)` on UBOs,
-`layout(location=N)` on varyings, HLSL brace initializers — and
-`vulkanGlslToWebgl2.ts` is the ~200-line adapter down to ES 3.00. That file is
-not an alternative to using Slang for WebGL; it is the gap Slang leaves. The one
-real alternative — `-target spirv` through SPIRV-Cross's ESSL backend — was
-weighed and declined in
+Production draw shaders are `.slang`, compiled to WGSL (WebGPU) and GLSL ES 3.00
+(WebGL2) by `packages/shader-tools/src/build-shaders.ts`. slangc has no GLSL ES
+target (desktop `glsl_110`–`glsl_460` only), so `-target glsl` yields
+Vulkan-flavoured desktop GLSL and `vulkanGlslToWebgl2.ts` is the adapter down to
+ES 3.00. The SPIRV-Cross alternative was declined in
 [ADR-061](../architecture-decision-records/adr-061-webgl2-glsl-comes-from-the-regex-adapter.md).
+Authoring conventions: [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).
 
-**Never hand-edit `*.generated.ts`** — edit the `.slang` source and run `pnpm
-gen:shaders`. The generated module exports per-field byte offsets, strides,
-typed uniform/instance structs, a typed `writeUniforms()` / `packInstances()`,
-the `VERTEX_ATTRIBUTES` array and `SOURCE`; TS imports these by name, so
-stride/offset drift between packer and shader is impossible by construction. CI
-runs `pnpm gen:shaders && git diff --exit-code` to catch stale outputs, and the
-build itself refuses a `.generated.ts` that no `.slang` produces any more — a
-renamed shader or a dropped `//! *-out` leaves a committed file frozen at its
-last value, which is the one staleness a diff cannot see.
+**Never hand-edit `*.generated.ts`.** Edit the `.slang` and run `pnpm
+gen:shaders` (check its exit code). The generated module exports byte offsets,
+strides, typed uniform/instance structs, `writeUniforms()`, `packInstances()`,
+`VERTEX_ATTRIBUTES` and `SOURCE`, so packer/shader drift is impossible by
+construction. CI runs `pnpm gen:shaders && git diff --exit-code`, and the build
+refuses a `.generated.ts` no `.slang` produces any more (a renamed shader leaves
+one frozen, the staleness a diff cannot see).
 
-**A shader's text is not on the module a consumer imports.** It is in
-`<base>.wgsl.generated.ts` and `<base>.glsl.generated.ts`, and `SOURCE` is one
-`import()` of each. `slangPass` puts `SOURCE` on the descriptor, and each HAL
-awaits its own target while it is built: `WebGPUHal.create` per pass inside
-pipeline resolution, `WebGL2Hal.create` for every pass at once, both before the
-canvas's context is claimed, so a load that fails falls down the ladder with the
-canvas still free. The RPC worker, which builds no HAL, evaluates no shader
-text; a WebGPU session never evaluates GLSL; Canvas2D evaluates neither. Why,
-and what it moved: [EAGER_BUNDLE.md](EAGER_BUNDLE.md) §"Shader text loads when a
-HAL is built". Three checks hold it: `shaderSources.test.ts` (every shader's
-loaders resolve to its targets' text, and no module a consumer imports exports
-any), the `noShaderTextImport` lint rule (a static import outside tests), and
-`measureRegistryBundle.ts` (the routes lint cannot see: an `exports`-map
-subpath, the product's worker entry).
+**A shader's text is not on the module a consumer imports.** It lives in
+`<base>.wgsl.generated.ts` and `<base>.glsl.generated.ts`; `SOURCE` is one
+`import()` of each, awaited by each HAL while it is built, before the canvas
+context is claimed. The RPC worker evaluates no shader text, a WebGPU session
+never evaluates GLSL, Canvas2D neither
+([EAGER_BUNDLE.md](EAGER_BUNDLE.md) §"Shader text loads when a HAL is built").
+Held by `shaderSources.test.ts`, the `noShaderTextImport` lint rule and
+`measureRegistryBundle.ts`.
 
-**A shader's binding table is generated, not restated.** `BINDINGS` is the
-reflected `@binding` list — `{ index, kind, name, stages }`, with `kind` spelled
-the way WebGPU spells it and `stages` naming the entry points that read the
-binding. The WebGPU HAL builds each pass's bind-group layout and bind group from
-it (`bindGroupLayoutEntries` in `hal/deviceGpuCache.ts`), each binding visible to
-exactly its `stages`, and so does the compute driver (`computePipeline.ts`).
-`pnpm gen:shaders` refuses a render shader whose table is not one the HALs bind:
-the uniform block at 1, then optionally a combined `Sampler2D` at 2/3 and a
-second at 4/5.
+**Binding tables are generated.** `BINDINGS` is the reflected `@binding` list
+(`{ index, kind, name, stages }`). The WebGPU HAL builds bind-group layouts from
+it (`bindGroupLayoutEntries`, `hal/deviceGpuCache.ts`), each binding visible to
+exactly its `stages`, as does `computePipeline.ts`. `pnpm gen:shaders` refuses a
+render shader whose table the HALs cannot bind: uniform block at 1, optional
+`Sampler2D` at 2/3, a second at 4/5.
 
-**A sampler's filter comes from the module whose math needs it.** `//!
-texture-filter: [sampler] nearest | linear` has no default and is **inherited through
-`import`**, because the module that needs the filter is not the file that
-declares the binding — `colorRampLut` and `rowTable` each take a sampler as a
-parameter, and every pass reading one writes its own `Sampler2D<float4>`.
-`colorRampLut` declares `linear`, which its remap of `t` into texel space is
-written against; `rowTable` declares `nearest`, because `rowTableWidth` is the
-key count itself below 2048 and `(x + 0.5) / w` at a non-power-of-two width does
-not round-trip through the sampler's fixed point, so a linear tap decodes
-through `byteOf` to a slot belonging to neither key — a row drawn on the wrong
-lane, silently. A shader declaring a sampler with nothing in scope is refused,
-and two modules wanting different filters for one sampler are refused by name; until this
-existed the codegen emitted `linear` for every sampler and `spanMark.ts` rebuilt
-the binding in a wrapper.
+- **Which stage reads a binding is the shader's answer, not the HAL's.** A
+  hand-set layout hid the ramp from the vertex stage and WebGPU rejected both
+  pipelines, so those displays silently drew on WebGL2. The build compiles each
+  entry point alone (slangc marks `used` only then), and
+  `assertStageReadsMatchWgsl` holds it to the emitted WGSL.
+  `webgpuHalBindingVisibility.test.ts` builds every pass through the real
+  `WebGPUHal` against a recording device.
+- **Reflection and emitted WGSL are cross-checked** (`assertBindingsMatchWgsl`):
+  they come from different slangc passes and only the WGSL runs. It is
+  one-directional because slangc drops a binding the body never reads. A
+  `SLANG_VERSION` bump trips it if the sampler expansion (`index + 1`) changes.
+- **A sampler's filter comes from the module whose math needs it.**
+  `//! texture-filter: [sampler] nearest | linear` has no default and is
+  **inherited through `import`**. `colorRampLut` declares `linear`; `rowTable`
+  declares `nearest`, because `(x + 0.5) / w` at a non-power-of-two width does not
+  round-trip through a linear tap and silently lands a row on the wrong lane. A
+  shader declaring a sampler with nothing in scope, or two modules wanting
+  different filters, is refused.
 
-**Which stage reads a binding is the shader's answer, not the HAL's.** A
-hand-set layout showed the ramp to the fragment stage alone while the bar and
-point marks sample theirs in the vertex stage, so WebGPU refused both pipelines
-and those displays drew on WebGL2 wherever WebGPU is the first rung, with
-nothing on screen to say so.
-slangc marks what an entry point reads (`used` on its reflected bindings) only
-when it compiles that entry point alone, so the build compiles each one alone —
-the per-stage GLSL compile it already ran — and `assertStageReadsMatchWgsl`
-holds the result to the emitted WGSL: every binding an entry point's body, or a
-function it calls, names has to be in that binding's `stages`. Then
-`webgpuHalBindingVisibility.test.ts` builds every pass in the tree through the
-real `WebGPUHal` against a recording device, and fails naming the stage a
-binding is hidden from.
+**One suffix, one meaning: `_BYTES` / `_WORDS` are units; `_F32` / `_U32` /
+`_I32` are typed-array views.** The layout surface is `INSTANCE_STRIDE_BYTES`,
+`INSTANCE_STRIDE_WORDS` and `INSTANCE_OFFSET_F32` / `_U32` / `_I32`, each map
+holding only fields of that Slang type, matching `UNIFORM_OFFSET_*`. A flat
+offset map once let `f32[o + F.position]` on a `uint` field compile and write a
+float bit pattern the shader read as an enormous integer; the flat map and
+`INSTANCE_STRIDE_F32` are gone. A hand-written packer names the view it writes
+through, and the wrong one does not compile. A package that cannot import the
+plugin owning the `.slang` (`alignments-core`) gets typed layouts through
+`layout-out` rather than a prose restatement of the struct.
 
-**Reflection and the emitted WGSL are cross-checked.** They are two outputs of
-different slangc passes and only one of them is what the GPU runs, so
-`assertBindingsMatchWgsl` reads the `@binding(N) @group(0) var<…>` declarations
-back out of the WGSL and makes them agree with the table — the same doctrine as
-`assertVertexInputsMatch`, and one-directional for the same reason: slangc drops
-a binding the body never reads (the alignments selection frame's shader, since
-deleted, declared a uniform block and then took every value from its instance
-attributes), which is DCE and harmless,
-while a *declared* binding the table doesn't mention is one nothing would bind.
-This is what a `SLANG_VERSION` bump would trip if the sampler expansion — the one
-index the codegen invents, `index + 1` — ever changed.
+**Layout.** Display shaders live in `plugins/<plugin>/src/<display>/shaders/`,
+per-plugin shared ones in `plugins/<plugin>/src/shared/shaders/`, cross-plugin
+modules in `packages/render-core/src/shaders/`: the atoms (`hpmath.slang`,
+`antialias.slang`, `colorPack.slang`) and shared *shapes* (`pointGlyph`,
+`diagonalGrid`, `rowRect`, `capsule`). A shape earns a module on the
+`pointGlyph` bar, two real consumers with a live drift hazard, not surface
+similarity ([ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md)).
+[SHADER_SHAPE_LIBRARY.md](SHADER_SHAPE_LIBRARY.md) says what each shape draws and
+the two splits that keep the set from becoming a framework; read it before
+pointing a second consumer at one.
 
-**One suffix, one meaning: `_BYTES` / `_WORDS` are units, `_F32` / `_U32` /
-`_I32` are typed-array views.** So the layout surface is `INSTANCE_STRIDE_BYTES`,
-`INSTANCE_STRIDE_WORDS`, and `INSTANCE_OFFSET_F32` / `_U32` / `_I32` — each
-offset map holding only the fields whose Slang type takes that view, matching
-`UNIFORM_OFFSET_*`.
+**The coverage band is the one shared *pass set*.** `coverageBand.slang` declares
+the band's uniform struct, geometry and depth normalizer and the five entry
+points (`coverageBar`, `coverageSnp`, `coverageMod`, `coverageInterbase`,
+`coverageIndicator`). The pileup band and the MAF band both declare them through
+`@jbrowse/alignments-core`'s `coverageBandMarks`, because a mark's height rule is
+shared with the buffer layout and Canvas2D painter it must land on. The display
+owns where the band sits: MAF declares the mark's `band`; alignments scissors per
+section.
 
-It was not always: a flat `FIELD_OFFSET_F32` covered every instance field
-regardless of type, where `_F32` meant *words*, so two adjacent generated
-constants used one suffix for opposite things. Packing through it meant choosing
-the destination view by hand, and `f32[o + F.position]` on a `uint position`
-compiled and wrote a float bit pattern the shader read as an enormous integer.
-About 140 call sites did it correctly and nothing checked them. Both the flat map
-and `INSTANCE_STRIDE_F32` are **gone**, not deprecated — leaving either would
-have kept the ambiguous suffix in the vocabulary and a second, unchecked way to
-do the same thing. A hand-written packer (one that can't use `packInstances()`
-because it indexes a second array or scales on the way in) now names the view it
-writes through, and naming the wrong one does not compile.
-
-`packages/alignments-core`'s coverage packers are the worked example of why this
-matters most at a distance: that package deliberately can't import the plugin
-owning the `.slang`, its `layout-out` artifact carried no type information at
-all, and so each packer headed a prose restatement of the struct
-(`[position(u32), yOffset(f32), …] = 20 bytes`) that nothing could check.
-
-Layout: display-specific shaders in
-`plugins/<plugin>/src/<display>/shaders/<name>.slang`; per-plugin shared in
-`plugins/<plugin>/src/shared/shaders/`; cross-plugin modules in
-`packages/render-core/src/shaders/` — the atoms (`hpmath.slang`,
-`antialias.slang`, `colorPack.slang`) plus the shared *shapes* two or more
-plugins draw identically (`pointGlyph.slang` disc/square markers,
-`diagonalGrid.slang` the 45°-rotated Hi-C / LD cell transform, `rowRect.slang`
-the MAF / multi-row colored-row rectangle, `capsule.slang` the stroked segment
-whose degenerate case is a dot). A shape module earns its place on the `pointGlyph` bar —
-two real consumers with a live drift hazard — not on surface similarity; see
-[ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md).
-
-**What each shape draws, who imports it, and the two splits that keep the set
-from becoming a framework — a cap-agnostic frame shared where the cap is not,
-and one named coverage per cap style rather than a `capStyle` flag — is
-[SHADER_SHAPE_LIBRARY.md](SHADER_SHAPE_LIBRARY.md).** Read it before pointing a
-second consumer at an existing shape.
-
-**The coverage band is the one shared *pass set* rather than a shape module**:
-`coverageBand.slang` there declares the band's uniform struct, its geometry and
-its depth normalizer, and the five entry points beside it (`coverageBar`,
-`coverageSnp`, `coverageMod`, `coverageInterbase`, `coverageIndicator`) are the
-only copy of each draw. The alignments pileup band and the MAF display band both
-declare them, from the same worker-packed layouts, through
-`@jbrowse/alignments-core`'s `coverageBandMarks` — one `MarkShape` per layer
-over the pass and the package's own painter, sharing one uniform write — which
-is what makes it a whole band rather than a primitive: a mark's height rule is
-shared with the buffer layout it reads and the Canvas2D painter it must land
-on. The display still owns where the band sits: MAF declares it as the mark's
-`band`, alignments scissors per section around the list.
-
-`slangPass()` turns a generated module into a `PipelineDescriptor`, and the
-overrides it takes are `topology` and `blendState`. A sampler's filter comes
-from the shader instead: `//! texture-filter: nearest | linear`, declared by
-the module whose math needs it and inherited through `import`, with no default,
-so `pnpm gen:shaders` refuses a sampler that has none in scope. Authoring
-conventions and gotchas:
-[ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).
+`slangPass()` turns a generated module into a `PipelineDescriptor`; its overrides
+are `topology` and `blendState`.
 
 ### WGSL validates what GLSL waves through
 
-Codegen emitting both backends means a shader can pass `pnpm gen:shaders`, run
-fine on WebGL2, and be rejected at `createShaderModule` on WebGPU. Two rules the
-WebGL2 path never enforces:
+A shader can pass `pnpm gen:shaders`, run on WebGL2, and fail
+`createShaderModule` on WebGPU. The only signal is a `[GPU] UNCAPTURED ERROR` /
+`GPUPipelineError` in a WebGPU browser.
 
-- **Derivatives (`ddx`/`ddy`/`fwidth`) must sit in uniform control flow.** A
-  fragment shader that branches on a varying — a `shape` discriminator, an early
-  `return` — and then takes a derivative inside that branch fails with `'dpdy'
-  must only be called from uniform control flow`. Fix: each branch picks only its
-  SDF, and the derivative + AA ramp run once after the branch (`pointMark.slang`),
-  or compute every glyph's alpha before the branch and let it select
-  (`wiggle.slang`). Reconvergence restores uniformity, so a plain `if/else` that
-  assigns and falls through is fine; `discard` doesn't demote it either.
-- **A `max` blend operation takes no factors.** WebGPU rejects any factor but
-  `one` on either channel, so `BlendState` makes `{ op: 'max' }` a variant with no
-  factor fields at all rather than letting an ignored-but-invalid pair be written.
+- **Derivatives (`ddx`/`ddy`/`fwidth`) must sit in uniform control flow.**
+  Branching on a varying and taking a derivative inside the branch fails. Each
+  branch picks only its SDF and the derivative + AA ramp run once after it
+  (`pointMark.slang`), or compute every alpha before the branch
+  (`wiggle.slang`). Reconvergence restores uniformity; `discard` does not demote
+  it.
+- **A `max` blend takes no factors.** `BlendState` makes `{ op: 'max' }` a variant
+  with no factor fields.
 
-Both survive review easily because the WebGL2 fallback renders correctly; the
-only signal is a `[GPU] UNCAPTURED ERROR` / `GPUPipelineError` in a WebGPU
-browser. To check every shader at once without the app, drive puppeteer at a
-**secure origin** (`navigator.gpu` is undefined on `about:blank`) with a
-WebGPU-capable Chrome, import each `*.generated.ts`, and read
-`createShaderModule(...).getCompilationInfo()`; wrap `createRenderPipeline` in
-`pushErrorScope('validation')` for the blend/pipeline half.
+To check every shader at once, drive puppeteer at a **secure origin**
+(`navigator.gpu` is undefined on `about:blank`) with a WebGPU-capable Chrome,
+import each `*.generated.ts`, read `createShaderModule(...).getCompilationInfo()`,
+and wrap `createRenderPipeline` in `pushErrorScope('validation')`.
 
 ## Canvas scaling & hi-DPI
 
-**GPU canvases (HAL-managed):** shader uniforms are in CSS pixels; HAL sets the
-backing store to `css × dpr`, so `N / canvas_width` in clip space = `N` CSS pixels
-at any DPR. Do not manually scale by `devicePixelRatio`.
+**GPU canvases (HAL-managed):** uniforms are in CSS pixels and the HAL sets the
+backing store to `css × dpr`. Do not scale by `devicePixelRatio`.
 
-**2D overlay canvases (`VisibleLabelsOverlay` and the like):**
-caller owns DPR. Set `canvas.width = w * dpr` + `canvas.height = h * dpr` in the
-effect, call `ctx.scale(dpr, dpr)`, then put CSS `width`/`height` in the style
-block. Skipping this renders blurry on Retina. `prepareCanvas` (in
-`packages/render-core/src/canvas2dUtils.ts`) does this for the on-screen Canvas2D
-backend path; standalone overlay components must replicate it.
+**2D overlay canvases** (`VisibleLabelsOverlay` and the like): the caller owns
+DPR. Set `canvas.width = w * dpr` and `canvas.height = h * dpr`, call
+`ctx.scale(dpr, dpr)`, and put CSS `width`/`height` in the style. Skipping this
+blurs on Retina. `prepareCanvas` (`packages/render-core/src/canvas2dUtils.ts`)
+does it for the on-screen Canvas2D path; standalone overlays must replicate it.
 
 ## Antialiasing ramps: how wide, and where the width comes from
 
-**`packages/render-core/src/shaders/antialias.slang` is the rule.** It holds
-both ramp widths, the one ramp shape and `glyphEdgeAlpha`, and its header says
-which width a shader gets to use. What follows is why there is a module at all.
+**`packages/render-core/src/shaders/antialias.slang` is the rule.** It holds both
+ramp widths, the one ramp shape and `glyphEdgeAlpha`, and its header says which
+width a shader gets.
 
-Five shaders were fixed for one bug — synteny, dotplot, the point glyphs, hi-C,
-and chevron — and it is the same bug every time: **an AA ramp whose width was
-measured with `fwidth`, and/or whose geometry had no room for it.**
+The recurring bug is an **AA ramp whose width was measured with `fwidth`, and/or
+whose geometry had no room for it.** `fwidth` is `|ddx| + |ddy|`, overshooting a
+true gradient by up to √2, worst on diagonals. A too-wide *linear* ramp does not
+thicken a mark, it dilutes it (the half-max contour does not move), so look for
+dilution, not a fat line. Sweep with `grep -rn 'fwidth(' --include='*.slang'
+packages plugins example-plugins`; the one hit is `continuation.slang`'s
+barycentric wireframe estimator, whose comment says why it stays. A second call
+site is what would justify a `//! fwidth-ok:` directive.
 
-`fwidth` is `|ddx| + |ddy|`, which overshoots a true gradient by up to √2, worst
-on diagonals, which is what these marks are made of. Where it was *also* the
-smoothstep's half-width, the ramp came out 2–2.83 output pixels instead of 1.
+The right width depends on what the SDF is measured in:
 
-The first four were each found by someone looking at the mark. Chevron was found
-by asking which shaders still called `fwidth` after the fourth, which is the
-sweep worth repeating: its arms rise at half their run, so it took a third too
-much, and nobody had reported it because a too-wide LINEAR ramp does not thicken a mark —
-it dilutes it. The half-max contour does not move. That is the failure mode to
-look for, not a fat line.
-
-The sweep is one line, so run it rather than reasoning about it:
-
-```sh
-grep -rn 'fwidth(' --include='*.slang' packages plugins example-plugins
-```
-
-It returns one line today: `continuation.slang`'s barycentric wireframe
-estimator, whose own comment says why it stays and what would decide otherwise.
-The paren in the pattern is what keeps the prose mentions — this section
-included — out of the answer. A second call site is the thing to look at, and a
-second is also what would make a `//! fwidth-ok: <reason>` directive worth
-building. At one, the grep is cheaper than the machinery to enforce it.
-
-The right width depends on what the SDF is measured in, and the three cases are
-genuinely different:
-
-- **Distance already in pixels** (synteny `perpCoverage`, the dotplot capsule,
-  wiggle's center-line capsule and the xyplot bar's horizontal cuts): `|∇d| = 1`,
-  so the full width is `aaPx(dpr)` and there is nothing to differentiate. Call
-  `edgeCoverage(signedInkCssPx, dpr)`, which is the only spelling of this and
-  the only one the build can see — a shader reaching it without a
-  `devicePixelRatio` uniform fails `pnpm gen:shaders`
-  ([ADR-098](../architecture-decision-records/adr-098-one-ramp-one-unit-and-the-build-checks-it.md)). **A varying set from the same screen y the
-  vertex converts to clip is in this case**, not the next one — it is affine in
-  screen y with unit slope, so the ramp is one output pixel wide by
-  construction; `syntenyTypes.slang`'s `vertCoverage` and `wiggle.slang`'s
-  `barInkPx` both rely on that.
-- **Not a perpendicular distance in known units** — an SDF in quad-local units
-  whose scale differs per shape (`pointGlyph`, manhattan: the disc and triangle
-  carry unit gradients, the diamond's L1 norm carries √2), or a varying carrying
-  a foreshortening the shader cannot state (chevron's vertical `dist`). Must be
-  measured, as `aaGradient`, taken as the **full** width. It is also the only
-  option for a shader with no `devicePixelRatio` uniform, which is why chevron
-  measures — and why wiggle's capsule did, until the xyplot bar gave that
-  uniform block a `devicePixelRatio` and it went analytic like the dotplot's.
+- **Distance already in pixels** (synteny `perpCoverage`, dotplot capsule,
+  wiggle's capsule, the xyplot bar's horizontal cuts): `|∇d| = 1`, so the full
+  width is `aaPx(dpr)`. Call `edgeCoverage(signedInkCssPx, dpr)`, the only
+  spelling the build can see; a shader reaching it without a `devicePixelRatio`
+  uniform fails `pnpm gen:shaders`
+  ([ADR-098](../architecture-decision-records/adr-098-one-ramp-one-unit-and-the-build-checks-it.md)).
+  **A varying set from the same screen y the vertex converts to clip is in this
+  case**: it is affine with unit slope (`vertCoverage`, `barInkPx`).
+- **Not a perpendicular distance in known units** (quad-local SDFs whose scale
+  differs per shape, as in `pointGlyph` and manhattan; or chevron's foreshortened
+  `dist`): measure with `aaGradient`, taken as the **full** width. It is also the
+  only option for a shader with no `devicePixelRatio` uniform.
 - **Tiled cells** (hi-C bins): no per-quad AA at all, deliberately. Bins share
-  exact edges after a linear transform, and antialiasing them individually
-  produces seams. The same refusal covers marks that STACK — wiggle's step-line
-  quads overlap at every joint by design, and the alignments coverage band's
-  SNP/modification segments tile the depth bar they are drawn over — so those
-  keep hard edges too. §"What the coverage band cannot antialias" below.
+  exact edges, so antialiasing each produces seams. The same refusal covers marks
+  that STACK (wiggle step-line quads, the coverage band's SNP/modification
+  segments), which keep hard edges. See §"What the coverage band cannot
+  antialias".
 
-**There is one ramp SHAPE left, the linear `aaRamp`.** Which one to reach for
-used to read as a preference — linear "is what a box filter, and so Canvas2D,
-produces on a straight edge", cubic "reads softer on a curve" — and
-`scripts/aa_ramp_coverage_study.ts` settles it by scoring both against the exact
-area a straight edge covers of a pixel, at five angles. Linear is closer at
-every one of them:
+**There is one ramp shape, the linear `aaRamp`.** `scripts/aa_ramp_coverage_study.ts`
+scores linear and cubic against exact pixel coverage of a straight edge: linear
+is closer at every angle, so the cubic's "softer" look is extra ink on both sides
+of the half-max contour. A band built as `ramp(d) - ramp(d - W)` is exact at
+every width with linear, where cubic paints a half-pixel band at 0.688 instead of
+0.500. `aaSmoothRamp` is deleted, not deprecated: an uncalled shader function is
+dead-code-eliminated and `pnpm gen:shaders` then fails its js-skip check. The
+linear form takes the FULL ramp width where smoothstep took the half, so
+`aaSmoothRamp(d, halfPx)` becomes `aaRamp(d, 2.0 * halfPx)`; getting it wrong
+still compiles at half or double width.
 
-| edge angle | max error, linear | max error, cubic |
-| --- | --- | --- |
-| 0° | 0.00023 (quadrature noise) | 0.09631 |
-| 22.5° | 0.03323 | 0.07345 |
-| 45° | 0.04298 | 0.06737 |
+The predicted cross-backend drift from the cubic-to-linear conversion was never
+measured and no longer can be; see
+[CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) § "The AA ramp prediction outlived
+its instrument". A ramp change and the per-display MSAA sample-count question
+([ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md))
+land on the same pixels, so record the commit any drift table was measured at. A
+second `runner.ts` in the same worktree wedges both runs (a golden refresh
+`rm -rf`s `browser-tests/__snapshots__`); check `ps -Ao command | grep runner.ts`.
 
-The cubic is not trading accuracy on the axis for accuracy on the diagonal; it
-is worse on both, and "softer" is it carrying more ink on both sides of the
-half-max contour. A thin mark shows it plainly: a band built as
-`ramp(d) - ramp(d - W)` is exactly right at every width with the linear ramp,
-where the cubic paints a half-pixel band at 0.688 coverage instead of 0.500.
+**A ramp needs geometry to live in.** Widening one without padding the quad clips
+it. The dotplot capsule quad is `halfWidth + aaHalfPx(dpr)` on both axes, the
+reach exactly (over-padding blends alpha-0 fragments anyway), with a `discard`
+for fragments the pad introduces. `dotplotCapsulePad.test.ts`,
+`glyphEdgeAlpha.test.ts` and `syntenyFillPad.test.ts` mirror the shader in TS and
+assert the geometry contains everything the fragment shades; they *model* the
+shader, so a `SYNC` comment keeps them honest. **A model test cannot check an
+agreement it models from one source**: `syntenyFillPad.test.ts` built the polygon
+and the analytic clip from one `fillEdges`, so it could not catch a
+corner-to-edge pairing drift. `ribbonEdges` is one pairing, so the property is
+structural.
 
-**All four cubic call sites are converted** — synteny's `perpCoverage` and
-`vertCoverage`, the dotplot capsule, and `glyphEdgeAlpha` with every point glyph
-behind it — and `aaSmoothRamp` went with them rather than staying deprecated,
-because a shader function nothing calls is dead-code-eliminated out of every
-compiled shader and `pnpm gen:shaders` then fails its own js-skip check for
-naming a function no emitted shader contains. The smoothstep form is written
-down in the study script, which models both shapes in JS.
-
-Each conversion was a one-argument change, and the factor of two is the whole
-risk: `aaSmoothRamp(d, halfPx)` becomes `aaRamp(d, 2.0 * halfPx)`, since the
-linear form takes the FULL ramp width where the smoothstep takes the half. Get
-it wrong and it still compiles, with every ramp in that shader half or double
-the width it asks for.
-
-**The drift these conversions predict was never measured, and no longer can
-be.** The instrument was the cross-backend gate rather than a golden — it diffs
-canvas2d against the GPU render of the same run with canvas2d as the reference
-side, and `Dotplot View`, `Synteny Views`, `Multi-Way Synteny Views` and `GWAS
-Tracks` were all in its CI scope, so all four sites were watched. Three runs
-were attempted between 2026-08-29 and 2026-09-02 and none produced a number; by
-the time a fourth was possible every watched site had been redrawn for unrelated
-reasons. [CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) § "The AA ramp
-prediction outlived its instrument" carries what moved and the decision.
-
-The prediction itself stands unfalsified rather than wrong: a ramp closer to
-exact coverage should move a pair DOWN a cross-backend distribution, not merely
-somewhere else. Anyone re-posing it needs a before/after across one commit pair
-on a site nothing else is touching, which is the part that was never true here.
-
-**Check that nothing else is driving the harness before you start.** That file
-already says the machine has to be quiet; the sharper version is that a SECOND
-`runner.ts` in the same worktree does not merely add load — a golden-refresh run
-`rm -rf`s `browser-tests/__snapshots__` and restores its own copy, and it holds
-the browser and the test server. Two attempts at the run above were spent
-learning that: one degraded into `data-display-drawn` timeouts across
-`Miscellaneous Tracks` and `Multi-Way Synteny Views`, the other wedged
-indefinitely on `BigWig Tracks > GC content track` — which was one of the three
-suites the other run was filtered to. `ps -Ao command | grep runner.ts` is the
-check, and it costs nothing next to a build.
-
-**Two efforts land on the same pixels, so a drift run has to hold one fixed to
-read the other.** This conversion and the per-display MSAA sample-count question
-are not independent: `glyphEdgeAlpha` sits behind `pointGlyph` and manhattan's
-SDFs, and the primitives
-[ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md)
-records as still depending on the 4x MSAA target are wiggle/coverage bar tops,
-read arrow tips and the tiled Hi-C/LD diamonds. A ramp change and a sample-count
-change on one build produce a number neither effort can attribute, so record the
-commit any drift table was measured at.
-
-**A ramp needs geometry to live in.** Widening one without padding the quad
-clips it: the dotplot capsule quad is `halfWidth + aaHalfPx(dpr)` on both axes — the
-reach exactly, since over-padding shades fragments to alpha 0 and blends them anyway — with
-a `discard` for the fragments the pad introduces. The tests for this
-(`shaders/dotplotCapsulePad.test.ts`, `shaders/glyphEdgeAlpha.test.ts`, and the
-pre-existing `syntenyFillPad.test.ts`) mirror the shader in TS and assert the
-geometry contains everything the fragment shades, each pinning the retired
-spelling as a counterexample. They *model* the shader rather than reading it, so
-a `SYNC` comment is what keeps them honest.
-
-**And a model test cannot check an agreement it models from one source.**
-`syntenyFillPad.test.ts` looked like it would catch a corner→edge pairing drift
-and could not: it builds both the polygon and the analytic clip from one copy of
-`fillEdges`, so it assumes the very agreement it appears to test. That is what
-`ribbonEdges` is for — one corner→edge pairing, so the property is structural
-instead of tested.
-
-### What the pad costs, measured
-
-`browser-tests/probe-dotplot-pad-cost.ts` runs the shipped GLSL and changes one
-thing, the vertex stage's `ext`. 400k instances at dpr 1 on an Intel UHD 630:
-
-| lineWidth | padded | unpadded | pad costs |
-| --- | --- | --- | --- |
-| 1 | 5.473 ms | 5.317 ms | +2.9% |
-| 2.5 (default) | 6.530 ms | 5.629 ms | +16.0% |
-| 5 | 9.826 ms | 8.271 ms | +18.8% |
-
-Real, inside a 60fps budget, and it buys a correct edge — the GPU's ink error
-against the Canvas2D render of the same segments goes from −1.87% (under-inked,
-the ~1px-narrow line) to +0.91%. Two results that invert the obvious guess:
-
-- **Cost scales opposite to the area *ratio*.** The ratio is worst for thin lines
-  (4× for a `lineWidth` 1 dot) and the measured cost is *lowest* there: the quads
-  are small enough that per-instance setup dominates and fill barely registers.
-  Once fill dominates, absolute added area is what matters, not the ratio.
-- **The `discard` is not a lever on it.** `finalAlpha <= 0.0` holds only at
-  `d ≥ halfWidth + aa`, so along a line's body the pad ring never discards — that
-  ring *is* the outer half of the ramp and has to be shaded. Only the quad corners
-  past each cap go. The pad is geometrically required; the only reduction
-  available is a narrower ramp, which is a quality decision.
-
-Measuring it has two traps that each produce a confident wrong answer. Headless
-Chrome falls back to SwiftShader, whose cost is not area-dominated — it reports
-the pad as free (0.8%, against ±3.5% noise); the real GPU needs a headed browser,
-as `runner.ts` says for the webgl backend. And machine contention lands mostly on
-the cheaper variant: a contended run read 8.1% where a quiet one read 16.0%.
-Judge a run by whether the two distributions separate.
+The pad costs fill (`browser-tests/probe-dotplot-pad-cost.ts` measures it). The
+cost scales opposite to the area *ratio* (per-instance setup dominates thin
+lines), and the `discard` is not a lever, since along a line's body the pad ring
+is the outer half of the ramp. Headless Chrome's SwiftShader reports the pad as
+free; measure in a headed browser.
 
 ### Which backend disagreement is evidence, and which is not
 
-Verifying this family of fixes turned on one question, and it generalizes:
-**does the change move one backend, or all of them at once?**
+Ask whether a change moves one backend or all at once. `pnpm
+test:browser:compare` diffs `webgl` / `webgpu` / `canvas2d`. For a GPU-only
+change Canvas2D is an independent render of the same marks, so "closer to
+Canvas2D" replaces "looks better" with a number. It is **no oracle** for a change
+reaching every path together: a `//! js-export`ed function whose twin Canvas2D
+and SVG call (`fillShade`), or a constant a CPU path imports from the shader
+(hi-C's `MIN_VISIBLE_ALPHA`). Those agree on the new answer, right or wrong, and
+need a snapshot diff or an eye. Decide which side a change falls on before
+planning verification.
 
-`pnpm test:browser:compare` diffs `webgl` / `webgpu` / `canvas2d`. Where a change
-is GPU-only, Canvas2D is an *independent render of the same marks*, so "closer to
-Canvas2D" replaces "looks better" with a number — that is what settled both the
-dotplot pad above and the point-glyph ramp (differing pixels against the canvas2d
-golden 4.51% → 2.03%, excess chroma +11.19% → +5.72%). The goldens corroborate on
-their own: canvas2d's capture does not move while webgl's does.
-
-It is no oracle at all for a change that reaches every path together — a
-`//! js-export`ed function whose generated twin Canvas2D and the SVG export call
-(`fillShade`), or a constant a CPU path imports from the shader
-(hi-C's `MIN_VISIBLE_ALPHA`). Those move in lockstep and agree on the new answer,
-right or wrong, so they need a snapshot diff or an eye. Ask which side of that
-line a change falls on *before* planning how to verify it.
-
-Two things have no suite and needed one-off probes, both of which record their
-traps in the file header: `browser-tests/hover-probe.ts` (drive
-`setHoveredInstanceIdx`, never the mouse — a mouse move that lands on no feature
-is indistinguishable from a hover cue that draws nothing; and require a settled
-non-blank frame, because the repaint clears the canvas first) and the pad-cost
-probe above.
+Hover has no suite: `browser-tests/hover-probe.ts` drives
+`setHoveredInstanceIdx`, never the mouse (a miss is indistinguishable from a cue
+that draws nothing), and requires a settled non-blank frame because the repaint
+clears first.
 
 ### A bar's top edge is the datum, and it is measured
 
-It is the one edge in the tree where aliasing corrupts an *encoding* rather than
-a silhouette: the reader takes the score off that edge, so rounding its position
-rounds the value. `wiggle.slang`'s xyplot bar computes its own coverage for that
-reason (2026-08-22). `barInkPx` carries CSS px below each horizontal cut, the
-fragment takes the difference of two `aaRamp`s, and the quad grows one device px
-past each cut — the ramp's full width, so every fragment the ramp inks is
-*fully* covered by the geometry and the rasterizer's own coverage never
-multiplies into the analytic one. That last part is what makes the bar identical
-at one sample and at four, and it is why `aaHalfPx` (the dotplot capsule's pad,
-half as wide) is not enough here: it stops the ramp being cropped, but leaves the
-fringe pixel partly covered.
+The xyplot bar's top is the one edge where aliasing corrupts an *encoding*: the
+reader takes the score off it. `wiggle.slang` therefore computes its own coverage.
+`barInkPx` carries CSS px below each horizontal cut, the fragment differences two
+`aaRamp`s, and the quad grows one device px past each cut, the ramp's full width,
+so rasterizer coverage never multiplies the analytic one and the bar is identical
+at one sample and four. `aaHalfPx` (the capsule pad) is not enough: it uncrops
+the ramp but leaves the fringe pixel partly covered. Both cuts are needed: a
+single top ramp against a hard baseline paints a half-covered row under a
+zero-height bar, a dotted line along the origin on a wiggle of zero bins.
 
-Both horizontal cuts, not only the top. The band form is the only one exact below
-one device pixel — a single top ramp against a hard baseline applies a half-plane
-coverage formula to a slab, and paints a half-covered row under a bar of zero
-height, which on a wiggle full of zero bins is a dotted line along the origin.
-
-**Neighbouring bars do share pixel columns, and the bound is measured rather
-than argued away.** `extendToMinWidthX` floors a bin at `MIN_FILL_WIDTH_PX` by
-growing it off its anchor, and bbi hands the wiggle a bin no wider than
-`2 * bpPerPx` (`basesPerSpan = bpPerPx` at the default `resolutionMultiplier`,
-and `getView` takes the coarsest reduction under twice it), so at most zooms a
-bar is 1.5 CSS px over a bin narrower than that and overlaps its neighbours two
-or three deep. Where their tops agree — a plateau, a flat run — the fringe row
-composites `1 - (1 - a)^n` rather than `a`:
-
-| bin (CSS px) | bars per column | fringe painted | correct | apparent top error |
-| --- | --- | --- | --- | --- |
-| 2.0, 1.5 | 1 | 0.50 | 0.50 | 0 |
-| 1.25, 1.0 | 2 | 0.75 | 0.50 | 0.25 device px |
-| 0.75, 0.5 | 3 | 0.875 | 0.50 | 0.375 device px |
-
-Under MSAA the same overlap was free, because coincident flat fills cover the
-same samples and the union is exact. So the change trades a 0.277 device px
-quantisation error on EVERY column (the table below) for up to 0.375 on the
-fringe row of a flat-topped run at an overlapping zoom, and is a clear win on
-any data whose neighbours differ — which is why it stays. The measurement below
-does not exercise it: `volvox_microarray` features are wide, and 2,208 of 2,532
-device columns there are interior to a single bar.
-
-The baseline is the same story one row down: every bar in a row shares `originY`,
-so the overlap strips over-ink just under the origin too. In multi-row multiwiggle
-there is a third instance with the opposite sign — rows stack edge-to-edge, so a
-bar clipped to `domainYMax` puts its top cut exactly on the row boundary the row
-above baselines on, and two edges that TILE compose to 0.75 where 1.0 is right.
-Separator lines default off, so nothing covers it.
-
-The sub-pixel position of the top, over the 2,208 columns interior to a bar in
-`volvox_microarray` at dpr 2 — the after arms are the reference, and the record
-says how they are independently validated:
+**Neighbouring bars share pixel columns.** `extendToMinWidthX` floors a bin at
+`MIN_FILL_WIDTH_PX`, and bbi bins are no wider than `2 * bpPerPx`, so bars overlap
+two or three deep. Where tops agree (a plateau) the fringe row composites
+`1 - (1 - a)^n` instead of `a`, up to 0.375 device px of apparent top error,
+where MSAA's coincident coverage was exact. The change still wins: it replaces a
+0.277 device px quantisation error on every column, and is a clear win wherever
+neighbours differ. The baseline over-inks the same way, and multi-row multiwiggle
+adds an opposite-sign case, where edge-to-edge rows composite two tiled edges to
+0.75 instead of 1.0 (separator lines default off, so nothing covers it).
 
 <!-- BEGIN GENERATED MEASUREMENT wiggle-bar-top-subpixel -->
 
@@ -1725,14 +963,10 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT wiggle-bar-top-subpixel -->
 
-`shaders/barCutCoverage.test.ts` pins both properties against the two spellings
-that fail them.
-
-The cross-backend gate is the independent check, and it is the falsifiable
-prediction §"Which backend disagreement is evidence" asks for: Canvas2D
-rasterises `fillRect` at fractional y and has always antialiased that cut, so a
-shader computing the same coverage has to move TOWARD it rather than merely
-somewhere else. Every pair that moved, fell:
+`shaders/barCutCoverage.test.ts` pins both properties. The independent check is
+the cross-backend gate: Canvas2D antialiases that cut, so a correct shader moves
+TOWARD it. Every pair that moved, fell (webgl under swiftshader here, against
+WebGPU above):
 
 <!-- BEGIN GENERATED MEASUREMENT wiggle-bar-top-backend-drift -->
 
@@ -1749,213 +983,111 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT wiggle-bar-top-backend-drift -->
 
-Note the rung: that is **webgl** under swiftshader, where the sub-pixel table
-above is WebGPU on a retina panel. Two backends, two instruments, one verdict.
-
 ### What the coverage band cannot antialias
 
-**The same change does not go on the alignments coverage band, and the reason is
-structural.** Every mark there shares a horizontal edge with another mark:
+**The same change does not go on the alignments coverage band**, because every
+mark there shares a horizontal edge with another:
 
-- `coverageSnp` / `coverageMod` segments **stack**. Each accumulates `yOffset`,
-  so segment *i*'s top is segment *i+1*'s bottom exactly. Per-fragment alpha on
-  both sides of that edge composites to less than full ink and leaks the grey
-  depth bar through — Kilgard & Bolz's conflation, the case MSAA sidesteps by
-  keeping coverage exclusive per sample.
+- `coverageSnp` / `coverageMod` segments **stack** (each accumulates `yOffset`),
+  so per-fragment alpha on both sides of the shared edge composites to less than
+  full ink and leaks the grey depth bar (Kilgard & Bolz's conflation, which MSAA
+  avoids by keeping coverage exclusive per sample).
 - The topmost segment's top **coincides** with `coverageBar.slang`'s depth-bar top
-  whenever a position is fully mismatched, which is what a homozygous SNP is. Two
-  primitives drawn one over the other with the same edge and the same fractional
-  alpha `a` composite to `a·segment + a(1−a)·grey`, so ramping either one alone
-  puts a grey fringe above the column and ramping both puts up to 0.25 of one
-  there. Hard edges tile exactly at any sample count; that is why they are hard.
-- `coverageInterbase` is already `floor(… + 0.5)` on both y edges, deliberately
-  — its own comment records the cross-backend divergence that produced the snap.
+  when a position is fully mismatched. Ramping one puts a grey fringe above the
+  column; ramping both puts up to 0.25 of one there. Hard edges tile exactly at
+  any sample count.
+- `coverageInterbase` is already `floor(… + 0.5)` on both y edges, deliberately.
 
-hic's `drawHicBlocks.ts` and §"Tiled cells" above are the two earlier findings
-this is the third of. The shape that would let the coverage band go analytic is
-the same one §5 of
-[ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md)
-offers hi-C: draw a position's whole stack as ONE primitive, deriving the segment
-in the fragment, so the shared edges stop being primitive boundaries. Nothing has
-costed that.
+The shape that would let the band go analytic is §5 of
+[ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md):
+draw a position's whole stack as ONE primitive and derive the segment in the
+fragment.
 
 ## `displayedRegionIndex`
 
-Zero-based index into `view.displayedRegions`. Stable unless regions are added,
-removed, or reordered. **Not** an index into `dynamicBlocks.contentBlocks` — one
-displayedRegion can produce multiple render blocks that share one GPU buffer and
-draw with different scissor clips.
-
-The join key across `model.rpcDataMap`, `hal.uploadBuffer(regionKey, ...)`, and
-`RenderBlock.displayedRegionIndex`. A comparative display keys on
-`sharedBackendKey(self.id)` instead, and dotplot rides that hash on the block's
-`displayedRegionIndex` — the field is the key a block was uploaded under, not
-always an index into `displayedRegions`.
+Zero-based index into `view.displayedRegions`, stable unless regions are added,
+removed or reordered. **Not** an index into `dynamicBlocks.contentBlocks`: one
+displayed region can yield several render blocks that share one GPU buffer and
+draw with different scissor clips. It joins `model.rpcDataMap`,
+`hal.uploadBuffer(regionKey, ...)` and `RenderBlock.displayedRegionIndex`. A
+comparative display keys on `sharedBackendKey(self.id)` instead, and dotplot
+rides that hash on the block's field, so the field is the key a block was
+uploaded under, not always an index.
 
 ## What this architecture deliberately does not have
 
-Every entry below is a standard real-time-rendering technique that a reader
-coming from a game-engine background — or an agent prompted with game-engine
-vocabulary — will reach for, and that we have a specific reason not to use.
-Named here in the standard vocabulary so the reach lands on the reason.
+Each entry is a standard real-time-rendering technique a reader with a
+game-engine background will reach for. The reason it is absent is stated in
+that vocabulary.
 
-**Render graph / frame graph.** A frame graph exists to order passes and
-allocate transient render targets when a frame has many of both, with
-dependencies between them. Ours has one render pass, one color attachment, no
-offscreen targets, and no pass that consumes another's output. Ordering is a
-static z-ordered mark list beside the renderers that read it (`PILEUP_MARKS` is
-the largest, at 13 entries with per-mark `enabled` gates; the coverage band's
-is the other), and resource lifetime is `RegionRegistry`'s. The nearest proposal to a
-frame graph — a unified GPU/Canvas2D "layer manifest" driving draw dispatch from
-a table — was declined 2026-06 and has since been overturned for both of those
-bands, which is a narrower thing than a frame graph and worth not confusing with
-one: a shared list of layer ids carrying z-order and gates, plus a
-`Record<LayerId, …>` per backend. No dependencies between passes, no targets, no
-scheduling. See agent-docs/architecture-decision-records/ for what the decline got wrong and what of it
-survives.
+**Render graph / frame graph.** Ours has one render pass, one colour attachment,
+no offscreen targets and no pass consuming another's output. Ordering is a
+static z-ordered mark list (`PILEUP_MARKS`, the coverage band's) and resource
+lifetime is `RegionRegistry`'s. A shared list of layer ids with z-order and gates
+plus a `Record<LayerId, …>` per backend is narrower than a frame graph: no
+dependencies, no targets, no scheduling. See the layer-manifest decline and its
+overturn in `agent-docs/architecture-decision-records/`.
 
-**Indirect drawing (`drawIndirect`).** Indirect draws exist to remove a CPU
-roundtrip when the GPU decides how much to draw. Nothing here generates geometry
-on the GPU, and the instance count is already the packed buffer's own
-`byteLength / instanceStride` (`uploadPass`), which the CPU computes as it packs.
-There is no roundtrip to remove. **The condition, not just the conclusion:**
-this holds exactly as long as every instance buffer is packed CPU-side — by a
-worker or by the main-thread packers `packInstances()` generates. The day a
-pass's instances are produced by a compute kernel, its count lives on the GPU
-and this entry is the one to reopen for that pass. Nothing is on that path (see
-"Compute where a CPU fallback must exist anyway" below).
+**Indirect drawing.** The instance count is already the packed buffer's
+`byteLength / instanceStride`, computed CPU-side, so there is no roundtrip to
+remove. **The condition:** this holds while every instance buffer is packed
+CPU-side. The day a compute kernel produces a pass's instances, reopen it for
+that pass.
 
-**GPU-driven culling.** Culling is CPU-side and stays there. Measured and
-declined twice: for dotplot (quads are a few px, so the rasterizer discards them
-about as cheaply as a vertex test would) and for hi-C contacts by distance from
-the diagonal (2026-08-13). Synteny's `isCulled` is the case that *does* earn its
-place, because its quads span the track. Both declines are in agent-docs/architecture-decision-records/
-with their numbers.
+**GPU-driven culling.** Culling stays CPU-side. Declined twice with numbers:
+dotplot (quads of a few px, which the rasterizer discards as cheaply as a vertex
+test) and hi-C contacts by distance from the diagonal. Synteny's `isCulled`
+earns its place because its quads span the track.
 
-**Storage buffers (SSBO) in the render path.** Every render pass feeds
-per-instance data through a **vertex buffer** with `stepMode: 'instance'`, never
-a storage binding. Two reasons, and the second stands on its own if WebGL2 is
-ever dropped:
+**Storage buffers (SSBO) in the render path.** Every pass feeds per-instance data
+through a vertex buffer with `stepMode: 'instance'`. Slang cross-compiles to GLSL
+ES 3.0, which has no SSBOs, so adopting them forks every shader. And the access
+pattern is one instance reading its own fixed struct sequentially, which vertex
+fetch serves; the largest instance struct (`read.slang`) takes 10 attributes
+against a limit of 16 ([GPU_PORTABILITY.md](GPU_PORTABILITY.md)). GenomeSpy's
+generic `rect` mark needs ~28 channels, so its storage buffers follow from
+generic marks; ours are specific.
 
-- Slang cross-compiles to GLSL ES 3.0, which has no SSBOs. Adopting them would
-  fork every shader into two variants — precisely what the single-source Slang
-  design exists to prevent.
-- **The access pattern is vertex fetch, and vertex fetch is what serves it.**
-  What a storage buffer buys over `stepMode: 'instance'` is random access (an
-  instance reading elements other than its own), variable-length indirection,
-  deduplication of shared columns, escape from the vertex-attribute limit, and
-  write access for compute. Every render pass here is one instance reading its
-  own fixed struct, sequentially — the case dedicated attribute-fetch hardware
-  exists for. Nor does the attribute limit bind: the largest instance struct
-  in tree is `read.slang` at 10 attributes and almost everything else is 4–5,
-  against a default `maxVertexAttributes` of 16 on WebGPU and the same floor on
-  WebGL2 ([GPU_PORTABILITY.md](GPU_PORTABILITY.md)). GenomeSpy's generic `rect`
-  mark declares ~28 channels and physically cannot be vertex attributes, so its
-  storage buffers are a consequence of generic marks, not a performance choice
-  — our marks are specific, so the constraint never binds.
+**Depth buffer / early-Z.** No pass declares depth-stencil state. Every pass
+blends (`premultiplied`, `max` on the wiggle centre line, `behind` on the
+whiskers band), and blending composes correctly only in draw order. A depth test
+rejects exactly the fragment a translucent mark behind it should show through.
+Order is the correctness mechanism; early-Z would save only opaque overdraw the
+rasterizer already discards cheaply.
 
-Storage buffers *are* what a compute pass with no GLSL target would use, and
-the tree has had none since the LD compute kernels went with the in-browser
-estimator.
+**Persistent staging / mapped buffers.** Uploads use `queue.writeBuffer` and
+`gl.bufferData`, never a `mapAsync` ring. `writeBuffer` is the browser's staging
+ring, minus the `mapAsync` round trip. The uniform ring (`uniformRingBuffer`)
+turns per-draw uniform writes into one frame-level copy, not to avoid allocation.
 
-**Depth buffer / early-Z.** No pass declares a depth-stencil state and no
-attachment carries one; overdraw is not depth-tested away. Every pass blends:
-`//! blend: premultiplied` (source-over) on most, `//! blend: max` on the wiggle
-center line, `//! blend: behind` on the wiggle whiskers band, which
-draws after the lines and composites under them, and nothing passes
-`blend: false`. Blending only composes correctly in draw order — back to front,
-or front to back for `behind`. A
-depth test rejects a fragment by its Z, which is exactly the fragment a
-translucent mark behind it was meant to show through; it would break the
-painter's-algorithm compositing the z-ordered mark lists (`PILEUP_MARKS`, the
-coverage band's) exist to define. What early-Z would save is the overdraw of
-fully opaque marks, and there the rasterizer already discards a quad only a few
-pixels wide about as cheaply (see "GPU-driven culling"). Order is the
-correctness mechanism here; a depth buffer trades it for a saving nothing has
-measured a need for.
+**Compute where a CPU fallback must exist anyway.** Compute is right when the CPU
+fallback is "the feature does not exist", and wrong when a CPU fallback must
+exist anyway. The LD kernels passed (O(n²) pairwise, parallel, a CPU version too
+slow to be a fallback); `ideas/waiting-on-a-call/gpu-sample-distance-matrix.md`
+applies the criterion to the next candidates. Instance packing fails it:
+Canvas2D is a mandatory floor, so a compute packer would be a second packer
+emitting bytes the first must match, the drift `packInstances()` exists to
+prevent. The cost sits in branchy BAM/CRAM decode and row assignment anyway.
+`createInstanceCache` already covers re-deriving from resident data.
 
-**Persistent staging / mapped buffers.** Uploads go through
-`queue.writeBuffer` (`createVertexBuffer`) and `gl.bufferData`, never a
-`mapAsync` ring or `mappedAtCreation`. `writeBuffer` IS the browser's staging
-ring: the implementation copies into its own upload heap and schedules the
-transfer, which is what a hand-rolled staging buffer would do, minus the
-`mapAsync` round trip a mapped path adds to a main-thread upload. The uniform
-ring (`uniformRingBuffer`, one `writeBuffer` per frame from `uniformStaging`) is
-the one place a persistent host-side staging copy already exists, and it is
-there to turn per-draw uniform writes into one frame-level copy, not to avoid
-allocation. See "Buffer pooling" below for the allocation number this would
-otherwise be reached for.
+**Spatial acceleration structures for culling.** Flatbush indexes
+**hit-testing and picking**, never what to draw. The genome axis is 1D and
+`view.displayedRegions` is already the spatial partition.
 
-**Compute where a CPU fallback must exist anyway.** The principle that settles
-every compute proposal in one line: **compute is right when the CPU fallback is
-"the feature does not exist", and wrong when a CPU fallback must exist anyway.**
-The LD kernels pass — O(n²) pairwise over genotypes, embarrassingly parallel,
-large output, and a CPU version too slow to be a real fallback, so "WebGPU-only"
-is an honest answer (`ideas/waiting-on-a-call/gpu-sample-distance-matrix.md` applies the same
-criterion to the next candidates). Instance packing fails it: Canvas2D is a
-mandatory floor, so the CPU packer has to exist, and a compute packer would be a
-second packer emitting bytes the first must match — the same logic in two
-languages with no codegen joining them, which is the drift `packInstances()`
-exists to make impossible. It would also accelerate the cheap half: BAM/CRAM
-decode and pileup row assignment are the cost, and both are branchy,
-variable-length and sequential-ish, a poor GPU fit. The narrow real win —
-re-deriving from data already resident on the GPU (recolor, re-filter) — is
-what `createInstanceCache` already does more cheaply by patching one lane.
+**Draw-call batching.** One instanced draw per `(pass, region)` with data. Our
+analogue of GenomeSpy's sample-facet coalescing is a row inside one instance
+buffer, already one draw. Measured draws per frame are in the tens, not the
+thousands where a budget binds (table below), and frames are main-thread bound
+([INTERACTION_PERF.md](INTERACTION_PERF.md)). Merging would have to cross region
+boundaries, where scissor, viewport and per-block uniforms change.
 
-**Spatial acceleration structures for culling.** We index heavily with Flatbush
-(a packed Hilbert R-tree, vendored at `packages/core/src/util/flatbush/`) — but
-for **hit-testing and picking**, never to decide what to draw. A BVH/quadtree/
-octree accelerates culling in a 3D scene with a moving camera; the genome axis
-is 1D, and `view.displayedRegions` is already the spatial partition that
-`regionKey` and the scissor rects are built on.
-
-**Draw-call batching / merging.** One instanced draw per `(pass, region)` with
-data, and nothing coalesces draws. GenomeSpy's coalescing is narrower than the
-name suggests: `coalesceSampleFacetBatches` collapses the repeated sample-facet
-views of one mark — hundreds of cohort rows drawing the same mark — into one
-draw whose per-facet placement is resolved in the vertex shader and computed
-once per layout, not general adjacent-draw merging. Our analogue of a sample
-facet is a row inside one instance buffer, which is already one draw, so the
-case their coalescing exists for does not arise here. What is left is the draw
-count itself, measured 2026-09-04 (`probe-buffer-churn.ts`, table below): one
-alignments track over two static blocks runs a median
-5<!--m:buffer-churn-pan.one-alignments-track-pan.drawsMed--> draws a frame on
-the pan and 7<!--m:buffer-churn-pan.one-alignments-track-pan-back.drawsMed--> on
-the way back, two tracks
-10<!--m:buffer-churn-pan.two-alignments-tracks-pan-webgpu.drawsMed--> to
-16<!--m:buffer-churn-pan.drawsMed.max-->, a wiggle track
-1<!--m:buffer-churn-pan.one-wiggle-track-pan.drawsMed-->; the frame an upload
-lands in peaks at
-48<!--m:buffer-churn-pan.two-alignments-tracks-pan-webgpu.drawsMax--> to
-62<!--m:buffer-churn-pan.two-alignments-tracks-pan-back-webgpu.drawsMax--> because
-several renders fire in it. Those are tens, not the thousands at which a
-draw-call budget starts to bind, and what these frames are bound by is the main
-thread rather than draw submission
-([INTERACTION_PERF.md](INTERACTION_PERF.md)). Merging would also have to cross
-a region boundary, which is where the scissor rect, the viewport and the
-per-block uniforms all change, so the "compatible" set is one pass in one
-region: exactly what is drawn now.
-
-**Buffer pooling / sub-allocation.** Not present: `uploadBuffer` destroys and
-recreates one `GPUBuffer` per `(regionKey, passId)` per upload. This used to be
-filed as the one unmeasured entry on the list. **Measured 2026-09-04, and
-declined**: a screen-and-a-half pan with two alignments tracks open creates
-24<!--m:buffer-churn-pan.two-alignments-tracks-pan-webgpu.allocs--> buffers on WebGPU
-and 26<!--m:buffer-churn-pan.allocs.max--> on WebGL2 — at most
-1468KB<!--m:buffer-churn-pan.kb.max--> of vertex and uniform data — across the
-whole gesture, and the summed wall time inside the create calls is under a
-millisecond: 0.90ms<!--m:buffer-churn-pan.allocMs.max--> at worst, on WebGL2,
-which is the honest rung to read because its `bufferData` allocates and uploads
-synchronously while WebGPU's `createBuffer` returns before the device allocates.
-Against a gesture measured in seconds that is
-0.004%<!--m:buffer-churn-pan.allocShare.max--> of it at worst. A pan that stays
-inside the loaded blocks allocates
-0<!--m:buffer-churn-pan.two-alignments-tracks-1-px-pan-webgpu.allocs--> buffers — the
-1 px rows are the control — so the churn is one buffer per pass per newly
-fetched block, arriving at the fetch cadence rather than the frame cadence. A
-pool recycles allocations; there is nothing here worth recycling. What would
-reopen it is a display whose uploads arrive per frame rather than per fetch,
-which no upload pattern in tree does (§"Upload patterns").
+**Buffer pooling / sub-allocation.** `uploadBuffer` destroys and recreates one
+`GPUBuffer` per `(regionKey, passId)` per upload. **Measured and declined**: a
+pan allocates buffers at the fetch cadence (one per pass per newly fetched block),
+a pan inside loaded blocks allocates none, and time inside create calls is a
+negligible share of the gesture. WebGL2 is the rung to read, since `bufferData`
+allocates synchronously. What would reopen it is a display whose uploads arrive
+per frame; none does (§"Upload patterns").
 
 <!-- BEGIN GENERATED MEASUREMENT buffer-churn-pan -->
 
@@ -1975,123 +1107,70 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT buffer-churn-pan -->
 
-**GPU picking (an id pass plus a readback).** Hit-testing is analytic and CPU-
-side, and stays there. GPU picking answers the wrong question for us: it returns
-a pixel id, and every consumer needs the feature record — the tooltip wants flags
-and tags, the details panel the whole feature, the overlay the row — so it is an
-extra pass plus a readback and then the same `findRead` lookup we were going to
-do anyway. It would also be a *third* hit-test implementation rather than a
-replacement, since the Canvas2D floor needs an analytic one regardless. And
-`readPixels` blocks on WebGL where WebGPU's readback is async, which puts a frame
-or more of latency into hover. Our marks are mostly rectangles on rows, cheap and
-exact to test. GenomeSpy made the opposite call for the mirror reason: its marks
-are arbitrary user-specified shapes with SDF strokes and rotation, and its
-feature record is a datum index, so there the pixel id *is* the answer. The one
-real weakness — a non-rectangular mark tested by an approximation of its shape —
-is fixed by deriving the predicate from the shader instead
-(§"Keeping the two backends in parity"), which does not touch the model.
+**GPU picking (id pass plus readback).** Hit-testing is analytic and CPU-side.
+Picking returns a pixel id, but every consumer needs the feature record, so it
+adds a pass and a readback before the same `findRead` lookup. It would also be a
+*third* hit-test implementation, since the Canvas2D floor needs an analytic one,
+and `readPixels` blocks on WebGL. GenomeSpy's arbitrary SDF shapes make the pixel
+id the answer there. Our one real weakness, a non-rectangular mark tested by
+approximation, is fixed by deriving the predicate from the shader
+(§"Keeping the two backends in parity").
 
-**Runtime shader generation.** Shaders are hand-written `.slang` compiled ahead
-of time by `pnpm gen:shaders`, never assembled from an encoding spec at runtime.
-The property that buys is that a worker in a package which cannot import the
-plugin owning the `.slang` still packs bytes that provably match its struct —
-the generated `packInstances` and `INSTANCE_OFFSET` maps come from the same
-compile as the shader. Runtime codegen gives that up, and it is what prevents
-the exact bug class this doc describes elsewhere: a hand-written packer writing
-a float bit pattern into a `uint` field, compiling fine, rendering an enormous
-integer.
-[ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md)
-and
-[ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
-are the arguments; `reference/SESSION_SPEC_FORMAT.md` is the same question one
-level up, about the spec rather than the shader.
+**Runtime shader generation.** Shaders are `.slang` compiled ahead of time, so a
+worker in a package that cannot import the plugin still packs bytes that provably
+match its struct (the generated `packInstances` and `INSTANCE_OFFSET` come from
+the same compile). Runtime codegen forfeits that and invites the float-bits-in-a-`uint`
+bug. See ADR-051 and
+[ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md);
+`SESSION_SPEC_FORMAT.md` asks the same question one level up.
 
-**Nested render scopes / group opacity.** The pass list is flat and z-ordered,
-not a tree of scopes each with its own bounds and opacity. GenomeSpy has scopes
-because its specs are trees of views — `layer`, `hconcat`/`vconcat`, `facet`,
-`unit` — where a view carries opacity and its children must composite *within* it
-before compositing into the parent: five overlapping marks at 0.6 cannot each be
-drawn at alpha 0.6, so the group needs an isolated layer composited once. We have
-no analogue. A track is a display is a canvas, displays do not nest, and there is
-no per-display group opacity. The nearest thing we have — the shared-canvas views
-(dotplot, the synteny level) — is flat co-tenancy, not nesting. Adopting scopes
-would be building for a requirement we do not have.
+**Nested render scopes / group opacity.** The pass list is flat and z-ordered.
+GenomeSpy has scopes because its specs are trees of views whose opacity must
+composite as a group. A track is a display is a canvas, displays do not nest, and
+the shared-canvas views are flat co-tenancy.
 
 ## Adding a new GPU display type
 
 The public
 [GPU displays guide](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/creating_gpu_display.md)
-walks this checklist step by step (and
-[Plotting features](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/plotting_features.md)
-does the shared-shape version); keep them in step with any change here.
+walks this checklist ([Plotting
+features](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/plotting_features.md)
+covers the shared-shape version); keep them in step with any change here.
 
 - **Types** — `MyData`, `MyRenderState`, `MyRenderingBackend`.
-- **Shape** — `spanMark` or `pointMark` where one fits. Otherwise a
-  `MarkShape` of your own beside `my.slang` (`pnpm gen:shaders` emits
-  `my.generated.ts`; `slangPass()` builds the `PipelineDescriptor`): its
-  `writeUniforms`, its `paintBlock` (also the SVG export) and its `ink`,
-  held to each other by a `sweepMarkAgainstHit` test.
-- **Marks + backend** — `defineMark({ shape, channels, params })`, one per
-  shape, and `createMarkBackend(canvas, MARKS)` from
-  `@jbrowse/render-core/marks/backend`, imported from the lazily loaded
-  component and nowhere else.
-- **MST model:**
-  - Compose `MultiRegionDisplayMixin()` for LGV-family per-region displays (brings
-    in `RenderLifecycleMixin`, `FetchMixin`, `RegionTooLargeMixin`, the five fetch
-    autoruns, and `rpcProps()`→refetch wiring).
-  - Compose `GlobalFetchMixin()` for displays that hold a single
-    non-regional dataset (HiC contact matrix, LD triangle, multi-way synteny).
-    Same slot mixin + `FetchMixin` +
-    `RegionTooLargeMixin` plumbing, but **no** fetch autoruns — the display
-    installs its own in `afterAttach` via
-    `installGlobalFetchAutorun(self, { prepare, run, commit, delay, name })`.
-    The helper declares this family's terms over the shared `installFetch`
-    skeleton (`reloadCounter` and the durable cancel read unconditionally, the
-    freshness gate on `currentFetchKey` with its reload epoch, and gates for a
-    view not yet initialized, a minimized track and a viewport the byte gate
-    already measured; then the debounce); the display supplies the three phases.
-    `prepare` runs synchronously in the autorun and returning `undefined` from
-    it is the display's gate, so what it read to decline stays tracked (HiC
-    declines until `effectiveResolution` lands); `run` owns every await and
-    writes nothing; `commit` writes while the
-    fetch is still current.
-  - Compose `RenderLifecycleMixin()` directly only when neither fetch surface is
-    needed (rare).
-  - Add a cached `renderState` view.
-  - Define `startRenderingBackend(backend)` calling
-    `installUpload` over the map the display keys its payloads by — never a
-    hand-rolled `attachRenderingBackend`.
-  - Expose `rpcProps()`; add `gpuProps()` only when the main thread encodes GPU
-    buffers from settings.
-- **React component** — `observer()`. Render the canvas through the shared
-  `DisplayChrome` (from `@jbrowse/display-kit/DisplayChrome`), passing the model
-  and the backend `factory`. `DisplayChrome` calls `useRenderingBackend`
-  internally and owns the render-error / region-too-large / error-bar / loading
-  overlays, so the component only lays out its own canvas(es) via the render-prop
-  child:
-  ```tsx
-  return (
-    <DisplayChrome
-      model={model}
-      factory={createMyBackend}
-      testid="my-display"
-      style={{ width, height }}
-    >
-      {({ canvasRef }) => <canvas ref={canvasRef} />}
-    </DisplayChrome>
-  )
-  ```
-- **Wiggle-style displays** — to reuse the whole LinearWiggleDisplay model, compose
-  `stateModelFactory` (the default export) from
-  `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel` — the subpath, not the
-  barrel (see the export note above). To borrow only the score machinery, compose
-  `WiggleScoreConfigMixin` + `makeScoreSubMenu` and render `ScorePlotChrome`
-  from its subpath. A display plotting one configured field composes
-  `ScoreFieldConfigMixin`, which adds `scoreField` (`plugins/gwas` Manhattan);
-  one naming a field per mark keeps the base (`plugins/marks`).
-  Implement `WiggleRenderingBackend` (typed from `@jbrowse/wiggle-core`). A
-  zoom-independent display needs no cache override: the zoom rule is the
-  adapter's declared `zoomRange` on the payload (ADR-125), and an adapter that
-  reads no zoom declares none.
+- **Shape** — `spanMark` or `pointMark` where one fits. Otherwise a `MarkShape`
+  beside `my.slang` (`pnpm gen:shaders` emits `my.generated.ts`; `slangPass()`
+  builds the descriptor) with its `writeUniforms`, its `paintBlock` (also the SVG
+  export) and its `ink`, held to each other by a `sweepMarkAgainstHit` test.
+- **Marks + backend** — `defineMark({ shape, channels, params })` per shape, and
+  `createMarkBackend(canvas, MARKS)` from `@jbrowse/render-core/marks/backend`,
+  imported from the lazily loaded component and nowhere else.
+- **MST model**
+  - `MultiRegionDisplayMixin()` for LGV-family per-region displays (brings
+    `RenderLifecycleMixin`, `FetchMixin`, `RegionTooLargeMixin`, the fetch
+    autoruns and `rpcProps()` wiring).
+  - `GlobalFetchMixin()` for a single non-regional dataset (HiC, LD, multi-way
+    synteny). It has **no** fetch autoruns; the display installs its own in
+    `afterAttach` via `installGlobalFetchAutorun(self, { prepare, run, commit,
+    delay, name })`. `prepare` runs synchronously and returning `undefined` is the
+    display's gate, so what it read to decline stays tracked (HiC declines until
+    `effectiveResolution` lands); `run` owns every await and writes nothing;
+    `commit` writes while the fetch is still current.
+  - `RenderLifecycleMixin()` directly only when neither fetch surface is needed.
+  - A cached `renderState` view; `startRenderingBackend` calling `installUpload`
+    (never a hand-rolled `attachRenderingBackend`); `rpcProps()`; `gpuProps()`
+    only when the main thread encodes buffers from settings.
+- **React component** — an `observer()` rendering `DisplayChrome` (from
+  `@jbrowse/display-kit/DisplayChrome`) with `model`, the backend `factory` and a
+  `testid`. It owns the overlays, so the component lays out only its canvas(es)
+  via the render-prop child `({ canvasRef }) => <canvas ref={canvasRef} />`.
+- **Wiggle-style displays** — to reuse the whole LinearWiggleDisplay model,
+  compose `stateModelFactory` from the `LinearWiggleDisplay/stateModel` subpath.
+  To borrow only the score machinery, compose `WiggleScoreConfigMixin` +
+  `makeScoreSubMenu` and render `ScorePlotChrome` from its subpath. One plotting
+  a configured field composes `ScoreFieldConfigMixin` (`plugins/gwas`); one naming
+  a field per mark keeps the base (`plugins/marks`). Implement
+  `WiggleRenderingBackend`. A zoom-independent display needs no cache override:
+  the adapter's `zoomRange` is the zoom rule (ADR-125).
 - **Tests** — unit (`MockHal`); browser (Puppeteer,
   `--backend=webgl|webgpu|canvas2d`).

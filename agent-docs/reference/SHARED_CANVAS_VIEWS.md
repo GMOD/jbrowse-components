@@ -8,206 +8,138 @@ kind: spec
 
 Synteny and dotplot are a third display shape, alongside the two LGV fetch
 foundations in
-[ARCHITECTURE.md § Display stacks](../ARCHITECTURE.md#display-stacks). Two things
-make them different, and they are independent: their fetch composes
-`KeyedFetchMixin` rather than either LGV foundation, and their canvas belongs to
-a container model rather than to a display. Everything below follows from one or
-the other.
-
-The rules here generalize past these two views. Any container that owns a canvas
-several children draw on — a future stacked view, a multi-track overlay — hits
-the keying, empty-frame and readiness sections unchanged.
+[ARCHITECTURE.md § Display stacks](../ARCHITECTURE.md#display-stacks). Two
+independent things make them different: their fetch composes `KeyedFetchMixin`
+rather than either LGV foundation, and their canvas belongs to a container model
+rather than a display. The keying, empty-frame and readiness rules apply to any
+container owning a canvas that several children draw on.
 
 ## The third shape: a keyed fetch onto a canvas the view owns
 
 Both comparative displays (`LinearSyntenyDisplay`, `DotplotDisplay`) compose
 `BaseDisplay` + `ComparativeFetchMixin` (`@jbrowse/synteny-core`), which is
-`KeyedFetchMixin` (`@jbrowse/display-kit`) — `FetchMixin` plus the
-`currentFetchKey` / `loadedFetchKey` compare the LGV global family runs on —
-under the two-way loading answer a shared canvas wants. Until 2026-09 they
-composed `SyntenyFetchStateMixin` instead, a second spelling of every
-`FetchMixin` member the overlay reads;
+`KeyedFetchMixin` (`@jbrowse/display-kit`: `FetchMixin` plus the
+`currentFetchKey` / `loadedFetchKey` compare) under the two-way loading answer a
+shared canvas wants.
 [ADR-054](../architecture-decision-records/adr-054-comparative-displays-keep-their-own-fetch.md)
-kept that split and
+kept the separate fetch and
 [ADR-105](../architecture-decision-records/adr-105-the-comparative-displays-compose-fetchmixin.md)
-records how each of its four grounds lapsed. What the family gets from the
-shared mixins, and what stays its own:
+records why each ground lapsed. The split of members:
 
-- `FetchMixin`'s: the rotation `cancelFetchByUser` stops (lent to the skeleton
-  at install, so the stop and the flag are one action — a flag alone is not a
-  cancel, since nothing else aborts the fetch and the cancelled RPC would
-  commit its plot over the load the user stopped), `isLoading`, `error`, the
-  status window, `reloadCounter` + `reload()` behind Retry, `fetchCanceled` +
-  `cancelFetchByUser()` behind Cancel, and the overridable `fetchInert` hook
-  (see [SVG_EXPORT.md](SVG_EXPORT.md) and "the on-screen twin" in
-  ARCHITECTURE.md's SVG export section).
-- `KeyedFetchMixin`'s: the `viewSignature` hook each display fills with its two
-  views' state, `currentFetchKey` over it plus the settings and adapter axes,
-  the `loadedFetchKey` stamp `commitFetchResult` writes beside the display's own
-  store, and `dataCurrent`.
-- `ComparativeFetchMixin`'s own: the `fetchLanded` / `hasDrawable` hooks, `loading`
-  (first load — full overlay) versus `refetching` (stale plot still on screen —
-  corner chip), `svgReady`, and `assembliesSwapped`.
+- **`FetchMixin`**: the rotation `cancelFetchByUser` stops (lent to the skeleton, so
+  the stop and the flag are one action; a flag alone is not a cancel), `isLoading`,
+  `error`, the status window, `reloadCounter` + `reload()` behind Retry,
+  `fetchCanceled`, and the `fetchInert` hook ([SVG_EXPORT.md](SVG_EXPORT.md)).
+- **`KeyedFetchMixin`**: the `viewSignature` hook each display fills with its two
+  views' state, `currentFetchKey` over it plus settings and adapter axes, the
+  `loadedFetchKey` stamp `commitFetchResult` writes, and `dataCurrent`.
+- **`ComparativeFetchMixin`**: `fetchLanded` / `hasDrawable` hooks, `loading` (first
+  load, full overlay) versus `refetching` (stale plot on screen, corner chip),
+  `svgReady`, `assembliesSwapped`.
 
-**A comparative cancel is durable until Retry**, and that is the one deliberate
-difference from the LGV families: no clear-on-viewport-change autorun here,
-because these displays sit on single RPCs that can run for minutes and a cancel
-any pan undoes is not one — and their viewport *is* their fetch input, so the
-LGV clear would un-cancel on every trigger.
+**A comparative cancel is durable until Retry**, the one deliberate difference from
+the LGV families: these displays sit on single RPCs that run for minutes, a cancel any
+pan undoes is not one, and their viewport *is* their fetch input, so the LGV
+clear-on-viewport-change would un-cancel on every trigger.
 
-`installComparativeFetchAutorun` (`@jbrowse/synteny-core`) is a declaration over
-the shared `installFetch` skeleton the way `installGlobalFetchAutorun` is: the
-lent rotation, `fetchMixinLifecycle`'s begin/end/error trio, `currentFetchKey`
-as the freshness key against `loadedFetchKey`, `commitFetchResult` at commit.
-What it adds is the refName rename a `run` here is handed; each display supplies
-only the three `FetchPhases`. The skeleton logs whatever it `setError`s, so
-neither display overrides `setError` to log it a second time. Its autorun body
-is synchronous and kicks the awaits off into their own function: an async body
-stops tracking at its first await, and saying so structurally beats every read
-here happening to sit above it.
+`installComparativeFetchAutorun` (`@jbrowse/synteny-core`) is a declaration over the
+shared `installFetch` skeleton: the lent rotation, `fetchMixinLifecycle`'s
+begin/end/error trio, `currentFetchKey` against `loadedFetchKey`, `commitFetchResult`.
+It adds the refName rename a `run` is handed; each display supplies three
+`FetchPhases`. The skeleton logs what it `setError`s, so displays do not log twice.
+Its autorun body is synchronous and kicks the awaits into their own function, since an
+async body stops tracking at its first await. It installs `makeRetryContractCheck`
+too, exempted by `fetchInert` (ADR-081). `installAssemblySwapCheck` is the companion
+for the one-shot reversed-assembly check, shared for its two `isAlive` guards. The
+family runs the shared `computeSvgReady` policy through a key compare
+(`isDataCurrent`), which is where the stale-capture bugs lived
+([SVG_EXPORT.md](SVG_EXPORT.md) §"On-screen capture gate").
 
-It installs `makeRetryContractCheck` too, so this family's Retry is watched like
-the other two — `fetchInert` is the exemption, and it is the same field the LGV
-displays publish (ADR-081).
+**Tracked reads.** The autoruns track `currentFetchKey` (carrying the adapter axis) and
+read every value behind it `untracked`, so a pan inside the buffered window cannot
+refire the fetch. Two more reads are tracked **before** `prepare()`'s bail-outs, and
+only a user gesture moves either:
 
-`installAssemblySwapCheck` is the companion installer for the one-shot
-reversed-assembly check, off the fetch path — shared for its two `isAlive`
-guards (teardown fires the parent atom the gate reads; the RPC resolves long
-after a view can be closed), each invisible until a user closes a view mid-load.
+- `reloadCounter`: after a failure every input is unchanged, so `prepare` recomputes the
+  same key and nothing refires; this is why clearing the error left Retry inert
+  ([FETCH_SKELETON.md](FETCH_SKELETON.md#the-global-fetch-trigger-list-must-be-read-unconditionally);
+  "reload() refires the fetch with no input change" pins it).
+- `fetchCanceled`, which CLOSES the gate while a cancel stands. `reload()` is the only
+  thing that reopens it, so a `reload()` bumping the counter without clearing the flag
+  wakes the autorun into a refused run ("reload() reopens the gate" pins it).
 
-They also answer the shared `dataCurrent` freshness question and run the shared
-`computeSvgReady` policy, just via a key compare (`isDataCurrent` over
-`currentFetchKey`) rather than spatial coverage — which is where the
-stale-capture bugs lived ([SVG_EXPORT.md](SVG_EXPORT.md) §"On-screen capture
-gate").
+**Nothing fetch-derived may join those reads, and `error` is the one that will be
+reached for**: the skeleton clears it at every fetch start and sets it on failure, so a
+tracked read turns one failure into an unbounded retry loop against the server that just
+failed. Nothing checks it (same law as `installGlobalFetchAutorun`'s "`rpcProps()` must
+never return fetch-derived state").
 
-Both autoruns track the one key computed (`currentFetchKey`, which carries the
-adapter axis) and read every value behind it `untracked`, so a pan inside the
-buffered window can't refire the fetch. The third tracked read is
-`FetchMixin`'s `reloadCounter`, taken **before** `prepare()`'s bail-outs: after a failure every fetch input is unchanged, so `prepare`
-recomputes the same key and nothing refires the autorun — which is why clearing
-the error was not enough and the banner's Retry was inert on both views. Same
-law, and the same one-line fix, as the global family's `reloadCounter`; see
-[ARCHITECTURE.md § the trigger
-list](FETCH_SKELETON.md#the-global-fetch-trigger-list-must-be-read-unconditionally).
-`installComparativeFetchAutorun.test.ts` ("reload() refires the fetch with no
-input change") pins it.
-
-The fourth is `fetchCanceled`, read in the same breath and above the same
-bail-outs, gating the run while a cancel stands. It is the mirror image of the
-counter — it CLOSES the gate — so the two belong together: `reload()` is the
-only thing that reopens it, and a `reload()` that bumped the counter without
-clearing the flag would wake the autorun into a run the gate still refuses. That
-is the failure the "reload() reopens the gate" test in the same file catches.
-Both reads are safe in the tracked half for one reason, which is the rule for
-anything added beside them: only a user gesture moves either. **Nothing
-fetch-derived may join them, and `error` is the one that will be reached
-for** — the skeleton clears it at every fetch start and sets it on failure, so
-a tracked read turns one failure into an unbounded retry loop paced by the
-debounce, against the server that just failed. Nothing checks it; the same law
-is `installGlobalFetchAutorun`'s "`rpcProps()` must never return fetch-derived
-state".
-
-Both scope their fetch through the shared `syntenyFetchRegions`
-(`@jbrowse/synteny-core`): the visible blocks widened by a pan buffer and snapped
-to a buffer-sized grid, so a pan inside the buffer neither refetches nor exposes
-an unfetched strip, and the freshness key stays stable across the gesture.
-Synteny scopes its query axis, dotplot its h axis; the fetch is one-dimensional.
-Synteny's `showOffscreenMates` (on by default since 2026-09-07;
-TWO_AXIS_SYNTENY_FETCH.md) is the exception: it adds a second query scoped
-to the target axis (`targetFetchRegions`), flipped into the query perspective
-before drawing.
+Both scope their fetch through `syntenyFetchRegions`: the visible blocks widened by a
+pan buffer and snapped to a buffer-sized grid, so a pan inside the buffer neither
+refetches nor exposes an unfetched strip. Synteny scopes its query axis, dotplot its h
+axis. Synteny's `showOffscreenMates` adds a second query on the target axis
+(`targetFetchRegions`), flipped into the query perspective before drawing
+(TWO_AXIS_SYNTENY_FETCH.md).
 
 ## The canvas belongs to the container, not the display
 
-Both put their `RenderLifecycleMixin` *above* the display, so one canvas is
-shared by several displays: dotplot on the view itself, synteny on
-`LinearSyntenyViewHelper` — the per-level (row-gap) model — so a 3-row stack has
-two canvases, one per band, each shared by that level's synteny tracks. That is
-what makes their upload callbacks key by `sharedBackendKey` rather than by a
-region index: they diff through `installUpload` and delete each departed key
-individually, because an active-set prune computed from one display's map would
-wipe its siblings' buffers.
+Both put their `RenderLifecycleMixin` *above* the display: dotplot on the view,
+synteny on `LinearSyntenyViewHelper` (the per-level model), so a 3-row stack has two
+canvases, each shared by that level's tracks. Upload callbacks therefore key by
+`sharedBackendKey` and diff through `installUpload`, deleting each departed key
+individually, because an active-set prune from one display's map would wipe its
+siblings' buffers.
 
-**A shared canvas is laid out by the model that owns it, never by the displays
-drawing on it.** The canvas is absolutely positioned over the whole band, so it
-contributes no height; the band has to reserve its own (`level.height` for a
-synteny level). Sizing it from the displays instead looks equivalent — every
-display in a level reports the level's height — right up to the legal case of a
-band with *no* display: an assembly pair with no synteny dataset between it (the
-import form launches those deliberately), or the last track on a level hidden.
-`LinearSyntenyRenderArea` reserved 0px there while its canvas still painted
-the level's height, overlapping the genome row below. The SVG export never had
-the bug because `SVGLinearSyntenyView` lays its rows out from `level.height`
-directly — the on-screen path is the one that has to be told.
+**A shared canvas is laid out by the model that owns it, never by the displays drawing
+on it.** The canvas is absolutely positioned and contributes no height, so the band
+reserves its own (`level.height`). Sizing from displays works until a band has none (an
+assembly pair with no synteny dataset, which the import form launches deliberately, or
+the last track hidden): `LinearSyntenyRenderArea` reserved 0px while the canvas still
+painted the level's height. `SVGLinearSyntenyView` lays out from `level.height`
+directly.
 
 ## Key by `sharedBackendKey(self.id)`, never a list index
 
-An index renumbers the moment a sibling is hidden or reordered, and then the
-survivor's key names a slot holding another display's bytes: the identity diff
-sees a changed reference and re-uploads every later display's whole buffer (a
-full re-pack of every segment), and any frame that lands between the two draws
-one display's geometry under another's parameters. Dotplot keyed by track index
-until that was fixed.
+An index renumbers when a sibling is hidden or reordered, so the survivor's key names a
+slot holding another display's bytes: the identity diff re-uploads every later buffer,
+and a frame landing between draws one display's geometry under another's parameters.
 
 ## The empty frame is load-bearing
 
-A shared canvas makes the empty frame load-bearing, and that is why this family's
-render callback is *unconditional* where the per-region family's is gated. When
-each display owns its canvas, hiding a track unmounts the canvas with it. When
-the canvas belongs to the container, nothing else ever repaints it — so a
-callback that skips the tick "because no display has geometry" leaves the hidden
-track's pixels on screen, its buffer deleted and nothing drawn over them. Both
-plugins' backends clear before drawing, so painting zero displays *is* the wipe.
-One shape, in both:
+When the canvas belongs to the container, nothing else repaints it after a track is
+hidden, so a render callback that skips the tick "because no display has geometry"
+leaves the hidden track's pixels on screen with its buffer deleted. This family's
+callback is therefore *unconditional* where the per-region family's is gated, and both
+backends clear before drawing, so painting zero displays is the wipe:
 
-- `renderState` is a **resolved getter**, never `undefined`; an empty block list
-  is a real frame.
-- `canRender` carries the "view isn't measured yet" precondition
-  (`view.initialized`), so the autorun pair idles instead of the state going
-  nullable.
-- The render always repaints the whole canvas: clear, then draw every key it
-  holds geometry for. Both draw through `renderBlocks`, whose frame scaffold
-  clears whether or not a block survives — transparent for dotplot, and the
-  band's own ground for synteny, which declares a `clearColor` because its indel
-  wedges are pre-blended against a known colour rather than composited over it.
-- A view or level that legitimately has nothing to show still resolves
-  `canvasDrawn`, and so `settled` and `data-display-drawn`. Both return what
-  `renderBlocks` answered — no block drew, so nothing reached the canvas — and
-  say the other half through `paintInert`, `RenderLifecycleMixin`'s hook for a
-  display that will not paint its way out of where it is: a plot with no tracks
-  on it, a band with no ribbon track on it. The distinction is worth the hook: a
-  track still fetching leaves the map empty too, and only one of those two is
-  finished.
+- `renderState` is a **resolved getter**, never `undefined`; an empty block list is a
+  real frame.
+- `canRender` carries "view isn't measured yet" (`view.initialized`), so the autorun
+  pair idles instead of the state going nullable.
+- The render repaints the whole canvas through `renderBlocks`, whose scaffold clears
+  whether or not a block survives (transparent for dotplot; synteny declares a
+  `clearColor` because its indel wedges are pre-blended against a known colour).
+- A view or level with nothing to show still resolves `canvasDrawn`, hence `settled` and
+  `data-display-drawn`. Both return what `renderBlocks` answered and say the other half
+  through `paintInert` (a plot with no tracks, a band with no ribbon track); a track
+  still fetching leaves the map empty too, and only one of the two is finished.
 
-`products/jbrowse-web/src/tests/SharedCanvasHideTrack.test.tsx` holds both views
-to this.
+`products/jbrowse-web/src/tests/SharedCanvasHideTrack.test.tsx` holds both views to
+this.
 
 ## Readiness is a required prop, not a selector list
 
-**Both views publish that `settled` as `data-display-drawn`, a *required* prop on
-`RenderCanvas`.** ADR-065 deleted the per-view
-`synteny_canvas_done` / `dotplot_webgl_canvas_done` testids. The attribute is
-what `PENDING_DISPLAYS` (`@jbrowse/browser-test-utils`) waits on, so these two
-answer "has everything painted?" with the same attribute every LGV display
-does.
+Both views publish `settled` as `data-display-drawn`, a **required** prop on
+`RenderCanvas` (ADR-065 deleted the per-view `_done` testids). `PENDING_DISPLAYS`
+(`@jbrowse/browser-test-utils`) waits on that attribute, so these two answer "has
+everything painted?" as every LGV display does. It is required because the
+hand-enumerated list forgot dotplot (an unpainted dotplot counted as finished and a
+capture landed blank) and a stale third copy lived in the desktop harness. **A readiness
+signal published as a required prop cannot forget a view; a selector list can.** Use
+that shape wherever a cross-cutting check would be a list someone must append to (as
+`fetchInert` is a mixin hook, not a getter each display invents).
 
-It is required because the previous version enumerated views by hand:
-`PENDING_DISPLAYS` named `synteny_canvas` and simply forgot dotplot, so an
-unpainted dotplot counted as finished and a capture could land on it blank — and
-a third, hand-copied version of the list lived in the desktop harness, already
-stale and matching only by accident. **A readiness signal published as a required
-prop cannot forget a view; a selector list can.** Reach for that shape whenever a
-cross-cutting check would otherwise be a list someone has to remember to append
-to — it is the same move as `fetchInert` being a mixin hook rather than a getter
-each display invents.
-
-`canvasDrawn` therefore means "a block drew" on both, which is
-[ADR-009](../architecture-decision-records/adr-009-canvas-drawn-reliability.md)'s
-own meaning (written for the per-region family, whose loading scrim reads it
-through `computeActivityPhase`'s `rendersCanvas && !canvasDrawn` term). Nothing is
-lost: both `settled` getters carry data-readiness separately through
-`displaysSettled`, and neither view drives a scrim off `canvasDrawn`. Dotplot
-keyed by track index and gated its render on having geometry until both were
-fixed; synteny reached the same place by a different route, with a nullable state
-and a `clear()` method on the backend interface for the empty case.
+`canvasDrawn` means "a block drew" on both
+([ADR-009](../architecture-decision-records/adr-009-canvas-drawn-reliability.md)'s
+meaning). Data-readiness rides separately through `displaysSettled`, and neither view
+drives a scrim off `canvasDrawn`.

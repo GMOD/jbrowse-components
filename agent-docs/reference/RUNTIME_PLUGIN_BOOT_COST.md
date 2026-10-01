@@ -6,14 +6,11 @@ kind: measurement
 
 # What a runtime plugin costs at boot
 
-[EAGER_BUNDLE.md](EAGER_BUNDLE.md) is about the host's own first paint, which
-six measured pins have squeezed hard. This is the other half, which has had
-none of that: a config naming a store plugin pays for **all** of that plugin
-before anything draws, and pays the parse again in every RPC worker.
-
-The store's five large entries, gzipped: MsaView 234 KB, Apollo 175, TView 159,
-Ideogram 130, Protein3d 97. The other eight are 7.5 KB or less. So MsaView
-alone is 40% of what jbrowse-web's empty page costs.
+[EAGER_BUNDLE.md](EAGER_BUNDLE.md) covers the host's own first paint. A config
+naming a store plugin adds **all** of that plugin before anything draws, and
+pays the parse again in every RPC worker. A handful of store entries (MsaView,
+Apollo, TView, Ideogram, Protein3d) are large enough to rival the host's own
+empty page; the rest are a few KB.
 
 ## The three cuts, measured on MsaView
 
@@ -34,83 +31,66 @@ Same source, same esbuild, same machine; only the named thing changed.
 
 ### 1. The host floor
 
-The plugin's own `esbuild.mjs` intersects `@jbrowse/core/ReExports/list` with a
-host-floor file it keeps beside it — what the **oldest supported host** serves —
-so one bundle runs everywhere. That floor names `@jbrowse/core`
-4.0.0: 273 paths, 27 of them core subpaths, against the v5 list as measured at beta.9
-(509 and 243; `list.ts` now holds 543 specifiers, 261 of them `@jbrowse/core/*`). **361 served specifiers are bundled rather than externalized**,
-and a bundled `@jbrowse` module drags its relative closure, which is how MUI,
-floating-ui and rxjs arrive.
+A plugin's `esbuild.mjs` intersects `@jbrowse/core/ReExports/list` with a
+host-floor file naming what the **oldest supported host** serves, so one bundle
+runs everywhere. Every specifier only a newer host serves is bundled rather than
+externalized, and a bundled `@jbrowse` module drags its relative closure, which
+is how MUI, floating-ui and rxjs arrive. Source-map attribution puts roughly a
+third of MsaView, TView and Protein3d in that host-servable share. Two
+passengers that look like plugin dependencies are core's own:
+`source-map-js` (via `core/esm/ui/mapStackTrace.js`) and `dompurify` (via
+`core/esm/ui/DOMPurifySanitizedHTML.js`).
 
-Attributing each bundle's output bytes through its published source map, the
-share that is host-servable library: **MsaView 33%, TView 38%, Protein3d 34%**,
-Apollo 8%, Ideogram 0% (it wraps a third-party library and has nothing to
-externalize).
-
-Two passengers look like plugin dependencies and are core's, arriving inside
-that second copy: `source-map-js` via `core/esm/ui/mapStackTrace.js`, and
-`dompurify` via `core/esm/ui/DOMPurifySanitizedHTML.js`.
-
-The floor is not a mistake — one bundle has to run on every host. What makes it
-avoidable is that the store already publishes per-version `jbrowseRange` and
-every entry declares `*`, so `resolvePlugin` never has two builds to choose
-between. A v5-floor build at `>=5.0.0` beside the old one costs the plugin a
-second artifact and nothing else.
+The floor is needed for one bundle; one bundle is not. The store publishes a
+per-version `jbrowseRange`, so a v5-floor build at `>=5.0.0` beside the old one
+costs the plugin a second artifact and nothing else. Today every entry declares
+`*`, so `resolvePlugin` never has two builds to choose between.
 
 ### 2 and 3. Splitting, and the edges that defeat it
 
-MsaView's source already writes `lazy(() => import('./components/MsaViewPanel'))`.
-It buys nothing: the build emits one file, and esbuild inlines an internal
-dynamic import unless `splitting` is on.
+MsaView writes `lazy(() => import('./components/MsaViewPanel'))`, which buys
+nothing in a one-file build: esbuild inlines an internal dynamic import unless
+`splitting` is on. Turning splitting on moved little, because two module-scope
+edges in the plugin's own source name the deferred side:
 
-Turning splitting on moved 16 KB, because two static edges from the plugin's own
-source name the deferred side at module scope:
+- `src/LaunchMsaViewExtensionPoint/index.ts` imports `expandSpec` from
+  `react-msaview`
+- `src/AddHighlightModel/index.tsx` imports `src/MsaViewPanel/model.ts`
 
-- `src/LaunchMsaViewExtensionPoint/index.ts` — `import { expandSpec } from 'react-msaview'`
-- `src/AddHighlightModel/index.tsx` — imports `src/MsaViewPanel/model.ts`
-
-That is EAGER_BUNDLE.md's recurring pin — an eagerly evaluated module naming a
-value from the heavy side — reproduced in a runtime plugin. Making the view's
-`stateModel` a thunk changed nothing on its own, because `AddHighlightModel`
-reaches the model anyway.
+That is EAGER_BUNDLE.md's recurring pin reproduced in a runtime plugin. A
+`stateModel` thunk changes nothing while `AddHighlightModel` reaches the model
+anyway.
 
 ## The classic RPC worker does not block ESM
 
-Splitting needs ESM, and every product's `makeWorkerInstance` builds a
-**classic** worker, which cannot have an ES module as its entry script
-(`workerScriptLoadMessage` names that failure for UMD plugins under a module
-worker; the reverse is what mattered here). Dynamic `import()` inside a classic
-worker is a different question, and it works — probed directly on
-Chrome 154.0.8037.57, where a classic dedicated worker resolved
-`await import('./chunk.mjs')`. each product's `rpcWorker.ts` already passes
-`fetchESM: url => import(url)` to `initializeWorker`, jbrowse.org already answers plugin requests
-with `access-control-allow-origin: *`, and `publishReExports` sets the global
-before any plugin module evaluates.
+Splitting needs ESM. Every product's `makeWorkerInstance` builds a **classic**
+worker, which cannot take an ES module as its entry script, but dynamic
+`import()` inside a classic worker works (probed in Chrome). Each product's
+`rpcWorker.ts` passes `fetchESM: url => import(url)` to `initializeWorker`,
+jbrowse.org serves plugins with `access-control-allow-origin: *`, and
+`publishReExports` sets the global before any plugin module evaluates.
 
-**Not verified on Firefox** — the system binary here is a snap and puppeteer
-could not drive it. Check before recommending ESM to a plugin author.
+**Not verified on Firefox.** Check before recommending ESM to a plugin author.
 
 ## What it costs to take
 
 - **A UMD bundle can carry an integrity hash and an ESM one cannot**, since
-  dynamic import takes no integrity attribute. `definitionFrom` already mints
-  ESM definitions without one, so the store's SRI applies to the UMD arm only;
-  moving a plugin to ESM trades the hash for the split.
+  dynamic import takes no integrity attribute. `definitionFrom` mints ESM
+  definitions without one, so the store's SRI covers the UMD arm only.
 - **A lazy `stateModel` makes `addView` throw**, naming `launchView`
-  (`MultipleViews.ts`). A plugin whose own launcher calls `addView` — MsaView's
-  does — has to move.
-- **The bound in the table holds react-msaview out entirely.** A real split
-  leaves it a chunk, so a reader who opens the view still downloads it. What
-  moves is the boot path, and the parse in every worker that only wanted the
-  plugin's adapter.
+  (`MultipleViews.ts`). A plugin whose own launcher calls `addView`, as
+  MsaView's does, has to move.
+- **The table's last row holds react-msaview out entirely.** A real split leaves
+  it a chunk that a user opening the view still downloads. What moves is the
+  boot path, and the parse in every worker that only wanted the adapter.
 
 ## What the repo checks
 
 `packages/product-core/src/Session/splitRuntimePlugin.test.ts` over
-`test_data/split_plugin/` pins the host half end to end: a two-module plugin
-installs its entry, registers its view, and leaves the second module
-unevaluated until `launchView`. It fails all three ways if the fixture
-registers eagerly instead.
+`test_data/split_plugin/` pins the host half: a two-module plugin installs its
+entry, registers its view, and leaves the second module unevaluated until
+`launchView`. It fails if the fixture registers eagerly.
 
 `scripts/check-published-plugins.ts` reads what published bundles take **off**
-the ABI. Nothing reads what they failed to take off it, which is the 33% above.
+the ABI. Nothing reads what they failed to take off it, which is the host-floor
+share above.

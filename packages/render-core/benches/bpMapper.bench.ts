@@ -20,8 +20,8 @@
 //   control   a separately declared copy of old in the same module
 //   new       the production functions
 //
-// Old and control are imported as new is (BENCHMARKING.md, "An arm declared in
-// the bench").
+// Old and control are imported as new is (BENCHMARKING.md, "The shape of a
+// bench you can believe").
 //
 // IDENTITY. After timing and before anything prints, every arm paints forward,
 // reversed and alternating blocks on a recording context and must match old's

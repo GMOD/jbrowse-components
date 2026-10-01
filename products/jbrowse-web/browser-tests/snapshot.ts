@@ -456,7 +456,7 @@ async function waitForMorphIdle(page: Page, timeout = 10000) {
 // targeted alignments pairs and 16-27% on the full-page ones — the scroll
 // outlives the call, so the `page.screenshot()` that follows photographs a
 // scrolled app. The render was never wrong; see
-// reference/FIGURE_CAPTURE.md, "The third one".
+// reference/FIGURE_CAPTURE.md, "`el.screenshot()` scrolls the element first".
 //
 // So measure the rectangle and clip to it, which is all `el.screenshot()` does
 // after the scroll it is being avoided for. Capturing where the page already

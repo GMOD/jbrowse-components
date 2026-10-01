@@ -7,69 +7,32 @@ kind: spec
 
 # In-App Clustering Workflow
 
-Applies to `plugins/wiggle` (the quantitative display) and `plugins/variants`
-(multi-sample variant displays). Both plugins share the same structural pattern:
-a dialog triggers an RPC call that builds a feature matrix, runs hierarchical
-clustering via `@gmod/hclust`, and writes the result through the row
-arrangement's `setRowOrder`, which drives dendrogram rendering. Both compose
-`TreeSidebarMixin`, which stores it in the display's `rows` config object: the
-field-keyed `Rows` on the quantitative display, the intrinsic `RowArrangement`
-on the variant displays, whose rows are the samples.
+Applies to `plugins/wiggle` (the quantitative display) and `plugins/variants` (multi-sample variant displays). A dialog triggers an RPC that builds a feature matrix, runs `@gmod/hclust`, and writes the result through the row arrangement's `setRowOrder`, which drives the dendrogram. Both compose `TreeSidebarMixin`, which stores the arrangement in the display's `rows` config object: field-keyed `Rows` on the quantitative display, intrinsic `RowArrangement` on the variant displays, whose rows are the samples.
 
 ## Data flow
 
 ```
-Track menu
-  ↓  "Cluster rows by score" (wiggle)
-  ↓  "Cluster by genotype"   (variants)
-Dialog (Auto / Manual)
-  ↓  Auto path
-RPC call (main → worker)
-  ├─ wiggle:   MultiWiggleClusterScoreMatrix
-  ├─ marks:    MarkClusterRows
-  └─ variants: MultiSampleVariantClusterGenotypeMatrix
-Worker
-  1. Build matrix (one row per source/sample, one column per position/variant)
-  2. @gmod/hclust clusterObject() → hierarchical dendrogram
-  3. toNewick() → Newick string
-  Return { order: number[], tree: string }
+Track menu → Dialog (Auto / Manual)
+Auto: RPC (main → worker)
+  MultiWiggleClusterScoreMatrix | MarkClusterRows | MultiSampleVariantClusterGenotypeMatrix
+Worker: build matrix → hclust clusterObject() → toNewick()
+  returns { order: number[], tree: string }
 Dialog callback
-  wiggle:   runWiggleClustering → applyClusterRun → rotateClusterRun
-            → clusteredCladeLayout(rows, editableSources, order)
+  wiggle:   runWiggleClustering → applyClusterRun → rotateClusterRun → clusteredCladeLayout
   variants: runGenotypeClustering; manual paste → applyClusterOrder
-  model.setRowOrder(rows, { tree, provenance })     ← both plugins
-Arrangement written (TreeSidebarMixin: display config, flushed to the session)
-  rows.domain  → row order, by name
-  rows.tree    → Newick string, rows.treeProvenance beside it
-Re-render
-  hierarchy view  = clusterLayout(parsedTree, rowHeight, treeAreaWidth, showBranchLength)
-  renderSvg.tsx   → <SvgTreePath hierarchy={hierarchy} /> + reordered rows
+  model.setRowOrder(rows, { tree, provenance })
+Re-render: clusterLayout(parsedTree, rowHeight, treeAreaWidth, showBranchLength)
 ```
 
----
+Both renderers (`LinearWiggleDisplay/renderSvg.tsx`, `variants/src/shared/renderSvgUtils.ts`) pass `model.hierarchy` to `<SvgTreePath>`. Clicking a tree node calls `setRowFocus`. The Manual tab generates an R script; the user pastes the resulting Newick and the dialog takes the same `setRowOrder` path.
 
 ## Matrix construction
 
-### Wiggle — score matrix (`getScoreMatrix.ts`)
+### Wiggle score matrix (`getScoreMatrix.ts`)
 
-- **Rows** = sources (tracks)
-- **Columns** = genomic positions, binned by `bpPerPx`
-- **Values** = `Float32Array`, each column the MEAN of every feature covering it
+Rows are sources, columns are positions binned by `bpPerPx` (tree-sidebar's `binColumns`, shared with the mark display's `MarkClusterRows`), values are a `Float32Array` where each column is the MEAN of every feature covering it. Every visible region contributes a segment (`columnSegments`), so a whole-genome or collapsed-intron view clusters on all of them. A column averages rather than takes the last writer because several features routinely land in one.
 
-Every visible region contributes a segment and they concatenate, so a
-whole-genome or collapsed-intron view clusters on all of them —
-`columnSegments`. Reading only the first block was a real bug, not a
-simplification. The binning is tree-sidebar's `binColumns`, which the mark
-display's `MarkClusterRows` bins its bars and points through as well.
-
-A column averages rather than takes the last writer, because several features
-routinely land in one: hundreds of a bedMethyl's CpGs at 10 kb/px, and
-whole-genome is tens of thousands.
-
-**The accumulator is `Float64Array` and the row it lands in is `Float32Array`,
-and the split is deliberate.** Summing that many f32s into an f32 is naive
-summation with no compensation, which the clusterer's own distance build does
-not do to itself (hclust 5.1.0 promotes to f64x2 every 16 elements). Measured:
+**The accumulator is `Float64Array` and the row is `Float32Array`, deliberately.** Summing many f32s into an f32 is uncompensated summation. The row stays f32 because it is a `postMessage` transferable and BigWig scores are f32. No cluster order moved in any arm, so this is a correct mean rather than a different tree. `getScoreMatrix.test.ts` pins the width with a 2e7 outlier among a hundred 1s.
 
 <!-- BEGIN GENERATED MEASUREMENT wiggle-bin-accumulator-width -->
 
@@ -86,269 +49,59 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT wiggle-bin-accumulator-width -->
 
-The row stays f32 because it is a `postMessage` transferable and a BigWig's
-scores are f32 in the file, so widening it would buy false precision at double
-the wire cost. **No cluster order moved in any arm**, so this is a correct column
-mean rather than a different tree — which matters because
-`MultiWiggleGetScoreMatrix` hands the same matrix to the display.
-`getScoreMatrix.test.ts` pins the accumulator width with a 2e7 outlier among a
-hundred 1s; nothing else in that file reaches it, since every other case sums a
-handful of small values where the two widths agree exactly.
+### Variants genotype matrix (`getGenotypeMatrix.ts`)
 
-### Variants — genotype matrix (`getGenotypeMatrix.ts`)
+Rows are samples. Columns are one per ALT allele of every variant passing the MAF, missingness and jexl filters, so a multiallelic site is several columns. Values are a `Float32Array` dosage on a diploid scale, `2 × (calls of that ALT) / (called alleles)`, with `NaN` for a no-call. `genotypeMatrixEncoding.ts` says why a dosage and why NaN is the only missing marker.
 
-- **Rows** = samples
-- **Columns** = one per ALT allele of every variant passing the MAF,
-  missingness and jexl filters, so a multiallelic site is several columns
-- **Values** = `Float32Array` dosage on a diploid scale,
-  `2 × (calls of that ALT) / (called alleles)`: 0, 1, 2 for a complete diploid
-  call, a fraction for a polyploid one, `NaN` for a no-call
+hclust rejects non-finite input, so the in-app path runs `imputeMissingToSiteMean` first: every no-call becomes its site's mean over the called samples, a fraction. The R/TSV export writes `NA`. Real panels carry no-calls, so fractional rows are the norm.
 
-`genotypeMatrixEncoding.ts` says why a dosage and not a class, and why NaN is
-the only missing marker. The R/TSV export writes it as `NA`; the in-app path
-runs `imputeMissingToSiteMean` first, because hclust rejects non-finite input,
-so every no-call becomes its site's mean over the called samples — a fraction.
-On the hosted 3,202-sample 1KGP SV callset 15% of sites carry a no-call (0.7%
-of cells), so fractional rows are the norm on a real panel; the 1000 Genomes
-phase 3 slices carry none, which is why the measurements behind
-`ideas/waiting-on-a-call/gpu-sample-distance-matrix.md` saw integer dosages.
+### Phased mode (`getPhasedGenotypeMatrix.ts`)
 
-### Variants phased mode (`getPhasedGenotypeMatrix.ts`)
-
-`renderingMode === 'phased'`: one row per haplotype per sample (e.g. `HG001
-HP0`, `HG001 HP1`). Values are a per-haplotype alt indicator in `Float32Array`,
-0 or 1, with `NaN` for a no-call or an unphased genotype, imputed the same way.
-
-Both clustering paths cluster `clusterableSources`, the rows the display
-draws before its tint and band: haplotype rows in phased mode, already
-expanded, which the worker passes through. The dialog commits a finished run
-through one `applyOrder(order, matrixRowNames)` callback
-(`MultiSampleVariantClusterDialog.tsx`), which calls `applyClusterOrder`
-(`plugins/variants/src/shared/`) and hands the result, row names, to
-`model.setRowOrder`; the auto path does the same with its tree. So the phased
-and unphased paths commit identically and neither holds a mode-specific
-branch.
-
----
+`renderingMode === 'phased'` gives one row per haplotype (`HG001 HP0`), values 0 or 1, `NaN` for a no-call or unphased genotype, imputed the same way. Both paths cluster `clusterableSources`, the rows the display draws before its tint and band. The dialog commits a finished run through one `applyOrder(order, matrixRowNames)` callback (`MultiSampleVariantClusterDialog.tsx`) into `applyClusterOrder` and `model.setRowOrder`, so phased and unphased paths commit identically.
 
 ## The arrangement mixin (`packages/tree-sidebar`)
 
-Every row display reaches its arrangement through one API, `TreeSidebarMixin`,
-over the `rows` config object (ADR-157): wiggle, the variant displays, the
-multi-row feature display and MAF. It also derives the rows a run clusters,
-`clusterableSources`, from the rows each display discovers.
+Every row display (wiggle, variants, multi-row feature display, MAF) reaches its arrangement through `TreeSidebarMixin` over the `rows` config object (ADR-157). It also derives `clusterableSources`.
 
 | Member | display config |
 |---|---|
 | Row order | `rows.domain` (`string[]`) |
-| Tree | `rows.tree` (Newick) |
-| Provenance | `rows.treeProvenance` |
+| Tree | `rows.tree` (Newick), `rows.treeProvenance` beside it |
 | Focus | `rows.kept` |
 | Row labels | `rows.labels` |
 | Row colours | `rowColor` pairs |
 
-A guide tree a display's adapter supplies (`guideTreeNewick`, MAF's `.nh`) is
-data rather than config: `rowTree` draws it while some rotation of it lists
-`rows.domain` and never writes it to `rows.tree`.
-`treeAreaWidth`, the sidebar's pixel width (default 80), is config too.
+A guide tree an adapter supplies (`guideTreeNewick`, MAF's `.nh`) is data, not config: `rowTree` draws it while some rotation of it lists `rows.domain`, and never writes it to `rows.tree`.
 
-Key actions:
-- `setRowOrder(rows)` — a reorder; clears the tree if the row order changed
-- `setRowOrder(rows, { tree, provenance })` — a run's order and tree, together
-- `applyRowEdits(rows)` — the arrangement dialog's submit: labels, colours and
-  an order that moved
-- `setRowFocus(names)` — collapses to deepest matching subtree (interactive click)
-- `resetRowArrangement()` — the order, the tree and the focus back to what the
-  config.json declares
-
-Every `TreeSidebarMixin` writer flushes to the session at once
-(`persistConfigurationNow`), so a run is one undo step.
+Actions: `setRowOrder(rows)` (a reorder; clears the tree if the order changed), `setRowOrder(rows, { tree, provenance })`, `applyRowEdits(rows)` (arrangement dialog submit), `setRowFocus(names)` (collapse to the deepest matching subtree), `resetRowArrangement()`. Every writer flushes at once (`persistConfigurationNow`), so a run is one undo step.
 
 ### Staleness has one imperative half and one derived half
 
-`clusterLayout` positions leaves *positionally* (leaf `i` on row `i`), so a tree
-that no longer names the rows on screen draws against the wrong ones. Two things
-enforce that it does:
+`clusterLayout` positions leaves *positionally* (leaf `i` on row `i`), so a tree that no longer names the rows on screen draws against the wrong ones. Two things guard this:
 
-- **`setRowOrder` → `rowOrderWillDropTree`**, for the writes that go through it. It also
-  backs the color dialog's pre-submit warning, which has to answer before the
-  write happens. Every action that moves rows must route through `setRowOrder`,
-  never a direct write to the order.
-- **`computeClusterHierarchy`**, which takes the *drawn rows* and returns
-  `undefined` unless the tree's leaves are exactly those names in that order.
-  This is the backstop for the ways rows move with no order write at all — a
-  `sources` decoration downstream of the order (multi-row features' `rowGroups`),
-  a discovered row set growing as regions load, variants' phased expansion
-  switching on when ploidy arrives.
+- **`setRowOrder` → `rowOrderWillDropTree`** covers writes that go through it, and backs the color dialog's pre-submit warning. Every action that moves rows must route through `setRowOrder`, never write the order directly.
+- **`computeClusterHierarchy`** takes the *drawn rows* and returns `undefined` unless the tree's leaves are exactly those names in that order. It backstops rows that move with no order write: a `sources` decoration downstream of the order (`rowGroups`), a discovered row set growing as regions load, phased expansion switching on when ploidy arrives.
 
-The focus (`rows.kept`) is **not** invalidated by either: it
-is a set of row names matched without a tree, so it survives a reorder on
-purpose. Only a change to what rows are *called* invalidates it — variants'
-`setPhasedMode`, which renames rows between `HG001` and `HG001 HP0`, and
-multi-row's `setRowsField`, which repartitions them.
+The focus (`rows.kept`) is a set of names matched without a tree, so a reorder keeps it on purpose. Only a change to what rows are *called* invalidates it: variants' `setPhasedMode` and multi-row's `setRowsField`.
 
----
-
-## Why the tree no longer waits
-
-Variants used to hold the dendrogram in a `pendingClusterTree` volatile and
-apply it in `setCellData`, because the row order was an RPC input: a clustering run
-refetched, and until the new cells arrived the rows on screen were still in the
-old order while the tree already showed the new one.
-
-**Row order stopped being a fetch input**, so that window closed — the worker
-names its rows and `rowRemap` places them onto screen rows, re-derived from
-`sources` the moment the order changes (FETCH_KEYS.md, "Row order is not a
-fetch input"). Deferring anyway then meant the tree waited on a refetch that no
-longer happens, and a `runClustering: true` display drew no dendrogram at all.
-Layout and tree now land together, immediately, on both plugins.
-`clusterTreeLands.test.ts` is the regression guard.
-
-This is the shape to expect when a "wait for the other half to arrive"
-mechanism outlives the asynchrony it was written for: it doesn't fail loudly,
-it just never fires.
-
----
+Row order is not a fetch input (FETCH_KEYS.md, "Row order is not a fetch input"), so the tree and layout land together with no deferral. A "wait for the other half" mechanism that outlives its asynchrony does not fail loudly, it never fires; `clusterTreeLands.test.ts` guards this.
 
 ## Cluster utilities (`packages/tree-sidebar/src/clusterUtils.ts`)
 
-- **`buildClusteredLayout(baseSources, order)`** — reorders `baseSources` by
-  the clustering `order` array, throwing on an index out of range.
-- **`computeClusterHierarchy`**, **`clusteredCladeLayout`**,
-  **`validateClusterOrder`** and **`parseClusterOrder`** — the hierarchy the
-  sidebar draws, the clade-ordered layout `applyClusterRun` writes, and the
-  checks on a pasted order.
-- **`buildTree(newick)`** / **`applySubtreeFilter(root, filter)`** — parses
-  Newick, wraps in d3-hierarchy `HierarchyNode`, and optionally filters to the
-  deepest subtree whose leaves exactly match `filter`. Single post-order pass.
+`buildClusteredLayout`, `computeClusterHierarchy`, `clusteredCladeLayout`, `validateClusterOrder`, `parseClusterOrder`, `buildTree(newick)` and `applySubtreeFilter(root, filter)` (deepest subtree whose leaves exactly match `filter`).
 
----
+## Performance regimes
 
-## Manual mode
+At the default filters the variant RPC hands over one column per site in the window, so population panels are thousands to tens of thousands of columns wide. There the Euclidean distance build dominates, not hclust's merge loop. `clusterMatrix` tries `gpuDistanceMatrix` first (`packages/tree-sidebar/src/gpuDistanceMatrix.ts`, kernel `shaders/sampleDistance.slang`) and hands hclust the matrix through `clusterData({ distances })`. The numbers live in `ideas/waiting-on-a-call/gpu-sample-distance-matrix.md`; `pnpm bench:real` in the hclust repo and `products/jbrowse-web/browser-tests/probe-gpu-distance-matrix.ts` reproduce them.
 
-Both dialogs offer a Manual tab that generates an R script. The user runs it
-locally and pastes the resulting Newick tree. The dialog calls the same
-`setRowOrder` path as auto mode, just with
-user-supplied order/tree instead of RPC output.
+The wasm build is the fallback, and runs:
 
----
+- **below the work gate** (`MIN_WORK`), where a dispatch's fixed cost outweighs the work;
+- **without a WebGPU device**, or when the n x n output does not bind (`planDistanceDispatch`);
+- **when the dispatch fails validation or reads back wrong.** A truncated dispatch raises no error and leaves zeros, which hclust would merge first at height 0, so `distanceSpotCheck.ts` recomputes a few pairs in f64 and a mismatch throws. Both throws fall back with a `console.warn`; an abort propagates.
 
-## Rendering
+The kernel writes the upper triangle and sums squares in blocks of 16 with Kahan compensation, so fractional rows hold at wide windows where a plain f32 sum drifts.
 
-**Wiggle:** `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx`  
-**Variants:** `plugins/variants/src/shared/renderSvgUtils.ts`
+**Ties make the merge loop the cost.** hclust caches each cluster's nearest neighbour and rescans when it merges away; on mostly identical rows every merge invalidates every cache. The hosted 1KGP SV callset in a window holding one or two SVs has that shape, and a distance kernel does not help there.
 
-Both call `model.hierarchy` (a computed view) and pass it to `<SvgTreePath>`.
-The dendrogram appears in the left sidebar; rows are drawn in the arranged
-order.
-Clicking a tree node calls `setRowFocus` to collapse/expand that clade.
-
----
-
-## Where the time goes on a population panel
-
-Every hclust benchmark before August 2026 ran at V = 20 columns, and at that
-width the merge loop is the cost. The variant RPC hands over one column per
-site in the window at the default filters (MAF 0, missingness 1: every site),
-so a 1000 Genomes window is thousands to tens of thousands of columns wide, and
-there the Euclidean distance build is the run: on chr22:20-21 Mb (2504 samples,
-22,383 sites) the merge loop is ~40 ms of a run that takes seconds to minutes.
-`pnpm bench:real` in the hclust repo measures that regime on real genotypes,
-and `ideas/waiting-on-a-call/gpu-sample-distance-matrix.md` carries the table and the case for
-doing the build on a compute shader.
-
-Two things changed in hclust 5.1.0, which this tree has had since (it now pins 6.0.0), because of that
-measurement:
-
-- **The first clustering in a fresh worker no longer runs at half speed.** V8
-  promotes a wasm function out of its baseline tier on call count, without
-  on-stack replacement, and 5.0.0 did the whole build in one call, so that call
-  stayed baseline to the end. A best-of-N benchmark in one process never sees
-  it, which is why it went unreported. 5.1.0 does the per-row work in its own
-  function, and the first call is within 5% of a warm one.
-- **The kernel is 2.5x faster at these widths** (f32x4 differences and
-  squares, promoted to f64x2 every 16 elements), with merges and heights
-  bit-identical to 5.0.0 on every real matrix checked.
-
-## The distance build runs on the GPU when it is worth it
-
-`clusterMatrix` tries `gpuDistanceMatrix` first
-(`packages/tree-sidebar/src/gpuDistanceMatrix.ts`, kernel
-`shaders/sampleDistance.slang`) and hands hclust the matrix through
-`clusterData({ distances })` (hclust 5.2.0). It runs the same for all four
-clustering RPCs because they share that tail. The wasm build is the fallback,
-and it is what runs:
-
-- **below the work gate**, 10^9 pair-elements (`MIN_WORK`): a dispatch has
-  ~50 ms of fixed cost, and at 464 rows x 512 columns the wasm wins outright;
-- **without a WebGPU device**, or when the n x n output does not bind
-  (`planDistanceDispatch`);
-- **when the dispatch fails validation or reads back wrong.** A truncated
-  dispatch raises no error and leaves zeros, which hclust would merge first at
-  height 0, so `distanceSpotCheck.ts` recomputes a handful of pairs in f64
-  and a mismatch throws. Both throws fall back with a `console.warn` saying
-  why; an abort propagates instead.
-
-The kernel writes the upper triangle, which is the half hclust reads, and
-sums squares in blocks of 16 with Kahan compensation so fractional rows
-(imputed dosages, identity fractions) hold at 22,000 columns where a plain
-f32 sum drifted to 3.6e-5. Integer dosages sum exactly, so on a 1000 Genomes
-window the tree is identical to the wasm's.
-
-`products/jbrowse-web/browser-tests/probe-gpu-distance-matrix.ts` bundles
-the shipped `gpuDistanceMatrix` into headed Chrome and times it, then times
-hclust's merge on the matrix that came back, against the wasm doing both;
-`--matrix` reads the dumps `pnpm bench:real --dump` writes in the hclust repo.
-`ideas/waiting-on-a-call/gpu-sample-distance-matrix.md` has the numbers.
-
-The other way the merge loop stops being noise is ties. hclust caches each
-cluster's nearest neighbour and rescans when that neighbour merges away, and on
-rows that are mostly identical every merge invalidates every cache: 3,202 rows
-carrying 9 distinct values took 27 s where 3,202 distinct rows took 0.36 s
-(5.1.0, node, 2026-09-07). That is the shape the hosted 1KGP SV callset
-(`jbrowse.org/demos/1000g`, 3,202 samples, ~70 sites per Mb, all unphased)
-presents in a window holding one or two SVs, so on that panel the freeze is in
-the merge loop, not the distance build, and a distance kernel would not touch
-it.
-
-## Where the memory goes
-
-The matrix crosses into hclust's wasm heap, and that heap is built with
-`MAXIMUM_MEMORY=2GB` — the one hard wall on the path. N×V×4 for the input and
-N²×4 for the distance matrix the C allocates have to share it; everything else
-is browser memory pressure. Through 5.2.0, hclust staged a flat
-`Float32Array` copy of the rows on the way in, so the input is live three times
-(the builder's `Map<string, Float32Array>`, the staging copy, the heap) while
-the distance build runs, and it checked no `_malloc` result — a data allocation
-the heap refuses comes back 0 and the matrix is written at address 0. On the
-shapes the idea doc measures:
-
-| window                    |     N |        V | rows + staging (JS) | heap: input + distances | in 2 GB |
-| ------------------------- | ----: | -------: | ------------------: | ----------------------: | ------- |
-| 1 Mb, MAF 0, samples      | 2,504 |   22,514 |              451 MB |           225 MB + 25 MB | yes     |
-| 1 Mb, MAF 0, haplotypes   | 5,008 |   22,383 |              897 MB |          448 MB + 100 MB | yes     |
-| 4.5 Mb, MAF 0, haplotypes | 5,008 | ~100,000 |              4.0 GB |          2.0 GB + 0.1 GB | no      |
-
-The time wall comes first: the 1 Mb haplotype row already takes 98 s, so the
-run that reaches the heap is a seven-minute one. Nothing in this tree weighs
-N against V; the dialog shows whatever `clusterMatrix` throws, and hclust
-5.3.0, which 6.0.0 (the pin) carries, refuses what the heap cannot hold before
-allocating and fills the heap row by row (changelog in `~/src/gmod/hclust`).
-
-## Key files
-
-| File | Role |
-|---|---|
-| `plugins/wiggle/src/WiggleRPC/executeClusterScoreMatrix.ts` | Worker clustering for wiggle |
-| `plugins/wiggle/src/WiggleRPC/getScoreMatrix.ts` | Score matrix construction |
-| `plugins/wiggle/src/LinearWiggleDisplay/components/WiggleClusterDialog.tsx` | Dialog (Auto + Manual) |
-| `plugins/wiggle/src/LinearWiggleDisplay/model.ts` | Composes TreeSidebarMixin, `hierarchy` view |
-| `plugins/variants/src/VariantRPC/executeClusterGenotypeMatrix.ts` | Worker clustering for variants |
-| `plugins/variants/src/VariantRPC/getGenotypeMatrix.ts` | Dosage matrix construction |
-| `plugins/variants/src/VariantRPC/getPhasedGenotypeMatrix.ts` | Phased haplotype matrix |
-| `plugins/variants/src/shared/components/MultiSampleVariantClusterDialog.tsx` | Dialog (Auto + Manual) |
-| `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts` | Base model; `hierarchy` |
-| `plugins/variants/src/shared/applyClusterOrder.ts` | Turns an order over the clustered rows into the next `rows.domain`, the focused-out rows after the clade |
-| `packages/tree-sidebar/src/TreeSidebarMixin.ts` | The arrangement over the `rows` config object, and the rows derived from it |
-| `packages/tree-sidebar/src/arrangeRows.ts` | Orders, relabels and tints a display's rows |
-| `packages/tree-sidebar/src/clusterUtils.ts` | `buildClusteredLayout`, `buildTree`, `applySubtreeFilter` |
+**The hclust wasm heap is capped at `MAXIMUM_MEMORY=2GB`**, the one hard wall on the path: the N×V×4 input and the N²×4 distance matrix share it, and the input is live several times in JS while the build runs. The time wall arrives first on wide haplotype windows. Nothing in this tree weighs N against V; the dialog shows whatever `clusterMatrix` throws, and recent hclust refuses what the heap cannot hold before allocating.

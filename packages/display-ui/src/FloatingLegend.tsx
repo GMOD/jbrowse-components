@@ -51,20 +51,9 @@ const useStyles = makeStyles()(theme => ({
     // rendered inline, where events already pass through)
     pointerEvents: 'auto',
   },
-  // A plain <button>, not MUI's IconButton, and the glyph is `×` rather than
-  // the Material Close icon.
-  //
-  // This component is rendered by canvas, alignments, variants and multi-wiggle
-  // displays *directly*, behind neither bring-your-own seam, so a Material
-  // widget here reaches an embedder who has opted out of both — and the
-  // build-your-own site's zero-MUI census, which no page currently trips only
-  // because no page turns on a colorBy that raises a legend. Same call
-  // `BaseTooltip` made in 2026-08: what it needed was colors, and colors have a
-  // toolkit-free home already. See DISPLAYCHROME.md, "a third seam was
-  // considered for the tooltip and rejected".
-  //
-  // `×` is what `SvgColorLegend` already draws for this control, so the
-  // exported legend and the on-screen one now agree.
+  // A plain <button> with a `×` glyph, not MUI: displays render this legend
+  // directly, behind neither bring-your-own seam. See DISPLAYCHROME.md, "The
+  // bring-your-own seams".
   closeButton: {
     position: 'absolute',
     top: 0,

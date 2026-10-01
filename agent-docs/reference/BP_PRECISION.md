@@ -7,57 +7,46 @@ kind: spec
 # BP precision & coordinate conventions
 
 Genomic positions exceed 3×10⁹ on T2T assemblies. Float32's 24-bit mantissa
-can't represent every integer past 2²⁴ ≈ 16.7 Mbp, so a naive float upload loses
-~256 bp of precision at 3 Gbp. GPU clip-space is unavoidably float32 — this doc
-is how we keep positions exact anyway.
+cannot represent every integer past 2²⁴ ≈ 16.7 Mbp, so a naive float upload loses
+~256 bp at 3 Gbp. GPU clip-space is float32 regardless; this doc is how positions
+stay exact anyway.
 
 ## The absolute-uint32 rule
 
 **Every position array that crosses the worker boundary is absolute genomic
-uint32** — reads, gaps, mismatches, interbase (ins/soft/hardclip), softclip
-bases, modifications, SNP/noncov/indicator/modCov segments, sashimi junctions,
-chain connecting lines, `coverageStartPos`, `readNextPositions`, wiggle
-`featurePositions`.
+uint32** (reads, gaps, mismatches, interbase, modifications, coverage and
+junction segments, wiggle `featurePositions`, and the rest). Absolute rather than
+`regionStart`-relative because:
 
-Why absolute rather than regionStart-relative:
+- Region boundaries change on zoom-out, silently invalidating anything keyed to
+  `regionStart`.
+- Genomic positions are always ≥ 0, so no signed offsets.
+- Reversal is the drawing layer's job (`bpToX` on Canvas2D, `flipX` on GPU), not
+  the coordinate convention's.
+- Every consumer compares against absolute bp (SVG export, hit testing, tooltips,
+  `findFeatureInRpcData`, main-thread layout).
 
-- **Region boundaries change on zoom-out.** Anything keyed to `regionStart` is
-  silently invalidated when the anchor shifts.
-- **No signed offsets needed** — genomic positions are always ≥ 0.
-- **Reversal is orthogonal.** The drawing layer handles reversed regions
-  (`bpToX` on Canvas2D, `flipX` on GPU), not the coordinate convention.
-- **Every consumer compares against absolute bp** — SVG export, Canvas2D, hit
-  testing, tooltips, `findFeatureInRpcData`, main-thread layout.
-
-Uint32 is exact for `[0, 2³²)` = 4.29 Gbp, so absolute storage costs 4 bytes per
-vertex and stays valid under any zoom.
-
-## The 0-based half-open convention
-
-JBrowse uses **0-based half-open intervals** `[start, end)` internally for all
-genomic features and regions, matching BED/BAM. Adapters that read 1-based
-formats (VCF `POS`, GFF `start`) subtract 1 on ingest; exporters that write
-1-based formats add 1 on output.
+Uint32 is exact on `[0, 2³²)` = 4.29 Gbp at 4 bytes per vertex under any zoom.
+Internally all features and regions are **0-based half-open** `[start, end)`;
+adapters for 1-based formats subtract 1 on ingest, exporters add 1.
 
 ## The coordinate families
 
 | Family | Displays | Vertex attribute | Conversion |
 |---|---|---|---|
-| **LGV bp** | alignments, canvas basic + multi-row, wiggle, variants, MAF, GWAS | absolute genomic `uint` | `bpToClipX(bp, u)` (hi/lo split, below) |
+| **LGV bp** | alignments, canvas basic + multi-row, wiggle, variants, MAF, GWAS | absolute genomic `uint` | `bpToClipX(bp, u)` (hi/lo split) |
 | **Window-relative cumulative bp** | synteny, dotplot | `float bpRel = cumBp − base` | `bpRel * bpPerPxInv + panPx`, then `screenToClip` |
-| **Origin-relative diagonal bp** | Hi-C, LD (both passes) | bp/√2 off the payload's own `originBp` — a `float2` attribute, or (LD index mode) a decoded instance index times `uniformW` | `diagonalCellToClip(pos, canvasSize, viewScale, viewOffsetX, yScalar)` |
+| **Origin-relative diagonal bp** | Hi-C, LD | bp/√2 off the payload's own `originBp` | `diagonalCellToClip(...)` |
 | **Screen space** | variant matrix | CSS px, computed on the CPU | `screenToClip(px, resolution)` |
 
-`hpmath.slang` hosts the hi/lo helpers plus the generic ones every family lands
-on (`screenToClip`, `quadLocal`, `extendToMinWidthX`, the pixel-snap
-functions), so `import hpmath` does not by itself mean a shader does hi/lo math.
-The diagonal family's rotation lives in `diagonalGrid.slang` — shared by Hi-C
-and both LD variants precisely so the two plugins cannot spell one transform
-differently — and finishes through `screenToClip` from here.
+`hpmath.slang` hosts the hi/lo helpers plus the generic ones every family lands on
+(`screenToClip`, `quadLocal`, `extendToMinWidthX`, pixel snapping), so `import
+hpmath` does not imply hi/lo math. `diagonalGrid.slang` is shared by Hi-C and both
+LD variants so the plugins cannot spell one transform differently.
 
-## LGV family: what you actually write
+## LGV family: what you write
 
-Each LGV plugin defines the same one-line wrapper next to its uniform struct:
+Each LGV plugin defines the same wrapper next to its uniform struct:
 
 ```slang
 float bpToClipX(uint bp, Uniforms u) {
@@ -65,402 +54,186 @@ float bpToClipX(uint bp, Uniforms u) {
 }
 ```
 
-Call that. Alignments and
-the canvas feature-glyph passes ship theirs in `alignmentsUniforms.slang` and
-`featureGlyphUniforms.slang`; render-core (`barMark.slang`, `pointMark.slang`),
-wiggle, variants and `score-example` each carry a local copy. **Don't call `hpToClipX` /
-`hpSplitUint` directly from a draw shader** — the wrapper takes a `uint`, so it
-can't be handed an already-converted float. (A shader that only calls
-`bpToClipX` doesn't need `import hpmath` at all; see
-`plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`.)
+**Don't call `hpToClipX` / `hpSplitUint` directly from a draw shader**: the
+wrapper takes a `uint`, so it cannot be handed an already-converted float. The
+copies are deliberate. Hoisting the wrapper into `hpmath.slang` needs a Slang
+interface every plugin's `Uniforms` must conform to, leaking render-core UBO shape
+into plugin structs, and external authors copy a self-contained uniforms module
+from the GPU-display guide.
 
-The copies are deliberate. Hoisting the wrapper into `hpmath.slang` would need a
-Slang interface every plugin's `Uniforms` had to conform to, leaking render-core
-UBO shape into every plugin struct — and external plugin authors copy a
-self-contained uniforms module out of the GPU-display guide. One duplicated line
-is the cheaper trade.
-
-The uniform side is `bpRangeX = [bpStartHi, bpStartLo, ±clippedLengthBp]`,
-written by `blockClipUtils.clipBlock` (or `splitPositionWithFrac` for a single
-UBO field). Length is negated for reversed blocks, which flips clip-x inside
-`hpToClipX`; alignments instead calls `flipX(sx, u)` after the conversion.
-Either way, reversal never touches the stored coordinate. The alignments UBO has
-**no `regionStart`**, **no `domainStart`/`domainEnd`**.
+The uniform side is `bpRangeX = [bpStartHi, bpStartLo, ±clippedLengthBp]`, written
+by `blockClipUtils.clipBlock` (or `splitPositionWithFrac` for one UBO field).
+Length is negated for reversed blocks, which flips clip-x inside `hpToClipX`;
+alignments calls `flipX(sx, u)` after conversion instead. The alignments UBO has no
+`regionStart` and no `domainStart`/`domainEnd`.
 
 ## How the hi/lo split works
 
-Rarely relevant — read this when debugging a precision artifact or writing a new
-uniform module, not when writing a draw shader.
+Read this when debugging a precision artifact or writing a new uniform module. The
+uint32 is cut into a **high** half (bits 12..31, a multiple of 4096) and a **low**
+half (bits 0..11), both exact in float32. The CPU splits the viewport start the
+same way; the shader subtracts hi-from-hi and lo-from-lo, so every subtraction is
+large-minus-large or small-minus-small, with no catastrophic cancellation.
 
-Storage is uint32 (exact to 4.29 Gbp); the precision-sensitive step is the
-float32 conversion, so that is where the split happens. The uint32 is cut into a
-**high** half (bits 12..31, an exact multiple of 4096) and a **low** half (bits
-0..11, values 0..4095) — both exact in float32:
+The real `hpToClipX` threads an `hpZero` term and `max(…, -inf)` + `dot()` so the
+compiler cannot algebraically collapse `dHi + dLo` into one large subtraction.
+**Read `hpmath.slang`; don't retype a simplified copy.**
 
-```slang
-uint lo = value & 0xFFFu;
-uint hi = value - lo;
-float2 split = float2(float(hi), float(lo));
-```
-
-The viewport start is split the same way on the CPU. The shader then subtracts
-hi-from-hi and lo-from-lo separately, so every subtraction is large-minus-large
-or small-minus-small — no catastrophic cancellation:
-
-```slang
-float dHi = split.x - u.bpHi;  // large - large = small, exact
-float dLo = split.y - u.bpLo;  // small - small = small, exact
-float clipX = (dHi + dLo) / bpLen * 2.0 - 1.0;
-```
-
-That snippet is a simplification of the real `hpToClipX`, which wraps the
-subtractions in `max(…, -inf)` + `dot()` and threads an `hpZero` term precisely
-so the compiler can't algebraically collapse `dHi + dLo` back into one
-large-magnitude subtraction and destroy the precision the split exists to
-preserve. **Read `hpmath.slang`; don't retype this snippet.**
-
-Why two representations rather than one: uint32-only would lose precision at the
-float conversion (fine only below ~16 Mbp); float-hi/lo attributes would double
-per-vertex position memory (8 vs 4 bytes) and push the split onto every CPU
-packer. Uint32 storage + in-shader split gets 4 bytes, full precision, and
-packers that copy absolute positions unchanged. See ADR-008 for the wiggle-side
+Uint32-only would lose precision at the float conversion past ~16 Mbp;
+float-hi/lo attributes would double per-vertex bytes and push the split onto every
+CPU packer. Uint32 storage plus in-shader split gives 4 bytes, full precision and
+packers that copy absolute positions unchanged. ADR-008 holds the wiggle-side
 equality decision.
 
 ## Synteny + dotplot: window-relative Float32 cumulative-bp
 
-A synteny ribbon connects two views (dotplot: two axes) with independent
-`bpPerPx`, so a corner is **cumulative bp across all regions of its view/axis**,
-not single-region absolute bp — genome scale, up to Gbp, past Float32's mantissa
-and past uint32 on large assemblies.
+A synteny ribbon corner is **cumulative bp across all regions of its view**
+(dotplot: its axis), up to Gbp and past uint32 on large assemblies. Both store each
+corner relative to a per-axis fetch-time base (`base = offsetPx * bpPerPx`):
 
-Instead of the hi/lo split, both store each corner **relative to a per-axis
-fetch-time base** (`base = offsetPx * bpPerPx`, the viewport-start cumBp
-captured when the geometry is built):
+- The vertex attribute is one Float32 `bpRel = cumBp − base`. The shader computes
+  screen X as `bpRel * bpPerPxInv + panPx`, with `panPx = (base − viewBp) /
+  bpPerPx` folded on the CPU in float64 from the small pan since fetch
+  (`syntenyRibbonMarks` / `segmentMark`; `computeTransform` is the single
+  implementation). Both terms stay sub-pixel in one Float32.
+- Synteny bakes the relative value into its geometry buffers (the worker geometry
+  **is** the RPC payload; `buildSyntenyGeometry` returns `base0`/`base1`). Dotplot
+  builds on the main thread and keeps absolute cumBp `Float64Array`s in geometry,
+  because Canvas2D and SVG consume them unchanged; it subtracts the base only at
+  GPU upload (`buildLineSegments` carries `baseH`/`baseV`).
+- Each plugin's `instanceInterleave.ts` owns a hand-written pack loop (a per-element
+  transform a flat packer cannot express), exports it as `interleaveInstances` plus
+  an `InstanceCacheOpts` descriptor, and `createInstanceCache` drives it
+  ([the recolor fast path](FETCH_KEYS.md#gpuprops-and-derived-region-maps--re-upload-without-refetch)).
+  Offsets and stride come from the shader's generated interface.
 
-- The vertex attribute is a single Float32 `bpRel = cumBp − base`. The shader
-  reconstructs screen X as `bpRel * bpPerPxInv + panPx`, where `panPx = (base −
-  viewBp) / bpPerPx` is folded on the CPU in float64 from a SMALL delta — the
-  pan since fetch (synteny's `syntenyRibbonMarks` / dotplot's `segmentMark`). The base
-  cancels the genome-scale magnitude, so both terms stay sub-pixel in one
-  Float32: no hi/lo pair, half the position bytes. Per-instance layout is the
-  four corners (`bp{1..4}` / `x1,y1,x2,y2`) plus color etc.
-  (`syntenyTypes.slang` / `dotplot.slang`).
-- Synteny bakes the window-relative value into its geometry buffers, so the CPU
-  pick path reads it directly (`buildSyntenyGeometry` returns `base0`/`base1`).
-  Dotplot keeps **absolute** cumBp `Float64Array`s in geometry — the Canvas2D
-  and SVG renderers consume them unchanged — and subtracts the base only at GPU
-  upload; `buildLineSegments` carries `baseH`/`baseV` for the GPU path.
-- That is the *only* place the two diverge. Each plugin's
-  `DisplayName/instanceInterleave.ts` owns its pack loop (hand-written, not the
-  generated `packInstances`, because both apply a per-element transform a flat
-  ArrayLike packer can't express: synteny's `featureId = instanceFeatureIdx + 1`,
-  dotplot's `cumBp − base`), and each exports that loop as `interleaveInstances`
-  plus the `InstanceCacheOpts` descriptor naming its geometry token and color
-  lane, which `createInstanceCache` drives — see [the recolor fast
-  path](FETCH_KEYS.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
-  Offsets and stride always come from the shader's generated interface, so only
-  the loop is local.
+It works because the fetch re-runs when the window moves, so the base stays near
+the view; far-off-screen corners lose absolute precision only on the clipped-away
+sliver, with visible error ~`panDistancePx · 2⁻²³`. Storing cumBp avoids the
+per-region uniform table that ruled out earlier hp-math attempts and imposes no
+`MAX_REGIONS` cap. **ADR-067** is the decision; ADR-010 holds the rejected
+per-region tables and ADR-018 the earlier hi/lo shape. Dotplot's v axis does not
+refetch on pan, so `panPxV` grows until a zoom recaptures `baseV`; the error bound
+still holds (~8.4M px of vertical pan to reach 1 px).
 
-This works because the fetch is scoped per window and re-runs when the window
-moves (synteny: both views refetch on pan; dotplot: the h-axis refetches, and a
-zoom on either axis rebuilds geometry), so the base stays near the view.
-Far-off-screen corners — a distant-mate ribbon on another chromosome — lose
-absolute precision, but only on the clipped-away sliver; visible error stays
-~`panDistancePx · 2⁻²³`. Storing cumBp instead of regional bp + region index
-avoids the per-region uniform table and per-region-pair draw calls that ruled
-out earlier hp-math attempts, and imposes no `MAX_REGIONS` cap. **ADR-067** is
-the decision; ADR-010 holds the rejected per-region-table alternatives and
-ADR-018 the earlier hi/lo shape this replaced.
+### The Float64 stage is a precision requirement
 
-**Dotplot's v axis is the exception.** Its fetch is h-axis-scoped and the
-geometry autorun reads `offsetPx` untracked, so a v-axis pan neither refetches
-nor rebuilds — only a zoom recaptures `baseV`, and `panPxV` grows unbounded
-until then. The error bound above still holds (~8.4M px of vertical pan to reach
-1 px), so it is recorded, not fixed.
-
-The two plugins differ on *where* the subtraction happens because of where they
-build geometry: dotplot builds on the main thread, so it has a seam between the
-data and the vertex buffer; synteny builds in the worker, where the geometry
-object **is** the RPC payload and no seam exists. ADR-067 has the reasoning.
-
-### Why there is a Float64 stage at all
-
-Both plugins hold absolute cumBp in **Float64** before the subtraction, and that
-is a precision requirement rather than a leftover. It is easy to read
-"window-relative Float32" as meaning the pipeline is Float32 throughout and the
-wide arrays are dead weight; it is the other way round.
-
-**The subtraction is what cancels the genome-scale magnitude, so it can only do
-that while the magnitude is still exact.** Narrow cumBp to Float32 first and the
-rounding has already happened *at genome scale* — ~256 bp at 3 Gbp, per the
-opening of this doc — so `cumBp − base` returns a small number that is precisely
-wrong, and no later arithmetic recovers it. Doing the difference in Float64 and
-narrowing the *result* is the whole trick: the answer is sub-pixel before it ever
-meets a 24-bit mantissa.
-
-uint32 is not the alternative it looks like. The `< 2³²` rule is **per
-chromosome** ([Genome-size limits](#genome-size-limits)); cumBp is whole-assembly
-and overflows it on a large one. Float64 is the only representation that is both
-wide enough to hold cumBp and exact enough (integers to 2⁵³) for the difference
-to be right.
-
-Both halves are pinned, and the dotplot one is the direct test of this property:
-`dotplotPrecision.test.ts` ("window-relative Float32 upload is sub-pixel vs
-absolute Float64") reproduces the upload and the shader's reconstruction at a
-base of 8×10⁸ and compares it against the exact float64 answer;
-`buildSyntenyGeometry.precision.test.ts` ("on-screen corner at genome scale is
-stored window-relative + sub-pixel") asserts at a 1.5 Gbp locus that the stored
-corner is small-magnitude and still reconstructs to the right screen X. A change
-that narrowed earlier would fail them.
-
-Where each stage lives:
+Narrowing cumBp to Float32 before subtracting rounds at genome scale (~256 bp at 3
+Gbp), so `cumBp − base` returns a small number that is precisely wrong. Subtract
+in Float64 and narrow the result. uint32 is not the alternative: the `< 2³²` rule
+is per chromosome, while cumBp is whole-assembly. `dotplotPrecision.test.ts` and
+`buildSyntenyGeometry.precision.test.ts` pin both halves.
 
 | | absolute Float64 cumBp | subtracts the base |
 | --- | --- | --- |
-| synteny | `executeSyntenyFeaturesAndPositions` → `p11_cumBp`…`p22_cumBp` (+ `queryGridAnchors`) | `buildSyntenyGeometry`, into the Float32 `bp1`…`bp4` |
-| dotplot | `dotplotGeometry`'s `buildLineSegments` → `x1`/`y1`/`x2`/`y2`, kept absolute through the model | `instanceInterleave`, at GPU upload only |
+| synteny | `executeSyntenyFeaturesAndPositions` → `p11_cumBp`…`p22_cumBp` | `buildSyntenyGeometry`, into Float32 `bp1`…`bp4` |
+| dotplot | `buildLineSegments` → `x1`/`y1`/`x2`/`y2` | `instanceInterleave`, at GPU upload only |
 
-**The trap next door:** the `Uint32Array`s sitting beside synteny's Float64
-corners — `starts` / `ends` / `mateStarts` / `mateEnds` — are chromosome-**local**
-feature coords, carried for the feature-detail panel and the min-length cull.
-They are not the drawn positions and are not in the same space. Reaching for them
-because they are the ones that look like plain coordinates is the mistake the
-comment above them exists to prevent.
+**The trap next door:** the `Uint32Array`s beside synteny's Float64 corners
+(`starts` / `ends` / `mateStarts` / `mateEnds`) are chromosome-local feature
+coords for the detail panel and min-length cull, not the drawn positions.
 
-### Should synteny adopt dotplot's shape? Asked, declined on bytes
+### Synteny adopting dotplot's shape: declined on bytes
 
-Synteny is the one that puts relative coordinates into the data model and across
-the RPC boundary, which brushes against the repo `CLAUDE.md` rule that worker
-output is absolute genomic uint32. It does not straightforwardly violate it —
-synteny's base is a **viewport** base rather than a regionStart, it is refetched
-when the window moves, and `base0`/`base1` travel with the data so no consumer
-has to guess it — but the inconsistency is real and the question has been asked.
+Absolute cumBp across the RPC would be Float64: 16 bytes/instance of corners
+becomes 32, roughly +8 MB per region at the plugin's 500k-instance whole-genome
+PAF target, and it undoes the "half the position bytes" win. It would also move
+the CPU pick path (`projectCorners`), which reads relative values today. The
+residual cost is that `base0`/`base1` are a correctness dependency riding with the
+data; the one hand-written twin is `bpRel * inv + panPx` in `projectCorners` (TS)
+against `computeCorners` (Slang), which ADR-051's scalar-only codegen makes
+unavoidable. Don't split the difference by converting on arrival (current cost
+plus a copy). Revisit only if one coordinate story across the fleet is worth the
+bytes, or a third consumer needs absolute cumBp on the main thread.
 
-The departure is bounded: the rule holds in full for the *feature* payload
-(`starts`/`ends`/`mateStarts`/`mateEnds` are absolute chromosome-local uint32),
-and a corner is cumBp anyway, so even an "absolute" version would be Float64
-cumBp rather than the uint32 family the rule describes.
+### `FeatPos` is absolute and is not what the ribbon is drawn from
 
-It was declined, so it can be argued with rather than re-derived:
-
-- Corners are synteny's largest per-instance array, and absolute means Float64:
-  **16 bytes/instance of corners becomes 32**. The plugin sizes its target at
-  500k instances on whole-genome PAF (`instanceInterleave.ts`,
-  `syntenyPickEngine.ts`), so roughly **+8 MB per region**, across the RPC and
-  then resident in the level's cell map, per level.
-- "Half the position bytes" is a stated goal of the refactor that introduced the
-  scheme. Undoing it buys consistency and spends a measured win.
-- It is not a buffer-format change. The CPU pick path (`syntenyPickEngine.ts` /
-  `projectCorners`) reads the relative values today, so it moves too.
-
-The residual cost is that `base0`/`base1` are a correctness dependency riding
-with the data, which dotplot's shape avoids. It is smaller than it sounds:
-`computeTransform` is the single implementation of `panPx`/`bpPerPxInv`, and the
-GPU renderer imports it rather than re-spelling it. The one hand-written twin is
-`bpRel * inv + panPx` — `projectCorners` (TS) against `computeCorners` (Slang) —
-which ADR-051's scalar-only codegen makes unavoidable, and which no test
-compares. `getCigarOpAtInstance` is the only reader relying on the base
-*cancelling* rather than being applied.
-
-**What would change the verdict:** a decision that one coordinate story across
-the fleet is worth the bytes regardless (a legitimate call, and not the
-implementer's); evidence the 500k-instance case is not the one to optimize for;
-or a third consumer arriving that needs absolute cumBp on the main thread, at
-which point synteny is paying the conversion anyway.
-
-**Do not** split the difference by leaving the worker relative and converting on
-arrival — that is the current cost plus a copy.
-
-### `FeatPos` is absolute, and is *not* what the ribbon is drawn from
-
-The band's main-thread feature data obeys the absolute-uint32 rule:
-`starts`/`ends`/`mateStarts`/`mateEnds` in `SyntenyFeatureData` are absolute
-chromosome-local bp, and `getFeatureAtIndex` hands them out as `FeatPos`. Nothing
-relative is in there. That is the good news and also the trap.
-
-Those numbers are the **original block extent**, written before the geometry
-stage. The ribbon on screen is not: `clipLargeBlockToWindow` re-anchors a
-chain-sized block to just its visible slice, CIGAR-accurately, and
-`clampBlockToRegions` trims it again to what both axes can show
-(`executeSyntenyFeaturesAndPositions.ts`). Only the geometry sees the result;
-`startsArray[validCount] = start` stores the pre-clip value on purpose, because
-the detail panel and the min-length cull want the whole block.
-
-So main-thread code that reads `FeatPos` coordinates and reasons about *what the
-user is looking at* is wrong wherever the block was clipped — which is precisely
-the liftOver-style chain, the case such code is usually written for. In
-particular, interpolating a mate position across `start..end` is not "the
-geometry the picture is drawn with", however reasonable that sounds: the picture
-followed the CIGAR and the interpolation did not. This has been shipped once and
-reverted (`8981347686`).
-
-The correct route for anything needing a position correspondence is a worker
-round trip that walks the real CIGAR and returns absolute bp —
-`SyntenyResolveMatchingRegion`, which is what the band's "Move … panel to the
-matching region" items use, gated on `featureData.hasCigar` so a CIGAR-less tier
-gets no answer rather than a guessed one.
+`starts`/`ends`/`mateStarts`/`mateEnds` in `SyntenyFeatureData` (handed out as
+`FeatPos`) are the original block extent, written before geometry.
+`clipLargeBlockToWindow` and `clampBlockToRegions`
+(`executeSyntenyFeaturesAndPositions.ts`) then re-anchor the drawn ribbon to its
+visible slice, CIGAR-accurately; `startsArray[validCount] = start` stores the
+pre-clip value on purpose for the detail panel. Main-thread code reasoning about
+what the user sees from `FeatPos` is wrong wherever a block was clipped, which is
+the liftOver chain case. Interpolating a mate position across `start..end` was
+shipped once and reverted (`8981347686`). Use the worker round trip
+`SyntenyResolveMatchingRegion`, which walks the real CIGAR, gated on
+`featureData.hasCigar`.
 
 ### The same hazard on the CSS side: `staticBlocksTranslateX`
 
-Everything above is about the worker and the GPU. The DOM has the identical
-problem and it is easy to miss, because nothing in CSS reports a range error.
+`view.offsetPx` is a whole-genome pixel coordinate (past 1e10 at base resolution on
+hg38 chr1). CSS cannot carry it: transforms are float32 at the compositor (~1024px
+steps at 1e10) and Blink's `LayoutUnit` saturates at ±33.5M px. So overlay chrome
+(gridlines, labels, region seams) is laid out in the *staticBlocks frame*, spanning
+only the displayed regions on screen, shifted into the viewport by one transform:
+`LinearGenomeView.staticBlocksTranslateX`, a getter so the large-minus-large
+subtraction happens in float64. `translateX(-view.offsetPx)` over an
+absolutely-placed overlay puts the row somewhere else entirely on large assemblies
+at high zoom. `paddingSpans`, `gridlineTicks` and `scalebarLabels` publish `x` in
+that frame; `scalebarRefNameLabels` is the exception (screen x, since a sticky label
+follows scroll). It is a published surface: `products/jbrowse-build-your-own`
+teaches hosts to draw these overlays.
 
-`view.offsetPx` is a **whole-genome** pixel coordinate: hg38 chr1 at base
-resolution is already past 1e10, and a whole-genome view of a large assembly
-sits above that again. A number that size does not survive the trip through CSS.
-The transform matrix is float32 by the time it reaches the compositor — at 1e10
-consecutive representable values are ~1024px apart — and layout saturates
-sooner, since Blink's `LayoutUnit` is an int32 at 1/64px, i.e. ±33.5M px.
+### Hi-C and LD: the origin is why precision is not a problem
 
-So the chrome that overlays the row — gridlines, coordinate labels, region seams
-— is **not** laid out in absolute genome pixels. It is laid out in the
-*staticBlocks frame*, which spans only the displayed regions currently on
-screen plus an overhang of a block or two, and the whole frame is shifted into
-the viewport by one transform. That shift is
-`LinearGenomeView.staticBlocksTranslateX`, and the reason it is a getter rather
-than an expression at each call site is this section: the subtraction is
-large-minus-large in float64 and only its small difference reaches CSS. Writing
-`translateX(-view.offsetPx)` over an absolutely-placed overlay is the shape that
-looks obvious, and it does not lose a subpixel — it puts the row somewhere else
-entirely, on large assemblies at high zoom, which is not where anyone tests.
-
-`paddingSpans`, `gridlineTicks` and `scalebarLabels` all publish `x` in that
-frame for the same reason. `scalebarRefNameLabels` is the deliberate exception:
-its `transform` is a screen x (already net of `offsetPx`, and therefore also
-small), because a sticky label's position is a function of the scroll rather
-than of block geometry.
-
-This is a published surface, not an internal one — `products/jbrowse-build-your-own`
-teaches hosts to draw exactly these overlays.
-
-### Hi-C and LD are not a precision problem, and the origin is why
-
-Since the 2026-08-21 rewrite the diagonal grid really is in genomic units:
-`w = res / √2` (`executeRenderHicData.ts`), so an instance position is genomic
-bp projected onto the rotated axis — bp/√2, which `diagonalCellToClip`'s own
-`ROT_45` factor collapses back — rather than the viewport-pixel-scale number it
-used to be. That reads like the Gbp-scale Float32 hazard synteny and dotplot
-both had to solve, and it is answered the same way: the worker subtracts an
-origin first.
-
-`triangleAxis` (display-kit) picks `originBp` — the leading edge of the fetched block set —
-and every position ships relative to it, so a Float32 instance attribute carries
-a span, not a genomic coordinate. The origin is folded back per frame on the CPU
-in double precision, inside `viewOffsetX = originBp / bpPerPx - offsetPx` (the
-`viewTransform` getter `TriangleMatrixMixin` gives both triangle displays; the
-forward and inverse maps it feeds are display-kit's `triangleTransform.ts`), the same
-base-plus-window shape as the cumulative-bp family — one base subtracted in the
-worker, added back in float64, never a large absolute value in a float32
-attribute. LD lays its columns out the same way, in bp/√2 off the first region's
-leading edge, in both index and genomic mode.
-
-What that bought is not precision but freedom from the viewport: `bpPerPx` no
-longer appears in the payload at all, so a pan or zoom is pure live arithmetic
-over `viewScale = 1 / bpPerPx` and a stale matrix draws at its own genomic
-position while a refetch runs. The staleness mechanism that existed to rescale
-fetch-time pixels retired with it (ARCHITECTURAL_LIMITS.md §"Staleness
-mechanisms behind one name").
+`triangleAxis` (display-kit) picks `originBp`, the leading edge of the fetched
+block set, and every instance position ships relative to it (bp/√2 on the rotated
+axis), so a Float32 attribute carries a span, not a coordinate. The CPU folds the
+origin back per frame in double precision: `viewOffsetX = originBp / bpPerPx -
+offsetPx` (`viewTransform` from `TriangleMatrixMixin`; maps in `triangleTransform.ts`).
+LD lays columns out the same way, in index and genomic mode. `bpPerPx` is absent
+from the payload, so pan and zoom are live arithmetic over `viewScale = 1 /
+bpPerPx` and a stale matrix draws at its genomic position during a refetch
+(ARCHITECTURAL_LIMITS.md §"Staleness mechanisms behind one name").
 
 **A uniform scale that small must stay out of the SVG ctx matrix.** The export
-rounds serialized transforms to 2 decimals, and `viewScale` is `1 / bpPerPx`, so
-it rounds to zero past ~200 bp/px — every window a contact map is actually read
-at. Hi-C multiplies it onto the coordinates instead and keeps only the rotation
-and the y-squash on the ctx stack. SVG_EXPORT.md carries the rule.
+rounds serialized transforms to 2 decimals, so `viewScale` rounds to zero past ~200
+bp/px. Hi-C multiplies it onto the coordinates and keeps only rotation and
+y-squash on the ctx stack (SVG_EXPORT.md).
 
 ## The readout direction: a pixel back to a base
 
-Everything above is about getting a position **to** the GPU intact. The inverse
-— a cursor pixel back to the base painted under it — is float64 throughout and
-looks like it cannot go wrong. It can, and it does so exactly where the answer
-is read: at a base boundary, at base-level zoom, in a tooltip.
-
-**Multiply before dividing, and never form the fraction.** `bpAtPx` is
+The inverse, a cursor pixel to the base under it, is float64 and still goes wrong
+at base boundaries at base-level zoom. **Multiply before dividing, and never form
+the fraction.** `bpAtPx` is
 
 ```ts
 const offset = Math.floor(((px - screenStartPx) * (end - start)) / blockWidth)
 return reversed ? end - 1 - offset : start + offset
 ```
 
-and the shape is load-bearing. `(px - screenStartPx) * span` is **exact**: both
-operands are dyadic (a cursor px is an integer or a dpr fraction, a block edge
-comes out of the same layout arithmetic), and the product tops out around 3e12
-against a 2⁵³ budget. So the single division is the only rounding in the
-expression, and its true quotient is either an exact integer — in which case the
-division is exact too — or at least `1 / blockWidth` away from one, about 1e-3,
-against a relative error of 2⁻⁵³. The floor cannot land on the wrong base.
+`(px - screenStartPx) * span` is exact (dyadic operands, product ~3e12 against a
+2⁵³ budget), so the single division is the only rounding, and its quotient is
+either an exact integer or ≥ `1 / blockWidth` from one. Spelling it `frac = (px -
+s) / blockWidth` then flooring `frac * span` rounds twice and lands on the wrong
+base (wiggle's old local copy, and `bpAtPx` before the fix, each did it
+independently). Against an exact rational oracle over 11.6M samples the
+multiply-first spelling was wrong 0 times; the two fraction spellings thousands.
+Example: 90 bp over 800 px puts base 63's edge at px 560, and the old form reported
+62.
 
-Spelling it `frac = (px - s) / blockWidth` and then flooring `frac * span`
-rounds twice, and the second product can land either side of an integer. Two
-functions did, independently, each with a long correct comment about the
-reversed-block pivot and no idea the arithmetic under it was the problem.
-Measured against an exact rational oracle (float64 inputs decomposed to
-BigInt fractions, no rounding anywhere) over 11.6M realistic samples — integer
-through eighth-pixel cursors, chr1-scale starts, 1 bp to 3 Mb spans, both
-orientations, fractional block offsets:
+**A genome-scale `start` hides this in a sweep**: `floor(start + frac * span)` adds
+an addend whose ULP swamps the drift, so a test with realistic starts passes both
+spellings. The `canvas2dUtils.test.ts` sweep pins `start: 0` for this reason.
 
-| spelling | wrong |
-|---|---|
-| `floor(frac * span)`, then add `start` (wiggle's old local copy) | 10992 |
-| `floor(start + frac * span)` (`bpAtPx` before 2026-08-16) | 4202 |
-| `floor((px - s) * span / blockWidth)` | **0** |
-
-Concretely: 90 bp over 800 px puts base 63's edge at px 560 exactly
-(560 × 90 / 800 = 63), and the old form reported 62 — 27 rather than 26 flipped.
-
-**A genome-scale `start` hides this in a sweep.** `floor(start + frac * span)`
-adds a chr1-scale addend whose ULP is far coarser than the drift in
-`frac * span`, so the wrong value frequently rounds back to the right one. A
-test that only exercises realistic starts passes against both spellings; the
-sweep in `canvas2dUtils.test.ts` pins `start: 0` for exactly this reason, and it
-is why the old form survived review.
-
-**What this does not transfer to, and does not need to.** `basePaintedAt`
-(`@jbrowse/core/util/Base1DUtils`) answers the same question and cannot use this
-form: it takes an already-divided `offsetBp` from `pxToBp`, which works in
-view-cumulative coordinates off an arbitrary `bpPerPx`, so there is no exact
-integer product to preserve. Aligning the two would push one coordinate family's
-assumptions into the other.
-
-It is also **exact as it stands** — measured against the same oracle over 2.1M
-samples (whole-chromosome and multi-region layouts, both orientations, quarter-
-pixel cursors, `bpPerPx` from 0.02 to 5000 including the exactly-representable
-zooms where every integer pixel *is* a base boundary): zero wrong. The reason is
-structural rather than lucky, and it is the same reason stated from the other
-side: **`pxToBp` never forms a normalized fraction.** It goes straight to
-genome-scale bp in one multiply, `(offsetPx + px) * bpPerPx`, so its absolute
-error stays around one ULP of a genome-scale number. The bug above came from
-building a value in `[0, 1)` — whose error is then *amplified* by multiplying
-back up by the span — which is a step this chain does not have. Don't "fix" it.
-
-The painting side was checked and left alone. `makeCellLeftMapper`, which the
-pileup's cells were painted through when this was measured (they stand on
-`makeBpMapper` now, through `cellPlacement`), uses the same divide-then-multiply
-shape, but over 1.15M cursor positions the base `bpAtPx`
-names always has a painted cell covering it, bar 64 reversed cases off by ~1e-14
-px — below rasterization and below any cursor. Round-tripping a cell's *exact*
-edge through `bpAtPx` does disagree ~17% of the time, and that measurement is
-meaningless: an irrational boundary like 800/3 is not representable, the float
-lands a hair inside the previous base, and no cursor ever takes that value.
+`basePaintedAt` (`@jbrowse/core/util/Base1DUtils`) is already exact and must not be
+"fixed" to match: `pxToBp` goes straight to genome-scale bp in one multiply,
+`(offsetPx + px) * bpPerPx`, and never forms a normalized fraction whose error would
+be amplified by the span.
 
 ## Genome-size limits
 
 - **A single reference sequence must be `< 2³²` = 4.29 Gbp.** The one hard
-  assumption. Every LGV-family `uint32` position attribute and every
-  `starts`/`ends`/`mateStarts`/`mateEnds` array in the synteny RPC
-  (`executeSyntenyFeaturesAndPositions.ts`) stores *chromosome-local*
-  coordinates and relies on it. Real chromosomes clear it comfortably (human
-  chr1 ≈ 250 Mbp, hexaploid wheat chr3B ≈ 830 Mbp); only a single reference past
-  4.29 Gbp (certain lungfish/amphibian chromosomes) would wrap — out of scope.
-
-- **Whole-assembly cumulative bp has no GPU ceiling.** The sum across all
-  chromosomes — what a synteny ribbon corner or dotplot segment spans — is
-  Float64 on the CPU (exact to 2⁵³) and window-relative Float32 on the GPU, so
-  on-screen precision is ~`panDistancePx · 2⁻²³`: sub-pixel for realistic
-  navigation at any assembly size (16 Gbp hexaploid wheat, 160 Gbp
-  *Tmesipteris oblanceolata*), because a zoom recaptures the base near the view.
-  `Region.start`/`end` are Float64 throughout, with no bitwise coordinate ops.
-
-- **Soft, non-bp ceiling:** the synteny per-instance `featureId`
-  (`instanceInterleave.ts`) is a Float32, exact only to 2²⁴ ≈ 16.7M *rendered
-  instances* — a density limit on a single whole-genome PAF, not a coordinate
-  limit. Overview-zoom culling keeps counts well below it.
+  assumption: every LGV-family `uint32` attribute and every
+  `starts`/`ends`/`mateStarts`/`mateEnds` array in the synteny RPC stores
+  chromosome-local coordinates. Only a single reference past 4.29 Gbp (certain
+  lungfish/amphibian chromosomes) would wrap; out of scope.
+- **Whole-assembly cumulative bp has no GPU ceiling.** It is Float64 on the CPU
+  (exact to 2⁵³) and window-relative Float32 on the GPU, sub-pixel at any assembly
+  size because a zoom recaptures the base. `Region.start`/`end` are Float64
+  throughout, with no bitwise coordinate ops.
+- **Soft, non-bp ceiling:** synteny's per-instance `featureId`
+  (`instanceInterleave.ts`) is a Float32, exact to 2²⁴ ≈ 16.7M rendered instances,
+  a density limit on a single whole-genome PAF. Overview-zoom culling keeps counts
+  below it.

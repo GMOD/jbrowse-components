@@ -54,8 +54,8 @@
 // can feel — which is the shape where quoting the ratio alone would mislead.
 //
 // FIXTURE SIZE IS THE TRAP HERE. This is an allocation-per-record shape, and
-// BENCHMARKING.md §"A window LARGE enough that the arms' own garbage decides the
-// result" measured such a shape ceasing to resolve at ~4,000 records per arm —
+// BENCHMARKING.md §"A window LARGE enough that the arms' own garbage decides"
+// measured such a shape ceasing to resolve at ~4,000 records per arm —
 // byte-identical controls at 0.63x. So the fixtures are the per-FRAME call
 // counts, which is what the question is about anyway: `drawCoverageBins` walks
 // the whole packed buffer but only calls `fillSpanRect` for bins that survive

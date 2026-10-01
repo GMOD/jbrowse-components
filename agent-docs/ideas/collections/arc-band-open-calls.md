@@ -30,8 +30,7 @@ every connection becomes its own mark, and `resolveArcs` hands each of them the
 whole cluster's size. An 8-pair event is 8 arcs (or 8 + 8 ticks), each stroked as
 though it alone carried 8 reads and each hovering "supported by 8".
 `compute.test.ts` pins the current answer as `[5,5,5,5,5,5,5,5,5,5]` for five
-pairs, and `ARC_BAND.md` describes the trade as "two coordinates of one event",
-which is what it would be if the marks were 2.
+pairs. The marks would be 2 per event if it drew one per cluster.
 
 The ink is O(N) marks at `arcStrokeScale`'s width for N where the evidence is one junction —
 the opposite of what coalescing was introduced for on the same-chromosome arm

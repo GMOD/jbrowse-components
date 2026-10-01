@@ -8,300 +8,181 @@ kind: operations
 # Hosted assets and how they are published
 
 Failures here are silent: a stale CDN object looks like a bad config, and a
-hand-uploaded demo file looks like one its build script produced.
-
-`CLAUDE.md` carries the rule that costs most to break — demo configs deploy via
-`scripts/deploy-demo.sh`, never a bare `aws s3 cp`; the bucket has no
-versioning, so an overwrite that drops a track is unrecoverable.
+hand-uploaded demo file looks like one its build script produced. Demo configs
+deploy via `scripts/deploy-demo.sh`, never a bare `aws s3 cp` (`CLAUDE.md`): the
+bucket has no versioning, so an overwrite that drops a track is unrecoverable.
 
 ## Bucket and CDN
 
-Origin `s3://jbrowse.org`, fronted by CloudFront **E13LGELJOT4GQO** (aliases
-`jbrowse.org`, `www.jbrowse.org`, `jbrow.se`). `apollo.` and `genomes.` have
-their own.
+Origin `s3://jbrowse.org`, fronted by CloudFront `E13LGELJOT4GQO` (aliases
+`jbrowse.org`, `www.jbrowse.org`, `jbrow.se`); `apollo.` and `genomes.` have their
+own.
 
 **An upload is not a publish.** After `aws s3 cp` the plain URL keeps serving the
-cached object (observed `x-cache: Hit from cloudfront`, age ~17h). `?nocache=`
-bypasses the edge, but the app and screenshot generator use the plain URL, so the
-old config loads silently — surfacing as "Could not resolve identifier
-`<new_trackId>`" over an empty band, which reads like a config bug.
+cached object. `?nocache=` bypasses the edge, but the app and screenshot generator
+use the plain URL, so the old config loads silently, surfacing as "Could not
+resolve identifier `<new_trackId>`" over an empty band. `scripts/deploy-demo.sh
+<local-file> <demos-relative-path>` does copy, invalidation and JSON content-type.
+Wait for the plain URL to reflect the change before regenerating anything that
+reads it.
 
-`scripts/deploy-demo.sh <local-file> <demos-relative-path>` does copy +
-invalidation + JSON content-type. Wait for the plain URL to reflect the change
-before regenerating anything that reads it.
+## Figure and media stores
 
-## Figure store
+`website/static/img/` and `products/jbrowse-img`'s `img/` are gitignored. Bytes
+live at `s3://jbrowse.org/jb2-figures/<name>.<sha256[0:12]>.<ext>`, and git tracks
+`figures.lock` (`<path> <WxH> <bytes> <sha256>`, sorted). CLI
+`website/scripts/figures.ts` (`pnpm figures`, `:pull`, `:push`). The name in the
+key shrinks the collision domain to per-figure, which makes the truncated hash
+safe; `pull` verifies against the full sha256 in the lock. **Never delete from the
+store, including orphans**: URLs get pasted into issues and papers. There is
+deliberately no `gc`.
 
-Adopted 2026-08-06 (`e5af680b69`). `website/static/img/` and
-`products/jbrowse-img`'s `img/` are gitignored; bytes live at
-`s3://jbrowse.org/jb2-figures/<name>.<sha256[0:12]>.<ext>`, and git tracks
-`figures.lock` (`<path> <WxH> <bytes> <sha256>`, sorted). CLI:
-`website/scripts/figures.ts` (`pnpm figures`, `:pull`, `:push`).
-
-The name in the key shrinks the collision domain to per-figure (~22
-revisions/yr), which is what makes the truncated hash safe; `figures.lock` keeps
-the full sha256 and `pull` verifies against it, so a collision fails loudly.
-
-**Never delete from the store, including orphans** — URLs get pasted into issues
-and papers. There is deliberately no `gc`.
-
-## Media store
-
-Same store, third corpus: `s3://jbrowse.org/jb2-media/`, git tracks
-`website/media.lock`, CLI `website/scripts/media.ts` (`pnpm media`,
-`media:pull`, `media:push`). `website/static/media/` is gitignored, and a clip is
-two files, the mp4 and its poster frame.
-
-MEDIA rather than VIDEO because the corpus already holds a file that is not one:
-every clip ships a poster frame, and the boundary that matters is "a big binary
-the docs embed, kept out of git". A caption track is the next thing on the other
-side of it, and it would otherwise be a second corpus with a second CLI, a second
-lock and a second pull step in `build`.
-
-**It exists because the docs deploy would otherwise delete the videos.**
-`update-docs.yml` runs `rclone sync … s3:jbrowse.org/jb2`, and sync removes
-whatever the freshly-built `dist/` does not carry; a CI checkout has no
-`static/media`. `pnpm build` runs `figures:pull`, which drives the media store too, so astro copies the files in and
-the sync finds them. Regenerating them in CI instead would mean a jbrowse-web
-build plus a headless capture on every "update docs" commit, for output that is
-non-deterministic and re-uploads in full each time.
-
-The browser-test goldens are the other corpus (`jb2-snapshots`,
-`products/jbrowse-web/browser-tests/snapshots.lock`). All three share their
-addressing, manifest grammar and hash through
-`@jbrowse/browser-test-utils/blobStore`.
+The media store is the same store's third corpus (`s3://jbrowse.org/jb2-media/`,
+`website/media.lock`, `website/scripts/media.ts`, `pnpm media`; a clip is an mp4
+plus its poster frame). The name is MEDIA because the boundary is "a big binary the
+docs embed, kept out of git". **It exists because the docs deploy would otherwise
+delete the videos**: `update-docs.yml` runs `rclone sync … s3:jbrowse.org/jb2`,
+which removes whatever the built `dist/` lacks, and `pnpm build` runs
+`figures:pull`, which drives the media store too. The browser-test goldens are the
+other corpus (`jb2-snapshots`, `snapshots.lock`). All three share addressing,
+manifest grammar and hash through `@jbrowse/browser-test-utils/blobStore`.
 
 ## Hosted genomes and the launch surface
 
-- **hg38/GRCh38 FASTA**: `https://jbrowse.org/genomes/GRCh38/fasta/`, with
-  `.fa.gz`/`.fai`/`.gzi` present. **Both `GRCh38.fa.gz` and `hg38.prefix.fa.gz`
-  use non-`chr` refnames** despite the name, so bare-numeric contigs need no
-  aliasing.
+- **hg38/GRCh38 FASTA**: `https://jbrowse.org/genomes/GRCh38/fasta/` with
+  `.fa.gz`/`.fai`/`.gzi`. Both `GRCh38.fa.gz` and `hg38.prefix.fa.gz` use
+  non-`chr` refnames, so bare-numeric contigs need no aliasing.
 - **Hub URLs** (`packages/core/src/util/fetchHub.ts`): UCSC db →
-  `jbrowse.org/ucsc/<db>/config.json`; GenArk fans the first nine digits into
-  three dirs → `jbrowse.org/hubs/genark/GCA/964/188/535/GCA_964188535.1/config.json`.
-  UCSC dbs ship trix `aggregateTextSearchAdapters`; GenArk ones often don't.
-- **The hosted UCSC hg19 hub already carries the annotation tracks a figure
-  usually wants**, referenced by `trackId` with no session track:
-  `hg19-clinvarMain`, `hg19-dgvMerged`, `hg19-gnomadSvFull`, plus dbVar, CADD
-  and phyloP/phastCons. Check `jbrowse.org/ucsc/hg19/config.json` before adding
-  one to a spec.
+  `jbrowse.org/ucsc/<db>/config.json`; GenArk fans the first nine digits into three
+  dirs → `jbrowse.org/hubs/genark/GCA/964/188/535/GCA_964188535.1/config.json`. UCSC
+  dbs ship trix `aggregateTextSearchAdapters`; GenArk ones often don't.
+- **The hosted UCSC hg19 hub already carries the usual annotation tracks**
+  (`hg19-clinvarMain`, `hg19-dgvMerged`, `hg19-gnomadSvFull`, dbVar, CADD,
+  phyloP/phastCons), referenced by `trackId` with no session track. Check
+  `jbrowse.org/ucsc/hg19/config.json` before adding one to a spec.
 - **UCSC downloads are `hgdownload.soe.ucsc.edu`, never `hgdownload.cse.ucsc.edu`.**
-  Both names reach the same server on one cert, but UCSC reissued it on
-  2026-07-16 with SANs for `soe`/`gi` (and hgdownload2/3) and **dropped the
-  legacy `cse` SAN**, so HTTPS to `cse` now fails
-  `ERR_CERT_COMMON_NAME_INVALID`. In screenshot generation that surfaces as an
-  assembly refusing to load with "Failed to fetch … chromAlias.txt". Repoint any
-  new `cse` URL.
+  UCSC's reissued cert dropped the `cse` SAN, so HTTPS fails
+  `ERR_CERT_COMMON_NAME_INVALID`; in screenshot generation an assembly refuses to
+  load with "Failed to fetch … chromAlias.txt".
 - **`&loc=` accepts a gene name; a session spec's `init.loc` does not.** The URL
   param routes through text search; `navToLocString` rejects a non-locstring.
-  Symbol → URL params, coordinates → either.
-- **Cross-group genome search**: `genomes.jbrowse.org/searchIndex.json` (7.5MB,
-  ~50k rows), built by jb2hubs' own `generateSearchIndex.ts`. Per-group files
-  can't be merged client side (`bacteria.json` 34MB, `all.json` 76MB).
+- **Cross-group genome search**: `genomes.jbrowse.org/searchIndex.json`, built by
+  jb2hubs' `generateSearchIndex.ts`. Per-group files cannot be merged client side.
 - **On-the-fly mate assemblies**: `Core-handleUnrecognizedAssembly` →
   `@cmdcolin/jbrowse-plugin-hubs` HEAD-probes a guessed URL and adds a
-  `JB2TrackHubConnection`. Measured 2026-08: hg38 names 239 synteny tracks → 239
-  mate assemblies, **60 with no hosted config**. Those drove the unbounded HEAD
-  re-probing.
+  `JB2TrackHubConnection`. Many mates have no hosted config, which drove the
+  unbounded HEAD re-probing.
 
 ## Hosted PIFs and the coarse tier
 
-`make-pif` emits the coarse tier (uppercase `T`/`Q` seqids) by default.
-`tabix -l <url> | grep -c '^[TQ]'` is the whole check,
-no download; `tabix -H <url>` shows the `#pif` header. Audited 2026-09-13:
+`make-pif` emits the coarse tier (uppercase `T`/`Q` seqids) by default. The check
+needs no download: `tabix -l <url> | grep -c '^[TQ]'` for the tier, `tabix -H <url>`
+for the `#pif` header. jb2hubs rebuilds its liftOver PIFs whenever its pinned
+`@jbrowse/cli` changes (`lib/chainpif.sh` holds the stamps).
 
-| file | coarse tier | `#pif` header |
-| --- | --- | --- |
-| `ucsc/*/liftOver/*.pif.gz` (2,358) and `hubs/genark/…/liftOver/*.pif.gz`, built by jb2hubs | yes | version 2 |
-| `genomes/hs1_vs_mm39/hs1ToMm39.over.chain.pif.gz` | yes | version 2 |
-| `demos/cgiab/HG008T_v3.2.pif.gz` | yes | version 2 |
-| `demos/scratch/hs1_chrY_self.pif.gz` | no, by design | version 2 |
-| `demos/hprc_multiway/hprc_multiway_gfa.pif.gz` | yes | version 2 |
-| `demos/ecoli_pangenome/ecoli_{pggb,cactus}_ava.pif.gz`, `ecoli_pggb_untangle.pif.gz` | no | none |
-| `demos/hpylori/26695_vs_chc155.pif.gz` | no | none |
-
-jb2hubs rebuilds its liftOver PIFs whenever its pinned `@jbrowse/cli` changes,
-so those need no hand rebuild; `lib/chainpif.sh` there holds the stamps.
-
-- **A file with no `#pif` header predates the coarse CIGAR.** Since
-  2026-09-02 `make-pif` writes a `cr:Z:` tag on a coarse row (ADR-104) so the
-  indels it keeps draw as wedges, and a header stating the bound; these files'
-  coarse rows are the older split pieces with no alignment string and draw as
-  plain ribbons. Since 2026-09-10 the header is version 2 and every row
-  carries `pi:i:`, the id a selection holds across the tier switch. One
-  rebuild adds all of it. A JBrowse older than 2026-09-02 draws a rebuilt
-  file's coarse rows as single straight ribbons, so a hub that must serve such
-  clients builds with `--no-coarse`.
-- **The coarse tier can never engage for a bacterial genome.** It serves only
-  past `coarseBpPerPxThreshold` (default 10000 bp/px); E. coli's 4.6Mb across
-  1500px is ~3.2 kb/px. Demonstrating it needs a eukaryote-scale PIF.
-- **A PIF regen of a version-1 file is never pixel-neutral.** Coarse rows shift
-  every fine row's byte offset, so `syntenyId`/`uniqueId` (from `fileOffset`)
-  change and dense figures move slightly in ribbon overlap order. A version-2
-  file's ids come from `pi:i:`, the input row index, so a regen from the same
-  PAF keeps them.
-- **PIF inverts losslessly back to PAF**: `t`-prefixed rows keep the original
-  CIGAR, since `processLine` builds `tRow` before mutating `rest[cigarIdx]`.
-  That is how to rebuild a hosted PIF whose PAF is gone: the awk in
-  [pif-coarse-fold-bytes](../measurements/pif-coarse-fold-bytes.json)'s repro
-  swaps a `t` row back, and `make-pif` over the result gives `t` rows identical
-  to the old file's apart from `pi:i:`. HG008T and `hs1_chrY_self` were rebuilt
-  that way.
-- **A PAF with no CIGAR builds with `--no-coarse`.** Its coarse tier repeats the
-  fine one row for row and doubles the file, and `make-pif` warns so;
-  `hs1_chrY_self` halved to 11 MB.
-
-**Hosted and referenced by nothing:**
-`demos/ecoli_pangenome/ecoli_minigraph.tier{500,2000,10000}.*` — 12 objects,
-~55 kB, orphaned when the bacterial-ladder figure was dropped (the tier buys
-only ~4× on a minigraph rGFA, see
-[PANGENOME_GRAPHS.md](PANGENOME_GRAPHS.md)). Either delete them or wire one up;
-they rebuild in about two seconds from `build_bubble_tier.sh` over a
-`gfatools bubble` run, so nothing is lost by deleting. Left in place rather than
-cleaned up because **this bucket has no versioning** and an orphan costs 55 kB
-where a wrong delete costs a re-derivation.
+- **A file with no `#pif` header predates the coarse CIGAR.** Its coarse rows lack
+  the `cr:Z:` tag (ADR-104) and draw as plain ribbons. Header version 2 adds the
+  `pi:i:` id a selection holds across the tier switch. One rebuild adds both. A
+  JBrowse older than the coarse CIGAR draws a rebuilt file's coarse rows as single
+  straight ribbons, so a hub serving such clients builds with `--no-coarse`.
+- **The coarse tier never engages for a bacterial genome**: it serves only past
+  `coarseBpPerPxThreshold` (default 10000 bp/px) and E. coli is ~3.2 kb/px. Demonstrating
+  it needs a eukaryote-scale PIF. `hs1_chrY_self` is `--no-coarse` by design.
+- **A PIF regen of a version-1 file is never pixel-neutral**: coarse rows shift every
+  fine row's byte offset, so `syntenyId`/`uniqueId` change and dense figures move in
+  ribbon overlap order. A version-2 file's ids come from `pi:i:`.
+- **PIF inverts losslessly back to PAF** (`t`-prefixed rows keep the original CIGAR),
+  which is how to rebuild a hosted PIF whose PAF is gone: the awk in
+  [pif-coarse-fold-bytes](../measurements/pif-coarse-fold-bytes.json)'s repro swaps a
+  `t` row back, and `make-pif` over the result reproduces the old file apart from
+  `pi:i:`.
+- **A PAF with no CIGAR builds with `--no-coarse`**: its coarse tier repeats the fine
+  one row for row and doubles the file (`make-pif` warns).
 
 ## Plugins served off jbrowse.org, not npm
 
-- **blat** — the only **versioned** published path
-  (`plugins/jbrowse-plugin-blat/dist/v1/…umd.production.min.js`). The URL lands
-  in jb2hubs' generated configs, which regenerate on their own schedule, so an
-  unversioned URL would push a future bundle into every config already out
-  there. v1 takes compatible updates; a change demanding more of the host gets a
-  v2. Build `pnpm --filter @jbrowse/plugin-blat build:umd`, publish
-  `plugins/blat/scripts/publish-umd.sh`. First in-monorepo UMD build — copy it.
-- **zarr** — `demos/zarr/jbrowse-plugin-zarr.umd.production.min.js`, republished
-  by `pnpm betabuild`, which re-downloads the entry point after invalidating and
-  fails on md5 mismatch. An upload the edge shadows looks exactly like a
-  successful publish.
-- **graphgenomeview** — third-party **ESM** on npm, rehosted by
-  jbrowse-plugin-list as the `GraphGenomeView` store entry and loaded from its
-  `latest/` url via `esmUrl`; a release reaches that url when the entry's
-  `versions` pin is bumped and `pnpm dep` runs there. Figures via `website/scripts/specs/graph-{fixtures,ecoli,hprc}.ts` and
-  `test_data/graphgenomeview/config.json`.
+- **blat** is the only **versioned** published path
+  (`plugins/jbrowse-plugin-blat/dist/v1/…umd.production.min.js`), because the URL
+  lands in jb2hubs' generated configs and an unversioned one would push a future
+  bundle into every config already out. v1 takes compatible updates; a change
+  demanding more of the host gets a v2. Build `pnpm --filter @jbrowse/plugin-blat
+  build:umd`, publish `plugins/blat/scripts/publish-umd.sh`.
+- **zarr** is `demos/zarr/jbrowse-plugin-zarr.umd.production.min.js`, republished by
+  `pnpm betabuild`, which re-downloads the entry point after invalidating and fails
+  on md5 mismatch (an upload the edge shadows looks like a successful publish).
+- **graphgenomeview** is third-party ESM on npm, rehosted by jbrowse-plugin-list as
+  the `GraphGenomeView` store entry and loaded from its `latest/` url via `esmUrl`;
+  a release reaches that url when the entry's `versions` pin is bumped and `pnpm dep`
+  runs there. Figures: `website/scripts/specs/graph-{fixtures,ecoli,hprc}.ts`.
 
 BLAT proxy: `https://api.jbrowse.org/ucsc/v1/{blat,ispcr}`, stack
-`jbrowse-blat-proxy`, **us-east-1** — where the website buckets, the jb2hubs
-config-merger and the `*.jbrowse.org` ACM cert all live, and an HTTP API custom
-domain is regional so its cert must match. Subdomain rather than a path on
-jbrowse.org, which would mean adding an API origin to the website distribution.
-`GET .../v1/status` reports the day's spend and an operator notice (proxy README
-§"Outage notice"); `.github/workflows/blat-canary.yml` probes it and both routes
-daily.
+`jbrowse-blat-proxy`, **us-east-1** (where the website buckets, the jb2hubs
+config-merger and the `*.jbrowse.org` ACM cert live; an HTTP API custom domain is
+regional so its cert must match). `GET .../v1/status` reports the day's spend and an
+operator notice; `.github/workflows/blat-canary.yml` probes it daily.
 
 ## Private files in S3
 
-Presigned URLs work (issue #2744, `config_guides/authentication.md`). `Range`
-isn't a signed header, so range requests are fine. Two silent breakages:
-
-- `makeIndex` (`packages/core/src/util/formatGuessers.ts`) appends `.bai` to the whole
-  URI, landing it after the signature params — the `uri` shorthand is unusable,
-  spell out both locations.
-- `getFileName` returns `sample.bam?X-Amz-…` and guessers test `/\.bam$/i`, so
-  type detection guesses nothing. Pick the type in the Add track form or write
-  the adapter `type`.
-
-A SigV4 internet account needs no core changes: `getFetcher` in
-`InternetAccountModel.ts` returns a fetch wrapper a subclass can sign in.
+Presigned URLs work (`config_guides/authentication.md`) and `Range` is not a signed
+header. Two silent breakages: `makeIndex`
+(`packages/core/src/util/formatGuessers.ts`) appends `.bai` to the whole URI, after
+the signature params, so spell out both locations; and `getFileName` returns
+`sample.bam?X-Amz-…`, so guessers test `/\.bam$/i` against it and guess nothing.
+Pick the type in the form or write the adapter `type`. A SigV4 internet account
+needs no core change: `getFetcher` in `InternetAccountModel.ts` returns a fetch
+wrapper a subclass can sign in.
 
 ## Demo assets drift from their build scripts
 
-`https://jbrowse.org/demos/<topic>/` files are uploaded by hand, not regenerated
-by `scripts/build_*.sh` or CI. A tutorial, its build script and its
-`website/scripts/specs/*.ts` spec can each describe different data with nothing
-failing.
+`https://jbrowse.org/demos/<topic>/` files are uploaded by hand, not regenerated by
+`scripts/build_*.sh` or CI, so a tutorial, its build script and its
+`website/scripts/specs/*.ts` can describe different data with nothing failing.
+Auditing a data tutorial: `curl -o /dev/null -w '%{http_code}' -I` every hosted URL
+the doc and its spec name, then check the data matches the prose.
 
-The 2026-07-23 popgen audit found doc and script emitting `tajd_all.bw` while
-host and spec used `tajimad_all.bw` (the doc's own "hosted URL pattern" 404'd),
-and spec comments claiming 10 kb windows for 2 kb data.
-
-Auditing a data tutorial: `curl -o /dev/null -w '%{http_code}' -I` every hosted
-URL it names *and* every URL in its spec, then check the data matches the prose.
-
-**A field the code stopped needing cannot leave `demos/*/config.json` on its
-own**, because `check-live-configs --network` compares the repo copy against the
-hosted one and fails on the difference. `HOSTED_MIRRORS` there is the list of
-files under that comparison, and adding a hosted file to it is what puts the
-file under review at all. One is sitting there now, in
-`demos/ecoli_orthologs`. The adapter-level `assemblyNames` duplicates
-`blockAssemblies`, which `MCScanBlocksAdapter.mateAssemblies` defaults, and
-draws the same picture either way. The gene colour is `{ field: 'cluster' }` in
-the build script and the repo copy, and still the `jexl:` hash of the name in
-the hosted one. The released app (4.3.0) predates `MultiWaySyntenyDisplay`, so
-it draws neither spelling, and one `scripts/deploy-demo.sh` of the config
-retires the difference. `demos/primate_orthologs` went out that way on
-2026-09-24.
-
-The worse version of this is a demo with **no** build script in the tree at all.
-`demos/mouse_pangenome/` and `demos/bovine_pangenome/` were published
-2026-09-02 and were in that state until 2026-09-09: the only record of how
-either was made was a set of shell scripts on one build box under `/mnt/sdb`,
-so reproducing either meant finding that machine. They are
-`scripts/build_mouse_pangenome.sh` and `scripts/build_bovine_pangenome.sh` now.
-Both ship a `README.txt` beside the data carrying source checksums, what was
-modified, tool versions and the audits that ran — which is the half that was
-always done well, and is why the 27.4 h minigraph figure and the chrY finding
-are quotable at all. The rule the two halves add up to: **the build script is
-committed before the data is uploaded.**
-
-Those READMEs are the only written record of where a demo's data came from, and
-until 2026-09-11 all six of them were hand-written straight into the bucket:
-correcting one produced no diff, and a claim that went stale had no reader. They
-are `demos/<topic>/README*.txt` now, mirror-checked like the configs, and
-`deploy-demo.sh` refuses to publish a copy that differs from the tracked one.
-Six is the whole corpus — every other `README` under `demos/` belongs to a
-vendored app or a `node_modules` that was uploaded with it.
-
-A related drift that reachability checks cannot see: `demos/hprc/` holds both
-`hprc-v2.0-mc-grch38.*` and `hprc-v2.1-mc-grch38.*`, and consumers can sit on
-either indefinitely because both answer 200. The HPRC tutorials moved to v2.1;
-GMOD/jb2hubs' own `hprc-grch38.json` graph config stayed on v2.0 after they
-moved, serving the older graph with nothing reporting it. Its
-`pnpm check-pangenome-assets` now probes the next minor and major sibling of
-whatever version a config names, which is the general form of that check.
+- **The build script is committed before the data is uploaded.** A demo whose only
+  recipe is a shell script on one build box cannot be reproduced. Each such demo
+  ships a `README.txt` beside the data with source checksums, modifications, tool
+  versions and audits; these are `demos/<topic>/README*.txt` in the repo, mirror-
+  checked like configs, and `deploy-demo.sh` refuses to publish a copy that differs
+  from the tracked one.
+- **A field the code stopped needing cannot leave `demos/*/config.json` on its
+  own**: `check-live-configs --network` compares the repo copy against the hosted
+  one and fails on the difference, and `HOSTED_MIRRORS` there is the list under
+  comparison. One `scripts/deploy-demo.sh` of the config retires a difference.
+- **Reachability checks cannot see version drift.** `demos/hprc/` holds both v2.0
+  and v2.1 files, and a consumer can sit on either indefinitely because both answer
+  200. jb2hubs' `pnpm check-pangenome-assets` probes the next minor and major sibling
+  of whatever version a config names.
 
 ## Third-party mirrors, and what a bucket listing does not prove
 
-`website/scripts/third-party-hosts.txt` is the ratchet over which servers we do
-not run a figure sweep pulls from, and removing a line is the win. EBI is where
-the win was cheapest: the 2026-08-23 sweep lost six figures to
-`ftp.1000genomes.ebi.ac.uk` and `ftp.sra.ebi.ac.uk` stalling a connection for
-tens of seconds at a time, which the app reports as "No response … after 30s".
-
-The 1000 Genomes ftp tree is mirrored by the Registry of Open Data at
-`https://1000genomes.s3.amazonaws.com/`, CORS-open and range-capable, and the
-path mapping is worth writing down because it is not a straight prefix swap:
+`website/scripts/third-party-hosts.txt` is the ratchet over which servers we do not
+run a figure sweep pulls from; removing a line is the win. EBI stalls connections for
+tens of seconds ("No response … after 30s"). The 1000 Genomes ftp tree is mirrored by
+the Registry of Open Data at `https://1000genomes.s3.amazonaws.com/` (CORS-open,
+range-capable), and the path mapping is not a straight prefix swap:
 
 | EBI | mirror |
 | --- | --- |
 | `ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase3/…` | `phase3/…` |
-| `…/vol1/ftp/data_collections/1000G_2504_high_coverage/…` | `1000G_2504_high_coverage/…` (`data_collections/` is dropped) |
+| `…/vol1/ftp/data_collections/1000G_2504_high_coverage/…` | `1000G_2504_high_coverage/…` (`data_collections/` dropped) |
 | `ftp.sra.ebi.ac.uk/vol1/run/<ERR3>/<ERR>/<S>.final.cram` | `1000G_2504_high_coverage/{data,additional_698_related/data}/<ERR>/<S>.final.cram` |
 
 NCBI mirrors the same CRAMs at
 `ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/1000G_2504_high_coverage/data/…` and
-nothing else of it — `data_collections/` 404s there, so the SV callsets are not
-on that host at any guessable path.
+nothing else (`data_collections/` 404s, so SV callsets are not there).
 
-**A key in the listing is not a file.** 49 keys under
-`1000G_2504_high_coverage/` have size 0, the whole `20201028_3202_phased`
-release among them, and a mapping that only asked whether the key existed
-repointed a working track at an empty object. Read the `<Size>` and require it
-nonzero; `aws s3 ls --no-sign-request --recursive` gives both in one pass, which
-is cheaper and stricter than HEADing each URL. Two `.crai` under `data/` are
-zero too, so this is not confined to one directory.
+**A key in the listing is not a file.** Some keys under `1000G_2504_high_coverage/`
+have size 0 (the whole `20201028_3202_phased` release, two `.crai`), and a mapping
+that only asked whether the key existed repointed a working track at an empty
+object. Require a nonzero `<Size>`; `aws s3 ls --no-sign-request --recursive` gives
+both in one pass.
 
-**What no mirror carries** stays at EBI and is the reason a figure there is
-still on someone else's uptime: `1KG_ONT_VIENNA`, the `20220422` phased
-SNV/INDEL/SV panel, the HGSVC3 calls, and the `20210124.SV_Illumina_Integration`
-directory. We host our own byte-for-byte copy of the one file the figures need
-out of that last one — the 1.75 GB 3202-sample ensemble SV callset, at
-`demos/1000g/`. Its sibling `1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF`
-is another 1.8 GB and no figure reads it, so it was left where it is.
-
-The hosted 1000 Genomes catalog config is `demos/1000g/config.json`, with the
-old `genomes/GRCh38/1000genomes/config_1000genomes.json` still serving the same
-bytes. It has no copy in this repo — it is `~/src/dont_care/1000g_config` on
-Colin's machine, pushed to `cmdcolin/jbrowse1kg`, and that git history is the
-only thing standing in for the bucket's missing versioning.
+**What no mirror carries** stays on EBI's uptime: `1KG_ONT_VIENNA`, the `20220422`
+phased panel, the HGSVC3 calls and `20210124.SV_Illumina_Integration`. We host a
+byte-for-byte copy of the one file the figures need out of the last (the 3202-sample
+ensemble SV callset, `demos/1000g/`). The hosted catalog config is
+`demos/1000g/config.json` (the old `genomes/GRCh38/1000genomes/config_1000genomes.json`
+serves the same bytes); it has no copy in this repo, and its git history in
+`cmdcolin/jbrowse1kg` is the only stand-in for the bucket's missing versioning.

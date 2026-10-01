@@ -1,50 +1,130 @@
 ---
 name: offscreen-synteny-mates
-description: Alignments whose mate lands outside every region the facing view displays, drawn as a mark rather than a ribbon. Both classes shipped 2026-08-19. Read before changing the mate marks, their click or their SVG export.
+description: Alignments whose mate lands outside every region the facing view displays, drawn as a mark rather than a ribbon. Read before changing the mate marks, their click, their hover or their SVG export.
 kind: spec
 ---
 
 # Off-screen synteny mates, drawn as something other than a ribbon
 
-**Class A shipped on 2026-08-19, all three stages.**
-`collectOffscreenMates` tallies the drops per contig and places them on the
-query axis; the settings menu's "Off-screen mates" checkbox turns
-`OffscreenMateOverlay` on, which draws each as a mark at the top of the band,
-labelled with the contig it points at; hovering one names that contig whether or
-not the run is wide enough to be labelled and reports how many alignments on
-this band go there, and clicking one shows the locus its alignments land on, on
-the facing row, undoably. An SVG export carries the same marks. The
-rest of this file is the case for it and the reasoning the implementation
-followed — kept because it is the reasoning class B was then built on, the same
-day and to the terms set out at the bottom of this file.
+A synteny band draws a ribbon only when both ends land on a displayed region.
+Without this feature, a peach locus syntenic to a grape contig the facing row
+does not show looks identical to a locus syntenic to nothing. The "Off-screen
+mates" checkbox (`showOffscreenMates`, on by default) draws those alignments as
+marks in a strip at the band edge, labelled with the contig they point at.
 
-**The scroll class is FLOWN, since 2026-08-25.** A mark whose contig the facing
-row already displays — which is every mark once whole assemblies are stacked,
-see `culledRibbonMates` — is scrolled to rather than navigated to, and the
-scroll is a jump of a chromosome or more. `LinearGenomeView.flyTo` plays the
-Van Wijk arc to it instead: pulled back far enough to hold both ends, travelled,
-dropped in, over 250-1100ms (`flyTo.ts`). The DESTINATION is unchanged, which is
-what leaves the snackbar, its Undo and the follow-anchor take exactly as they
-were — the flight reads back what it wrote each frame, so the Undo, a wheel
-zoom or a drag ends it rather than being overwritten by its next frame. Off
-under the reader's `animationMode`.
-The show class is not flown and cannot be: `showRegions` changes the row's
-regions, so there is no coordinate space the two ends are both in.
+`OffscreenMateOverlay` is a second 2D canvas over the level's, with
+`pointerEvents: none`. The level's own canvas belongs to the rendering backend
+and may be WebGPU, and the ribbon shader spans the full gap between the two axes
+by construction, so a part-height mark does not fit the instance format. Do not
+approximate a mark with a degenerate ribbon: the full-height vertical band reads
+as an alignment to the locus below it.
 
-**What it costs, measured.** The arc's whole point is the pull-back, and over
-stacked whole assemblies that is ~15 octaves of zoom each way — a 0.4Mb window
-opening to 210Mb at the apex and back, landing at 992ms. Synteny's fetch key
-buckets on `floor(log2(bpPerPx))` (`bucketBpPerPx`), so one flight crosses ~30
-fetch buckets where a pan at constant zoom crosses none, and that looked like it
-had to cost a burst of thrown-away RPCs. **It costs one.** Against
-`demos/grape_peach_cacao` the flight issues 2 `SyntenyGetFeaturesAndPositions`
-where the instant jump issues 1, over the same window from the same viewport:
-the 500ms leading-edge debounce absorbs the entire excursion. The bucket count
-is real and irrelevant, and the levers nobody needs yet (lower `RHO`, a gate on
-the `fetchInert` seam) should stay unused until a heavier file says otherwise.
-The run, the sampled path and the frames are in the record below; the one thing
-no number in it settles is that at the apex a whole-genome band is a dense
-hairball, and the arc flashes it for ~200ms.
+## Four classes
+
+| class | anchor | mate | why no ribbon | decided | marked on |
+| --- | --- | --- | --- | --- | --- |
+| **A** | visible query window | no target region reaches it | no second endpoint | worker, per fetch | query axis |
+| **B** | no query region reaches it | visible target window | never requested | worker, per fetch | target axis |
+| **C** | visible query window | contig the target displays, scrolled off | `overdrawPx` cull | main thread, per repaint | query axis |
+| **D** | contig the query displays, scrolled off | visible target window | `overdrawPx` cull | main thread, per repaint | target axis |
+
+- **A** costs nothing to recover: the adapter returns every alignment anchored
+  in the query window whatever its mate, and the decorate loop discards those
+  whose mate fails `v2RefNames.has(mate.refName)`. The query axis is the top
+  view, so which genome is on top decides how much is free. Never quote one
+  percentage for the feature; it is a property of the stacking.
+- **B** needs the second query on the target axis, see
+  [two-axis-synteny-fetch](TWO_AXIS_SYNTENY_FETCH.md).
+- A and B are decided by locus, not contig: the worker marks at each projection
+  drop site (`markUnplaced`), and the target fetch asks `findRegionEntry`
+  against the displayed regions before flipping anything.
+  `bidirectionalFetch.test.ts` holds all four classes.
+- **C and D cannot be decided in the fetch.** The facing row pans a full
+  `syntenyPanBufferPx` without refetching, so a mark decided at fetch time
+  would sit beside a ribbon it claims does not exist. `culledRibbonMates`
+  restates the `isRibbonCulled` band in the facing axis's cumBp, so one
+  comparison decides both and a mark and its ribbon cannot both draw. It reads
+  the instances, not the feature lanes: `starts`/`ends` are untrimmed, and
+  transparent-CIGAR mode has no single instance per block. The extent on
+  `mateAxis` skips a facing row whose band already spans every mate, which is
+  the common zoomed-out state.
+- **A row's strip is complete if and only if that row was queried.** The upper
+  row always is, so A and C are whole. B is never requested and D is requested
+  only within the pan buffer, so one fetch holds an arbitrary fraction of it,
+  which the tooltip count would then misreport. `laneData` enforces the rule in
+  the one place draw, hit test, tooltip count and SVG export all read.
+- Marks are placed from `views[level]`, the level's upper row, because the
+  lower row's ruler puts every mark at a wrong offset. The two strips sit on
+  opposite band edges, which lets one hit test answer for both.
+
+A chain clipped inside a CIGAR gap gets a one-base mate locus, so its click
+frames 20kb around it. Marking the unclipped span would frame the whole chain.
+
+## Drawing
+
+- The band is the drawing unit: one call takes every lane. Label rule: a name
+  may not share a baseline, or come within a row of one, with a name already
+  placed. Between stretches at the same x, the call takes one from each lane
+  before a second from either.
+- What a strip draws and names is decided by aligned bp, see
+  [ADR-138](../architecture-decision-records/adr-138-aligned-bp-ranks-and-gates-the-off-screen-mate-marks.md).
+  The hover leads with that sequence off the per-contig `alignedBp` tally, so it
+  stays O(contigs) per pointer move.
+- The strip is one path, not a fill per mark. The mark colour carries alpha, so
+  per-mark fills darken with density until the strip reads as a solid ideogram.
+- Marks are the background and the label is the finding, so marks use
+  `text.secondary` at 0.35 alpha and labels use it at full strength.
+- Marks obey `minAlignmentLength`, and a sub-pixel mark is floored to a visible
+  tick.
+- Hover and click share `offscreenMateAt`. A mark can stand for a run of anchors
+  (`MIN_OFFSCREEN_MATE_WIDTH_PX`), so the click navigates to the union of the
+  mate spans under the pointer; picking one anchor arbitrarily sends the same
+  mark to different places at different window widths. The span is floored to
+  `OFFSCREEN_MATE_NAV_MIN_BP`.
+- Hover is the only place the per-band count shows, via `OffscreenMateTooltip`
+  through `ComparativeTooltip`. The hit test lives in the level's pointer
+  handlers ahead of the ribbon pick and answers only within the strip height,
+  tested before any alignment so hover cost is independent of mark count.
+  Draw and hit test share `offscreenMateStrips`.
+- `SVGOffscreenMates` is one layer per level after every display's ribbons,
+  running the same `drawOffscreenMates` through `PaintLayer`, with a `side` per
+  axis. The export carries marks whenever the setting is on.
+
+## Click destination
+
+`mateNavDestination` resolves the class, coordinate and locstring before the
+click takes anything, so an unresolvable mark leaves the viewport capture and
+follow anchor untouched and notifies. `offscreenMateDestination` is the one
+resolver the tooltip and click share, and `coord0` becomes 1-based through
+`assembleLocString` before display.
+
+- A click never removes a region and raises a snackbar with an **Undo** that
+  restores regions, zoom and scroll. With the follow on, the click takes the
+  anchor, or the follow re-asserts the row's old position.
+  `LinearSyntenyOffscreenMateFollow.test.tsx` holds it.
+- A contig the row lacks is appended whole. For a contig the row shows slices
+  of, the click adds a slice in the largest gap holding the locus, trimmed so
+  two regions of one contig never overlap (`clipLargeBlockToWindow` assumes
+  that), beside its neighbour and running its way. A locus no gap holds is shown
+  in the slice holding its centre. The gap is chosen by the locus, not the
+  framed window, because `navSpan` clamps the window to the contig.
+- An aliased region is respelled to the canonical refName in place, keeping
+  extent and orientation, because `navTo` compares `displayedRegions` refNames
+  raw.
+- The scroll class (C, D) navigates with the row's spelling off `pxToBp`, not
+  the mark's canonical one, and its staleness test canonicalizes both sides;
+  `===` silently did nothing for an alias. It centres the row on the drawn span
+  (`mateCumBp`) at the row's zoom, or padded by `OFFSCREEN_MATE_NAV_GROW` where
+  the span does not fit, capped at the widest window the row can show. A flight
+  goes through `flyToFit`, which widens from the zoom the flight in the air is
+  heading to.
+- `LinearGenomeView.flyTo` (`flyTo.ts`) plays the Van Wijk arc for the scroll
+  class and reads back what it wrote each frame, so Undo, a wheel zoom or a drag
+  ends it. The show class is not flown: `showRegions` changes the row's regions,
+  so no coordinate space holds both ends. `animationMode` turns it off.
+- The arc crosses ~30 fetch buckets (`bucketBpPerPx`) but costs one extra synteny
+  RPC, because the 500ms leading-edge debounce absorbs the excursion. Leave
+  `RHO` and the `fetchInert` seam alone until a heavier file says otherwise.
 
 <!-- BEGIN GENERATED MEASUREMENT synteny-mate-flight -->
 
@@ -57,255 +137,7 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT synteny-mate-flight -->
 
-A synteny band draws a ribbon only when **both** ends land on a displayed
-region. When peach chr1 is stacked against grape chr1 and a peach locus is
-syntenic to grape chr5, there is no ribbon and no marker and no count — the view
-is identical to one where that locus is syntenic to nothing.
-
-The proposal is to draw those as a **non-ribbon element**: a box or mark hanging
-off the anchor's axis, labelled with the contig the mate is actually on.
-
-## Two classes, and only one of them is expensive
-
-They are usually discussed together and they should not be. The fetch is scoped
-to the query axis (v1, the top view) alone, so:
-
-| class | anchor | mate | fetched today? | dropped at |
-| --- | --- | --- | --- | --- |
-| **A** | in the visible v1 window | contig v2 does not display | **yes** | `v2RefNames.has(mate.refName)` in the decorate loop |
-| **B** | contig v1 does not display | in the visible v2 window | no | never requested |
-
-**Class A costs nothing to recover.** The adapter is queried for a v1 region and
-returns every alignment anchored there whatever its mate; pairwise adapters
-filter the mate by *assembly* (`targetAssemblyName`, for the all-vs-all case) and
-never by refName. The features are decoded, `getMate` succeeds, and they are
-discarded by the `&& v2RefNames.has(mate.refName)` conjunct — which is doing
-legitimate work for the sort-size reduction it was written for, and incidentally
-eating this class.
-
-Class B is [two-axis-synteny-fetch](TWO_AXIS_SYNTENY_FETCH.md), which was
-believed to be a real architecture change with a real blocker and turned out to
-need neither — see that file. Nothing here depended on it, and what shipped
-there is the mirror of what shipped here.
-
-**Which genome is on top therefore decides how much is free**, because v1 is the
-query axis. That asymmetry is not small — see the numbers below.
-
-## What it is worth, measured
-
-`demos/grape_peach_cacao`, the MCScan blocks track, whole chromosome on each
-axis. 16,865 grape–peach anchor pairs in the file.
-
-**Peach chr1 (`NC_034009.1`) on top, grape chr1 (`NC_081805.1`) below:**
-
-| | anchors |
-| --- | --- |
-| anchored on visible peach chr1 | 3796 |
-| mate on grape chr1 — drawn today | 1029 |
-| mate on another grape contig — **dropped, class A** | **2767 (73%)** |
-
-The 2767 are not scatter. Nine grape contigs, three of which carry 86% of them,
-and each covers a distinct near-contiguous run of peach chr1:
-
-| grape contig | anchors | peach chr1 span |
-| --- | --- | --- |
-| `NC_081809.1` | 892 | 0.3–22.3 Mb |
-| `NC_081822.1` | 965 | 32.9–45.5 Mb |
-| `NC_081808.1` | 512 | 34.8–40.5 Mb |
-| `NC_081816.1` | 176 | 45.5–47.8 Mb |
-
-That is the grape gamma paleohexaploidy read off the demo we ship: each peach
-segment has ~3 grape counterparts, the view shows whichever one you happened to
-stack, and says nothing about the other two. A user concluding "peach chr1 is
-mostly not syntenic to grape" from this view is reading it correctly and getting
-the wrong answer.
-
-**The reverse stacking is a different dataset.** Grape chr1 on top: 1103 anchors,
-only 74 (7%) with a peach mate off peach chr1. Grape chr1 is one ancestral block
-where peach chr1 is a fusion, so the class A payoff here is an order of magnitude
-smaller — and the 2767 above become class B, which is not free. **Do not quote a
-single percentage for this feature; it is a property of the stacking.**
-
-Reproduce with the three demo files (`grape.blocks.gz`, `grape.bed.gz`,
-`peach.bed.gz`); blocks columns are `blockAssemblies` order, so grape is column 0
-and peach column 1, joined to coordinates through the BEDs.
-
-## Staging, cheapest first
-
-**1. Say the number.** No geometry at all: count the class A drops per off-screen
-mate contig in the decorate loop, return the tally alongside `featureData`, and
-show it in the track's UI — "2,767 alignments here map to 9 other grape contigs".
-This converts a silent 73% omission into something a user can see, and it is the
-only stage with no rendering question in it. It also gives the row-launching
-machinery (`syntenyTrackRows`, `connectedEndpoints`) an obvious hook: those
-contig names are exactly the rows worth offering to add.
-
-**2. Draw the mark.** Harder than it looks, and the reason to stage it. **Taken
-via the overlay**, which is the alternative priced two paragraphs down —
-`OffscreenMateOverlay` is a second 2D canvas over the level's, `pointerEvents:
-none`, and the shader is untouched. The level's own canvas belongs to the
-rendering backend and may be a WebGPU surface, so there is no drawing on it
-afterwards; a stacked canvas is what a non-instance element costs. The
-shader takes four cumBp corners and interpolates vertically over `u.height`
-(`y = u.height * yCurve(t)`), so every instance spans the full gap between the two
-axes by construction. A mark that descends only part way is a new kind with a
-per-kind vertical clamp — contained, but it is a `.slang` change plus its
-Canvas2D counterpart in `syntenyRibbonPath.ts`, and the two must agree or the
-fallback path disagrees with WebGPU. Do **not** approximate it by emitting a
-degenerate ribbon with the bottom corners equal to the top: that draws a
-full-height vertical band, which reads as an alignment to the locus directly
-below it — the one thing it must not say.
-
-The alternative, worth pricing before committing to the shader: draw stage 2 as a
-separate Canvas2D overlay layer rather than as synteny instances, since these
-never need the pick index, the CIGAR tiling, or alpha compositing against
-ribbons. 2767 boxes is nothing for Canvas2D and it keeps a visually distinct
-element out of the instance format.
-
-**3. Label it.** Needs text, which the instance renderer has none of, so this is
-the overlay path whatever stage 2 chose. Not gated on a count in the end: a
-label goes on wherever it FITS, which is what "too many to label" actually
-means, and one label per *stretch* rather than per anchor, since a block is
-dozens of anchors a few px apart. Haloed, because the label sits below the mark
-over whatever the renderer painted.
-
-*2026-08-20:* the BAND is the drawing unit, not the strip. Class B put a second
-strip on the far edge, and the two were drawn one call each — so their marks
-could not collide (opposite edges) but their labels, which stack INWARD from
-those edges, were placed blind to each other and met in the middle. On a 50px
-band both lanes offered the same three baselines and a query name landed on
-exactly the pixels of a target name; on the 80px band a four-level stack
-auto-scales to, the two third rows landed 6px apart. One call now takes every
-lane, and one rule covers both cases — a name may not share a baseline, or come
-within a row of one, with an overlapping name already placed. Between stretches
-at the same x it takes one from each lane before a second from either, or the
-lane drawn first took every row a short band has.
-
-**What the strip draws, and what it names, is decided by aligned bp** —
-[ADR-138](../architecture-decision-records/adr-138-aligned-bp-ranks-and-gates-the-off-screen-mate-marks.md),
-which carries the reasoning and the alternatives it rejected. The rules the rest
-of this file assumes:
-
-- A contig draws marks only where the sequence it holds, summed over every
-  dataset in the strip, is worth `MIN_CONTIG_MARK_PX` of the band, so the floor
-  lifts with the window and the scattered contigs appear on the way in.
-- A ribbon "Hide unlabelled" paints transparent leaves no mark and no tally.
-- A label row goes to the stretch holding the most sequence, the lane interleave
-  above breaking a tie.
-- A name may overhang its stretch by up to half its own width
-  (`MIN_LABEL_COVERAGE`), clamped into the window, and the box it holds against
-  the rule above is the TEXT box.
-- Colour groups paint weakest-first by their longest alignment, and a pointer
-  answers with the colour painted on top and the longest alignment within it,
-  hover and click alike — in a grey strip, the longest alignment under it.
-- The hover leads with that sequence — `NC_081816.1 · 920Kbp in 176 alignments`
-  — off the per-contig `alignedBp` tally each lane carries beside `counts`, so
-  it stays O(contigs) per pointer move.
-
-`website/scripts/probe-mate-density.ts` measures what a window keeps and what it
-drops, against the live demo.
-
-*2026-08-20:* the marks are the BACKGROUND and the label is the finding, so they
-are not the same grey. At full `text.secondary` the strip read as the loudest
-thing in a band of 0.2-alpha ribbons, which inverts what a reader should look at
-first; the marks are now that color at 0.35 alpha and the labels are not. The
-published figures in the user guide predate this.
-
-## Behind a toggle, decided
-
-Colin, 2026-08-19: pursue this, with a switch to turn it on. Which settles the
-question stage 2 would otherwise have raised at review — whether a whole second
-class of element appearing in every synteny view is a change everyone wants —
-without settling it the expensive way, and it gives stage 1's count somewhere
-obvious to lead: a number that says how much is being hidden is also the control
-that shows it.
-
-`showOffscreenMates` now defaults on. Default off was not obvious: 73% of peach chr1's
-anchors on a demo we ship argues the other way, and a feature nobody finds
-reports nothing.
-
-## What class A settled, and what class B inherits
-
-- **Which axis owns a mark.** Settled for class A: `offscreenMateStrip` reads
-  `views[level]`, the level's upper row, and its test says why — the lower row's
-  ruler puts every mark at a believable wrong offset. Class B's marks hang off
-  v2, and they are told apart by the edge of the band they hang from — the two
-  strips are at opposite edges, which is also what lets one hit test answer for
-  both. Neither is a ribbon whose far end is merely panned off the left/right
-  edge, which already drew correctly and is *not* this.
-- **Whether marks obey `minAlignmentLength`.** Settled: yes, on the same
-  reasoning the ribbons do. A sub-pixel mark that survives the floor is still
-  floored to a visible tick, since a mark carries no width a reader could act
-  on.
-- **What happens on hover/click.** Settled for the pairwise case, which is the
-  one class A produces: the mate contig belongs to the facing row's own
-  assembly, it is simply not displayed, so a click navigates that row to it and
-  the marks become ribbons. `SyntenyResolveMatchingRegion` was the other
-  candidate — it answers "where exactly does this go" — and it is not needed to
-  make the contig visible, only to land on the right locus within it. Worth
-  revisiting if landing whole-contig turns out too coarse.
-
-  IT WAS TOO COARSE, revisited 2026-08-20: a bare refName is a whole chromosome,
-  so a click meant to answer "what is over there" answered it by zooming out past
-  everything else. Not through the resolve RPC, though — the collector already
-  had the mate coordinates in hand and was dropping them, so `mateStarts`/
-  `mateEnds` ride along per placed alignment and the click costs no round trip.
-  It also answers for the MARK rather than for a feature, which the resolve could
-  not: `MIN_OFFSCREEN_MATE_WIDTH_PX` piles a run of anchors into one column
-  wherever a contig has more of them than the strip has pixels, so the click
-  unions the mate spans under the pointer (`offscreenMateAt`). Picking one of
-  them instead is arbitrary in a way a reader sees — the same visible mark,
-  clicked at two window widths, goes to two different places. Floored to
-  `OFFSCREEN_MATE_NAV_MIN_BP` so a lone small anchor does not land the row at
-  sequence zoom with nothing around it, which is the same failure from the other
-  end.
-
-  The click never removes a region: it appends the contig, or a slice of it
-  beside its neighbour (`mateNavDestination`), and frames the mate there. It
-  still raises a snackbar carrying an **Undo** that restores the row's regions,
-  zoom and scroll — an actionable info toast, which `SnackbarModel`
-  deliberately does not auto-hide.
-
-  WITH THE FOLLOW ON, THE CLICK TAKES THE ANCHOR. A row the follow MOVES is
-  re-asserted onto the anchor's mapping every time the anchor settles, so
-  clicking a mark on such a row ran, posted its snackbar, and left the row
-  exactly where the follow wanted it. Anchoring the row is what the click means —
-  this row should show that contig, and the others should come to it — and the
-  undo restores the anchor with the regions.
-  `LinearSyntenyOffscreenMateFollow.test.tsx` holds it.
-- **Where the hit test lives.** In the level's pointer handlers, before the
-  ribbon pick, answering only within the mark strip. The overlay stays
-  `pointerEvents: none`: two hit paths over one band is how a click comes to
-  mean different things depending on which element received it. Draw and hit
-  test share `offscreenMateStrips`, so they cannot disagree the way the ribbons
-  can — `syntenyPickRenderAgreement.test.ts` exists because those are two code
-  paths.
-- **How a reader identifies an UNLABELLED run.** Settled 2026-08-19: by
-  hovering. A name goes on a stretch only when the stretch is wide enough to
-  hold it, and on `synteny_offscreen_mates` that is 5 of the 17 stretches on
-  screen — so the marks a reader most needs explained are the ones the strip
-  cannot explain. Until the hover the only way to identify one was to click it,
-  and the click then ran `navToLocString`, which replaced the facing panel's
-  displayed regions: the destructive step was the only way to see what it would
-  do. `OffscreenMateTooltip` renders through `ComparativeTooltip`, the same
-  tooltip a ribbon hover uses, because a mark and a ribbon are two things in one
-  band. Its count comes off the same tally the overlay draws from, scoped to
-  this band rather than the view, and the tooltip is now the only place that
-  count is shown: the hamburger item that used to carry it in its label is gone,
-  and the control is a fixed-label checkbox, so nothing states a live
-  number twice.
-- **Whether the figure carries them.** Settled: yes. `showOffscreenMates` is a
-  menu setting, so the same rule the color-by legend follows applies — an export
-  taken with it on has to have it, or the figure of a view reporting what it
-  cannot draw is the figure that does not draw it. `SVGOffscreenMates` is one
-  layer per level, after every display's ribbons and inside the band's clip,
-  running the same `drawOffscreenMates` through `PaintLayer`. Class B's marks
-  hang off v2, and share the layer rather than getting their own: one strip per
-  axis, each positioned against its own row, drawn by the same call with a
-  `side`. What must not be shared is the RULER, which is the mistake this
-  section opens with.
-
-## What it costs the frame it runs in
+## Cost
 
 <!-- BEGIN GENERATED MEASUREMENT offscreen-mate-overlay -->
 
@@ -319,173 +151,11 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT offscreen-mate-overlay -->
 
-On the shape this was designed against the overlay is free: a repaint is a
-quarter of a millisecond, against the 12.5ms the pick engine's own warm hover
-costs on an all-vs-all PAF (`reference/SYNTENY_PICKING.md`). The 2026-08-20
-re-measurement ran on a loaded machine — `hover, before` is untouched code and
-moved with everything else, so read the columns against each other rather than
-against the numbers this table held before.
-
-**The hover is independent of the mark count, and deliberately.** The strip is a
-few pixels of a band ~100 tall, so nearly every pointer position `offscreenMateHit`
-is asked about is not in it — and it runs ahead of the ribbon pick on every
-mousemove. Testing the strip height before any alignment is what collapses that
-column; laying the level out first to answer "no" is what the `hover, before`
-column is, and at 250k marks it is 8.3ms of every frame the pointer moved.
-
-**Hover and click are one call, `offscreenMateAt`.** Where a mark stands for a
-run of anchors — anywhere a contig has more of them than the strip has pixels —
-the locus a click navigates to is the union of their mate spans, which is every
-alignment under the pointer. That is a full pass of the lane, and so is the
-hover, which names the longest alignment under the pointer (ADR-138). The two
-were separate functions on the belief that the hover could stop early; once
-both walked the lane, the only difference was the union, a Map update per
-alignment under the pointer.
-
-**The strip is one path, not a fill per mark.** The mark color carries alpha, so
-filling each separately composites them against each other and the strip darkens
-with density — at whole-chromosome zoom there are more marks than pixels, so it
-saturated to near-black and read as a solid ideogram rather than as marks.
-Filling one path takes the color once. The export column is the same change seen
-from the other side: one `<path>` where a figure used to carry a `<rect>` per
-alignment.
-
-**The repaint column is layout and path building, not rasterization** — the
-bench's context is a mark, so nothing there measures what the GPU or Canvas2D
-does with the path. What it does bound is the per-frame JS, and at 250k marks
-that alone is a frame. Reaching that takes a query row on the whole genome with
-the target row narrowed to one contig.
-
-*2026-08-20:* the toggle **went on by default** after this table was measured,
-so that state now pays the repaint column without asking for it — which is the
-one thing the default costs that a few pixels of band does not. The hover column
-is not in that: it is what the pointer pays on every move, and testing the strip
-height before any alignment is what makes it independent of the mark count. What
-a reader in that state is looking at is a strip whose marks outnumber its pixels,
-so if the column is ever worth attacking, the answer is a per-pixel-column
-occupancy pass rather than a rect per alignment — and the label placement, which
-runs off those same rects, is what makes that more than a draw-loop change.
-
-## Cheaper thing this is not
-
-Panning the facing view so the mate comes on screen is not the same feature and
-does not compete with it: the mate contig has to already be a displayed region
-for that, and the case here is precisely that it is not.
-
-*2026-08-23:* **that paragraph was the blind spot, and class C is what it read
-past.** "The mate contig has to already be a displayed region" is not the rare
-case — it is what a stack of whole assemblies IS, and the multiway demo we ship
-is one. Reported from `demos/grape_peach_cacao` with all three rows on whole
-assemblies and "Off-screen mates" on: the strip drew nothing, because
-`v2RefNames.has(mate.refName)` is true for every mate when the facing row
-displays every contig. Meanwhile `isRibbonCulled` was dropping all but the
-ribbons reaching the visible slice — 125 of 126 instances in the volvox
-reproduction. The one arrangement where "what am I not being shown" is hardest
-to answer was the one arrangement the feature said nothing about.
-
-| class | anchor | mate | why no ribbon | decided | marked on |
-| --- | --- | --- | --- | --- | --- |
-| **A** | visible v1 window | no v2 region reaches it | no second endpoint | worker, per fetch | query axis |
-| **B** | no v1 region reaches it | visible v2 window | never requested | worker, per fetch (`showOffscreenMates`) | target axis |
-| **C** | visible v1 window | contig v2 displays and has scrolled off | `overdrawPx` cull | **main thread, per repaint** | query axis |
-| **D** | contig v1 displays and has scrolled off | visible v2 window | `overdrawPx` cull | **main thread, per repaint** | target axis |
-
-*2026-09-20:* **A and B are decided by locus, not by contig.** A row showing a
-slice of the mate's contig passed the contig test, and the projection loop then
-dropped the alignment with no mark: a mate outside every slice, a chain clipped
-to the window whose visible part maps outside the slice, or a block the two
-slices share no part of. The worker marks at each of those drop sites
-(`markUnplaced`), and the target fetch asks `findRegionEntry` against the
-displayed regions before it flips anything. `bidirectionalFetch.test.ts` holds
-all four.
-
-A chain clipped inside a CIGAR gap is marked with a one-base mate locus, so its
-click frames 20kb around that base. Marking the unclipped span instead would
-frame the whole chain, 86Mb for chimp chr19, and no demo pairs a chain PAF with
-a sliced facing row, so the one-base locus stays.
-
-**C cannot move into the fetch, and that is the whole of its design.** The facing
-row pans a full `syntenyPanBufferPx` without refetching, so a mark decided when
-the data landed sits beside the ribbon it claims does not exist. It is therefore
-a draw-time question asked against the same band `isRibbonCulled` uses —
-`culledRibbonMates` restates that band in the facing axis's cumBp, and the one
-comparison decides both, so a mark and its ribbon cannot both be drawn.
-
-*2026-08-25:* **D is C read from the other row, and it shipped a strip short.**
-`isRibbonCulled` drops a ribbon when EITHER end leaves its own row's band, so the
-undrawable alignment whose query end is off screen and whose target end is in
-plain sight is as real as C — and it was placed on the query axis alone, at an x
-the layout rejects, so it drew nowhere: no ribbon, no mark, on either strip. What
-made it visible from the menu is that the last step — "Mark them, both rows" as
-it was then labelled — is the setting that goes and FETCHES that class: the
-second query recovers alignments anchored on the lower row whose query end is a
-pan buffer or more off the top row's edge, which is class D by construction. On peach chr1 18-22Mb over the whole of grape chr1
-that is **849 of the 1029 alignments the level holds**, against 74 marks from
-class B — so the second row read as having no marks at all while the first had
-thousands.
-
-`culledRibbonMateData` returns the pair now (`onQueryAxis`, `onTargetAxis`): the
-instance walk resolves both axes already, so the transpose is the two extents and
-one more per-contig tally, +6% on the per-fetch build and nothing per repaint.
-The two cannot double-mark, because being outside a row's band means being more
-than `overdrawPx` off that row's screen — so an alignment culled on one end has
-exactly one axis the layout will place it on.
-
-**D DOES need the second fetch, and the day it spent not needing it is worth
-keeping.** The fetch window is the visible window plus a pan buffer, so the
-alignments in that margin are held, culled, and have a target-axis position —
-which read as "free" and shipped that way, relabelling the menu to describe it
-(the middle step named the panels it marked, the last what it queried). It is
-not free, it is INCOMPLETE, and the difference is invisible at the pixel level:
-a class D mark stands for an alignment whose query end is off the row above, so
-one fetch holds only what fell inside `syntenyPanBufferPx`. Counted on the
-peach/grape figure, the lower strip's marks by how far off the upper row's edge
-their query end sits:
-
-| | marks | 1000–2000px off | 2000–2364px | beyond |
-| --- | ---: | ---: | ---: | ---: |
-| one query | 396 | 272 | 124 | **0** |
-| two queries | 849 | 272 | 577 | to 3651px |
-
-The zero is the finding. The strip stops at the FETCH WINDOW's edge, not at the
-data's; it steps as the upper row pans across the snap grid; and the tooltip
-count — which on the upper strip is a fact a reader can act on — becomes an
-arbitrary fraction of the alignments going to that contig, with nothing saying
-so. An empty strip is a better answer than a number nobody can use.
-
-So the rule is symmetric, and it is the one thing this whole feature turns on:
-**a row's strip is complete if and only if that row was queried.** The upper row
-always is, so classes A and C are whole at the middle step. Classes B and D are
-the mirror and wait for the second query — B because it is never requested, D
-because it is requested only in part. `laneData` enforces it in one place, which
-is the place draw, hit test, tooltip count and SVG export all read.
-
-The setting is one checkbox since 2026-09-07: on marks both edges and runs the
-second query, off draws nothing. The free upper-panel-only step was a third
-state a checkbox could not show, and the reader asked for on/off.
-The 8,004 device px the lower strip painted at the middle step was measuring the
-ring, and goes with it.
-
-**Off the instances, not the feature lanes.** `starts`/`ends` are the adapter's
-untrimmed coordinates; a CIGAR-clipped block draws from corners the projection
-loop moved, so a reprojected mark sits beside its own ribbon. Min/max over a
-feature's instances also covers transparent-CIGAR mode, where the base trapezoid
-is replaced by one tile per match segment and no single instance spans the block.
-
-**What keeps it off the frame budget is the extent on `mateAxis`.** A facing row
-whose band already spans every mate the fetch holds can hide none of them, so the
-whole dataset leaves the lane on two comparisons — which is two rows zoomed out
-over each other, the common state.
-
-**Measured, and the surprise is what is NOT in it.** The per-entry band test
-costs nothing: `repaint` and `control` — the identical dataset with the mate lane
-removed, i.e. what a class A strip of that mark count costs — track each other at
-every size. The repaint column is the rect-per-mark cost both classes already
-had, and the table above is the same shape. What this change does to it is make
-the ceiling REACHABLE in a state that previously drew nothing at all: query row
-zoomed out, facing row zoomed in. The `covered` column is the other half — it is
-what the extent buys, turning a 15ms walk at 100k features into nothing — and
-`build` is the only genuinely new work, once per fetch.
+Hover is independent of mark count. The repaint column is layout and path
+building, not rasterization, and at 250k marks that alone is a frame. If it is
+worth attacking, use a per-pixel-column occupancy pass rather than a rect per
+alignment; label placement runs off the same rects, which makes that more than a
+draw-loop change.
 
 <!-- BEGIN GENERATED MEASUREMENT culled-ribbon-mates -->
 
@@ -501,70 +171,8 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT culled-ribbon-mates -->
 
-**A class C click scrolls.** The hit carries the drawn span (`mateCumBp`), so
-the click moves the row to where the mate is already drawn and leaves its
-regions alone.
+`build` is the only new work from classes C and D, once per fetch. `repaint` and
+`control` track each other, so the per-entry band test costs nothing.
 
-## Where the click sends the row, settled
-
-`mateNavDestination` answers the whole question — which class, which coordinate,
-and the locstring naming it — before the click takes anything. Nothing a click
-takes is earned until it answers: the viewport capture and the follow anchor come
-after, so an unresolvable mark leaves both where the reader had them.
-
-**The scroll class navigates with the ROW's spelling, not the mark's.** The mark
-carries the canonical refName (`renameOffscreenMates`); `displayedRegions` is a
-frozen `Region[]` that `setDisplayedRegions` does not canonicalize, so a
-hand-authored session can spell a contig as an alias. Compared with `===` the
-click read that as stale geometry and silently did nothing. The refName the click
-navigates with now comes off `pxToBp`, which is the row's own, and the staleness
-test canonicalizes both sides.
-
-**Otherwise the click frames the mate locus and never removes a region.** A
-contig the row lacks is appended whole, after everything else. A contig the row
-shows slices of gains a slice in the gap between them that holds the most of the
-locus, trimmed to that gap so no two regions of one contig overlap — the
-worker's clip assumes they do not (`clipLargeBlockToWindow`). The slice goes
-beside its neighbour in the list and runs its way, so a collapsed-intron row,
-reversed or not, still reads in order. A locus no gap holds any of is shown in
-the slice holding its centre, adding nothing. The gap is chosen by the locus,
-not the framed window: `navSpan` clamps the window to the contig, so near an
-end its centre is not the locus's.
-
-Since the worker marks by locus, this is the common case on a row showing
-slices, from a multi-locus search or Collapse introns' "Replace current view":
-an alignment whose mate misses every slice is marked, and the click used to
-swap those slices for the whole forward contig. Any change to the list blanks
-the band for one round trip (`geometryCurrent` in `LinearSyntenyDisplay/model.ts`),
-so an inserted slice costs the reader no more than an appended one.
-
-**An aliased region is respelled in place.** `navTo` canonicalizes the location
-and then compares `displayedRegions` refNames raw, so no spelling reaches a
-region a hand-authored session spelled by an alias. The click rewrites that
-region's refName to the canonical one, keeping its extent and orientation, which
-also stops the row listing one contig under two spellings.
-
-**The hover states the click's destination.** `offscreenMateDestination` is the
-one resolver the tooltip and the click share, so the hover names the locus the
-snackbar will, and gives the reason for a mark that resolves nowhere before
-anyone clicks it.
-
-**A click that resolves nothing notifies**, as the hover already did, so a stale
-mark is never a dead pixel.
-
-**One coordinate convention.** `coord0` is what `bpToOffset`/`bpToPx` take;
-`assembleLocString` prints its 1-based sibling, which is what the location box
-will read. The snackbar printed `coord0` and so named a base one before the one
-the row landed on.
-
-**The scroll class places the row's window in its own cumBp.** The drawn span
-is already in that space, so the click centres the row on it: at the row's zoom
-where the span fits, and framing it padded by `OFFSCREEN_MATE_NAV_GROW` a side
-where it does not, since a mark standing for a run of anchors can name a union
-many windows wide whose middle holds none of them. The frame is capped at the
-widest window the row can show, or the zoom's clamp shifts it off centre. A
-flight goes through `flyToFit`, which widens from the zoom a flight already in
-the air is heading to rather than the arc's current width, so a second click
-mid-flight does not land pulled back. A union across two displayed
-copies of one contig centres between them, which is why the staleness test asks
-the span's ends as well as its centre.
+`website/scripts/probe-mate-density.ts` measures what a window keeps and drops
+against the live demo.

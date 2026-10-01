@@ -1,6 +1,6 @@
 ---
 name: track-registration
-description: The three destinations a track config can land in (sessionTracks, trackConfigDeltas, jbrowse.tracks), the six actions that route between them, and the 4 destination values a consumer can tell apart. Read before adding a track-registration action.
+description: The three destinations a track config can land in (sessionTracks, trackConfigDeltas, jbrowse.tracks), the six actions that route between them, and the four values a consumer reads. Read before adding a track-registration action.
 audience: internal
 kind: spec
 ---
@@ -8,9 +8,7 @@ kind: spec
 # Track registration: session, catalog, delta
 
 A track config reaches a session by one of three routes, and which one it takes
-depends on who is asking and what already exists. This spec enumerates the
-leaves, groups them by what a consumer can tell apart, and reports both counts,
-on the template of [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md).
+depends on who is asking and what already exists.
 
 | Code | Path |
 | --- | --- |
@@ -20,180 +18,86 @@ on the template of [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md).
 | Catalog write with no dedupe | `packages/app-core/src/JBrowseModel/index.ts` `addTrackConf` |
 | Contract check on every add path; reports through `reportContractViolation`, never throws | `packages/product-core/src/Session/temporaryAssemblyTracks.ts` |
 | Capability guards | `isSessionWithAddSessionTrack`, `isSessionWithPublishTrackConf`, `isSessionWithSessionTracks`, `isSessionWithAddTracks` in `packages/core/src/util/types/index.ts` |
-| ADR for the temporary-assembly refusal | [ADR-084](../architecture-decision-records/adr-084-a-view-local-track-config-rides-on-its-track.md) |
+| Temporary-assembly refusal | [ADR-084](../architecture-decision-records/adr-084-a-view-local-track-config-rides-on-its-track.md) |
 | Working invariants (delta caching, reset-not-delete) | `packages/product-core/src/Session/CLAUDE.md` |
 
-Tests: `UpdateTrackConfiguration.test.ts` is the named canary in
-`Session/CLAUDE.md`, and `TrackConfigWorkingCopy.test.ts` pins a slot reset holding on screen; `pluginFacingSessionApi.test.ts`
-pins the deprecated `addTrackConf` alias two prebuilt plugin bundles still call
-by name at runtime.
+`UpdateTrackConfiguration.test.ts` is the canary named in `Session/CLAUDE.md`,
+`TrackConfigWorkingCopy.test.ts` pins a slot reset holding on screen, and
+`pluginFacingSessionApi.test.ts` pins the deprecated `addTrackConf` alias that
+two prebuilt plugin bundles still call by name.
 
-## The three destinations, and who has them
+## The three destinations
 
-- **`jbrowse.tracks`** (the catalog) — what the config.json the admin server
-  hands every visitor carries. Every product has this.
-- **`sessionTracks`** — the tracks the session added: a non-admin's added and
-  copied tracks, and every track a feature, a session spec, a share link or an
-  agent stands up. Each entry is the base its edits diff against. Travels with
-  the session; never reaches the catalog. `SessionTracksManagerSessionMixin`
-  holds it; the base `TracksManagerSessionMixin` has no separate store.
+- **`jbrowse.tracks`** (the catalog) — what the admin server's config.json hands
+  every visitor. Every product has it.
+- **`sessionTracks`** — tracks the session added: a non-admin's added and copied
+  tracks, and every track a feature, session spec, share link or agent stands
+  up. Each entry is the base its edits diff against. It travels with the
+  session and never reaches the catalog.
 - **`trackConfigDeltas`** — a track's edited slots, stored as a diff against its
-  base (its `sessionTracks` or catalog entry) rather than a full shadow, so a
-  later change to an untouched field of the base still flows through
+  base (a `sessionTracks` or catalog entry) rather than a full shadow, so a
+  later change to an untouched base field still flows through
   ([ADR-158](../architecture-decision-records/adr-158-a-session-tracks-entry-is-the-base-its-edits-diff-against.md)).
 
-So the base mixin has **one** destination regardless of which action is called
-or who is calling: `jbrowse.tracks`. The session-tracks mixin has **three**,
-and the routing logic below exists entirely to pick among them.
+The base mixin (`TracksManagerSessionMixin`) has one destination, `jbrowse.tracks`,
+whichever action runs. `SessionTracksManagerSessionMixin` has all three, and its
+routing exists to pick among them.
 
 ## The six actions
 
 `addSessionTrackConf`, `publishTrackConf`, `addTrackConf` (deprecated alias of
 the first), `updateTrackConfiguration`, `resetTrackConfiguration`,
-`deleteTrackConf`. Repo `CLAUDE.md`'s rule — `addSessionTrackConf` is the
-default, `publishTrackConf` only for Add-track workflows — is the policy this
-spec's leaf count is the shape of.
+`deleteTrackConf`. The policy lives in the repo `CLAUDE.md`: `addSessionTrackConf`
+is the default and `publishTrackConf` is for Add-track workflows only.
 
-## Leaf branches: 25
+Routing rules that fail silently:
 
-Walking every conditional in the six actions, across both mixins, to a
-terminal effect (a write, a no-op, a thrown error, or a snackbar):
+- `addToSession` resolves an existing entry (session, catalog, assembly sequence
+  or connection) through `getTrackById` and returns it unchanged. A missing
+  `type` throws uncaught; an invalid config is caught into an error snackbar.
+- `publishTrackConf` for a non-admin routes to `addToSession`. An admin whose
+  config names an assembly the catalog lacks also routes there, with an info
+  snackbar naming the assembly.
+- `updateTrackConfiguration` on a track with a base stores a delta and clears it
+  when the edit nets back to base, reverting the working copy. Unsetting a slot
+  the base sets is not a net-back: the delta records a `null`. A connection
+  track, or a track with no base, goes to the base mixin's version. The embedded
+  products' `jbrowse` (`createConfigModel`) has no `updateTrackConf`, so there
+  the catalog write throws.
+- `deleteTrackConf` always dereferences the track (closing every open view
+  showing it); whether it also removes the catalog entry (`adminMode`), clears a
+  leftover delta and splices a `sessionTracks` entry are independent.
 
-**`addSessionTrackConf` / `addTrackConf`** (identical code path in both
-mixins — the alias delegates to the same closure, contributing no branches of
-its own): base mixin 2 (its `addToSession` returns an entry
-`getTrackById` already resolves, after `assertNotReaddedDifferently`; otherwise
-`jbrowse.addTrackConf` throws on a missing `type` or pushes), override mixin's shared `addToSession` 4 (missing `type`
-throws; `getTrackById` resolves an existing entry — session, catalog, assembly
-sequence, or connection — and returns it unchanged; `sessionTracks.push`
-succeeds; `sessionTracks.push` throws on an invalid config, caught into
-`notifyError`). Subtotal: **6**.
+## What a consumer reads
 
-**`publishTrackConf`**: base mixin calls `jbrowse.addTrackConf` directly (catalog,
-unconditional push, no dedupe) — no new branches beyond the push and the
-missing-`type` throw already counted. Override
-mixin: non-admin routes into `addToSession`'s existing 4; admin with every
-named assembly in the catalog routes into the base mixin's 2 (via
-`superPublishTrackConf`); admin naming an assembly the catalog does not carry
-routes into `addToSession`'s 4 again, but now paired with an info snackbar
-naming the assembly — a genuinely new terminal state layered on an existing
-one. Subtotal: **1** new leaf.
+- **The `tracks` getter** (what renders): whether a track's live config comes
+  from the session, the catalog, a delta merged over its base, or a connection.
+- **`isTrackOverride`** (the edited badge): computed from
+  `flattenTrackConfigDelta`'s changed-slot count, not from key presence in
+  `trackConfigDeltas`, so a delta holding only content-free display stubs reads
+  as off.
+- **The track menu's `isSessionOverride`** ("Reset track settings"): the same
+  `isTrackOverride`. Delete stays beside Reset wherever `canEdit` holds.
+- **The snackbar**: none, an invalid-config error, or the missing-assembly info
+  notice.
 
-**`updateTrackConfiguration`** (override mixin only; base mixin's own version
-is folded into case C below): **8**. Case A (editing a track with a base,
-its `sessionTracks` or catalog entry) — the new delta differs from any existing one (2: does the
-programmatic-sync half apply or no-op) × does an *existing* identical delta
-already exist so the write is skipped instead of stored (2) = 4, plus nets back
-to base and a delta existed (1: cleared, working copy reverted), plus nets back
-to base with no delta to clear (1 true no-op) = 6. Unsetting a slot the base
-sets is not a net-back: the delta records it as a `null`.
-Case C (a connection track, or a track with no base — routed to the base
-mixin's `updateTrackConfiguration`): connection-track branch vs
-catalog-write branch, which writes nothing for a track the catalog lacks = 2.
-The embedded products' `jbrowse` (`createConfigModel`) has no `updateTrackConf`,
-so there the catalog-write branch throws instead.
+A connection track never carries an edited badge, since only a track with a base
+can have a delta. A snackbar only ever pairs with the session-add destination.
 
-**`resetTrackConfiguration`**: delta present → cleared and the working copy
-reverted; delta absent → no-op. **2**.
+## Why three destinations
 
-**`deleteTrackConf`**: override mixin — `dereferenceTrack` always runs (closes
-every open view showing the track), independent of the rest; whether the
-catalog entry is removed depends on `adminMode` (2); whether a leftover delta
-also gets cleared is independent (2); whether a `sessionTracks` entry gets
-spliced out is independent of both (2) — 2×2×2 = **8**, including a leaf the UI
-never offers but the action does not guard against: a non-admin "deleting" a
-catalog-owned track dereferences every open view and removes nothing from any
-store, since it is neither an admin catalog-delete nor a `sessionTracks`
-splice.
+A catalog write, a per-user addition and a per-user edit of either have three
+different persistence and sharing semantics. `Session/CLAUDE.md`'s invariants
+(delta caching keyed to the value it mirrors, a reset recorded as a `null`)
+exist because getting either wrong loses a keystroke mid-edit or silently undoes
+a reset the user just watched land.
 
-6 + 1 + 8 + 2 + 8 = **25** named terminal branches in total. The count
-predates `assertNotReaddedDifferently`, whose throw adds a leaf to each
-`addToSession`, so 25 is a floor.
+## Known gaps
 
-## What a consumer can tell apart: 13
-
-Two branches are the same *state* when nothing downstream can distinguish
-them. The clearest case: Case A's "identical delta, sync applies" and "new
-delta, sync applies" write the same eventual `trackConfigDeltas[trackId]` and
-leave the working copy in the same place — 4 of the 6 Case-A leaves collapse to
-2 (a delta gets stored or it does not; a working copy gets synced or it does
-not are the only two axes anything reads). Grouping every leaf by (which store
-now holds the config or the fact that nothing changed, whether a snackbar fired
-and which kind, whether the edited badge would light):
-
-1. added to `sessionTracks` (silent)
-2. add to `sessionTracks` refused — invalid config (error snackbar)
-3. deduped — resolved to an existing entry, nothing written (silent)
-4. added to `jbrowse.tracks` (silent, admin/desktop)
-5. added to `sessionTracks` instead of `jbrowse.tracks` because the config
-   names an assembly the catalog does not carry (info snackbar)
-6. missing `type` — thrown, uncaught, never reaches a snackbar
-7. delta written or restamped, edited badge on
-8. delta cleared, working copy reverted on screen (implicit reset)
-9. true no-op — nothing to clear, nothing changed
-10. an opened connection track's config is edited in place
-11. deleted from `jbrowse.tracks` (admin), views dereferenced
-12. deleted from `sessionTracks` (non-admin's own track), views dereferenced
-13. dereferenced with nothing removed from any store — the unguarded
-    non-admin-delete-of-a-catalog-track leaf above
-
-**13**, not 25: the routing logic's job is almost entirely to pick a
-*destination*, and most of the branch count is two or three code paths
-reaching the same destination by a different route (dedupe-vs-add,
-admin-vs-desktop, sync-applies-vs-not).
-
-## What actually gets read: 4 destinations, plus three small side channels
-
-Nothing downstream reads all 13 outcomes as 13 separate cases. Four consumers,
-each asking one narrow question:
-
-- **The `tracks` getter** (what renders): which of {session, catalog,
-  delta-merged-over-its-base, connection} a track's live config now comes from.
-  **4 values.** This is the axis every one of the 13 outcomes ultimately
-  reduces to.
-- **`isTrackOverride`** (the edited badge): on or off, computed from
-  `flattenTrackConfigDelta`'s *changed-slot* count, not from bare key presence
-  in `trackConfigDeltas` — a delta holding only content-free display stubs
-  reads as off. **2 values.**
-- **The track menu's `isSessionOverride`** ("Reset track settings"): whether
-  the track carries changed slots over its base, `isTrackOverride`. **2
-  values**. Delete stays beside Reset wherever `canEdit` holds, as it does for
-  a session track.
-- **The snackbar surface**: none, an invalid-config error, or the
-  missing-assembly info notice. **3 values**, and only 2 of the 25 branches
-  ever produce a non-none one.
-
-4 × 2 × 2 × 3 = 48 combinatorial slots; the 13 outcomes above occupy few of
-them, because a "which store" answer of `connection` never co-occurs with an
-edited badge (only a track with a base can have a delta), and the snackbar
-values only ever pair with the session-add destination.
-
-## Verdict
-
-**The shape holds up.** 25 branches sounds like a lot for six actions, but most
-of them exist because the same three-way dedupe-or-write-or-throw pattern
-(`addToSession`) is walked by hand at several call sites
-instead of shared once — that is code duplication, not state-space growth, and
-it collapses cleanly once grouped by destination. The genuine complexity is
-real and load-bearing: three destinations exist because a catalog write, a
-per-user addition, and a per-user *edit* of either are three
-different persistence and sharing semantics, and `Session/CLAUDE.md`'s
-documented invariants (delta caching keyed to the value it mirrors, a reset
-recorded as a `null`) exist because getting either wrong loses a keystroke
-mid-edit or silently undoes a reset the user just watched land. A four-value destination is the honest floor for what this concept
-has to express.
-
-**Two findings worth fixing, not smoothing over in the writeup:**
-
-- `jbrowse.addTrackConf` (`packages/app-core/src/JBrowseModel/index.ts`) does
-  an **unconditional push with no dedupe**, unlike `addToSession`'s
-  `getTrackById` check. `addSessionTrackConf` and `addTrackConf` run that check
-  in both mixins, so only `publishTrackConf` reaches the bare push: a repeated
-  admin `publishTrackConf` call, or one that races itself, can push two
-  catalog entries sharing one `trackId`. Nothing validates catalog-side
-  uniqueness before the write.
-- `deleteTrackConf`'s leaf 13 (a non-admin calling delete on a catalog-owned
-  track dereferences every open view and removes nothing from any store) is
-  reachable by any caller that does not go through the track menu's
-  `isSessionOverride`-gated UI, including a plugin. It is a silent no-op
-  standing in for what should be a refusal.
+- `jbrowse.addTrackConf` pushes unconditionally with no dedupe. Only
+  `publishTrackConf` reaches the bare push, so a repeated or racing admin call
+  can leave two catalog entries sharing one `trackId`.
+- A non-admin calling `deleteTrackConf` on a catalog-owned track dereferences
+  every open view and removes nothing from any store. The track menu's
+  `isSessionOverride` gating hides it from the UI, but a plugin can reach it. It
+  is a silent no-op where a refusal belongs.

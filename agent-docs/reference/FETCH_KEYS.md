@@ -10,308 +10,98 @@ The three tiers are stated in [ARCHITECTURE.md](../ARCHITECTURE.md#rpcprops--gpu
 
 ## What each tier costs when it moves, and who is zoom-sensitive
 
-The three tiers are not three flavours of the same
-thing — they differ by two orders of magnitude in what a change costs:
-
 | tier | a change does | cost |
 | --- | --- | --- |
-| `rpcProps()` | `settingsFetchInputs` moves -> every loaded region's `fetchInputs` stamp is stale, and `SettingsInvalidate` -> `invalidateSettings()` | refetch every region, drawn stale under the scrim meanwhile |
+| `rpcProps()` | `settingsFetchInputs` moves, every loaded region's `fetchInputs` stamp goes stale, `SettingsInvalidate` runs `invalidateSettings()` | refetch every region, drawn stale under the scrim meanwhile |
 | `gpuProps()` | the identity `installUpload` compares moves (`p !== lastProps` clears `encodedFrom` in `createEncodeMemo`, `packages/render-core/src/encodeMemo.ts`) | **re-encode every cached region, main thread, no RPC** |
 | `renderState` | the render callback re-fires | repaint |
 
-The middle row is the one that surprises, because it is O(cached regions x
-features) of main-thread work with nothing on the network to make it visible.
-[ADR-016](../architecture-decision-records/adr-016-bicolorpivot-stays-in-worker.md)
-is the measurement of exactly that cost, taken when the proposal was to move
-wiggle's pos/neg split main-thread-ward; the same accounting applies to anything
-that lands in `gpuProps()`. (That ADR is superseded — the split was deleted
-rather than moved — but the cost it measured is the one this row describes.)
+The middle row surprises because it is O(cached regions x features) of main-thread work with nothing on the network to show it. [ADR-016](../architecture-decision-records/adr-016-bicolorpivot-stays-in-worker.md) measured that cost; the accounting applies to anything that lands in `gpuProps()`.
 
-**Only one `gpuProps()` in the tree is zoom-sensitive at all**, and it is
-deliberate: `LinearMafDisplay`'s `binBp` reads `encodeBinBp`
-(`plugins/maf/src/LinearMafDisplay/stateModel.ts`), which is
-`settledSubPixelBinBp` — `subPixelBinBp` (`packages/display-kit/src/subPixelBinBp.ts`)
-read off the **debounced** `coarseBpPerPx`, quantized to a
-power of two precisely so a gesture does not thrash it (its comment: unquantized,
-"MAF re-encodes every region on every wheel tick"). The alignments worker's
-per-base extracts share that function, but their `perBaseBinBp` rides the RPC
-call site, not `rpcProps()` or `gpuProps()`. So a sustained zoom can re-encode every cached MAF region, but
-only on crossing a power-of-two boundary after the debounce settles. Every other
-`gpuProps()` reads session or config state only — none reads live `bpPerPx`,
-`offsetPx`, `visibleRegions`, `dynamicBlocks` or hover.
+**A per-frame viewport value must never reach `gpuProps()`.** It re-encodes the whole cache mid-gesture, and the profile blames the encoder rather than the key that let it in. No `gpuProps()` reads live `bpPerPx`, `offsetPx`, `visibleRegions`, `dynamicBlocks` or hover. The one deliberate zoom-sensitive exception is `LinearMafDisplay`'s `binBp`, which reads `encodeBinBp`: `subPixelBinBp` (`packages/display-kit/src/subPixelBinBp.ts`) off the **debounced** `coarseBpPerPx`, quantized to a power of two so a gesture does not thrash it. The alignments worker's `perBaseBinBp` rides the RPC call site instead.
 
-**That is the invariant to preserve.** A per-frame viewport value reaching
-`gpuProps()` re-encodes the whole cache mid-gesture, silently, and the profile
-blames the encoder rather than the key that let it in.
-
-Two other facts the census turned up, neither a bug:
-
-- **`origin` fans out to two tiers**, which no single comment says.
-  `gpuProps()` (every mode colours by sign main-thread, and the SVG export
-  calls `buildSourceRenderData(data, gpuProps)` directly) and `renderState`
-  (the shader's bar pivot and density fade). It left `rpcProps()` when the
-  worker-side split went (ADR-016, superseded), so moving the cut no longer
-  refetches. Each hop is commented where it happens; the fan-out is only
-  visible from here.
-- **Twelve of fourteen `installUpload` call sites pass neither `inputs` nor
-  `encode`** — everything but `installWiggleRenderingBackend` and
-  `LinearBasicDisplay`: sequence, `LinearSyntenyViewHelper`,
-  `MultiWaySyntenyDisplay`, alignments, HiC, LD, dotplot, the multi-row
-  canvas display, marks and the two circular passes. That is the typed
-  no-`encode` overload, not an omission: `cells()` already yields encoded
-  data, built by a `computed` upstream (`LinearSyntenyDisplay.computedColors`,
-  `DotplotDisplay.computedColors`), so MobX's own map diff limits the re-encode
-  instead of `installUpload`'s clear.
+- **`origin` fans out to two tiers.** `gpuProps()` uses it (every mode colours by sign main-thread, and SVG export calls `buildSourceRenderData(data, gpuProps)`), and `renderState` uses it (bar pivot, density fade). It left `rpcProps()` with the worker-side split, so moving the cut no longer refetches.
+- **Most `installUpload` call sites pass neither `inputs` nor `encode`.** That is the typed no-`encode` overload: `cells()` already yields encoded data built by an upstream `computed` (`LinearSyntenyDisplay.computedColors`, `DotplotDisplay.computedColors`), so MobX's map diff limits the re-encode instead of `installUpload`'s clear.
 
 ## Structural args stay out of `rpcProps()`
 
-`rpcProps()` returns **user-controlled settings only**. Structural args
-(`adapterConfig`, `sequenceAdapter`, `region(s)`, `bpPerPx`, `signal`) are
-spread in at the RPC call site, keeping `rpcProps()` focused on its purpose:
-cache keys for `SettingsInvalidate`. Every display follows the same call shape:
+`rpcProps()` returns **user-controlled settings only**, the cache keys for `SettingsInvalidate`. Structural args (`adapterConfig`, `sequenceAdapter`, `region(s)`, `bpPerPx`, `signal`) are spread in at the RPC call site:
 
 ```ts
 rpcManager.call(sessionId, 'RenderXxxData', {
-  adapterConfig: self.adapterConfig,  // inherited from BaseDisplayModel
-  regions, bpPerPx,                    // per-call values
-  ...self.rpcProps(),                  // user settings (cache keys)
+  adapterConfig: self.adapterConfig,
+  regions, bpPerPx,
+  ...self.rpcProps(),
   signal, statusCallback,
 })
 ```
 
-`sessionId` belongs in the **first** argument only — `RpcManager.call` injects
-it into the payload, and `AssertNoCallLevelFields` fails a registry entry that
-declares it in its args. Passing it again in the object is redundant; no call
-site does anymore.
+`sessionId` belongs in the first argument only: `RpcManager.call` injects it, and `AssertNoCallLevelFields` fails a registry entry that declares it.
 
-`adapterConfig` is provided by `BaseDisplayModel` (via
-`getConf(this.parentTrack, 'adapter')`) — a **structural** arg, so it is not in
-`rpcProps()`, and it rides beside the payload in `FetchMixin.settingsFetchInputs`,
-the settings axis every fetch family keys on, so a track re-pointed in the
-config editor refetches. GC content folds `gcMode` / `windowSize` / `windowDelta` into the
-`GCContentAdapter` config its `adapterConfig` getter builds and lists them in
-`rpcProps()` as well; both axes now see them, and either alone would do.
+`adapterConfig` comes from `BaseDisplayModel` and rides beside the payload in `FetchMixin.settingsFetchInputs`, so a track re-pointed in the config editor refetches.
 
-**Override it only to change what the adapter *is*, and never to annotate it.**
-`dataAdapterCache` keys on the config object (`adapterConfigCacheKey`), so a key
-the adapter never reads still forks the cache: the decorating display resolves
-its own instance and its own parse of the file, while every plain reader of the
-same track — another display type over it, a `CoreGetFeatures` probe behind a
-launch dialog — shares a second one, and a key the adapter ignores raises no
-error. If a worker-side value genuinely doesn't belong to the adapter, pass it as a sibling
-RPC arg, the way `sequenceAdapter` is passed.
+**Override `adapterConfig` only to change what the adapter *is*, never to annotate it.** `dataAdapterCache` keys on the config object (`adapterConfigCacheKey`), so a key the adapter never reads still forks the cache: the decorating display gets its own adapter instance and file parse, every plain reader of the track shares a second, and nothing raises an error. Pass a worker-side value that is not the adapter's as a sibling RPC arg, the way `sequenceAdapter` is passed.
 
-`rpcProps()` is the **only** extension point for the RPC payload. Each display
-defines its own typed shape; subclasses that layer on fields capture `super` and
-spread:
+`rpcProps()` is the **only** extension point for the RPC payload. Each display defines its own typed shape; subclasses capture `super` and spread:
 
 ```ts
 .views(self => {
   const { rpcProps: superRpcProps } = self
   return {
     rpcProps() {
-      return {
-        ...superRpcProps(),
-        showOnlyGenes: self.showOnlyGenes,
-      }
+      return { ...superRpcProps(), showOnlyGenes: self.showOnlyGenes }
     },
   }
 })
 ```
 
-A zoom-derived worker decision is not an `rpcProps` field: it is a field of the
-display's `zoomFetchArgs()`, the object the RPC spreads and the foundation
-stamps (canvas's `effectiveGeneGlyphMode`, alignments' `perBaseBinBp`, the
-synteny `lodTier`), so a threshold crossing refetches the regions on screen
-while they keep drawing, where an `rpcProps` move runs `SettingsInvalidate`,
-supersedes the in-flight fetch and scrims the held data.
+A zoom-derived worker decision is a field of the display's `zoomFetchArgs()`, not of `rpcProps`: a threshold crossing refetches the regions on screen while they keep drawing, where an `rpcProps` move runs `SettingsInvalidate`, supersedes the in-flight fetch and scrims the held data.
 
-`MultiRegionDisplayMixin` does **not** provide a base default — declaring one
-would widen the typed return through MST's `.views()` chain and force consumers to
-re-spread named fields. The mixin's `SettingsInvalidate` autorun looks up
-`rpcProps` dynamically and is installed only when the method exists, so a
-per-region display with no settings-driven refetch (e.g.
-`LinearReferenceSequenceDisplay`) can simply not define it. HiC and LD compose
-`GlobalFetchMixin` rather than MultiRegion, and both *do* define
-`rpcProps()`.
+`MultiRegionDisplayMixin` provides no base `rpcProps` default, because one would widen the typed return through MST's `.views()` chain. Its `SettingsInvalidate` autorun looks `rpcProps` up dynamically and installs only when the method exists, so a display with no settings-driven refetch simply omits it.
 
 ## The cache key is the return value, not the reads
 
-Every family invalidates on the payload's **value** — never on the raw call.
-`FetchMixin.settingsFetchInputs` (`display-kit/fetchInputs.ts`) holds it with
-the adapter config in one structural computed: `SettingsInvalidate` watches it
-and each loaded region stamps it, the keyed families fold it into
-`currentFetchKey`, and the byte gate measures under it.
+Every family invalidates on the payload's **value**, never on the raw call. `FetchMixin.settingsFetchInputs` (`display-kit/fetchInputs.ts`) holds the payload and the adapter config in one structural computed: `SettingsInvalidate` watches it, each loaded region stamps it, keyed families fold it into `currentFetchKey`, and the byte gate measures under it.
 
-The reason is that **building the payload reads far more observables than it
-returns**, so tracking the call tracks all of them:
+Building the payload reads far more observables than it returns, so tracking the call tracks all of them. Canvas builds it from `fullConfSnapshot`, which reads every slot on the display config and its inherited schemas, so a `showLabels` flip would refetch. HiC's `activeNormalization` consults the **fetched** `availableNormalizations`. The structural computed keeps the previous value when a recomputation returns equal content, so only a change in what is returned invalidates. Tests: `installGlobalFetchAutorun.test.ts`, `fetchInputs.test.ts`.
 
-- canvas builds it from a whole config snapshot (`fullConfSnapshot`),
-  which reads *every* slot on the display config and on every schema it inherits
-  — so a `showLabels`, `heightMode` or compact/normal `displayMode` flip, none of
-  which is in the payload, would refetch
-- HiC's `activeNormalization` consults `availableNormalizations`, which is
-  **fetched** (`CoreGetInfo`) — a read that has nothing to do with user intent
-
-The structural computed collapses both: a recomputation that returns equal
-content keeps the previous value, so only a change in what's returned
-invalidates. Regression-tested in `installGlobalFetchAutorun.test.ts` ("ignores
-an observable rpcProps() reads but does not return") and `fetchInputs.test.ts`
-("holds the settings identity across a read the payload does not return").
-
-The compare is structural, not a serialized string, because `JSON.stringify`
-drops an `undefined`-valued key and flattens a class with no own enumerable
-fields to `{}`: two states of either field would be one key, and a change
-between them a **silently dead cache axis**. `compareStructural` counts keys
-and compares own fields, so both are distinct states, pinned in
-`fetchInputs.test.ts`
-([ADR-132](../architecture-decision-records/adr-132-fetch-keys-are-values-compared-structurally.md)).
-A value stamp has a hazard of its own instead: a live collection mutated in
-place behind it. `snapshotInputs` closes that by rebuilding and freezing it,
-which leaves a class instance mutated in place as the one case to avoid — build
-a fresh one.
+The compare is structural rather than a serialized string, because `JSON.stringify` drops an `undefined`-valued key and flattens a field-less class to `{}`, which makes a **silently dead cache axis**. `compareStructural` counts keys and compares own fields ([ADR-132](../architecture-decision-records/adr-132-fetch-keys-are-values-compared-structurally.md)). A value stamp has its own hazard, a live collection mutated in place behind it: `snapshotInputs` rebuilds and freezes it, so build a fresh class instance rather than mutating one.
 
 ## Pick the payload out of the snapshot; never subtract from it
 
-Keying on the returned value fixes *which reads* invalidate. It does nothing
-about **which slots are in the payload**, and that is a second, separate hazard for any display whose
-`rpcProps()` starts from `fullConfSnapshot`: the snapshot carries
-every slot the display's schema *and every schema it inherits* declare, so the
-payload's contents are decided by whatever the display does with it.
+For a display whose `rpcProps()` starts from `fullConfSnapshot`, the snapshot carries every slot its schema and every inherited schema declare. Pick the slots the worker reads. Canvas's `pickDisplayConfig` copies exactly the keys of its `DisplayConfig` interface off a `Record<keyof DisplayConfig, true>`, which TypeScript checks exhaustive in both directions, so the list cannot drift from the interface the worker reads.
 
-Do that by picking the slots the worker reads. Canvas's `pickDisplayConfig` copies
-exactly the keys its `DisplayConfig` interface declares, off a
-`Record<keyof DisplayConfig, true>` — which TypeScript checks exhaustive in **both**
-directions with no helper type, erroring on a key the list omits and on a name that
-is not a key. That is what makes the list safe to have: it cannot drift from the
-interface the worker actually reads through.
+Avoid the subtractive spelling (snapshot minus a destructured exclusion list). It fails silently:
 
-The subtractive spelling — snapshot minus a destructured exclusion list — is the
-one to avoid, and it is the one you write first. Its failure is silent and
-compounding:
+- **A slot nobody excluded becomes an RPC cache key.** The expensive one was `height`: the resize handle writes it every drag frame, so dragging a track taller re-ran the worker pipeline.
+- **The leaking names come from another package's schema.** `BaseLinearDisplay`'s schema contributes most, so whoever adds a main-thread slot there has no reason to open a display plugin's `rpcProps()`.
+- **The payload type is a lie.** Snapshot-minus-exclusions is a superset of the worker's interface, so it reaches the typed args through an `as DisplayConfig` cast, the assertion that would have caught the extras.
 
-- **A slot nobody thought to exclude becomes an RPC cache key.** Canvas's list
-  reached ten names, and the expensive one was `height`: the resize handle writes
-  it on every drag frame (`TrackContainer` → `resizeHeight` → `setConf`), so
-  dragging a track taller re-ran the whole worker pipeline.
-- **The names that leak come from a schema in another package.**
-  `BaseLinearDisplay`'s schema contributes most of them, so a contributor adding a
-  main-thread slot there has no reason to look at a display plugin's `rpcProps()`.
-- **The payload type has to be a lie.** A snapshot-minus-exclusions object is a
-  superset of the worker's config interface, so it reaches the typed RPC args
-  through an `as DisplayConfig` cast — which is exactly the assertion that would
-  have caught the extras.
+Picking inverts all three: a new worker slot edits the interface and the key list together, and forgetting breaks the feature visibly; a new main-thread slot edits neither.
 
-Picking inverts all three. A new worker slot means editing the interface and the
-key list together, and forgetting means the feature does not work — which someone
-notices. A new main-thread slot means editing neither.
-
-**A slot that is in the payload only to invalidate it gets its own field** —
-once the config half is a pick of what the worker reads, anything riding along
-for the cache key alone has nowhere left to hide in it. A budget edit reaches the
-verdict through tracked reads, so a raw gate slot in the payload buys only a
-redundant refetch of regions already loaded and in budget.
+**A slot in the payload only to invalidate it gets its own field.** A budget edit reaches the verdict through tracked reads, so a raw gate slot in the payload buys only a redundant refetch.
 
 ## `gpuProps()` and derived region maps — re-upload without refetch
 
-`gpuProps()` exists wherever the main thread encodes the GPU buffer — wiggle
-and MAF (and GC-content, which inherits wiggle's wholesale). HiC and
-multi-LGV synteny fill the same role without the method: HiC's render state
-carries `self.colorRamp`, the cached LUT its colour declares, and synteny's
-`computedColors` getter is its re-upload-without-refetch half. Canvas's worker
-emits a color *class* per themed lane and
-the main-thread encode resolves classes against `session.palette`, so the
-worker holds no palette and a theme change re-encodes. This splits refetch from
-re-upload: a wiggle colour change, `color` and `origin` alike, re-encodes and
-refetches nothing, while `resolution` and `scoreField` change what the worker
-returns and so refetch.
+`gpuProps()` exists wherever the main thread encodes the GPU buffer: wiggle, MAF and GC-content. HiC (`self.colorRamp` in render state) and multi-LGV synteny (`computedColors`) fill the same role without the method. Canvas's worker emits a color *class* per themed lane and the main-thread encode resolves classes against `session.palette`, so a theme change re-encodes. A wiggle `color` or `origin` change re-encodes and refetches nothing, while `resolution` and `scoreField` change what the worker returns and refetch.
 
-**Opacity is a render parameter, never a packed color.** Both comparative
-displays own a `computedColors` getter — the gpuProps half — and both keep the
-plot-wide opacity slider *out* of it: synteny multiplies it in `fillShade`,
-dotplot in `dotplot.slang`'s fragment (`color.a * u.alpha`), each fed from the
-render state (`SyntenyTrackRenderParams.alpha` / `DotplotRenderState.alpha`) with
-a Canvas2D twin so the SVG export matches. Baking it into every packed ABGR
-byte turns one drag frame into three full O(n) passes — recompute the colors
-array, re-pack every instance, re-upload the buffer — for a value identical on
-every instance. **A per-instance array is the wrong
-home for a scalar**: if a setting multiplies every element by the same number,
-it belongs in the uniform/draw params.
+**Opacity is a render parameter, never a packed color.** Synteny multiplies it in `fillShade`, dotplot in `dotplot.slang`'s fragment, each fed from render state with a Canvas2D twin so SVG export matches. Baking it into every packed ABGR byte turns one drag frame into three O(n) passes (recompute, re-pack, re-upload) for a value identical on every instance. A per-instance array is the wrong home for a scalar that multiplies every element. The color-lane patch that spares a genuine recolor a full re-pack is a backend concern: [GPU_RENDERING.md § Upload patterns](GPU_RENDERING.md#upload-patterns).
 
-A genuine recolor does still produce a fresh `colors` array over the same
-coordinate arrays, and a naive keyed-upload backend re-packs every lane to change
-one. The two-line memo that avoids it is a backend concern:
-[GPU_RENDERING.md § Upload patterns](GPU_RENDERING.md#upload-patterns),
-under "the color-lane patch".
+Use a derived region map when settings change the shape of per-region data, and `gpuProps()` for scalars fed to an encoder. Alignments' `laidOutByGroup` returns per group shallow clones of `rpcDataMap` entries with freshly allocated Y arrays from main-thread layout; `sourceSections` pairs each with its arc feed for the upload callback. The raw `rpcDataMap` is never mutated.
 
-Derived region maps apply when upload needs whole fresh per-region payloads, not
-just encoder parameters. Alignments' `laidOutByGroup` returns, per group, shallow
-clones of that group's `rpcDataMap` entries with freshly-allocated Y arrays from
-main-thread layout (+ connecting-line / Flatbush in chain mode); `sourceSections`
-pairs each with its arc feed and is what the upload callback iterates. Raw
-`rpcDataMap` is never mutated. Use derived maps
-when settings change the shape/contents of per-region data; use `gpuProps()` for
-scalars fed to an encoder.
+That immutability fixes its representation: build it with [`regionDataMap()`](../../packages/render-core/src/regionDataMap.ts), a **shallow** `observable.map`, since an entry that never changes gives MobX's deep enhancer nothing to observe ([ADR-060](../architecture-decision-records/adr-060-region-data-maps-are-shallow-observable.md)). A hand-written `observable.map<number, …>()` is the thing to notice in review.
 
-That the raw map is never mutated is also what fixes how it is *represented*:
-build it with
-[`regionDataMap()`](../../packages/render-core/src/regionDataMap.ts),
-which is a **shallow** `observable.map`. An entry that can never change has
-nothing for MobX's deep enhancer to observe, so the observable-object graph it
-builds per entry on insert — and the proxy hop it adds to every field read — buys
-no reactivity at all
-([ADR-060](../architecture-decision-records/adr-060-region-data-maps-are-shallow-observable.md)).
-Every per-region volatile in tree goes through the helper; writing
-`observable.map<number, …>()` by hand is the thing to notice in review.
-
-**A derived map is a tier, so keep its cheap half out of its expensive half.**
-Alignments splits the one above in three: `laidOutByGroupUncolored` does row
-placement, `laidOutByGroupFramed` applies the chain strand frames, and
-`laidOutByGroup` bakes the per-read color arrays over it. Nothing
-in the color half can move a read's row, so folding the color settings into the
-layout computed makes a recolor re-run placement, every per-feature Y remap and the modification Flatbush to
-change two arrays. Split, the layout computed stays memoized across a recolor,
-and because the overlay *spreads* its input rather than rebuilding it, `readYs`
-survives with it: the GPU renderer reads that identity as "same layout run" and
-rewrites the read pass alone (GPU_RENDERING.md, "Whole-map synced: skipping a
-region without leaving stale buffers"). The same reasoning applies to any value a derived map
-reads but only *sometimes* spends — the band-overhead input to the grouped fit
-budget is a thunk for exactly that reason, so band geometry stays out of the
-layout computed's dependency set on the ungrouped path.
+**A derived map is a tier, so keep its cheap half out of its expensive half.** Alignments splits it in three: `laidOutByGroupUncolored` places rows, `laidOutByGroupFramed` applies chain strand frames, `laidOutByGroup` bakes per-read colors. Folding color settings into the layout computed would make a recolor re-run placement and every Y remap. Split, the layout stays memoized across a recolor, and because the overlay spreads its input, `readYs` keeps its identity: the GPU renderer reads that as "same layout run" and rewrites the read pass alone (GPU_RENDERING.md, "Whole-map synced: skipping a region without leaving stale buffers"). The same applies to any value a derived map reads but only sometimes spends; the band-overhead input to the grouped fit budget is a thunk for that reason.
 
 ## Theme-derived render inputs are session getters, not pushed volatiles
 
-Color palettes are a pure function of the active theme, so derive them in a model
-getter — `<plugin builder>(getPaletteHost(self).palette)` — that `gpuProps()` /
-`renderState` read directly. Do **not** stage them in a volatile that a React
-`useEffect` pushes in via a `setColorPalette` action: the effect runs only on
-mount, so SVG export and RPC — neither of which has a component — see a null
-palette and render blank. As a getter the value is always present and MobX
-recomputes it only when the theme changes: same re-encode invalidation, no mount
-dependency. Every palette builder in tree reads that one session input —
-`buildColorPaletteFromPalette` (alignments), `getMafColorPalette` (MAF),
-`buildColorPalette` (reference sequence), canvas's `themedColorTable`, the
-multi-sample variant and multi-way synteny palettes, and `treeStroke` /
-`treeHoverColors` (tree-sidebar, whose consumer is a drawing autorun rather
-than `gpuProps()` — same rule, since an autorun has no component either).
+A palette is a pure function of the active theme, so derive it in a model getter, `<plugin builder>(getPaletteHost(self).palette)`, that `gpuProps()` / `renderState` read directly. Do **not** push it into a volatile from a React `useEffect` via `setColorPalette`: the effect runs only on mount, so SVG export and RPC, which have no component, see a null palette and render blank. A getter is always present and MobX recomputes it only on a theme change. A drawing autorun follows the same rule (tree-sidebar's `treeStroke` / `treeHoverColors`).
 
-**Read `session.palette`, not `session.theme`.** Both are required on
-`AbstractSessionModel` and both resolve from the same `resolvePalette` call, so
-they cannot disagree — but they are for different consumers, and only one is a
-render input:
-
-- `palette` (`JBrowsePalette`) is what *rendering* reads: plain color strings,
-  no toolkit, serializable, so it crosses the RPC boundary and works headless.
-- `theme` is the resolved MUI `Theme`, for the components that are MUI.
-
-Embedded products without `ThemeManagerSessionMixin` supply both off a
-`themeOptions` getter (`EmbeddedSessionThemeMixin`). No display sends a theme
-to the worker any more; SVG export still overrides the palette with the
-*export* theme — `resolvePalette({ configTheme: opts?.theme })`.
+**Read `session.palette`, not `session.theme`.** Both resolve from one `resolvePalette` call, but `palette` (`JBrowsePalette`) is plain serializable color strings that cross the RPC boundary and work headless, while `theme` is the MUI `Theme` for MUI components. SVG export overrides the palette with the export theme via `resolvePalette({ configTheme: opts?.theme })`; no display sends a theme to the worker.
 
 ## `rpcProps()` loop trap and how to break it
 
-Including any fetch-result derivative in `rpcProps()` creates an infinite loop:
+A fetch-result derivative in `rpcProps()` loops forever:
 
 ```
 setCellData → <derived value> changes → rpcProps() changes
@@ -319,64 +109,21 @@ setCellData → <derived value> changes → rpcProps() changes
   → <derived value> changes → rpcProps() changes → …
 ```
 
-The fix is to split the computation: `rpcProps()` gets a cache-key version
-computed from user-controlled inputs only; any part that needs fetch-result data
-is kept in a separate view used only for rendering or passed directly to the
-server.
+**Rule:** `rpcProps()` contains only user-controlled settings. Never include `cellData`, `samplePloidy` or any getter that reads them. Split the computation: `rpcProps()` gets a cache-key version from user inputs only, and the part needing fetch-result data stays in a separate view used for rendering. In the variant case, `rpcProps().sampleFilter` reads `sourcesBase` (samples narrowed to the focus before haplotype expansion, which needs `samplePloidy`); the client's `sources` view reads `samplePloidy` for rendering only, and the worker expands haplotype rows itself.
 
-In the variant case, `rpcProps().sampleFilter` reads `sourcesBase`, the
-adapter's samples narrowed to the focus before any haplotype expansion — which
-needs `samplePloidy` — so a focus naming haplotypes asks for their samples
-(`parseRowName`, the inverse of the haplotype naming). The client's `sources`
-view still reads `samplePloidy` for rendering, safe because it is not in
-`rpcProps()`. The worker expands to haplotype rows itself, after computing
-`samplePloidy` from the features.
-
-**Rule:** `rpcProps()` must contain only user-controlled settings. Never include
-`cellData`, `samplePloidy`, or any getter that reads them.
-
-Because both families key on the *returned* payload (see "the cache key is the
-return value, not the reads"), the loop needs a fetch-derived value to reach the
-**return** — one merely consulted while building can't loop. That is the whole
-reason HiC gets away with `activeNormalization` reading fetched
-`availableNormalizations`. It also sets where the loop shows up: per-region it is
-a synchronous freeze, caught by `makeSettingsLoopGuard`'s within-tick counter;
-on the global family `installGlobalFetchAutorun` reads the key and fetches in one
-debounced body, so it loops on the async-fetch cadence instead, which no
-within-tick counter can tell apart from fast interaction. See
-`packages/display-kit/CLAUDE.md` for the overridable
-hook list and test-file mapping.
+Both families key on the *returned* payload, so the loop needs a fetch-derived value to reach the **return**; one merely consulted while building cannot loop (why HiC's `activeNormalization` is safe). Per-region, the loop is a synchronous freeze caught by `makeSettingsLoopGuard`'s within-tick counter. The global family's `installGlobalFetchAutorun` reads the key and fetches in one debounced body, so it loops at async-fetch cadence, which no within-tick counter can tell from fast interaction. `packages/display-kit/CLAUDE.md` lists the overridable hooks and tests.
 
 ## Row order is not a fetch input
 
-The three row-stacking displays all keep the *order* rows are drawn in out of
-the RPC, and each pays for it in a different currency:
+The row-stacking displays keep the *order* rows are drawn in out of the RPC:
 
 | display | what crosses | who assigns the row |
 | --- | --- | --- |
 | wiggle | the full canonical `sources` list, as a **structural** arg (absent from `rpcProps()`) | the main-thread encoder, from `gpuProps().sources` |
-| MAF | the focus (`rows.kept`, sorted) only | `placeMafRegionData`, keyed on species name, re-run by the `rpcDataMap` memo over the store and the row order |
+| MAF | the focus (`rows.kept`, sorted) only | `placeMafRegionData`, keyed on species name, re-run by the `rpcDataMap` memo |
 | multi-sample variant | `sampleFilter` (sorted sample names) | `placeVariantRows`, keyed on `rowNames`, re-run by the derived region map |
 
-The shared rule: **a fetch argument may name the row *set*, never the row
-order.** The set is real work — a focused clade is a fraction of the cells or
-the sequence — while the order is a permutation the main thread can apply for
-free. Sent unsorted, a set puts the order back in through the cache key, which
-compares arrays in order, even though no worker reads it — so sort it.
+**A fetch argument may name the row *set*, never the row order.** The set is real work, since a focused clade is a fraction of the data, while the order is a permutation the main thread applies for free. Sort the set: unsorted, it puts the order back in through the cache key, which compares arrays in order. Drag-reorder, "Group by", clustering and genotype sort are then re-uploads of bytes in hand, and no payload is numbered against a row list the display is not drawing.
 
-A drag-reorder, a "Group by", a clustering run and a genotype sort are then all
-re-uploads of bytes already in hand; under positional row identity each of them
-re-downloaded and re-computed the whole window. It also removes a class of bug,
-since a payload numbered against a row list the display isn't drawing renders
-every row under another row's name.
-
-Two things to get right when doing it again:
-
-- **Name the rows in the payload** (`rowNames` / `sampleId`) and place by name.
-  A row the display isn't drawing must not fall back to row 0; variants sends it
-  to a `HIDDEN_ROW` sentinel that every painter's existing Y-cull discards, MAF
-  drops it.
-- **Placement must not disturb an ordering something else depends on.** The
-  variant cell arrays are sorted by `(featureIndex, rowIndex)` in the *worker's*
-  numbering and the hit test binary-searches that, so placement writes a second
-  array and leaves the sorted one alone.
+- **Name the rows in the payload** (`rowNames` / `sampleId`) and place by name. A row the display is not drawing must not fall back to row 0; variants sends it to a `HIDDEN_ROW` sentinel that every painter's Y-cull discards, MAF drops it.
+- **Placement must not disturb an ordering something else depends on.** The variant cell arrays are sorted by `(featureIndex, rowIndex)` in the worker's numbering and the hit test binary-searches that, so placement writes a second array and leaves the sorted one alone.

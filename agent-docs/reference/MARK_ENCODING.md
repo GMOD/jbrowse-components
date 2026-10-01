@@ -11,284 +11,211 @@ it wants and which feature fields feed each channel, one worker call per
 region evaluates that, and the display draws what comes back through the
 shared shapes. [ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
 §"The grammar position, as one ladder" refused a mark grammar at the authoring
-level on the ground that "the reader never picks a mark"; this is the rung
-where a reader does, for the one class where the format decides nothing — a
-BED score column, a segment ratio, a bedGraph-shaped interval.
+level because the reader never picks a mark; this is the rung where a reader
+does, for the one class where the format decides nothing (a BED score column, a
+segment ratio, a bedGraph-shaped interval).
 
-## The three pieces
+## The pieces
 
 | Piece | Where | What it owns |
 | --- | --- | --- |
-| `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a shape that is a name, a jexl expression or a categorical scale over the shape names, an integer `row`, a `text` lane of strings for the text mark, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
-| `runTransforms`, `layerTables` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `cells`, `bin`, `aggregate`, `coverage`, `pileup`, `mate` — run in order over a table (`featureTable.ts`; a feature list is a source table, and an adapter holding its rows typed answers a `ColumnTable` over them through `getFeatureTable`, [ADR-193](../architecture-decision-records/adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)), each step one kernel reading what the last answered and answering a table of its own ([ADR-191](../architecture-decision-records/adr-191-the-mark-pipeline-runs-over-tables.md)); `layerTables` runs a whole layered request, facet included |
-| `CoreGetEncodedLayers` | `packages/core/src/rpc/methods/CoreGetEncodedLayers.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `filter` list as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
-| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ mark, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry with a shape reading `layers[markIndex]` through a lens that checks its type's lanes are present (`markLanes` over `MARK_SPECS`) and `enabled` inside the entry's zoom range, a `text` entry placed as DOM by `placeTextMarks` in the entry's stead, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over the candidates its layer answers — a bar, rule, line or span's by the rows near the cursor (`rowSpanIndex`, [ADR-192](../architecture-decision-records/adr-192-a-span-answers-a-hover-by-its-row.md), [ADR-196](../architecture-decision-records/adr-196-a-bar-answers-a-hover-by-its-row.md)), a point or link's from its Flatbush — spans stacked on `row` into `rowCount` bands |
+| `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the lanes the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, and the `ScaleTable` per scaled channel |
+| `runTransforms`, `layerTables` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list run in order over a table ([ADR-191](../architecture-decision-records/adr-191-the-mark-pipeline-runs-over-tables.md)); an adapter holding typed rows answers a `ColumnTable` through `getFeatureTable` ([ADR-193](../architecture-decision-records/adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)) |
+| `CoreGetEncodedLayers` | `packages/core/src/rpc/methods/CoreGetEncodedLayers.ts` | one region's features fetched once, the shared `transform` run, then each layer's own `transform` and encoding; answers `{ layers: EncodedChannels[] }` index-aligned with the request, buffers transferred |
+| `LinearMarkDisplay` | `plugins/marks` | the `marks` slot, one `defineMark` per entry reading `layers[markIndex]` through a lens that checks its lanes are present (`markLanes` over `MARK_SPECS`) and `enabled` inside the entry's zoom range; a `text` entry placed as DOM by `placeTextMarks`; the legend from the union of the regions' scale tables; hover through each mark's `hitNearest` |
+
+Hover for a bar, rule, line or span goes by the rows near the cursor
+(`rowSpanIndex`, [ADR-192](../architecture-decision-records/adr-192-a-span-answers-a-hover-by-its-row.md),
+[ADR-196](../architecture-decision-records/adr-196-a-bar-answers-a-hover-by-its-row.md));
+a point or link uses a Flatbush.
+
+## Scales
 
 **A positional channel is a field and the value scale is the plot's**, where
-`color` and `shape` each carry their own scale object.
-The display's own `scales.y` — `type`, `domainMin`, `domainMax`, the
-autoscale members, and the two guides it owns, `rules` and `title` — is the one
-value scale, and every mark's `encoding.y` names a field read through it, so
-the axis, its ticks, its reference lines and every mark's shapes read one
-declaration and the score menu's "Set min/max" writes there
-([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)).
-`ScoreAxisMixin` is the contract it satisfies, and wiggle, Manhattan and the
-coverage band declare the same object with the members each of them draws, `ScoreScaleMixin` reading and writing it
-([ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)). The scale does not cross
-the wire — the worker reads a value and nothing there reads the scale, and
-shipping it would key the fetch on the axis.
+`color` and `shape` each carry their own scale object. The display's `scales.y`
+(`type`, `domainMin`, `domainMax`, the autoscale members, and the `rules` and
+`title` guides) is the one value scale. Every mark's `encoding.y` names a field
+read through it, so the axis, ticks, reference lines and every mark's shapes read
+one declaration and the score menu's "Set min/max" writes there
+([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md),
+[ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)).
+The scale does not cross the wire: nothing in the worker reads it, and shipping
+it would key the fetch on the axis.
 
-**Colour is resolved in exactly one place per cardinality**, and the legend
-reads the same table ([mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md)).
-Every value derives its entry from itself (`categoricalScale`,
-`packages/core/src/ui/colors.ts`: an integer takes the slot it names, anything
-else hashes in), so two regions that met different value sets agree on every
-value they share without a round trip, and a feature with nothing in the field
-takes a grey `(no value)` row. A `domain` hands palette entries to the listed
-values in that order, continuing into the default palette past a short one, and
-a value it leaves out hashes into a slot no listed value holds, nor one within
-0.05 OKLab of a listed color; the legend lists the domain first and the rest
-sorted. Ranking the unlisted values after the listed ones, as this did until
-2026-09-17, gave one value two colors across a pan. That
-was Manhattan's own evaluator until 2026-09-09; the encoder's per-region
-palette walk was the one way two regions of a view could disagree about a
-colour, and the reviewer's case against a view-level resolution instead was
-that it either refetches on every union growth or rewrites colour per instance
-on the main thread, which breaks the one-place rule above.
+**Colour is resolved in exactly one place per cardinality**, and the legend reads
+the same table ([mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md)).
 
-Which kind a colour scale is comes from `scale` and never from the data or
-from which other member is written — a `field` with no `scale` is
-`categorical`, whatever `range` lists — so a numeric field with no scale takes
-a colour per distinct value; the table carries `numericKeys` for that case and
-the key prints a line naming `scale` once the rows pass a handful.
+- **Categorical.** Every value derives its entry from itself (`categoricalScale`,
+  `packages/core/src/ui/colors.ts`: an integer takes the slot it names,
+  anything else hashes in), so two regions that met different value sets agree
+  on every shared value without a round trip. A feature with no value takes a
+  grey `(no value)` row. A `domain` hands palette entries to the listed values
+  in order, continuing into the default palette, and an unlisted value hashes
+  into a slot no listed value holds nor one within 0.05 OKLab of a listed
+  colour. Ranking unlisted values after listed ones gave one value two colours
+  across a pan. A view-level resolution was rejected because it either refetches
+  on every union growth or rewrites colour per instance on the main thread.
+- **Which kind comes from `scale` alone**, never from the data or from which
+  other member is written: a `field` with no `scale` is categorical whatever
+  `range` lists. The table carries `numericKeys` for a numeric field with no
+  scale, and the key prints a line naming `scale` once rows pass a handful.
+- **Threshold.** Only ever declared: `domain` holds ascending cut points, `range`
+  one colour more, and a value takes `range[thresholdIndex(value, domain)]`
+  (`@jbrowse/core/util/thresholdScale`). A missing value paints the no-value
+  grey and non-numeric text the misconfiguration grey, decided on the miss branch
+  so the interval lookup stays an integer ([ADR-156](../architecture-decision-records/adr-156-the-feature-colour-takes-a-threshold.md)).
+  It resolves per region in the worker like a categorical scale, and its table is
+  its declaration plus two flags for keyless cases. `thresholdKeyEntries` derives
+  the key rows for the mark display and Manhattan alike. Manhattan's LocusZoom r²
+  bins are this scale over `field: 'ld'`.
+- **Quantitative ramp.** Resolved on the main thread, like y. A caller whose shape
+  reads the ramp names the `colorValue` lane, and the worker ships raw values plus
+  the region's `extent`. The display unions loaded extents into one domain, and
+  `bar`, `point` and `span` read it as three uniforms (`rampMode`, `rampMin`,
+  `rampMax`) over the 256-entry LUT bound through `defineMark`'s `texture`
+  (a `span` doing so makes a heatmap, ADR-113). A pan that widens the domain
+  uploads no instance bytes. The value rides the colour lane reinterpreted: one
+  4-byte slot carries a packed ABGR or the value's float32 bits (`colorBits`,
+  `markColor.slang`'s `asfloat`). `text` keeps the worker-resolved lane because
+  its labels are DOM. Canvas2D, which is also the SVG export, bakes packed
+  colours once per domain change (`paintColors`). `domainMin` and `domainMax`
+  each pin one end (`rampDomain`, `@jbrowse/core/util/colorRamp`); both pinned
+  fixes a legend for a figure. `reverse` turns the stops round
+  (`colorRampStops`) so direction is a member rather than a domain written
+  high to low.
 
-A **threshold** scale is the third kind, and it is only ever declared: `domain`
-is the ascending cut points, `range` holds one colour more, and a value takes
-`range[thresholdIndex(value, domain)]` — the count of cut points it is at or
-past (`@jbrowse/core/util/thresholdScale`). A feature with no value paints the
-no-value grey and text that is no number the misconfiguration grey, the two
-keys the feature display's threshold files (ADR-156), decided on the miss
-branch alone so the interval lookup stays an integer. It resolves per region
-in the worker the way a categorical scale does, so it needs no lane, no ramp
-and no shader change, and the table it ships is its declaration, the cuts and
-the `range` as written, with two flags for the keyless cases the region met;
-`thresholdKeyEntries` derives the key's rows from those — interval labels
-`< a`, `a – b`, `≥ b`, then the two keyless rows — for the mark display and
-Manhattan alike, and the legend ORs the flags across regions and marks.
-Manhattan's LocusZoom r²
-bins are this scale over `field: 'ld'`, which is what makes them a config an
-author can move.
+**A scale belongs to a channel, not to colour alone.** `shape` takes
+`{ field, scale: 'categorical', domain? }` with `range` listing shape names (the
+three, in order, by default), and `encodeFeatures` resolves both through one
+arm, `paintCategories`. The payload carries `scale` for colour and `shapeScale`
+for shape. The legend draws a shape table with the shape as swatch, recorded from
+render-core's `appendGlyph` as SVG path data so the key cannot draw a triangle
+the plot draws as a circle. The shape fills the `glyph` lane, which only `point`
+reads; a scale on a bar's shape is never resolved and the rule list warns of it.
 
-A **quantitative** ramp resolves on the main thread instead, the way y does:
-a caller whose shape reads the ramp itself names the `colorValue` lane and the
-worker ships the raw values plus the region's own `extent`; the display unions
-the extents of the loaded regions into one domain and `bar` and `point` read
-it as three uniforms (`rampMode`, `rampMin`, `rampMax`) over the 256-entry LUT
-bound through `defineMark`'s `texture`, so an unpinned ramp agrees across a
-view and a pan that widens the domain uploads no instance bytes. The value
-rides the colour lane reinterpreted — one 4-byte slot carrying either a packed
-ABGR or the value's float32 bits, `colorBits` on the packing side and
-`markColor.slang`'s `asfloat` on the shader's — so the ramp costs no instance
-byte. The Canvas2D painters, which are also the SVG export, bake the packed
-colours once per domain change (`paintColors`, memoized on the payload). A
-`span` reads the same uniforms (ADR-113's amendment of 2026-09-28), which is
-what makes it a heatmap; `text` alone keeps the worker-resolved lane, since its
-labels are DOM the display places. `domainMin` and `domainMax` each pin
-one end and leave the other to that union (`rampDomain`,
-`@jbrowse/core/util/colorRamp`), so a pinned floor holds across a pan while the
-ceiling follows the data; both pinned is what fixes a legend for a figure. The
-ramp's stops are `range`'s colours or the named `scheme`, turned round under
-`reverse` (`colorRampStops`), so a direction is a member rather than a domain
-written high to low.
+## Lanes
 
-**A scale belongs to a channel, not to colour alone.** `shape` takes the
-same `{ field, scale: 'categorical', domain? }` that `color` does, with
-`range` — shape names, the three in order by default — as colour's `range`
-lists colours, and `encodeFeatures` resolves both through one categorical arm,
-`paintCategories`: each value's range entry, pinned by `domain` or derived
-from the value, is its own whatever else a region met, so over a `category`
-column each label resolves once and the lane is painted by code, and the
-table lists the values the admitted instances carried. The payload carries `scale` for the
-colour channel and `shapeScale` for the shape channel, and the mark display's
-legend draws a shape table as rows whose swatch is the shape — recorded from
-render-core's own `appendGlyph` as SVG path data, so the key cannot draw a
-triangle the plot draws as a circle. The shape fills the `glyph` lane, the
-point painter's code per instance, and only `point` reads it; a scale on a
-bar's shape is never resolved, and the rule list warns of it.
+**A lane is filled because a shape reads it.** `encodeFeatures` takes the lane set
+beside the encoding (`y`, `color`, `colorValue`, `glyph`, `row`, and `index` for
+the Flatbush), and an unnamed lane is neither allocated, filled nor transferred.
+`EncodedChannels` carries every lane optional on the wire and `Encoded<L>` makes
+a caller's own lanes required. The index is a lane because it was most of the
+cost after the walk (the `no-index` and `wiggle` rows below), so a caller that
+never hovers through it declines it. The mark display names it for a point or
+link alone. A `jexl` instance is passed only by a caller with a `jexl:` channel.
 
-**A lane is filled because a shape reads it.** `encodeFeatures` takes the
-lane set beside the encoding — `y`, `color`, `colorValue`, `glyph`, `row`, and
-`index` for the Flatbush — and a lane not named is neither allocated, filled nor
-transferred: `EncodedChannels` carries every lane as optional on the wire,
-`Encoded<L>` is the same type with a caller's own lanes required, and the
-mark display's lens hands a shape its layer only when the lanes it reads
-are there. The index is a lane like the others because it was most of the
-cost after the walk — the `no-index` and `wiggle` rows below — and a caller
-that never hovers through it (wiggle's fallback, the example plugin's
-every-instance walk) declines it. The mark display names it for a point or a
-link alone: a bar, rule, line or span stands between `x` and `x2` in one row,
-and the display finds it there (ADR-196). A `jexl` instance is likewise passed only
-by a caller with a `jexl:` channel to compile; every other channel is a
-field name or a reader.
+**A constant colour is one number, not a lane.** A CSS colour, the default
+included, answers `color` as the packed ABGR itself, and
+`encodedChannelTransferables` lists no buffer for it. A categorical, threshold,
+ramp or `jexl:` colour stays a lane even when every instance takes one colour.
+`colorAt` reads either spelling, and indexing `color` directly is a type error.
+The GPU pack and Canvas2D each expand it once, so shaders never learn the
+difference ([ADR-198](../architecture-decision-records/adr-198-a-constant-colour-rides-as-a-scalar.md)).
 
-**A constant colour is one number, not a lane.** Where the colour is a CSS
-colour, the default included, `encodeFeatures` answers `color` as the packed
-ABGR itself, and `encodedChannelTransferables` lists no buffer for it; a
-categorical, threshold, ramp or `jexl:` colour stays a lane even where every
-instance takes one colour. `colorAt` reads either spelling, beside
-`featureIndexAt`, and a caller that indexes `color` directly is a type error
-under the union. Nothing downstream holds the expanded lane: the GPU pack
-fills one for the pack alone (`colorBits`), and Canvas2D expands it once and
-keeps it on the payload as it keeps a ramp's bake (`paintColors`). The
-instance record is unchanged, so the shaders never learn the difference
-([ADR-198](../architecture-decision-records/adr-198-a-constant-colour-rides-as-a-scalar.md)).
+**The encoder fills a lane at a time.** One pass admits rows over `x`, `x2` and
+`y` alone, and none runs when all three hold whole numbers; every other lane is
+its own loop over the admitted rows with one composed index or none. A
+`kept ? kept[k] : k` test per element ran 3-4x slower in V8, so each loop exists
+once with the index and once without. `featureIndex` is absent where no row was
+skipped; `featureIndexAt` reads either.
 
-**The encoder fills a lane at a time.** One pass admits the rows over `x`,
-`x2` and `y` alone, straight off the lanes where they are lanes, and none runs
-where all three hold whole numbers; every other lane is its own loop over the
-admitted rows, reading a lane through one composed index or none. A loop
-testing `kept ? kept[k] : k` per element ran 3-4x slower in V8, which does not
-hoist the test, so each loop is written once with the index and once without.
-`featureIndex` is absent where no row was skipped, since it is then the
-identity; `featureIndexAt` reads either
-([ADR-193](../architecture-decision-records/adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)).
+**A feature the encoder cannot place is counted, not lost.** A feature whose `x`,
+`x2` or asked-for `y` is missing or not a number is left out of the arrays and
+added to `skipped` beside `count`. The mark display and Manhattan sum both into a
+`SkippedFeaturesIndicator` chip (display-kit), whose tooltip names the `y` field.
+Without it a mistyped `scoreField` or `encoding.y` was an empty track with no
+message.
 
-**A feature the encoder cannot place is counted, not lost.** A feature whose
-`x`, `x2` or asked-for `y` reads as missing or not a number is left out of
-the arrays and added to `skipped` beside `count`, and the mark display and
-Manhattan sum the two over their loaded regions into a warning chip in the
-bottom-right corner (`SkippedFeaturesIndicator` in display-kit, the same
-`TrackControl` the height indicator uses for features the layout dropped):
-"4 of 4 skipped", with the tooltip naming the `y` field. Before it, a
-mistyped `scoreField` or `encoding.y` was an empty track with no message.
-
-**A `jexl:` ref is a channel escape, not the default.** The measurement below
-is why: the native read is the loop's own cost and a jexl evaluation is half
-again on top of it per channel.
+**A `jexl:` ref is a channel escape, not the default.** The native read is the
+loop's own cost and a jexl evaluation adds about half again per channel (the
+table below).
 
 ## The transform stage
 
-A layer's features are the region's, after the steps its `transform` names,
-run in the worker before the encode. The step list is typed by `type`, the
-spelling GenomeSpy chose over Vega-Lite's inferred one, and `runTransforms`
-walks it in order:
-
-| Step | What it answers | Fields it writes |
-| --- | --- | --- |
-| `filter` | the features a `jexl:` expression admits | none |
-| `formula` | every feature, with a `jexl:` expression's value in `as` | `as` |
-| `flatten` | one feature per element of an array-valued `field` (`subfeatures`) or per entry of a record keyed by name (a VCF's `samples`, a MAF block's `alignments`), reading the element's fields over the feature it came from; `keepEmpty` holds on to a feature whose field is empty, which is otherwise dropped | the element's, `index` and, for a record, `key` |
-| `cells` | one feature per run of columns in one `state` — `match`, `mismatch`, `gap` — of each aligned row's `field` (`seq`) against the same field on the feature it was fanned out of, on the row's reference span, and one interbase `insertion` per run of reference gaps the row has bases in, at the reference base it precedes; a gap run reaching either end of the row is no cell | `state`, `base` on a mismatch or an insertion, `match` as 1 or 0 off a gap, `length` on an insertion |
-| `bin` | every feature, snapped to the genome-aligned bin of `step` bp its `field` (`start`) falls in; with `fields`, an interval's start and end, one piece per bin the interval overlaps, a zero-length one a piece in the bin holding it; `step: "auto"` follows the view's zoom | `start` and `end`, or the two names in `as`; with `fields`, `overlap`, the interval's bases inside the bin |
-| `aggregate` | one feature per distinct `groupby` value set, spanning its members' extent, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` over a field, `count`/`sum`/`mean` weighted by a `weight` field where one is named — in `as` or `count`/`<op>_<field>`; no `groupby` folds the region | the group's fields, the ops |
-| `coverage` | one feature per run of constant depth over the spans, where the depth is not zero | `as` (`coverage`) |
-| `pileup` | every feature, on the lowest row where it overlaps nothing already there — greedy first fit in start order over `fields` (`start`, `end`), `padding` bp of clearance | `as` (`row`) |
-| `mate` | one feature per other end a record states — its `mate` field (BEDPE, STAR-Fusion) or each VCF `ALT` naming a locus — a record naming none dropped and a pair of ends answered once | `mate.refName`, `mate.start`, `mate.end`, `mate.mateDirection`, `mateDirection`, `alt`, `svtype` |
+A layer's features are the region's, after the steps its `transform` names, run
+in the worker before the encode. A step is typed by `type`, the spelling
+GenomeSpy chose over Vega-Lite's inferred one, and `runTransforms` runs them in
+order. The step types are `filter`, `formula`, `flatten`, `cells`, `bin`,
+`aggregate`, `coverage`, `pileup` and `mate`; `featureTransforms.ts` and its tests
+define each one's fields and outputs.
 
 In config a step is one member of `MarkTransform`
 (`plugins/marks/src/LinearMarkDisplay/markTransformConfigSchema.ts`), a
-`ConfigurationSchemaUnion`: it names its `type` and takes only its own slots,
-each defaulting to what the worker reads for a slot the wire leaves off, and a
+`ConfigurationSchemaUnion`: it names its `type`, takes only its own slots, and a
 key of another step is refused at load. The display writes every slot of every
-step onto the wire (`stepsOf`), so a step left at its defaults and the same
-step written at them are one fetch; `model.test.ts` pins that for every slot of
-every step type. Three lists name the step types — the union's keys, the
-wire's `TransformStep` and the rule list's `StepSnapshot` — and the union's
-`satisfies` and `markTransformConfigSchema.test.ts` fail when they disagree
+step onto the wire (`stepsOf`), so a step left at its defaults and the same step
+written at them are one fetch; `model.test.ts` pins that. Three lists name the
+step types (the union's keys, the wire's `TransformStep`, the rule list's
+`StepSnapshot`), and the union's `satisfies` and
+`markTransformConfigSchema.test.ts` fail when they disagree
 ([ADR-150](../architecture-decision-records/adr-150-a-transform-step-is-one-schema-per-type.md)).
 
-`bin` writes over `start` and `end` on purpose: an `aggregate` grouped by
-those two is then a density whose bars span the bins, with the encoding's
-`x`/`x2` defaults untouched and `y: 'count'`, and the group's extent is the
-bin's. Two defaults spare the config that restatement. An `aggregate` whose
-`groupby` is empty takes the edges the last `bin` before it wrote, in its own
-list, the facet's or the display's, resolved where the display translates
-`marks` into the request rather than in `runTransforms`. A mark whose
-`encoding.row` is empty reads the field the last `pileup` before its encode
-wrote — its own, the facet's per-section one, or the display's — unless an
-`aggregate` or `coverage` after that pileup made its features from nothing,
-resolved in the worker (`layerFeatures`) so a caller of the RPC gets the same
-row a display does. A `bin` by `field` places a feature in one bin, so a
-feature that crosses a boundary counts where its `field` falls, and the
-`make-density` sidecar counts starts the same way, so the density tier and the
-fetched count agree. A `bin` over `fields` is the interval case, declared
-([ADR-197](../architecture-decision-records/adr-197-a-bin-cuts-an-interval-at-its-edges.md)):
-each piece is its feature with the bin's edges and `overlap` beside it, and an
-`aggregate` weighting a `mean` by `overlap` is a mean per base — the MAF
-display's identity behind `cells`, or a BigWig tier's span-weighted mean. An
-interval `bin` followed at once by an `aggregate` grouped by its edges runs as
-one kernel with no piece table, answering what the two steps answer apart.
-`coverage` stays the step for depth as runs rather than bins. A `formula` and
-a `bin` answer the input's rows with the new fields beside them, so no
-feature's data is copied per step; an `aggregate` or `coverage` answers typed
-lanes carrying only what it wrote, with a lazy id. A `step` of
-`"auto"` resolves before the RPC to the 1/2/5 rung above four pixels of bp and
-is keyed into the fetch, so a bin is the same width of screen at every zoom
-and only a zoom across a rung refetches
-([ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)).
-Wiggle's binning is still the adapter's: a BigWig's zoom levels are computed
-at index time, and a mark over a `QuantitativeTrack` reads the tier bbi picks
-for the view's zoom, the one the wiggle display reads (ADR-123, ADR-125). So
-`bin` is for the feature adapters that have no summary, and over a BigWig it
-bins tier rows; the table under "The mark display over a BigWig, measured"
-says what that costs and how far it sits from the raw section.
+Behaviours that fail silently:
 
-`pileup` is the one step whose output is a layout rather than a measurement,
-and it is what makes a read pileup declarable: a `span` reading the `row` it
-wrote is the packing canvas's `packRef` does by hand, over any adapter the
-mark display attaches to
-([ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md)).
-It answers the input's rows in start order with a typed `row` lane beside
-them, so nothing is copied per feature and a later `bin` or `aggregate` still
-reads the original fields.
+- **`bin` writes over `start` and `end` on purpose.** An `aggregate` grouped by
+  those two is then a density whose bars span the bins, with `x`/`x2` defaults
+  untouched and `y: 'count'`.
+- **Two defaults spare that restatement.** An `aggregate` with empty `groupby`
+  takes the edges the last `bin` before it wrote, in its own list, the facet's
+  or the display's, resolved where the display translates `marks` into the
+  request. A mark with empty `encoding.row` reads the field the last `pileup`
+  before its encode wrote, unless an `aggregate` or `coverage` after that pileup
+  made features from nothing. That resolves in the worker (`layerFeatures`) so an
+  RPC caller gets the display's row.
+- **A `bin` by `field` counts a boundary-crossing feature where its `field`
+  falls.** The `make-density` sidecar counts starts the same way, so the density
+  tier and the fetched count agree.
+- **A `bin` over `fields` is the interval case** ([ADR-197](../architecture-decision-records/adr-197-a-bin-cuts-an-interval-at-its-edges.md)):
+  each piece carries the bin's edges and `overlap`, so an `aggregate` weighting a
+  `mean` by `overlap` is a mean per base (the MAF display's identity behind
+  `cells`, a BigWig tier's span-weighted mean). An interval `bin` followed at
+  once by an `aggregate` grouped by its edges runs as one kernel.
+- **`step: "auto"` resolves before the RPC** to the 1/2/5 rung above four pixels
+  of bp and is keyed into the fetch, so only a zoom across a rung refetches
+  ([ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)).
+- **`bin` is for adapters with no summary.** Wiggle's binning stays the adapter's,
+  since a BigWig's zoom levels are computed at index time and a mark over a
+  `QuantitativeTrack` reads the tier bbi picks (ADR-123, ADR-125). Over a BigWig
+  `bin` bins tier rows.
+- **`pileup` is a layout, not a measurement.** It makes a read pileup declarable:
+  a `span` reading the `row` it wrote is what the packing canvas's `packRef` does
+  by hand ([ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md)).
+- **`formula` and `bin` answer the input's rows with new fields beside them**, so
+  no feature's data is copied per step; `aggregate` and `coverage` answer typed
+  lanes carrying only what they wrote.
 
-**`facet` and `rows` are one split in the worker.** `CoreGetEncodedLayers`
-splits the features on the request's `facet.field` and runs each layer's steps
-over each section alone (`facetLayers`,
+**`facet` and `rows` are one split in the worker.** `CoreGetEncodedLayers` splits
+the features on the request's `facet.field` and runs each layer's steps over each
+section alone (`facetLayers`,
 [ADR-130](../architecture-decision-records/adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md)).
-The split is a counting sort into section order, placed as early as the
-shared steps allow (`layerTables`, ADR-191): a shared step after it must read
-a row and answer rows of it in order without writing the field, so it answers
-what it would have after the split.
-The mark display sends its `facet`, or where it has none its `rows.field`
-under the same name, so the worker never learns which it was. The main thread
-lays the answer out one of two ways: labelled sections as deep as their
-packing, under chips, capped at forty and hidden from a chip (`facetLayout`);
-or one row per value in the tree sidebar's arrangement, focus included, every
-row a region packed a value into landing on that value's one row
-(`rowsLayout`). `rows` takes no steps of its own, so `facet.transform` with no
-facet field runs over the shared list before the split, as it does with no
-split at all. The row lane, `markRowHeightPx` and `bandTops` are the same for
-both ([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)).
+The split is a counting sort placed as early as the shared steps allow
+(`layerTables`, ADR-191), so a shared step after it must read a row and answer
+rows in order without writing the field. The display sends its `facet`, or its
+`rows.field` under the same name. The main thread lays the answer out as labelled
+sections under chips (`facetLayout`) or one row per value in the tree sidebar's
+arrangement (`rowsLayout`). `rows` takes no steps of its own, so `facet.transform`
+with no facet field runs over the shared list. The row lane, `markRowHeightPx` and
+`bandTops` are shared
+([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)).
 
-The request's shared `transform` runs first, then each layer's own, so a
-`marks` list can hold a binned count and the raw features over one fetch:
-the display's `filter` expressions are the shared steps and a mark's `transform`
-its own. With a zoom range on each — `minBpPerPx` on the density,
-`maxBpPerPx` on the features — one config is a multiscale picture, the
-declared form of GenomeSpy's `multiscale` layer and of `defineMark`'s
-`enabled`. A mark outside its range is off for the draw, the hover and the
-highlight through `enabled`, and the display folds only the drawing marks
-into the shared y domain, the legend, the span row count and the skipped
-chip (`markView`), so the feature layer's axis is not blown out to the
-count's range. The worker still encodes every layer per region: the bin
-layer costs 300 instances at a million features, and the feature layer's
-encode is the cost it was, so nothing is skipped by zoom before the RPC.
+**The shared `transform` runs first, then each layer's own**, so one fetch can
+hold a binned count and the raw features. With `minBpPerPx` on the density and
+`maxBpPerPx` on the features, one config is a multiscale picture (GenomeSpy's
+`multiscale` layer, `defineMark`'s `enabled`). A mark outside its range is off for
+draw, hover and highlight, and `markView` folds only drawing marks into the shared
+y domain, legend, span row count and skipped chip. The worker still encodes every
+layer per region; nothing is skipped by zoom before the RPC.
 
-**Past the byte budget the picture is the sidecar's.** The display is
-byte-gated and composes `DensityTierMixin`, so where the gate refuses the
-detail fetch a mark declaring `source: 'density'` draws the adapter's
-`densityAdapter` bins as its own layer — the sidecar's intervals as `x`/`x2`,
-its levels as `y`, a Flatbush over the same box where the mark is a point —
-and `rpcDataMap` answers
-that in the region store's place, so the domain, the axis, the legend, the
-hover and the SVG export are the paths the features already take. Every other
-mark is empty there, a corner chip says the sidecar is what is drawn, and a
-bin opens nothing, the read-back being the download the gate refused. With no
-density mark drawing, the tier never reads and the banner stands
-([ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)).
+**Past the byte budget the picture is the sidecar's.** The display is byte-gated
+and composes `DensityTierMixin`. Where the gate refuses the detail fetch, a mark
+declaring `source: 'density'` draws the adapter's `densityAdapter` bins as its own
+layer, and `rpcDataMap` answers that in the region store's place, so domain, axis,
+legend, hover and SVG export take the paths features take. Every other mark is
+empty there, a corner chip says so, and a bin opens nothing, since the read-back
+is the download the gate refused. With no density mark drawing, the tier never
+reads and the banner stands ([ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)).
 
-Measured, per input feature, as the steps plus the native encode of their
+Step cost, per input feature, as the steps plus the native encode of their
 output:
 
 <!-- BEGIN GENERATED MEASUREMENT feature-transform-steps -->
@@ -310,10 +237,9 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT feature-transform-steps -->
 
-A table's row view (`TableRow`) spells `get` as a prototype method: the
-class-field arrow the derived features before it first used allocated a
-closure per instance beside the object, and over a million features that was
-most of the construction:
+A table's row view (`TableRow`) spells `get` as a prototype method. The
+class-field arrow derived features used allocated a closure per instance, which
+was most of the construction cost over a million features:
 
 <!-- BEGIN GENERATED MEASUREMENT feature-getter-prototype -->
 
@@ -326,87 +252,61 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT feature-getter-prototype -->
 
-The jexl arms cost what the jexl channel does. The aggregate's first form
-built a string key per feature and measured 2.5x the raw-value trie it
-keys by now; its and coverage's outputs were `SimpleFeature`s, then a
-data-backed feature, and are typed lanes since ADR-191. What the table does not show is
-what the encode hands the GPU: `bin-count` uploads 300 instances where
-`none` uploads a million, which is the whole point of a density layer at
+The table does not show what the encode hands the GPU: `bin-count` uploads 300
+instances where `none` uploads a million, which is the point of a density layer at
 wide zoom.
 
 ## The bar shape
 
 `packages/render-core/src/marks/barMark.ts` and `shaders/barMark.slang`: a rect
 from `x` to `x2` standing between `origin` and `y` on `valueScale.slang`'s
-`valueToYPxScaled`, the scale `pointMark` reads too — the composition
-[ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
-adopted, with [ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)'s
-split kept: the scale is shared, the anchor (a glyph centre against a bar's
-baseline) is each shape's own. The horizontal cuts antialias analytically as
-wiggle's xyplot bar does; the vertical cuts stay hard because tiling intervals
-split a pixel column, so the shader declares no `//! coverage: analytic`.
-`drawAgainstHit.test.ts` sweeps it in both orientations, and a zero-height bar
-neither paints nor answers.
+`valueToYPxScaled`, the scale `pointMark` also reads. The scale is shared and the
+anchor (a glyph centre against a bar's baseline) is each shape's own
+([ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md),
+[ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)).
+Horizontal cuts antialias analytically; vertical cuts stay hard because tiling
+intervals split a pixel column, so the shader declares no
+`//! coverage: analytic`. `drawAgainstHit.test.ts` sweeps both orientations, and a
+zero-height bar neither paints nor answers.
 
 ## A reader in a channel's place
 
 `encodeFeatures` takes a `MarkEncodingInput`: a `MarkEncoding` any channel of
-which may be a `ChannelReader`, a `(feature) => value` built in the worker.
-The declared form is what crosses the wire; the reader form is how a display's
-own worker method reaches the one loop for a channel no field name can say.
-Three packers moved onto it on 2026-09-09:
+which may be a `ChannelReader`, a `(feature) => value` built in the worker. The
+declared form crosses the wire; the reader form lets a display's own worker method
+reach the one loop for a channel no field name can say. Callers today:
 
-- **Manhattan** read LD colouring through a reader joining each feature
-  against the PLINK adapter, until 2026-09-24. `GWASAdapter` makes that join
-  now, writing `ld` and `ld_role` onto the features when a fetch's `opts.ld`
-  names the index SNP, so the display declares its layers to
-  `CoreGetEncodedLayers` and keeps no worker method.
-- **score-example** is `encodeFeatures(features, { y: scoreColumn })` and
-  nothing else; its `[0, 1]` normalisation per region went, and the display
-  folds the shipped `yMax` of every loaded region into one `[0, max]` domain
-  the shape's `valueScale` uniform reads, so a box's height means the same in
-  every region.
-- **wiggle's array-less fallback** (`featuresToRaw`,
-  `plugins/wiggle/src/util.ts`) is `encodeFeatures(features, { y })` where
-  `y` is a reader over `scoreField` that plots a missing value at 0, as the
-  slot documents, plus the summary `minScore`/`maxScore` band read through
-  `featureIndexAt` afterwards, the way Manhattan reads r². The array fast path
-  (BigWig, GC content) never materialises a `Feature` and stays as it is;
-  `RawFeatureArrays` admits the encoder's `Uint32Array` beside the bbi
-  `Int32Array`, and `processFeaturesFromArrays` copies either. Measured over
-  a million `SimpleFeature`s, min of 7: 83 → 219 ns/feature, 91 → 263 with a
-  summary band, and **the whole gap was the Flatbush** the encoder built for
-  a hit index this packer discards. The fallback now names the `y` lane
-  alone and passes no jexl instance — every channel it hands the encoder is
-  a reader — and the `wiggle` row of the table below is that call.
+- **Manhattan** reads LD colouring from `ld` and `ld_role`, which `GWASAdapter`
+  writes onto features when a fetch's `opts.ld` names the index SNP. The display
+  declares its layers to `CoreGetEncodedLayers` and keeps no worker method.
+- **score-example** is `encodeFeatures(features, { y: scoreColumn })`. The display
+  folds every loaded region's shipped `yMax` into one `[0, max]` domain, so a
+  box's height means the same in every region.
+- **wiggle's array-less fallback** (`featuresToRaw`, `plugins/wiggle/src/util.ts`)
+  passes `y` as a reader over `scoreField` that plots a missing value at 0, and
+  reads the `minScore`/`maxScore` band through `featureIndexAt`. The array fast
+  path (BigWig, GC content) never materialises a `Feature` and stays as it is.
+  Naming only the `y` lane and no jexl instance matters: the encoder's Flatbush
+  for a hit index this packer discards was the whole cost gap.
 
-## Prior art, read against the encoder on 2026-09-09
+## Prior art: GenomeSpy
 
-GenomeSpy (`~/src/vendor/genomespy`, a Vega-Lite dialect over WebGL for
-genomics; `SESSION_SPEC_FORMAT.md` §"What the grammars do" has the census)
-answers the same questions differently, and three of its answers are worth
-knowing at this seam:
+GenomeSpy (a Vega-Lite dialect over WebGL for genomics; `SESSION_SPEC_FORMAT.md`
+§"What the grammars do" has the census) answers three of this seam's questions
+differently:
 
-- **Scales resolve on the GPU.** A categorical attribute carries the category
-  index and the colours sit in a range texture, so a re-palette touches no
-  buffer — and its scale generator carries a note that WebGL treats those
-  indices as fixed texture positions, so a domain cannot reorder or grow
-  dynamically. The value-derived resolution above is this tree's answer to
-  the same per-region problem, without a texture and with colour still
-  resolved in one place.
-- **A transform names its `type`.** GenomeSpy departed from Vega-Lite's
-  inferred transform shape on purpose, for extensibility. `CoreGetEncodedLayers`
-  takes that spelling — `transform: [{ type: 'filter', expr }]`, run in order
-  before the layers encode.
-- **Semantic zoom is a layer property.** Its `multiscale` composition orders
-  layers from zoomed-out to zoomed-in with `stops` and cross-fades by the zoom
-  metric. A `marks` entry's `minBpPerPx`/`maxBpPerPx` is the declared form
-  here, a hard cut through `defineMark`'s `enabled(state)` rather than a
-  cross-fade.
+- **Scales resolve on the GPU**, with categories as indices into a range texture,
+  so a re-palette touches no buffer but a domain cannot reorder or grow
+  dynamically. Value-derived resolution is this tree's answer, with colour still
+  resolved in one place and no texture.
+- **A transform names its `type`.** `CoreGetEncodedLayers` takes that spelling.
+- **Semantic zoom is a layer property** (`multiscale`, cross-fading by zoom
+  metric). A `marks` entry's `minBpPerPx`/`maxBpPerPx` is the declared form here,
+  as a hard cut through `enabled(state)`.
 
-What it has that the compile-time form deliberately does not: `size`,
-`opacity` and `angle` as channels, from shaders generated at runtime from the
-encoding (ADR-095 §"The grammar position").
+GenomeSpy also has `size`, `opacity` and `angle` channels from shaders generated
+at runtime, which the compile-time form deliberately lacks (ADR-095 §"The grammar
+position").
 
 ## The jexl channel, measured
 
@@ -430,19 +330,14 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT mark-encoding-jexl-channel -->
 
-The control row is the harness's resolution. The jexl rows are one
-evaluation per feature over `buildJexlContext`'s proxy; the colour arm was
-2.35x native before its CSS answers were parsed once per distinct string
-rather than per feature, which is the cache `colorEvaluator` holds. The scale
-rows are the same rule declared as a scale — a field read, a map lookup per
-feature and one pass after the walk — and are why shape-by-field is a scale
-on `shape` rather than the jexl ternary it used to need. The two ramp rows
-are the same colour scale resolved on either side of the wire: `ramp-color`
-is the worker indexing the LUT per feature, `ramp-value` is the walk keeping
-the raw values for the display to resolve (ADR-113), and the second is
-cheaper as well as being the one that agrees across regions. The last two
-rows are what the lane set buys: `no-index` is the native encoding without
-its Flatbush, and `wiggle` is the fallback packer's call.
+The control row is the harness's resolution. The jexl rows are one evaluation per
+feature over `buildJexlContext`'s proxy, and `colorEvaluator` caches CSS answers
+per distinct string. The scale rows declare the same rule as a scale, which is why
+shape-by-field is a scale on `shape` rather than a jexl ternary. `ramp-color` is
+the worker indexing the LUT per feature and `ramp-value` keeps raw values for the
+display to resolve (ADR-113); the second is cheaper and agrees across regions.
+`no-index` is the native encoding without its Flatbush, and `wiggle` is the
+fallback packer's call.
 
 ## The mark display over a BigWig, measured
 
@@ -473,30 +368,22 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT mark-vs-wiggle-bigwig -->
 
-Both paths read one tier now, so the rows agree by construction and the
-bench checks it before it times anything. A screen of tier rows is hundreds
-to a thousand, and the mark path's work over them is between one and three
-times the hand path's and under half a millisecond in every row: the
-difference is `BigWigFeature` objects and the rxjs collect in
-`getFeaturesArray`, and the Flatbush the `index` lane builds, which
-`no-index` in the table above prices. Neither side's work is where a refetch
-spends its time, so no shape needs a BigWig fast path, and a
-`getFeaturesArray` override on the adapter is declined on the same number.
-The last three columns are the reading a binned mean gives off a tier,
-against the raw section's coverage-weighted mean. A `bin: auto` by start and
-an unweighted `aggregate: mean`, each tier row counted once in its start's
-bin, sits within a third of a percent of it on average over the coverage
-file's own tiers and within 0.8 over its synthetic one (ADR-129), and within a
-few percent over volvox's tiers, with the worst bin inside thirteen percent.
-A `bin: auto` over `fields: ['start', 'end']` and a `mean` weighted by
-`overlap` (ADR-197) cuts each tier row at the bin edges, and it is the tier
-straddling the bins that costs the unweighted mean most: at volvox's
-256 bp synthetic tier the average error falls from
+Both paths read one tier, so the rows agree by construction and the bench checks
+that before timing. The mark path's extra work over a screen of tier rows is the
+`BigWigFeature` objects, the rxjs collect in `getFeaturesArray` and the `index`
+lane's Flatbush (`no-index` prices it), and neither side is where a refetch spends
+its time. No shape needs a BigWig fast path, and a `getFeaturesArray` override on
+the adapter is declined on the same number.
+
+The last three columns compare a binned mean off a tier with the raw section's
+coverage-weighted mean (ADR-129). An unweighted `mean` counts each tier row once
+in its start's bin, so a tier straddling the bins costs it most. A `bin` over
+`fields: ['start', 'end']` with a `mean` weighted by `overlap` (ADR-197) cuts rows
+at the bin edges: at volvox's 256 bp synthetic tier the average error falls from
 1.75%<!--m:mark-vs-wiggle-bigwig.volvox-microarray-bw-256.meanErrPct--> to
-0.23%<!--m:mark-vs-wiggle-bigwig.volvox-microarray-bw-256.weightedErrPct-->,
-and at the coverage file's 128 bp one from
+0.23%<!--m:mark-vs-wiggle-bigwig.volvox-microarray-bw-256.weightedErrPct-->, and at
+the coverage file's 128 bp tier from
 0.79%<!--m:mark-vs-wiggle-bigwig.cd16-mono-bw-113-1.meanErrPct--> to
-0.31%<!--m:mark-vs-wiggle-bigwig.cd16-mono-bw-113-1.weightedErrPct-->. What
-is left is the tier's own rounding, which only a `validCnt` could say more
-about; `@gmod/bbi` keeps its count, and the adapter's synthetic bins carry
-none either.
+0.31%<!--m:mark-vs-wiggle-bigwig.cd16-mono-bw-113-1.weightedErrPct-->. The
+remainder is the tier's own rounding, which only a `validCnt` could resolve;
+`@gmod/bbi` keeps its count and the adapter's synthetic bins carry none.

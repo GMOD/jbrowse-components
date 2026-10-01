@@ -12,13 +12,11 @@ vocabulary for writing about it — for anyone from leadership to a plugin autho
 to whoever's drafting the paper.
 
 How to read it, by audience:
-- **Leadership / mildly technical:** read §0 — it hands you the vocabulary and
-  the contrasts in one page.
-- **New to GPU graphics:** read §0, then §1–§2 for the mental model.
-- **Writing the paper / talk:** §3–§7 are the techniques, §10 is paste-ready prose.
+- **Leadership / mildly technical:** §0 hands you the vocabulary and the contrasts in one page.
+- **New to GPU graphics:** §0, then §1 for the mental model.
+- **Writing the paper / talk:** §1 and §7 are the techniques, §10 is paste-ready prose.
 - **Already know real-time graphics, or prompting an agent that does:** §8 maps
   the standard terms onto our spellings and names the file that owns each.
-- **Need a specific term:** jump to the §9 dictionary.
 
 ---
 
@@ -115,62 +113,15 @@ technology the web is standardizing on.
 The rest of this document explains *how* it works, for engineers and the paper.
 
 ---
+## 1. Primer: from Canvas2D to the GPU
 
-## 1. Start here: one concrete example
-
-Forget GPUs for a second. Say you want to draw **50,000 genes** as little
-rectangles across the screen.
-
-**The Canvas2D way** (what JBrowse used to do): loop in JavaScript, and for each
-gene call `ctx.fillRect(x, y, width, height)`. 50,000 function calls, run one
-after another on the CPU. Simple, but the CPU is doing all 50,000 by hand, every
-frame.
-
-**The GPU way** (what JBrowse does now): write down all 50,000 genes' positions
-and colors into one long list of numbers, hand that whole list to the graphics
-card once, and say "draw all of these." The graphics card then colors the pixels
-for all 50,000 rectangles *at the same time*, using hundreds of tiny cores
-working in parallel.
-
-That's the entire idea. Everything below is just the names for the parts of
-"write down a list of numbers, hand it over once, and say draw."
-
-The catch — and the reason there's vocabulary to learn — is that the GPU is a
-separate piece of hardware with its own memory and its own rules. You can't just
-call a function and have it draw. You have to (1) package your data the way the
-hardware wants it, (2) copy it across into GPU memory, and (3) give the GPU a
-tiny program telling it how to turn one entry in the list into pixels. Those
-three things are §3, §4, and §6.
-
----
-
-## 2. The big mental shift from Canvas2D
-
-If you only remember one thing: **Canvas2D is a pen; the GPU is a printing
-press.** With a pen you draw each mark yourself, in order. With a press you spend
-effort up front setting the plates, then stamp the whole page in one motion. The
-GPU is slower to set up and dramatically faster to "stamp."
-
-Three specific differences, each of which earns a sentence in a "why GPU" paper
-section:
-
-**You don't draw one shape at a time.** Instead of 50,000 `fillRect` calls, you
-hand over one list of 50,000 entries and issue a single "draw" command (a **draw
-call**). The CPU stops being the bottleneck because it's no longer babysitting
-each shape.
-
-**The GPU runs the same little program on everything at once.** Canvas2D fills a
-rectangle by having the CPU walk its pixels one by one. The GPU runs a small
-program called a **shader** across hundreds of cores simultaneously. You write
-the program for *one* rectangle; the hardware runs copies of it across all of
-them. (This is the "data-parallel" or "SIMD" part — same instructions, many data
-items.)
-
-**You don't give commands, you configure a machine.** Canvas2D has verbs:
-`stroke`, `fill`, `arc`. The GPU has a fixed assembly line — the **pipeline** —
-with two slots where you can insert your own programs and a few fixed knobs
-(like how to blend transparent colors). You don't tell it "draw a circle"; you
-feed it geometry plus a program, and a circle comes out the end.
+**Canvas2D is a pen; the GPU is a printing press.** Drawing 50,000 genes in
+Canvas2D is a JavaScript loop calling `ctx.fillRect` 50,000 times on the CPU. On the
+GPU you write all 50,000 positions and colors into one list of numbers, hand the
+list over once, and say "draw all of these"; hundreds of cores color the pixels in
+parallel. The cost is setup: the GPU has its own memory and rules, so you must
+package the data the way the hardware wants it, copy it across, and give the GPU a
+tiny program that turns one list entry into pixels.
 
 | Canvas2D | GPU equivalent | Plain meaning |
 |---|---|---|
@@ -181,367 +132,137 @@ feed it geometry plus a program, and a circle comes out the end.
 | `globalAlpha` / compositing | **blending** | how a new color mixes with what's there |
 | the canvas itself | the **framebuffer** | the image being drawn into |
 
----
+**The pipeline** is the fixed sequence every draw call passes through: buffer →
+**vertex shader** (once per corner: where on screen?) → **rasterizer** (fixed:
+which pixels a triangle covers, and interpolation of vertex outputs across them) →
+**fragment shader** (once per pixel: what color?) → **blending** (fixed) →
+**framebuffer**. The two shaders are the stages you write. A shader is the inside of
+your draw loop shipped to the GPU: the `x = (f.start - viewStart) * pxPerBp` line is
+the vertex shader, the `fillStyle` line the fragment shader.
 
-## 3. The pipeline: the GPU's assembly line
+Ideas Canvas2D never exposed:
 
-"The pipeline" is just the fixed sequence of stages every draw call passes
-through. Picture an assembly line where geometry goes in one end and colored
-pixels come out the other. Naming the stages keeps a methods section crisp:
+- **Clip space** is the GPU's −1…+1 coordinate system, regardless of resolution; the
+  vertex shader converts into it. Unrelated to Canvas2D's `clip()`, which is the
+  **scissor**.
+- **Interpolation (varyings)**: a value set at the corners blends across the shape
+  before the fragment shader sees it.
+- **Shader invocations run the same code on their own data and cannot see
+  neighbors.** Divergent `if` branches between neighboring pixels are slow.
+- **No objects or allocation**: shaders work in small fixed vectors (`float2`,
+  `float4`).
+- **Uniforms vs attributes**: an *attribute* differs per gene and lives in the
+  packed buffer; a *uniform* is one value for the whole draw call (zoom, canvas
+  size).
+- **Textures and samplers**: a texture is an image or color strip in GPU memory
+  (our palettes); a sampler is the rule for reading it (nearest or blended).
 
-1. **Buffer** → the list of numbers (your 50,000 genes) sitting in GPU memory.
-2. **Vertex shader** → runs once per corner of each shape. Its only job: "where
-   on screen does this corner go?" For us, this is where a base-pair position
-   becomes a screen position. (Your program — slot #1.)
-3. **Rasterizer** → fixed, not programmable. Takes each triangle and figures out
-   which pixels it covers. Also smoothly **interpolates** the vertex shader's
-   outputs across those pixels (so a value set at the corners becomes a value at
-   every pixel in between).
-4. **Fragment shader** → runs once per covered pixel. Its only job: "what color
-   is this pixel?" Gradients, anti-aliased edges, and color lookups happen here.
-   (Your program — slot #2.)
-5. **Blending** → fixed. Mixes the new pixel color with whatever was already
-   there (this is how transparency and overlapping features composite).
-6. **Framebuffer** → the finished image, i.e. the canvas the user sees.
+**Data path: compute → pack → transfer → upload → draw.** A worker computes
+geometry off the UI thread; the values are *packed* into one flat typed array with a
+fixed byte count per gene (the **instance stride**); the block is *transferred*
+zero-copy (the worker gives up ownership); it is *uploaded* to GPU memory
+(`hal.uploadBuffer`), the one cost Canvas2D never pays; and `hal.drawPass` draws it.
+Pan and zoom re-run the shaders over resident data, and only a newly visible region
+triggers an upload.
 
-The spine to memorize: **buffer → vertex shader → rasterizer → fragment shader →
-blend → framebuffer.** Stages 2 and 4 are the ones you write; the rest you only
-configure.
-
----
-
-## 4. How data gets to the GPU (the part Canvas2D never had)
-
-This is the genuinely new concept, because the GPU has its *own memory* separate
-from JavaScript's. Getting your 50,000 genes into it has a fixed journey:
-
-**compute → pack → transfer → upload → draw**
-
-- **Compute** — we calculate each gene's geometry in a background thread (a web
-  **worker**), off the main UI thread, so the page stays responsive.
-- **Pack** — instead of an array of JavaScript objects (`{start, width, color}`),
-  we write the values into one flat block of raw bytes (a typed array like
-  `Float32Array`), with a fixed number of bytes per gene. Think of it as a
-  tightly-packed spreadsheet with no labels — just rows of numbers in a known
-  order. The bytes-per-gene is the **instance stride**. (Objects are convenient
-  for code but wasteful and slow to hand to hardware; packed bytes are what the
-  GPU actually wants.)
-- **Transfer** — hand that block of bytes from the worker thread to the main
-  thread. We do this **zero-copy** (the worker gives up ownership of the memory
-  rather than cloning it), which is fast even for big blocks.
-- **Upload** — copy the block from regular memory into **GPU memory**
-  (`hal.uploadBuffer`). *This is the one cost Canvas2D never pays.* The whole
-  performance game is to upload once and then reuse it: panning and zooming just
-  re-run the shaders against data that's already on the GPU. Only scrolling to a
-  brand-new region triggers a fresh upload.
-- **Draw** — issue the **draw call** (`hal.drawPass`) that runs the pipeline over
-  the uploaded buffer and paints the frame.
-
-Two supporting ideas you'll need words for:
-
-- **Uniforms vs. attributes.** An **attribute** is data that's *different for
-  each gene* (its position, its color) — it lives in the packed buffer. A
-  **uniform** is one value that's *the same for the whole draw call* (the current
-  zoom level, the canvas size). Mnemonic: attributes vary, uniforms are uniform.
-- **Textures and samplers.** A **texture** is an image (or a strip of colors)
-  living in GPU memory that a shader can look things up in — we use them as color
-  palettes. A **sampler** is the little rule for how to read it (snap to the
-  nearest color, or blend between them).
+**Instancing** is why the GPU path beats the loop. Every gene is the same shape, a
+**quad** (two triangles), differing in place, size and color. Describe the rectangle
+once, put the per-gene differences in the packed buffer, and fire one draw call that
+says "draw this rectangle N times; copy *i* reads row *i*". The shader is told which
+corner and which instance it is.
 
 ---
 
-## 5. Instancing: the trick that makes it fast
+## 7. What's special about our GPU work
 
-This is the single most important technique to name in a paper, because it's
-*why* the GPU path beats the Canvas2D loop.
+### 7a. One shader source, two GPU APIs
+WebGPU speaks WGSL and WebGL2 speaks GLSL. We write each shader once in **Slang**; a
+build step compiles it ahead of time to both, plus a TypeScript file describing the
+packed buffer's byte layout, so CPU-side packing cannot drift from what the shader
+expects. The generated files are checked in and `pnpm gen:shaders` regenerates them.
 
-All our genes are the same shape — a rectangle — just at different places, sizes,
-and colors. (A rectangle on a GPU is a **quad**: two triangles, because GPUs only
-draw triangles.) **Instanced rendering** means: describe the basic rectangle
-*once*, put the 50,000 per-gene differences in the packed buffer, and fire a
-single draw call that says "draw this rectangle 50,000 times — and for copy
-number *i*, read row *i* of the buffer for where to put it and what color."
+### 7b. Sub-pixel accuracy across a 3-billion-base genome (hp-math)
+32-bit floats lose ~256 bases of precision near the end of a human genome. Each
+coordinate is split into a high and a low part, with the position math done on the
+parts separately (technique adapted from genome-spy, MIT). The shader compiler would
+"optimize" the parts back into one number, so the math is written to stop it. Detail
+in [BP_PRECISION.md](BP_PRECISION.md).
 
-The shader gets told two things: which corner of the rectangle it's working on,
-and which gene (which copy) this is. That's enough to position and color all
-50,000 with one command and zero per-gene JavaScript.
+### 7c. One interface over three backends (the HAL)
+Track code never calls WebGPU or WebGL2 directly. Both sit behind the **HAL**, which
+exposes verbs like upload, draw pass and scissor, and the same code can run on a pure
+CPU **Canvas2D** backend. A change to one GPU backend must be mirrored in the other
+and in the test mock ("HAL parity").
 
-Paper sentence: *"Each feature is encoded as one instance record; a single
-instanced draw call renders an entire block of features, eliminating the
-per-feature CPU dispatch of the Canvas2D path."*
+**The GPU path is opt-in; Canvas2D is the baseline.** Every display ships a Canvas2D
+draw function (image/SVG export requires one), so a display can be Canvas2D-only
+(`createCanvas2DBackend`) and gets the shader path only through the dual-path
+`createRenderingBackend`. The lifecycle machinery (`RenderLifecycleMixin` /
+`DisplayChrome`) is backend-agnostic. Start a new display on Canvas2D and promote it
+only once profiling shows it cannot hold 60fps at real feature counts (≳100K
+features per frame).
 
----
+### 7d. Scissor, not clip paths
+Each genomic block is clipped with the GPU **scissor**. The Canvas2D fallback clamps
+to the same rectangle, so all three backends clip identical pixels.
 
-## 6. Shaders, for someone who knows `fillRect`
-
-**The one-line intuition: a shader is the *inside of your draw loop*, shipped to
-the GPU.** You're already writing shader logic in Canvas2D — you just run it
-yourself, in a loop. Look at the two lines that *decide* things:
-
-```js
-for (const f of features) {
-  const x = (f.start - viewStart) * pxPerBp        // WHERE it goes  → vertex shader
-  ctx.fillStyle = f.score > 90 ? 'green' : 'red'   // WHAT COLOR     → fragment shader
-  ctx.fillRect(x, y, w, h)                          // the stamp itself
-}
-```
-
-The two computed lines — *where* a feature goes and *what color* it is — are
-exactly what a shader contains. The difference is who runs them: in Canvas2D
-**you** loop a million times on the CPU; with a shader you hand those lines to
-the GPU once and it runs them on all million features in parallel.
-
-The GPU splits that loop body into the two shaders you write:
-
-- **Vertex shader = the *where* line.** The base-pair-to-pixel math, run on the
-  GPU once per corner. Input: the gene's start/width plus the uniforms (zoom,
-  canvas size); output: a position on screen.
-- **Fragment shader = `fillStyle`, but per pixel.** It picks one pixel's color.
-  Running per pixel gives you gradients, anti-aliased edges, and palette lookups
-  essentially for free.
-
-A few ideas Canvas2D never exposed you to:
-
-- **Clip space.** The GPU doesn't think in pixels; it uses its own coordinate
-  system that runs from −1 to +1 across the screen, regardless of resolution. The
-  vertex shader's job is to convert your coordinates into this −1…+1 space. (This
-  is unrelated to Canvas2D's `clip()` — that idea is "scissor," below.)
-- **Interpolation (varyings).** A value the vertex shader sets at the corners is
-  automatically blended across the shape before the fragment shader sees it. Set
-  a color at each corner and you get a gradient in between, for free.
-- **Same code, no peeking at neighbors.** Every copy of the shader runs the same
-  instructions on its own data and can't see the others. Straight-line math is
-  cheap; lots of `if`-branches that disagree between neighboring pixels are
-  comparatively slow.
-- **No objects, no allocation.** Shaders work in small fixed vectors of numbers
-  (`float2`, `float4`) — no heap, no strings. You think in packed numbers, not
-  objects.
-
----
-
-## 7. What's special about *our* GPU work
-
-The boilerplate above is true of any GPU app. These are the parts a paper would
-actually claim as engineering contributions.
-
-### 7a. Write the shader once, run it on two GPU APIs
-The browser has two GPU APIs — the newer **WebGPU** and the older **WebGL2** —
-and each speaks a different shader language (**WGSL** and **GLSL**
-respectively). Maintaining two copies of every shader would be miserable.
-Instead we write each shader *once* in a language called **Slang**, and a build
-step compiles it ahead of time into both WGSL and GLSL, plus a little TypeScript
-file describing the byte layout. So one renderer drives both GPU APIs from a
-single source of truth. The same build step reads the shader to derive the
-exact byte layout of the packed buffer, so the CPU-side packing can't silently
-drift out of sync with what the shader expects.
-*Phrase: "a single shader source, compiled ahead-of-time to dual targets."*
-
-### 7b. Sub-pixel accuracy across a 3-billion-base genome ("hp-math")
-GPUs do math in 32-bit floats, which can only hold about 7 significant digits.
-A human genome is ~3 billion bases — so near the far end, a single float can't
-tell two adjacent bases apart (you lose ~256 bases of precision). Our fix: split
-each base-pair coordinate into a **high part and a low part** (two floats
-together), and do the position math on the parts separately so the precision
-survives. The result is base-accurate placement even when zoomed all the way
-into a 3-billion-base genome. (Technique adapted from genome-spy, MIT.) One
-subtlety worth a sentence in a paper: the shader compiler *wants* to "optimize"
-the two parts back into one number, which would destroy the whole point, so the
-math is written carefully to stop it from doing that.
-*Phrase: "an emulated high/low float-pair coordinate transform preserves
-sub-pixel base accuracy at whole-genome scale."*
-
-### 7c. One interface over three rendering backends (the HAL)
-We never call WebGPU or WebGL2 directly from track code. Both sit behind one thin
-interface — the **HAL** (hardware abstraction layer) — that exposes plain verbs
-like "upload this buffer," "draw this pass," "clip to this rectangle." On top of
-the HAL, the same track code can also run on a pure-CPU **Canvas2D** path for
-machines with no working GPU. So there are effectively three **backends** —
-WebGPU, WebGL2, Canvas2D — behind one set of code. (A change to one GPU backend
-must be mirrored in the other and in a test mock; we call that "HAL parity.")
-
-**The GPU path is opt-in, Canvas2D is the baseline.** Every display already
-ships a Canvas2D draw function (image/SVG export requires one), so a display can
-be Canvas2D-only and skip the GPU entirely (`createCanvas2DBackend`); it gets the
-GPU shader path only by opting into the dual-path `createRenderingBackend`. The
-lifecycle machinery (`RenderLifecycleMixin` / `DisplayChrome`) is
-backend-agnostic — nothing downstream knows whether a HAL exists. The documented
-guidance is to *start a new display on Canvas2D and promote it to the GPU only
-once profiling shows Canvas2D can't hold 60fps at real feature counts* (≳100K
-features/frame). This is what keeps the rendering rewrite from raising the
-authoring bar for ordinary displays.
-
-### 7d. Clipping with the scissor, not clip paths
-To keep each genomic block's drawing inside its slot, we use the GPU's
-**scissor** — a hardware "only paint inside this rectangle" mask — rather than
-clip paths. The Canvas2D fallback clamps to the exact same rectangle, so all
-three backends clip identical pixels.
-
-### 7e. Two shapes of backend: per-region and global
-Most tracks are **per-region**: the screen is split into blocks, each block's
-data is uploaded and drawn separately, and blocks are discarded as you scroll
-away. A few dense displays (Hi-C, LD, the variant matrix) are **global**: one big
-upload and one draw for the whole thing, no block splitting. Handy to name when
-explaining why some tracks stream smoothly and others rebuild all at once.
+### 7e. Per-region and global backends
+Most tracks are **per-region**: each block is uploaded and drawn separately and
+discarded on scroll. Dense displays (Hi-C, LD, the variant matrix) are **global**: one
+upload and one draw.
 
 ### 7f. Packed colors
-Rather than store each color as four separate numbers, we **pack** it into one
-compact integer inside each gene's record. Smaller records mean less data to
-copy to the GPU, i.e. faster uploads.
+Each color is packed into one integer in the gene's record, so uploads are smaller
+([COLOR_REPRESENTATIONS.md](COLOR_REPRESENTATIONS.md) holds the byte-order trap).
 
-### 7g. A zero-copy pipeline: parse output *is* the upload payload
-The usual flow — parse into JS objects, deep-copy them across the worker
-boundary, then walk them again on the main thread to build a buffer — touches the
-data three times and allocates twice. We collapse it: the worker decodes
-**straight into the exact binary layout the GPU consumes**, then hands that
-buffer to the main thread as a **transferable** (ownership moves, no copy; the
-sender's buffer is left detached). The main thread passes those same bytes
-directly to `hal.uploadBuffer`. The data is touched essentially **once** between
-parse and screen. Where encoding depends on theme/settings rather than the raw
-data (e.g. MAF), we pack on the main thread instead, so a recolor re-runs only
-the cheap pack step with no worker roundtrip — and run-length-merge during
-packing so the instance count tracks color transitions, not base count.
-*Phrase: "decode directly into GPU-ready buffers and transfer them zero-copy, so
-data is materialized once between worker and GPU."*
+### 7g. Zero-copy: parse output is the upload payload
+The worker decodes straight into the GPU's binary layout and transfers the buffer
+(ownership moves, the sender's buffer is detached); the main thread passes the same
+bytes to `hal.uploadBuffer`. Where encoding depends on theme or settings rather than
+raw data (MAF), the main thread packs, so a recolor re-runs only the cheap pack step,
+and packing run-length-merges so the instance count tracks color transitions rather
+than base count.
 
 ---
 
 ## 8. Standard graphics terms → our spelling
 
-§0–§7 explain the architecture to someone who does not already know GPU
-graphics. This section is the opposite audience: someone who *does* — or a code
-generation agent prompted in standard real-time-rendering vocabulary — who needs
-to know which of our identifiers is the thing they already have a word for.
-
-Two of these are collisions rather than translations, and they are the reason
-this table exists at all: **a "pass" identifier means a PSO**, and **our uniform
-"ring buffer" does not wrap**. Both are flagged below.
+For someone who knows real-time graphics, or an agent prompted in its vocabulary:
+which of our identifiers is the thing they already have a word for. Two entries are
+collisions rather than translations: **a "pass" identifier means a PSO**, and **our
+uniform "ring buffer" does not wrap**.
 
 | Standard term | Our spelling | Owned by |
 |---|---|---|
-| **Pipeline state object (PSO)** | `PipelineDescriptor` — but ⚠️ every identifier around it still says *pass* (`passId`, `drawPass`, `slangPass`, `InstancePass`, `*_PASSES`) | `hal/types.ts`, built by `slangPass()` |
+| **Pipeline state object (PSO)** | `PipelineDescriptor` — but every identifier around it still says *pass* (`passId`, `drawPass`, `slangPass`, `InstancePass`, `*_PASSES`) | `hal/types.ts`, built by `slangPass()` |
 | **Render pass** (`beginRenderPass`) | the `beginFrame` / `endFrame` bracket — one per frame, not per `drawPass` | `webgpuHal.ts`, `webgl2Hal.ts` |
 | **Draw call** | `hal.drawPass(passId, regionKey)` | `hal/types.ts` |
 | **Instanced rendering** | the whole architecture — `stepMode: 'instance'`, `draw(verticesPerInstance, count)` | `InstancePass`, `uploadPass`, `instanceCache.ts` |
 | **Instance buffer / per-instance data** | the packed buffer a pass's `pack()` returns; `instanceStride` is its bytes-per-item | `instancePass.ts` |
-| **Vertex input layout / vertex buffer descriptor** | `vertexAttributes` (`VertexAttributeLayout`, generated as `VERTEX_ATTRIBUTES`) | `hal/types.ts`, emitted by the Slang codegen |
-| **Bind group / bind group layout** | same words; the layout is built from the shader's `BINDINGS` | `bindGroupLayoutEntries` in `deviceGpuCache.ts` |
-| **Bind group caching** | `passBindGroups`, one group shared by the passes over one untextured layout | `webgpuHal.getBindGroup` |
+| **Vertex input layout** | `vertexAttributes` (`VertexAttributeLayout`, generated as `VERTEX_ATTRIBUTES`), derived from the shader by codegen, never hand-written | `hal/types.ts`, emitted by the Slang codegen |
+| **Bind group / layout** | same words; the layout is built from the shader's `BINDINGS`; `passBindGroups` shares one group across passes over one untextured layout | `bindGroupLayoutEntries` in `deviceGpuCache.ts`, `webgpuHal.getBindGroup` |
 | **Pipeline layout** | same word | `PassLayout` in `deviceGpuCache.ts` |
 | **Shader reflection** | `ShaderBinding` / a shader module's `BINDINGS` export | `packages/shader-tools/src/shader-codegen/reflection.ts` |
 | **UBO / uniform buffer** | `writeUniforms`, bound at `@binding(1)` with `hasDynamicOffset` | `webgpuUtils.ts` |
 | **Dynamic uniform offset** | the per-draw `dynamicOffset` in `drawPass` | `webgpuHal.ts` |
-| **Ring buffer** | `uniformRingBuffer` — ⚠️ reset to slot 0 every `beginFrame`, so it is a per-frame linear arena, not a ring that wraps across frames | `webgpuHal.ts` |
+| **Ring buffer** | `uniformRingBuffer` — **collision**: reset to slot 0 every `beginFrame`, so it is a per-frame linear arena, and ordering against the previous submit is what makes that safe | `webgpuHal.ts` |
 | **Staging buffer** | `uniformStaging` — coalesces a frame's uniform writes into one `queue.writeBuffer` at submit | `webgpuHal.ts` |
-| **SSBO / storage buffer** | `storage` / `read-only-storage` bindings — **compute only**, never the render path (§7a: GLSL ES has no SSBOs). The one in-tree user is `tree-sidebar`'s `gpuDistanceMatrix.ts` | `packages/render-core/src/computePipeline.ts` |
-| **Compute pipeline / workgroup dispatch** | same words; a 2D workgroup grid clears `maxComputeWorkgroupsPerDimension`. The one in-tree user is `tree-sidebar`'s `gpuDistanceMatrix.ts`, through `makeComputePipelineCache` | `packages/render-core/src/computePipeline.ts` |
+| **SSBO / storage buffer** | `storage` / `read-only-storage` bindings — **compute only**, never the render path (GLSL ES has no SSBOs) | `packages/render-core/src/computePipeline.ts` |
+| **Compute pipeline / workgroup dispatch** | same words; a 2D workgroup grid clears `maxComputeWorkgroupsPerDimension`. Through `makeComputePipelineCache`; the in-tree user is `tree-sidebar`'s `gpuDistanceMatrix.ts` | `packages/render-core/src/computePipeline.ts` |
 | **Blend state** | `BlendState`, `STANDARD_BLEND_STATE` | `hal/types.ts`, `webgpuUtils.ts` |
 | **Primitive topology** | `PipelineDescriptor.topology` | `hal/types.ts` |
-| **MSAA / resolve target** | `SampleCount` — per display, stated by `RenderingBackendOptions.sampleCount`, defaulting to `deriveSampleCount(passes)`: 1 when every pass is `coverage: 'analytic'`, else 4; `msaaView` + `resolveTarget` | `hal/types.ts`, `webgpuHal.ts` |
+| **MSAA / resolve target** | `SampleCount` — per display via `RenderingBackendOptions.sampleCount`, defaulting to `deriveSampleCount(passes)` (1 when every pass is `coverage: 'analytic'`, else 4); `msaaView` + `resolveTarget` | `hal/types.ts`, `webgpuHal.ts` |
 | **Scissor / viewport** | same words | `hal/types.ts` |
-| **Frustum culling** | "cull" — CPU-side, over a 1D bp interval; there is no frustum and no camera | `syntenyTypes.slang`, `syntenyFetchWindow.ts` |
+| **Frustum culling** | "cull" — CPU-side over a 1D bp interval; there is no frustum and no camera | `syntenyTypes.slang`, `syntenyFetchWindow.ts` |
 | **Spatial index / BVH** | Flatbush (packed Hilbert R-tree) — **picking and hit-testing only**, never draw culling | `packages/core/src/util/flatbush/` |
 | **Scene graph** | the MST view → track → display tree; we never call it that | `ARCHITECTURE.md` §"Display stacks" |
 | **Render graph / frame graph** | none, deliberately | GPU_RENDERING.md §"What this architecture deliberately does not have" |
 | **Indirect drawing** | none, deliberately | same |
 | **Buffer pooling / sub-allocation** | none — one `GPUBuffer` per `(regionKey, passId)` | same |
 
-## 9. Dictionary (jump in anywhere)
-
-- **Attribute** — data that differs per gene (position, color); lives in the
-  packed buffer. Opposite of a *uniform*.
-- **Backend** — which renderer is actually running: WebGPU, WebGL2, or Canvas2D.
-- **Bind / binding** — connecting a specific buffer/texture so a shader can read
-  it.
-- **Bind group** — WebGPU's unit for handing a set of resources (uniform buffer,
-  texture, sampler) to a shader at once; a **bind group layout** is its shape,
-  declared when the pipeline is built. Ours are cached per pass, and uniform-only
-  passes all share one.
-- **Blending** — the rule for mixing a new pixel's color with what's already
-  there; how transparency and overlaps work.
-- **Buffer** — a block of GPU memory holding the packed list of numbers.
-- **Canvas2D** — the CPU drawing API; here, the baseline every display supports
-  and the fallback when there's no GPU. The GPU path is opt-in on top of it.
-- **Clip space** — the GPU's own −1…+1 coordinate system; what the vertex shader
-  outputs.
-- **Compute shader** — a shader that does general parallel work and writes to a
-  buffer instead of painting pixels. We use one place: the LD matrix kernels.
-- **Culling** — dropping work for things that can't be seen. Ours is on the CPU,
-  against the visible bp window (there is no camera, so no *frustum* culling).
-- **Draw call / draw pass** — the single command that runs the pipeline and
-  paints (`hal.drawPass`).
-- **Dynamic offset** — a per-draw byte offset into one shared uniform buffer, so
-  every draw in a frame can read its own uniforms without its own bind group.
-- **Fragment shader** — the program that picks each pixel's color (Canvas2D's
-  `fillStyle`, but per pixel). Also called a pixel shader.
-- **Framebuffer** — the image being drawn into; the canvas the user sees.
-- **GLSL** — WebGL2's shader language; one of our two compile targets.
-- **Glyph** — the shape drawn per feature (rectangle, arc, chevron…).
-- **HAL** — hardware abstraction layer; one interface hiding WebGPU vs. WebGL2.
-- **hp-math** — our high/low float-pair trick for base-accurate positions on a
-  huge genome.
-- **Instancing / instance / instance stride** — drawing one shape many times
-  from a packed list; the stride is the bytes-per-item.
-- **Interpolation (varying)** — a corner value blended smoothly across a shape
-  before the fragment shader.
-- **MSAA (multisample antialiasing)** — sampling each pixel several times so
-  edges come out smooth; the samples are then **resolved** down to one image. We
-  run 4×, resolving once per frame.
-- **Pass** — ⚠️ **as an identifier in this codebase, a pipeline state object, not
-  WebGPU's render pass.** The type is named honestly (`PipelineDescriptor`: one
-  shader + vertex layout + blend + topology, compiled to one pipeline), but
-  `passId`, `drawPass`, `slangPass`, `InstancePass` and every `*_PASSES` array
-  still say pass and all mean that pipeline. WebGPU's render pass is our
-  `beginFrame`/`endFrame` bracket, of which there is one per frame. See §8.
-- **Pipeline** — the GPU's fixed assembly line: vertex → raster → fragment →
-  blend.
-- **Pipeline state object (PSO)** — the whole configuration of one draw baked
-  into an immutable object: shaders, vertex layout, blend, depth/stencil,
-  topology. Ours is `PipelineDescriptor`, compiled up front at HAL construction.
-- **Quad** — a rectangle built from two triangles (GPUs only draw triangles).
-- **Rasterizer** — the fixed stage that turns triangles into pixels and
-  interpolates corner values.
-- **Region** — a genomic block's slice of data in a per-region backend.
-- **Ring buffer** — normally, one buffer written at rotating offsets so the CPU
-  never overwrites bytes a frame in flight is still reading. ⚠️ Our
-  `uniformRingBuffer` is named for this but resets to slot 0 each frame, making
-  it a per-frame linear arena; ordering against the previous submit is what makes
-  that safe.
-- **Sampler** — the rule for how a texture is read (nearest pixel vs. blended).
-- **Scissor** — a hardware "paint only inside this rectangle" clip.
-- **Shader** — a small program the GPU runs in parallel (vertex or fragment).
-- **Slang** — the one language we write shaders in; compiled to WGSL + GLSL.
-- **Spatial index** — a structure for "what's in this box" queries (ours is
-  Flatbush, a packed Hilbert R-tree). Used for **picking**, never for culling.
-- **Staging buffer** — CPU-side scratch that a frame's writes accumulate into, so
-  the upload to GPU memory happens once instead of per write.
-- **Storage buffer (SSBO)** — a large buffer a shader can read or write at
-  arbitrary indices. Compute only here; the render path uses vertex buffers
-  because GLSL ES has no SSBOs.
-- **Texture** — an image or color strip in GPU memory that a shader looks up
-  values in.
-- **Topology** — what the vertices are read as: a list of triangles, a strip, or
-  lines.
-- **Transfer (transferable)** — handing a block of bytes from worker to main
-  thread without copying.
-- **Uniform** — one value that's the same for the whole draw call (zoom, canvas
-  size). Opposite of an *attribute*.
-- **Upload** — copying data from regular memory into GPU memory; the cost
-  Canvas2D never pays.
-- **Vertex attribute layout** — the map from bytes in a packed buffer to the
-  inputs a shader declares: name, offset, component count, type. Derived from the
-  shader by codegen, never hand-written.
-- **Vertex shader** — the program that places each corner on screen (the
-  base-pair → pixel math).
-- **WebGL2 / WebGPU** — the browser's two GPU APIs; WebGPU is primary, WebGL2 the
-  fallback.
-- **WGSL** — WebGPU's shader language; our other compile target.
-- **Worker** — a background thread where we compute geometry off the UI thread.
-  Unrelated to a GPU *workgroup*.
-- **Workgroup** — a block of compute-shader invocations that run together; a
-  dispatch is a grid of them.
+A *worker* (background thread) is unrelated to a GPU *workgroup*.
 
 ---
-
 ## 10. Sentences you can paste into prose
 
 - "Per-feature geometry is computed in background workers, packed into flat

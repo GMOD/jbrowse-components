@@ -7,323 +7,150 @@ kind: spec
 
 # Desktop contextIsolation migration
 
-How to remove jbrowse-desktop's renderer privilege, what actually blocks it, and
-what turned out not to. Written after auditing `products/jbrowse-desktop` and
-probing Electron 43 directly.
-
 ## The problem
 
 `electron/window.ts` creates the main window with `nodeIntegration: true`,
-`contextIsolation: false`, `webSecurity: false` and no preload. So anything that
-executes in the renderer — injected content, a loaded plugin, a page navigated
-to — has Node, and with it the user's machine.
-
-Two specific paths to that privilege are now gated, but the privilege itself
-remains, and gating paths one at a time is a losing game:
-
-- Remote-config plugins (`f573bcad11`): a `jbrowse://` link, or a start-screen
-  favorite, → remote config → its `plugins` → `fetchCJS` → `require()`. Vetted
-  in `fetchConfig` — the one door such a config comes through — using
-  `@jbrowse/core/checkPlugins`, shared with web
-  ([ADR-038](../architecture-decision-records/adr-038-desktop-plugin-trust-at-fetchconfig-funnel.md)),
-  and the `require()` end of it is now gone with the CJS plugin loader: a plugin
-  is UMD or ESM in both products, evaluated as browser code. The gate stays,
-  because a plugin evaluated in a nodeIntegration renderer still reaches Node
-  through `window.require` whatever format it shipped in.
-- Navigation (`c7a2ef063c`): the window had no `will-navigate` guard, so a
-  navigated-to page inherited nodeIntegration. Now `electron/navigationGuard.ts`.
+`contextIsolation: false`, `webSecurity: false` and no preload, so anything that
+executes in the renderer — injected content, a loaded plugin, a navigated-to
+page — has Node. Two paths to that privilege are gated: remote-config plugins at
+`fetchConfig`
+([ADR-038](../architecture-decision-records/adr-038-desktop-plugin-trust-at-fetchconfig-funnel.md))
+and navigation (`electron/navigationGuard.ts`). Gating paths one at a time does
+not remove the privilege; the flip does.
 
 ## "Plugins need filesystem access" is false
 
-This was the stated reason not to lock the renderer down. It does not hold:
+- Apollo, the plugin usually cited, imports no node builtins; its only Electron
+  use is one `ipcRenderer.invoke('openAuthWindow')`.
+- The plugin API (`packages/core/src/ReExports/list.ts`) never offered a node
+  builtin. A plugin touching `fs` reaches around it via `window.require`.
+- File I/O that matters runs in RPC workers, which keep Node through
+  `nodeIntegrationInWorker` — a setting independent of the renderer's.
 
-- **Apollo** (`packages/jbrowse-plugin-apollo` in the Apollo3 repo), the plugin
-  usually cited, has **zero node-builtin imports** in its shipped source and
-  stores its ontology in IndexedDB. Its only Electron use is one
-  `ipcRenderer.invoke('openAuthWindow')` for OAuth.
-- **The sanctioned plugin API never offered fs.** `packages/core/src/ReExports/list.ts`
-  is ~543 specifiers of React/MUI/MST/core, no node builtins. A plugin touching
-  `fs` is reaching around the plugin API via `window.require`, not using it.
-- **The file I/O that matters already runs in RPC workers**, which keep Node via
-  `nodeIntegrationInWorker` — a setting **independent** of the renderer's.
+The real compatibility constraint is the shape plugins already use,
+`const { ipcRenderer } = require('electron')`, and nearly every crossing is an
+`ipcRenderer.invoke`. `electron/requireShim.ts` + `electron/preload.ts` keep
+that shape, so contextIsolation costs third-party plugins no release.
 
-The real compatibility constraint is not fs, it is the *shape* plugins already
-use: `const { ipcRenderer } = require('electron')`. Nearly every crossing to the
-main process — 23 of the 24 in JBrowse, and Apollo's one — is an
-`ipcRenderer.invoke`, so one method is nearly the entire bridge.
-`electron/requireShim.ts` + `electron/preload.ts` keep that shape, so
-contextIsolation costs third-party plugins no release.
+**The shim exposes only `invoke`, and four crossings are not one.** Each fails
+silently under the flip:
 
-**Four crossings are not an invoke**, and the shim carries none of them:
+- `fileToLocation` in `packages/core/src/util/index.ts` calls
+  `webUtils.getPathForFile`, which is how a dropped file becomes a
+  `LocalPathLocation`. Without it drag-and-drop breaks, in core. Expose it beside
+  `invoke` or give it a channel.
+- Desktop's renderer listens with `ipcRenderer.on`/`off` (`onIpc` in
+  `src/ipc.ts`) on the three `IpcPushChannels` in `electron/ipc/channelTypes.ts`:
+  `flushSessionForClose`, `openLaunchTarget`, `mcpRequest`. With no `on`, the
+  close guard waits for a flush that never comes, a pushed launch does nothing,
+  and every MCP call times out. The shim needs `on`/`off` for exactly those names.
 
-- `packages/core/src/util/index.ts` reaches `webUtils.getPathForFile(file)` in
-  `fileToLocation`, which is how a *dropped* file becomes a `LocalPathLocation`.
-  `webUtils` is a separate Electron API, so the shim returning only
-  `{ipcRenderer: {invoke}}` breaks drag-and-drop — in `@jbrowse/core`, not in
-  desktop. Either expose `webUtils.getPathForFile` alongside `invoke`, or give
-  it a channel.
-- Desktop's own renderer listens with `ipcRenderer.on`/`off` on the three
-  channels in `IpcPushChannels` (`electron/ipc/channelTypes.ts`), through
-  `onIpc` in `src/ipc.ts`: `flushSessionForClose` (the close guard's flush),
-  `openLaunchTarget` (a `jbrowse://` link or OS open-file swapped into an open
-  session) and `mcpRequest` (every MCP tool call on the session). With only
-  `invoke` exposed each listener fails to attach and nothing says so: closing
-  the window waits for a flush that never comes until a second click, a pushed
-  launch does nothing, and every MCP call times out. The shim needs `on`/`off`
-  for exactly those names.
+## Verified by probe
 
-Do not leave the sentence above read as "all of them".
-
-## Verified by probe, not by documentation
-
-Electron 43, minimal probe apps. Re-run these if you doubt any of it.
+Electron 43, minimal probe apps:
 
 | Claim | Result |
 | --- | --- |
 | `contextIsolation:true` + `nodeIntegration:false` + `nodeIntegrationInWorker:true` | renderer has no `require`/`process`; a Worker still `readFileSync`s off disk |
-| The shim under contextIsolation | Apollo's exact `globalThis.require('electron')` destructuring works; `invoke` round-trips a real value from main; `require('fs')` refused; unlisted channel refused |
-| main-process `loadURL` | does **not** emit `will-navigate` (renderer-initiated navigation does) — why the guard doesn't break `loadTarget` |
+| The shim under contextIsolation | Apollo's `globalThis.require('electron')` destructuring works; `invoke` round-trips; `require('fs')` and unlisted channels refused |
+| main-process `loadURL` | does **not** emit `will-navigate`, so the navigation guard doesn't break `loadTarget` |
 
-**The preload must be `.cjs`.** This package is `"type": "module"`, so a preload
-written to `build/preload.js` parses as ESM and throws on its own `require()`
-before exposing anything — silently, because a throwing preload does not stop
-the page. The renderer just quietly has no bridge, which looks exactly like
-`contextBridge` being broken. See
-`products/jbrowse-desktop/scripts/buildElectronMain.ts`.
+**The preload must be `.cjs`.** The package is `"type": "module"`, so a
+`build/preload.js` parses as ESM and throws on its own `require()`. A throwing
+preload does not stop the page; the renderer just has no bridge, which looks like
+`contextBridge` being broken. `products/jbrowse-desktop/scripts/buildElectronMain.ts` carries the why.
 
-## What actually blocks the flip
+## What blocks the flip
 
-### 1. `openLocation` is the chokepoint — fix the funnel, not the call sites
+### 1. `openLocation` is the chokepoint
 
-There is **exactly one** non-test `new LocalFile` in the repo:
+`packages/core/src/util/io/index.ts` holds the only non-test `new LocalFile`.
+`openLocation` returns a `GenericFilehandle`, so an IPC-backed implementation
+for `LocalPathLocation` behind that interface fixes every call site unchanged,
+including ones grep misses.
 
-```
-packages/core/src/util/io/index.ts       new CachedFilehandle(new LocalFile(location.localPath), …)
-```
+Main-thread reads exist because the RPC boundary is for rendering: an adapter
+feeding a renderer is built in the worker, where Node lives, but a read whose
+result lands in the model as data (refNameAliases, cytobands, the spreadsheet
+import wizard) has no render call to ride on. These are small, whole-file,
+read-once metadata reads through the same `openLocation`.
 
-`openLocation` returns a `GenericFilehandle` (`read`/`readFile`/`stat`/`close`).
-Slot an IPC-backed implementation in behind that interface for
-`LocalPathLocation` when Node isn't reachable, and **every call site is fixed
-unchanged** — including any not found by grep.
+### 2. The renderer bundle statically requires `fs`
 
-Why main-thread reads exist at all: JBrowse's RPC boundary exists for
-*rendering* ("render this region → return an image"). An adapter feeding a
-renderer is constructed **inside the worker**, so its `openLocation` runs where
-Node lives. Reads whose result lands in the main-thread model as *data* have no
-render call to ride on, so they run on the main thread. Known instances —
-`assemblyManager/assembly.ts` (refNameAliases, genetic codes),
-`data_adapters/CytobandAdapter`, `spreadsheet-view/ImportWizard` — are all small,
-whole-file, read-once metadata. They are not special-casing Electron; they call
-the same `openLocation` as everything else, and it only reached `node:fs`
-because the renderer happened to have it. The same code runs fine in
-jbrowse-web, where a `LocalPathLocation` cannot exist.
+The flip does not degrade gracefully; a renderer module that `require`s a node
+builtin at load throws and its chunk fails. The chain:
 
-### 2. The renderer bundle statically requires `fs` — this is the real blocker
+- `products/jbrowse-desktop/scripts/config.ts` targets `electron-renderer`, so
+  webpack leaves node-builtin `require()` calls in the bundle, sets
+  `resolve.aliasFields = []`, and aliases `generic-filehandle2` to its Node
+  build.
+- That build's index statically requires `localFile.js`, which requires
+  `fs/promises` at module scope, and `util/io/index.ts` imports
+  `{ BlobFile, LocalFile }` from it.
 
-The flip does not degrade gracefully; it stops the app booting. The chain:
+**The alias is load-bearing for the worker.** Deleting it clears `fs` from the
+renderer and also swaps the worker's real `LocalFile` for the browser stub that
+rejects every read, so desktop boots and can read nothing. `generic-filehandle2`
+lists `"browser"` first in its `exports`, webpack's `electron-renderer`
+conditions include both `node` and `browser`, and the worker is a
+sub-compilation sharing one `resolve` config — so resolution cannot fix the
+renderer alone.
 
-- `products/jbrowse-desktop/scripts/config.ts` sets `config.target =
-  'electron-renderer'`, so webpack leaves node-builtin `require()` calls in the
-  renderer bundle instead of polyfilling them. The current bundle really does
-  contain literal `require("fs")` (`build/main.*.js`, `build/912.*.chunk.js`).
-- The same file sets `config.resolve.aliasFields = []`, which **disables the
-  browser field**, and then explicitly aliases `generic-filehandle2` to
-  `dist/index.js` — the Node build.
-- `generic-filehandle2/dist/index.js` requires `./localFile.js`, which does
-  `require("fs/promises")` **at module scope**.
-- `packages/core/src/util/io/index.ts:1` imports it statically:
-  `import { BlobFile, LocalFile } from 'generic-filehandle2'`.
+The fix is an import change: keep the alias and stop `util/io/index.ts`
+evaluating the package index in the renderer. Making only `LocalFile` dynamic is
+not enough, because `BlobFile` comes off the same index; deep-import
+`BlobFile`/`RemoteFile` too, and load `LocalFile` behind the capability check.
 
-So under contextIsolation that `require` throws *while the module is loading*,
-the chunk fails, and the renderer never starts — a blank window, not a
-file-read error.
+The other node builtin left in renderer source is `src/indexJobsModel.ts`'s own
+`fs`/`path`, which is small. It reaches `@jbrowse/text-indexing` through the
+`./util` subpath; importing the package barrel instead drags `ixixx` and
+`child_process` back into the renderer.
 
-This is also why grep alone underestimates the work: the dependency is in a
-transitive `node_modules` module, not in JBrowse source.
+### 3. `isElectron` is a userAgent sniff
 
-**The alias is load-bearing for the worker — measured.** Built the desktop
-renderer twice, once as-is and once with the `generic-filehandle2` alias
-deleted, and grepped the output:
+`isElectron` in `packages/core/src/util/environment.ts` tests
+`navigator.userAgent`, which Electron sets regardless of `contextIsolation`.
+After the flip `openLocation` still takes the `LocalFile` branch and fails deep
+inside generic-filehandle, not with the clean "can't use local files" error.
+Don't redefine `isElectron` — most uses mean "am I in desktop". The
+`isNode || isElectron` gate in `io/index.ts` wants a capability check. `isNode`
+is probably already true in today's renderer (no `process` shim under
+`electron-renderer`); unprobed.
 
-| | `main.*.js` (renderer) | worker bundle | who has `LocalFile` |
-| --- | --- | --- | --- |
-| as-is | 1 × `require("fs/promises")` | 1 × `require("fs/promises")` | the real class, both |
-| alias deleted | none | none | the browser **stub**, both |
+### 4. Argument validation is part of the flip
 
-So dropping the alias does clear `fs` out of the renderer — and takes the
-worker's real `LocalFile` with it, replacing it with the stub that rejects every
-read. Every local file in desktop is opened in the worker, so that build boots
-and then cannot read anything.
-
-The cause is not `config.target`, and revisiting the target does not help. It is
-that `generic-filehandle2` declares `"browser"` **first** in its `exports` map,
-and webpack's condition set for `electron-renderer` contains both `node` and
-`browser` (`conditions.push` in webpack's `config/defaults.js` adds `browser`
-for `tp.web`), so the browser entry wins on sight. The alias is what overrides
-that. One `resolve` config serves both graphs — the worker is a sub-compilation
-of the same config — so the condition cannot be turned on for the renderer
-alone.
-
-Fix direction, therefore: not a resolution change but an **import** change.
-Leave the alias, and stop `packages/core/src/util/io/index.ts` from importing
-`LocalFile` at module scope — behind the capability check, `await import()` it.
-The renderer's chunk graph still *contains* the node build; what matters is that
-the renderer never evaluates it, which is what makes the flip a working app
-rather than a blank window. That is the same move the IPC-backed filehandle in
-step 1 needs anyway.
-
-### 2b. What the renderer actually requires from Node — measured
-
-Grep the *source* and you find two files. Sweep the built bundle for every node
-builtin, not just `fs`, and it is **twelve**, from three sources. Every one of
-them is referenced from a lazily-loaded chunk rather than from `main.*.js`'s own
-module bodies, so the flip defers the failure rather than blanking the window at
-boot.
-
-| source | chunk | pulls in |
-| --- | --- | --- |
-| `generic-filehandle2`, via `util/io/index.ts` | 1487 | `fs/promises` |
-| `ixixx`, via `src/indexJobsModel.ts` | 6404 | `child_process`, `stream`, `stream/promises`, `string_decoder`, `events`, `os`, `path`, `fs` |
-| `src/indexJobsModel.ts` itself | 2973 | `fs`, `path` |
-| `src/util.tsx` (`fetchCJS`, blocker 4) | via `pluginManagers.tsx` | `fs/promises`, `os`, `path` — **fixed**, the module went with the CJS loader |
-
-**`indexJobsModel.ts` was a barrel leak, not a channel and not a worker move —
-and it is fixed.** It imports exactly two *values* from `@jbrowse/text-indexing`
-— `createTextSearchConf` and `findTrackConfigsToIndex`, both pure config helpers
-from that package's `util.ts`. The barrel also re-exports `indexTracks` from
-`TextIndexing.ts`, which imports `ixixx` at module scope, which spawns `sort` as
-a subprocess, so the page thread was dragging a subprocess library in to call
-two config functions. That package now has an `exports` map (ADR-030) with a
-`./util` subpath, and the import goes through it, so the whole `child_process`
-graph is out of the renderer. The row above is the pre-fix measurement.
-`indexJobsModel.ts`'s own `mkdirSync` is separate and genuinely small.
-
-**The `LocalFile` fix is not "make the import dynamic".**
-`generic-filehandle2`'s index — `dist/index.js` and `esm/index.js` alike —
-statically pulls `localFile.js`, and `util/io/index.ts` imports `BlobFile` from
-that same index. So deferring only `LocalFile` leaves the package index, and
-therefore `fs/promises`, exactly where it was. It needs the `BlobFile`/
-`RemoteFile` imports off the barrel too (deep paths), or the browser build
-aliased in with the worker deep-importing the node `localFile.js`.
-
-### 3. `isElectron` is a userAgent sniff, and it is a landmine
-
-```ts
-// packages/core/src/util/environment.ts
-export const isElectron = /electron/i.test(
-  typeof navigator !== 'undefined' ? navigator.userAgent : '',
-)
-```
-
-Electron sets that UA regardless of `contextIsolation`, so after the flip
-`isElectron` stays `true`, `openLocation` confidently takes the `new LocalFile`
-branch, and it fails deep inside generic-filehandle reaching for `fs` that isn't
-there — **not** the clean "can't use local files in the browser" error.
-
-Do not simply redefine `isElectron`: it has ~32 non-test uses across core,
-plugins and products, and most of them genuinely mean "am I in desktop",
-not "can I reach Node". The `isNode || isElectron` gate in `io/index.ts` wants a *capability* check.
-
-On the adjacent `isNode` brand-check
-(`toString.call(globalThis.process) === '[object process]'`): because the target
-is `electron-renderer`, webpack injects no `process` shim, so the real Node
-`process` is visible and `isNode` is likely already `true` in the desktop
-renderer today — making `|| isElectron` redundant at this call site. Not probed
-directly; check before relying on it. After the flip both go false, which is
-correct, but by then the bundling issue above has already bitten.
-
-### 4. Plugin loading — done
-
-`src/util.tsx` `fetchCJS` wrote plugin code to a temp dir with `node:fs` and
-`require`d it in the renderer, neither of which survives contextIsolation. The
-rethink this section asked for was to delete the format rather than port it: no
-store entry published a CJS build, Electron's renderer runs UMD and ESM, and a
-plugin reaching the main process does it through `window.require('electron')`
-whichever format it ships in — so the loader that needed Node bought nothing its
-two peers do not. `PluginLoader` names UMD or ESM as the successor for a config
-still carrying `cjsUrl`, and the desktop `src/util.tsx` that held `fetchCJS` is
-deleted, taking `node:fs/promises`, `node:os` and `node:path` out of the
-renderer's graph and the RCE-by-`require` vector with them. What is left naming
-a node builtin in that renderer's own source is `src/indexJobsModel.ts`, the
-small one this section's table already calls separate.
-
-A plugin evaluated in the renderer still reaches Node through `window.require`
-until the flip, so the trust gate is not redundant — what changed is that the
-plugin loader no longer *hands* it Node.
-
-### 5. Argument validation is part of this work, not a follow-up
-
-The preload allowlists channel *names*, not *arguments*. Several channels take
-unbounded paths and URLs:
-
-- `saveSession(sessionPath, snap)` — arbitrary file **write**
-- `loadSession(sessionPath)` — arbitrary file **read**, returned to the renderer
-- `indexFasta(location)` — fetches any URL or reads any local path
-
-Today this is moot: the renderer already has Node. After the flip these **are**
-the boundary, and locking the renderer while leaving `saveSession(anyPath)`
-reachable just changes the payload from `require('fs')` to an `invoke`. Constrain
-session paths to `userData`/the JBrowse documents dir plus what the user actually
-chose through `promptOpenFile` (the main process can remember what it handed
-out — that is the only path the user consented to).
-
-The BLAT pair is done. `blatFetch` and `openBlatChallenge` used to POST and
-navigate anywhere on the app's **default** session, cookies included. Bounding
-them by host does not work — the dialog's server field is how someone runs their
-own proxy or gfServer — so they run on their own partition instead
-(`electron/blatSession.ts`), which keeps a solved challenge visible to the
-request that needed it and takes the app's other cookies out of reach. Scheme,
-embedded credentials, response size and a timeout are checked there too.
+The preload allowlists channel names, not arguments. `saveSession(path, snap)`
+is an arbitrary write, `loadSession(path)` an arbitrary read returned to the
+renderer, `indexFasta(location)` any URL or path. After the flip these are the
+boundary, so constrain session paths to `userData`/the documents dir plus paths
+the main process handed out through `promptOpenFile`. The BLAT channels already
+run on their own partition (`electron/blatSession.ts`), since a host allowlist
+would break user-run gfServers.
 
 ## Suggested order
 
-**Probe before any of it: can page-thread JS build its own Worker and inherit
-node integration?** The flip exists to stop *injected* content reaching Node. If
-Electron grants `nodeIntegrationInWorker` to any Worker the renderer constructs
-rather than only to same-origin script urls, then after the flip injected content
-still reaches `child_process` through `new Worker(blobUrl)`, and the whole
-workstream buys much less than it costs. Same minimal probe-app shape as the
-three rows in the table above, an afternoon at most. If it comes back badly the
-fallback is `nodeIntegrationInWorker: false` plus the IPC-backed filehandle
-serving the worker too — a larger version of already-planned work rather than a
-new design. Nobody has run it.
-
-Then the bundling. It is the one that decides whether the rest is feasible at
-all, and every later step is unverifiable while the renderer won't boot.
-
-1. **Get `fs` out of the renderer's module graph** (blocker 2). The spike is
-   done and its answer is in that section: resolution cannot decide this,
-   because one `resolve` config serves the renderer and the worker and the
-   worker needs the node build. Make the `LocalFile` import dynamic instead.
-2. Type the renderer's IPC. Landed for callers *inside* the product
-   (`src/ipc.ts`), and `channelNames.ts` now has an exhaustiveness guard that
-   works — the original `const _: UnlistedChannel[] = []` never checked
-   anything, since an empty array literal satisfies every array type, and it hid
-   two unlisted channels for as long as they existed. What is left is the four
-   callers outside the product that still hand-roll `window.require('electron')`
-   and restate the contract with casts; the shape for those is
+0. **Probe first: does a Worker the page constructs (`new Worker(blobUrl)`)
+   inherit `nodeIntegrationInWorker`?** If so, injected content still reaches
+   `child_process` after the flip, and the fallback is
+   `nodeIntegrationInWorker: false` with the IPC filehandle serving the worker.
+1. Get `fs` out of the renderer's evaluated graph (blocker 2). Every later step
+   is unverifiable while the renderer won't boot.
+2. Type the IPC for the callers outside the product that still hand-roll
+   `window.require('electron')`:
    [ideas/ready/plugin-main-process-bridge.md](../ideas/ready/plugin-main-process-bridge.md).
-   Doing that is what makes step 5's validation type-checked, and what keeps the
-   allowlist from drifting again.
-3. IPC-backed `GenericFilehandle` behind `openLocation` + the capability check.
-4. ~~Plugin loading off `node:fs`/`require`~~ — done, by deleting the CJS
-   format.
-5. Argument validation on the channels above.
-6. Flip `window.ts`: `contextIsolation: true`, `nodeIntegration: false`, keep
-   `nodeIntegrationInWorker: true`, add `preload: build/preload.cjs`.
-7. An e2e assertion that the lockdown holds — `require('fs')` throws,
-   `require('electron').ipcRenderer` works — so nobody quietly re-enables
-   nodeIntegration to fix a bug. Assert the bridge *exists* too: the `.cjs` trap
-   produces no bridge at all, silently.
+3. IPC-backed `GenericFilehandle` behind `openLocation`, plus the capability
+   check.
+4. Argument validation.
+5. Flip `window.ts`: `contextIsolation: true`, `nodeIntegration: false`, keep
+   `nodeIntegrationInWorker: true`, `preload: build/preload.cjs`.
+6. An e2e assertion that `require('fs')` throws and
+   `require('electron').ipcRenderer` exists, so the `.cjs` trap and a quiet
+   re-enable both fail.
 
-`webSecurity: false` is load-bearing for CORS to genome servers and is
-independent of contextIsolation; it can stay.
+`webSecurity: false` is load-bearing for CORS to genome servers and independent
+of contextIsolation.
 
-## Not verified
-
-The flip has **not** been attempted against the real app — only minimal probe
-pages. Verifying it needs a fresh webpack renderer build plus the packaged-app
-e2e harness (`test/harness.ts` runs against `dist/unpacked/…`). Expect at least
-one renderer-side Node dependency that grep did not surface; fixing the
-`openLocation` funnel (step 3) rather than individual call sites is what makes
+The flip has been tried only on probe pages, never on the real app; that needs a
+fresh renderer build and the packaged-app harness (`test/harness.ts`). Expect a
+renderer Node dependency grep missed — the `openLocation` funnel is what makes
 that survivable.

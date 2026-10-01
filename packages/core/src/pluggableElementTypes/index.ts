@@ -60,15 +60,8 @@ export type {
 export { default as InternetAccountType } from './InternetAccountType.ts'
 
 export { default as RpcMethodType } from './RpcMethodType.ts'
-// The two region-renaming bases, which nearly every RPC method that takes a
-// viewport wants — without them an external plugin deep-imports the file and
-// bundles its own copy, which is only harmless because RPC methods are keyed by
-// name (PluginManager.rpcMethods) and nothing does an instanceof.
 // `RpcMethodTypeWithFiltersAndRenameRegions` is deliberately not here: it pulls
-// in `renderers/util/serializableFilterChain`, and RFC-001 §9 deletes
-// `pluggableElementTypes/renderers/*` after the legacy renderer migration. This
-// barrel is served as ABI, so exporting it would pin a directory we intend to
-// remove.
+// in `renderers/util/serializableFilterChain`, and this barrel is served as ABI.
 export { default as RpcMethodTypeWithRenameRegion } from './RpcMethodTypeWithRenameRegion.ts'
 export { default as RpcMethodTypeWithRenameRegions } from './RpcMethodTypeWithRenameRegions.ts'
 export { default as AddTrackWorkflowType } from './AddTrackWorkflowType.ts'

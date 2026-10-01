@@ -7,508 +7,222 @@ kind: dataset
 
 # HPRC release 2 in JBrowse
 
-The alignment/MAF side of the HPRC data. The graph view's own queue is
-in [`jbrowse-plugin-graphgenomeviewer/agent-docs/IDEAS.md`](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer/blob/main/agent-docs/IDEAS.md) —
-that plugin's repo, not this one — and does not overlap.
+The alignment and MAF side of the HPRC data. The graph view's own queue lives in
+the graph plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `IDEAS.md`).
 
-## What HPRC publishes, and what opens today
+## What HPRC publishes, and what opens
 
 | artifact | opens? |
 | --- | --- |
-| `v2.0/…/hprc-v2.0-mc-grch38.full.taf.gz` + `.tai` (5.96 GB, 464 haplotypes) | yes, `BgzipTaffyAdapter` — a quarter of the MAF's bytes per locus, and the source `demos/hprc_multiway` unpacks pairwise PAF from (below) |
-| `v2.1/…/hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` (53 GB, 464 haplotypes) | **yes**, `BgzipMafAdapter`, and this is the one the tutorial uses — a different alignment, not a repackaging of the TAF |
+| `v2.0/…/hprc-v2.0-mc-grch38.full.taf.gz` + `.tai` | yes, `BgzipTaffyAdapter`; a quarter of the MAF's bytes per locus |
+| `v2.1/…/hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` | yes, `BgzipMafAdapter`; the tutorial's file |
 | `sv.gfa` (minigraph rGFA) | yes, graph view plugin |
-| `wave.vcf.gz` (464-haplotype callset) | yes, genotype matrix |
-| `hprc25272.aln.paf.gz` (310 GB, 25,221 haplotype pairs) and the same alignments split one file per target under `impg/pafs/all-vs-1/` (465 files, 490-870 MB) | yes in principle, but it is a **sparse** all-vs-all and unsorted — see below |
-| `hprc465vsgrch38.aln.paf.gz` (6.3 GB) | yes, but it is a **star** — see below |
-| per-chromosome pggb `.gfa.zst` | **no** — see the memory measurement below |
-| impg TPA (466 files, one per haplotype) | **no reader** |
+| `wave.vcf.gz` | yes, genotype matrix |
+| `hprc25272.aln.paf.gz` and the per-target `impg/pafs/all-vs-1/` split | in principle, but sparse all-vs-all and unsorted (below) |
+| `hprc465vsgrch38.aln.paf.gz` | yes, but a star (below) |
+| per-chromosome pggb `.gfa.zst` | no (below) |
+| impg TPA | no reader |
 
-Of everything on that list the TPA row is the one integration that would be
-genuinely differentiating rather than catching up — 466 files ship as a
-first-class alternative to the PAFs and nothing anywhere reads the format. It is
-recorded here rather than in `TODO.md` because nobody has scoped a reader.
+The bucket serves `Access-Control-Allow-Origin: *` with `Content-Range` exposed,
+so browsers can range-request all of it.
 
-The human-pangenomics bucket serves `Access-Control-Allow-Origin: *` with
-`Content-Range` exposed, so browsers can range-request all of it.
+## The v2.0 and v2.1 builds differ
 
-## The alignment is published twice, and the flat prefix is not the whole story
+- v2.0 publishes the alignment as TAF and v2.1 as MAF, never both. Both index
+  the same 195 GRCh38 contigs and name sequences `GRCh38.chr6`. The v2.0 TAF
+  header is `#taf run_length_encode_bases:1 version:1`, which
+  `BgzipTaffyAdapter.ts` handles.
+- v2.1 is a re-run, so its alignment differs in content, not just packaging: its
+  README (`…/minigraph-cactus/v2.1/README`) lists per-chromosome minigraph
+  construction and centromeres patched to align with rCRS. It also fixes a
+  sample-name typo in `sv.gfa.gz` and a vcfwave missing-genotypes bug. Check
+  this before treating a v2.0 oddity as a JBrowse bug.
+- At C4, which build is right is not settled: C4 is copy-number variable, so a
+  haplotype with a different copy count has no single correct projection onto
+  GRCh38.
+- The flat `wave.vcf.gz` predates the one under `v2.0/` (a later rewave). The
+  tutorial still points at the flat one.
+- The fetch gate measures `queryBlockSpan` over the buffered region against the
+  display's 5 MB default. At the tutorial's C4 locus both formats draw without
+  `fetchSizeLimit`. The MAF costs range: its alignment tier passes 5 MB at a
+  much narrower view than the TAF's. `queryBlockSpan` and `bytesForRegions` hold
+  the numbers.
 
-`pangenomes/freeze/release2/minigraph-cactus/` is the listing everyone reads — 12
-flat files. Beside them are `v2.0/` and `v2.1/` subdirectories holding the full
-per-build set, and what is in them changes which file to reach for.
+## Measured findings
 
-- **v2.0 publishes the alignment as TAF, v2.1 as MAF, and neither publishes
-  both.** `v2.0/…full.taf.gz` is 5.96 GB with a 4.98 MB `.tai`; `v2.1/…full.maf.gz`
-  is 53.4 GB with a 5.35 MB `.tai`. Both index the same 195 GRCh38 contigs, both
-  name sequences `GRCh38.chr6`, and the v2.0 TAF's header is
-  `#taf run_length_encode_bases:1 version:1`, which `BgzipTaffyAdapter.ts` handles
-  explicitly.
-- **Everything here reads v2.1**, the alignment included. The
-  TAF was the last holdout, on the read sizes below; the re-run beat them.
-- **What the gate sees, measured 2026-09-16** through `queryBlockSpan` over the
-  buffered region the fetch uses (the view plus half a screen each side), against
-  the display's 5 MB default: at the tutorial's own chr6:31,972,057-32,055,418 the
-  MAF is 3.50 MB and the TAF 425 KB, so **both draw and neither needs
-  `fetchSizeLimit`** — the 50 MB an earlier MAF spec carried was over-generous
-  rather than measured. What the MAF costs is range: the alignment tier first
-  exceeds 5 MB at ~123 kb of view against the TAF's ~632 kb. Narrower windows
-  scale with span rather than landing in whole blocks the way the TAF's did —
-  a 30 kb core is 1.47 MB against the 83 kb module's 3.50 MB. The harness
-  reproduces this doc's whole-chr6 TAF figure (353,902,971 bytes) to the byte.
-- **A C4 read served from the MAF**, as a check that the URL and the index agree
-  at the figure's locus: the 1,850,227 bytes the index asks for decode to 51
-  blocks over `GRCh38.chr6:31,963,151-32,075,542`, carrying all 464 haplotypes.
-- **v2.1 is a re-run, so its alignment differs in content.** Its README
-  (`…/minigraph-cactus/v2.1/README`, no extension) lists minigraph construction
-  ordered per chromosome, "reduces underalingments" [sic], and assemblies patched
-  so centromeres align with rCRS — both of which move alignment columns, not just
-  packaging. It also fixes a sample-name typo in `sv.gfa.gz` and a
-  missing-genotypes bug in vcfwave output. Worth knowing before treating a v2.0
-  oddity as a JBrowse bug.
-- **How much the re-run moves, at C4.** The v2.1 MAF carries 464 haplotypes per
-  block either side of the module and 309 through it, dropping to 58 over
-  chr6:32,017,452-32,022,279, and HG00146.1 has no row at all across
-  chr6:31,996,844-32,029,366. The v2.0 TAF aligned that clade through the
-  module, so the figure's block of unaligned haplotypes is much wider than it
-  was. Read off the published MAF, not the picture. Which build is *right* here
-  is not settled by either: C4 is copy-number variable, so a haplotype carrying
-  a different copy count has no single correct projection onto GRCh38.
-- **The flat `wave.vcf.gz` is older than the one in `v2.0/`.** The flat copy is
-  the March 2025 build (2,275,985,017 bytes); `v2.0/…wave.vcf.gz` is a January
-  2026 rewave (2,261,483,979 bytes) with `-rewave.log` and a `.old` beside it. All
-  three wave VCFs carry the same 232 sample columns and all three strip
-  `INFO/AT`. The tutorial still points at the flat one; moving it is a URL change
-  plus a regen of two matrix figures.
-- **The snarl-level carriage file is in the release tree now.**
-  `v2.0/…pgbi.vcf.gz` is the same size as the
-  `submissions/671F0A25-…--hprc_v2.0_mc_grch38_index/` copy the tutorial links,
-  which is a UUID path rather than a discoverable one.
+**impg's PAF output is projections, not compositions.** `impg query -x -o paf`
+returns "PAF-like projected interval matches" anchored on the sequence queried,
+so on the vs-GRCh38 star a query returned zero rows pairing two non-reference
+haplotypes, and `impg query -o paf | make-pif` reproduces the star it was given.
+A-vs-B through impg means `-o fasta` and realigning, or `-o maf`/`-o gfa`. impg
+suits extracting a locus across a cohort, not generating pairwise alignments.
 
-## Four things measured here — do not re-derive
+**`hprc465vsgrch38.aln.paf.gz` is a pure star.** Every row targets GRCh38, so a
+band between two non-reference assemblies is empty by construction. Both
+all-vs-all adapters throw `noSuchPairError` rather than drawing an empty band.
 
-**1. impg's PAF output is projections, not compositions.** The name and the `-x`
-transitive flag make `impg query -x -o paf` sound like it fills in missing pairs.
-It does not — impg's own help calls it "PAF-like projected interval matches", and
-on the vs-GRCh38 star a 1 Mb chr20 query returned 338 rows of which **zero paired
-two non-reference haplotypes**. Every row stays anchored on the sequence queried,
-and anchoring on a haplotype instead changes nothing, so
-`impg query -o paf | make-pif` reproduces the star it was given. Reaching A-vs-B
-through impg means `-o fasta` and realigning, or `-o maf`/`-o gfa` with the
-assembly FASTAs. impg is a retrieval and graph engine: the right tool for
-extracting a locus across a cohort, the wrong one for generating pairwise
-alignments.
+**`hprc25272.aln.paf.gz` does not hold every pair either.** It stores about 54
+haplotype partners per target of 464, and an unordered pair has a direct CIGAR
+about one time in five. A stack whose adjacent rows are chosen on biology mostly
+lands on unstated pairs, so `build_amylase_haplotypes.sh` aligns each pair with
+minimap2. Where the pair is stated, wfmash chains still break at a copy-number
+array. The per-target files are BGZF but not sorted by target position, so an
+index alone cannot make them range-requestable.
 
-**2. `hprc465vsgrch38.aln.paf.gz` is a pure star.** Sampled over 14 scattered
-BGZF slices (829k rows, 39 query samples): every row targets GRCh38, so **39 of
-780 sample pairs are stated and 741 are not**, and a synteny band between two
-non-reference assemblies is empty by construction. Both all-vs-all adapters
-raise `noSuchPairError` on this now rather than drawing an empty band.
+**A composition tool for this was built and deleted** (`jbrowse transitive-paf`,
+`a2858d0c86` → `79080af254`). Do not rebuild it: three stacked rows need only two
+bands (order the reference between them), a locus cut aligns pairwise in
+seconds, and beyond that a pangenome is a multiple alignment.
 
-**`hprc25272.aln.paf.gz` does not hold every pair either.** Its 25,221
-alignments are haplotype pairs, about 54 per target out of 464 possible:
-`all-vs-1/HG00232_hap1_hprc_r2_v1.0.1.merged.paf.gz` holds 732,349 records from
-50 query haplotypes, GRCh38 and a spread of populations among them, and
-NA18608#2, the row above HG00232#1 in the amylase stack, is not one. impg
-indexes each alignment in both directions, so an unordered pair has a direct
-`=`/`X` CIGAR about one time in five. A stack whose adjacent rows are chosen on
-biology mostly lands on unstated pairs, and `build_amylase_haplotypes.sh`
-aligns each pair with minimap2 for that reason. Where the pair is stated the
-wfmash record is no better across a copy-number array: 48 of the 50 partners
-break their chain at the amylase array and leave a mean 146 kb of HG00232#1
-unaligned.
+**The per-chromosome pggb graphs do not fit in memory.** `pggb_gfa_to_bed.py`
+holds every segment, link and path step at once, so it scales with the graph and
+not the window; chrY, the smallest, exhausted a 30 GB machine. For human, use
+`odgi extract` on a window or the minigraph rGFA.
 
-The per-target files are BGZF but not sorted by target position (290,918
-backward steps in the file above), so an index alone cannot make them
-range-requestable from the HPRC bucket; they would have to be re-sorted and
-re-hosted. `impg index` over that one 589 MB file took 134 s and wrote a 67 MB
-index, after which a 500 kb `impg query -o paf` returns in under a second with
-records trimmed to the window on whole-contig coordinates.
+**The published MAF is tab-separated.** UCSC writes space-aligned MAF; taffy and
+Cactus write tabs. A ` +` split leaves each row in one field, so every block
+silently vanishes and the track draws nothing without erroring.
+`util/mafLines.ts` splits on `\s+` (`WHITESPACE_REGEX`).
 
-**A composition tool for this was built and then deleted** (`jbrowse
-transitive-paf`, `a2858d0c86` → `79080af254`). **Do not rebuild it.** It worked —
-88% recall at 99.8% precision on a held-out E. coli pair — but three stacked
-rows only need two bands (order the reference between them), a locus cut aligns
-pairwise in seconds, and beyond that a pangenome is a multiple alignment rather
-than a stack of pairwise bands.
+**taffy dies on a byte-cut slice.** A truncated last MAF block trips
+`maf_read_block`'s assertion, and a headerless mid-file TAF range segfaults. Cut
+at a block boundary.
 
-**3. The per-chromosome pggb graphs do not fit.** `pggb_gfa_to_bed.py` on chrY,
-the smallest of the 25 (343 MB zstd against chr21's 2.4 GB): 4.12M segments,
-7.69M links, **15.2 GB resident after 93 s while still loading**, nothing
-written; killed at 4 GB from exhausting a 30 GB machine. It holds every segment,
-link and path step at once, so it scales with the graph and not with the window.
-For human, `odgi extract` a window or use the minigraph rGFA. The script carries
-this measurement and refuses non-blunt overlaps.
-
-**4. The published MAF is tab-separated.** UCSC writes MAF space-aligned; taffy
-and Cactus write tabs. A ` +` split — which is what the legacy `parseBigMafStanza` in
-`legacyMafParse.fixture.ts` does, splitting a bigMaf stanza on `;` — leaves each
-row in one field, so every block silently vanishes and the track draws nothing
-without erroring. `mafParsing.ts` splits the text on `\n` and hands each line to
-`applyMafLine` in `util/mafLines.ts`, whose `WHITESPACE_REGEX` splits fields on
-`\s+` and says why.
+**`maf2bed` needs v0.6.0 or newer for `--summary`.** v0.5.1 ignored the unknown
+flag, exited 0 and wrote nothing.
 
 ## Unpacking pairwise alignments from the graph
 
 `demos/hprc_multiway` draws eight haplotypes against GRCh38 out of the graph's
-own alignment rather than the impg PAF: `scripts/build_hprc_multiway_synteny.sh`
-streams the v2.0 TAF one chromosome at a time through `taffy view -m` and
-`scripts/maf_to_pairwise_paf.py` unpacks each haplotype's rows into PAF. The
-TAF is hal2maf of the cactus run that produced the graph, projected onto
-GRCh38, so every block holds the reference row and one row per haplotype
-aligned there, and a haplotype's pairwise alignment is its rows read off block
-by block. Nothing is aligned and no aligner setting is chosen; the input is the
-published file, which is what makes the build reproducible.
+own alignment, not the impg PAF. Nothing is aligned and no aligner setting is
+chosen, so the build is reproducible from the published file. Two routes in
+`scripts/build_hprc_multiway_synteny.sh`:
 
-**The converter** (`--reference GRCh38 --queries HG01109#1,… --max-gap 10000
---chrom-sizes-dir`) reads an `=`/`X`/`I`/`D` CIGAR straight off the two rows'
-columns (N is a mismatch; a column both rows gap is dropped), converts `-`
-strand rows to PAF's forward query interval, and chains a haplotype's
-consecutive blocks into one record while it continues on both sequences and one
-strand. Cactus blocks tile the reference, but the projection drops any query
-insertion that falls between two blocks, so with exact chaining a jump of one
-unaligned base splits the record and the HPRC graph unpacks to ~10 kb pieces
-(80 records for 8 haplotypes over 100 kb of chr22). `--max-gap` bridges a jump
-of up to that many bp on either sequence as an `I`/`D`; at 10 kb, the same
-window is one record per haplotype. 10 kb matches `make-pif`'s coarse bound, so
-an indel the coarse tier keeps as a fold is a record break instead and the two
-tiers agree on where an alignment is discontinuous. Names come out PanSN
-(`HG01109#1#JAHEPA020000012.1`, `GRCh38#0#chr22`) whatever the MAF used
-(`HG01109.1.JAHEPA020000012.1` here), which is what `make-pif` and
-`assemblyNameToPanSN` want. `scripts/maf_to_pairwise_paf.test.ts` works a
-four-block fixture by hand, `-` strand and all.
+- **GFA (`SOURCE=gfa`, the default).** `scripts/gfa_to_pairwise_paf.py` reads a
+  haplotype's alignment to any chosen reference off the walks: two walks through
+  one node are identical sequence. No taffy, and no `-r` range that refuses chr1
+  and chr2. `PANGENOME_GRAPHS.md` §"Pairwise alignments unpacked from the GFA"
+  holds the chaining rules and the E. coli agreement.
+- **TAF (`SOURCE=taf`).** Streams the v2.0 TAF per chromosome through
+  `taffy view -m` into `scripts/maf_to_pairwise_paf.py`.
 
-**What it costs, measured 2026-09-05 on 16 cores.** The genome is 1.34 TB of
-MAF text (464 haplotypes; ~340 bytes per reference base), streamed once. taffy
-decodes chr22 (17.2 GB) alone in 89 s and with the converter behind it in 98 s
-(176 MB/s), so the converter is not the limit: it skips a row on its name prefix
-before touching the sequence (~1 GB/s when 8 of 464 rows are wanted; 80 MB/s
-when every row is), and the CIGAR is computed per block with two `translate`s,
-a big-int XOR and one more `translate`, no per-column python. A `LC_ALL=C grep`
-pre-filter ahead of it was slower (194 s: BSD grep's alternation runs at
-90 MB/s), so nothing sits between them. Eight chromosomes at a time each stream
-runs at 76–86 MB/s (taffy is CPU-bound; chr9 55.7 GB in 678 s); two at a time
-at 154 MB/s (chr1 107.9 GB in 700 s). 22 chromosomes took 1850 s and chr1+chr2
-741 s, ~43 min of unpacking as run; `make-pif` took 10 s on the 167 MB PAF.
-Memory is a few hundred MB per stream, since a chain holds run-length pairs
-rather than op bytes (a 27 Mb record's CIGAR is 257 KB of text).
+Both converters take `--max-gap 10000`. Cactus blocks tile the reference but the
+projection drops query insertions between blocks, so exact chaining splits a
+record at every one-base jump and the graph unpacks to ~10 kb pieces. A 10 kb
+bridge (an `I`/`D`) matches `make-pif`'s coarse bound, so both tiers agree on
+where an alignment is discontinuous. Names come out PanSN
+(`HG01109#1#JAHEPA020000012.1`). `scripts/maf_to_pairwise_paf.test.ts` works a
+four-block fixture by hand.
 
-**taffy refuses chr1 and chr2 at their full length**, with the same "not found
-in taffy index; emitting header-only output" that a range past the contig's end
-gives. `tai_iterator` bounds its scan with the index record at or after the
-range *end*; past the contig's last record that is the next contig in index
-order, and this file is written `chr10..chr19, chr1, chr20..chr22, chr2, chr3…`,
-so chr1's successor `chr10` and chr2's `chr20` sit *earlier* in the file and
-the scan breaks on its first block. Every other chromosome's successor is later
-and works. The fix is one line in `tai.c` (null the bound when it names another
-contig), verified on a local build; the script instead retries the range capped
-at the contig's last index entry and says what it dropped: 12,012 bp on chr1
-and 12,259 bp on chr2, each the telomeric 10 kb N run plus one or two blocks.
+**taffy refuses chr1 and chr2 at full length** with the same "not found in taffy
+index" as a range past the contig's end. `tai_iterator` bounds its scan by the
+index record after the range end, and for chr1 and chr2 that successor
+(`chr10`, `chr20`) sits earlier in the file. The script retries capped at the
+last index entry and reports the dropped bp (a telomeric N run).
 
-**Agreement with impg's PAF.** The graph-derived PIF is 4,332 rows / 127 MB
-(477–606 per haplotype; median record 362 kb, p90 16.9 Mb, max 99.5 Mb, a
-chromosome arm; 846 rows on `-`) against impg's 147,879 rows / 197 MB (median
-12 kb, max 14.6 Mb). Genome-wide over the primary chromosomes each haplotype's
-union coverage of GRCh38 is 98.6–99.1% of impg's (2.69–2.83 Gb against
-2.73–2.85 Gb) at higher identity (0.9960–0.9966 matched/aligned against
-0.9915–0.9945). At `chr1:196,700,000-197,000,000`, the CFH window the demo
-opens on, both say the same thing:
+**Without `--contig-lengths`** every chromosome-scale contig comes out a few kb
+short, because minigraph-cactus clipped telomeres out of the walks.
 
-| | impg | graph |
-| --- | --- | --- |
-| HG01109, HG01123, HG01960, HG02055 | 2 rows each, breaking at 196,758,573–196,767,397 and resuming at 196,835,914–196,836,333 | 2 rows each, all four breaking at 196,753,096 and resuming at 196,837,771 |
-| HG00097, HG00099, HG00128 | 1 row through | 1 row through |
-| HG00133 | 6 rows, 316 kb covered over a 300 kb window (overlapping) | 1 row through |
-| identity in window | 0.9970–0.9995 | 0.9973–0.9995 |
+**A haplotype pair needs no 63 GB download.** `gbz-base-query` with
+`--haplotype-index` and `--stack` fetches one window and prints each row against
+the next as PAF; a shared node is a run of `=` and the bases between get the best
+global alignment under vg's scoring.
+`scripts/build_graph_haplotype_stack.sh` wraps it into a stacked
+LinearSyntenyView config (`test_data/hprc_c4_stack`, figure
+`multiway_synteny/hprc_c4_graph_stack`). Do not use the reader's `--cigar`
+(sizes the stretch between shared nodes as one `M`) or `gfa_to_pairwise_paf.py`
+on a `--format gfa` window (pairs it as `X`) for a haplotype pair: neither
+compares bases. At the amylase locus the graph folds paralogs onto shared nodes,
+so the pair fragments whichever tool reads it.
 
-The four CFHR3/CFHR1 deletion carriers break in both; the graph puts every
-carrier's break at the same coordinates because they traverse one bubble,
-where wfmash extends each row into the flanking segmental duplication by a
-different amount. Where impg's rows overlap each other (HG00133) the graph has
-one row, since a base sits in one block.
+**Agreement.** The GFA, TAF and impg routes agree on the CFH window the demo
+opens on (`chr1:196,700,000-197,000,000`): the four CFHR3/CFHR1 deletion carriers
+break in all three, and the graph puts every carrier's break at the same
+coordinates because they traverse one bubble, where wfmash extends each row into
+the flanking duplication by a different amount. The graph has one row where
+impg's rows overlap, since a base sits in one block. Genome-wide, graph-derived
+union coverage is 98.6-99.1% of impg's at higher identity, and the GFA `=` total
+matches the TAF's to 0.011%. They differ in how private bp are written (the GFA
+pairs them as `X` first) and in record length, since a chain runs through what a
+MAF block boundary split.
 
-**Hosting.** Both builds sit in `jbrowse.org/demos/hprc_multiway/`: the impg
-files under their original names and the graph-derived ones as
-`hprc_multiway_graph.pif.gz{,.csi}`, `<sample>.<hap>.graph.chrom.sizes` and
-`README_graph.txt`. The graph `chrom.sizes` are strict subsets of the impg ones
-(the projection lists only contigs aligned to a primary chromosome; 34–54
-against 60–114, no size conflicts), which is why they could not replace them
-in place. The checked-in `demos/hprc_multiway/config.json` points at the GFA
-build (see below), not these.
+**Hosting.** `jbrowse.org/demos/hprc_multiway/` holds the impg files, the
+TAF-route files (`hprc_multiway_graph.*`) and the GFA-route files
+(`hprc_multiway_gfa.pif.gz{,.csi}`, `<sample>.<hap>.gfa.chrom.sizes`,
+`README_gfa.txt`). `demos/hprc_multiway/config.json` serves the GFA build.
+`UPLOAD=1` copies data files and skips any key already there; the README goes
+through `deploy-demo.sh`. The hosted GFA file came from release 2.1's graph
+(the script's default `GFA_URL`); `README_gfa.txt` beside it carries its counts.
 
-### The GFA route
+## The zoom-out tier
 
-Since 2026-09-05 the script's default (`SOURCE=gfa`; the TAF route above is
-`SOURCE=taf`). The same alignment is also in the graph itself:
-`hprc-v2.0-mc-grch38.gfa.gz` (63.1 GB gzipped, 464 haplotypes as W lines)
-carries every haplotype as a walk through shared nodes, and two walks through
-one node are identical sequence, so `scripts/gfa_to_pairwise_paf.py` reads a
-haplotype's pairwise alignment to GRCh38 straight off the walks — no taffy, no
-HAL, no `-r` range that silently refuses chr1 and chr2, and any path can be the
-reference, so a mate-vs-mate alignment is a direct read. How it chains, what an
-`X` means, and the E. coli agreement against halSynteny and minimap2 are in
-`PANGENOME_GRAPHS.md` §"Pairwise alignments unpacked from the GFA"; this
-section is the HPRC run and how it compares with the TAF and impg routes.
+`jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.summary.bed.gz` is the whole-genome
+summary tier for the v2.1 MAF, wired by `test_data/hprc_maf_summary.json` and
+rebuilt by `scripts/build_hprc_maf_summary.sh`, whose header carries the
+surviving failure mode. A whole-chromosome read costs tens to low hundreds of kB
+against a 5 MB budget, where the MAF alone is refused on whole chr6 (billions of
+bytes by `queryBlockSpan`). The alignment tier stays the better view wherever it
+is affordable, such as the tutorial's C4 window.
 
-**A haplotype pair needs no 63 GB download: the reader aligns two walks of one
-window.** `gbz-base-query <gbz.db> --haplotype-index <anchored.db> --sample
-GRCh38 --contig chr6 --interval 31940000..32090000 --context 0 --stack
-'HG01978#2,HG02004#2,GRCh38#0,HG02818#1,HG00146#1'` fetches the C4 window once
-and prints each row against the next as PAF in 6 s, on each haplotype's own
-coordinates. A shared node is a run of `=`, and the bases between two shared
-nodes get the best global alignment under vg's scoring, so the CIGAR is defined
-by the scoring and by no threshold. An oracle that rebuilds both walks from the
-window's S lines finds every `=` column equal and every `X` column different
-over 588,074 + 310 columns, reverse-strand records included. The two
-three-module haplotypes align straight through the 32,738 bp module GRCh38
-lacks. `scripts/build_graph_haplotype_stack.sh` wraps that call into a stacked
-LinearSyntenyView config; `test_data/hprc_c4_stack` and the figure
-`multiway_synteny/hprc_c4_graph_stack` are its C4 run.
+**The tier is a separate config, not switched on for `hprc_maf.json`.** The
+summary swaps on span (`coarseTierPastThreshold` is `aboveForceLoadFloor`, 20
+kb), while the question it stands in for is cost. The tutorial's 83 kb C4 figure
+would silently lose its per-haplotype base rows to presence bands (verified:
+`coarseTierActive: true` with the summary configured). A cost-based swap is a
+design question, since the deciding estimate is the detail tier's, which
+`byteGateAdapterConfig` points away from once the tier is on
+(`gateMeasuresCoarse`). [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"What the LOD
+lesson actually points at" predicted this gap.
 
-Two readings of the same window compare no bases and should not be used for a
-haplotype pair. The reader's `--cigar` sizes the stretch between two shared
-nodes as an `M`. `gfa_to_pairwise_paf.py` pairs it as `X`, which on a
-`--format gfa` window wrote one 75,004 bp `X` run for NA18608#2 against
-HG00133#1 and 25,521 `X` columns whose bases are equal. At the amylase locus
-the graph folds the paralogs onto shared nodes, so NA18608#2 against HG00232#1
-comes out as 26 records on both strands whichever tool reads it.
+Traps in the summary build, none specific to HPRC:
 
-**This run is the v2.0 GFA, and the hosted files are not.** The script's default
-`GFA_URL` is release 2.1's `hprc-v2.1-mc-grch38.gfa.gz` and the published
-`hprc_multiway_gfa.pif.gz` came out of it: 4,609 rows, 541–606 per haplotype,
-per the generated `README_gfa.txt` beside it. Every number below, the agreement
-table included, is the earlier v2.0 run and has not been taken again — treat it
-as the shape of the comparison rather than as the current file's measurements.
+- **`taffy view -r` fails silently on a range past the contig's end**: stderr
+  message, empty MAF, exit 0. A harness that discards stderr and tests
+  `[ -s file ]` passes a summary holding only its header; one such build lost 93
+  of 195 contigs, chr1 and chr2 among them. A per-chromosome table catches it; a
+  genome-wide total hides it. The build is now one sequential pass that never
+  asks the index.
+- **A contig with a single `.tai` entry cannot be extracted by region.** That
+  was a taffy limit, not evidence the alignment lacked the contig.
+- **`--merge-gap` is not the lever for row count.** In segmental duplications a
+  haplotype aligns to one reference interval more than once, so runs overlap and
+  there is no gap to close. Collapsing each haplotype's overlapping runs into
+  their union cut chr14 from 900,414 rows to 9,089. That belongs upstream in
+  `maf2bed`.
 
-**What it costs.** 135,927,476 nodes, GRCh38 83,073,334 steps on 195 walks.
-The download is 38 min at 27 MB/s; `pigz -dc | python3 gfa_to_pairwise_paf.py
---reference GRCh38#0 --queries <8> --max-gap 10000 --contig-lengths <fai>` then
-runs 1665 s over 376,401 MB of text (226 MB/s), pigz at 79–86% of a core and
-python at 41–49% (891 s user), 1.49 GB peak RSS, one process; the TAF route
-was ~43 min across six taffy streams. `make-pif --csi` takes 8 s on the 176 MB
-PAF and writes a 127 MB PIF (`hprc_multiway_gfa.pif.gz`, 44,908 byte CSI). The
-file is one chromosome after another (S, L, W; GRCh38's walk first in each
-block), so the converter indexes reference walks as they arrive and refuses,
-with a byte-per-node guard, a reference walk that lands on nodes an
-already-aligned query walked as private — the first run died there at 74 s
-before the guard and the interleaving existed.
-
-**Agreement with the TAF route (`hprc_multiway_graph.pif.gz`) and impg
-(`hprc_multiway.pif.gz`), per haplotype over the primary chromosomes.**
-Coverage is the union of intervals per sequence; identity is `=/(=+X)`.
-
-| | GFA | TAF | impg |
-| --- | --- | --- | --- |
-| rows | 475–551 (645 of 4,146 on `-`) | 477–606 (846 of 4,332) | 14,480–19,081 |
-| GRCh38 covered | 2.689–2.825 Gb | 2.690–2.826 Gb (GFA is 99.95% of it) | 2.726–2.854 Gb (GFA is 98.7–99.0%) |
-| `=` bp | 2,687,428,613–2,824,039,133 | 2,687,679,830–2,824,338,304 (GFA within 0.011%) | 2.85–2.97 Gb (M columns) |
-| identity | 0.9986–0.9988 | 0.9988–0.9990 | 0.9969–0.9978 |
-| `X` / `I` / `D` per haplotype | 3.3–3.7 / 7.5–8.0 / 4.7–5.5 Mb | 2.8–3.2 / 6.6–7.5 / 8.3–9.1 Mb | 6.4–9.1 / 10.0–15.7 / 7.7–10.3 Mb |
-| median / max record span | 535 kb–765 kb / 84–97 Mb | 291 kb–637 kb / 75–99 Mb | 12–14 kb / 6.8–14.6 Mb |
-
-The GFA's `=` total is the TAF's to within 300 kb per haplotype (0.011%): the
-shared nodes and the aligned columns are the same alignment. Where they differ
-is how the private bp are written — the GFA pairs them as `X` first, so it has
-0.5 Mb more `X`, 0.8–1.0 Mb more `I` and 3.5–3.8 Mb less `D` — and in record
-length, since a chain runs
-through what a MAF block boundary split (HG01109's CFH-side record starts at
-chr1:161.6 Mb in the GFA and 184.6 Mb in the TAF). At
-`chr1:196,700,000-197,000,000` the two routes say the same thing to the base
-on the right break and to 8 bp on the left:
-
-| | TAF | GFA |
-| --- | --- | --- |
-| HG01109, HG01123, HG01960, HG02055 | 2 rows, all four breaking at 196,753,096 and resuming at 196,837,771 | 2 rows, all four breaking at 196,753,088 and resuming at 196,837,771 |
-| HG00097, HG00099, HG00128, HG00133 | 1 row through | 1 row through |
-| identity in window | 0.9989–0.9992 | 0.9989–0.9992 |
-
-(impg: 2 rows for the carriers at 196,758,573–196,767,397 / 196,835,914–
-196,836,333, 6 overlapping rows for HG00133, as recorded above.) The 8 bp is
-the last shared node before the deletion bubble: the MAF block ends where the
-projection's column ends, the chain where the node does.
-
-**chrom.sizes.** The GFA route's `<sample>.<hap>.gfa.chrom.sizes` equal the
-TAF route's `.graph.chrom.sizes` byte for byte on seven of eight haplotypes
-once the `.fai` lengths are in (HG01960 lists one more contig,
-JBHIHM010000047.1, walked but with no shared node and so no row); without
-`--contig-lengths` every chromosome-scale contig comes out a few kb short,
-because minigraph-cactus clipped the telomeres out of the walks.
-
-**Hosting.** The GFA build goes up beside the others as
-`hprc_multiway_gfa.pif.gz{,.csi}`, `<sample>.<hap>.gfa.chrom.sizes` and
-`README_gfa.txt`. `UPLOAD=1` copies the data files and skips any key already
-there; the README goes through `deploy-demo.sh` from `demos/hprc_multiway/`. `demos/hprc_multiway/config.json`
-serves the GFA build — `hprc_multiway_gfa.pif.gz` and eight
-`<sample>.<hap>.gfa.chrom.sizes` — and the TAF-route files stay hosted beside
-it.
-
-## What the zoom-out tier is worth
-
-Rebuilt whole-genome from the v2.1 MAF and hosted on 2026-09-16 at
-`jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.summary.bed.gz` — 1.72 MB, 396,363
-rows, 464 haplotypes, **all 195 contigs** — wired by
-`test_data/hprc_maf_summary.json` and rebuilt by
-`scripts/build_hprc_maf_summary.sh`, whose header carries the surviving failure
-mode. A whole-chromosome read costs **73 kB (chrM) to 212 kB (chr1)** against a
-5 MB budget, so the tier has one to two orders of magnitude of headroom
-everywhere. This is what it buys on whole chr6, each side computed off the index
-the gate itself reads — `queryBlockSpan` for the alignment, `bytesForRegions`
-for the tier:
-
-| | no `summaryAdapter` | with it |
-| --- | --- | --- |
-| bytes for whole chr6 | 3,189,973,830 | 150,272 |
-| against a 5 MB budget | refused | drawn, 464 rows |
-
-**21,000x**, and the whole chromosome becomes navigable rather than a prompt.
-The v2.0 TAF build of this file was 1,411x on the same comparison, because the
-TAF asked a ninth of what the MAF asks for the same chromosome — the tier's
-value grew with the alignment it stands in front of.
-
-The alignment tier stays the better view where it is affordable: the tutorial's
-C4 window is 3.50 MB against `LinearMafDisplay`'s 5 MB budget.
-
-### What the build has to get right, all found the hard way
-
-Written up at length in `scripts/build_hprc_maf_summary.sh`; the shape of each is
-worth carrying here because none is specific to HPRC.
-
-**One survives, and two are retired by construction.** The build was a
-per-contig `taffy view -r` extraction until 2026-09-16; it is now a single
-sequential pass, which asks the index for nothing and so cannot be fooled by it.
-The two below marked *(retired)* are what that bought, and they are kept because
-the shape recurs wherever a build addresses a file by region.
-
-- **`taffy view -r` fails silently on a range past the contig's end** *(retired)*
-  — stderr message, empty MAF, exit 0. A first pass ended every range at
-  last-index-entry + 10 Mb and lost **93 of 195 contigs, including chr1, chr2 and
-  chrY**, while logging all 93 as "ok": the harness discarded stderr and tested
-  `[ -s file ]`, which is true for a summary holding only its header. The
-  per-chromosome table above is what caught it, because chr1 and chr2 were
-  visibly missing from it — a single genome-wide total would have hidden 93
-  absent contigs behind a plausible number.
-- **`--merge-gap` is not the lever for row count.** In segmental-duplication
-  territory a haplotype aligns to the same reference interval more than once, so
-  the runs *overlap* and there is no gap to close: on chr14:18-20 Mb, raising the
-  gap from 500 to 50,000 removed 0.04% of 854,467 rows. Collapsing each
-  haplotype's overlapping runs into their union is what works — chr14 900,414
-  rows / 2.9 MB becomes 9,089 / 43 kB, genome-wide 11,068,425 becomes 396,363,
-  and GRCh38's own covered bases come out identical to the byte. That belongs
-  upstream in `maf2bed`, since overlapping presence rows are redundant by
-  construction for what the slot feeds.
-- **A contig with a single `.tai` entry cannot be extracted by region at all**
-  *(retired)*, even over 500 bp. That left 43 contigs out of the v2.0 file, all
-  `chrUn_*` scaffolds of 970 bp - 15 kb. It was a taffy extraction limit and
-  never evidence the alignment lacked them, which the sequential build settles:
-  the v2.1 file carries all 195.
-
-**Which is why the tier is a separate config rather than switched on for
-`hprc_maf.json`, and that is a finding rather than a preference.** The summary
-tier swaps on **span** — `coarseTierPastThreshold` is `aboveForceLoadFloor`,
-20 kb — while the question it is
-standing in for is **cost**. The tutorial's own figure is drawn at
-chr6:31,972,057-32,055,418, which is 83 kb, so wiring the summary onto that
-track silently replaces the per-haplotype base rows the figure exists to show
-with presence bands, for a detail read the budget still allows. Verified: `coarseTierActive: true` at that locus with the summary configured.
-
-This is the gap [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"What the LOD lesson
-actually points at" predicted — "the per-species view built for see all 470
-species at once is only available in the zoom range where fetching all 470 costs
-the most per useful pixel" — now with a concrete instance and a config that
-demonstrates both halves. Making the swap cost-based rather than span-based is
-the fix, and it is a design question rather than a one-liner: the estimate that
-would decide it is the *detail* tier's, which is exactly the measurement
-`byteGateAdapterConfig` points away from once the tier is on (`gateMeasuresCoarse`).
-
-## Cutting a slice: two traps that look like tool bugs
-
-**`taffy` dies on a byte-cut slice.** On a MAF whose last block is truncated it
-aborts on `maf_read_block`'s `column_number == strlen(row->bases)` assertion, and
-on a headerless mid-file TAF range it segfaults outright. Cut at a block boundary
-— `awk 'f||/^a/{f=1;print}'` for the head, drop everything from the last `^a` for
-the tail — and it is fine.
-
-**`maf2bed` needs v0.6.0 or newer for `--summary`.** The released v0.5.1 both
-lacked the flag and ignored unknown arguments, so the documented command exited 0
-and wrote nothing. v0.6.0 is on crates.io.
-
-## What the `LV==0` filter costs, measured
+## What the `LV==0` filter costs
 
 The wave VCF is vcfwave-decomposed, so the tutorial teaches `LV==0` to keep the
-top-level record and not paint one event at two positions. Both halves of that
-are true and the clause is doing real work — over `chr6:32,450,000-32,650,000`
-it drops 22 records on the >=50 bp tier and 18 of them name an `ORIGIN` inside
-the same window, which is the de-duplication it is for.
+top-level record and not paint one event at two positions. Over
+`chr6:32,450,000-32,650,000` it drops 22 records on the >=50 bp tier, 18 of them
+naming an `ORIGIN` in the same window.
 
-**The cost is a span collapsing onto a column.** A parent sits at one position
-while its children spread over the span it covers, so a window can lose all its
-records to a parent drawn elsewhere. Counted off the file:
+The cost is a span collapsing onto a column. A parent sits at one position while
+its children spread over its span, so a window can lose all its records to a
+parent drawn elsewhere: three consecutive windows across CYP21A1P and TNXA (the
+most variable part of C4, `chr6:32,000,000-32,020,000`) hold 76, 170 and 103
+records and none with `LV==0`. That is why `maf_hprc_pangenome`'s callset lane
+runs unfiltered. A blank column under `LV==0` is a statement about the snarl
+tree.
 
-| window | records | `LV==0` |
-| --- | --- | --- |
-| `chr6:32,000,000-32,005,690` | 76 | 0 |
-| `chr6:32,005,690-32,011,057` | 170 | 0 |
-| `chr6:32,011,057-32,020,000` | 103 | 0 |
+The sparse right third of `pangenome/hprc_graph_vs_callset` is not the same
+artifact: the >=50 bp tier really is thin there, and dropping the clause would
+double-paint events to recover mostly absent texture. Do not re-derive.
 
-That is 20 kb across CYP21A1P and TNXA — the most variable part of C4 — blank
-under the filter, which is why `maf_hprc_pangenome`'s callset lane runs
-unfiltered. A blank column under `LV==0` is a statement about the snarl tree.
+## Short-read copy number at C4
 
-**What this is NOT.** The sparse right third of
-`pangenome/hprc_graph_vs_callset` was read as the same artifact and is not: over
-its window the >=50 bp tier really is thin there (20, 4 and 10 records in the
-last three 10 kb bins against 42, 39, 20, 25, 29 and 14 in the first six), and
-the LV clause removes 24 of those whose parents are in view. Dropping it there
-would double-paint 18 events to recover a texture that is mostly absent anyway.
-Checked before changing it; do not re-derive.
-
-## Short-read copy number at C4 agrees with the alignment, and is out of the figure anyway
-
-`maf_hprc_pangenome` carried a lane of 1000 Genomes QuicK-mer2 copy number for
-one round (`genomes/GRCh38/1000g/kidd_lab_cnv/<POP>/<SAMPLE>.qm2.CN.1k.bw`,
-fourteen of the sixteen samples the alignment rows draw; HG002 is GIAB's and
-CHM13 is a cell line, so neither is in the panel). It came out on review — "the
-copy number can likely be removed, it is confusing, small number of samples" —
-and fourteen rows of depth beside 464 of genotype and 32 of alignment do read as
-a third cohort rather than as a measurement of the same one.
-
-The measurement is worth keeping even though the lane is not, because the obvious
-objection to it is wrong here. A unique-k-mer estimator has fewest unique k-mers
-exactly where RCCX repeats itself, so the calls could have been noise. Checked
-against the alignment over chr6:32,005,691-32,011,057 (CYP21A1P and TNXA), by
-reading the drawn rows: seven haplotypes have no aligned sequence there, one each
-of HG00099, HG00280, HG00290, HG00320 and HG00321 and both of HG00146. Each of
-those six samples' depth call is exactly `2 - (unaligned haplotypes)` — five at 1
-copy, HG00146 at 0 — and every sample with both haplotypes aligned is called 2 or
-3. Thirteen of the fourteen agree. HG00140 is the fourteenth: depth says 1 copy
-and both its haplotypes align.
-
-**What only depth can say** is the gain side. An extra tandem module collapses
-onto its own reference span, so a haplotype carrying two draws the same grey row
-as one carrying one — HG00128 and HG00232 are called 3 and the alignment cannot
-show it. If a figure ever needs the gains, this is the lane; the losses it does
-not need it for.
-
-## Cached test data
-
-Large artifacts go under `~/scratch`, not a session scratchpad.
-`~/scratch/jbrowse-pangenome` holds three files and **two of them cannot be
-used**: the `tier10000.segs` `.tbi` is a bare index whose `.bed.gz` is nowhere
-on disk, and the CAT annotation for HG01433 has no index beside it. Only the MHC
-gene slice for that sample is a working pair.
-
-**Everything this section used to list is gone**, checked 2026-09-25: the chr20
-HPRC slice, the E. coli hold-out set, the untangle PAF, a built `impg`,
-`~/scratch/hprc-gfa/chrY.gfa.zst`, both published `.tai` indexes, the 200 kb C4
-MAF slice and its summary BED. A session that plans a measurement against one of
-them designs it around a file nobody has, which is how the C4 slice got written
-into a plan on 2026-09-25. Re-fetch, and do not add a file back to this list
-without `ls`-ing it.
+A lane of 1000 Genomes QuicK-mer2 copy number agreed with the alignment at C4
+and was removed from `maf_hprc_pangenome` as a confusing third cohort. Over
+`chr6:32,005,691-32,011,057` the depth call equals `2 - (unaligned haplotypes)`
+for thirteen of fourteen samples, so a unique-k-mer estimator is not noise even
+where RCCX repeats. Only depth shows gains: an extra tandem module collapses
+onto its own reference span and draws the same row as one copy. If a figure
+needs gains, this is the lane.
 
 ## Related
 
-- [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"A `.tai` is not a tier" — why both
-  MAF adapters now take a `summaryAdapter` slot, with the bytes/bp measurements.
-- [MAF_WORKER_PIPELINE.md](MAF_WORKER_PIPELINE.md) — what one region costs after
+- [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"A `.tai` is not a tier": why both
+  MAF adapters take a `summaryAdapter` slot.
+- [MAF_WORKER_PIPELINE.md](MAF_WORKER_PIPELINE.md): what one region costs after
   the bytes arrive.
-- [PANGENOME_GRAPHS.md](PANGENOME_GRAPHS.md) — the graph side of the same data.
+- [PANGENOME_GRAPHS.md](PANGENOME_GRAPHS.md): the graph side of the same data.

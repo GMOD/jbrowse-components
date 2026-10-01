@@ -7,8 +7,8 @@ kind: operations
 
 # Test Infrastructure
 
-Browser tests (Puppeteer) in `products/jbrowse-web/browser-tests/`; unit tests
-(Jest) co-located as `*.test.ts`.
+Browser tests (Puppeteer) in `products/jbrowse-web/browser-tests/`; unit tests (Jest)
+co-located as `*.test.ts`.
 
 ## Browser tests
 
@@ -22,139 +22,80 @@ node browser-tests/runner.ts --headed         # debug
 node browser-tests/runner.ts --update-snapshots
 ```
 
-47 suites in `browser-tests/suites/` (alignments, variants, the synteny family,
-dotplot, hic, gwas, methylation-modifications, svg-export, color-by-tag,
-wiggle-color, main-thread-rpc, basic-lgv, …).
+Suites live in `browser-tests/suites/`.
 
 ### Golden snapshots
 
-Visual regression via pixelmatch (default `threshold = 0.1`, a 10% diff
-fraction; canvas2d targeted captures cap it at 1%), stored per backend
-in `browser-tests/__snapshots__/{canvas2d,webgl,webgpu}/`. Cross-backend compare
-(`compare-backends.ts`): identical / `<5%` similar / `≥5%` different. Intentional
-change → `--update-snapshots`, which rewrites a golden only when the new capture
-differs by more than 0.5%.
+Visual regression via pixelmatch, stored per backend in
+`browser-tests/__snapshots__/{canvas2d,webgl,webgpu}/`. `compare-backends.ts` compares
+across backends. `--update-snapshots` rewrites a golden only when the new capture differs by
+more than 0.5%. **Look at `__snapshots__/<backend>/<name>.diff.png` before believing a number
+and before running `-u`.** Goldens carry ordinary drift from unrelated commits, so a diff
+percentage alone attributes nothing; check whether your change can reach those pixels. Two
+goldens (`canvas2d/fullpage_methylation.png`, `fullpage_modifications.png`) are blank pages
+frozen in from the flake below.
 
-**Goldens never run in CI** — they encode one machine's rendering. The
-*cross-backend gate* does, blocking, since 2026-08-04: `pnpm --filter @jbrowse/web test:browser:gate:ci`
-renders `CI_GATE_SUITES` (`crossBackendGate.ts`) with canvas2d and swiftshader
-webgl in one run and diffs the two, so it needs no committed baseline. Scope and
-its reasons live next to the list; `agent-docs/reference/CROSS_BACKEND_GATE.md`
-is what to read before widening it.
+**Goldens never run in CI** (they encode one machine's rendering). The *cross-backend gate*
+does, blocking: `pnpm --filter @jbrowse/web test:browser:gate:ci` renders `CI_GATE_SUITES`
+(`crossBackendGate.ts`) with canvas2d and swiftshader webgl and diffs the two, needing no
+baseline ([CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) before widening it). The local
+`test:browser:gate` adds webgpu, which is Firefox Nightly launched headed, so CI's two
+backends are a coverage gap, not a verdict
+(`ideas/waiting-on-someone-else/render-webgpu-in-the-blocking-cross-backend-gate-job.md`).
 
-**`pnpm --filter @jbrowse/web test:browser:gate` renders webgpu as well and the CI one does not**, and
-the difference is the runner rather than the pixels: webgpu is Firefox Nightly,
-launched headed, and `ubuntu-latest` has neither the browser nor a display. So
-CI's two backends are a coverage gap, not a verdict —
-`agent-docs/ideas/waiting-on-someone-else/render-webgpu-in-the-blocking-cross-backend-gate-job.md`
-carries what closing it needs.
-
-**The 10-25% blank-capture flake was `fullPage: true`** (fixed 2026-07-26).
-Puppeteer implements `fullPage` by resizing the viewport to the scroll size and
-restoring it afterwards; that resize invalidates the page raster, and under load
-the capture comes back before the content has re-rastered — live app chrome
-around a white content area, which reads as a large "regression". `pageSnapshot`
-now takes a plain viewport screenshot. No golden changed: the app fills the
-window, so every full-page golden is exactly 1280x800. A view that needs more
-room gets a bigger viewport (`page.setViewport`) — never `fullPage`.
-
-Measured on the alignments suite at concurrency 4: **5/5 runs failed 2-3 tests
-with `fullPage`, 4/4 runs clean without it**, same build, same goldens. The DOM
-was fully populated at capture time (displays reporting `data-display-drawn`,
-ruler text in `innerText`) and an immediate re-capture matched, which is what ruled out a
-paint gate as the fix. A single test run alone with `--test=` almost never
-reproduces it — the blanking needs the concurrent browser churn.
-
-Two goldens froze that flake in (`canvas2d/fullpage_methylation.png`,
-`fullpage_modifications.png` are blank pages), so **still look at
-`__snapshots__/<backend>/<name>.diff.png` before believing a number, and before
-running `-u`.**
-
-Goldens also carry ordinary drift from unrelated commits: after ~10 days of
-alignments work every test still passed while the BAM golden sat at ~2.7% RMSE
-(mostly toolbar chrome). So a diff percentage alone attributes nothing — check
-whether your change can even reach the pixels in question.
+**`fullPage: true` caused a 10-25% blank-capture flake.** Puppeteer implements it by
+resizing the viewport, which invalidates the page raster, and under load the capture returns
+before re-raster (live chrome around a white content area). `pageSnapshot` takes a plain
+viewport screenshot; a view needing more room gets a bigger viewport (`page.setViewport`),
+never `fullPage`. A single `--test=` run almost never reproduces it; the blanking needs
+concurrent browser churn.
 
 ### WebGL / WebGPU
 
-- **WebGL** — fully supported (Chrome headless / Firefox), CI default.
-- **WebGPU local** (Firefox real GPU): `--backend=webgpu --headed`; set
-  `FIREFOX_NIGHTLY_PATH` or pass `--firefox=/path/to/binary` to locate the binary.
-- **WebGPU CI** (Linux + lavapipe): install `mesa-vulkan-drivers`, run under
-  `xvfb-run` with `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json
-  --backend=webgpu`. Chrome flags already set in `runner.ts`.
-- **macOS** — real GPU, ~10× cost.
+- **WebGL**: fully supported (Chrome headless / Firefox), CI default.
+- **WebGPU local** (Firefox real GPU): `--backend=webgpu --headed`; `FIREFOX_NIGHTLY_PATH` or
+  `--firefox=/path/to/binary` locates the binary.
+- **WebGPU CI** (Linux + lavapipe): `mesa-vulkan-drivers`, `xvfb-run`,
+  `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json --backend=webgpu`.
 
-**A webgpu run fails ~17 tests that have nothing to do with rendering, because
-it is the Firefox run.** Read the names before chasing any of them:
+**A webgpu run fails ~17 tests unrelated to rendering, because it is the Firefox run.** Read
+the names before chasing any: SVG Export (the download behavior only CDP sets), FetchCancellation
+(`page.createCDPSession()` is Chrome-only), TransferListDiagnostics (reads the wording of
+Chrome's `DataCloneError`), and two unexplained DOM/text assertions (a canvas label-squeeze
+check and a dotplot tooltip). None are goldens, so `--update-snapshots` leaves them alone. The
+first run after a cold start also fails a test or two to Firefox profile creation. Judge a run by
+whether failures are on that list, not the tally.
 
-- **SVG Export (11)**, all with an empty error. The export saves through a
-  download behavior only CDP sets, so the file never lands and the assertion has
-  nothing to say.
-- **FetchCancellation (3)**, same empty error — `fetch-cancellation.ts` calls
-  `page.createCDPSession()` directly, which is Chrome-only.
-- **TransferListDiagnostics (1)**, which reads the *wording* of Chrome's
-  `DataCloneError` back out of a postMessage failure. Firefox words it
-  differently and the regex says so in the failure message.
-- **Two DOM/text assertions** — a canvas label-squeeze check and a dotplot
-  tooltip — that are genuinely unexplained rather than known-benign. Neither
-  touches the GPU path.
-
-None of these are goldens: a failed test writes none, so `--update-snapshots`
-leaves them alone. **The first run after a cold start also fails a test or two
-to Firefox profile creation** (`Alignments Read Identity` was the case seen);
-they pass on the second. Judge a webgpu run by whether the failures are on that
-list, not by the tally.
-
-**The webgpu window has to stay in the FOREGROUND, and a run that loses it
-produces failures that look like bugs.** It is a headed Firefox, so another
-window taking focus throttles its animation frames — and the failure mode is
-nastier than "slow", because `page.waitForFunction` polls on **rAF by default**.
-An rAF-polled wait in a backgrounded window stops evaluating entirely and burns
-its whole timeout while the page underneath is fine, so the symptom is a clean
-`Waiting failed: Nms exceeded` on a test that is not broken. Two defences, and
-prefer the first: pass `polling: 'mutation'` (React schedules through
-MessageChannel, not rAF, so the DOM still changes — only the observer stalls),
-and give a wait an explicit failure dump rather than letting a bare timeout
-stand as the diagnosis. The same throttling makes wall-clock numbers from a
-probe untrustworthy; a run whose timings are wildly out of line with its
-neighbours was probably backgrounded rather than slow.
+**The webgpu window has to stay in the FOREGROUND.** A backgrounded headed Firefox throttles
+rAF, and `page.waitForFunction` polls on **rAF by default**, so the wait burns its whole timeout
+(`Waiting failed: Nms exceeded`) on a test that is not broken. Pass `polling: 'mutation'` (React
+schedules through MessageChannel, so the DOM still changes) and give a wait an explicit failure
+dump. Wall-clock numbers from a backgrounded run are untrustworthy.
 
 ## Unit tests
 
-Jest, co-located (`*.test.ts`), run with `pnpm test-ci`. Node-based and fast —
-use for logic, config, RPC, and buffer packing; use browser tests for rendering
-and UI.
+Jest, co-located, `pnpm test-ci`. Node-based and fast: use for logic, config, RPC and buffer
+packing; browser tests for rendering and UI.
 
 ### Which suites a change runs
 
-`pnpm test-related` selects by **footprint**: every jest run records, per suite,
-the repo files it loaded through jest's module system
-(`config/jest/footprintRuntime.cjs`, set as `runtime` on every project), and a
-suite runs when its footprint holds a changed file. A changed file whose
-`@babel/preset-typescript` output is unchanged — a comment, a type, a reflow —
-selects nothing. `jest.config.js`, `babel.config.cjs`, `pnpm-lock.yaml` and the
-`.cjs` files under `config/jest/` are in no footprint, so a change to one is
-reported with a pointer to `pnpm test` rather than selecting anything.
+`pnpm test-related` selects by **footprint**: every jest run records, per suite, the repo files
+it loaded through jest's module system (`config/jest/footprintRuntime.cjs`, `runtime` on every
+project), and a suite runs when its footprint holds a changed file. A changed file whose
+`@babel/preset-typescript` output is unchanged (comment, type, reflow) selects nothing.
+`jest.config.js`, `babel.config.cjs`, `pnpm-lock.yaml` and the `.cjs` files under `config/jest/`
+are in no footprint, so a change to one reports a pointer to `pnpm test`. The static graph
+(`--findRelatedTests`) is the fallback for a suite with no footprint yet and cannot discriminate
+(every jbrowse-web suite imports `corePlugins`). Footprints live under
+`<cacheDirectory>/footprints/<hash of checkout root>/`; a worktree reads its own and the
+primary checkout's, so a branch that drops an import cannot narrow what another checkout reads.
 
-The static graph (`--findRelatedTests`) is the fallback for a suite with no
-footprint yet, and it cannot discriminate on its own: every jbrowse-web suite
-imports `corePlugins`, so a wiggle `util.ts` edit is statically related to 313
-suites.
-
-**The `jbrowse-web` jest project runs on remote CI only.** Its 182 suites each
-boot the app and together take 47% of the suite clock, where no other package
-takes more than 6%. `pnpm test` passes `--ignoreProjects jbrowse-web`,
-`pnpm test-ci` runs every project, and `test-related` selects a web suite only
-when the change edits that test file, or with `--with-web`. The web suites are
-where a config-slot removal, a menu regrouping or a caption change goes red
-(`ConfigSlotDefaults`, `AlignmentsFilters`, `ReversedRegionLabels` each execute
-the module involved), so that class of change can land green locally and red on
-push, and gets fixed forward. The `no web` rows below still select web suites
-for a change inside jbrowse-web, which `test-related` no longer does.
-
-Measured over the 264 recent commits that touched source, pricing each suite at
-its median duration in jest's perf cache:
+**The `jbrowse-web` jest project runs on remote CI only** (its suites each boot the app and take
+about half the suite clock). `pnpm test` passes `--ignoreProjects jbrowse-web`, `pnpm test-ci`
+runs every project, and `test-related` selects a web suite only when the change edits that test
+file, or with `--with-web`. A config-slot removal, menu regrouping or caption change goes red
+there (`ConfigSlotDefaults`, `AlignmentsFilters`, `ReversedRegionLabels` execute the module
+involved), so that class can land green locally and red on push, and gets fixed forward.
 
 <!-- BEGIN GENERATED MEASUREMENT test-selection-strategies -->
 
@@ -169,68 +110,34 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT test-selection-strategies -->
 
-`footprint, no web` selected no more than `static, no web` on any of the 264. The with-web
-mean stays high because about 40% of commits touch a module every app-level
-suite executes at import — a config schema, a plugin's `index.ts`, render-core's
-marks — and those still select most of the ~380 suites that carry the app graph.
-Selecting harder does not narrow that: function-level selection off V8 precise
-coverage added ~27% to every run and moved the mean by ~6%, because most changed
-lines in those modules are top-level.
-
-Footprints live under `<cacheDirectory>/footprints/<hash of checkout root>/`, one
-gzipped file per suite, ~15MB for the tree. A worktree reads its own and the
-primary checkout's, so a fresh worktree starts from what the primary last ran,
-and a branch that drops an import cannot narrow what another checkout reads.
-Recording costs ~1.6ms per app-level suite.
+Footprint selection selected no more than static selection on any measured commit. The
+with-web mean stays high because many commits touch a module every app-level suite executes at
+import (a config schema, a plugin's `index.ts`, render-core's marks), and function-level
+selection off V8 coverage added ~27% to every run for ~6% off the mean, since most changed lines
+in those modules are top-level.
 
 ### The selection is not what makes a run long
 
-`test-related` prints what it selected costs — `N suite(s), ~Xs of suite time` —
-priced from jest's own sequencer cache (`perf-cache-*`), at the **minimum** each
-suite has ever recorded rather than its mean. A duration is only what the box
-allowed that day: the same `sdEllipse.test.ts` sits at 6.1s in one checkout's
-cache and 3979s in another, and the floor is the one number in there that
-describes the work.
+`test-related` prints `N suite(s), ~Xs of suite time`, priced from jest's sequencer cache
+(`perf-cache-*`) at the **minimum** each suite has recorded: a duration is what the box allowed
+that day (one suite sits at 6.1s in one cache and 3979s in another), and the floor describes the
+work. Read that figure before the clock, since on a laptop with a dozen agent sessions the two
+barely relate.
 
-Read that figure before reading the clock, because on a laptop with a dozen
-agent sessions the two have almost nothing to do with each other. A 955-suite
-selection off a render-core marks change prices at 380 suite-seconds — about 95s
-at four workers — and was seen taking over twenty minutes. 229 of those suites,
-60 suite-seconds, on a laptop carrying two dozen agent worktrees:
-
-| run                                    | workers | wall clock |
-| -------------------------------------- | ------: | ---------: |
-| ungated, as every agent run used to be |       1 |      1015s |
-| holding one of the machine-wide slots  |       4 |       254s |
-
-Same 229 suites, same box, one after the other, and the gated run went second
-into a load average that had climbed from 32 to 54 — so 4.0x is the floor of
-that gap rather than its best case. What separates the two is worker count, and
-what sets worker count is whether anything gated the run: `resolveMaxWorkers` in
-`jest.config.js` subtracts the load average for an agent session, so on a box the
-other sessions have driven to 30+ every run collapses to one worker. Eight runs
-at one worker each are still eight jest processes, so nothing comes off the box
-and each of them serialises a selection it could have spread.
-
-So `pnpm test`, `pnpm test-related` and `pnpm test-ci-no-react-compiler` now take
-one of the three machine-wide slots `scripts/heavy-run-slot.sh` hands out, the
-same ones the typechecks queue on. A run that holds one skips the load haircut
-and uses its ceiling, since the queue has already counted it; the runs that do
-not fit sleep in `flock` costing nothing. `test-related` takes its slot around
-the jest spawn rather than around the whole script, so a change that selects
-nothing never joins the queue.
-
-A bare `npx jest` stays ungated on purpose — it is the one-file run, and putting
-it behind a queue would make the cheap thing feel expensive. `npx jest <dir>`
-therefore goes around the gate; name files there.
+What separates a gated from an ungated run is worker count. `resolveMaxWorkers` in
+`jest.config.js` subtracts the load average for an agent session, so on a box driven to 30+
+every ungated run collapses to one worker (the same 229 suites took ~4× longer ungated). So
+`pnpm test`, `pnpm test-related` and `pnpm test-ci-no-react-compiler` take one of the three
+machine-wide slots `scripts/heavy-run-slot.sh` hands out (shared with the typechecks); a run
+that holds one skips the load haircut and uses its ceiling, and the rest sleep in `flock`.
+`test-related` takes its slot around the jest spawn only, so a change selecting nothing never
+queues. **A bare `npx jest` stays ungated on purpose** (the one-file run); `npx jest <dir>` goes
+around the gate, so name files.
 
 ### Where a warm `pnpm test` spends its time
 
-Measured 2026-08-30 over all 1978 suites, warm cache, on an otherwise quiet
-16-core box. **Read the whole suite, not a directory of it** — the measurement
-this replaced was taken over `packages/core/src/util`, whose suites are ~0.1s
-each, so it was reading jest's own startup and concluded that worker count did
-not matter.
+**Read the whole suite, not a directory of it**: a measurement over `packages/core/src/util`
+(~0.1s suites) read jest's own startup and concluded worker count did not matter.
 
 <!-- BEGIN GENERATED MEASUREMENT jest-worker-scaling -->
 
@@ -245,166 +152,58 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT jest-worker-scaling -->
 
-Workers are ~97% occupied at every count, so the suite parallelises; what does
-not scale is the **per-suite cost under contention**, which is why the last
-doubling is worth nothing and the 12 that buys 9% holds half again the memory.
-Split by where the time goes, at 4 workers before any of the fixes below: 951s
-inside test bodies, 489s outside them (environment, setup files, module import,
-hooks), of a 1440s total against today's 1243s.
+Workers are ~97% occupied at every count; what does not scale is **per-suite cost under
+contention**, so the last doubling is worth nothing and memory keeps growing.
 
-Two structural facts behind those numbers:
+- **The graph is the shape of the cost.** ~260 suites (jbrowse-web's own plus the plugin suites
+  importing `@jbrowse/web`) carry ~2,900 modules each and over half the clock. Per-suite overhead
+  fits `0.167s + 0.419ms × modules`.
+- **Module import is memoized per worker PROCESS, not per suite.** A lever that looks per-suite in
+  a one-suite measurement is usually per-worker in a real run and worth a fraction of it.
+- **The floor is ~31ms per suite** (jsdom, `setupFiles`, `setupFilesAfterEnv`, teardown), which is
+  why a jsdom-to-`node` sweep buys nothing. **Everything above it is the import graph re-executed
+  per test FILE**: jest builds a fresh module registry per file, so a warm transform cache saves
+  the *transpile* and not the *run*. `doBeforeEach` is ~0.04ms a call and its cache clears
+  (`clearCache()`, `clearAdapterCache()`) are free isolation; don't remove them for speed.
+- **`config/jest/babelTransform.cjs` computes its own cache key**, because babel-jest's
+  `loadPartialConfigSync` per module cost more than the transform it guards. The key contains
+  nothing absolute, so a worktree reads the cache the primary filled.
+- **`roots` names the four directories `testMatch` anchors on**; jest otherwise crawled ~42,000
+  files (including the website corpus).
+- **The worker ceiling is a ceiling** (8 interactive, 4 for an agent) that `MemAvailable` and load
+  average pull down.
 
-- **The graph is the shape of the cost.** 1.18M module executions per run.
-  260 suites — jbrowse-web's own 164 plus the 70 plugin suites that import
-  `@jbrowse/web` — carry ~2,900 modules each and 54% of the clock;
-  `products/jbrowse-web` alone is 43%. The other 1,718 suites together are 660s.
-  A least-squares fit over the per-suite overheads is
-  `0.167s + 0.419ms x modules`.
-- **Module import is memoized per worker PROCESS, not per suite.** A worker that
-  ran 40 jbrowse-web suites called the transformer's `getCacheKey` ~2,000 times
-  in total, not 2,000 per suite, and `workerIdleMemoryLimit` recycled nothing
-  across the run (verified by counting the PIDs that transformed anything: 5 for
-  164 suites at 4 workers). So a lever that looks per-suite in a one-suite
-  measurement is usually per-worker in a real run, and worth an eighth of what
-  it looked like.
+**Levers that generalise** (each measured with an interleaved A/B on the affected suites):
 
-Four things were paying for nothing and no longer do (2026-08-30):
-
-- **babel-jest's cache key cost more than the transform it guards.** It calls
-  `loadPartialConfigSync` — a full babel config resolution, with the
-  `rootMode: 'upward'` walk — for every module it is asked about. On one warm
-  jbrowse-web suite that was 2028 calls, 897ms of a 12.2s run, and zero actual
-  transforms. `config/jest/babelTransform.cjs` now computes its own key: same
-  calls, 60ms. Nothing absolute is in it, which is the second reason for it —
-  entries are valid in any checkout, so a worktree reads the cache the primary
-  filled instead of transpiling the graph cold.
-- **jest crawled the whole rootDir**, ~42,000 files, `1000g_cnv_build` and the
-  429MB website corpus included. `roots` now names the four directories
-  `testMatch` already anchors on: **3.6s → 0.83s of startup on every
-  invocation**, which is most of what a single-file run or `pnpm test-related`
-  costs.
-- **The worker ceiling was a flat 4, and 1 for agent sessions.** It is now a
-  ceiling (8 interactive, 4 for an agent) that `MemAvailable` and the load
-  average pull down, so a session alone on the box gets the box and fourteen
-  concurrent ones still collapse to 1 without hard-coding it.
-- **Four suites spent their time on work nobody reads**: `makeTicks` walked 100M
-  iterations to read two ticks (29.7s → 1.4s); a layout property test asserted
-  per node on a growing tree, ~1.4M assertions (29.3s → 2.4s); a shader sweep
-  sampled 400 rows per segment where 100 catches the same sabotage (51.8s →
-  11.9s); `testFileReload` booted the full 123-track config for a reload that
-  names its one track (12.9s → 10.6s for its suite).
-
-Together: **372s → 216s** for the whole suite, same 20,504 tests green.
-
-### The test files, 2026-08-30
-
-The second pass, after the harness one above. Measured the same way and A/B'd
-against itself on the same box within the hour: **Σ per-suite 1305s → 1120s,
-wall clock at four workers 346s → 291s**, 1977 suites green either way. Both
-sides sit ~7% above the table, which was taken on an idle box — the delta is
-what to read, not the totals.
-
-Three levers, and the first two generalise past the files they were used on.
-
-**A debounce is a `setTimeout`, so a suite that only waits for one belongs on a
-fake clock.** `installPerRegionFetchAutoruns` was 50.4s of which 48.6s was
-`(idle)`: 44 calls to a quiescence poller that has to outlast the 600ms
-`FetchVisibleRegions` debounce, holding a worker without using one.
-`jest.useFakeTimers()` plus `jest.advanceTimersByTimeAsync(POLL_MS)` inside the
-poller took it to **2.3s**, and Manhattan's `retryContract`, the same shape,
-**15.9s → 1.9s**. It works because everything those suites wait on is a timer —
-`leadingEdgeAutorun` arms one for its debounce, the harness's `fetchDelayMs` is
-another, and the RPC between them is a resolved promise that
-`advanceTimersByTimeAsync` flushes on the way. Neither poller changed otherwise
-and neither lost its sabotage: dropping the fetch autorun's `fetchGeneration`
-read fails the same three dependency-set cases, dropping its `reloadCounter`
-read the same two.
-
-**A settle has a positive signal, and the signal is nearly always cheaper than
-the guess.** The four synteny-follow suites slept through 63s of their 72s on
-constants picked off the 500ms coarse-blocks debounce. `followSettled`
-(`products/jbrowse-web/src/tests/syntenyFollowSettle.ts`) waits for no row's
-`coarseDynamicBlocks` to be behind its live ones — which is exactly "the
-debounced autorun has run for the viewport as it stands", since
-`setCoarseDynamicBlocks` assigns only on a difference — and then for the
-`SyntenyFollow` autorun to stop running. **85.3s → 26.9s** over the four, and it
-says the pass ran, which a sleep never did. Where the assertion is itself
-something the follow changes, the sleep became a plain `waitFor` on it.
-`waitForRepaintedCanvas` is the same move for a change that repaints without
-moving anything on the model (`BigWigColor`, 6.2s → 3.6s of bodies), which is
-the gap `findSettledDisplay`'s docstring names.
-
-**The `volvoxConfigWithTracks` trim is paid twice, and the second payment is the
-larger one.** Per `createView` it is 0.34s (the A/B is in
-`HighlightWidget.test.tsx`, below) — but the document it leaves behind is also
-what every later `findByText` / `findByRole` / `findByLabelText` scans, so a
-suite that searches is charged again per query. The two text-search suites went **38.1s →
-13.8s of bodies** on a trim justified by reading `trix/volvox_meta.json`: the
-sixteen tracks the aggregate index names are the only ones a search here can
-land on. Twelve suites took it; the boundary is real and `SyntenyImportForm`
-found it — its manual import form scans the whole track list for the assembly
-pair it launches, and the local-file tests draw a canvas 74% different without
-the rest of the list, so only `three level` takes the trim there.
-
-### What the 449s outside test bodies is
-
-Suite wall minus the sum of its tests' durations, per `--json`. Three things
-live in that window, and they are not the same size. Probed on one worker,
-six copies of each shape so the numbers are medians rather than a first run:
-
-| a suite that…                                       | wall  |
-| --------------------------------------------------- | ----- |
-| has one test and imports nothing                      | 31ms  |
-| imports `@jbrowse/core/util`                          | 53ms  |
-| imports `products/jbrowse-web/src/tests/util.tsx`     | 362ms |
-| …and runs `doBeforeEach` before twenty tests          | 414ms |
-
-**The floor is 31ms** — the jsdom environment, the ten `setupFiles`, the
-`setupFilesAfterEnv` and teardown. Times 1980 suites that is ~61s, and it is why
-the jsdom-to-`node` sweep buys nothing (agent-docs/architecture-decision-records/, "Tooling, tests and
-docs").
-
-**Everything above it is the import graph, re-executed per test FILE.** Jest
-builds a fresh module registry for each one, so a warm transform cache and a
-reused worker save the *transpile* and not the *run*: the sixth copy of the
-`util.tsx` probe cost the same 362ms as the first, on the same worker. That is
-the 2,900 modules the app graph carries, and it is the reason "module import is
-memoized per worker process" (above) is true of `getCacheKey` and false of
-execution.
-
-**Hooks are in this window too and are not where to look.** `doBeforeEach` is
-the one every jbrowse-web suite runs, and timed inside itself over a whole
-`products/jbrowse-web` run it is **0.04ms a call, 386 calls, 10ms in total** —
-p99 0.23ms. The 52ms the probe above gains from adding it to twenty tests is
-jest's own per-test hook and reporting machinery, not the function body. Its two
-cache clears are free downstream as well: dropping `clearCache()` and
-`clearAdapterCache()` moved 30 tests across five suites from 39.84s to 39.53s,
-inside the noise, because each test builds a fresh session and so misses the
-adapter cache anyway. They are isolation at no cost — do not remove them for
-speed.
-
-Where it falls in a real 4-worker run, where contention roughly doubles each
-figure: `products/jbrowse-web` is 180 suites and **120s**, mean 667ms — but
-**everything else is 1800 suites and 329s**, mean 183ms, which is each plugin's
-own graph rather than the app's. So the overhead is broad rather than
-concentrated: the top decile of suites holds 166s of it and no single suite
-holds more than 3.1s.
-
-What is left, in order of size, is flat: nothing above 18s and the top twenty
-are all real React rendering and painting. `plugins/blat/src/liveIsPcr.test.ts`
-is 18.5s of live UCSC round-trip on any box where `UCSC_API_KEY` is set, 16s of
-it the rate limit the file waits out on purpose. The one structural lever left
-is merging sibling suites that differ by an argument — `AlignmentArcs` /
-`AlignmentLinked` / `AlignmentStack`, the six `Launch*View`, the eight
-`*ViewInit` — which returns the ~0.55s median per-suite overhead per file
-removed and costs scheduling flexibility and `pnpm test-related` granularity.
+- **A debounce is a `setTimeout`, so a suite that only waits for one belongs on a fake clock.**
+  `jest.useFakeTimers()` plus `jest.advanceTimersByTimeAsync(POLL_MS)` inside the quiescence
+  poller took `installPerRegionFetchAutoruns` from 50s (48s idle) to ~2s, and Manhattan's
+  `retryContract` from 16s to 2s, without losing sabotage coverage. It works because everything
+  waited on is a timer (`leadingEdgeAutorun`'s debounce, the harness's `fetchDelayMs`) or a
+  resolved promise `advanceTimersByTimeAsync` flushes.
+- **A settle has a positive signal, and it is nearly always cheaper than the guess.**
+  `followSettled` (`products/jbrowse-web/src/tests/syntenyFollowSettle.ts`) waits for no row's
+  `coarseDynamicBlocks` to be behind its live ones and for the `SyntenyFollow` autorun to stop,
+  replacing sleeps picked off the 500ms debounce (85s → 27s over four suites) and saying the pass
+  ran. Where the assertion is what the follow changes, use a plain `waitFor`.
+  `waitForRepaintedCanvas` is the same move for a repaint that moves nothing on the model.
+- **The `volvoxConfigWithTracks` trim is paid twice**: per `createView` (see below), and again on
+  every later `findByText` / `findByRole` / `findByLabelText` scan of the document it leaves. The
+  boundary is real: `SyntenyImportForm` scans the whole track list for its assembly pair, so only
+  its `three level` test takes the trim.
+- **Work nobody reads**: a loop walking 100M iterations to read two ticks, per-node assertions on
+  a growing tree (~1.4M), a shader sweep at 400 rows per segment where 100 catches the same
+  sabotage. Profile a slow suite before assuming the harness is at fault.
+- **Merging sibling suites that differ by an argument** returns ~0.55s median overhead per file
+  removed at the cost of scheduling flexibility and `test-related` granularity.
+  `plugins/blat/src/liveIsPcr.test.ts` is 18.5s of live UCSC round-trip wherever `UCSC_API_KEY`
+  is set.
 
 ### A display harness is `createDisplayTestEnvironment`
 
-One builder in `@jbrowse/display-test-utils`, over `displayTestSessionModel` and
-`testAssembly` / `testAssemblyManager`. A plugin's `testEnv.ts` names its track
-type, its display type and the two factories, and wraps the result when its own
-tests want a different `createDisplay` signature:
+One builder in `@jbrowse/display-test-utils`, over `displayTestSessionModel` and `testAssembly` /
+`testAssemblyManager`. A plugin's `testEnv.ts` names its track type, display type and the two
+factories:
 
 ```ts
 export function createTestEnvironment() {
@@ -418,281 +217,150 @@ export function createTestEnvironment() {
 }
 ```
 
-The caller supplies `plugins` and `viewModel` because this package sits above
-`plugins/` in the workspace layering and cannot import one.
+The caller supplies `plugins` and `viewModel` because the package sits above `plugins/` in the
+workspace layering. **Don't hand-roll one**: hand-rolled copies muted every display-contract check
+with a copied `console.error = jest.fn()`, left `palette` out of two harnesses while every model
+color getter reads it, and left `displays[0]` un-annotated so suites asserted against `any`.
 
-**Don't hand-roll one.** Ten did, and every failure the arrangement produced was
-invisible from inside any one file: nine copied `console.error = jest.fn()` and
-muted every display-contract check; `palette` was in two harnesses of ten while
-every model-side color getter reads it; and half of them left `displays[0]`
-un-annotated, so those suites asserted against `any` (folding the last two in
-turned up five assertions that had been doing exactly that).
+- **`rpcCall`**: the body `mockRpcCall` wraps. Bare by default (resolves `undefined` for every
+  method); a byte-gated display needs one answering `CoreGetRegionByteEstimate`, or its fetch never
+  commits and the suite reads as a broken display.
+- **`displayConfig`**: display config **slots**, written into the track config's own `displays`
+  entry and referenced by id, because a slot name on a display's *session* snapshot is dropped
+  silently (ARCHITECTURE.md, "where a display's state lives"). `displaySnapshot` on `createDisplay`
+  is the MST-property half.
+- **`adapter.config`**: omitted it is `{ type: name }`; present-but-`undefined` registers the type
+  and puts **no** adapter on the track (how a test asserts the fallback).
 
-Three options exist because a display genuinely needs them, and each is a
-question the copies answered by being read rather than by being asked:
-
-- **`rpcCall`** — the body `mockRpcCall` wraps. Bare by default, which resolves
-  `undefined` for every method; a byte-gated display (arc) needs one that answers
-  `CoreGetRegionByteEstimate`, or its fetch never commits and the suite reads as
-  a broken display.
-- **`displayConfig`** — display config **slots**. The builder writes them into
-  the track config's own `displays` entry and references it by id, because a slot
-  name on a display's *session* snapshot is dropped in silence (ARCHITECTURE.md,
-  "where a display's state lives"). `displaySnapshot`, on `createDisplay`, is the
-  other half: MST properties.
-- **`adapter.config`** — omitted it is `{ type: name }`; present-but-`undefined`
-  registers the type and puts **no** adapter on the track, which is how a test
-  asserts what a display falls back to when the adapter declares nothing.
-
-The half not yet delivered: the shim is still not annotated as
-`AbstractSessionModel`, so a member added to that interface is a runtime
-`TypeError` rather than a compile error. It is one shim to annotate now instead
-of ten, which is the point of the move.
-
-Silence `console.warn` if a harness must, never `console.error` — that is the
-channel the contract checks report through, and `config/jest/contractGate.js`
-fails the test that collected one.
+The session shim is not annotated as `AbstractSessionModel`, so a member added to that interface
+is a runtime `TypeError`, not a compile error. Silence `console.warn` if a harness must, never
+`console.error`: it is the channel the contract checks report through, and
+`config/jest/contractGate.js` fails the test that collected one.
 
 ### An autorun's dependency set is assertable
 
 Every autorun installer (`leadingEdgeAutorun`, `autorunOnReadyView`,
-`RenderLifecycleMixin.attachRenderingBackend`) builds its reaction through
-`namedAutorun`, which records it by name on the node as well as disposing it
-with one, and `reactionDependencies(node, name)` from
-`@jbrowse/render-core/namedReactions` returns the leaf observables it subscribed
-to on its last run, sorted, as `Model.prop` names (computeds flattened to what
-they read). Use it when the
-property under test is *which reads are tracked* — a trigger that must stay
-above a gate, a guard that must stay `untracked` — and state the list per state
-rather than probing one observable per test. `installPerRegionFetchAutoruns.test.ts`
-and `RenderLifecycleMixin.test.ts` have the shape. Name an ad-hoc observable in
-such a test (`observable.map(undefined, { name: 'data' })`); the default
-`ObservableMap@N` carries a per-process counter.
+`RenderLifecycleMixin.attachRenderingBackend`) builds its reaction through `namedAutorun`.
+`reactionDependencies(node, name)` from `@jbrowse/render-core/namedReactions` returns the leaf
+observables it subscribed to on its last run, sorted, as `Model.prop` names. Use it when the
+property under test is *which reads are tracked* (a trigger above a gate, a guard that must stay
+`untracked`), stating the list per state. `installPerRegionFetchAutoruns.test.ts` and
+`RenderLifecycleMixin.test.ts` have the shape. Name an ad-hoc observable
+(`observable.map(undefined, { name: 'data' })`); the default `ObservableMap@N` carries a
+per-process counter.
 
 ## Wait signals
 
-Two completion signals. **Do not** wait on `LoadingOverlay` text — it keeps the
-literal `"Loading"` in the DOM at `opacity:0`, so a `textContent` check is always
-true (this silently burned full snapshot timeouts).
+**Do not** wait on `LoadingOverlay` text: it keeps the literal `"Loading"` in the DOM at
+`opacity:0`, so a `textContent` check is always true.
 
-- `data-testid="loading-overlay"` **absent** → data finished **fetching**
-  (generic; used by `waitForLoadingToComplete` / `waitForDataLoaded` and the
-  snapshot waits).
-- `data-display-drawn="true"` → canvas finished **painting** (gated on
-  `painted`, published by `DisplayChrome` from its **required** `testid` base
-  prop, and by `RenderCanvas` for the two chrome-less views). The testid names
-  the display TYPE and is **stable** — it used to gain a `-done` suffix on first
-  paint, and ADR-065 removed that, so nothing composes readiness into an id any
-  more.
-
-  Don't hand-write the conjunction. `displayPainted(base)` /
-  `displaySettled(base)` come from `@jbrowse/capture`
-  (re-exported by `@jbrowse/browser-test-utils`) for selector strings, and
+- `data-testid="loading-overlay"` **absent** → data finished **fetching** (`waitForLoadingToComplete`
+  / `waitForDataLoaded`, the snapshot waits).
+- `data-display-drawn="true"` → canvas finished **painting** (gated on `painted`, published by
+  `DisplayChrome` from its required `testid` base, and by `RenderCanvas` for the two chrome-less
+  views). The testid names the display TYPE and is stable (ADR-065 removed the `-done` suffix).
+  Don't hand-write the conjunction: `displayPainted(base)` / `displaySettled(base)` come from
+  `@jbrowse/capture` (re-exported by `@jbrowse/browser-test-utils`) for selectors, and
   `findDisplayPainted` / `findAnyDisplayPainted` are the jest waits
-  (`products/jbrowse-web/src/tests/util.tsx`) — the jest ones report *which*
-  half failed, which "no element found" never could. See DISPLAYCHROME.md, "One
-  element per display".
+  (`products/jbrowse-web/src/tests/util.tsx`), which report *which* half failed
+  ([DISPLAYCHROME.md](DISPLAYCHROME.md), "One element per display"). Tests that pixel-match the
+  canvas wait with `findDisplayPainted`, then read the inner `<canvas>`'s static selector
+  (`hic_canvas`, `ld_canvas`, `variant_canvas`, `variant_matrix_canvas`); `canvasSnapshot` takes
+  the exact selector.
 
-  For tests that pixel-match or screenshot the canvas element, the inner
-  `<canvas>` carries a **static** selector (`hic_canvas`, `ld_canvas`,
-  `variant_canvas`, `variant_matrix_canvas`): wait with `findDisplayPainted`,
-  then read the static canvas selector. `canvasSnapshot` takes the exact
-  selector — canvas captures are the most reliable.
+## What a `createView()` costs
 
-## What a `createView()` actually costs
+Most of it is the **track selector**. `defaultSession` leaves the hierarchical selector open and
+`useMeasure` is mocked to `height: 100000` (`packages/__mocks__/@jbrowse/core/util/useMeasure.ts`)
+so `HierarchicalTree`'s virtualization never engages: every test mounts a row per track before it
+does anything. There is no single hotspot (ordinary rendering of ~115 rows).
 
-Most of it is the **track selector**, not the view. `defaultSession` leaves the
-hierarchical selector open, and `useMeasure` is mocked to `height: 100000`
-(`packages/__mocks__/@jbrowse/core/util/useMeasure.ts`) so
-`HierarchicalTree`'s virtualization never engages — every test mounts a row per
-track, all 123 of them, before it has done anything. Measured in isolation:
-**~1.5s and a 2094-element document with the stock volvox config, ~0.4s and
-~300 elements with one track.** A CPU profile of the init path is
-`TrackLabel` / `TreeItem` / `CheckboxLite` / `CascadingMenuButton` /
-`MoreHorizGlyph` and the React and emotion work they drive, with no single
-hotspot to fix — it is 115 rows of ordinary rendering.
+The document it leaves is also what every later `findBy*` scans. `getByLabelText` and `getAllByRole`
+walk every element and ask jsdom for labels/role, which is quadratic on a large document. Prefer
+`findByTestId` / `findByPlaceholderText` / `findByText` in full-app tests. The absolute cost is
+unsettled (timings ranged from 0.2s to 17s a call on a noisy box), so don't sweep the whole
+`ByLabelText` category on this account.
 
-It is paid twice, because the document it leaves behind is what every later
-`findBy*` scans. On a 2094-element document `getByTestId` measured ~10ms per
-call and **`getByLabelText` 4-17 seconds** — `getAllByRole` is the same shape.
-Those two walk every element and ask jsdom for its labels/role, which is
-quadratic here, and jsdom's nwsapi result cache only hides it until the next DOM
-mutation. Prefer `findByTestId` / `findByPlaceholderText` / `findByText` in
-full-app tests; a `ByLabelText` that looks instant in a component test is not.
-
-**The 4-17s is unsettled**: timed at the jsdom level across seven suites on
-2026-08-30 it came back at 0.2-0.5s a call, against one documented measurement,
-on a box whose own docs say a single timing is noise. It matters only as a
-*don't* — the whole `ByLabelText` / `ByRole` category across `products/jbrowse-web`
-is ~4s either way, so the sweep is not worth running and nobody should edit the
-paragraph above until someone re-times `getByLabelText` deliberately.
-
-`volvoxConfigWithTracks(['...'])` in `products/jbrowse-web/src/tests/util.tsx`
-is the lever: a suite names the tracks it opens and stops paying for the rest,
-while keeping the coverage it has (the track is still switched on by clicking
-its row in the real selector). It throws on an unknown trackId — but not on an
-assembly's own sequence track, which is not in `tracks` at all and survives any
-trim.
-
-**The in-run figure is 0.34s per `createView`, not the ~1.1s the 1.5s → 0.4s
-above implies**, because that pair is a cold isolated measurement. The A/B is
-`HighlightWidget.test.tsx` at eleven calls: 11.1s of test bodies → 7.4s. Then add the
-second payment — the searches after it — which is the larger half for a suite
-that does any (see "The test files, 2026-08-30").
-
-**Don't trim a suite that reads the track list itself** — categories, filter
-text, counts, picking a track out of a listbox by name, or asserting on what is
-*not* shown. `LGVSynteny` is the worked example of one that cannot be trimmed;
-`SVInspector`'s "Open from track", `CopyAndDelete`'s delete path,
-`BasicLinearGenomeView`'s selector and reorder tests and `SyntenyImportForm`'s
-three import-form tests are the rest of the list. A suite can take the trim per
-call rather than per file, which is how those four keep both.
+`volvoxConfigWithTracks(['...'])` (`products/jbrowse-web/src/tests/util.tsx`) is the lever: a suite
+names the tracks it opens and stops paying for the rest, while the track is still switched on
+through the real selector. It throws on an unknown trackId but not on an assembly's own sequence
+track. **Don't trim a suite that reads the track list itself** (categories, filter text, counts,
+picking a track by name, asserting what is *not* shown): `LGVSynteny`, `SVInspector`'s "Open from
+track", `CopyAndDelete`'s delete path, `BasicLinearGenomeView`'s selector and reorder tests. A suite
+can take the trim per call rather than per file. The mock's height is the bigger lever (500 cut init
+to ~1.0s) but then only 37 rows render and any test naming a track further down fails.
 
 ### `fireEvent`, not `userEvent`
 
-`userEvent.click` replays a whole pointer sequence — pointerover, pointerdown,
-mousedown, focus, pointerup, mouseup, click — each wrapped in `act()` against a
-mounted JBrowse app. On that DOM it measured **~260ms a click against ~6ms for
-`fireEvent.click`**. Converting ~100 sites across this directory cut the
-affected suites' test-body time **22.6%** (two interleaved A/B rounds, 22.1% and
-23.1%, 90 tests green in both arms). Ticking a track checkbox or walking a menu
-does not need the difference, and most of the directory already used `fireEvent`
-for exactly those.
+`userEvent.click` replays a whole pointer sequence, each step in `act()` against a mounted app:
+~260ms a click against ~6ms for `fireEvent.click`. Converting ~100 sites cut affected suites'
+test-body time ~22%. Three cases need `userEvent`, and the full-suite run finds them (expect a
+failure, not a slow test, if you convert one back):
 
-Four sites do need it, and each carries a comment saying so — the full-suite run
-is what found them, so expect a failure rather than a slow test if you convert
-one of these back:
+- **A focus guard.** `GridBookmarkWidget`'s hotkeys fire only when the view has focus, and only a
+  real pointer sequence focuses `tracksContainer`.
+- **A non-input target.** A `<div>` highlight-label cell has no value setter for
+  `fireEvent.change`.
+- **MUI Autocomplete.** It opens its listbox off the focus/pointer sequence
+  (`BasicLinearGenomeView`'s refName dropdown).
 
-- **A focus guard.** `GridBookmarkWidget`'s hotkeys only fire when the view has
-  focus, and only a real pointer sequence focuses `tracksContainer`;
-  `fireEvent.click` leaves `activeElement` on `<body>` and the keydown is
-  dropped.
-- **A non-input target.** Its highlight-label cell is a `<div>`, so
-  `fireEvent.change` fails outright with "element does not have a value setter".
-- **MUI Autocomplete.** It opens its listbox off the focus/pointer sequence, so
-  a bare click leaves it closed and the following `findByRole('listbox')` burns
-  its timeout (`BasicLinearGenomeView`'s refName dropdown).
+`user.type` on a plain text field is one `fireEvent.change`, which replaces the whole value, so a
+preceding `user.clear` is redundant.
 
-`user.type` on a plain text field is one `fireEvent.change`, which replaces the
-whole value — so a preceding `user.clear` becomes redundant rather than lost.
+### Benchmarking on a shared box is unreliable
 
-The mock's height is the bigger, unclaimed lever: dropping it to 500 cut init to
-~1.0s across the board, but only 37 rows then render, so every test naming a
-track further down the list fails. Trimming per suite gets the same win without
-that.
-
-### Benchmarking on this box is unreliable
-
-The dev box runs several agents' test suites at once (load average ~35 on 16
-cores was normal while the above was measured). Per-suite wall time moved ±30s
-between runs **on suites that were not touched**, and a full-suite before/after
-disagreed in sign with an in-band A/B of the same change. Judge a perf change by
-an interleaved A/B of the affected suites, or by `--runInBand` on both arms, and
-treat a single full-suite wall time as noise. Load also produces spurious
-failures: a suite that times out under load and passes alone (`AuthenticationHTTPBasic`
-did) is not a regression.
+With several agents running suites, per-suite wall time moves ±30s between runs on untouched suites,
+and a full-suite before/after disagreed in sign with an in-band A/B. Judge a perf change by an
+interleaved A/B of the affected suites, or `--runInBand` on both arms; treat a single full-suite wall
+time as noise. A suite that times out under load and passes alone (`AuthenticationHTTPBasic`) is not
+a regression.
 
 ## Image snapshots go stale invisibly
 
-`jest-image-snapshot` writes `__image_snapshots__/*-snap.png` as plain files
-beside the suite, **outside** jest's own obsolete-snapshot tracking. So a
-snapshot whose test was renamed, deleted, or simply stopped calling
-`expectCanvasMatch` is never reported by anything — verified by dropping a
-fabricated `…-zzz-fake-orphan-probe-1-snap.png` into a snapshot dir and watching
-a full run of that suite pass without a word. Two such orphans were found by
-hand in `BigWig.test.tsx` alone, one of them ~30 commits old.
-
-**The library ships a reporter for this and it must not be enabled here.**
-`jest-image-snapshot/src/outdated-snapshot-reporter` (gated on
-`JEST_IMAGE_SNAPSHOT_TRACK_OBSOLETE`) deletes every `-snap.png` in any directory
-the run touched that the run did not itself write. Two properties make that
-destructive in this repo:
-
-- `__image_snapshots__` is shared per test *directory*, so one running test
-  marks the whole directory live — and every `test.skip` in that directory then
-  looks obsolete. There are several (`Alignments`, `ConfigurationEditor`,
-  `JBrowse`, …), and regenerating a deleted golden means re-rendering it, which
-  this repo only does after a *visually verified* change.
-- It deletes on any run, including a filtered one, so `jest BigWig.test.tsx`
-  with the flag set wipes every other jbrowse-web golden.
-
-The **instrumentation** is safe on its own: setting the env var without
-registering the reporter appends each compared file to
-`.jest-image-snapshot-touched-files`, which can be diffed against what is on
-disk. That needs a fully green `jest` run over the whole repo — a failing or
-filtered run under-reports the touched set and every unreached snapshot reads
-as an orphan.
+`jest-image-snapshot` writes `__image_snapshots__/*-snap.png` beside the suite, **outside** jest's
+obsolete-snapshot tracking, so a snapshot whose test was renamed, deleted or stopped calling
+`expectCanvasMatch` is never reported. **Don't enable the library's reporter**
+(`jest-image-snapshot/src/outdated-snapshot-reporter`, gated on
+`JEST_IMAGE_SNAPSHOT_TRACK_OBSOLETE`): it deletes every `-snap.png` in any touched directory that the
+run did not write. `__image_snapshots__` is shared per test *directory*, so every `test.skip`
+there looks obsolete, and it deletes on filtered runs too (`jest BigWig.test.tsx` would wipe every
+other jbrowse-web golden). The **instrumentation** is safe alone: the env var without the reporter
+appends each compared file to `.jest-image-snapshot-touched-files` for diffing against disk, but
+needs a fully green whole-repo run, since a failing or filtered run under-reports the touched set.
 
 ## Troubleshooting
 
-- **Stale build / `ChunkLoadError: Loading chunk N failed`** — rebuild:
-  `rm -rf build && pnpm --filter @jbrowse/web build`.
-- **Startup crash / `ERR_INSUFFICIENT_RESOURCES` / "HistoryService::Init() failed"**
-  — corrupted Puppeteer cache: `rm -rf /tmp/puppeteer_* /tmp/org.chromium.*`.
-- **"libpxbackend-1.0.so not found"** — system snap Chrome is broken; use
-  Puppeteer's cached binary (`~/.cache/puppeteer/`).
-- **Port 3333 in use (`EADDRINUSE`) / stray processes** — `fuser -k 3333/tcp`.
-  Never `pkill chrome`: other agents run browsers on this machine. `runner.ts`
-  reaps only orphaned automation browsers at startup — those whose launching
-  `node` is gone, told by the parent's `/proc/<pid>/exe`
-  (`browser-tests/staleBrowsers.ts`, Linux-only) — and force-kills its own on
-  exit.
-- **`Attempted to use detached Frame` then `Session closed` some seconds into
-  a page, with no `pageerror`, no `error` crash event and no navigation** —
-  something outside the page SIGKILLed the browser's main process. A renderer
-  kill reports as `Page crashed!`; a GPU or utility kill is invisible. Look for
-  a runner or a `pkill` that started elsewhere on the machine at that second
-  (this was the reaper itself, reading Node 24's `MainThread` as not-`node`,
-  2026-08-25).
-- **Console errors** — runner forwards `[alignments]` / `[webgl-wiggle]` logs;
-  add patterns in `runner.ts`.
-- **A `waitFor` that burns its full 30s, blamed on a line that never ran.** In
-  `products/jbrowse-web/src/tests`, `view` is typed but
-  `view.tracks[0].displays[0]` is **`any`** — so a getter that does not exist on
-  the display model typechecks fine and fails only at runtime. Jest then prints
-  the *last* error with surrounding source, pointing several lines below the
-  real one. This cost a long debug once: `display.sashimiSections` never existed
-  (it is `sashimiArcSections`), but the reported error named `data.sashimiX1` on
-  an unreached line. When a test touches more than a member or two off a
-  display, annotate it with the real exported model type — e.g.
-  `LinearAlignmentsDisplayModel` from `@jbrowse/plugin-alignments`, which
-  jbrowse-web already depends on. `AlignmentGroupBy.test.tsx` is the worked
-  example. Expect a batch of `noUncheckedIndexedAccess` errors that `any` was
-  hiding. If a member looks plausible but resolves nowhere, suspect a
-  pre-migration shape: the nested `PileupDisplay`/`SNPCoverageDisplay` sub-nodes
-  were flattened into `LinearAlignmentsDisplay` (see `sessionMigrations`), and
-  dead `xtest`s referenced them for years afterward.
+- **Stale build / `ChunkLoadError: Loading chunk N failed`**: `rm -rf build && pnpm --filter
+  @jbrowse/web build`.
+- **Startup crash / `ERR_INSUFFICIENT_RESOURCES` / "HistoryService::Init() failed"**: corrupted
+  Puppeteer cache: `rm -rf /tmp/puppeteer_* /tmp/org.chromium.*`.
+- **"libpxbackend-1.0.so not found"**: system snap Chrome is broken; use Puppeteer's cached binary
+  (`~/.cache/puppeteer/`).
+- **Port 3333 in use / stray processes**: `fuser -k 3333/tcp`. Never `pkill chrome`: other agents run
+  browsers on this machine. `runner.ts` reaps only orphaned automation browsers at startup
+  (`browser-tests/staleBrowsers.ts`, Linux-only) and force-kills its own on exit.
+- **`Attempted to use detached Frame` then `Session closed`, with no `pageerror`, crash event or
+  navigation**: something outside the page SIGKILLed the browser's main process (a renderer kill
+  reports `Page crashed!`). Look for a runner or `pkill` that started elsewhere at that second.
+- **Console errors**: the runner forwards `[alignments]` / `[webgl-wiggle]` logs; add patterns in
+  `runner.ts`.
+- **A `waitFor` burning its full 30s, blamed on a line that never ran.** In
+  `products/jbrowse-web/src/tests`, `view.tracks[0].displays[0]` is **`any`**, so a getter that does
+  not exist typechecks and fails at runtime, and jest prints the *last* error with source, pointing
+  several lines from the real one (`display.sashimiSections` never existed). When a test touches more
+  than a member or two off a display, annotate it with the real model type
+  (`LinearAlignmentsDisplayModel`; `AlignmentGroupBy.test.tsx` is the example) and expect
+  `noUncheckedIndexedAccess` errors `any` was hiding. A plausible member that resolves nowhere is
+  probably a pre-migration shape (the `PileupDisplay`/`SNPCoverageDisplay` sub-nodes were flattened
+  into `LinearAlignmentsDisplay`, see `sessionMigrations`).
 
 ### Cross-test memory growth is SwiftShader, not a JBrowse leak
 
-(Measured 2026-05-29.) JBrowse disposes GL contexts 1:1 (`useRenderingBackend` unmount +
-`pagehide`; `webgl2Hal.dispose()` frees every GL object) and the main JS heap
-stays flat. The unbounded `~29 MB/cycle` is Chrome's **GPU-process RSS under
-SwiftShader**, which never returns per-context memory to the OS — unfixable from
-JS. Headless always falls back to SwiftShader (even with `--ignore-gpu-blocklist`);
-only headed-on-a-real-GPU avoids it, so it is **not** a CI fix. Mitigation:
-`runner.ts` recycles the browser per test (see
-`adr-024-per-backend-snapshots-real-gpu.md`). Repro: enable `?webgl2-debug=1`
-(or `window.DEBUG.webgl2=true`) telemetry and watch `--type=gpu-process` RSS via
-`ps -o rss=,args=`.
-
-A separate, lower-severity **product** leak (not a test-cleanliness problem,
-since the browser recycles per test): closing a track retains its entire
-detached `TrackContainer` subtree (~55 nodes, ~6 listeners/cycle), GC-rooted via
-a leaked listener or the HAL-held canvas.
-
-## Open follow-ups
-
-- **Refresh the drifted goldens on a quiet worktree.** Last full run: the two
-  blank methylation/modifications full-page goldens plus ~15 targeted ones
-  (bigwig, hic, long-reads/inversions, multi-region, demo-inventory) fail
-  deterministically against a clean build — real rendering drift since the
-  Jul 16 refresh (`452396ab97`). Regenerating needs a worktree nobody else is
-  rebuilding in, or the goldens capture another agent's uncommitted work.
-- **`HiC mirrors on a reversed region` fails an assertion, not a snapshot**
-  (`err vs mirrored-forward 577` should be well under `err vs forward 728`), and
-  both `Variant Force Load` tests time out waiting for the Force-load button —
-  the too-large gate never trips. Both reproduce run to run; neither is flake.
-- **Profile the ~32s full-page synteny capture.** Now that `pageSnapshot` skips
-  the viewport resize, re-measure before optimizing; canvas-only captures of the
-  same view were the fast path.
+JBrowse disposes GL contexts 1:1 (`useRenderingBackend` unmount + `pagehide`;
+`webgl2Hal.dispose()`) and the main JS heap stays flat. The unbounded growth is Chrome's
+**GPU-process RSS under SwiftShader**, which never returns per-context memory to the OS. Headless
+always falls back to SwiftShader, so it is not a CI fix. `runner.ts` recycles the browser per test
+(`adr-024-per-backend-snapshots-real-gpu.md`). Repro: `?webgl2-debug=1` telemetry and watch
+`--type=gpu-process` RSS via `ps -o rss=,args=`. A separate lower-severity **product** leak: closing
+a track retains its detached `TrackContainer` subtree, GC-rooted via a leaked listener or the
+HAL-held canvas.

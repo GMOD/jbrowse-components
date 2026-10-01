@@ -7,407 +7,177 @@ kind: spec
 # Pangenome graphs
 
 How a graph reaches JBrowse, what each format can and cannot say, and the
-findings that are expensive to re-derive. Replaces `GENERAL_GFA_HANDOFF.md` and
-`PANGENOME_PATHS_HANDOFF.md`, both of whose work shipped.
+findings that are expensive to re-derive.
 
-The view itself is a third-party plugin,
-`~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer` — build and deploy traps are
-in the `key_pattern_graphgenomeview_plugin_deploy_and_autofit` memory. User docs
-are `website/docs/user_guides/graph_genome_view.md`. The package, its bundle,
-its GitHub repo, its hosted prefix and the local checkout are all spelled
-`graphgenomeview**er**`; only `test_data/graphgenomeview/` drops the `er`.
-
-A graph opens as a track of the linear view, and `GRAPH_TRACK.md` in the
-plugin's agent docs records how it cuts and re-cuts; the standalone
+The view itself is a third-party plugin (`jbrowse-plugin-graphgenomeviewer`; the
+package, bundle, repo and hosted prefix all spell `graphgenomeview**er**`, only
+`test_data/graphgenomeview/` drops the `er`). User docs are
+`website/docs/user_guides/graph_genome_view.md`; the plugin's own queue is its
+`IDEAS.md`. A graph opens as a track of the linear view (the plugin's
+`GRAPH_TRACK.md` records how it cuts and re-cuts); the standalone
 `GraphGenomeView` opens a whole GFA file. An `RgfaTabixAdapter` track lists
-`LinearGraphDisplay` first, so turning it on opens the graph, and its segments
-lane (`LinearBasicDisplay`) second; a gbz-base `SyntenyTrack` lists the graph
-after its lanes.
+`LinearGraphDisplay` first and the segments lane (`LinearBasicDisplay`) second.
 
-**A store bump moves the figures, and `test_data/graphgenomeview/README.md` is
-the rule**: every config names the plugin list's `latest/` url on jbrowse.org —
-the figure fixtures, the `demos/` configs and the tutorials alike — and `pnpm
-check-live-configs` refuses any other. jbrowse-plugin-list pins the release its
-`GraphGenomeView` entry serves, so an npm publish reaches readers when that pin
-is bumped and `pnpm dep` runs there, and moves the graph figures at the next
-regen with no commit here to attribute the move to; `pnpm figures:report` after
-that regen is where it is read, and a spec that clicked a label the plugin
-renamed fails there rather than silently. The fixtures pinned the plugin's
-content-addressed betabuild (`demos/graphgenomeviewer/<hash>/`) until
-2026-09-06, and the pin cost a bump nobody remembered; that prefix retired on
-2026-09-24, and unpkg on 2026-09-25.
-
-**Read the build's date against the commits before assuming a bump re-renders
-anything.** The 2026-08-26 publish looked like it carried a visual change —
-`3ea526b` caps a row layout's deletion bow — and did not: the previous build was
-made two minutes *after* that commit landed, so the pinned bundle already had
-it. What was genuinely unpublished was a launch-behaviour fix and a typecheck
-pass, neither of which touches geometry, and a re-render of
-`pangenome/hprc_cfhr_deletion` across the bump came back with its graph pane
-unchanged. `git log --format='%ad'` on the plugin against the `dist/` mtime is
-the check; "there are unpushed commits" is not the same claim as "the deployed
-bundle lacks them".
+**A plugin store bump moves the figures.** Every config names the plugin list's
+`latest/` url on jbrowse.org, and `pnpm check-live-configs` refuses any other
+(`test_data/graphgenomeview/README.md`). A publish reaches readers when
+jbrowse-plugin-list bumps its pin, so graph figures move at the next regen with no
+commit here; read it with `pnpm figures:report`. Compare the plugin's commit dates
+against the `dist/` mtime before assuming a bump re-renders anything: "unpushed
+commits" is not "the deployed bundle lacks them", and bundle hashes are
+content-addressed and say nothing about lineage (grep the served file).
 
 ## Coordinates are the only real difference between formats
 
-- **rGFA** (minigraph, and the minigraph stage of Minigraph-Cactus) states
+- **rGFA** (minigraph, the minigraph stage of Minigraph-Cactus) states
   `SN`/`SO`/`SR` per segment.
-- **A plain GFA** (pggb, odgi, vg, base-level Minigraph-Cactus) states the same
-  thing in path order: walking a path assigns every segment it visits an
-  interval on that path's own sequence. **P and W lines are both read** (W since
-  2026-08-02. It used to `sys.exit`, while three docs already claimed support).
-  A W line is the easier of the two, because it names sample and haplotype in
-  their own fields and gives the walk's start offset outright, where a P line
-  hides an `odgi extract` offset in a `:start-end` name suffix. A graph mixing them
-  (Minigraph-Cactus writes the reference as P and haplotypes as W) anchors on
-  the P line with no `--reference` argument, because file order picks it.
+- **A plain GFA** (pggb, odgi, vg, base-level Minigraph-Cactus) states the same in
+  path order: walking a path assigns each visited segment an interval on that
+  path's sequence. P and W lines are both read. A W line names sample and
+  haplotype and gives the start offset outright; a P line hides an `odgi extract`
+  offset in a `:start-end` name suffix. A graph mixing them (Minigraph-Cactus: P
+  reference, W haplotypes) anchors on the P line by file order.
 
-Same information, different encoding. Both are consumed the same way, and there
-are two routes in:
+| Route | Built by | Gives |
+| --- | --- | --- |
+| indexed track (rGFA) | `scripts/build_rgfa_tabix.sh` | a graph track at any locus, hover sync, the segments lane |
+| indexed track (plain GFA) | `scripts/build_pggb_tabix.sh` → `pggb_gfa_to_bed.py` | the same, plus `SM:Z:` carriage |
+| coarse tier (any graph) | `scripts/build_bubble_tier.sh` → `bubbles_to_tier_bed.py` | one node per bubble, so a whole chromosome draws |
+| a GFA file | `odgi extract` / `vg chunk`, then Add → Graph genome view | one window, no index; the view walks a chosen path in-app (`pathAnchoring.ts`) |
 
-| Route                       | Built by                                                                     | What it gives                                                             |
-| --------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| indexed track (rGFA)        | `scripts/build_rgfa_tabix.sh` (`gfatools gfa2bed -m` + an awk pass over L)   | a graph track at any locus, hover sync, the segments lane                  |
-| indexed track (plain GFA)   | `scripts/build_pggb_tabix.sh` → `scripts/pggb_gfa_to_bed.py` (the path walk) | the same, plus `SM:Z:` carriage rGFA cannot express                        |
-| coarse tier (any graph)     | `scripts/build_bubble_tier.sh` → `scripts/bubbles_to_tier_bed.py`            | the same, one node per bubble, so a whole chromosome is drawable           |
-| a GFA file                  | `odgi extract` / `vg chunk`, then **Add → Graph genome view**                | one window, no index; the view walks a chosen path in-app (`pathAnchoring.ts`) |
-
-Every builder emits the same pair, and `RgfaTabixAdapter` reconstructs a
-synthetic rGFA from them (`formatSubgraph` in `rgfaBed.ts`), which is why
-nothing downstream had to learn a second format:
-
-- `<prefix>.segs.bed.gz`: `stableName start end segmentId rank [tags]`
-- `<prefix>.links.bed.gz`: one row per L-line **per endpoint**, both endpoints
-  stated in full, because a neighbour usually sits on another stable sequence
-  where tabix cannot look it up by id, then `[srcTags tgtTags]`
+Every builder emits `<prefix>.segs.bed.gz` (`stableName start end segmentId rank
+[tags]`) and `<prefix>.links.bed.gz` (one row per L-line **per endpoint**, both in
+full, because a neighbour usually sits on another sequence tabix cannot look up by
+id). `RgfaTabixAdapter` reconstructs a synthetic rGFA from them (`formatSubgraph`
+in `rgfaBed.ts`), so nothing downstream learned a second format.
 
 ## The tag column is the extension point
 
-Column 6 of `segs.bed` is a space-separated list of **GFA tags**, written
-verbatim onto the S-line `formatSegment` synthesizes. The GFA parser already
-reads arbitrary tags into `GraphNode.tags`, typed, so a producer can state
-something new without touching the adapter, the parser or the renderer. rGFA
-files have no sixth column and are unaffected.
+Column 6 of `segs.bed` is a space-separated list of GFA tags, written verbatim
+onto the synthesized S-line; the parser reads arbitrary tags into
+`GraphNode.tags`. A producer states something new without touching adapter,
+parser or renderer. Tags in use: `SM:Z:` (carriage, from `pggb_gfa_to_bed.py`),
+`ct:Z:` (`bubble`/`backbone`) and `cn cw cs cl cv` (segments, traversals,
+shortest, longest, inversion), from `bubbles_to_tier_bed.py`.
 
-This replaced a bespoke `samples` column, which had a positional slot per
-concept and would have needed five more for the tier alone. In use now:
-
-| tag                                  | written by                | means                                    |
-| ------------------------------------ | ------------------------- | ---------------------------------------- |
-| `SM:Z:`                              | `pggb_gfa_to_bed.py`      | carriage, comma separated                |
-| `ct:Z:`                              | `bubbles_to_tier_bed.py`  | node type, `bubble` or `backbone`         |
-| `cn:i: cw:i: cs:i: cl:i: cv:i:`      | `bubbles_to_tier_bed.py`  | segments, traversals, shortest, longest, inversion |
-
-The precomputed `LO:Z:` layout position from the removed gfa-to-tabix tree's
-adr-028 lands here too, with no format change — this tree's adr-028 is an
-unrelated tooltip decision, and the one meant is
-`git show 3b98dbb985^:agent-docs/architecture-decision-records/adr-028-offline-graph-layout-tag.md`.
-
-**The tag grammar is checked, not trusted** (`GFA_TAG` in `rgfaBed.ts`). Files
-built before this column existed put a bare comma list there, and passing that
-through would put a non-tag field on an S-line, which is a malformed GFA rather
-than a missing annotation. Non-conforming fields are dropped, so an old file
-degrades to pre-tag behaviour.
-
-**The hosted E. coli pggb pair was one of those files. Rebuilt and rehosted
-2026-08-06** with the current `build_pggb_tabix.sh` (605,979 segments / 814,027
-links, 14.7 s, 4.9 MB + 21 MB), so `demos/ecoli_pangenome/ecoli_pggb.segs.bed.gz`
-now carries `SM:Z:K12.1,Sakai.1,NCTC86.1,IAI39.1` per haplotype where it used to
-carry a bare `CFT073,NCTC86` that the grammar check dropped.
-
-**The display side is done too, 2026-08-06** (plugin `418bf7c`, published as
-`bfe47428e7ae`). `gfaConverter.makeNode` reads `SM:Z:` into `GraphNode.samples`,
-which `model.ts` already rendered as `carriedBy`. Precedence is walk-first:
-`pathAnchoring.anchorNode` rebuilds `samples` from path visits whenever there are
-any, so a file-loaded graph keeps the authoritative set and the tag is only what
-an indexed cut falls back to.
-
-Measured in the app rather than inferred, on `pangenome/pggb_locus_graph` against
-the hosted index: **0 of 53 nodes** carried samples on the previously published
-bundle, **53 of 53** after, spelled per haplotype (`CFT073.1, IAI39.1`). If this
-ever regresses, that A/B is the check — the unit tests cover the segs row → the
-synthesized S-line → the parser → `node.samples`, and the end-to-end one is
-`rgfaBed.test.ts`'s "SM:Z: on a segs row reaches GraphNode.samples".
-
-**The linear side landed 2026-08-06 too** (plugin `f2108cc`, published as
-`0093d998d280`).
-`getFeatures` parsed the tag column
-and then dropped it, so the whole tag route ended at the graph view and a
-LinearGenomeView lane colored by carriage was not expressible. `segmentSamples`
-in `rgfaBed.ts` now puts `samples` (the haplotype list) and `carriers` (its
-length) on every feature, so a `color` jexl reads `feature.carriers` directly
-rather than counting a list through a member access. Absent, not 0, on an rGFA.
-`demos/ecoli_pangenome/config.json` carries the lane as `ecoli_pggb_carriage`,
-and its fixture is `pggb_ecoli.segs.bed.gz` in the plugin's `RgfaTabixAdapter`
-test_data: 24 real segments around the IS5 element at K12 chr:1,299,499-1,300,693
-spanning every carrier count from 1 to 5.
-
-Why a lane and not just the popup: `odgi depth` answers the same core/accessory
-question as a mean over fixed windows, so an accessory stretch shorter than one
-window is averaged into its neighbours. The lane is one box per segment, which is
-the unit the graph actually states carriage in.
-
-**Bundle lineage, because a commit message got it wrong on 2026-08-06.** The
-three bundles published that day are a straight line, each a superset of the one
-before:
-
-| bundle | built from | adds |
-| ------ | ---------- | ---- |
-| `bfe47428e7ae` | `418bf7c` | `SM:Z:` → `GraphNode.samples` (the popup's `carriedBy`) |
-| `aee5e17f4b2c` | `60a4049` | `maxRegionBp` |
-| `0093d998d280` | `f2108cc` | `samples`/`carriers` on the linear feature |
-
-`418bf7c` is an ancestor of `60a4049` (`git merge-base --is-ancestor`), and
-`grep carriedBy` finds it in **all three** served bundles. So the claim that
-`aee5e17f4b2c` "predates carriage entirely" is false, and a figure pinned to it
-showing `carriedBy` is not evidence of a bad pin. Check a bundle by grepping the
-served file rather than reasoning from publication order — the hashes are
-content-addressed and say nothing about lineage.
-
-**Carriage is per haplotype**, written `HG002.1`. Keying it on the PanSN sample
-alone merged a diploid sample's two haplotypes, so a segment carried only on the
-maternal copy read as "HG002 carries it". On haploid input the `.1` is accurate
-rather than noise.
+- **The tag grammar is checked** (`GFA_TAG` in `rgfaBed.ts`). Non-conforming
+  fields are dropped, since a bare old-format comma list on an S-line is a
+  malformed GFA.
+- **Carriage is per haplotype** (`HG002.1`); keying on the PanSN sample merged a
+  diploid sample's haplotypes. `gfaConverter.makeNode` reads `SM:Z:` into
+  `GraphNode.samples`. Precedence is walk-first: `pathAnchoring.anchorNode`
+  rebuilds `samples` from path visits when there are any; the tag is the fallback
+  for an indexed cut. `rgfaBed.test.ts` pins "SM:Z: on a segs row reaches
+  GraphNode.samples".
+- **The linear side reads it too.** `segmentSamples` puts `samples` and `carriers`
+  (its length) on each feature, absent on an rGFA, so a `color` jexl reads
+  `feature.carriers`. The lane is one box per segment, the unit the graph states
+  carriage in; `odgi depth` averages short accessory stretches into windows.
+- A precomputed `LO:Z:` layout tag was the removed gfa-to-tabix tree's adr-028
+  (`git show 3b98dbb985^:agent-docs/architecture-decision-records/adr-028-offline-graph-layout-tag.md`).
 
 ## Level of detail: one node per bubble
 
-The fine tier draws one node per GFA segment, so node count grows with sequence
-and the drawable window tops out near 100 kb. The coarse tier draws one node per
-bubble, with the invariant reference between bubbles as backbone nodes, and it
-needed **no adapter, glyph or renderer work** because a collapsed bubble already
-fits the contract above: a reference span, an id, a rank.
+The fine tier draws one node per segment, so the drawable window tops out near
+100 kb. The coarse tier draws one node per bubble with the invariant reference
+between as backbone nodes, and needed no adapter, glyph or renderer work: a
+collapsed bubble already fits the contract (reference span, id, rank). The view
+picks the tier by zoom: `RgfaTabixAdapter`'s `coarse: { uri, aboveBpPerPx }`. The
+shape matches [SYNTENY_LOD.md](SYNTENY_LOD.md)'s two PIF tiers.
 
-Measured over HPRC release 2's hosted `bubbles.bed.gz` (130,510 bubbles), nodes
-returned for a whole 249 Mb chr1, against ~751k segments in the graph:
-
-| `--min-content` | chr1 nodes | index size        |
-| --------------- | ---------- | ----------------- |
-| 0               | 18,888     | 2.9 MB + 5.5 MB   |
-| 1000            | 3,342      | 582 kB + 1.1 MB   |
-| 10000           | 474        | 99 kB + 172 kB    |
-
-So a chromosome is drawable at 10 kb, a 10 Mb window at 1 kb (151 nodes), and a
-1 Mb window at full bubble resolution (111). Below that the fine tier takes
-over. That is the same shape as [SYNTENY_LOD.md](SYNTENY_LOD.md)'s two PIF
-tiers, so the view change is picking a prefix by `bpPerPx` rather than a new
-rendering mode.
-
-**It draws, and the figure is published** (2026-08-06,
-`pangenome/hprc_whole_chromosome`): all 249 Mb of chr1 as 474 nodes / 473 edges,
-layout 18 ms. The chr1 tier is **237 backbone nodes alternating strictly with
-237 bubbles** and covers 0–248.6 Mb with no gap over 1 Mb — the stretch that
-looks empty is one **18.7 Mb backbone node at 125.2–143.8 Mb**, the centromere
-and 1q12 heterochromatin, not a coverage hole.
-
-**The bp ceiling was the only blocker, and it is a session prop now.**
-`MAX_GRAPH_REGION_BP` is a proxy for node count and a fair one only at segment
-granularity (5 Mb of the fine index is 3,034 segments; the same span is 35 tier
-nodes). `maxRegionBp` defaults to the same 5 Mb and a session pointed at a tier
-raises it; `maxGraphNodes` counts what came back and remains the real backstop.
-A graph track's fine cut keeps the 5 Mb cap; its coarse cut has none.
-
-**The bubble file also plots as a curve with no adapter change.**
-`MinigraphBubbleAdapter` sets `score` to the segment count and extends
-`BaseFeatureDataAdapter`, which supplies `getRegionQuantitativeStats` off
-`scoresToStats` — only the track *type* changes, since a `FeatureTrack` offers
-no wiggle display. chr1 is 9,444 bubbles, scores into the hundreds.
-
-**`gfatools bubble` returns 0 bubbles on a pggb GFA** — it needs rGFA
-`SN`/`SO`/`SR` to place a bubble on a reference. That used to mean the graph most
-needing coarsening could not be coarsened; **it can now, and from a file the
-graph already ships** (2026-08-09). `pggb -V` writes a `vg deconstruct` snarl VCF
-whose `LV=0` records are the top-level bubbles, each with a reference span, an
-`AT` traversal per allele and the allele sequences, so
-`scripts/snarls_to_bubble_bed.py` emits the bubble BED `bubbles_to_tier_bed.py`
-reads and nothing downstream changes. No BubbleGun run, no re-running pggb.
-
-Measured on the hosted E. coli `ecoli_pggb_snarls.vcf.gz`: 174,528 records,
-**143,964 top level, 0 of them overlapping**, so the tier's one-sorted-walk
-assumption holds on snarls as it does on gfatools bubbles. Hosted as
-`ecoli_pggb.tier50`:
-
-| `--min-content` | bubbles in 20 kb | whole graph |
-| --------------- | ---------------- | ----------- |
-| 0               | 462              | 143,964     |
-| 50              | 2                | 544         |
-
-At 0 every single-base alternative is a node and the tier is worse than the fine
-index; at 50 those go into the backbone and every indel survives, which makes the
-whole 4.64 Mb graph **1,088 nodes in 51 kB** against 606k fine segments. 100 kb
-draws as 27 nodes (`pangenome/pggb_bubble_tier`).
-
-**The node id needs qualifying on a pggb graph, and gfatools' does not.** pggb
-folds repeats, so the reference path can walk one snarl more than once and `vg
-deconstruct` reports it once per visit: `>544433>544462` appears at chr:3,943,364
-and again 225 kb later. 67 of 143,897 sources are used twice, 134 rows in all, in
-one repeat cluster. So the converter emits `<source>@<refStart>`, and
-`bubbles_to_tier_bed.py`'s uniqueness assert is what found this rather than a
-silently merged pair of loci. The cost is that the id no longer joins straight
-back to the fine tier the way an rGFA tier's does, which for a repeat-folded
-graph was never single-valued anyway.
-
-**Still not built: popping a bubble open in the app.** pangyplot's `/pop` swaps
-one collapsed node for its internal subgraph, which here would be a second
-`GetSubgraph` over the popped bubble's span against the FINE prefix, spliced into
-the tier GFA by dropping the collapsed node's S-line (the fine cut supplies a real
-one for the same id) and letting the tier's links attach to it. That plus a node
-menu item and a `popped` set on the model. Until then the ladder is two figures,
-coarse to find and fine to open.
-And the tier is **a dud on a bacterial rGFA**, which is the minigraph half of
-the same graph rather than the pggb half above: the five-strain E. coli minigraph
-graph gives 601 bubbles → 358 nodes at `--min-content 2000`, but its fine index
-is already only 1,508 segments for the whole 4.64 Mb chromosome, so the tier
-buys ~4× where HPRC gets ~1,600×.
-
-Facts behind it, each measured rather than assumed:
-
-- **Bubbles do not overlap.** 0 overlapping adjacent pairs across all 24 GRCh38
-  chromosomes, so one sorted walk per chromosome is a complete alternating
-  chain. `gfatools bubble` reporting top-level bubbles only is what buys this.
-- **Threshold on content, never on reference span.** 53,293 of the 130,510
-  bubbles are zero-length on GRCh38, because a pure insertion is an alternative
-  to nothing. `end - start` drops every one, including the 100 kb+ insertions
-  that are the pangenome's whole claim. Content is
-  `max(reference span, longest allele)`.
-- **A zero-span bubble draws 1 bp wide** and states its real size in `cl:i:`,
-  the same convention the allele inventory and the bubble CIGARs already use.
-- **The node id is the bubble's own source segment**, so a tier node joins back
-  to the fine tier and expanding one is a fine-index query over the same span.
-  Adjacent bubbles share a boundary segment (one bubble's sink is the next
-  one's source), so sources are distinct while sinks are not.
-- Covered by `bubbleTier.test.ts` in the plugin, over a committed whole-chrY
-  tier fixture (57 bubbles, 5.5 kB).
+- **Threshold on content, never reference span.** A pure insertion is a
+  zero-length bubble (53,293 of HPRC's 130,510), so `end - start` drops the 100 kb+
+  insertions that are the pangenome's whole claim. Content is
+  `max(reference span, longest allele)`. A zero-span bubble draws 1 bp wide and
+  states its size in `cl:i:`.
+- **Bubbles do not overlap** (`gfatools bubble` reports top-level only), so one
+  sorted walk per chromosome is a complete alternating chain.
+- **The node id is the bubble's source segment**, so a tier node joins back to the
+  fine tier. Adjacent bubbles share a boundary segment, so sources are distinct
+  and sinks are not.
+- **`maxRegionBp`** (session prop, default 5 Mb) replaces the bp ceiling as the
+  node-count proxy; `maxGraphNodes` counts what came back and is the backstop. A
+  tier session raises `maxRegionBp`. `bubbleTier.test.ts` covers a committed chrY
+  tier fixture.
+- **The chr1 tier is 237 backbone nodes alternating with 237 bubbles.** The
+  stretch that looks empty is one 18.7 Mb backbone node (the centromere), not a
+  coverage hole.
+- **The bubble file plots as a curve with no adapter change**:
+  `MinigraphBubbleAdapter` sets `score` to the segment count; only the track type
+  changes.
+- **`gfatools bubble` returns 0 bubbles on a pggb GFA** (it needs `SN`/`SO`/`SR`).
+  `scripts/snarls_to_bubble_bed.py` builds the bubble BED from the `pggb -V`
+  `vg deconstruct` VCF (`LV=0` records), then `bubbles_to_tier_bed.py` runs
+  unchanged. Use `--min-content 50` there: at 0 every single-base alternative is a
+  node and the tier is worse than the fine index.
+- **A pggb node id needs qualifying** (`<source>@<refStart>`): pggb folds repeats,
+  so a snarl can appear twice on the reference path. `bubbles_to_tier_bed.py`'s
+  uniqueness assert found it.
+- **The tier is a dud on a small rGFA.** The five-strain E. coli minigraph fine
+  index is already 1,508 segments, so a tier buys ~4× where HPRC gets ~1,600×.
 
 ## Decisions that look like bugs and are not
 
-- **First visit wins** when a path reaches a segment twice. A node draws as one
-  tube at one x, so the alternative claims reference the segment does not
-  occupy. The repeat stays visible as depth (a multiple of the path count).
-  Test case: the rRNA operons, where `odgi depth` reaches 10 over the
-  five-strain E. coli graph at `chr:4,167,000-4,170,500` and
-  `chr:3,942,000-3,946,500`.
-- **An off-reference segment sits on its own carrier's coordinates**, the same
-  asymmetry rGFA has. This is what makes `contributingAssemblies` and the whole
-  launch-out menu work on a graph with no `SN` tags.
-- **Rank is 0 or 1 for a path-derived graph.** rGFA's higher ranks are
-  minigraph's build order; a path GFA has no equivalent and more would be
-  invented structure.
-- **The reference path is a choice, not a fact.** Explicit `referencePath` wins
-  (PanSN sample first, then full name), else `loadedRegion.assemblyName`, else
-  the first path in the file, which is where pggb and odgi leave it. An
-  unmatched name falls back rather than dropping to force-directed.
-- **The `:start-end` suffix comes off the path name** and into the offsets.
-  `odgi extract` writes `K12#1#chr:1004500-1004961`, which is the only statement
-  of where the cut sits; leaving it on gives PanSN a contig no linear view can
-  open, and dropping it silently puts every extracted subgraph at the origin.
-- **The offline walk matches the in-app one on purpose**, so an indexed cut and
-  a file cut of the same window agree. Verified: at chr:1,004,500-1,004,961
-  all 36 intervals from `build_pggb_tabix.sh` match those `gfa_nodes_to_bed.py`
-  derives from the `odgi extract` subgraph.
+- **First visit wins** when a path reaches a segment twice: a node draws as one
+  tube at one x. The repeat stays visible as depth.
+- **An off-reference segment sits on its own carrier's coordinates**, as in rGFA;
+  this is what makes `contributingAssemblies` and the launch-out menu work.
+- **Rank is 0 or 1 for a path-derived graph.** rGFA's higher ranks are minigraph's
+  build order; more would be invented structure.
+- **The reference path is a choice.** Explicit `referencePath` (PanSN sample
+  first, then full name), else `loadedRegion.assemblyName`, else the first path in
+  the file. An unmatched name falls back rather than dropping to force-directed.
+- **The `:start-end` suffix comes off the path name** into the offsets; leaving
+  it on gives PanSN a contig no linear view can open, dropping it silently puts
+  every extracted subgraph at the origin.
+- **The offline walk matches the in-app one on purpose**, so an indexed cut and a
+  file cut of one window agree.
+- **Extraction is not symmetric across reference paths, and that is biology**, so
+  the Reference path picker changing the drawing is expected.
 
-## Ceilings, measured
+## Ceilings
 
-- **Index size grows with total sequence, not variation.** A pggb graph runs
-  ~17 bp/segment: five-strain E. coli is 606k segments and 814k links, ~11 s to
-  build, 4.8 MB + 21 MB. A human base-level graph is orders of magnitude past
-  that; there, index a chromosome at a time or browse the SV-resolution
-  minigraph rGFA instead.
-- **The builder's name says nothing about resolution.** The same five strains
-  through Minigraph-Cactus land in the same place as pggb: 628k segments, 842k
-  links, 13.5 s, 5.0 MB + 20.8 MB (measured 2026-08-13), because
-  `mc/ecoli.gfa.gz` is the base-level graph. The SV-resolution one is
-  `mc/ecoli.sv.gfa.gz` sitting beside it, from the minigraph stage, and a fifth
-  the size as a file. So "index the Cactus graph" is two different jobs
-  depending on which of the two, and a glob over `mc/*.gfa.gz` picks by sort
-  order rather than by intent.
-- **The drawable window is node-density-bound, not index-bound.** 1 kb of that
-  pggb graph is ~150 nodes and legible; 3 kb is 519 and draws as a braid.
-- **Force layout does not get better with more nodes.** Measured over real
-  subgraphs, fitted to a 1000 px pane: 60 kb / 108 nodes / mean node 62-77 px /
-  ~2% of the canvas inked; 1 Mb / 449 nodes / 15 px / ~2%; 3.5 Mb / 1041 nodes /
-  5 px / ~2%. `bandageAutoScale` targets a mean drawn length whatever the count,
-  so FMMM lays a near-path pangenome out as one thread whose length grows and
-  whose 2-D coverage does not.
-- **The force layout is deterministic** as of 2026-07-27. It was not: OGDF's
-  `RandomTime` initial placement reseeds from `time(nullptr)` and ignores
-  `randSeed`, so the same window drew differently every run and the two
-  force-directed figures carried `diffThreshold: 0.1`. The engine's C++ is now
-  in the plugin (`packages/core/src/bandage/native`), seeded, with `pnpm test:wasm` asserting
-  it. A `seed` option overrides per call.
-- **A row is a row height, and the y axis is not scaled** — fixed 2026-08-06,
-  plugin `6684edb`. It used to be 5% of the *drawn width*, in bp, with one scale
-  drawing both axes, so a two-row graph got a ~46 px pitch for a 10 px tube and
-  a taller-than-wide drawing bound zoom-to-fit on its height and took the
-  backbone out from under the linear view's axis. `scaleX` now carries the zoom
-  and `scaleY` is pinned at 1; the pane is the row count times the pitch, and
-  rows past its ceiling are panned to.
-
-  **The cost is not in the layouts, it is in everything that mixes the axes.**
-  A chord length, a tangent projection, a deletion's bow, a mitre normal, an
-  arrowhead's angle and a hover distance are each one `hypot` over x and y, and
-  every one of them converts before it measures. They take **one `AxisScale`**
-  (`{scaleX, scaleY}`, the model's own numbers) rather than a scale plus an
-  optional ratio: passing them separately let a caller supply x and default y,
-  which compiles and draws a wrong picture silently, and three of these have to
-  agree or a label lands where its arc is not. `scaleY === scaleX` is the
-  isotropic path and is asserted to be the *identity*, which is what keeps every
-  committed FMMM figure where it is.
-
-  **A drawing whose y is horizontal notices none of this**, which is worth
-  knowing before trusting a test: a row layout's node polylines are horizontal,
-  so their normals are (0,±1) under any axis and their positions come from the
-  transform. A deletion's BOW is the one shape whose geometry depends on the
-  ratio — get it wrong and it balloons by roughly `scaleY/scaleX`, ~100x at a
-  typical window. Any test meant to catch an axis mistake needs an arc with
-  backbone to bow around, or it passes either way.
-
-  The one place not converted is `graph.slang`, whose generated WGSL divides the
-  vertex normal by `scale.x` alone; it is dead until a GPU backend exists, and
-  `GraphRenderer.ts` says what to change.
-- **`odgi degree` is a dud**: over 500 bp windows, mean 3.82, max 4.79, no
-  dynamic range. It does not make a graph-complexity track. The tutorial shipped
-  one anyway for a while; it was removed 2026-08-05 with the measurement that
-  settles it, over the 9,284 windows `build_ecoli_pangenome_graph.sh` writes:
-  p5 2.85 / p50 3.93 / p95 4.05, so 90% of the chromosome sits in a 1.2-unit
-  band, and **degree correlates with depth at r = 0.78**, i.e. it is mostly the
-  curve above it drawn again. The claim it was carried for was "a window can be
-  fully covered and still branched" — of the 5,719 windows at full depth, 11.8%
-  land in the global top decile of degree, which is what chance gives. Don't
-  rebuild it; if graph tangledness needs a lane, it needs a different statistic.
-- **`odgi untangle` is usable** as a general-graph lane, and it shipped
-  2026-08-06: the hosted E. coli projection is rebuilt with
-  `-R target -Q queries -m 1000 -j 0.5 -e 5000 -p`, 2m13s, **3,923 records**
-  (CFT073 919 / IAI39 956 / Sakai 981 / NCTC86 1,067). `scripts/untangle_to_bed.py`
-  drops it into `LinearMultiRowFeatureDisplay` with `rows` on the
-  strain. Does not scale to human at that cost.
-
-  **`-e` is the decision to re-read before reusing this, because it contradicts
-  adr-024** (in the removed gfa-to-tabix tree;
-  `git show 3b98dbb985^:agent-docs/architecture-decision-records/adr-024-untangle-replaces-synteny-build.md`).
-  That ADR says leave `-e` off: the cut is irreversible and the rule was bake
-  permissive, filter up at runtime. Both premises differ here — these files feed
-  static figures with no runtime merge to filter up with, and the regime is a
-  five-strain near-colinear bacterial graph rather than HPRC chr20 at 90
-  haplotypes. Without `-e` this graph returns **174 records for all four pairs**,
-  which is not a coarser figure but no figure; it is what the `bad` verdict on
-  `pangenome/pggb_untangle` was about. Keep the ADR's advice for a human-scale
-  graph and for anything a display is expected to filter.
-
-  What the finer file then says, measured: 310 of IAI39's 956 segments are
-  reverse-strand, merging into five runs on K12 (213,443-262,948;
-  302,899-501,436; 914,963-1,239,923; 1,635,838-2,229,302; 3,941,447-4,171,723),
-  while Sakai and NCTC86 have **zero** and CFT073 has one — the control is in the
-  same file. That agrees independently with the minigraph `--call` route below
-  (IAI39-only, run at 1,671,139-1,870,074, inside the fourth). And two K12 spans
-  (`3,941,447-3,944,255`, `4,169,192-4,171,723`) are each reached from two
-  distant query loci by those same three strains, which is the rRNA collapse.
+- **Index size grows with total sequence, not variation** (pggb is ~17 bp per
+  segment). A human base-level graph is far past it; index a chromosome at a time
+  or browse the SV-resolution minigraph rGFA.
+- **The builder's name says nothing about resolution.** `mc/ecoli.gfa.gz` is the
+  base-level graph and indexes like pggb; `mc/ecoli.sv.gfa.gz`, from the minigraph
+  stage, is the SV-resolution one. A glob over `mc/*.gfa.gz` picks by sort order.
+- **The drawable window is node-density-bound**: ~150 nodes legible, ~500 a braid.
+- **Force layout does not improve with more nodes.** `bandageAutoScale` targets a
+  mean drawn length, so FMMM lays a near-path pangenome out as one thread whose
+  length grows and whose 2-D coverage stays ~2%.
+- **The force layout is deterministic.** OGDF's `RandomTime` placement ignores
+  `randSeed`; the plugin now carries seeded C++ (its `bandage/native` tree)
+  with `pnpm test:wasm`, and a `seed` option.
+- **A row is a row height, and the y axis is not scaled.** `scaleX` carries zoom,
+  `scaleY` is pinned at 1. Every length that mixes axes (chord, tangent, deletion
+  bow, mitre normal, arrowhead angle, hover distance) takes **one `AxisScale`**
+  (`{scaleX, scaleY}`), since passing scales separately lets a caller default y and
+  draw a wrong picture silently; `scaleY === scaleX` is asserted the identity. A
+  row layout's horizontal polylines notice none of this; only a deletion's bow
+  depends on the ratio (~100× balloon if wrong), so a test needs an arc with
+  backbone to bow around. `graph.slang` is not converted (dead until a GPU backend
+  exists; `GraphRenderer.ts` says what to change).
+- **`odgi degree` is a dud**: over 500 bp windows it has no dynamic range (90% of
+  windows within 1.2 units) and correlates with depth at r = 0.78. Don't rebuild
+  it as a complexity track; that needs a different statistic.
+- **`odgi untangle` is usable** as a general-graph lane (`scripts/untangle_to_bed.py`
+  into `LinearMultiRowFeatureDisplay`, rows on strain) with
+  `-R target -Q queries -m 1000 -j 0.5 -e 5000 -p`. **`-e` contradicts the removed
+  tree's adr-024** (leave `-e` off; bake permissive, filter at runtime): here the
+  files feed static figures with no runtime merge and the graph is a near-colinear
+  bacterial one, where omitting `-e` returns 174 records for four pairs, no figure.
+  Keep the ADR's advice for a human-scale graph or anything a display filters. It
+  does not scale to human at that cost.
 
 ### A whole-cohort cut, and what decides whether walk rows can draw it
 
-The graph view's `walkrows` layout draws every haplotype as a bar on its own bp,
-which is the one place a private repeat copy has the width a reference axis
-cannot give it. Whether that picture holds turns on how the route builds its
-node set rather than on the window, so it has to be cut to find out.
+The `walkrows` layout draws every haplotype as a bar on its own bp. Whether that
+holds turns on how the route builds its node set, so cut it to find out.
+`--context 1000 --snarls` is the cut; `--context 0` is a different question
+(every haplotype breaks at every bubble). Time a cut through the plugin's own
+`node_modules`: `npx -p @gmod/gbz-base` spends ~37 s resolving the package.
 
 <!-- BEGIN GENERATED MEASUREMENT gbz-cohort-subgraph-cut -->
 
@@ -424,20 +194,12 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT gbz-cohort-subgraph-cut -->
 
-Two things to carry away. **`--context 1000 --snarls` is the cut, and
-`--context 0` is a different question**: without the snarls the cut is the
-reference walk's own nodes, every haplotype breaks at every bubble, and a 689 bp
-window answers 16,034 fragments instead of 474 walks. **And time a cut through
-the plugin's own `node_modules`** — `npx -p @gmod/gbz-base` spends ~37 s
-resolving the package before the query starts, which is larger than every query
-here.
-
-### Naming the haplotypes returns whole walks; asking for the cohort does not
-
-The split walks above are a property of the cohort cut, not of the locus. A
-`keep` predicate takes the anchored route, which builds whole walks by
-construction, and the amylase window that splits 296 of 464 haplotypes returns
-every named walk in one piece — the four copy-number carriers included.
+The split walks are a property of the cohort cut, not the locus. A `keep`
+predicate takes the anchored route, which builds whole walks by construction; it
+cannot rescue a walk that genuinely leaves the window (1q21.1 returns 8 of 9
+named haplotypes in two pieces because the walk crosses a segmental duplication).
+The set a demo names is therefore a data decision: choose it from a census over
+every haplotype, not by hand, or the tidy picture is the choosing.
 
 <!-- BEGIN GENERATED MEASUREMENT gbz-keep-set-cut -->
 
@@ -457,21 +219,11 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT gbz-keep-set-cut -->
 
-It is a different extraction rather than a smaller one, so the node count rises
-against the cohort cut. What it does not rescue is a walk that genuinely leaves
-the window: 1q21.1 runs at 12,065 nodes, nowhere near the adapter's 100000
-ceiling, and still returns 8 of 9 named haplotypes in two pieces, because the
-walk crosses the segmental duplication and comes back.
-
-So the set a demo names is a data decision. Choose it from a census over every
-haplotype — the callset's per-window structural forms — and the graph gives each
-chosen form its length; choose it by hand and the tidy picture is the choosing.
-
-### The graph will not group a cohort into structural forms for you
-
-`haplotypes: 'distinct'` merges walks through identical nodes and weights each
-by the haplotypes it stands for, which reads like a population summary the graph
-states for free. Measured against the same cut, it is not one.
+**The graph will not group a cohort into structural forms.** `haplotypes:
+'distinct'` merges walks through identical nodes, but node identity is the wrong
+equivalence for a structural question (one SNP separates two walks with the same
+allele). A weight means nothing without its walk length beside it. Group on a
+structural tier (the callset's per-window forms, or the bubble tier).
 
 <!-- BEGIN GENERATED MEASUREMENT gbz-distinct-walk-collapse -->
 
@@ -487,433 +239,178 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT gbz-distinct-walk-collapse -->
 
-Node identity is the wrong equivalence for a structural question: one SNP
-separates two walks that carry the same allele, so the collapse is weak
-everywhere and gone by 260 kb. **A weight is meaningless without its walk length
-beside it** — the high weights belong to short fragments, and the one that looks
-like the CFHR3/CFHR1 deletion at its population frequency is a 345-node piece
-against a 3,976-node median. Group on a structural tier instead, the callset's
-own per-window forms or the bubble tier, and let the graph give a chosen form
-its length.
-
 ## Carriage: the one thing rGFA cannot say
 
-`SR` is build order, so on an rGFA a segment names the assembly that
-*contributed* it first, never who else carries it. Both pangenome tutorials warn
-about this, and the two workarounds are:
+`SR` is build order, so an rGFA segment names the assembly that *contributed* it
+first, never who else carries it. Two workarounds:
 
-- **`minigraph -cxasm --call`** per assembly, projected to a per-bubble-per-
-  sample BED by `scripts/build_minigraph_paths.sh`. Header line is the contract
-  (`chrom start end name score strand thickStart thickEnd itemRgb strain class
-  delta pathLen refLen alleles nonRef path`); columns 1-14 are stable.
-- **a path GFA**, where every path visiting a segment is stated. The walk
-  records it as an `SM:Z:` tag, per haplotype, and it reaches
-  `GraphNode.tags.SM` in the graph view and `feature.carriers` /
-  `feature.samples` on the linear track. See "The tag column is the extension
-  point" above.
+- **`minigraph -cxasm --call`** per assembly, projected by
+  `scripts/build_minigraph_paths.sh`; columns 1-14 of its header line are stable.
+- **A path GFA**, where every path visiting a segment is stated: the `SM:Z:` tag
+  above.
+- **A linear lane over the reference draws no rank above 0.** An off-reference
+  segment's `SN` names its sample contig, so the index files it under that PanSN
+  name; a rank-colouring jexl paints one flat colour on a reference lane.
 
-**And a linear lane over the reference draws no rank above 0.** An
-off-reference segment's `SN` names the sample contig it came from, so the index
-files it under that contig's PanSN name. A `.segs.bed.gz` query on
-`GRCh38#0#chr6` at the C4 window returns 13 rows, every one rank 0, while
-`HG00097#1#CM094060.1` returns rank 236 throughout. So a jexl colouring rank 0
-against the rest paints one flat colour on a reference lane, and separates two
-colours only on a sample's own lane or in a graph view cut from the same pair.
-Checked against the hosted release 2 index on 2026-09-25.
+`--call` traps:
 
-`--call` traps, each a wrong first attempt:
+- A bare `.` in the last field is missing data; read as colon-separated it scores
+  as a whole-span deletion.
+- `*` is an empty path, a deletion only where the bubble has reference span; there
+  it is the reference allele. Classify on `delta`; `.` needs its own check.
+- The reference row is the pipeline's own check: K12 is `ref` at every bubble. An
+  indel there means suspect the join.
+- `strand` is orthogonal to the length classes.
 
-- a bare `.` in the last field is **missing data**; read as colon-separated it
-  yields pathLen 0 and scores as a whole-span deletion.
-- `*` is an **empty path**, a deletion only where the bubble has reference span.
-  72 of the 601 E. coli bubbles have none, and there `*` is the reference
-  allele. Classifying on `delta` handles both; `.` needs its own check.
-- **the reference row is the pipeline's own check**: K12 comes out `ref` at all
-  601 bubbles. An indel there means suspect the join, not the biology.
+### No linearized deletion track — don't rebuild it
 
-### No linearized deletion track. Decided 2026-07-31, do not rebuild it
+Projecting the link index into a link-mark track so a deletion is an arc in an
+ordinary LGV was not built:
 
-The anchored layout draws the backbone at reference coordinates, which invites
-the next step: project the link index into a link-mark track (or a
-custom track type in the plugin) so a deletion is an arc in an ordinary LGV with
-no graph view at all. The pieces are all there — `links.bed.gz` states both
-endpoints with ranks, `deletionEdges.ts` already classifies them, `BedpeAdapter`
-and the arc display ship in core. It was **not built**, for three reasons in this
-file:
+- **The arcs are anonymous.** A backbone-to-backbone skip has GRCh38 at both ends
+  and names no donor, and a linear row reads as carriage (the misreading that
+  retired `hprc_allele_inventory`'s sample rows).
+- **`wave.vcf.gz` already does it better**: tabix-indexed, explicit ALTs to 65 kb,
+  a genotype per haplotype, no plugin.
+- **What a projection would uniquely add has no linear encoding** (segment-level
+  correspondence, nesting).
 
-- **The arcs are anonymous.** A backbone-to-backbone skip has GRCh38 at both
-  ends, so it names no donor (Carriage, above). A row in a linear track is read
-  as carriage, which is the misreading that retired `hprc_allele_inventory`'s
-  sample rows and that "Comparing the graph with the callset" in
-  `pangenome_hprc.md` exists to head off.
-- **`wave.vcf.gz` already does it, better.** It is not symbolic, it is
-  tabix-indexed, it carries explicit ALTs to 65 kb and a genotype per haplotype,
-  and it needs no plugin. The CFHR deletion is one of its records with 139 of 464
-  haplotypes carrying it. A projected arc would be the same event with the
-  genotypes thrown away.
-- **What the projection would uniquely add is what an axis cannot hold.**
-  Segment-level correspondence with the graph panel, and the chaining and nesting
-  of an alternate path. Nesting is the part with no linear encoding, so the
-  content worth linearizing is already in the VCF and the content not in the VCF
-  is not linearizable.
+A linear projection of a graph looks like a missing feature and is usually a claim
+the graph cannot support (same shape as the reroot-MAF reverts).
 
-Same shape as the reroot-MAF reverts: a linear projection of a graph looks like a
-missing feature and is usually a claim the graph cannot support.
+## Verified facts
 
-## Verified facts, so nobody re-derives them
+- **`ecoli_pggb.maf.bed.gz` carries a row only for a strain that aligns**, so a
+  window inside an accessory island reads as a nearly empty lane and every feature
+  built from it lists one strain. Check a candidate locus with
+  `tabix … | awk -F'\t' '{n=split($6,s,","); print $2"-"$3, n}'`.
+- **Tabix over the hosted bytes is not the reader's path.** Demo configs declare
+  tracks in config while committed figures declare them in a session spec, so a
+  track that resolves by `tabix` can still be one the app never draws. Render it
+  the reader's way (`specs/pangenome_cactus.ts` says how above `GRAPH_CONFIG`).
+- **HG002's parents are not in the HPRC graph**, so there is no trio.
 
-- `gfatools bubble` reports **top-level bubbles only**, and on the E. coli graph
-  they never overlap (0 of 601), which is what makes one flat lane per strain
-  complete rather than lossy. Nested variation is the cost, and lives in the
-  VCF's `LV`/`PS` snarl fields instead.
-- Allele spectrum: 436 biallelic bubbles, 105 with three alleles, 37 with four,
-  23 where all five strains differ.
-- `strand` is **orthogonal to the length classes**: IAI39's 169 reverse-aligned
-  calls split 60 ref / 57 del / 52 ins, in long contiguous runs
-  (1,671,139-1,870,074 and nine others). No other strain has any.
-- The rGFA-only allele inventory (`build_rgfa_alleles.sh`) agrees with `--call`
-  on 747 of 842 alleles; the 95 that differ are compound routes at 69 nested
-  bubbles.
-- **`ecoli_pggb.maf.bed.gz` carries a row only for a strain that ALIGNS**, and
-  the demo's own tutorial window is one where most do not. A block's field 6 is
-  a comma-separated `NAME.chr:start:len:strand:srcSize:SEQ` per strain, so a
-  window inside an accessory island reads as a nearly empty lane and every
-  feature built from the covered rows — the row menu's per-strain entries, the
-  synteny launch — lists one strain. 3,728 of the file's 4,780 blocks carry all
-  five; the three under `chr:1,446,000-1,449,000` (the paa island) carry K12
-  with CFT073/IAI39/NCTC86 once and then K12 with NCTC86 alone. Backbone worth
-  reusing: every block between 797,952 and 801,145, which is where
-  `synteny/maf_row_synteny` drags and which sits inside the 795,000-815,000
-  window `allVsAllLanes` opens at. `tabix … | awk -F'\t' '{n=split($6,s,","); print $2"-"$3, n}'`
-  answers it for any candidate locus in one command.
-- **The five-strain `.og` is on this box**: `~/ecoli_graph5/pggb/*.smooth.final.og`
-  with the `.gfa` and `-V` VCF beside it, plus the PanSN fastas in
-  `~/ecoli_graph5/`. Do **not** use `~/depth_build/`, the pre-IAI39 four-strain
-  run.
-- **So is the Minigraph-Cactus run**, in `~/ecoli_cactus5/`, and it is the one
-  the live demo was built from: its `ecoli_cactus_depth.bw` matches the hosted
-  object byte for byte, where `~/ecoli_cactus_build/`'s does not. That is the
-  cheap way to tell two old build directories apart before rebuilding either.
-- **The MC graph is indexed and hosted** as of 2026-08-13:
-  `demos/ecoli_pangenome/ecoli_cactus.{segs,links}.bed.gz{,.tbi}`, read by the
-  demo's `ecoli_cactus_segments` track and written from then on by
-  `build_ecoli_pangenome_cactus.sh`. Remote `tabix` over the hosted pair answers
-  `K12#0#chr` range queries, which is the adapter's own access pattern and the
-  whole check that an upload of one of these worked.
+## The hosted HPRC link index
 
-  That check is about the bytes, and it is worth knowing what it leaves out: the
-  reader's path is the demo config, where the tracks are declared in config,
-  while every committed graph figure declares its tracks in a session spec
-  instead. So a track that resolves by `tabix` can still be a track
-  the app never draws. Rendering it the reader's way is the other half, and
-  `specs/pangenome_cactus.ts` says how above `GRAPH_CONFIG`.
-
-## Measured on the hosted HPRC link index
-
-`tabix` on `hprc-v2.0-mc-grch38.links.bed.gz`, two windows from the tutorial's
-own loci: C4 (`GRCh38#0#chr6:31,980,000-32,050,000`, 70 kb) and MHC class II
-(`32,450,000-32,650,000`, 200 kb).
+Facts from `tabix` on `hprc-v2.0-mc-grch38.links.bed.gz`:
 
 - **Haplotype identity is already in the file.** `SN` on a rank>0 segment is the
-  PanSN contig of the haplotype that introduced it (`HG01433.2#2#CM086511.1`),
-  and rank maps 1:1 to donor (MHC: 16 ranks, 16 donors, none shared), so
-  labelling an off-reference allele needs no W-line projection. But minigraph
-  collapses, so the label is the **first** haplotype to contribute the allele,
-  never everyone carrying it: 464 haplotypes in the graph, 15 donors in the MHC
-  window, about one allele each. Discovery attribution, not a pileup, and it
-  must not be drawn as one.
-- **Clean deletions are anonymous.** A backbone-to-backbone skip has GRCh38 at
-  both ends, so no `SN` and no donor. One gets a donor only when it carries
-  novel sequence (`s462766`, 1 bp, HG01952.1, bridging 31,984,683 to 31,991,051
-  — a 6.3 kb deletion). MHC: 8 anonymous deletions against 78 attributed
-  alleles, which is why a per-haplotype row layout can place insertions but not
-  deletions.
-- **Chain walking is mostly unnecessary.** An alternate path's interior links are
-  indexed under the donor contig, so a reference query never returns them — but
-  72 of 78 MHC alt segments appear in both an off-backbone and an on-backbone
-  link, so one segment id gives the whole allele (`refStart` = entry's srcEnd,
-  `refEnd` = exit's tgtStart, `altLen` = the segment's own length). The rest
-  resolve without the interior too, because entry and exit share `SN` and donor
-  coordinates run contiguous across the allele (`s526659` 31,891,267-31,923,687
-  then `s526660` 31,923,687-31,924,005, so altLen 32,738). Pair by `SN` **then**
-  donor offset; `SN` alone is ambiguous, HG01433.2 contributes 41 entries in
-  that one window.
-- **Volume is trivial.** MHC 200 kb: 320 unique links, 155 backbone-adjacent, 8
-  deletions (mean 605 bp), 78 off the backbone, 79 back onto it, 0 alt-to-alt.
-  C4 70 kb: 36 links, 1 deletion, 10 out, 11 back. Tens of records per window,
-  so no density gate. That 0 is a property of the reference-keyed index, not of
-  the graph.
+  PanSN contig of the haplotype that introduced it, and rank maps 1:1 to donor, so
+  labelling an off-reference allele needs no W-line projection. Minigraph collapses,
+  so the label is the **first** contributor, never everyone carrying it: discovery
+  attribution, not a pileup, and it must not be drawn as one.
+- **Clean deletions are anonymous** and get a donor only when they carry novel
+  sequence, so a per-haplotype row layout can place insertions but not deletions.
+- **Chain walking is mostly unnecessary.** One alt-segment id gives the whole
+  allele (`refStart` = entry's srcEnd, `refEnd` = exit's tgtStart, `altLen` = the
+  segment's length); otherwise pair by `SN` **then** donor offset (`SN` alone is
+  ambiguous).
+- **Volume is tiny** (tens of records per window), so no density gate. A zero
+  alt-to-alt count is a property of the reference-keyed index.
 - **The VCF is not symbolic**, so allele length is not what the graph adds.
-  `wave.vcf.gz` at `chr6:32,010,000-32,020,000`: 126 records, **zero** symbolic
-  ALTs, explicit ALT strings up to 65,481 bp, genotypes per haplotype. What a
-  linearized graph adds over it is segment-level correspondence with the graph
-  panel (same ids, same rank colors), the chaining and nesting of an alternate
-  path, and working on a bare minigraph rGFA with no `deconstruct` step.
 
-## The hosted index is 95% dead weight (measured 2026-07-30)
+**The hosted index is dominated by donor-contig index weight**, which every graph
+track downloads before cutting (the `fetch 12371ms` in the HPRC graph figures).
+A `GRCh38`-only pair (`build_rgfa_tabix.sh` third argument;
+`demos/hprc/hprc-v2.0-mc-grch38.ref.*`) returns identical rows for 19× less index,
+**but only at `subgraphContext: 0`.** The default is 1 hop, which follows an
+allele's interior segments indexed under the donor contig; on the small pair the
+expansion finds nothing and the cut silently degrades to context 0 (the two stubs
+ending in mid-air in `graph_context.png`). Use the small pair for a segments track
+drawn on the reference or a session that sets `subgraphContext: 0`; keep the full
+pair for the graph cut and for a track on a contributing assembly. The 12 s fetch
+is not free to reclaim this way.
 
-Every graph track downloads both tabix indexes before it can cut anything, and
-that fixed cost is what the perf readout reports as `fetch 12371ms` in the
-published HPRC graph figures. It is index download, not query:
+**The bubble file is a locus finder.** `hprc-v2.0-mc-grch38.bubbles.bed.gz` ranks
+loci without opening the graph (segment count, path count, shortest and longest
+allele, inversion flag on a small, complete set). Scoring on `longest - shortest`
+alone returns undrawable pericentromeric satellites; filter to what the view can
+draw (delta ≥ 20 kb, ≤ 200 segments, span ≤ 300 kb), and note that `gene` rows in
+`ncbiRefSeq.gff.gz` carry `gene_id=`, not `gene_name=`.
 
-| file                | data     | `.tbi`   | indexed sequences |
-| ------------------- | -------- | -------- | ----------------- |
-| `segs.bed.gz`       | 6.7 MB   | 4.42 MB  | 13,717            |
-| `links.bed.gz`      | 34.2 MB  | 4.76 MB  | 13,581            |
-| reference rows only | 2.5/12.5 | 0.21/0.26 | 195              |
+## Any donor can be loaded as an assembly, from GenArk
 
-195 of those 13,717 sequences are `GRCh38#*`; the rest are donor contigs.
-Rebuilding the pair from `$1 ~ /^GRCh38/` returns byte-identical rows for
-**19× less index** (9.18 MB → 0.48 MB), verified across seven windows including
-a whole chromosome. `build_rgfa_tabix.sh` emits it from a third argument, and
-the pair is hosted at `demos/hprc/hprc-v2.0-mc-grch38.ref.*`.
+UCSC's GenArk hub for each release 2 assembly names its 2bit sequences by the
+GenBank accessions the graph uses, and its `chromAlias.txt` has an `hprcV2` column
+spelling the PanSN name. So an assembly entry with `uri: <GenArk>/<GCA>.2bit` and
+`refNameAliases: <GenArk>/<GCA>.chromAlias.txt` resolves every node that
+haplotype contributed with no mapping: `assemblySampleResolver` matches the PanSN
+sample against assembly names and aliases, and `RgfaTabixAdapter`'s lookup is
+keyed `sample\tcontig`. Sample+haplotype → GCA is `hprcSamples.json` in jb2hubs.
+`pangenome/hprc_haplotype_launch` takes this route.
 
-**Correction, 2026-08-05: "`getSubgraph` at the default `context: 0`" was wrong,
-and it inverts the conclusion.** `subgraphContext` is `types.optional(types.number, 1)`
-— the default is **1 hop**, not 0. A hop follows an allele's interior segments,
-which are indexed under the donor contig, so on the small pair the expansion
-finds nothing and the cut silently degrades to context 0: the two stubs ending
-in mid-air that `graph_context.png` exists to explain. Measured on C4:
+Minigraph credits an allele to its first contributor, so which haplotype a window
+offers is build order. CHM13 is still loaded from UCSC's `hs1` (RefSeq genes,
+RepeatMasker); the hg38→hs1 liftOver PIF serves the synteny launch there, and no
+per-haplotype alignment is hosted for a GenArk donor.
 
-| context | full | reference-only |
-| ------- | ---- | -------------- |
-| 0       | 30 nodes / 36 edges | 30 / 36 — same |
-| 1 (default) | 34 / 43 | 30 / 36 — **differs** |
-| 2       | 34 / 45 | 30 / 36 — **differs** |
+## Release 2 files nothing here reads yet
 
-So the small pair is for a **segments track drawn on the reference** (which only
-ever queries the reference refName) and for a session that sets
-`subgraphContext: 0` deliberately. The graph cut keeps the full pair, as does a
-segments track opened on a contributing assembly (E. coli, and HPRC's hs1/CHM13
-lane). The 12 s `fetch` in the graph figures is therefore **not** free to
-reclaim this way; reclaiming it needs the hop to reach donor rows some other
-way, which is a different piece of work.
+Public on `s3://human-pangenomics`:
 
-## The bubble file is a locus finder (scanned 2026-07-30)
+- **`…hprc-v2.0-mc-grch38.pgbi.vcf.gz`** (3.5 GB, `.tbi` beside it) is snarl-level
+  carriage: `AT` per allele, `LV`/`PS` in the snarl tree, 462 haplotypes of `GT`.
+  Remote `tabix` over a 70 kb window is seconds. The join to our graph is
+  positional, not by id (`ID`/`AT` name base-level integer nodes, not `sNNNNN`).
+- **`…WashU_HPRCv2_MEI/all.final.INDEL.unique.gt.combined.hg38.bed`** (10 MB) names
+  what an insertion is (`AluY`/`SVA`/`L1…`, phased carriers); bgzip + tabix and it
+  is a `FeatureTrack`.
+- **`pangenomes/freeze/release2/impg/pafs/all-vs-1/*.merged.paf.gz`**: one PAF per
+  haplotype against GRCh38, not range indexed; input for `jbrowse make-pif`.
 
-`hprc-v2.0-mc-grch38.bubbles.bed.gz` is 130,510 bubbles, and it carries enough
-per row to rank loci without opening the graph: segment count, path count,
-shortest and longest allele, and an **inversion flag that is set on only 246 of
-them**. That 246 is small enough to treat as a complete list.
+## Indel glyphs
 
-Scoring on `longest - shortest` alone returns pericentromeric and satellite
-regions with thousands of segments — a real answer to "where does the graph hold
-the most sequence", and undrawable. Filtering to what the view can draw
-(delta ≥ 20 kb, ≤ 200 segments, span ≤ 300 kb) leaves 30 candidates, and the
-gene names come off the hosted `ncbiRefSeq.gff.gz` (note `gene` rows carry
-`gene_id=`, not `gene_name=`). The ones worth knowing:
-
-| locus                          | segs | inv | shortest → longest | genes                    |
-| ------------------------------ | ---- | --- | ------------------ | ------------------------ |
-| `chr5:70,996,742-71,121,626`   | 27   |     | 0 → 375,610        | GTF2H2, NAIP, OCLNP1     |
-| `chr5:69,967,884-70,150,288`   | 50   | yes | 140,991 → 433,090  | SMN2, SERF1B             |
-| `chr22:22,674,713-22,919,615`  | 137  |     | 32,072 → 303,712   | IGLL5 (the IGL locus)    |
-| `chr14:105,558,722-106,679,859` | 3784 | yes | 106,366 → 2,455,720 | ADAM6, ELK2AP (IGH)     |
-| `chr22:18,185,648-19,023,244`  | 2194 | yes | 74,902 → 1,180,034 | DGCR6, FAM230A (LCR22)   |
-| `chr1:103,611,080-103,732,636` | 95   | yes | 26,889 → 316,616   | AMY1A, AMY1B, AMY2A      |
-| `chr19:42,738,980-42,854,205`  | 146  |     | 0 → 490,126        | PSG3, PSG8               |
-| `chr1:248,122,398-248,180,452` | 18   |     | 0 → 247,631        | OR2M2, OR2M5             |
-| `chr10:87,233,092-87,429,953`  | 10   | yes | 64,643 → 329,055   | NUTM2A, NUTM2D           |
-| `chr16:74,406,294-74,406,329`  | 40   |     | 35 → 239,774       | CLEC18B                  |
-| `chr15:28,452,488-28,603,853`  | 98   | yes | 27,815 → 332,579   | GOLGA8G, HERC2P11        |
-| `chr1:12,780,118-13,315,943`   | 658  | yes | 61,683 → 1,101,014 | PRAMEF*, HNRNPCL*        |
-
-5q13 is three overlapping mega-bubbles plus an inversion at 27-72 segments
-apiece, which is the rare combination of drawable and famous: RefSeq's own
-`NAIP` description calls the region "a 500 kb inverted duplication… prone to
-rearrangements… difficulty in determining the organization of this genomic
-region", and SMN1 copy number is what sets spinal muscular atrophy severity.
-
-## Any donor can be loaded as an assembly, from GenArk (corrected 2026-09-02)
-
-This section used to say only **HG002.1, HG002.2 and CHM13** could be opened,
-because the other 460 haplotypes name their contigs by GenBank accession
-(`CM086511.1`) rather than `chr1`-style. That was wrong about what an assembly
-needs. UCSC's GenArk hub for each release 2 assembly names its 2bit sequences
-by exactly those accessions, and its `chromAlias.txt` carries an `hprcV2` column
-spelling the PanSN name the graph uses (`HG01433#2#CM086511.1`) beside the
-`ucsc` spelling (`chr6`). So
-
-```json
-{ "name": "HG01433.2", "uri": "<GenArk>/GCA_042027645.1.2bit",
-  "refNameAliases": { "uri": "<GenArk>/GCA_042027645.1.chromAlias.txt" } }
-```
-
-resolves every node HG01433.2 contributed with no mapping: the plugin's
-`assemblySampleResolver` matches the PanSN sample against assembly names and
-aliases, and `RgfaTabixAdapter`'s lookup is keyed `sample\tcontig`, so the
-segments track draws on the haplotype too once its `assemblyNames` list it.
-Sample+haplotype → GCA accession is `hprcSamples.json` in jb2hubs (haplotype 2
-of HG01433 is GCA_042027645.1). Measured on the hosted links index: HG01433.2
-is 42 of the donor link endpoints in the MHC class II window
-(chr6:32,500,000-32,560,000) against 9 for the next haplotype.
-`pangenome/hprc_haplotype_launch` takes the route on the HPRC page's own
-config, which declares all 464 haplotypes as chromosome-length assemblies
-aliased by their PanSN names.
-
-What stays true: minigraph credits an allele to its FIRST contributor, so which
-haplotype a window offers is build order, and a backbone-to-backbone deletion
-offers none. CHM13 is still the donor worth loading from UCSC's `hs1` rather
-than GenArk, for its RefSeq genes and RepeatMasker; the hg38→hs1 liftOver PIF
-(`jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz`, used by
-`test_data/hg38_hs1_synteny`) is what the synteny launch out of the graph needs
-there, and no per-haplotype alignment is hosted for a GenArk donor.
-
-HG002's parents are **not** in the graph (`pgbi.vcf.gz` has HG002 and HG005 but
-no HG003/HG004), so there is no trio to show inside the pangenome.
-
-## Release 2 files nothing here reads yet (probed 2026-07-30)
-
-All three are public on `s3://human-pangenomics` and all three answer a question
-the sections above record as unanswerable.
-
-- **`submissions/671F0A25-…--hprc_v2.0_mc_grch38_index/hprc-v2.0-mc-grch38.pgbi.vcf.gz`**
-  (3.5 GB, `.tbi` published beside it) is the **carriage file this page says does
-  not exist**. Snarl-level rather than decomposed: `AT` per allele is its
-  traversal through the graph, `LV`/`PS` place it in the snarl tree, and 231
-  phased samples give 462 haplotypes of `GT`. Remote `tabix` over the C4 window
-  (70 kb) is 1,107 records, 3.2 MB of text, 1.7 s — browsable, unlike its size
-  suggests. Records with no `LV` field are the long alleles (`REF` up to 39 kb);
-  451 of the 1,107 are `LV=0`. **The join to our graph is positional, not by
-  id**: `ID`/`AT` name base-level integer nodes (`>161001867>161004536`), not the
-  `sNNNNN` of `sv.gfa`.
-- **`submissions/afb0c613-…--WashU_HPRCv2_MEI/all.final.INDEL.unique.gt.combined.hg38.bed`**
-  (10 MB, hg38, one file) names what an insertion *is*:
-  `chrom start end class score strand INS|DEL carriers intactness`, where class
-  is `AluY`/`SVA`/`L1…` and `carriers` is `SAMPLE:1|0,…` phased per haplotype.
-  bgzip + tabix and it is a `FeatureTrack`.
-- **`pangenomes/freeze/release2/impg/pafs/all-vs-1/*.merged.paf.gz`**, one per
-  haplotype against GRCh38 (0.5-0.7 GB gzipped each). The input for a
-  per-haplotype linearized synteny stack (`jbrowse make-pif`). Not range
-  indexed, so a locus demo means streaming one file per haplotype and filtering
-  on the target side.
-
-## Indel glyphs (shipped)
-
-Two length-aware passes, both an `OverlayCanvas` over whichever backend painted
+Two length-aware passes, each an `OverlayCanvas` over whichever backend painted
 the blocks plus a second call on the SVG export, neither touching a shader:
 `LinearMultiRowFeatureDisplay`'s `lengthField` slot
 (`rendering/drawMultiRowIndelGlyphs.ts`) and `LinearMultiSampleVariantDisplay`'s
 `showInsertionGlyphs` (`components/drawVariantInsertionGlyphs.ts`). Both borrow
-`drawInsertionMarker` from `@jbrowse/alignments-core`, which is the seam for
-glyph geometry — add a consumer there rather than a display type (`884a126861`
-is the counter-example: `MultiLGVSyntenyDisplay`, ~4,000 lines and three bespoke
-shaders, deleted).
+`drawInsertionMarker` from `@jbrowse/alignments-core`; add a glyph consumer there
+rather than a display type (`MultiLGVSyntenyDisplay`, ~4,000 lines and three
+bespoke shaders, was deleted).
 
-Rules they encode, each a reverted first attempt:
-
-- **draw the bar only where it is wider than the block** — a same-colored bar
-  inside a wide block is invisible overdraw, and the label carries magnitude.
-- **keep the cell's own genotype color** in the variant pass; color says which
-  allele, the marker only supplies length.
-- **only cells whose genotype carries the allele widen** (`cellCarriesAlt`), or
-  the marker claims reference haplotypes have the sequence.
+- Draw the bar only where it is wider than the block.
+- Keep the cell's own genotype color in the variant pass; the marker supplies
+  length only.
+- Only cells whose genotype carries the allele widen (`cellCarriesAlt`).
 - `featureDeltas.length === featureStarts.length` is the multi-row "slot is set"
   gate, because a zero delta is a legitimate reference-length allele.
 
-## Pairwise alignments unpacked from the GFA (2026-09-05)
+## Pairwise alignments unpacked from the GFA
 
-`scripts/gfa_to_pairwise_paf.py` turns a graph's own path walks into PAF: two
-walks through one node carry identical sequence, so a query haplotype's
-alignment to any other path is the nodes the two walks share, in the order the
-reference visits them. It needs no HAL, no MAF and no projection, reads
-minigraph-cactus (W lines) and pggb (P lines) alike, and any path can be the
-reference, which is what makes a mate-vs-mate alignment (Sakai against CFT073,
-HG01109 against HG01123) a direct read rather than a projection through the
-reference. `scripts/build_hprc_multiway_synteny.sh` runs it as `SOURCE=gfa`,
-its default, with the TAF route kept as `SOURCE=taf`; the two produce the same
-output shape (PanSN names, `cg:Z:` over `=`/`X`/`I`/`D`, a chrom.sizes per
-query) so `make-pif` and the demo config do not care which was used.
-`scripts/gfa_to_pairwise_paf.test.ts` works an eleven-node graph by hand: a
-SNP bubble, an insertion, a deletion, an inversion, a contig arriving as two W
-pieces with offsets, a node the reference visits twice, and the same graph as
-P lines.
+`scripts/gfa_to_pairwise_paf.py` turns a graph's path walks into PAF: two walks
+through one node carry identical sequence, so a query haplotype's alignment to any
+other path is the nodes the two walks share, in the order the reference visits
+them. It needs no HAL, MAF or projection, reads minigraph-cactus (W) and pggb (P),
+and any path can be the reference, so a mate-vs-mate alignment is a direct read.
+`scripts/build_hprc_multiway_synteny.sh` runs it as `SOURCE=gfa` (default; TAF is
+`SOURCE=taf`); both emit the same shape (PanSN names, `cg:Z:` over `=`/`X`/`I`/`D`,
+a chrom.sizes per query). `gfa_to_pairwise_paf.test.ts` works an eleven-node graph
+by hand. Agreement with the TAF route and the impg PAF is in
+`HPRC_RELEASE2.md` §"Unpacking pairwise alignments from the graph".
 
-**What it does.** One pass over the GFA. S lines keep only each node's length
-(`array('I')` indexed by id; a dict when ids are not integers); L lines are
-skipped; a W or P line is parsed only when its sample#hap is the reference or a
-requested query, else skipped on its first two fields, which is what makes the
-63 GB HPRC file tractable. The reference's walks are laid end to end as one
-ranked step list with a node → packed (rank, orientation) array, and a node the
-reference visits more than once keeps its extra occurrences in a side dict. A
-query walk is then followed step by step keeping the query offset: a step on a
-reference node is an anchor, a chain is a run of anchors whose ranks move
-monotonically — up when the query traverses the nodes in the reference's
-orientation, down when flipped — with at most `--max-gap` (default 10,000)
-private bp skipped between two anchors on either side, and a node with several
-reference occurrences takes the one nearest ahead in the chain's direction. One
-record per chain: forward query coordinates with strand `-` for a flipped
-chain, the CIGAR in the reference's forward direction the way minimap2 writes a
-`-` row (a flipped chain's runs are reversed on emit), each shared node `<len>=`
-and the private bp between two anchors `min(q,r)X` then the remainder `I` or
-`D` (`--no-x` writes plain `I` then `D`). The common step — the next reference
-node with nothing private between — only lengthens the open `=` run, on local
-variables; everything else is the slow path, which is why it runs at ~1.8 M
-steps/s in pure python with no numpy.
+- **One streaming pass** keeps only node lengths; a W/P line is parsed only for the
+  reference or a requested query. The reference's walks form one ranked step list;
+  a chain is a run of anchors with monotone ranks (up for the reference's
+  orientation, down when flipped) with at most `--max-gap` private bp between
+  anchors. A flipped chain emits strand `-` with its CIGAR in the reference's
+  forward direction. Private runs become `min(q,r)X` then `I` or `D`.
+- **The file is written one chromosome at a time**, so the converter indexes
+  reference walks as they come and refuses a late reference walk that visits a node
+  a query walked as private, pointing at `--hold-queries`.
+- **Contig lengths off the walks are short by the clipped telomere.** Pass the
+  assemblies' own `.fai` as `--contig-lengths`.
+- **Limits.** `=` is exact by construction; an `X` is graph-induced, and about one
+  in ten is actually an equal base. Sequence the graph clipped is absent, so no
+  GFA route aligns it where minimap2 or the HAL can. A node the reference visits
+  several times is placed at the occurrence continuing the chain: right for a
+  tandem repeat walked in order, a guess otherwise.
+- **Against halSynteny and minimap2 on E. coli**, the converter covers 3-6% more of
+  each genome with half the rows (a chain bridges private runs), every `=` column
+  matches the FASTAs, and sampled reference positions map to the same query base as
+  minimap2 at 99.7-99.97%.
 
-**E. coli, against halSynteny and minimap2 on the same four strains.** The
-local `ecoli_cactus_build/mc/ecoli.gfa.gz` (K12, Sakai, CFT073, NCTC86;
-525,146 nodes, 14 W lines, K12 318,884 steps) converts in 2 s at 97 MB RSS.
-The hosted `ecoli_cactus_ava.pif.gz` is from a *different* cactus run (five
-strains, an NCTC86 of 5,111,920 bp where this graph's is 4,903,501), so the
-comparison below is against halSynteny re-run on this build's own
-`ecoli.full.hal` in the cactus image, and against the hosted minimap2
-`all_vs_all.paf.gz` (same RefSeq K12, Sakai and CFT073; its NCTC86 is the other
-assembly, so that pair is halSynteny only). Coverage is the union of intervals;
-identity is `=/(=+X)` for the converter and matches/M for minimap2.
-
-| pair | converter rows / K12 cov / query cov / `=` / identity | halSynteny rows / K12 cov / query cov / matches | minimap2 rows / K12 cov / query cov / identity |
-| --- | --- | --- | --- |
-| K12 vs Sakai | 36 / 4,289,306 / 4,376,394 / 4,007,318 / 0.9643 | 58 / 4,166,988 / 4,221,099 / 4,068,229 | 397 / 4,189,841 / 4,196,504 / 0.9824 |
-| K12 vs CFT073 | 34 / 4,232,813 / 4,203,541 / 3,773,147 / 0.9597 | 72 / 4,052,450 / 3,997,871 / 3,863,170 | 380 / 4,001,532 / 3,981,973 / 0.9735 |
-| K12 vs NCTC86 | 31 (all `-`) / 4,316,067 / 4,267,626 / 3,849,023 / 0.9594 | 74 / 4,128,569 / 4,051,769 / 3,945,293 | other assembly |
-| Sakai vs CFT073, direct | 46 / 4,289,741 / 4,181,435 / 3,733,336 / 0.9432 | 82 / 4,040,431 / 3,949,204 / 3,814,510 | 625 / 4,185,105 / 4,087,945 / 0.9701 |
-
-The converter covers 3–6% more of each genome than halSynteny with half as
-many rows, because a chain bridges the private runs halSynteny's blocks break
-at (the six largest 20 kb-bin differences per pair are all bins the converter
-fills and halSynteny half-covers, e.g. K12:3,900,000-3,920,000 at 20,000 vs
-8,164); no 20 kb bin of K12 is covered by one and not the other in any K12 pair,
-and the Sakai/CFT073 direct alignment has 4 bins the converter covers and
-halSynteny does not. Its `=` count is 1.5–2.3% below halSynteny's matches,
-which is the sequence minigraph-cactus put in private bubbles rather than
-shared nodes. Two checks that matter more than the totals: every `=` column
-compared against the FASTAs is identical — 11,629,488 columns over the three
-K12 pairs and 3,733,336 over Sakai/CFT073, 0 differing, the reverse-strand
-NCTC86 rows included — and at reference positions sampled every 997 bp the
-converter maps a base to the same query base as minimap2 at 99.87% (K12/Sakai,
-3,986 of 3,991), 99.97% (K12/CFT073) and 99.70% (Sakai/CFT073); the rest are
-repeat copies minimap2 placed elsewhere. Of the `X` columns, 10.6% (K12 pairs)
-and 13.7% (Sakai/CFT073) are bases that are in fact equal, which is the
-honest cost of pairing private runs without realigning them.
-
-**HPRC, the whole 63 GB graph in one stream.** `hprc-v2.0-mc-grch38.gfa.gz` (63.1 GB gzipped, 464 haplotypes; 135,927,476
-nodes, GRCh38 83,073,334 steps on 195 walks) downloads in 38 min and converts,
-`pigz -dc | python3`, in 1665 s: 376 GB of text at 226 MB/s, pigz-bound
-(79–86% of a core against python's 41–49%), 1.49 GB peak RSS, one process — the
-TAF route took ~43 min across six taffy streams and hundreds of MB each. The
-file is written one chromosome at a time (S, L, then W lines, GRCh38's walk
-first in each), which the first attempt did not survive: a converter assuming
-the reference walks are contiguous stopped at chr11's after 74 s. It now
-indexes reference walks as they come, aligns a query walk at once when a
-reference has been seen, and keeps a byte per node a query walked as private so
-a later reference walk that visits one is refused with a pointer at
-`--hold-queries`. The eight haplotypes come out as 4,146 rows (475–551 each,
-645 on `-`), 176 MB, `make-pif --csi` in 8 s to a 127 MB PIF. Contig lengths
-off the walks are short by the clipped telomere (CM092085.1 walks to
-242,284,449 of 242,287,352), so the build passes the assemblies' own `.fai`
-from the release 2 index as `--contig-lengths`, and the chrom.sizes then equal
-the TAF route's byte for byte on seven haplotypes; HG01960 lists one contig
-more (JBHIHM010000047.1, 139 kb, walked but sharing no node with GRCh38, so
-no row). Agreement with the TAF route and the impg PAF is in
-`HPRC_RELEASE2.md` §"The GFA route".
-
-**The reader against the converter, on the same graph (2026-09-06).**
-`@gmod/gbz-base` 2.5.0 was run over a gbz-base database built from this
-build's own `ecoli.gbz` (vg 1.76.1 for the chains — 1.69.0 refuses the v2
-GBZ — and gbz-base 0.6.1, on the lab machine), with the reader's haplotype
-index beside it, at ten 20 kb windows across K12, and every `+` record's CIGAR
-was read against the converter's row at reference points every 250 bp:
+The reader (`@gmod/gbz-base`) against the converter on the same graph:
 
 <!-- BEGIN GENERATED MEASUREMENT gbz-cigar-vs-gfa-oracle -->
 
@@ -934,201 +431,58 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT gbz-cigar-vs-gfa-oracle -->
 
-1,544 of 1,552 points put the haplotype base at the same coordinate. The eight
-that differ are one block, and they are the kind the review predicted and no
-other: the reader scores a divergent stretch as I then D where the converter
-writes X, so inside the block the two place a base 2.1-3.9 kb apart and
-outside it they agree to the base. NCTC86 is assembled in the other
-orientation, so its records are all `-` and the twenty `+` records are Sakai's
-and CFT073's.
+The reader scores a divergent stretch as I then D where the converter writes X, so
+inside such a block the two place a base 2-4 kb apart and outside it they agree to
+the base.
 
-**Limits, stated once.** An `=` is exact by construction; an `X` is
-graph-induced — "the graph put different sequence between these two anchors" —
-and the E. coli figure above says one in ten of them is not a mismatch.
-Contig lengths come from the largest W end seen (`--contig-lengths` takes a
-chrom.sizes when the assembly's are known), and where minigraph-cactus clipped
-the tail of a contig the length is short. Sequence the graph clipped is not in
-the graph: Sakai 1,137,308-1,221,174 is absent from every Sakai W line, so no
-route through the GFA can align it, where minimap2 does; the HAL still has it,
-and that is the one thing the TAF route sees that this one cannot. A haplotype
-that reaches a node the reference visits several times is placed at the
-occurrence that continues its chain, which is right for a tandem repeat the
-query walks in order and a guess when it does not.
-
-### Lane pairs read off the hosted HPRC graph (measured 2026-09-24)
-
-The plugin runs no analysis and no aligner of its own (Colin, 2026-09-24): a
-lane pair is the alignment the graph states, through `@gmod/gbz-base`
+**Lane pairs.** The plugin runs no aligner of its own: a lane pair is the
+alignment the graph states, through `@gmod/gbz-base`
 `pairAlignments({ bases: false })`, and a curated 8-16 haplotype panel was
-rejected as not pangenome-ready. Scripts in `~/tutorial_spikes/lane_pairs/`
-(`pairbench.mjs`, `bubblebench.mjs`, `mm.sh`), captures under `captures/`:
-
-- gbz-base per adjacent pair, context 1000: cut 0.3-1 s warm (3-7 s cold),
-  align 0.06-3.5 s. Share of each walk the graph states (shared nodes, 1-vs-1
-  SNPs, one-sided indels): C4 and CFH ~100%, HLA-DR 64-94%, amylase 33-64%,
-  LPA KIV-2 15-99%.
-- 1q21.1 inversion (chr1:144.40-144.52 Mb, carrier HG01891#1): the cut holds
-  4 kb of the carrier's walk, and the graph pairs it with the other
-  segmental-duplication copy (88%) rather than its allelic position on −
-  (100%). minimap2 on the assembly windows: one − record, 112.7 kb, 99.9%.
-- minimap2 reproduces C4's 32,738 bp module and 6,367 bp HERV-K insertions
-  exactly; CFH is one record per pair; HLA-DR depends on the preset; at
-  amylase and LPA a copy-number difference lands at an arbitrary copy.
-- HPRC's assemblies publish `.fa.gz` with `.fai` and `.gzi`, so windows are
-  range-readable.
-
-What composition through GRCh38 would lose instead is measured in
+rejected as not pangenome-ready. A lane stack cuts the window once per adjacent
+pair. The graph states 100% of a walk at C4 and CFH but 15-64% at amylase and LPA
+KIV-2; at 1q21.1 the graph pairs the carrier with the other duplication copy, not
+its allelic position. minimap2 gives a single record there. HPRC assemblies
+publish `.fa.gz` with `.fai` and `.gzi`, so windows are range-readable. What
+composing through GRCh38 would lose is in
 [MULTIWAY_SYNTENY_DISPLAY.md](MULTIWAY_SYNTENY_DISPLAY.md) §1.1.
 
 ## Prior art
 
 **The abandoned `gfa-to-tabix` / `GfaTabixAdapter` effort** (removed in
 `fa737e4255`, `c72b88d177`, `3b98dbb985`) solved the same problem at HPRC scale.
-Its ADRs went with it, so every `adr-0NN` in this section is that tree's
-numbering rather than this one's —
-`git show 3b98dbb985^:agent-docs/architecture-decision-records/` lists them:
+Its ADRs went with it, so an `adr-0NN` it cites is that tree's numbering
+(`git show 3b98dbb985^:agent-docs/architecture-decision-records/`).
 
-- `getSubgraph` was never the failure — it matched `vg find` byte-for-byte in
-  under 300 ms at ≤100 kb. `synteny_build` sank it, and adr-024 benchmarks the
-  replacement (`odgi untangle` on HPRC chr20, ~1 h → 1 m 39 s).
-- **its chunked `pos.bed.gz` could not carry a path walk, and silently didn't**:
-  rows listed the *set* of segment ordinals per chunk, so haplotype walks came
-  out wrong wherever they diverged from the reference. Do not re-introduce a
-  chunked ordinal index.
-- **whole-contig reverse-complement ("grooming") is real**, with a deterministic
-  test: flip a walk when >99% of the bp it shares with the reference are
-  opposite-orientation (bp-weighted, so SNP nodes cannot outvote a reversed
-  contig), then emit its steps in reverse. Our path walk does none of this; the
-  E. coli demo does not need it, a real assembly set will.
-- **chain contraction does not coarsen a dense graph**: `vg mod -u` on HPRC
-  chr20 measured 0.95% reduction, because at 90 haplotypes almost no node has
-  bidirected degree 2. Superbubbles (`vg snarls`, BubbleGun) are the primitive
-  that works. Taken in that tree's adr-014, which no longer exists in any
-  numbering here — this bullet is the measurement's home.
-- extraction is **not symmetric across reference paths, and that is biology**
-  (adr-015), so the Reference path picker genuinely changing the drawing is
-  expected.
-- **what actually made it heavy was indexing every path.** A subgraph index only
-  needs the *reference* path's coordinates — rGFA states them outright in the
-  `SR:0` tags, and a pggb graph gets them by walking one designated path — and
-  everything else can hang off segment ids. Indexing all paths is what produced
-  the 1.49 GB all-paths `segments.bin`. Any revival of reference-anchored
-  subgraph browsing should start here rather than from `getSubgraph`, which was
-  already fast enough.
+- `getSubgraph` was never the failure; `synteny_build` sank it.
+- **Its chunked `pos.bed.gz` silently could not carry a path walk** (rows listed the
+  set of ordinals per chunk). Do not re-introduce a chunked ordinal index.
+- **Whole-contig reverse-complement ("grooming") is real**: flip a walk when >99%
+  of the bp it shares with the reference are opposite-orientation (bp-weighted),
+  then emit its steps in reverse. Our path walk does none; a real assembly set will
+  need it.
+- **Chain contraction does not coarsen a dense graph** (`vg mod -u` on HPRC chr20:
+  0.95%). Superbubbles (`vg snarls`, BubbleGun) work.
+- **What made it heavy was indexing every path.** A subgraph index needs only the
+  reference path's coordinates; everything else hangs off segment ids. Start a
+  revival there.
 
-**PangyPlot** (Mastromatteo et al. 2025, vendored at `~/src/vendor/pangyplot`)
-is the closest published prior art and solved the problem this view still has:
-precomputed `odgi layout` SGD baked into SQLite, plus a BubbleGun bubble
-hierarchy so sub-threshold bubbles render as one node and the user pops one open
-(`/pop`). Their team measured BubbleGun as published at chrY 2 s / 1 GB, chrX
-30 s / 11 GB, chr9 ~40 min / 13 GB, chr1 hanging at 15+ GB; the fix is a flat
-int64-CSR rewrite. `gfabase` (`src/schema/GFA1.sql`) validates the indexing
-shape: a genomic range index over `(refseq_name, refseq_begin, refseq_end)` is
-what `segs.bed.gz` does with tabix.
+**PangyPlot** (Mastromatteo et al. 2025) is the closest prior art: precomputed
+`odgi layout` baked into SQLite plus a BubbleGun hierarchy so sub-threshold bubbles
+render as one node and the user pops one open (`/pop`). Its `gfabase` range index
+over `(refseq_name, refseq_begin, refseq_end)` is what `segs.bed.gz` does with
+tabix.
 
-## Operating the graph plugin: two traps that cost a session each
+## Operating the graph plugin: two traps
 
 - **`test_data/graphgenomeview/_localdist` was a stale hand-copy.**
-  `GRAPH_PLUGIN_LOCAL=1` serves that directory, and every "I rebuilt the plugin
-  and it still fails" result was read off whatever build was copied there last.
-  A dependency bump, two upstream patches and two rounds of instrumentation were
-  all judged against a bundle containing none of them. The generator
-  (`website/scripts/specs/graph-fixtures.ts`) now copies the plugin's `dist/` over
-  it on every `GRAPH_PLUGIN_LOCAL` run and fails when no build exists, so rebuild
-  the plugin first.
+  `GRAPH_PLUGIN_LOCAL=1` serves it, so "I rebuilt and it still fails" read an old
+  bundle. `website/scripts/specs/graph-fixtures.ts` now copies the plugin's `dist/`
+  on every `GRAPH_PLUGIN_LOCAL` run and fails when no build exists.
 - **emscripten's `UTF8ArrayToString` cannot decode a long string out of wasm
-  memory.** It decodes a view over `HEAPU8` — over `WebAssembly.Memory`, whose
-  buffer is a resizable `ArrayBuffer`, which browsers refuse to `TextDecoder`.
-  `UTF16ToString` has the same shape. Both take that path **only for strings
-  longer than 16 units**, and shorter ones fall through to a manual char loop —
-  which is why it read as a data bug for a whole session: the fine index names
-  nodes `s10274` (6 bytes, fine) and the tier names them
-  `bb_GRCh38#0#chr1_0` (18 bytes, throws), so it was 100% failure on one index
-  and 0% on the other with everything else identical. Patched in
-  `jbrowse-plugin-graphgenomeviewer/scripts/build-wasm.sh` — that plugin's repo,
-  not this one — because that script overwrites the generated file wholesale.
-
-  The general lesson is the cheaper one: **bisecting on inputs cannot find a bug
-  whose error names a type.** Nine rounds eliminated window size, file size,
-  route, compressor, index flavour, tag column, plugin version and two dependency
-  versions, and none of them was it. One instrumented run — wrap
-  `TextDecoder.prototype.decode` and **throw** the stack rather than logging it,
-  since a worker's console does not reach the page — named the frame
-  immediately. Reach for that on the second round, not the tenth.
-
-## Open
-
-The graph view's own queue is in
-[`jbrowse-plugin-graphgenomeviewer/agent-docs/IDEAS.md`](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer/blob/main/agent-docs/IDEAS.md) —
-that plugin's repo, not this one.
-
-- ~~**The `samples` column is emitted but not read.**~~ Done 2026-08-02, as the
-  general tag column above: `SM:Z:` reaches `GraphNode.tags.SM`. What is still
-  open is *displaying* it, and drawing a node once per carrier (next bullet).
-- **A node carried by several assemblies draws on one row.** Needs the layout to
-  emit synthetic per-carrier ids and hit detection to resolve them back.
-- **Orientation is recorded but not drawn.** `StableCoordinate.strand` shows in
-  the node popup; arrowheads are an edge property in `GeometryBuilder`.
-- **A precomputed global `odgi layout`, carried as an `LO:Z:` tag** (the removed
-  tree's adr-028 — the tag column above has the path) is not built. It is no
-  longer about determinism — FMMM is seeded now, see below — but about windows
-  of one graph being laid out consistently with each other.
-  The input exists: `~/ecoli_graph5/pggb/*.smooth.final.og.lay.tsv`.
-- ~~**Bubble collapse is the one that matters** for scale.~~ Producer done
-  2026-08-02, see "Level of detail" above: a chromosome is 474 nodes. The view
-  picks the tier by zoom since 2026-09-26: `RgfaTabixAdapter`'s
-  `coarse: { uri, aboveBpPerPx }` names the pair, and a graph track cuts it
-  past that bp per pixel. Expand-on-click across the two tiers stays open;
-  `popBubble` opens a bubble inside the current cut.
-- **HPRC needs no per-haplotype path track after all.** `--call` would need the
-  464 assemblies re-mapped, but `pgbi.vcf.gz` (above) already states carriage at
-  bubble granularity and is tabix-indexed.
-- **gbz-base's `Subgraph.alignment()` writes `M` for match and mismatch
-  alike** (`gbz-base-js`'s `src/subgraph.ts`, `EditOp`), so the anchor gutter of an HPRC lane
-  stack inks no mismatch until it writes `X`. `pairAlignment.ts` there already
-  writes `=`/`X`.
-- **The anchored cut of the KIV-2 window** (the portal's LPA card, `auto`
-  layout) sits on "Fetching subgraph" past three minutes, on plugin 4.0.6 and
-  4.0.7 alike; the force layout's window-only cut lands quickly. One hop
-  through a 129-route VNTR plus a window-width margin each side is the
-  suspect.
-- **`demos/hprc` has no `defaultSession`, and its `hprc_v2_1_gbz_lanes` names
-  only eight haplotypes**, the curated panel Colin rejected on 2026-09-24, so a
-  reader who switches that track on meets it. The figures that use the track
-  pick their haplotypes in the session.
-- **HPRC figures to reshoot (2026-09-27).** Once a plugin release carries
-  45f66d6 (walk rows fit their own bars in a track rather than taking the
-  linear view's x): `hprc_abca7_repeat_units`, `hprc_abca7_disagreements`,
-  `graph_kiv2_walk_rows`, `hprc_amylase_walk_rows`. On the hosted bundle
-  already: `maf_hprc_pangenome` (still a separate graph view),
-  `genomes_hprc_loci` (the portal's rows changed), `hprc_haplotype_launch` (its
-  menu entry and box disagree, and the published PNG predates the force layout
-  its spec draws). Several specs draw the test fixture where the prose opens a
-  portal launch: `hprc_whole_chromosome`, `hprc_cluster_callset`,
-  `hprc_graph_anatomy`.
-- **At ABCA7 every haplotype comes back as its walk plus a 0.2 kb piece**
-  that walk rows draws as a `partial walk` row, in a named-sample cut and a
-  cohort cut alike, on the hosted bundle and on 45f66d6. The measurement
-  above counts 474 W lines there; gbz-base 3.0.0's CLI returns 822 paths for
-  the same `--context 1000 --snarls` cut, named `unknown#N`, so the table may
-  predate the split. Open.
-- **A lane stack cuts the window once per adjacent pair**, N-1 cuts at 0.3-1 s
-  each warm on the hosted db; cutting once per stack is the speed lever.
-  `pairAlignments` returned FLNA's inversion record twice with identical spans.
-- Smaller: the portal's bovine callset lacks `renderingMode: "phased"`;
-  `ecoli_minigraph` has no hosted tier and `build_ecoli_pangenome_graph.sh`
-  builds none; `pggb_bubble_tier`'s bubble labels overlap the backbone's length
-  labels; the ecoli, cactus, syri and host pages lead with a build.
-- **Colin's call: PangyPlot at v2 scale on chr1.** chr22 of v2.1 (3.12M nodes,
-  1,131 walks) laid out in 32 minutes with gbz2layout's `perf` branch
-  (`--balanced --updates-mult 100`, the init anchored on GRCh38; numbers in
-  `~/src/vendor/gbz2layout-perf/PERF_NOTES.md`) and reads the same as the
-  hosted v1.1 (`~/tutorial_spikes/pp_v2/`). chr1, for amylase, needs the
-  whole-genome export (chr22's peaked at 14.5 GB) and about five times chr22's
-  nodes.
-- **Colin's call: a GSTT1 tutorial section.** The graph shows a 39.5 kb allele
-  loop beside GSTT4, contributed by HG03654#2, but CAT projects GRCh38's genes
-  and GRCh38's chr22 has no GSTT1, so no haplotype's annotation names it, and
-  HPRC's PAF targets the no-alt set, so nothing hosted shows the gene on a
-  haplotype. Either a data product for GRCh38's alt-contig genes on each
-  haplotype, or a section that says no hosted annotation names it.
+  memory.** It decodes a view over a resizable `ArrayBuffer`, which browsers refuse
+  to `TextDecoder`, only for strings longer than 16 units; shorter ones take a
+  manual loop. It read as a data bug (the fine index's `s10274` fine, the tier's
+  `bb_GRCh38#0#chr1_0` throws). Patched in the plugin's `build-wasm.sh`.
+  **Bisecting on inputs cannot find a bug whose error names a type**: wrap
+  `TextDecoder.prototype.decode` and throw the stack (a worker's console does not
+  reach the page), and do it on the second round, not the tenth.

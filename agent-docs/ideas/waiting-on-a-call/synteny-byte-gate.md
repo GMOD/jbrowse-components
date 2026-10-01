@@ -17,8 +17,7 @@ path this costs nothing per fetch — the executor measures inside the fetch it
 was going to make anyway — so what is left is only the missing bound.
 
 Recorded as a decision (inert, known) in
-[REGION_TOO_LARGE.md](../../reference/REGION_TOO_LARGE.md) §"Two ungated shapes
-that are decisions, not omissions".
+[REGION_TOO_LARGE.md](../../reference/REGION_TOO_LARGE.md) §"What is not gated".
 
 ## The cheap half
 

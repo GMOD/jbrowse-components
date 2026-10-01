@@ -6,92 +6,28 @@ kind: measurement
 
 # Interaction perf: which components re-render per frame
 
-Measurements, not a proposal.
+Interaction is main-thread-JS bound — frame time scales with CPU throttle — not
+GPU-bound and not MobX-bound. The cost is React re-render plus the
+MUI/Emotion styling each render pays, so the one lever is **fewer components
+re-rendering per frame**. Zoom is the worse gesture: React's DOM attribute
+setters, `setAttribute` and lifecycle style recalc dominate every bin, beside
+the relayout a zoom legitimately owes.
 
-### Where this leaves the perf story (all measured)
+The tax scales per track, since each track mounts its own overlay and chrome
+subtree. `jb2bench/scripts/render/multibam.ts` sweeps the track count with
+region, zoom, viewport, gesture and frame count held fixed.
 
-- Interaction is main-thread-JS bound (frame time scales ~linearly with CPU
-  throttle), not GPU and not MobX.
-- The cost is React re-render + MUI/Emotion CSS-in-JS, and CSS-in-JS is a
-  per-render tax — so it's really the "too many components re-render per frame"
-  problem wearing a styling-cost hat.
-- tss-react is already optimized — no win there.
-- The tooltip wasn't the culprit. The remaining ~21ms/frame at 4× is the broader
-  set of components that re-render on `bpPerPx`/`offsetPx` — the
-  coverage/label/arc overlays and the LGV chrome.
+**The alignments display overlays are zoom-invariant — do not chase them.**
+`hoverInk`, `renderSections`, `sections` and `laidOutByGroup` read no
+`offsetPx`/`bpPerPx`, and `VisibleLabelsOverlay` is a canvas. Sashimi was the
+exception, below.
 
-### Zoom is the worse of the two gestures, and labels are not the reason
+## Pool a list where the gesture changes every key
 
-Wheel-driven zoom on the GPU path, four tracks:
-
-| ~4.8 s gesture     |    pan |           zoom |
-| ------------------ | -----: | -------------: |
-| page frames        |    279 | 152 (31.7 fps) |
-| p90 frame interval | 16.7ms |         66.7ms |
-| dropped frames     |     65 |            140 |
-| tasks > 50ms       |      1 |             16 |
-
-Main thread is 95-100% busy in every bin across the whole gesture.
-
-**A label A/B on zoom that looked like a big win was a measurement artifact.**
-The two arms swept different `bpPerPx` ranges (1.1-1.9 against 0.6-3.0), so they
-rendered different amounts of detail: the rate limiter is per elapsed-ms and the
-turnaround read `bpPerPx` back, so the slower arm both applied less zoom per
-event and flipped direction later. Re-run with a scripted geometric ramp, both
-arms reporting an identical sequence (36.0 2.67 1.76 1.16 0.766 0.505 0.750 1.14
-1.72 2.61):
-
-| scripted zoom, same ramp | labels on | labels off |
-| ------------------------ | --------: | ---------: |
-| style recalc             |     700ms |      751ms |
-| layout                   |     236ms |      236ms |
-| page frames              |       244 |        256 |
-| main busy                |    5422ms |     5230ms |
-
-Layout is identical and style recalc is higher with labels off — inside noise.
-So the container-transform fix is a pan win and does nothing measurable for
-zoom, and zoom needs its own attack.
-
-What zoom is bound by, self time, consistent across every 1200ms bin: React's
-DOM attribute and property setters (`react-dom-client:1273` ~178ms,
-`:1254` ~143ms) plus `setAttribute`, which is the top cost and the
-"too many components re-render per frame" residual again; `createObjectURL`
-~91ms on the stop-token path; style recalc at 700-750ms of a 4.8 s gesture
-(~15%), all `(no stack)` lifecycle recalcs with `@emotion/serialize` recurring
-in the long tasks; and the relayout a zoom legitimately owes
-(`GranularRectLayout.addRect`).
-
-Both named targets were taken up on 2026-08-30 and only one survived. The mint
-count is not the `createObjectURL` frame — see "The stop-token probe" below. The
-per-frame component count got the render census, whose findings are in
-§"Count the renders in jsdom before you profile a build" below.
-
-### Honest next step
-
-The only thing that reduces that per-frame cost is cutting the number of
-components that re-render each zoom frame. Pinning down which ones needs a
-React-render-level measurement (React DevTools profiler or render counters), not
-a CPU flame graph — that's the right tool for "who re-rendered and why."
-
-**The first measurements on this page are of ONE track (later sections use four,
-six and eight), and the tax scales per track**: each one mounts its own overlay and chrome subtree, so a six-track
-session pays it six times. Since `computeVisibleLabels` stopped deciding its walk
-from the data's longest feature, this is the entire residual —
-`jb2bench/scripts/render/multibam.ts` sweeps the track count with region, zoom,
-viewport, gesture and frame count held fixed. The two directions parked at one
-track are the two to take at N: reposition overlays by CSS transform during a
-gesture, and hoist static styles out of the per-frame render.
-
-**It is blocked on a quiet machine, and demonstrably so** — see the periodicity
-section below, where the same gesture profiles at 83% `(program)` with every
-worker idle. Attribution is worthless in that state and the inflation is not
-uniform across frames.
-
-**Measured culprit (2026-07-11): the LGV coordinate ruler, not the alignments overlays.** A `MutationObserver` attributing every DOM mutation during a 5× zoom to its nearest `data-testid` subtree found ~2056 mutations dominated by `rubberband_controls` (the ScaleBar): 719 structural node add/remove + 439 style-attr, vs **2 of 2056** in the alignments overlays. The alignments display overlays are already zoom-invariant (`hoverInk` short-circuits to `[]` when nothing hovered; `renderSections`/`sections`/`laidOutByGroup` read only vertical layout, never `offsetPx`/`bpPerPx`) — **do not chase them.** `VisibleLabelsOverlay` is a canvas, so it contributes no DOM churn.
-
-The churn was `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../ScalebarCoordinateLabels.tsx`): it created and destroyed ~144 tick `<div>` nodes per zoom click. Its `key`-by-base reuse works for *pan* and not *zoom*, which is the wrong way round — `scalebarLabels` is **unchanged** during a pan (the labels live in the staticBlocks frame, and only the container transform moves), so there was nothing there to save; a zoom moves the whole tick set, so every key changed and React rebuilt the list, each new node paying the emotion/tss `tickLabel` styling cost.
-
-**Fixed 2026-08-15 by keying the list positionally**, which makes it a pool: same nodes, patched transform and text. Measured A/B on one machine and toolchain, two builds of the same commit differing only in the key:
+`ScalebarCoordinateLabels` keyed its tick divs by base, which reuses nodes on a
+pan (where the labels do not change anyway) and changes every key on a zoom, so
+React rebuilt the whole tick set each frame. Positional keys make the list a
+pool:
 
 <!-- BEGIN GENERATED MEASUREMENT scalebar-zoom-churn -->
 
@@ -105,29 +41,38 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT scalebar-zoom-churn -->
 
-Read the trade, not the total: structural churn is the expensive class (each new node pays styling, layout and paint) and it halves, while the rise in attribute patches is the same work done the cheap way on nodes that survived.
+Read the trade, not the total: structural churn is the expensive class (each new
+node pays styling, layout and paint), and the extra attribute patches are the
+same work done cheaply on surviving nodes. The residual structural churn is the
+label *count* moving between frames as `labelFitsInBlock` drops a different
+number. `website/scripts/measure-zoom-churn.ts` reproduces it and serves
+`products/jbrowse-web/build`, so rebuild between arms.
 
-**The residual 248 is the label *count* moving between frames.** Positional keys pool `min(oldCount, newCount)` nodes and still mount or unmount the difference, and the count shifts as label text changes width and `labelFitsInBlock` / `MIN_TICK_LABELS_PER_BLOCK` drop a different number of them. Closing it needs a genuinely fixed pool — a constant node count with the extras hidden — which is a bigger change than the key was, and worth roughly this remainder. The other two options are unchanged: a **canvas ruler** (bigger win, loses selectable text), or **coarsening ticks off `coarseBpPerPx`** during the zoom spring, snapping exact on settle.
+`PaddingBlocks` had the same bug (keyed by block identity) and the same fix. The
+rule is narrower than "pool every list": a zoom does not change a feature's id,
+so `FloatingLabelsLayer` already pools across a zoom, and positional keys there
+would repaint every surviving label. Gene labels censused at gene-track zooms
+are not a structural cost, but the volvox gene track is small — widen the
+fixture before re-asking.
 
-Repro tool: `website/scripts/measure-zoom-churn.ts`, which needs `products/jbrowse-web/build` current — it serves the built bundle, so rebuild between arms or you measure the old one twice.
+## An array-rebuilding computed re-renders every observer that reads it
 
-Also, per-mousemove: `AlignmentsDisplayComponent` `setMouseCoord` on every `onMouseMove` re-runs the top observer; children are `observer`-memoized so blast radius is mostly the tooltip — confirm no inline object/array prop defeats a child's memo.
-
-### The sashimi clause of that verdict expired, and was fixed on 2026-08-30
-
-The 2026-07-11 verdict above rests on the alignments overlays being
-zoom-invariant, and one of them stopped being. `showSashimiArcs` defaults to
-`true` (`configSchema.ts`), so junction arcs draw
-wherever the coverage band does, and `sashimiArcSections` read `view.visibleRegions` — a fresh
-array of fresh objects every frame — so the computed invalidated on every zoom
-AND pan frame and re-ran `mergeJunctions` from scratch inside it. The merge
-answers to loaded data, the region set on screen and two filter settings; only
-the projection answers to the pan.
-
-`sashimiJunctionSections` is now the memoized merge and `projectSashimiArcs` the
-frame-owed half, with a `compareStructural` computed over the visible regions
-between them — the same mechanism the view's own `contentRightEdgePx` uses in
-its scalar form.
+- **A computed that rebuilds a fresh empty array is not free.** A view inside
+  one contig has no padding span, yet every track's `PaddingBlocks` re-rendered
+  an empty list inside a `ZoomTransform` each frame. Returning one shared frozen
+  array (so MobX's `===` stops) and `null` from the component took it out of
+  the census. A census arm starting at offset 0 never sees this; the mid-contig
+  arm exists for it.
+- **Clamp inside the computed.** `visibleRegions` rebuilds fresh objects every
+  frame, so the wiggle bodies re-rendered to derive a legend edge that is
+  usually the unchanged `trackWidthPx`. The view's `contentRightEdgePx` applies
+  `Math.min(trackWidthPx, …)` where MobX can stop at it; publishing the raw edge
+  would have changed nothing.
+- **Split a computed by the clock each half answers to.** `sashimiArcSections`
+  read `view.visibleRegions` and re-ran `mergeJunctions` every frame.
+  `sashimiJunctionSections` is now the memoized merge (behind a
+  `compareStructural` computed over the visible regions) and
+  `projectSashimiArcs` the per-frame half:
 
 <!-- BEGIN GENERATED MEASUREMENT sashimi-frame-split -->
 
@@ -140,217 +85,76 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT sashimi-frame-split -->
 
-**On DNA data the whole pipeline is now free, and it was not before.** Every
-alignments track evaluates it, and one whose reads carry no skip gap has nothing
-to project — but `sashimiArcSections` still rebuilt a list of empty sections per
-frame, so `SashimiArcsOverlay` re-rendered on all 20 of a zoom's frames to return
-a list of nulls. `ZoomRenderCensus.test.tsx`'s alignments arm measures **21
-renders over 20 zoom frames → 0**, taking that view's whole observer count from
-21.6 to 20.6 per frame for one track.
+The table drives the shipping code with a real BAM's junction list; it is not a
+whole-app RNA-seq frame budget, and no in-repo fixture carries real junction
+counts. Sashimi stays SVG: its paths are keyed by `sashimiArcKey`, so a zoom
+patches one `d` per drawn arc with no structural mutation.
 
-Two changes split that 21, and it is worth keeping them apart. Memoizing the
-junction merge on the visible-region set (`compareStructural`) takes the overlay
-off the per-frame path and carries 21 → 1. Handing back one shared empty array
-removes the render still owed on the frames where `renderSections` does change,
-1 → 0. Pooling an empty array is worth a render, not twenty — the rule two
-sections down is about the computed, not about this arithmetic.
+**Do the wrapper arithmetic before optimizing one.** `ZoomTransform` tops the
+census, but `observer` wraps `React.memo` and a fresh `children` defeats it, so
+its count equals the sum of its parents' (`PaddingBlocks` + `Gridlines`).
+`ZoomRenderCensus.test.tsx` asserts that equality.
 
-**What is NOT measured is a whole-app RNA-seq frame budget**, and the table
-above is not one. No in-repo fixture carries real junction counts — volvox's
-largest is `spliced.bam` at 13 distinct junctions (2464 reads, 1740 of them
-N-op), against 213 in a 120 kb window and 651 in a megabase of hosted K562
-Iso-Seq — and that BAM is against hg38, which the jsdom test config does not
-carry. So the table drives the shipping code with the real BAM's junction list
-instead, and a browser figure would want an hg38 config plus a quiet machine.
+## Count the renders in jsdom before you profile a build
 
-**The SVG-vs-canvas question is answered for now, and the answer is stay.** The
-arc band next door (`features/arcs/`) draws on canvas through the link and point
-marks, and
-the case for sashimi adopting it would be per-feature DOM work. There is none of
-the expensive kind: over a 20-frame zoom on `spliced`, the `pileup-display`
-subtree logs **52-64 `attr:d` patches and zero structural mutations** across
-runs — the arc paths are keyed by `sashimiArcKey`, so React pools them and
-patches one attribute per arc per frame. Divide by the arcs actually DRAWN in
-the window (about three here, not the 11 over the score floor) for the per-arc
-rate a bigger dataset multiplies. That is the shape `ScalebarCoordinateLabels` was
-*fixed into* above, not the shape it was fixed from.
+`mobx-react-lite` names each component's reaction `observer<ComponentName>`, and
+`Reaction.track` wraps the render, so `mobx.spy()` filtered to `reaction` events
+**is** the per-component render count. `products/jbrowse-web/src/tests/renderCensus.ts`
+is the helper; `ZoomRenderCensus.test.tsx` drives a geometric `zoomTo` ramp over
+a real session beside a `MutationObserver` tally (`ZOOM_CENSUS=1` prints the
+per-component tables). No browser, no rebuild per arm.
 
-## The p99 during a pan is periodic, and the period is the only part you can measure on a loaded box
+Two limits a budget written against it must respect:
 
-**Measured 2026-08-14**, six BAM tracks at `chr22_mask:124000-143000`, 240
-rAF-paced frames x 3 passes, one build. `jb2bench/scripts/render/multibam.ts` now
-persists the raw per-frame gaps for this (`rows[].gaps`, one array per pass); its
-summary columns cannot answer "when", and every question here is about when.
+- **A count is a floor.** A child re-rendered by a parent's fresh props runs no
+  reaction of its own, and `mobx` emits spy events only in its development
+  build.
+- **Only the view-geometry half is deterministic.** Ruler, scalebar and overlay
+  counts repeat to the integer; anything downstream of a fetch
+  (`DisplayLoadingOverlay`, `DisplayChromeBaseInner`, `FetchVisibleRegions`,
+  `AppReadyMarker`) races the wall clock. Quote the first group and read the
+  second, and quote per-component counts rather than the gesture total.
 
-Each pass carries exactly **two** events over 100 ms and almost nothing else, and
-the interval between them is **79, 79, 80 frames** across the three passes — about
-500 ms at this build's ~6.3 ms frame. So the coarse-update tick that
-`coverageStats` reads (`coarseDynamicBlocks`, ~2x/sec) does line up with the
-over-budget frames, which is what a per-track herd on one tick would look like.
+`products/jbrowse-web/browser-tests/probe-zoom-churn.ts` is the browser
+counterpart, attributing each DOM mutation to its nearest `data-testid`; it
+confirmed the census in headed Chrome at eight tracks mid-contig, where the
+ten silenced `PaddingBlocks` instances took 30 elements and their per-frame
+`ZoomTransform` attribute churn out of the page. A `data-testid` attribution
+cannot see divs under `tracksContainer`, which is why the census found
+`PaddingBlocks` and the earlier mutation sweep did not.
 
-Three things about that measurement are worth more than the number:
+## Profile the production build
 
-- **Test the period on frame index, or on wall time with the stalls' own duration
-  removed — never on the raw wall clock.** A spike longer than the period
-  displaces every later frame, so a genuinely periodic trigger cannot stay on a
-  wall-clock grid once the first spike exceeds 500 ms. Tested that way the same
-  data reads "scattered" at mod 500, mod 250 and mod 1000, and the hypothesis
-  looks refuted when it is not.
-- **No refetch is involved.** Every RPC worker profiled **100% idle** through the
-  gesture, so the bench's "this is re-render cost, not network" claim holds at six
-  tracks, and the tick's cost is main-thread or browser-side.
-- **The SIZE is the machine.** The two events were ~6.4 s and 0.4-1.7 s, and the
-  main-thread profile of that same gesture is **82.8% `(program)`** with the
-  workers idle — i.e. the renderer process was not executing JS. At load 16-22 on
-  a box shared with ~10 agent sessions that is descheduling, so the period is
-  JBrowse's and the magnitude is not. An earlier sweep of the same gesture called
-  these 46-55 ms; neither figure is a property of the code.
+Take render **counts** from a dev build and nothing else. React's dev
+instrumentation (`jsxDEV`, `createTask`, `logComponentRender`, the
+performance-track measures) inflates component cost unevenly, so a dev profile
+reorders the ranking — it puts the coordinate ruler on top, where production
+does not. `products/jbrowse-web/browser-tests/profile-zoom.ts` is the harness.
 
-**What the tick actually costs is not the stats computation.**
-`computeVisibleCoverageStats` is a tight typed-array loop over the visible bp span
-— ~19k entries per track here, tens of microseconds — so memoizing it to skip the
-work saves nothing worth measuring. The cost is the invalidation it publishes:
-`coverageStats` -> `coverageDomain` -> `coverageDepthDomain` ->
-`renderState.coverageMinDepth`/`MaxDepth`, and `renderState` is tier 5, a full
-canvas repaint, per open track, on one tick. Both of the first two build a fresh
-object every evaluation, so the chain runs and the repaint happens **even when
-every value is unchanged**.
-
-The obvious response is a **value-equality memo on `coverageStats`** — return the
-previous object when the stats are equal, and MobX's default `===` comparer stops
-the chain there. **Counted, and it has no case to fire in.** Six tracks, 360
-frames, `jb2bench/scripts/render/coarsetick.probe.ts`: 4 coarse ticks over the
-gesture, and at every one of them the stats **changed for all six displays — 0 of
-24 equal**. Each display took exactly 5 distinct values: its initial one plus one
-per tick.
-
-That is not a near miss, and in hindsight it is what the tick *is*. The coarse
-blocks update only once the view has moved far enough to warrant it, so a new
-coarse window covers different data and min/max/mean move with it. A stationary
-view does not tick at all — MobX caches the computed and nothing invalidates it —
-so there is no third state in which the values repeat.
-
-**So the per-tick recompute and repaint are WARRANTED work, not redundant work**,
-and that closes the suppression direction entirely. What is left for this tick is
-either to stagger it, so N tracks and the SearchBox stop landing on one frame — a
-real option, and one that trades a briefly stale axis for smoothness — or to make
-the repaint itself cheaper, which is the React/Emotion item above and not specific
-to this tick at all.
-
-Measuring it also confirms the ~500 ms period by a second route: 4 ticks over
-~2.2 s of frames, arrived at with no reference to the frame gaps.
-
-## Profile the production build, or you will rank the wrong components
-
-**Measured 2026-08-23**, scroll-zoom on a four-track LGV (variants + MAF +
-multi-wiggle + synteny), production bundle served statically, Chrome CPU profile
-resolved through the build's sourcemaps. `products/jbrowse-web/browser-tests/profile-zoom.ts`
-is the harness.
-
-The section above asks for "a React-render-level measurement (React DevTools
-profiler or render counters)" as the honest next step. **Take the render COUNTS
-from a dev build and nothing else.** Component costs measured there are inflated
-by React's dev instrumentation — `jsxDEV`, `createTask`, `logComponentRender`,
-the component performance-track measures — and the inflation is not uniform, so
-it reorders the list:
-
-| inclusive, one ~7s gesture | dev build | production |
-| -------------------------- | --------: | ---------: |
-| `ScalebarCoordinateLabels` |     275ms |       12ms |
-| `ZoomTransform`            |     249ms |        5ms |
-| `PaddingBlocks`            |     238ms |        6ms |
-| `Gridlines`                |     113ms |        4ms |
-
-A dev profile puts the coordinate ruler back at the top of the list, which is
-where the 2026-07-11 mutation count also put it and where it no longer belongs
-once the keys were pooled. In production the ruler is 12ms and the marker
-overlays — which the DOM-mutation method could not see at all, because they are
-canvases — were the top cost.
-
-Two further traps in that measurement, both of which produced a confident wrong
-answer before they were caught:
+Traps that each produced a confident wrong answer:
 
 - **Charging a message its enclosing task overstates it.** Booking each
-  `HandlePostMessage` the duration of the `RunTask` containing it attributed 1284ms
-  (23% of main-thread busy) to worker RPC traffic. Cutting that traffic by 92%
-  moved total busy time by ~0%: the tasks were mostly the renders the messages
-  triggered, and true per-message overhead was ~200ms. Sum the event's own `dur`.
-- **A gesture driven by `page.mouse.wheel` measures the wrong thing.** Each call
-  is a CDP round trip the page's own busyness delays, so a SLOWER build ran a
-  shorter gesture and traced less work. Drive the wheels from inside the page on
-  a wall-clock schedule, and bound the sweep by `bpPerPx` rather than by a wheel
-  count — the zoom rate limiter is per elapsed-ms, so a fixed count leaves each
-  run at a different place on the scale, rendering different amounts of detail.
-  Before that bound, run-to-run variance in main-thread busy was ~16% and swamped
-  everything being measured.
+  `HandlePostMessage` the duration of its `RunTask` blamed worker RPC traffic
+  for what were the renders it triggered. Sum the event's own `dur`.
+- **`page.mouse.wheel` measures the wrong thing.** Each call is a CDP round trip
+  the page's busyness delays, so a slower build runs a shorter gesture. Drive
+  wheels from inside the page on a wall-clock schedule, and bound the sweep by
+  `bpPerPx` rather than a wheel count — the zoom rate limiter is per elapsed-ms,
+  so a fixed count ends each run at a different scale. Two arms over different
+  `bpPerPx` ranges render different detail and cannot be compared.
+- **Do not profile headless.** Headless Chrome falls back to Canvas2D, and
+  bar-by-bar wiggle drawing swamps the trace. `profile-zoom.ts` is headed unless
+  `HEADLESS` is set; `--headed` is `probe-zoom-churn.ts`'s flag.
+- **The top-self list is truncated** (`.slice(0, 22)` over the sampled frames),
+  so a self-time read from it is a floor. `topSelf` (v8 samples) and
+  `styleRecalc` (Blink trace events) are independent instruments, so never add a
+  self-time column to a forced-recalc total.
 
-### Any canvas text op flushes the document's style
+### Read the A/A floor before the delta
 
-The finding worth carrying to other overlays. Setting `ctx.font` **or** calling
-`ctx.fillText` makes the browser resolve the canvas element's computed font,
-which flushes the whole document's pending style recalc. `fillRect` does not.
-Measured in isolation, 200 iterations against a dirty DOM: `fillRect` 11.8ms,
-`ctx.font` set to the value it already holds 73.4ms, `fillText` 72.1ms — and
-with the DOM clean, the same `ctx.font` write is 0.0ms.
-
-An `OverlayCanvas` draws from a passive effect, which runs immediately after
-React commits a frame of dirty inline styles, so the first overlay to touch text
-is charged for the entire document recalc. MAF's deletion labels cost 272ms a
-gesture and its insertion labels 385ms doing this at zoom levels where the rows
-are too short to render a single letter. Both now decide whether any label will
-draw before touching text state; insertions fell to 40ms.
-
-So: **an overlay that draws text must gate the text work on something actually
-being drawn**, and caching `ctx.font` yourself does not help — `fillText` pays
-the same flush.
-
-**That 40ms is regime-specific, and comparing across regimes will look like a
-regression.** It was taken where the rows are too short for a letter, so the
-gate suppresses the flush entirely. A sweep that spends part of its time zoomed
-in enough to draw labels pays it legitimately: the default `profile-zoom` sweep
-(0.5-4 bpPerPx) flushes on ~85 of ~573 frames and books ~140ms, because a
-`large` insertion labels at any zoom once its row clears
-`MIN_HEIGHT_FOR_TEXT` — only `small` ones wait for `MIN_PX_PER_BP_FOR_TEXT`
-(6.5), which that sweep never reaches. Quote the zoom range with the number. The corollary is that the flush cost is proportional to how much
-React just dirtied, which is the same "too many components re-render per frame"
-problem this page has been circling, reached from the canvas side.
-
-### What is left, in production, after 2026-08-23
-
-The pass that landed (`perf(zoom)`, 1dd2e3f) took the median frame rate from 34
-to 41fps and pinned the p50 frame interval at 16.8ms across every run, where the
-baseline flipped to 32ms on a third of runs. Main-thread busy moved ~3%: the win
-is frame pacing, not throughput, and the remaining budget is roughly:
-
-- **Instance encoding on the main thread, inside the RPC message handler**:
-  MAF's instance encode (`buildMafChannels` now) 126ms, wiggle `pack` 110ms,
-  `autoscale` 111ms. These are
-  the largest identified block of real compute left.
-- **Stop tokens without cross-origin isolation**: `Blob` + `createObjectURL`
-  94ms, plus the stop broadcast to every worker in the pool, 79ms of
-  `postMessage`. Gone since ADR-122; a trace from before it still shows them.
-- **React commit**: `react-dom` self time 651ms, `setAttribute` 81ms. Still the
-  largest single block, and still the same answer — fewer components per frame.
-
-### The four fixes after that pass, A/B'd
-
-**Measured 2026-08-24**, same harness and session, two production builds per arm
-alternating main / branch, each figure the mean of that arm's two runs.
-
-**The control is built into the design, and read it first.** The two builds
-within an arm are identical source, so their spread is this harness's floor for
-that metric — the `floor` column. A row whose delta does not clear its own floor
-says nothing, however plausible its mechanism, and three rows here are in that
-state.
-
-**Two instrument limits that bound every number on this page.** The top-self
-list is `.slice(0, 22)` over ~920 distinct sampled frames, so a self-time figure
-taken from it is a FLOOR, not a total — the `react-dom` self time reads 340ms as
-four surviving frames here and 651ms in the fuller 2026-08-23 accounting, and
-those are not in conflict. And `topSelf` (v8 samples) and `styleRecalc` (Blink
-trace events) are independent instruments that do not subtract from each other,
-so a style recalc run synchronously inside a canvas text op is plausibly counted
-in both. Do not add a self-time column to a forced-recalc total.
+`zoom-token-churn` builds each arm twice from identical source, so the spread
+between those builds is the `floor` column. A delta that does not clear its own
+floor says nothing, however plausible its mechanism.
 
 <!-- BEGIN GENERATED MEASUREMENT zoom-token-churn -->
 
@@ -368,258 +172,75 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT zoom-token-churn -->
 
-Two rows clear their floor:
+Only the two bold rows clear their floor. Main-thread task counts vary by more
+than the effect between identical builds, so do not quote a task count off this
+harness. Between-build drift on a frame neither arm touched exceeds the tighter
+floors, so treat any single self-time frame as noisy at that scale. The `Blob`
+and `postMessage` rows predate the stop token's removal (ADR-122); a trace from
+before it shows a blob-URL probe and `createObjectURL` frames that no longer
+exist.
 
-- **One shared `Blob` behind every token retires the whole `Blob` frame** — 61ms
-  against a 4ms floor, and mechanically certain besides (one blob per session
-  instead of one per token). The 61ms was the constructor, not
-  `createObjectURL`, which is unchanged at ~100ms and is still the substantial
-  cost — the split the 94ms figure above hides.
-- **Guarding the repeat stop cuts `postMessage` by 30%**, 30ms against an 8ms
-  floor: a token was stopped two or three times over and every repeat fanned out
-  to the whole pool.
+### Any canvas text op flushes the document's style
 
-The rest do not, and saying which is the point of the table:
+Setting `ctx.font` **or** calling `ctx.fillText` resolves the canvas element's
+computed font, which flushes the whole document's pending style recalc;
+`fillRect` does not. An `OverlayCanvas` draws from a passive effect right after
+React commits a frame of dirty inline styles, so the first overlay to touch text
+pays the whole recalc. **An overlay that draws text must gate the text work on
+something actually being drawn** — caching `ctx.font` does not help, since
+`fillText` pays the same flush. MAF's insertion and deletion labels do this.
 
-- **Task and worker-message counts are unusable here.** Main-thread tasks vary
-  by ~2570 between two builds of the SAME source, so the 1015 that looked like a
-  win is inside the floor by more than double. Do not quote a task count off
-  this harness at all until something stabilises it.
-- **The autoscale clip is not resolvable by this harness.** Its two frames sit
-  near the top-self cutoff, so one arm reports them and the other does not, and
-  the effect is the size of the truncation. The instrument that does resolve it
-  is an isolated A/B of the function itself — 1.15–1.4x, same answer verified
-  across a sweep of windows — and that is what the claim should rest on.
-- **The `LoadingOverlay` timer rewrite shows nothing either way.** Its
-  `setTimeout` + `clearTimeout` self time came out ~25ms worse, which reads like
-  a regression until you notice the floor on that row is 27ms and that timer
-  INSTALLS are flat to slightly down. Both frames aggregate every timer in the
-  app and neither can isolate one hook. Keep the rewrite for its pinned
-  semantics, not for a win; proving the per-pulse saving needs a counter around
-  the hook, not a whole-app profile.
+Text-flush cost depends on the zoom regime: a sweep that zooms in far enough to
+draw labels pays it legitimately. Quote the `bpPerPx` range with the number.
 
-**`main busy` did not move, and could not have.** Its own floor is 67ms, so a
-~100ms effect on a 5.7s gesture is at the edge of detection at two runs an arm.
-"unchanged" here means "not detectable by this design", not "zero" — and a
-design that could see it needs many more repetitions than a per-arm rebuild
-makes affordable.
+## A loaded box owns the magnitude, the code owns the period
 
-**Between-build drift is larger than an arm's internal spread suggests.**
-`deletions.ts`, which neither arm's change touches, came out 17ms lower in the
-branch arm across both pairs. Treat ~17ms as the practical floor for any single
-self-time frame here, not the 4-8ms the tighter rows imply.
+A pan's p99 is periodic: over-budget frames land on the coarse-block update
+(`coarseDynamicBlocks`, about every ~500 ms during a gesture), which
+invalidates `coverageStats` → `coverageDomain` → `renderState` and repaints
+every open track's canvas on one frame. `multibam.ts` persists raw per-frame gaps
+(`rows[].gaps`) for this.
 
-## Count the renders in jsdom before you profile a build
-
-**Built 2026-08-30**, and it is the instrument this page asks for four times
-over — "pinning down which ones needs a React-render-level measurement (React
-DevTools profiler or render counters), not a CPU flame graph". It needs neither
-of those, and no browser.
-
-`mobx-react-lite` names every function component's reaction
-`observer<ComponentName>`, and `Reaction.track` wraps the render itself rather
-than only the invalidation, so `mobx.spy()` filtered to `type: 'reaction'`
-events **is** the per-component render count, with no component instrumented.
-`products/jbrowse-web/src/tests/renderCensus.ts` is that; `ZoomRenderCensus.test.tsx`
-drives a geometric `zoomTo` ramp over a real multi-track session and prints the
-ranked count beside a `MutationObserver` tally of where the DOM churn lands.
-One run, ~20s, no rebuild per arm. It prints a one-line summary per arm; pass
-`ZOOM_CENSUS=1` for the per-component tables.
-
-**Two limits, and a budget written here must respect both.** A child re-rendered
-purely by a parent's fresh props runs no reaction of its own, and `mobx` reports
-spy events only in its development build — so a count is a FLOOR on React's real
-work. And only part of it is deterministic: the overlay, ruler and scalebar
-components are a function of the zoom steps alone and repeat to the integer,
-while anything downstream of a fetch (`DisplayLoadingOverlay`,
-`DisplayChromeBaseInner`, `FetchVisibleRegions`, `AppReadyMarker`) moved by up
-to 2x between runs of identical source, because how many refetch rounds land
-inside 20 frames is a wall-clock race. Quote the first group; read the second.
-
-### What it says about the production ranking above
-
-The dev-build table above warns that dev profiles reorder the component list,
-and this is a third instrument agreeing with the production column rather than
-the dev one — with one addition it can see and neither profile could.
-
-**`ZoomTransform` tops the census and is not a target.** 7.6 renders a frame,
-and its total is `PaddingBlocks` + `Gridlines` **exactly**: 152 = 114 + 38 over
-20 frames. `observer` wraps `React.memo`, and a fresh `children` element defeats
-the compare, so it re-renders once per parent render and has no reaction of its
-own to stop; dropping `observer` from it would save nothing. Do that arithmetic
-on any wrapper before optimizing it.
-
-**Structural churn was still the expensive class, and `PaddingBlocks` had the
-scalebar's bug.** It keyed its divs by block identity; a zoom moves every block,
-so React rebuilt the list each frame — in a component mounted once per track
-plus once for the container, so the cost scaled with the session. At eight
-tracks that was **360 structural mutations over 20 frames**, and the entry
-leaves the tally once the list is keyed positionally. The July DOM-mutation
-sweep could not have found it: that method attributes to the nearest
-`data-testid`, and these divs sit under `tracksContainer` with every other
-overlay.
-
-**The largest single win was an overlay that had nothing to draw.** A view
-sitting inside one contig has no region seam, no elision and no boundary, so
-`paddingSpans` is empty — and that is where a reader spends nearly all of a
-session, not an edge case. Every track still mounted a `PaddingBlocks` that
-rendered an empty list inside a `ZoomTransform`, and that wrapper reads
-`staticBlocks`, so each one re-rendered and rewrote its transform every frame of
-every gesture to position nothing. Returning one shared frozen array from the
-getter (so the computed's value repeats and MobX stops there) and `null` from
-the component took **63.9 DOM mutations a frame to 50.5** at four tracks over a
-20-frame zoom, with `PaddingBlocks` leaving the census entirely and
-`ZoomTransform` falling **160 to 40**, `Gridlines` being its only parent left.
-Both scale with the track count.
-
-Read the per-component numbers rather than the gesture's render total. The
-totals move by more than 20% across runs of identical source — 852 and 662
-before, 422 and 448 after, on four measured runs — because they carry the
-fetch-driven renders the section below says to read rather than quote. The
-components above are exact on every run.
-
-Worth stating as a rule, because it is invisible to every profile above: **a
-computed that rebuilds a fresh empty array is not free — it re-renders every
-observer that reads it.** The arms of this census that start at offset 0 keep a
-boundary block on screen throughout and never see this at all, which is why the
-mid-contig arm exists.
-
-**The rule that generalises is narrower than "pool every list".** A zoom changes
-every `paddingSpan` key and every scalebar tick key, which is what made those
-two rebuild wholesale. It does not change a feature's id, so
-`FloatingLabelsLayer` already pools across a zoom and only culling churns it —
-positional keys there would trade a handful of mounts for repainting every
-surviving label. Pool where the gesture changes every key.
-
-**An array-rebuilding computed re-renders every observer that reads it, and the
-clamp has to be inside.** `visibleRegions` rebuilds fresh objects every frame,
-so both wiggle bodies re-rendered per frame to derive a legend edge that is
-usually the unchanged `trackWidthPx` — 66 renders over 20 frames, 7 after the
-view published `contentRightEdgePx`. Publishing the raw edge would have changed
-nothing: `Math.min(trackWidthPx, …)` is what makes the value repeat, so it has
-to happen where MobX can stop at it.
-
-### Three census readings that closed no work
-
-- **Gene labels are not a structural cost.** Censused at 10-69 bpPerPx,
-  `FloatingLabelsLayer` renders under once a frame with 1.6 structural mutations
-  a frame against the chrome's 55 attribute writes. The volvox gene track is
-  small, so widen the fixture before re-asking.
-- **The zoom slider's 5.7 mutations a frame stay.** Reading `coarseBpPerPx`, as
-  `SearchBox` does, would bring back the thumb trailing the zoom that
-  `HeaderZoomControls` killed MUI's transition to stop.
-- **The wheel-driven arm books 2158ms in rAF callbacks**, far above the
-  scripted arm, but the two covered different `bpPerPx` ranges, so the number
-  means nothing until a matched run.
-
-## The census checked against a real browser
-
-**Measured 2026-08-30**, headed Chrome on a real GPU, production build,
-`ctgA:20000-24000` with eight tracks, six zoom clicks, one build per arm.
-`products/jbrowse-web/browser-tests/probe-zoom-churn.ts` is the harness — the
-browser counterpart of the jsdom census, attributing every DOM mutation to its
-nearest `data-testid` the way the 2026-07-11 sweep did.
-
-| mid-contig, 8 tracks, 6 zoom clicks    |  main | with the padding-overlay fixes |
-| -------------------------------------- | ----: | -----------------------------: |
-| DOM elements                            |   571 |                            541 |
-| elements carrying an inline `translateX`|    40 |                             30 |
-| attr churn, `ZoomTransform` containers under `tracksContainer` | 920 | **90-96** |
-| DOM mutations, total                    | 3,375 |                    2,762-2,823 |
-
-Ten fewer elements carry a `translateX`, and the count is exactly accounted
-for: `PaddingBlocks` mounts once per track (`TrackContainer`), once for
-`TracksContainer` and once for the `Scalebar`, so eight tracks is ten instances,
-and mid-contig none of them renders. The per-frame attribute churn on them falls
-by **90%**. That is the jsdom census's
-`ZoomTransform` 160 -> 40 reproduced in a browser, at twice the track count, so
-the jsdom numbers describe the app rather than the shim.
-
-**Read the structural row as noise here, and it is instructive why.**
-Mid-contig `paddingSpans` is empty on BOTH arms, so the positional-key fix has
-nothing to pool and contributes nothing; the structural counts came out 545,
-628 and 706 across three runs of two arms, which is the scalebar tick pool and
-fetch-driven label churn moving run to run. The two fixes have different
-regimes, and a single sweep cannot show both: the keys matter where spans exist
-(genome start, multi-region, whole-genome) and the empty-return matters where
-they do not. Running the same probe with `--start` confirms the other half is
-intact — `paddingSpans` 1, 45 translated elements against mid-contig's 30, so
-the overlay still renders where it has something to draw.
-
-**Do not profile this headless.** A first attempt through `profile-zoom.ts`
-with `HEADLESS=1` came back with `fillRect` at 2,756ms of 5,938ms sampled and an
-empty `component renders:` list: headless Chrome fell through WebGL to Canvas2D,
-and eight wiggle tracks drawing bar-by-bar swamped every signal the run was for.
-The harness's own note says the React/DOM side is the same headless — it is, but
-only if something else is not eating the trace. `profile-zoom.ts` reads
-`HEADLESS` and is headed by default, so the fix is to leave that variable unset;
-`--headed` is `probe-zoom-churn.ts`'s flag and does nothing here.
+- **Test the period on frame index**, or on wall time with the stalls removed. A
+  spike longer than the period displaces every later frame, so a raw wall-clock
+  test reads a periodic trigger as scattered.
+- **The spike's size is the machine.** On a box at high load the main-thread
+  profile reads mostly `(program)` with every worker idle — the renderer was
+  descheduled. Attribution is worthless in that state.
+- **The per-tick recompute is warranted, not redundant.**
+  `jb2bench/scripts/render/coarsetick.probe.ts` found the stats changed for
+  every display at every tick, since a new coarse window covers different data
+  and a stationary view does not tick. A value-equality memo on `coverageStats`
+  has no case to fire in — declined. What remains is staggering the tick across
+  tracks or making the repaint cheaper.
 
 ## The model's work per step is a gate, not a probe
 
 `workCensus` (`packages/display-test-utils/src/workCensus.ts`) counts what the
-models do rather than what React renders. Each row display's
-`workCensus.test.ts` and the session's `trackWorkCensus.test.ts` snapshot, per
-step, the arranger's runs and the rows handed to them, the calls into
-`rowAlias`, each row stage's recomputes and the named reactions' runs, and for
-the session the index rebuilds, track-list copies, per-id resolutions, working
-copies built and the shown tracks whose config woke a reader. A recompute is
-counted by wrapping the computed's `derivation`, so a cached read counts
-nothing, and every count is an integer on a fake clock. The census cannot see
-cost inside one run beyond the alias calls: the phased variant display's 1.7×
-arrangement regression moved an arranged arrival's `alias` from 20 to 32 while
-`arrange` stayed 1, and a memoized alias counts the same as one that re-parses.
-It sees no React render, no upload or draw (the two render autoruns install
-when a backend attaches, which no test environment does) and no millisecond,
-and it tells reactions apart by name alone. The render census and
-`probe-zoom-churn.ts` above remain the instruments for those.
-
-## The stop-token probe, for whoever finds it in a trace next
-
-A trace taken before 2026-09-15 shows the blob-URL probe (a synchronous XHR per
-throttled check, 408 ms across six tracks' cold load) and a `createObjectURL`
-frame beside it. Neither exists any more: cancellation is an `AbortSignal` and a
-loop that never awaits yields a task instead (ADR-122). The mint count that
-was chased here — 8 tokens across a 20-frame zoom — was never the frame, and
-the frame itself was never attributed.
+models do. Each row display's `workCensus.test.ts` and the session's
+`trackWorkCensus.test.ts` snapshot integer counts per step on a fake clock —
+arranger runs, `rowAlias` calls, row-stage recomputes (counted by wrapping each
+computed's `derivation`, so a cached read counts nothing), named reaction runs,
+and the session's index rebuilds and config reads. It cannot see cost inside one
+run beyond the alias calls (a memoized alias counts the same as one that
+re-parses), nor React renders, uploads, draws or milliseconds. The render census
+and `probe-zoom-churn.ts` cover those.
 
 ## A stalled main thread scrolls the page in Firefox, never in Chrome
 
-**Measured 2026-09-24**, headed Chrome 154 and Firefox Nightly 156, on a bare
-page whose non-passive wheel listener always calls `preventDefault`, with the
-main thread busy-looped for 300ms, 600ms and 1.5s while wheels arrive.
+With a non-passive wheel listener that always calls `preventDefault`:
 
-- **Chrome waits for the handler however long the stall lasts.** The page never
-  scrolled; the queued wheels arrived merged (10 sent, 6 delivered) and all
-  cancelable. In the app at 4x CPU throttle over eight tracks, every wheel over
-  the tracks was prevented, no scroller moved, and the tracks area saw no
-  `mouseleave`.
-- **Firefox gives up after `apz.content_response_timeout`, 400ms by default**,
-  and scrolls the page for the rest of that wheel transaction. So a task over
-  400ms during a scroll-zoom is a page scroll for a Firefox user, whatever the
-  controller does. No automated run here can show it: puppeteer's Firefox
-  profile raises the pref to 60000, and its wheel actions bypass APZ anyway. The
-  default is what `about:config` reads after a reset.
-- **Chrome re-targets wheels without scroll phases on every event.** A page
-  scroll that carries the tracks under a still pointer hands them the next
-  wheel, cancelable. Phase-carrying input (macOS trackpads) latches its target
-  for the whole phase, which CDP cannot synthesize.
+- **Chrome waits for the handler however long the stall lasts**; queued wheels
+  arrive merged and cancelable, and the page never scrolls.
+- **Firefox gives up after `apz.content_response_timeout` (400ms by default)**
+  and scrolls the page for the rest of that wheel transaction, so a long task
+  during a scroll-zoom is a page scroll for a Firefox user. No automated run here
+  shows it: puppeteer's Firefox profile raises the pref, and its wheel actions
+  bypass APZ.
+- **Chrome re-targets phase-less wheels on every event**, so a page scroll that
+  carries the tracks under a still pointer hands them the next wheel.
+  Phase-carrying trackpad input latches its target, which CDP cannot
+  synthesize.
 
-## How far a wheel zooms is the wheel's, not the frame's
-
-Until 2026-09-24 the wheel controller applied each frame's input capped at
-`MAX_ZOOM_RATE_PER_MS` times the frame's elapsed, and dropped the rest. Measured
-in the app with 120px ctrl+wheel notches: the first notch of a burst zoomed
-1.20x and every later one 1.80x, because only the first frame's elapsed defaults
-to 16.67ms; eight notches zoomed 71x spun 83ms apart and 8.3x spun 25ms apart,
-against 110x asked for. Each notch landed as one frame's jump, then nothing until
-the next. A steady trackpad stream on even frames moved by uneven steps too
-(coefficient of variation 0.30), as its events fell two, three or four to a
-frame.
-
-The controller now keeps what a gesture owes as a backlog in log(bpPerPx), and
-each frame lands a 24ms time constant's share of it under the same rate limit.
-A notch becomes ~80ms of eased motion that totals what it asked for at any spin
-speed or refresh rate, and in simulation the trackpad's variation falls from
-0.38 to 0.15 for about one frame of lag. A 16x cap on the backlog keeps a
-free-spinning wheel from banking a zoom that runs on after the hand stops.
+The wheel controller's eased zoom backlog (`packages/core/src/util/wheelZoom.ts`)
+makes how far a wheel zooms independent of frame timing.

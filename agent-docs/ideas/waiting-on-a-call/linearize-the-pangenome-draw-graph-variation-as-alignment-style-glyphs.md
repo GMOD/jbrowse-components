@@ -39,7 +39,7 @@ The data is mostly there, in the two BEDs `scripts/build_rgfa_tabix.sh` emits:
   allele, so "how much variation sits here" needs no new file.
 
 Two windows of `links.bed.gz` are measured out in
-[reference/PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md#measured-on-the-hosted-hprc-link-index)
+[reference/PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md#the-hosted-hprc-link-index)
 — read it before designing the lane, because four of its findings constrain the
 layout: the haplotype label is a discovery attribution rather than carriage,
 clean deletions carry no donor at all, one segment id resolves 72 of 78 alleles
@@ -57,7 +57,7 @@ and 208,308 on HPRC in 23 s from the hosted indexes alone, columns named
 Build the lane on `drawInsertionMarker` (`@jbrowse/alignments-core`) through an
 `OverlayCanvas` pass plus a second `PaintLayer` call on the SVG export, the seam
 two other displays already draw indels through — rules and counter-example in
-[reference/PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md#indel-glyphs-shipped).
+[reference/PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md#indel-glyphs).
 Not a new display type, not a shader.
 
 ## One lane, not rows

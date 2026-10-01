@@ -8,29 +8,24 @@ kind: spec
 # React Compiler × MobX: memo-dependency coarsening
 
 `babel-plugin-react-compiler` is on globally (`babel.config.cjs`), so it compiles
-app code for the browser too — this is a production effect, not a test artifact.
-When it memoizes a block, it can drop a MobX update, because MST nodes mutate in
-place while keeping stable identity.
+app code for the browser too. When it memoizes a block, it can drop a MobX update,
+because MST nodes mutate in place while keeping stable identity.
 
 ## The mechanism
 
 Two ingredients must both be present in a **compiled** function:
 
-- The observable read sits inside a **conditional** (ternary, `&&`, nested
-  ternary), so the compiler can't hoist it to an unconditional per-render
-  `const` and it stays inside a memoized block.
+- The observable read sits inside a **conditional** (ternary, `&&`), so the
+  compiler cannot hoist it to an unconditional per-render `const`.
 - That same block passes the node **whole** to a child (`<Child model={model}/>`),
   which coarsens the block's memo dependency from `model.canvasDrawn` to `model`
   identity.
 
 MobX mutates `canvasDrawn` in place with `model` identity stable, so the block
-never re-evaluates, the read never re-runs (MobX unsubscribes), and stale JSX is
-returned. Only a **stable-identity** carrier is at risk — MST nodes
-(`model`/`view`/`display`/`session`). A plain prop or local recreated when its
-content changes gets a fresh identity, so the coarse gate still fires.
-
-An unconditional read is emitted verbatim and re-read every render, so MobX
-tracks it and it stays live. The same rule stated for a method call:
+never re-evaluates, MobX unsubscribes, and stale JSX returns. Only a
+**stable-identity** carrier is at risk (MST `model`/`view`/`display`/`session`); a
+prop or local recreated on change gets a fresh identity. An unconditional read is
+re-read every render and stays live:
 
 ```js
 const a = model.someGetter;        // re-read every render → SAFE
@@ -44,60 +39,42 @@ else t1 = $[2];
 > render. Property/getter reads are safe.
 
 This is not an upstream bug: coarsening is sound under the compiler's contract
-(don't mutate props/state); MobX violates that by design. The escape hatch
-(`'use no memo'`) is the intended fix, and the cases that work are accidental
-alignment, not a guarantee.
+(don't mutate props/state), and MobX violates it by design. `'use no memo'` is the
+intended fix.
 
-## What is compiled, and what that means in practice
+## What is compiled
 
-- **Inline `observer(function(){})` / `observer(()=>…)` is NOT compiled** — the
-  house style, so most MobX reads never reach the compiler. Always write
-  observers this way.
-- **`function Decl(){}; observer(Decl)` IS compiled** — avoid it, or add
+- **Inline `observer(function(){})` / `observer(()=>…)` is NOT compiled.** This is
+  the house style; always write observers this way.
+- **`function Decl(){}; observer(Decl)` IS compiled.** Avoid it, or add
   `'use no memo'`.
 - **`use`-prefixed functions are hooks and ARE compiled**, even when every caller
-  is an inline observer. "No compiled observers" ≠ "no compiled MobX reads".
-- **Setters/actions in hooks are safe**: `model.setX(...)` in a handler or effect
-  memoizes the callback identity, not a value.
+  is an inline observer. A hook wrapping a model method (`useOverlayState` over
+  `getTrackOverlayData()` in breakpoint-split-view) froze at first-render values;
+  the fix inlined the hook into its one caller. Its regression guard is a browser
+  test ("overlay connectors track pan and zoom"), since catching it needs a real
+  pan and zoom.
+- **Setters/actions in hooks are safe**: they memoize the callback identity, not a
+  value.
 
-## Live status
+`DisplayChromeBaseInner` carries `'use no memo'` and is the only compiled
+`observer`; its early-`return` terminal branches are a style choice, and
+`DisplayChrome.test.tsx` guards the behavior. `DisplayContextMenu` passes
+`menuItems={() => model.contextMenuItems()}` as a thunk called on open, so no
+render-time method read remains; `contextMenuInfo` is a fresh object per
+right-click, which would also defeat staling if the call were ever inlined.
 
-- `DisplayChromeBaseInner` carries `'use no memo'` — the only compiled
-  `observer` in the codebase. Its early-`return` terminal branches are now a style choice, not
-  a correctness requirement; `DisplayChrome.test.tsx` guards the behavior.
-- The breakpoint-split-view overlay shipped a real bug from this rule and no
-  longer can. `useOverlayState` wrapped `getTrackOverlayData()`, and being
-  `use`-prefixed it got compiled even though every caller was an inline
-  observer: the offsetPx/scrollTop/height snapshot froze at first-render values
-  while the `getX` closure it returned kept reading `bpPerPx` live, so panning
-  froze the connectors and zooming threw them millions of px off-screen.
-  `'use no memo'` fixed it; 583e0665d2 then inlined the hook into its one
-  caller, which removes the hazard at the source — an inline
-  `observer(function(){})` is left alone. The regression guard stays a browser
-  test (`browser-tests/suites/breakpoint-split-view.ts`, "overlay connectors
-  track pan and zoom") because catching it needs a real pan and zoom.
-- The variant displays' `model.contextMenuItems()` no longer runs during
-  render at all: `DisplayContextMenu` passes it as the thunk
-  `menuItems={() => model.contextMenuItems()}` and calls it when the menu opens,
-  so there is no render-time read left to coarsen. What `ContextMenuMixin` holds
-  is `contextMenuInfo`, an object extending `{ clientX, clientY }`
-  (`ContextMenuAnchor`) built fresh on each right-click, with `undefined` as the
-  closed state. Were the call ever inlined into JSX again, that freshness is what
-  would keep it from staling — and it would stop protecting anything the moment
-  the info became a stable value.
-- A repo-wide observer opt-out and a custom ESLint rule were both rejected: an
-  audit compiling all 431 tracked `observer` `.tsx` files found 14 coarsened
-  reads, all benign (props/locals recreated on change, or non-observables like
-  `classes` from `useStyles`), and only the compiled output truly discriminates —
-  source heuristics over- and under-match.
+A repo-wide observer opt-out and a custom ESLint rule were rejected: compiling all
+tracked `observer` `.tsx` files found only benign coarsened reads, and only the
+compiled output discriminates, since source heuristics over- and under-match.
 
 ## Writing or auditing a hook that reads MobX
 
-Prefer passing already-read *values* in, or keep the read a plain property
-access. If you must call a model method that reads observables, add
-`'use no memo'` with `// eslint-disable-next-line react-compiler/react-compiler`
-above it — the ESLint plugin wrongly calls the directive unused, while the babel
-plugin that builds the app really does compile the function.
+Pass already-read *values* in, or keep the read a plain property access. If you
+must call a model method that reads observables, add `'use no memo'` with
+`// eslint-disable-next-line react-compiler/react-compiler` above it (the ESLint
+plugin wrongly calls the directive unused; the babel plugin that builds the app
+does compile the function).
 
 To check a suspicion, compile the file and look for a `_c(n)` cache around the
 call:
@@ -106,39 +83,27 @@ call:
 babel.transformSync(src, { filename, presets: [['@babel/preset-react',{runtime:'automatic'}],'@babel/preset-typescript'], plugins: ['babel-plugin-react-compiler'] })
 ```
 
-Unit tests do run the compiler, but only catch this if they re-render after
-mutating the observable.
+Unit tests run the compiler but catch this only if they re-render after mutating
+the observable.
 
-## The uncompiled half, and the job that runs it
+## The uncompiled half
 
-`pnpm test` and every app bundle compile. The **published packages do not** —
-`build:esm` is plain tsc, so an npm consumer of `@jbrowse/plugin-*` executes code
-no compiler ever saw. `pnpm test-ci-no-react-compiler` (`NO_RC=1`, its own
+`pnpm test` and every app bundle compile; **published packages do not**, since
+`build:esm` is plain tsc. `pnpm test-ci-no-react-compiler` (`NO_RC=1`, its own
 `--cacheDirectory` because jest keys entries on file content and transformer
-config and an env var is neither) is the only run that exercises that artifact,
-and CI runs it as "Test (no React Compiler)".
+config, not an env var) is the only run exercising that artifact; CI runs it as
+"Test (no React Compiler)". Its scope is every workspace whose published `main` is
+`build:esm` output: `plugins packages` and `products/jbrowse-react-` (the three
+embedding components set `publishConfig.main` to `esm/index.js`).
 
-Its scope is every workspace whose published `main` is `build:esm` output:
-`plugins packages`, and also `products/jbrowse-react-` — the three embedding
-components (`@jbrowse/react-app2`,
-`@jbrowse/react-linear-genome-view2`, `@jbrowse/react-circular-genome-view2`)
-set `publishConfig.main` to `esm/index.js` exactly like a plugin does. The rest
-of `products` ships bundled and compiled, so the uncompiled path is not an
-artifact they have.
+The gap it closes is the opposite of staleness: the compiler memoizes far more
+than the source's explicit `memo`/`useMemo`, so it **stands in for one that is
+missing** and a sabotage check stays green (`useViewSvgFigure`'s `memo` was
+load-bearing and unverifiable until `NO_RC=1`). A `memo` between a figure and its
+parent never covered an `observer` inside the figure against MobX; that reports
+itself in both runs ([ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md)
+§"Ordering is the contract", the `figure` family).
 
-The gap it closes is the opposite of the staleness above: the compiler memoizes
-far more than the source's explicit `memo`/`useMemo`, so it **stands in for one
-that is missing** and a sabotage check stays green. `useViewSvgFigure`'s `memo`
-was load-bearing and unverifiable by any run in the repo for exactly this
-reason — deleting it failed nothing compiled, and fails the figure's freeze test
-immediately under `NO_RC=1`.
-
-What that `memo` never covered is the other direction, and no run tells you
-either: it sits between the figure and its parent, not between an `observer`
-inside the figure and MobX. That one reports itself in both runs now — see
-[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"Ordering is the contract",
-the `figure` family.
-
-Reaching for `'use no memo'` instead does not work: the compiler memoizes the
-whole chain, so opting out the one component under test moves the absorption a
-level down and the check stays green. Switch the plugin off for the run.
+`'use no memo'` does not substitute: the compiler memoizes the whole chain, so
+opting out the component under test moves the absorption a level down and the
+check stays green. Switch the plugin off for the run.

@@ -308,8 +308,7 @@ The gate judges on two axes, and each stops gating for a different reason:
 "Exempt" in this mixin means force-loaded. `gateExempt` is
 `configForceLoad || forceLoadTrack` and lifts **both** axes.
 [REGION_TOO_LARGE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/REGION_TOO_LARGE.md)
-is the full account, including the four bugs the predecessor had from an axis
-name claiming a term it did not have.
+is the full account.
 
 No display calls the gate by hand. Both fetch runners call it: the three helpers
 in `fetchEachRegion.ts` (`fetchEachRegion`, `fetchAllRegions`,

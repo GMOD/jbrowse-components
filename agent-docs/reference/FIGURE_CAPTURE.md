@@ -7,619 +7,257 @@ kind: operations
 
 # Capturing a figure
 
-Four ways a committed PNG disagrees with what you meant, all of them
+Four ways a committed PNG disagrees with what you meant, all in
 `website/scripts/generate-screenshots.ts` and the browser-test suite rather than
-the app: a callout resolves somewhere you did not intend, the capture lands on a
-frame the data had not reached, the capture path hands back something the
-renderer never drew, or the whole thing takes three minutes because every WebGL
-draw is running on the CPU.
-
-The common lesson across all four is the one that keeps being paid for twice:
-**a figure that looks wrong is a harness bug until the render is ruled out**,
-and each section below records the reading that ruled it out — a legend that
-only exists once data arrived, `toDataURL` against `el.screenshot()`, the
-element rect read after the capture rather than before, a Chrome task trace
-against a JS profile.
+the app: a callout resolves somewhere unintended, the capture lands before the
+data arrived, the capture path returns something the renderer never drew, or
+every WebGL draw runs on the CPU. **A figure that looks wrong is a harness bug
+until the render is ruled out.**
 
 ## Where a callout lands
 
-`website/CLAUDE.md` states the rule: **never hand-measure a callout position —
-every annotation `anchor`s, and a click anchors too.** This is the how, and the
-arithmetic you would otherwise re-derive with a render.
-
-The vocabulary is `AnnotationAnchor` in
-`packages/browser-test-utils/src/annotationOverlay.ts`, shared with the desktop
-selenium harness. Four kinds, in decreasing order of preference: `track`+`locus`
-(the live LGV model), `graphNode` (a GFA segment), `selector`, `text`. Actions
-take the same shape through `website/scripts/locusAnchor.ts`, whose header is
-the writeup of what a stale coordinate cost — `alignments_sort_by_base` kept a
-108bp-era right-click after its spec narrowed to 31bp and read as 17% render
-flakiness for months.
-
-`website/scripts/check-specs.ts` ratchets the count of what is left. The residue is
-deliberate; its comment says which kinds and why.
+`website/CLAUDE.md` states the rule: never hand-measure a callout position;
+every annotation `anchor`s, and a click anchors too. The vocabulary is
+`AnnotationAnchor` in `packages/browser-test-utils/src/annotationOverlay.ts`,
+shared with the desktop selenium harness. In order of preference: `track`+`locus`
+(the live LGV model), `graphNode`, `selector`, `text`. Actions take the same shape
+through `website/scripts/locusAnchor.ts`. `check-specs.ts` ratchets what is left
+unanchored.
 
 ### What the types don't say
 
-Four things, all of which produce a plausible-looking figure rather than an
-error:
+Each of these produces a plausible figure rather than an error:
 
-- **The anchor's `dx`/`dy` and the annotation's own `dx`/`dy` both apply, at
-  different stages.** The anchor's shifts the resolved rect *before* `alignX` /
-  `alignY` are read off it; the annotation's shifts the point afterwards. For a
-  point anchor they are equivalent, which is why the difference goes unnoticed
-  until an `alignX: 'right'` is involved.
-- **A `fromAnchor` is read exactly like an `anchor`**, `alignX`/`alignY`
-  included, so an arrow's two ends align the same way and a tail can sit at an
-  element's edge. It did NOT used to: align was applied to the head and dropped
-  on the tail, which put the tail at the rect's centre while the spec said edge.
-  Silent in every case and loudest on a wide rect —
-  `tcga/mutations_cdh1_histology` asked for a short vertical arrow at a track's
-  left edge and drew a diagonal across the whole panel, half a view width off.
-  A tail leaving one of our own text pills is still not this: use `leader`.
-  Note the anchor's own `dx`/`dy` shift the rect *before* the align is read off
-  it, at both ends, so a spec that encodes half an element's width as a `dx`
-  (what this used to advise) must drop that `dx` when it adopts an align.
+- **The anchor's `dx`/`dy` and the annotation's own both apply, at different
+  stages.** The anchor's shifts the resolved rect before `alignX`/`alignY` are
+  read; the annotation's shifts the point afterwards. They differ only once an
+  `alignX: 'right'` is involved.
+- **A `fromAnchor` reads exactly like an `anchor`**, align included, so a tail can
+  sit at an element's edge. A tail leaving one of our own text pills uses
+  `leader` instead.
 - **A `box` whose anchor sets `fracY` gets a zero-height band**, so `height`
-  falls back to `2 * pad` (12px). Supply `height` explicitly. Omitting `fracY`
-  instead wraps the whole track band — right for a short track, wrong for a
-  130px display holding a 10px glyph.
-- **`pad` insets a box on every side** (default 6), and `width`/`height` given
-  explicitly are used verbatim while `x`/`y` still get the `pad`. Frames that
-  have to meet a row exactly, or meet each other at a breakpoint, want `pad: 0`.
+  falls back to `2 * pad`. Supply `height`. Omitting `fracY` wraps the whole track
+  band.
+- **`pad` insets a box on every side** (default 6); explicit `width`/`height` are
+  used verbatim while `x`/`y` still get the `pad`. Frames that must meet exactly
+  want `pad: 0`.
 
-### A label that points at something is ONE annotation
+### A label that points at something is one annotation
 
-`leader: true` on a `text` annotation draws the label's arrow with it. The
-anchor is then what the callout NAMES, and the annotation's own `dx`/`dy` place
-the label off it: `dx`'s sign picks the side, its magnitude is the gap between
-the target and the pill's facing edge, and `dy` centres the pill on that line.
-The tail comes off the measured pill, so nothing about it is written down.
+`leader: true` on a `text` annotation draws the label's arrow with it. The anchor
+is what the callout names; the annotation's `dx`/`dy` place the label off it
+(`dx`'s sign picks the side, its magnitude is the gap to the pill's facing edge,
+`dy` centres the pill). The tail comes off the measured pill.
 
-Two annotations cannot do this, and the reason is not fixable by better
-numbers. A tail belongs at the pill's edge; a pill's width is only known once
-its text is measured in the page; so a spec can only guess it, and one guess
-fits one label length. `dog10k-size-fst-scan-genome` named three peaks with one
-pair of offsets and got three different gaps — IGF1's arrow stopped 50px short
-of its pill and IGF2BP2's tail vanished inside one — while `ld/lct_fst_scan`'s
-three-letter label floated on its own. Both came back from review as "the
-arrows are no longer next to the text boxes". `oat_homoeologs` was the same
-defect a third time, found by counting the pattern rather than by a reviewer.
+Two annotations (a text and an arrow) cannot do this: a pill's width is known
+only once its text is measured in the page, so a spec can only guess it, and one
+guess fits one label length. A `leader` whose pill covers its own target draws no
+arrow and reports a miss, so the fix (raise `dx`) surfaces as an error.
 
-A `leader` whose pill covers its own target draws no arrow and reports a miss,
-so the fix (raise `dx`) surfaces as a thrown error rather than as a figure with
-a label and no arrow in it.
+`countDetachableLabels` (`screenshot-spec-rules.ts`, run by `check-specs`)
+ratchets text+arrow pairs resolving to the same site; lower `LEADER_BASELINE` when
+converting one. Only sideways pills are fragile, since horizontal is the axis
+whose extent only the page knows.
 
-**`countDetachableLabels` ratchets the rest** (`screenshot-spec-rules.ts`,
-run by `check-specs`), pairing a `text` with an `arrow` whose `fromAnchor`
-resolves to the same site. That is authorship rather than proximity, so it
-cannot fire on an arrow that legitimately starts in open space. Converting one
-moves pixels, so they land as their figures are touched; lower `LEADER_BASELINE`
-when one does.
-
-Only the SIDEWAYS ones are fragile, which is worth knowing before spending a
-regen on a figure that reads fine. Horizontal is the axis whose extent only the
-page knows, so a pill whose arrow leaves through a horizontal edge — every one
-of `lgv_usage_guide`'s toolbar callouts — sits where it was put. The sideways
-ones that look right today are right by coincidence, and go wrong on the next
-edit to a label or a font size.
-
-One trick worth reusing: `parseAnnotationLocus` accepts `..` as well as `-`, so
-a location string printed by the UI (`chr10:122,835,344..122,837,142`) works
-**both** as a `text` anchor finding that cell in the DOM and as a `locus`
-resolving to the feature's pixels. `sv_cgiab/deletion_sv_inspector_search`
-collapses five callouts onto one constant that way, and the callout on the row
-and the callout on the glyph then cannot drift apart.
+`parseAnnotationLocus` accepts `..` as well as `-`, so a UI-printed location
+(`chr10:122,835,344..122,837,142`) works both as a `text` anchor finding the DOM
+cell and as a `locus`; one constant then keeps both callouts together.
 
 ### Converting a hand-placed coordinate without rendering
 
-Rendering to see what happened is slow, and on a shared box a render bakes in
-whatever another agent last built. Everything below comes off the committed PNG.
+Everything comes off the committed PNG.
 
-**Halve everything.** Captures are `deviceScaleFactor: 2`. A `stageColumns`
-grid also gives each panel a 12px white border (`GRID_GUTTER_PX / 2`) in
-captured pixels, so a stage's own (0,0) is at composed pixel (12,12); vertical
-stacks abut with no border.
+- **Halve everything.** Captures are `deviceScaleFactor: 2`. A `stageColumns`
+  grid adds a 12px white border per panel (`GRID_GUTTER_PX / 2`); vertical stacks
+  abut.
+- **x is a locus**, exactly: `locus = windowStart + x * (windowBp /
+  viewportWidth)`, because the tracks container spans the capture width from 0.
+- **y is a depth into a track.** Track labels are in flow by default
+  (`trackLabels` defaults to `offset`, plus `marginBottom: 4`), so in a default
+  1500px capture the first track's rendering container starts at y = 193.
+  Prefer `fracY: 0` plus `dy` when the display packs from its top; use a
+  fraction when rows genuinely divide the height.
+- **A committed figure records what its anchors resolved to.** An anchored
+  arrowhead's tip is its element's centre (ray-cast from the known tail through
+  callout red `#e3242b`). A `box`'s painted rectangle is its element's rect inset
+  symmetrically by `pad + strokeWidth/2`, so its centre is the element's centre.
 
-**x is a locus, and the mapping is exact.** The LGV's tracks container spans the
-capture width with its left edge at 0, so `locus = windowStart + x *
-(windowBp / viewportWidth)`. Verified three ways: `multisv`'s inversion band
-edges, `maf_codon_tooltip`'s tooltip printing the codon its hover landed on
-(`chrI:2,999,247`, from x=351 in a 1250px capture), and `linear_align_ctx_menu`'s
-ruler ticks.
-
-**y is a depth into a track, and the track's top is findable.** Track labels are
-**in flow by default** — `LinearGenomeViewPlugin`'s `trackLabels` slot defaults
-to `offset`, and `TrackContainer`'s `trackLabelOffset` adds `marginBottom: 4` —
-so the label chip pushes the content down and the rendering container starts at
-the chip's bottom edge plus 4. In a default 1500px-wide capture that puts the
-**first track's rendering container at y = 193**, which four unrelated figures
-agree on. Cross-check it against the display: an alignments track's coverage
-band is exactly `coverageHeight` (45 by default) from the container top to the
-first read row.
-
-Prefer `fracY: 0` plus a `dy` over a bare fraction whenever the display packs
-from its top (a pileup, a feature layout): 57px is the second read row whatever
-height the display is given, where a fraction is that row at one height only.
-Use a fraction when the rows genuinely divide the height (the trio VCF's six
-haplotype rows) or when the callout should stay proportional.
-
-**A committed figure already records what its anchors resolved to.** Two
-readings, both exact:
-
-- An **anchored arrowhead's tip is its element's centre**, because the marker is
-  placed base-first at the shortened line end and extends `ARROW_LEN *
-  strokeWidth` forward to the target. Ray-cast out of the known raw tail, keep
-  the longest run of callout red (`#e3242b`), and the far end is the anchor
-  point. That is how `lgv_usage_guide`'s six toolbar controls were placed — all
-  five in the toolbar tier came back at y=121.4, which is its own proof the
-  reading is sound.
-- A **`box` annotation's painted rectangle is its element's rect**, inset by
-  `pad + strokeWidth/2` on each side. The inset is symmetric, so the box's
-  centre *is* the element's centre with no arithmetic at all.
-
-**Then draw the predicted geometry over the committed PNG and look at it.** Ten
-lines of PIL. Catches an off-by-a-row before it costs a render.
+Draw the predicted geometry over the committed PNG and look at it before
+spending a render.
 
 ### When not to anchor
 
-Two cases, and converting them to satisfy a count makes the figure worse:
-
-- **A caption parked in a corner or a margin.** It points at nothing, so the
-  failure anchoring prevents — a callout landing off its target — cannot happen
-  to it, and anchoring *relocates* it: `sv_cgiab/translocation_sv_inspector_view`
-  puts its caption at (60,90) while the `SV_20` row it names is most of a view
-  further down. If one is worth touching it is because it collides with content,
-  and that is a composition fix.
-- **The tail of an arrow leaving one of those captions.** The caption and its
-  tail are one unit in page coordinates. Anchoring only the tail pulls the arrow
-  off the pill it leaves the first time a layout moves, which is worse than
-  either end being raw. Both or neither — and "both" means anchoring the pill to
-  the panel it sits over, the way `inverted_duplication`'s three callouts hang
-  off their pileup track's top edge. Where the whole callout can anchor to what
-  it names, `leader` makes the question moot.
+- **A caption parked in a corner or margin** points at nothing; anchoring
+  relocates it. Fix a collision as composition.
+- **The tail of an arrow leaving such a caption.** Caption and tail are one unit
+  in page coordinates; anchor both (the pill to the panel it sits over) or
+  neither. `leader` makes the question moot where the callout can anchor to what
+  it names.
 
 ### Verifying
 
 `node --experimental-strip-types website/scripts/generate-screenshots.ts --check
---filter <spec> --exact --localport 3355`, which renders twice and touches no
-committed file. `drawAnnotations` throws on any anchor that resolves to nothing
-and an action anchor fails the spec by name, so a clean run *is* the proof every
-anchor resolved; the percentage is the run-to-run drift.
+--filter <spec> --exact --localport <free port>` renders twice and touches no
+committed file. `drawAnnotations` throws on an anchor resolving to nothing, so a
+clean run proves every anchor resolved. Always pass `--localport`: another run
+holding the default port shows up as a blank page and a ready-gate timeout long
+before `EADDRINUSE`.
 
-**Pass `--localport`** — another agent's run holds the default 3334, and the
-collision surfaces as a blank page and a ready-gate timeout long before it
-surfaces as `EADDRINUSE`.
+A clean run does **not** prove the callout is in the picture: one that resolves
+and then draws off-frame is silent. Check the drawn y against the capture height
+when a callout hangs off content whose position a layout chooses.
 
-**A clean run does NOT prove the callout is in the picture.** `drawAnnotations`
-only reports an anchor that resolved to *nothing*; one that resolves and then
-draws off-frame is silent. `pangenome/rgfa_hover_sync` carried the pill that
-answered its review note for a whole round, anchored `dy: +90` off a node the
-force layout puts at the foot of a 1250px capture — so it painted at y≈1299 and
-no reviewer ever saw it. When a callout hangs off content whose position the
-layout chooses, check the drawn y against the capture height rather than
-trusting the run.
-
-Don't regenerate the figure to prove the conversion. The worktree usually
-carries another agent's in-flight display edits and `products/jbrowse-web`'s
-build output is whatever they last built; a figure rendered under that bakes their unlanded
-work into a committed PNG. Land the spec change and let the weekly sweep render
-it on a clean runner.
+Don't regenerate a figure to prove a conversion. A worktree carries other
+agents' unlanded display edits and whatever `products/jbrowse-web` last built;
+land the spec change and let the weekly sweep render it on a clean runner.
 
 ## An empty capture is the generator's readiness race
 
-A canvas/GPU display's figure occasionally captures **empty** (no features), even
-though the same spec renders fine on the dev server and on clean re-runs. This is
-a **screenshot-generator capture race**, not a data/adapter/refName bug, and it
-is written down so the next "empty painting" report doesn't get mis-diagnosed as
-an adapter problem.
+A canvas/GPU figure occasionally captures empty though the same spec renders on
+the dev server and on clean re-runs. It is a capture race, not a data, adapter or
+refName bug. Rule out the data path first, then look at readiness.
 
-### The concrete case (trio-ancestry)
+`canvasDrawn` can flip on an empty first paint, before features are fetched and
+drawn. The first RPC on a session lazily boots the web worker, and the boot needs
+the main thread to answer `readyForConfig`, so a heavy config or loaded machine
+stretches the ready-but-empty window. A fixed `settleMs`, or a `readyText`
+matching the track name, can pass inside it (both flagged in `website/CLAUDE.md`).
 
-`trio-ancestry` (a `LinearMultiRowFeatureDisplay` painting an ASW trio's six
-haplotypes by local ancestry) rendered empty in the committed PNG. It was
-reported — twice — as a data bug: first "BedTabix partition column not read",
-then "refName aliasing broken". **Both were wrong.**
+**Gate on a data-derived DOM signal.** The color legend exists only once data has
+been binned: `FloatingLegend` (`packages/display-ui`) carries
+`data-testid="floating-legend"`, and the spec sets `readySelector:
+'[data-testid="floating-legend"]'`. If data never loads, the wait times out and
+the spec fails loudly.
 
-What was actually true:
+`readySelector` uses puppeteer `waitForSelector({visible:true})`.
+`displayPainted('<name>-display')` fails it: GPU displays paint into a
+`position:absolute` canvas, so the DisplayChrome element has height 0 (exists,
+not visible). Pick a drawn element.
 
-- refName aliasing works. The hosted BED uses `chr1`; the hg38 assembly's
-  canonical refName is `1`; the rename (`RpcMethodTypeWithRenameRegion` →
-  `getRefNameMapForAdapter` → nested `CoreGetRefNames`) maps `1`→`chr1`
-  correctly. Verified end to end.
-- The BedTabix `sample`/`ancestry` extra columns parse fine (`defaultParser`
-  zips `columnNames` to values; `feature.get('sample')` returns the row label).
-- On the dev server the painting renders every time.
-
-The empty capture was **intermittent** — the exact same spec rendered a full
-6-row painting on clean sequential re-runs, and captured empty when the machine
-was under load (concurrent builds).
-
-### Why it happens
-
-The generator's readiness waits at the time keyed off the display's own "ready"
-signals — the loading overlay clearing and the `<testid>-done` suffix, both
-driven by `canvasDrawn`. **`canvasDrawn` can flip on an empty first paint**,
-before the feature data has been fetched and drawn. Under
-a slow first fetch (the first RPC on a session lazily boots the web worker; a
-heavy config or a loaded machine makes that boot slow), the display briefly reads
-as "ready" with nothing painted, and a fixed `settleMs` can elapse inside that
-window — so the capture lands on an empty frame. That paint wait also swallowed
-its own timeout, so a genuinely-never-finished render committed empty rather
-than failing loudly.
-
-Two red flags this matches (both already called out in
-`website/CLAUDE.md`): a capture gated on a **fixed `settleMs`**, and a `readyText`
-that matches the **track name** (present immediately) rather than the rendered
-content.
-
-### The fix pattern: gate on a data-derived DOM signal
-
-Wait on something in the DOM that can only exist **after the feature data has
-loaded and been processed** — not on `canvasDrawn`/settle. The color legend is
-ideal: it renders one entry per binned value, so it is absent until real data
-arrives.
-
-- `FloatingLegend` (`packages/display-ui`) carries
-  `data-testid="floating-legend"` on its box, and the chrome mounts it only
-  once the display's `legendSpec` has a section — for a derived key, only once
-  real data has been binned.
-- The spec sets `readySelector: '[data-testid="floating-legend"]'`.
-
-Result: content-stable (0.000% diff across runs), always the full painting; and
-if data genuinely never loads, the wait times out and the spec **fails loudly**
-instead of committing an empty PNG.
-
-#### Gotcha: the chrome element is 0-height
-
-The obvious signal, `displayPainted('<name>-display')`, does **not** work
-through a `readySelector` (which uses puppeteer `waitForSelector({visible:true})`):
-the GPU displays paint into a `position:absolute` canvas, so the DisplayChrome
-element collapses to **height 0** and never passes the visibility check (it
-`EXISTS` but is not `VISIBLE`). The generator's own waits get away with it
-because they query by **existence** (`querySelector`), not visibility. Pick a
-data-derived, actually-drawn element (legend, a rendered label) for
-`readySelector`.
-
-The generator waits for `[data-app-phase="ready"]` to hold, which already
-covers every display's fetch and first paint, bounded by the spec's
-`readyTimeout`, and then fails the spec over any display still unpainted
-(capture's `waitForFrame`). A page with no canvas display at all — a menu,
-widget, or import-form figure — passes that check at once. A spec's
+The generator also waits for `[data-app-phase="ready"]`, bounded by the spec's
+`readyTimeout`, then fails the spec over any display still unpainted
+(`waitForFrame`). A page with no canvas display passes at once. A spec's
 `settleMs` is unread.
 
-### A canvas below the fold still draws new data
-
-`RenderLifecycleMixin` skips a pan or zoom redraw while a canvas is off screen,
-and draws every upload wherever the canvas is. A fetch commits one region at a
-time, so a rule that skipped every draw after the first would leave a display
-below the fold showing its first region alone under `data-display-drawn="true"`.
-`offscreenTargetRelease.test.ts` pins the rule, and `checkRingsPainted` in
-`@jbrowse/browser-test-utils` backs it up by reading each circular ring before
-and after scrolling to it.
-
+`RenderLifecycleMixin` skips a pan or zoom redraw while a canvas is off screen
+but draws every upload, since a fetch commits one region at a time.
+`offscreenTargetRelease.test.ts` pins the rule and `checkRingsPainted`
+(`@jbrowse/browser-test-utils`) backs it up.
 
 ## A lost WebGL context commits a blank canvas, and the run says nothing
 
-A third way a figure comes out empty, and the one that is not a wait at all: the
-browser drops the display's WebGL2 context mid-capture. The run prints
-`WebGL: CONTEXT_LOST_WEBGL: loseContext: context lost` and
-`[WebGL2Hal #n] context LOST (statusMessage="", live=6)` in the browser log,
-carries on, and reports the spec as succeeded — so what lands in `static/img` is
-the page with its GPU canvases blank, with every readiness gate satisfied.
-`multiway_synteny/grape_peach_cacao_gene_orthologs` committed that way on
-2026-09-17: the gene glyphs and every synteny ribbon were gone, the run said
-`✓`, and the same spec drew the full figure when it was the only one running.
-
-Two things follow.
+The browser drops the display's WebGL2 context mid-capture. The log prints
+`CONTEXT_LOST_WEBGL: loseContext: context lost` and `[WebGL2Hal #n] context LOST`,
+the run reports success, and the committed PNG has blank GPU canvases with every
+readiness gate satisfied.
 
 - **A run that logs a context loss is not a run whose figures you may commit.**
-  Grep the log for `context LOST` before `figures:push`, and re-shoot the specs
-  it names. The ceiling itself is
-  [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md); `live=` in the message is how
-  many contexts were up when the eviction cascade started, and on a loaded
-  machine that is well under the 16 the budget describes.
-- **Concurrency is the lever.** The generator runs four specs at once by
-  default, each a browser with its own contexts, so a figure that stacks GPU
-  displays — a multi-panel synteny view, a breakpoint split view with a pileup
-  per panel — loses them under a sweep and keeps them when filtered alone. Run
-  such a spec on its own.
+  Grep the log for `context LOST` before `figures:push` and re-shoot the specs it
+  names. The ceiling is [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md); `live=`
+  is the count up when eviction started.
+- **Concurrency is the lever.** The generator runs four specs at once, each a
+  browser with its own contexts, so a figure stacking GPU displays loses them
+  under a sweep and keeps them alone. Run such a spec on its own.
 
-**A page crash is the same failure one step further on**, and that one at least
-fails loudly: `Page crashed!`, a retry in a fresh browser, and the spec reported
-as failed with the committed PNG untouched. Four figures crashed every attempt
-on 2026-09-17 at load average 2 as well as 12 — `sv_cgiab/cnv_depth_baf`,
-`ld/lct_haploblock`, `multiway_synteny/hprc_chr12_whole` and
-`cancer_sv/multihop_split_view` — all of them a whole chromosome of scatter, a
-300-row clustered matrix, or three deep pileups at once. There is nothing to fix
-in the spec when this happens: land the spec change and let the sweep, on a
-machine doing nothing else, draw the figure.
+A page crash (`Page crashed!`) is the same failure one step further and fails
+loudly with the committed PNG untouched. Whole-chromosome scatter, 300-row
+clustered matrices and several deep pileups at once crash every attempt; land the
+spec change and let the sweep draw it on an idle machine.
 
 ## The other blank capture: `el.screenshot()` vs the compositor
 
-The section above is the **website generator's** race, and its fix is a better
-readiness wait. The browser-test suite
-(`products/jbrowse-web/browser-tests`) has a second, unrelated one that no wait
-can fix, and the two get confused because the symptom is identical.
+The browser-test suite (`products/jbrowse-web/browser-tests`) has a blank-capture
+race no wait fixes. Every app-level signal was true (overlay down, no display
+`loading`, every display `canvasDrawn`, morph idle) on both canvas2d and webgl, so
+it is neither a driver nor a slowness story.
 
-There, a capture came back blank while **every** app-level signal was legitimately
-true — loading overlay down, no display in its `loading` phase, every display
-reporting `canvasDrawn`, morph idle. Measured 34 of 34 blanks that way, on both
-the canvas2d and webgl backends, so it is neither a GPU-driver story nor a
-slowness one. `preserveDrawingBuffer` and a compositor double-rAF were both
-tested and neither helped (see the handoff for the tables).
+`el.screenshot()` serves composited layers; `canvas.toDataURL()` reads the backing
+store. On a blank capture the two separate the causes: content in the canvas
+means the capture path failed; a blank canvas means the render side failed. A
+"render side" verdict is conclusive on canvas2d only, since a cleared webgl
+drawing buffer reads identically.
 
-The question was settled by asking the canvas instead of arguing about it.
-`el.screenshot()` goes through Chrome's capture path, which serves **composited
-layers**; `canvas.toDataURL()` reads the **backing store** and never touches the
-compositor. So on a blank capture the two answers separate the causes, and one
-occurrence decides it:
+**Those bytes diagnose the blank; they are not a substitute capture.**
+`toDataURL` returns the canvas's own pixels with alpha unflattened, while
+`el.screenshot()` composites the element box over its background and any DOM over
+the canvas. Substituting one produced a false 93% drift against the other
+backend. A differential oracle comparing a backing store against a composited
+layer compares capture paths, not renderers. `assertCanvasHasContent` is the one
+place the backing store is authoritative, because it compares no bytes.
 
-```
-[self-report: canvas 1193x529 HAS content (19442b) while the screenshot is blank
-              -> capture/compositing side]
-[self-report: canvas 1268x100 is ALSO blank -> render side]
-```
+### `el.screenshot()` scrolls the element first
 
-Both verdicts have now been observed. The first is the one that matters: the app
-had drawn, and the capture path handed back an empty image.
+Separate from a blank: the capture is full and byte-stable but wrong in a band at
+the top. Puppeteer scrolls the element into view and Firefox moves an inner
+scroller while `window.scrollY` stays 0, so the canvas top sits under the app
+header and `el.screenshot()` composites 37px of header chrome into the element's
+rectangle. That surfaced as canvas2d-vs-webgpu (Chrome-vs-Firefox) drift of 3-27%
+on the alignments suites. The render was never wrong and the clip rectangle was
+right.
 
-### Those bytes diagnose the blank. They are not a substitute capture.
+- Read geometry **after** the screenshot, with `document.elementsFromPoint` down
+  the band; a `[data-testid]` scan misses untagged layout divs.
+- The band's apparent correlations (coverage strip, zoom level, WebGPU) were all
+  downstream of the scroll; the band is fixed whatever `coverageHeight` is.
 
-The obvious next step — use the `toDataURL` bytes as the capture, since they are
-demonstrably the render — was implemented, measured, and reverted the same day.
-A recovered `targeted_variants-assembly-aliases` came back **93.65% different**
-from the other backend's screenshot of the same view, and the diff image showed
-every glyph landing in an identical place over a wholly different background:
+`captureElementPng` (`browser-tests/snapshot.ts`) is the path every element
+capture takes. It reads the rect through the **selector**, calls
+`page.screenshot({ clip })`, rereads the rect and throws if it moved. A threshold
+override would have excused a harness artifact as a rendering difference.
 
-- `toDataURL` returns the canvas's own pixels with **alpha unflattened**;
-  `el.screenshot()` returns the element box **composited** over what is behind it.
-- `el.screenshot()` also captures any DOM drawn over the canvas, and the selector
-  can name a wrapper holding more than one canvas. `toDataURL` sees neither.
-
-The drawings agree; the capture paths do not. A differential oracle that compares
-one backend's backing store against another's composited layers is comparing
-capture paths, not renderers — and a false 93% drift is much worse for a blocking
-gate than a re-run. So a blank capture fails its test, and the CI gate's
-fresh-browser retry takes it again through the same path on both sides.
-
-`assertCanvasHasContent` is the one place the backing store *is* authoritative:
-it asks "did this display draw" and compares no bytes against anything.
-
-Two further limits:
-
-- **A "render side" verdict on webgl is not conclusive** — a cleared drawing
-  buffer reads identically. On canvas2d it is conclusive.
-- **None of this masks a shader that draws nothing.** That canvas self-reports
-  blank too, and still fails with the render-side verdict.
-
-## The third one: `el.screenshot()` scrolls the element first
-
-Not a blank, and not a race. The capture is full, stable, byte-reproducible, and
-**wrong in a band at the top**, because puppeteer scrolls the element into view
-before capturing and the browsers disagree about whether to scroll.
-
-Found on the alignments suites' canvas2d-vs-webgpu pairs, which are also a
-Chrome-vs-Firefox pair, since WebGPU needs Firefox Nightly. Eight stable
-over-threshold pairs, 3-4% on the targeted captures and 16-27% on the fullpage
-ones, holding to the decimal across runs. Measured with
-`browser-tests/probe-webgpu-coverage.ts`, which prints both capture paths side
-by side and had to be repaired first: `b7f076fe04` swept a node-side selector
-helper into a `page.evaluate` body, so every run of it between that commit and
-2026-08-26 threw `displayPainted is not defined` on its first read.
-
-| | Chrome (canvas2d, webgl) | Firefox (webgpu) |
-| --- | --- | --- |
-| canvas rect before capture | top 197 | top 197 |
-| canvas rect **after** capture | top 197 | **top 124** |
-| `window.scrollY` after | 0 | 0 |
-| painted over the canvas after | nothing, rows 0-38 | locstring box 12px, untagged toolbar divs 8px, ruler 17px |
-
-Firefox moves the element up 73px with `window.scrollY` still 0, so an inner
-scroller moved. The canvas top then sits under the app's header, and
-`el.screenshot()` composites that header into the element's rectangle:
-12 + 8 + 17 = **37px**, which is exactly the band that differs. Everything below
-it is pixel-identical between the backends.
-
-The three things worth carrying:
-
-- **The render was never wrong.** The backing store held the full coverage strip
-  the whole time, which is the conclusive direction of the `toDataURL` check
-  above.
-- **It is not an offset.** Sliding the capture over the viewport screenshot
-  matches at offset **0** (0.02% residual, against 29-34% at every other offset
-  tried). The clip rectangle is right. The page really does paint chrome there.
-- **A `[data-testid]` scan is not enough to attribute it.** It found only the
-  12px of locstring box, because the toolbar's layout divs carry no testid.
-  `document.elementsFromPoint` down the band, *after* the capture, names all 37
-  rows. Read the geometry after the screenshot, not before: the scroll that
-  causes this happens inside the call.
-
-The apparent correlations are all downstream of the scroll, and each would have
-sent an investigation somewhere useless: it looked like a coverage-strip
-rendering bug (the band is where the coverage strip is), like a zoom-dependent
-one (a zoomed-in locus stacks more pileup rows, so the display is taller and
-Firefox decides a scroll is needed), and like a WebGPU one (only that backend
-runs in Firefox). The band is fixed at 37px whether `coverageHeight` is 45 or
-90, which is what rules the first one out.
-
-### Fixed 2026-08-26: the capture clips where the element already is
-
-`captureElementPng` in `browser-tests/snapshot.ts` is the one path every element
-capture in the suite now takes. It reads the rect through the **selector**, calls
-`page.screenshot({ clip })`, reads the rect again and throws if it moved — which
-is all `el.screenshot()` does apart from the scroll it is being avoided for. A
-threshold override was never the answer: it would have excused a harness artifact
-as a rendering difference.
-
-Measured on the two alignments suites, `--backend=all --swiftshader --gate-only
---drift-report`, same build either side of the change:
-
-| pair (canvas2d vs webgpu) | before | after |
-| --- | --- | --- |
-| `fullpage_color-by-strand` | 27.01% | 0.48% |
-| `fullpage_color-by-tag-hp` | 24.21% | 0.49% |
-| `fullpage_color-by-mapping-quality` | 23.13% | 0.48% |
-| `fullpage_alignments-bam` | 15.01% | 0.91% |
-| `targeted_color-by-strand` | 3.88% | 0.08% |
-| `targeted_color-by-mapping-quality` | 3.88% | 0.07% |
-| `targeted_color-by-tag-hp` | 3.51% | 0.01% |
-| `targeted_alignments-bam` | 3.47% | 0.01% |
-
-40 pairs, 8 over threshold before and **0 after**, max 0.91%, median 0.08%. The
-control that makes it a fix rather than a coincidence: every canvas2d-vs-webgl
-figure in the same two runs is unchanged to the decimal (0.70 / 0.62 / 0.23 /
-0.21 / 0.14 / 0.07), because Chrome was never scrolling and its captures did not
-move.
-
-Three things the fix turned up that the attribution above did not predict:
-
-- **Assert the rect through the selector, not through an element handle.** A
-  pileup display swaps its canvas element during the capture on *every* run —
-  `isConnected` reads false afterwards while `document.querySelector` still finds
-  one canvas at the same `1266x600@6,197`. `el.boundingBox()` answers `null` for
-  a page that never moved, so the first spelling of this invariant failed 100% of
-  the time on the suite it was written for.
-- **The scroll was carrying a compositor barrier.** `scrollIntoViewIfNeeded`
-  awaits an `IntersectionObserver`, whose callback the spec queues inside
-  update-the-rendering, so puppeteer had always produced a frame before
-  capturing. Removing the scroll removed that, and blank captures went *up*.
-  `browser-tests/probe-capture-barrier.ts` measures the three paths on one
-  settled canvas2d page:
-
-  | capture path | N=15 | N=25 |
-  | --- | --- | --- |
-  | `el.screenshot` (puppeteer's own barrier) | 3/15 blank | 0/25 blank |
-  | clip, no barrier | 5/15 blank | 6/25 blank |
-  | clip, `IntersectionObserver` barrier | **0/15** | **0/25** |
-
-  So the barrier is now explicit, and better placed than the one it replaces:
-  puppeteer's ran before the scroll decision with a round trip after it, and this
-  one is the last thing before the clip. That is a lead on the blank captures in
-  the section above, which no amount of *app-level* waiting could fix.
-- **`scrollIntoView: false` works at runtime and does not typecheck.** Puppeteer
-  25 declares it only on `screenshot`'s implementation signature; both public
-  overloads take a plain `ScreenshotOptions`. Passing it needs a cast that would
-  go stale silently, which is why the clip is computed here instead.
+- **Assert the rect through the selector, not an element handle.** A pileup
+  display swaps its canvas element during capture on every run, so
+  `el.boundingBox()` answers `null` for a page that never moved.
+- **The scroll carried a compositor barrier.** `scrollIntoViewIfNeeded` awaits an
+  `IntersectionObserver`, forcing a frame before capture. Removing the scroll
+  removed it and blank captures rose, so the barrier is explicit now.
+  `browser-tests/probe-capture-barrier.ts` measures the three paths.
+- **`scrollIntoView: false` works at runtime but does not typecheck** (puppeteer
+  declares it only on `screenshot`'s implementation signature), hence the clip.
 
 ## Slow figures are SwiftShader, not the app
 
-The tcga specs took 190-230s each to become ready. **None of that was app code.**
-`--use-angle=gl` (or `--headed`, which uses the real GPU) renders the same figure
-in **14.1s** — ~15x faster — and `--check` then reports **0.000%** drift between
-two renders where software raster needed `diffThreshold: 0.02`.
-
 `generate-screenshots` launches Chrome with `--enable-unsafe-swiftshader`, so
-every WebGL draw is rasterized on the CPU. For a figure with 1104 rows and 379k
-features across 23 regions at 1900px/dSF2, one draw takes seconds.
+every WebGL draw rasterizes on the CPU. A large figure (`tcga/cohort_cnv_genome`:
+1104 rows, 379k features, 23 regions, 1900px at dSF2) took 190-230s to become
+ready; `--use-angle=gl` or `--headed` (real GPU) renders it in 14s and `--check`
+then reports 0.000% drift where software raster needed `diffThreshold: 0.02`.
 
-### The measurements (2026-07-25, `tcga/cohort_cnv_genome`)
+Everything JS-visible was small (worker CPU, `postMessage`, network, clustering,
+GC). A Chrome `Tracing` task trace found the rest: renderer-main tasks of 3.6-26s,
+each mirrored to the millisecond by a GPU-process task, i.e. the renderer blocked
+synchronously on software rasterization.
 
-Everything JS-visible is small:
+**When wall clock far exceeds JS CPU on every thread, stop forming JS
+hypotheses.** A sampling JS profiler reports the blocked thread ~99% idle. Four
+JS-level explanations (stop-token sync-XHR, structured clone, background
+throttling, RPC serialization) were each measured and refuted before the trace.
 
-| | measured |
-| --- | --- |
-| worker JS CPU | 17.6s |
-| main-thread JS CPU | 2.2s |
-| network | 2.1s (18 requests, 5.8MB; whole file downloads in 0.7s) |
-| `postMessage` (structured clone) | 0.15s / 406 calls |
-| `checkStopToken` sync-XHR probes | 0.3s / 143 probes (~2ms each) |
-| `@gmod/hclust` clustering | 0.4s |
-| GC | ~1s |
-| **accounted** | **~36s of ~200s** |
+Tools in `website/scripts/`:
 
-Chrome `Tracing` found the rest:
+- `profile-spec.ts <spec>` — CPU profile of a cold load (main thread and every
+  RPC worker) with a milestone timeline and per-file network attribution;
+  `--angle-gl` renders on the GPU.
+- `trace-rpc.ts <spec>` — per-method RPC counts and durations, plus worker-side
+  sync XHR, `fetch`, `postMessage` and event-loop lag. A dead heartbeat means a
+  blocked thread, not an idle one.
+- `trace-tasks.ts <spec>` — Chrome-level task trace by thread. The tool of last
+  resort.
 
-| thread | toplevel busy | tasks | longest |
-| --- | --- | --- | --- |
-| `CrRendererMain` | 181.2s | 4579 | 26,015ms |
-| `CrGpuMain` | 179.4s | 537 | 26,010ms |
-| `DedicatedWorker thread` | 0.4s | 1178 | 114ms |
+To regenerate a slow figure use `--headed` (or `xvfb-run`). Capture geometry is
+unaffected, since `setViewport` emulates device metrics. Don't raise timeouts
+first. `tcga/cohort_cnv_genome.png` is the only GPU-rendered committed figure; no
+CI job runs `generate-screenshots`, and switching the default would rewrite every
+PNG once.
 
-~10 renderer tasks of 3.6-26s, **each mirrored to the millisecond by a GPU-process
-task** — the renderer blocking synchronously on software rasterization.
+## Debugging tips
 
-### Methodology: "idle" in a JS profile means look outside JS
-
-A sampling JS profiler only sees JS. Both threads reported ~99% idle because the
-cost was in the GPU process with the renderer blocked in a sync IPC wait. Four
-plausible JS-level explanations were each measured and **refuted** before the
-right tool was used:
-
-- stop-token sync-XHR fallback (`checkStopToken`, since retired by ADR-122) —
-  0.3s, and forcing the `SharedArrayBuffer` path changed nothing
-- structured clone of `featureNames` / `featureIds` (the two non-transferable
-  string arrays in `packMultiRowFeatures`) — `postMessage` totals 0.15s
-- Chrome background/timer throttling and IPC flood protection — the anti-throttling
-  flags made no difference (185s vs 190-210s)
-- RPC serialization — 24 calls are dispatched in one tick and RPC is in flight for
-  96% of the wall clock, with only ~3s between calls
-
-**When wall clock >> JS CPU on every thread, stop forming JS hypotheses.** Go to
-`website/scripts/trace-tasks.ts`; a renderer task mirrored by a GPU task is
-blocked-on-GPU.
-
-### Tools (all added 2026-07-25, `website/scripts/`)
-
-- `profile-spec.ts <spec>` — CPU-profiles any spec's cold load, main thread and
-  every RPC worker, with a milestone timeline (domcontentloaded → view
-  initialized → fetch+parse done → painted → readySelector) and per-file network
-  attribution. `--angle-gl` renders on the GPU.
-- `trace-rpc.ts <spec>` — wraps `Worker.postMessage` and the reply channel in the
-  page (no app changes, runs the built bundle) for per-method RPC call counts and
-  durations, plus worker-side accounting of sync XHR, `fetch`, `postMessage` and
-  **event-loop lag**. A dead heartbeat means the thread is blocked, not idle.
-- `trace-tasks.ts <spec>` — Chrome-level task trace: which thread ran what, and
-  the biggest slices. The tool of last resort, and the one that answered this.
-
-### Regenerating a slow figure
-
-Use `--headed` on a machine with a display (`xvfb-run` works too). Capture
-geometry is unaffected: `setViewport` sets emulated device metrics and the CDP
-screenshot uses those, so dSF 2 still yields the same pixel dimensions no matter
-the window size. Don't reach for bigger timeouts first — that treats software
-raster as a fact of life.
-
-### Still open
-
-- **~10 full-canvas GPU passes per figure**, one per arriving RPC reply, each
-  re-rasterizing all 1104 rows. Real app-side waste for large multi-region views,
-  independent of which rasterizer runs it; `trace-tasks.ts` measures it. Batching
-  the per-region replies (or debouncing the instance-buffer rebuild until the
-  region set settles) is the fix.
-- **Whether hardware GL should be the default.** No CI job runs
-  `generate-screenshots`, so figures are only regenerated locally — low risk for
-  CI, but the appearance differs from SwiftShader (27.8% on the cohort figure), so
-  the switch rewrites every committed PNG once and diverges between maintainer
-  machines with and without a GPU. `tcga/cohort_cnv_genome.png` is currently the
-  only GPU-rendered figure. A per-spec `hardwareGl?: true` opt-in is the
-  lower-risk shape.
-- **`tcga/cnv_recurrence_genome` at viewportHeight > 860** still dies with "frame
-  got detached". Unexamined since this investigation; now suspect the same
-  software-raster path (a taller canvas for the same 1104 auto-fit rows), which
-  would make it a harness artifact rather than a renderer bug.
-- The spec comment claiming clustering costs "three minutes of RPC" was wrong
-  (0.4s) and has been corrected; `screenshot-review.json`'s note on
-  `cnv_recurrence_genome` still blames the blank frame solely on the height crash,
-  when a cold-assembly race was a second, independent cause (fixed by
-  `data-view-phase`, see `waitForViewPhases`).
-
-## Debugging tips that saved time here
-
-- `page.on('console')` **does** forward web-worker console in current puppeteer,
-  but the generator filters it; when in doubt, attach a CDP
-  `Target.setAutoAttach` session and read `Runtime.consoleAPICalled` to see the
-  main/worker boundary. That's what proved the worker was the slow step and the
-  render itself was correct.
-- The RPC worker boots lazily on the first call and the boot needs the main
-  thread to answer its `readyForConfig` postMessage; a saturated main thread (big
-  config parse) delays the boot, which is what stretches the "ready-but-empty"
-  window. Adding `console.error` instrumentation changed the timing enough to
-  hide the race — beware Heisenbugs here.
-- Reproduce reliability with N forced runs and watch the content-stable diff
-  percentage; a figure that flips between two states shows up as an occasional
-  large `% diff` on `--force` re-render.
-- A regen that reports the whole corpus changed is app drift since the last
-  `Bump snaps` sweep, not the browser: one spec rendered byte-identical under
-  Chrome 147.0.7727.57 and 151.0.7922.47 (measured 2026-08-02). `CHROME_PATH`
-  pins a run to one binary to check.
+- `page.on('console')` forwards web-worker console, but the generator filters it.
+  Attach a CDP `Target.setAutoAttach` session and read
+  `Runtime.consoleAPICalled` to see the main/worker boundary. Added
+  `console.error` instrumentation can shift timing enough to hide a race.
+- Measure reliability with N forced runs and watch the content-stable diff
+  percentage; a figure flipping between two states shows as an occasional large
+  `% diff` on `--force`.
+- A regen reporting the whole corpus changed is app drift since the last
+  `Bump snaps` sweep, not the browser. `CHROME_PATH` pins one binary to check.

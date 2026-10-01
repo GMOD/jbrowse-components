@@ -1,317 +1,173 @@
 ---
 name: region-view-launch
-description: Launching another view type on a locus (a synteny stack) from a linear view. The shared convention, where the synteny launcher diverged from the graph plugin's retired one, and what is still open. Read before adding a "open view X for this region" entry point.
+description: Launching another view type on a locus (a synteny stack) from a linear view. The shared convention, where the synteny launcher diverged from the graph plugin's retired one, and what is still open. Read before adding an "open view X for this region" entry point.
 kind: spec
 ---
 
 # Launching a view on a region
 
-**Take a locus in a linear view, open a different kind of view on it, sourced
-from some track.** Linear synteny does this, in
-`plugins/linear-comparative-view/src/LaunchSyntenyView/`.
-
-The graph plugin had the first such launcher, and the synteny one was written to
-follow its convention. Since plugin 4.0.0 the graph is
-a track of the linear view (`LinearGraphDisplay`) and launches nothing; its
-column below is the record the synteny launcher was matched against.
+**Take a locus in a linear view, open a different kind of view on it, sourced from
+some track.** Linear synteny does this in
+`plugins/linear-comparative-view/src/LaunchSyntenyView/`. The graph plugin's launcher
+came first and synteny follows its convention; since plugin 4.0.0 the graph is a
+track of the linear view (`LinearGraphDisplay`) and launches nothing, so its column
+below is the record the synteny launcher was matched against.
 
 ## The convention
 
 1. **Hook `Core-extendPluggableElement`**, not a display-specific seam. Override
-   `menuItems()` (visible region) and/or `rubberBandLaunchMenuItems()`
-   (selection) on `LinearGenomeView`; override
-   `trackMenuItems()`/`contextMenuItems()` on a `DisplayType` when the entry
-   point belongs to one track.
-2. **Discover from tracks, not from displays.** Read track *configs* — the graph
-   plugin scans `session.tracks` via `allSessionTracks`, so connection tracks
-   count. This is why a display-contributed `regionLaunchItems()` seam was
-   considered and rejected: it cannot serve a track with no display.
-
-   **How wide to scan is the launcher's call, and the two answer differently.**
-   The graph plugin goes session-wide — *"The graph track need not be in the
-   view, or even turned on… before, the only entry point was the menu of a track
-   they might never have opened."* Synteny is **view-scoped**
-   (`launchableTracks` filters the launching view's own open tracks) because a
-   config is free to declare a dozen synteny tracks with none of them open, and
-   session-wide put all of them in the dialog's selector with the first in
-   *config order* preselected — a choice the user never knowingly made, deciding
-   a panel list they have no way to judge. Sorting the open ones first didn't
-   help the case that needed it, which is the one where none are open. What
-   synteny gives up is a configured-but-closed track, and that is what the import
-   form behind Add → Linear synteny view is for. Read the comment on
-   `launchableTracks` before widening it back.
-3. **Discover by declared capability, not adapter name.** The graph plugin
-   checks `pluginManager.getAdapterType(t).adapterCapabilities.includes('getSubgraph')`
-   (`RgfaTabixAdapter`'s `index.ts` declares it). It hardcoded
-   `GfaTabixAdapter`/`GfaServerAdapter` once and *"that is exactly what left it
-   dead when those were removed."* Registration is checked first, because a
-   session can hold tracks whose plugin isn't loaded and `getAdapterType`
-   throws on an unregistered type.
-4. **Always name the dataset the launch reads from — where it fits.** 0 capable
-   tracks → no menu item at all, always. Which dataset a launch is cut from
-   decides what the new view shows, so it is never left unsaid; *where* it is
-   said follows how big the list can get:
-
-   - **Bounded list** (consensus: alignments tracks open in *this view*, so one
-     or two) → one entry whose submenu names each, a single track included.
-     `launchTargetsMenuItem` (`@jbrowse/core/ui`, tested) is that shape.
-   - **Unbounded list** (a session-wide scan has no ceiling) → a flat entry, and
-     the dataset is a field of the dialog it opens. A cascading submenu of every
-     capable track in a config is worse than the unnamed flat item it replaced.
-     Synteny is this shape even though rule 2 narrowed it to the view's own open
-     tracks: `LaunchSyntenyViewForRegionDialog` carries the dataset as its first
-     field, where changing it refetches the panel list, and renders it as a line
-     of text rather than a select when there is only one — a full-width select
-     holding its only value is a control the reader has to try before ruling it
-     out.
-
-   A launcher with **no dialog** (the graph plugin) has nowhere to move the
-   choice to, so it owes the submenu; it still branches on count inline in
-   `subgraphMenuItems.ts`.
-5. **A launch is offered on the one assembly the source can be cut on, and
-   greyed out elsewhere naming it.** A track that declares several assemblies
-   does not accept a cut on all of them: a graph track names its reference
-   first, which is the rule `GbzBaseSyntenyAdapter` already applies to its
-   anchor, so the graph plugin offers the cut only from that assembly's view and
-   the view itself refuses the rest — an old saved session cannot draw in the
-   wrong frame either. Offering all of them is worse than it sounds: from a
-   haplotype's view the launch framed a GRCh38 backbone on the haplotype's own
-   contig, so the anchored layouts drew off screen and the ramp, hover band and
-   Highlight all put reference coordinates on a contig that has none of them,
-   with nothing erroring. Plugin `6a27768`.
-6. **Never push a launch entry into a menu top level.** In the view and track
-   menus, group with `pushLaunchViewMenuItem` (`@jbrowse/core/ui`) so offers
-   collect under one "Launch" submenu. In the linear view's rubberband
-   menu, extend **`rubberBandLaunchMenuItems()`** on the model rather than
-   `rubberBandMenuItems()`: the view wraps whatever that returns in a "Launch"
-   submenu (and omits the group entirely when it comes back empty), so the
-   grouping is decided once, in `LinearGenomeView/menuItems.ts`, instead of by
-   whichever plugin's `Core-extendPluggableElement` callback runs first. That
-   menu used to take these flat and was up to seven entries.
-7. **Take the widest block, never the first.** Both entry points hand the launch
-   one region, but a linear view can be showing several: `dynamicBlocks
-   .contentBlocks` and `getSelectedRegions()` both return display order, and a
-   launched view is anchored on one stable sequence. A view scrolled just past a
-   region boundary, or a rubberband dragged across one, puts a sliver first —
-   `getSelectedRegions` returns `[{ctgA 49,998-50,001}, {ctgB 0-9,000}]` for a
-   drag that is mostly ctgB (asserted in `LinearGenomeView/index.test.ts`), so
-   `[0]` frames the launch on 3 bp of the region the user dragged away from.
-   `widestRegion` (`regionLaunchMenuItems.ts`) and `widestBlock`
-   (`launchSubgraphView.ts`) are that choice: widest by **bp** (a dynamic block
-   carries `widthPx` and a selected region does not, and bpPerPx is uniform
-   within a view, so the two orders agree), ties keep the leftmost.
-
-   All four call sites had this wrong at some point, and on a launcher with a
-   size guard it is silent rather than merely wrong: reading the sliver puts an
-   illegal window under the cap, so the item renders enabled and cuts a
-   degenerate graph instead of saying "zoom in". **No figure can cover this** —
-   it needs a multi-region view and no spec has one. The unit tests are the
+   `menuItems()` (visible region) and/or `rubberBandLaunchMenuItems()` (selection) on
+   `LinearGenomeView`; override `trackMenuItems()`/`contextMenuItems()` on a
+   `DisplayType` when the entry point belongs to one track.
+2. **Discover from tracks, not displays.** Read track *configs*, so connection tracks
+   count. A display-contributed `regionLaunchItems()` seam was rejected: it cannot serve a
+   track with no display. **Scan width is the launcher's call.** The graph plugin went
+   session-wide; synteny is **view-scoped** (`launchableTracks` filters the view's open
+   tracks) because a config may declare a dozen synteny tracks with none open, and
+   session-wide preselected the first in *config order*, a choice the user never made.
+   Synteny gives up a configured-but-closed track (the import form behind Add → Linear
+   synteny view serves that). Read `launchableTracks`'s comment before widening it.
+3. **Discover by declared capability, not adapter name**:
+   `pluginManager.getAdapterType(t).adapterCapabilities.includes('getSubgraph')`.
+   Hardcoded adapter names left the graph launcher dead when those adapters were removed.
+   Check registration first: a session can hold tracks whose plugin isn't loaded and
+   `getAdapterType` throws on an unregistered type.
+4. **Always name the dataset the launch reads from, where it fits.** 0 capable tracks →
+   no menu item. A **bounded list** (consensus: alignments tracks open in this view) → one
+   entry whose submenu names each, a single track included (`launchTargetsMenuItem`,
+   `@jbrowse/core/ui`). An **unbounded list** → a flat entry with the dataset as a field of
+   the dialog; a cascading submenu of every capable track is worse than the unnamed item.
+   Synteny is this shape: `LaunchSyntenyViewForRegionDialog` carries the dataset first
+   (changing it refetches the panel list) and renders a line of text, not a select, when
+   there is one. A launcher with **no dialog** owes the submenu.
+5. **A launch is offered on the one assembly the source can be cut on, greyed out elsewhere
+   naming it.** A graph track names its reference first (as `GbzBaseSyntenyAdapter` applies
+   to its anchor), so the cut is offered only from that assembly's view and the view
+   refuses the rest, so an old saved session cannot draw in the wrong frame. Offering all
+   framed a GRCh38 backbone on a haplotype's own contig with no error.
+6. **Never push a launch entry into a menu top level.** Group with
+   `pushLaunchViewMenuItem` (`@jbrowse/core/ui`); in the rubberband menu extend
+   `rubberBandLaunchMenuItems()`, which the view wraps in a "Launch" submenu (omitted when
+   empty), so grouping is decided once in `LinearGenomeView/menuItems.ts`.
+7. **Take the widest block, never the first.** `dynamicBlocks.contentBlocks` and
+   `getSelectedRegions()` return display order, and a launched view anchors on one stable
+   sequence. A rubberband dragged across a region boundary puts a sliver first
+   (`[{ctgA 49,998-50,001}, {ctgB 0-9,000}]`, asserted in `LinearGenomeView/index.test.ts`),
+   so `[0]` frames 3 bp of the region the user left. `widestRegion`
+   (`regionLaunchMenuItems.ts`) and `widestBlock` (`launchSubgraphView.ts`) pick the widest
+   by bp, ties leftmost. Under a size guard this is silent: the sliver puts an illegal
+   window under the cap, so the item renders enabled and cuts a degenerate graph. **No
+   figure can cover this** (no spec has a multi-region view); the unit tests are the
    coverage.
 
 ## Where they diverge
 
 | | graph | synteny |
 |---|---|---|
-| dialog | none — menu click launches | yes — panel picker + window size |
+| dialog | none; menu click launches | yes: panel picker + window size |
 | what persists | `loadedTrackId` + `loadedRegion` view props | resolved locstrings in `init` |
-| size guard | `MAX_GRAPH_REGION_BP = 5_000_000`, disabled item + `disabledHelpText` on every entry point (the track menu's caught up 2026-09-11, having notified after the click until then) | none |
+| size guard | `MAX_GRAPH_REGION_BP`, disabled item + `disabledHelpText` | none |
 | source linkage | `connectedViewId` → hover sync | none |
-| entry points | view menu, rubberband, track menu, feature context menu | view menu, rubberband (a synteny row's included — it reads the bands' tracks, `launchableTrackConfs`, and offers to replace the stack), MultiWaySyntenyDisplay track menu, alignment context menu (pairwise, multi-panel on a track declaring 3+ assemblies, and the mate assembly alone in an LGV), feature-detail links (the same three), a MAF row's drag-selection menu (`launchMafRowSynteny`, ribbons cut from the columns) |
+| entry points | view menu, rubberband, track menu, feature context menu | view menu, rubberband (a synteny row's too, replacing the stack), MultiWaySyntenyDisplay track menu, alignment context menu, feature-detail links, a MAF row's drag-selection menu (`launchMafRowSynteny`) |
 
-**The dialog split is real, not an oversight.** A subgraph is fully determined
-by `(region, trackId)`, so there is nothing to ask. A synteny launch is not: the
-set of assemblies aligning to a locus is only knowable by fetching, and their
-top-to-bottom order changes which comparisons exist (ribbons draw between
-*adjacent* panels only). Hence the RPC-backed picker.
+**The dialog split is real.** A subgraph is fully determined by `(region, trackId)`; the
+set of assemblies aligning to a locus is only knowable by fetching, and their order
+changes which comparisons exist (ribbons draw between *adjacent* panels only).
 
-**The persistence split is worth closing, in synteny's favour of graph's
-model.** The graph launch writes a plain snapshot the view resolves when its
-canvas mounts — the same path a reloaded session takes, so a launched view is
-restorable for free and the menu does no RPC. The synteny launch bakes resolved
-locstrings, so a reload cannot re-derive it and the dialog must do the RPC
-up-front. Persisting `(trackId, region, ordered assembly list)` and letting the
-view resolve would align them and move the picker into the view.
+**The persistence split is worth closing, in the graph model's favour.** The graph writes
+a plain snapshot the view resolves on mount (restorable for free, no RPC in the menu);
+synteny bakes resolved locstrings, so a reload cannot re-derive and the dialog does the
+RPC up front. Persisting `(trackId, region, ordered assembly list)` and letting the view
+resolve would align them.
 
 ## Open ideas, roughly by value
 
-**Give synteny a size guard.** A rubberband is bounded by the viewport, but the
-*visible region* entry is not — at whole-chromosome zoom the discovery RPC is a
-whole-genome `CoreGetFeatures` against an all-vs-all track. Measure before
-picking a cap; the graph launcher's pattern (disabled item carrying the size in
-`disabledHelpText`, so the limit is read before clicking rather than notified
-after) is the one to copy. Note the repo-wide preference is helpText over
-`disabled` — the graph plugin argued the opposite for a hard cap, and that
-argument only holds where there *is* a hard cap.
-
-**`connectedViewId` for synteny.** The graph plugin pairs a graph with its
-linear view for hover sync (`hoverSync/graphViewHighlights.ts`). A synteny stack
-launched from a locus could highlight back into the LGV it came from.
-
-**Synteny track menu entry.** The graph plugin offered "(this region)" from the
-graph track's own menu; `MultiWaySyntenyDisplay` has one, `LGVSyntenyDisplay`
-reaches the same dialog from a block's right-click instead.
-
-**The closed-track case, honestly.** `launchableTracks` went open-tracks-only
-because a session-wide list preselected the first dataset in config order. The
-objection was to the preselection, not to the offer: an entry that appears when
-no synteny track is open, with the dataset select empty and required, restores
-the "browsing genes, want to compare" route the graph launcher had without
-deciding a panel list the user cannot judge. A product call.
-
-**MAF rows as a synteny launch — shipped**, pairwise, as
-`launchMafRowSynteny` (plugins/maf): the ribbons are cut from the MAF's own
-columns and no adapter is involved. [MAF_CROSS_VIEW_NAVIGATION.md](MAF_CROSS_VIEW_NAVIGATION.md)
-has the design, including why the all-samples stack is not offered and why the
-`FromConfigAdapter` store holds the reference-anchored side only.
+- **A synteny size guard.** The *visible region* entry at whole-chromosome zoom is a
+  whole-genome `CoreGetFeatures` against an all-vs-all track. Measure before picking a
+  cap; copy the graph pattern (disabled item carrying the size in `disabledHelpText`). The
+  repo prefers helpText over `disabled`; the graph plugin's counter-argument holds only
+  where there is a hard cap.
+- **`connectedViewId` for synteny**, so a launched stack can highlight back into its LGV.
+- **The closed-track case.** The objection to session-wide discovery was the
+  preselection, not the offer: an entry shown when no synteny track is open, with the
+  dataset select empty and required, restores "browsing genes, want to compare". A product
+  call.
+- MAF rows as a pairwise synteny launch exist (`launchMafRowSynteny`;
+  [MAF_CROSS_VIEW_NAVIGATION.md](MAF_CROSS_VIEW_NAVIGATION.md)).
 
 ## Gotchas
 
 - **A CIGAR-less alignment is still clipped to the selection, by interpolation.**
-  `resolveSpans` (`resolvePanel.ts`) walks the CIGAR when there is one
-  and interpolates across the block when there is not — which is not a lesser
-  approximation of the walk, it is the geometry the block is already *drawn*
-  with (no per-base correspondence is known, so the ribbon is a straight
-  quadrilateral between the two blocks' corners). Framing on the whole block
-  instead, which is what this did, ignored the selection outright: a rubberband
-  over one gene of a megabase-long asm5 block opened the whole megabase on both
-  sides with no sign of it. Not an edge case — a PAF from minimap2 without `-c`
-  carries no `cg`, and neither do MashMap, MCScan or the coarse PIF tier. The
-  discovery RPC states no `lodMode`, and the PIF adapters read fine on no stated
-  mode, so the *region* launch always has CIGARs off a tiered PIF; the pairwise
-  right-click launch is where a coarse feature can reach this.
-- **A panel is every block its mate aligns the region with, not the widest
-  one.** `pickMatesForRegion` groups rather than reduces, and `resolvePanel`
-  unions the resolved spans. Several blocks per mate is the *normal* case: an
-  HSP table (BLAST tabular) and a gene-anchor table (MCScan) are one row per
-  hit, so any locus worth selecting is already dozens of them, and a minimap2
-  PAF splits at every structural difference. Keeping the widest framed that
-  panel — and, through the anchor row's union of what the panels resolved to,
-  the whole launched view — on one block: `ctgA:1,001..5,000` launched as
-  `ctgA:3,001..5,000`, silently. Three rules keep the union from running away.
-  Two belong to "a panel opens on one stable sequence": the mate **contig**
-  covering most of the region wins and the others are dropped, and the panel
-  opens reversed only when the minus strand carries most of the alignment. The
-  third is `keepNearMedian`, shared with the multi-way lane frame: on the
-  winning contig a hit further than 1.5 regions from the length-weighted median
-  is repeat noise and is dropped — one stray orthogroup hit otherwise stretched
-  brachypodium to `1:5,237,628..54,451,482` for a 185 kb rice window. The
-  whole-block launch (no region) has no unit to scale the reach by and keeps
-  every hit.
-- **The coordinates are resolved in the worker, and only the coordinates cross
-  the RPC.** `SyntenyDiscoverMates` returns `ResolvedPanel[]` — six numbers and
-  two names per mate assembly — rather than the alignments behind them. The
-  CIGAR is the one field the resolution needs and the one whose size is
-  unbounded (an asm5 PAF block's `cg` tag alone runs to 100 KB), so with a panel
-  now spanning *every* block at the locus, shipping alignments would have made
-  the wire scale with the selection: a whole-chromosome visible-region launch
-  against an HSP table is tens of thousands of blocks. It also puts the dialog's
-  preview and the launched view on literally the same numbers, which is what the
-  two rounded differently before. **Round outward, in `resolvePanel` and nowhere
-  else** — a viewport edge and an interpolated block both land mid-base, and a
-  span rounded in is a view that opens inside the row the user read.
-- **A mate that is not a declared assembly is dropped from the launch, and the
-  dialog has to say so.** `assemblyForPanSNName` falls back to the bare PanSN
-  sample name when the config declares no assembly for it, so an all-vs-all file
-  hands back mates the display happily draws (tested, deliberate — you need only
-  load the assembly you are viewing) and the launch cannot open a panel on.
-  `pickMatesForRegion` therefore returns `{ mates, unconfigured }`: reporting
-  those as "nothing aligns to this region" contradicts the lanes the user can
-  see drawn in the track they just launched from. The sibling failure — the
-  *anchor's* own name not matching a PanSN prefix — is now an adapter error
-  (`noPanSNMatchError`, `plugins/comparative-adapters/src/util.ts`) rather than a
-  configured track that draws nothing and reports nothing: both all-vs-all
-  adapters answer `hasDataForRefName` with `true` unconditionally, so nothing
-  filters it out. The prefixes are the one thing no add-track form or config
-  editor lists, so the error carries them. Verified against every hosted E. coli
-  demo file before shipping the throw — `tabix -l <url> | cut -c2- | cut -d'#' -f1
-  | sort -u` is the check.
-- **A launch RPC that does not rename its region silently opens an empty view.**
-  Fixed in the graph plugin (`GetSubgraph` now extends
-  `RpcMethodTypeWithRenameRegion`), but read this before writing the next
-  launcher, because nothing about the failure points at the cause. JBrowse maps a
-  region's refName onto the adapter's own names before calling `getFeatures`,
-  which is why an rGFA segments track draws on an hg38 assembly whose contigs are
-  `6` while the graph's stable names are `GRCh38#0#chr6`. A plain `RpcMethodType`
-  gets no such mapping, and `resolveRefName`
-  (`RgfaTabixAdapter/rgfaBed.ts`) matches only the graph's own spelling, so the
-  launch resolved nothing while the track it launched from kept drawing: the
-  graph looked broken, its own data looked fine, and nothing raised an error.
-  Every hosted GRCh38 FASTA on jbrowse.org uses bare `1`/`6` names,
-  `hg38.prefix.fa.gz` included, so this was the default human case, not an edge
-  case; E. coli escaped it because the assembly's `chr` matches `K12#1#chr`. Note
-  `renameRegionsIfNeeded` (`packages/core/src/util/renameRegions.ts`) already
-  throws on the near-miss of pairing a singular `region` with the *plural* base
-  class, and its comment names this same bug — but a method extending plain
-  `RpcMethodType` never calls it, so the guard cannot fire.
-- **Both graph adapters live in the plugin repo now**, not here:
-  `RgfaTabixAdapter` and `MinigraphBubbleAdapter` moved out with the view, so
-  `plugins/comparative-adapters` no longer has them and nothing in this repo
-  registers those types. What is left here is `scripts/build_rgfa_tabix.sh`, the
-  tutorials, and `website/scripts/specs/graph-ecoli.ts`. The plugin's own
-  `RGFA_GRAPH_HANDOFF.md` still tables them under
-  `plugins/comparative-adapters/src/` and is stale on this point.
-- **A subgraph comes from an adapter that declares `getSubgraph`**:
-  `RgfaTabixAdapter` and `GbzBaseSyntenyAdapter`. `MinigraphBubbleAdapter`
-  reads a summary index and cannot cut one. Minigraph-Cactus: `sv.gfa` is rGFA,
-  plain `.gfa` is not; pggb/odgi needs `odgi extract`.
-- **Menu rows have stable testids**, built by `makeTestId` in
-  `packages/core/src/ui/CascadingMenu.tsx`:
-  `cascading-submenu-<label>` / `cascading-menuitem-<label>`, lowercased with
-  whitespace → `_`. Screenshot specs and tests must use these, **not** text:
-  a track's name is usually also its label in the view, and a text match
-  resolves to the first visible match, which is that label.
+  `resolveSpans` (`resolvePanel.ts`) walks the CIGAR when there is one and interpolates
+  otherwise, which is the geometry the block is already *drawn* with. Framing on the whole
+  block ignored the selection (one gene of a megabase asm5 block opened the megabase). Not
+  an edge case: PAF without `-c`, MashMap, MCScan and the coarse PIF tier carry no `cg`.
+- **A panel is every block its mate aligns the region with, not the widest.**
+  `pickMatesForRegion` groups and `resolvePanel` unions spans: an HSP table or gene-anchor
+  table is one row per hit, so dozens per locus; keeping the widest launched
+  `ctgA:1,001..5,000` as `ctgA:3,001..5,000`. Three rules bound the union: the mate
+  **contig** covering most of the region wins; the panel opens reversed only when the
+  minus strand carries most of it; and `keepNearMedian` (shared with the multi-way lane
+  frame) drops a hit further than 1.5 regions from the length-weighted median as repeat
+  noise. The whole-block launch has no unit to scale by and keeps every hit.
+- **Only coordinates cross the RPC.** `SyntenyDiscoverMates` returns `ResolvedPanel[]`
+  (six numbers and two names per mate), since the CIGAR is unbounded (an asm5 `cg` tag runs
+  to 100 KB) and a whole-chromosome launch against an HSP table is tens of thousands of
+  blocks. The dialog preview and the launched view use the same numbers. **Round outward,
+  in `resolvePanel` and nowhere else**: a span rounded in opens inside the row the user
+  read.
+- **A mate that is not a declared assembly is dropped from the launch, and the dialog has
+  to say so.** `assemblyForPanSNName` falls back to the bare PanSN sample name, so an
+  all-vs-all file yields mates the display draws and the launch cannot open.
+  `pickMatesForRegion` returns `{ mates, unconfigured }`; saying "nothing aligns"
+  contradicts the lanes the user sees. An *anchor* name not matching a PanSN prefix is an
+  adapter error (`noPanSNMatchError`, `plugins/comparative-adapters/src/util.ts`), since
+  both all-vs-all adapters answer `hasDataForRefName` with `true`. Check prefixes with
+  `tabix -l <url> | cut -c2- | cut -d'#' -f1 | sort -u`.
+- **A launch RPC that does not rename its region silently opens an empty view.** JBrowse
+  maps a region's refName onto the adapter's names before `getFeatures`, but a plain
+  `RpcMethodType` gets no mapping (`GetSubgraph` now extends
+  `RpcMethodTypeWithRenameRegion`). Hosted GRCh38 FASTAs use bare `1`/`6` names while graph
+  stable names are `GRCh38#0#chr6`, so it was the default human case. `renameRegionsIfNeeded`
+  throws on the singular-region/plural-base-class near-miss, but a method extending plain
+  `RpcMethodType` never calls it.
+- **The graph adapters live in the plugin repo**, not here (`RgfaTabixAdapter`,
+  `MinigraphBubbleAdapter`). A subgraph comes from an adapter declaring `getSubgraph`
+  (`RgfaTabixAdapter`, `GbzBaseSyntenyAdapter`); `MinigraphBubbleAdapter` reads a summary
+  index and cannot cut one. Minigraph-Cactus: `sv.gfa` is rGFA, plain `.gfa` is not;
+  pggb/odgi needs `odgi extract`.
+- **Menu rows have stable testids** from `makeTestId` (`CascadingMenu.tsx`):
+  `cascading-submenu-<label>` / `cascading-menuitem-<label>`, lowercased with whitespace →
+  `_`. Use them, not text: a track's name is usually also its view label and a text match
+  resolves to that.
 - **Launching by `session.addView` bypasses invariants.** Synteny routes through
-  `launchSyntenyView` (`packages/synteny-core`), which owns the "≥2 views"
-  check; there is no equivalent guard on the graph side because a graph view
-  needs no pairing.
-- **`getSession()` throws on a track *config* node.** Session-wide discovery
-  hands you `AnyConfigurationModel`s, which are not under the session in the
-  state tree (connection configs are not even under the config root). Pass the
-  session in. This cost a debugging cycle; it fails as
-  `Error: no session model found!` rendered *inside* the dialog, so it looks
-  like an empty result rather than an exception.
+  `launchSyntenyView` (`packages/synteny-core`), which owns the "≥2 views" check.
+- **`getSession()` throws on a track *config* node.** Session-wide discovery hands back
+  `AnyConfigurationModel`s outside the session tree; pass the session in. It fails as `no
+  session model found!` rendered inside the dialog, looking like an empty result.
 
 ## Verifying a launcher
 
 Unit tests cover the pure parts (`launchTargetsMenuItem`, `panelOrder`,
-`pickMatesForRegion`, `resolvePanel`, `buildSyntenyViewSpec`). They are not enough — the jsdom
-integration test in `products/jbrowse-web/src/tests/LGVSynteny.test.tsx`
-("launch a multi-panel synteny view from a region selection") drives
-`view.rubberBandMenuItems()` through the real extension point and asserts the
-launched view's assemblies, and it still missed that nothing *rendered*.
+`pickMatesForRegion`, `resolvePanel`, `buildSyntenyViewSpec`). The jsdom test
+`products/jbrowse-web/src/tests/LGVSynteny.test.tsx` drives `view.rubberBandMenuItems()`
+through the real extension point and still missed that nothing *rendered*. Generating the
+figure (`multiway_synteny/ecoli_launch_from_selection`; regen loop in
+`website/scripts/screenshot-review-plan.md`) caught the rest. Pick the demo window with
+care: a window inside the paa operon island (three of four strains unaligned) makes
+discovery return one mate and degenerates to the pairwise case. Graph figure specs
+(`website/scripts/specs/graph-ecoli.ts`) assert only a picture, so review by eye:
 
-What caught the remaining bugs was generating the figure
-(`multiway_synteny/ecoli_launch_from_selection`, a `stages` spec; see
-`website/scripts/screenshot-review-plan.md` for the regen loop). Pick the demo window with
-care: the first render landed inside the paa operon island, the one locus where
-three of four strains have no alignment at all, so discovery correctly returned
-a single mate and the multi-panel launch degenerated to the pairwise case it was
-meant to contrast against.
+- **Pick the clicked feature from the index.** A segment with no rank>0 neighbour cuts a
+  straight run of backbone. `tabix ecoli_minigraph.links.bed.gz K12#1#chr:4050000-4100000`
+  names segments with alleles.
+- **Target the rendered label, not a coordinate**:
+  `[data-testid="feature-name-<label text>"]`
+  (`plugins/canvas/src/LinearBasicDisplay/components/overlayElements.tsx`).
+- **A graph canvas is too sparse for the content-stable diff gate** (mostly white, thin
+  strokes: an anchored-to-force switch moved 2.7% of pixels and was kept). Regenerate a
+  deliberate layout change with `--force`.
 
-The graph launcher had the same coverage from the figure specs in
-`website/scripts/specs/graph-ecoli.ts`, which assert nothing but a picture, so
-review them by eye after a regen. Three things they taught still hold for any
-graph figure:
-
-- **Pick the clicked feature from the index, not by eye.** Right-clicking a
-  segment with no rank>0 neighbour cuts a neighbourhood that is a straight run of
-  backbone — the launcher working correctly, and a figure that teaches nothing.
-  `tabix ecoli_minigraph.links.bed.gz K12#1#chr:4050000-4100000` names the
-  segments with alleles hanging off them.
-- **Target the feature's rendered label, not a viewport coordinate.**
-  `[data-testid="feature-name-<label text>"]` is emitted by
-  `plugins/canvas/src/LinearBasicDisplay/components/overlayElements.tsx`
-  alongside a `data-feature-id` the display's delegated handler resolves, so a
-  right-click spec needs no hand-measured pixels.
-- **A graph canvas is too sparse for the content-stable diff gate.** It is mostly
-  white with thin strokes, so switching the HPRC C4 figure from the
-  anchored layout to the force layout moved 2.7% of pixels and was *kept* rather
-  than written. No force-layout figure raises `diffThreshold` any more, since FMMM is seeded
-  ([PANGENOME_GRAPHS.md](PANGENOME_GRAPHS.md)); regenerate a deliberate layout
-  change that the gate keeps with `--force`.
-
-**The figures can only cover what is published.** The tutorials load the plugin
-from the plugin list's `latest/` url, and that bundle is code-split, so audit it
-by grepping the entry *and every chunk it references* (the color-scheme labels
-live in a chunk, not the entry), and diff the entry's md5 against the local
-`dist/`.
+**Figures cover only what is published.** The tutorials load the plugin from the plugin
+list's `latest/` url, a code-split bundle: grep the entry *and every chunk it references*
+and diff the entry's md5 against the local `dist/`.

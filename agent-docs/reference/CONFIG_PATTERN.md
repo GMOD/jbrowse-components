@@ -6,384 +6,177 @@ kind: spec
 
 # Display Config Pattern
 
-How display settings flow from MST model → rendering code (GPU/Canvas2D/worker).
-MST confined to main thread; renderers work on plain objects.
+How display settings flow from the MST model to rendering code (GPU, Canvas2D,
+worker). MST stays on the main thread; renderers work on plain objects.
 
 ## The pattern
 
-### Main thread: produce a plain config object
+**Main thread.** A display builds its config payload inside `rpcProps()`, the
+single RPC payload hook (`ARCHITECTURE.md` §"`rpcProps()` / `gpuProps()`
+pattern"); subclasses extend it by capturing `super`'s `rpcProps` and
+spreading. Canvas sends `pickDisplayConfig(fullConfSnapshot(self.configuration))`:
+`fullConfSnapshot` returns every slot's current value, defaults included and
+`jexl:` strings raw, and `pickDisplayConfig` keeps exactly the slots
+`DisplayConfig` declares, off a `Record<keyof DisplayConfig, true>` the
+compiler proves complete. Every other display enumerates its `rpcProps()`
+fields by hand. `plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`
+§"Which getter decides what a setting invalidates" explains why a visual-only
+change must not refetch.
 
-The display config snapshot is built inline inside `rpcProps()` (the single
-RPC payload extension hook — see `ARCHITECTURE.md` §"`rpcProps()` /
-`gpuProps()` pattern"). Subclasses that need to layer fields onto
-`displayConfig` extend `rpcProps()` via super-capture and spread:
+**A value that swings with zoom is not an `rpcProps` field.** Canvas's
+`effectiveGeneGlyphMode`, the synteny LOD tier and alignments' per-base bin go
+in `zoomFetchArgs()`, so a threshold crossing refetches the regions on screen
+without a settings invalidation.
 
-`fullConfSnapshot(self.configuration)` is the snapshot helper the
-`@jbrowse/core/configuration` barrel exports: it returns every slot's current
-value, defaults included, so the worker can read the result with no schema.
+**Worker side.** `readConfigValue(config, key, feature)` reads a plain object,
+evaluating a `jexl:` string against the feature and returning anything else
+as is. Canvas also has a worker-side `readConfigValue` / `readConfigValueSafe`
+pair; core's is the one a plugin outside canvas uses.
 
-```ts
-// Base view: assemble the snapshot once, inside rpcProps()
-.views(self => ({
-  rpcProps() {
-    return {
-      adapterConfig: self.adapterConfigSnapshot,
-      displayConfig: {
-        ...fullConfSnapshot(self.configuration),
-      } as DisplayConfig,
-      // ...
-    }
-  },
-}))
+**Schema.** Visual settings live directly on the display config schema, not in
+a renderer sub-config. A slot takes a callback only where it declares
+`contextVariable`.
 
-// Subclass: extend via super-capture
-.views(self => {
-  const { rpcProps: superRpcProps } = self
-  return {
-    rpcProps() {
-      return {
-        ...superRpcProps(),
-        showOnlyGenes: self.showOnlyGenes,
-      }
-    },
-  }
-})
-```
+**Legacy configs.** `baseTrackConfig.ts`'s `preProcessSnapshot` lifts old
+renderer sub-config properties to the display. **A slot whose type changed
+needs converting, not just lifting**, or the legacy value fails validation;
+keep the conversion, the enum values and the type in one module, as
+`plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts` does.
 
-A value that swings with zoom (canvas's `effectiveGeneGlyphMode`, the synteny
-LOD tier, alignments' per-base bin) is NOT an `rpcProps` field: it is a
-`zoomFetchArgs()` field, which the RPC spreads and the foundation stamps, so a
-threshold crossing refetches the regions on screen without a settings
-invalidation.
-
-`fullConfSnapshot` returns ALL config values including defaults (unlike
-`getSnapshot()`, which strips defaults via `postProcessSnapshot`). JEXL callback
-values are preserved as raw `"jexl:..."` strings.
-
-### Rendering code: read values with JEXL support
-
-```ts
-import { readConfigValue } from './renderConfig.ts'
-
-// Simple value:
-const height = readConfigValue<number>(config, 'featureHeight', feature)
-
-// JEXL callback (evaluated per-feature automatically):
-const color = readConfigValue<string>(config, 'color1', feature)
-
-// Nested key:
-const fontSize = readConfigValue<number>(
-  config,
-  ['labels', 'fontSize'],
-  feature,
-)
-```
-
-`readConfigValue` detects `"jexl:..."` strings and evaluates them via
-`stringToJexlExpression`. Non-JEXL values are returned directly. No MST model
-needed — works on plain objects.
-
-### Config schema: define settings on the display
-
-Visual settings live directly on the display config schema, not nested inside a
-renderer sub-config:
-
-```ts
-ConfigurationSchema('MyDisplay', {
-  color1: {
-    type: 'color',
-    defaultValue: 'goldenrod',
-    contextVariable: ['feature'], // enables jexl callbacks
-  },
-  featureHeight: {
-    type: 'number',
-    defaultValue: 10,
-    contextVariable: ['feature'],
-  },
-  // ...
-})
-```
-
-### Backward compatibility
-
-`baseTrackConfig.ts` `preProcessSnapshot` promotes old renderer → display-level
-properties. Old configs work without migration.
-
-**Type-changed slots need converting, not just lifting.** When a slot's type
-changes (e.g. `showLabels` went from `boolean` to a `stringEnum` of
-`auto`/`on`/`off`), `preProcessSnapshot` must convert the old value, otherwise
-the lifted/legacy value fails schema validation. Keep the conversion + the enum
-values + the type in one module so the schema, the model getter, the menu, and
-the snapshot migration can't drift — see
-`plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts` (`SHOW_LABELS_MODES`,
-`ShowLabelsMode`, `legacyShowLabelsToMode`), consumed by `baseConfigSchema.ts`'s
-renderer-lift, `migrateBasicSnapshot.ts`, and `baseModel.ts`.
-
-**Every config schema must be `explicitlyTyped`** (gives it a
-`type: types.optional(types.literal(name), name)` discriminator). The track /
-display / adapter unions (`pluginManager.pluggableConfigSchemaType`) are plain
-`types.union(...)` with no dispatcher, so MST relies on that literal `type` to
-pick the member. Without it — or when a member's value is wrong — a single bad
-field made MST report *every* member's full structure ("No type is applicable
-for the union", dozens of lines).
-
-`@jbrowse/mobx-state-tree` fixes that wall (since 5.10.0; core depends on `^6.7.0`): it scopes the validation
-error to the single member whose literal `type` matches the snapshot. The
-scoping drills through the wrapper layers `ConfigurationSchema()` builds —
-`ConfigurationSchema()` returns `optional(model)` (this fork bakes
-`pre`/`postProcessSnapshot` into the `ModelType` itself, so members are
-`optional(model)`, not `optional(snapshotProcessor(model))`); the unwrapper also
-handles `snapshotProcessor()`/`refinement()`/`late()` for non-config unions.
-
-If you still see the wall, the offending member either isn't `explicitlyTyped`,
-its `type` literal doesn't match the snapshot, or the union mixes in an untagged
-catch-all member (one whose `type` is a plain string rather than a literal) — in
-that case MST can't prove the discriminator match is unique and falls back to
-validating every member.
+**Every config schema must be `explicitlyTyped`.** The track / display /
+adapter unions are plain `types.union(...)`, so MST picks the member by the
+literal `type`. `@jbrowse/mobx-state-tree` scopes a validation error to the
+member whose literal matches. If you still see "No type is applicable for the
+union" listing every member, the offending member isn't `explicitlyTyped`, its
+`type` doesn't match the snapshot, or the union mixes in an untagged catch-all
+member.
 
 ## Runtime setting changes (write the slot directly)
 
-A runtime UI change to a display setting writes the **config slot itself**
-(`setConf(self, key, value)`) and reads it back through `getConf`. There is no
-separate override map: the earlier
-`ConfigOverrideMixin` (a `configOverrides` frozen map with `getConfWithOverride`
-/ `getOverride` / `setOverride`) was collapsed. A setting's current value lives
-in the slot, so the `displayConfig` snapshot above already reflects any runtime
-change with no extra spread.
+A runtime UI change writes the config slot (`setConf`) and reads it back with
+`getConf`, so the `rpcProps()` payload reflects it with no extra spread. There
+is no override map; `ConfigOverrideMixin` was collapsed into this.
 
-Where to put a new setting:
+**A setting is a config slot, and the session mirrors it.** That keeps one
+word for one setting: a session spec writes the slot (`SESSION_SPEC_FORMAT.md`),
+the config docs document it, `jbrowse validate` checks it, and the track menu
+writes the same slot. A state-model property instead cannot be declared in
+`config.json` and acquires a second spelling — the `groupBy` / `rowOrder` /
+`facet` drift. What stays a property is what config never says: a reader's
+transient marks (hidden rows, pinned features), an arrangement derived from
+data (`layout`, a cluster tree), and a launch spec that clears itself.
 
-- **Config-backed setting** (the default for any display option) — add a slot to
-  the display config schema, write it with `setConf`, read it with `getConf`. It
-  serializes into the session and can take a declarative config default.
-- **Bespoke MST prop** — only for state that isn't a config slot (an ephemeral
-  volatile). A sentinel is not a reason to avoid a slot: `rowHeight === 0` =
-  fit-to-height sits on a config slot in every display that has it. What a
-  sentinel does require is a distinct resolved getter (`effectiveRowHeight`)
-  that every consumer reads instead of the raw setting — see
-  `ROW_HEIGHT_AND_FIT.md`.
-
-**A setting is a config slot, and the session mirrors it.** That is what keeps
-one word for one setting: a session spec's track entry writes the slot table
-(`SESSION_SPEC_FORMAT.md`), the config pages document it, `jbrowse validate`
-checks it, and the track menu writes the same slot the config author declared.
-A setting kept as a state-model property instead cannot be declared on a track
-in `config.json`, and it acquires a second spelling the moment either side
-names it — which is where the `groupBy` / `rowOrder` / `facet` drift came from,
-each of them the facet domain under another name. What stays a property is what
-the config never says: a reader's transient marks (hidden rows, pinned or
-soloed features, a lane picked out of a graph's haplotypes), an arrangement
-derived from data (`layout`, a cluster tree), and a launch spec that clears
-itself.
-
-The `fullConfSnapshot(self.configuration)` form above is canvas's, and canvas
-does not ship what it returns: `pickDisplayConfig` takes exactly the slots
-`DisplayConfig` declares back out of it, off a `Record<keyof DisplayConfig, true>`
-the compiler proves complete in both directions. Everything else — alignments,
-both wiggles, multi-row, Manhattan, HiC, MAF, LD, multi-sample variant —
-enumerates its `rpcProps()` fields by hand, which is the same discipline reached
-without the snapshot. `plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`
-§"Which getter decides what a setting invalidates" is the worked account of why
-visual-only changes must not refetch.
+A sentinel is not a reason to avoid a slot (`rowHeight === 0` is fit-to-height
+on a slot). It does require a distinct resolved getter (`effectiveRowHeight`)
+that every consumer reads; see `ROW_HEIGHT_AND_FIT.md`.
 
 ## Reading a slot: node, not snapshot
 
 Every slot is `types.stripDefault(...)`, so a config snapshot **omits any slot
-sitting at its default**. That keeps saved sessions minimal and is exactly right
-for what snapshots are for — re-creating the object (the schema re-applies
-defaults) and diffing what a user actually set. It is not a value-read API.
-
-**The compiler owns this now, so it needs no vigilance.** A snapshot is not an
-accepted argument to `readConfObject` — a compile error, guarded by
-`configTypeNarrowing.test.ts`. So the spelling left is the correct one: drill from
-the live node, which resolves defaults.
+at its default**. Snapshots are for re-creating and diffing, not reading
+values. `readConfObject` refuses a snapshot at compile time
+(`configTypeNarrowing.test.ts`), so drill from the live node, which resolves
+defaults:
 
 ```ts
-// resolves the adapter's default
 readConfObject(getContainingTrack(self).configuration, ['adapter', 'fetchSizeLimit'])
 ```
 
-Note the array path itself still returns `any` — only single-slot reads narrow.
+An array path still returns `any`; only single-slot reads narrow.
 
-**Don't add a runtime check on top.** It was tried and reverted: reading a slot off
-an un-hydrated plain config is legitimate and load-bearing — `generateHierarchy`
-walks the frozen `jbrowse.tracks` that way rather than hydrate 10k tracks for the
-track selector — and at runtime that is indistinguishable from the broken
-spelling.
+**Don't add a runtime check on top.** One was tried and reverted: reading a
+slot off an un-hydrated plain config is legitimate — `generateHierarchy` walks
+the frozen `jbrowse.tracks` that way rather than hydrate thousands of tracks —
+and at runtime it is indistinguishable from the broken spelling.
 
-Don't "fix" `readSlot` to return a defaults-included clone: it returns the cached
-`getSnapshot` deliberately (stable identity, so downstream computeds memoize), and
-a per-read built object was a measured perf and spurious-recomputation regression.
+**Don't make `readSlot` return a defaults-included clone.** It returns the
+cached `getSnapshot` for stable identity, so downstream computeds memoize; a
+per-read object measured as a perf and spurious-recomputation regression.
 
 ## Forwarding a callback slot: read it raw, don't resolve it
 
 [ADR-066](../architecture-decision-records/adr-066-callback-slots-are-read-raw-at-the-call-site.md)
-is the decision behind this section, including the repo-wide fix that was built
-and backed out. `pnpm check-deferred-slot-reads` ratchets it.
+is the decision; `pnpm check-deferred-slot-reads` ratchets it.
 
-A wholesale snapshot never had to think about this. `fullConfSnapshot` reads raw
-MST properties, so a `jexl:` slot is forwarded intact and the worker's
-`readConfigValue` binds the feature — which is why canvas, the one display that
-reads a whole snapshot (`pickDisplayConfig`), has never hit the trap below.
-
-A display that curates its own `rpcProps()` slot by slot has to think about it,
-because the obvious spelling is wrong:
+`readConfObject` / `getConf` take `args` as an optional parameter. Omit it on a
+callback slot and the expression is evaluated anyway, against a context where
+every name is `undefined`, and the fallout comes back as the setting. A display
+that curates its `rpcProps()` slot by slot must read a callback slot raw so
+the worker binds the feature:
 
 ```ts
-// WRONG in a curated rpcProps(): resolves the callback here, on the main
-// thread, against whatever context the read passes — which is none
-get rowsField(): string {
-  return readConfObject(self.conf, ['rows', 'field'])
-}
-
-// RIGHT: a transport read. The worker binds `feature` and resolves it.
-get rowsField(): string {
-  return self.conf.rows.field
-}
+// WRONG: resolves on the main thread with no feature
+readConfObject(self.conf, ['rows', 'field'])
+// RIGHT: a transport read
+self.conf.rows.field
 ```
 
-`readConfObject` / `getConf` take `args` as an **optional**
-parameter, so "what is this setting" and "what is this setting FOR this feature"
-are the same call with and without a third argument. Omit it on a callback slot
-and the expression is evaluated anyway, against a context where every name it
-mentions is `undefined`, and the fallout comes back as the setting. The two
-spellings of that look nothing alike from the outside:
+The failure looks different per slot: `marks[].encoding.color` throws and
+banners the display; `rows.field` with `split(feature.name,…)` returns `''`
+and puts every feature in one unnamed row. Canaries sit at the display (the
+mark display's "jexl unevaluated" case in `model.test.ts`,
+`partitionFieldTransport.test.ts`), because the reader cannot tell an arg-less
+read of a callback from the many legitimate ones.
 
-| slot | expression | arg-less read | symptom |
-| --- | --- | --- | --- |
-| `LinearMarkDisplay.marks[].encoding.color` | `jexl:get(feature,…)` | throws `reading 'get'` | escapes the model getter, banners the display |
-| `LinearMultiRowFeatureDisplay.rows.field` | `jexl:split(feature.name,…)` | `''`, because `split` is total | `''` ships as an attribute name; every feature lands in one unnamed row |
-
-Both are pinned by canaries at the display — the mark display's "jexl
-unevaluated" case in `model.test.ts` and `partitionFieldTransport.test.ts` —
-because there is nothing in the reader that
-can catch this: an arg-less read is a legitimate operation on the many slots that
-hold no callback.
-
-**How to tell which kind of read you want:** does something downstream still bind
-a feature? If the value is going into `rpcProps()`, a renderer, or anywhere the
-worker will call `readConfigValue` on it, it is transport — read it raw. If it is
-going into a swatch, a menu label, or arithmetic on the main thread, it is a
-resolving read, and it needs either a feature in `args` or an `isJexl` guard.
-`LinearBasicDisplay`'s `color` / `utrColor` are the worked examples of the
-second kind: raw read, `isJexl` guard, fall back to a default,
-because no single swatch can show a per-feature expression.
-
-Slots that can hold a callback are the ones declaring `contextVariable`, and
-only those: every other slot refuses a `jexl:` string at load, on `setSlot`, in
-the config editor and in the JSON Schema, naming the slot
-([ADR-155](../architecture-decision-records/adr-155-a-slot-takes-a-callback-only-where-it-declares-one.md)).
-A slot naming a field the display reads per feature is a `featureField`, which
-the reader hands over raw, so its `jexl:` expression reaches `fieldReader`
-without a raw read at the call site.
+**Which read you want:** if something downstream still binds a feature
+(`rpcProps()`, a renderer, the worker's `readConfigValue`), read raw. If the
+value feeds a swatch, a menu label or main-thread arithmetic, pass a feature
+in `args` or guard with `isJexl` and fall back to a default, as
+`LinearBasicDisplay`'s `color` / `utrColor` do. Only slots declaring
+`contextVariable` accept a `jexl:` string
+([ADR-155](../architecture-decision-records/adr-155-a-slot-takes-a-callback-only-where-it-declares-one.md));
+a `featureField` slot is handed over raw by the reader, so it needs no raw read
+at the call site.
 
 ## Key functions
 
-| Function                                | Location                                                  | Purpose                                                   |
-| --------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------- |
-| `fullConfSnapshot(config)`              | `packages/core/src/configuration/fullConfSnapshot.ts`     | Snapshot of every slot's current value, defaults included |
-| `readConfigValue(config, key, feature)` | `packages/core/src/configuration/readConfObject.ts`       | Read from plain object, auto-evaluate JEXL                |
-| `pickDisplayConfig(snapshot)`           | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | Take the worker's slots out of the snapshot — the pick, never a subtraction |
-
-Canvas has its own `readConfigValue` beside those, plus a `readConfigValueSafe`;
-they are the worker-side pair, and core's is the one a plugin outside canvas
-reaches for.
-
-## What this replaces
-
-| Old pattern                                                     | New pattern                                      |
-| --------------------------------------------------------------- | ------------------------------------------------ |
-| `readConfObject(mstModel, key, { feature })` in workers         | `readConfigValue(plainObj, key, feature)`        |
-| `configSchema.create(snapshot, { pluginManager })` re-hydration | Not needed — plain objects work directly         |
-| `CachedConfig<T>` / `readCachedConfig()` indirection            | Removed — `readConfigValue` is simple and direct |
-| Hardcoded `mockConfig` with fallback defaults                   | the real snapshot includes real values           |
-| Nested `renderer: { type: "X", color1: "..." }` in config       | Direct `color1: "..."` on display config         |
+| Function | Location | Purpose |
+| --- | --- | --- |
+| `fullConfSnapshot(config)` | `packages/core/src/configuration/fullConfSnapshot.ts` | Every slot's current value, defaults included |
+| `readConfigValue(config, key, feature)` | `packages/core/src/configuration/readConfObject.ts` | Read from a plain object, evaluating JEXL |
+| `pickDisplayConfig(snapshot)` | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | Take the worker's slots out of the snapshot — a pick, never a subtraction |
 
 ## Which displays are on it
 
-The pipeline is for a display whose worker reads config. That is every display
-with an `rpcProps()`: canvas's three (`LinearBasicDisplay`,
-`LinearVariantDisplay`, `LinearMultiRowFeatureDisplay`), alignments, both
-wiggles, Manhattan, HiC, MAF, LD, multi-sample variant, and `LGVSyntenyDisplay`.
-
-The rest have no worker config to send, which is a different shape rather than
-an unfinished migration: **arc** and **circular-view**'s chords paint the live
-view as main-thread SVG with every feature in one array, **dotplot** and
-**synteny** own their fetch outside `FetchMixin` entirely
+Every display with an `rpcProps()` — its worker reads config. The rest have no
+worker config to send: arc and circular-view chords paint main-thread SVG,
+dotplot and synteny own their fetch outside `FetchMixin`
 ([SHARED_CANVAS_VIEWS.md](SHARED_CANVAS_VIEWS.md)), and
-`LinearReferenceSequenceDisplay` deliberately omits `rpcProps()` so no
-`SettingsInvalidate` is installed at all — see
-[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"Ordering is the contract".
+`LinearReferenceSequenceDisplay` omits `rpcProps()` so no `SettingsInvalidate`
+is installed ([ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"Ordering is
+the contract"). The server-side renderer registry is gone
+(`PLUGIN_ABI_STABILITY.md`).
 
-There is no server-side renderer left to migrate off. The renderer registry —
-`ServerSideRendererType`, `FeatureRendererType`, `BoxRendererType`, `GlyphType`
-— is gone; `PLUGIN_ABI_STABILITY.md` §"What has already left the re-export
-surface" records each removal with its reason.
+## Reference resolution
 
-## Reference resolution (the other config concern)
+Separate from the render-data flow: every track / display state model holds
+its config via `ConfigurationReference(schemaType)`, dispatched on the schema's
+`explicitIdentifier` — `trackId` → `TrackConfigurationReference`, `displayId`
+→ `DisplayConfigurationReference`, anything else → a plain
+`types.union(ref, schema)`. `packages/core/src/configuration/CLAUDE.md` is the
+authoritative account with its canary tests. The traps:
 
-The pipeline above is the render-data flow. Orthogonal to it is how state
-models *reach* their config: every track / display state model holds its
-config via `ConfigurationReference(schemaType)`, dispatched on the schema's
-`explicitIdentifier`:
-
-| `explicitIdentifier` | Branch                          |
-| -------------------- | ------------------------------- |
-| `'trackId'`          | `TrackConfigurationReference`   |
-| `'displayId'`        | `DisplayConfigurationReference` |
-| anything else        | plain `types.union(ref, schema)` |
-
-Authoritative docs (with named canary tests) live alongside the code at
-`packages/core/src/configuration/CLAUDE.md`. Highlights:
-
-- All three branches union the same two members — an id string, or a full
-  inline config — but **only the first two carry `idOrSnapshotUnion`'s
-  dispatcher**, and that asymmetry is load-bearing rather than an oversight the
-  plain branch never caught up on. With the dispatcher, a non-string goes to
-  the schema member and is adopted as an owned instance (which throws if it
-  already has a parent). Undispatched, `BaseReferenceType.isAssignableFrom`
-  defers to its target type and a live in-tree node goes to the *reference*
-  member instead — which is what `initializeInternetAccount` needs when it
-  pushes `jbrowse.internetAccounts[i]` straight through. Adding the dispatcher
-  to the plain branch breaks it; `configurationSchema.test.ts` pins it at the
-  union, `InternetAccounts.test.ts` five suites away.
-- **TrackConfigurationReference** resolves an id through
-  `session.getTrackById(id)` (a per-id computed — resolving one track's config
-  subscribes only to that id) and throws if it misses. The union's second
-  branch is what a view holding a track config nothing else can draw takes: the
-  config is written into the track rather than parked in a list beside it
-  ([ADR-084](../architecture-decision-records/adr-084-a-view-local-track-config-rides-on-its-track.md),
-  which deleted the tree-wide `resolveIdentifier` fallback along with
-  `viewTrackConfigs`). Canaries: `ReadVsRef.test.tsx`, `SVInspector.test.tsx`,
-  `viewTeardown.test.tsx`.
-- **What `getTrackById` hands back decides which of three nodes you get**: a
-  plain frozen object hydrates through the `PluginManager` cache (ADR-031), or,
-  for a non-admin, through the session's private working copy (ADR-032); an
-  entry that is *already* an MST node — an assembly's `sequence` track, a live
-  connection's track — is returned as-is and edited in place.
-- **DisplayConfigurationReference** resolves by displayId, then by
-  `parent.type`, inside the containing track config's `displays`. The
-  type-match path always succeeds at runtime because
-  `baseTrackConfig.preProcessSnapshot` injects a stub display entry for every
-  registered displayType on the track — and it is **reached**, by a session
-  saved before a `DisplayType` was renamed against a track whose config does
-  not itself declare the old entry: the stub is named for the new type, the
-  display model's `preProcessSnapshot` rewrites the state model's `type`, and
-  nothing rewrites the saved `configuration` id. A config that *does* declare
-  the old entry keeps its old `displayId` through the alias rewrite and wins
-  the first-wins dedupe, so that session resolves by id and never reaches the
-  fallback. `DisplaySnapshotShape.test.tsx` pins the reached case.
+- **Only the first two branches carry `idOrSnapshotUnion`'s dispatcher, on
+  purpose.** Undispatched, a live in-tree node goes to the reference member,
+  which `initializeInternetAccount` needs. Adding the dispatcher to the plain
+  branch breaks it (`configurationSchema.test.ts`, `InternetAccounts.test.ts`).
+- **`TrackConfigurationReference`** resolves through `session.getTrackById(id)`
+  and throws on a miss. Its inline-config branch is how a view holds a track
+  config nothing else can draw
+  ([ADR-084](../architecture-decision-records/adr-084-a-view-local-track-config-rides-on-its-track.md));
+  `assertTrackConfOutlivesItsAssemblies` enforces it, so don't simplify it away.
+- **What `getTrackById` hands back decides the node**: a frozen object hydrates
+  through the `PluginManager` cache (ADR-031) or, for a non-admin, the
+  session's working copy (ADR-032); an entry already an MST node (an assembly's
+  sequence track, a connection's track) is edited in place.
+- **`DisplayConfigurationReference`** resolves by displayId, then by
+  `parent.type`, inside the track's `displays`. The type fallback is reached by
+  a session saved before a display type was renamed, against a track config
+  that doesn't declare the old entry (`DisplaySnapshotShape.test.tsx`).
 - `ConfigurationReference`'s return carries an `IConfigurationReference`
-  annotation but no `as SCHEMATYPE` **cast**. The cast narrows `SnapshotIn` to
-  just the object branch and breaks string-id callers; the union `SnapshotIn`
-  the annotation preserves is `string | SnapshotIn<schema>`.
-- **A subclass that adds its own config slots must redeclare
-  `configuration: ConfigurationReference(configSchema)` in its `types.compose`**,
-  or `getConf` still types against the base factory's schema. `types.compose`
-  **overrides** props rather than intersecting them (`_OverrideProps` in the MST
-  typings), so the redeclaration costs nothing at runtime — same node either
-  way — and buys own-slot narrowing.
-
-The inline-config branch is not a quirk to simplify away — ADR-084 chose it
-over the session list it replaced, and `assertTrackConfOutlivesItsAssemblies`
-enforces it.
+  annotation but no `as SCHEMATYPE` cast; the cast would break string-id
+  callers.
+- **A subclass that adds config slots must redeclare
+  `configuration: ConfigurationReference(configSchema)` in its
+  `types.compose`**, or `getConf` types against the base schema. Compose
+  overrides props, so this costs nothing at runtime.

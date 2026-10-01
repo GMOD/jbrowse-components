@@ -17,17 +17,16 @@ track.
 | `RegionTooLargeMixin` — the verdict, the budgets, force-load | `packages/display-kit/src/RegionTooLargeMixin.ts` |
 | `nextGateState`, `resolveByteLimit`, `evaluateRegionTooLarge` | `packages/display-kit/src/regionTooLargeUtils.ts` |
 | `measureRegionBytes`, `RegionTooLargeResult`, the budget vocabulary | `packages/core/src/rpc/byteBudget.ts` |
+| `gateBatch` — commit-before-cancel for a refusing batch | `packages/display-kit/src/fetchEachRegion.ts` |
 | `CanvasFeatureGateMixin` — the density axis | `plugins/canvas/src/shared/CanvasFeatureGateMixin.ts` |
 | Adapter estimate | `BaseFeatureDataAdapter.getRegionByteSize` |
 | The save dialog's own check, not the gate | `CoreGetRegionByteEstimate`, `fetchTrackData.ts`, `BaseTrackModel.exportByteLimit` |
 
-Tests: `regionTooLargeUtils.test.ts` and `nextGateState.test.ts` for the pure
-parts, `gateTruthTable.test.ts` for every getter against boundary values
-(16,800 rows collapse to 7 banner-facing states, listed at the top of its golden
-file), a `derivedRegionTooLarge.test.ts` on alignments, multi-row, MAF and
-multi-sample variant, `densityTier.test.ts` where the band has replaced the
-banner, `gateDeclined.test.ts` for the display that declines the gate outright,
-and the fetch runners' own files for the commit and the refusal skip.
+Tests: `regionTooLargeUtils.test.ts`, `nextGateState.test.ts`,
+`gateTruthTable.test.ts` (every getter against boundary values; its golden file
+lists the banner-facing states), `derivedRegionTooLarge.test.ts` per gated
+display, `densityTier.test.ts`, `gateDeclined.test.ts`, and the fetch runners'
+own files.
 
 ![What one gated fetch decides, and what the first refusal does to the batch](diagrams/region-too-large-gate.svg)
 
@@ -35,45 +34,33 @@ and the fetch runners' own files for the commit and the refusal skip.
 
 A display opts in with two lines: override `gateEnabled` to `true`, and pass
 `byteLimit: self.resolvedByteLimit()` in its fetch RPC's args. Everything else
-is the mixin's and the fetch runners'.
+belongs to the mixin and the fetch runners.
 
 1. **The RPC measures first.** `measureRegionBytes` is the first await that
-   touches the data in every gated feature RPC (canvas's two, alignments, the
-   mark display's `CoreGetEncodedLayers`, both MAF tiers, multi-sample variant —
-   MAF's two load their samples
-   adapter, a cached Newick read, ahead of it): one index read per region, no
+   touches data in every gated feature RPC: one index read per region, no
    features. Over budget, it answers a `RegionTooLargeResult` in place of the
    payload; under, the payload carries `bytes` too. Canvas then samples density
    before the download and refuses on that axis the same way.
-2. **The runner commits.** `fetchEachRegion`, `fetchAllRegions`,
-   `fetchRegionsBatched` and the global family's shared `run` capture
-   `gateFetchState()` before
-   issuing — the viewport, whether the gate was active, and which adapter tier
-   it was about — and call `commitFetchBytes(perRegionBytes, issued)` when the
-   results land. A refused region is neither stored nor marked loaded.
-3. **`nextGateState` applies the commit.** The per-region max is folded into
-   `byteEstimate` when the fetch measured bytes, and the viewport is stamped
-   as measured when the fetch was gated at issue — two halves, because a
-   density refusal measures no bytes and an unmeasurable result must not wipe
-   a good estimate. A measurement issued against another tier is dropped.
+2. **The runner commits.** Each fetch runner captures `gateFetchState()` at
+   issue (viewport, whether the gate was active, which adapter tier) and calls
+   `commitFetchBytes(perRegionBytes, issued)` when results land. A refused
+   region is neither stored nor marked loaded.
+3. **`nextGateState` applies the commit.** The per-region max folds into
+   `byteEstimate` when the fetch measured bytes; the viewport is stamped as
+   measured when the fetch was gated at issue. The two halves are separate
+   because a density refusal measures no bytes and an unmeasurable result must
+   not wipe a good estimate. A measurement issued against another tier is
+   dropped.
 4. **The verdict is derived.** `regionTooLarge` is the stored estimate against
    `resolvedByteLimit()`, then `densityTooLarge` when `densityGateActive`. The
-   banner reads `regionTooLargeReason`; `zoomCanReleaseGate` decides whether
-   it offers "zoom in".
+   banner reads `regionTooLargeReason`; `zoomCanReleaseGate` decides whether it
+   offers "zoom in".
 
 The estimate survives `clearAllRpcData()`, so a pan doesn't flicker the banner.
-One autorun on the mixin, `ClearGateMeasurementsOnNavOrTierSwap`, drops it when
-the estimate stops describing the fetch the display would make: chromosome
-navigation (`displayedRegionIndex` is reused) and a tier swap
-(`byteGateAdapterConfig` changes — MAF's summary tier at 20 kb). `forceLoadTrack`
-survives both.
-
-**Both axes drop on that one trigger**, through the `clearGateMeasurements`
-hook the autorun calls beside the estimate; `CanvasFeatureGateMixin` fills it
-with its per-region counts. They used to clear on different triggers, the byte
-estimate on navigation *and* a tier swap and the density counts on navigation
-alone, so re-pointing a track's adapter dropped the bytes and left
-`densityTooLarge` speaking for the previous file until the refetch landed.
+The mixin's `ClearGateMeasurementsOnNavOrTierSwap` autorun drops it on
+chromosome navigation and on a tier swap (`byteGateAdapterConfig` changes), and
+calls the `clearGateMeasurements` hook so the density axis drops on the same
+trigger. `forceLoadTrack` survives both.
 
 **Neither budget is an RPC cache key.** `resolvedByteLimit()` and canvas's
 `maxFeatureDensity` swing at 20 kb and on force-load, so they travel as
@@ -81,123 +68,67 @@ call-site arguments, never in `rpcProps()`, where a swing would be a full
 refetch. Raising a budget releases the verdict and refetches the refused
 region; lowering one re-banners from the stored measurement with no RPC.
 
-**A refusal refuses what the fetch is granular in**, and the three runners are
-granular in three things. `fetchEachRegion` stops the batch at the first
-refusal, because N round trips are still in flight and no sibling can change a
-display-wide verdict. `fetchRegionsBatched` refuses the one payload it asked
-for (variants, MAF's detail tier). `fetchAllRegions` already holds every
-result, so it stores the regions that fit and drops the ones that did not, with
-nothing left to cancel — no gated display is on it, and which of the three a
-gated one should want is
+**A refusal refuses what the fetch is granular in.** `fetchEachRegion` stops
+the batch at the first refusal: the verdict is a display-wide max, so no
+sibling can change it, and `heldDataAnswers` voids coverage while
+`gateBlocked`. It commits, then `cancelFetch` aborts the in-flight siblings. On
+an hg38 RefSeq GFF3 at whole-genome zoom that moved the banner from ~2.8 s and
+~10 MB of discarded downloads to ~50 ms and none. `fetchRegionsBatched` refuses
+the one payload it asked for. `fetchAllRegions` stores the regions that fit;
+no gated display uses it, and which granularity one should want is
 [ideas/waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md](../ideas/waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md).
-MAF's batch is
-itself a per-region fan-out, so its first refusal aborts a signal scoped to that
-batch (`refusalScope` in `fetchMafData.ts`) and the siblings still downloading
-abort rather than land into a payload about to be discarded. The banner
-quotes the largest region's bytes labelled with the whole visible span — a
-label, never a denominator: dividing by span releases a region the worker still
-refuses.
+MAF's batch is itself a fan-out, so its first refusal aborts a batch-scoped
+signal (`refusalScope` in `fetchMafData.ts`).
 
-**A measurement carries whether it covers the set.** A fan-out that stopped
-early reports the max over whichever regions won the race, and `partial` is
-that fact travelling beside `bytes` so `nextByteEstimate` does not read it as
-evidence about zoom. `fetchEachRegion` derives it from its own landed count;
-the runners handed one payload read it off the result with `measurementPartial`
-(`byteBudget.ts`), which is how MAF's two tiers report it — their abort is the
-only thing in the tree that cuts a set short behind a single payload. Every
-commit site reads `measuredBytes` and `measurementPartial` as a pair, so a
-fourth runner cannot commit the number without the claim about it.
+**Commit before cancelling.** Cancelling first strands the verdict and loops the
+fetch forever; `gateBatch`'s docstring has the mechanism, and its one
+`refuse()` leaves no order to invert. It also commits once per batch, so many
+regions refusing at whole-genome zoom cost one `fetchGeneration` bump. The
+density axis has the same trap in `fetchGatedRegions`'s `onComplete`.
 
-**The first refusal ends the batch.** The verdict is a display-wide max on both
-axes and `tooLarge` replaces the whole subtree, so no sibling can change the
-answer and no sibling payload is drawn under the banner — and held data does not
-survive to be reused either, `heldDataAnswers` voiding coverage for as long as
-`gateBlocked`. `fetchEachRegion` therefore commits the verdict and calls
-`cancelFetch`, which aborts the in-flight siblings at the socket and refuses the
-ones the worker pool has not dispatched. Measured on an hg38 RefSeq GFF3 at
-whole-genome "Show all regions", 24 content blocks: the banner moves from
-2816 ms and 10.4 MB of downloaded-then-discarded features to 47 ms and none,
-because chr1's index answers over budget before any region reads a feature.
-
-**Commit before cancelling — `gateBatch` is where that is enforced**, as one
-`refuse()` with no order for a runner to invert. Cancelling first strands the
-verdict: the aborts reject the batch, its tail never commits, `handleFetchError`
-swallows the abort as a superseded fetch's ordinary end, and `cancelFetch`'s
-`fetchGeneration` bump re-runs the autorun against a gate holding no
-measurement — `nextGateState` stamps `gateMeasuredViewportKey` only on a
-committed one, so `gateSkipsMeasuredViewport` reads false and the plan re-issues
-every region, forever. The density axis has the same trap one level up, its
-measurements committing in `fetchGatedRegions`'s `onComplete`. `gateBatch` also
-holds the commit to one per batch itself rather than inferring it from
-`cancelFetch` closing the rotation's guard, so several regions refusing in one
-batch — the ordinary case at whole-genome zoom — is one `fetchGeneration` bump
-rather than one per refusal, whatever a given display's cancel does.
-
-Two consequences worth knowing. The banner may quote the **first** refusing
-region's bytes rather than the largest, since the batch stops before the rest
-report — which is why `gateBatch` commits that measurement as `partial` and
-`nextByteEstimate` carries `zoomIneffective` through unchanged rather than
-recomputing it: a batch that stopped early reports whichever regions won the
-race, so zooming from one refusing viewport to another could compare chr1's
-bytes against chr4's, clear the 90% bar on that alone, and drop the "zoom in"
-advice exactly where zooming in would have worked. And a sibling's real
-(non-abort) error is swallowed once the batch is cancelled, which is
-`handleFetchError`'s existing rule for a fetch that is no longer current, not a
-new one.
+**A measurement carries whether it covers the set.** A batch that stopped early
+reports the max over whichever regions won the race, so the banner may quote
+the first refusing region rather than the largest. `partial` travels beside
+`bytes` (`measurementPartial` in `byteBudget.ts`), every commit site reads the
+pair, and `nextByteEstimate` carries `zoomIneffective` through unchanged on a
+partial measurement rather than compare chr1's bytes against chr4's. The banner
+labels the bytes with the whole visible span — a label, never a denominator:
+dividing by span releases a region the worker still refuses.
 
 ## Measurement follows the viewport
 
-The verdict is the last measurement, so the question is when a new one is
-taken, and the answer is always "the fetch takes it". Ungated, every fetch
-measures before it downloads. Gated, the fetch skeletons skip only on
-`gateSkipsMeasuredViewport` — the banner is up *and* the measurement already
-describes the viewport on screen — so a blocked display runs one fetch per
-settled viewport that stops at the gate: an index read on the byte axis, one
-density probe on canvas. Skipping unconditionally freezes the estimate;
-never skipping spins on the `fetchGeneration` bump.
+The verdict is the last measurement, and the fetch always takes the next one.
+Ungated, every fetch measures before it downloads. Gated, the fetch skeletons
+skip only on `gateSkipsMeasuredViewport` — the banner is up *and* the
+measurement already describes the viewport on screen — so a blocked display
+runs one fetch per settled viewport that stops at the gate. Skipping
+unconditionally freezes the estimate; never skipping spins on the
+`fetchGeneration` bump.
 
 A force-loaded fetch carries no budget, measures nothing, and stamps no
-viewport; density stats still commit. The approval itself is track-wide and
-nothing clears it, so zooming back out does not re-gate — that is ADR-074's
-intent, not an oversight.
+viewport; density stats still commit.
 
-## The density probe samples toward the verdict, not toward precision
+**"Zoom in to see features" is measured.** An index quotes whole blocks, so
+whether zooming shrinks a fetch is a property of the file. `nextByteEstimate`
+sets `zoomIneffective` when a span at most half the previous comes back with
+more than 90% of its bytes, and the banner drops the advice on the byte axis
+only — density always falls with zoom. Predicting it instead, by sampling the
+index at a ladder of spans, cost ~18x the single call on a whole-genome region
+set and was declined.
 
-`calculateFeatureDensityStats` grows a window from a fixed point 25% into the
-region until it has enough features to report a density. Two things decide how
-much that costs, and neither used to have anything to do with the question being
-asked.
+## The density probe
 
-**The first window is sized from the budget.** `densityProbeGate` asks for the
-narrowest window whose count can settle the verdict —
-`DENSITY_SETTLE_FEATURES / (DENSITY_SETTLE_MARGIN * maxFeatureScreenDensity)`
-screen pixels of it, 2 px — and the probe stops as soon as an *admitted* count
-in that window reads `DENSITY_SETTLE_MARGIN` times over budget. Growth still
-tests the raw count, for the reason `stats.ts` gives; only the settling exit is
-admitted, so a filtered view is not refused on a population it filters away.
+`calculateFeatureDensityStats` (`stats.ts`) grows a window from a point 25%
+into the region until it has enough features to report a density.
+`densityProbeGate` sizes the first window from the budget and lets the probe
+stop as soon as an *admitted* count reads `DENSITY_SETTLE_MARGIN` times over
+budget; growth still tests the raw count, so a filtered view is not refused on
+a population it filters away. The window is capped at the width the default
+budget asks for, because a budget under 1 feature/px would otherwise ask for a
+window that clamps to the chromosome. A budget that cannot size a window (`0`,
+NaN from jexl) yields no gate and the plain ladder.
 
-The window is bounded at both ends. Below `bpPerPx` ~500 at the default budget
-(the floor binds while `bpPerPx < 500 * maxFeatureScreenDensity`) it is under the
-probe's own 1 kb floor and the ladder is exactly what it always was; above, it is capped
-at the width the default budget asks for, because a budget below 1 feature/px
-asks for a proportionally wider one — `maxFeatureScreenDensity: 0.01` wants
-200 px, half a gigabase at whole-genome zoom, which clamps to the chromosome and
-downloads what the probe exists to avoid. The cap costs nothing where it binds:
-a tighter budget makes the settling threshold easier to clear, so a genuinely
-dense region still refuses at the first window, and only the marginal case
-ladders. The reason is worth stating exactly, because the intuitive one is
-backwards: it is not that a tighter budget makes `settled` easier — it is that
-of `settled`'s two terms only the **count** binds once the cap is reached. At any
-budget at or under 1 feature/px the derived window and the cap coincide, so the
-rule reduces to a constant, "`DENSITY_SETTLE_FEATURES` admitted features in
-`DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN` screen pixels" — 4 features per
-pixel, which is over any such budget by construction. The two names are one dial
-in every default configuration; the derivation only does work above 1/px. A budget that cannot size a window at all — `0`, or a NaN out of a
-jexl-computed slot — yields no gate and the plain ladder, rather than an
-infinite or NaN interval.
-
-Sliding the sample point across each chromosome is what says a single window
-is not evidence a permanent banner can rest on:
+One window is one draw from a clumpy distribution:
 
 <!-- BEGIN GENERATED MEASUREMENT density-probe-sample-point -->
 
@@ -214,96 +145,37 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT density-probe-sample-point -->
 
-**A settled verdict is confirmed at a second point before it is answered, and
-only where that verdict is new.** The sample point is fixed at 25% into the
-region, so one window is one draw from the table above — where the 25% point
-reads anywhere from 5% low to 2x high. The growth exits tolerate that because
-they widen until they hold `DENSITY_SAMPLE_MIN_FEATURES`, which dilutes a local
-cluster; the settling exit answers from the window in front of it, which does
-not. A track with fewer than 70 features in the whole region could never reach
-the 70-raw exit at all — the old ladder widened until the window spanned the
-region and reported the truth — so answering from 8 features lets a sparse track
-with a cluster at the mark read many times its real density and banner at that
-zoom until the user force-loads. Silent, permanent, and on the user's own file.
+**A settled verdict is confirmed at `DENSITY_CONFIRM_POINT` before it is
+answered**, on the lower of the two readings, and only when the first window
+holds fewer than `DENSITY_SAMPLE_MIN_FEATURES` raw features. Without the
+confirmation, a sparse track with a cluster at the 25% mark banners
+permanently at that zoom on the user's own file, silently. A disagreement is
+not a verdict; the ladder carries on.
 
-So `calculateFeatureDensityStats` samples `DENSITY_CONFIRM_POINT` and refuses
-only if that point settles too, on the lower of the two readings. A disagreement
-is not a verdict: the ladder carries on exactly as it would have. **The raw count
-is what scopes it, so there is no second constant** — a window already holding
-`DENSITY_SAMPLE_MIN_FEATURES` is one the 70-raw exit would have answered from
-anyway, so it claims nothing new and falls straight through to that exit for the
-same number. Only under that count is the confirmation owed. Every dense
-annotation track measured clears 70 in its first window, so the common path pays
-nothing: the whole-genome density-only scenario runs the same single probe with
-the confirmation as without it.
+**Not running the probe is what makes it cheap; shrinking the window is not.**
+A probe's floor is one bgzf chunk, a property of the file. For tabix GFF3/GTF
+the probe passes `topLevelOnly` so `readTabixLinesRedispatched` skips its
+flank expansion, which on an NCBI `GCF_*_genomic.gff.gz` (chromosome-long
+`match` records) otherwise parses the whole chromosome; see that function for
+why the flanks cannot change a top-level count.
 
-**8 features, and the count is what guards correctness.** An earlier draft
-settled on two, which is half a screen pixel's worth of evidence: the table above
-shows the 25% point reading anywhere from 5% low to 2x high, and two features
-extrapolated from that window read thousands per pixel whatever the truth is.
-Eight in a 2 px window is 4 features/px, over any budget at or under 1/px by
-construction, and it is the term that binds — see the cap's note above. The
-confirmation at a second point is what makes it safe rather than merely
-unlikely; the count is what keeps the confirmation from being asked on noise.
+**An incremental exact count is declined.** A tabix read is not incremental at
+the transport — the chunk is in the buffer before the first feature emits — so
+there is nothing left to abort by the time counting could stop.
 
-**Shrinking the window is not what makes the probe cheap; not running it is.**
-A probe's floor is one bgzf chunk, and chunk size is a property of the file: on
-the hosted hg38 RefSeq GFF3 a 1 kb window and a 4 Mb window on chr1 both cost 6
-reads and 238 kb, so no ladder tuning gets a region under a few hundred kb. The
-byte axis reads a `.tbi` already in memory and costs nothing, which is why the
-batch short circuit above matters more than either constant here.
-
-**That floor is the window read alone, and for a tabix GFF3/GTF it only became
-the whole cost once the probe stopped redispatching.** `readTabixLinesRedispatched`
-normally reads two more flanks to complete subfeature lists, bounded by the
-widest record the query returned — and on an NCBI `GCF_*_genomic.gff.gz`, whose
-every reference opens with a chromosome-long `match` record, that bound is the
-chromosome. One 1 kb probe there parsed 193,008 lines to keep 3 features:
-2734 ms against 8 ms. The probe now passes `topLevelOnly`, which skips the
-expansion, because the flanks provably cannot change a top-level count — see
-`readTabixLinesRedispatched` for the argument and
-gff-nostream's `hasIdAttribute`, at the adapter's call in
-[`Gff3TabixAdapter.ts`](../../plugins/gff3/src/Gff3TabixAdapter/Gff3TabixAdapter.ts),
-for what bounds the expansion on the paths that still take it.
-
-That chunk granularity is also why the probe is a *sample* rather than an
-incremental exact count, which is the obvious thing to reach for instead — count
-admitted features as the observable emits and stop at the budget, with no fixed
-point, no extrapolation and no constants. It cannot work over a tabix reader:
-the read is not incremental at the transport. Whole chr1 is 2 reads and its
-5,542,779 bytes are in the buffer before the first feature is emitted, so there
-is nothing left to abort by the time counting could start. Sampling is the only
-way to ask a cheap question of a chunk-granular reader.
-
-**The byte estimate is exact for the regions this view fetches.**
-`bytesForRegions` sums `optimizeChunks(blocksForRange(…))`, and `getLines` reads
-that same chunk list, so the two agree unless the line scan early-returns before
-consuming it (`tabixIndexedFile.ts` — "offers 7 chunks and reads 1" on a sparse
-file). Measured against actual bytes read on the hosted RefSeq GFF3: 1.00x at
-1 kb, 100 kb, 6.18 Mb and whole-chromosome. The 3.57x measured for a tabix chunk forecast is the gap to `@gmod/bam`'s tighter *cut*
-forecast on a file where that early return fires, not an over-report of this
-file's download — chr1 really does cost 5,542,779 bytes against its 5 Mb
-budget.
-
-**"Zoom in to see features" is measured too.** An index quotes whole blocks,
-so whether zooming shrinks a file's fetch is a property of the file:
-`volvox.maf.bed.gz` quotes the same 306,719 bytes from 25 kb to 100 kb, while a
-whole-genome VCF's halvings buy 47%, 34%, 26%, 17%, 12%, 4%, 2%, 0%.
-`nextByteEstimate` sets `zoomIneffective` when a span at most half the previous
-comes back with more than 90% of its bytes, and the banner drops the advice on
-the byte axis only — density is features per pixel and always falls with zoom.
-Predicting this instead would sample the index at a ladder of spans, 18x the
-one call on a whole-genome region set (2.4 s against 133 ms).
+**The byte estimate is exact for the regions fetched.** `bytesForRegions` sums
+`optimizeChunks(blocksForRange(…))`, the chunk list `getLines` reads, so the two
+agree unless the line scan early-returns on a sparse file
+(`tabixIndexedFile.ts`).
 
 ## The sub-floor budget tier
 
-Below `AUTO_FORCE_LOAD_BP` (20 kb) the byte budget is multiplied by
-`SUB_FLOOR_BYTE_BUDGET_FACTOR` (2). The gate keeps asking at every zoom — an
+Below `AUTO_FORCE_LOAD_BP` the byte budget is multiplied by
+`SUB_FLOOR_BYTE_BUDGET_FACTOR`. The gate keeps asking at every zoom — an
 off-switch would be bypassable, since a region over budget below the floor was
-over budget at 20 kb too — but against a larger number, because a user at a
-gene-sized window navigated there deliberately. The tier exists because the
-estimate stops moving below a BAI's 16 kb bins, so the user cannot act on the
-banner's own advice:
+over budget at the floor too — but against a larger number, because the
+estimate stops moving below a BAI's 16 kb bins and the user cannot act on the
+banner's advice:
 
 <!-- BEGIN GENERATED MEASUREMENT subfloor-index-bin-bytes -->
 
@@ -317,27 +189,21 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT subfloor-index-bin-bytes -->
 
-2x is what the deepest file here needs: 7.44 Mb against BAM's 5 Mb becomes
-7.44 against 10. A policy dial, not a derived constant. The density axis stops
-gating below the floor instead, because its number is a model with no
-measurement under it at that span, and no indexed file in the repo would trip
-it there ([ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md)). MAF's summary
-tier swaps to its summary adapter at the same span (`coarseTierPastThreshold`),
-and all three read `aboveForceLoadFloor` rather than the constant.
+The factor is a policy dial sized to the deepest file above, not a derived
+constant. The density axis stops gating below the floor instead, because its
+number is an extrapolation with no measurement under it at that span
+([ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md)). MAF swaps to its summary
+adapter at the same span (`coarseTierPastThreshold`); all three read
+`aboveForceLoadFloor` rather than the constant.
 
 ## A budget has a scope
 
-`gateByteLimit` is what one **region** may cost, so a region set reduces by
-max — in `measureRegionBytes` worker-side and `commitFetchBytes` on the main
-thread — and a multi-region view where every region fits is never refused for
-their sum. `getRegionByteSize` itself sums merged chunks across whatever it is
-handed, so `CoreGetRegionByteEstimate` takes a required `scope`: the save
-dialog asks `wholeRequest`, because a save is one download. The two readings
-differ by 5-10x: at whole-genome view
-`test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz` reads
-5059k<!--m:byte-estimate-scope.70.wholeRequest--> against `VcfTabixAdapter`'s
-5 Mb and banners, where its largest single region is
-968k<!--m:byte-estimate-scope.70.largestRegion-->.
+`gateByteLimit` is what one **region** may cost, so a region set reduces by max
+— in `measureRegionBytes` worker-side and `commitFetchBytes` on the main thread
+— and a multi-region view where every region fits is never refused for their
+sum. `getRegionByteSize` sums merged chunks across whatever it is handed, so
+`CoreGetRegionByteEstimate` takes a required `scope`: the save dialog asks
+`wholeRequest`, because a save is one download.
 
 <!-- BEGIN GENERATED MEASUREMENT byte-estimate-scope -->
 
@@ -358,110 +224,71 @@ disagree at the boundary.
 ## The density tier
 
 Where the verdict refuses, a display whose adapter carries a `densityAdapter`
-sidecar draws features per bin in the banner's place. ADR-102 has the decision;
-the parts:
+sidecar draws features per bin in the banner's place.
+[ADR-102](../architecture-decision-records/adr-102-the-density-tier-swaps-on-the-gates-verdict.md)
+has the decision.
 
-| Piece                                                                                   | Where                                                             |
-| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `densityAdapterConfigSchemaFields` — the slot the nine indexed feature adapters spread   | `packages/core/src/data_adapters/BaseAdapter/featureDensity.ts`   |
-| `BaseFeatureDataAdapter.getFeatureDensity` — reads the sidecar at the view's bp/px      | `packages/core/src/data_adapters/BaseAdapter/BaseFeatureDataAdapter.ts` |
-| `CoreGetFeatureDensity` — the RPC, one answer per region                                | `packages/core/src/rpc/methods/CoreGetFeatureDensity.ts`          |
-| `CoarseTierMixin` — the tier: the swap decision, the payloads with their own span, the read on its own rotation; MAF's summary tier is the same mixin | `packages/display-kit/src/CoarseTierMixin.ts`                     |
-| `DensityTierMixin` — the density band's hooks over it: the `densityAdapter` slot, the two config slots, the zoom bucket, `CoreGetFeatureDensity` | `packages/display-kit/src/DensityTierMixin.ts`                    |
-| `coarseTierDisplayPhase` / `coarseTierSvgReady` — the phase and export gate with the tier standing in, one copy for canvas, alignments and MAF | `packages/display-kit/src/coarseTierPhase.ts`                     |
-| `densityToUniformBins` / `packDensityRegion` — the resampler onto screen-pixel bins, packed for the coverage band's painters | `packages/alignments-core/src/densityBins.ts`                     |
-| the canvas band, one painter for both feature displays and their SVG export             | `plugins/canvas/src/shared/densityBand.ts`                        |
-| the alignments band, the coverage band's own depth-bar pass over the bins               | `plugins/alignments/src/features/coverage/densityBand.ts`         |
-| the mark display's density layer — the sidecar's own rows as a `bar` mark's channels, drawn through the display's y scale, legend, hover and export (ADR-117) | `plugins/marks/src/LinearMarkDisplay/densityLayer.ts`             |
-| `jbrowse make-density`, `add-track --density`                                           | `products/jbrowse-cli/src/commands/make-density/`                 |
+| Piece | Where |
+| --- | --- |
+| `densityAdapterConfigSchemaFields`, `getFeatureDensity` | `packages/core/src/data_adapters/BaseAdapter/` |
+| `CoreGetFeatureDensity` | `packages/core/src/rpc/methods/CoreGetFeatureDensity.ts` |
+| `CoarseTierMixin` — swap decision, own payloads, own rotation; MAF's summary tier too | `packages/display-kit/src/CoarseTierMixin.ts` |
+| `DensityTierMixin` — the density band's hooks over it | `packages/display-kit/src/DensityTierMixin.ts` |
+| `coarseTierDisplayPhase` / `coarseTierSvgReady` | `packages/display-kit/src/coarseTierPhase.ts` |
+| `densityToUniformBins` / `packDensityRegion` | `packages/alignments-core/src/densityBins.ts` |
+| the bands: canvas, alignments, marks ([ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)) | `densityBand.ts` in canvas and alignments; `densityLayer.ts` in marks |
+| `jbrowse make-density`, `add-track --density` | `products/jbrowse-cli/src/commands/make-density/` |
 
-- **The swap is the verdict, plus an optional threshold.** `coarseTierActive`
-  is `hasSource && (mode === 'always' || (mode === 'auto' && (gateRefusesDetail || pastThreshold)))`,
-  with the `densityTier` slot's `features`/`density` read as `never`/`always`.
-  Nothing above in this file changes: a refused fetch still stops at the
-  measurement and `regionTooLarge` still reads true. With the tier active the
-  phase is the band's own read, `loading` until it lands and `ready` after,
-  and only the chrome and the drawing differ.
-- **A bin is a level, not a count.** A bigWig's zoom levels are means over the
-  bases their rows cover, so `make-density` writes every base of every
-  reference (a run of empty bins as one row) and `densityToUniformBins` takes
-  the area-weighted mean per screen bin. The band then reads as features per
-  sidecar bin at every zoom, and a coverage bigWig on the same slot reads as
-  depth. A sidecar with its empty bins omitted reads, zoomed out, as the mean
-  over the bins that held something: on the hg38 RefSeq genes that was 1.0 in
-  every 3 Mb bin where the true counts ran 23 to 117.
-- **The stand-in is total, and it fetches nothing.** Alignments empties
-  `lanes`, canvas `laidOutDataMap`, multi-row `drawnRegionData`, so a track
-  forced to `density` over data it already holds draws the band alone rather
-  than over the features. `CoarseTierMixin.fetchSuspended` answers
-  `resolveFetchSuspended` into the fetch plan: the display's stand-in term
-  (`coarseTierStandsIn` — the verdict, a measured view, and the display's own
-  `coarseTierHasSomewhereToDraw`, which alignments fills with its visible
-  coverage band) and `mode === 'always' || !gateRefusesDetail`. A
-  forced `density` downloads nothing whatever the gate says; `auto` under a
-  refusal keeps its measurement pass, which is what the gate releases through.
-  The plan reads the hook tracked, so the flip back to `features` is itself
-  the fetch's wake.
-  With the band up the phase is the band's own read (`loading` until it lands,
-  `ready` after) and so is the export gate; the two failure terminals pass
-  through.
+- **The swap is the verdict, plus an optional threshold** (`coarseTierActive`).
+  Nothing above changes: a refused fetch still stops at the measurement and
+  `regionTooLarge` still reads true; only the chrome and the drawing differ.
+- **A bin is a level, not a count.** A bigWig's zoom levels are means, so
+  `make-density` writes every base of every reference (empty bins included)
+  and `densityToUniformBins` takes the area-weighted mean. A sidecar with empty
+  bins omitted reads, zoomed out, as the mean over occupied bins only — flat
+  and wrong.
+- **The stand-in is total, and it fetches nothing.** The display empties its
+  feature data, and `CoarseTierMixin.fetchSuspended` feeds the fetch plan:
+  forced `density` downloads nothing; `auto` under a refusal keeps its
+  measurement pass, which is what the gate releases through.
 - **The two slots sit on the schemas that compose the tier**, not on
-  `baseLinearDisplayConfigSchema` beside `regionTooLargeConfigSchemaFields`.
-  Every gated display uses the gate's pair, which is why that one belongs at
-  the base; the tier reaches six displays, through
-  `LinearBasicDisplay`'s base schema (which variants and LGV synteny extend),
-  `LinearMultiRowFeatureDisplay`, `LinearAlignmentsDisplay` and
-  `LinearMarkDisplay`. Spread lower it
-  listed `densityTier` in the config docs of ten displays that ignore it.
+  `baseLinearDisplayConfigSchema`, so displays that ignore them don't document
+  them.
 - **The bins never touch the fetch tiers.** They live in the tier's own
-  `regionDataMap` (`coarseTier`), cleared on chromosome navigation, and the
-  mode is a config slot (`densityTier`) that never enters `rpcProps()`, so the
-  swap drops no loaded region. The read records the buffered span and key it
-  was issued over, and declines while that still covers every visible block at
-  the same zoom bucket for the same adapter (`coarseTierCovers`, the tier's
-  `isBlockCovered`), so a pan or a small zoom inside the buffered read draws
-  what is held rather than re-reading and scrimming. A failed read lands on
-  the display's own `error`, so the banner and its Retry are the ones the
-  features already have.
-- **A gated coarse tier is the gate's measurement pass.** MAF's summary read
-  is a whole-feature download, so it says `coarseTierGated` and the mixin
-  points `byteGateAdapterPath` at the summary adapter while the tier is up,
-  commits the read's bytes, keeps a refusal as the banner, and stands the
-  detail fetch down outright. The swap is then by threshold alone, since the
-  verdict is about whichever tier is up. The density read commits no bytes,
-  so the measurement a refused `auto` owes stays with the feature fetch.
+  `regionDataMap`, and the mode slot never enters `rpcProps()`, so the swap
+  drops no loaded region. `coarseTierCovers` declines a re-read while the
+  buffered span still covers the view.
+- **A gated coarse tier is the gate's measurement pass.** MAF's summary read is
+  a whole-feature download, so it sets `coarseTierGated`: `byteGateAdapterPath`
+  points at the summary adapter while the tier is up and the detail fetch
+  stands down. The density read commits no bytes.
 
 ## Force-load
 
 One volatile boolean for the whole track, `forceLoadTrack`, ORed with the
-`forceLoad` config slot into `gateExempt`; every budget and both axes read it
-through `gateActive`. The banner quotes the size before the click, and the
-user is never asked again for that track. Volatile so a shared session cannot
-carry a disabled gate; the slot is the durable form (`jbrowse-img --force`).
-Where the density band has replaced the banner the button lived on, the band's
-own submenu carries it (`densityTierMenuItems`), so `auto` under a refusal is
-never a one-way door.
+`forceLoad` slot into `gateExempt`; every budget and both axes read it through
+`gateActive`. Nothing clears it, so zooming back out does not re-gate. Volatile
+so a shared session cannot carry a disabled gate; the slot is the durable form
+(`jbrowse-img --force`). Where the density band replaced the banner, the band's
+submenu carries the button (`densityTierMenuItems`).
 [ADR-074](../architecture-decision-records/adr-074-force-load-is-one-boolean-per-track.md)
 is why a boolean rather than a raised ceiling.
 
 ## Shared primitives
 
 **Hooks a display may override.** `gateEnabled` (a literal, checked by
-`check-gated-adapter-budgets`); `densityTooLarge`; `byteGateAdapterPath`, which
-`CoarseTierMixin` points at the sub-adapter a gated coarse tier reads so the
-measurement and the budget name one file; `byteGateAdapterConfig`, for an
-adapter config that is synthesized rather than read. `fetchSizeLimit` and `forceLoad` are the mixin's
-own slots (`regionTooLargeConfigSchemaFields`), spread into every composer's
-schema. `CanvasFeatureGateMixin` contributes `gateEnabled` and
-`densityTooLarge`, so it must be composed after the mixin that declares
-them; `no-restricted-syntax` fails the other order.
+`check-gated-adapter-budgets`); `densityTooLarge`; `byteGateAdapterPath`, so
+the measurement and the budget name one file; `byteGateAdapterConfig`, for a
+synthesized adapter config. `fetchSizeLimit` and `forceLoad` are the mixin's
+slots (`regionTooLargeConfigSchemaFields`). **`CanvasFeatureGateMixin` must be
+composed after the mixin that declares its two members**, or `types.compose`
+hands them back to the `false` defaults and the gate is silently off;
+`no-restricted-syntax` fails the other order.
 
 **The budget.** `resolveByteLimit` prefers the adapter's declared
-`fetchSizeLimit`, read off the live track config at `byteGateAdapterPath`,
-over the display's slot, and doubles it below the floor. Every consumer —
-the worker, the banner, the `byteLimit` MAF passes its frames RPC — reads
-`resolvedByteLimit()`. An adapter that implements `getRegionByteSize` and
-declares no limit inherits its display's:
+`fetchSizeLimit`, read off the live track config at `byteGateAdapterPath`, over
+the display's slot, and doubles it below the floor. Every consumer reads
+`resolvedByteLimit()`.
 
 <!-- GATED_BUDGETS START -->
 
@@ -481,16 +308,12 @@ Adapters with no `fetchSizeLimit` of their own, which therefore take whichever d
 <!-- GATED_BUDGETS END -->
 
 `scripts/check-gated-adapter-budgets.ts` fails when a new gated adapter or
-gating display has no budget decided, and shares its scan with the generator
-of that table. The 5 Mb rows exist because the index estimate is block-granular
-— a gene-sized window still pulls whole BGZF blocks, and on 1 Mb an hg38
-100-way MAF banners at a locus that renders at 38–55 fps
-(`MAF_LARGE_BLOCKS.md`).
+gating display has no budget decided. The 5 Mb rows exist because the index
+estimate is block-granular, and on 1 Mb an hg38 100-way MAF banners at a locus
+that renders smoothly (`MAF_LARGE_BLOCKS.md`).
 
-**Why the byte axis has no floor.** Cost is bytes per base times something
-zoom cannot shrink — a 470-way MAF is 6-8 MB over 40 kb, an amplicon pileup
-tens of MB — and where the estimate goes flat is a property of the file, not
-of the index's bin width:
+**The byte axis has no floor.** Cost is bytes per base times something zoom
+cannot shrink, and where the estimate goes flat is a property of the file:
 
 <!-- BEGIN GENERATED MEASUREMENT index-estimate-flat-spans -->
 
@@ -505,27 +328,24 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 <!-- END GENERATED MEASUREMENT index-estimate-flat-spans -->
 
-**What is not gated.** Self-summarizing adapters (BigWig, HiC, sequence)
-implement no `getRegionByteSize` and need no exemption. That holds under the
-mark display too, which opts in: it hands a BigWig the zoom it reads at
-([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)),
-so the fetch is a summary tier's size and the gate has nothing to measure. An
-estimate for BigWig was written and reverted; it would need a budget row in the
-table above for a fetch the tier already bounds. `LinearManhattanDisplay`
-turns the mark display's opt-in back off, by decision: its case is a
-genome-wide summary-stats view.
-`LGVSyntenyDisplay` inherits alignments' opt-in but no comparative adapter
-implements the estimate, so its gate is inert
-([ideas/waiting-on-a-call/synteny-byte-gate.md](../ideas/waiting-on-a-call/synteny-byte-gate.md)).
-`LDTrackDisplay` declines the gate outright (`gateEnabled` is false): an LD
-record source (`PlinkLDAdapter`, `PlinkLDTabixAdapter`) serves no features and
-has no index estimate to read, so the only verdict the byte axis could return is
-"unmeasurable" (`gateDeclined.test.ts`). `HtsgetBamAdapter` inherits `BamAdapter`'s
-`getRegionByteSize`, which answers `undefined` without a `bam.index`, and htsget
-has no index — so it is never byte-gated, and the budget table lists it only
-because that scan walks `extends` chains. MAF's `mafFrames` overlay is bounded
-inside `LinearMafGetAnnotationData`, which measures before it reads and refuses
-with a `RegionTooLargeResult` — against the display's `resolvedByteLimit()`,
-the alignment or summary tier's `fetchSizeLimit`, never a limit declared on the
-`annotationAdapter` sub-config; the display maps that to `framesGateBlocked` and
-never banners.
+## What is not gated
+
+- Self-summarizing adapters (BigWig, HiC, sequence) implement no
+  `getRegionByteSize`. Under the mark display a BigWig is read at a summary
+  zoom
+  ([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)),
+  so a BigWig estimate (written and reverted) would gate a fetch the tier
+  already bounds.
+- `LinearManhattanDisplay` turns the mark display's opt-in off: its case is a
+  genome-wide summary-stats view.
+- `LGVSyntenyDisplay` inherits alignments' opt-in, but no comparative adapter
+  implements the estimate, so its gate is inert
+  ([ideas/waiting-on-a-call/synteny-byte-gate.md](../ideas/waiting-on-a-call/synteny-byte-gate.md)).
+- `LDTrackDisplay` sets `gateEnabled` false: an LD source has no index estimate
+  (`gateDeclined.test.ts`).
+- `HtsgetBamAdapter` inherits `getRegionByteSize`, which answers `undefined`
+  with no `bam.index`, so it is never byte-gated; the budget table lists it only
+  because the scan walks `extends` chains.
+- MAF's `mafFrames` overlay is bounded inside `LinearMafGetAnnotationData`
+  against the display's `resolvedByteLimit()`; the display maps a refusal to
+  `framesGateBlocked` and never banners.

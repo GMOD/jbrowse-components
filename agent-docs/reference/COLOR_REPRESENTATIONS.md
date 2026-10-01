@@ -7,147 +7,83 @@ kind: spec
 
 # Color representations: a concept that does not collapse
 
-Most of this repo's cross-cutting concepts turn out to be a large branch count
-funneling into a small number of values a consumer actually reads —
-[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) (73 states to 7) and
-[TRACK_REGISTRATION.md](TRACK_REGISTRATION.md) (31 to 4) are both that shape.
-Color is not: the graph a color travels through has a hole in it, the hole is
-along the one axis the type system cannot check, and the file/line growth this
-spec was chosen for (18 → 74 consumer files, 301 → ~1,950 implementation
-lines since `v4.3.0`, spread across nine plugins/packages) is the GPU renderer
-rollout adding a whole new representation to a domain that already had one,
-without adding a way to tell the two apart at the type level.
+Most cross-cutting concepts here funnel many branches into a few values a consumer
+reads ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md), [TRACK_REGISTRATION.md](TRACK_REGISTRATION.md)).
+Color does not: two representations share the runtime type `number` with
+incompatible byte layouts, and the type system cannot tell them apart. The GPU
+renderer rollout added the second layout to a domain that already had one, without
+adding a way to distinguish them.
 
 | Code | Path |
 | --- | --- |
-| Vendored canonical-layout library (`0xRRGGBBAA`, R in the high byte) | `packages/core/src/util/color-bits/{core,parse,format,functions,convert,bit}.ts` |
+| Vendored canonical-layout library (`0xRRGGBBAA`, R in the high byte) | `packages/core/src/util/color-bits/` |
 | ABGR u32 layout, BED-triple handling, the invalid-color sentinel | `packages/core/src/util/colorBits.ts` |
 | `colord`-API compat shim over the canonical layout | `packages/core/src/util/colord.ts` |
-| Named-color table, contrast/emphasis helpers | `packages/core/src/util/color/{cssColorsLevel4,index}.ts` (`makeContrasting`, `emphasize`, `randomColor` live in `index.ts`) |
-| The documented hazard, not yet a fix | `agent-docs/reference/CORE_UTIL_AUDIT.md` § "Open: structural" |
+| Named-color table, contrast/emphasis helpers | `packages/core/src/util/color/` |
+| The documented hazard, not yet a fix | `CORE_UTIL_AUDIT.md` § "Kept on purpose" |
 | GPU shader-side unpack, the ABGR layout's other end | `packages/render-core/src/shaders/colorPack.slang` (`unpackRGBA()`) |
 
-Tests: `color-bits/core.test.ts`, `clamping.test.ts` pin the vendored library's
-byte math; `colorBits.test.ts`'s documented contract is that a broken config
-reads as the magenta sentinel, never a plausible wrong color. No test asserts
-anything about which of the two u32 layouts a given call site is holding —
-there is no type for that to check.
+`color-bits/core.test.ts` and `clamping.test.ts` pin the byte math;
+`colorBits.test.ts` pins the contract that a broken config reads as the magenta
+sentinel, never a plausible wrong color. No test asserts which u32 layout a call
+site holds, because no type can express it.
 
 ## The six representations
 
-A color moving from a track's config slot to a drawn pixel passes through as
-many as six distinct forms:
+1. **CSS text**: a config slot, a JEXL return value, or a raw BED
+   `itemRgb`/`reserved`/`field8` attribute (hex, `rgb()`/`hsl()`/`color()`, a
+   named color, or a bare `"255,0,0"` triple that `featureBedColor` folds into
+   `rgb(...)` first).
+2. **The canonical packed `Color`**: a `number` in `0xRRGGBBAA`, the vendored
+   `color-bits` domain. Every `blend`/`darken`/`lighten`/`alpha`/`getLuminance`
+   lives here only.
+3. **The ABGR-packed u32**: a `number` with red in the *low* byte, the layout GPU
+   instance buffers and canvas `fillStyle` round-trips write (`colorBits.ts`).
+4. **A normalized `[0,1]` float triple/quad**: a shader *uniform* (not a
+   per-instance attribute).
+5. **Plain `{r,g,b,a}` / `{h,s,l,a}` objects**: `toRGBA`/`toHSLA`, for pickers and
+   inspectors.
+6. **The `Colord` façade**: wraps (2) with `colord()`'s API for code migrated from
+   the npm package.
 
-1. **CSS text** — a config slot, a JEXL callback's return value, or a raw BED
-   `itemRgb`/`reserved`/`field8` feature attribute (`#rgb`, `#rrggbb(aa)`,
-   `rgb()`/`rgba()`/`hsl()`/`hsla()`/`color()`, a named color, or a bare
-   `"255,0,0"` triple `featureBedColor` recognizes and folds into a synthesized
-   `rgb(...)` string before it reaches the parser).
-2. **The canonical packed `Color`** — a `number` in `0xRRGGBBAA` layout (red in
-   the high byte), the vendored `color-bits` library's entire domain: every
-   `blend`/`darken`/`lighten`/`alpha`/`getLuminance` operation lives here and
-   nowhere else.
-3. **The ABGR-packed u32** — a `number` in the *opposite* byte order (red in
-   the low byte), the layout GPU instance buffers and canvas `fillStyle`
-   round-trips actually write, defined in `colorBits.ts` alongside the
-   canonical layout it is not compatible with.
-4. **A normalized `[0,1]` float triple/quad** — the shape a WebGL/WebGPU
-   shader *uniform* (as opposed to a per-instance vertex attribute) expects.
-5. **Plain `{r,g,b,a}` / `{h,s,l,a}` objects** — `toRGBA`/`toHSLA`, the shape a
-   color picker or an "About track" inspector reads.
-6. **The `Colord` façade** — an object wrapping (2), offering `colord()`'s
-   `mix`/`darken`/`lighten`/`toHex`/`toRgbString` API for UI code migrated from
-   the real `colord` npm package without touching every call site.
+## The conversion graph
 
-## The conversion graph: ~23 named edges, one missing direction
+Same-domain math (`alpha`, `darken`, `blend`, `withAbgrAlpha`) stays inside one
+representation. Cross-representation functions:
 
-Counting every exported function that crosses one of these six forms into
-another (not the same-domain math — `alpha`/`darken`/`lighten`/`blend`/
-`getLuminance` stay inside representation 2, `withAbgrAlpha` stays inside 3):
+| From → To | Functions |
+| --- | --- |
+| CSS → canonical | `parse`, `parseColor`, `parseHex` (vendored); `parseCssColor`, `parseCssColorOr` (adds named colors, BED triples, `transparent`, fallback) |
+| canonical → CSS | `formatHEX`, `formatHEXA`, `formatRGBA`, `formatHSLA` |
+| canonical → object / triple | `toRGBA`, `toHSLA`; `toGLrgb` |
+| CSS → triple / ABGR / 0..255 | `cssColorToNormalizedRgb(a)`, `cssColorToABGR`, `cssColorToRgb(a)` (each parse, then convert) |
+| ABGR ↔ CSS / canvas | `abgrToCssRgba`, `setAbgrFill` |
+| triple → ABGR / CSS | `normalizedRgbToABGR` (**opaque alpha only**), `normalizedRgbToCss(Rgba)` |
+| → / from `Colord` | `colord()`; `.toHex()`, `.toRgbString()`, `.toHsl()`, `.toHslString()`, `.toRgb()` |
 
-| From → To | Functions | Count |
-| --- | --- | --- |
-| CSS → canonical `Color` | `parse`, `parseColor`, `parseHex` (vendored); `parseCssColor`, `parseCssColorOr` (adds named colors, BED triples, `transparent`, fallback-on-throw) | 5 |
-| canonical `Color` → CSS | `formatHEX`, `formatHEXA`, `formatRGBA`, `formatHSLA` | 4 |
-| canonical `Color` → object | `toRGBA`, `toHSLA` | 2 |
-| canonical `Color` → normalized triple | `toGLrgb` | 1 |
-| CSS → normalized triple | `cssColorToNormalizedRgb`, `cssColorToNormalizedRgba` (parse, then normalize — composite) | 2 |
-| CSS → ABGR | `cssColorToABGR` (parse, then pack — composite) | 1 |
-| CSS → 0..255 channel array | `cssColorToRgb`, `cssColorToRgba` (parse, then read channels — composite) | 2 |
-| ABGR → canvas fill | `setAbgrFill` (wraps `abgrToCssRgba` onto `ctx.fillStyle`) | 1 |
-| normalized triple → ABGR | `normalizedRgbToABGR` (**opaque alpha only** — cannot round-trip an input alpha) | 1 |
-| normalized triple → CSS | `normalizedRgbToCss`, `normalizedRgbToCssRgba` | 2 |
-| ABGR → CSS | `abgrToCssRgba` | 1 |
-| CSS/HSL-object → `Colord` | `colord()` (wraps (1)) | 1 |
-| `Colord` → CSS / object | `.toHex()`, `.toRgbString()`, `.toHsl()`, `.toHslString()`, `.toRgb()` | (5, not separately tallied — one façade) |
+Three edges that would complete the graph do not exist:
 
-**Twenty-three** named cross-representation functions, over six nodes.
-`withAbgrAlpha` stays inside ABGR and is not counted. Three edges
-that would complete the graph do not exist:
+- **ABGR → canonical `Color`**: a caller holding a GPU-domain u32 who needs any
+  color math has only `abgrToCssRgba` then `parseCssColor`, a string round-trip
+  for what should be a byte reorder.
+- **ABGR → normalized triple**: same gap.
+- **canonical `Color` → ABGR**: only `cssColorToABGR`, which starts from a CSS
+  string; its body holds the one `packAbgr(getRed(c), getGreen(c), getBlue(c),
+  getAlpha(c))` idiom. Swapping a `getRed`/`getBlue` for `abgrRed`/`abgrBlue` goes
+  silently wrong because both accessor families share the signature
+  `(c: number) => number`. `CORE_UTIL_AUDIT.md` rejected a branded type: read back
+  from a `Uint32Array`, an ABGR value is a bare `number`, so a brand would be cast
+  away at every read.
 
-- **ABGR → canonical `Color`**: nothing. A caller holding a GPU-domain u32
-  that needs `blend`/`darken`/`lighten`/`getLuminance` — every color-math
-  operation this codebase has — has no function to call. The only way there is
-  `abgrToCssRgba` then `parseCssColor`, a full string round-trip for what
-  should be a byte reorder.
-- **ABGR → normalized triple**: nothing, same gap.
-- **canonical `Color` → ABGR**: no named function from a `Color` a caller
-  already holds. `cssColorToABGR` is the one audited path and it starts from a
-  CSS string; its body is the only place the idiom
-  `packAbgr(getRed(c), getGreen(c), getBlue(c), getAlpha(c))` appears — four
-  channel reads through the canonical-layout accessors, then a re-pack — which
-  is exactly the operation that goes silently wrong if a `getRed`/`getBlue` pair
-  is swapped for `abgrRed`/`abgrBlue`, because both accessor families share
-  the signature `(c: number) => number` and nothing distinguishes a canonical
-  `Color` from an ABGR `number` at the type level. `CORE_UTIL_AUDIT.md`
-  documents the swap hazard and the branded-type fix it rejected — read back
-  from a `Uint32Array` (a GPU instance buffer element), an ABGR value is a bare
-  `number` by the time any function sees it, so a brand would need casting
-  away at every read, defeating itself.
+## Verdict: does not collapse
 
-## What a consumer can actually tell apart: one bit, unchecked
+What a call site holding a `number` must know is **one bit**: canonical or ABGR
+byte order. Every other representation carries its own type. Nothing enforces the
+bit; each ABGR accessor caller outside `core` trusts a comment, a variable name or
+the surrounding shader-packing code that its `number` is in that order and not the
+canonical one a config-side `parseCssColor` produced.
 
-Collapse the six representations by what a call site holding a `number` in
-hand actually needs to know before it can act on it correctly: not which of
-six named forms it is, but **which of the two incompatible u32 byte orders**
-— canonical or ABGR. Every other representation (CSS, the normalized triple,
-the plain objects, `Colord`) carries its own type (`string`, a 3/4-element
-array, an object, a class instance) and cannot be confused with anything else
-at a glance. The two `number`-typed layouts can, and are read by accessor
-families with identical signatures.
-
-So the concept a consumer distinguishes is genuinely **one bit** — and
-nothing enforces it. `git grep` finds 11 non-test files outside `core`, across
-seven plugins/packages (`alignments`, `canvas`, `circular-view`, `dotplot-view`,
-`linear-comparative-view`, `render-core`, `synteny-core`) calling the ABGR
-accessor family directly, each trusting by convention — a code
-comment, a variable name, the shape of the surrounding shader-packing code —
-that the `number` it was handed is actually in that byte order and not the
-canonical one a config-side `parseCssColor` call two functions up the stack
-produced.
-
-## Verdict: does not collapse — this is the finding
-
-Where the region-too-large gate and track registration both turn out to be
-more branches than states, color has the opposite shape: few representations,
-a small conversion graph, and it still fails to collapse to something a type
-signature can hold a call site to. The failure mode is specific and
-real, not a hypothetical: two representations occupy the same runtime type,
-one direction of conversion between them has a single audited helper that
-starts from a CSS string (`cssColorToABGR`) and none from a `Color` already in
-hand, and the opposite direction does not exist at all. The
-growth this spec was picked for — the GPU rendering rollout since `v4.3.0`
-adding representation 3 and 4 wholesale to a domain that already had 1 and 2 —
-is exactly how a second incompatible layout with the same runtime type gets
-introduced without anyone deciding it needs to be told apart from the first.
-
-`CORE_UTIL_AUDIT.md` already named this ("the wrong pair silently swaps R and
-B") and already rejected the branded-type fix for a documented, structural
-reason — the fix is genuinely hard, not overlooked. What is missing is not a
-fix but the two edges that would make the existing convention (comments,
-naming, "both families now cross-reference each other") into something the
-graph itself enforces: a single audited `Color → ABGR` function (the
-`packAbgr(getRed(c), …)` idiom now exists once, inside `cssColorToABGR`, so the
-gap is a `Color`-in-hand entry point rather than 40 hand-written sites) closes the more dangerous of the two missing directions — the one
-that runs at every GPU-path color write, not just the rare read-back — even
-without solving the type-level ambiguity CORE_UTIL_AUDIT.md left open.
+The missing piece is not the branded-type fix but a single audited `Color → ABGR`
+entry point for a `Color` already in hand. It would close the more dangerous
+missing direction, the one that runs at every GPU-path color write, without
+solving the type-level ambiguity.

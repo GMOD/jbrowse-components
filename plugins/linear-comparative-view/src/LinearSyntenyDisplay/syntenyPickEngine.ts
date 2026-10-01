@@ -75,36 +75,8 @@ export interface PickIndex {
 }
 
 // How far the two views may drift APART (px) before the index is rebuilt. A pan
-// that moves both views equally never widens the query at all, so this only
-// trips when one view is panned on its own.
-//
-// The ceiling exists because the widening is what a stale index costs: the query
-// interval grows by the skew, so candidates grow with it, and the widened query
-// is paid PER MOUSEMOVE where the rebuild it avoids is paid once.
-//
-// Re-measured 2026-08-14 in Chrome (300k instances, 1400px, viewport mid-genome;
-// the earlier figures here predated excluding unpickable instances and no longer
-// described either side). What the skew costs depends entirely on hull width, so
-// it has to be read off the COLLINEAR arm — two related genomes, narrow hulls —
-// which is the shape where widening genuinely admits new candidates:
-//
-//   skew    250px ->    287 candidates, <0.1ms/query
-//   skew   1000px ->   1052 candidates,  0.1ms/query
-//   skew   5000px ->   5084 candidates,  0.3ms/query
-//   skew  20000px ->  20250 candidates,  1.2ms/query
-//   rebuild                             ~33ms, once
-//
-// Growth is ~1 candidate per px of skew (instance density along x), NOT the
-// order-of-magnitude jump the old note described. Against a ~33ms rebuild, 250px
-// was orders of magnitude too tight. 2000px holds the worst query at ~0.1ms —
-// about 330 hovers before the rebuild would have been the cheaper trade — while
-// making ordinary single-axis panning free. Deliberately conservative: 20000px
-// would still amortize over ~28 hovers.
-//
-// The wide-hull (all-vs-all) arm cannot inform this number, because there the
-// skew is not what costs: nearly every hull spans the canvas, so a stab returns
-// ~71k candidates AT ZERO SKEW and 500,000px of skew only takes it to ~108k.
-// That case is slow for a reason this cap cannot fix — see
+// that moves both views equally never widens the query. The widened query is
+// paid per mousemove, the rebuild once; measurements in
 // agent-docs/reference/SYNTENY_PICKING.md.
 const MAX_PAN_SKEW_PX = 2000
 

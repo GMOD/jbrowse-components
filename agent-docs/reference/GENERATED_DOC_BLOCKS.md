@@ -7,15 +7,13 @@ kind: operations
 
 # Generated doc blocks
 
-Several tables in the public developer guides (`website/docs/developer_guides`) are **generated**, and so are their counterparts in
-`ARCHITECTURE.md` — `pnpm autogen` rewrites both from the same scan, so there is no
-mirroring step to forget. **A generated block is bracketed by a marker pair in
-one of two spellings** — `<!-- NAME START -->` / `<!-- NAME END -->`, or
-`<!-- BEGIN GENERATED NAME -->` / `<!-- END GENERATED NAME -->` — and neither is
-hand-editable, here or under `website/docs`. Both spellings are live and the
-difference is only which generator wrote the block, so read the marker, not the
-form. `pnpm autogen --check` names every block it owns; a block it does not name
-is hand-written:
+Tables in the public developer guides and their `ARCHITECTURE.md` counterparts are
+generated from one scan by `pnpm autogen`. **A generated block is bracketed by a
+marker pair in one of two spellings**, `<!-- NAME START -->` / `<!-- NAME END -->`
+or `<!-- BEGIN GENERATED NAME -->` / `<!-- END GENERATED NAME -->`, and neither is
+hand-editable. The spelling only records which generator wrote it. `pnpm autogen
+--check` names every block it owns; one it does not name is hand-written. Blocks
+with prose-level provenance:
 
 | Marker | Renders | From |
 | --- | --- | --- |
@@ -29,18 +27,12 @@ is hand-written:
 | `HELPER_PACKAGES` | the standalone npm helper packages | `packages/*/package.json` |
 | `REEXPORT_MODULES` | the `@jbrowse` packages a plugin gets the host's copy of, with how much of each the RPC worker serves for real | `ReExports/reExports.generated.json`, itself generated from the exports maps |
 
-A row joins any of them by existing in the source, never by being written down.
-Every one replaced a hand-written table that had already drifted; what each of
-them got wrong, and the rule to draw from it, is in
-[CLAUDE.md](../CLAUDE.md#frontmatter-and-generated-tables).
-
-The index below is generated too, off the docs' own `<!-- NAME START -->`
-pairs, so a block of that spelling whose page nobody wrote down still appears in
-it. The scan does not match the `BEGIN GENERATED` spelling, so
-`DISPLAY_HOOK_OVERRIDES`, `DISPLAY_STATE_CENSUS`, `DISPLAY_CHROME_ADOPTION` and
-the `MEASUREMENT` blocks are absent from it. The marker name is what to
-grep for in `website/scripts` to find the generator behind a block, and
-`website/scripts/api-docs/README.md` is how to write one.
+A row joins a block by existing in the source, never by being written down; the
+rule is in [CLAUDE.md](../CLAUDE.md#frontmatter-and-generated-tables). The index
+below is generated off `<!-- NAME START -->` pairs only, so the `BEGIN GENERATED`
+blocks (`DISPLAY_HOOK_OVERRIDES`, `DISPLAY_STATE_CENSUS`, `DISPLAY_CHROME_ADOPTION`,
+`MEASUREMENT`) are absent from it. Grep the marker name in `website/scripts` to
+find its generator; `website/scripts/api-docs/README.md` is how to write one.
 
 <!-- MARKER_INDEX START -->
 

@@ -8,205 +8,114 @@ kind: dataset
 # Dog10K: callsets, loci and measured recipes
 
 What the `local_ancestry`, `dog10k_svs`, `dog10k_lof` and `dog10k_selection`
-tutorials rest on. The
-infrastructure is in place (`test_data/dog10k/config.json`, remote slicing,
-breed-labeled `layout`), so a new locus is roughly an hour. Forward-looking
-tutorial ideas live in
+tutorials rest on: `test_data/dog10k/config.json`, remote slicing, and a
+breed-labeled `layout`. Each figure has a `scripts/build_dog10k_*.sh` recipe;
+point an existing one at a new locus. Tutorial ideas live in
 [ideas/collections/tutorial-ideas-audit.md](../ideas/collections/tutorial-ideas-audit.md);
-the editorial rules these pages follow are in `website/CLAUDE.md`.
+editorial rules in `website/CLAUDE.md`.
 
 ## Which dog assembly
 
-Everything here is **canFam4 = UU_Cfam_GSD_1.0** (the German Shepherd assembly):
-`test_data/dog10k/config.json`, its `chrom.sizes`, the pre-existing
-`test_data/cfam2` demo, all three Dog10K callsets, and the hosted UCSC gene track
-the figures point at. Verified by chr1 = 123,556,469 bp against UCSC's
-`canFam4.chrom.sizes`.
+Everything here is **canFam4 = UU_Cfam_GSD_1.0**: the config, its
+`chrom.sizes`, the `test_data/cfam2` demo, all three Dog10K callsets, and the
+hosted UCSC gene track. The wider dog literature (genetic maps, most GWAS,
+dbSNP rsIDs) is still largely canFam3.1, which is why the local-ancestry
+tutorial generates its own uniform map and the CYP1A2 recipe derives the stop
+codon by translating the reference CDS. **Treat any dog coordinate from a paper
+as canFam3.1 until proven otherwise.**
 
-The wider dog literature is still largely canFam3.1 — the published genetic maps,
-most GWAS, and dbSNP rsIDs — which is exactly why the local-ancestry tutorial has
-to generate its own uniform map and why the CYP1A2 tutorial derives the stop
-codon's coordinate instead of copying an rsID's position. **Treat any dog
-coordinate from a paper as canFam3.1 until proven otherwise.**
+## The callsets
 
-## What already ships
+- **Manta SV aggregate**,
+  `kiddlabshare/dog10K/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz`:
+  ~1 GB, all samples, and the only callset carrying DUP and INV. Use it for
+  structural loci.
+- **Zenodo 8084059**: the Paragraph SV set (~6 GB, no DUP/INV), small variants
+  and the phased imputation panel. No copy number.
+- **Kidd lab bigBeds** (`github.com/KiddLab/dog-long-read-sv`): the authors'
+  Ohana selection output and two SV sets, bed9 with no names or scores — an
+  overlay under a computed track, not a substitute.
 
-- `tutorials/local_ancestry.md` — Dog10K wolfdogs, replacing the 1000
-  Genomes ASW trio the local-ancestry material used to use. Built by
-  `scripts/build_dog10k_wolfdog_ancestry.sh`.
-- `tutorials/dog10k_svs.md` — the Collie eye anomaly deletion from Schall
-  & Kidd 2025, built by `scripts/build_dog10k_nhej1_sv.sh`. That script still
-  writes the _DENR_ slice too, and the config still declares the tracks, but
-  **there is no DENR figure and it should not be rebuilt** — see below.
-- `tutorials/dog10k_lof.md` — the _CYP1A2_ p.Arg373Ter nonsense allele
-  from the Dog10K paper's Fig 10, built by `scripts/build_dog10k_cyp1a2.sh`.
-  The coordinate is derived by translating the reference CDS rather than copied,
-  which is worth repeating elsewhere: it re-checks against the assembly in use.
-  Fig 10a sits under it as `dog10k-cyp1a2-cohort-copy-number`, from
-  `scripts/build_dog10k_cyp1a2_cn.sh`: named animals over the whole collection,
-  both lanes from the callset's own per-sample `DP`.
-  **There is no `dog10k-cyp1a2-copy-number` figure** and this file used to say
-  there was. That was the 15-CRAM `MultiQuantitativeTrack` stack of read depth;
-  the track (`dog10k_cyp1a2_cn`) is still in the config and the script still
-  writes it, but it is deliberately not on the page, because which 15 dogs have
-  CRAMs is an accident of what the share published. It survives as the
-  validation of the callset-depth route (r = 0.92 over shared windows), not as a
-  picture. `specs/dog10k.ts` carries the same note where the figure would be.
-- `tutorials/dog10k_svs.md` also carries **AMY2B and RNASE1**, the two diet
-  genes, stacked as one composed figure (`dog10k-diet-genes`) over one panel
-  sliced from both callsets in the same order so the lanes read row for row.
-  Built by `scripts/build_dog10k_amy2b_sv.sh`. Measured 2026-08-07: the amylase
-  `DUP` (chr6:47,375,677, Manta aggregate) is 1568/1575 breed dogs hom alt
-  against 50/55 wolves hom ref, and the RNASE1 SINE insertion
-  (chr15:18,164,072, Paragraph) is 26/55 wolves het against 2 carriers in 1,824
-  dogs. **The Arctic-breed reading is a trap worth not re-deriving**: two of
-  three Greenland Dogs lack the duplication, which looks like the published
-  low-copy-number result for sled breeds, but the third carries it and so does
-  every Alaskan Malamute and Samoyed. The genotype is presence/absence, not
-  copies, so it cannot speak to that result either way.
-Both Dog10K tutorials close by putting the underlying genotypes under the derived
-track, and both carry a **built-in control** — the German Shepherd row in the
-wolfdog painting, the wolf rows in the SV panel. The 2026-08-04 rebuild of the
-painting added the other half: a POSITIVE control (eight gray wolves held out of
-the wolf panel and painted like any target) plus a 219-breed sweep that is
-neither, so the subject has a scale on both sides rather than only a floor. Two
-of the eight positives came out wrong, which is the argument for having them.
+**Take counts from the build script's output, not from prose.** Which category
+the sample table files an animal under moves the numbers.
 
-## More loci, each about an hour
+## What ships, and what deliberately does not
 
-- **_HMGA2_, Spitz group** — three intronic SVs in a gene tied to body weight
-  and ear type (Schall & Kidd Fig S5).
-- **_AP3B1_, Collie & Shetland Sheepdog** — the gene behind gray Collie
-  syndrome, which joins the list once the paper's significance threshold is
-  relaxed.
-- **Wolf-ancestry frequency across all autosomes** — run
-  `build_dog10k_wolfdog_ancestry.sh` over chr1..chr38 and summarize wolf
-  ancestry per position across the eight wolfdogs as a quantitative track.
-  Compelling if a depleted region lands on something known, but with eight
-  animals the noise is real: describe it, do not call it selection. Measured
-  cost, so nobody starts it blind, and RE-MEASURED 2026-08-04 after the target
-  set grew from 11 animals to 243: chr1 now takes about 15 minutes (4 of remote
-  slicing for 591 samples, the rest FLARE at 16 threads). chr1 is ~6% of the
-  autosomes, so the sweep is on the order of 4-5 hours rather than the ~3.5 the
-  11-animal run implied. The local-ancestry tutorial's numbers are chr1 only and
-  say so; the sweep is what would let it quote genome-wide fractions.
+- `local_ancestry.md` — wolfdogs painted by FLARE
+  (`build_dog10k_wolfdog_ancestry.sh`), chr1 only. It carries a negative
+  control (German Shepherd), a positive control (gray wolves held out of the
+  panel) and a breed sweep.
+- `dog10k_svs.md` — the Collie eye anomaly deletion
+  (`build_dog10k_nhej1_sv.sh`); the diet genes AMY2B and RNASE1 as one composed
+  figure sliced from both callsets in the same sample order
+  (`build_dog10k_amy2b_sv.sh`); SLC28A3 copy number from per-sample `DP`
+  normalized against each dog's flanks (`build_dog10k_slc28a3_cn.sh`).
+- `dog10k_lof.md` — CYP1A2 p.Arg373Ter (`build_dog10k_cyp1a2.sh`), with Fig 10a
+  as `dog10k-cyp1a2-cohort-copy-number` from callset `DP`
+  (`build_dog10k_cyp1a2_cn.sh`).
+- `dog10k_selection.md` — per-clade AF and Fst over the phased panel, written
+  as bgzipped BED for `GWASAdapter` + `LinearManhattanDisplay`, with the Ohana
+  bigBed as a validation row.
 
-_CYP1A2_ is done (see above).
+Traps:
 
-**_DENR_ was cut, 2026-08-11, and the reason generalizes.** The two SINEC2A1
-dimorphisms in adjacent introns are a real result — 220 bp at ~90% frequency
-with the reference carrying the rare allele, and the two repeats have different
-ages (every wolf has lost the left one, a third still carry the right one). It
-never became a figure. Drawn at their true spans the records are two ~35 px
-stripes in an otherwise blank frame ("it just doesn't seem to be telling a
-strong story by itself. visually it is like 'ok two verticalstripes'"); moved to
-the matrix display, which widens them to half a panel each, they read as
-multi-kb deletions over the whole gene and needed a caption saying they are not
-("this is a somewhat chaotic screenshot, unsure what i should be getting from
-this. are there 'giant' SV overshadowing the ones that are intending to be
-shown?"). Two displays, two rejections, and re-zooming lands back on the width
-that produced the first one.
+- **There is no `dog10k-cyp1a2-copy-number` figure.** The 15-CRAM read-depth
+  track (`dog10k_cyp1a2_cn`) is still in the config and the script still writes
+  it, but which dogs have CRAMs is an accident of the share; it survives as
+  validation of the callset-`DP` route. `specs/dog10k.ts` says the same.
+- **There is no DENR figure; don't rebuild it.** `build_dog10k_nhej1_sv.sh`
+  still writes the slice and the config still declares the tracks. Two
+  ~220 bp SINE records genotyped across a few dozen animals is a table, not a
+  picture: drawn at true span they are two thin stripes, and the matrix display
+  widens them into what reads as multi-kb deletions.
+- **Don't read AMY2B as the Arctic low-copy result.** The genotype is
+  presence/absence, not copies, and the Greenland Dogs split while every
+  Malamute and Samoyed carries it.
 
-The diagnosis is not the display. **Two ~220 bp records genotyped across 56
-animals is a table, not a picture** — the finding is a frequency-and-ancestry
-claim, and the only positional content ("adjacent introns") is one sentence the
-gene model already carries. The polarity point it also carried (the reference
-genome holds both repeats, so "how many SVs does this dog have" depends on what
-you called against) is worth keeping in prose somewhere; it does not need this
-locus.
+## Verified loci not yet shot
 
-**Verified 2026-07-29, genotypes checked remotely.** Use the
-`SV-genotype-v2.merge.agg_only.08032022.vcf.gz` callset under
-`kiddlabshare/dog10K/Manta-SV_2022-03-28/`: it is **1.08 GB** (not the 5.9 GB
-Zenodo Paragraph set), covers the same 1,879 samples, and unlike the Paragraph
-set it carries DUP and INV records. Each of these is the existing
-`build_dog10k_nhej1_sv.sh` recipe pointed somewhere new:
+Both are the `build_dog10k_nhej1_sv.sh` recipe over the Manta callset:
 
-- **Ridgeback 133 kb duplication**, chr18:48,828,545-48,962,003. Every Rhodesian
-  and Thai Ridgeback carries it (8 homozygous, 1 het), plus exactly the three
-  African village dogs the paper names (VILLCG000006, VILLKE000001,
-  VILLLR000017) — and one Schipperke it does not.
-- **SLC28A3 duplication**, chr1:75,578,115 (136 kb). GBGV000003 homozygous, four
-  more GBGVs and a PBGV heterozygous: Fig 11 as genotypes. The copy-number route
-  exists now (`scripts/build_dog10k_slc28a3_cn.sh`, below).
+- **Ridgeback duplication**, chr18:48,828,545-48,962,003 (133 kb): every
+  Rhodesian and Thai Ridgeback, plus exactly the three African village dogs the
+  paper names (VILLCG000006, VILLKE000001, VILLLR000017), and one Schipperke.
+- **SLC28A3 duplication**, chr1:75,578,115 (136 kb): Fig 11 as genotypes,
+  concentrated in GBGV and PBGV.
 
-_AMY2B_ and _RNASE1_ are done (see above). The counts this file carried for them
-were close but not exact, so take the build script's output over any number
-written down: it was 1581/1588 breed dogs here and the script prints 1568/1575,
-the difference being which category the sample table files an animal under.
+## Per-sample copy number at a locus
 
-**A selection scan is one download, and it ships** in the `dog10k_selection`
-tutorial, scored over the phased imputation panel rather than the 1.08 GB SV
-callset: per-clade AF, Fst against the rest, written as a bgzipped
-BED: `GWASAdapter` + `LinearManhattanDisplay` already ship and already handle
-ranged SVs. The authors' own Ohana output is published as a 52 KB canFam4
-bigBed (283 sites, `github.com/KiddLab/dog-long-read-sv`, alongside two more SV
-bigBeds), which loads directly as a validation row under the computed scan. The
-bigBeds are bed9 with no names or scores, so they are an overlay, not a
-substitute.
+The published QuicK-mer2 estimates are not released, the fastCN reference is
+canFam3.1 only, and the full collection's reads are not on the share, so
+cohort-wide CN is out of reach. A locus profile needs none of that:
 
-**Per-sample copy number is computable at a locus, cheaply.** The published
-QuicK-mer2 estimates behind Fig 10a and Fig 11 are *not* released
-(`kiddlabshare/public-data/QuicK-mer/QuicK-mer2-refs/` is empty, no CNV
-directory on the share, and Zenodo 8084059 holds variants/SVs/the phased panel
-but no CN). Recomputing them cohort-wide is still out of reach: the published
-fastCN reference is canFam3.1 only, and the reads for the full collection are
-not on the share. But a *locus* profile needs neither.
+- `cram-share/` holds 15 range-requestable CRAMs with `.crai`. The `@SQ` lines
+  carry M5, so `REF_PATH=https://www.ebi.ac.uk/ena/cram/md5/%s` fetches only
+  the chromosome touched (`REF_CACHE` keeps it).
+- Column 14 of the sample table is `effectiveAutosomalMeanCoverage`, so
+  `CN = 2 * depth / cov` after `samtools depth -r <locus>`, binned.
 
-Measured recipe, verified 2026-07-29:
+It is plain depth, without QuicK-mer2's GC correction or SUNK mappability
+(`callable-genome-mask/` on the share could supply a mask). The 15 samples are
+Chihuahua, Bourbonnais Pointing Dog, English Springer Spaniel, one Greenland
+Dog and one Azerbaijan village dog — no wolves and no GBGV, so SLC28A3 needs the
+callset-`DP` route. Column 5 of the sample table carries SRA runs for a
+read-level panel, at tens of GB of fastq per sample.
 
-- `cram-share/` holds 15 range-requestable CRAMs with `.crai`. CRAM decode needs
-  no reference download — the `@SQ` lines carry M5, so
-  `REF_PATH=https://www.ebi.ac.uk/ena/cram/md5/%s` fetches only the chromosome
-  touched (`REF_CACHE` keeps it).
-- Normalization is free: column 14 of the sample table is
-  `effectiveAutosomalMeanCoverage`, so `CN = 2 * depth / cov`.
-- `samtools depth -r <locus>` over each CRAM, binned, then that formula, takes
-  minutes for a 100 kb window across several samples.
+**phyloP on canFam4** is Zenodo 8084059's lifted Zoonomia bigWig, gzipped
+whole (~13 GB), so it cannot be range-requested: download, decompress, slice
+the locus. UCSC has no canFam4 conservation track.
 
-At AMY2B (chr6:47,375,000-47,390,000) this gives CN ~12 for the Greenland Dog
-and the Bourbonnais Pointing Dogs, CN 2 for the English Springer Spaniels, flat
-2 in the flanks, with sharp boundaries. At CYP1A2 (chr30) it gives 1.9 for the
-Greenland Dog, ~4 for pointers and spaniels, ~5 for a Chihuahua and the
-Azerbaijan village dog — Fig 10a in miniature, and it sits directly under the
-`dog10k_lof.md` nonsense-variant panel.
+## Gotchas
 
-What it is not: this is plain depth, without QuicK-mer2's GC correction or SUNK
-mappability control (a mask could come from the share's `callable-genome-mask/`).
-And the 15 samples are only Chihuahua x2, Bourbonnais Pointing Dog x8, English
-Springer Spaniel x3, Greenland Dog, Azerbaijan village dog — no wolves, and no
-Grand Basset Griffon Vendéen, so Fig 11's SLC28A3 expansion is not reachable
-this way.
-
-`scripts/build_dog10k_slc28a3_cn.sh` builds it from the callset's per-sample
-`DP`, normalized against each dog's own flanks, as `dog10k_slc28a3_cohort_cn`
-and `dog10k_slc28a3_breed_cn` (used in `dog10k_svs.md`). Its second route is
-reads: column 5 of the sample table carries SRA runs (GBGV000001-3 =
-SRR12330329/330/331, plus Basset Hounds and PBGVs), so a targeted panel is
-~15-20 GB of fastq per sample plus a one-time canFam4 QuicK-mer2 index build.
-
-**phyloP on canFam4 exists but is awkward.** Zenodo 8084059 carries
-`zoonomia-cf3.1-lifted-to-cf4.liftover.phylop.20210708.bw.gz`, which is Fig 10c.
-It is a 12.8 GB *gzipped* bigWig, so it cannot be range-requested: adding a
-conservation track under any of these figures means downloading it whole,
-decompressing, and slicing the locus into a small bigWig. UCSC has no
-conservation track for canFam4.
-
-## Gotchas worth not rediscovering
-
-- `layout` HP indices are **0-based** on the wire (`<sample> HP0`/`HP1`, see
+- `layout` HP indices are **0-based** (`<sample> HP0`/`HP1`, see
   `makeHaplotypeSources`). Using 1/2 renders every second row empty.
-- Neither `filterSetting` nor `filter` has any effect on
-  `LinearMultiRowFeatureDisplay` — the display reads no filters, and the config
-  slot it used to publish is gone. A figure that wants a subset of painted rows
-  needs a different track, not a filter.
+- `LinearMultiRowFeatureDisplay` reads no filters, so `filterSetting` and
+  `filter` do nothing. A figure wanting a subset of painted rows needs a
+  different track.
 - `flare_anc_to_bed.py` keys its palette on the ancestry **name**, not FLARE's
-  internal code — the code is not stable between runs and a rebuild silently
-  swapped the wolf and dog colors once.
-- A local-ancestry reference panel must include the targets' own background. An
-  alphabetically truncated dog panel (first 60 breeds, no shepherd) put 0.4%
-  spurious wolf ancestry on the German Shepherd control; the full 318-breed
-  panel takes it to 0.0%.
+  code, which is not stable between runs and once swapped wolf and dog colors.
+- A local-ancestry reference panel must include the targets' own background:
+  a truncated dog panel without shepherds put spurious wolf ancestry on the
+  German Shepherd control.
 - Zenodo serves a file and its index from separate `/content` URLs, so remote
-  slicing needs `bcftools view … "$DATA##idx##$INDEX"` rather than letting
-  bcftools guess the index URL.
+  slicing needs `bcftools view … "$DATA##idx##$INDEX"`.

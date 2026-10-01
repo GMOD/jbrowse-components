@@ -24,8 +24,8 @@
  * wiggle, synteny's outline) and `ramp(d) - ramp(d - h)` (synteny's
  * vertCoverage).
  *
- * Reported in GPU_RENDERING.md's antialiasing section; rerun it rather than
- * trusting the numbers quoted there.
+ * GPU_RENDERING.md's antialiasing section summarizes the result; rerun this
+ * for the numbers.
  */
 
 // Samples per axis for the reference integration. 2048 puts the quadrature
