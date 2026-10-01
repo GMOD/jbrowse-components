@@ -33,12 +33,6 @@ in git; what follows is what is left.
 
 ## Figures whose config is still a copy
 
-- **cgiab's benchmark lanes load under the page's ids** since 2026-09-27:
-  `demos/cgiab/config.json` carries `hg008t_benchmark_sv` and
-  `hg008t_somatic_cnv` as the page's fences spell them, and every spec names
-  those. The old ids (`GRCh38_HG008-T-V0.5_…draftbenchmark.vcf`, `…calls`,
-  `hg008_cnv_calls`) stay in the config until the site redeploys, because the
-  live tutorial's figure links still open them. Drop them after that deploy.
 - **A figure on a hosted demo config draws the config's track, not the page's
   fence.** Nothing compares those two copies either; hg002's gene tracks were
   one such pair (the page and `demos/hg002` now agree).
@@ -57,9 +51,10 @@ in git; what follows is what is left.
   labels overlapping the plot is a battle JBrowse has fought before. Parked:
   don't propose it again without a new argument.
 - **The floating colour key covers data** at the top right of a lane
-  (`pangenome/maf`'s genotype key over the strain rows). A lane shorter than
-  its key scrolls the key rather than clipping it, which a still cannot show;
-  the two cattle figures whose key lost yak that way took 40 px more lane.
+  (`pangenome/maf`'s genotype key over the strain rows). Colin accepted the
+  overlap on 2026-09-30, as with the row labels. A lane shorter than its key
+  scrolls the key rather than clipping it, which a still cannot show; the two
+  cattle figures whose key lost yak that way took 40 px more lane.
 
 ## Fixed on 2026-09-27, after the third round
 
