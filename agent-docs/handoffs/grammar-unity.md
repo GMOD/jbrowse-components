@@ -1,6 +1,6 @@
 ---
 name: grammar-unity
-description: "Colin's 2026-09-30 ask for unity around the grammar of graphics across every display and every surface, rather than fewer display types. A scorecard of which display reaches which grammar object, and four moves ranked by reach - one spec and editor for every display's grammar objects, menus derived from those objects, one resolution path per object, and the grammar lending its parts to format displays. Waiting on Colin's read of the plan after a Fable review. Two defects an audit of the table pipeline found are fixed; two stay open below."
+description: "Colin's 2026-09-30 ask for unity around the grammar of graphics across every display and every surface, rather than fewer display types. A scorecard of which display reaches which grammar object, and four moves ranked by reach - one spec and editor for every display's grammar objects, menus derived from those objects, one resolution path per object, and the grammar lending its parts to format displays. Revised after a Fable review and waiting on Colin's read. The stale-region and hover-allocation defects an audit and the review found are fixed; two threshold defects stay open."
 ---
 
 # Grammar unity: one vocabulary, every display, every surface
@@ -61,12 +61,24 @@ and wiggle, and `MarkPlot` (`plugins/marks/src/LinearMarkDisplay/markPlot.ts`,
 `{ marks, transform, facet, rows, scales }`) on the mark display and
 Manhattan. Seven rows of the scorecard have neither, alignments among them.
 
-Merge them into one spec, in which a display carries the keys its config
-schema has slots for, found by each slot's sub-schema type (a colour object,
-`facet`, `rows`, `scales`, `marks`, `transform`) rather than declared by hand.
+Make `MarkPlot` `ChannelSpec`'s superset (`ChannelSpec`'s `CHANNELS` plus
+`marks`, `transform` and `scales`), take a display's keys by slot name, since
+the names already are the concepts (ADR-131 kept them), and point the one box
+at the seven displays without one: multi-row, the multi-sample variant display
+and alignments already hold `facet`, `color` and `rows` in the shared shapes.
 One JSON box, one rule list, the agent's read and write (`markPlot`,
 `plotProblems` and `liftMarkPlot` exist on the mark display alone) and Edit
-plot's display-level controls (facet, rows, axis, colour) derive from it.
+plot's display-level controls (facet, rows, axis, colour) then read one spec.
+
+A bare colour string reads two ways by position, as
+[GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) §"Spelling,
+checked 2026-09-27" decided: inside a mark's `encoding` it is a field
+(`plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts:157`,
+`shorthand: 'field'`), and on a display's colour object it is the constant
+(`ChannelSpec`'s `parseColor`). The merged box keeps both, since they sit at
+different keys. The cost is that the agent text teaches both readings
+(`JB_HELP`, `packages/app-core/src/JbApi/jbApi.ts:1443`); the Fable review
+asked for one reading to be chosen first, which would reopen that decision.
 
 The spec is not
 [ADR-091](../architecture-decision-records/adr-091-a-displays-settings-are-a-declaration.md)'s
@@ -76,10 +88,10 @@ removed zero getters. Each grammar object is already one config object
 and its successors), and the spec is an editor and a read-back over slots a
 schema already has; getters, fetch keys and render state stay where they are.
 
-Filtering needs one answer first: the feature displays hold a runtime list
-(`filterSetting`) whose entries take no `jexl:` prefix, the mark display's
-`transform` holds `filter` steps whose `expr` requires one, and alignments'
-`filterBy` is a structured object of its own. Unsized.
+Filters are already one object: `FilterSetting`
+(`packages/core/src/util/jexlFilters.ts:53`) holds `jexl:` expressions and
+refuses a bare string on the canvas, mark and multi-sample variant displays
+alike. Alignments' structured `filterBy` stays its own, a loose edge.
 
 ### 2. Menus as views over those objects
 
@@ -104,11 +116,17 @@ menus. So 252 of 359 controls write settings.
 | LD | 7 | 1 | 1 |
 | Reference sequence | 4 | 1 | 1 |
 
-Give each grammar object one menu builder (colour, facet, rows, `scales.y`)
-reading the display's presets table and the fields a scan found, and each
-repeated action one helper. Domain actions stay each display's own,
-since they are where its meaning lives. The census found what the builders
-retire:
+Three of the four object builders exist and are shared: `groupByMenu.ts` for
+`facet` (`packages/display-kit/src`; canvas, marks, alignments, multi-way),
+`rowArrangementMenuItem.ts` for `rows` (`packages/tree-sidebar/src`; MAF,
+variants, multi-row, marks, wiggle) and `scoreMenuItems.ts` for `scales.y`
+(`packages/wiggle-core/src`, through `ScoreScaleMixin`). Colour has none
+across displays: `packages/synteny-core/src/colorByMenuItems.tsx` serves
+multi-way and the circular view alone. The move is a colour-menu builder over
+the colour object and the display's field presets, and the displays not yet on
+the other three moved onto them. Domain actions stay each display's own, since
+they are where its meaning lives. The duplication the census found is cleanup
+alongside, not a mechanism:
 
 - **One action written many times.** "Open feature details" is seven literals
   (`plugins/marks/src/LinearMarkDisplay/markMenus.ts:146` among them), "Copy
@@ -142,9 +160,15 @@ retire:
   ([ADR-167](../architecture-decision-records/adr-167-the-feature-colours-scale-resolves-on-the-main-thread.md)),
   multi-row and the alignments read fill resolve on the main thread, as
   [ADR-185](../architecture-decision-records/adr-185-a-colour-over-the-plotted-value-reads-the-y-lane.md)
-  does for a colour over the plotted value. Apply ADR-167's rule to both
-  displays. The refetch is traced through the code, not driven; a probe
-  should confirm it before building.
+  does for a colour over the plotted value. A probe in review confirmed the
+  refetch: a constant, a categorical `domain` or `range`, or a ramp over
+  another field changes `rpcProps()`; a threshold over the plotted field does
+  not. The template is in the same display: extend `withValueColors`
+  (`plugins/marks/src/LinearMarkDisplay/valueColor.ts`), which already stamps
+  a colour lane per region before keying and facet offsets, to every colour.
+  A constant needs no new lane (ADR-198's scalar), nor does a ramp over
+  another field, whose raw values already ride `colorValue`; a categorical
+  colour needs ADR-167's index into each region's distinct values.
 - **The holdouts the grammar doc names.** Hi-C keeps `HicColor`, and its "Log
   scale" and "Emphasize faint contacts" toggles
   (`plugins/hic/src/LinearHicDisplay/trackMenuItems.ts:127-137`) re-implement
@@ -165,7 +189,8 @@ retire:
   ([ADR-189](../architecture-decision-records/adr-189-an-adapter-lists-its-rows-and-a-guide-tree-draws-through-the-mixin.md))
   is where what it already reads would travel. The mark display's `rows`
   beside a `facet`, which `rows-beside-facet` warns about, is the same
-  capability.
+  capability. Nothing in the tree asks for wiggle subtrack bands or MAF
+  clades yet, so this waits on a track that does.
 - **Wiggle through render-core's marks, keeping its display type.** On
   2026-09-27 Colin asked why wiggle should not move onto `bar` and `point` and
   said to aim for the ideal implementation
@@ -173,18 +198,26 @@ retire:
   Wiggle still holds its own Slang for every picture render-core draws
   (`plugins/wiggle/src/shared/wiggleMarks.ts:14-18`). Beyond
   [wiggle-onto-bar-and-point](../ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md):
-  - **Whiskers, the default summary mode**, is three bands (max lightened,
-    mean, min darkened), each split by sign with the longest drawn first: six
-    layers (`plugins/wiggle/src/shared/wiggleLayers.ts:105`, `:132`). Without
-    new grammar that is six bar marks behind sign filters, on ADR-178's
-    precedent of LD as two filtered marks; with it, one mark through a `fold`
-    step and longest-first draw order. The line-mode band is a filled min–max
-    area needing `y2`, declined on 2026-09-30, so min and max lines stand in,
-    shown to Colin as captures first. The recommendation is the six marks.
+  - **Whiskers, the default summary mode**, is three bands (max, mean, min)
+    whose lightness tracks magnitude on both sides of the pivot
+    (`plugins/wiggle/src/shared/wiggleLayers.ts:91-99`), built as six layers
+    split by sign (`:105`, `:132`). Three translucent bar marks over
+    `maxScore`, `score` and `minScore`, columns the BigWig table already names
+    (`plugins/wiggle/src/BigWigAdapter/bigWigFeatureTable.ts:26-27`), each one
+    translucent hue with ADR-185's threshold at the pivot, encode the same
+    rule with no sign split, `fold` or draw order: the overlap count is the
+    magnitude. They cannot paint a band darker than the base, so the base
+    reads dark and the single layer light, which is a capture to show Colin
+    first. Six marks behind sign filters, the first proposal, would run a jexl
+    `filter` per mark per row, about 250 ms a million rows each (ADR-191's
+    table). The line-mode band is a filled min–max area, which needs `y2` (the
+    range bar declined on 2026-09-23, the lane with the stack on 2026-09-30),
+    so min and max lines stand in.
   - **The parked per-layer `row` call is not a blocker.** `barMark.slang:48`
     reads `row` for every instance and `rowLane.ts:30` fills zeros where none
-    is sent, so every bar pays the GPU bytes already; four payload bytes per
-    instance on multi-source tracks remain.
+    is sent; four payload bytes per instance on multi-source tracks remain.
+    Against wiggle's own record the port still pays on the GPU: a `bar`
+    instance is 20 bytes where wiggle's is 12, to measure at the port.
   - **Smaller gaps:** no symlog ramp in `markColor.slang`; no `resolution`;
     GC content's adapter-declared value domain
     ([ADR-176](../architecture-decision-records/adr-176-gc-content-is-a-track-the-wiggle-display-draws.md));
@@ -195,7 +228,7 @@ retire:
     [ADR-193](../architecture-decision-records/adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)
     measured at 1.80x wiggle on one BigWig.
 
-### 4. Lend the grammar's parts where a format display hand-spells one
+### 4. Where it grows, each on its trigger
 
 - **An insertion mark.** Alignments, MAF, the multi-sample display and
   multi-row each place alignments-core's insertion marker through an overlay
@@ -203,27 +236,29 @@ retire:
   and three more), clearing
   [ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md)'s
   two-consumer bar twice over.
-- **An ordinal x.** LD and the multi-sample display both draw one equal-width
-  column per variant with connector lines, under one `variantLayout` slot; the
-  column x becomes grammar once a declared plot wants columns, with
+- **An ordinal x**, once a declared plot wants equal-width columns. LD and the
+  multi-sample display both draw one column per variant with connector lines,
+  under one `variantLayout` slot;
   [a-distribution-plot-needs-x-to-be-a-value](../ideas/waiting-on-a-call/a-distribution-plot-needs-x-to-be-a-value.md)
-  as its value-x sibling.
-- **Typed tables.** `getFeatureTable` answers typed arrays for MAF and BigWig
-  alone; BAM/CRAM, VCF and bigBed answer `Feature` rows, until a declared plot
-  over one of them is slow on real data. ADR-114's 3.11x and ADR-118's 4.23x
-  both blamed the per-row `Feature`, which
+  is its value-x sibling.
+- **Typed tables for BAM/CRAM, VCF and bigBed**, once a declared plot over one
+  of them is slow on real data; `getFeatureTable` answers typed arrays for MAF
+  and BigWig alone. ADR-114's 3.11x and ADR-118's 4.23x both blamed the
+  per-row `Feature`, which
   [ADR-191](../architecture-decision-records/adr-191-the-mark-pipeline-runs-over-tables.md)
   removed for typed sources, so re-measure both before citing them again.
 
 The mark display is where each object's best implementation lands first —
-Edit plot, the rule list, main-thread scales once move 3 lands, bands of rows
-— and each capability then reaches every display reading the same object.
-That, rather than subtyping, is what a more powerful mark display buys.
+Edit plot, the rule list, main-thread scales once move 3 lands — and each
+capability then reaches every display reading the same object. That, rather
+than subtyping, is what a more powerful mark display buys.
 
 ## Loose edges accepted
 
 - The multi-sample variant and reference-sequence displays keep their plots.
 - The 84 domain actions with no mark-display counterpart stay put.
+- Alignments' `filterBy` stays its own; Hi-C, LD and MAF keep their colour
+  objects.
 - `addDisplayMenuItems` matches a display by its registered name
   (`packages/core/src/pluggableElementTypes/extendElementType.ts:93`), so an
   item added to `LinearMarkDisplay` misses Manhattan, as the read-vs-ref and
@@ -232,31 +267,36 @@ That, rather than subtyping, is what a more powerful mark display buys.
 ## Not proposed
 
 A display factory or declared settings table (ADR-091); MAF onto the mark
-display (ADR-199); `y2` or stacking, declined on 2026-09-23 and 2026-09-30;
-canvas or alignments onto the mark display
+display (ADR-199); `y2` or stacking (the range bar declined on 2026-09-23,
+the stack and its lane on 2026-09-30); canvas or alignments onto the mark
+display
 ([ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md),
 [ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md));
 track- or view-level facets and a free y per section (Colin's 2026-09-30
-calls).
+calls); a `fold` step; a helper per repeated menu action.
 
 ## Defects
 
-Fixed by the commit "A hover under rows skips the hidden key; a facet hides a
-stale region": a hover in `rows` mode over a region fetched before a Rows edit
-no longer sizes `rowSpanIndex`'s arrays by `HIDDEN_ROW` (2³² rows), and
-`facetRegion` draws nothing for a region split on the outgoing facet field or
-fetched before the facet, where it used to place it in the new layout by key.
+Fixed by the commits "A hover under rows skips the hidden key; a facet hides a
+stale region" and "With no split, a region fetched under one draws nothing
+until its refetch": a hover in `rows` mode over a region fetched before a Rows
+edit no longer sizes `rowSpanIndex`'s arrays by `HIDDEN_ROW` (2³² rows), and a
+region fetched under other split settings draws nothing until its refetch
+lands, in each of the three views (`rows`, a facet, neither), where it used to
+draw its old rows in the new layout.
 
 Open:
 
-- **Worker and display disagree at a float32 cut.** `thresholdIndex`
-  (`packages/core/src/util/thresholdScale.ts:51`) compares the widened value
-  against the raw cut, while the shader, legend and tooltip round the cut to
-  float32 first (`thresholdBandOf`,
-  `packages/render-core/src/marks/markRamp.ts:162`), so a text mark over a
-  BigWig score at a cut like `0.7` names the band below the one its bar
-  paints. Hand-written configs only; the fix must not move a float64 value's
-  band.
+- **Worker and display disagree at a float32 cut.** The mark encoder's
+  threshold path (`packages/core/src/util/markEncoding.ts:864`, through
+  `thresholdIndex` at `thresholdScale.ts:51`) compares the widened value
+  against the raw cut, while the shader, legend and tooltip compare in
+  float32 (`thresholdBandOf`, `packages/render-core/src/marks/markRamp.ts:162`),
+  so a text mark over a BigWig score at a cut like `0.7` names the band below
+  the one its bar paints. Hand-written configs only. The fix compares in
+  float32 on both sides in the encoder alone, matching what is painted;
+  `thresholdIndex`'s other callers (canvas features, alignments) read float64
+  values and keep the double comparison.
 - **More than eight threshold cuts.** The GPU keeps eight (`markRamp.ts:97`)
   while Canvas2D paints every cut (`markRamp.ts:224`), and `markProblems` has
   no rule for it.
@@ -264,13 +304,12 @@ Open:
 ## Order of work
 
 1. The drifted labels and the inverted checkbox, any time: hours.
-2. The merged spec (move 1), then the menu builders over it (move 2), since
-   both read the same per-display key list: unsized.
-3. Colour on the main thread on the mark and multi-sample displays (move 3),
-   in parallel with step 2, ADR-167 the template: unsized.
-4. Bands of rows, with row attributes on the listing (move 3): unsized.
-5. Wiggle onto render-core's marks with the whisker decision (move 3): the
-   ideas doc sized the render port at 7-10 days.
-6. The holdouts (move 3) and the lent parts (move 4), each on its trigger.
-</content>
-</invoke>
+2. Colour on the main thread on the mark and multi-sample displays (move 3),
+   `withValueColors` extended with a categorical index lane: unsized.
+3. `MarkPlot` as `ChannelSpec`'s superset, keys by slot name, and the box on
+   the seven displays without one (move 1): unsized.
+4. The colour-menu builder (move 2): unsized.
+5. Wiggle onto render-core's marks with three translucent whisker marks,
+   captures first (move 3): the ideas doc sized the render port at 7-10 days.
+
+Not now: bands of rows, the colour holdouts, and move 4, each on its trigger.
