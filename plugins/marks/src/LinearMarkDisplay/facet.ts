@@ -242,13 +242,24 @@ export function facetRegion(
     const remap = rowRemap(sections, layout)
     return { ...region, layers: region.layers.map(l => facetLayer(l, remap)) }
   }
-  if (!region.request) {
-    return region
-  }
+  return region.request ? hiddenRegion(region) : region
+}
+
+/** The region with every instance gone from every layer. */
+export function hiddenRegion(region: MarkRegionData): MarkRegionData {
   return {
     ...region,
     layers: region.layers.map(l =>
       keptLayer(l, new Uint32Array(0), l.row && new Uint32Array(0)),
     ),
   }
+}
+
+/**
+ * A region as drawn while neither a facet nor `rows` splits the features: one
+ * fetched under a split still holds that split's section rows, so it draws
+ * nothing until its refetch lands.
+ */
+export function unsplitRegion(region: MarkRegionData): MarkRegionData {
+  return region.request?.facet ? hiddenRegion(region) : region
 }

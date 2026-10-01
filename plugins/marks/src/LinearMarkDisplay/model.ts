@@ -90,7 +90,13 @@ import {
 import { autorun } from 'mobx'
 
 import { densityRegionData } from './densityLayer.ts'
-import { facetLayout, facetRegion, rowsLayout, sectionsOn } from './facet.ts'
+import {
+  facetLayout,
+  facetRegion,
+  rowsLayout,
+  sectionsOn,
+  unsplitRegion,
+} from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import {
@@ -836,8 +842,13 @@ export function stateModelFactory(
           () => layout.get(),
           facetRegion,
         )
+        const unsplit = createEncodeMemo(
+          () => (self.drawsKeyedRows || self.facet ? NO_REGIONS : colored()),
+          undefined,
+          unsplitRegion,
+        )
         const drawn = () =>
-          self.drawsKeyedRows ? keyed() : self.facet ? faceted() : colored()
+          self.drawsKeyedRows ? keyed() : self.facet ? faceted() : unsplit()
         const mateRegions = stableIdentityComputed((): MateRegion[] =>
           self.host.displayedRegions.map((r, index) => ({
             index,

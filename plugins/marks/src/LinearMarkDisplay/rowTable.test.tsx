@@ -325,6 +325,15 @@ test('a hover over a region the new rows field has not reached answers nothing',
   expect(refusingRunawayArrays(() => sweepHits(display))).toEqual([])
 })
 
+test('clearing the facet draws nothing for a region it split until the refetch lands', () => {
+  const display = loaded({ facet: 'source' })
+  expect(display.rpcDataMap.get(0)!.layers[0]!.count).toBe(5)
+  setConf(display.conf, ['facet', 'field'], '')
+  expect(display.rpcDataMap.get(0)!.layers[0]!.count).toBe(0)
+  display.setRpcData(0, workerResult(display, FAMILY), REGION)
+  expect(display.rpcDataMap.get(0)!.layers[0]!.count).toBe(5)
+})
+
 test('a value only a departed load knew hides nothing', () => {
   const display = loaded({ rows: 'source' })
   void display.rpcDataMap

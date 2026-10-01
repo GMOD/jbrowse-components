@@ -1,6 +1,6 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 
-import { facetLayout, facetRegion } from './facet.ts'
+import { facetLayout, facetRegion, unsplitRegion } from './facet.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 
@@ -105,4 +105,20 @@ test('a region fetched before the facet draws nothing, and the density sidecar k
   expect(facetRegion(unsplit, layout).layers[0]!.count).toBe(0)
   const sidecar: MarkRegionData = { layers: [linkLayer()] }
   expect(facetRegion(sidecar, layout)).toBe(sidecar)
+})
+
+test('with no split, a region fetched under one draws nothing, and an unsplit one draws as it came', () => {
+  const split: MarkRegionData = {
+    layers: [linkLayer()],
+    facet: [{ key: '1', firstRow: 0, rowCount: 2 }],
+    request: splitOn('strand'),
+  }
+  expect(unsplitRegion(split).layers[0]!.count).toBe(0)
+  const unsplit: MarkRegionData = {
+    layers: [linkLayer()],
+    request: { ...splitOn('strand')!, facet: undefined },
+  }
+  expect(unsplitRegion(unsplit)).toBe(unsplit)
+  const sidecar: MarkRegionData = { layers: [linkLayer()] }
+  expect(unsplitRegion(sidecar)).toBe(sidecar)
 })
