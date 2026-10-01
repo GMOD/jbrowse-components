@@ -85,6 +85,7 @@ minimumReleaseAgeExclude:
   - 'generic-filehandle2'
   - '@jbrowse/mobx-state-tree'
   - '@jbrowse/jexl'
+  - '@jbrowse/quick-lru'
   - 'typescript'
   - '@typescript/*'
   - 'astro'

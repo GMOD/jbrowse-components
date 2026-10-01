@@ -420,8 +420,8 @@ importers:
         specifier: ^6.7.0
         version: 6.7.0(mobx@7.0.5)
       '@jbrowse/quick-lru':
-        specifier: ^7.3.5
-        version: 7.3.5
+        specifier: ^8.0.0
+        version: 8.0.0
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -5255,6 +5255,10 @@ packages:
   '@jbrowse/quick-lru@7.3.5':
     resolution: {integrity: sha512-DPEtODWKt+QGmCg+EO36sSmKOmdjJOwtxeV/4PBnf+7jqC/P7R4YIz+/yohtqh9UZ38dbLtXIlmigPlkZy8SAA==}
     engines: {node: '>=18'}
+
+  '@jbrowse/quick-lru@8.0.0':
+    resolution: {integrity: sha512-zToC0THd94TGr4cWMp9eOCRB8eeN004ncajZzVOoM8WEWV90YMTX5SX9zY6Nk1hhY7ASKWnfOmguXt7SoXaLzw==}
+    engines: {node: '>=22'}
 
   '@jest/console@30.5.2':
     resolution: {integrity: sha512-e8sQC4pCMHPBrPX7Hk8TJr+DM5dkUnImSTNag8SEWFAFAF6xIz4AJvCKapnrdHnZxep4bxw4PhG+ZbimYBMyKw==}
@@ -13784,6 +13788,8 @@ snapshots:
       mobx: 7.0.5
 
   '@jbrowse/quick-lru@7.3.5': {}
+
+  '@jbrowse/quick-lru@8.0.0': {}
 
   '@jest/console@30.5.2':
     dependencies:
