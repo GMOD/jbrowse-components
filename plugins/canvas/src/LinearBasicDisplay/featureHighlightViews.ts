@@ -34,6 +34,7 @@ export interface FeatureHoverHost {
 }
 
 export function featureHighlightViews(self: FeatureHighlightHost) {
+  let heldPinned: ReadonlySet<string> | undefined
   return {
     /**
      * #getter
@@ -79,14 +80,20 @@ export function featureHighlightViews(self: FeatureHighlightHost) {
     /**
      * #getter
      */
-    // Returns the pinned set by reference when nothing is highlighted, so the
-    // layout cache's reference compare stays cheap.
+    // The layout cache compares this by reference, and `resolvedHighlights`
+    // recomputes on every region arrival, so the same ids keep the same set.
     get layoutPinnedFeatureIdSet(): ReadonlySet<string> {
       const highlighted = this.resolvedHighlights.pin
       if (highlighted.size === 0) {
         return self.pinnedFeatureIdSet
       }
-      return new Set([...self.pinnedFeatureIds, ...highlighted])
+      const next = new Set([...self.pinnedFeatureIds, ...highlighted])
+      const held = heldPinned
+      if (held?.size === next.size && [...next].every(id => held.has(id))) {
+        return held
+      }
+      heldPinned = next
+      return next
     },
 
     /**

@@ -1,4 +1,5 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import {
   makeFeatureData,
@@ -498,5 +499,59 @@ describe('feature highlight declarative persistence', () => {
       'feat-xyz',
       'pinned-1',
     ])
+  })
+})
+
+describe('a highlight under the incremental layout', () => {
+  const ctgB = { ...ctgA, refName: 'ctgB' }
+
+  function regionOf(prefix: string) {
+    return makeFeatureData({
+      flatbushItems: Array.from({ length: 20 }, (_, i) =>
+        makeFlatbushItem({
+          featureId: `${prefix}${i}`,
+          startBp: i * 100,
+          endBp: i * 100 + 80,
+          bottomPx: 10,
+          featureHeightPx: 10,
+        }),
+      ),
+    })
+  }
+
+  function setup() {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay({
+      featureHighlights: [{ refName: 'ctgA', start: 300, end: 380 }],
+    })
+    view.setDisplayedRegions([ctgA, ctgB])
+    const held = autorun(() => void display.laidOutDataMap)
+    display.setRpcData(0, regionOf('a'), ctgA)
+    return { display, held }
+  }
+
+  it('leaves the highlighted region laid out as it was when another arrives', () => {
+    const { display, held } = setup()
+    const pinned = display.layoutPinnedFeatureIdSet
+    const laid = display.laidOutDataMap.get(0)
+    expect([...pinned]).toEqual(['a3'])
+
+    display.setRpcData(1, regionOf('b'), ctgB)
+
+    expect(display.laidOutDataMap.size).toBe(2)
+    expect(display.layoutPinnedFeatureIdSet).toBe(pinned)
+    expect(display.laidOutDataMap.get(0)).toBe(laid)
+    held()
+  })
+
+  it('re-lays out once the highlight pins another feature', () => {
+    const { display, held } = setup()
+    const laid = display.laidOutDataMap.get(0)
+
+    display.setFeatureHighlights([{ refName: 'ctgA', start: 500, end: 580 }])
+
+    expect([...display.layoutPinnedFeatureIdSet]).toEqual(['a5'])
+    expect(display.laidOutDataMap.get(0)).not.toBe(laid)
+    held()
   })
 })
