@@ -1328,17 +1328,24 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   variantLayout: (value, { displayType }) =>
-    (value === 'genomic' || value === 'columns') &&
-    displayType &&
-    (MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType) ||
-      displayType === 'LDTrackDisplay')
-      ? {
-          path: `${TRACK_MENU} → Show... → One column per variant`,
-          note:
-            value === 'columns'
-              ? 'Checked: one equal-width column per variant.'
-              : 'Unchecked: each variant at its genomic position.',
-        }
+    (value === 'genomic' || value === 'columns') && displayType
+      ? MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+        ? {
+            path: `${TRACK_MENU} → Show... → Show as genotype matrix`,
+            note:
+              value === 'columns'
+                ? 'Checked: one equal-width column per variant.'
+                : 'Unchecked: each variant across the bases it covers.',
+          }
+        : displayType === 'LDTrackDisplay'
+          ? {
+              path: `${TRACK_MENU} → Show... → Show cells with genome proportions`,
+              note:
+                value === 'genomic'
+                  ? 'Checked: cells sized by the genomic distance between SNPs.'
+                  : 'Unchecked: one uniform cell per SNP.',
+            }
+          : undefined
       : undefined,
   // Elsewhere runClustering's step names the window
   clusterRegion: (value, { displayType }) =>
