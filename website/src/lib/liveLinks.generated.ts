@@ -1977,7 +1977,7 @@ export const figureFrames: Record<
   },
   "mark_display/edit_plot": {
     "width": 1500,
-    "height": 640
+    "height": 1000
   },
   "alu_age/locus": {
     "width": 1500,
