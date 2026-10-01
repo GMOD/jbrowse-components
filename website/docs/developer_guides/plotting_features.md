@@ -724,7 +724,22 @@ the backend, one Canvas2D function the SVG export calls after `paintMarkBlocks`:
 <!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/components/SequenceDisplayComponent.tsx#letters -->
 
 ```tsx
-
+const SequenceLetters = observer(function SequenceLetters({
+  model,
+}: {
+  model: LinearReferenceSequenceDisplayModel
+}) {
+  const { sequenceData, renderBlocks, renderState } = model
+  return renderState.showLetters ? (
+    <OverlayCanvas
+      width={renderState.canvasWidth}
+      height={renderState.canvasHeight}
+      draw={ctx => {
+        drawSequenceLetters(ctx, sequenceData, renderBlocks, renderState)
+      }}
+    />
+  ) : null
+})
 ```
 
 A display with no shape at all can still skip the mark layer and return a
