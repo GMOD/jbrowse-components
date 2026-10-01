@@ -141,10 +141,12 @@ For human, `odgi extract` a window or use the minigraph rGFA. The script carries
 this measurement and refuses non-blunt overlaps.
 
 **4. The published MAF is tab-separated.** UCSC writes MAF space-aligned; taffy
-and Cactus write tabs. A ` +` split — which is what `parseBigMafStanza` uses, and
-what got copied — leaves each row in one field, so every block silently vanishes
-and the track draws nothing without erroring. `mafParsing.ts` splits on `\s+` and
-says why.
+and Cactus write tabs. A ` +` split — which is what the legacy `parseBigMafStanza` in
+`legacyMafParse.fixture.ts` does, splitting a bigMaf stanza on `;` — leaves each
+row in one field, so every block silently vanishes and the track draws nothing
+without erroring. `mafParsing.ts` splits the text on `\n` and hands each line to
+`applyMafLine` in `util/mafLines.ts`, whose `WHITESPACE_REGEX` splits fields on
+`\s+` and says why.
 
 ## Unpacking pairwise alignments from the graph
 
@@ -231,8 +233,8 @@ files under their original names and the graph-derived ones as
 `README_graph.txt`. The graph `chrom.sizes` are strict subsets of the impg ones
 (the projection lists only contigs aligned to a primary chromosome; 34–54
 against 60–114, no size conflicts), which is why they could not replace them
-in place. The checked-in `demos/hprc_multiway/config.json` points at the graph
-files.
+in place. The checked-in `demos/hprc_multiway/config.json` points at the GFA
+build (see below), not these.
 
 ### The GFA route
 

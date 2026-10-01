@@ -37,14 +37,13 @@ const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
 
 // The graph-as-a-graph figure loads the K12-only graphgenomeview fixture rather
 // than the demo config the projections above use, for the reason every other
-// graph figure does: that fixture pins the plugin bundle by content hash, so the
-// view cannot change this image without a diff in this repo. The carriage lane
+// graph figure does: that fixture declares its tracks in a session spec, so a demo
+// config edit cannot change this image. The carriage lane
 // and the graph both read the hosted ecoli_cactus index, which the demo config
 // carries as `ecoli_cactus_segments` and build_ecoli_pangenome_cactus.sh writes.
 //
-// WHAT THAT PIN DOES NOT COVER is the path a reader takes: the demo config, its
-// own unpinned plugin url, and the track declared there rather than in a session
-// spec. Checked by rendering this spec once with GRAPH_CONFIG swapped for CONFIG
+// WHAT THAT DOES NOT COVER is the path a reader takes: the demo config and the
+// track declared there rather than in a session spec. Checked by rendering this spec once with GRAPH_CONFIG swapped for CONFIG
 // and the session tracks dropped, which drew the same 161 nodes and 214 edges
 // off the config's own `ecoli_cactus_segments` (2026-08-13). Re-run it that way
 // after a demo redeploy; it is not committed as a figure of its own, because a

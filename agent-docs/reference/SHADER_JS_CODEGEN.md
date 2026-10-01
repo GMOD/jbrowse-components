@@ -17,8 +17,9 @@ to "leave it", and a check whose findings all end in a suppression teaches peopl
 to suppress. It would also not catch the accretion ADR-051 actually fears, since
 a *new* marginal export always has a consumer — that being why someone added it.
 
-All six current rows were examined; re-deriving this is the waste the table
-exists to prevent:
+These six exports were examined when the generated inventory listed six; it
+lists 15 now (`normalizeDepthScalar` and `normalizeScore` have since gained
+importers). Re-deriving this is the waste the table exists to prevent:
 
 | Export | Why it stays |
 | --- | --- |
@@ -356,8 +357,8 @@ Mechanics worth not rediscovering, all in `oracleProbe.ts`:
   disagreed with its shader on a NaN input — the exact split
   `ldGenotypeCorrelation`'s comment already warns about ("an unfilled cell on
   one backend and a clamped one on the other"), reintroduced generically by the
-  emitter's own helpers. `_clamp` and `_smoothstep` are written as comparisons
-  now. Neither behavior is *wrong* by the spec; agreeing with the compiler that
+  emitter's own helpers. `_clamp` calls the NaN-faithful `_min` and `_max`
+  helpers, and `_smoothstep` is written as comparisons. Neither behavior is *wrong* by the spec; agreeing with the compiler that
   also generates the GPU path is the only useful choice.
 
 ## Verified facts, do not re-derive
@@ -494,7 +495,7 @@ grep -oP '^\s*(public\s+)?static const \w+ \K\w+' <shader>.slang
 `colorUtils.ts` / `colorSchemes.ts` / `insertSizeStats.ts` named `read.slang`
 branches deleted when read classification moved to the CPU. Grep the counterpart
 before trusting a tag, and before counting one — `grep -rn 'SYNC:' --include='*.ts'
-packages plugins products` currently returns 10, all in synteny and dotplot, and
+packages plugins products` currently returns 9, spread across render-core, wiggle, synteny and dotplot, and
 each falls in a class ADR-051 classifies (`computeCorners` ×3,
 `instanceInterleave` ×2 plus the silhouette predicate, `perpW` ×2, `sBlend`, the
 fill pad). Recount rather than restate.
@@ -512,7 +513,7 @@ Three structural findings from that sweep, so it need not be redone:
   have a Canvas2D twin" and read the LD compute shaders as GPU-only. They were
   not: their fallback was the CPU path in `ld-core`, and a finalize function on
   the shared uniform module was missed on pass one because of it. The tree has
-  no compute pass now, so the next one to land is the first to be checked.
+  one compute pass, `tree-sidebar`'s `sampleDistance.slang`, so check it first.
 
 ## Related
 

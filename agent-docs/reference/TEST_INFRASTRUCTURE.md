@@ -22,25 +22,27 @@ node browser-tests/runner.ts --headed         # debug
 node browser-tests/runner.ts --update-snapshots
 ```
 
-~29 suites in `browser-tests/suites/` (alignments, variants, the synteny family,
+47 suites in `browser-tests/suites/` (alignments, variants, the synteny family,
 dotplot, hic, gwas, methylation-modifications, svg-export, color-by-tag,
 wiggle-color, main-thread-rpc, basic-lgv, …).
 
 ### Golden snapshots
 
-Visual regression via pixelmatch (0.1% pixel-diff threshold), stored per backend
+Visual regression via pixelmatch (default `threshold = 0.1`, a 10% diff
+fraction; canvas2d targeted captures cap it at 1%), stored per backend
 in `browser-tests/__snapshots__/{canvas2d,webgl,webgpu}/`. Cross-backend compare
 (`compare-backends.ts`): identical / `<5%` similar / `≥5%` different. Intentional
-change → `--update-snapshots`.
+change → `--update-snapshots`, which rewrites a golden only when the new capture
+differs by more than 0.5%.
 
 **Goldens never run in CI** — they encode one machine's rendering. The
-*cross-backend gate* does, blocking, since 2026-08-04: `pnpm test:browser:gate:ci`
+*cross-backend gate* does, blocking, since 2026-08-04: `pnpm --filter @jbrowse/web test:browser:gate:ci`
 renders `CI_GATE_SUITES` (`crossBackendGate.ts`) with canvas2d and swiftshader
 webgl in one run and diffs the two, so it needs no committed baseline. Scope and
 its reasons live next to the list; `agent-docs/reference/CROSS_BACKEND_GATE.md`
 is what to read before widening it.
 
-**`pnpm test:browser:gate` renders webgpu as well and the CI one does not**, and
+**`pnpm --filter @jbrowse/web test:browser:gate` renders webgpu as well and the CI one does not**, and
 the difference is the runner rather than the pixels: webgpu is Firefox Nightly,
 launched headed, and `ubuntu-latest` has neither the browser nor a display. So
 CI's two backends are a coverage gap, not a verdict —

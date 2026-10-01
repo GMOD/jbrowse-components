@@ -47,7 +47,7 @@ These look like leftovers and are not:
 
 ## Open: latent / typing / contract
 
-- `renameRegions.ts:18` returns a dead MST node typed as a live `Region`. Every
+- `renameRegions.ts` returns a dead MST node typed as a live `Region`. Every
   caller then reads properties off it, which MST refuses. Not reproduced in
   practice — a worker gets plain objects, so `isStateTreeNode` is false there —
   and fixing it means deciding whether the region is dropped (changing the

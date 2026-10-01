@@ -61,7 +61,7 @@ lock and a second pull step in `build`.
 **It exists because the docs deploy would otherwise delete the videos.**
 `update-docs.yml` runs `rclone sync … s3:jbrowse.org/jb2`, and sync removes
 whatever the freshly-built `dist/` does not carry; a CI checkout has no
-`static/media`. `pnpm build` runs `media:pull`, so astro copies the files in and
+`static/media`. `pnpm build` runs `figures:pull`, which drives the media store too, so astro copies the files in and
 the sync finds them. Regenerating them in CI instead would mean a jbrowse-web
 build plus a headless capture on every "update docs" commit, for output that is
 non-deterministic and re-uploads in full each time.
@@ -195,7 +195,7 @@ daily.
 Presigned URLs work (issue #2744, `config_guides/authentication.md`). `Range`
 isn't a signed header, so range requests are fine. Two silent breakages:
 
-- `makeIndex` (`packages/core/src/util/tracks.ts`) appends `.bai` to the whole
+- `makeIndex` (`packages/core/src/util/formatGuessers.ts`) appends `.bai` to the whole
   URI, landing it after the signature params — the `uri` shorthand is unusable,
   spell out both locations.
 - `getFileName` returns `sample.bam?X-Amz-…` and guessers test `/\.bam$/i`, so

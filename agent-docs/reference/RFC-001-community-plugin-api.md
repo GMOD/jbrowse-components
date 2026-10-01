@@ -100,8 +100,7 @@ display type".)*
 **Not built as specified, and the reason is worth keeping.** The proposal was to
 promote `rect` / `line` / `arrow` / `chevron` passes into a shared cross-plugin
 library. They still live in `plugins/canvas/src/LinearBasicDisplay/passes/`,
-whose `index.ts` comment records that they were drafted for this and stayed put
-until a second consumer appeared. One never has.
+and no second consumer has appeared.
 
 ### 5b. Primitives, not a framework
 
@@ -165,9 +164,9 @@ The other three items, still open and still worth doing:
 - **`Promise.all` → `Promise.allSettled` in `resolvePipelines`.** Parallel
   pipeline compilation reports the first error and masks the rest; when porting
   a shader you want them all at once. ~10 lines, aggregating into a
-  `ShaderCompileError`.
-- **`MAX_UNIFORM_SLOTS = 512` cap exhaustion test.** The cap is undocumented to
-  the rest of the codebase and silently `console.error`s on overflow without
+  the existing `ShaderCompileError`.
+- **`MAX_UNIFORM_SLOTS = 2048` cap exhaustion test.** The cap is documented in
+  `ARCHITECTURAL_LIMITS.md` and `console.error`s on overflow without
   preventing draw corruption. Drive a frame past it and assert clean failure.
 
 ---
@@ -217,9 +216,8 @@ Kept so a section is not renumbered or deleted out from under a reference:
 
 - `packages/render-core/src/createRenderingBackend.ts` → §3a
 - `packages/core/src/pluggableElementTypes/index.ts` → §9
-- `plugins/canvas/src/LinearBasicDisplay/passes/index.ts` → §5
 - [ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md) → §5b (twice)
-- [PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md) → §7 (three times)
+- [PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md) → §7 (twice)
 - [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) → §13a, §13b
 - [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md) → §12b
-- [GPU_RENDERING.md](GPU_RENDERING.md) → §3a
+- [GPU_PORTABILITY.md](GPU_PORTABILITY.md) → §12b

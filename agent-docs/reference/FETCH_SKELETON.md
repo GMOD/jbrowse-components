@@ -330,7 +330,7 @@ that fails when the read is deleted. The fourth row is the general one — the
 prerequisite reads (HiC's header, the multi-sample sample list), the circular
 view's chord fetch and the breakpoint split view's overlay fetch all run on it,
 and it reads the signal for them. The four prerequisite reads (HiC's header,
-the sample list, the tiered alignment file's LOD header, the mark display's
+the sample list, a synteny file's LOD header (`LodTierInfoMixin`), the mark display's
 source list) share one declaration over it, `installPrerequisiteFetch`
 (`@jbrowse/core/util`): one RPC about the adapter itself, tracked on the adapter
 config and keyed on it, gated on minimized, reporting where the caller says.

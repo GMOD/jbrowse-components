@@ -17,9 +17,11 @@ We run two TypeScript versions on purpose. Don't "fix" this by unifying them.
   `@typescript-eslint`, whose `ts-api-utils` peer range is `<6.1.0`; bumping the
   ambient `typescript` breaks it. (The backstop is type-info-free, so it doesn't
   type-check with 6.x — it just needs the parser to install.)
-- **Typecheck wants 7.x for speed.** `pnpm typecheck` runs an aliased
+- **Typecheck wants 7.x for speed.** `pnpm typecheck` runs
+  `scripts/typecheck.ts`, which picks the checker count and calls the aliased
   `typescript7` devDependency (`npm:typescript@7`) by path
-  (`node node_modules/typescript7/bin/tsc --noEmit`).
+  (`node node_modules/typescript7/bin/tsc --noEmit`). Use `pnpm typecheck`,
+  never a bare `tsc`.
 - **`build:esm` uses 7.x too.** Package `build:esm` scripts invoke
   `node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json`
   by path, same as `typecheck`. Emit is byte-identical to 6.x (verified across
@@ -30,7 +32,7 @@ other's — each discards it and does a full rebuild. That's safe (no stale or
 corrupt output) but means an incremental cache is worthless across a version
 switch, so don't share a `.tsbuildinfo` CI cache between the two.
 
-`products/jbrowse-cli` still runs ambient 6.x via `"build": "tsc && webpack"` —
+`products/jbrowse-cli` still runs ambient 6.x via `"build": "tsc -p tsconfig.build.json"` —
 it's not a `build:esm` package.
 
 ## The rule
@@ -56,7 +58,7 @@ its package.json `workspace:` deps — nothing else. The compiler options live i
 `rootDir`, `include`, and `exclude` resolve against the extending package rather
 than the root. The two packages that run in node and import `node:*` extend
 `tsconfig.base.esm.node.json` instead; the generator decides which.
-`tsconfig.build.json` at the root is the solution file listing all 53 projects.
+`tsconfig.build.json` at the root is the solution file listing all 58 projects.
 
 Without references each package resolves its workspace deps to **source**
 (package.json `main` is `src/index.ts`), so `tsc` re-parses and re-checks each

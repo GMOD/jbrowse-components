@@ -8,7 +8,7 @@ kind: spec
 
 **Class A shipped on 2026-08-19, all three stages.**
 `collectOffscreenMates` tallies the drops per contig and places them on the
-query axis; the settings menu's fixed-label "Off-screen mates" radios turn
+query axis; the settings menu's "Off-screen mates" checkbox turns
 `OffscreenMateOverlay` on, which draws each as a mark at the top of the band,
 labelled with the contig it points at; hovering one names that contig whether or
 not the run is wide enough to be labelled and reports how many alignments on
@@ -220,7 +220,7 @@ without settling it the expensive way, and it gives stage 1's count somewhere
 obvious to lead: a number that says how much is being hidden is also the control
 that shows it.
 
-Default off is not implied by that and is not obvious. 73% of peach chr1's
+`showOffscreenMates` now defaults on. Default off was not obvious: 73% of peach chr1's
 anchors on a demo we ship argues the other way, and a feature nobody finds
 reports nothing.
 
@@ -292,7 +292,7 @@ reports nothing.
   band. Its count comes off the same tally the overlay draws from, scoped to
   this band rather than the view, and the tooltip is now the only place that
   count is shown: the hamburger item that used to carry it in its label is gone,
-  and the control is a fixed-label radio submenu, so nothing states a live
+  and the control is a fixed-label checkbox, so nothing states a live
   number twice.
 - **Whether the figure carries them.** Settled: yes. `showOffscreenMates` is a
   menu setting, so the same rule the color-by legend follows applies — an export
@@ -376,7 +376,7 @@ for that, and the case here is precisely that it is not.
 past.** "The mate contig has to already be a displayed region" is not the rare
 case — it is what a stack of whole assemblies IS, and the multiway demo we ship
 is one. Reported from `demos/grape_peach_cacao` with all three rows on whole
-assemblies and "Mark them" on: the strip drew nothing, because
+assemblies and "Off-screen mates" on: the strip drew nothing, because
 `v2RefNames.has(mate.refName)` is true for every mate when the facing row
 displays every contig. Meanwhile `isRibbonCulled` was dropping all but the
 ribbons reaching the visible slice — 125 of 126 instances in the volvox

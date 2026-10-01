@@ -332,7 +332,7 @@ Facts behind it, each measured rather than assumed:
   `RandomTime` initial placement reseeds from `time(nullptr)` and ignores
   `randSeed`, so the same window drew differently every run and the two
   force-directed figures carried `diffThreshold: 0.1`. The engine's C++ is now
-  in the plugin (`src/bandage/native`), seeded, with `pnpm test:wasm` asserting
+  in the plugin (`packages/core/src/bandage/native`), seeded, with `pnpm test:wasm` asserting
   it. A `seed` option overrides per call.
 - **A row is a row height, and the y axis is not scaled** — fixed 2026-08-06,
   plugin `6684edb`. It used to be 5% of the *drawn width*, in bp, with one scale
@@ -502,15 +502,6 @@ its length.
 *contributed* it first, never who else carries it. Both pangenome tutorials warn
 about this, and the two workarounds are:
 
-**And a linear lane over the reference draws no rank above 0.** An
-off-reference segment's `SN` names the sample contig it came from, so the index
-files it under that contig's PanSN name. A `.segs.bed.gz` query on
-`GRCh38#0#chr6` at the C4 window returns 13 rows, every one rank 0, while
-`HG00097#1#CM094060.1` returns rank 236 throughout. So a jexl colouring rank 0
-against the rest paints one flat colour on a reference lane, and separates two
-colours only on a sample's own lane or in a graph view cut from the same pair.
-Checked against the hosted release 2 index on 2026-09-25.
-
 - **`minigraph -cxasm --call`** per assembly, projected to a per-bubble-per-
   sample BED by `scripts/build_minigraph_paths.sh`. Header line is the contract
   (`chrom start end name score strand thickStart thickEnd itemRgb strain class
@@ -520,6 +511,15 @@ Checked against the hosted release 2 index on 2026-09-25.
   `GraphNode.tags.SM` in the graph view and `feature.carriers` /
   `feature.samples` on the linear track. See "The tag column is the extension
   point" above.
+
+**And a linear lane over the reference draws no rank above 0.** An
+off-reference segment's `SN` names the sample contig it came from, so the index
+files it under that contig's PanSN name. A `.segs.bed.gz` query on
+`GRCh38#0#chr6` at the C4 window returns 13 rows, every one rank 0, while
+`HG00097#1#CM094060.1` returns rank 236 throughout. So a jexl colouring rank 0
+against the rest paints one flat colour on a reference lane, and separates two
+colours only on a sample's own lane or in a graph view cut from the same pair.
+Checked against the hosted release 2 index on 2026-09-25.
 
 `--call` traps, each a wrong first attempt:
 
@@ -602,9 +602,9 @@ missing feature and is usually a claim the graph cannot support.
   whole check that an upload of one of these worked.
 
   That check is about the bytes, and it is worth knowing what it leaves out: the
-  reader's path is the demo config plus its own **unpinned** plugin url, where
-  every committed graph figure pins the bundle and declares its tracks in a
-  session spec instead. So a track that resolves by `tabix` can still be a track
+  reader's path is the demo config, where the tracks are declared in config,
+  while every committed graph figure declares its tracks in a session spec
+  instead. So a track that resolves by `tabix` can still be a track
   the app never draws. Rendering it the reader's way is the other half, and
   `specs/pangenome_cactus.ts` says how above `GRAPH_CONFIG`.
 
@@ -1028,13 +1028,14 @@ what `segs.bed.gz` does with tabix.
 
 ## Operating the graph plugin: two traps that cost a session each
 
-- **`test_data/graphgenomeview/_localdist` is a stale hand-copy and nothing
-  refreshes it.** `GRAPH_PLUGIN_LOCAL=1` serves that directory, so every "I
-  rebuilt the plugin and it still fails" result is read off whatever build was
-  copied there last. A dependency bump, two upstream patches and two rounds of
-  instrumentation were all judged against a bundle containing none of them.
-  **`cp -r <plugin>/dist test_data/graphgenomeview/_localdist` before any
-  `GRAPH_PLUGIN_LOCAL` run**, or make the generator do it.
+- **`test_data/graphgenomeview/_localdist` was a stale hand-copy.**
+  `GRAPH_PLUGIN_LOCAL=1` serves that directory, and every "I rebuilt the plugin
+  and it still fails" result was read off whatever build was copied there last.
+  A dependency bump, two upstream patches and two rounds of instrumentation were
+  all judged against a bundle containing none of them. The generator
+  (`website/scripts/specs/graph-fixtures.ts`) now copies the plugin's `dist/` over
+  it on every `GRAPH_PLUGIN_LOCAL` run and fails when no build exists, so rebuild
+  the plugin first.
 - **emscripten's `UTF8ArrayToString` cannot decode a long string out of wasm
   memory.** It decodes a view over `HEAPU8` — over `WebAssembly.Memory`, whose
   buffer is a resizable `ArrayBuffer`, which browsers refuse to `TextDecoder`.
@@ -1083,8 +1084,8 @@ that plugin's repo, not this one.
   464 assemblies re-mapped, but `pgbi.vcf.gz` (above) already states carriage at
   bubble granularity and is tabix-indexed.
 - **gbz-base's `Subgraph.alignment()` writes `M` for match and mismatch
-  alike** (`src/subgraph.ts`, `EditOp`), so the anchor gutter of an HPRC lane
-  stack inks no mismatch until it writes `X`. `pairAlignment.ts` already
+  alike** (`gbz-base-js`'s `src/subgraph.ts`, `EditOp`), so the anchor gutter of an HPRC lane
+  stack inks no mismatch until it writes `X`. `pairAlignment.ts` there already
   writes `=`/`X`.
 - **The anchored cut of the KIV-2 window** (the portal's LPA card, `auto`
   layout) sits on "Fetching subgraph" past three minutes, on plugin 4.0.6 and

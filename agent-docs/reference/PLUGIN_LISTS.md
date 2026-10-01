@@ -246,7 +246,7 @@ hold in both products:
 2. **Armed only when the enabled list is non-empty.** A list that is all
    switched off counts as empty: none of them ran, so a later crash is not
    theirs to answer for.
-3. **Not cleared during a safe-mode boot.** `markGlobalPluginLoadSucceeded()` is
+3. **Not cleared during a safe-mode boot.** `markGlobalPluginLoadFinished()` is
    a no-op in safe mode, because by construction nothing ran and nothing has
    been vouched for. Clearing it re-armed the plugins for the next launch, which
    reproduced the crash: the app worked every *other* time it was started.
@@ -437,7 +437,7 @@ Web:
   effect on the next load, which is what the row says; a full app rebuild per
   toggle is not what a user hunting a culprit wants, and under safe mode the
   rebuild would skip the list all over again anyway.
-- **`markPermanentPluginLoadSucceeded` runs on the plugin-install rebuild too**,
+- **`markPermanentPluginLoadFinished` runs on the plugin-install rebuild too**,
   which re-arms and re-clears the marker. That is the same load, done twice, and
   the second pass is the one that counts.
 

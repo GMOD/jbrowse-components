@@ -28,7 +28,7 @@ bgzip -dc their.bed.gz | awk '{print $3-$2}' | sort -n | tail -5
 
 If the max block is a few kb, **stop** — blocks are not the problem and
 everything below is wasted effort. Look instead at the worker-side allocation
-noted in "Still open" at the bottom.
+noted under "Render cost is no longer the open question".
 
 For calibration, run the same line against the two MAF-tabix files this repo
 carries, plus the synthesized bench fixture (measured 2026-07-29):
@@ -52,7 +52,7 @@ chains/nets converted to MAF), not of MAF generally.
 ## Why one long block is expensive at every layer
 
 MAF-tabix is one BED line per alignment block, with every species' gapped
-sequence joined into column 6 (`maf_to_bed.py`, `MafTabixAdapter.ts:56`). Tabix
+sequence joined into column 6 (`maf_to_bed.py`; `MafTabixAdapter` reads it). Tabix
 is line-oriented: a query returns **whole overlapping lines**. So a 1Mb block
 across 10 species is ~10MB of sequence on a single line, and a query touching
 one base of it pulls all of it — downloads it, decompresses it, splits it into
@@ -113,7 +113,7 @@ And clipping only pays off *after* the expensive layers:
 - Finding the column range for a bp window means walking columns to account for
   reference gaps — the same O(columns) walk that is the expensive part.
 - Clipped region data is zoom-dependent, so `isBlockCovered`
-  (`MultiRegionDisplayMixin.ts:451`) can no longer reuse a loaded region across
+  (`packages/display-kit/src/planRegionFetch.ts`) can no longer reuse a loaded region across
   zoom. Today zooming within a loaded region costs nothing; clipping makes it
   refetch.
 - Tooltips and FASTA export read per-species `chr`/`srcStart`/`strand` off the
@@ -440,7 +440,7 @@ affordable, and it is already built. The two real gaps are both in it, not in
 the draw loop:
 
 - The summary tier is opt-in and unconfigured tracks don't have it. All four MAF
-  adapters take a `summaryAdapter` slot now (see "Still open" above and "A `.tai`
+  adapters take a `summaryAdapter` slot now (see "The other half of the original report, now closed" above and "A `.tai`
   is not a tier" below), but a 470-way written without one still has no cheap
   zoom-out path — the tier exists, the file it reads has to be produced.
 - The identity plot is confined *below* the summary threshold — the summary
@@ -491,8 +491,8 @@ the tutorial figure uses):
 
 Both are flat in bytes-per-bp from about 100 kb up — **19 for the MAF, 2.1 for
 the TAF** — which is the shape a span-bounded read should have, and exactly why
-it runs out: against the default 1 MB `fetchSizeLimit` the ceiling is ~50 kb of
-MAF and ~350 kb of TAF, and it moves linearly with the limit thereafter. TAF
+it runs out: against `LinearMafDisplay`'s default 5 MB `fetchSizeLimit` the ceiling is
+~250 kb of MAF and ~1.7 Mb of TAF, and it moves linearly with the limit thereafter. TAF
 buys about 10x. It does not buy a chromosome.
 
 So the two adapters that read *published* whole-genome alignments were the two

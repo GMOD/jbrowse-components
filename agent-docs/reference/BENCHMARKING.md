@@ -267,8 +267,8 @@ browser.
 
 ## Worked examples
 
-Four benches in the repo implement the pattern, and each carries the detail
-specific to its own question:
+Four benches in the repo implement the pattern, and a fifth survives only in git
+history. Each carries the detail specific to its own question:
 
 - `plugins/alignments/benches/mismatchWalk.bench.ts` — A/Bs a library against
   the implementation it replaced, extracting the old one from a git ref twice

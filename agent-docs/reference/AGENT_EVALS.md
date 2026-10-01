@@ -41,7 +41,7 @@ fail an agent that invents a track or reports a setting it could not write.
 
 ## The route report
 
-Each desktop run records which briefed routes its `run_javascript` code named.
+The route report is desktop-only: `webAgentEval.ts` does not record it. Each desktop run records which briefed routes its `run_javascript` code named.
 The routes come from the live object (`Object.keys(jb)`) and from every
 `jb.x`, `view.x`, `track.x`, `session.x` and `activeDisplay.x` in `jb.help`
 (`scripts/agent-evals/jbUsage.ts`), so a route added to either is measured with

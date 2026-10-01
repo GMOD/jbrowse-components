@@ -39,7 +39,7 @@ IntersectionObserver took that to 6. That commit already recorded that the freez
 is container-independent (Classic froze identically) and backend-wide (WebGPU
 could not mount the canvases at all at scale).
 
-A re-investigation on 2026-08-05 reopened it as a dockview problem and found the
+A re-investigation on 2026-08-05 reopened it as a dockview problem (ADR-068 has since replaced dockview with an MST-native layout) and found the
 same answer the second time. If it comes up again, the useful questions are
 **which build** the report predates and **what the reporter's `chrome://gpu`
 says** — not what dockview does differently, which is nothing measurable:
@@ -142,7 +142,7 @@ read as a software one. The string stays local to the stack-trace dialog, like
 
   **Two attempts got this wrong before it was right, in opposite directions.**
   Pinning inside `sessionSpec` looked like the tidy single place — but that
-  builder feeds `gen-gallery-links.ts` as well as the captures, so it forced
+  builder feeds `gen-live-links.ts` as well as the captures, so it forced
   WebGL on 251 website gallery links, i.e. on exactly the visitors this whole
   section is about. Moving the pin to `snapshot.ts::captureToTemp` then missed
   the corpus entirely, because `generate-screenshots.ts` navigates through
@@ -274,9 +274,9 @@ Nothing that redistributes *when* a pipeline is built helps. Both ends are
 expensive: building one costs a context and a shader recompile, holding one costs
 against the ceiling.
 
-- **MST write amplification through dockview's layout echo.** The sync autorun
-  observes `init`, `dockviewLayout`, `views`, `panelViewAssignments` and
-  `activePanelId`; none change while scrolling or panning, so reconcile does not
+- **MST write amplification through dockview's layout echo.** Dockview is gone
+  (ADR-068); while it was live, the sync autorun observed `init`, `dockviewLayout`, `views`, `panelViewAssignments` and
+  `activePanelId`; none changed while scrolling or panning, so reconcile did not
   run per interaction. The canvas2d control settles it independently — same
   session, same writes, a fraction of the cost.
 - **Releasing the context on dispose** (gating `WEBGL_lose_context.loseContext()`
@@ -296,4 +296,5 @@ building.
 
 Related: [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"One WebGL2 context
 per display canvas", [GPU_RENDERING.md](GPU_RENDERING.md),
-[ADR-057](../architecture-decision-records/adr-057-dockview-stays-external.md).
+[ADR-068](../architecture-decision-records/adr-068-workspace-layout-is-an-mst-tree.md)
+(ADR-057, dockview stays external, is superseded).

@@ -106,9 +106,9 @@ implementation gets one set of assertions.
 
 ### `setFitToHeight` seeds the height slot only where `height` is derived
 
-maf and canvas open `setFitToHeight` with
-`setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))`; variants
-does not, and that asymmetry is required rather than left over. Both of the
+maf opens `setFitToHeight` with
+`setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))` and canvas
+with `setConf(self, 'height', self.height)`; variants does not seed it, and that asymmetry is required rather than left over. Both of the
 first two **override the `height` getter** to a content-derived value (maf's
 `totalHeight`, canvas's `nrow * effectiveRowHeight`), so in fixed mode
 `self.height` is not what the `height` slot holds — entering fit mode without

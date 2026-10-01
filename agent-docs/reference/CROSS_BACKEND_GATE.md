@@ -166,8 +166,8 @@ The durable capture-side mechanics are in
 - **The gate is blind to a bug both backends share.** It would have caught
   neither render bug found on 2026-07-16. Goldens are the other half, and they
   only refresh by hand. **For `Mark Display` that other half does not exist**:
-  12 of the 51 snapshot names in `CI_GATE_SUITES` are absent from
-  `snapshots.lock` — all eleven `mark-*` scenes plus `gwas-manhattan-bars` — and
+  the `mark-*` snapshot names in `CI_GATE_SUITES` are absent from
+  `snapshots.lock` (`gwas-manhattan-bars` is in it now) and
   `snapshot.ts` writes a missing golden and returns "Snapshot created", so the
   run that fills them in passes without comparing anything. The suite setting
   the gate's own floor (`targeted_mark-ramp`, 0.91%) is the one carrying no
@@ -403,8 +403,8 @@ a 1 px move perfectly well.**
 What defeats it is the edge already carrying a real AA gradient, which is what
 supplies the mixed neighbourhood the heuristic wants. Measured 2026-09-08 on
 `targeted_gwas-manhattan-bars` under SwiftShader, whose bar edges ramp
-`62,140,219` → `183,209,235`: removing `BAR_OVERDRAW_PX` from `pointMark.slang`
-— a 1 CSS px overdraw at each end of every extent bar, GPU-side only — moves
+`62,140,219` → `183,209,235`: removing the bar overdraw from `pointMark.slang`
+(since deleted) — a 1 CSS px overdraw at each end of every extent bar, GPU-side only — moves
 **387 px of 113,940 (0.340%)** by a plain RGB compare, **380** at
 `includeAA: true`, and **2** at the gate's settings.
 
@@ -451,7 +451,8 @@ shared draw path, and never add an entry without a measured number.**
 
 It rose to **four** on 2026-08-11 as tightening the default to 1.5% exposed
 entries rather than loosening any: two `-linked` entries recording the line-width
-bug above (3.96% and 1.99%, neither moving between rasterizers), and
+bug above (3.96% and 1.99%, neither moving between rasterizers; both gone
+now), and
 `inversion-paired-coverage` at 2.40%/2.31% — the first entry in this list whose
 antialiasing claim the audit has ever *confirmed* rather than refuted. Splitting
 `inversion-pbsim-linked` out also stopped the 10% coverage ceiling silently
@@ -462,8 +463,9 @@ both sides. Two per-base entries arrived and left again inside a day, which is
 its own worked example of the rule at the top of this section — see "The
 per-base wall" below.
 
-**It is three since 2026-09-24**, when MAF's summary bars moved onto the backend
-canvas and the MAF suite took its first dual snapshots. `maf-summary` measures
+**It is four now.** On 2026-09-24 MAF's summary bars moved onto the backend
+canvas and the MAF suite took its first dual snapshots, adding
+`maf-summary`; `whiskers-band` (2.5%) joined the list too. `maf-summary` measures
 7.50% under swiftshader and 7.18% on a real GPU, so it moves with the
 rasterizer: Canvas2D antialiases each abutting bar's edge on its own and leaves
 a lighter seam where two meet on a fractional pixel, which the GPU does not.
@@ -472,8 +474,9 @@ everywhere until then; closing them on the Canvas2D side is the span shape's
 `seamPx`, which darkens the overlap of two translucent bars instead.
 
 **Order matters now, and did not before.** `thresholdFor` takes the first
-substring match, so `inversion-pbsim-linked` has to sit above `inversion-pbsim`
-or it is swallowed by it. Latent while there was one entry.
+substring match, so a specific entry has to sit above any broader one that would
+swallow it. `inversion-pbsim` covers `inversion-pbsim-linked` deliberately; no
+`-linked` entry exists.
 
 (If you count them with `grep -c 'match:'` you get one more than there are,
 because it counts the type annotation on the declaration line. That is the exact
@@ -515,7 +518,7 @@ sides moved the bar a pixel apart. Both use `floor(x + 0.5)` now. Every
 hand-written canvas twin of a shader has this available to it, and ADR-051's
 codegen does not cover them — it covers generated twins, not paired ones.
 
-The remaining 6.59% is the same accumulate-vs-resolve asymmetry on marks that
+The remaining drift (7.59% under swiftshader, 7.41% on a real GPU) is the same accumulate-vs-resolve asymmetry on marks that
 **cannot** be snapped: SNP ticks and indicator triangles at arbitrary sub-pixel
 x, ~40 deep per column. Canvas2D is the wrong one — drawing the same opaque shape
 twice should not make it more opaque — but closing it means canvas2d drawing one
@@ -690,7 +693,9 @@ statement of what a pixel row covers; Canvas2D is the approximation, and it is
 the fallback backend. Closing it there means stroking the centerline in N pieces
 at N alphas rather than one `ctx.stroke()`, inside the loop `StyleCache` exists
 because `rgba()` construction alone cost >100ms at 500k instances. Filed in
-TODO.md and given a 2% override with the gap understood.
+TODO.md. The 2% override is gone: the pair now measures 0.64%, under the
+default, after `ribbonMaxPerpWidth` split the fill-vs-stroke decision off
+`ribbonPerpWidth`.
 
 **One caveat this pair exposes about the audit rule.** "Identical across
 rasterizers ⇒ not antialiasing ⇒ a real difference in what is drawn" was derived

@@ -65,10 +65,10 @@ float bpToClipX(uint bp, Uniforms u) {
 }
 ```
 
-Call that (and `bpToLinear` where a normalized [0,1] is wanted). Alignments and
+Call that. Alignments and
 the canvas feature-glyph passes ship theirs in `alignmentsUniforms.slang` and
-`featureGlyphUniforms.slang`; wiggle, MAF, GWAS, variants, multi-row and
-`score-example` each carry a local copy. **Don't call `hpToClipX` /
+`featureGlyphUniforms.slang`; render-core (`barMark.slang`, `pointMark.slang`),
+wiggle, variants and `score-example` each carry a local copy. **Don't call `hpToClipX` /
 `hpSplitUint` directly from a draw shader** — the wrapper takes a `uint`, so it
 can't be handed an already-converted float. (A shader that only calls
 `bpToClipX` doesn't need `import hpmath` at all; see

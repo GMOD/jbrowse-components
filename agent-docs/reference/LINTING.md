@@ -51,7 +51,7 @@ rule set, so each sees the other's suppressions as unused:
   `react-refresh/only-export-components` (17).
 
 This is why 39 comments suppressing nothing accumulated before anyone noticed
-(deleted in `c7b26da3a8`). The fix is to migrate oxlint-owned suppressions from
+(deleted in `757e7c4bad`). The fix is to migrate oxlint-owned suppressions from
 `eslint-disable` to `oxlint-disable`, after which oxlint's check can be turned
 on for real. Until then, the sweep is manual: run oxlint's check, then filter by
 which config actually enables each rule.

@@ -58,6 +58,8 @@ samples: [
 ]
 ```
 
+Paths below are under `plugins/maf/src/LinearMafDisplay/`.
+
 - `components/findRowSpan.ts` — the row's own locus over a reference bp range.
   Shares `forwardPos` with `findRowHover.ts` so the `−`-strand mirror through
   `srcSize` can't disagree between the tooltip and a navigation target. A row
@@ -68,8 +70,11 @@ samples: [
   a row is absent from the result when it has no aligned base there or the
   sample has no assembly.
 - `components/sampleNavigationItems.ts` — menu entries for the rows a drag
-  selection covers, appended to the existing `SubsequenceContextMenu`. Six or
-  fewer go inline, more collapse into a submenu.
+  selection covers, appended to the existing `SubsequenceContextMenu`.
+  `sampleNavigationItems` always returns one entry, "Open aligned genome at the
+  matching region", with a submenu holding one item per row.
+  `mafSyntenyLaunchItems` returns the second, "Linear synteny view, ⟨ref⟩
+  vs...", with the same per-row submenu (the section below).
 - `openSampleInNewView.ts` — launches declaratively via
   `addView('LinearGenomeView', {assembly, loc})`, keyed
   `<displayId>_<assemblyName>` so following the same species repeatedly
@@ -136,7 +141,8 @@ The config mapping still wins where it exists.
 ## The synteny view, cut from the columns
 
 The stretch version shipped the same day, as a menu item and not an adapter:
-`launchMafRowSynteny.ts`. `buildMafRowSynteny` walks the fetched blocks' gapped
+`launchMafRowSynteny.ts`, offered as the second entry, `mafSyntenyLaunchItems`
+("Linear synteny view, ⟨ref⟩ vs..."). `buildMafRowSynteny` walks the fetched blocks' gapped
 columns for one row — both bases `M`, a reference gap `I`, a row gap `D` —
 clipped to the selection half-open, with the row's coordinates through the same
 `forwardPos` the hover and the navigation target use, so a `-` row's mate span

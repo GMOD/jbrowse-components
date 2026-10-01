@@ -172,7 +172,7 @@ One shape, in both:
   band's own ground for synteny, which declares a `clearColor` because its indel
   wedges are pre-blended against a known colour rather than composited over it.
 - A view or level that legitimately has nothing to show still resolves
-  `canvasDrawn`, and so `settled` and the `*_done` testid. Both return what
+  `canvasDrawn`, and so `settled` and `data-display-drawn`. Both return what
   `renderBlocks` answered — no block drew, so nothing reached the canvas — and
   say the other half through `paintInert`, `RenderLifecycleMixin`'s hook for a
   display that will not paint its way out of where it is: a plot with no tracks
@@ -186,11 +186,11 @@ to this.
 ## Readiness is a required prop, not a selector list
 
 **Both views publish that `settled` as `data-display-drawn`, a *required* prop on
-`RenderCanvas`.** The per-view `synteny_canvas_done` /
-`dotplot_webgl_canvas_done` testids still exist and are still what a spec's own
-`readySelector` names, but the attribute is what `PENDING_DISPLAYS`
-(`@jbrowse/browser-test-utils`) waits on, so these two answer "has everything
-painted?" with the same attribute every LGV display does.
+`RenderCanvas`.** ADR-065 deleted the per-view
+`synteny_canvas_done` / `dotplot_webgl_canvas_done` testids. The attribute is
+what `PENDING_DISPLAYS` (`@jbrowse/browser-test-utils`) waits on, so these two
+answer "has everything painted?" with the same attribute every LGV display
+does.
 
 It is required because the previous version enumerated views by hand:
 `PENDING_DISPLAYS` named `synteny_canvas` and simply forgot dotplot, so an

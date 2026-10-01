@@ -425,7 +425,9 @@ reference tiles and every copy still aligns against identical sequence.
 `getTagAlt` exists because `getTag('MM') ?? getTag('Mm')` walked the whole tag
 block twice on every read of a file that carries neither, and that pair was
 12.9% of a 1000x short-read query. `extractFeatureArrays` makes **two**
-unconditional per-read tag reads, not one:
+per-read tag reads, not one — the `SA` read is skipped for a read with no end
+clip (`hasEndClip`), and the modification read runs only when the modification
+layer paints or the read is among the first `MOD_TYPE_SAMPLE_READS`:
 
 ```
 suppAlignments.push(getTag(feature, 'SA') ?? '')       // arcs
@@ -482,9 +484,9 @@ Two notes for whoever does pick it up. The fused walk in the probe reaches
 private fields; a real implementation belongs inside `BamRecord`, where
 `tagValueEnd` is already the shared cursor `_findTag`, `getTagAlt` and
 `_computeTags` walk with, so it should be an argument-count change rather than a
-fourth copy of the walk. And the consumer-side alternative — stop reading `SA`
-unconditionally — is **closed, not open**: it was implemented and reverted. Only
-the arc overlay was believed to read `readSuppAlignments`, and linked reads and
+fourth copy of the walk. And gating the `SA` read on its consumers is **closed, not open**: it was
+implemented and reverted. The shipped gate is on the read itself (`hasEndClip`),
+not on the consumers. Only the arc overlay was believed to read `readSuppAlignments`, and linked reads and
 the curved connectors read it too, under settings of their own, so gating the
 walk on connections took their off-screen segments away. The `rpcProps`
 entry it needs also invalidates the fetch on a draw toggle, which was the smaller
@@ -845,7 +847,7 @@ time:
 
 The link's own spread is ±3s and the prefix arm won four of six pairs, so the
 request and byte counts are the result here and the time is only
-consistent-in-direction. Not pushed — that is a release decision.
+consistent-in-direction. The installed `@gmod/bam` 10.0.1 carries this `stopIndex` re-test in `bamFile.js`, so the stock row is the pre-fix reader.
 
 Two things worth carrying out of building it:
 
@@ -937,8 +939,8 @@ Stated so the next audit does not re-derive them.
   `BamSlightlyLazyFeature` and `RegionBoundBamFeature` carry it — so the MM/Mm
   and ML/Ml lookups are one pass over the tag block rather than two, which on
   1000x short-read was 12.9% of the query spent proving absence.
-- **The pool is wired everywhere it can be.** `BamAdapter` plus all nine
-  `TabixIndexedFile` sites. The remaining `@gmod/bgzf-filehandle` imports in
+- **The pool is wired everywhere it can be.** `BamAdapter` plus six of the eight
+  `TabixIndexedFile` sites (`Gff3TabixAdapter` and `GtfTabixAdapter` pass none). The remaining `@gmod/bgzf-filehandle` imports in
   core and `plugins/maf` are whole-file `unzip`, which has no blocks to spread.
 - **`seq` is decoded twice per read in the modification color modes, and the
   obvious fix does not pay.** `extractModifications` reads it for

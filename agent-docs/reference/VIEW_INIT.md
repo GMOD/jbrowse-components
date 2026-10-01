@@ -73,6 +73,7 @@ interface InitState {
   assembly: string // required
   loc?: string // locstring; absent => showAllRegionsInAssembly
   grow?: number // fractional zoom-out around `loc` (0.2 = 20% padding a side)
+  showHitTrack?: boolean // a `loc` that is a searched name also opens its track
   displayedRegionNames?: string[] // whole-genome view restricted to these
   // refNames, in order, globs allowed; ignored when `loc` is set
   tracks?: TrackInit[] // string id, or { trackId, trackSnapshot?, displaySnapshot? }
@@ -155,12 +156,12 @@ prop list found nothing else.
 
 | view | launch keys | notes |
 | --- | --- | --- |
-| LGV | `loc`, `grow`, `showHitTrack`, `assembly`, `displayedRegionNames`, `tracklist`, `nav`, `tracks`, `highlight` | `bpPerPx`/`offsetPx` are `passThrough` — no longer declared properties, still converted by the model's own preprocessor |
-| dotplot | `views`, `tracks`, `highlight`, `autoDiagonalize` | `views` is unconditional: the model declares `hview`/`vview` and derives `views` as a getter |
-| synteny | `views`, `tracks`, `levelHeights`, `autoDiagonalize`, `collapseEmptyRows`, `sameScale` | `tracks` is unconditional: the levels between the rows hold theirs, so the view declares no top-level `tracks` |
-| circular | `assembly`, `displayedRegionNames`, `tracks` | `displayedRegions` is the resolved form of the second |
-| spreadsheet | `assembly`, `uri`, `fileType`, `filterText` | four plain lifts; the view declares no property of any of those names |
-| sv-inspector | `assembly`, `uri`, `fileType`, `filterText` | written out rather than borrowed from the spreadsheet's, so the Record fails the build when a view's commands and its registration disagree |
+| LGV | `loc`, `grow`, `showHitTrack`, `assembly`, `displayedRegionNames`, `tracklist`, `nav`, `tracks`, `highlight` | `bpPerPx`/`offsetPx`/`showCytobandsSetting` are `passThrough` — no longer declared properties, still converted by the model's own preprocessor |
+| dotplot | `views`, `tracks`, `highlight`, `autoDiagonalize` | `passThrough` is `LIFTED_VIEW_KEYS` (`colorBy`); `views` is unconditional: the model declares `hview`/`vview` and derives `views` as a getter |
+| synteny | `views`, `tracks`, `levelHeights`, `autoDiagonalize`, `collapseEmptyRows`, `sameScale` | `passThrough` is `LIFTED_VIEW_KEYS` (`colorBy`); `tracks` is unconditional: the levels between the rows hold theirs, so the view declares no top-level `tracks` |
+| circular | `assembly`, `displayedRegionNames`, `tracks`, `autoDiagonalize` | `displayedRegions` is the resolved form of the second |
+| spreadsheet | `assembly`, `uri`, `baseUri`, `fileType`, `filterText`, `svEventFilter` | six plain lifts; the view declares no property of any of those names |
+| sv-inspector | `assembly`, `uri`, `baseUri`, `fileType`, `filterText`, `svEventFilter`, `drilldownTracks` | written out rather than borrowed from the spreadsheet's, so the Record fails the build when a view's commands and its registration disagree |
 | breakpoint | `views` | its one key and its one discriminator |
 
 Everything else each view can be launched with is a declared property —
@@ -171,7 +172,7 @@ is a launch key.
 
 `ViewType.launchKeys` carries it, and `ViewType.acceptedKeys` is the derived
 answer to "what may an author write on this view": the state model's properties,
-plus the launch keys, plus `passThrough`. Four consumers read it rather than
+plus the launch keys, plus `passThrough`. Five consumers read it rather than
 restating it.
 
 - **`loadSessionSpec`** runs the same classification the snapshot path gets,
@@ -272,7 +273,7 @@ looping it directly walked its characters.
 
 LGV, dotplot and synteny each hand-rolled the same machine — re-entry guard,
 readiness gate, ordered apply, clear, catch — and drifted on the error policy.
-They now share `installInitAutorun(self, { name, ready, materialized, apply })`,
+They now share, with circular and spreadsheet, `installInitAutorun(self, { name, ready, materialized, apply })`,
 which owns:
 
 - the non-observable `draining` flag. `ready` folds in the measured width, which
@@ -368,6 +369,8 @@ everything it lets escape is fatal-as-of-that-point. Per view:
 | LGV | `initialized` | always true — one row, and `error` already derives a failed assembly |
 | dotplot | `volatileWidth` | `assemblyNames.length` (set by the first apply step) |
 | synteny | `width` | `views.length` (`buildViews` awaits every assembly before `setViews`) |
+| circular | `initialized` | `displayedRegions.length > 0` |
+| spreadsheet | always true — no width to measure | `!!spreadsheet` |
 
 Tests: `packages/core/src/util/installInitAutorun.test.ts` for the machine,
 `LinearSyntenyView/initFailure.integration.test.ts` for the two policy branches
@@ -430,12 +433,9 @@ paint they will make.
 
 All seven view types take their settings the same way and share the partition;
 each still owns its own `LaunchView-<Type>` extension point and its own autorun.
-The three with an async multi-step apply (LGV, dotplot, synteny) share the
-machine above. Circular, breakpoint and sv-inspector apply synchronously inside
-the autorun, so there is no await window to guard. SpreadsheetView is async but
-deliberately different — a `reaction` cleared synchronously up front, so
-re-entrancy is excluded by the dependency graph instead of a flag; it can do that
-because the launch blob is not what keeps its loading state up.
+LGV, dotplot, synteny, circular and spreadsheet all call
+`installInitAutorun`. Breakpoint and sv-inspector apply synchronously inside
+their own autorun, so there is no await window to guard.
 
 ## Known warts (see also the user doc website/docs/automating.md)
 

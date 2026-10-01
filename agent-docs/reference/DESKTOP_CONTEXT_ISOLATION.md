@@ -42,7 +42,7 @@ This was the stated reason not to lock the renderer down. It does not hold:
   stores its ontology in IndexedDB. Its only Electron use is one
   `ipcRenderer.invoke('openAuthWindow')` for OAuth.
 - **The sanctioned plugin API never offered fs.** `packages/core/src/ReExports/list.ts`
-  is ~157 entries of React/MUI/MST/core, no node builtins. A plugin touching
+  is ~543 specifiers of React/MUI/MST/core, no node builtins. A plugin touching
   `fs` is reaching around the plugin API via `window.require`, not using it.
 - **The file I/O that matters already runs in RPC workers**, which keep Node via
   `nodeIntegrationInWorker` — a setting **independent** of the renderer's.
@@ -98,7 +98,7 @@ the page. The renderer just quietly has no bridge, which looks exactly like
 There is **exactly one** non-test `new LocalFile` in the repo:
 
 ```
-packages/core/src/util/io/index.ts:56    return new LocalFile(location.localPath)
+packages/core/src/util/io/index.ts       new CachedFilehandle(new LocalFile(location.localPath), …)
 ```
 
 `openLocation` returns a `GenericFilehandle` (`read`/`readFile`/`stat`/`close`).
@@ -209,8 +209,10 @@ aliased in with the worker deep-importing the node `localFile.js`.
 ### 3. `isElectron` is a userAgent sniff, and it is a landmine
 
 ```ts
-// packages/core/src/util/index.ts
-export const isElectron = /electron/i.test(navigator.userAgent)
+// packages/core/src/util/environment.ts
+export const isElectron = /electron/i.test(
+  typeof navigator !== 'undefined' ? navigator.userAgent : '',
+)
 ```
 
 Electron sets that UA regardless of `contextIsolation`, so after the flip
@@ -220,7 +222,7 @@ there — **not** the clean "can't use local files in the browser" error.
 
 Do not simply redefine `isElectron`: it has ~32 non-test uses across core,
 plugins and products, and most of them genuinely mean "am I in desktop",
-not "can I reach Node". The gate at `io/index.ts:56` wants a *capability* check.
+not "can I reach Node". The `isNode || isElectron` gate in `io/index.ts` wants a *capability* check.
 
 On the adjacent `isNode` brand-check
 (`toString.call(globalThis.process) === '[object process]'`): because the target
@@ -323,5 +325,5 @@ The flip has **not** been attempted against the real app — only minimal probe
 pages. Verifying it needs a fresh webpack renderer build plus the packaged-app
 e2e harness (`test/harness.ts` runs against `dist/unpacked/…`). Expect at least
 one renderer-side Node dependency that grep did not surface; fixing the
-`openLocation` funnel (step 2) rather than individual call sites is what makes
+`openLocation` funnel (step 3) rather than individual call sites is what makes
 that survivable.

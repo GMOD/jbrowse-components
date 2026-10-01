@@ -73,7 +73,7 @@ identical across the band.
 
 Consumers: `LinearSyntenyDisplay.lodTier` → `currentFetchKey`,
 `DotplotDisplay.lodTier` → `dotplotFetchKey`, `LGVSyntenyDisplay.lodTier` →
-`rpcProps`. All three read the threshold with `getCoarseBpPerPxThreshold`, which
+`rpcProps`, and `MultiWaySyntenyDisplay` composes it as well. All four read the threshold with `getCoarseBpPerPxThreshold`, which
 goes through the **slot path** — `adapterConfig` is a snapshot carrying only
 explicitly-set keys, so it reads `undefined` for the ~all tracks at the default
 and the tier was never resolved. The presence of that slot is also the gate
@@ -98,7 +98,7 @@ rather than querying `T`/`Q` prefixes that match nothing.
 
 The slot alone cannot say whether the file HAS a coarse tier or what bound it
 was folded at; both are facts of the file, on the adapter side of the RPC. So
-each of the three displays composes `LodTierInfoMixin` and, in `afterAttach`,
+each of the four displays composes `LodTierInfoMixin` and, in `afterAttach`,
 `installLodTierInfoFetch` makes one `CoreGetInfo` call against the track's
 adapter (the `LinearHicDisplay` binsize pattern: a prerequisite read keyed on
 the adapter config, gated on `trackHasLodTiers` so a PAFAdapter never asks).

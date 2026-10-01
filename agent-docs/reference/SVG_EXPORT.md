@@ -256,7 +256,7 @@ their terminals differently and keep their own call.
   `viewportEmpty` (below) is what keeps that `loadedRegions.size` term from
   hanging an export over a viewport that holds no block to load.
   `fetchInert` is the overridable hook the sequence display uses.
-- **`GlobalFetchMixin`** (whole-view single-blob — HiC, LD, and arc): a global
+- **`GlobalFetchMixin`** (whole-view single-blob — HiC and LD): a global
   display has no per-region spatial axis, so it requires the single dataset to
   actually be current — deliberately **not** `displayPhase !== 'loading'`,
   because the fetch trigger is a debounced `afterAttach` autorun, so at export
@@ -464,12 +464,11 @@ it can't disagree.
 They don't track `loadedRegions`/`displayPhase` the same way, but they run the
 same `computeSvgReady` policy:
 
-- **Arc / paired-arc** are still LGV track displays and compose
-  `GlobalFetchMixin`, so they get `svgReady` — and the whole signature compare —
-  from it, overriding only `viewSignature` (the static-block keys). Drawing all
-  features into a single array (gated by `RegionTooLargeMixin`), the freshness
-  compare makes an export fired right after a pan/zoom wait for fresh arcs
-  instead of capturing stale ones.
+- **HiC and LD** are LGV track displays composing `GlobalFetchMixin`, so they
+  get `svgReady` — and the whole signature compare — from it, overriding only
+  `viewSignature`. The freshness compare makes an export fired right after a
+  pan/zoom wait for the fresh matrix instead of capturing a stale one. (The arc
+  displays composed it too until the arc plugin went, ADR-163.)
 - **Multi-LGV synteny** is *non-LGV* (a `LinearSyntenyView` level composing only
   `BaseDisplay` with its own fetch), so it awaits `awaitSvgReady` itself, calling
   `computeSvgReady` directly with `dataCurrent` =
@@ -478,7 +477,7 @@ same `computeSvgReady` policy:
   debounced fetch (500ms) leaves a *pre-refetch* window where a region/zoom
   change has invalidated the held data yet `fetching` hasn't flipped true, so
   `!refetching` alone still resolves on stale ribbons. `dataCurrent`
-  (`loadedFetchKey === currentFetchKey`) closes that window exactly as arc's
+  (`loadedFetchKey === currentFetchKey`) closes that window exactly as HiC's
   signature does.
 
   It draws **no `SvgChrome` at all**: every synteny display in a level paints the
@@ -500,7 +499,7 @@ space itself, when HiC and LD moved to genomic worker output and a signature):
 | Mechanism | Foundation | Implementation |
 | --- | --- | --- |
 | Spatial coverage | `MultiRegionDisplayMixin` | `viewportWithinLoadedData && loadedRegions.size > 0` |
-| Signature compare | `GlobalFetchMixin` (arc, HiC, LD), synteny, dotplot | `isDataCurrent(loaded, current)` |
+| Signature compare | `GlobalFetchMixin` (HiC, LD), synteny, dotplot | `isDataCurrent(loaded, current)` |
 
 Consumers — `computeSvgReady`, the `settled` capture gates, BreakpointSplitView's
 overlays — read `dataCurrent` and never the mechanism, so a display *composes* a
@@ -509,8 +508,7 @@ freshness answer rather than choosing which of the names to expose.
 `isDataCurrent(loaded, current)` (`@jbrowse/core/util`,
 `loaded !== undefined && compareStructural(loaded, current)`) is the shared rule
 for the second row. Both keyed families run the whole compare on
-`KeyedFetchMixin` (ADR-105): a display supplies only `viewSignature` (arc and
-HiC over static blocks — HiC appending its binsize — LD over dynamic blocks,
+`KeyedFetchMixin` (ADR-105): a display supplies only `viewSignature` (HiC over static blocks, appending its binsize; LD over dynamic blocks,
 synteny and dotplot over their region sets, zoom buckets and LOD tier), the
 mixin pairs it with the `settingsFetchInputs` axis, stamps the issued key at
 commit, and drops it on `reload()`.
@@ -582,7 +580,7 @@ supply their own `dataCurrent` thunk:
   exists (node, jsdom) the rings are skipped up front and named through
   `notifySkippedSvgTracks`, never embedded blank.
 
-So both halves are uniform across **every** display (LGV, arc, synteny, dotplot,
+So both halves are uniform across **every** display (LGV, synteny, dotplot,
 circular): the readiness gate, and the answer to a failed track — the display
 throws, from `awaitSvgReady`. What used to vary, *who* throws, was the
 shared-surface exception, and it is gone: a display never has to know whether it

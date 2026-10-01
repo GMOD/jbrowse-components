@@ -7,7 +7,7 @@ kind: operations
 
 # Generated doc blocks
 
-Several tables in those guides are **generated**, and so are their counterparts in
+Several tables in the public developer guides (`website/docs/developer_guides`) are **generated**, and so are their counterparts in
 `ARCHITECTURE.md` — `pnpm autogen` rewrites both from the same scan, so there is no
 mirroring step to forget. **A generated block is bracketed by a marker pair in
 one of two spellings** — `<!-- NAME START -->` / `<!-- NAME END -->`, or
@@ -34,8 +34,11 @@ Every one replaced a hand-written table that had already drifted; what each of
 them got wrong, and the rule to draw from it, is in
 [CLAUDE.md](../CLAUDE.md#frontmatter-and-generated-tables).
 
-The index below is generated too, off the docs' own marker pairs, so a block
-whose page nobody wrote down still appears in it. The marker name is what to
+The index below is generated too, off the docs' own `<!-- NAME START -->`
+pairs, so a block of that spelling whose page nobody wrote down still appears in
+it. The scan does not match the `BEGIN GENERATED` spelling, so
+`DISPLAY_HOOK_OVERRIDES`, `DISPLAY_STATE_CENSUS`, `DISPLAY_CHROME_ADOPTION` and
+the `MEASUREMENT` blocks are absent from it. The marker name is what to
 grep for in `website/scripts` to find the generator behind a block, and
 `website/scripts/api-docs/README.md` is how to write one.
 

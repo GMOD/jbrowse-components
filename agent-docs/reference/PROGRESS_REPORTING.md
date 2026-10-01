@@ -16,7 +16,11 @@ progress.
 `statusCallback: (status: RpcStatus) => void`, where
 
 ```ts
-RpcStatus = string | { message; current; total } | { message; failed: true }
+RpcStatus =
+  | string
+  | { message; current; total; source? }
+  | { message; source }
+  | { message; failed: true }
 ```
 
 (`packages/core/src/util/progress.ts`). A plain string is an indeterminate
@@ -24,7 +28,11 @@ phase label. The second form adds a determinate `current/total` fraction —
 unit-agnostic (bytes, blocks, or records). The UI decides presentation, so
 percentages are never baked into the message string.
 
-The third is a **retire that says the phase did not finish**, written by the
+The third is a phase label that names what it is waiting on, `source` being the
+URL of the file in flight; it votes in the aggregate as the bare string it
+replaces. The progress form takes an optional `source` too.
+
+The fourth is a **retire that says the phase did not finish**, written by the
 `finally` of `updateStatus` / `withProgress` / `downloadStatus` and by nothing
 else. Its `message` is the same string the retire carries anyway (`''`, or the
 enclosing phase's label), so `statusMessageText` and `statusFraction` answer for
@@ -133,7 +141,7 @@ caller reports nothing still runs `toBytesWithProgress`.
   `slot()` is a `StatusCallback` remembering its own value and how much of each
   phase it has finished, and every write re-derives the shared status from all
   slots. Hand a slot to each of N concurrent operations sharing one status
-  field. The arithmetic is `aggregateStatus`, which is internal to the module —
+  field. The arithmetic is `aggregateStatus`, which `progress.ts` exports and only `progress.test.ts` imports —
   ADR-072 for what it sums and ADR-080 for how the phase is picked.
 
 `parseLineByLine` (flat-file adapters, `label` + `signal` opts) and

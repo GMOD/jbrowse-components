@@ -18,10 +18,13 @@ which is also the design record this file cites by section name.
 
 Paths: `JC/` is `~/src/jbrowse-components`, `P/` is
 `~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer`, `G/` is
-`~/src/gbz-base-js`. The display is
+`~/src/gmod/gbz-base-js`. The display is
 `JC/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/`, abbreviated
 `MW/` below, and cited by symbol rather than line, since its line numbers move
-with every change. Every measurement here was either taken against the hosted
+with every change. The plugin's `agent-docs/` no longer holds
+`GBZ_PLAN.md`, `GBZ_HANDOFF.md`, `HAPLOTYPE_WALKS_REVIEW.md` or
+`HAPLOTYPE_WALKS_VISION.md`; citations to them below are historical and their
+line numbers point at nothing current. Every measurement here was either taken against the hosted
 data or is cited to the file that records it.
 
 ## Findings that have landed — do not re-fix them
@@ -373,7 +376,7 @@ Today's providers:
 
 - `MCScanBlocksAdapter`: reads the whole table and every BED up front, answers
   any column pair, and is the only adapter implementing `mateShape: 'grouped'`
-  (`JC/plugins/comparative-adapters/src/MCScanBlocksAdapter/MCScanBlocksAdapter.ts:405`).
+  (`JC/plugins/comparative-adapters/src/MCScanBlocksAdapter/MCScanBlocksAdapter.ts`, the `grouped` branch of `getFeatures`).
 - `MultiPairwiseSyntenyAdapter`: N pairwise PIF children, each subscribed at
   once and emitted in child order (`getFeatures`, ids re-keyed
   `${childIndex}-…`); header folds the children's tiers (`hasCoarseTier` only
@@ -580,7 +583,7 @@ mate-vs-mate, which returns nothing by design
 (`MultiPairwiseSyntenyAdapter.ts:78-98`; a `MultiGenomePAFAdapter` star raises
 `noSuchPairError` instead). Dragging the anchor to the middle of the
 dialog's list got two drawing levels of eight
-(`LaunchSyntenyView/panelOrder.ts:65-75` says so in its comment). The stacked
+(the comment above `toPanelRows` in `LaunchSyntenyView/panelOrder.ts` says so). The stacked
 view has no notion of "every level anchored on the hub"; a level is
 `views[i]`/`views[i+1]` in ten files (design record §"A ribbon bridges a lane
 that places nothing for its group"). So the honest answer for a star was: eight
@@ -589,7 +592,7 @@ what made every band a direct pair, at 2N-1 rows.
 
 Two more things about that route are worth knowing. The rows came from the
 `SyntenyDiscoverMates` RPC over the dataset
-(`LaunchSyntenyView/discoverMates.ts:41-81`), not from the display's lane
+(`makeMateDiscovery` in `LaunchSyntenyView/discoverMates.ts`), not from the display's lane
 selection or `domain` — the launch forgot what the reader chose, and on a GBZ
 track it was a second full-cohort window fetch that proposed every haplotype the
 window places as a panel; `lanePanelsForRegion` replaced it (§4.4). And each
@@ -624,9 +627,9 @@ N = mate lanes drawn (after selection).
 | cost | 8 | 64 | 464 | 4,000 | where |
 | --- | ---: | ---: | ---: | ---: | --- |
 | ortholog fetch (RPCs) | 1 | 1 | 1 | 1 | `fetchPhases` |
-| …inside a `MultiPairwise` star: child tabix reads | 8 | 64 | 464 | 4,000 | `MultiPairwiseSyntenyAdapter.ts:150-185` |
+| …inside a `MultiPairwise` star: child tabix reads | 8 | 64 | 464 | 4,000 | `childrenForLanes` and the subscribe loop in `MultiPairwiseSyntenyAdapter.ts` |
 | …inside a PanSN PIF: records parsed | ≈lanes × records/lane | | | | one index read |
-| …inside GBZ: walks extracted, identified, aligned | every haplotype in the window (465 at KIV-2) regardless of N | same | same | same | `P/…/GbzBaseSyntenyAdapter.ts:381-412`; `P/agent-docs/HAPLOTYPE_WALKS_REVIEW.md:36-39` |
+| …inside GBZ: walks extracted, identified, aligned | every haplotype in the window (465 at KIV-2) regardless of N | same | same | same | `P/…/GbzBaseSyntenyAdapter.ts` (`keep`); `P/agent-docs/HAPLOTYPE_WALKS_REVIEW.md:36-39` |
 | lane-gene RPCs (lanes the session holds) | 9 | 65 | 465 | 4,001 | `laneGenesFetchSpecs` |
 | lane-link RPCs (nameless non-star, or `lanePairsOnAnchor`) | 7 | 63 | 463 | 3,999 | `laneLinksFetchSpecs` |
 | header read | 1 | 1 | 1 | 1 | `installLodTierInfoFetch` |
@@ -763,7 +766,7 @@ For a named table that is "how many genes this lane shares". For a nameless
 source every record is one group with one placement, so a haplotype whose
 alignment *breaks* in the window had more placements than one that runs through.
 At the CFH window the four CFHR3/CFHR1 deletion carriers are two records each
-and the non-carriers one ([HPRC_RELEASE2.md](HPRC_RELEASE2.md)`:226-240`), so the
+and the non-carriers one ([HPRC_RELEASE2.md](HPRC_RELEASE2.md), "Unpacking pairwise alignments from the graph"), so the
 carriers sorted to the top by construction and the reader was told they were
 "densest". The `weight` the contig vote already uses (anchor bp for nameless
 records) is the right quantity and was sitting on every group; the sort weights
@@ -781,9 +784,9 @@ contig, so the sort now takes the heaviest contig's weight, the quantity
 §2.2 records the route as it stood: `buildSyntenyViewSpec` put the same track on
 every level and the anchor on top by default, so for a star every level but the
 first was empty (`MultiPairwise`) or an error (`MultiGenomePAF`; GBZ
-answers nothing for a lane region, `P/…/GbzBaseSyntenyAdapter.ts:366-368`). The
+answers nothing for a lane region, `P/…/GbzBaseSyntenyAdapter.ts`). The
 dialog's own comment knew a three-panel launch "wants the anchor in the middle"
-(`LaunchSyntenyView/panelOrder.ts:65-68`). The block at the top of this file
+(the comment above `toPanelRows` in `LaunchSyntenyView/panelOrder.ts`). The block at the top of this file
 says what replaced it.
 
 ### 4.5 Lane-link tier on a mate lane — checked, not a defect
@@ -871,10 +874,10 @@ lane` menu all read one list: `ALSO_ON_MAX = 3` with the remainder counted in
 ### 5.1 What the display needs from a graph route
 
 1. **Records per chosen haplotype, not per haplotype in the graph.** The GBZ
-   adapter returns every walk and the display filters
-   (`GbzBaseSyntenyAdapter.ts:381-412`). The reader's `keepHaplotypes` and the
-   W-line direction fix exist at `G/` HEAD (`add1f2f`) but are unreleased and
-   unused by the plugin (the plugin pins 2.3.0). The review's finding is that
+   adapter hands the lane selection to the reader as `keep`
+   (`GbzBaseSyntenyAdapter.ts`), which calls `Subgraph.keepHaplotypes` on a
+   `haplotypes: 'all'` extract; the plugin pins `@gmod/gbz-base` ^4.1.0, which
+   ships it. The review's finding is that
    `alignments()` is per path and could take a handle filter today for about a
    quarter of a window's time (`HAPLOTYPE_WALKS_REVIEW.md:45-55`); the
    subgraph fetch itself only shrinks with reference-anchored samples in the
@@ -931,18 +934,18 @@ those that resolve to a loaded session assembly (`:187-195`) — on HPRC that is
 the reference alone (`contributors.ts:172-178`). It never constructs a MultiWay
 display. The cheap, concrete bridge is: the graph selection's *samples* (every
 visitor of the selected nodes is already recorded in `GraphNode.samples`,
-`P/src/GraphGenomeView/pathAnchoring.ts:132`) go to `setSelectedLanes` on the
+`P/packages/core/src/pathAnchoring.ts`) go to `setSelectedLanes` on the
 session's multiway track over the same anchor window. That is a menu item and
 no new data path, and it is the first place the two views would agree on what a
 set of haplotypes is.
 
-**Sample rows** (`P/src/GraphGenomeView/layout/sampleRowLayout.ts:81-149`) draws
+**Sample rows** (`P/packages/core/src/layout/sampleRowLayout.ts`) draws
 each off-reference node once, in the row of the reference if it visits, else
-the *first path in file order* (`pathAnchoring.ts:123`,
+the *first path in file order* (`pathAnchoring.ts`,
 `visits.find(v => v.path === reference) ?? visits[0]`), and keeps the rest in
 `samples`. The header comment states the limit: "drawing a segment once per
 carrier needs the layout to emit more nodes than the graph has, which the
-renderer keys by node id and cannot do" (`sampleRowLayout.ts:27-35`). So on a
+renderer keys by node id and cannot do" (the header of `sampleRowLayout.ts`). So on a
 GBZ cut with every W line it shows *attribution*, and the KIV-2 figure shot from
 an eight-haplotype cut showed exactly that. Drawing carriage instead would mean
 per-(node, carrier) positions and a renderer key other than node id — and the

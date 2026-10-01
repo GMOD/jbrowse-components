@@ -23,7 +23,7 @@ without adding a way to tell the two apart at the type level.
 | Vendored canonical-layout library (`0xRRGGBBAA`, R in the high byte) | `packages/core/src/util/color-bits/{core,parse,format,functions,convert,bit}.ts` |
 | ABGR u32 layout, BED-triple handling, the invalid-color sentinel | `packages/core/src/util/colorBits.ts` |
 | `colord`-API compat shim over the canonical layout | `packages/core/src/util/colord.ts` |
-| Named-color table, contrast/emphasis helpers | `packages/core/src/util/color/{cssColorsLevel4,makeContrasting,emphasize,randomColor}.ts` |
+| Named-color table, contrast/emphasis helpers | `packages/core/src/util/color/{cssColorsLevel4,index}.ts` (`makeContrasting`, `emphasize`, `randomColor` live in `index.ts`) |
 | The documented hazard, not yet a fix | `agent-docs/reference/CORE_UTIL_AUDIT.md` § "Open: structural" |
 | GPU shader-side unpack, the ABGR layout's other end | `packages/render-core/src/shaders/colorPack.slang` (`unpackRGBA()`) |
 
@@ -59,7 +59,7 @@ many as six distinct forms:
    `mix`/`darken`/`lighten`/`toHex`/`toRgbString` API for UI code migrated from
    the real `colord` npm package without touching every call site.
 
-## The conversion graph: ~20 named edges, one missing direction
+## The conversion graph: ~23 named edges, one missing direction
 
 Counting every exported function that crosses one of these six forms into
 another (not the same-domain math — `alpha`/`darken`/`lighten`/`blend`/
@@ -73,13 +73,16 @@ another (not the same-domain math — `alpha`/`darken`/`lighten`/`blend`/
 | canonical `Color` → normalized triple | `toGLrgb` | 1 |
 | CSS → normalized triple | `cssColorToNormalizedRgb`, `cssColorToNormalizedRgba` (parse, then normalize — composite) | 2 |
 | CSS → ABGR | `cssColorToABGR` (parse, then pack — composite) | 1 |
+| CSS → 0..255 channel array | `cssColorToRgb`, `cssColorToRgba` (parse, then read channels — composite) | 2 |
+| ABGR → canvas fill | `setAbgrFill` (wraps `abgrToCssRgba` onto `ctx.fillStyle`) | 1 |
 | normalized triple → ABGR | `normalizedRgbToABGR` (**opaque alpha only** — cannot round-trip an input alpha) | 1 |
 | normalized triple → CSS | `normalizedRgbToCss`, `normalizedRgbToCssRgba` | 2 |
 | ABGR → CSS | `abgrToCssRgba` | 1 |
 | CSS/HSL-object → `Colord` | `colord()` (wraps (1)) | 1 |
 | `Colord` → CSS / object | `.toHex()`, `.toRgbString()`, `.toHsl()`, `.toHslString()`, `.toRgb()` | (5, not separately tallied — one façade) |
 
-**Twenty** named cross-representation functions, over six nodes. Three edges
+**Twenty-three** named cross-representation functions, over six nodes.
+`withAbgrAlpha` stays inside ABGR and is not counted. Three edges
 that would complete the graph do not exist:
 
 - **ABGR → canonical `Color`**: nothing. A caller holding a GPU-domain u32
@@ -88,11 +91,12 @@ that would complete the graph do not exist:
   `abgrToCssRgba` then `parseCssColor`, a full string round-trip for what
   should be a byte reorder.
 - **ABGR → normalized triple**: nothing, same gap.
-- **canonical `Color` → ABGR**: no single named function either. The idiom
-  every ABGR-producing call site actually uses is
-  `packAbgr(getRed(c), getGreen(c), getBlue(c), getAlpha(c))` — four channel
-  reads through the canonical-layout accessors, then a re-pack — which is
-  exactly the operation that goes silently wrong if a `getRed`/`getBlue` pair
+- **canonical `Color` → ABGR**: no named function from a `Color` a caller
+  already holds. `cssColorToABGR` is the one audited path and it starts from a
+  CSS string; its body is the only place the idiom
+  `packAbgr(getRed(c), getGreen(c), getBlue(c), getAlpha(c))` appears — four
+  channel reads through the canonical-layout accessors, then a re-pack — which
+  is exactly the operation that goes silently wrong if a `getRed`/`getBlue` pair
   is swapped for `abgrRed`/`abgrBlue`, because both accessor families share
   the signature `(c: number) => number` and nothing distinguishes a canonical
   `Color` from an ABGR `number` at the type level. `CORE_UTIL_AUDIT.md`
@@ -113,10 +117,10 @@ at a glance. The two `number`-typed layouts can, and are read by accessor
 families with identical signatures.
 
 So the concept a consumer distinguishes is genuinely **one bit** — and
-nothing enforces it. `git grep` finds 40 non-test files across nine
-plugins/packages (`alignments`, `canvas`, `dotplot-view`, `gwas`,
-`linear-comparative-view`, `maf`, `variants`, `wiggle`, `synteny-core`) calling
-the ABGR accessor family directly, each trusting by convention — a code
+nothing enforces it. `git grep` finds 11 non-test files outside `core`, across
+seven plugins/packages (`alignments`, `canvas`, `circular-view`, `dotplot-view`,
+`linear-comparative-view`, `render-core`, `synteny-core`) calling the ABGR
+accessor family directly, each trusting by convention — a code
 comment, a variable name, the shape of the surrounding shader-packing code —
 that the `number` it was handed is actually in that byte order and not the
 canonical one a config-side `parseCssColor` call two functions up the stack
@@ -129,9 +133,9 @@ more branches than states, color has the opposite shape: few representations,
 a small conversion graph, and it still fails to collapse to something a type
 signature can hold a call site to. The failure mode is specific and
 real, not a hypothetical: two representations occupy the same runtime type,
-one direction of conversion between them has no named function (so every
-call site re-derives the ABGR-from-canonical idiom by hand instead of calling
-one audited helper), and the opposite direction does not exist at all. The
+one direction of conversion between them has a single audited helper that
+starts from a CSS string (`cssColorToABGR`) and none from a `Color` already in
+hand, and the opposite direction does not exist at all. The
 growth this spec was picked for — the GPU rendering rollout since `v4.3.0`
 adding representation 3 and 4 wholesale to a domain that already had 1 and 2 —
 is exactly how a second incompatible layout with the same runtime type gets
@@ -142,8 +146,8 @@ B") and already rejected the branded-type fix for a documented, structural
 reason — the fix is genuinely hard, not overlooked. What is missing is not a
 fix but the two edges that would make the existing convention (comments,
 naming, "both families now cross-reference each other") into something the
-graph itself enforces: a single audited `Color → ABGR` function (replacing the
-40-site `packAbgr(getRed(c), …)` idiom with one call this doc can point a
-reader at) closes the more dangerous of the two missing directions — the one
+graph itself enforces: a single audited `Color → ABGR` function (the
+`packAbgr(getRed(c), …)` idiom now exists once, inside `cssColorToABGR`, so the
+gap is a `Color`-in-hand entry point rather than 40 hand-written sites) closes the more dangerous of the two missing directions — the one
 that runs at every GPU-path color write, not just the rare read-back — even
 without solving the type-level ambiguity CORE_UTIL_AUDIT.md left open.

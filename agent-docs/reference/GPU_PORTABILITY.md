@@ -95,13 +95,14 @@ Grep, not measurement: `awk '/VERTEX_ATTRIBUTES/,/^]/'` over
 <!-- prettier-ignore -->
 | quantity | widest in tree | floor | headroom |
 | --- | --- | --- | --- |
-| vertex attributes in one pass | **11** (`read.iface.generated.ts`, alignments' pileup) | 16 | 5 attributes |
-| vertex buffer stride | 44 bytes (same pass) | 2048 | ~46x |
-| uniform block size | 864 bytes (alignments), 1024 aligned | WebGPU 64 KiB binding, WebGL2 16 KiB block | ~16x on the tighter of the two |
+| vertex attributes in one pass | **10** (`read.iface.generated.ts`, alignments' pileup) | 16 | 6 attributes |
+| vertex buffer stride | 44 bytes (`wiggleBand.iface.generated.ts`; the pileup pass is 40) | 2048 | ~46x |
+| uniform block size | 6496 bytes (`linkMark.iface.generated.ts`), 6656 aligned; alignments' passes are 624 | WebGPU 64 KiB binding, WebGL2 16 KiB block | ~2.5x on the tighter of the two |
 | color attachments | 1 | 8 | 7 |
 
-Alignments is the widest pass on every axis, so those are the numbers to re-take
-when a pass grows a dimension. The one to watch is vertex attributes: 11 of 16,
+Alignments' pileup pass is the widest on attributes, `wiggleBand` on stride and
+`linkMark` on uniform bytes, so those are the numbers to re-take when a pass
+grows a dimension. The one to watch is vertex attributes: 10 of 16,
 and the pileup pass has taken a new attribute more than once
 (`a_colorCategory`, `a_edgeFlags`).
 

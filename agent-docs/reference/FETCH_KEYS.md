@@ -16,7 +16,7 @@ thing — they differ by two orders of magnitude in what a change costs:
 | tier | a change does | cost |
 | --- | --- | --- |
 | `rpcProps()` | `settingsFetchInputs` moves -> every loaded region's `fetchInputs` stamp is stale, and `SettingsInvalidate` -> `invalidateSettings()` | refetch every region, drawn stale under the scrim meanwhile |
-| `gpuProps()` | the identity `installUpload` compares moves (`p !== lastProps` clears `encodedFrom`, `installUpload.ts:195-198`) | **re-encode every cached region, main thread, no RPC** |
+| `gpuProps()` | the identity `installUpload` compares moves (`p !== lastProps` clears `encodedFrom` in `createEncodeMemo`, `packages/render-core/src/encodeMemo.ts`) | **re-encode every cached region, main thread, no RPC** |
 | `renderState` | the render callback re-fires | repaint |
 
 The middle row is the one that surprises, because it is O(cached regions x
@@ -29,11 +29,13 @@ rather than moved — but the cost it measured is the one this row describes.)
 
 **Only one `gpuProps()` in the tree is zoom-sensitive at all**, and it is
 deliberate: `LinearMafDisplay`'s `binBp` reads `encodeBinBp`
-(`plugins/maf/src/LinearMafDisplay/stateModel.ts:1315-1327`), which is
-`subPixelBinBp(view.coarseBpPerPx)` — the **debounced** copy, quantized to a
-power of two precisely so a gesture does not thrash it
-(`subPixelBinBp.ts:19-22`: unquantized, "MAF re-encodes every region on every
-wheel tick"). So a sustained zoom can re-encode every cached MAF region, but
+(`plugins/maf/src/LinearMafDisplay/stateModel.ts`), which is
+`settledSubPixelBinBp` — `subPixelBinBp` (`packages/display-kit/src/subPixelBinBp.ts`)
+read off the **debounced** `coarseBpPerPx`, quantized to a
+power of two precisely so a gesture does not thrash it (its comment: unquantized,
+"MAF re-encodes every region on every wheel tick"). The alignments worker's
+per-base extracts share that function, but their `perBaseBinBp` rides the RPC
+call site, not `rpcProps()` or `gpuProps()`. So a sustained zoom can re-encode every cached MAF region, but
 only on crossing a power-of-two boundary after the debounce settles. Every other
 `gpuProps()` reads session or config state only — none reads live `bpPerPx`,
 `offsetPx`, `visibleRegions`, `dynamicBlocks` or hover.
@@ -51,15 +53,15 @@ Two other facts the census turned up, neither a bug:
   worker-side split went (ADR-016, superseded), so moving the cut no longer
   refetches. Each hop is commented where it happens; the fan-out is only
   visible from here.
-- **Six of fourteen `installUpload` callers pass neither `inputs` nor
-  `encode`** — gwas, sequence, `LinearSyntenyViewHelper`, `MultiWaySyntenyDisplay`,
-  alignments, the two multi-sample variant displays and dotplot. That is the
-  typed no-`encode` overload, not an omission: `cells()` already yields encoded
+- **Twelve of fourteen `installUpload` call sites pass neither `inputs` nor
+  `encode`** — everything but `installWiggleRenderingBackend` and
+  `LinearBasicDisplay`: sequence, `LinearSyntenyViewHelper`,
+  `MultiWaySyntenyDisplay`, alignments, HiC, LD, dotplot, the multi-row
+  canvas display, marks and the two circular passes. That is the typed
+  no-`encode` overload, not an omission: `cells()` already yields encoded
   data, built by a `computed` upstream (`LinearSyntenyDisplay.computedColors`,
   `DotplotDisplay.computedColors`), so MobX's own map diff limits the re-encode
-  instead of `installUpload`'s clear. HiC and LD take a third route — `encode`
-  with no `inputs`, keying the colour ramp as its own map entry so only its
-  identity change re-encodes it.
+  instead of `installUpload`'s clear.
 
 ## Structural args stay out of `rpcProps()`
 

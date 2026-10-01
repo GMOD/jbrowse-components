@@ -7,7 +7,7 @@ kind: measurement
 
 # Sweeping for duplicates
 
-Four sweeps have run this over the whole repo. Each found one or two real things
+Five sweeps have run this over the whole repo. Each found one or two real things
 and spent most of its budget re-deriving the same false positives, which is what
 this records.
 
@@ -48,12 +48,12 @@ Check these before opening anything, in roughly descending volume:
    the class name.
 4. **Lazy-import shims.** A module whose entire job is to re-export another
    behind an `import()`, so the eager side never names the lazy one. Desktop's
-   `StartScreen/util.tsx` wraps five, and there are `lazyDialogs.ts`,
+   `StartScreen/util.tsx` wraps four, and there are `lazyDialogs.ts`,
    `lazyLoginForms.ts` and arc's per-display `renderSvg.tsx`. All say so.
 5. **Thin bindings over something already shared.** Two callers configuring one
    shared component or helper: the two `ReorderChromosomesDialog`s both bind
    `synteny-core`'s `DiagonalizeDialog`, dotplot's `getHighlightColor` pins an
-   alpha on core's, canvas's `readConfigValue` is a typed wrapper on core's.
+   alpha on core's, canvas's `readConfigValueSafe` is a typed wrapper on core's `readConfigValue`.
    The sharing already happened.
 6. **Layer pairs.** Same operation at two representations. `packages/core`'s
    `ui/palette.ts` and `util/color-bits/functions.ts` collide on **four** names
@@ -100,7 +100,7 @@ helpers from `../util.ts` to keep an eager module and a lazy one from sharing a
 module. A sweep read them as accidental copies and merged three
 (`24aba4d012`). tsc, jest and lint all passed; the synteny page went 678 -> 690
 KB gzip eager and broke a budget only a full Astro build measures. Restored in
-`0e8f92550f`, and the plugin now has `eagerBoundary.test.ts`.
+`6a1cf3d104`, and the plugin now has `eagerBoundary.test.ts`.
 
 So: **identical trivial copies are the expected shape of a deliberate split, not
 evidence against one.** Read the file header before deleting one. Details and
@@ -146,7 +146,7 @@ third copy was invisible to the earlier scan for one reason: canvas declares a
 typed `get conf()` over `self.configuration` and reads through it, and
 `getConf(self, 'x')` **is** `readConfObject(self.configuration, 'x')`, so the
 two spellings are the same call with different sugar. `RowHeightMixin` took the
-triple (`d2b1af1`).
+triple (first appears in `7cea0c3235`).
 
 So a floor of two is only evidence when the pattern covers every spelling of the
 read. Before reading a count as "the shape working", grep for the accessor

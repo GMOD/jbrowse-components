@@ -87,7 +87,7 @@ starting — one run began at load 3.15 and finished at 35.
   the box, not the code. The period of a repeating stall can still be the
   code's — see [INTERACTION_PERF.md](INTERACTION_PERF.md), where the interval
   was JBrowse's and the size was descheduling.
-- **Nothing here is published on the website.** The public digest is
-  `website/docs/developer_guides/optimizations.md`, and putting a
-  released-version comparison on it is an editorial decision rather than a
-  regeneration.
+- **Only the zoom-in refetch comparison is published on the website.** The
+  public digest is `website/docs/developer_guides/optimizations.md`, and putting
+  any other released-version comparison on it is an editorial decision rather
+  than a regeneration.

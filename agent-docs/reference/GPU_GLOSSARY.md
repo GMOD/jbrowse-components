@@ -432,11 +432,11 @@ this table exists at all: **a "pass" identifier means a PSO**, and **our uniform
 | **Dynamic uniform offset** | the per-draw `dynamicOffset` in `drawPass` | `webgpuHal.ts` |
 | **Ring buffer** | `uniformRingBuffer` — ⚠️ reset to slot 0 every `beginFrame`, so it is a per-frame linear arena, not a ring that wraps across frames | `webgpuHal.ts` |
 | **Staging buffer** | `uniformStaging` — coalesces a frame's uniform writes into one `queue.writeBuffer` at submit | `webgpuHal.ts` |
-| **SSBO / storage buffer** | `storage` / `read-only-storage` bindings — **compute only**, never the render path (§7a: GLSL ES has no SSBOs). No in-tree user since the LD compute kernels went with the in-browser estimator | — |
-| **Compute pipeline / workgroup dispatch** | same words; a 2D workgroup grid clears `maxComputeWorkgroupsPerDimension`. No in-tree user since the LD compute kernels went | — |
+| **SSBO / storage buffer** | `storage` / `read-only-storage` bindings — **compute only**, never the render path (§7a: GLSL ES has no SSBOs). The one in-tree user is `tree-sidebar`'s `gpuDistanceMatrix.ts` | `packages/render-core/src/computePipeline.ts` |
+| **Compute pipeline / workgroup dispatch** | same words; a 2D workgroup grid clears `maxComputeWorkgroupsPerDimension`. The one in-tree user is `tree-sidebar`'s `gpuDistanceMatrix.ts`, through `makeComputePipelineCache` | `packages/render-core/src/computePipeline.ts` |
 | **Blend state** | `BlendState`, `STANDARD_BLEND_STATE` | `hal/types.ts`, `webgpuUtils.ts` |
 | **Primitive topology** | `PipelineDescriptor.topology` | `hal/types.ts` |
-| **MSAA / resolve target** | `SampleCount` — per display, stated by `RenderingBackendOptions.sampleCount` and 4 unless a display says otherwise; `msaaView` + `resolveTarget` | `hal/types.ts`, `webgpuHal.ts` |
+| **MSAA / resolve target** | `SampleCount` — per display, stated by `RenderingBackendOptions.sampleCount`, defaulting to `deriveSampleCount(passes)`: 1 when every pass is `coverage: 'analytic'`, else 4; `msaaView` + `resolveTarget` | `hal/types.ts`, `webgpuHal.ts` |
 | **Scissor / viewport** | same words | `hal/types.ts` |
 | **Frustum culling** | "cull" — CPU-side, over a 1D bp interval; there is no frustum and no camera | `syntenyTypes.slang`, `syntenyFetchWindow.ts` |
 | **Spatial index / BVH** | Flatbush (packed Hilbert R-tree) — **picking and hit-testing only**, never draw culling | `packages/core/src/util/flatbush/` |

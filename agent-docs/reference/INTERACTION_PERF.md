@@ -73,8 +73,8 @@ components that re-render each zoom frame. Pinning down which ones needs a
 React-render-level measurement (React DevTools profiler or render counters), not
 a CPU flame graph — that's the right tool for "who re-rendered and why."
 
-**Everything on this page was measured on ONE track, and the tax scales per
-track**: each one mounts its own overlay and chrome subtree, so a six-track
+**The first measurements on this page are of ONE track (later sections use four,
+six and eight), and the tax scales per track**: each one mounts its own overlay and chrome subtree, so a six-track
 session pays it six times. Since `computeVisibleLabels` stopped deciding its walk
 from the data's longest feature, this is the entire residual —
 `jb2bench/scripts/render/multibam.ts` sweeps the track count with region, zoom,

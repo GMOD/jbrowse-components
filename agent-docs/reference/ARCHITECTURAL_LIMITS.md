@@ -278,9 +278,9 @@ to `uint4[6]` would have saved
 6.29MB<!--m:uniform-ring-occupancy.6-alignments-tracks-dpr-2.packSaves--> across
 six tracks and given up the generated `setUniformReadCategoryColor`. The slot
 size then grew: the read-connection band's link mark (ADR-170) carries a
-6304-byte struct, a 256-entry region table and each region's extents, and it
-sets every alignments display's slot, 13.1 MB each side per display at 2048
-slots and 102 KB at 16. The pileup keeps a 624-byte scratch of its own
+6496-byte struct, a 256-entry region table and each region's extents, and it
+sets every alignments display's slot, 13.6 MB each side per display at 2048
+slots and 106 KB at 16. The pileup keeps a 624-byte scratch of its own
 (`PILEUP_UNIFORMS_SIZE_BYTES`), since a write uploads the whole buffer it is
 handed.
 
@@ -395,10 +395,10 @@ introduced, rather than on a WebGPU browser nobody ran. `mockHal.test.ts`
 §"MockHal uniforms per draw" carries the shapes, including the legal one (two
 draws sharing one write).
 
-The ring's cost is fixed and paid whether a renderer writes 4 slots or 1900:
-`MAX_UNIFORM_SLOTS` x the device-aligned uniform size, as a GPU buffer **and** a
-CPU staging array. Alignments' 864-byte uniform aligns to 1024, so 2 MiB on each
-side per alignments HAL.
+The ring's cost scales with the slots a frame uses: it starts at
+`INITIAL_UNIFORM_SLOTS` (16) and doubles to `MAX_UNIFORM_SLOTS`, each slot the
+device-aligned uniform size, as a GPU buffer **and** a CPU staging array. See
+"The uniform ring drops a write past 2048 slots" above for the sizes.
 
 **Retire when** `writeUniforms` returns a slot token that `drawPass` takes and
 WebGL2 ignores. Cheap, and the reason to wait is that nothing needs it yet —
@@ -1107,7 +1107,7 @@ only on a real violation):
   channel does not reach**, because nothing is left to report it.
 - **A display's `afterAttach` must not chain to super.** The MST fork auto-chains
   lifecycle hooks, so capturing and calling it double-installs all five autoruns
-  (`models/afterAttachAutoChain.test.ts`). A `WeakSet` of nodes the foundation's
+  (`packages/display-kit/src/afterAttachAutoChain.test.ts`). A `WeakSet` of nodes the foundation's
   hook has already run on catches the re-entry. **Kept as a runtime check on
   purpose**: the super-capture is a declaration and would make a fine selector,
   but it is not the only way a foundation's hook runs twice on one node —
@@ -1382,8 +1382,7 @@ build-time gate today, and gives the `@public` audit a factual starting point.
 
 **Status:** Open.
 
-`agent-docs/` is 42.6k lines against the 28 in-tree `CLAUDE.md` files' 2.6k
-(2026-08-18). Rules the compiler already owns are still written as warnings,
+`agent-docs/` is far larger than the in-tree `CLAUDE.md` files combined. Rules the compiler already owns are still written as warnings,
 spending the attention the unenforceable ones need.
 
 **Re-count before citing those; don't quote them from here.** Both halves grow

@@ -56,7 +56,7 @@ LOD tier, alignments' per-base bin) is NOT an `rpcProps` field: it is a
 threshold crossing refetches the regions on screen without a settings
 invalidation.
 
-Both snapshot helpers return ALL config values including defaults (unlike
+`fullConfSnapshot` returns ALL config values including defaults (unlike
 `getSnapshot()`, which strips defaults via `postProcessSnapshot`). JEXL callback
 values are preserved as raw `"jexl:..."` strings.
 
@@ -127,7 +127,7 @@ pick the member. Without it — or when a member's value is wrong — a single b
 field made MST report *every* member's full structure ("No type is applicable
 for the union", dozens of lines).
 
-`@jbrowse/mobx-state-tree@5.10.0` fixes that wall: it scopes the validation
+`@jbrowse/mobx-state-tree` fixes that wall (since 5.10.0; core depends on `^6.7.0`): it scopes the validation
 error to the single member whose literal `type` matches the snapshot. The
 scoping drills through the wrapper layers `ConfigurationSchema()` builds —
 `ConfigurationSchema()` returns `optional(model)` (this fork bakes
@@ -154,7 +154,7 @@ change with no extra spread.
 Where to put a new setting:
 
 - **Config-backed setting** (the default for any display option) — add a slot to
-  the display config schema, write it with `setSlot`, read it with `getConf`. It
+  the display config schema, write it with `setConf`, read it with `getConf`. It
   serializes into the session and can take a declarative config default.
 - **Bespoke MST prop** — only for state that isn't a config slot (an ephemeral
   volatile). A sentinel is not a reason to avoid a slot: `rowHeight === 0` =
@@ -223,8 +223,8 @@ and backed out. `pnpm check-deferred-slot-reads` ratchets it.
 
 A wholesale snapshot never had to think about this. `fullConfSnapshot` reads raw
 MST properties, so a `jexl:` slot is forwarded intact and the worker's
-`readConfigValue` binds the feature — which is why canvas and wiggle, which ship
-the whole snapshot, have never hit the trap below.
+`readConfigValue` binds the feature — which is why canvas, the one display that
+reads a whole snapshot (`pickDisplayConfig`), has never hit the trap below.
 
 A display that curates its own `rpcProps()` slot by slot has to think about it,
 because the obvious spelling is wrong:

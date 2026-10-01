@@ -196,7 +196,9 @@ reads, which is now the largest single cost at small windows.
 
 - **`MN` is checked against `l_qseq`.** htslib errors when the MM/MN data length
   disagrees with the sequence length, which catches a hard-clipped or trimmed
-  read whose MM tag no longer describes it. We never read `MN`.
+  read whose MM tag no longer describes it. `getModTag` reads `MN` and drops the
+  MM tag when its length differs from SEQ, so the read shows no modifications
+  rather than an error.
 - **A run-over is reported.** htslib warns "MM tag refers to bases beyond
   sequence length" when deltas remain after the sequence ends. We clamp silently
   — `currPos` stops at `seqLength` and the position records as `seqLength - 1`.

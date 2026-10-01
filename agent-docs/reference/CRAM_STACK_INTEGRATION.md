@@ -364,8 +364,8 @@ Stated so the next audit does not re-derive them.
   `getTrailingClipLength` answer off the read features at that end, so the
   render path's one CIGAR value costs nothing and `NUMERIC_CIGAR` — ~7,000
   manufactured operations for a 49 kb ONT read — is never built for it.
-- **The mismatch walk is the library's, once.** `readFeaturesToMismatches` on
-  this side emits this repo's vocabulary and is not a second walk of the format;
+- **The mismatch walk is the library's, once.** `CramSlightlyLazyFeature.forEachMismatch`
+  overrides the library's and emits this repo's vocabulary; it is not a second walk of the format;
   `@gmod/cram` ADR 0008 has why the callback goes straight to the consumer.
 - **The slice worker pool is sized for this host, not for the library's idea of
   one.** `sliceWorkerCount()` carries the measurement (5 tracks x 4 workers is

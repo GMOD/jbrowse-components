@@ -135,7 +135,7 @@ endpoint squares are a mark with a hit test of their own.
 ## What may hide an arc
 
 **"Concordant" has one definition and two settings spend it.**
-`isConcordantPairRead` (`shared/buildBaseFeatureData.ts`) is the aligner's verdict
+`isConcordantPairRead` (`packages/alignments-core/src/orientation.ts`) is the aligner's verdict
 — flagged proper, not supplementary, mates facing — and it is called by both the
 worker's read filter behind "Show proper pairs" (`isProperPairChain`) and the arc
 filter behind "Show concordant-pair arcs" (`resolveArcs`). One hides the reads,
@@ -514,7 +514,7 @@ instead. `linkMark.test.ts` holds the seam clip.
 ## The gesture guard
 
 **An arc outranks the band it is painted over, and it says so as a RESULT
-VARIANT.** `runHitTest` returns `arc ?? result`, so `ArcMarkHit` is a member of
+VARIANT.** `runHitTest` returns `arc ?? performHitTest(...)`, so `ArcMarkHit` is a member of
 `MarkHitResult` alongside the pileup's five — one value, one discriminant, and one
 place where the ranking is stated.
 
@@ -556,7 +556,7 @@ placement of the arc written into the test would be free to disagree with the
 three it is checking. Every case is stated against its own control: the SAME pixel
 with `readConnections` off, which is the only thing separating "the guard
 suppressed this" from "there was nothing here anyway". Both cases fail if
-`arc ?? result` stops preferring the arc.
+`arc ?? performHitTest(...)` stops preferring the arc.
 
 `mouseGestures.test.ts` covers the two handlers that are pure guard —
 `handleMouseDown`, which decides between this display's pan, the LGV's shift+drag

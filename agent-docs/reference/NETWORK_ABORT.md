@@ -79,16 +79,17 @@ the socket.
 | generic-filehandle2 `read` | BgzipTaffy, BgzipMaf (the `.tai` slice) |
 | `fetch` | SPARQL |
 
-**Two readers can't be wired**, and neither is our code to fix:
+**One reader is only partly wired**, and it is not our code to fix:
 
-- `@gmod/cram` takes a signal on `IndexOpts` (the .crai read) but **not** on
-  `getRecordsForRange`, so CRAM record reads have no abort seam. Needs an
-  upstream change.
-- `@gmod/indexedfasta` declares `signal` in its types but never forwards it —
-  0 references in the built JS. Passing one would typecheck and do nothing, which
-  is worse than not passing it.
+- `@gmod/indexedfasta` forwards a signal to the `.fai` read only (4 references
+  in the 5.0.11 build); the sequence reads take none.
 
-Also unwired by choice: `@gmod/hic`, and the VCF *export* path (user-initiated,
+`@gmod/cram` takes a signal on `getRecordsForRange`, and `CramAdapter` passes
+it, so CRAM record reads cancel like BAM's.
+
+Also unwired by choice: the `@gmod/hic` library calls (`HicAdapter` threads the
+signal through `downloadStatus` and `checkAbortSignal` but not into the
+library), and the VCF *export* path (user-initiated,
 not cancel-sensitive).
 
 The shared-fetch hazard is handled at every layer, and mostly not by us:
@@ -149,5 +150,5 @@ That number is also what justifies the `joinChunk` retry below: the coalescing
 hazard exists *because* of the signal, and a 6.5 MiB-per-cancel saving pays for a
 small retry path in shared I/O code.
 
-**Open:** CRAM and IndexedFasta need upstream signal support before they can join
+**Open:** IndexedFasta needs upstream signal support on its sequence reads
 (above).

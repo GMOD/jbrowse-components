@@ -112,9 +112,9 @@ So the frame is shared wider than the distance:
 | Consumer | Frame | Distance | Why |
 | --- | --- | --- | --- |
 | dotplot | `capsuleFrame` | `capsuleDist` (round) | the width slider modulates line↔dot, and **the dot IS the degenerate round cap** — a segment shorter than its width grows isotropically |
-| wiggle `linecenter` | `capsuleFrame` | `capsuleDist` (round) | consecutive capsules share a cap centred on the joint vertex, so the max-blend pass unions them into a seamless join at any angle; square caps left nicks on sharp bends |
+| wiggle `linecenter` and render-core `lineCenterMark` | `capsuleFrame` | `capsuleDist` (round) | consecutive capsules share a cap centred on the joint vertex, so the max-blend pass unions them into a seamless join at any angle; square caps left nicks on sharp bends |
 | alignments `linkedReadLine` | `capsuleFrame` | `buttSegmentCoverage` (butt) | its Canvas2D/SVG twin strokes `moveTo`/`lineTo` with the default `lineCap` |
-| render-core `linkMark` under `line` (the read cloud's bars) | none — its segment is horizontal by construction, so `local` runs along it from its left end | a segment distance whose round cap the quad cuts off at each end (butt, unramped) | its painter strokes `lineCap: 'butt'` |
+| render-core `linkMark` under `line` (the read cloud's bars; imports no `capsule`) | none — its segment is horizontal by construction, so `local` runs along it from its left end | a segment distance whose round cap the quad cuts off at each end (butt, unramped) | its painter strokes `lineCap: 'butt'` |
 
 All four then ramp through the same `edgeCoverage`.
 
@@ -131,8 +131,8 @@ in the home of the consumers wanting it — the `rampColor` /
 `rampColorPremultiplied` pattern, because a mode is a thing every future caller
 has to decide and every reader has to trace:
 
-- `capsuleDist` in `capsule.slang` — round, two consumers.
-- `buttSegmentCoverage` in `alignmentsUniforms.slang` — butt, two consumers, a
+- `capsuleDist` in `capsule.slang` — round, three consumers (`dotplot`, `wiggleLineCenter`, `lineCenterMark`).
+- `buttSegmentCoverage` in `alignmentsUniforms.slang` — butt, one consumer (`linkedReadLine.slang`), a
   separable box-filter product of two `edgeCoverage` calls, so the ends are
   exactly as soft as the sides.
 
@@ -171,7 +171,7 @@ Sharing more is not better, and each of these is a decision with a reason:
   conversion per-backend; the whole table of candidates that failed that test
   is in that ADR.
 - **The anchor a normalized score is placed against.** `scoreScale` carries a
-  score to `[0,1]` for three importers; where that fraction then lands is the
+  score to `[0,1]` for ten importers; where that fraction then lands is the
   display's own, and the four candidate unifications were measured and declined
   ([ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)).
   A row in a stack, a baseline inside a band that reserves a label inset at both

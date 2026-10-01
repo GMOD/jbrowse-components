@@ -39,8 +39,9 @@ does four things:
 It is two files, split exactly where the backend stops mattering.
 `DisplayChromeBase` holds the hook and the `renderError` branch;
 `DisplayStatusChromeBase` holds the rest and takes `phase`/`drawn` as **props**,
-so it reads no observable and needs no `observer`. The split exists because arc
-needs everything except the hook — see the on-screen exception below. Two phase
+so it reads no observable and needs no `observer`. The split exists so a display
+with no backend can take everything except the hook — see the on-screen
+exception below. Two phase
 types carry the distinction into the type system: `DisplayPhase` for a display
 with a backend, `DisplayStatusPhase` (the same union minus `renderError`) for one
 without, so the status chrome can't be handed a state whose banner it has no
@@ -77,9 +78,9 @@ its own box — part of the overlay-set contract in `chromeOverlays.ts`.
 **The activity phase is single-sourced in `computeActivityPhase`, and so is the
 mapping onto it**, in `foundationDisplayPhase` — the twin of `foundationSvgReady`.
 Both foundations call it and supply exactly one argument, their staleness
-predicate: per-region its spatial one, global `() => true`. Arc goes
-through `foundationDisplayStatusPhase`, the same mapping returning the narrower
-phase and supplying the two canvas terms it has no canvas for. Customize it
+predicate: per-region its spatial one, global `() => true`. A display with no
+backend goes through `foundationDisplayStatusPhase`, the same mapping returning
+the narrower phase and supplying the two canvas terms it has no canvas for. Customize it
 through the hooks — `fetchInert`, `rendersCanvas`, `awaitingDependentData` (a
 load beyond the primary fetch has not first landed; multi-way synteny's lanes) —
 **never by overriding `displayPhase`**: an override restates every term and
@@ -364,19 +365,20 @@ content display likewise. A display splitting its own model across
 guard.** A hand audit came back clean once; a hand audit that has to be repeated
 is what a generator is for, so it is recomputed on every `pnpm autogen`.
 
-**On-screen exception: arc / paired-arc.** These paint the *live view* onto a
-plain main-thread Canvas2D of their own (no worker, no GPU backend, all features
-in one array) — nothing to do with the export columns above, where both are on
-`SvgChrome` like every other row. A display with no backend cannot wrap
+**On-screen exception: a display with no backend.** The arc and paired-arc
+displays were the case: they painted the *live view* onto a plain main-thread
+Canvas2D of their own (no worker, no GPU backend, all features in one array).
+A display with no backend cannot wrap
 `DisplayChrome`, which owns the backend hook; it renders `DisplayStatusChrome`
 — the *same component* the GPU chrome delegates to, not a parallel
 implementation — and supplies the two facts it can't derive for a display whose
 canvas it doesn't own: `phase` and `drawn`. Container, the four `data-*`
 attributes, banners, progress chip and legend all come from the shared file.
 The phase lives on the model, not in the component, for the same reason it
-does for a GPU display: the component then can't disagree with it. The arc
-plugin was the one such display, until its arcs became link marks (ADR-163);
-none ships now, and the entry point stays for the next.
+does for a GPU display: the component then can't disagree with it.
+`@jbrowse/plugin-arc` was the one such display; ADR-163 deleted it when its arcs
+became link marks. No display ships on this entry point now, and
+`DisplayStatusChrome` and `foundationDisplayStatusPhase` stay for the next.
 
 **The hand-written copy this replaced had already drifted** — arc rendered no
 `BackgroundProgress` chip at all, and its loading term read a bare `isLoading`.
@@ -384,10 +386,10 @@ A concept shared by convention decays silently, since nothing renders both
 versions side by side. Alignment with the chrome should cost a display a prop,
 not a copy.
 
-Arc's fetch autorun declines while its data is current, so `reload()` must drop
-the loaded signature as well as clearing `error` — done for the whole global
-family by `GlobalFetchMixin.reload()`, which owns the signature. Without that
-pairing the shared error bar's retry would be dead.
+The deleted arc display's fetch autorun declined while its data was current, so
+`reload()` had to drop the loaded signature as well as clearing `error` — done
+for the whole global family by `GlobalFetchMixin.reload()`, which owns the
+signature. Without that pairing the shared error bar's retry would be dead.
 
 ## The retry contract
 
@@ -399,8 +401,8 @@ owes — clear the error, clear the durable cancel, bump `reloadCounter` — are
 `FetchMixin.reload`, which both foundations chain and add their own invalidation
 to (the loaded signature, the full per-region reset). Two shapes have failed it:
 
-- **A gate `reload()` doesn't clear.** Arc, above: the fetch declines while
-  `dataCurrent`, so a bare `reloadCounter` bump refires the autorun into a no-op
+- **A gate `reload()` doesn't clear.** The deleted arc display's fetch declined
+  while `dataCurrent`, so a bare `reloadCounter` bump refires the autorun into a no-op
   unless the loaded signature is dropped too — which is why
   `GlobalFetchMixin.reload()` does both in one action rather than each display
   overriding it. The shared skeleton makes the same pairing for everything else:
@@ -636,8 +638,8 @@ distinct reasons, not to be conflated:
   drawing as soon as the features land flashes a chordless circle whenever the
   adapter's names differ from the assembly's (`1` vs `chr1`). It keeps its own `Loading`
   and `DisplayError` components, because the rectangular LGV banners don't fit a
-  radial view. Arc is an *LGV* SVG display and so can reuse them; circular's
-  medium is why it can't.
+  radial view. The rectangular banners suit an LGV display; circular's medium is
+  why it can't reuse them.
 
   **It owes the retry too, and pays it in its own medium.** Nothing here is a
   rendering backend, so there is no `retry()` to wire; what its error circle was
@@ -695,9 +697,9 @@ raw flag can never flip:
   *overlay*, so the canvas stays mounted, nothing draws into it, and the flag
   stays false for the rest of the session; a cancel is the same shape, being
   durable until Retry or a viewport change. Both families fill the hook with
-  `foundationPaintInert`. Arc was immune only by accident: its `painted` is
-  `features !== undefined || self.paintInert`, a hand-written expression that
-  carried the term the shared getter never got.
+  `foundationPaintInert`. The deleted arc display was immune only by accident: its
+  `painted` was `features !== undefined || self.paintInert`, a hand-written
+  expression that carried the term the shared getter never got.
 
 Either way the failure is the same and it is invisible: `PENDING_DISPLAYS`
 selects `[data-display-drawn="false"]`, so a zoomed-out reference sequence track
@@ -747,13 +749,13 @@ every shape:
   case, and the symptom was a capture that timed out rather than an authoring
   error.
 
-**The co-location is pinned in jest, which is the only one of those systems that
-runs outside CI.** `BigWig.test.tsx` and `Manhattan.test.tsx` assert that the
+**The co-location is pinned in jest, the only one of those systems that needs no
+GPU.** `BigWig.test.tsx` and `Manhattan.test.tsx` (`jbrowse-web` suites, so they
+run on remote CI only) assert that the
 testid, `data-display-id`, `data-display-drawn` and `data-display-phase` land on
 **one** element. Collapsing a wrapper is invisible to jest without that
 assertion, and every system that would notice needs a GPU and a headless Chrome
-— so this is the guard that would catch the next such refactor going wrong, and
-it runs locally.
+— so this is the guard that would catch the next such refactor going wrong.
 
 **What was deleted with it.** `DisplayContainer` and `BaseLinearDisplayComponent`
 are gone, and with them `BaseDisplayModel`'s `DisplayMessageComponent` getter, so
@@ -771,7 +773,7 @@ Two follow-through details, neither visible in a diff:
   pushed onto `DisplayChrome` for everyone: seven displays never had them, and
   `white-space: nowrap` on a display root would stop long error-banner text from
   wrapping.
-- The canvas family's `FloatingLegend` moved inside `DisplayChrome`'s child. The
+- The canvas family's legend (now `ChromeLegend`) moved inside `DisplayChrome`'s child. The
   chrome is `position: relative` exactly as the container was, so the geometry is
   unchanged.
 
@@ -951,8 +953,8 @@ own source — until 2026-08 that page (then called "Bring your own overlays",
 now "Removing Material UI") only ever swapped in JBrowse's *other* set.
 
 **The overlay node is published too, and is the host's half of the portal.**
-Floating chrome a display draws — `FloatingLegend` (canvas, alignments,
-variants, wiggle), `HicOverlayPanel`, maf's row labels — escapes its
+Floating chrome a display draws — the legend (`ChromeLegend` in
+`DisplayStatusChromeBase`, wrapping `FloatingLegend`), `HicOverlayPanel`, maf's row labels — escapes its
 `contain: strict` sandbox through `TrackOverlayPortal`, into a node the *host*
 supplies via `TrackOverlayContext`. An embedder mounting `RenderingComponent`
 directly supplied none, so the context was null, the portal fell back to
@@ -1004,7 +1006,7 @@ provider. Reach for the palette before reaching for a fourth context.
 only see a tooltip a headless hover happened to raise.
 
 **`FloatingLegend` was the same shape, found the same way.** Canvas, alignments,
-variants and wiggle all render it directly, behind neither provider, and it
+variants and wiggle all rendered it directly, behind neither provider, and it
 drew two MUI `IconButton`s and a `Link component="button"`. Its `makeStyles` was
 already the theme-free one, so the *styling* half had been fixed and the
 components had not — and the census scored it zero for a third reason: it counts
@@ -1103,7 +1105,7 @@ elements per page and a direct import shows up there as a regression.
 
 ## Load-bearing gotchas
 
-Four things get cited here; three are load-bearing and one is not, and conflating
+Five things get cited here; four are load-bearing and one is not, and conflating
 them is why this section exists. All are guarded by `DisplayChrome.test.tsx` and
 restated in the `DisplayChrome.tsx` comment block.
 
@@ -1121,7 +1123,7 @@ restated in the `DisplayChrome.tsx` comment block.
   on every activation, resets the timer, and turns the delay into a no-op that
   flashes the scrim on every fast pan.
 - **`immediate` bypasses that delay; it must never be an input to it
-  (load-bearing).** The chrome passes `immediate={!painted}`, and that flips
+  (load-bearing).** The chrome passes `immediate={!drawn}`, and that flips
   *during* a load: first paint lands while the phase is still `loading` (region 1
   drawn, regions 2..n in flight). `useDelayedFlag(isVisible && !immediate, …)`
   made the flip start a fresh 250 ms window from zero, so the scrim blinked out
@@ -1138,8 +1140,8 @@ restated in the `DisplayChrome.tsx` comment block.
   since `DisplayChromeBaseInner` took `'use no memo'` —
   [COMPILER_TERNARY_FINDING.md](COMPILER_TERNARY_FINDING.md).
 
-Full "why" for the tree-shape rule: DISPLAYCHROME.md §"Terminal states early-return
-their own root". Don't duplicate it here.
+Full "why" for the tree-shape rule: §"Terminal states early-return their own
+root" below. Don't duplicate it here.
 
 ## Terminal states early-return their own root
 
@@ -1182,8 +1184,7 @@ shape:
   on `model`'s stable identity. That opt-out is also why `return`-vs-ternary is now
   a style choice: what stays load-bearing is *replacing the subtree*, not how the
   replacement is spelled. Full analysis:
-  [reference/COMPILER_TERNARY_FINDING.md](COMPILER_TERNARY_FINDING.md).
+  [COMPILER_TERNARY_FINDING.md](COMPILER_TERNARY_FINDING.md).
 
 The rest of the shared chrome — the phase precedence, the retry affordances, the
-overlay components — is in
-[reference/DISPLAYCHROME.md](DISPLAYCHROME.md).
+overlay components — is above.

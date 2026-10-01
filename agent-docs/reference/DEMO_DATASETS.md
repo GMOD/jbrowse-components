@@ -468,7 +468,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   finding, which only the SyRI track shows: minigraph holds no knob-sized
   bubble. A session spec naming `GCF_000001735.4` opens `TAIR10` through its
   `aliases`, but jb2capture's census wants the literal name; jb2hubs launches
-  pass `dataset.reference.assembly`, so check `checkPangenomeLaunches.mjs`
+  pass `dataset.reference.assembly`, so check `checkPangenomeLaunches.mjs` (in `jb2hubs/scripts/`)
   before choosing a reference name. Lanes draw gene annotation only
   (`laneAnnotation.ts` ranks GFF3, GTF, BED), so the accessions' methylation
   bigWigs cannot ride in a lane.
@@ -561,7 +561,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 ## Where a new demo's annotation comes from: NCBI datasets, then Ensembl
 
 **Default to `datasets download genome accession <acc> --include gff3,protein`.**
-Seven build scripts already take that route and
+Ten build scripts already take that route and
 `build_grape_peach_cacao_synteny.sh` is the worked multi-genome version, a short
 name/accession table looped over. What makes it the default is that a set is
 then pinned by accession: one identifier names one assembly, one call brings

@@ -42,7 +42,7 @@ column below is the record the synteny launcher was matched against.
    `launchableTracks` before widening it back.
 3. **Discover by declared capability, not adapter name.** The graph plugin
    checks `pluginManager.getAdapterType(t).adapterCapabilities.includes('getSubgraph')`
-   (`RgfaTabixAdapter/index.ts:17` declares it). It hardcoded
+   (`RgfaTabixAdapter`'s `index.ts` declares it). It hardcoded
    `GfaTabixAdapter`/`GfaServerAdapter` once and *"that is exactly what left it
    dead when those were removed."* Registration is checked first, because a
    session can hold tracks whose plugin isn't loaded and `getAdapterType`
@@ -239,7 +239,7 @@ has the design, including why the all-samples stack is not offered and why the
   Every hosted GRCh38 FASTA on jbrowse.org uses bare `1`/`6` names,
   `hg38.prefix.fa.gz` included, so this was the default human case, not an edge
   case; E. coli escaped it because the assembly's `chr` matches `K12#1#chr`. Note
-  `renameRegionsIfNeeded` (`packages/core/src/util/renameRegions.ts:67`) already
+  `renameRegionsIfNeeded` (`packages/core/src/util/renameRegions.ts`) already
   throws on the near-miss of pairing a singular `region` with the *plural* base
   class, and its comment names this same bug — but a method extending plain
   `RpcMethodType` never calls it, so the guard cannot fire.
@@ -306,9 +306,9 @@ graph figure:
 - **A graph canvas is too sparse for the content-stable diff gate.** It is mostly
   white with thin strokes, so switching the HPRC C4 figure from the
   anchored layout to the force layout moved 2.7% of pixels and was *kept* rather
-  than written. Force-layout figures carry `diffThreshold: 0.1` for FMMM jitter,
-  which cannot be told apart from a real change of that size — regenerate those
-  with `--force`.
+  than written. No force-layout figure raises `diffThreshold` any more, since FMMM is seeded
+  ([PANGENOME_GRAPHS.md](PANGENOME_GRAPHS.md)); regenerate a deliberate layout
+  change that the gate keeps with `--force`.
 
 **The figures can only cover what is published.** The tutorials load the plugin
 from the plugin list's `latest/` url, and that bundle is code-split, so audit it

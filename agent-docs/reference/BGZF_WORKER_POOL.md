@@ -157,7 +157,7 @@ workers and spawns a fresh set on the next call, transparent to holders in a way
 [BAM_STACK_INTEGRATION.md](BAM_STACK_INTEGRATION.md) § "Seam 1" owns the counts
 and the question of what to do about them.
 
-`browser-tests/percontext-probe.ts` is the harness, and it needs a **recursive**
+`products/jbrowse-web/browser-tests/percontext-probe.ts` is the harness, and it needs a **recursive**
 `Target.setAutoAttach`: a pool worker is a worker inside a worker, so
 `memHelpers`' one-level `setupWorkerTracking` sees the RPC workers and none of
 the pool. Run it with `TRACKS` above the RPC pool size — the 8-track row is what
@@ -195,7 +195,7 @@ have only such chunks measures nothing, silently.
 The helper's import is dynamic for bundle reasons — static pins the inlined
 worker blob into the initial bundle at 23.4kb gzipped, against 141 bytes plus a
 lazily fetched chunk — and that is the whole justification. A comment claiming it
-also took three alignments suites from 16s to 181s did not reproduce: 13.887s
+also took three jbrowse-web variant suites from 16s to 181s did not reproduce: 13.887s
 static against 13.856s dynamic on a warm cache. The 29s reading that seemed to
 confirm it was a cold jest transform cache in a fresh worktree — the *same*
 mistake as the HTTP-cache trap above, made twice in one session. Measure bundles

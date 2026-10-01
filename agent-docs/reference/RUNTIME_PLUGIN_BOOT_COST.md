@@ -37,8 +37,8 @@ Same source, same esbuild, same machine; only the named thing changed.
 The plugin's own `esbuild.mjs` intersects `@jbrowse/core/ReExports/list` with a
 host-floor file it keeps beside it — what the **oldest supported host** serves —
 so one bundle runs everywhere. That floor names `@jbrowse/core`
-4.0.0: 273 paths, 27 of them core subpaths, against the installed v5 list's
-509 and 243. **361 served specifiers are bundled rather than externalized**,
+4.0.0: 273 paths, 27 of them core subpaths, against the v5 list as measured at beta.9
+(509 and 243; `list.ts` now holds 543 specifiers, 261 of them `@jbrowse/core/*`). **361 served specifiers are bundled rather than externalized**,
 and a bundled `@jbrowse` module drags its relative closure, which is how MUI,
 floating-ui and rxjs arrive.
 
@@ -82,8 +82,8 @@ Splitting needs ESM, and every product's `makeWorkerInstance` builds a
 worker; the reverse is what mattered here). Dynamic `import()` inside a classic
 worker is a different question, and it works — probed directly on
 Chrome 154.0.8037.57, where a classic dedicated worker resolved
-`await import('./chunk.mjs')`. `initializeWorker` already passes
-`fetchESM: url => import(url)`, jbrowse.org already answers plugin requests
+`await import('./chunk.mjs')`. each product's `rpcWorker.ts` already passes
+`fetchESM: url => import(url)` to `initializeWorker`, jbrowse.org already answers plugin requests
 with `access-control-allow-origin: *`, and `publishReExports` sets the global
 before any plugin module evaluates.
 

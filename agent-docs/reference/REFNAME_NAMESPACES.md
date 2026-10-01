@@ -129,10 +129,10 @@ derivation.
 
 | plugin | the un-requested refName | what it does about it |
 | --- | --- | --- |
-| alignments | mate / `next_ref` | `getCanonicalRefName2` on receipt (`viewMateRegion.ts`) |
+| alignments | mate / `next_ref` | `getCanonicalRefName2` on receipt, through `clampToContig` / `clampToListedContig` (`viewMateRegion.ts`) |
 | breakpoint-split | overlay / translocation partners | `getCanonicalRefName2` on receipt (`BreakpointSplitView/model.ts`) |
-| gwas | `indexSnp` | bundled into `regions` so it rides the inbound pass |
-| hic | `viewBlocks[].refName` | the view's own names carried in a parallel array |
+| gwas | `indexSnp` | `canonicalizeViewRefName` on the main thread (`ldJoinResolver.ts`) |
+| hic | the view's pre-rename refNames | carried beside the regions in `axisBlocks[].refName` |
 | `GetConsensusSequence` | — | returns no refName at all |
 | synteny | the entire mate axis | `getCanonicalRefNameFn` on receipt, on both channels (below) |
 
@@ -142,12 +142,13 @@ that number is now the argument rather than the fix being the argument. Each
 plugin's workaround is correct and none of them is reusable by the next one; the
 seventh will invent a seventh.
 
-Three of the six now reach for the same primitive — alignments and
-breakpoint-split calling `getCanonicalRefName2`, synteny's
+Four of the six now reach for the same primitive — alignments,
+breakpoint-split and gwas calling `getCanonicalRefName2` (directly or through
+`clampToContig` and `canonicalizeViewRefName`), synteny's
 `getCanonicalRefNameFn` wrapping it — which is not six answers converging so
 much as evidence about the shape the layer-level one should take: **resolve on
 receipt through the assembly's alias table**, not invert the outbound map. The
-remaining three differ because they avoid the return direction rather than
+remaining two differ because they avoid the return direction rather than
 implement it.
 
 ## Why synteny is the worst case rather than a special case
@@ -164,8 +165,10 @@ line to a file that already reads `getFeatureAtIndex`, and nothing about writing
 it would prompt anyone to think about namespaces.
 
 Two channels carry names off the wire into synteny's main thread, and **both are
-renamed on receipt** — `refNameDict` / `mateRefNameDict` in the fetch's `run`
-(`LinearSyntenyDisplay/afterAttach`), `ResolvedSpan.refName` in
+renamed on receipt** — `refNameDict` / `mateRefNameDict` through
+`canonicalizeSyntenyDictLanes` (`synteny-core/src/renameDictLane.ts`, lanes in
+`syntenyLaneSchema.ts`), called from the fetch in `LinearSyntenyDisplay/afterAttach`
+with one `getCanonicalRefNameFn` per axis, `ResolvedSpan.refName` in
 `resolveMatchingSpan`:
 
 - `SyntenyFeatureData`'s `refNameDict` / `mateRefNameDict`, from the fetch —
@@ -338,7 +341,7 @@ for the same reason.
 
 ## What is done, and what is still open
 
-**Done: canonicalize both synteny channels.** All nine straddles and both
+**Done: canonicalize both synteny channels.** All eight straddles and both
 display-text sites at once, because everything in the tables reads through
 `getFeatureAtIndex` or `ResolvedSpan`. `LinearSyntenyRefNameAlias.test.tsx` is
 the gate and `LinearSyntenyFollow.test.tsx`'s RPC count is the guard against the
@@ -363,7 +366,7 @@ of what remains:
    refName at all, and `resolveMatchingSpan`'s `regions[]` is the worked example
    of a return that deliberately passes a name back OUT and would break under a
    blanket pass. And **start from the alias table, not from the outbound map** —
-   three of the six workarounds now resolve on receipt through
+   four of the six workarounds now resolve on receipt through
    `getCanonicalRefName2` (or synteny's `getCanonicalRefNameFn` around it) rather
    than inverting the map, which is the shape to build, because the outbound map
    is keyed by canonical name and inverting it keeps only one file spelling per

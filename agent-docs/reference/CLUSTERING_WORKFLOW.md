@@ -34,8 +34,9 @@ Worker
   3. toNewick() → Newick string
   Return { order: number[], tree: string }
 Dialog callback
-  wiggle:   buildClusteredLayout(baseSources, existingLayout, order)
-  variants: applyClusterOrder({ rows, arranged, order, tree, domain })
+  wiggle:   runWiggleClustering → applyClusterRun → rotateClusterRun
+            → clusteredCladeLayout(rows, editableSources, order)
+  variants: runGenotypeClustering; manual paste → applyClusterOrder
   model.setRowOrder(rows, { tree, provenance })     ← both plugins
 Arrangement written (TreeSidebarMixin: display config, flushed to the session)
   rows.domain  → row order, by name
@@ -121,7 +122,8 @@ HP0`, `HG001 HP1`). Values are a per-haplotype alt indicator in `Float32Array`,
 Both clustering paths cluster `clusterableSources`, the rows the display
 draws before its tint and band: haplotype rows in phased mode, already
 expanded, which the worker passes through. The dialog commits a finished run
-through one `applyOrder(order)` callback, which calls `applyClusterOrder`
+through one `applyOrder(order, matrixRowNames)` callback
+(`MultiSampleVariantClusterDialog.tsx`), which calls `applyClusterOrder`
 (`plugins/variants/src/shared/`) and hands the result, row names, to
 `model.setRowOrder`; the auto path does the same with its tree. So the phased
 and unphased paths commit identically and neither holds a mode-specific
@@ -212,6 +214,10 @@ it just never fires.
 
 - **`buildClusteredLayout(baseSources, order)`** — reorders `baseSources` by
   the clustering `order` array, throwing on an index out of range.
+- **`computeClusterHierarchy`**, **`clusteredCladeLayout`**,
+  **`validateClusterOrder`** and **`parseClusterOrder`** — the hierarchy the
+  sidebar draws, the clade-ordered layout `applyClusterRun` writes, and the
+  checks on a pasted order.
 - **`buildTree(newick)`** / **`applySubtreeFilter(root, filter)`** — parses
   Newick, wraps in d3-hierarchy `HierarchyNode`, and optionally filters to the
   deepest subtree whose leaves exactly match `filter`. Single post-order pass.
@@ -222,7 +228,7 @@ it just never fires.
 
 Both dialogs offer a Manual tab that generates an R script. The user runs it
 locally and pastes the resulting Newick tree. The dialog calls the same
-`buildClusteredLayout` + `setRowOrder` path as auto mode, just with
+`setRowOrder` path as auto mode, just with
 user-supplied order/tree instead of RPC output.
 
 ---
@@ -251,7 +257,7 @@ there the Euclidean distance build is the run: on chr22:20-21 Mb (2504 samples,
 and `ideas/waiting-on-a-call/gpu-sample-distance-matrix.md` carries the table and the case for
 doing the build on a compute shader.
 
-Two things changed in hclust 5.1.0, which this tree pins, because of that
+Two things changed in hclust 5.1.0, which this tree has had since (it now pins 6.0.0), because of that
 measurement:
 
 - **The first clustering in a fresh worker no longer runs at half speed.** V8
@@ -310,10 +316,10 @@ it.
 The matrix crosses into hclust's wasm heap, and that heap is built with
 `MAXIMUM_MEMORY=2GB` — the one hard wall on the path. N×V×4 for the input and
 N²×4 for the distance matrix the C allocates have to share it; everything else
-is browser memory pressure. 5.1.0, which this tree pins, stages a flat
+is browser memory pressure. Through 5.2.0, hclust staged a flat
 `Float32Array` copy of the rows on the way in, so the input is live three times
 (the builder's `Map<string, Float32Array>`, the staging copy, the heap) while
-the distance build runs, and it checks no `_malloc` result — a data allocation
+the distance build runs, and it checked no `_malloc` result — a data allocation
 the heap refuses comes back 0 and the matrix is written at address 0. On the
 shapes the idea doc measures:
 
@@ -325,9 +331,9 @@ shapes the idea doc measures:
 
 The time wall comes first: the 1 Mb haplotype row already takes 98 s, so the
 run that reaches the heap is a seven-minute one. Nothing in this tree weighs
-N against V; the dialog shows whatever `clusterMatrix` throws, and the next
-hclust (in `~/src/gmod/hclust`) throws before allocating, with both sizes in
-the message, drops the staging copy and checks every malloc.
+N against V; the dialog shows whatever `clusterMatrix` throws, and hclust
+5.3.0, which 6.0.0 (the pin) carries, refuses what the heap cannot hold before
+allocating and fills the heap row by row (changelog in `~/src/gmod/hclust`).
 
 ## Key files
 

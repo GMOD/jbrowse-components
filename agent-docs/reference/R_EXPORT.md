@@ -18,7 +18,7 @@ instead of them.
 
 | branch | head | on origin | holds |
 | --- | --- | --- | --- |
-| `r-export` | moving | no | the mark-display translator §"What is built" describes (`git show r-export:plugins/marks/src/rexport/`), with its `Rscript` suite and `pnpm gen:rhelpers` |
+| `r-export` | moving | yes | the mark-display translator §"What is built" describes (`git show r-export:plugins/marks/src/rexport/`), with its `Rscript` suite and `pnpm gen:rhelpers` |
 | `r-export4-rebase` | `db6e771092` (2026-08-27) | yes | the fidelity-first exporter: 53 R helpers, `exportR.ts`, nine per-display fragments, the equivalence oracles, a 19-figure gallery |
 | `r-export-rewrite` | `ddbae50e74` (2026-08-26) | **no** | the idiomatic-first one: `FigureSpec`, `rplot.ts`, `emitR.ts`, `jb2export --out fig.R` |
 | `R_export4` | `b90ffa8d1a` (2026-07-17) | **stale ref** | superseded by `r-export4-rebase` |

@@ -14,7 +14,7 @@ assembly-provenance bug worth never repeating.
 ## What a `.blocks` table can express
 
 **The format and `MCScanBlocksAdapter` are NOT reference-anchored.** This was
-stated the other way round in `multiway_synteny.md` for a long time and is
+stated the other way round in `multiway_synteny_grape_peach_cacao.md` for a long time and is
 wrong. `pairRows(colA, colB)` joins exactly the two columns being drawn and
 keeps rows where both cells resolve through their BEDs; `columnsFor` resolves
 those indices by assembly name and `columnPairs` enumerates the pairs. Column 0 is never consulted. So:
@@ -39,15 +39,15 @@ band of the stacked view.
 `Orthogroups.tsv` is inferred over all genomes at once, so a group can contain
 peach and cacao and no grape. `scripts/orthogroups_to_blocks.py` converts it and
 `docs/tutorials/orthofinder_synteny.md` builds a six-genome view that way. The
-tutorial now explains the MCScan/OrthoFinder split under "One reference, or all
-against all".
+grape/peach/cacao tutorial (`multiway_synteny_grape_peach_cacao.md`) explains
+the MCScan/OrthoFinder split under "One reference, or all against all".
 
 **Two answer shapes, one join.** A query with no `targetAssemblyName` fans out
 to every pair anchored on the queried assembly, one `mate`-carrying feature per
 (anchor gene × mate assembly) — and that is what the LGVSyntenyDisplay, the
 region launch and the dotplot get. `MultiWaySyntenyDisplay` regroups those per
 anchor on the main thread, so it passes `mateShape: 'grouped'` (a
-`BaseOptions` field, opt-in) and gets one feature per anchor gene carrying
+`ComparativeOptions` field, opt-in) and gets one feature per anchor gene carrying
 `mates: [{assemblyName, refName, start, end, strand, orientation, name}, …]`
 instead; `groupFeatures` reads either shape, and every other consumer keeps the
 pairwise one. Same `pairRows` cache and dedupe, so the join is unchanged and the

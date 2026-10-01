@@ -15,6 +15,9 @@ cd products/jbrowse-desktop
 pnpm screenshots:headless --only desktop-blat,desktop-ispcr
 ```
 
+`pnpm screenshots:build` chains `package:linux:no-installer` and
+`screenshots:headless`.
+
 **It renders the packaged app, so a code change needs
 `pnpm package:linux:no-installer` first.** The binary going stale is not a
 theoretical problem: a run against a 10-hour-old build failed at the volvox step
@@ -77,11 +80,12 @@ under the sequence box shifting subpixel — most likely MUI's autosizing textar
 measuring itself before font metrics settle). That is far under the 0.5% the web
 generator calls unchanged, so a content-stable gate would be feasible here.
 
-## The BLAT figures
+## The BLAT figure
 
-The in-silico PCR dialog is captured first, then the BLAT dialog, and then that
-*same* BLAT dialog is submitted for the result figure — the two BLAT figures are
-two states of one visit. Order matters: submitting adds a track and moves the
+The in-silico PCR dialog is captured first (`desktop-ispcr.png`, then
+`desktop-ispcr-results.png`). BLAT is one two-frame figure,
+`desktop-blat-steps.png`: frame 0 is the BLAT dialog with the sequence typed,
+frame 1 is that *same* dialog submitted — two states of one visit. Order matters: submitting adds a track and moves the
 view, so any pristine dialog captured afterwards would show the result state.
 
 Public UCSC BLAT sits behind a Cloudflare CAPTCHA and needs an account apiKey, so

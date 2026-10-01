@@ -26,7 +26,7 @@ leaf package (deps: `mobx` + `@jbrowse/mobx-state-tree` + `react` peer; **no**
 
 Shader codegen (`packages/shader-tools/src/build-shaders.ts`, plus `slangPass` in
 render-core) and the display-integration layer (`MultiRegionDisplayMixin` /
-`GlobalFetchMixin` / `DisplayChrome`, in the LGV plugin) stay where they
+`GlobalFetchMixin` / `DisplayChrome`, in `packages/display-kit/src/`) stay where they
 are. Per-display shaders/passes live per-plugin under
 `plugins/<plugin>/src/<display>/{shaders,passes}`. The host serves the GPU API to
 runtime plugins like every bundled `@jbrowse` package; see
@@ -133,7 +133,8 @@ MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
     displayPhase                  'renderError' | 'tooLarge' | 'error' | 'canceled' | 'loading' | 'ready'
                                   computeDisplayPhase(self, () => computeActivityPhase({...}, () =>
                                     self.viewportWithinLoadedData))
-                                  (this family supplies the staleness axis and constants out rendersCanvas;
+                                  (this family supplies the staleness axis; `GlobalFetchMixin` calls the same
+                                   foundationDisplayPhase with a constant-true staleness axis;
                                    customize via the fetchInert hook, never by overriding this getter)
 ```
 
@@ -147,15 +148,17 @@ Loading-scrim visibility is derived once by `DisplayChrome` as `displayPhase`
 ```
 isMinimized || fetchInert || viewportEmpty ? 'ready'
   : fetchCanceled ? 'canceled'
-  : isLoading || awaitingDependentData || (rendersCanvas && !canvasDrawn) ||
+  : isLoading || awaitingDependentData ||
+      (rendersCanvas && hostMounted() && !canvasDrawn) ||
       !viewportCurrent() ? 'loading'
   : 'ready'
 ```
 
 Each family constants out the axis it doesn't have — per-region passes
-`viewportCurrent = () => viewportWithinLoadedData` and `rendersCanvas: true`,
-global passes `viewportCurrent = () => true` and `fetchInert: false` — so
-the only per-family difference is the staleness axis described below. It was two
+`viewportCurrent = () => viewportWithinLoadedData`, global passes
+`viewportCurrent = () => true`, and both read `rendersCanvas` as
+`!fetchInert` — so the only per-family difference is the staleness axis
+described below. It was two
 hand-written expressions that had drifted three ways, equivalent only by
 accident; adding a term now reaches every display. `viewportCurrent` stays a
 **thunk** because it is the only input reading the containing view; the rest
@@ -192,7 +195,7 @@ a refetch (worker output is genomic, so it draws correctly under the live view
 transform), so a pan shows no scrim
 beyond the `isLoading` window.
 
-`rendersCanvas` (default true) gates the clause so a display showing a static
+`rendersCanvas` (`!fetchInert` in both families, overridable) gates the clause so a display showing a static
 non-canvas placeholder — the sequence display zoomed out — doesn't sit permanently
 under the scrim. It is an overridable hook rather than inlined because the
 pre-paint scrim needs both "nothing painted yet" and "not a deliberate empty
@@ -200,7 +203,7 @@ placeholder", and only the display knows the second. The alternative that remove
 it — rendering the placeholder *outside* `DisplayChrome` — was rejected for
 disposing and re-initializing the GPU backend on every toggle
 ([ADR-026](../architecture-decision-records/adr-026-displaychrome-layering-stays.md)).
-Deleting LD's override as "dead single-use code" regresses a stuck spinner.
+LD carries no override of its own: both foundations derive it from `fetchInert`.
 
 `installGlobalFetchAutorun` schedules **leading-edge**: the first fetch fires
 immediately, and only subsequent refetches debounce by `delay`. MobX's built-in
@@ -414,7 +417,7 @@ touching either path, preserve whichever of these the display uses:
   transliterated from slangc's own WGSL, so the Canvas2D and SVG paths run the
   shader's math rather than a hand-port of it. `hpmath.slang` exports
   `snapBoxHeightPx` / `snapBoxCenterYPx` / `extendToMinWidthPx` this way;
-  `hic.slang` its count→ramp mapping, `insertion.slang` its marker width (to
+  `scoreScale.slang` its count→ramp mapping (`normalizeScore`), `insertion.slang` its marker width (to
   another package, via `//! js-export-out:`). The subset is **scalar only** — no
   vectors, swizzles, loops or indexing — and every gap an export reaches throws
   at `pnpm gen:shaders`. Less limiting than it sounds: a color- or
@@ -744,13 +747,13 @@ so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
 - `displayModel.ts` — `WiggleGpuDisplayModel<TRenderingBackend>`: model↔component contract
 - `scale.ts` / `autoscale.ts` — `getNiceDomain`, `getScale`, autoscale helpers
 - `scoreMenuItems.ts` — `makeScoreSubMenu(self, opts)` + `ScoreScaleModel`: the shared Score submenu
-- `pointMarker.ts` / `resolveRenderState.ts` / `transferables.ts` / `YScaleBar` — the shared scatter glyph (wiggle + Manhattan), render-state resolution, worker transfer-list collection, and the Y-axis overlay
+- `pointMarker.ts` / `resolveRenderState.ts` / `transferables.ts` / `YScaleBar` (`packages/display-ui/src/YScaleBar.tsx`) — the shared scatter glyph (wiggle + Manhattan), render-state resolution, worker transfer-list collection, and the Y-axis overlay
 - `WiggleScoreConfigMixin` / `ScoreFieldConfigMixin` — the score-plot config: the axis (`ScoreScaleMixin`, which the alignments coverage band composes alone), the cross-hatch toggle and the point size; the second adds `scoreField` for a display plotting one configured field, which the mark display does not
 - `@jbrowse/wiggle-core/ScorePlotChrome` / `@jbrowse/wiggle-core/ScorePlotSvgFrame` — the on-screen chrome and the SVG-export body of a display drawing a mark list on the score axis. Subpaths, not the barrel: a config schema imports the barrel at plugin install, and `index.eager.test.ts` fails if the barrel reaches the chrome or the SVG export again
 
 `@jbrowse/plugin-wiggle` — the wiggle displays' own model pieces:
 
-- `linearWiggleDisplayConfigSchema` / `linearWiggleDisplayModelFactory` — the full
+- `linearWiggleDisplayConfigSchema` / `stateModelFactory` — the full
   LinearWiggleDisplay config + model, for a plugin composing it **wholesale**;
   GC content draws through the display itself, over its own adapter. The
   config schema comes off the plugin barrel; the
@@ -1037,7 +1040,8 @@ hundreds of call sites to restate what the type now says once. Read `passId` as
 createGpuHal(canvas, { passes, sampleCount }): Promise<GpuHal | null>
   ?renderer=canvas2d|canvas  → return null                 (Canvas2D backend)
   ?renderer=webgl            → skip WebGPU, try WebGL2 → null on failure
-  otherwise                  → try WebGPU → WebGL2 → null
+  ?renderer=webgpu           → WebGPU only, error on failure
+  otherwise                  → try WebGPU → WebGL2 (not on a software rasterizer) → null
 ```
 
 **Key methods** (full interface: `packages/render-core/src/hal/types.ts`):
@@ -1160,9 +1164,11 @@ ever been acquired (`hadDevice`) and past that point retries (3 × 700 ms) and
 never caches a failure. A machine that genuinely lacks WebGPU declines on the
 first ask and waits for nothing.
 
-**Renderer override** (query param `?renderer=`). Only three values are
+**Renderer override** (query param `?renderer=`). Four values are
 recognized (`createHal.ts` + `getGpuDevice`): `canvas2d` / `canvas` force the
-Canvas2D backend, and `webgl` skips the WebGPU attempt. Omitted → auto-detect.
+Canvas2D backend, `webgl` skips the WebGPU attempt, and `webgpu` pins that rung
+(below). Omitted → auto-detect, which also skips WebGL2 for Canvas2D when the
+browser reports a software rasterizer.
 
 **`?renderer=webgpu` pins that rung and does not fall past it.** A pinned
 renderer that silently substitutes another makes every comparison against it
@@ -1841,7 +1847,7 @@ ever dropped:
   write access for compute. Every render pass here is one instance reading its
   own fixed struct, sequentially — the case dedicated attribute-fetch hardware
   exists for. Nor does the attribute limit bind: the largest instance struct
-  in tree is `read.slang` at 11 attributes and almost everything else is 4–5,
+  in tree is `read.slang` at 10 attributes and almost everything else is 4–5,
   against a default `maxVertexAttributes` of 16 on WebGPU and the same floor on
   WebGL2 ([GPU_PORTABILITY.md](GPU_PORTABILITY.md)). GenomeSpy's generic `rect`
   mark declares ~28 channels and physically cannot be vertex attributes, so its
@@ -2034,7 +2040,7 @@ does the shared-shape version); keep them in step with any change here.
     in `RenderLifecycleMixin`, `FetchMixin`, `RegionTooLargeMixin`, the five fetch
     autoruns, and `rpcProps()`→refetch wiring).
   - Compose `GlobalFetchMixin()` for displays that hold a single
-    non-regional dataset (HiC contact matrix, LD triangle, both arc displays).
+    non-regional dataset (HiC contact matrix, LD triangle, multi-way synteny).
     Same slot mixin + `FetchMixin` +
     `RegionTooLargeMixin` plumbing, but **no** fetch autoruns — the display
     installs its own in `afterAttach` via
@@ -2058,7 +2064,7 @@ does the shared-shape version); keep them in step with any change here.
   - Expose `rpcProps()`; add `gpuProps()` only when the main thread encodes GPU
     buffers from settings.
 - **React component** — `observer()`. Render the canvas through the shared
-  `DisplayChrome` (from `@jbrowse/plugin-linear-genome-view`), passing the model
+  `DisplayChrome` (from `@jbrowse/display-kit/DisplayChrome`), passing the model
   and the backend `factory`. `DisplayChrome` calls `useRenderingBackend`
   internally and owns the render-error / region-too-large / error-bar / loading
   overlays, so the component only lays out its own canvas(es) via the render-prop
@@ -2076,9 +2082,9 @@ does the shared-shape version); keep them in step with any change here.
   )
   ```
 - **Wiggle-style displays** — to reuse the whole LinearWiggleDisplay model, compose
-  `linearWiggleDisplayModelFactory` from
+  `stateModelFactory` (the default export) from
   `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel` — the subpath, not the
-  barrel (see `plugins/gccontent`, and the export note above). To borrow only the score machinery, compose
+  barrel (see the export note above). To borrow only the score machinery, compose
   `WiggleScoreConfigMixin` + `makeScoreSubMenu` and render `ScorePlotChrome`
   from its subpath. A display plotting one configured field composes
   `ScoreFieldConfigMixin`, which adds `scoreField` (`plugins/gwas` Manhattan);

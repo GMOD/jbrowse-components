@@ -64,9 +64,9 @@ drag (mousemove on the synteny canvas)     wheel
 `panStack` runs on every mousemove (`LevelSyntenyCanvas.tsx`), since those
 already arrive at ~60Hz and the action is what coalesces the several views a
 stack drives from one gesture. Don't go looking for a frame boundary to measure
-across; the batching is the transaction. The rAF-coalesced path is the *LGV*'s
-own side-scroll (`useSideScroll`'s `flushScroll`), which is a different pipeline
-reached by dragging a track rather than the connector canvas.
+across; the batching is the transaction. The rAF-coalesced path is
+`useRafCommit` (`VerticalScrollbar.tsx`'s `flushScroll`), which is a different
+pipeline reached by dragging a scrollbar rather than the connector canvas.
 
 Time each step independently. The slow one is the bottleneck.
 
@@ -233,7 +233,8 @@ Recording these because future investigations will likely re-discover them.
    we optimize the renderer. Trackpads emit faster (~60-120Hz).
 
 2. **Fetch-autorun deps are the #1 GPU-path footgun**. Synteny's
-   `syntenyFetchAutorun` originally read `v.offsetPx` and `v.bpPerPx` directly
+   synteny's fetch autorun (`installComparativeFetchAutorun` in
+   `LinearSyntenyDisplay/afterAttach.ts`) originally read `v.offsetPx` and `v.bpPerPx` directly
    in the deps phase, triggering a worker round-trip on every scroll (after
    500ms debounce) with **identical content but new references**. Downstream:
    `instanceData REF NEW` → `renderInstanceData` re-runs → upload autorun
@@ -401,13 +402,13 @@ in the chunks a worker parses is UI code** (`@mui/material` 983 KB, `react-dom`
 `website/scripts/probe-startup.ts` reports the worker importing. Three workers
 boot for a three-track load, so that is paid three times.
 
-`node scripts/check-worker-imports.ts [--causes]` reports why: **258 static
-import sites** across 23 packages, all reached through `corePlugins.ts` — every
+`node scripts/check-worker-imports.ts [--causes]` reports why: **164 static
+import sites** across 18 packages, all reached through `corePlugins.ts` — every
 product's worker entry statically imports every plugin's `index.ts`, and a
 plugin index reaches its React components (menu icons via
 `packages/core/src/ui/Icons.tsx`, tooltips via `tss-react`, SVG-export wrappers
 via `renderToStaticMarkup`, `TrackOverlayPortal` via `react-dom`). The sites are
-spread — 89 in `packages/core`, 57 in `linear-genome-view` — not concentrated in
+spread — 81 in `packages/core`, 23 in `product-core`, 19 in `synteny-core` — not concentrated in
 a few hubs.
 
 **This is all-or-nothing.** Webpack keeps a module if any reachable importer
@@ -425,7 +426,7 @@ a package removes it. Two things follow:
 
 The real fix is making plugin `index.ts` files stop statically reaching React —
 lazy-importing the menu/UI registration at its natural `import()` boundary. That
-is a campaign across ~23 packages, and `--causes` is its worklist; the site
+is a campaign across ~18 packages, and `--causes` is its worklist; the site
 count is the progress bar. Related: the same static `corePlugins.ts` import is
 why the cold app shell eagerly loads a ~1 MB all-plugins chunk on the main
-thread (`products/jbrowse-web/CLAUDE.md`), so the two problems share a fix.
+thread, so the two problems share a fix.

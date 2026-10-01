@@ -151,8 +151,8 @@ them is the drawing's.
   interest ranking (`arcPaintRank`, and ticks under arcs in `ARC_PASSES`). The
   live ratio is under "What the running app says" below.
 - `colorShortInsert` sat 1.5 L\* from the concordant grey, separated by chroma
-  alone, which is the weakest channel on a 1px stroke. `palette.ts` carries the
-  full CIELCh working.
+  alone, which is the weakest channel on a 1px stroke. `packages/core/src/ui/palette.ts` carries the
+  full CIELCh working (alignments' `shaders/palettes.ts` is a separate file).
 - **The `maxHeight` default is NOT reached at 300x**, contrary to what the
   truncation-notice change first claimed. See the measurement below. The notice
   is still a quiet in-place line rather than a warning chip, on the grounds that

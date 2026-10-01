@@ -291,9 +291,8 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
     name: 'LGVInit',
     // `init` is what makes hasSomethingToShow / awaitingInitNavigation report
     // "loading"
-    // until navigation populates displayedRegions, so the alternative gate
-    // (clearing `init` up front, the way SpreadsheetView does) would flash the
-    // import form mid-load.
+    // until navigation populates displayedRegions, so clearing `init` up front
+    // would flash the import form mid-load.
     ready: () => self.initialized,
     // No pre-materialization phase to protect: the view is its own single row,
     // and `error` already derives a failed init assembly declaratively (via

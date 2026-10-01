@@ -11,7 +11,7 @@ A pileup draws one meaning through three vocabularies:
 
 - **read fills** — `readColorCategory` (colorUtils.ts) classifies each read into
   a `ReadColorCategory`, once, on the CPU; the shader paints the resulting index.
-- **arc / read-cloud overlays** — `getArcColorType` (features/arcs/compute.ts)
+- **arc / read-cloud overlays** — `getArcColorType` (features/arcs/arcColors.ts)
   classifies each connection into an arc palette slot.
 - **linked-read connectors** — the bezier/straight curves, whose slots are
   `LINKED_READ_COLOR_*` (features/linkedReads/compute.ts).
@@ -41,7 +41,7 @@ reaches the GPU uniforms, the Canvas2D fill, the key and the band through the
 one table.
 
 The same shape covers the words. `connectionLabel` derives its wording from the
-slot's category through the read key, with `SPLIT_JUNCTION_LABELS` (legendUtils)
+slot's category through the read key, with `SPLIT_JUNCTION_LABELS` (`packages/alignments-core/src/connectionLabels.ts`)
 as the documented override for the two junction rows — which the arc overlay
 reads too. This matters mechanically, not just aesthetically:
 `getAlignmentsColorScales` de-dupes the connections section against the
@@ -66,7 +66,7 @@ disagreeing again.
 
 ## Why the bugs here survived so long
 
-Three separate divergences shipped, and each one agreed in exactly the
+Six separate divergences shipped, and each one agreed in exactly the
 configuration everybody looks at:
 
 | divergence | agreed in | diverged in |
@@ -141,7 +141,7 @@ plausible colour.
 
 ## Deriving the rule is not the same as calling it
 
-The last two rows are a variant worth naming separately, because the doctrine
+The connector-slot and mate-link rows are a variant worth naming separately, because the doctrine
 above had already been applied to both and they still diverged: what drifted was
 a **call site**, not a rule.
 
@@ -173,7 +173,7 @@ corrected the way `readPairOrientations` is, so under the plain `insertSize`
 scheme a supplementary segment (TLEN 0 → `normal`) paints neutral beside its
 long-insert primary within one chain. Defensible — an unset TLEN is genuinely
 unknown, and the orientation-flavoured schemes cover the split with their own
-`CHAIN_FILL_SPLIT_*` hues — but it is the same question answered the other way,
+`CHAIN_SPLIT_*` hues — but it is the same question answered the other way,
 so decide it rather than rediscover it.
 
 ## Insert size is TLEN, on both sides

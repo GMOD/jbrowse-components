@@ -7,7 +7,8 @@ kind: dataset
 
 # Dog10K: callsets, loci and measured recipes
 
-What the `local_ancestry`, `dog10k_svs` and `dog10k_lof` tutorials rest on. The
+What the `local_ancestry`, `dog10k_svs`, `dog10k_lof` and `dog10k_selection`
+tutorials rest on. The
 infrastructure is in place (`test_data/dog10k/config.json`, remote slicing,
 breed-labeled `layout`), so a new locus is roughly an hour. Forward-looking
 tutorial ideas live in
@@ -126,16 +127,17 @@ set it carries DUP and INV records. Each of these is the existing
   African village dogs the paper names (VILLCG000006, VILLKE000001,
   VILLLR000017) — and one Schipperke it does not.
 - **SLC28A3 duplication**, chr1:75,578,115 (136 kb). GBGV000003 homozygous, four
-  more GBGVs and a PBGV heterozygous: Fig 11 as genotypes when the CN route is
-  out of reach.
+  more GBGVs and a PBGV heterozygous: Fig 11 as genotypes. The copy-number route
+  exists now (`scripts/build_dog10k_slc28a3_cn.sh`, below).
 
 _AMY2B_ and _RNASE1_ are done (see above). The counts this file carried for them
 were close but not exact, so take the build script's output over any number
 written down: it was 1581/1588 breed dogs here and the script prints 1568/1575,
 the difference being which category the sample table files an animal under.
 
-**A selection scan is one download.** Per-clade AF from that same 1.08 GB
-callset (`bcftools +fill-tags -S`), Fst against the rest, written as a bgzipped
+**A selection scan is one download, and it ships** in the `dog10k_selection`
+tutorial, scored over the phased imputation panel rather than the 1.08 GB SV
+callset: per-clade AF, Fst against the rest, written as a bgzipped
 BED: `GWASAdapter` + `LinearManhattanDisplay` already ship and already handle
 ranged SVs. The authors' own Ohana output is published as a 52 KB canFam4
 bigBed (283 sites, `github.com/KiddLab/dog-long-read-sv`, alongside two more SV
@@ -176,7 +178,10 @@ Springer Spaniel x3, Greenland Dog, Azerbaijan village dog — no wolves, and no
 Grand Basset Griffon Vendéen, so Fig 11's SLC28A3 expansion is not reachable
 this way.
 
-For that one, column 5 of the sample table carries SRA runs (GBGV000001-3 =
+`scripts/build_dog10k_slc28a3_cn.sh` builds it from the callset's per-sample
+`DP`, normalized against each dog's own flanks, as `dog10k_slc28a3_cohort_cn`
+and `dog10k_slc28a3_breed_cn` (used in `dog10k_svs.md`). Its second route is
+reads: column 5 of the sample table carries SRA runs (GBGV000001-3 =
 SRR12330329/330/331, plus Basset Hounds and PBGVs), so a targeted panel is
 ~15-20 GB of fastq per sample plus a one-time canFam4 QuicK-mer2 index build.
 

@@ -19,7 +19,7 @@ protect. Read alongside `ARCHITECTURE.md` "Display stacks".
 - **The runtime registry is the exports maps** ([ADR-128](../architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md)).
   `scripts/generateReExports.ts` writes `ReExports/list.ts`, the module maps
   in core and in each product, and `reExports.generated.json`, from the
-  `exports` maps of `@jbrowse/core` and the display toolkit — 376 keys where
+  `exports` maps of `@jbrowse/core` and the display toolkit — 417 module keys (read `reExports.generated.json` for the current count) where
   the hand list named 25 core subpaths. No other plugin's code is served. So a served
   name is one an exports map publishes, a removal is a diff in a committed
   generated file, and the two checks that read the manifest are the gates: the
@@ -39,7 +39,7 @@ protect. Read alongside `ARCHITECTURE.md` "Display stacks".
   per surface does not pay for itself at this plugin count — see "Baselines
   tried and dropped" below. What still catches a session member that survives
   with a changed signature (a presence check can't) is
-  `pluginFacingSessionApi.test.ts`: it pins the fifteen members published
+  `pluginFacingSessionApi.test.ts`: it pins the eighteen members published
   bundles actually call, and performs the call.
 - **`@jbrowse/core`'s published `exports` map, which nobody writes.**
   `packages/core/scripts/generateExports.mjs` derives it by grepping
@@ -67,11 +67,11 @@ protect. Read alongside `ARCHITECTURE.md` "Display stacks".
 
 `abiPreviousRelease.test.ts`, `pluginExports.test.ts`/`pluginExportsBaseline.json`
 and `sessionExports.test.ts`/`sessionExportsBaseline.json`, plus the
-`preservedExports`/`SUBPATH_REMOVALS` mechanism in `generateExports.mjs` and the
+`SUBPATH_REMOVALS` mechanism in `generateExports.mjs` and the
 deleted `ReExports/knownRemovals.ts` that fed them, existed briefly
 to gate a removal from the plugin `exports` object, the session, and
 `@jbrowse/core`'s published `exports` map against what the previous release
-served. We deleted all of it: at the plugin count JBrowse has today, hand-
+served. We deleted all of it except the `preservedExports` allowlist, which `generateExports.mjs` still reads: at the plugin count JBrowse has today, hand-
 maintaining a baseline per surface on every refactor costs more than the
 removals it would have caught are worth, and the surface the baselines
 themselves exposed — a removals list, a "which entries are load-bearing"
@@ -229,7 +229,7 @@ reaches a plugin `exports` object or the session. The script does also evaluate
 every store bundle against jbrowse-web's worker export map, which is what catches a UI stub of the wrong shape or a
 module-scope `document` read, but nothing yet boots one on the main thread. `pluginFacingSessionApi.test.ts` is the one thing that reaches
 narrower than a bare removal here: it pins what published bundles actually
-call for fifteen session members, and performs the call, which is why
+call for eighteen session members, and performs the call, which is why
 `getReferring`'s changed signature is caught even though nothing pins session
 member presence any more.
 
@@ -291,7 +291,7 @@ The unsolved problem is **external** plugins:
 No amount of in-tree analysis sees them. Design every fix below around "consumers
 I cannot see."
 
-> **RFC-001's direction** (§2 goal #3, §4): replace `getPlugin('X').exports.Y`
+> **RFC-001's direction**: replace `getPlugin('X').exports.Y`
 > with static `import { Y } from '@jbrowse/plugin-x'` resolved via esbuild
 > `globalExternals`. This makes a plugin's host-dependencies **explicit in its
 > own source and build** (typecheck + visible import graph) — a real
@@ -348,7 +348,7 @@ Ship a few releases; remove with **evidence** instead of archaeology.
 
 ### 4. Make the blessed extension points good enough that nobody reaches into internals
 
-gdc/icgc/mafviewer compose `BaseLinearDisplay` because there's no stable
+gdc/icgc/mafviewer composed `BaseLinearDisplay` (since removed) because there's no stable
 high-level "custom server-rendered display" API — so they grab an internal and
 freeze it. Every gap RFC-001 closes is one fewer internal leaking into the
 permanent ABI. This is the durable long-term answer; #1–#3 are what make the
@@ -398,8 +398,7 @@ drift.**
 > block state model, `LinearBareDisplay`, `BasicTrack`, and the block components
 > in-tree and **accepted the gdc/icgc breakage**, offering to rebuild the path as
 > an external compat plugin (core's `ServerSideRendererType` /
-> `renderToAbstractCanvas` / `CoreRender` machinery stays public, so that's a
-> clean plugin, not a monkeypatch). So "nothing is removed" was not iron law — a
+> `renderToAbstractCanvas` / `CoreRender` machinery has since been removed too). So "nothing is removed" was not iron law — a
 > hard-enough forcing function (a whole-pipeline rewrite) overrode it. The
 > analysis below still holds for every export *not* worth a rewrite to shed; read
 > it as "the cost of keeping," with the block stack as the case where the cost of
@@ -866,7 +865,7 @@ belong *inside* RFC-001 §7 rather than bolted beside it.
   [ideas/waiting-on-a-call/a-dependency-bump-is-an-abi-event.md](../ideas/waiting-on-a-call/a-dependency-bump-is-an-abi-event.md)
   has the directions; its first move is a measurement, not a build.
 - [ ] **Runtime deprecation-warning wrapper.** A tiny helper to mark a specific
-  export deprecated; apply to gray-area exports like `BaseLinearDisplay` first.
+  export deprecated; apply to gray-area exports first.
   Ships now, starts learning usage.
 - [ ] **API-version declaration + load-time compat check.** Plugins declare a
   target API version; host fails loud on mismatch. Largest piece; depends on

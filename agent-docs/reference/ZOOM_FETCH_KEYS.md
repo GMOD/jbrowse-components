@@ -120,11 +120,11 @@ across one refetches every visible region together. See
   placement flushes the coarse blocks itself (`settleCoarseBlocks`) and only the
   continuous zoom and drag paths wait out the 500ms.
 
-**Two answer presence instead.** `LinearMultiRowFeatureDisplay` and canvas both
-return `rpcDataMap.has(idx)` as deliberate defense-in-depth: a refused region is
-never marked loaded on any current path, so these overrides decide which way a
-future drift between the commit sites and the stores would fail — as a refetch,
-not a freeze.
+**Presence-only answers.** `LinearBasicDisplay` has no `regionHasData`
+override and takes the mixin's, which also reads the payload's zoom stamp.
+`LinearMultiRowFeatureDisplay` returns `regionHasPinnedData`, which asks for a
+loaded payload whose partition field matches the pin. The old
+`rpcDataMap.has(idx)` hooks are gone (`MultiRegionDisplayMixin`).
 
 **A second tier is neither a zoom input nor a presence answer: it is a second store
 with its own span.** MAF zoomed out with a configured summary adapter pulls

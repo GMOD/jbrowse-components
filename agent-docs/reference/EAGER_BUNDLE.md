@@ -150,7 +150,7 @@ confirmed to fail with the `publishReExports()` call removed.
 
 Since 2026-09-16 the registry is generated from the exports maps
 (`scripts/generateReExports.ts`, ADR-128) and serves every subpath of
-`@jbrowse/core` and the display toolkit — 376 keys where the hand list named
+`@jbrowse/core` and the display toolkit — over 400 module keys (`reExports.generated.json`) where the hand list named
 25 core subpaths — so the namespace spread above names far more than it did. It
 is the same lazy chunk, and each product holds its own generated map
 (`reExports.generated.ts`).
@@ -184,9 +184,7 @@ registries and records what each realm evaluates before the first plugin's
 module scope runs; CI re-checks it. Quote it from
 `scripts/registryBundleSizes.json` rather than from prose — that file is what
 CI gates, so a number written anywhere else is one the next commit can falsify.
-The 272 -> 182 KB above is the hand-measured figure from the
-`workerNamespaceNames.ts` era and is kept as the record of that change, not as
-the current answer. The worker's residual rendering stack is `ui/theme.ts`
+The worker's residual rendering stack is `ui/theme.ts`
 reaching `@mui/material/styles`, which brings @mui/system and emotion with it:
 the exemption ADR-128 took over marking every theme reader as UI.
 
@@ -277,8 +275,8 @@ Four modules imported it — the Loader, `StartScreen`, `LeftSidePanel`,
 plugin graph before the start screen could draw a pixel.
 
 The heavy half is now `StartScreen/pluginManagers.tsx`, and `util.tsx` is a
-facade reaching it through `import()`. Its three entry points
-(`loadPluginManager`, `openSpecLink`, `createStartScreenPluginManager`) were
+facade reaching it through `import()`. Its four entry points
+(`loadPluginManager`, `launchSnapshot`, `openSpecLink`, `createStartScreenPluginManager`) were
 already async and awaited at every call site, so the deferral costs a chunk load
 on a path that was going to wait on IPC and plugin fetches anyway.
 
@@ -322,7 +320,7 @@ to session-open. It was tried, and reverted:
 Typecheck, 3135 unit tests and every bundle measurement stayed green through
 that, because unit tests use MainThreadRpc and never exercise worker chunk
 loading. Only `pnpm package:linux:no-installer && pnpm test:e2e:headless` caught
-it. Suspected mechanism, unconfirmed: `src/util.tsx` (`fetchCJS`) is imported by
+it. Suspected mechanism, unconfirmed (`src/util.tsx` has since gone): `src/util.tsx` (`fetchCJS`) was imported by
 `rpcWorker.ts`, a **separate webpack entry**; a second async renderer consumer
 appears to tip `splitChunks` into extracting a shared chunk the worker must then
 load at runtime, which is what `products/jbrowse-desktop/scripts/config.ts`
@@ -635,7 +633,8 @@ Two things generalize from it:
 - **Read a hand-written re-export barrel next to generated code as a report of
   this bug.** `plugins/canvas` had two hops (`passes/constants.ts` →
   `components/sharedRendererConstants.ts`) doing by hand what the consts module
-  now does, with a header quantifying the ~67 KB it was dodging. Both are gone.
+  now does, with a header quantifying the ~67 KB it was dodging. `constants.ts`
+  is gone; `LinearBasicDisplay/components/sharedRendererConstants.ts` is back.
   If you find a third, check whether the generator can own it before adding to it.
 - **A shader constant now comes from `x.consts.generated.ts`, and there is no
   reason to reach past it.** Importing the same name from `x.generated.ts`
@@ -692,7 +691,7 @@ already had: `WebGPUHal.create` per pass inside pipeline resolution,
 `WebGL2Hal.create` for every declared pass (a draw cannot wait), the compute
 cache with its build. Both HALs load before claiming the canvas's context, so a
 load that fails falls down the ladder like any rung failure. A WebGPU session
-never evaluates GLSL, a Canvas2D one evaluates neither, and the 90 `slangPass`
+never evaluates GLSL, a Canvas2D one evaluates neither, and the `slangPass`
 call sites did not change.
 
 **What a user sees on first opening a display:** its loading state, held until
@@ -875,7 +874,7 @@ webpack**, for the reason below.
 
 ### `import * as coreUi` is the reason, and removing it costs more than it saves
 
-`ReExports/modules.ts` still holds `import * as coreUi from '../ui/index.ts'`.
+`ReExports/coreModules.generated.ts` still holds `import * as m63 from '../ui/index.ts'`.
 webpack's used-exports analysis is global, not per chunk, so **a namespace
 import marks every export of the barrel used, and any chunk that holds
 `ui/index.ts` holds all 122 modules under it** whatever its importer asked for.
@@ -931,12 +930,12 @@ by the 1.2 s the bytes themselves take.
 ## What is not worth chasing
 
 **Not worth chasing:** the ~1.4 MB raw that remains is dominated by plugin
-registration — models, adapters, config schemas for all 18 core plugins — plus
+registration — models, adapters, config schemas for all 30 core plugins — plus
 React and MST. That is the engine, and `createViewState`'s contract is that all
 of it is registered before a session snapshot can be read.
 
 **Not worth chasing: building those config schemas.** Registering jbrowse-web's
-31 plugins builds every schema in the tree, and the whole of it — module eval
+30 plugins builds every schema in the tree, and the whole of it — module eval
 and registration together — is what the first two rows below cost. Measured
 2026-09-20:
 
