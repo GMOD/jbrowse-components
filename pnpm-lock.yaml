@@ -1349,8 +1349,8 @@ importers:
         specifier: ^6.7.0
         version: 6.7.0(mobx@7.0.5)
       gff-nostream:
-        specifier: ^5.5.0
-        version: 5.5.0
+        specifier: ^5.6.0
+        version: 5.6.0
       mobx:
         specifier: ^7.0.5
         version: 7.0.5
@@ -8466,8 +8466,8 @@ packages:
     resolution: {integrity: sha512-7nF7C9fIPFEMHgEMEfgIlO9wDdZ8CyHw27rWciFZfHvHDReIiPhsYuzPRXsfvBCqFy1l8RRyyWV7QLM+ZhUJsQ==}
     engines: {node: '>=20.20.0'}
 
-  gff-nostream@5.5.0:
-    resolution: {integrity: sha512-UhWyvP+hLnu/gu0QUWBZTGOlF0CAaX4vu9jmRQY+9bl2KKSO/Ab5g9nJU6aIFpDQCyRrXlup2QK3w8pvRJwFpQ==}
+  gff-nostream@5.6.0:
+    resolution: {integrity: sha512-b+Sjs/OqhRqsaD2obaVxghQ68s6kKJQ9E4K+D/3enIjTzkRZ7v9PvMoQ89HcGPMULHWrbVVPNHFPE9xMbCKl1g==}
 
   github-from-package@0.0.0:
     resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
@@ -17090,7 +17090,7 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  gff-nostream@5.5.0: {}
+  gff-nostream@5.6.0: {}
 
   github-from-package@0.0.0: {}
 
