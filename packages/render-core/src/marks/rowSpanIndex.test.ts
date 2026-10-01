@@ -1,4 +1,5 @@
 import { rowSpanIndex, spansInRow } from './rowSpanIndex.ts'
+import { HIDDEN_ROW } from './rowTable.ts'
 
 function lcg(seed: number) {
   let s = seed
@@ -98,4 +99,21 @@ test('a row with each insertion just ahead of the run it interrupts answers as a
   expect(query(x, x2, undefined, 0, 5, 5)).toEqual([0, 1, 2])
   expect(query(x, x2, undefined, 0, 11, 12)).toEqual([2, 3, 4, 5])
   expect(query(x, x2, undefined, 0, 13, 30)).toEqual([5])
+})
+
+// Under `rows`, a region fetched before the split keys every instance at
+// HIDDEN_ROW until its refetch lands; sized by that key the index would hold
+// 2^32 rows.
+test('an instance on HIDDEN_ROW stands in no row, and the index is sized by the rows it holds', () => {
+  const x = Uint32Array.of(0, 10, 20, 30)
+  const x2 = Uint32Array.of(10, 20, 30, 40)
+  const row = Uint32Array.of(1, HIDDEN_ROW, 1, HIDDEN_ROW)
+  const index = rowSpanIndex(x, x2, row)
+  expect(index.rowStart).toHaveLength(3)
+  expect([...index.order]).toEqual([0, 2])
+  expect(query(x, x2, row, 1, 0, 40)).toEqual([0, 2])
+  expect(query(x, x2, row, HIDDEN_ROW, 0, 40)).toEqual([])
+  const hidden = rowSpanIndex(x, x2, new Uint32Array(4).fill(HIDDEN_ROW))
+  expect(hidden.rowStart).toHaveLength(2)
+  expect(hidden.order).toHaveLength(0)
 })

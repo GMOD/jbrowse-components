@@ -59,3 +59,50 @@ test('a hidden section keeps a constant colour as one number', () => {
 test('a hidden section leaves the size scale it widened', () => {
   expect(hideFirstSection(linkLayer()).sizeScale!.extent).toEqual([3, 4])
 })
+
+function splitOn(field: string): MarkRegionData['request'] {
+  return {
+    region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+    layers: [],
+    facet: { field },
+  } as unknown as MarkRegionData['request']
+}
+
+// A facet field change refetches each region on its own, so one region can
+// land under the new field while another still holds the old field's sections.
+test('a region split on the outgoing field draws nothing, though its keys match the new field', () => {
+  const stale: MarkRegionData = {
+    layers: [linkLayer()],
+    facet: [
+      { key: '0', firstRow: 0, rowCount: 1 },
+      { key: '1', firstRow: 1, rowCount: 1 },
+    ],
+    request: splitOn('nm'),
+  }
+  const fresh: MarkRegionData = {
+    layers: [linkLayer()],
+    facet: [
+      { key: '-1', firstRow: 0, rowCount: 1 },
+      { key: '1', firstRow: 1, rowCount: 1 },
+    ],
+    request: splitOn('strand'),
+  }
+  const layout = facetLayout(
+    [stale, fresh],
+    categoricalField('strand'),
+    new Set(),
+  )
+  expect(facetRegion(stale, layout).layers[0]!.count).toBe(0)
+  expect(facetRegion(fresh, layout).layers[0]!.count).toBe(4)
+})
+
+test('a region fetched before the facet draws nothing, and the density sidecar keeps its rows', () => {
+  const layout = facetLayout([], categoricalField('strand'), new Set())
+  const unsplit: MarkRegionData = {
+    layers: [linkLayer()],
+    request: { ...splitOn('strand')!, facet: undefined },
+  }
+  expect(facetRegion(unsplit, layout).layers[0]!.count).toBe(0)
+  const sidecar: MarkRegionData = { layers: [linkLayer()] }
+  expect(facetRegion(sidecar, layout)).toBe(sidecar)
+})

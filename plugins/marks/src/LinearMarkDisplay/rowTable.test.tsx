@@ -296,6 +296,35 @@ test('a rows field change starts a new key space', () => {
   expect(display.scaleDataMap).toBe(display.rpcDataMap)
 })
 
+// A Uint32Array this long fails the test rather than being allocated, so an
+// index sized by the hidden key cannot take the 16 GB it would ask for.
+const RUNAWAY_LENGTH = 1e8
+
+function refusingRunawayArrays<T>(run: () => T) {
+  const Real = globalThis.Uint32Array
+  globalThis.Uint32Array = new Proxy(Real, {
+    construct(target, args: unknown[]) {
+      if (typeof args[0] === 'number' && args[0] > RUNAWAY_LENGTH) {
+        throw new RangeError(`Uint32Array(${args[0]})`)
+      }
+      return Reflect.construct(target, args) as object
+    },
+  })
+  try {
+    return run()
+  } finally {
+    globalThis.Uint32Array = Real
+  }
+}
+
+// The held region keeps drawing under the refetch scrim, and the plot keeps
+// asking it for hits, until the refetch under the new field lands.
+test('a hover over a region the new rows field has not reached answers nothing', () => {
+  const display = loaded({ rows: 'source' })
+  setConf(display.conf, ['rows', 'field'], 'tissue')
+  expect(refusingRunawayArrays(() => sweepHits(display))).toEqual([])
+})
+
 test('a value only a departed load knew hides nothing', () => {
   const display = loaded({ rows: 'source' })
   void display.rpcDataMap

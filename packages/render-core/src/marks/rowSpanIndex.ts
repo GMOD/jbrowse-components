@@ -1,3 +1,5 @@
+import { HIDDEN_ROW } from './rowTable.ts'
+
 /**
  * Instances from `x` to `x2` grouped by the row they stand in, each row's in
  * start order, with the furthest end any instance of the row has reached so
@@ -86,8 +88,9 @@ function sortRow(
 
 /**
  * The index over `count` spans from `x` to `x2`, each in the row `row` names
- * (row 0 where there is no lane). A counting sort by row, a sort of each row
- * the input left out of start order, and one pass for the reach.
+ * (row 0 where there is no lane), less those on `HIDDEN_ROW`, which no row
+ * holds. A counting sort by row, a sort of each row the input left out of
+ * start order, and one pass for the reach.
  */
 export function rowSpanIndex(
   x: Uint32Array,
@@ -98,15 +101,19 @@ export function rowSpanIndex(
   let rows = 1
   if (row) {
     for (let i = 0; i < count; i++) {
-      if (row[i]! + 1 > rows) {
-        rows = row[i]! + 1
+      const r = row[i]!
+      if (r !== HIDDEN_ROW && r + 1 > rows) {
+        rows = r + 1
       }
     }
   }
   const rowStart = new Uint32Array(rows + 1)
   if (row) {
     for (let i = 0; i < count; i++) {
-      rowStart[row[i]! + 1]!++
+      const r = row[i]!
+      if (r !== HIDDEN_ROW) {
+        rowStart[r + 1]!++
+      }
     }
     for (let r = 0; r < rows; r++) {
       rowStart[r + 1] = rowStart[r + 1]! + rowStart[r]!
@@ -114,18 +121,22 @@ export function rowSpanIndex(
   } else {
     rowStart[1] = count
   }
-  const order = new Uint32Array(count)
+  const placed = rowStart[rows]!
+  const order = new Uint32Array(placed)
   if (row) {
     const next = rowStart.slice(0, rows)
     for (let i = 0; i < count; i++) {
-      order[next[row[i]!]!++] = i
+      const r = row[i]!
+      if (r !== HIDDEN_ROW) {
+        order[next[r]!++] = i
+      }
     }
   } else {
     for (let i = 0; i < count; i++) {
       order[i] = i
     }
   }
-  const reach = new Uint32Array(count)
+  const reach = new Uint32Array(placed)
   for (let r = 0; r < rows; r++) {
     const from = rowStart[r]!
     const to = rowStart[r + 1]!

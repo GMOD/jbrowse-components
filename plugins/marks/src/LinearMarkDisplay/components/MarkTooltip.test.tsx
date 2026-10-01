@@ -13,6 +13,7 @@ import type { MarkTooltipModel } from './MarkTooltip.tsx'
 const at = { x: 10, y: 10, clientX: 10, clientY: 10 }
 
 const NO_FACET: FacetLayout = {
+  field: '',
   sections: [],
   rowCount: 0,
   firstRowOf: new Map(),
@@ -117,6 +118,7 @@ test('a mark in an implicit pileup names its section', async () => {
     encodings: [{ color: 'red' }],
     markTypes: ['span'],
     facetLayout: {
+      field: 'svtype',
       sections: [
         { key: 'DEL', label: 'svtype: DEL', firstRow: 0, rowCount: 2 },
         { key: 'DUP', label: 'svtype: DUP', firstRow: 2, rowCount: 3 },
@@ -147,6 +149,7 @@ test('under a facet the band reads as the section chip rather than an index', as
     encodings: [{ row: 'row', color: 'red' }],
     markTypes: ['span'],
     facetLayout: {
+      field: 'svtype',
       sections: [
         { key: 'DEL', label: 'svtype: DEL', firstRow: 0, rowCount: 2 },
         { key: 'DUP', label: 'svtype: DUP', firstRow: 2, rowCount: 3 },

@@ -20,6 +20,8 @@ export interface FacetBand {
 }
 
 export interface FacetLayout {
+  /** The field whose values the sections are. */
+  field: string
   sections: FacetBand[]
   rowCount: number
   /** Where each drawn key's rows start, a merged key's inside the overflow band. */
@@ -92,7 +94,13 @@ export function facetLayout(
       rowCount: next - firstRow,
     })
   }
-  return { sections, rowCount: next, firstRowOf, rows: false }
+  return {
+    field: field.field,
+    sections,
+    rowCount: next,
+    firstRowOf,
+    rows: false,
+  }
 }
 
 /**
@@ -104,6 +112,7 @@ export function rowsLayout(
   field: CategoricalField,
 ): FacetLayout {
   return {
+    field: field.field,
     sections: rows.map((row, i) => ({
       key: row.name,
       label: field.sectionLabel(row.name),
@@ -118,8 +127,10 @@ export function rowsLayout(
 
 const HIDDEN = 0xffffffff
 
-function rowRemap(region: MarkRegionData, layout: FacetLayout) {
-  const table = region.facet ?? []
+function rowRemap(
+  table: NonNullable<MarkRegionData['facet']>,
+  layout: FacetLayout,
+) {
   const total = table.reduce((n, s) => Math.max(n, s.firstRow + s.rowCount), 0)
   const remap = new Uint32Array(total).fill(HIDDEN)
   for (const { key, firstRow, rowCount } of table) {
@@ -153,9 +164,40 @@ function gatherFloats(lane: Float32Array, kept: Uint32Array) {
   return new Float32Array(bits.buffer, bits.byteOffset, bits.length)
 }
 
+// The layer with only the instances `kept` lists, every lane gathered
+// through that one list, and its extents and hit index over what is left.
+function keptLayer(
+  layer: StoredLayer,
+  kept: Uint32Array,
+  row: Uint32Array | undefined,
+): StoredLayer {
+  const x = gather(layer.x, kept)
+  const x2 = gather(layer.x2, kept)
+  const y = layer.y && gatherFloats(layer.y, kept)
+  const { featureIndex, text, color } = layer
+  return drawnScales({
+    ...layer,
+    count: kept.length,
+    x,
+    x2,
+    y,
+    row,
+    featureIndex: featureIndex ? gather(featureIndex, kept) : kept,
+    color: typeof color === 'object' ? gather(color, kept) : color,
+    colorValue: layer.colorValue && gatherFloats(layer.colorValue, kept),
+    glyph: layer.glyph && gather(layer.glyph, kept),
+    text: text && Array.from(kept, i => text[i]!),
+    size: layer.size && gatherFloats(layer.size, kept),
+    x2Ref: layer.x2Ref && gather(layer.x2Ref, kept),
+    x2Region: layer.x2Region && gather(layer.x2Region, kept),
+    flatbush:
+      layer.flatbush && kept.length > 0 ? hitIndexOf(x, x2, y) : undefined,
+    flatbushData: undefined,
+  })
+}
+
 // The layer as drawn: its rows on the layout, and a hidden section's
-// instances gone from every lane and from the hit index, each lane gathered
-// through the one list of instances kept.
+// instances gone.
 function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
   const { row } = layer
   if (!row) {
@@ -179,42 +221,34 @@ function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
       kept[k++] = i
     }
   }
-  const x = gather(layer.x, kept)
-  const x2 = gather(layer.x2, kept)
-  const y = layer.y && gatherFloats(layer.y, kept)
-  const { featureIndex, text, color } = layer
-  return drawnScales({
-    ...layer,
-    count: shown,
-    x,
-    x2,
-    y,
-    row: gather(moved, kept),
-    featureIndex: featureIndex ? gather(featureIndex, kept) : kept,
-    color: typeof color === 'object' ? gather(color, kept) : color,
-    colorValue: layer.colorValue && gatherFloats(layer.colorValue, kept),
-    glyph: layer.glyph && gather(layer.glyph, kept),
-    text: text && Array.from(kept, i => text[i]!),
-    size: layer.size && gatherFloats(layer.size, kept),
-    x2Ref: layer.x2Ref && gather(layer.x2Ref, kept),
-    x2Region: layer.x2Region && gather(layer.x2Region, kept),
-    flatbush: layer.flatbush && shown > 0 ? hitIndexOf(x, x2, y) : undefined,
-    flatbushData: undefined,
-  })
+  return keptLayer(layer, kept, gather(moved, kept))
 }
 
 /**
  * A region's layers on the one layout, so the chips and the bands they name
  * agree whichever region an instance came from and whatever the reader has
- * hidden. A region no facet split, the density sidecar's, keeps its rows.
+ * hidden. The density sidecar's region, which answers no request, keeps its
+ * rows. A region fetched before the split or split on another field draws
+ * nothing until its refetch lands, as under `rows`: its rows hold the old
+ * field's sections, which a matching key would place in the new layout at
+ * the old depth.
  */
 export function facetRegion(
   region: MarkRegionData,
   layout: FacetLayout,
 ): MarkRegionData {
-  if (!region.facet) {
+  const sections = sectionsOn(region, layout.field)
+  if (sections) {
+    const remap = rowRemap(sections, layout)
+    return { ...region, layers: region.layers.map(l => facetLayer(l, remap)) }
+  }
+  if (!region.request) {
     return region
   }
-  const remap = rowRemap(region, layout)
-  return { ...region, layers: region.layers.map(l => facetLayer(l, remap)) }
+  return {
+    ...region,
+    layers: region.layers.map(l =>
+      keptLayer(l, new Uint32Array(0), l.row && new Uint32Array(0)),
+    ),
+  }
 }
