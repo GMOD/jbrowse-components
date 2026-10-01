@@ -323,7 +323,7 @@
     "canvas-sequencer-ts": "^3.1.3",
     "compare-versions": "^6.1.1",
     "dompurify": "^3.4.16",
-    "generic-filehandle2": "^2.4.0",
+    "generic-filehandle2": "^2.5.0",
     "idb": "^8.0.3",
     "mobx": "^7.0.5",
     "mobx-react": "^10.0.2",

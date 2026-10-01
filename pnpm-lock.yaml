@@ -169,8 +169,8 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1(supports-color@8.1.1)
       generic-filehandle2:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.5.0
+        version: 2.5.0
       globals:
         specifier: ^17.12.0
         version: 17.12.0
@@ -450,8 +450,8 @@ importers:
         specifier: ^3.4.16
         version: 3.4.16
       generic-filehandle2:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.5.0
+        version: 2.5.0
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -892,8 +892,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       generic-filehandle2:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.5.0
+        version: 2.5.0
       mobx:
         specifier: ^7.0.5
         version: 7.0.5
@@ -926,8 +926,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       generic-filehandle2:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.5.0
+        version: 2.5.0
       mobx:
         specifier: ^7.0.5
         version: 7.0.5
@@ -1162,8 +1162,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       generic-filehandle2:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.5.0
+        version: 2.5.0
       mobx:
         specifier: ^7.0.5
         version: 7.0.5
@@ -1573,8 +1573,8 @@ importers:
         specifier: ^6.7.0
         version: 6.7.0(mobx@7.0.5)
       generic-filehandle2:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.5.0
+        version: 2.5.0
       mobx:
         specifier: ^7.0.5
         version: 7.0.5
@@ -3172,8 +3172,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-test-utils
       generic-filehandle2:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.5.0
+        version: 2.5.0
       pixelmatch:
         specifier: ^7.2.0
         version: 7.2.0
@@ -8419,6 +8419,9 @@ packages:
   generic-filehandle2@2.4.0:
     resolution: {integrity: sha512-+ah1SBkiusKbBguKuj11zrdAMRdWE9g3zPTtUQtC5LRCGvbfg534KHRjolJFnapCj0Xtt4ZQxs86Vr/WpfuZ8A==}
 
+  generic-filehandle2@2.5.0:
+    resolution: {integrity: sha512-qrzjvxfFTswagFQRW7Gc8m5Fy+ra538mrXg4Ggtn+05PpeGYQ9QPkvQQ2O4poa2eGdUN/jAR49M5Y31Wvrr/xA==}
+
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
@@ -13438,25 +13441,25 @@ snapshots:
       '@gmod/bgzf-filehandle': 6.7.0
       '@gmod/shared-read-cache': 1.7.2
       '@jbrowse/quick-lru': 8.0.0
-      generic-filehandle2: 2.4.0
+      generic-filehandle2: 2.5.0
 
   '@gmod/bbi@11.3.0':
     dependencies:
       '@gmod/shared-read-cache': 1.7.2
-      generic-filehandle2: 2.4.0
+      generic-filehandle2: 2.5.0
 
   '@gmod/bed@2.3.1': {}
 
   '@gmod/bgzf-filehandle@6.7.0':
     dependencies:
-      generic-filehandle2: 2.4.0
+      generic-filehandle2: 2.5.0
       pako-esm2: 2.0.2
 
   '@gmod/cram@14.2.0':
     dependencies:
       '@gmod/shared-read-cache': 1.7.2
       crc: 4.3.2
-      generic-filehandle2: 2.4.0
+      generic-filehandle2: 2.5.0
       md5: 2.3.0
     transitivePeerDependencies:
       - buffer
@@ -13490,7 +13493,7 @@ snapshots:
 
   '@gmod/range-cache-filehandle@1.4.0':
     dependencies:
-      generic-filehandle2: 2.4.0
+      generic-filehandle2: 2.5.0
 
   '@gmod/shared-read-cache@1.7.2': {}
 
@@ -17046,6 +17049,8 @@ snapshots:
       - supports-color
 
   generic-filehandle2@2.4.0: {}
+
+  generic-filehandle2@2.5.0: {}
 
   gensync@1.0.0-beta.2: {}
 
