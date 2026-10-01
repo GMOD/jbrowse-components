@@ -106,13 +106,26 @@ export function displayModeMetrics(
 export type LabelRoomFactors = Required<Pick<LayoutInputs, 'labelRoomFactor'>> &
   Pick<LayoutInputs, 'geneLabelRoomFactor'>
 
-// `prepareRefPack` takes this type so the prepared half of a pack cannot read
-// either factor, making one prep valid for every factor probed.
 export type LabelRoomFactorFreeInputs = Omit<
   LayoutInputs,
   keyof LabelRoomFactors
 >
 
-// Twin of `LabelRoomFactorFreeInputs`: one preparation is valid for every
-// count, because the trim happens per count in `trimPreparedRef`.
 export type IsoformCountFreeInputs = Omit<LayoutInputs, 'maxIsoformsPerGene'>
+
+// `prepareRefPack` takes this type, so one prep is valid for every factor and
+// count probed; the trim happens per count in `trimPreparedRef`.
+export type PackPrepInputs = Omit<
+  LayoutInputs,
+  keyof LabelRoomFactors | 'maxIsoformsPerGene'
+>
+
+// What a fit solve turns between probes. Every key is present, so spread over
+// a probe's inputs it overrides any stray value they carry.
+export type PackKnobs = {
+  [K in keyof LabelRoomFactors | 'maxIsoformsPerGene' | 'bodyScale']:
+    | LayoutInputs[K]
+    | undefined
+}
+
+export type PackKnobFreeInputs = Omit<LayoutInputs, keyof PackKnobs>

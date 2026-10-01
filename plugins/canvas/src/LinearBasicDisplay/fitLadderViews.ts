@@ -16,6 +16,8 @@ import {
   createContentHeightProbe,
   createIncrementalLayout,
   createIsoformCountProbe,
+  createPackHeightCache,
+  createPackHeightProbe,
 } from './layout.ts'
 import {
   keepsAnyName,
@@ -26,7 +28,7 @@ import {
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureFacet } from './facet.ts'
 import type { FitRung, FitStage, LabelReservation } from './fitLadder.ts'
-import type { IncrementalLayout } from './layout.ts'
+import type { IncrementalLayout, PackHeightCache } from './layout.ts'
 import type {
   IsoformCountFreeInputs,
   LabelRoomFactorFreeInputs,
@@ -83,6 +85,9 @@ export interface FitLadderHost {
   incrementalLayoutIsoforms: IncrementalLayout
   incrementalLayoutThinned: IncrementalLayout
   incrementalLayoutBare: IncrementalLayout
+  packHeightsIsoforms: PackHeightCache
+  packHeightsThinned: PackHeightCache
+  packHeightsDecimated: PackHeightCache
 }
 
 // One instance per reservation config: a shared instance can only cache one
@@ -130,6 +135,18 @@ export function fitLadderVolatiles() {
      * #volatile
      */
     incrementalLayoutBare: createIncrementalLayout(),
+    /**
+     * #volatile
+     */
+    packHeightsIsoforms: createPackHeightCache(),
+    /**
+     * #volatile
+     */
+    packHeightsThinned: createPackHeightCache(),
+    /**
+     * #volatile
+     */
+    packHeightsDecimated: createPackHeightCache(),
   }
 }
 
@@ -226,6 +243,7 @@ export function fitLadderViews(self: FitLadderHost) {
         self.rpcDataMap,
         this.decimatedBaseInputs,
         self.fitMeasureFeatureIds,
+        self.packHeightsDecimated,
       )
     },
     /**
@@ -265,6 +283,7 @@ export function fitLadderViews(self: FitLadderHost) {
         self.rpcDataMap,
         this.isoformsBaseInputs,
         self.fitMeasureFeatureIds,
+        self.packHeightsIsoforms,
       )
     },
     /**
@@ -331,15 +350,23 @@ export function fitLadderViews(self: FitLadderHost) {
      * its own prep, since the pack reads body heights from it.
      */
     bodyScaleHeightProbe(
+      cache: PackHeightCache,
       inputs: LabelRoomFactorFreeInputs,
       factors?: LabelRoomFactors,
     ): (bodyScale: number) => number {
+      const heightAt = createPackHeightProbe(
+        self.rpcDataMap,
+        inputs,
+        self.fitMeasureFeatureIds,
+        cache,
+      )
       return bodyScale =>
-        createContentHeightProbe(
-          self.rpcDataMap,
-          { ...inputs, bodyScale },
-          self.fitMeasureFeatureIds,
-        )(factors?.labelRoomFactor, factors?.geneLabelRoomFactor)
+        heightAt({
+          bodyScale,
+          maxIsoformsPerGene: inputs.maxIsoformsPerGene,
+          labelRoomFactor: factors?.labelRoomFactor,
+          geneLabelRoomFactor: factors?.geneLabelRoomFactor,
+        })
     },
     /**
      * #getter
@@ -365,7 +392,10 @@ export function fitLadderViews(self: FitLadderHost) {
         return undefined
       }
       return solveBodyScale(
-        this.bodyScaleHeightProbe(this.thinnedBaseInputs),
+        this.bodyScaleHeightProbe(
+          self.packHeightsThinned,
+          this.thinnedBaseInputs,
+        ),
         self.fitTargetHeight,
         this.fitLabeledBodyFloor,
       )
@@ -458,7 +488,11 @@ export function fitLadderViews(self: FitLadderHost) {
       const floor = this.fitLabeledBodyFloor
       return (
         solveBodyScale(
-          this.bodyScaleHeightProbe(this.decimatedBaseInputs, factors),
+          this.bodyScaleHeightProbe(
+            self.packHeightsDecimated,
+            this.decimatedBaseInputs,
+            factors,
+          ),
           self.fitTargetHeight,
           floor,
         ) ?? floor

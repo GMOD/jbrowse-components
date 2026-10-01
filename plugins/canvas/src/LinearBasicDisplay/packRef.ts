@@ -39,11 +39,11 @@ import type {
   DisplayModeMetrics,
   LabelRoomFactorFreeInputs,
   LayoutInputs,
+  PackPrepInputs,
 } from './layoutInputs.ts'
 
 // Three stages so a solve probes ~10 factors against one preparation; the
-// `*FreeInputs` parameter types stop a stage reading a knob it must be
-// invariant to.
+// parameter types stop a stage reading a knob it must be invariant to.
 
 interface FeatureGeometry {
   readonly startBp: number
@@ -197,7 +197,7 @@ function gatherFeatureGeometry(
 // and the label overhang are then decided among that section's own features.
 export function prepareRefPack(
   regions: [number, FeatureDataResult][],
-  inputs: LabelRoomFactorFreeInputs,
+  inputs: PackPrepInputs,
   metrics: DisplayModeMetrics,
   featureIds?: ReadonlySet<string>,
 ): PackPrep {

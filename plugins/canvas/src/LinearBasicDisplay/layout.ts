@@ -29,6 +29,9 @@ import type {
   LabelRoomFactorFreeInputs,
   LayoutInputs,
   LayoutRegionData,
+  PackKnobFreeInputs,
+  PackKnobs,
+  PackPrepInputs,
 } from './layoutInputs.ts'
 import type { PackPrep, PackTrims } from './packRef.ts'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
@@ -87,7 +90,7 @@ const UNGROUPED: GroupId = { key: '', label: '' }
 // the one-section case, so nothing downstream carries an ungrouped branch.
 function prepareRefSections(
   regions: [number, LayoutRegionData][],
-  inputs: LabelRoomFactorFreeInputs,
+  inputs: PackPrepInputs,
   metrics: DisplayModeMetrics,
   sectionOf: ((item: FlatbushItem) => GroupId) | undefined,
 ): RefSections {
@@ -332,51 +335,103 @@ function layoutRefGroups(
   return { out, collapsedIds }
 }
 
-// A probe skips `cloneMutableFields` and `applyLayoutToRegion`, and the prep
-// is hoisted out of the loop because nothing in it depends on the factor.
-// Probe and commit run the identical pack over identical raw values, so the
-// measured height is the committed height by construction.
-function createPackProbe(
-  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
-  inputs: LabelRoomFactorFreeInputs,
-  // Narrows only the measurement, never the pack.
-  measureIds: ReadonlySet<string> | undefined,
-) {
-  const metrics = displayModeMetrics(inputs)
-  const sectionOf = sectionAssignment(rpcDataMap, inputs)
-  const preps = [...groupRawByRef(rpcDataMap).values()].map(regions =>
-    prepareRefSections(regions, inputs, metrics, sectionOf),
+// The bottom of every placed row of one probe pack, so any on-screen set can
+// be measured against it without packing again. Same `isPlacedRow` test and
+// `measureIds` narrowing as `maxBottom`, so a probe and the committed layout
+// answer the same question.
+interface PackedBottoms {
+  ids: string[]
+  bottoms: number[]
+}
+
+function packedBottoms(
+  refs: readonly RefSections[],
+  packInputs: LayoutInputs,
+  metrics: DisplayModeMetrics,
+): PackedBottoms {
+  const packed = refs.map(
+    ref => packRefSections(ref, packInputs, metrics).sections,
   )
-  return (maxIsoformsPerGene: number | undefined) => {
-    const trimmedInputs = { ...inputs, maxIsoformsPerGene }
-    return (
-      labelRoomFactor: number | undefined,
-      geneLabelRoomFactor?: number,
-    ) => {
-      const packInputs = {
-        ...trimmedInputs,
-        labelRoomFactor,
-        geneLabelRoomFactor,
-      }
-      const refs = preps.map(
-        ref => packRefSections(ref, packInputs, metrics).sections,
-      )
-      const tops = stackSections(refs, inputs)
-      let max = 0
-      for (const sections of refs) {
-        for (const { id, pack } of sections) {
-          max = Math.max(
-            max,
-            packedRowsHeight(
-              offsetLayoutMap(pack.layoutMap, tops.get(id.key)!),
-              pack.layoutHeights,
-              measureIds,
-            ),
-          )
+  const tops = stackSections(packed, packInputs)
+  const ids: string[] = []
+  const bottoms: number[] = []
+  for (const sections of packed) {
+    for (const { id, pack } of sections) {
+      for (const [fid, y] of offsetLayoutMap(
+        pack.layoutMap,
+        tops.get(id.key)!,
+      )) {
+        if (isPlacedRow(y)) {
+          ids.push(fid)
+          bottoms.push(y + pack.layoutHeights.get(fid)!)
         }
       }
-      return max
     }
+  }
+  return { ids, bottoms }
+}
+
+function measuredHeight(
+  { ids, bottoms }: PackedBottoms,
+  measureIds: ReadonlySet<string> | undefined,
+) {
+  let max = 0
+  for (let i = 0; i < ids.length; i++) {
+    if ((!measureIds || measureIds.has(ids[i]!)) && bottoms[i]! > max) {
+      max = bottoms[i]!
+    }
+  }
+  return max
+}
+
+// A probe skips `cloneMutableFields` and `applyLayoutToRegion`, and preps
+// once per body scale, since no other knob reaches the prep. Probe and commit
+// run the identical pack over identical raw values, so the measured height is
+// the committed height by construction.
+export function createPackHeightProbe(
+  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
+  inputs: PackKnobFreeInputs,
+  // Narrows only the measurement, never the pack.
+  measureIds: ReadonlySet<string> | undefined,
+  cache: PackHeightCache = createPackHeightCache(),
+) {
+  const packs = cache(rpcDataMap, inputs)
+  let prepared:
+    | {
+        bodyScale: number | undefined
+        metrics: DisplayModeMetrics
+        refs: RefSections[]
+      }
+    | undefined
+  const prepAt = (bodyScale: number | undefined) => {
+    if (!prepared || prepared.bodyScale !== bodyScale) {
+      const prepInputs: PackPrepInputs = { ...inputs, bodyScale }
+      const metrics = displayModeMetrics(prepInputs)
+      const sectionOf = sectionAssignment(rpcDataMap, prepInputs)
+      prepared = {
+        bodyScale,
+        metrics,
+        refs: [...groupRawByRef(rpcDataMap).values()].map(regions =>
+          prepareRefSections(regions, prepInputs, metrics, sectionOf),
+        ),
+      }
+    }
+    return prepared
+  }
+  return (knobs: PackKnobs) => {
+    const key = `${knobs.bodyScale}:${knobs.maxIsoformsPerGene}:${knobs.labelRoomFactor}:${knobs.geneLabelRoomFactor}`
+    let packed = packs.get(key)
+    if (packed) {
+      packs.delete(key)
+    } else {
+      const { refs, metrics } = prepAt(knobs.bodyScale)
+      packed = packedBottoms(refs, { ...inputs, ...knobs }, metrics)
+    }
+    packs.set(key, packed)
+    if (packs.size > PROBE_PACK_LIMIT) {
+      packs.delete(packs.keys().next().value!)
+    }
+    return measuredHeight(packed, measureIds)
   }
 }
 
@@ -384,25 +439,32 @@ export function createContentHeightProbe(
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LabelRoomFactorFreeInputs,
   measureIds?: ReadonlySet<string>,
+  cache?: PackHeightCache,
 ) {
-  return createPackProbe(
-    rpcDataMap,
-    inputs,
-    measureIds,
-  )(inputs.maxIsoformsPerGene)
+  const heightAt = createPackHeightProbe(rpcDataMap, inputs, measureIds, cache)
+  return (labelRoomFactor: number | undefined, geneLabelRoomFactor?: number) =>
+    heightAt({
+      bodyScale: inputs.bodyScale,
+      maxIsoformsPerGene: inputs.maxIsoformsPerGene,
+      labelRoomFactor,
+      geneLabelRoomFactor,
+    })
 }
 
 export function createIsoformCountProbe(
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: IsoformCountFreeInputs,
   measureIds?: ReadonlySet<string>,
+  cache?: PackHeightCache,
 ) {
-  const trimAt = createPackProbe(rpcDataMap, inputs, measureIds)
+  const heightAt = createPackHeightProbe(rpcDataMap, inputs, measureIds, cache)
   return (maxIsoformsPerGene: number) =>
-    trimAt(maxIsoformsPerGene)(
-      inputs.labelRoomFactor,
-      inputs.geneLabelRoomFactor,
-    )
+    heightAt({
+      bodyScale: inputs.bodyScale,
+      maxIsoformsPerGene,
+      labelRoomFactor: inputs.labelRoomFactor,
+      geneLabelRoomFactor: inputs.geneLabelRoomFactor,
+    })
 }
 
 // Shared by the committed layout and the probe so both pack the same groups
@@ -453,6 +515,54 @@ const LAYOUT_CACHE_KEYS = Object.keys(LAYOUT_CACHE_KEYS_RECORD) as Exclude<
   keyof LayoutInputs,
   'reversedRegions'
 >[]
+
+const PACK_KNOBS: Record<keyof PackKnobs, true> = {
+  bodyScale: true,
+  maxIsoformsPerGene: true,
+  labelRoomFactor: true,
+  geneLabelRoomFactor: true,
+}
+
+const PROBE_CONFIG_KEYS: (keyof PackKnobFreeInputs)[] = [
+  'reversedRegions',
+  ...LAYOUT_CACHE_KEYS.filter(
+    (key): key is Exclude<keyof PackKnobFreeInputs, 'reversedRegions'> =>
+      !(key in PACK_KNOBS),
+  ),
+]
+
+// Two settles of the largest solve: two tiers of label-room factors at ~11
+// packs each, then ~7 body scales.
+const PROBE_PACK_LIMIT = 64
+
+interface PackHeightCacheEntry {
+  rpcDataMap: ReadonlyMap<number, LayoutRegionData>
+  inputs: PackKnobFreeInputs
+  packs: Map<string, PackedBottoms>
+}
+
+// Keeps a probe site's packs across settles of the view, since a pan moves
+// only the on-screen set and no pack reads it. Like `createIncrementalLayout`,
+// an instance holds one config, so each probe site takes its own.
+export function createPackHeightCache() {
+  let entry: PackHeightCacheEntry | undefined
+  return (
+    rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
+    inputs: PackKnobFreeInputs,
+  ) => {
+    const prev = entry
+    if (
+      prev?.rpcDataMap === rpcDataMap &&
+      PROBE_CONFIG_KEYS.every(key => prev.inputs[key] === inputs[key])
+    ) {
+      return prev.packs
+    }
+    entry = { rpcDataMap, inputs, packs: new Map() }
+    return entry.packs
+  }
+}
+
+export type PackHeightCache = ReturnType<typeof createPackHeightCache>
 
 interface GroupCache {
   inputs: LayoutInputs

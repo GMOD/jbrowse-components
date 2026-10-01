@@ -174,18 +174,13 @@ export function featureIdsTouchingBlocks(
   return ids
 }
 
-// Same `isPlacedRow` test and `measureIds` narrowing as `maxBottom`, so a
-// probe and the committed layout answer the same question.
+// Same `isPlacedRow` test as `maxBottom`.
 export function packedRowsHeight(
   layoutMap: Map<string, number>,
   layoutHeights: Map<string, number>,
-  measureIds?: ReadonlySet<string>,
 ) {
   let max = 0
   for (const [id, top] of layoutMap) {
-    if (measureIds && !measureIds.has(id)) {
-      continue
-    }
     const bottom = top + layoutHeights.get(id)!
     if (isPlacedRow(top) && bottom > max) {
       max = bottom
