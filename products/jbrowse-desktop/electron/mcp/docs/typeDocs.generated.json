@@ -446,7 +446,7 @@
   },
   "TimeTraveller": {
    "category": "General",
-   "text": "# TimeTraveller (General model, core)\n\nUndo/redo history for a target state-tree node: records snapshots as it changes and exposes canUndo/canRedo with undo/redo actions.\n\n## Actions\n- `stopTrackingUndo() => void`\n- `resumeTrackingUndo() => void`\n- `addUndoState(snapshot: unknown) => void`\n- `initialize() => void`: Start recording history for the target store. Re-runs whenever the root swaps in a new session node, so it must be idempotent: the previous registration is disposed and the history reset, because `history` is volatile while `undoIdx` is a…\n- `undo() => void`\n- `redo() => void`\n\n## Getters\n- `canUndo: boolean`\n- `canRedo: boolean`\n\n## Properties\n- `undoIdx = -1`\n- `targetPath = ''`"
+   "text": "# TimeTraveller (General model, core)\n\nUndo/redo history for a target state-tree node: records snapshots as it changes and exposes canUndo/canRedo with undo/redo actions.\n\n## Actions\n- `setHasPendingRecord(value: boolean) => void`\n- `flushPendingRecord() => void`\n- `stopTrackingUndo() => void`\n- `resumeTrackingUndo() => void`\n- `addUndoState(snapshot: unknown) => void`\n- `initialize() => void`: Start recording history for the target store. Re-runs whenever the root swaps in a new session node, so it must be idempotent: the previous registration is disposed and the history reset, because `history` is volatile while `undoIdx` is a…\n- `undo() => void`\n- `redo() => void`\n\n## Getters\n- `canUndo: boolean`\n- `canRedo: boolean`\n\n## Properties\n- `undoIdx = -1`\n- `targetPath = ''`"
   },
   "TokenEntryInternetAccount": {
    "category": "Internet Account",

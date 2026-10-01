@@ -24,6 +24,7 @@ changes and exposes canUndo/canRedo with undo/redo actions.
 | --- | --- |
 | <span id="volatile-history">**history**</span><br><code>history: [] as unknown[]</code> |  |
 | <span id="volatile-nottrackingundo">**notTrackingUndo**</span><br><code>notTrackingUndo: false</code> |  |
+| <span id="volatile-haspendingrecord">**hasPendingRecord**</span><br><code>hasPendingRecord: false</code> |  |
 
 ## Getters
 
@@ -38,6 +39,8 @@ changes and exposes canUndo/canRedo with undo/redo actions.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="action-sethaspendingrecord">**setHasPendingRecord**</span><br><code>(value: boolean) =&gt; void</code> |  |
+| <span id="action-flushpendingrecord">**flushPendingRecord**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-stoptrackingundo">**stopTrackingUndo**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-resumetrackingundo">**resumeTrackingUndo**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-addundostate">**addUndoState**</span><br><code>(snapshot: unknown) =&gt; void</code> |  |
