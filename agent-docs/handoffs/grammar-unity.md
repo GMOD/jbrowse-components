@@ -111,7 +111,7 @@ zero getters: it edits and reads back slots a schema already has, and getters,
 fetch keys and render state stay where they are.
 
 A bare colour string reads two ways by position, as GRAMMAR_OF_GRAPHICS.md
-§"Spelling, checked 2026-09-27" decided: inside a mark's `encoding` it is a
+§"Spelling" decided: inside a mark's `encoding` it is a
 field (`plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts:157`,
 `shorthand: 'field'`), and on a display's colour object it is the constant
 (`ChannelSpec`'s `parseColor`). The merged box keeps both, since they sit at
