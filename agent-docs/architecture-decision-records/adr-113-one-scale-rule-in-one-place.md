@@ -232,3 +232,9 @@ a span's ramp on the main thread as it resolves the others'. `rowRect`'s
 shared instance struct is untouched, since the value rides the colour slot
 reinterpreted. `text` alone keeps the worker-resolved lane, and
 `unpinned-span-ramp` is `unpinned-text-ramp`.
+
+### Amended 2026-09-30: `text` reads it too
+
+Since [ADR-202](adr-202-every-mark-colour-resolves-on-the-main-thread.md) a
+text mark's ramp resolves on the main thread over the domain the display
+unions, as every other mark's does, and `unpinned-text-ramp` is gone.

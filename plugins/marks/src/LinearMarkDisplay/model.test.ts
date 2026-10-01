@@ -1028,8 +1028,8 @@ test('a colour ramp pins the end it names, and a domain beside it is named as un
   // a colour over the plotted field is the display's own, not a fetch input
   expect(display.encodings[0]!.color).toBe(DEFAULT_MARK_COLOR)
   expect(display.markColors[0]).toMatchObject({
-    kind: 'value',
-    readsY: true,
+    kind: 'numbers',
+    fromY: true,
     encoding: {
       field: 'score',
       scale: 'linear',
@@ -2626,7 +2626,7 @@ test('a color or shape naming a field other than score and no scale reads it cat
     scale: 'categorical',
   })
   expect(display.markColors[1]).toMatchObject({
-    kind: 'categorical',
+    kind: 'categories',
     encoding: { field: 'svlen', range: ['white', 'red'] },
   })
 })

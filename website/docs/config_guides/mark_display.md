@@ -326,9 +326,11 @@ or overlapping spans stay readable.
   Each cut in `domain` opens an interval, so `range` carries one colour more.
   The key lists a row per interval, and a grey one for features with no value.
 
-A change to a colour's constant, scale, cuts, ends, domain or range redraws
-without refetching, since the display paints every colour from the values it
-already loaded. Only a `jexl:` colour, which reads each feature, refetches.
+The display paints every colour from the data it already loaded, so a change to
+a constant colour, a palette, a domain, a threshold's cuts or a ramp's ends
+redraws without fetching again. A change that needs new data from each feature
+does fetch again: a new field, a switch between categories and numbers, or a
+`jexl:` colour.
 
 `title` heads the key and has the axis `title`'s three states: unset reads the
 `field` name, text is that text, `""` draws no heading. Marks share one key only

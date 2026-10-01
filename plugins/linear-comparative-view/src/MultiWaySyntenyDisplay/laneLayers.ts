@@ -7,7 +7,7 @@ import type {
   EncodedChannels,
   LayerRequest,
 } from '@jbrowse/core/util/markEncoding'
-import type { MarkColor } from '@jbrowse/plugin-marks'
+import type { ColorSource } from '@jbrowse/plugin-marks'
 import type { BarChannels, MarkColorScale } from '@jbrowse/render-core/marks'
 
 export const LANE_LAYER_GAP_PX = 2
@@ -81,23 +81,27 @@ export function barChannelsOf(
   return { x, x2, y: squished ?? y, color, colorValue, count }
 }
 
-const coloredChannels = new WeakMap<
+const coloredLayers = new WeakMap<
   EncodedChannels,
-  { color: MarkColor; channels: EncodedChannels }
+  { color: ColorSource; colored: EncodedChannels }
 >()
 
 /**
- * A payload with its mark's colour resolved, as the mark display stamps its
- * regions, so a colour edit repaints what is held and refetches nothing; one
- * per payload and colour, so the bar cell keyed on it survives a settle.
+ * A lane layer's payload coloured as its mark declares, as the mark display
+ * colours its regions, so a colour edit recolours what is held and fetches
+ * nothing. Kept per payload and colour, so the bar cell built on it is reused
+ * and uploads nothing new.
  */
-export function laneLayerChannels(channels: EncodedChannels, color: MarkColor) {
-  const held = coloredChannels.get(channels)
+export function coloredLaneLayer(
+  channels: EncodedChannels,
+  color: ColorSource,
+) {
+  const held = coloredLayers.get(channels)
   if (held?.color === color) {
-    return held.channels
+    return held.colored
   }
   const colored = withMarkColor(channels, color)
-  coloredChannels.set(channels, { color, channels: colored })
+  coloredLayers.set(channels, { color, colored })
   return colored
 }
 

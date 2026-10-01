@@ -48,7 +48,7 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   markColorOf,
   markLayerRequest,
-  markPaintScales,
+  paintScalesOver,
   stepChannels,
 } from '@jbrowse/plugin-marks'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -103,7 +103,7 @@ import {
   LANE_TEMPLATE_MAX_BP,
   barCellOf,
   laneLayerBpPerPx,
-  laneLayerChannels,
+  coloredLaneLayer,
   laneLayerDomains,
   laneLayerOrigin,
   laneLayerSpecLane,
@@ -221,7 +221,7 @@ import type {
 } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { MarkColor } from '@jbrowse/plugin-marks'
+import type { ColorSource } from '@jbrowse/plugin-marks'
 import type { MarkColorScale } from '@jbrowse/render-core/marks'
 import type {
   AttributeRange,
@@ -2350,7 +2350,9 @@ export function stateModelFactory(
       },
     }))
     .views(self => {
-      const sameColors = sameAsLast<MarkColor[][]>()
+      // a fresh array per read would recolour every held payload on each read
+      // nothing observes, so an equal one keeps the last one's identity
+      const sameColors = sameAsLast<ColorSource[][]>()
       return {
         /**
          * #getter
@@ -2364,10 +2366,10 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * each layer's mark colours, resolved off what the worker read as
-         * the mark display resolves its own
+         * where each lane layer's marks take their colour from, one per mark,
+         * read as the mark display reads its own
          */
-        get laneLayerColors(): MarkColor[][] {
+        get laneLayerColors(): ColorSource[][] {
           return sameColors(
             self.configuration.laneLayers.map(layer =>
               layer.marks.map(m => markColorOf(m, stepChannels(m.transform))),
@@ -2375,26 +2377,31 @@ export function stateModelFactory(
           )
         },
         /**
-         * #getter
-         * each layer's marks' colour scales, a ramp's domain unioned over
-         * every lane it holds, so one value takes one colour in every lane
+         * #method
+         * a held payload's layers, each coloured as its mark declares
          */
-        get laneLayerPaintScales(): (MarkColorScale | undefined)[][] {
+        coloredLayersOf(held: HeldLaneLayer): EncodedChannels[] {
+          const colors = this.laneLayerColors[held.layer]
+          return held.channels.map((channels, mark) => {
+            const color = colors?.[mark]
+            return color ? coloredLaneLayer(channels, color) : channels
+          })
+        },
+        /**
+         * #getter
+         * the ramp or threshold each lane layer's bars turn a number into a
+         * colour through, one per mark and undefined for a mark coloured
+         * another way; a ramp's range spans every lane, so one value is one
+         * colour in all of them
+         */
+        get laneLayerColorScales(): (MarkColorScale | undefined)[][] {
           const colors = this.laneLayerColors
-          const regions = colors.map(
-            () => [] as { layers: EncodedChannels[] }[],
-          )
-          for (const held of self.laneLayerData.held?.values() ?? []) {
-            const marks = colors[held.layer]
-            regions[held.layer]?.push({
-              layers: held.channels.map((channels, mark) => {
-                const color = marks?.[mark]
-                return color ? laneLayerChannels(channels, color) : channels
-              }),
-            })
+          const held = colors.map(() => [] as { layers: EncodedChannels[] }[])
+          for (const payload of self.laneLayerData.held?.values() ?? []) {
+            held[payload.layer]?.push({ layers: this.coloredLayersOf(payload) })
           }
-          return regions.map((held, layer) =>
-            markPaintScales(held, colors[layer]!.length),
+          return held.map((regions, layer) =>
+            paintScalesOver(regions, colors[layer]!.length),
           )
         },
       }
@@ -2424,8 +2431,7 @@ export function stateModelFactory(
         const cells = new Map<string, MultiWayCell>()
         const layers: BarLayer[] = []
         const domains = self.laneLayerDomains
-        const colors = self.laneLayerColors
-        const paintScales = self.laneLayerPaintScales
+        const colorScales = self.laneLayerColorScales
         for (const {
           specLane,
           held,
@@ -2439,12 +2445,11 @@ export function stateModelFactory(
             continue
           }
           const { start, end } = held.region
-          held.channels.forEach((channels, mark) => {
-            const color = colors[held.layer]?.[mark]
+          self.coloredLayersOf(held).forEach((channels, mark) => {
             const cell = barCellOf(
-              color ? laneLayerChannels(channels, color) : channels,
+              channels,
               domain,
-              paintScales[held.layer]?.[mark],
+              colorScales[held.layer]?.[mark],
             )
             if (cell) {
               const key = `bars:${specLane}:${mark}`

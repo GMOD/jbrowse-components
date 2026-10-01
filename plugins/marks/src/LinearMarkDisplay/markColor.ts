@@ -1,3 +1,19 @@
+/**
+ * Where a mark's colour is worked out (ADR-202).
+ *
+ * The worker holds the features, so it reads from each one only the raw data
+ * a colour needs: a category's key, or a number. This module, on the main
+ * thread, turns that data into colours through the config. An edit that only
+ * changes how data maps to colour — a constant, a palette, a domain, a
+ * threshold's cuts, a ramp's ends — then recolours what is already loaded and
+ * fetches nothing.
+ *
+ * For example, `color: { field: 'type', scale: 'categorical' }` asks the worker
+ * for each feature's index into the types it met, and an edit to `range`
+ * repaints those indexes here. A ramp over `score` on a bar whose `y` is
+ * `score` asks the worker for nothing extra: it reads the heights the bar
+ * already has.
+ */
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -25,63 +41,60 @@ import type {
   ThresholdRef,
 } from '@jbrowse/core/util/markEncoding'
 
-/** A quantitative colour: a ramp or a threshold over a numeric field. */
+/** A colour over a number: a ramp, or a threshold's bands. */
 export type ValueColor = ContinuousRef | ThresholdRef
 
-/**
- * How a mark's colour resolves. Every form but `worker` resolves on the main
- * thread off what the worker read, so an edit to it re-stamps the regions and
- * refetches none: a `constant`, a `categorical` scale over the keys each
- * region met, and a `value` scale over the numbers, read off the `y` lane
- * where the colour reads the field the mark plots. A `jexl:` callback is the
- * worker's, since it reads the feature.
- */
-export type MarkColor =
+/** How a mark's colour is worked out: one of four ways. */
+export type ColorSource =
+  /** One colour for every feature; the worker reads nothing for it. */
   | { kind: 'constant'; color: number }
-  | {
-      kind: 'categorical'
-      encoding: CategoricalRef & { range?: string[] }
-    }
-  | { kind: 'value'; encoding: ValueColor; readsY: boolean }
-  | { kind: 'worker'; encoding: string }
+  /** A colour per category; the worker sends each feature's category key. */
+  | { kind: 'categories'; encoding: CategoricalRef & { range?: string[] } }
+  /**
+   * A ramp or threshold over a number; the worker sends the numbers, unless
+   * they are the `y` values the mark already plots (`fromY`).
+   */
+  | { kind: 'numbers'; encoding: ValueColor; fromY: boolean }
+  /** A `jexl:` expression the worker evaluates per feature into a colour. */
+  | { kind: 'expression'; encoding: string }
 
 export function markColorOf(
   mark: MarkConfig,
   channels: StepChannels,
-): MarkColor {
+): ColorSource {
   const encoding = featureColorEncoding(mark.encoding.color)
   if (typeof encoding !== 'object') {
     const value = encoding ?? DEFAULT_MARK_COLOR
     return isJexl(value)
-      ? { kind: 'worker', encoding: value }
+      ? { kind: 'expression', encoding: value }
       : { kind: 'constant', color: cssColorToABGR(value) }
   }
   if (encoding.scale === 'categorical') {
-    return { kind: 'categorical', encoding }
+    return { kind: 'categories', encoding }
   }
   const y = mark.encoding.y || channels.y
   return {
-    kind: 'value',
+    kind: 'numbers',
     encoding,
-    readsY: plotsValue(mark.mark) && !!y && encoding.field === y,
+    fromY: plotsValue(mark.mark) && !!y && encoding.field === y,
   }
 }
 
 /**
- * The colour as the worker takes it: what it reads per feature and nothing
- * the display paints through, so the field alone crosses for a scale and the
- * default for a constant. A quantitative field crosses as a threshold with no
- * cuts, which reads the numbers and flags the keyless ones and builds no
- * ramp table, whose shared lookup table would be cloned on every fetch.
+ * What the worker is asked to read for the colour: the field alone for a
+ * scale, and the default colour, which it ignores, where it reads nothing.
+ * A number field is asked for as a threshold with no cuts: that reads the
+ * numbers and flags missing ones without building a ramp, whose cached
+ * lookup table would be copied on every fetch.
  */
-export function wireColorOf(color: MarkColor): ColorEncoding {
+export function wireColorOf(color: ColorSource): ColorEncoding {
   switch (color.kind) {
-    case 'worker':
+    case 'expression':
       return color.encoding
-    case 'categorical':
+    case 'categories':
       return { field: color.encoding.field, scale: 'categorical' }
-    case 'value':
-      return color.readsY
+    case 'numbers':
+      return color.fromY
         ? DEFAULT_MARK_COLOR
         : { field: color.encoding.field, scale: 'threshold' }
     case 'constant':
@@ -89,25 +102,24 @@ export function wireColorOf(color: MarkColor): ColorEncoding {
   }
 }
 
-/**
- * The lanes the worker fills for the colour: none for a constant, which the
- * stamp writes whole, so a switch between a constant and a colour over `y`
- * asks the worker for nothing new.
- */
-export function colorLanesOf(color: MarkColor): MarkLane[] {
+/** The lanes the worker fills for the colour. */
+export function colorLanesOf(color: ColorSource): MarkLane[] {
   switch (color.kind) {
     case 'constant':
       return []
-    case 'worker':
+    case 'expression':
       return ['color']
-    case 'categorical':
+    case 'categories':
       return ['colorKey']
-    case 'value':
-      return color.readsY ? [] : ['colorValue']
+    case 'numbers':
+      return color.fromY ? [] : ['colorValue']
   }
 }
 
-function valueScaleTable(
+// The table the legend, the hover and the shaders read for a ramp or
+// threshold, built from the config and the region's numbers, keeping which
+// missing or non-numeric values the worker met.
+function numberScaleTable(
   values: Float32Array,
   count: number,
   color: ValueColor,
@@ -123,7 +135,7 @@ function valueScaleTable(
     return {
       kind: 'threshold',
       field: color.field,
-      // the cuts the shader holds, so the key lists the bands that paint
+      // the GPU holds this many cuts, so the key lists only bands that paint
       domain: thresholdCuts(color.domain ?? []).slice(0, MAX_COLOR_CUTS),
       ...(color.range ? { range: [...color.range] } : {}),
       ...met,
@@ -152,12 +164,13 @@ function valueScaleTable(
   }
 }
 
-// Each key the worker met, painted through the declaration and ordered by it;
-// keys of another field, or under no categorical declaration, paint as the
-// worker's table did.
-function categoricalLayer<L extends EncodedChannels>(
+// Each feature's category key, looked up in the worker's list of the keys it
+// met, painted through the config's domain and range, the list reordered to
+// the config's domain for the legend. Keys of another field, or with no
+// categorical config, take the field's own default colours.
+function colorByKeys<L extends EncodedChannels>(
   layer: L,
-  colorKey: Uint32Array,
+  keys: Uint32Array,
   encoding?: CategoricalRef & { range?: string[] },
 ): L {
   const read = layer.scale
@@ -175,7 +188,7 @@ function categoricalLayer<L extends EncodedChannels>(
   )
   const color = new Uint32Array(layer.count)
   for (let k = 0; k < layer.count; k++) {
-    color[k] = palette[colorKey[k]!]!
+    color[k] = palette[keys[k]!]!
   }
   const entries = read.entries
     .map((e, i) => ({ value: e.value, color: palette[i]! }))
@@ -197,22 +210,23 @@ function categoricalLayer<L extends EncodedChannels>(
 
 const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
 
-// A layer fetched under another form of colour, while its refetch is pending,
-// stays drawn as the field it holds reads on its own: keys in the field's own
-// colours, numbers through a linear ramp over them, and the default colour
-// where it holds none; a `jexl:` callback's colours as they came.
-function heldLayer<L extends EncodedChannels>(layer: L): L {
+// A region the worker read for another kind of colour, drawn while its refetch is
+// on the way: whatever it holds coloured as plainly as it can be, so the mark
+// stays on screen. Keys take their field's default colours, numbers a linear
+// ramp over themselves, an expression's colours stay, and a region holding no
+// colour data takes the default colour.
+function colorWhileRefetching<L extends EncodedChannels>(layer: L): L {
   const read = layer.scale
   if (layer.colorKey) {
-    return categoricalLayer(layer, layer.colorKey)
+    return colorByKeys(layer, layer.colorKey)
   }
   if (layer.colorValue && read) {
-    const own: ContinuousRef = { field: read.field, scale: 'linear' }
+    const ramp: ContinuousRef = { field: read.field, scale: 'linear' }
     return {
       ...layer,
       scale:
         layer.count > 0
-          ? valueScaleTable(layer.colorValue, layer.count, own, read)
+          ? numberScaleTable(layer.colorValue, layer.count, ramp, read)
           : undefined,
     }
   }
@@ -222,16 +236,18 @@ function heldLayer<L extends EncodedChannels>(layer: L): L {
 }
 
 /**
- * One layer with its colour resolved off what the worker read, for a caller
- * holding layers outside a region: multi-way synteny's lane layers.
+ * One layer, as the worker sent it, with its colour worked out from `color`:
+ * the colour lane and scale table the painters, the legend and the hover read.
+ * Exported for multi-way synteny's lane layers, which hold layers outside a
+ * region.
  */
 export function withMarkColor<L extends EncodedChannels>(
   layer: L,
-  color: MarkColor,
+  color: ColorSource,
 ): L {
   switch (color.kind) {
-    case 'worker':
-      return heldLayer(layer)
+    case 'expression':
+      return layer.color === undefined ? colorWhileRefetching(layer) : layer
     case 'constant':
       return layer.color === color.color &&
         !layer.colorValue &&
@@ -245,16 +261,16 @@ export function withMarkColor<L extends EncodedChannels>(
             colorKey: undefined,
             scale: undefined,
           }
-    case 'categorical':
+    case 'categories':
       return layer.colorKey
-        ? categoricalLayer(layer, layer.colorKey, color.encoding)
-        : heldLayer(layer)
-    case 'value': {
-      const { readsY, encoding } = color
+        ? colorByKeys(layer, layer.colorKey, color.encoding)
+        : colorWhileRefetching(layer)
+    case 'numbers': {
+      const { fromY, encoding } = color
       const read = layer.scale
-      const values = readsY ? layer.y : layer.colorValue
-      if (!values || (!readsY && read?.field !== encoding.field)) {
-        return heldLayer(layer)
+      const values = fromY ? layer.y : layer.colorValue
+      if (!values || (!fromY && read?.field !== encoding.field)) {
+        return colorWhileRefetching(layer)
       }
       return {
         ...layer,
@@ -262,7 +278,7 @@ export function withMarkColor<L extends EncodedChannels>(
         colorKey: undefined,
         scale:
           layer.count > 0
-            ? valueScaleTable(values, layer.count, encoding, read)
+            ? numberScaleTable(values, layer.count, encoding, read)
             : undefined,
       }
     }
@@ -270,17 +286,13 @@ export function withMarkColor<L extends EncodedChannels>(
 }
 
 /**
- * The region with each layer's colour resolved off what the worker read: a
- * constant as the number every instance paints, a categorical scale's keys
- * painted into a lane, and a quantitative scale's table built over the values,
- * the `y` lane aliased as `colorValue` where the colour reads it. The legend,
- * the hover and the painters then read the lane and the table as though the
- * worker had filled them. Once per region and per declaration, so a colour
- * edit re-stamps every region and refetches none.
+ * Every layer of a region coloured as `withMarkColor` colours one,
+ * and the region itself where nothing changed. The display runs this once per
+ * region and per set of colours, before anything else reads the region.
  */
 export function withMarkColors(
   region: MarkRegionData,
-  colors: readonly MarkColor[],
+  colors: readonly ColorSource[],
 ): MarkRegionData {
   const layers = region.layers.map((layer, i) => {
     const color = colors[i]

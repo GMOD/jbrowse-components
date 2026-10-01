@@ -591,7 +591,7 @@ export function paintScaleOf(
  * Each of `markCount` marks' paint scale over `regions`, for a display that
  * draws marks with no key of its own: multi-way synteny's lane layers.
  */
-export function markPaintScales(
+export function paintScalesOver(
   regions: Iterable<MarkRegionData>,
   markCount: number,
 ) {

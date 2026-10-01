@@ -99,3 +99,11 @@ it plots.
   table is what the legend reads, so a main-thread edit that never reaches the
   worker has to build the table itself anyway; once it does, the request is
   the same with or without the colour.
+
+### Amended 2026-09-30: every colour, not only one over `y`
+
+[ADR-202](adr-202-every-mark-colour-resolves-on-the-main-thread.md) carries
+this ADR's main-thread resolution to every colour but a `jexl:` callback.
+`valueColor.ts`, `valueColorOf` and `withValueColors` are gone into
+`markColor.ts`'s `markColorOf` and `withMarkColors`, and the text mark reads
+the display's scale as the others do.

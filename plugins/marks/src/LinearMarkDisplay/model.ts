@@ -158,7 +158,7 @@ import type { FacetLayout } from './facet.ts'
 import type { MarkHitInfo } from './findMarkHit.ts'
 import type { MateRegion } from './linkOwners.ts'
 import type { RegionLayer } from './markAutoscale.ts'
-import type { MarkColor } from './markColor.ts'
+import type { ColorSource } from './markColor.ts'
 import type {
   MarkEntry,
   MarkRegionData,
@@ -504,11 +504,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each mark's colour as the display resolves it off what the worker
-         * read; the declaration and not a fetch input, so an edit to it
-         * refetches nothing.
+         * Where each mark's colour comes from (`markColor.ts`), read from the
+         * config alone, so editing a colour recolours the loaded regions
+         * rather than fetching them again.
          */
-        get markColors(): MarkColor[] {
+        get markColors(): ColorSource[] {
           const { markChannels } = this
           return self.conf.marks.map((m, i) => markColorOf(m, markChannels[i]!))
         },
@@ -821,10 +821,12 @@ export function stateModelFactory(
             self.hiddenGroupKeys,
           )
         })
-        const sameColors = sameAsLast<MarkColor[]>()
-        // Each colour is stamped onto each region here, before the rows are
-        // keyed or the sections offset, so everything downstream reads the
-        // lane and the table as though the worker had filled them.
+        // A fresh array per read would recolour every region on each read
+        // nothing observes, so an equal one keeps the last one's identity.
+        const sameColors = sameAsLast<ColorSource[]>()
+        // Each region is coloured here, first, so the rows, the sections, the
+        // legend and the painters all read its colours as if the worker had
+        // sent them.
         const colored = createEncodeMemo(
           () => self.featurePayloads,
           () => sameColors(self.markColors),

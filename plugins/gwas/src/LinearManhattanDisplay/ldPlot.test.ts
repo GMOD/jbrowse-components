@@ -117,7 +117,7 @@ test("LD colouring makes the default plot LocusZoom's, as the add-track workflow
   const [partners, index] = display.encodings
   expect(display.markColors).toMatchObject([
     {
-      kind: 'value',
+      kind: 'numbers',
       encoding: {
         field: 'ld',
         scale: 'threshold',
