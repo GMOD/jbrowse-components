@@ -50,6 +50,12 @@ turns and dollars, not characters removed.
 
 `--runs N` reports `passes/runs` per task; one run hides a flaky task.
 
+Results land in `~/agent-evals/<time>-<commit>-<model>-<set>-<client>/` unless
+`--out` says otherwise; `summary.json` records the commit and the `claude`
+version, since a client release moves the numbers on its own.
+`node scripts/agent-evals/compareEvals.ts <baseline> <variant>` prints two runs
+per task.
+
 ## The agents that count
 
 The target is sonnet and opus at their best, so a weaker model is not the

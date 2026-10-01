@@ -32,8 +32,13 @@
 //
 // Usage: node test/mcpAgentEval.ts [--model sonnet|opus|haiku] [--filter name]
 //        [--runs N] [--out dir] [--client code|desktop] [--attach]
-//        [--set dev|heldout|all]
-import { spawn } from 'node:child_process'
+//        [--set dev|heldout|all] [--server path/to/mcpServer.js]
+//
+// `--server` measures another stdio server against the same app: the
+// instructions, the tool descriptions and the docs all live in that one file,
+// so a variant of them is `pnpm build:electron-main` on a branch and a copy of
+// its build/mcpServer.js.
+import { execFileSync, spawn } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -63,8 +68,24 @@ const filter = flag('filter', '')
 const runs = Number(flag('runs', '1'))
 const taskSet = flag('set', 'dev') as TaskSet
 const client = flag('client', 'code')
+const git = (...gitArgs: string[]) =>
+  execFileSync('git', gitArgs, { cwd: repoRoot, encoding: 'utf8' }).trim()
+const commit = git('rev-parse', '--short', 'HEAD')
+const dirty = git('status', '--porcelain').length > 0
+const claudeVersion = execFileSync('claude', ['--version'], {
+  encoding: 'utf8',
+}).trim()
+const startedAt = new Date().toISOString()
+// Outside tmp, so a baseline is still there to compare the next change against
 const outDir = path.resolve(
-  flag('out', path.join(os.tmpdir(), `jbrowse-agent-eval-${Date.now()}`)),
+  flag(
+    'out',
+    path.join(
+      os.homedir(),
+      'agent-evals',
+      `${startedAt.slice(0, 16).replace(':', '')}-${commit}${dirty ? '-dirty' : ''}-${model}-${taskSet}-${client}`,
+    ),
+  ),
 )
 const attach = args.includes('--attach')
 
@@ -328,7 +349,9 @@ function median(values: number[]) {
 
 fs.mkdirSync(outDir, { recursive: true })
 const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'jbrowse-agent-eval-cwd-'))
-const serverPath = path.join(desktopRoot, 'build/mcpServer.js')
+const serverPath = path.resolve(
+  flag('server', path.join(desktopRoot, 'build/mcpServer.js')),
+)
 const proxyPath = path.join(
   repoRoot,
   'scripts/agent-evals/desktopClientProxy.ts',
@@ -432,6 +455,8 @@ const medians = tasks.map(task => {
     tokens: of(m => m.tokensIn + m.cacheWrite + m.cacheRead + m.tokensOut),
     chars: of(m => Object.values(m.chars).reduce((a, n) => a + n, 0)),
     seconds: of(m => m.seconds),
+    turns: of(m => m.turns),
+    usd: of(m => m.usd * 1000) / 1000,
     passes: rows.filter(m => m.pass).length,
     runs: rows.length,
   }
@@ -474,6 +499,11 @@ fs.writeFileSync(
   path.join(outDir, 'summary.json'),
   JSON.stringify(
     {
+      commit,
+      dirty,
+      server: serverPath,
+      startedAt,
+      claudeVersion,
       model,
       client,
       set: taskSet,
