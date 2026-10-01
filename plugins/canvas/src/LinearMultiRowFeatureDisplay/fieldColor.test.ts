@@ -153,6 +153,42 @@ describe('a ramp colour on the multi-row display', () => {
     })
   })
 
+  it('keys no itemRgb colour, since the ramp paints over every one', () => {
+    const features = [
+      { start: 0, end: 50, name: 'stateA', itemRgb: '255,0,0', score: 1 },
+      { start: 100, end: 150, name: 'stateB', itemRgb: '0,0,255', score: 9 },
+    ].map(
+      (attrs, i) =>
+        new SimpleFeature({
+          uniqueId: `f${i}`,
+          refName: 'ctgA',
+          sample: 's1',
+          ...attrs,
+        }),
+    )
+    const data = packMultiRowFeatures({
+      features,
+      partitionField: 'sample',
+      lengthField: '',
+      colorConfig: { value: undefined, field: 'score' },
+      jexl: createJexlInstance(),
+    })
+    expect(data.usedItemRgb).toBe(true)
+    for (const color of [
+      { field: 'score', scale: 'linear' },
+      { field: 'score' },
+    ]) {
+      const { display: d } = createTestEnvironment({
+        displayConfig: { rows: 'sample', color },
+      }).createDisplay()
+      d.setRpcData(0, data, ctgA)
+      expect(d.colorLegend).toEqual([])
+      expect(d.colorScales.map(scale => [scale.kind, scale.id])).toEqual([
+        ['ramp', 'features'],
+      ])
+    }
+  })
+
   // The band stands in before anything is drawn, and a key over nothing names
   // a domain no reader can check against the picture.
   it('keys nothing while no feature has drawn', () => {

@@ -577,9 +577,13 @@ export default function stateModelFactory(
        * color field's scale derives from the values the worker found, else
        * the one the painted colors derive, each named by the features
        * carrying it. All are gated on there being a painting to key, since a
-       * key is a claim about colors on screen.
+       * key is a claim about colors on screen. Empty under a ramp, which
+       * paints over all of them.
        */
       get colorLegend() {
+        if (self.colorRamp) {
+          return []
+        }
         const identity = self.hasDrawnFeatures ? self.identityLegend : []
         const field = self.paintedColorField
         return identity.length
