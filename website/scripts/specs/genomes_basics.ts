@@ -131,9 +131,9 @@ const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 // cell type and one with only H3K4me3 is poised.
 //
 // `rows` is a config setting, so an inline key on the spec's tracks entry
-// reaches it; the empty string is every source in one plot box, which is what
-// the hub's own `aggregate: transparentOverlay` asks for and what the
-// MultiQuantitativeTrack's `rows: 'source'` seed otherwise overrides.
+// reaches it. The hub writes these UCSC overlay multiWigs as an `xyplot`, every
+// source in one plot box, which is how they open; `'source'` is a row each.
+// Both frames spell theirs, so neither rests on the hub keeping its default.
 const H3K4ME3_OVERLAY = {
   trackId: 'hg38-wgEncodeRegMarkH3k4me3',
   type: 'LinearWiggleDisplay',
@@ -144,10 +144,12 @@ const H3K27AC_OVERLAY = {
   type: 'LinearWiggleDisplay',
   rows: '',
 }
+const H3K4ME3_ROWS = { ...H3K4ME3_OVERLAY, rows: 'source' }
+const H3K27AC_ROWS = { ...H3K27AC_OVERLAY, rows: 'source' }
 
 // The leaf the two frames differ by, spelled once so the hovers, the callout
 // boxes and the prose cannot name it three ways. The tracks open at `rows: ''`
-// on the default plot, so the pick that splits them is the same plot under the
+// on the XY plot, so the pick that splits them is the same plot under the
 // other layout. Written out rather than imported: check-menu-labels resolves
 // each segment against the app's own literals, which is the check that would
 // catch a rename, and an import would make it vacuous.
@@ -529,10 +531,9 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // Side by side (`stageColumns`), because the frames are a before and an after
   // of one radio button and a reader compares them across rather than down.
   //
-  // Frame 1 is UCSC's layered arrangement, `rows: ''` on both marks, all
-  // seven cell lines drawn over one another under the menu that separates
-  // them. Frame 2 is the same six tracks at the track type's own default, one
-  // row per cell line.
+  // Frame 1 is UCSC's layered arrangement the tracks open in, all seven cell
+  // lines drawn over one another under the menu that separates them. Frame 2
+  // is the same six tracks after that pick, one row per cell line.
   //
   // Frame 2 loads a session rather than clicking the checkbox: the click would
   // change ONE track, and a frame with one mark separated and one still
@@ -625,8 +626,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
                 { ...GENE_TRACK_COLLAPSED, height: 60 },
                 { trackId: 'hg38-cpgIslandExt', height: 50 },
                 { trackId: 'hg38-cCREregistry', height: 60 },
-                { trackId: H3K4ME3_OVERLAY.trackId, height: 150 },
-                { trackId: H3K27AC_OVERLAY.trackId, height: 150 },
+                { ...H3K4ME3_ROWS, height: 150 },
+                { ...H3K27AC_ROWS, height: 150 },
                 { trackId: 'hg38-epdNewPromoter', height: 60 },
               ],
             },

@@ -134,8 +134,8 @@ Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 - **EPDnew Promoters - EPDnew v6**
 
 The Layered H3K4Me3 and H3K27Ac tracks each hold seven cell lines, and open with
-one row per cell line (**Multi-row**). **Track menu → Plot type → Overlapping**
-draws all seven in one plot box, UCSC's layered arrangement. Their names carry
+all seven in one plot box, UCSC's layered arrangement. **Track menu → Plot type
+→ Multi-row → XY plot** gives each cell line a row of its own. Their names carry
 hg19 because ENCODE3 released them on it; the config points at the hg38 files.
 
 <Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs coloured by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the two marks with their seven cell lines in one plot box, and the Plot type menu that separates them. Right: the same six tracks with a row per cell line." />
