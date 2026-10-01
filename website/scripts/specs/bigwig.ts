@@ -519,7 +519,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           {
             type: 'box',
             anchor: {
-              selector: 'textarea[placeholder="https://host/sample1.bw"]',
+              selector: 'textarea[placeholder$="/sample1.bw"]',
             },
           },
           {
@@ -527,7 +527,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             text: 'Paste wiggle file URLs here',
             leader: true,
             anchor: {
-              selector: 'textarea[placeholder="https://host/sample1.bw"]',
+              selector: 'textarea[placeholder$="/sample1.bw"]',
               alignX: 'left',
             },
             dx: -60,
