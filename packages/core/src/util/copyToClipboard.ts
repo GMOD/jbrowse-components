@@ -26,7 +26,13 @@ export default async function copyToClipboard(
   // navigator.clipboard is only present in secure contexts; isSecureContext is
   // the real gate, so insecure http:// falls through to execCommand below
   if (format === 'text/plain' && window.isSecureContext) {
-    await navigator.clipboard.writeText(text)
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch (e) {
+      if (!execCommandCopy(text, format)) {
+        throw e
+      }
+    }
   } else if (!execCommandCopy(text, format)) {
     throw new Error('the browser rejected the clipboard write')
   }

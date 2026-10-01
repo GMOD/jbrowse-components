@@ -21,7 +21,8 @@ export function useGlobalSearch({
 }) {
   const { data, error, isLoading } = useFetch(
     enabled ? SEARCH_INDEX_URL : undefined,
-    () => fetchJson<Parameters<typeof searchAllGroups>[0]>(SEARCH_INDEX_URL),
+    (u: string, signal: AbortSignal) =>
+      fetchJson<Parameters<typeof searchAllGroups>[0]>(u, { signal }),
   )
 
   return {

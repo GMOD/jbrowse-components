@@ -142,8 +142,9 @@ export function useGenomesData({
 } {
   // no explicit type argument: it would pin `Data` and leave the key type to its
   // loose default, costing the fetcher its typed `u`
-  const { data, error, isLoading } = useFetch(url, (u: string) =>
-    fetchJson<Entry[]>(u),
+  const { data, error, isLoading } = useFetch(
+    url,
+    (u: string, signal: AbortSignal) => fetchJson<Entry[]>(u, { signal }),
   )
 
   // allData is the whole group, so a multi-selection built up across searches

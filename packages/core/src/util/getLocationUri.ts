@@ -22,7 +22,8 @@ export function resolveUri({
 }
 
 /**
- * An address with its query string dropped, which is what makes it safe to put
+ * An address with its query string and any username:password dropped, which is
+ * what makes it safe to put
  * on screen. A presigned S3 or GCS link carries its credential in the query — a
  * few hundred characters of `?X-Amz-Signature=…` — and a notice that renders one
  * puts it in front of whoever is looking at the screen and into every screenshot
@@ -34,7 +35,12 @@ export function resolveUri({
  * than a typed location.
  */
 export function redactSource(source: string) {
-  return source.includes('://') ? source.split(/[?#]/)[0]! : source
+  if (!source.includes('://')) {
+    return source
+  }
+  return source
+    .replace(/^([a-z][a-z\d+.-]*:\/\/)[^/?#]*@/i, '$1')
+    .split(/[?#]/)[0]!
 }
 
 /**

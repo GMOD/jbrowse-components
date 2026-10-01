@@ -1,4 +1,8 @@
-import { downloadPhase, getLocationUri } from './getLocationUri.ts'
+import {
+  downloadPhase,
+  getLocationUri,
+  redactSource,
+} from './getLocationUri.ts'
 
 test('a relative uri resolves against its baseUri', () => {
   expect(
@@ -63,4 +67,31 @@ test('a presigned url shows its host and path, not its signature', () => {
       uri: 'https://s3.amazonaws.com/bucket/hg38.2bit?X-Amz-Signature=deadbeef&X-Amz-Expires=3600',
     }),
   ).toBe('https://s3.amazonaws.com/bucket/hg38.2bit')
+})
+
+test('redactSource drops userinfo, query and fragment from a URL', () => {
+  expect(redactSource('https://user:pw@example.com/a.bam?sig=1#x')).toBe(
+    'https://example.com/a.bam',
+  )
+  expect(redactSource('https://user@example.com/a.bam')).toBe(
+    'https://example.com/a.bam',
+  )
+})
+
+test('redactSource strips userinfo up to the last @ of the authority', () => {
+  expect(redactSource('https://u:p@ss@host/x')).toBe('https://host/x')
+  expect(redactSource('https://u:p@ss@host/a@b?q=c@d')).toBe('https://host/a@b')
+})
+
+test('redactSource keeps an @ in the path and drops one in the query', () => {
+  expect(redactSource('https://example.com/a@b.bam')).toBe(
+    'https://example.com/a@b.bam',
+  )
+  expect(redactSource('https://example.com?email=a@b')).toBe(
+    'https://example.com',
+  )
+})
+
+test('redactSource leaves a path alone', () => {
+  expect(redactSource('/data/a@b?.txt')).toBe('/data/a@b?.txt')
 })
