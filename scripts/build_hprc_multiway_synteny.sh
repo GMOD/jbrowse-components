@@ -377,7 +377,7 @@ config = {
         'views': [{
             'type': 'LinearGenomeView',
             'assembly': 'hg38',
-            'loc': 'chr1:196,700,000-197,000,000',
+            'loc': 'chr1:196,640,000-196,900,000',
             'tracks': ['hg38_ncbiRefSeq_ucsc', 'hprc_multiway'],
         }],
     },

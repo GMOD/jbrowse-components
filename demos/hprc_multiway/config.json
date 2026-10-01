@@ -333,7 +333,7 @@
       {
         "type": "LinearGenomeView",
         "assembly": "hg38",
-        "loc": "chr20:44,580,000-44,680,000",
+        "loc": "chr1:196,640,000-196,900,000",
         "tracks": ["hg38_ncbiRefSeq_ucsc", "hprc_multiway", "hprc_v2_1_gbz"]
       }
     ]

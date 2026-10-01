@@ -21,8 +21,8 @@ from was replaced by two routes that read the alignment out of the graph
 itself, scripts/build_hprc_multiway_synteny.sh with SOURCE=gfa or SOURCE=taf,
 and those write the sets described in README_gfa.txt and README_graph.txt
 beside this file. config.json here serves the SOURCE=gfa set, and the tutorial
-at https://jbrowse.org/jb2/docs/tutorials/hprc_multiway_synteny/ walks that
-build. These files stay hosted for anything pointed at them.
+at https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_haplotypes/#whole-genomes-from-a-gfa
+walks that build. These files stay hosted for anything pointed at them.
 
 Files
 -----
