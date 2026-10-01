@@ -58,12 +58,12 @@ export function parseLocStringOneBased(
   }
 
   // handle reverse strand notation e.g. "chr1:1-100[rev]"
+  locString = locString.replaceAll(/\s/g, '')
   let reversed = false
   if (locString.endsWith('[rev]')) {
     reversed = true
     locString = locString.slice(0, -5)
   }
-  locString = locString.replaceAll(/\s/g, '')
 
   // extract optional assembly name in braces e.g. "{hg19}chr1:1-100"
   const assemblyMatch = ASSEMBLY_REGEX.exec(locString)
@@ -216,7 +216,10 @@ function assembleLocStringWith(
   }
   let endString: string
   if (end !== undefined) {
-    endString = start !== undefined && start + 1 === end ? '' : `..${cb(end)}`
+    endString =
+      start !== undefined && (start + 1 === end || start === end)
+        ? ''
+        : `..${cb(end)}`
   } else {
     endString = start !== undefined ? '..' : ''
   }

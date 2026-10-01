@@ -43,10 +43,14 @@ export function gatherOverlaps<T extends BasicFeature>(
   regions: T[],
   padding = 5000,
 ) {
-  const memo: Record<string, T[]> = {}
+  const memo = new Map<string, T[]>()
   for (const x of regions) {
-    memo[x.refName] ??= []
-    memo[x.refName]!.push(x)
+    const group = memo.get(x.refName)
+    if (group) {
+      group.push(x)
+    } else {
+      memo.set(x.refName, [x])
+    }
   }
-  return Object.values(memo).flatMap(group => mergeIntervals(group, padding))
+  return [...memo.values()].flatMap(group => mergeIntervals(group, padding))
 }

@@ -19,3 +19,10 @@ test('a kB is 1000 bytes', () => {
 test('a value past the last unit stays in it', () => {
   expect(formatBytes(5e15)).toBe('5000.0 TB')
 })
+
+test('a value that rounds up to 1000 advances the unit', () => {
+  expect(formatBytes(999_949)).toBe('999.9 kB')
+  expect(formatBytes(999_950)).toBe('1.0 MB')
+  expect(formatBytes(999_999)).toBe('1.0 MB')
+  expect(formatBytes(999_950_000)).toBe('1.0 GB')
+})

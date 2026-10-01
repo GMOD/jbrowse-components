@@ -17,7 +17,7 @@ export function formatRelativeTime(date: Date | number, now = Date.now()) {
   let duration = (Number(date) - now) / 1000
   let result = rtf.format(Math.round(duration), 'years')
   for (const { amount, unit } of DIVISIONS) {
-    if (Math.abs(duration) < amount) {
+    if (Math.round(Math.abs(duration)) < amount) {
       result = rtf.format(Math.round(duration), unit)
       break
     }

@@ -294,6 +294,24 @@ describe('parseLocStringOneBased', () => {
     expect(result.start).toBe(1)
     expect(result.end).toBe(100)
   })
+
+  test('reads [rev] followed by trailing whitespace', () => {
+    const result = parseLocStringOneBased('chr1:1..100[rev] ', refName =>
+      ['chr1'].includes(refName),
+    )
+    expect(result.reversed).toBe(true)
+    expect(result.end).toBe(100)
+  })
+})
+
+describe('assembleLocStringRaw zero-length region', () => {
+  test('prints a non-inverted form that parses back', () => {
+    const str = assembleLocStringRaw({ refName: 'chr1', start: 5, end: 5 })
+    expect(str).toBe('chr1:6')
+    const parsed = parseLocString(str, r => r === 'chr1')
+    expect(parsed.start).toBe(5)
+    expect(parsed.end).toBe(6)
+  })
 })
 
 describe('parseLocString - edge cases and functional behavior changes', () => {

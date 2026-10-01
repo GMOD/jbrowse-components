@@ -11,7 +11,7 @@ const units = ['bytes', 'kB', 'MB', 'GB', 'TB']
 export function formatBytes(bytes: number) {
   let n = bytes
   let i = 0
-  while (n >= 1000 && i < units.length - 1) {
+  while (Number(n.toFixed(1)) >= 1000 && i < units.length - 1) {
     n /= 1000
     i++
   }
