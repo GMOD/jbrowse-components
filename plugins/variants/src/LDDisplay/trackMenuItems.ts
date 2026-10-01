@@ -68,14 +68,14 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
     ),
     squashToHeightCheckboxItem(self),
     toggleItem(
-      'Show cells with genome proportions',
+      'Size cells by genomic distance',
       self.variantLayout === 'genomic',
       on => {
         self.setVariantLayout(on ? 'genomic' : 'columns')
       },
       {
         helpText:
-          'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',
+          'Off, every SNP takes one equal-width column. On, each cell is as wide as the genomic distance between its SNPs, so the triangle lines up with the genome.',
       },
     ),
   ]

@@ -215,8 +215,8 @@ Columns are for genotype PATTERN, not spans: the lane, the insertion markers and
 the reference toggle are genomic-position features and answer off in columns.
 
 **Each display names the slot's checkbox for its own picture**, so the two check
-for opposite values: "Show as genotype matrix" here (columns), "Show cells with
-genome proportions" on LD (genomic). One shared label read wrong on one of them,
+for opposite values: "Show as genotype matrix" here (columns), "Size cells by
+genomic distance" on LD (genomic). One shared label read wrong on one of them,
 and was reverted on 2026-09-30.
 
 ## Bands above the rows

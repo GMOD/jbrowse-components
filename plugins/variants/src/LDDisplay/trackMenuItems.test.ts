@@ -125,6 +125,6 @@ test('the Show menu carries every visibility and layout toggle', () => {
     'Show variant labels',
     'Show vertical guides on hover',
     'Fit to display height',
-    'Show cells with genome proportions',
+    'Size cells by genomic distance',
   ])
 })

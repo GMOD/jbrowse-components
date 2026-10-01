@@ -1339,7 +1339,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           }
         : displayType === 'LDTrackDisplay'
           ? {
-              path: `${TRACK_MENU} → Show... → Show cells with genome proportions`,
+              path: `${TRACK_MENU} → Show... → Size cells by genomic distance`,
               note:
                 value === 'genomic'
                   ? 'Checked: cells sized by the genomic distance between SNPs.'
