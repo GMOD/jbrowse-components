@@ -74,7 +74,6 @@ export interface DisplayConfig {
   subParts: string
   impliedUTRs: boolean
   mouseover: string
-  // the "Filter by..." list, `activeJexlFilters`, in place of the slot's own
   filter: string[]
   // Not a jexl filter, so it never reaches the "Filter by..." dialog.
   hideSourceFeatures: boolean

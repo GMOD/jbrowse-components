@@ -19,10 +19,8 @@ import {
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
-  FilterSetting,
-  activeJexlFilters,
+  baseJexlFilters,
   configuredJexlFilters,
-  liftRetiredFilterSetting,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -32,7 +30,6 @@ import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { colorSpecOf } from '@jbrowse/display-kit/channelSpec'
 import {
   colorForField,
   colorForValue,
@@ -44,8 +41,9 @@ import {
 } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
@@ -70,12 +68,6 @@ import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
 import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
 import { scaleLaidOutData } from './applyLayout.ts'
 import { findSubfeatureById, indexById } from './baseModelHelpers.ts'
-import {
-  CHANNEL_SPEC_EXAMPLES,
-  channelSpecProblems,
-  facetOf,
-  filterOf,
-} from './channelSpec.ts'
 import { colorViews } from './colorViews.ts'
 import {
   buildFeatureFlatbushIndex,
@@ -111,6 +103,7 @@ import {
   createMembershipMemo,
   featureIdsTouchingBlocks,
 } from './layoutQueries.ts'
+import { PLOT_EXAMPLES, facetOf, plotJexlProblems } from './plotExamples.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
 import {
@@ -153,6 +146,7 @@ import type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
@@ -162,7 +156,6 @@ import type {
   Region,
   StatusCallback,
 } from '@jbrowse/core/util'
-import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -218,9 +211,6 @@ const ColorByAttributeDialog = lazy(
   () => import('./components/ColorByAttributeDialog.tsx'),
 )
 const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
-const ChannelSpecDialog = lazy(
-  () => import('@jbrowse/display-kit/ChannelSpecDialog'),
-)
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 
@@ -251,11 +241,6 @@ export default function baseStateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * Runtime "Filter by..." override.
-         */
-        filterSetting: FilterSetting,
         /**
          * #property
          * Feature ids the user pinned to the top of the layout via the
@@ -298,7 +283,6 @@ export default function baseStateModelFactory(
         ),
       }),
     )
-    .preProcessSnapshot(liftRetiredFilterSetting)
     .volatile(() => ({
       // #region volatile
       /**
@@ -352,10 +336,18 @@ export default function baseStateModelFactory(
 
       /**
        * #method
-       * What the `filter` config slot alone declares.
+       * The filters the `filter` config slot holds.
        */
       configuredFilters(): string[] {
         return configuredJexlFilters(self)
+      },
+      /**
+       * #method
+       * What the track's config declares for `filter`, which "Clear all
+       * filters" returns to.
+       */
+      baseFilters(): string[] {
+        return baseJexlFilters(self)
       },
     }))
     .views(featureColorViews)
@@ -616,11 +608,10 @@ export default function baseStateModelFactory(
 
       /**
        * #method
-       * The filters actually applied, as `jexl:`-prefixed expressions — see
-       * `activeJexlFilters`, which is the shared two-tier resolution.
+       * The filters applied, as `jexl:`-prefixed expressions.
        */
       activeFilters(): string[] {
-        return activeJexlFilters(self)
+        return self.configuredFilters()
       },
 
       /**
@@ -1250,11 +1241,11 @@ export default function baseStateModelFactory(
 
         /**
          * #action
-         * Sets the runtime filter override (already-`jexl:`-prefixed
-         * expressions).
+         * Write the `filter` slot (already-`jexl:`-prefixed expressions);
+         * undefined returns it to what the track's config declares.
          */
         setFilter(filters?: string[]) {
-          self.filterSetting = cast(filters)
+          setConf(self, 'filter', filters ?? self.baseFilters())
         },
 
         /**
@@ -1566,18 +1557,6 @@ export default function baseStateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The grouping, color and filter as grammar-of-graphics channels, each
-       * `null` while unset: what "Edit as JSON..." opens with.
-       */
-      get channelSpec(): ChannelSpec {
-        return {
-          facet: facetOf(self.facet),
-          color: colorSpecOf(self.colorSettings),
-          filter: filterOf(self.activeFilters()),
-        }
-      },
-      /**
-       * #getter
        * The key the color channel's scale derives from what the worker
        * painted, less the values only a hidden section painted, in the
        * sections' order where the facet reads the same field. An identity
@@ -1642,16 +1621,19 @@ export default function baseStateModelFactory(
       },
       /**
        * #method
-       * The Group by dialog's choice of field as channels: the facet, keeping
-       * its domain while the field is the one already set, a color by the
-       * field when ticked (left alone while it already paints, through any
-       * scale), and no color when unticked over a categorical color that was
-       * the facet's own.
+       * The Group by dialog's choice of field as plot settings: the facet,
+       * keeping its domain while the field is the one already set, a color by
+       * the field when ticked (left alone while it already paints, through
+       * any scale), and no color when unticked over a categorical color that
+       * was the facet's own.
        */
-      groupByChannelSpec(
+      groupByPlot(
         field: string | undefined,
         colorByGroup: boolean,
-      ): ChannelSpec {
+      ): {
+        facet: ReturnType<typeof facetOf>
+        color?: { field: string } | null
+      } {
         const colorField = self.colorField?.field ?? ''
         const painted = self.colorFieldName ?? ''
         const current = facetOf(self.facet)
@@ -1681,15 +1663,18 @@ export default function baseStateModelFactory(
       /**
        * #getter
        */
-      get channelSpecExamples() {
-        return CHANNEL_SPEC_EXAMPLES
+      get plotExamples() {
+        return PLOT_EXAMPLES
       },
       /**
        * #method
+       * The schema's refusals, then a `jexl:` colour or filter that does not
+       * compile.
        */
-      channelSpecProblems(spec: ChannelSpec) {
-        return channelSpecProblems(
-          spec,
+      plotProblems(draft: Plot): string[] {
+        self.liftPlot(draft)
+        return plotJexlProblems(
+          draft,
           getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
         )
       },
@@ -1741,30 +1726,24 @@ export default function baseStateModelFactory(
       },
       /**
        * #action
+       * "Edit plot...", seeded with a draft a dialog has not applied.
        */
-      openChannelSpecDialog(seed?: ChannelSpec) {
-        getDialogHost(self).queueDialog(handleClose => [
-          ChannelSpecDialog,
-          { model: self, seed, handleClose },
-        ])
+      openPlotDialog(seed?: Plot) {
+        queuePlotDialog(self, seed)
       },
     }))
     .actions(self => ({
       /**
        * #action
-       * What the Group by dialog applies: the channels its choice changes,
+       * What the Group by dialog applies: the settings its choice changes,
        * through the setters the menus use.
        */
       applyGroupBy(field: string | undefined, colorByGroup: boolean) {
-        const { facet, color } = self.groupByChannelSpec(field, colorByGroup)
-        if (facet !== undefined) {
-          self.setFacet(facet ?? undefined)
-        }
+        const { facet, color } = self.groupByPlot(field, colorByGroup)
+        self.setFacet(facet ?? undefined)
         if (color === null) {
           self.setColorScale()
-        } else if (typeof color === 'string') {
-          self.setFeatureColor(color)
-        } else if (color !== undefined && 'field' in color) {
+        } else if (color) {
           self.colorByField(color.field)
         }
       },

@@ -66,7 +66,7 @@ test('an unwritten plot is a point per feature at its score, which a snapshot le
   const { display } = createTestEnvironment().createDisplay()
   expect(getSnapshot(display.conf.marks)).toEqual([MANHATTAN_MARK])
   expect(getSnapshot(display.conf)).not.toHaveProperty('marks')
-  expect(display.markPlot.marks).toEqual([MANHATTAN_MARK])
+  expect(display.plot.marks).toEqual([MANHATTAN_MARK])
   expect(display.layerRequests[0]?.encoding).toMatchObject({ y: 'score' })
   expect(display.gateEnabled).toBe(false)
 })
@@ -133,12 +133,12 @@ test("LD colouring makes the default plot LocusZoom's, as the add-track workflow
     domain: ['index'],
     range: ['diamond'],
   })
-  expect(display.markPlot.transform).toEqual(transform)
+  expect(display.plot.transform).toEqual(transform)
 
   display.setLdColoring(false)
   expect(display.joinsLd).toBe(false)
   expect(getSnapshot(display.conf)).not.toHaveProperty('marks')
-  expect(display.markPlot.transform).toEqual(transform)
+  expect(display.plot.transform).toEqual(transform)
 })
 
 const DEMO_LD_PLOT = (

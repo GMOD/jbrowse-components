@@ -1,25 +1,24 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { getConf } from '@jbrowse/core/configuration'
-import { parseChannelSpec } from '@jbrowse/display-kit/channelSpec'
+import { getConf, parsePlot } from '@jbrowse/core/configuration'
 
-import { CHANNEL_SPEC_EXAMPLES } from './channelSpec.ts'
+import { PLOT_EXAMPLES } from './plotExamples.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 function display() {
   return createTestEnvironment().createDisplay().display
 }
 
-test('an untouched display reads every channel as null', () => {
-  expect(display().channelSpec).toEqual({
-    facet: null,
-    color: null,
-    filter: null,
-  })
+test('an untouched display declares no plot setting', () => {
+  const d = display()
+  expect(d.plotKeys).toEqual(
+    expect.arrayContaining(['facet', 'color', 'filter']),
+  )
+  expect(d.plot).toEqual({})
 })
 
-test('facet and color are the two settings, read back as the dialog shows them', () => {
+test('facet, color and filter read back as the box shows them', () => {
   const d = display()
   expect(
     d.applyDisplaySettings({
@@ -40,7 +39,7 @@ test('facet and color are the two settings, read back as the dialog shows them',
     range: ['red'],
   })
   expect(d.colorByAttribute).toBe('subtrack')
-  expect(d.channelSpec).toEqual({
+  expect(d.plot).toEqual({
     facet: { field: 'subtrack', domain: ['key5', 'key2', 'key3'] },
     color: { field: 'subtrack', range: ['red'] },
     filter: ["jexl:feature.type == 'gene'"],
@@ -57,7 +56,7 @@ test('a string is the one-value form: the facet field, or the constant color', (
   expect(d.facet).toEqual({ field: 'strand', domain: [] })
   expect(d.colorSettings).toMatchObject({ value: 'red', field: '' })
   expect(d.colorByMode).toBe('default')
-  expect(d.channelSpec.color).toBe('red')
+  expect(d.plot).toEqual({ facet: 'strand', color: 'red' })
 })
 
 test('strand is a field on both channels, painting its own colors', () => {
@@ -66,26 +65,23 @@ test('strand is a field on both channels, painting its own colors', () => {
   expect(d.colorByMode).toBe('strand')
   expect(d.colorField?.color('1')).toBe('tomato')
   expect(d.colorField?.color('-1')).toBe('cornflowerblue')
-  expect(d.channelSpec).toMatchObject({
-    facet: { field: 'strand' },
-    color: { field: 'strand' },
-  })
+  expect(d.plot).toEqual({ facet: 'strand', color: { field: 'strand' } })
 })
 
 test('strand takes a range like any other field', () => {
   const d = display()
-  const spec = { color: { field: 'strand', range: ['red', 'blue'] } }
-  expect(d.channelSpecProblems(spec)).toEqual([])
-  d.applyDisplaySettings(spec)
+  const plot = { color: { field: 'strand', range: ['red', 'blue'] } }
+  expect(d.plotProblems(plot)).toEqual([])
+  d.applyPlot(plot)
   expect(d.colorField?.domain).toEqual(['1', '-1', '0'])
   expect(d.colorField?.color('1')).toBe('red')
   expect(d.colorField?.color('-1')).toBe('blue')
 })
 
-test('an object replaces the channel whole, and null clears it', () => {
+test('an object replaces the setting whole, and null clears it', () => {
   const d = display()
-  d.applyDisplaySettings({ color: { field: 'source', range: ['red'] } })
-  d.applyDisplaySettings({ color: 'red' })
+  d.applyPlot({ color: { field: 'source', range: ['red'] } })
+  d.applyPlot({ color: 'red' })
   expect(d.colorSettings).toMatchObject({
     value: 'red',
     field: '',
@@ -93,36 +89,36 @@ test('an object replaces the channel whole, and null clears it', () => {
     domain: [],
     range: [],
   })
-  d.applyDisplaySettings({ facet: 'strand', color: { field: 'type' } })
-  d.applyDisplaySettings({ color: null })
+  d.applyPlot({ facet: 'strand', color: { field: 'type' } })
+  d.applyPlot({ color: null })
   expect(d.facet).toMatchObject({ field: 'strand' })
   expect(d.colorSettings).toMatchObject({ value: undefined, field: '' })
-  expect(d.channelSpec.color).toBeNull()
-  d.applyDisplaySettings({ facet: { field: 'biotype', domain: ['b', 'a'] } })
-  d.applyDisplaySettings({ facet: { field: 'biotype' } })
-  expect(d.channelSpec.facet).toEqual({ field: 'biotype' })
+  expect(d.plot.color).toBeUndefined()
+  d.applyPlot({ facet: { field: 'biotype', domain: ['b', 'a'] } })
+  d.applyPlot({ facet: { field: 'biotype' } })
+  expect(d.plot.facet).toBe('biotype')
 })
 
 test('a domain or range that is not a list is refused, and the display keeps what it had', () => {
   const d = display()
   d.applyDisplaySettings({ color: { field: 'source' } })
-  expect(
-    d.applyDisplaySettings({
-      color: { field: 'source', range: 'red' },
-      facet: { field: 'source', domain: 'a' },
-    }),
-  ).toMatchObject({
+  const refused = {
+    color: { field: 'source', range: 'red' },
+    facet: { field: 'source', domain: 'a' },
+  }
+  expect(d.applyDisplaySettings(refused)).toMatchObject({
     applied: [],
     failed: [{ key: 'color' }, { key: 'facet' }],
   })
-  expect(d.channelSpec.color).toEqual({ field: 'source' })
+  expect(() => d.plotProblems(refused)).toThrow()
+  expect(d.plot.color).toEqual({ field: 'source' })
   expect(d.facet).toBeUndefined()
 })
 
-test('an expression that does not compile is a problem, named by channel', () => {
+test('an expression that does not compile is a problem, named by setting', () => {
   const d = display()
   expect(
-    d.channelSpecProblems({
+    d.plotProblems({
       color: 'jexl:feature.type ==',
       filter: ['jexl:feature.score >'],
     }),
@@ -130,41 +126,41 @@ test('an expression that does not compile is a problem, named by channel', () =>
     expect.stringMatching(/^color: /),
     expect.stringMatching(/^filter: /),
   ])
+  expect(d.plotProblems({ color: { field: 'jexl:feature.type ==' } })).toEqual([
+    expect.stringMatching(/^color: /),
+  ])
   expect(
-    d.channelSpecProblems({ color: { field: 'jexl:feature.type ==' } }),
-  ).toEqual([expect.stringMatching(/^color: /)])
-  expect(
-    d.channelSpecProblems({
+    d.plotProblems({
       color: { field: 'jexl:feature.type' },
       filter: ['jexl:feature.score > 5'],
     }),
   ).toEqual([])
 })
 
-test.each(CHANNEL_SPEC_EXAMPLES)(
-  'the example $spec parses, passes and applies',
-  ({ spec }) => {
+test.each(PLOT_EXAMPLES)(
+  'the example $plot parses, passes and applies',
+  ({ plot }) => {
     const d = display()
-    const { filter, ...settings } = parseChannelSpec(spec)
-    expect(d.channelSpecProblems({ filter, ...settings })).toEqual([])
-    if (Object.keys(settings).length) {
-      expect(d.applyDisplaySettings(settings).failed).toEqual([])
-    }
-    expect(d.channelSpec).toMatchObject(settings)
+    const draft = parsePlot(plot, d.plotKeys)
+    expect(d.plotProblems(draft)).toEqual([])
+    d.applyPlot(draft)
+    expect(d.plot).toEqual(
+      Object.fromEntries(Object.entries(draft).filter(([, v]) => v !== null)),
+    )
   },
 )
 
-test('the gene track guide prints every example the dialog lists', () => {
+test('the gene track guide prints every example the box lists', () => {
   const guide = readFileSync(
     join(__dirname, '../../../../website/docs/user_guides/gene_track.md'),
     'utf8',
   ).replaceAll(/\n\s*/g, ' ')
-  for (const { spec, description } of CHANNEL_SPEC_EXAMPLES) {
-    expect(guide).toContain(`\`${spec}\` ${description}`)
+  for (const { plot, description } of PLOT_EXAMPLES) {
+    expect(guide).toContain(`\`${plot}\` ${description}`)
   }
 })
 
-describe('the Group by dialog applies a channel spec', () => {
+describe('the Group by dialog applies a plot', () => {
   it('keeps the range of the field already painting', () => {
     const d = display()
     d.applyDisplaySettings({
@@ -172,7 +168,7 @@ describe('the Group by dialog applies a channel spec', () => {
       color: { field: 'biotype', range: ['red', 'blue'] },
     })
     d.applyGroupBy('biotype', true)
-    expect(d.channelSpec.color).toEqual({
+    expect(d.plot.color).toEqual({
       field: 'biotype',
       range: ['red', 'blue'],
     })
@@ -189,25 +185,25 @@ describe('the Group by dialog applies a channel spec', () => {
 
   it('names no color domain from the facet on either route', () => {
     const viaDialog = display()
-    const viaJson = display()
-    for (const d of [viaDialog, viaJson]) {
+    const viaText = display()
+    for (const d of [viaDialog, viaText]) {
       d.setFacet({ field: 'biotype', domain: ['b'] })
     }
     viaDialog.applyGroupBy('biotype', true)
-    viaJson.applyDisplaySettings({ color: { field: 'biotype' } })
-    expect(viaDialog.channelSpec).toEqual(viaJson.channelSpec)
-    expect(viaJson.channelSpec.color).toEqual({ field: 'biotype' })
+    viaText.applyPlot({ color: { field: 'biotype' } })
+    expect(viaDialog.plot).toEqual(viaText.plot)
+    expect(viaText.plot.color).toEqual({ field: 'biotype' })
   })
 
   it("clears a color that was the grouping's own when unticked, and leaves any other", () => {
     const d = display()
     d.applyGroupBy('strand', true)
-    expect(d.groupByChannelSpec(undefined, false)).toEqual({
+    expect(d.groupByPlot(undefined, false)).toEqual({
       facet: null,
       color: null,
     })
     d.applyDisplaySettings({ color: 'purple' })
-    expect(d.groupByChannelSpec(undefined, false)).toEqual({ facet: null })
+    expect(d.groupByPlot(undefined, false)).toEqual({ facet: null })
   })
 
   it('leaves a threshold color alone, ticked on its own field or unticked on another', () => {
@@ -215,22 +211,24 @@ describe('the Group by dialog applies a channel spec', () => {
     d.applyDisplaySettings({
       color: { field: 'dif', scale: 'threshold', domain: ['0'] },
     })
-    expect(d.groupByChannelSpec('dif', true)).toEqual({
+    expect(d.groupByPlot('dif', true)).toEqual({
       facet: { field: 'dif' },
     })
-    expect(d.groupByChannelSpec('strand', false)).toEqual({
+    expect(d.groupByPlot('strand', false)).toEqual({
       facet: { field: 'strand' },
     })
   })
 })
 
+// The plot is the config as written, so the parked field shows beside the
+// constant that paints.
 test('Solid color keeps the field, its order and range under scale none for the way back', () => {
   const d = display()
   d.setColorScale({ field: 'biotype', domain: ['lncRNA'], range: ['red'] })
   d.setFeatureColor('purple')
   expect(d.colorByMode).toBe('default')
   expect(d.colorField).toBeUndefined()
-  expect(d.channelSpec.color).toBe('purple')
+  expect(d.plot.color).toMatchObject({ value: 'purple', scale: 'none' })
   expect(d.colorSettings).toMatchObject({
     value: 'purple',
     field: 'biotype',
@@ -244,5 +242,5 @@ test('Solid color keeps the field, its order and range under scale none for the 
   d.setFeatureColor(undefined)
   expect(d.colorByMode).toBe('default')
   expect(d.colorSettings).toMatchObject({ field: 'biotype', scale: 'none' })
-  expect(d.groupByChannelSpec(undefined, false)).toEqual({ facet: null })
+  expect(d.groupByPlot(undefined, false)).toEqual({ facet: null })
 })

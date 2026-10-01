@@ -1,58 +1,66 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import {
+  ConfigurationSchema,
+  liftPlot,
+  parsePlot,
+  plotChanges,
+  plotKeysOf,
+  plotOf,
+  plotSettingsWritten,
+} from '@jbrowse/core/configuration'
 
 import { configSchemaFactory, markListSchema } from './configSchema.ts'
-import {
-  liftMarkPlot,
-  markPlotChanges,
-  markPlotOf,
-  markPlotSettingsWritten,
-  parseMarkPlot,
-  summarizeMarkPlot,
-} from './markPlot.ts'
+import { markPlotSettingsOf } from './markPlot.ts'
 import { markProblems } from './markProblems.ts'
 
 import type { MarkPlot } from './markPlot.ts'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 const schema = configSchemaFactory()
 
-function lift(plot: MarkPlot, current: MarkPlot = {}) {
-  return liftMarkPlot(schema, plot, current)
+function declared(
+  plot: MarkPlot = {},
+  configSchema: AnyConfigurationSchemaType = schema,
+) {
+  return configSchema.create({
+    type: 'LinearMarkDisplay',
+    displayId: 'declared',
+    ...plot,
+  })
 }
 
-// markPlotOf reads a snapshot, never a live node: re-creating from a node that
-// is already in a tree is what MST refuses.
-function declared(plot: MarkPlot) {
-  return markPlotOf(
-    getSnapshot<Record<string, unknown>>(
-      schema.create({
-        type: 'LinearMarkDisplay',
-        displayId: 'declared',
-        ...plot,
-      }),
-    ),
-  )
+function lift(plot: MarkPlot, conf = declared()) {
+  return markPlotSettingsOf(liftPlot(conf, plot))
 }
 
-describe('parseMarkPlot', () => {
+describe('the mark display plot', () => {
+  it('holds the grammar slots the mark schema declares', () => {
+    expect(plotKeysOf(declared())).toEqual(
+      expect.arrayContaining(['marks', 'transform', 'facet', 'rows', 'scales']),
+    )
+  })
+
   it('refuses a setting the box does not write, naming it', () => {
-    expect(() => parseMarkPlot('{"marks":[],"height":100}')).toThrow(/height/)
-    expect(() => parseMarkPlot('{"marks":[],"height":100}')).toThrow(
+    const keys = plotKeysOf(declared())
+    expect(() => parsePlot('{"marks":[],"height":100}', keys)).toThrow(/height/)
+    expect(() => parsePlot('{"marks":[],"height":100}', keys)).toThrow(
       /marks, transform, facet, rows/,
     )
   })
 
   it('refuses anything that is not one object', () => {
-    expect(() => parseMarkPlot('[]')).toThrow(/one JSON object/)
-    expect(() => parseMarkPlot('nope')).toThrow()
+    const keys = plotKeysOf(declared())
+    expect(() => parsePlot('[]', keys)).toThrow(/one JSON object/)
+    expect(() => parsePlot('nope', keys)).toThrow()
   })
 
   it('keeps a null so a setting can be cleared', () => {
-    expect(parseMarkPlot('{"facet":null}')).toEqual({ facet: null })
+    expect(parsePlot('{"facet":null}', plotKeysOf(declared()))).toEqual({
+      facet: null,
+    })
   })
 })
 
-describe('liftMarkPlot', () => {
+describe('liftPlot over a mark display', () => {
   it('expands every shorthand the schema declares', () => {
     const settings = lift({
       marks: [
@@ -86,8 +94,7 @@ describe('liftMarkPlot', () => {
   })
 
   it('merges over what is declared, so a cross-slot rule still fires', () => {
-    const current = declared({ facet: 'HP' })
-    const settings = lift({ rows: 'source' }, current)
+    const settings = lift({ rows: 'source' }, declared({ facet: 'HP' }))
     expect(settings.facet).toMatchObject({ field: 'HP' })
     expect(markProblems(settings).map(p => p.rule)).toContain(
       'rows-beside-facet',
@@ -95,8 +102,30 @@ describe('liftMarkPlot', () => {
   })
 
   it('clears a setting a null names', () => {
-    const current = declared({ facet: 'HP' })
-    expect(lift({ facet: null }, current).facet).toBeUndefined()
+    expect(lift({ facet: null }, declared({ facet: 'HP' })).facet).toBe(
+      undefined,
+    )
+  })
+
+  // As Manhattan's does: a null there lands on its point per feature.
+  it('resets a cleared marks to the default plot where the schema names one', () => {
+    const withDefaultPlot = ConfigurationSchema(
+      'DefaultPlotDisplay',
+      { marks: markListSchema([{ mark: 'point', encoding: { y: 'score' } }]) },
+      {
+        baseConfiguration: schema,
+        explicitlyTyped: true,
+        explicitIdentifier: 'displayId',
+      },
+    )
+    const marks = [{ mark: 'bar', encoding: { y: 'score' } }]
+    expect(lift({ marks: null }, declared({ marks })).marks).toEqual([])
+    expect(
+      lift(
+        { marks: null },
+        withDefaultPlot.create({ displayId: 'd', marks }),
+      ).marks.map(m => m.mark),
+    ).toEqual(['point'])
   })
 })
 
@@ -136,21 +165,18 @@ describe('markProblems over a lifted plot', () => {
   })
 })
 
-describe('markPlotChanges', () => {
-  const current = declared({
-    marks: [{ mark: 'bar', encoding: { y: 'score' } }],
-  })
+describe('plotChanges over a mark display', () => {
+  const current = plotOf(
+    declared({ marks: [{ mark: 'bar', encoding: { y: 'score' } }] }),
+  )
 
   it('names nothing for a round trip', () => {
-    expect(markPlotChanges(current, current)).toEqual({ sets: [], clears: [] })
-    expect(summarizeMarkPlot(current, current, [], lift(current))).toBe(
-      'No changes',
-    )
+    expect(plotChanges(current, current)).toEqual({ sets: [], clears: [] })
   })
 
   it('separates what is set from what is cleared', () => {
     const next: MarkPlot = { ...current, facet: 'HP', marks: null }
-    expect(markPlotChanges(next, current)).toEqual({
+    expect(plotChanges(next, current)).toEqual({
       sets: ['facet'],
       clears: ['marks'],
     })
@@ -158,44 +184,6 @@ describe('markPlotChanges', () => {
 
   it('writes only what moved', () => {
     const next: MarkPlot = { ...current, rows: 'source' }
-    expect(markPlotSettingsWritten(next, current)).toEqual({ rows: 'source' })
-  })
-})
-
-describe('summarizeMarkPlot', () => {
-  it('counts the problems the plot still has beside what it writes', () => {
-    const problems = markProblems(lift({ marks: [{ mark: 'bar' }] }))
-    expect(
-      summarizeMarkPlot({ rows: 'a' }, {}, problems, lift({ rows: 'a' })),
-    ).toBe('Sets rows. 1 problem')
-  })
-
-  // As Manhattan's does: a null there lands on its point per feature.
-  it('says a cleared marks resets to the default plot where the schema names one', () => {
-    const withDefaultPlot = ConfigurationSchema(
-      'DefaultPlotDisplay',
-      { marks: markListSchema([{ mark: 'point', encoding: { y: 'score' } }]) },
-      {
-        baseConfiguration: schema,
-        explicitlyTyped: true,
-        explicitIdentifier: 'displayId',
-      },
-    )
-    const current = declared({
-      marks: [{ mark: 'bar', encoding: { y: 'score' } }],
-      facet: 'HP',
-    })
-    const next: MarkPlot = { ...current, marks: null, facet: null }
-    expect(summarizeMarkPlot(next, current, [], lift(next, current))).toBe(
-      'Clears marks, facet',
-    )
-    expect(
-      summarizeMarkPlot(
-        next,
-        current,
-        [],
-        liftMarkPlot(withDefaultPlot, next, current),
-      ),
-    ).toBe('Clears facet. Resets marks to the default plot')
+    expect(plotSettingsWritten(next, current)).toEqual({ rows: 'source' })
   })
 })

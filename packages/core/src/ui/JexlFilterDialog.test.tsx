@@ -31,6 +31,7 @@ function setup(
   fields: JexlFilterField[] | Promise<JexlFilterField[]> = FIELDS,
   metadata?: Promise<unknown>,
 ) {
+  const written = jest.fn<undefined, [string[] | undefined]>()
   const track = types
     .model('Track', {
       configuration: ConfigurationSchema(
@@ -40,14 +41,16 @@ function setup(
       ),
       display: types
         .model('Display', {
-          filterSetting: types.maybe(types.array(types.string)),
+          filter: types.optional(types.array(types.string), STORED),
         })
-        .views(() => ({
-          configuredFilters: () => STORED,
+        .views(self => ({
+          configuredFilters: () => [...self.filter],
+          baseFilters: () => STORED,
         }))
         .actions(self => ({
           setFilter(filters?: string[]) {
-            self.filterSetting = cast(filters)
+            written(filters)
+            self.filter = cast(filters ?? STORED)
           },
         })),
     })
@@ -66,7 +69,7 @@ function setup(
       />
     </Suspense>,
   )
-  return { display: track.display, handleClose }
+  return { written, handleClose }
 }
 
 const apply = () => {
@@ -74,7 +77,7 @@ const apply = () => {
 }
 
 test('shows a line as rows and writes an untouched one back unchanged', () => {
-  const { display, handleClose } = setup()
+  const { written, handleClose } = setup()
   expect(screen.getByText('Filter Variants')).toBeInTheDocument()
   expect(screen.getByDisplayValue('QUAL')).toBeInTheDocument()
   expect(screen.getByDisplayValue('25')).toBeInTheDocument()
@@ -84,12 +87,12 @@ test('shows a line as rows and writes an untouched one back unchanged', () => {
     screen.getByDisplayValue('feature.INFO.AC / feature.INFO.AN > 0.1'),
   ).toBeInTheDocument()
   apply()
-  expect(display.filterSetting).toEqual(STORED)
+  expect(written).toHaveBeenLastCalledWith(STORED)
   expect(handleClose).toHaveBeenCalled()
 })
 
 test('visiting a field without changing it leaves its line alone', () => {
-  const { display } = setup()
+  const { written } = setup()
   const field = screen.getByDisplayValue('QUAL')
   fireEvent.focus(field)
   fireEvent.blur(field)
@@ -97,14 +100,14 @@ test('visiting a field without changing it leaves its line alone', () => {
   fireEvent.focus(value)
   fireEvent.blur(value)
   apply()
-  expect(display.filterSetting).toEqual(STORED)
+  expect(written).toHaveBeenLastCalledWith(STORED)
 })
 
 test('editing a condition writes each condition of its line alone', () => {
-  const { display } = setup()
+  const { written } = setup()
   fireEvent.change(screen.getByDisplayValue('25'), { target: { value: '30' } })
   apply()
-  expect(display.filterSetting).toEqual([
+  expect(written).toHaveBeenLastCalledWith([
     'jexl:feature.QUAL >= 30',
     "jexl:feature.FILTER == 'PASS'",
     STORED[1],
@@ -112,7 +115,7 @@ test('editing a condition writes each condition of its line alone', () => {
 })
 
 test('the Text tab edits every line as text, without the prefix', () => {
-  const { display } = setup()
+  const { written } = setup()
   fireEvent.click(screen.getByRole('tab', { name: 'Text' }))
   const box = screen.getByDisplayValue(/feature\.QUAL>=25/)
   expect((box as HTMLTextAreaElement).value).toBe(
@@ -123,7 +126,7 @@ test('the Text tab edits every line as text, without the prefix', () => {
   expect(screen.getByText(/^Line 1:/)).toBeInTheDocument()
   fireEvent.change(box, { target: { value: 'feature.QUAL > 5\n\n' } })
   apply()
-  expect(display.filterSetting).toEqual(['jexl:feature.QUAL > 5'])
+  expect(written).toHaveBeenLastCalledWith(['jexl:feature.QUAL > 5'])
 })
 
 test('waits for fields supplied as a promise', async () => {
@@ -134,7 +137,7 @@ test('waits for fields supplied as a promise', async () => {
 })
 
 test('a typed field takes a numeric operator and writes a number', () => {
-  const { display } = setup()
+  const { written } = setup()
   fireEvent.click(screen.getByRole('button', { name: 'Add condition' }))
   const field = screen.getAllByPlaceholderText('Field').at(-1)!
   fireEvent.change(field, { target: { value: 'AF' } })
@@ -155,7 +158,10 @@ test('a typed field takes a numeric operator and writes a number', () => {
     target: { value: '0.001' },
   })
   apply()
-  expect(display.filterSetting).toEqual([...STORED, 'jexl:feature.AF >= 0.001'])
+  expect(written).toHaveBeenLastCalledWith([
+    ...STORED,
+    'jexl:feature.AF >= 0.001',
+  ])
 })
 
 test('the picker lists the columns the adapter describes', async () => {

@@ -130,11 +130,12 @@ by `altDosageByte`, the dosage the cells paint.
   removed** — the cluster tree did and silently drew nothing.
 - **`rpcProps()` must not read fetch-derived state** — `sampleFilter` reads
   `sourcesBase`, not `sources`.
-- **Feature filters are the shared two-tier contract**
-  (`@jbrowse/core/util/jexlFilters`): the `filter` config slot declares the
-  baseline, `filterSetting` is the dialog's override, and `activeFilters()` is
-  the only thing anything reads. The property used to shadow the slot, so a
-  config declaring filters on one of these tracks did nothing and said nothing.
+- **Feature filters are the `filter` config slot alone**
+  (`@jbrowse/core/util/jexlFilters`): the dialog, a feature's filter actions and
+  "Edit plot..." all write it, and "Clear all filters" returns it to what the
+  track's config declares. A runtime override once shadowed the slot, so a
+  filter written through `applyDisplaySettings` reported success and did
+  nothing.
 - **The tier is per layout, not per setting**: `referenceDrawingMode` is a fetch
   input at genomic positions and inert in columns, which draw every reference
   cell, so `rpcProps` sends it only in the first.

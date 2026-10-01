@@ -162,7 +162,7 @@ const GROUPING_TRACK = {
   showLabels: 'name',
 }
 
-// What `ui/gene_track_channel_spec` pastes into Edit as JSON..., printed in
+// What `ui/gene_track_channel_spec` pastes into Edit plot..., printed in
 // gene_track.md.
 export const GENE_CHANNEL_SPEC_JSON = `{
   "facet": {

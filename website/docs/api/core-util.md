@@ -19,6 +19,20 @@ where the reserver and the painter historically drifted.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
+## baseDisplayConfig
+
+The base's entry for this display, hydrated, which a reset returns to and
+"is this the reader's" compares against: the config.json's, or the one a
+track the session owns was added with; empty in a session that keeps no
+base.
+
+```js
+// type signature
+(self: object) => Record<string, unknown>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/baseDisplayConfig.ts)
+
 ## boundBandHeight
 
 Bound a band height to its legal range — a config value, a menu choice, or a

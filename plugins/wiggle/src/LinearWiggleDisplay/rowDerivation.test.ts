@@ -211,9 +211,10 @@ test('overlay, density: a dialog edit paints the plot', async () => {
   expect(display.rowColors.get('Grain1')).toBe('#00f')
 })
 
-// The Edit as JSON box writes rows as a reorder does: the labels and the focus
-// stay, and a tree the new order no longer describes drops.
-test('rows: the JSON box keeps the labels and the focus across an order', async () => {
+// The Edit plot box writes rows whole: an order typed over what it shows keeps
+// the labels and the focus beside it, and a rows naming only its order drops
+// them, as a config file naming only that would.
+test('rows: the plot box writes rows whole', async () => {
   const display = await loaded(GROUPED, rowsPerSource())
   const [g1, g2, g3, g4] = display.editableSources
   display.applyRowEdits([{ ...g1!, label: 'One' }, g2!, g3!, g4!])
@@ -222,14 +223,27 @@ test('rows: the JSON box keeps the labels and the focus across an order', async 
     tree: '((Grain1,Grain2),(Grain3,Grain4));',
   })
 
-  display.setRowsSpec({ field: 'source', domain: ['Grain2', 'Grain1'] })
-
+  const draft = structuredClone(display.plot) as { rows: { domain: string[] } }
+  draft.rows.domain = ['Grain2', 'Grain1']
+  display.applyPlot(draft)
   expect(display.sources.map(s => s.name)).toEqual(['Grain2', 'Grain1'])
   expect(display.rowLabels).toEqual({ Grain1: 'One' })
   expect(display.rowFocus).toEqual(['Grain1', 'Grain2'])
+
+  display.applyPlot({ rows: { field: 'source', domain: ['Grain2', 'Grain1'] } })
+  expect(display.sources.map(s => s.name)).toEqual([
+    'Grain2',
+    'Grain1',
+    'Grain3',
+    'Grain4',
+  ])
+  expect(display.rowLabels).toEqual({})
+  expect(display.rowFocus).toBeUndefined()
   expect(display.rowTree).toBeUndefined()
 
-  display.setRowsSpec(null)
+  expect(() => display.plotProblems({ rows: { field: 'group' } })).toThrow()
+
+  display.applyPlot({ rows: null })
   expect(display.isOverlay).toBe(true)
   expect(display.rowArrangementIsCustom).toBe(false)
 })

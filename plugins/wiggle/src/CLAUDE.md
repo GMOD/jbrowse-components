@@ -286,9 +286,8 @@ because a channel replaces its setting. Three rules it turns on:
   threshold past one cut reads out beside the reason; a colour per subtrack
   hides the line, since the grid below is already that control.
   `plotColorLine.test.ts` round-trips every shape a shipped config holds.
-- **`Edit as JSON...` in the dialog is the escape**, on the same
-  `{ rows, color }` spec — a ramp, several cut points, hand-written stops, a
-  typed row order. ADR-144 amended, ADR-164 amended.
+- **`Edit plot...` in the dialog is the escape**, on the display's `plot` — a
+  ramp, several cut points, hand-written stops, a typed row order. ADR-204.
 
 **"Color rows by → Each row" writes two settings here**, and only this display
 can write the second: `rowColor` names each row, and

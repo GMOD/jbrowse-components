@@ -41,6 +41,7 @@ import {
   colorFieldOf,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { getFeatureName } from '@jbrowse/plugin-canvas'
@@ -2881,6 +2882,7 @@ export function stateModelFactory(
           const items = [
             ...superMenuItems(),
             ...multiWayTrackMenuItems(self),
+            ...editPlotMenuItems(self),
             ...lodMenuItems(self),
           ]
           for (const item of syntenyRegionMenuItems({

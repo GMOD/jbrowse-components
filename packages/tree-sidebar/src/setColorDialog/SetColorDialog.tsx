@@ -380,7 +380,7 @@ export default observer(function SetColorDialog<
                   handleClose()
                 }}
               >
-                Edit as JSON...
+                Edit plot...
               </Button>
             ) : null}
             <Button variant="contained" color="inherit" onClick={resetToModel}>

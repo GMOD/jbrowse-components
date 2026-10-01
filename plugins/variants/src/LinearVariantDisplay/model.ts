@@ -20,7 +20,7 @@ import {
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
 import { breakendMenuItems } from './breakendMenu.ts'
-import { VARIANT_CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
+import { VARIANT_PLOT_EXAMPLES } from './plotExamples.ts'
 import { presetColorOf } from './presetColor.ts'
 
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
@@ -163,8 +163,8 @@ export default function stateModelFactory(
       /**
        * #getter
        */
-      get channelSpecExamples() {
-        return VARIANT_CHANNEL_SPEC_EXAMPLES
+      get plotExamples() {
+        return VARIANT_PLOT_EXAMPLES
       },
       /**
        * #getter

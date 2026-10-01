@@ -65,8 +65,7 @@ Both are the `build_dog10k_nhej1_sv.sh` recipe over the Manta callset:
 
 - `layout` HP indices are **0-based** (`<sample> HP0`/`HP1`, see
   `makeHaplotypeSources`). Using 1/2 renders every second row empty.
-- `LinearMultiRowFeatureDisplay` reads no filters, so `filterSetting` and `filter`
-  do nothing.
+- `LinearMultiRowFeatureDisplay` reads no filters, so `filter` does nothing.
 - `flare_anc_to_bed.py` keys its palette on the ancestry **name**, not FLARE's
   code, which is not stable between runs and once swapped wolf and dog colors.
 - A local-ancestry reference panel must include the targets' own background: a

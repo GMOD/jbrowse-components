@@ -25,7 +25,7 @@ test('the attribute box lists what the features in view carry, with color counts
           id: 'display1',
           colorByAttribute: '',
           colorByField,
-          openChannelSpecDialog: jest.fn(),
+          openPlotDialog: jest.fn(),
           scanGroupByCandidates: jest.fn(async () => SCAN),
         }}
         handleClose={handleClose}

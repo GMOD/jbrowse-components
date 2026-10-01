@@ -1,4 +1,3 @@
-import { markPlotSettingsWritten } from './markPlot.ts'
 import { markProblems } from './markProblems.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -28,10 +27,10 @@ function displayOn(config: Record<string, unknown> = {}) {
 // absent from the snapshot, so a `bar` mark does not name itself and the
 // box opens on what the author wrote rather than on forty default slots — an
 // aggregate's default op strips to `{}`, while `step: "auto"` is not a default
-// and stays.
+// and stays. A one-member facet prints as the shorthand a config file writes.
 it('opens on what a config declared, with the defaults left off', () => {
-  const display = displayOn(PLOT as Record<string, unknown>)
-  expect(display.markPlot).toEqual({
+  const display = displayOn(PLOT)
+  expect(display.plot).toEqual({
     marks: [
       { encoding: { y: 'score', color: { field: 'strand' } } },
       {
@@ -43,20 +42,20 @@ it('opens on what a config declared, with the defaults left off', () => {
         minBpPerPx: 100,
       },
     ],
-    facet: { field: 'strand' },
+    facet: 'strand',
   })
 })
 
 // The property the box exists for: applying what it shows is a round trip, so
 // a setting the editor never displayed cannot be dropped by using it.
 it('applying the plot it shows changes nothing and reports nothing unapplied', () => {
-  const display = displayOn(PLOT as Record<string, unknown>)
-  const before = display.markPlot
-  const report = display.applyDisplaySettings(
-    markPlotSettingsWritten(before, before),
-  )
+  const display = displayOn(PLOT)
+  const before = structuredClone(display.plot)
+  display.applyPlot(before)
+  expect(display.plot).toEqual(before)
+  const report = display.applyDisplaySettings(before)
   expect(report).toMatchObject({ unapplied: [], failed: [] })
-  expect(display.markPlot).toEqual(before)
+  expect(display.plot).toEqual(before)
 })
 
 it('writes a plot the box lifted, and the display draws by it', () => {
@@ -64,23 +63,23 @@ it('writes a plot the box lifted, and the display draws by it', () => {
   const next: MarkPlot = {
     marks: [{ mark: 'point', encoding: { y: 'score' } }],
   }
-  display.applyDisplaySettings(markPlotSettingsWritten(next, display.markPlot))
+  display.applyPlot(next)
   expect(display.markTypes).toEqual(['point'])
   expect(display.configProblems).toEqual([])
 })
 
 it('a null clears the setting rather than writing an empty one', () => {
   const display = displayOn({ facet: { field: 'strand' } })
-  expect(display.markPlot.facet).toBeDefined()
-  display.applyDisplaySettings({ facet: null })
-  expect(display.markPlot.facet).toBeUndefined()
+  expect(display.plot.facet).toBeDefined()
+  display.applyPlot({ facet: null })
+  expect(display.plot.facet).toBeUndefined()
 })
 
 // The box and the corner notice read one function over one lift, so they
 // cannot disagree about what a plot says.
 it('says through the corner notice exactly what the box would say', () => {
   const display = displayOn({ marks: [{ mark: 'bar' }], rows: 'source' })
-  expect(markProblems(display.liftMarkPlot(display.markPlot))).toEqual(
+  expect(markProblems(display.liftMarkPlot(display.plot))).toEqual(
     display.configProblems,
   )
   expect(display.configProblems.map(p => p.rule)).toContain(

@@ -42,7 +42,7 @@ export default observer(function WiggleSetColorDialog({
     colorSetting: ColorSetting
     discoveredRows: readonly unknown[]
     setColor: (color?: Partial<ColorSetting> | string) => void
-    openChannelSpecDialog: () => void
+    openPlotDialog: () => void
   }
   handleClose: () => void
 }) {
@@ -73,7 +73,7 @@ export default observer(function WiggleSetColorDialog({
             }
       }
       onEditAsJson={() => {
-        model.openChannelSpecDialog()
+        model.openPlotDialog()
       }}
     />
   )

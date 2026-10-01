@@ -190,28 +190,29 @@ A variation the display owns is a setting on it: an alignments track has one
 arcs are `applyDisplaySettings({ readConnections: 'arc' })` and `describeSlots`
 lists what else it takes.
 
-A feature or variant track groups and colors through two settings:
-`track.applyDisplaySettings({ facet: 'strand', color: { field: 'type' } })`. A
-string is the one-value form, the facet's field or a constant color, and an
-object spells the rest out: `facet: { field, domain }` orders the sections,
-`color: { field, domain, range }` hands the `domain` values the `range` colors
-in order. An object replaces the setting whole and `null` clears it. A field is
-a feature attribute, a dotted path such as `INFO.SVTYPE`, or `strand`. An
-alignments track takes the same `facet`, its field a read dimension
-(`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`). The filter is the runtime
-list, `display.setFilter(["jexl:feature.type == 'gene'"])`, and
-`display.channelSpec` reads all three back.
+A display's grammar settings are its plot: `display.plot` lists them by slot
+name, the ones that display declares among `facet`, `color`, `rows`, `rowColor`,
+`scales` and `filter`, and on a mark display `marks` and `transform`. A change
+is a copy edited and handed back: `structuredClone(display.plot)`, edited as any
+object, then `display.plotProblems(draft)`, which throws what a config file
+would be refused for and lists what the display cannot draw, and
+`display.applyPlot(draft)`. An object replaces the setting whole and `null`
+resets it. A string is the one-value form, the facet's field or a constant
+color, and an object spells the rest out: `facet: { field, domain }` orders the
+sections, `color: { field, domain, range }` hands the `domain` values the
+`range` colors in order. A field is a feature attribute, a dotted path such as
+`INFO.SVTYPE`, or `strand`; an alignments track's facet field is a read
+dimension (`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`). The `filter` is
+a list of `jexl:` expressions, such as `["jexl:feature.type == 'gene'"]`. "Edit
+plot..." in the track menu is the same object as text.
 
 A plot of a track's features, written as ggplot2 writes one, is the
 `LinearMarkDisplay` on any feature, alignments, variant or quantitative track:
 `marks` (layers, each a `mark` with an `encoding` over feature fields and its
-own `transform` steps), `transform`, `facet`, `rows` and `scales`. Its
-`markPlot` is all five as JSON, so a change is a copy edited and handed back:
-`structuredClone(display.markPlot)`, edited as any object, then
-`display.plotProblems(plot)` for what it cannot draw, without applying it, and
-`display.applyDisplaySettings(plot)`. The same object applied to another track's
-mark display draws the same plot there. The docs topic `plots` is the whole
-vocabulary, with the ggplot2 and Vega-Lite name for each idea.
+own `transform` steps), `transform`, `facet`, `rows` and `scales`, all in its
+`plot`. The same plot applied to another track's mark display draws the same
+thing there. The docs topic `plots` is the whole vocabulary, with the ggplot2
+and Vega-Lite name for each idea.
 
 A feature's label is whatever `name` it carries, else its `id`, and a file
 decides which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and

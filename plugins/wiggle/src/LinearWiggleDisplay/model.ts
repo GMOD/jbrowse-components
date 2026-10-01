@@ -10,6 +10,7 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { set1 } from '@jbrowse/core/ui/colors'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
@@ -19,12 +20,11 @@ import LegendMixin, {
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { colorSpecOf } from '@jbrowse/display-kit/channelSpec'
-import {
-  colorMembersOf,
-  colorScaleChoicesOf,
-} from '@jbrowse/display-kit/colorConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
+import {
+  editPlotMenuItems,
+  openPlotDialog as queuePlotDialog,
+} from '@jbrowse/display-kit/plotMenu'
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
@@ -48,7 +48,6 @@ import {
   treeSidebarOffset,
   treeSidebarShowMenuItems,
   fieldColorDeal,
-  baseDisplayConfig,
   rowColorIsCustom,
 } from '@jbrowse/tree-sidebar'
 import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
@@ -78,8 +77,8 @@ import {
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { WIGGLE_RENDERINGS } from '../util.ts'
-import { CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
 import { buildLegendItems } from './legendItems.ts'
+import { PLOT_EXAMPLES } from './plotExamples.ts'
 import {
   PER_SOURCE_COLOR,
   baseColorChannel,
@@ -99,9 +98,9 @@ import type { WiggleContextInfo } from './components/findHit.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Plot } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RowsSetting } from '@jbrowse/display-kit/rowsConfigSchema'
@@ -116,9 +115,6 @@ import type {
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
-const ChannelSpecDialog = lazy(
-  () => import('@jbrowse/display-kit/ChannelSpecDialog'),
-)
 const WiggleClusterDialog = lazy(
   () => import('./components/WiggleClusterDialog.tsx'),
 )
@@ -247,37 +243,9 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The scales this display's colour paints, for the Edit as JSON box.
        */
-      get colorScaleChoices(): string[] {
-        return colorScaleChoicesOf(self.configuration.color)
-      },
-
-      /**
-       * #getter
-       * The members this display's colour object declares, for the Edit as
-       * JSON box.
-       */
-      get colorMembers(): string[] {
-        return colorMembersOf(self.configuration.color)
-      },
-
-      /**
-       * #getter
-       */
-      get channelSpecExamples() {
-        return CHANNEL_SPEC_EXAMPLES
-      },
-
-      /**
-       * #method
-       * A wiggle colours per signal and keeps no runtime filter list, so a
-       * spec naming `filter` is refused rather than silently dropped.
-       */
-      channelSpecProblems(spec: ChannelSpec) {
-        return spec.filter === undefined
-          ? []
-          : ['filter: a quantitative display filters nothing']
+      get plotExamples() {
+        return PLOT_EXAMPLES
       },
 
       /**
@@ -425,25 +393,6 @@ export default function stateModelFactory(
        */
       get legendColor(): string {
         return this.wiggleColor.posColor
-      },
-
-      /**
-       * #getter
-       * `ChannelSpecHost`'s hook: the two settings the Edit as JSON box
-       * writes, as written rather than as resolved, so a round trip through
-       * the box changes nothing on its own.
-       */
-      get channelSpec(): ChannelSpec {
-        const { rows } = self
-        return {
-          rows: rows
-            ? {
-                field: rows.field,
-                ...(rows.domain.length ? { domain: [...rows.domain] } : {}),
-              }
-            : null,
-          color: colorSpecOf(self.colorSetting),
-        }
       },
     }))
     .views(self => ({
@@ -905,15 +854,12 @@ export default function stateModelFactory(
 
       /**
        * #action
-       * The arrangement dialog's Edit as JSON... button: the colour object, and
-       * the rows beside it, as JSON — the escape for a ramp, several cut points
+       * The arrangement dialog's "Edit plot..." button: the colour object and
+       * the rows beside it as text, the escape for a ramp, several cut points
        * or a typed row order, none of which the dialog's own controls offer.
        */
-      openChannelSpecDialog(seed?: ChannelSpec) {
-        getDialogHost(self).queueDialog(handleClose => [
-          ChannelSpecDialog,
-          { model: self, seed, handleClose },
-        ])
+      openPlotDialog(seed?: Plot) {
+        queuePlotDialog(self, seed)
       },
 
       /**
@@ -945,29 +891,6 @@ export default function stateModelFactory(
               self.effectiveSummaryScoreMode,
             ),
         )
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * The Edit as JSON box's `rows`: the field through `setRowLayout`, and
-       * the order through `setRowOrder`, so a stale tree drops and the labels
-       * and the focus stay. `null` returns the rows to the config's own
-       * arrangement in one shared plot.
-       */
-      setRowsSpec(rows: { field: string; domain?: string[] } | null) {
-        if (!rows) {
-          self.setRowLayout(false)
-          self.resetRowArrangement()
-          return
-        }
-        if (rows.field !== 'source') {
-          throw new Error(
-            `rows.field is "${rows.field}", and a quantitative display puts "source" alone on rows`,
-          )
-        }
-        self.setRowLayout(true)
-        self.setRowOrder((rows.domain ?? []).map(name => ({ name })))
       },
     }))
     .actions(self => {
@@ -1159,6 +1082,7 @@ export default function stateModelFactory(
               ])
             },
           }),
+          ...editPlotMenuItems(self),
         ]
       },
 

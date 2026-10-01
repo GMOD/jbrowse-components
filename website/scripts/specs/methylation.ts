@@ -133,7 +133,7 @@ const ARABIDOPSIS_CONTEXT_LANES = [
   {
     trackId: `${TAIR10}-repeatMasker`,
     type: 'LinearBasicDisplay',
-    filterSetting: ['jexl:feature.end-feature.start>1000'],
+    filter: ['jexl:feature.end-feature.start>1000'],
     height: 50,
   },
   // aggregate CpG/CHG/CHH fraction, one labeled row each

@@ -855,6 +855,7 @@
         "DEFAULT_FORMAT_DETAILS_DEPTH",
         "FormatAboutConfigSchemaFactory",
         "FormatDetailsConfigSchemaFactory",
+        "PLOT_VOCABULARY",
         "applyConfSettings",
         "applyRetiredSpellings",
         "arraySlotUnion",
@@ -883,9 +884,15 @@
         "isConstantEntry",
         "isCsiLocation",
         "isSlotDefinitionEntry",
+        "liftPlot",
         "liftRetiredSpellings",
         "makeSlotFacade",
         "mergeFormatCallbacks",
+        "parsePlot",
+        "plotChanges",
+        "plotKeysOf",
+        "plotOf",
+        "plotSettingsWritten",
         "preProcessConfigSnapshot",
         "preProcessSnapshotWith",
         "readConfObject",
@@ -2603,6 +2610,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/baseDisplayConfig": {
+      "package": "@jbrowse/core",
+      "names": [
+        "baseDisplayConfig"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/bgzfWorkerPool": {
       "package": "@jbrowse/core",
       "names": [
@@ -3126,11 +3140,10 @@
     "@jbrowse/core/util/jexlFilters": {
       "package": "@jbrowse/core",
       "names": [
-        "FilterSetting",
-        "activeJexlFilters",
+        "baseJexlFilters",
         "configuredJexlFilters",
         "jexlFilterNarrowing",
-        "liftRetiredFilterSetting"
+        "retiredFilterState"
       ],
       "worker": "real"
     },
@@ -3930,30 +3943,6 @@
         "react-dom"
       ]
     },
-    "@jbrowse/display-kit/channelSpec": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "CHANNELS",
-        "channelSpecChanges",
-        "colorSpecOf",
-        "colorSpecProblems",
-        "isIdentityColor",
-        "parseChannelSpec"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/ChannelSpecDialog": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "default"
-      ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
-      ]
-    },
     "@jbrowse/display-kit/ChromeHighlight": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4018,11 +4007,9 @@
         "colorForField",
         "colorForValue",
         "colorLabelsSlot",
-        "colorMembersOf",
         "colorRampSlots",
         "colorRangeSlot",
         "colorReverseSlot",
-        "colorScaleChoicesOf",
         "colorTitleSlot",
         "dealRowColors",
         "featureColorEncoding",
@@ -4448,6 +4435,26 @@
         "planRegionFetch",
         "regionAssemblyMismatchMessage",
         "retryOutcomeForPlan"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/PlotDialog": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/display-kit/plotMenu": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "editPlotMenuItems",
+        "openPlotDialog"
       ],
       "worker": "real"
     },

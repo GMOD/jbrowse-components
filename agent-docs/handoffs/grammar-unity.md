@@ -1,6 +1,6 @@
 ---
 name: grammar-unity
-description: "The grammar thread's live plan, approved by Colin on 2026-09-30: unity of grammar objects across every display and every surface, not fewer display types. The order of work comes first, starting with one JSON box for every display, then the scorecard and menu census it rests on, and the open calls and quantile leftover carried over from the retired grammar-next-steps."
+description: "The grammar thread's live plan, approved by Colin on 2026-09-30: unity of grammar objects across every display and every surface, not fewer display types. The order of work comes first, starting with a colour-menu builder, then the scorecard and menu census it rests on, and the open calls and quantile leftover carried over from the retired grammar-next-steps."
 ---
 
 # Grammar unity: one vocabulary, every display, every surface
@@ -11,12 +11,9 @@ sections after the order of work are the evidence it rests on.
 
 ## Next, in order
 
-1. **One JSON box for every display**: `MarkPlot` as `ChannelSpec`'s
-   superset, keys taken by slot name, on the seven displays without one
-   (§"One spec and one editor"). Unsized.
-2. **A colour-menu builder** over the colour object and the display's field
+1. **A colour-menu builder** over the colour object and the display's field
    presets (§"Menus as views over those objects"). Unsized.
-3. **Wiggle onto render-core's marks**, keeping its display type, with
+2. **Wiggle onto render-core's marks**, keeping its display type, with
    whiskers as three translucent bar marks and captures shown first:
    [wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md)
    is the worked proposal, sized at 7-10 days.
@@ -40,67 +37,51 @@ leverage that as best as we can."
 
 Unity here is the grammar doc's second rule, "one object per concept, and
 every surface reads it", held over surfaces as well as displays: the menu,
-the JSON box, the validator, the legend, the axis, the agent API and the SVG
+the plot editor, the validator, the legend, the axis, the agent API and the SVG
 export all read one object per concept. A display spelling a concept its own
 way, or a surface reaching only some displays, is a finding. Subtyping stays
 a tool for a display whose whole picture is a plot.
 
 ## Scorecard
 
-Read against main on 2026-09-30. ✗ is a gap; — means the concept does not
+Read against main on 2026-09-30, the plot column on 2026-10-01. ✗ is a gap; — means the concept does not
 apply to that display.
 
-| Display | Colour object | `scales.y` | `facet` | `rows` / bands of rows | JSON editor | Steps + encoder |
+| Display | Colour object | `scales.y` | `facet` | `rows` / bands of rows | Edit plot | Steps + encoder |
 | --- | --- | --- | --- | --- | --- | --- |
-| Mark, Manhattan | ✓ | ✓ | ✓ | ✓ / ✗ | `MarkPlot` | ✓ |
-| Wiggle | ✓ | ✓ | ✗ | ✓ / ✗ | `ChannelSpec` | ✗ (own RPC and shaders) |
-| Canvas, single-sample variant | ✓ | — | ✓ | — | `ChannelSpec` | ✗ |
-| Multi-row feature | ✓ | — | ✓ (`group`) | ✓ / ✓ | ✗ | ✗ |
-| Multi-sample variant | ✓ | — | ✓ | ✓ / ✓ | ✗ | ✗ |
-| Alignments, LGV synteny | ✓ (two objects) | ✓ (coverage band) | ✓ | — | ✗ | ✗ |
-| MAF | ✗ `MafColor` | ✗ (same coverage band, no scale) | ✗ | ✓ / ✗ | ✗ | shared kernels |
-| Hi-C | ✗ `HicColor` | — | — | — | ✗ | ✗ |
-| LD | ✗ no colour object | — | — | — | ✗ | ✗ |
-| Multi-way synteny | ✓ (two objects) | — | — | lanes | ✗ | lane layers ✓ |
+| Mark, Manhattan | ✓ | ✓ | ✓ | ✓ / ✗ | ✓ | ✓ |
+| Wiggle | ✓ | ✓ | ✗ | ✓ / ✗ | ✓ | ✗ (own RPC and shaders) |
+| Canvas, single-sample variant | ✓ | — | ✓ | — | ✓ | ✗ |
+| Multi-row feature | ✓ | — | ✓ (`group`) | ✓ / ✓ | ✓ | ✗ |
+| Multi-sample variant | ✓ | — | ✓ | ✓ / ✓ | ✓ | ✗ |
+| Alignments, LGV synteny | ✓ (two objects) | ✓ (coverage band) | ✓ | — | ✓ | ✗ |
+| MAF | ✗ `MafColor` | ✗ (same coverage band, no scale) | ✗ | ✓ / ✗ | ✓ | shared kernels |
+| Hi-C | ✗ `HicColor` | — | — | — | ✓ | ✗ |
+| LD | ✗ no colour object | — | — | — | — | ✗ |
+| Multi-way synteny | ✓ (two objects) | — | — | lanes | ✓ | lane layers ✓ |
 
 Validation is already shared: `colorProblems`
 (`packages/core/src/util/colorScale.ts`) feeds the mark display's rule list
 and every corner notice, and `ScoreScaleMixin`'s `valueScaleNotices` covers
 `scales.y`. `LegendMixin` derives the legend on ten displays.
 
-## One spec and one editor
+## One plot and one editor
 
-Two JSON shapes exist: `ChannelSpec` (`packages/display-kit/src/channelSpec.ts`,
-`{ facet, rows, color, filter }`) on canvas, the single-sample variant display
-and wiggle, and `MarkPlot` (`plugins/marks/src/LinearMarkDisplay/markPlot.ts`,
-`{ marks, transform, facet, rows, scales }`) on the mark display and
-Manhattan. Seven rows of the scorecard have neither, alignments among them.
+Every display's grammar settings are its `plot`, edited as text by "Edit
+plot..." and read and written by the agent through `plot`, `plotProblems` and
+`applyPlot`
+([ADR-204](../architecture-decision-records/adr-204-every-display-edits-its-grammar-settings-as-one-plot.md)).
+The `filter` slot is the one filter. Two edges remain:
 
-Make `MarkPlot` `ChannelSpec`'s superset (`ChannelSpec`'s `CHANNELS` plus
-`marks`, `transform` and `scales`), take a display's keys by slot name, since
-the names already are the concepts (ADR-131 kept them), and point the one box
-at the seven displays without one: multi-row, the multi-sample variant display
-and alignments already hold `facet`, `color` and `rows` in the shared shapes.
-One JSON box, one rule list, the agent's read and write (`markPlot`,
-`plotProblems` and `liftMarkPlot` exist on the mark display alone) and Edit
-plot's display-level controls then read one spec. The spec is not
-[ADR-091](../architecture-decision-records/adr-091-a-displays-settings-are-a-declaration.md)'s
-rejected table, which declared every setting with an `affects` tag and removed
-zero getters: it edits and reads back slots a schema already has, and getters,
-fetch keys and render state stay where they are.
-
-A bare colour string reads two ways by position, as the `field-spells-constant` rule
-decided: inside a mark's `encoding` it is a
-field (`plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts:157`,
-`shorthand: 'field'`), and on a display's colour object it is the constant
-(`ChannelSpec`'s `parseColor`). The merged box keeps both, since they sit at
-different keys; the cost is that the agent text teaches both readings
-(`JB_HELP`, `packages/app-core/src/JbApi/jbApi.ts:1443`).
-
-Filters are already one object: `FilterSetting`
-(`packages/core/src/util/jexlFilters.ts:53`) holds `jexl:` expressions and
-refuses a bare string on the canvas, mark and multi-sample variant displays
-alike. Alignments' structured `filterBy` stays its own.
+- A bare colour string reads two ways by position, as the
+  `field-spells-constant` rule decided: inside a mark's `encoding` it is a
+  field (`markColorConfigSchema.ts`, `shorthand: 'field'`), and on a display's
+  colour object it is the constant. Both sit in one plot at different keys, so
+  the agent text teaches both readings.
+- Only the mark display and canvas answer `plotProblems` beyond the schema's
+  refusals. The colour objects' `colorProblems` and `scales.y`'s
+  `scaleEndProblems` run as live notices on the displays that hold them and
+  could judge a draft the same way, each with its display's field presets.
 
 ## Menus as views over those objects
 

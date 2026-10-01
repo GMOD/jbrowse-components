@@ -18,7 +18,6 @@ import {
   withScaleMember,
   withoutChannel,
 } from '../markEdit.ts'
-import { markPlotSettingsWritten } from '../markPlot.ts'
 import { markProblemIndex } from '../markProblemIndex.ts'
 import { markProblems } from '../markProblems.ts'
 import { MARK_TYPES } from '../markVocabulary.ts'
@@ -39,12 +38,12 @@ import type { PlotFields } from '../scanPlotFields.ts'
 const NO_FIELDS: PlotFields = { numeric: [], categorical: [] }
 
 export interface MarkPlotDialogModel {
-  markPlot: MarkPlot
+  plot: MarkPlot
   plotFields: PlotFields | undefined
   plotScanLocus: string | undefined
   liftMarkPlot: (plot: MarkPlot) => MarkPlotSettings
-  applyDisplaySettings: (settings: Record<string, unknown>) => unknown
-  openPlotJsonDialog: (seed?: MarkPlot) => void
+  applyPlot: (draft: MarkPlot) => void
+  openPlotDialog: (seed?: MarkPlot) => void
 }
 
 /**
@@ -113,7 +112,7 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
   handleClose: () => void
 }) {
   const [plot, setPlot] = useState<MarkPlot>(() => ({
-    ...model.markPlot,
+    ...model.plot,
     ...seed,
   }))
   const marks = draftMarks(plot)
@@ -153,19 +152,17 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
       submitDisabled={error !== undefined}
       onCancel={handleClose}
       onSubmit={() => {
-        model.applyDisplaySettings(
-          markPlotSettingsWritten(plot, model.markPlot),
-        )
+        model.applyPlot(plot)
         handleClose()
       }}
       actions={
         <Button
           onClick={() => {
-            model.openPlotJsonDialog(plot)
+            model.openPlotDialog(plot)
             handleClose()
           }}
         >
-          Edit as JSON...
+          Edit as text...
         </Button>
       }
     >

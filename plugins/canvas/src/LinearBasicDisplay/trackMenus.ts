@@ -8,6 +8,7 @@ import {
   sectionOrderMenuItems,
 } from '@jbrowse/display-kit/groupByMenu'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
@@ -22,6 +23,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { HiddenGroupsModel } from '@jbrowse/display-kit/groupByMenu'
 import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
+import type { PlotDisplay } from '@jbrowse/display-kit/plotMenu'
 
 // Every menu level sorts by `priority` and the sort is stable, so this pins
 // the recovery rows below whatever a subclass appends and above "Display
@@ -81,7 +83,7 @@ interface GroupByMenuSelf {
   hideGroup: (key: string) => void
 }
 
-interface TrackMenuSelf extends GroupByMenuSelf {
+interface TrackMenuSelf extends GroupByMenuSelf, PlotDisplay {
   featureNarrowings: () => Reversibles
   featureMarks: () => Reversibles
   showSubmenuMenuItems: () => MenuItem[]
@@ -223,6 +225,7 @@ export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
     ...self.featureHeightMenuItems(),
     ...self.colorMenuItems(),
     ...groupByMenuItems(self),
+    ...editPlotMenuItems(self),
     ...featureSetRecoveryMenuItems(self),
     ...canvasFilterMenuItems(self),
   ]

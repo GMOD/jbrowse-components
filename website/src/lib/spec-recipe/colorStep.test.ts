@@ -5,8 +5,8 @@ function colorStep(value: unknown, displayType: string) {
   return Array.isArray(step) ? undefined : step
 }
 
-test('a declared range sends a canvas colour to the Edit as JSON box', () => {
+test('a declared range sends a canvas colour to Edit plot', () => {
   expect(
     colorStep({ field: 'biotype', range: ['red'] }, 'LinearBasicDisplay')?.path,
-  ).toBe('Track menu → Color by... → Attribute... → Edit as JSON...')
+  ).toBe('Track menu → Edit plot...')
 })

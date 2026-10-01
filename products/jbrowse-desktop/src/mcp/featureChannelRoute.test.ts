@@ -66,13 +66,13 @@ test('a feature track groups and colors through the two settings jb.help names, 
       color: { field: 'gene_biotype', domain: ['protein_coding'] },
     }),
   ).toMatchObject({ applied: ['facet', 'color'], failed: [] })
-  expect(display.channelSpec).toMatchObject({
-    facet: { field: 'strand' },
+  expect(display.plot).toMatchObject({
+    facet: 'strand',
     color: { field: 'gene_biotype', domain: ['protein_coding'] },
   })
   expect(jb.getConf(display, 'facet')).toEqual({ field: 'strand' })
   display.applyDisplaySettings({ facet: null })
-  expect(display.channelSpec.facet).toBeNull()
+  expect(display.plot.facet).toBeUndefined()
   expect(
     display.applyDisplaySettings({ color: { field: 'x', scale: 'ld' } }).failed,
   ).toMatchObject([{ key: 'color' }])

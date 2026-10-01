@@ -62,7 +62,7 @@ export default function MarkFieldPicker({
             fullWidth
             helperText={
               edit.beyond
-                ? 'says more than this control can — edit as JSON'
+                ? 'says more than this control can — edit as text'
                 : undefined
             }
             slotProps={{

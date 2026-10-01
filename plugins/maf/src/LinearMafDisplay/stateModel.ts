@@ -27,6 +27,7 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
@@ -2357,6 +2358,7 @@ export default function stateModelFactory(
             return [
               ...superTrackMenuItems(),
               ...buildMafTrackMenuItems(self),
+              ...editPlotMenuItems(self),
               ...mafLaunchMenuItems({
                 session: getSession(self),
                 model: self,

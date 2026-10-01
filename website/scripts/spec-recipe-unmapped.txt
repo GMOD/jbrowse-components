@@ -15,7 +15,7 @@ displayMode
 domain
 facet
 fadeThinAlignmentsMode
-filterSetting
+filter
 geneTrackId
 height
 hideUnlabelled

@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   getColorByMenuItem,
@@ -296,6 +297,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
                 { type: 'mateRefName', label: 'Query name' },
               ),
             }),
+            ...editPlotMenuItems(self),
             // No base pair / tag: a PAF block has no per-base sequence to sort a
             // column by, and no SAM tags. 'Longest features first' is the
             // `layoutOrder` length, folded in as a peer radio because

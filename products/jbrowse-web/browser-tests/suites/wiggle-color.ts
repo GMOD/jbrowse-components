@@ -45,18 +45,18 @@ const suite: TestSuite = {
         await delay(500)
 
         // the two swatches say a constant and a cut; a ramp or several cuts is
-        // the JSON escape inside the same dialog
-        const jsonItem = await findByText(page, 'Edit as JSON...', 10000)
-        await jsonItem.click()
+        // the plot box behind the same dialog
+        const plotItem = await findByText(page, 'Edit plot...', 10000)
+        await plotItem.click()
         await delay(500)
 
         // the colour is one object written as JSON; a string is the constant
-        const specField = await findByTestId(page, 'channel-spec-json', 10000)
-        await specField.click({ count: 3 })
+        const plotField = await findByTestId(page, 'plot-json', 10000)
+        await plotField.click({ count: 3 })
         await page.keyboard.down('Control')
         await page.keyboard.press('KeyA')
         await page.keyboard.up('Control')
-        await specField.type('{"color": "red"}')
+        await plotField.type('{"color": "red"}')
         await delay(500)
 
         const submitBtn = await page.waitForSelector('button[type="submit"]', {

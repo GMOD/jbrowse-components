@@ -498,7 +498,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // two labels need. Filtering it out leaves UL21 and UL22 on one row,
           // each with an arrow saying which way it is transcribed -- which is
           // the claim the two bands under it make.
-          filterSetting: ["jexl:feature.type=='gene'"],
+          filter: ["jexl:feature.type=='gene'"],
           height: 70,
         },
         {

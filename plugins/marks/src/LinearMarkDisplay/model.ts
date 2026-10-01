@@ -23,10 +23,8 @@ import {
   readFor,
 } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
-  FilterSetting,
-  activeJexlFilters,
+  baseJexlFilters,
   configuredJexlFilters,
-  liftRetiredFilterSetting,
 } from '@jbrowse/core/util/jexlFilters'
 import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
@@ -44,6 +42,7 @@ import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
+import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import {
   sameAsLast,
@@ -53,7 +52,6 @@ import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
 import {
   addDisposer,
-  cast,
   getSnapshot,
   isAlive,
   types,
@@ -119,7 +117,7 @@ import {
   rowValuesAt,
 } from './markList.ts'
 import { markContextMenuItems, markTrackMenuItems } from './markMenus.ts'
-import { liftMarkPlot as liftPlot, markPlotOf } from './markPlot.ts'
+import { MARK_PLOT_EXAMPLES, markPlotSettingsOf } from './markPlot.ts'
 import { markProblems, problemText } from './markProblems.ts'
 import {
   lastBinEdges,
@@ -221,7 +219,6 @@ export type MarkRenderingBackend = PerRegionRenderingBackend<
 >
 
 const MarkPlotDialog = lazy(() => import('./components/MarkPlotDialog.tsx'))
-const PlotJsonDialog = lazy(() => import('./components/PlotJsonDialog.tsx'))
 
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
@@ -301,15 +298,8 @@ export function stateModelFactory(
            */
           configuration: ConfigurationReference(configSchema),
           // #endregion
-          /**
-           * #property
-           * The "Filter by..." dialog's override of the `filter` slot; unset
-           * follows the config.
-           */
-          filterSetting: FilterSetting,
         }),
       )
-      .preProcessSnapshot(liftRetiredFilterSetting)
       .views(() => ({
         /**
          * #getter
@@ -566,6 +556,14 @@ export function stateModelFactory(
          */
         get configuredFilters() {
           return () => configuredJexlFilters(self)
+        },
+        /**
+         * #getter
+         * What the track's config declares for `filter`, which "Clear all
+         * filters" returns to.
+         */
+        get baseFilters() {
+          return () => baseJexlFilters(self)
         },
         /**
          * #getter
@@ -983,10 +981,10 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * the filters actually applied
+         * the filters applied
          */
         activeFilters(): string[] {
-          return activeJexlFilters(self)
+          return self.configuredFilters()
         },
         /**
          * #getter
@@ -1374,36 +1372,27 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The plot as declared, defaults left off: `marks`, `transform`,
-         * `facet`, `rows` and `scales`, which "Edit as JSON..." opens on. An
-         * agent edits a copy and hands it to `applyDisplaySettings`, or first
-         * to `plotProblems`. The marks are the ones drawn wherever any are,
-         * since a display built on this one names a default plot of its own.
          */
-        get markPlot(): MarkPlot {
-          const marks = getSnapshot(self.conf.marks)
-          return markPlotOf({
-            ...getSnapshot(self.conf),
-            ...(marks.length > 0 ? { marks } : {}),
-          })
+        get plotExamples() {
+          return MARK_PLOT_EXAMPLES
         },
         /**
          * #method
          * What a draft plot would report once applied, as the lines `notices`
-         * carries, without touching the display: a draft merges over the
-         * declared plot as `applyDisplaySettings` merges it, and one a config
-         * file would refuse throws the refusal.
+         * carries, without touching the display; one a config file would
+         * refuse throws the refusal.
          */
         plotProblems(plot: MarkPlot): string[] {
           return markProblems(this.liftMarkPlot(plot)).map(problemText)
         },
         /**
          * #method
-         * A typed plot as the config schema would hold it, throwing what a
-         * config file would be refused for. Nothing on this display is touched.
+         * A draft as the rule list reads it, merged over `plot` and lifted by
+         * the config schema, throwing what a config file would be refused
+         * for. Nothing on this display is touched.
          */
         liftMarkPlot(plot: MarkPlot): MarkPlotSettings {
-          return liftPlot(configSchema, plot, this.markPlot)
+          return markPlotSettingsOf(self.liftPlot(plot))
         },
         /**
          * #getter
@@ -1758,9 +1747,11 @@ export function stateModelFactory(
         },
         /**
          * #action
+         * Write the `filter` slot; undefined returns it to what the track's
+         * config declares.
          */
         setFilter(filters?: string[]) {
-          self.filterSetting = cast(filters)
+          setConf(self, 'filter', filters ?? self.baseFilters())
         },
         /**
          * #action
@@ -1838,15 +1829,12 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * Open the plot as JSON, over the same five settings the controls
-         * write. `seed` overlays a setting the caller has in hand but has not
+         * Open the plot as text, over the same settings the controls write.
+         * `seed` overlays a setting the caller has in hand but has not
          * applied.
          */
-        openPlotJsonDialog(seed?: MarkPlot) {
-          getDialogHost(self).queueDialog(handleClose => [
-            PlotJsonDialog,
-            { model: self, seed, handleClose },
-          ])
+        openPlotDialog(seed?: MarkPlot) {
+          queuePlotDialog(self, seed)
         },
         /**
          * #action
@@ -1894,6 +1882,13 @@ export function stateModelFactory(
             MarkPlotDialog,
             { model: self, seed, handleClose },
           ])
+        },
+        /**
+         * #action
+         * The text box's "Back to form", opened on its draft.
+         */
+        openPlotForm(draft: MarkPlot) {
+          this.openMarkPlotDialog(draft)
         },
       }))
       .views(self => ({

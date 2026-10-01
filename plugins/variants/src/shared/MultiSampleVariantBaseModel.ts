@@ -20,10 +20,8 @@ import {
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { readFor } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
-  FilterSetting,
-  activeJexlFilters,
+  baseJexlFilters,
   configuredJexlFilters,
-  liftRetiredFilterSetting,
 } from '@jbrowse/core/util/jexlFilters'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -39,9 +37,10 @@ import {
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   RowHeightMixin,
@@ -333,18 +332,10 @@ export default function MultiSampleVariantBaseModelF(
         types.model({
           type: types.string,
           configuration: ConfigurationReference(configSchema),
-          /**
-           * #property
-           * Runtime "Filter by..." override. When set (even to an empty list)
-           * it replaces the `filter` config slot; when undefined the config
-           * default applies. See `JexlFilterModel`.
-           */
-          filterSetting: FilterSetting,
           // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
           // trigger a run whose output is that mixin's `rows`.
         }),
       )
-      .preProcessSnapshot(liftRetiredFilterSetting)
       .volatile(() => ({
         /**
          * #volatile
@@ -428,12 +419,19 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #method
-         * What the `filter` config slot alone declares.
-         * In its own block ahead of every reader so they reach it through
-         * `self`, the arrangement `LinearBasicDisplay` uses for the same pair.
+         * The filters the `filter` config slot holds. In its own block ahead
+         * of every reader so they reach it through `self`.
          */
         configuredFilters(): string[] {
           return configuredJexlFilters(self)
+        },
+        /**
+         * #method
+         * What the track's config declares for `filter`, which "Clear all
+         * filters" returns to.
+         */
+        baseFilters(): string[] {
+          return baseJexlFilters(self)
         },
         /**
          * #method
@@ -525,13 +523,10 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #method
-         * The filters actually applied, `jexl:`-prefixed: the runtime override
-         * when set, otherwise the config tier. In its own block after
-         * `configuredFilters` so it reaches it through `self`, the arrangement
-         * `LinearBasicDisplay` uses for the same pair.
+         * The filters applied, `jexl:`-prefixed.
          */
         activeFilters(): string[] {
-          return activeJexlFilters(self)
+          return self.configuredFilters()
         },
         /**
          * #getter
@@ -697,7 +692,7 @@ export default function MultiSampleVariantBaseModelF(
            * #action
            */
           setFilter(f?: string[]) {
-            self.filterSetting = cast(f)
+            setConf(self, 'filter', f ?? self.baseFilters())
           },
           /**
            * #action
@@ -1528,6 +1523,7 @@ export default function MultiSampleVariantBaseModelF(
             return [
               ...superTrackMenuItems(),
               ...variantTrackMenuItems(self as MultiSampleVariantBaseModel),
+              ...editPlotMenuItems(self),
             ]
           },
           /**

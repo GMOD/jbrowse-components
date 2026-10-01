@@ -280,8 +280,8 @@ get colorsByConsequenceImpact() {
 /**
  * #getter
  */
-get channelSpecExamples() {
-  return VARIANT_CHANNEL_SPEC_EXAMPLES
+get plotExamples() {
+  return VARIANT_PLOT_EXAMPLES
 },
 /**
  * #getter
@@ -338,6 +338,7 @@ the inherited track menu:
       return [
         ...superTrackMenuItems(),
         ...buildMafTrackMenuItems(self),
+        ...editPlotMenuItems(self),
         ...mafLaunchMenuItems({
           session: getSession(self),
           model: self,

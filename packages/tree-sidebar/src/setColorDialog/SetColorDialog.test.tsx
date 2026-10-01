@@ -367,7 +367,7 @@ describe('the plot color line', () => {
     expect(line.queryByTitle(/click to set a custom color/)).toBeNull()
   })
 
-  test('Edit as JSON... hands over and closes, writing nothing', () => {
+  test('Edit plot... hands over and closes, writing nothing', () => {
     const model = fakeModel()
     const handleClose = jest.fn()
     const onEditAsJson = jest.fn()
@@ -379,7 +379,7 @@ describe('the plot color line', () => {
       />,
     )
 
-    fireEvent.click(screen.getByText('Edit as JSON...'))
+    fireEvent.click(screen.getByText('Edit plot...'))
     expect(onEditAsJson).toHaveBeenCalled()
     expect(handleClose).toHaveBeenCalled()
     expect(model.applyRowEdits).not.toHaveBeenCalled()

@@ -181,7 +181,7 @@ function landmarkLane(hap: 'MAT' | 'PAT') {
     trackId: `hg002_landmarks_${hap.toLowerCase()}`,
     type: 'LinearBasicDisplay',
     geneGlyphMode: 'longestCoding',
-    filterSetting: [LANDMARK_FILTER],
+    filter: [LANDMARK_FILTER],
     color: STRAND_COLOR,
     showLegend: false,
     height: 60,

@@ -15,7 +15,7 @@ import AttributeFieldInput from './AttributeFieldInput.tsx'
 import { GROUPING } from './attributeVerdict.ts'
 
 import type { AttributeScanModel } from './AttributeFieldInput.tsx'
-import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
+import type { Plot } from '@jbrowse/core/configuration'
 
 const CHOICES = ['none', 'strand', 'attribute'] as const
 
@@ -36,8 +36,8 @@ function fieldOf(choice: Choice, attribute: string) {
 export interface GroupByDialogModel extends AttributeScanModel {
   facet: { field: string } | undefined
   applyGroupBy: (field: string | undefined, color: boolean) => void
-  groupByChannelSpec: (field: string | undefined, color: boolean) => ChannelSpec
-  openChannelSpecDialog: (seed?: ChannelSpec) => void
+  groupByPlot: (field: string | undefined, color: boolean) => Plot
+  openPlotDialog: (seed?: Plot) => void
 }
 
 const GroupByDialog = observer(function GroupByDialog({
@@ -77,13 +77,11 @@ const GroupByDialog = observer(function GroupByDialog({
       actions={
         <Button
           onClick={() => {
-            model.openChannelSpecDialog(
-              model.groupByChannelSpec(field, alsoColor),
-            )
+            model.openPlotDialog(model.groupByPlot(field, alsoColor))
             handleClose()
           }}
         >
-          Edit as JSON...
+          Edit plot...
         </Button>
       }
     >

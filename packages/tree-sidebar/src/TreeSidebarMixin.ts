@@ -1,6 +1,6 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { getContainingTrack, getSession } from '@jbrowse/core/util'
-import { isSessionWithBaseTrackConfig } from '@jbrowse/core/util/types'
+import { getContainingTrack } from '@jbrowse/core/util'
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { getSnapshot, hasParent, types } from '@jbrowse/mobx-state-tree'
@@ -74,34 +74,6 @@ function present(value: unknown) {
     return Object.keys(value).length ? value : undefined
   }
   return value
-}
-
-/**
- * The base's entry for this display, hydrated, which a reset returns to and
- * "is this the reader's" compares against: the config.json's, or the one a
- * track the session owns was added with; empty in a session that keeps no
- * base.
- */
-export function baseDisplayConfig(self: object): Record<string, unknown> {
-  if (!hasParent(self)) {
-    return {}
-  }
-  const session = getSession(self)
-  if (!isSessionWithBaseTrackConfig(session)) {
-    return {}
-  }
-  const base = session.baseTrackConfig(
-    getConf(getContainingTrack(self), 'trackId'),
-  )
-  const { displayId } = confNode(self).configuration
-  const displays = base?.displays
-  return (
-    (Array.isArray(displays)
-      ? (displays as Record<string, unknown>[]).find(
-          d => d.displayId === displayId,
-        )
-      : undefined) ?? {}
-  )
 }
 
 function baseArrangement(self: object): Arrangement {

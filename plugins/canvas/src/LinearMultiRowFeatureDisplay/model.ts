@@ -19,6 +19,7 @@ import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -1324,6 +1325,7 @@ export default function stateModelFactory(
             ...superTrackMenuItems(),
             ...buildMultiRowTrackMenuItems(self),
             ...densityTierMenuItems(self),
+            ...editPlotMenuItems(self),
           ]
         },
       }

@@ -1,12 +1,18 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
+import { activeCount } from '@jbrowse/core/ui/filterMenuItems'
+import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
+import CanvasPlugin from '@jbrowse/plugin-canvas'
+import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
 import variantConfigSchemaFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import variantStateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
+import VariantsPlugin from '../index.ts'
 import { createDisplayTestEnvironment } from './testEnv.ts'
 
 import type { LinearMultiSampleVariantDisplayModel } from '../LinearMultiSampleVariantDisplay/model.ts'
 
-// The two-tier jexl-filter contract (`JexlFilterModel`), asserted on the
+// The jexl-filter contract (`JexlFilterModel`), asserted on the
 // multi-sample variant displays. They used to implement one half of it, and the
 // failures were silent:
 //
@@ -31,6 +37,14 @@ const variant =
     stateModel: variantStateModelFactory(variantConfigSchema),
   })
 
+const declared =
+  createDisplayTestEnvironment<LinearMultiSampleVariantDisplayModel>({
+    displayName: 'LinearMultiSampleVariantDisplay',
+    configSchema: variantConfigSchema,
+    stateModel: variantStateModelFactory(variantConfigSchema),
+    displayConfig: { filter: ["jexl:get(feature,'score')>10"] },
+  })
+
 const CASES = [
   ['LinearMultiSampleVariantDisplay', variant.createDisplay],
 ] as const
@@ -53,32 +67,44 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
     }).toThrow(/is not an expression/)
   })
 
-  it('lets the runtime override replace the config tier, empty included', () => {
-    const { display } = createDisplay()
-    setConf(display, 'filter', ["jexl:get(feature,'score')>10"])
+  it('writes the slot, and a clear goes back to what the track config declares', () => {
+    const { display } = declared.createDisplay()
+    expect(display.activeFilters()).toEqual(["jexl:get(feature,'score')>10"])
+    expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(0)
 
     display.setFilter(["jexl:get(feature,'score')>99"])
-    expect(display.activeFilters()).toEqual(["jexl:get(feature,'score')>99"])
+    expect(getConf(display, 'filter')).toEqual(["jexl:get(feature,'score')>99"])
+    expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(1)
 
-    // the case a one-tier design cannot express: clearing filters an admin
-    // declared, without clearing the declaration
     display.setFilter([])
     expect(display.activeFilters()).toEqual([])
+    expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(1)
 
     display.setFilter(undefined)
     expect(display.activeFilters()).toEqual(["jexl:get(feature,'score')>10"])
+    expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(0)
   })
+})
 
-  it("loads a v4.3 session's jexlFiltersSetting, prefixed", () => {
-    const { display } = createDisplay({
-      displaySnapshot: { jexlFiltersSetting: ["get(feature,'score')>99"] },
-    })
-    expect(display.filterSetting).toEqual(["jexl:get(feature,'score')>99"])
+test("a v4.3 session's jexlFiltersSetting on a variant display lands in its filter slot, prefixed", () => {
+  const pluginManager = new PluginManager([
+    new LinearGenomeViewPlugin(),
+    new CanvasPlugin(),
+    new VariantsPlugin(),
+  ])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const { configSchema, retiredState } = pluginManager.getDisplayType(
+    'LinearVariantDisplay',
+  )
+  const lifted = retiredState!.lift({
+    jexlFiltersSetting: ["get(feature,'score')>99"],
   })
-
-  it('keeps the override off the config node', () => {
-    const { display } = createDisplay()
-    display.setFilter(["jexl:get(feature,'score')>99"])
-    expect(getConf(display, 'filter')).toEqual([])
-  })
+  const conf = configSchema.create(
+    { type: 'LinearVariantDisplay', displayId: 'd', ...lifted },
+    { pluginManager },
+  )
+  expect(readConfObject(conf, 'filter')).toEqual([
+    "jexl:get(feature,'score')>99",
+  ])
 })

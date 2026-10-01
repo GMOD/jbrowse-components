@@ -428,8 +428,8 @@ an `applyDisplaySettings` bag: MST drops a snapshot key the model no longer
 declares, so a track that named one of them reopens in the default colors.
 `domainMid` is new on the ramp. The track menu has no colour row of its own any
 more: **Edit colors/arrangement...** offers the plot's two colours on one line,
-and its **Edit as JSON...** opens the shared channel-spec dialog on the same
-object a config file holds.
+and its **Edit plot...** opens the shared plot dialog on the same object a
+config file holds.
 
 [](/docs/config/wigglecolor) lists the members.
 

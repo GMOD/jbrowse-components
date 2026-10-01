@@ -1,6 +1,5 @@
 import { pathSubject, printCondition } from '@jbrowse/jexl'
 
-import { activeJexlFilters } from '../../util/jexlFilters.ts'
 import { ensureJexlPrefix } from '../../util/jexlStrings.ts'
 import { getNotificationSink } from '../../util/sessionServices.ts'
 
@@ -46,17 +45,17 @@ export function filterByValueItems(
   const shown =
     text.length > MAX_LABEL_VALUE ? `${text.slice(0, MAX_LABEL_VALUE)}…` : text
   const add = (op: '==' | '!=' | '>=') => () => {
-    const previous = display.filterSetting
+    const previous = display.configuredFilters()
     const line = printCondition({
       subject: pathSubject('feature', path),
       op,
       value,
     })
-    display.setFilter([...activeJexlFilters(display), ensureJexlPrefix(line)])
+    display.setFilter([...previous, ensureJexlPrefix(line)])
     getNotificationSink(display).notify('Filter added', 'info', {
       name: 'Undo',
       onClick: () => {
-        display.setFilter(previous && [...previous])
+        display.setFilter(previous)
       },
     })
   }

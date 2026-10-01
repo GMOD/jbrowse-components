@@ -99,6 +99,19 @@ historically drifted.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
+### baseDisplayConfig
+
+The base's entry for this display, hydrated, which a reset returns to and "is
+this the reader's" compares against: the config.json's, or the one a track the
+session owns was added with; empty in a session that keeps no base.
+
+```js
+// type signature
+(self: object) => Record<string, unknown>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/baseDisplayConfig.ts)
+
 ### BinStep
 
 Place every feature in a genome-aligned bin of `step` bp, writing the bin's
@@ -1057,6 +1070,21 @@ steps that follow it read the rows already in section order.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
 
+### liftPlot
+
+A draft as the display's config would hold it, through the schema's own lift and
+checks: a shorthand becomes its object, a default falls off, and what a config
+file is refused for throws. The node is never attached, so nothing on the
+display is touched; a display reads its typed members off it. The draft is
+copied first, since MST freezes what it creates from.
+
+```js
+// type signature
+(conf: AnyConfigurationModel, draft: Plot) => AnyConfigurationModel
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
 ### ListColumn
 
 A list of rows per row: row `i`'s entries are the rows of `entries` from
@@ -1229,6 +1257,18 @@ every comparison against it declines.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
 
+### parsePlot
+
+The text as a plot, refusing a key the display's plot does not hold. The schema
+is the parser past this point.
+
+```js
+// type signature
+(text: string, keys: readonly string[]) => Plot
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
 ### parseSvAlt
 
 Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
@@ -1253,6 +1293,84 @@ input in start order, so a `span` encoding `row` stacks it. Under a facet it
 packs each section on its own.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+### Plot
+
+A display's plot settings as written: a key left out is left alone, and `null`
+resets that setting. Untyped, since a value may be a shorthand the schema lifts,
+and the schema is what judges it.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
+### PLOT_VOCABULARY
+
+The grammar's settings, by the slot name every display that has one gives it:
+what "Edit plot..." shows and an agent reads as a display's `plot`. A display's
+plot is the ones its config declares (`plotKeysOf`).
+
+```js
+// type signature
+readonly[
+  ('marks',
+  'transform',
+  'facet',
+  'rows',
+  'rowColor',
+  'color',
+  'baseColor',
+  'arcColor',
+  'ribbonColor',
+  'laneLayers',
+  'scales',
+  'filter',
+  'filterBy')
+]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
+### plotChanges
+
+```js
+// type signature
+(draft: Plot, current: Plot) => { sets: string[]; clears: string[]; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
+### plotKeysOf
+
+```js
+// type signature
+(conf: AnyConfigurationModel) => string[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
+### plotOf
+
+A display's plot as declared, defaults left off. A list sitting at a default it
+shares with no other display, a default plot's marks, shows its entries, since
+they are what is drawn.
+
+```js
+// type signature
+(conf: AnyConfigurationModel) => Plot
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
+### plotSettingsWritten
+
+The settings bag a draft applies through `applyDisplaySettings`, holding only
+what moved, so a setting the draft repeats unchanged is not rewritten.
+
+```js
+// type signature
+(draft: Plot, current: Plot) => any
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
 ### preProcessConfigSnapshot
 

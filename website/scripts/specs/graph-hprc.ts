@@ -937,7 +937,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
                   // the lane the flag lives on, cut to the flagged bubbles so
                   // the one under the band is the subject rather than one row
                   // among the window's bubbles
-                  filterSetting: ['jexl:feature.inversion'],
+                  filter: ['jexl:feature.inversion'],
                   height: 60,
                 },
                 // Bounded where the other pages let it grow: this is the one

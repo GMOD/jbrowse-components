@@ -1026,7 +1026,7 @@ and a far end naming its own sequence field. The rules run as you type and each
 finding sits under the control that caused it. The corner notice opens the same
 dialog.
 
-**Edit as JSON...**, inside it, is the same plot as text, and **Back to form**
+**Edit as text...**, inside it, is the same plot as text, and **Back to form**
 there returns. A setting left out stays as it is; `null` clears one. Neither
 editor refuses a plot the rules complain about, since the display draws what it
 can; Apply refuses only what a config file is refused for.

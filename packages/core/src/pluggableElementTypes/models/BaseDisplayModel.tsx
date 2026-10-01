@@ -1,6 +1,16 @@
 import { hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
-import { applyConfSettings, getConf } from '../../configuration/index.ts'
+import {
+  applyConfSettings,
+  getConf,
+  setConf,
+} from '../../configuration/index.ts'
+import {
+  liftPlot as liftPlotDraft,
+  plotKeysOf,
+  plotOf,
+  plotSettingsWritten,
+} from '../../configuration/plot.ts'
 import {
   getContainingTrack,
   getEnv,
@@ -11,6 +21,7 @@ import { ElementId } from '../../util/types/mst.ts'
 import { displaySetterName } from '../../util/unknownSnapshotKeys.ts'
 
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type { Plot } from '../../configuration/plot.ts'
 import type { MenuItem } from '../../ui/index.ts'
 import type { RpcStatus } from '../../util/progress.ts'
 import type { UnappliedSetting } from '../../util/unknownSnapshotKeys.ts'
@@ -308,6 +319,63 @@ function stateModelFactory() {
           }
         }
         return { applied, unapplied, failed }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The grammar settings this display's config declares, by slot name
+       * (`PLOT_VOCABULARY`): what "Edit plot..." edits. Empty on a display
+       * with none, which then offers no editor.
+       */
+      get plotKeys(): string[] {
+        return plotKeysOf((self as unknown as DisplayModel).configuration)
+      },
+      /**
+       * #getter
+       * Those settings as declared, defaults left off and a shorthand written
+       * as a config file writes it. An agent edits a `structuredClone` of it,
+       * checks it with `plotProblems` and hands it to `applyPlot`.
+       */
+      get plot(): Plot {
+        return plotOf((self as unknown as DisplayModel).configuration)
+      },
+      /**
+       * #method
+       * A draft as the config would hold it, merged over `plot`, throwing what
+       * a config file would be refused for. Nothing on the display changes.
+       */
+      liftPlot(draft: Plot): AnyConfigurationModel {
+        return liftPlotDraft(
+          (self as unknown as DisplayModel).configuration,
+          draft,
+        )
+      },
+      /**
+       * #method
+       * What a draft would report once applied, throwing a refusal as
+       * `liftPlot` does. A display with a rule list over its settings
+       * overrides it; the draft still applies, and draws what it can.
+       */
+      plotProblems(draft: Plot): string[] {
+        this.liftPlot(draft)
+        return []
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Write a draft over `plot`: each setting it changes is replaced whole,
+       * so a member left out of an object goes back to its default, and `null`
+       * resets the setting.
+       */
+      applyPlot(draft: Plot) {
+        const { configuration } = self as unknown as DisplayModel
+        for (const [key, value] of Object.entries(
+          plotSettingsWritten(draft, self.plot),
+        )) {
+          setConf(configuration, key, value)
+        }
       },
     }))
 }

@@ -100,3 +100,13 @@ export {
 } from './slotFacade.ts'
 export type { SlotFacade } from './slotFacade.ts'
 export { fullConfSnapshot } from './fullConfSnapshot.ts'
+export {
+  PLOT_VOCABULARY,
+  liftPlot,
+  parsePlot,
+  plotChanges,
+  plotKeysOf,
+  plotOf,
+  plotSettingsWritten,
+} from './plot.ts'
+export type { Plot } from './plot.ts'

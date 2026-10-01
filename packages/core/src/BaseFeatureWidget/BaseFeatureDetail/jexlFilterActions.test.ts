@@ -18,14 +18,15 @@ function setup() {
         displays: types.array(
           types
             .model('Display', {
-              filterSetting: types.maybe(types.array(types.string)),
+              filter: types.optional(types.array(types.string), CONFIGURED),
             })
-            .views(() => ({
-              configuredFilters: () => CONFIGURED,
+            .views(self => ({
+              configuredFilters: () => [...self.filter],
+              baseFilters: () => CONFIGURED,
             }))
             .actions(self => ({
               setFilter(filters?: string[]) {
-                self.filterSetting = cast(filters)
+                self.filter = cast(filters ?? CONFIGURED)
               },
             })),
         ),
@@ -52,7 +53,7 @@ test('a number gets show, hide and at-least items', () => {
     'Show only INFO.DP ≥ 30',
   ])
   click(items[2])
-  expect(display.filterSetting).toEqual([
+  expect(display.configuredFilters()).toEqual([
     ...CONFIGURED,
     'jexl:feature.INFO.DP >= 30',
   ])
@@ -63,7 +64,7 @@ test('hiding text writes != with the key quoted where it has to be', () => {
   const items = filterByValueItems(display, ['INFO', 'CLN-SIG'], "it's")
   expect(items).toHaveLength(2)
   click(items[1])
-  expect(display.filterSetting).toEqual([
+  expect(display.configuredFilters()).toEqual([
     ...CONFIGURED,
     "jexl:feature.INFO['CLN-SIG'] != 'it\\'s'",
   ])
@@ -71,12 +72,14 @@ test('hiding text writes != with the key quoted where it has to be', () => {
 
 test('undo restores the filters as they were', () => {
   const { display, notify } = setup()
+  const narrowed = [...CONFIGURED, 'jexl:feature.DP > 1']
+  display.setFilter(narrowed)
   click(filterByValueItems(display, ['QUAL'], 5)[0])
   const [message, , action] = notify.mock.calls[0]!
   expect(message).toBe('Filter added')
   expect(action.name).toBe('Undo')
   action.onClick()
-  expect(display.filterSetting).toBeUndefined()
+  expect(display.configuredFilters()).toEqual(narrowed)
 })
 
 test('offers nothing for a value that is not text or a number', () => {

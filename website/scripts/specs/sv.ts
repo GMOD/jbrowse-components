@@ -226,7 +226,7 @@ function maneGeneLane({
     lane: {
       trackId,
       type: 'LinearBasicDisplay',
-      filterSetting: [`jexl:get(feature,'name')=='${accession}'`],
+      filter: [`jexl:get(feature,'name')=='${accession}'`],
       forceLoad: true,
       height,
       ...(featureHighlights ? { featureHighlights } : {}),

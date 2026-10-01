@@ -3129,7 +3129,6 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "configuration",
-        "filterSetting",
         "pinnedFeatureIds",
         "soloFeatureIds",
         "soloApplied",
@@ -5106,7 +5105,6 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "configuration",
-        "filterSetting",
         "pinnedFeatureIds",
         "soloFeatureIds",
         "soloApplied",
@@ -5351,8 +5349,7 @@ export const configManifest: ConfigManifest = {
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
-        "configuration",
-        "filterSetting"
+        "configuration"
       ]
     },
     "LDTrackDisplay": {
@@ -6447,7 +6444,6 @@ export const configManifest: ConfigManifest = {
         "clusterRegion",
         "sortRowsBy",
         "configuration",
-        "filterSetting",
         "indexSnp",
         "indexSnpPinned"
       ]
@@ -6938,8 +6934,7 @@ export const configManifest: ConfigManifest = {
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
-        "configuration",
-        "filterSetting"
+        "configuration"
       ]
     }
   },
@@ -7568,6 +7563,9 @@ export const configManifest: ConfigManifest = {
     "*": [
       "heightPreConfig"
     ],
+    "LinearBasicDisplay": [
+      "jexlFiltersSetting"
+    ],
     "LinearAlignmentsDisplay": [
       "PileupDisplay",
       "SNPCoverageDisplay",
@@ -7577,6 +7575,9 @@ export const configManifest: ConfigManifest = {
       "filterBySetting",
       "hideMismatchesSetting",
       "trackMaxHeight"
+    ],
+    "LinearVariantDisplay": [
+      "jexlFiltersSetting"
     ],
     "LinearMultiSampleVariantDisplay": [
       "clusterTree",

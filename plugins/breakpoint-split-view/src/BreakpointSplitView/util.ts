@@ -1,6 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { activeJexlFilters } from '@jbrowse/core/util/jexlFilters'
 
 import type { ReadSource } from './readChains.ts'
 import type { LayoutRecord, OverlayKind } from './types.ts'
@@ -49,7 +48,6 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
   bezierArcScope?: 'all' | 'crossRegion' | 'none'
   /** the "Filter by..." contract, `JexlFilterSource`, on displays that have one */
   configuredFilters?: () => string[]
-  filterSetting?: readonly string[]
   withFeatureById?: (
     featureId: string,
     onFeat: (feat: Feature) => void,
@@ -59,12 +57,7 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
 // The filters the display applies, so the overlay draws no connector for a
 // feature the track has filtered out.
 export function overlayJexlFilters(d: OverlayDisplayBase | undefined) {
-  return d?.configuredFilters
-    ? activeJexlFilters({
-        configuredFilters: d.configuredFilters,
-        filterSetting: d.filterSetting,
-      })
-    : []
+  return d?.configuredFilters?.() ?? []
 }
 
 /** A display that indexes its features, so an overlay can ask where one landed. */

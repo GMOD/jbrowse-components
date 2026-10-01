@@ -6,7 +6,7 @@ import GroupByDialog from './GroupByDialog.tsx'
 
 import type { AttributeScan } from './attributeVerdict.ts'
 
-const SPEC = { facet: null }
+const PLOT = { facet: null }
 
 const SCAN: AttributeScan = [
   {
@@ -25,8 +25,8 @@ function setup(
   scan: AttributeScan = [],
 ) {
   const applyGroupBy = jest.fn()
-  const groupByChannelSpec = jest.fn(() => SPEC)
-  const openChannelSpecDialog = jest.fn()
+  const groupByPlot = jest.fn(() => PLOT)
+  const openPlotDialog = jest.fn()
   const scanGroupByCandidates = jest.fn(async () => scan)
   const handleClose = jest.fn()
   const view = render(
@@ -36,8 +36,8 @@ function setup(
           id: 'display1',
           facet: field === undefined ? undefined : { field },
           applyGroupBy,
-          groupByChannelSpec,
-          openChannelSpecDialog,
+          groupByPlot,
+          openPlotDialog,
           scanGroupByCandidates,
         }}
         handleClose={handleClose}
@@ -51,8 +51,8 @@ function setup(
   return {
     ...view,
     applyGroupBy,
-    groupByChannelSpec,
-    openChannelSpecDialog,
+    groupByPlot,
+    openPlotDialog,
     scanGroupByCandidates,
     handleClose,
     checkbox,
@@ -60,23 +60,23 @@ function setup(
   }
 }
 
-test('Edit as JSON... hands over the unapplied choice as a spec and applies nothing', () => {
+test('Edit plot... hands over the unapplied choice as a plot and applies nothing', () => {
   const {
     getByText,
     getByLabelText,
     getByTestId,
     applyGroupBy,
-    groupByChannelSpec,
-    openChannelSpecDialog,
+    groupByPlot,
+    openPlotDialog,
     handleClose,
   } = setup(undefined)
   fireEvent.click(getByLabelText('Attribute'))
   fireEvent.change(getByTestId('group-by-attribute'), {
     target: { value: 'gene_biotype' },
   })
-  fireEvent.click(getByText('Edit as JSON...'))
-  expect(groupByChannelSpec).toHaveBeenCalledWith('gene_biotype', true)
-  expect(openChannelSpecDialog).toHaveBeenCalledWith(SPEC)
+  fireEvent.click(getByText('Edit plot...'))
+  expect(groupByPlot).toHaveBeenCalledWith('gene_biotype', true)
+  expect(openPlotDialog).toHaveBeenCalledWith(PLOT)
   expect(handleClose).toHaveBeenCalled()
   expect(applyGroupBy).not.toHaveBeenCalled()
 })

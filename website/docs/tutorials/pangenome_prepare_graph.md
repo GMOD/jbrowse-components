@@ -214,9 +214,9 @@ With a **plain GFA**, the command records who visits each segment as an `SM:Z:`
 tag while it walks the paths. The node panel shows it as `carriedBy`, and a
 track reads it as `feature.samples` and `feature.carriers`. **Color by... →
 Attribute...** with `carriers` gives each count a separate colour. Past a
-handful of haplotypes a ramp reads better; **Edit as JSON...** in the same
-dialog takes one, here red for a segment one haplotype carries to grey for the
-most widely carried:
+handful of haplotypes a ramp reads better; **Edit plot...** in the same dialog
+takes one, here red for a segment one haplotype carries to grey for the most
+widely carried:
 
 ```json addtrack
 {

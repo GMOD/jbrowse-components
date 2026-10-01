@@ -1,11 +1,12 @@
 import '@testing-library/jest-dom'
 
+import { liftPlot, plotSettingsWritten } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import { configSchemaFactory } from '../configSchema.ts'
-import { liftMarkPlot } from '../markPlot.ts'
+import { markPlotSettingsOf } from '../markPlot.ts'
 import MarkPlotDialog from './MarkPlotDialog.tsx'
 
 import type { MarkPlot } from '../markPlot.ts'
@@ -13,17 +14,21 @@ import type { MarkPlotDialogModel } from './MarkPlotDialog.tsx'
 
 const schema = configSchemaFactory()
 
-function setup(markPlot: MarkPlot = {}) {
-  const applyDisplaySettings = jest.fn()
-  const openPlotJsonDialog = jest.fn()
+// What applying the draft writes: the settings it moves, as `applyPlot` does.
+function setup(plot: MarkPlot = {}) {
+  const written = jest.fn()
+  const openPlotDialog = jest.fn()
   const handleClose = jest.fn()
+  const conf = schema.create({ displayId: 'declared', ...plot })
   const model: MarkPlotDialogModel = {
-    markPlot,
+    plot,
     plotFields: { numeric: ['score'], categorical: ['strand'] },
     plotScanLocus: 'ctgA:1..20,000',
-    liftMarkPlot: plot => liftMarkPlot(schema, plot, markPlot),
-    applyDisplaySettings,
-    openPlotJsonDialog,
+    liftMarkPlot: draft => markPlotSettingsOf(liftPlot(conf, draft)),
+    applyPlot: draft => {
+      written(plotSettingsWritten(draft, plot))
+    },
+    openPlotDialog,
   }
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -31,8 +36,8 @@ function setup(markPlot: MarkPlot = {}) {
     </ThemeProvider>,
   )
   return {
-    applyDisplaySettings,
-    openPlotJsonDialog,
+    written,
+    openPlotDialog,
     handleClose,
     apply: () => screen.getByRole('button', { name: 'Apply' }),
     channel: (name: string) => screen.getByTestId(`channel-${name}`),
@@ -63,10 +68,10 @@ it('offers only the channels the selected mark type reads', () => {
 })
 
 it('writes a channel through, inferring the scale a field implies', () => {
-  const { channel, apply, applyDisplaySettings } = setup(BAR)
+  const { channel, apply, written } = setup(BAR)
   fireEvent.change(channel('color'), { target: { value: 'strand' } })
   fireEvent.click(apply())
-  expect(applyDisplaySettings).toHaveBeenCalledWith({
+  expect(written).toHaveBeenCalledWith({
     marks: [
       {
         mark: 'bar',
@@ -87,12 +92,12 @@ it('adds a mark and says at once what it still needs', () => {
 })
 
 it('removes and reorders, since the list order is the paint order', () => {
-  const { apply, applyDisplaySettings } = setup({
+  const { apply, written } = setup({
     marks: [{ mark: 'bar', encoding: { y: 'a' } }, { mark: 'span' }],
   })
   fireEvent.click(screen.getByLabelText('move mark 2 up'))
   fireEvent.click(apply())
-  expect(applyDisplaySettings.mock.calls[0]![0].marks[0]).toEqual({
+  expect(written.mock.calls[0]![0].marks[0]).toEqual({
     mark: 'span',
   })
 })
@@ -111,7 +116,7 @@ it('keeps the selected mark selected when a row above it is removed', () => {
 })
 
 it('takes a fractional zoom bound', () => {
-  const { apply, applyDisplaySettings } = setup(BAR)
+  const { apply, written } = setup(BAR)
   fireEvent.change(screen.getByTestId('minBpPerPx'), {
     target: { value: '0' },
   })
@@ -120,20 +125,20 @@ it('takes a fractional zoom bound', () => {
     target: { value: '0.5' },
   })
   fireEvent.click(apply())
-  expect(applyDisplaySettings.mock.calls[0]![0].marks[0].minBpPerPx).toBe(0.5)
+  expect(written.mock.calls[0]![0].marks[0].minBpPerPx).toBe(0.5)
 })
 
 // The form never silently drops a slot: a channel the new type stopped
 // reading stays, named, with the rule that says what it costs.
 it('keeps a channel a type change stopped reading, and clears it on request', () => {
-  const { apply, applyDisplaySettings } = setup(BAR)
+  const { apply, written } = setup(BAR)
   fireEvent.change(screen.getByTestId('mark-type'), {
     target: { value: 'span' },
   })
   expect(screen.getByText(/does not read these/)).toBeTruthy()
   fireEvent.click(screen.getByText('Clear'))
   fireEvent.click(apply())
-  expect(applyDisplaySettings).toHaveBeenCalledWith({
+  expect(written).toHaveBeenCalledWith({
     marks: [{ mark: 'span', encoding: {} }],
   })
 })
@@ -151,33 +156,33 @@ it('holds a declaration the picker cannot round-trip read-only', () => {
     ],
   })
   expect(screen.getByTestId('channel-x2')).toBeDisabled()
-  expect(screen.getByText(/edit as JSON/)).toBeTruthy()
+  expect(screen.getByText(/edit as text/)).toBeTruthy()
 })
 
-it('hands the draft to the JSON box unapplied', () => {
-  const { channel, openPlotJsonDialog, applyDisplaySettings } = setup(BAR)
+it('hands the draft to the text box unapplied', () => {
+  const { channel, openPlotDialog, written } = setup(BAR)
   fireEvent.change(channel('row'), { target: { value: 'hp' } })
-  fireEvent.click(screen.getByText('Edit as JSON...'))
-  expect(openPlotJsonDialog).toHaveBeenCalledWith({
+  fireEvent.click(screen.getByText('Edit as text...'))
+  expect(openPlotDialog).toHaveBeenCalledWith({
     marks: [{ mark: 'bar', encoding: { y: 'score', row: 'hp' } }],
   })
-  expect(applyDisplaySettings).not.toHaveBeenCalled()
+  expect(written).not.toHaveBeenCalled()
 })
 
 it('reports a draft the schema refuses instead of crashing', () => {
-  const applyDisplaySettings = jest.fn()
+  const applyPlot = jest.fn()
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <MarkPlotDialog
         model={{
-          markPlot: BAR,
+          plot: BAR,
           plotFields: undefined,
           plotScanLocus: undefined,
           liftMarkPlot: () => {
             throw new Error('refused')
           },
-          applyDisplaySettings,
-          openPlotJsonDialog: jest.fn(),
+          applyPlot,
+          openPlotDialog: jest.fn(),
         }}
         handleClose={jest.fn()}
       />
@@ -187,7 +192,7 @@ it('reports a draft the schema refuses instead of crashing', () => {
   const apply = screen.getByRole('button', { name: 'Apply' })
   expect(apply).toBeDisabled()
   fireEvent.click(apply)
-  expect(applyDisplaySettings).not.toHaveBeenCalled()
+  expect(applyPlot).not.toHaveBeenCalled()
 })
 
 describe('a colour or shape typed into its picker', () => {
@@ -196,21 +201,19 @@ describe('a colour or shape typed into its picker', () => {
   }
 
   it('writes a field the scan did not list as a field, and applies', () => {
-    const { channel, apply, applyDisplaySettings } = setup(POINT)
+    const { channel, apply, written } = setup(POINT)
     fireEvent.change(channel('color'), { target: { value: 'INFO.DP' } })
     fireEvent.change(channel('shape'), { target: { value: 'score' } })
     expect(screen.queryByTestId('mark-plot-error')).toBeNull()
     fireEvent.click(apply())
-    expect(
-      applyDisplaySettings.mock.calls[0]![0].marks[0].encoding,
-    ).toMatchObject({
+    expect(written.mock.calls[0]![0].marks[0].encoding).toMatchObject({
       color: { field: 'INFO.DP', scale: 'categorical' },
       shape: { field: 'score', scale: 'categorical' },
     })
   })
 
   it('keeps the scale row through a constant typed on the way to a field', () => {
-    const { channel, apply, applyDisplaySettings } = setup({
+    const { channel, apply, written } = setup({
       marks: [
         {
           mark: 'bar',
@@ -230,9 +233,11 @@ describe('a colour or shape typed into its picker', () => {
     }
     expect(screen.getByTestId('scale-color')).toHaveValue('log')
     fireEvent.click(apply())
-    expect(
-      applyDisplaySettings.mock.calls[0]![0].marks[0].encoding.color,
-    ).toEqual({ field: 'reads', scale: 'log', scheme: 'viridis' })
+    expect(written.mock.calls[0]![0].marks[0].encoding.color).toEqual({
+      field: 'reads',
+      scale: 'log',
+      scheme: 'viridis',
+    })
   })
 })
 
@@ -260,7 +265,7 @@ describe('a scale beside its field', () => {
   })
 
   it('names a ramp its stops and pins its ends', () => {
-    const { channel, apply, applyDisplaySettings } = setup(RAMP)
+    const { channel, apply, written } = setup(RAMP)
     fireEvent.change(screen.getByTestId('scheme-color'), {
       target: { value: 'magma' },
     })
@@ -268,9 +273,7 @@ describe('a scale beside its field', () => {
       target: { value: '0' },
     })
     fireEvent.click(apply())
-    expect(
-      applyDisplaySettings.mock.calls[0]![0].marks[0].encoding.color,
-    ).toEqual({
+    expect(written.mock.calls[0]![0].marks[0].encoding.color).toEqual({
       field: 'score',
       scale: 'linear',
       scheme: 'magma',
@@ -282,7 +285,7 @@ describe('a scale beside its field', () => {
   // A ramp's stops and ends say nothing under a categorical scale, and the rule
   // list would report them, so the kind change drops what it cannot paint.
   it('drops the ramp members when the kind stops painting them', () => {
-    const { apply, applyDisplaySettings } = setup({
+    const { apply, written } = setup({
       marks: [
         {
           mark: 'bar',
@@ -298,15 +301,16 @@ describe('a scale beside its field', () => {
     })
     expect(screen.queryByTestId('scheme-color')).toBeNull()
     fireEvent.click(apply())
-    expect(
-      applyDisplaySettings.mock.calls[0]![0].marks[0].encoding.color,
-    ).toEqual({ field: 'score', scale: 'categorical' })
+    expect(written.mock.calls[0]![0].marks[0].encoding.color).toEqual({
+      field: 'score',
+      scale: 'categorical',
+    })
   })
 
   // The members the row does not show keep the picker above read-only, so the
   // form still cannot drop a palette it never displayed.
   it("edits a categorical colour's values, colours and key names in place", () => {
-    const { apply, applyDisplaySettings } = setup({
+    const { apply, written } = setup({
       marks: [
         {
           mark: 'bar',
@@ -327,7 +331,7 @@ describe('a scale beside its field', () => {
     })
     expect(screen.getByTestId('labels-color')).toHaveValue('first,')
     fireEvent.click(apply())
-    expect(applyDisplaySettings).toHaveBeenCalledWith({
+    expect(written).toHaveBeenCalledWith({
       marks: [
         {
           mark: 'bar',
@@ -347,7 +351,7 @@ describe('a scale beside its field', () => {
   })
 
   it('cuts a threshold at the points typed, with a colour for each interval', () => {
-    const { apply, applyDisplaySettings } = setup({
+    const { apply, written } = setup({
       marks: [
         {
           mark: 'bar',
@@ -365,7 +369,7 @@ describe('a scale beside its field', () => {
       target: { value: 'blue, grey, red' },
     })
     fireEvent.click(apply())
-    expect(applyDisplaySettings).toHaveBeenCalledWith({
+    expect(written).toHaveBeenCalledWith({
       marks: [
         {
           mark: 'bar',
@@ -384,7 +388,7 @@ describe('a scale beside its field', () => {
   })
 
   it("offers a link's width its own ramps, and no colour's stops", () => {
-    const { apply, applyDisplaySettings } = setup({
+    const { apply, written } = setup({
       marks: [
         { mark: 'link', encoding: { size: { field: 'score', scale: 'log' } } },
       ],
@@ -399,15 +403,17 @@ describe('a scale beside its field', () => {
     })
     expect(apply()).toBeEnabled()
     fireEvent.click(apply())
-    expect(
-      applyDisplaySettings.mock.calls[0]![0].marks[0].encoding.size,
-    ).toEqual({ field: 'score', scale: 'log', domainMax: 100 })
+    expect(written.mock.calls[0]![0].marks[0].encoding.size).toEqual({
+      field: 'score',
+      scale: 'log',
+      domainMax: 100,
+    })
   })
 })
 
 describe('the plot as a whole', () => {
   it('stacks sections by a field, titles the axis and pins its top', () => {
-    const { apply, applyDisplaySettings } = setup(BAR)
+    const { apply, written } = setup(BAR)
     fireEvent.change(screen.getByTestId('facet-field'), {
       target: { value: 'strand' },
     })
@@ -418,25 +424,25 @@ describe('the plot as a whole', () => {
       target: { value: '10' },
     })
     fireEvent.click(apply())
-    expect(applyDisplaySettings).toHaveBeenCalledWith({
+    expect(written).toHaveBeenCalledWith({
       facet: { field: 'strand' },
       scales: { y: { title: 'Score', domainMax: 10 } },
     })
   })
 
   it('clears a facet when its field is emptied', () => {
-    const { apply, applyDisplaySettings } = setup({ ...BAR, facet: 'strand' })
+    const { apply, written } = setup({ ...BAR, facet: 'strand' })
     fireEvent.change(screen.getByTestId('facet-field'), {
       target: { value: '' },
     })
     fireEvent.click(apply())
-    expect(applyDisplaySettings).toHaveBeenCalledWith({ facet: null })
+    expect(written).toHaveBeenCalledWith({ facet: null })
   })
 })
 
 describe("a mark's steps", () => {
   it('adds a coverage, which fills the y a bar names none of', () => {
-    const { apply, applyDisplaySettings } = setup({ marks: [{ mark: 'bar' }] })
+    const { apply, written } = setup({ marks: [{ mark: 'bar' }] })
     expect(screen.getByTestId('mark-row-0-error')).toBeTruthy()
     fireEvent.change(screen.getByTestId('add-step'), {
       target: { value: '3' },
@@ -446,13 +452,13 @@ describe("a mark's steps", () => {
     )
     expect(screen.queryByTestId('mark-row-0-error')).toBeNull()
     fireEvent.click(apply())
-    expect(applyDisplaySettings).toHaveBeenCalledWith({
+    expect(written).toHaveBeenCalledWith({
       marks: [{ mark: 'bar', transform: [{ type: 'coverage' }] }],
     })
   })
 
   it("edits a bin's width and an aggregate's summary in place", () => {
-    const { apply, applyDisplaySettings } = setup({ marks: [{ mark: 'bar' }] })
+    const { apply, written } = setup({ marks: [{ mark: 'bar' }] })
     fireEvent.change(screen.getByTestId('add-step'), {
       target: { value: '2' },
     })
@@ -466,7 +472,7 @@ describe("a mark's steps", () => {
       target: { value: 'score' },
     })
     fireEvent.click(apply())
-    expect(applyDisplaySettings).toHaveBeenCalledWith({
+    expect(written).toHaveBeenCalledWith({
       marks: [
         {
           mark: 'bar',
@@ -482,10 +488,10 @@ describe("a mark's steps", () => {
 
 describe('the mark list', () => {
   it('adds a zoomed-out density, handing the raw marks the closer zooms', () => {
-    const { apply, applyDisplaySettings } = setup(BAR)
+    const { apply, written } = setup(BAR)
     fireEvent.click(screen.getByText('Add zoomed-out density'))
     fireEvent.click(apply())
-    expect(applyDisplaySettings).toHaveBeenCalledWith({
+    expect(written).toHaveBeenCalledWith({
       marks: [
         { mark: 'bar', encoding: { y: 'score' }, maxBpPerPx: 100 },
         {

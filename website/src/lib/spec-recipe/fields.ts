@@ -464,8 +464,8 @@ function colorStep(
   if (displayType === 'LinearWiggleDisplay') {
     const editor = `${TRACK_MENU} → ${ROW_ARRANGEMENT_EDITORS.LinearWiggleDisplay}`
     // Two swatches say a constant and a two-sided cut. A ramp, several cuts or
-    // a colour per source is more than they can express, and the dialog's JSON
-    // escape is where the whole object goes.
+    // a colour per source is more than they can express, and Edit plot is
+    // where the whole object goes.
     return !scale ||
       (scale.field === 'score' &&
         scale.scale === 'threshold' &&
@@ -475,8 +475,8 @@ function colorStep(
           note: 'The two colours the plot is drawn in, above and below the baseline; both the same paints a flat plot.',
         }
       : {
-          path: `${editor} → Edit as JSON...`,
-          note: 'More than two swatches can say, so the dialog writes the whole colour object as JSON.',
+          path: `${TRACK_MENU} → Edit plot...`,
+          note: 'More than two swatches can say, so Edit plot writes the whole colour object.',
         }
   }
   if (scale) {
@@ -493,7 +493,7 @@ function colorStep(
       return { path: `${colorBy} → ${preset}` }
     }
     if (asList(scale.domain) || asList(scale.range)) {
-      return { path: `${colorBy} → Attribute... → Edit as JSON...` }
+      return { path: `${TRACK_MENU} → Edit plot...` }
     }
     return field === 'strand' && displayType === 'LinearBasicDisplay'
       ? { path: `${colorBy} → Strand` }
@@ -803,10 +803,6 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
 // (trackMenus.ts), the alignments/LGVSynteny one (menus/filters.ts, which adds
 // a count when filters are active), and the multi-sample variant one. So unlike
 // most of this table the label does not vary; only which displays have it does.
-//
-// The two field names are one control. `filter` is the config-level slot and
-// `filterSetting` is the session-level override the dialog actually writes, so
-// a reader reproducing either arrives through the same dialog.
 const FILTER_MENU_DISPLAYS = new Set([
   'LinearBasicDisplay',
   'LinearVariantDisplay',
@@ -1270,7 +1266,6 @@ export const trackFields: Record<string, FieldRecipe> = {
   rowColor: rowColorStep,
   facet: facetStep,
   filter: filterStep,
-  filterSetting: filterStep,
   // These two are declared by LinearHicDisplay alone, so as with the
   // alignments-only fields the name settles the display and an unresolved entry
   // can still be answered.

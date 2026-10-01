@@ -23,7 +23,6 @@ import {
   stripJexlPrefix,
   writeFilterRows,
 } from '../util/jexlFilterRows.ts'
-import { activeJexlFilters } from '../util/jexlFilters.ts'
 import { ensureJexlPrefix } from '../util/jexlStrings.ts'
 import { getContainingTrack } from '../util/mstUtils.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
@@ -175,7 +174,7 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
     resolveFields([...fieldList, ...describedColumns(described, fieldList)]),
   )
   const [state, setState] = useState(() =>
-    withOneRow(readFilterRows(activeJexlFilters(model), jexl, choices)),
+    withOneRow(readFilterRows(model.configuredFilters(), jexl, choices)),
   )
   const [tab, setTab] = useState<'conditions' | 'text'>('conditions')
   const [text, setText] = useState({ value: '', shown: '' })

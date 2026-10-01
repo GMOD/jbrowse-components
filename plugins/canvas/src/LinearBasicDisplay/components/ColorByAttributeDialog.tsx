@@ -8,7 +8,7 @@ import AttributeFieldInput from './AttributeFieldInput.tsx'
 import { COLORING } from './attributeVerdict.ts'
 
 import type { AttributeScanModel } from './AttributeFieldInput.tsx'
-import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
+import type { Plot } from '@jbrowse/core/configuration'
 
 const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
   model,
@@ -17,7 +17,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
   model: AttributeScanModel & {
     colorByAttribute: string
     colorByField: (field: string) => void
-    openChannelSpecDialog: (seed?: ChannelSpec) => void
+    openPlotDialog: (seed?: Plot) => void
   }
   handleClose: () => void
 }) {
@@ -40,7 +40,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
       actions={
         <Button
           onClick={() => {
-            model.openChannelSpecDialog(
+            model.openPlotDialog(
               trimmed && trimmed !== model.colorByAttribute
                 ? { color: { field: trimmed } }
                 : undefined,
@@ -48,7 +48,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
             handleClose()
           }}
         >
-          Edit as JSON...
+          Edit plot...
         </Button>
       }
     >

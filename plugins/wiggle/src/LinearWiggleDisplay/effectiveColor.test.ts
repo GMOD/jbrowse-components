@@ -76,7 +76,7 @@ test('a declared threshold draws a key, the layout default draws none', () => {
   ])
 })
 
-test('the spec reads back what was written', () => {
+test('the plot reads back what was written', () => {
   const display = makeDisplay(['a'], true)
   display.setColor({
     field: 'score',
@@ -84,14 +84,14 @@ test('the spec reads back what was written', () => {
     scheme: 'viridis',
     reverse: true,
   })
-  expect(display.channelSpec.color).toEqual({
+  expect(display.plot.color).toEqual({
     field: 'score',
     scale: 'linear',
     scheme: 'viridis',
     reverse: true,
   })
   display.setColor('green')
-  expect(display.channelSpec.color).toBe('green')
+  expect(display.plot.color).toBe('green')
 })
 
 test('the colour reads the display’s two fields and refuses any other', () => {

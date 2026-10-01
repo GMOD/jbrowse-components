@@ -4,61 +4,61 @@
 import coreLibs from '@jbrowse/core/ReExports/modules'
 import * as m0 from '@jbrowse/display-kit/BlockMsg'
 import * as m1 from '@jbrowse/display-kit/BottomRightIndicators'
-import * as m2 from '@jbrowse/display-kit/channelSpec'
-import * as m3 from '@jbrowse/display-kit/ChannelSpecDialog'
-import * as m4 from '@jbrowse/display-kit/ChromeHighlight'
-import * as m5 from '@jbrowse/display-kit/ChromeLegend'
-import * as m6 from '@jbrowse/display-kit/coarseTier'
-import * as m7 from '@jbrowse/display-kit/CoarseTierMixin'
-import * as m8 from '@jbrowse/display-kit/coarseTierPhase'
-import * as m9 from '@jbrowse/display-kit/colorConfigSchema'
-import * as m10 from '@jbrowse/display-kit/ConfigProblemsIndicator'
-import * as m11 from '@jbrowse/display-kit/configSchema'
-import * as m12 from '@jbrowse/display-kit/const'
-import * as m13 from '@jbrowse/display-kit/ContextMenuMixin'
-import * as m14 from '@jbrowse/display-kit/densityTier'
-import * as m15 from '@jbrowse/display-kit/densityTierConfigSchemaFields'
-import * as m16 from '@jbrowse/display-kit/densityTierMenu'
-import * as m17 from '@jbrowse/display-kit/DensityTierMixin'
-import * as m18 from '@jbrowse/display-kit/displayAutoruns'
-import * as m19 from '@jbrowse/display-kit/DisplayBackgroundProgress'
-import * as m20 from '@jbrowse/display-kit/DisplayChrome'
-import * as m21 from '@jbrowse/display-kit/DisplayChromeBase'
-import * as m22 from '@jbrowse/display-kit/DisplayContextMenu'
-import * as m23 from '@jbrowse/display-kit/DisplayErrorBar'
-import * as m24 from '@jbrowse/display-kit/DisplayLoadingOverlay'
-import * as m25 from '@jbrowse/display-kit/DisplayRenderErrorOverlay'
-import * as m26 from '@jbrowse/display-kit/DisplayStatusChromeBase'
-import * as m27 from '@jbrowse/display-kit/facetConfigSchema'
-import * as m28 from '@jbrowse/display-kit/fetchEachRegion'
-import * as m29 from '@jbrowse/display-kit/fetchInputs'
-import * as m30 from '@jbrowse/display-kit/FetchMixin'
-import * as m31 from '@jbrowse/display-kit/foundationDisplayPhase'
-import * as m32 from '@jbrowse/display-kit/foundationPaintInert'
-import * as m33 from '@jbrowse/display-kit/foundationSvgReady'
-import * as m34 from '@jbrowse/display-kit/foundationView'
-import * as m35 from '@jbrowse/display-kit/gateCommit'
-import * as m36 from '@jbrowse/display-kit/GlobalFetchMixin'
-import * as m37 from '@jbrowse/display-kit/groupByMenu'
-import * as m38 from '@jbrowse/display-kit/GroupLabelBox'
-import * as m39 from '@jbrowse/display-kit/GroupLabelChips'
-import * as m40 from '@jbrowse/display-kit/groupLabelChipStyles'
-import * as m41 from '@jbrowse/display-kit/groupLabelStyle'
-import * as m42 from '@jbrowse/display-kit/heightMode'
-import * as m43 from '@jbrowse/display-kit/heightModeConfigSchemaFields'
-import * as m44 from '@jbrowse/display-kit/heightModeMenu'
-import * as m45 from '@jbrowse/display-kit/HeightModeMixin'
-import * as m46 from '@jbrowse/display-kit/HiddenGroupsMixin'
-import * as m47 from '@jbrowse/display-kit/highlightHost'
-import * as m48 from '@jbrowse/display-kit/installClearHoverOnViewportChange'
-import * as m49 from '@jbrowse/display-kit/installGlobalFetchAutorun'
-import * as m50 from '@jbrowse/display-kit/installPerRegionFetchAutoruns'
-import * as m51 from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
-import * as m52 from '@jbrowse/display-kit/KeyedFetchMixin'
-import * as m53 from '@jbrowse/display-kit/legendHost'
-import * as m54 from '@jbrowse/display-kit/LegendMixin'
-import * as m55 from '@jbrowse/display-kit/MultiRegionDisplayMixin'
-import * as m56 from '@jbrowse/display-kit/planRegionFetch'
+import * as m2 from '@jbrowse/display-kit/ChromeHighlight'
+import * as m3 from '@jbrowse/display-kit/ChromeLegend'
+import * as m4 from '@jbrowse/display-kit/coarseTier'
+import * as m5 from '@jbrowse/display-kit/CoarseTierMixin'
+import * as m6 from '@jbrowse/display-kit/coarseTierPhase'
+import * as m7 from '@jbrowse/display-kit/colorConfigSchema'
+import * as m8 from '@jbrowse/display-kit/ConfigProblemsIndicator'
+import * as m9 from '@jbrowse/display-kit/configSchema'
+import * as m10 from '@jbrowse/display-kit/const'
+import * as m11 from '@jbrowse/display-kit/ContextMenuMixin'
+import * as m12 from '@jbrowse/display-kit/densityTier'
+import * as m13 from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import * as m14 from '@jbrowse/display-kit/densityTierMenu'
+import * as m15 from '@jbrowse/display-kit/DensityTierMixin'
+import * as m16 from '@jbrowse/display-kit/displayAutoruns'
+import * as m17 from '@jbrowse/display-kit/DisplayBackgroundProgress'
+import * as m18 from '@jbrowse/display-kit/DisplayChrome'
+import * as m19 from '@jbrowse/display-kit/DisplayChromeBase'
+import * as m20 from '@jbrowse/display-kit/DisplayContextMenu'
+import * as m21 from '@jbrowse/display-kit/DisplayErrorBar'
+import * as m22 from '@jbrowse/display-kit/DisplayLoadingOverlay'
+import * as m23 from '@jbrowse/display-kit/DisplayRenderErrorOverlay'
+import * as m24 from '@jbrowse/display-kit/DisplayStatusChromeBase'
+import * as m25 from '@jbrowse/display-kit/facetConfigSchema'
+import * as m26 from '@jbrowse/display-kit/fetchEachRegion'
+import * as m27 from '@jbrowse/display-kit/fetchInputs'
+import * as m28 from '@jbrowse/display-kit/FetchMixin'
+import * as m29 from '@jbrowse/display-kit/foundationDisplayPhase'
+import * as m30 from '@jbrowse/display-kit/foundationPaintInert'
+import * as m31 from '@jbrowse/display-kit/foundationSvgReady'
+import * as m32 from '@jbrowse/display-kit/foundationView'
+import * as m33 from '@jbrowse/display-kit/gateCommit'
+import * as m34 from '@jbrowse/display-kit/GlobalFetchMixin'
+import * as m35 from '@jbrowse/display-kit/groupByMenu'
+import * as m36 from '@jbrowse/display-kit/GroupLabelBox'
+import * as m37 from '@jbrowse/display-kit/GroupLabelChips'
+import * as m38 from '@jbrowse/display-kit/groupLabelChipStyles'
+import * as m39 from '@jbrowse/display-kit/groupLabelStyle'
+import * as m40 from '@jbrowse/display-kit/heightMode'
+import * as m41 from '@jbrowse/display-kit/heightModeConfigSchemaFields'
+import * as m42 from '@jbrowse/display-kit/heightModeMenu'
+import * as m43 from '@jbrowse/display-kit/HeightModeMixin'
+import * as m44 from '@jbrowse/display-kit/HiddenGroupsMixin'
+import * as m45 from '@jbrowse/display-kit/highlightHost'
+import * as m46 from '@jbrowse/display-kit/installClearHoverOnViewportChange'
+import * as m47 from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import * as m48 from '@jbrowse/display-kit/installPerRegionFetchAutoruns'
+import * as m49 from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import * as m50 from '@jbrowse/display-kit/KeyedFetchMixin'
+import * as m51 from '@jbrowse/display-kit/legendHost'
+import * as m52 from '@jbrowse/display-kit/LegendMixin'
+import * as m53 from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import * as m54 from '@jbrowse/display-kit/planRegionFetch'
+import * as m55 from '@jbrowse/display-kit/PlotDialog'
+import * as m56 from '@jbrowse/display-kit/plotMenu'
 import * as m57 from '@jbrowse/display-kit/regionCommit'
 import * as m58 from '@jbrowse/display-kit/regionHost'
 import * as m59 from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
@@ -163,61 +163,61 @@ const libs: Record<string, unknown> = {
   ...coreLibs,
   '@jbrowse/display-kit/BlockMsg': m0.default,
   '@jbrowse/display-kit/BottomRightIndicators': m1.default,
-  '@jbrowse/display-kit/channelSpec': m2,
-  '@jbrowse/display-kit/ChannelSpecDialog': m3.default,
-  '@jbrowse/display-kit/ChromeHighlight': m4.default,
-  '@jbrowse/display-kit/ChromeLegend': m5.default,
-  '@jbrowse/display-kit/coarseTier': m6,
-  '@jbrowse/display-kit/CoarseTierMixin': m7.default,
-  '@jbrowse/display-kit/coarseTierPhase': m8,
-  '@jbrowse/display-kit/colorConfigSchema': m9,
-  '@jbrowse/display-kit/ConfigProblemsIndicator': m10.default,
-  '@jbrowse/display-kit/configSchema': m11.default,
-  '@jbrowse/display-kit/const': m12,
-  '@jbrowse/display-kit/ContextMenuMixin': m13,
-  '@jbrowse/display-kit/densityTier': m14,
-  '@jbrowse/display-kit/densityTierConfigSchemaFields': m15,
-  '@jbrowse/display-kit/densityTierMenu': m16,
-  '@jbrowse/display-kit/DensityTierMixin': m17.default,
-  '@jbrowse/display-kit/displayAutoruns': m18,
-  '@jbrowse/display-kit/DisplayBackgroundProgress': m19.default,
-  '@jbrowse/display-kit/DisplayChrome': { ...m20, __esModule: true },
-  '@jbrowse/display-kit/DisplayChromeBase': m21.default,
-  '@jbrowse/display-kit/DisplayContextMenu': m22,
-  '@jbrowse/display-kit/DisplayErrorBar': m23.default,
-  '@jbrowse/display-kit/DisplayLoadingOverlay': m24.default,
-  '@jbrowse/display-kit/DisplayRenderErrorOverlay': m25.default,
-  '@jbrowse/display-kit/DisplayStatusChromeBase': m26.default,
-  '@jbrowse/display-kit/facetConfigSchema': m27,
-  '@jbrowse/display-kit/fetchEachRegion': m28,
-  '@jbrowse/display-kit/fetchInputs': m29,
-  '@jbrowse/display-kit/FetchMixin': { ...m30, __esModule: true },
-  '@jbrowse/display-kit/foundationDisplayPhase': m31,
-  '@jbrowse/display-kit/foundationPaintInert': m32,
-  '@jbrowse/display-kit/foundationSvgReady': m33,
-  '@jbrowse/display-kit/foundationView': m34,
-  '@jbrowse/display-kit/gateCommit': m35,
-  '@jbrowse/display-kit/GlobalFetchMixin': { ...m36, __esModule: true },
-  '@jbrowse/display-kit/groupByMenu': m37,
-  '@jbrowse/display-kit/GroupLabelBox': { ...m38, __esModule: true },
-  '@jbrowse/display-kit/GroupLabelChips': m39,
-  '@jbrowse/display-kit/groupLabelChipStyles': m40,
-  '@jbrowse/display-kit/groupLabelStyle': m41,
-  '@jbrowse/display-kit/heightMode': m42,
-  '@jbrowse/display-kit/heightModeConfigSchemaFields': m43,
-  '@jbrowse/display-kit/heightModeMenu': m44,
-  '@jbrowse/display-kit/HeightModeMixin': { ...m45, __esModule: true },
-  '@jbrowse/display-kit/HiddenGroupsMixin': { ...m46, __esModule: true },
-  '@jbrowse/display-kit/highlightHost': m47,
-  '@jbrowse/display-kit/installClearHoverOnViewportChange': m48,
-  '@jbrowse/display-kit/installGlobalFetchAutorun': m49,
-  '@jbrowse/display-kit/installPerRegionFetchAutoruns': m50,
-  '@jbrowse/display-kit/jexlFilterConfigSchemaFields': m51,
-  '@jbrowse/display-kit/KeyedFetchMixin': m52.default,
-  '@jbrowse/display-kit/legendHost': m53,
-  '@jbrowse/display-kit/LegendMixin': { ...m54, __esModule: true },
-  '@jbrowse/display-kit/MultiRegionDisplayMixin': { ...m55, __esModule: true },
-  '@jbrowse/display-kit/planRegionFetch': m56,
+  '@jbrowse/display-kit/ChromeHighlight': m2.default,
+  '@jbrowse/display-kit/ChromeLegend': m3.default,
+  '@jbrowse/display-kit/coarseTier': m4,
+  '@jbrowse/display-kit/CoarseTierMixin': m5.default,
+  '@jbrowse/display-kit/coarseTierPhase': m6,
+  '@jbrowse/display-kit/colorConfigSchema': m7,
+  '@jbrowse/display-kit/ConfigProblemsIndicator': m8.default,
+  '@jbrowse/display-kit/configSchema': m9.default,
+  '@jbrowse/display-kit/const': m10,
+  '@jbrowse/display-kit/ContextMenuMixin': m11,
+  '@jbrowse/display-kit/densityTier': m12,
+  '@jbrowse/display-kit/densityTierConfigSchemaFields': m13,
+  '@jbrowse/display-kit/densityTierMenu': m14,
+  '@jbrowse/display-kit/DensityTierMixin': m15.default,
+  '@jbrowse/display-kit/displayAutoruns': m16,
+  '@jbrowse/display-kit/DisplayBackgroundProgress': m17.default,
+  '@jbrowse/display-kit/DisplayChrome': { ...m18, __esModule: true },
+  '@jbrowse/display-kit/DisplayChromeBase': m19.default,
+  '@jbrowse/display-kit/DisplayContextMenu': m20,
+  '@jbrowse/display-kit/DisplayErrorBar': m21.default,
+  '@jbrowse/display-kit/DisplayLoadingOverlay': m22.default,
+  '@jbrowse/display-kit/DisplayRenderErrorOverlay': m23.default,
+  '@jbrowse/display-kit/DisplayStatusChromeBase': m24.default,
+  '@jbrowse/display-kit/facetConfigSchema': m25,
+  '@jbrowse/display-kit/fetchEachRegion': m26,
+  '@jbrowse/display-kit/fetchInputs': m27,
+  '@jbrowse/display-kit/FetchMixin': { ...m28, __esModule: true },
+  '@jbrowse/display-kit/foundationDisplayPhase': m29,
+  '@jbrowse/display-kit/foundationPaintInert': m30,
+  '@jbrowse/display-kit/foundationSvgReady': m31,
+  '@jbrowse/display-kit/foundationView': m32,
+  '@jbrowse/display-kit/gateCommit': m33,
+  '@jbrowse/display-kit/GlobalFetchMixin': { ...m34, __esModule: true },
+  '@jbrowse/display-kit/groupByMenu': m35,
+  '@jbrowse/display-kit/GroupLabelBox': { ...m36, __esModule: true },
+  '@jbrowse/display-kit/GroupLabelChips': m37,
+  '@jbrowse/display-kit/groupLabelChipStyles': m38,
+  '@jbrowse/display-kit/groupLabelStyle': m39,
+  '@jbrowse/display-kit/heightMode': m40,
+  '@jbrowse/display-kit/heightModeConfigSchemaFields': m41,
+  '@jbrowse/display-kit/heightModeMenu': m42,
+  '@jbrowse/display-kit/HeightModeMixin': { ...m43, __esModule: true },
+  '@jbrowse/display-kit/HiddenGroupsMixin': { ...m44, __esModule: true },
+  '@jbrowse/display-kit/highlightHost': m45,
+  '@jbrowse/display-kit/installClearHoverOnViewportChange': m46,
+  '@jbrowse/display-kit/installGlobalFetchAutorun': m47,
+  '@jbrowse/display-kit/installPerRegionFetchAutoruns': m48,
+  '@jbrowse/display-kit/jexlFilterConfigSchemaFields': m49,
+  '@jbrowse/display-kit/KeyedFetchMixin': m50.default,
+  '@jbrowse/display-kit/legendHost': m51,
+  '@jbrowse/display-kit/LegendMixin': { ...m52, __esModule: true },
+  '@jbrowse/display-kit/MultiRegionDisplayMixin': { ...m53, __esModule: true },
+  '@jbrowse/display-kit/planRegionFetch': m54,
+  '@jbrowse/display-kit/PlotDialog': m55.default,
+  '@jbrowse/display-kit/plotMenu': m56,
   '@jbrowse/display-kit/regionCommit': m57,
   '@jbrowse/display-kit/regionHost': m58,
   '@jbrowse/display-kit/regionTooLargeConfigSchemaFields': m59,

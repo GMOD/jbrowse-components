@@ -3039,7 +3039,7 @@ test('the plot an agent reads carries its axis, and a draft reports before it la
     'BedAdapter',
     { scales: { y: { type: 'log', title: 'Score' } } },
   ).createDisplay()
-  const plot = structuredClone(display.markPlot) as {
+  const plot = structuredClone(display.plot) as {
     marks: { mark: string; encoding: { y?: string } }[]
     scales: { y: { type: string } }
   }
@@ -3052,7 +3052,7 @@ test('the plot an agent reads carries its axis, and a draft reports before it la
   plot.marks[0]!.encoding = { y: 'count' }
   plot.scales.y.type = 'linear'
   expect(display.plotProblems(plot)).toEqual([])
-  display.applyDisplaySettings(plot)
+  display.applyPlot(plot)
   expect(display.conf.marks[0]!.encoding.y).toBe('count')
   expect(display.conf.scales.y.type).toBe('linear')
   expect(() => display.plotProblems({ marks: [{ mark: 'area' }] })).toThrow(

@@ -1,4 +1,4 @@
-import { baseDisplayConfig } from '@jbrowse/tree-sidebar'
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 
 import { SOURCE_FIELD } from '../shared/wiggleColorConfigSchema.ts'
 

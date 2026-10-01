@@ -63,13 +63,13 @@ function fakeBuild(
         displays: types.array(pluggable('display')),
       }
     }
-    // `filterSetting`'s spelling, on the model that really carries it. A
-    // union ORs its members' TypeFlags upward, so this answers `isArrayType`
-    // while being a `Union` with no `getChildType` — a walk that trusts the
-    // flags throws on every session that reaches one.
+    // An optional list, spelled as a model property spells one. A union ORs
+    // its members' TypeFlags upward, so this answers `isArrayType` while being
+    // a `Union` with no `getChildType` — a walk that trusts the flags throws on
+    // every session that reaches one.
     return {
       id: types.identifier,
-      filterSetting: types.maybe(types.array(types.string)),
+      optionalList: types.maybe(types.array(types.string)),
     }
   }
   for (const [group, names] of Object.entries(groups)) {
@@ -289,8 +289,8 @@ test('drops a connection whose plugin this build does not have', () => {
   expect(dropped).toEqual([{ group: 'connection', type: 'CustomConnection' }])
 })
 
-// THE FLAGS LIE ON A UNION. `types.maybe(types.array(types.string))` — the
-// sentinel spelling every jexl-filter setting uses — reports `isArrayType`,
+// THE FLAGS LIE ON A UNION. `types.maybe(types.array(types.string))` — an
+// optional list property's spelling — reports `isArrayType`,
 // because a union ORs its members' TypeFlags upward, while being a `Union` with
 // no `getChildType`. A walk that branched on the flags threw
 // `type.getChildType is not a function` out of `setSession` for every session
@@ -302,7 +302,7 @@ test('walks past a maybe-wrapped array without mistaking it for a container', ()
       h: {
         id: 'h',
         type: 'HierarchicalTrackSelectorWidget',
-        filterSetting: ['jexl:true'],
+        optionalList: ['a'],
       },
     },
   }

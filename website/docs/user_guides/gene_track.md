@@ -110,11 +110,11 @@ and unticking it returns the default color.
 
 <Figure caption="NCBI RefSeq genes on hg38 grouped and colored by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip and in its strand's color." src="/img/gene_track_group_by_strand.png" />
 
-### Writing the grouping as JSON
+### Writing the grouping as text
 
-**Edit as JSON...**, at the foot of the Group by and Color by attribute dialogs,
-opens the track's grouping, color and filter as three channels. `facet` and
-`color` are the display's two settings of those names, in the shape a config
+**Edit plot...**, in the track menu and at the foot of the Group by and Color by
+attribute dialogs, opens the track's grouping, color and filter as text. `facet`
+and `color` are the display's two settings of those names, in the shape a config
 file takes them: `facet` stacks a section per value of a field, in the order its
 `domain` lists; `color` is a CSS color or a jexl expression, or `{ "field": … }`
 for one color per value; `filter` is the list of jexl expressions **Filter
@@ -150,7 +150,7 @@ filter alone:
 }
 ```
 
-<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype colored by its position in the color's domain." />
+<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit plot from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype colored by its position in the color's domain." />
 
 A color by a field is the `color` setting's `{ "field", "domain", "range" }`
 form, and the track draws a key from the values it painted. Every value keeps a

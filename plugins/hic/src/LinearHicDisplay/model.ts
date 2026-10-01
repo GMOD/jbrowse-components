@@ -16,6 +16,7 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -553,7 +554,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
          * #method
          */
         trackMenuItems() {
-          return [...superTrackMenuItems(), ...buildHicTrackMenuItems(self)]
+          return [
+            ...superTrackMenuItems(),
+            ...buildHicTrackMenuItems(self),
+            ...editPlotMenuItems(self),
+          ]
         },
         /**
          * #method

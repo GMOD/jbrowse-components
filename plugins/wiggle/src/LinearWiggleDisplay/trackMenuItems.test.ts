@@ -237,8 +237,8 @@ describe('the wiggle display track menu', () => {
   })
 })
 
-// The JSON box is the dialog's Edit as JSON... button now, so no menu row of
-// its own reaches it and no two rows in the menu both say colour.
+// Edit plot... holds the colour among the other plot settings, so one row in
+// the menu says colour.
 it('names colour once in the menu', () => {
   for (const faceted of [true, false]) {
     const said = labels(

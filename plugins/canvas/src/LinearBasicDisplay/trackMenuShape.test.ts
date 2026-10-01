@@ -84,6 +84,7 @@ describe('canvas track menu shape', () => {
       'Feature height',
       'Color by...',
       'Group by...',
+      'Edit plot...',
       'Gene glyph',
       'Clear 1 highlight',
       'Filter by...',

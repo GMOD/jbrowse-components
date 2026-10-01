@@ -206,7 +206,7 @@ test('the Sections menu moves a section and writes the drawn order as the domain
   ])
   const reset = rows()[2] as { onClick: () => void }
   reset.onClick()
-  expect(display.channelSpec.facet).toEqual({ field: 'biotype' })
+  expect(display.plot.facet).toBe('biotype')
 })
 
 test('re-picking the same field from the dialog keeps a curated domain', () => {

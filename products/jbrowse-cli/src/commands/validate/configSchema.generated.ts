@@ -15166,12 +15166,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearBasicDisplayState": {
       "type": "object",
       "properties": {
-        "filterSetting": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "pinnedFeatureIds": {
           "type": "array",
           "items": {
@@ -15227,6 +15221,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "heightPreConfig": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "jexlFiltersSetting": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
@@ -15752,12 +15750,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearVariantDisplayState": {
       "type": "object",
       "properties": {
-        "filterSetting": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "pinnedFeatureIds": {
           "type": "array",
           "items": {
@@ -15815,6 +15807,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "jexlFiltersSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15863,12 +15859,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "sortRowsBy": {},
-        "filterSetting": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
@@ -16219,12 +16209,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "sortRowsBy": {},
-        "filterSetting": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "indexSnp": {
           "type": "string"
         },
@@ -16282,12 +16266,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "sortRowsBy": {},
-        "filterSetting": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."

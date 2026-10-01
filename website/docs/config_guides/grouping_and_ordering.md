@@ -47,11 +47,11 @@ from the same `domain`:
 }
 ```
 
-<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype colored by its position in the color's domain." />
+<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit plot from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype colored by its position in the color's domain." />
 
 [The gene track guide's Grouping features into sections section](/docs/user_guides/gene_track#grouping-features-into-sections)
 has the full mechanism — the Group by/Color by dialogs, the Sections menu, and
-what **Edit as JSON...** accepts.
+what **Edit plot...** accepts.
 
 ## Alignments tracks
 

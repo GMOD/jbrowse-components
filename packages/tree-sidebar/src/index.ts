@@ -92,7 +92,6 @@ export { default as ClusterProgress } from './ClusterProgress.tsx'
 export { useClusterRun } from './useClusterRun.ts'
 export {
   TreeSidebarMixin,
-  baseDisplayConfig,
   orderOver,
   rowColorIsCustom,
 } from './TreeSidebarMixin.ts'

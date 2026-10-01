@@ -10,8 +10,6 @@ import {
   FEATURE_FIELD_PRESETS,
   categoricalColorField,
   colorFieldOf,
-  colorMembersOf,
-  colorScaleChoicesOf,
   featureColorEncoding,
   identityKeyEntries,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -311,23 +309,6 @@ export function featureColorViews(self: FeatureColorHost) {
     get notices(): string[] {
       const settings = this.colorSettings
       return colorNotices(settings, FEATURE_FIELD_PRESETS)
-    },
-
-    /**
-     * #getter
-     * The scales this display's colour paints, for the Edit as JSON box.
-     */
-    get colorScaleChoices(): string[] {
-      return colorScaleChoicesOf(self.conf.color)
-    },
-
-    /**
-     * #getter
-     * The members this display's colour object declares, for the Edit as
-     * JSON box.
-     */
-    get colorMembers(): string[] {
-      return colorMembersOf(self.conf.color)
     },
   }
 }

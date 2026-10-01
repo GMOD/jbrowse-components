@@ -1,9 +1,6 @@
 import {
   ConfigurationSchema,
-  getConfigurationSchemaDefinition,
   isCallbackValue,
-  getSlotDefinition,
-  slotChoices,
 } from '@jbrowse/core/configuration'
 import { paletteFromSpec } from '@jbrowse/core/ui/colors'
 import { categoricalField, keyNames } from '@jbrowse/core/util/categoricalField'
@@ -19,7 +16,6 @@ import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   ColorScaleName,
   ColorSlots,
@@ -311,22 +307,6 @@ export const colorDomainQuantileSlot = {
     advanced: true,
   },
 } as const
-
-/**
- * The scales a display's colour object paints, read off its own slot, less
- * `none`, which the string form already is. What the Edit as JSON box offers
- * and holds a spec to.
- */
-export function colorScaleChoicesOf(color: AnyConfigurationModel): string[] {
-  return (slotChoices(getSlotDefinition(color, 'scale')) ?? []).filter(
-    scale => scale !== 'none',
-  )
-}
-
-/** The members a display's colour object declares, read off its schema. */
-export function colorMembersOf(color: AnyConfigurationModel): string[] {
-  return Object.keys(getConfigurationSchemaDefinition(color) ?? {})
-}
 
 /** A colour object's options: a bare string is its `value`, and an undeclared key is refused. */
 export function colorChannelOptions(

@@ -44,6 +44,7 @@ import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
@@ -4226,6 +4227,7 @@ export default function stateModelFactory(
                 },
               },
             }),
+            ...editPlotMenuItems(self),
             // The gate and the copy naming the switch are one value
             // (`sortReadsBlockedReason`), so this cannot grey the menu out
             // without saying what brings it back.

@@ -222,12 +222,11 @@ describe('computeOverlayX', () => {
 describe('overlayJexlFilters', () => {
   const display = { height: 100, configuredFilters: () => ['jexl:a'] }
 
-  test('follows the config slot until the dialog overrides it', () => {
+  test('follows the filter slot', () => {
     expect(overlayJexlFilters(display)).toEqual(['jexl:a'])
     expect(
-      overlayJexlFilters({ ...display, filterSetting: ['jexl:b'] }),
-    ).toEqual(['jexl:b'])
-    expect(overlayJexlFilters({ ...display, filterSetting: [] })).toEqual([])
+      overlayJexlFilters({ ...display, configuredFilters: () => [] }),
+    ).toEqual([])
   })
 
   test('a display with no filter contract filters nothing', () => {

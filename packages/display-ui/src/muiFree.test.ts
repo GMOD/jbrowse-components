@@ -94,9 +94,9 @@ test.each(Object.entries(weightPath))(
 // deep subpath published: core's `exports` map is generated from in-repo import
 // sites, so deep-importing them is a change to that map and belongs with one.
 const barrelUsers = new Set([
-  'ChannelSpecDialog.tsx',
   'DisplayContextMenu.tsx',
   'LegendMixin.ts',
+  'PlotDialog.tsx',
   'trackControl/MuiTrackControl.tsx',
 ])
 

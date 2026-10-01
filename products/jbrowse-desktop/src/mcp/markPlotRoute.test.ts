@@ -11,12 +11,10 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // What an agent reads off a mark display, as it reaches one through jb.
 interface MarkPlotDisplay {
   configuration: AnyConfigurationModel
-  markPlot: Record<string, unknown>
+  plot: Record<string, unknown>
   autoscaleGroup: string | undefined
   plotProblems(plot: unknown): string[]
-  applyDisplaySettings(settings: Record<string, unknown>): {
-    failed: unknown[]
-  }
+  applyPlot(draft: Record<string, unknown>): void
 }
 
 jest.mock('../makeWorkerInstance.ts', () => ({
@@ -96,7 +94,7 @@ test('an agent reads a plot as JSON, checks a draft, and applies it to two track
     slots: { y: { type: 'ValueScale' } },
   })
 
-  const plot = structuredClone(a.markPlot) as {
+  const plot = structuredClone(a.plot) as {
     marks: Record<string, unknown>[]
     scales?: unknown
   }
@@ -110,10 +108,10 @@ test('an agent reads a plot as JSON, checks a draft, and applies it to two track
   })
   plot.scales = { y: { autoscaleGroup: 'shared', title: 'Score' } }
   expect(a.plotProblems(plot)).toEqual([])
-  expect(a.applyDisplaySettings(plot).failed).toEqual([])
-  expect(b.applyDisplaySettings(plot).failed).toEqual([])
-  expect(b.markPlot).toEqual(a.markPlot)
-  expect(a.markPlot).toMatchObject({
+  a.applyPlot(plot)
+  b.applyPlot(plot)
+  expect(b.plot).toEqual(a.plot)
+  expect(a.plot).toMatchObject({
     marks: [{ encoding: { y: 'score' } }, { minBpPerPx: 100 }],
     scales: { y: { autoscaleGroup: 'shared', title: 'Score' } },
   })

@@ -3,7 +3,7 @@
 //
 // A whole track config needs no check: the tour reads the page's fence
 // (`pageFenceText`). What is left is a fragment, like the channel spec
-// `ui/gene_track_channel_spec` pastes into Edit as JSON, which the page prints
+// `ui/gene_track_channel_spec` pastes into Edit plot, which the page prints
 // in an untagged fence. The two copies are a template literal in a spec module
 // and a fence in markdown, so nothing but this holds them together, and nobody
 // re-reads a film.

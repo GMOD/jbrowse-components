@@ -95,7 +95,7 @@ describe('the color key', () => {
     expect(display.colorScales[0]?.title).toBe('State')
     const [section] = display.legendSpec.sections
     expect(section?.items.map(i => i.label)).toEqual(['Active', 'Repressed'])
-    expect(display.channelSpec.color).toMatchObject({ scale: 'identity' })
+    expect(display.plot.color).toMatchObject({ scale: 'identity' })
   })
 })
 

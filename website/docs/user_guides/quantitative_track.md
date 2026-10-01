@@ -87,7 +87,7 @@ is the whole colour story for a single signal, and a track with subtracks gets
 the list beneath them, where **Color rows by → Each row** hands every subtrack a
 palette entry of its own.
 
-**Edit as JSON...**, in that dialog, is the escape for what the line does not
+**Edit plot...**, in that dialog, is the escape for what the line does not
 offer: a ramp (`{ "field": "score", "scale": "linear", "scheme": "viridis" }`),
 the colours a heatmap fades through, and a threshold naming several cut points,
 a colour per band. The

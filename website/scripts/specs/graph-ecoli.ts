@@ -1136,7 +1136,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // pangenome_prepare_graph's carriage config, the ramp its Edit as JSON route
+  // pangenome_prepare_graph's carriage config, the ramp its Edit plot route
   // writes, on the pggb graph over the IS5 insertion: the private segment at
   // the red end, the core at the grey.
   {
