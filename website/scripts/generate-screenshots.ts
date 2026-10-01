@@ -106,6 +106,10 @@ const execFileAsync = promisify(execFile)
 
 class FatalConsoleError extends Error {}
 
+// What `withFreshPage` heard the page say that fails its spec, read before the
+// frame is committed so a failing figure never reaches the disk.
+const pageFatal = new WeakMap<Page, string>()
+
 // Apply the shared pre-shot steps (hide stray tooltip, draw/clear callouts,
 // flush pending WebGL frames) then screenshot straight to `file`.
 async function shoot(
@@ -532,6 +536,10 @@ async function captureSpec(
   port: number,
 ) {
   const renderPath = await renderSpecToTemp(page, spec, port)
+  const fatal = pageFatal.get(page)
+  if (fatal !== undefined) {
+    throw new FatalConsoleError(fatal)
+  }
   return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
 }
 
@@ -994,15 +1002,17 @@ async function main() {
             ...(spec.viewportHeight ? { height: spec.viewportHeight } : {}),
           })
         }
-        let fatal: string | undefined
         const report = (kind: string, text: string) => {
           const expected = spec.expectedConsole?.some(s => text.includes(s))
           if (!isBrowserConsoleNoise(text) && !expected) {
             console.error(
               `    [${spec.name}] browser[${kind}]: ${text.substring(0, 300)}`,
             )
-            if (kind === 'pageerror' || isFatalConsole(text)) {
-              fatal ??= `browser[${kind}]: ${text.substring(0, 300)}`
+            if (
+              (kind === 'pageerror' || isFatalConsole(text)) &&
+              !pageFatal.has(page)
+            ) {
+              pageFatal.set(page, `browser[${kind}]: ${text.substring(0, 300)}`)
             }
           }
         }
@@ -1027,6 +1037,7 @@ async function main() {
         run.catch(() => {})
         try {
           const result = await Promise.race([run, crash])
+          const fatal = pageFatal.get(page)
           if (fatal !== undefined) {
             throw new FatalConsoleError(fatal)
           }
