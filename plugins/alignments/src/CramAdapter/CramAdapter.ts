@@ -144,9 +144,9 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     return this.configureResult
   }
 
-  async getHeader(_opts?: BaseOptions) {
+  async getHeader(opts?: BaseOptions) {
     const { cram } = this.configure()
-    return cram.cram.getHeaderText()
+    return cram.cram.getHeaderText({ signal: opts?.signal })
   }
 
   // CraiIndex.getIndex memoizes its own parse, so the later per-region
@@ -157,7 +157,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     signal?: AbortSignal,
   ) {
     const { cram, index } = this.configure()
-    const rawHeader = await cram.cram.getSamHeader()
+    const rawHeader = await cram.cram.getSamHeader({ signal })
     await index.getIndex({ onProgress, signal })
     return rawHeader
   }

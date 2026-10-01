@@ -56,7 +56,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
   private setup = cachedSetup({
     label: 'Downloading header',
-    setup: () => this.hic.getMetaData(),
+    setup: opts => this.hic.getMetaData({ signal: opts.signal }),
   })
 
   public constructor(
@@ -78,7 +78,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     const norms = await downloadStatus(
       'Downloading normalization data',
       statusCallback,
-      onProgress => this.hic.getNormalizationOptions({ onProgress }),
+      onProgress => this.hic.getNormalizationOptions({ onProgress, signal }),
       signal,
     )
     return { norms, resolutions }
@@ -152,6 +152,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
               region2: regions[j]!,
               normalization,
               resolution,
+              signal,
               onProgress: (current, total) => {
                 advance(at, current / total)
               },
@@ -199,12 +200,14 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     region2,
     normalization,
     resolution,
+    signal,
     onProgress,
   }: {
     region1: Region
     region2: Region
     normalization: string
     resolution: number
+    signal?: AbortSignal
     onProgress: (current: number, total: number) => void
   }) {
     try {
@@ -217,7 +220,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
           { chr: region2.refName, start: region2.start, end: region2.end },
           'BP',
           resolution,
-          { onProgress },
+          { onProgress, signal },
         )
       return {
         records: transposed
