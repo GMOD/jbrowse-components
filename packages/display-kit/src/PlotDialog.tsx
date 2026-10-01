@@ -138,6 +138,7 @@ const PlotDialog = observer(function PlotDialog({
               <Button
                 size="small"
                 variant="outlined"
+                sx={{ textTransform: 'none' }}
                 onClick={() => {
                   setText(withExample(model.plot, example))
                 }}

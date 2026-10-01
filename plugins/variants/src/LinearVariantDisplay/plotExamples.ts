@@ -6,14 +6,9 @@ export const VARIANT_PLOT_EXAMPLES = [
     description: 'one color per variant class: SNV, deletion, insertion',
   },
   {
-    plot: '{ "color": { "field": "svType" } }',
-    description: 'one color per structural variant class',
-  },
-  {
     plot: '{ "color": { "field": "INFO.CLNSIG" } }',
     description: 'one color per ClinVar significance',
   },
-  { plot: '{ "facet": "FILTER" }', description: 'a section per FILTER value' },
   {
     plot: '{ "filter": ["jexl:feature.QUAL > 30"] }',
     description: 'site quality above 30',
