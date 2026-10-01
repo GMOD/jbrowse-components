@@ -187,7 +187,7 @@ function mergeTabixLines(...groups: TabixLine[][]) {
  * structural for the same reason as {@link TabixLineSource}.
  */
 interface TabixHeaderSource {
-  getHeaderLines(): Promise<string[]>
+  getHeaderLines(opts?: { signal?: AbortSignal }): Promise<string[]>
 }
 
 /**
@@ -221,6 +221,7 @@ interface TabixHeaderSource {
  */
 export function readTabixHeaderLines(
   file: TabixHeaderSource,
+  opts?: { signal?: AbortSignal },
 ): Promise<string[]> {
-  return file.getHeaderLines()
+  return file.getHeaderLines(opts)
 }

@@ -1,3 +1,5 @@
+import { makeAbortError } from '@jbrowse/core/util/aborting'
+import { CachedFilehandle } from '@jbrowse/core/util/io'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -195,4 +197,49 @@ test('adapter can use gwas header', async () => {
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
+})
+
+function hangReadsOf(suffix: string) {
+  const signals: (AbortSignal | undefined)[] = []
+  const { readFile } = CachedFilehandle.prototype
+  jest
+    .spyOn(CachedFilehandle.prototype, 'readFile')
+    .mockImplementation(function (this: CachedFilehandle, opts) {
+      if (!this.source?.endsWith(suffix)) {
+        return readFile.call(this, opts)
+      }
+      const signal = typeof opts === 'object' ? opts.signal : undefined
+      signals.push(signal)
+      return new Promise((_resolve, reject) => {
+        signal?.addEventListener('abort', () => {
+          reject(makeAbortError())
+        })
+      })
+    })
+  return signals
+}
+
+async function until(done: () => boolean) {
+  for (let i = 0; i < 100 && !done(); i++) {
+    await new Promise(resolve => setTimeout(resolve, 5))
+  }
+}
+
+describe('an abandoned setup', () => {
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('aborts its index read', async () => {
+    const reads = hangReadsOf('.tbi')
+    const adapter = makeAdapter('./test_data/volvox-bed12.bed.gz')
+    const caller = new AbortController()
+    const pending = adapter.getMetadata({ signal: caller.signal })
+    await until(() => reads.length > 0)
+    caller.abort()
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
+    await until(() => reads.every(signal => signal?.aborted))
+    expect(reads).not.toHaveLength(0)
+    expect(reads.every(signal => signal?.aborted)).toBe(true)
+  })
 })

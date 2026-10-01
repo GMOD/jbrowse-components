@@ -142,9 +142,13 @@ export async function getSamplesFromConfig(
   samplesConfig: SampleConfig,
   samplesTsvLocation?: FileLocation,
   pluginManager?: PluginManager,
+  signal?: AbortSignal,
 ) {
   const treeNewick = nhLocation
-    ? await openLocation(nhLocation, pluginManager).readFile('utf8')
+    ? await openLocation(nhLocation, pluginManager).readFile({
+        encoding: 'utf8',
+        signal,
+      })
     : undefined
 
   const configSamples = normalizeSamples(samplesConfig)
@@ -160,6 +164,7 @@ export async function getSamplesFromConfig(
     names: samples.length ? samples.map(s => s.id) : undefined,
     namesLabel: treeNewick ? 'the guide tree' : 'the samples slot',
     pluginManager,
+    opts: { signal },
   })
   const merged = mergeSamplesTsv(samples, sources)
   return {
@@ -204,11 +209,15 @@ function pruneTree(treeNewick: string, samples: Sample[]) {
  * `AnyConfigurationModel` — how `loadMafSummaryAdapter` already reads
  * `summaryAdapter` for the same four.
  */
-export function getSamplesFromAdapter(self: BaseFeatureDataAdapter) {
+export function getSamplesFromAdapter(
+  self: BaseFeatureDataAdapter,
+  signal?: AbortSignal,
+) {
   return getSamplesFromConfig(
     self.getConf('nhLocation'),
     self.getConf('samples'),
     self.getConf('samplesTsvLocation'),
     self.pluginManager,
+    signal,
   )
 }

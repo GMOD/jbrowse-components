@@ -43,7 +43,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   // re-entry (every getFeatures awaits it) doesn't re-flash "Downloading index"
   getMetadata = cachedSetup({
     label: 'Downloading index',
-    setup: () => this.bed.getMetadata(),
+    setup: opts => this.bed.getMetadata({ signal: opts.signal }),
   })
 
   // Memoized: getFeatures needs the names on every query, and reading them goes
@@ -51,7 +51,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   // repeated on every pan and zoom. Resolves undefined when the file declares
   // no column names — parseNamesFromHeader's answer for a header it can't read
   // names out of.
-  getNames = cachedSetup({ setup: () => this.readNames() })
+  getNames = cachedSetup({ setup: opts => this.readNames(opts.signal) })
 
   public constructor(
     config: BedTabixAdapterConfig,
@@ -93,7 +93,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     return this.bed.bytesForRegions(regions, opts)
   }
 
-  private async readNames() {
+  private async readNames(signal?: AbortSignal) {
     const columnNames = readConfObject(this.config, 'columnNames')
     if (columnNames.length) {
       return columnNames
@@ -102,7 +102,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     // `#`-commented block, which getHeader() returns, and a plain row skipped
     // via `tabix -S N`, which it does not.
     return parseNamesFromHeader(
-      (await readTabixHeaderLines(this.bed)).join('\n'),
+      (await readTabixHeaderLines(this.bed, { signal })).join('\n'),
     )
   }
 

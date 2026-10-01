@@ -74,11 +74,14 @@ export abstract class BamAdapterBase<
     )
   }
 
-  protected async readSamHeader(onProgress?: (n: number, t?: number) => void) {
+  protected async readSamHeader(
+    onProgress?: (n: number, t?: number) => void,
+    signal?: AbortSignal,
+  ) {
     // BamFile.getHeaderPre parses the .bai/.csi before reading the header
     // block, so this one await covers the whole "Downloading index" phase
     const { bam } = this.configure()
-    return bam.getHeader({ onProgress })
+    return bam.getHeader({ onProgress, signal })
   }
 
   async getHeader(_opts?: BaseOptions) {

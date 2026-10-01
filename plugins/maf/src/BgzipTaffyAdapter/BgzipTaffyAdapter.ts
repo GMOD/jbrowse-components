@@ -22,6 +22,7 @@ import type { SourceResolver } from '../util/parseAssemblyName.ts'
 import type { TaiIndex } from '../util/taiSlice.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 
 interface SetupData extends TaiIndex {
@@ -39,14 +40,14 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
   // the whole setup, and no public method reports `runLengthEncodeBases`.
   configure = cachedSetup({
     label: 'Downloading index',
-    setup: () => this.doSetup(),
+    setup: opts => this.doSetup(opts.signal),
   })
 
   // utf-8 (default) tends to be faster than 'ascii' in modern engines.
   private decoder = new TextDecoder()
 
-  async getRefNames() {
-    const { index } = await this.configure()
+  async getRefNames(opts?: BaseOptions) {
+    const { index } = await this.configure(opts)
     return [...index.keys()]
   }
 
@@ -149,14 +150,15 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
     }
   }
 
-  async doSetup(): Promise<SetupData> {
+  async doSetup(signal?: AbortSignal): Promise<SetupData> {
     const [tai, runLengthEncodeBases] = await Promise.all([
       readTaiIndex(
         this.getConf('taiLocation'),
         this.getConf('tafGzLocation'),
         this.pluginManager,
+        signal,
       ),
-      this.readHeader(),
+      this.readHeader(signal),
     ])
     return { ...tai, runLengthEncodeBases }
   }
@@ -175,12 +177,12 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
    * it breaks them too, and `cachedSetup` clears the memo so a transient error
    * retries.
    */
-  async readHeader(): Promise<boolean> {
+  async readHeader(signal?: AbortSignal): Promise<boolean> {
     const file = openLocation(this.getConf('tafGzLocation'), this.pluginManager)
     // One bgzf block is at most 64KiB compressed, so this always spans a whole
     // one; `unzip` decodes the complete blocks and stops, ignoring the partial
     // tail.
-    const buffer = await unzip(await file.read(65536, 0))
+    const buffer = await unzip(await file.read(65536, 0, { signal }))
     const firstLine = this.decoder.decode(buffer).split('\n', 1)[0] ?? ''
     return (
       firstLine.startsWith('#taf') &&
@@ -201,7 +203,7 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
     })
   }
 
-  async getRegionByteSize(regions: Region[]) {
-    return taiRegionByteSize(await this.configure(), regions)
+  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    return taiRegionByteSize(await this.configure(opts), regions)
   }
 }

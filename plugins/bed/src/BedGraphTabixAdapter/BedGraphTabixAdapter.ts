@@ -23,10 +23,10 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
   // getFeatures/byte-estimate awaits it) doesn't re-flash "Downloading index"
   protected configure = cachedSetup({
     label: 'Downloading index',
-    setup: () => this.configurePre(),
+    setup: opts => this.configurePre(opts),
   })
 
-  private async configurePre() {
+  private async configurePre(opts: BaseOptions) {
     const pm = this.pluginManager
     const bedGraphGzLocation = this.getConf('bedGraphGzLocation')
     const location = this.getConf(['index', 'location'])
@@ -43,7 +43,9 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
     // Not bedGraph.getHeader(): that returns only a `#`-commented header, so a
     // file whose header is a plain row skipped via `tabix -S 1` reported none
     // and quietly lost the names of its value columns.
-    const header = (await readTabixHeaderLines(bedGraph)).join('\n')
+    const header = (
+      await readTabixHeaderLines(bedGraph, { signal: opts.signal })
+    ).join('\n')
     return {
       columnNames,
       bedGraph,

@@ -23,10 +23,10 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
 
   configure = cachedSetup({
     label: 'Downloading index',
-    setup: () => this.configurePre(),
+    setup: opts => this.configurePre(opts),
   })
 
-  private async configurePre() {
+  private async configurePre(opts: BaseOptions) {
     const vcfGzLocation = this.getConf('vcfGzLocation')
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
@@ -36,7 +36,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
       chunkCacheBudget: decompressedBytesBudget,
       bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
-    const header = await vcf.getHeader()
+    const header = await vcf.getHeader({ signal: opts.signal })
     return {
       vcf,
       parser: new VcfParser({ header }),

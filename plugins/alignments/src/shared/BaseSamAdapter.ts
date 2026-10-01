@@ -26,6 +26,7 @@ export abstract class BaseSamAdapter<
    */
   protected abstract readSamHeader(
     onProgress?: (current: number, total?: number) => void,
+    signal?: AbortSignal,
   ): Promise<SamHeaderLine[]>
 
   /**
@@ -37,8 +38,10 @@ export abstract class BaseSamAdapter<
    */
   protected setup = cachedSetup({
     label: 'Downloading index',
-    setup: async (_opts, onProgress) => {
-      this.samHeader = parseSamHeader(await this.readSamHeader(onProgress))
+    setup: async (opts, onProgress) => {
+      this.samHeader = parseSamHeader(
+        await this.readSamHeader(onProgress, opts.signal),
+      )
       return this.samHeader
     },
   })

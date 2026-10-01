@@ -7,6 +7,7 @@ import { parseMafBlocks } from './mafParsing.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { BgzipMafAdapterConfig } from './configSchema.ts'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 
 /**
@@ -29,18 +30,19 @@ import type { Region } from '@jbrowse/core/util'
 export default class BgzipMafAdapter extends MafAdapterBase<BgzipMafAdapterConfig> {
   private configure = cachedSetup({
     label: 'Downloading index',
-    setup: () =>
+    setup: opts =>
       readTaiIndex(
         this.getConf('taiLocation'),
         this.getConf('mafGzLocation'),
         this.pluginManager,
+        opts.signal,
       ),
   })
 
   private decoder = new TextDecoder()
 
-  async getRefNames() {
-    const { index } = await this.configure()
+  async getRefNames(opts?: BaseOptions) {
+    const { index } = await this.configure(opts)
     return [...index.keys()]
   }
 
@@ -56,7 +58,7 @@ export default class BgzipMafAdapter extends MafAdapterBase<BgzipMafAdapterConfi
     })
   }
 
-  async getRegionByteSize(regions: Region[]) {
-    return taiRegionByteSize(await this.configure(), regions)
+  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    return taiRegionByteSize(await this.configure(opts), regions)
   }
 }

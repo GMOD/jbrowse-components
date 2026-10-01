@@ -43,7 +43,7 @@ export abstract class MafAdapterBase<
   })
 
   getSamples = cachedSetup({
-    setup: () => getSamplesFromAdapter(this),
+    setup: opts => getSamplesFromAdapter(this, opts.signal),
   })
 
   async listRowSources(opts?: BaseOptions): Promise<RowSourceListing> {

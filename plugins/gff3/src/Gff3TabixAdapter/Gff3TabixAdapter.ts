@@ -22,7 +22,7 @@ import type { Region } from '@jbrowse/core/util/types'
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAdapterConfig> {
   private configure = cachedSetup({
     label: 'Downloading index',
-    setup: async (_opts, onProgress) => {
+    setup: async (opts, onProgress) => {
       const gff = new TabixIndexedFile({
         filehandle: openLocation(
           this.getConf('gffGzLocation'),
@@ -37,7 +37,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
       })
       // the index is a whole-file read, so its byte ticks turn the
       // "Downloading index" label into a determinate bar
-      await gff.getReferenceSequenceNames({ onProgress })
+      await gff.getReferenceSequenceNames({ onProgress, signal: opts.signal })
       return {
         gff,
         dontRedispatchSet: new Set(this.getConf('dontRedispatch')),

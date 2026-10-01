@@ -19,7 +19,7 @@ import type { Region } from '@jbrowse/core/util/types'
 export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdapterConfig> {
   private configure = cachedSetup({
     label: 'Downloading index',
-    setup: async (_opts, onProgress) => {
+    setup: async (opts, onProgress) => {
       const gtf = new TabixIndexedFile({
         filehandle: openLocation(
           this.getConf('gtfGzLocation'),
@@ -37,7 +37,7 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
         dontRedispatchSet: new Set(this.getConf('dontRedispatch')),
         // the index is a whole-file read, so its byte ticks turn the
         // "Downloading index" label into a determinate bar
-        header: await gtf.getHeader({ onProgress }),
+        header: await gtf.getHeader({ onProgress, signal: opts.signal }),
       }
     },
   })

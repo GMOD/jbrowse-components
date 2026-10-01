@@ -1,3 +1,5 @@
+import { makeAbortError } from '@jbrowse/core/util/aborting'
+import { CachedFilehandle } from '@jbrowse/core/util/io'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -78,4 +80,49 @@ test('mints stable feature ids across different query windows', async () => {
   // id is derived from the tabix byte offset, not the per-query parse index),
   // so a feature stays selected while panning
   expect(await geneIdFor(40000, 40100)).toBe(await geneIdFor(41000, 41100))
+})
+
+function hangReadsOf(suffix: string) {
+  const signals: (AbortSignal | undefined)[] = []
+  const { readFile } = CachedFilehandle.prototype
+  jest
+    .spyOn(CachedFilehandle.prototype, 'readFile')
+    .mockImplementation(function (this: CachedFilehandle, opts) {
+      if (!this.source?.endsWith(suffix)) {
+        return readFile.call(this, opts)
+      }
+      const signal = typeof opts === 'object' ? opts.signal : undefined
+      signals.push(signal)
+      return new Promise((_resolve, reject) => {
+        signal?.addEventListener('abort', () => {
+          reject(makeAbortError())
+        })
+      })
+    })
+  return signals
+}
+
+async function until(done: () => boolean) {
+  for (let i = 0; i < 100 && !done(); i++) {
+    await new Promise(resolve => setTimeout(resolve, 5))
+  }
+}
+
+describe('an abandoned setup', () => {
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('aborts its index read', async () => {
+    const reads = hangReadsOf('.tbi')
+    const adapter = makeAdapter()
+    const caller = new AbortController()
+    const pending = adapter.getRefNames({ signal: caller.signal })
+    await until(() => reads.length > 0)
+    caller.abort()
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
+    await until(() => reads.every(signal => signal?.aborted))
+    expect(reads).not.toHaveLength(0)
+    expect(reads.every(signal => signal?.aborted)).toBe(true)
+  })
 })

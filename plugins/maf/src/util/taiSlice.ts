@@ -23,9 +23,13 @@ export async function readTaiIndex(
   taiLocation: FileLocation,
   gzLocation: FileLocation,
   pluginManager?: PluginManager,
+  signal?: AbortSignal,
 ): Promise<TaiIndex> {
   const [text, { size }] = await Promise.all([
-    openLocation(taiLocation, pluginManager).readFile('utf8'),
+    openLocation(taiLocation, pluginManager).readFile({
+      encoding: 'utf8',
+      signal,
+    }),
     openLocation(gzLocation, pluginManager).stat(),
   ])
   return { index: parseTaiIndex(text), fileSize: size > 0 ? size : undefined }
