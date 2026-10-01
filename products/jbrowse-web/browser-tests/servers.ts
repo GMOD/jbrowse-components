@@ -173,7 +173,10 @@ export function startOAuthServer(
 // HTTP Basic auth without a WWW-Authenticate challenge: JBrowse prompts for
 // credentials via its own UI, so a challenge header (which triggers the browser's
 // native login dialog) would break the test flow. Replaces express-basic-auth.
-function basicAuth(users: Record<string, string>): RequestHandler {
+function basicAuth(
+  users: Record<string, string>,
+  { challenge = false } = {},
+): RequestHandler {
   return (req, res, next) => {
     const encoded = /^Basic (\S+)$/.exec(req.headers.authorization ?? '')?.[1]
     const [user, pass] = encoded
@@ -182,6 +185,9 @@ function basicAuth(users: Record<string, string>): RequestHandler {
     if (user !== undefined && users[user] === pass) {
       next()
     } else {
+      if (challenge) {
+        res.set('WWW-Authenticate', 'Basic realm="jbrowse-test"')
+      }
       res.status(401).send('Unauthorized')
     }
   }
@@ -207,6 +213,16 @@ export function startBasicAuthServer(
     app.use(
       '/data/private',
       basicAuth({ bob: 'private456' }),
+      serveStatic(dataPath),
+    )
+    // The one path that sends the challenge, for a track no account covers:
+    // JBrowse reads the header off the 401 and mints an account for the origin.
+    // Cross-origin, so the browser shows no dialog of its own, and the header
+    // is only readable because it is exposed.
+    app.use(
+      '/data/challenge',
+      cors({ exposedHeaders: ['WWW-Authenticate'] }),
+      basicAuth({ carol: 'challenge789' }, { challenge: true }),
       serveStatic(dataPath),
     )
     app.use('/data', basicAuth({ admin: 'password' }), serveStatic(dataPath))

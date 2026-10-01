@@ -51,6 +51,15 @@ const webWorkerAuth: TestSuite = {
         await waitForDisplay(page, 'basicauth_bigwig_private')
       },
     },
+    {
+      name: 'prompts for BasicAuth when no account covers a URL that challenges',
+      fn: async page => {
+        await clearStorageAndNavigate(page, 'test_data/volvox/config_auth.json')
+        await openTrack(page, 'basicauth_bigwig_challenge')
+        await handleBasicAuthLogin(page, 'carol', 'challenge789')
+        await waitForDisplay(page, 'basicauth_bigwig_challenge')
+      },
+    },
   ],
 }
 

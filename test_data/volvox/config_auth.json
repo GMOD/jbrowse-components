@@ -234,6 +234,20 @@
           "uri": "http://localhost:3040/data/private/volvox.bw"
         }
       }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "basicauth_bigwig_challenge",
+      "name": "BasicAuth BigWig (no account, server challenges)",
+      "category": ["Authentication"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "locationType": "UriLocation",
+          "uri": "http://localhost:3040/data/challenge/volvox.bw"
+        }
+      }
     }
   ],
 
