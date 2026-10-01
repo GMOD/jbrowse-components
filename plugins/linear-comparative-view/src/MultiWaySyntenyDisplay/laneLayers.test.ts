@@ -2,6 +2,8 @@ import { createElement } from 'react'
 
 import { setConf } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { bandInk } from '@jbrowse/synteny-core'
 import { render } from '@testing-library/react'
@@ -26,7 +28,10 @@ import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 import type { HeldLaneLayer, LaneLayerFetchSpec } from './laneLayers.ts'
 import type { RowFrame } from './layoutMultiWay.ts'
 import type { LaneMap } from './multiwayRenderTypes.ts'
-import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
+import type {
+  EncodedChannels,
+  LayerRequest,
+} from '@jbrowse/core/util/markEncoding'
 
 const WIDTH = 1000
 
@@ -302,6 +307,50 @@ describe('a template layer', () => {
     display.lgv.showAllRegions()
     expect(reads(display)).toEqual([])
     expect(display.laneLayerTitles[0]!.text).toMatch(/ · zoom in$/)
+  })
+
+  // The worker reads no colour a lane layer's mark declares, so the bars take
+  // it from the display's stamp, and an edit repaints what is held.
+  test("a layer's bars paint its mark's colour, and a recolour refetches nothing", async () => {
+    const scores = [1, 2, 3].map(
+      i =>
+        new SimpleFeature({
+          uniqueId: `s${i}`,
+          refName: 'ctgA',
+          start: 100 * i,
+          end: 100 * i + 50,
+          score: i,
+        }),
+    )
+    const display = await templateDisplay(GC, {
+      rpc: async (name, args) =>
+        name === 'CoreGetEncodedLayers'
+          ? {
+              layers: (args.layers as LayerRequest[]).map(l =>
+                encodeFeatures(scores, l.encoding, l.lanes),
+              ),
+            }
+          : [],
+    })
+    setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
+      y: 'score',
+      color: { value: 'red' },
+    })
+    await when(() => display.laneLayerCells.cells.size > 0, { timeout: 5000 })
+    const barColors = () =>
+      [...display.laneLayerCells.cells.values()].map(cell =>
+        cell.kind === 'bars' ? cell.data.color : undefined,
+      )
+    expect(new Set(barColors())).toEqual(new Set([cssColorToABGR('red')]))
+    const keys = display.laneLayersFetchSpecs.map(spec => spec.key)
+
+    setConf(display.configuration.laneLayers[0]!.marks[0]!, 'encoding', {
+      y: 'score',
+      color: { value: 'green' },
+    })
+
+    expect(display.laneLayersFetchSpecs.map(spec => spec.key)).toEqual(keys)
+    expect(new Set(barColors())).toEqual(new Set([cssColorToABGR('green')]))
   })
 
   // The band is white in every theme, and a dark theme's palette text is white.

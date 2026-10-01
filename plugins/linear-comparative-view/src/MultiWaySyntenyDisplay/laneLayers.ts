@@ -1,4 +1,5 @@
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
+import { withMarkColor } from '@jbrowse/plugin-marks'
 
 import type { HeldLane, LaneFetchSpec, LaneRegion } from './laneFetch.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
@@ -6,6 +7,7 @@ import type {
   EncodedChannels,
   LayerRequest,
 } from '@jbrowse/core/util/markEncoding'
+import type { MarkColor } from '@jbrowse/plugin-marks'
 import type { BarChannels } from '@jbrowse/render-core/marks'
 
 export const LANE_LAYER_GAP_PX = 2
@@ -77,6 +79,26 @@ export function barChannelsOf(
     }
   }
   return { x, x2, y: squished ?? y, color, colorValue, count }
+}
+
+const coloredChannels = new WeakMap<
+  EncodedChannels,
+  { color: MarkColor; channels: EncodedChannels }
+>()
+
+/**
+ * A payload with its mark's colour resolved, as the mark display stamps its
+ * regions, so a colour edit repaints what is held and refetches nothing; one
+ * per payload and colour, so the bar cell keyed on it survives a settle.
+ */
+export function laneLayerChannels(channels: EncodedChannels, color: MarkColor) {
+  const held = coloredChannels.get(channels)
+  if (held?.color === color) {
+    return held.channels
+  }
+  const colored = withMarkColor(channels, color)
+  coloredChannels.set(channels, { color, channels: colored })
+  return colored
 }
 
 const barCells = new WeakMap<

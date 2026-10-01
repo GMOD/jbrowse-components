@@ -12,7 +12,7 @@ import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { plotsValue } from './markSpecs.ts'
 
 import type { MarkConfig } from './configSchema.ts'
-import type { MarkRegionData, StoredLayer } from './markList.ts'
+import type { MarkRegionData } from './markList.ts'
 import type { MarkLane } from './markSpecs.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type {
@@ -20,6 +20,7 @@ import type {
   ColorEncoding,
   ColorScaleTable,
   ContinuousRef,
+  EncodedChannels,
   ThresholdRef,
 } from '@jbrowse/core/util/markEncoding'
 
@@ -147,11 +148,11 @@ function valueScaleTable(
 // Each key the worker met, painted through the declaration and ordered by it;
 // a region still holding another field's keys while its refetch is pending
 // paints them as the worker's table did.
-function categoricalLayer(
-  layer: StoredLayer,
+function categoricalLayer<L extends EncodedChannels>(
+  layer: L,
   colorKey: Uint32Array,
   encoding: CategoricalRef & { range?: string[] },
-): StoredLayer {
+): L {
   const read = layer.scale
   if (read?.kind !== 'categorical') {
     return layer
@@ -191,7 +192,14 @@ function categoricalLayer(
   }
 }
 
-function coloredLayer(layer: StoredLayer, color: MarkColor): StoredLayer {
+/**
+ * One layer with its colour resolved off what the worker read, for a caller
+ * holding layers outside a region: multi-way synteny's lane layers.
+ */
+export function withMarkColor<L extends EncodedChannels>(
+  layer: L,
+  color: MarkColor,
+): L {
   switch (color.kind) {
     case 'worker':
       return layer
@@ -237,7 +245,7 @@ export function withMarkColors(
 ): MarkRegionData {
   const layers = region.layers.map((layer, i) => {
     const color = colors[i]
-    return color ? coloredLayer(layer, color) : layer
+    return color ? withMarkColor(layer, color) : layer
   })
   return layers.every((layer, i) => layer === region.layers[i])
     ? region

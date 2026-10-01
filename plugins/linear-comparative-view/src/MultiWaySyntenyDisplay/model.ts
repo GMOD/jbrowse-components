@@ -41,10 +41,15 @@ import {
   colorFieldOf,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { getFeatureName } from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
-import { markLayerRequest, stepChannels } from '@jbrowse/plugin-marks'
+import {
+  markColorOf,
+  markLayerRequest,
+  stepChannels,
+} from '@jbrowse/plugin-marks'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 import {
@@ -97,6 +102,7 @@ import {
   LANE_TEMPLATE_MAX_BP,
   barCellOf,
   laneLayerBpPerPx,
+  laneLayerChannels,
   laneLayerDomains,
   laneLayerOrigin,
   laneLayerSpecLane,
@@ -213,6 +219,7 @@ import type {
 } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { MarkColor } from '@jbrowse/plugin-marks'
 import type {
   AttributeRange,
   DeclaredLane,
@@ -2339,18 +2346,33 @@ export function stateModelFactory(
         return out
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * undefined for a layer no drawn lane holds values for yet
-       */
-      get laneLayerDomains() {
-        return laneLayerDomains(
-          self.laneLayerPlacements.map(placement => placement.held),
-          self.configuration.laneLayers.length,
-        )
-      },
-    }))
+    .views(self => {
+      const colors = stableIdentityComputed(() =>
+        self.configuration.laneLayers.map(layer =>
+          layer.marks.map(m => markColorOf(m, stepChannels(m.transform))),
+        ),
+      )
+      return {
+        /**
+         * #getter
+         * undefined for a layer no drawn lane holds values for yet
+         */
+        get laneLayerDomains() {
+          return laneLayerDomains(
+            self.laneLayerPlacements.map(placement => placement.held),
+            self.configuration.laneLayers.length,
+          )
+        },
+        /**
+         * #getter
+         * each layer's mark colours, resolved off what the worker read as
+         * the mark display resolves its own
+         */
+        get laneLayerColors(): MarkColor[][] {
+          return colors.get()
+        },
+      }
+    })
     .views(self => ({
       /** #getter */
       get laneLayerTitles() {
@@ -2376,6 +2398,7 @@ export function stateModelFactory(
         const cells = new Map<string, MultiWayCell>()
         const layers: BarLayer[] = []
         const domains = self.laneLayerDomains
+        const colors = self.laneLayerColors
         for (const {
           specLane,
           held,
@@ -2390,7 +2413,11 @@ export function stateModelFactory(
           }
           const { start, end } = held.region
           held.channels.forEach((channels, mark) => {
-            const cell = barCellOf(channels, domain)
+            const color = colors[held.layer]?.[mark]
+            const cell = barCellOf(
+              color ? laneLayerChannels(channels, color) : channels,
+              domain,
+            )
             if (cell) {
               const key = `bars:${specLane}:${mark}`
               cells.set(key, cell)
