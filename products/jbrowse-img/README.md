@@ -28,7 +28,7 @@ ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore reads),
 rendered straight from public files in a single command (`--aliases` reconciles
 the `1` / `chr1` / `NC_000001.10` refname styles across the files):
 
-![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://jbrowse.org/jb2-figures/jbrowse-img/1.325b21c2873e.png)
+![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://jbrowse.org/jb2-figures/jbrowse-img/1.2f958bc60f92.png)
 
 <!-- jb2export: 1 -->
 
@@ -86,7 +86,7 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --loc 1:48,683,542-48,907,531 --width 1200 --out remote_files.png
 ```
 
-![ClinVar variants above NCBI RefSeq genes across a 220 kb window of hg19 chromosome 1, every file streamed from a public URL](https://jbrowse.org/jb2-figures/jbrowse-img/remote_files.1495a910f238.png)
+![ClinVar variants above NCBI RefSeq genes across a 220 kb window of hg19 chromosome 1, every file streamed from a public URL](https://jbrowse.org/jb2-figures/jbrowse-img/remote_files.99f319ecd069.png)
 
 ### Hosted assemblies (genomes.jbrowse.org)
 
