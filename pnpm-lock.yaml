@@ -847,8 +847,8 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^10.0.1
-        version: 10.0.1
+        specifier: ^10.0.2
+        version: 10.0.2
       '@gmod/cram':
         specifier: ^14.1.1
         version: 14.1.1
@@ -947,8 +947,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       '@gmod/tabix':
-        specifier: ^3.9.0
-        version: 3.9.0
+        specifier: ^3.9.1
+        version: 3.9.1
       '@gmod/trix':
         specifier: ^3.0.22
         version: 3.0.22
@@ -1144,8 +1144,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.9.0
-        version: 3.9.0
+        specifier: ^3.9.1
+        version: 3.9.1
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1340,8 +1340,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.9.0
-        version: 3.9.0
+        specifier: ^3.9.1
+        version: 3.9.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1403,8 +1403,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.9.0
-        version: 3.9.0
+        specifier: ^3.9.1
+        version: 3.9.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2031,8 +2031,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.9.0
-        version: 3.9.0
+        specifier: ^3.9.1
+        version: 3.9.1
       '@gmod/vcf':
         specifier: ^7.2.0
         version: 7.2.0
@@ -4822,8 +4822,8 @@ packages:
   '@fontsource/roboto@5.3.0':
     resolution: {integrity: sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==}
 
-  '@gmod/bam@10.0.1':
-    resolution: {integrity: sha512-T3UwLdR5SENuZQafd8Lk9hGp1aeJm7/xV/xldebDBD8xi+2wiQaUZrYpegfjxdLP/jeM0XAXC3zWBIhl0Ofmdg==}
+  '@gmod/bam@10.0.2':
+    resolution: {integrity: sha512-KLuAnE91PvID7GsWurgN3blhGNhTCuxn6yHB6KVrf7NzjGEJSIt5Vrxz9R/wpTdjKmurs91R3JwkzV9Eu2eUyQ==}
 
   '@gmod/bbi@11.3.0':
     resolution: {integrity: sha512-Uztjf46uEDOMu3qQ3q1ysQSH93e/nOQT3LJ7X3mE/KkMlX3p9ywtOKylEfyaWTZfMIGu+nZoQkjKbQCqnVrqog==}
@@ -4864,8 +4864,8 @@ packages:
   '@gmod/shared-read-cache@1.7.2':
     resolution: {integrity: sha512-N71dzJHYYSEAZYQCl38QGZ8cx468lFZE9VdS29N2DhRbKMf/X7Qb+cJsuIt1MeVDmpvKui5wDiNILgkQREpwlw==}
 
-  '@gmod/tabix@3.9.0':
-    resolution: {integrity: sha512-kiU8Y4ASWWCP0LNH2GrN203hXkc9cSnN/TsF8pcdw762dPnrIB+UQ2YTlge3pdRRCmUE8gT6dluaJRDoJ5NvjQ==}
+  '@gmod/tabix@3.9.1':
+    resolution: {integrity: sha512-RaiSL3O4eclLOYaoHkkqdpr0EfhwmmGPj5xdbmsNNItdVlpnEM4lJ1dRzl26nFYVodEJSv+Krqr/5hWxMy1Q6w==}
 
   '@gmod/trix@3.0.22':
     resolution: {integrity: sha512-cOf2r20K2LecQCZ6Am4H17S6GNAU0g5FZJ4t6EU6IiKGpmYclDWjGVNvDnsERJgjOfvkp4HzHJxQ37WnuKK8Sg==}
@@ -5251,10 +5251,6 @@ packages:
     engines: {node: '>=22', pnpm: '>=10'}
     peerDependencies:
       mobx: ^7.0.0
-
-  '@jbrowse/quick-lru@7.3.5':
-    resolution: {integrity: sha512-DPEtODWKt+QGmCg+EO36sSmKOmdjJOwtxeV/4PBnf+7jqC/P7R4YIz+/yohtqh9UZ38dbLtXIlmigPlkZy8SAA==}
-    engines: {node: '>=18'}
 
   '@jbrowse/quick-lru@8.0.0':
     resolution: {integrity: sha512-zToC0THd94TGr4cWMp9eOCRB8eeN004ncajZzVOoM8WEWV90YMTX5SX9zY6Nk1hhY7ASKWnfOmguXt7SoXaLzw==}
@@ -13437,11 +13433,11 @@ snapshots:
 
   '@fontsource/roboto@5.3.0': {}
 
-  '@gmod/bam@10.0.1':
+  '@gmod/bam@10.0.2':
     dependencies:
       '@gmod/bgzf-filehandle': 6.7.0
       '@gmod/shared-read-cache': 1.7.2
-      '@jbrowse/quick-lru': 7.3.5
+      '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.4.0
 
   '@gmod/bbi@11.3.0':
@@ -13497,11 +13493,11 @@ snapshots:
 
   '@gmod/shared-read-cache@1.7.2': {}
 
-  '@gmod/tabix@3.9.0':
+  '@gmod/tabix@3.9.1':
     dependencies:
       '@gmod/bgzf-filehandle': 6.7.0
       '@gmod/shared-read-cache': 1.7.2
-      '@jbrowse/quick-lru': 7.3.5
+      '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.4.0
 
   '@gmod/trix@3.0.22': {}
@@ -13786,8 +13782,6 @@ snapshots:
   '@jbrowse/mobx-state-tree@6.7.0(mobx@7.0.5)':
     dependencies:
       mobx: 7.0.5
-
-  '@jbrowse/quick-lru@7.3.5': {}
 
   '@jbrowse/quick-lru@8.0.0': {}
 
