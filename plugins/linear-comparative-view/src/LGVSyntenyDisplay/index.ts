@@ -1,6 +1,7 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import configSchemaF from './configSchemaF.ts'
+import { LGV_SYNTENY_PLOT_EXAMPLES } from './plotExamples.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -19,6 +20,7 @@ export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'SyntenyTrack',
       viewType: 'LinearGenomeView',
+      plotExamples: LGV_SYNTENY_PLOT_EXAMPLES,
       ReactComponent,
     })
   })

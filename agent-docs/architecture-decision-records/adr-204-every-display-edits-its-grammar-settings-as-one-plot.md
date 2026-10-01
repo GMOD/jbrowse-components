@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display's grammar settings are one object, its `plot`: the slots from one vocabulary (`PLOT_VOCABULARY`: marks, transform, facet, rows, rowColor, color, baseColor, arcColor, ribbonColor, laneLayers, scales, filter, filterBy) that its config declares, read off the config snapshot with defaults left off and a shorthand folded back. `BaseDisplay` carries `plotKeys`, `plot`, `liftPlot`, `plotProblems` and `applyPlot`, which writes each changed setting whole; the config schema is the only parser. display-kit's `PlotDialog` is the one text box, \"Edit plot...\" in every display's track menu below its own rows and behind the colour and grouping dialogs' buttons. `ChannelSpec`, its parser and dialog, and the mark display's `MarkPlot` box go. The runtime `filterSetting` override goes too: the `filter` slot is the one filter, \"Clear all filters\" writes back what the track's config declares, and a v4 `jexlFiltersSetting` is retired state lifted into it"
+summary: "Every display's grammar settings are one object, its `plot`: the slots from one vocabulary (`PLOT_VOCABULARY`: marks, transform, facet, rows, rowColor, color, baseColor, arcColor, ribbonColor, laneLayers, scales, filter, filterBy) that its config declares, read off the config snapshot with defaults left off and a shorthand folded back. `BaseDisplay` carries `plotKeys`, `plot`, `liftPlot`, `plotProblems`, `plotWrites` and `applyPlot`, which writes each setting whose lifted value moved, whole; the config schema is the only parser and refuses a key outside the plot before anything is written. display-kit's `PlotDialog` is the one text box, under Advanced → \"Edit plot...\" in every display's track menu and behind the colour and grouping dialogs' buttons, with the display type's `plotExamples` as buttons and links to its config reference and the guide. `ChannelSpec`, its parser and dialog, and the mark display's `MarkPlot` box go. The runtime `filterSetting` override goes too: the `filter` slot is the one filter, \"Clear all filters\" writes back what the track's config declares, and a v4 `jexlFiltersSetting` is retired state lifted into it"
 ---
 
 # ADR-204: Every display edits its grammar settings as one plot
@@ -34,7 +34,8 @@ nothing while the dialog's override stood.
 ## Decision
 
 - **A display's plot is its grammar slots by name.** `PLOT_VOCABULARY`
-  (`core/configuration/plot.ts`) is the one hand list; `plotKeysOf` is it
+  (`core/configuration/plot.ts`) is the one hand list, each slot name with the
+  line the dialog shows for it; `plotKeysOf` is it
   intersected with the slots the display's config declares, so no display
   lists its own keys and LD, the reference sequence and the synteny views,
   which declare none, offer nothing. `plotOf` reads them off the config
@@ -43,22 +44,35 @@ nothing while the dialog's override stood.
   Manhattan's default marks appear.
 - **The schema is the parser.** `liftPlot` merges a draft over the plot and
   creates the display's config schema from it, which refuses what a config
-  file is refused for; a display reads its typed members off the detached node
-  (`markPlotSettingsOf`). Creating one costs 0.1-0.3 ms.
-- **`applyPlot` writes each changed setting whole**, through `setConf`, so a
+  file is refused for, a key outside the plot included; a display reads its
+  typed members off the detached node (`markPlotSettingsOf`). Creating one
+  costs 0.1-0.5 ms.
+- **`plotWrites` is what applying writes**: each setting whose lifted value
+  differs from the plot, as the lifted value, so a setting spelled another way
+  but meaning the same writes nothing. `applyPlot` writes those whole, through
+  `setConf`, after the lift has passed, so a refused draft writes nothing; a
   member left out of an object returns to its default and `null` resets the
   setting, a namespace such as `scales` included, where `applyDisplaySettings`
-  merges member by member. `rows` is shown and written whole, tree, labels and
+  merges member by member. The dialog's "Sets ... Resets ..." line reads the
+  same writes. `rows` is shown and written whole, tree, labels and
   focus included, so no display hook keeps what the box hid.
 - **`BaseDisplay` carries the plot** (`plotKeys`, `plot`, `liftPlot`,
-  `plotProblems`, `applyPlot`), so the agent reads and writes every display
+  `plotProblems`, `plotWrites`, `applyPlot`), so the agent reads and writes every display
   one way. `plotProblems` defaults to the schema's refusals; the mark display
   answers its rule list and canvas a `jexl:` compile check.
-- **One box, one row.** display-kit's `PlotDialog` is the text box and
-  `editPlotMenuItems` the "Edit plot..." row each display places below its own
-  rows; the Group by, Color by attribute and colour/arrangement dialogs keep a
-  button that opens it on their unapplied draft, and the mark display's form
-  calls it "Edit as text...".
+- **One box, under Advanced.** display-kit's `PlotDialog` is the text box,
+  and `editPlotMenuItems` an Advanced submenu holding "Edit plot...", at
+  priority -999 so it sits just above "Display types" wherever a display
+  places it. The Group by, Color by attribute and colour/arrangement dialogs
+  keep a button that opens the box on their unapplied draft, and the mark
+  display's form calls it "Edit as text...".
+- **A display type declares its examples** (`DisplayType.plotExamples`), which
+  the box shows as buttons, each filling the text with its example laid over
+  the current plot. They live on the type rather than the model so a test over
+  every registered display holds each to its schema (`PlotExamples.test.ts`).
+  The box also links the display's page in the config reference
+  (`configDocsUrl`, off the schema's name) and the "Editing a track's plot as
+  text" guide.
 - **The `filter` slot is the one filter.** `filterSetting`, `FilterSetting`,
   `activeJexlFilters` and `liftRetiredFilterSetting` go. The dialog, a
   feature's filter actions and the box write the slot, which the session keeps
@@ -78,6 +92,13 @@ nothing while the dialog's override stood.
 - A beta session's `filterSetting` is dropped (beta-only state, no migration).
 - The box's problem list is strings; the mark display's form keeps its
   per-slot problem index.
+- A filter is a track-config edit, so it applies in every view showing the
+  track.
+- A v4 `jexlFiltersSetting` on a session track lifts into the `sessionTracks`
+  entry itself, which is that track's base, so "Clear all filters" returns to
+  the v4 filter.
+- `ChordVariantDisplay` has a plot (`color`) and examples but no track menu,
+  so it offers no row; the agent reaches it through `plot`.
 
 ## Rejected alternatives
 
@@ -85,9 +106,13 @@ nothing while the dialog's override stood.
   checks per channel and fell behind them (a `rows` field the wiggle schema
   refuses, a colour member a display does not declare); the lift refuses the
   same things in the schema's words.
-- **The row added once in `BaseTrackModel.trackMenuItems`.** It sorts below
-  every display's rows by priority, away from the colour and grouping rows it
-  edits; each display places it instead.
+- **The row added once in `BaseTrackModel.trackMenuItems`.** That assembly
+  lives in core, which cannot open a display-kit dialog, and the Advanced
+  submenu's priority already puts it in one place on every display.
+- **The row beside each display's Color by and Group by rows.** Built first,
+  then moved under Advanced: the box is for what the menus cannot say, and a
+  top-level row in every track menu put a technical tool beside the everyday
+  ones.
 - **A per-display key list.** Two lists drifted already (`CHANNELS`,
   `MARK_PLOT_KEYS`); the intersection reaches a new display or slot with no
   edit.

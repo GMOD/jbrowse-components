@@ -2,6 +2,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
+import { MULTI_ROW_PLOT_EXAMPLES } from './plotExamples.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -21,6 +22,7 @@ export default function register(pluginManager: PluginManager) {
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
+      plotExamples: MULTI_ROW_PLOT_EXAMPLES,
       ReactComponent: LinearMultiRowFeatureDisplayComponent,
     })
   })

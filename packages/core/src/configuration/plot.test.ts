@@ -2,14 +2,7 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { ConfigurationSchema } from './configurationSchema.ts'
 import { setConf } from './getConf.ts'
-import {
-  liftPlot,
-  parsePlot,
-  plotChanges,
-  plotKeysOf,
-  plotOf,
-  plotSettingsWritten,
-} from './plot.ts'
+import { liftPlot, parsePlot, plotKeysOf, plotOf, plotWrites } from './plot.ts'
 
 const Facet = ConfigurationSchema(
   'PlotTestFacet',
@@ -96,16 +89,29 @@ test('the text refuses a key the plot does not hold', () => {
 
 test('a draft writes only what moved, and a namespace whole', () => {
   const conf = display({ scales: { y: { domainMin: 0, domainMax: 9 } } })
-  const current = plotOf(conf)
-  const draft = { ...current, scales: { y: { domainMin: 0 } }, facet: null }
-  expect(plotChanges(draft, current)).toEqual({
-    sets: ['scales'],
-    clears: [],
-  })
-  const written = plotSettingsWritten(draft, current)
-  expect(written).toEqual({ scales: { y: { domainMin: 0 } } })
-  for (const [key, value] of Object.entries(written)) {
+  const draft = {
+    ...plotOf(conf),
+    scales: { y: { domainMin: 0 } },
+    facet: null,
+  }
+  const writes = plotWrites(conf, draft)
+  expect(writes).toEqual({ scales: { y: { domainMin: 0 } } })
+  for (const [key, value] of Object.entries(writes)) {
     setConf(conf, key as 'scales', value)
   }
   expect(plotOf(conf).scales).toEqual({ y: { domainMin: 0 } })
+})
+
+test('a setting spelled another way but lifting the same writes nothing', () => {
+  const conf = display({ facet: 'strand' })
+  expect(plotWrites(conf, { facet: { field: 'strand' } })).toEqual({})
+  expect(plotWrites(conf, { facet: null })).toEqual({ facet: null })
+})
+
+test('a draft naming a setting outside the plot is refused before any write', () => {
+  const conf = display()
+  expect(() => plotWrites(conf, { facet: 'strand', height: 3 })).toThrow(
+    'not height',
+  )
+  expect(() => liftPlot(conf, { height: 3 })).toThrow('not height')
 })

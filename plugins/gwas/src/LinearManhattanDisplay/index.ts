@@ -2,6 +2,7 @@ import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import { LinearMarkDisplayReactComponent } from '@jbrowse/plugin-marks'
 
 import { configSchemaFactory } from './configSchemaFactory.ts'
+import { MANHATTAN_PLOT_EXAMPLES } from './plotExamples.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -18,6 +19,7 @@ export default function LinearManhattanDisplayF(pluginManager: PluginManager) {
         ),
       trackType: ['GWASTrack', 'FeatureTrack'],
       viewType: 'LinearGenomeView',
+      plotExamples: MANHATTAN_PLOT_EXAMPLES,
       ReactComponent: LinearMarkDisplayReactComponent,
     })
   })

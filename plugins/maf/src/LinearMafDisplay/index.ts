@@ -3,6 +3,7 @@ import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 import { liftRetiredRowState } from '@jbrowse/display-kit/retiredSettings'
 
 import configSchemaF from './configSchema.ts'
+import { MAF_PLOT_EXAMPLES } from './plotExamples.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -22,6 +23,7 @@ export default function LinearMafDisplayF(pluginManager: PluginManager) {
         import('./stateModel.ts').then(f => f.default(configSchema)),
       ReactComponent,
       viewType: 'LinearGenomeView',
+      plotExamples: MAF_PLOT_EXAMPLES,
       trackType: 'MafTrack',
       displayName: 'MAF display',
       // what jbrowse-plugin-mafviewer's display kept of the arrangement

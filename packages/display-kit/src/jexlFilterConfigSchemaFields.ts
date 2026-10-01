@@ -16,7 +16,8 @@ export const jexlFilterConfigSchemaFields = {
    * #slot
    * The features the display admits: a feature is drawn when every expression
    * holds. Each entry is a `jexl:` expression over `feature`. The "Filter
-   * by..." dialog opens on these and its edits override them for the session.
+   * by..." dialog and "Edit plot..." edit this list, and "Clear all filters"
+   * returns it to what the track's config declares.
    */
   filter: {
     type: 'expressionArray',

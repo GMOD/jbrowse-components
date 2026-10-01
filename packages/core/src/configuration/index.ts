@@ -104,9 +104,8 @@ export {
   PLOT_VOCABULARY,
   liftPlot,
   parsePlot,
-  plotChanges,
   plotKeysOf,
   plotOf,
-  plotSettingsWritten,
+  plotWrites,
 } from './plot.ts'
-export type { Plot } from './plot.ts'
+export type { Plot, PlotExample } from './plot.ts'

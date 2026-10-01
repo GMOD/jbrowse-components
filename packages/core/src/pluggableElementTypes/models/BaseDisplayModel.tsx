@@ -2,6 +2,7 @@ import { hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import {
   applyConfSettings,
+  getConfigurationSchemaMetadata,
   getConf,
   setConf,
 } from '../../configuration/index.ts'
@@ -9,7 +10,7 @@ import {
   liftPlot as liftPlotDraft,
   plotKeysOf,
   plotOf,
-  plotSettingsWritten,
+  plotWrites as plotWritesOf,
 } from '../../configuration/plot.ts'
 import {
   getContainingTrack,
@@ -21,7 +22,7 @@ import { ElementId } from '../../util/types/mst.ts'
 import { displaySetterName } from '../../util/unknownSnapshotKeys.ts'
 
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
-import type { Plot } from '../../configuration/plot.ts'
+import type { Plot, PlotExample } from '../../configuration/plot.ts'
 import type { MenuItem } from '../../ui/index.ts'
 import type { RpcStatus } from '../../util/progress.ts'
 import type { UnappliedSetting } from '../../util/unknownSnapshotKeys.ts'
@@ -341,6 +342,28 @@ function stateModelFactory() {
         return plotOf((self as unknown as DisplayModel).configuration)
       },
       /**
+       * #getter
+       * The worked examples this display type declares, which "Edit plot..."
+       * offers as buttons.
+       */
+      get plotExamples(): readonly PlotExample[] {
+        const { pluginManager } = getEnv(self)
+        return pluginManager.getDisplayType(self.type).plotExamples
+      },
+      /**
+       * #getter
+       * This display type's page in the config reference, which lists every
+       * setting it takes.
+       */
+      get configDocsUrl(): string {
+        const name = getConfigurationSchemaMetadata(
+          (self as unknown as DisplayModel).configuration,
+        )?.name
+        return name
+          ? `https://jbrowse.org/jb2/docs/config/${name.toLowerCase()}/`
+          : 'https://jbrowse.org/jb2/docs/config_guide/'
+      },
+      /**
        * #method
        * A draft as the config would hold it, merged over `plot`, throwing what
        * a config file would be refused for. Nothing on the display changes.
@@ -361,19 +384,29 @@ function stateModelFactory() {
         this.liftPlot(draft)
         return []
       },
+      /**
+       * #method
+       * What applying a draft would write, by setting: the lifted value where
+       * it differs from `plot`, `null` where it resets one. Throws a refusal.
+       */
+      plotWrites(draft: Plot): Record<string, unknown> {
+        return plotWritesOf(
+          (self as unknown as DisplayModel).configuration,
+          draft,
+        )
+      },
     }))
     .actions(self => ({
       /**
        * #action
        * Write a draft over `plot`: each setting it changes is replaced whole,
        * so a member left out of an object goes back to its default, and `null`
-       * resets the setting.
+       * resets the setting. A draft the schema refuses, or naming a setting
+       * outside the plot, throws before anything is written.
        */
       applyPlot(draft: Plot) {
         const { configuration } = self as unknown as DisplayModel
-        for (const [key, value] of Object.entries(
-          plotSettingsWritten(draft, self.plot),
-        )) {
+        for (const [key, value] of Object.entries(self.plotWrites(draft))) {
           setConf(configuration, key, value)
         }
       },

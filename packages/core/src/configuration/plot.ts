@@ -14,24 +14,25 @@ import type { AnyConfigurationModel } from './types.ts'
 /**
  * #api core/configuration
  * The grammar's settings, by the slot name every display that has one gives
- * it: what "Edit plot..." shows and an agent reads as a display's `plot`. A
- * display's plot is the ones its config declares (`plotKeysOf`).
+ * it, and what each holds: what "Edit plot..." shows and an agent reads as a
+ * display's `plot`. A display's plot is the ones its config declares
+ * (`plotKeysOf`).
  */
-export const PLOT_VOCABULARY = [
-  'marks',
-  'transform',
-  'facet',
-  'rows',
-  'rowColor',
-  'color',
-  'baseColor',
-  'arcColor',
-  'ribbonColor',
-  'laneLayers',
-  'scales',
-  'filter',
-  'filterBy',
-] as const
+export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
+  marks: 'the marks drawn in order, each a mark and an encoding',
+  transform: 'the steps run over the features before any mark',
+  facet: 'one section per value of a field',
+  rows: 'the rows: their field or order, labels, focus and tree',
+  rowColor: 'the colour of each row label',
+  color: 'the colour',
+  baseColor: 'the per-base layer over the reads',
+  arcColor: 'the colour of the arcs between mates',
+  ribbonColor: 'the colour of the ribbons between lanes',
+  laneLayers: 'the layers drawn over each lane',
+  scales: 'the axes, scales.y the value axis',
+  filter: 'the jexl: expressions a feature has to pass',
+  filterBy: 'the read flags and tags a read has to pass',
+}
 
 /**
  * #api core/configuration
@@ -41,12 +42,24 @@ export const PLOT_VOCABULARY = [
  */
 export type Plot = Record<string, unknown>
 
+/**
+ * #api core/configuration
+ * A worked example of a display's plot: the text it fills the editor with,
+ * and what it does.
+ */
+export interface PlotExample {
+  plot: string
+  description: string
+}
+
 const LIFT_ID = 'plotLift'
 
 /** #api core/configuration The plot keys a display config declares. */
 export function plotKeysOf(conf: AnyConfigurationModel): string[] {
   const definition = getConfigurationSchemaMetadata(conf)?.definition ?? {}
-  return PLOT_VOCABULARY.filter(key => Object.hasOwn(definition, key))
+  return Object.keys(PLOT_VOCABULARY).filter(key =>
+    Object.hasOwn(definition, key),
+  )
 }
 
 // A one-member object a shorthand would write as a bare value prints as that
@@ -95,6 +108,15 @@ export function plotOf(conf: AnyConfigurationModel): Plot {
   return plot
 }
 
+function checkKeys(draft: object, keys: readonly string[]) {
+  const unknown = Object.keys(draft).filter(key => !keys.includes(key))
+  if (unknown.length > 0) {
+    throw new Error(
+      `This display's plot is ${keys.join(', ')}, not ${unknown.join(', ')}`,
+    )
+  }
+}
+
 /**
  * #api core/configuration
  * The text as a plot, refusing a key the display's plot does not hold. The
@@ -105,12 +127,7 @@ export function parsePlot(text: string, keys: readonly string[]): Plot {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new Error(`A plot is one JSON object of ${keys.join(', ')}`)
   }
-  const unknown = Object.keys(parsed).filter(key => !keys.includes(key))
-  if (unknown.length > 0) {
-    throw new Error(
-      `This display's plot is ${keys.join(', ')}, not ${unknown.join(', ')}`,
-    )
-  }
+  checkKeys(parsed, keys)
   return parsed as Plot
 }
 
@@ -130,43 +147,41 @@ function merged(draft: Plot, current: Plot) {
  * #api core/configuration
  * A draft as the display's config would hold it, through the schema's own
  * lift and checks: a shorthand becomes its object, a default falls off, and
- * what a config file is refused for throws. The node is never attached, so
- * nothing on the display is touched; a display reads its typed members off
- * it. The draft is copied first, since MST freezes what it creates from.
+ * what a config file is refused for throws, a key outside the plot included.
+ * The node is never attached, so nothing on the display is touched; a display
+ * reads its typed members off it. The draft is copied first, since MST
+ * freezes what it creates from.
  */
 export function liftPlot(
   conf: AnyConfigurationModel,
   draft: Plot,
 ): AnyConfigurationModel {
+  checkKeys(draft, plotKeysOf(conf))
   return getType(conf).create({
     displayId: LIFT_ID,
     ...structuredClone(merged(draft, plotOf(conf))),
   }) as AnyConfigurationModel
 }
 
-/** #api core/configuration The keys a draft sets and the ones it resets. */
-export function plotChanges(draft: Plot, current: Plot) {
-  const moved = Object.keys(draft).filter(key =>
-    draft[key] === null
-      ? current[key] !== undefined
-      : draft[key] !== undefined &&
-        !compareStructural(draft[key], current[key]),
-  )
-  return {
-    sets: moved.filter(key => draft[key] !== null),
-    clears: moved.filter(key => draft[key] === null),
-  }
-}
-
 /**
  * #api core/configuration
- * The settings bag a draft applies through `applyDisplaySettings`, holding
- * only what moved, so a setting the draft repeats unchanged is not rewritten.
+ * What applying a draft writes: each setting whose lifted value differs from
+ * the plot, as the lifted value, and `null` for one it resets. A value
+ * spelled another way but lifting to the same setting writes nothing.
+ * Throws a refusal before anything is written.
  */
-export function plotSettingsWritten(draft: Plot, current: Plot) {
-  const { sets, clears } = plotChanges(draft, current)
-  return Object.fromEntries([
-    ...sets.map(key => [key, draft[key]]),
-    ...clears.map(key => [key, null]),
-  ])
+export function plotWrites(
+  conf: AnyConfigurationModel,
+  draft: Plot,
+): Record<string, unknown> {
+  const current = plotOf(conf)
+  const lifted = plotOf(liftPlot(conf, draft))
+  const writes: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(draft)) {
+    if (value === undefined || compareStructural(lifted[key], current[key])) {
+      continue
+    }
+    writes[key] = lifted[key] ?? null
+  }
+  return writes
 }

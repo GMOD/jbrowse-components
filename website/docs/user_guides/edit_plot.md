@@ -1,0 +1,73 @@
+---
+title: Editing a track's plot as text
+description:
+  Advanced → Edit plot... in a track's menu shows the track's colour, grouping,
+  rows, axis scales and filters as text, the way a config file writes them, with
+  worked examples and a check of what you type
+guide_category: General usage
+---
+
+Every track whose display has colour, grouping, rows, axis or filter settings
+has **Advanced → Edit plot...** in its track menu. It opens those settings as
+text, in the shape a config file writes them, so anything the menus and dialogs
+cannot express (a ramp, several threshold cuts, a typed section order, a filter
+expression) can be written directly. The Group by, Color by attribute and colour
+dialogs also open it from a button, filled in with the choice you have made
+there but not yet applied.
+
+## What the box shows
+
+The box lists the settings this display has, each with a line saying what it
+holds, and the text holds their current values. A setting at its default is left
+out, as it would be in a config file. Which settings appear depends on the
+display:
+
+| Display                              | Settings                                                              |
+| ------------------------------------ | --------------------------------------------------------------------- |
+| Feature, single-sample variant       | `facet`, `color`, `filter`                                            |
+| Multi-row feature                    | `facet`, `rows`, `rowColor`, `color`                                  |
+| Multi-sample variant                 | `facet`, `rows`, `rowColor`, `color`, `filter`                        |
+| Alignments, synteny in a genome view | `facet`, `color`, `baseColor`, `arcColor`, `scales`, `filterBy`       |
+| Quantitative                         | `rows`, `rowColor`, `color`, `scales`                                 |
+| Multiple alignment (MAF)             | `rows`, `rowColor`, `color`                                           |
+| Hi-C                                 | `color`                                                               |
+| Multi-way synteny                    | `color`, `ribbonColor`, `laneLayers`                                  |
+| Mark plot, Manhattan                 | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `filter` |
+
+The dialog links each display's page in the
+[config reference](/docs/config_guide), which lists every member each setting
+takes.
+
+## Examples
+
+The buttons above the text are worked examples for that display. A button fills
+the text with its example laid over the current settings, so you can read what
+it changes before applying it. For a feature track:
+
+```json
+{ "facet": "strand", "color": { "field": "type" } }
+```
+
+stacks one section per strand and colours each feature by its type.
+
+## Writing and applying
+
+- A setting left out stays as it is.
+- An object replaces the setting whole: a member you delete returns to its
+  default.
+- `null` resets a setting.
+- A string is a setting's one-value form, such as a facet's field or a constant
+  colour.
+
+The line under the text says which settings applying would set or reset, and
+Apply is disabled while the text is something the track's config would refuse,
+with the reason shown. A setting spelled another way but meaning the same thing
+changes nothing. Apply writes the settings onto the track, so they are kept with
+the session and **Reset track settings** returns them to the track's config.
+
+## From an agent or a script
+
+The same settings are a display's `plot`: read `display.plot`, edit a copy,
+check it with `display.plotProblems(draft)`, and write it with
+`display.applyPlot(draft)`. See
+[Agents and the live model](/docs/agents_live_model).

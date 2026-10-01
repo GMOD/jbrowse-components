@@ -24,7 +24,15 @@ function setup({
     plotKeys: ['marks', 'facet', 'rows', 'scales'],
     plot,
     plotProblems: jest.fn(plotProblems),
+    plotWrites: (draft: Plot) =>
+      Object.fromEntries(
+        Object.entries(draft).filter(
+          ([key, value]) => JSON.stringify(value) !== JSON.stringify(plot[key]),
+        ),
+      ),
     applyPlot: jest.fn(),
+    plotExamples: [],
+    configDocsUrl: 'https://jbrowse.org/jb2/docs/config/lineartestdisplay/',
     ...host,
   }
   const handleClose = jest.fn()
@@ -54,8 +62,8 @@ it("names and explains only the display's plot keys", () => {
   expect(screen.queryByText('facet')).toBeNull()
 })
 
-it("lists the display's examples", () => {
-  setup({
+it('an example button fills the text over the plot as it stands', () => {
+  const { field } = setup({
     host: {
       plotExamples: [
         {
@@ -65,7 +73,21 @@ it("lists the display's examples", () => {
       ],
     },
   })
-  expect(screen.getByText('{ "facet": "strand" }')).toBeInTheDocument()
+  fireEvent.click(
+    screen.getByRole('button', { name: 'one section per strand' }),
+  )
+  expect(JSON.parse(field.value)).toEqual({ ...MARKS, facet: 'strand' })
+  expect(screen.getByText('Sets facet')).toBeInTheDocument()
+})
+
+it("links the display's config reference", () => {
+  setup()
+  expect(
+    screen.getByRole('link', { name: /Every setting this display takes/ }),
+  ).toHaveAttribute(
+    'href',
+    'https://jbrowse.org/jb2/docs/config/lineartestdisplay/',
+  )
 })
 
 it('seeds over the declared plot without losing the rest', () => {

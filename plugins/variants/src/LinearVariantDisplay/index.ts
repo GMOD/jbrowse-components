@@ -2,6 +2,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { retiredFilterState } from '@jbrowse/core/util/jexlFilters'
 
 import configSchemaF from './configSchema.ts'
+import { VARIANT_PLOT_EXAMPLES } from './plotExamples.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -36,6 +37,7 @@ export default function LinearVariantDisplayF(pluginManager: PluginManager) {
           import('./model.ts').then(f => f.default(configSchema)),
         trackType: 'VariantTrack',
         viewType: 'LinearGenomeView',
+        plotExamples: VARIANT_PLOT_EXAMPLES,
         ReactComponent,
         // #region migration
         retiredState: retiredFilterState,

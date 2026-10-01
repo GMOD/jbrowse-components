@@ -112,15 +112,15 @@ and unticking it returns the default color.
 
 ### Writing the grouping as text
 
-**Edit plot...**, in the track menu and at the foot of the Group by and Color by
-attribute dialogs, opens the track's grouping, color and filter as text. `facet`
-and `color` are the display's two settings of those names, in the shape a config
-file takes them: `facet` stacks a section per value of a field, in the order its
-`domain` lists; `color` is a CSS color or a jexl expression, or `{ "field": … }`
-for one color per value; `filter` is the list of jexl expressions **Filter
-by...** edits. Applying a spec changes only the channels it names, an object
-replaces the setting whole, and `null` clears one. Each of these pastes as it
-is:
+**Advanced → Edit plot...** in the track menu, also a button at the foot of the
+Group by and Color by attribute dialogs, opens the track's grouping, color and
+filter as text ([](/docs/user_guides/edit_plot)). `facet` and `color` are the
+display's two settings of those names, in the shape a config file takes them:
+`facet` stacks a section per value of a field, in the order its `domain` lists;
+`color` is a CSS color or a jexl expression, or `{ "field": … }` for one color
+per value; `filter` is the list of jexl expressions **Filter by...** edits.
+Applying a spec changes only the channels it names, an object replaces the
+setting whole, and `null` clears one. Each of these pastes as it is:
 
 - `{ "facet": "strand" }` one section per strand
 - `{ "facet": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"] } }`

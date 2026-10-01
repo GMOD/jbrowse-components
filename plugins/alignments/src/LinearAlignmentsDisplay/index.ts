@@ -2,6 +2,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
+import { ALIGNMENTS_PLOT_EXAMPLES } from './plotExamples.ts'
 import { retiredState, retiredTypes } from './retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -27,6 +28,7 @@ export default function register(pluginManager: PluginManager) {
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
+      plotExamples: ALIGNMENTS_PLOT_EXAMPLES,
       ReactComponent: AlignmentsDisplayComponent,
       retiredTypes,
       retiredState,

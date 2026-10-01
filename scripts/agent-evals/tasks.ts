@@ -383,9 +383,8 @@ export const TASKS: EvalTask[] = [
     prompt:
       'Filter the gene track so that only the feature named EDEN is drawn.',
     solution: `return jb.trackModel('gff3tabix_genes').activeDisplay.setFilter(['jexl:get(feature, "name") == "EDEN"'])`,
-    // a filter is display state with no config slot, so the grader reads the model
     grade: `
-      const filter = ${shownTrack('gff3tabix_genes')}?.activeDisplay.filterSetting ?? []
+      const filter = ${shownTrack('gff3tabix_genes')}?.activeDisplay.plot.filter ?? []
       return { pass: filter.some(f => /EDEN/.test(f)), detail: { filter } }`,
   },
   {
@@ -397,7 +396,7 @@ export const TASKS: EvalTask[] = [
       return jb.waitReady(30000)`,
     grade: `
       const d = ${shownTrack('volvox_test_vcf')}?.activeDisplay
-      const marks = d?.markPlot?.marks ?? []
+      const marks = d?.plot?.marks ?? []
       return { pass: d?.type === 'LinearMarkDisplay' && marks.some(m => m.mark === 'point'), detail: { type: d?.type, marks } }`,
   },
   {

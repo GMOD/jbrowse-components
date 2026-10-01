@@ -19,11 +19,7 @@ import type { Reversible } from '../ui/filterMenuItems.ts'
  * rest.
  */
 export interface JexlFilterSource {
-  /**
-   * The slot's filters, in practice `configuredJexlFilters(self)`. A member
-   * rather than a read this module does itself, so LD's structural menu
-   * builder and its shape test need no live config node to answer a count.
-   */
+  /** The slot's filters, in practice `configuredJexlFilters(self)`. */
   configuredFilters: () => string[]
 }
 

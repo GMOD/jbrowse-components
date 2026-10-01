@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 
-import { liftPlot, plotSettingsWritten } from '@jbrowse/core/configuration'
+import { liftPlot, plotWrites } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, screen } from '@testing-library/react'
@@ -26,7 +26,7 @@ function setup(plot: MarkPlot = {}) {
     plotScanLocus: 'ctgA:1..20,000',
     liftMarkPlot: draft => markPlotSettingsOf(liftPlot(conf, draft)),
     applyPlot: draft => {
-      written(plotSettingsWritten(draft, plot))
+      written(plotWrites(conf, draft))
     },
     openPlotDialog,
   }
@@ -37,6 +37,9 @@ function setup(plot: MarkPlot = {}) {
   )
   return {
     written,
+    // an expected bag as applying writes it, lifted, so a default it spells
+    // out writes nothing
+    writes: (bag: MarkPlot) => plotWrites(conf, bag),
     openPlotDialog,
     handleClose,
     apply: () => screen.getByRole('button', { name: 'Apply' }),
@@ -68,20 +71,22 @@ it('offers only the channels the selected mark type reads', () => {
 })
 
 it('writes a channel through, inferring the scale a field implies', () => {
-  const { channel, apply, written } = setup(BAR)
+  const { channel, apply, written, writes } = setup(BAR)
   fireEvent.change(channel('color'), { target: { value: 'strand' } })
   fireEvent.click(apply())
-  expect(written).toHaveBeenCalledWith({
-    marks: [
-      {
-        mark: 'bar',
-        encoding: {
-          y: 'score',
-          color: { field: 'strand', scale: 'categorical' },
+  expect(written).toHaveBeenCalledWith(
+    writes({
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: { field: 'strand', scale: 'categorical' },
+          },
         },
-      },
-    ],
-  })
+      ],
+    }),
+  )
 })
 
 it('adds a mark and says at once what it still needs', () => {
@@ -131,16 +136,18 @@ it('takes a fractional zoom bound', () => {
 // The form never silently drops a slot: a channel the new type stopped
 // reading stays, named, with the rule that says what it costs.
 it('keeps a channel a type change stopped reading, and clears it on request', () => {
-  const { apply, written } = setup(BAR)
+  const { apply, written, writes } = setup(BAR)
   fireEvent.change(screen.getByTestId('mark-type'), {
     target: { value: 'span' },
   })
   expect(screen.getByText(/does not read these/)).toBeTruthy()
   fireEvent.click(screen.getByText('Clear'))
   fireEvent.click(apply())
-  expect(written).toHaveBeenCalledWith({
-    marks: [{ mark: 'span', encoding: {} }],
-  })
+  expect(written).toHaveBeenCalledWith(
+    writes({
+      marks: [{ mark: 'span', encoding: {} }],
+    }),
+  )
 })
 
 // A key's labels say more than a field picker and its scale row can, so the
@@ -310,7 +317,7 @@ describe('a scale beside its field', () => {
   // The members the row does not show keep the picker above read-only, so the
   // form still cannot drop a palette it never displayed.
   it("edits a categorical colour's values, colours and key names in place", () => {
-    const { apply, written } = setup({
+    const { apply, written, writes } = setup({
       marks: [
         {
           mark: 'bar',
@@ -331,27 +338,29 @@ describe('a scale beside its field', () => {
     })
     expect(screen.getByTestId('labels-color')).toHaveValue('first,')
     fireEvent.click(apply())
-    expect(written).toHaveBeenCalledWith({
-      marks: [
-        {
-          mark: 'bar',
-          encoding: {
-            y: 'score',
-            color: {
-              field: 'x',
-              scale: 'categorical',
-              range: ['red'],
-              domain: ['a', 'b'],
-              labels: ['first'],
+    expect(written).toHaveBeenCalledWith(
+      writes({
+        marks: [
+          {
+            mark: 'bar',
+            encoding: {
+              y: 'score',
+              color: {
+                field: 'x',
+                scale: 'categorical',
+                range: ['red'],
+                domain: ['a', 'b'],
+                labels: ['first'],
+              },
             },
           },
-        },
-      ],
-    })
+        ],
+      }),
+    )
   })
 
   it('cuts a threshold at the points typed, with a colour for each interval', () => {
-    const { apply, written } = setup({
+    const { apply, written, writes } = setup({
       marks: [
         {
           mark: 'bar',
@@ -369,22 +378,24 @@ describe('a scale beside its field', () => {
       target: { value: 'blue, grey, red' },
     })
     fireEvent.click(apply())
-    expect(written).toHaveBeenCalledWith({
-      marks: [
-        {
-          mark: 'bar',
-          encoding: {
-            y: 'score',
-            color: {
-              field: 'score',
-              scale: 'threshold',
-              domain: ['0.5', '0.9'],
-              range: ['blue', 'grey', 'red'],
+    expect(written).toHaveBeenCalledWith(
+      writes({
+        marks: [
+          {
+            mark: 'bar',
+            encoding: {
+              y: 'score',
+              color: {
+                field: 'score',
+                scale: 'threshold',
+                domain: ['0.5', '0.9'],
+                range: ['blue', 'grey', 'red'],
+              },
             },
           },
-        },
-      ],
-    })
+        ],
+      }),
+    )
   })
 
   it("offers a link's width its own ramps, and no colour's stops", () => {
@@ -413,7 +424,7 @@ describe('a scale beside its field', () => {
 
 describe('the plot as a whole', () => {
   it('stacks sections by a field, titles the axis and pins its top', () => {
-    const { apply, written } = setup(BAR)
+    const { apply, written, writes } = setup(BAR)
     fireEvent.change(screen.getByTestId('facet-field'), {
       target: { value: 'strand' },
     })
@@ -424,25 +435,27 @@ describe('the plot as a whole', () => {
       target: { value: '10' },
     })
     fireEvent.click(apply())
-    expect(written).toHaveBeenCalledWith({
-      facet: { field: 'strand' },
-      scales: { y: { title: 'Score', domainMax: 10 } },
-    })
+    expect(written).toHaveBeenCalledWith(
+      writes({
+        facet: { field: 'strand' },
+        scales: { y: { title: 'Score', domainMax: 10 } },
+      }),
+    )
   })
 
   it('clears a facet when its field is emptied', () => {
-    const { apply, written } = setup({ ...BAR, facet: 'strand' })
+    const { apply, written, writes } = setup({ ...BAR, facet: 'strand' })
     fireEvent.change(screen.getByTestId('facet-field'), {
       target: { value: '' },
     })
     fireEvent.click(apply())
-    expect(written).toHaveBeenCalledWith({ facet: null })
+    expect(written).toHaveBeenCalledWith(writes({ facet: null }))
   })
 })
 
 describe("a mark's steps", () => {
   it('adds a coverage, which fills the y a bar names none of', () => {
-    const { apply, written } = setup({ marks: [{ mark: 'bar' }] })
+    const { apply, written, writes } = setup({ marks: [{ mark: 'bar' }] })
     expect(screen.getByTestId('mark-row-0-error')).toBeTruthy()
     fireEvent.change(screen.getByTestId('add-step'), {
       target: { value: '3' },
@@ -452,13 +465,15 @@ describe("a mark's steps", () => {
     )
     expect(screen.queryByTestId('mark-row-0-error')).toBeNull()
     fireEvent.click(apply())
-    expect(written).toHaveBeenCalledWith({
-      marks: [{ mark: 'bar', transform: [{ type: 'coverage' }] }],
-    })
+    expect(written).toHaveBeenCalledWith(
+      writes({
+        marks: [{ mark: 'bar', transform: [{ type: 'coverage' }] }],
+      }),
+    )
   })
 
   it("edits a bin's width and an aggregate's summary in place", () => {
-    const { apply, written } = setup({ marks: [{ mark: 'bar' }] })
+    const { apply, written, writes } = setup({ marks: [{ mark: 'bar' }] })
     fireEvent.change(screen.getByTestId('add-step'), {
       target: { value: '2' },
     })
@@ -472,38 +487,42 @@ describe("a mark's steps", () => {
       target: { value: 'score' },
     })
     fireEvent.click(apply())
-    expect(written).toHaveBeenCalledWith({
-      marks: [
-        {
-          mark: 'bar',
-          transform: [
-            { type: 'bin', step: 5000 },
-            { type: 'aggregate', ops: [{ op: 'mean', field: 'score' }] },
-          ],
-        },
-      ],
-    })
+    expect(written).toHaveBeenCalledWith(
+      writes({
+        marks: [
+          {
+            mark: 'bar',
+            transform: [
+              { type: 'bin', step: 5000 },
+              { type: 'aggregate', ops: [{ op: 'mean', field: 'score' }] },
+            ],
+          },
+        ],
+      }),
+    )
   })
 })
 
 describe('the mark list', () => {
   it('adds a zoomed-out density, handing the raw marks the closer zooms', () => {
-    const { apply, written } = setup(BAR)
+    const { apply, written, writes } = setup(BAR)
     fireEvent.click(screen.getByText('Add zoomed-out density'))
     fireEvent.click(apply())
-    expect(written).toHaveBeenCalledWith({
-      marks: [
-        { mark: 'bar', encoding: { y: 'score' }, maxBpPerPx: 100 },
-        {
-          mark: 'bar',
-          transform: [
-            { type: 'bin', step: 'auto' },
-            { type: 'aggregate', ops: [{ op: 'count' }] },
-          ],
-          minBpPerPx: 100,
-        },
-      ],
-    })
+    expect(written).toHaveBeenCalledWith(
+      writes({
+        marks: [
+          { mark: 'bar', encoding: { y: 'score' }, maxBpPerPx: 100 },
+          {
+            mark: 'bar',
+            transform: [
+              { type: 'bin', step: 'auto' },
+              { type: 'aggregate', ops: [{ op: 'count' }] },
+            ],
+            minBpPerPx: 100,
+          },
+        ],
+      }),
+    )
   })
 
   it('duplicates a mark right after itself', () => {

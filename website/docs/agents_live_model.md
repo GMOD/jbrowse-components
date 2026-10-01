@@ -203,8 +203,8 @@ sections, `color: { field, domain, range }` hands the `domain` values the
 `range` colors in order. A field is a feature attribute, a dotted path such as
 `INFO.SVTYPE`, or `strand`; an alignments track's facet field is a read
 dimension (`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`). The `filter` is
-a list of `jexl:` expressions, such as `["jexl:feature.type == 'gene'"]`. "Edit
-plot..." in the track menu is the same object as text.
+a list of `jexl:` expressions, such as `["jexl:feature.type == 'gene'"]`.
+"Advanced → Edit plot..." in the track menu is the same object as text.
 
 A plot of a track's features, written as ggplot2 writes one, is the
 `LinearMarkDisplay` on any feature, alignments, variant or quantitative track:

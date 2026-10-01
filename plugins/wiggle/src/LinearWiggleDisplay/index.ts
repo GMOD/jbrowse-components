@@ -2,6 +2,7 @@ import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchema from './configSchema.ts'
+import { PLOT_EXAMPLES } from './plotExamples.ts'
 import { retiredState, retiredTypes } from './retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -48,6 +49,7 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
           'FeatureTrack',
         ],
         viewType: 'LinearGenomeView',
+        plotExamples: PLOT_EXAMPLES,
         ReactComponent,
         retiredTypes,
         retiredState,

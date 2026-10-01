@@ -1074,9 +1074,10 @@ steps that follow it read the rows already in section order.
 
 A draft as the display's config would hold it, through the schema's own lift and
 checks: a shorthand becomes its object, a default falls off, and what a config
-file is refused for throws. The node is never attached, so nothing on the
-display is touched; a display reads its typed members off it. The draft is
-copied first, since MST freezes what it creates from.
+file is refused for throws, a key outside the plot included. The node is never
+attached, so nothing on the display is touched; a display reads its typed
+members off it. The draft is copied first, since MST freezes what it creates
+from.
 
 ```js
 // type signature
@@ -1304,37 +1305,21 @@ and the schema is what judges it.
 
 ### PLOT_VOCABULARY
 
-The grammar's settings, by the slot name every display that has one gives it:
-what "Edit plot..." shows and an agent reads as a display's `plot`. A display's
-plot is the ones its config declares (`plotKeysOf`).
+The grammar's settings, by the slot name every display that has one gives it,
+and what each holds: what "Edit plot..." shows and an agent reads as a display's
+`plot`. A display's plot is the ones its config declares (`plotKeysOf`).
 
 ```js
 // type signature
-readonly[
-  ('marks',
-  'transform',
-  'facet',
-  'rows',
-  'rowColor',
-  'color',
-  'baseColor',
-  'arcColor',
-  'ribbonColor',
-  'laneLayers',
-  'scales',
-  'filter',
-  'filterBy')
-]
+Readonly<Record<string, string>>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
-### plotChanges
+### PlotExample
 
-```js
-// type signature
-(draft: Plot, current: Plot) => { sets: string[]; clears: string[]; }
-```
+A worked example of a display's plot: the text it fills the editor with, and
+what it does.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
@@ -1360,14 +1345,16 @@ they are what is drawn.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
-### plotSettingsWritten
+### plotWrites
 
-The settings bag a draft applies through `applyDisplaySettings`, holding only
-what moved, so a setting the draft repeats unchanged is not rewritten.
+What applying a draft writes: each setting whose lifted value differs from the
+plot, as the lifted value, and `null` for one it resets. A value spelled another
+way but lifting to the same setting writes nothing. Throws a refusal before
+anything is written.
 
 ```js
 // type signature
-(draft: Plot, current: Plot) => any
+(conf: AnyConfigurationModel, draft: Plot) => Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)

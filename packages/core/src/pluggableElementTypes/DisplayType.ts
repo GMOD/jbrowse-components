@@ -1,6 +1,7 @@
 import LazyStateModelElement from './LazyStateModelElement.ts'
 
 import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
+import type { PlotExample } from '../configuration/plot.ts'
 import type { AnyReactComponentType } from '../util/index.ts'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
@@ -68,6 +69,12 @@ export default class DisplayType extends LazyStateModelElement {
 
   retiredState?: RetiredDisplayState
 
+  /**
+   * Worked examples of this display's plot, which "Edit plot..." offers as
+   * buttons. Each has to pass the display's config schema.
+   */
+  plotExamples: readonly PlotExample[]
+
   constructor(stuff: {
     name: string
     stateModel: IAnyModelType | (() => Promise<IAnyModelType>)
@@ -80,6 +87,7 @@ export default class DisplayType extends LazyStateModelElement {
     adapterCapabilities?: readonly string[]
     retiredTypes?: readonly RetiredDisplayType[]
     retiredState?: RetiredDisplayState
+    plotExamples?: readonly PlotExample[]
   }) {
     super({
       ...stuff,
@@ -93,5 +101,6 @@ export default class DisplayType extends LazyStateModelElement {
     this.adapterCapabilities = stuff.adapterCapabilities ?? []
     this.retiredTypes = stuff.retiredTypes ?? []
     this.retiredState = stuff.retiredState
+    this.plotExamples = stuff.plotExamples ?? []
   }
 }

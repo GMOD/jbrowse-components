@@ -279,12 +279,6 @@ get colorsByConsequenceImpact() {
 },
 /**
  * #getter
- */
-get plotExamples() {
-  return VARIANT_PLOT_EXAMPLES
-},
-/**
- * #getter
  * The key while features draw: the impact tiers under that preset, or
  * else the key a color by a field derives.
  */

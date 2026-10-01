@@ -347,7 +347,7 @@ test('the track menu ends with the stacked-synteny launcher under Launch', () =>
     'Show...',
     'Color by...',
     'Lanes',
-    'Edit plot...',
+    'Advanced',
     'Launch',
   ])
   const launch = items.at(-1)

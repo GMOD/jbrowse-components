@@ -117,7 +117,7 @@ import {
   rowValuesAt,
 } from './markList.ts'
 import { markContextMenuItems, markTrackMenuItems } from './markMenus.ts'
-import { MARK_PLOT_EXAMPLES, markPlotSettingsOf } from './markPlot.ts'
+import { markPlotSettingsOf } from './markPlot.ts'
 import { markProblems, problemText } from './markProblems.ts'
 import {
   lastBinEdges,
@@ -1369,12 +1369,6 @@ export function stateModelFactory(
             rows: getSnapshot(self.conf.rows) as RowsSnapshot,
             scales: getSnapshot(self.conf.scales) as ScalesSnapshot,
           })
-        },
-        /**
-         * #getter
-         */
-        get plotExamples() {
-          return MARK_PLOT_EXAMPLES
         },
         /**
          * #method

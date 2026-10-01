@@ -2,10 +2,9 @@ import {
   ConfigurationSchema,
   liftPlot,
   parsePlot,
-  plotChanges,
   plotKeysOf,
   plotOf,
-  plotSettingsWritten,
+  plotWrites,
 } from '@jbrowse/core/configuration'
 
 import { configSchemaFactory, markListSchema } from './configSchema.ts'
@@ -165,25 +164,22 @@ describe('markProblems over a lifted plot', () => {
   })
 })
 
-describe('plotChanges over a mark display', () => {
-  const current = plotOf(
-    declared({ marks: [{ mark: 'bar', encoding: { y: 'score' } }] }),
-  )
+describe('plotWrites over a mark display', () => {
+  const conf = declared({ marks: [{ mark: 'bar', encoding: { y: 'score' } }] })
+  const current = plotOf(conf)
 
-  it('names nothing for a round trip', () => {
-    expect(plotChanges(current, current)).toEqual({ sets: [], clears: [] })
+  it('writes nothing for a round trip', () => {
+    expect(plotWrites(conf, current)).toEqual({})
   })
 
-  it('separates what is set from what is cleared', () => {
+  it('writes what is set, and null for what is reset', () => {
     const next: MarkPlot = { ...current, facet: 'HP', marks: null }
-    expect(plotChanges(next, current)).toEqual({
-      sets: ['facet'],
-      clears: ['marks'],
-    })
+    expect(plotWrites(conf, next)).toEqual({ facet: 'HP', marks: null })
   })
 
   it('writes only what moved', () => {
-    const next: MarkPlot = { ...current, rows: 'source' }
-    expect(plotSettingsWritten(next, current)).toEqual({ rows: 'source' })
+    expect(plotWrites(conf, { ...current, rows: 'source' })).toEqual({
+      rows: 'source',
+    })
   })
 })

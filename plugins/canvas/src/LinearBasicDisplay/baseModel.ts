@@ -103,7 +103,7 @@ import {
   createMembershipMemo,
   featureIdsTouchingBlocks,
 } from './layoutQueries.ts'
-import { PLOT_EXAMPLES, facetOf, plotJexlProblems } from './plotExamples.ts'
+import { facetOf, plotJexlProblems } from './plotProblems.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
 import {
@@ -1659,12 +1659,6 @@ export default function baseStateModelFactory(
        */
       scanGroupByCandidates(opts: GroupByScanOptions) {
         return scanGroupByCandidates(self, opts)
-      },
-      /**
-       * #getter
-       */
-      get plotExamples() {
-        return PLOT_EXAMPLES
       },
       /**
        * #method

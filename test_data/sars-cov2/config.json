@@ -39,7 +39,14 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["Wuhan-Hu-1"]
+      "assemblyNames": ["Wuhan-Hu-1"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "sequence-LinearBasicDisplay",
+          "filter": ["jexl:feature.type=='gene'"]
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -116,8 +123,7 @@
                 "id": "muum41iFNmp6WSBj8oPNm",
                 "type": "LinearBasicDisplay",
                 "heightPreConfig": 280,
-                "configuration": "sequence-LinearBasicDisplay",
-                "filterSetting": ["jexl:feature.type=='gene'"]
+                "configuration": "sequence-LinearBasicDisplay"
               }
             ]
           }

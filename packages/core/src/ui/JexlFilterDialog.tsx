@@ -143,7 +143,7 @@ function withOneRow(state: FilterRows) {
 
 /**
  * Editor for a display's jexl feature filters, for any display implementing
- * the two-tier {@link JexlFilterModel} contract. The Conditions tab shows each
+ * the {@link JexlFilterModel} contract. The Conditions tab shows each
  * line as rows of field, operator and value where it can, and as text where it
  * cannot; the Text tab is every line as text.
  *

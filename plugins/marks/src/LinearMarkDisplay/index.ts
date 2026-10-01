@@ -2,6 +2,7 @@ import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { configSchemaFactory } from './configSchema.ts'
+import { MARK_PLOT_EXAMPLES } from './markPlot.ts'
 import { retiredTypes } from './retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -44,6 +45,7 @@ export default function LinearMarkDisplayF(pluginManager: PluginManager) {
         'SyntenyTrack',
       ],
       viewType: 'LinearGenomeView',
+      plotExamples: MARK_PLOT_EXAMPLES,
       ReactComponent,
     })
   })

@@ -20,7 +20,6 @@ import {
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
 import { breakendMenuItems } from './breakendMenu.ts'
-import { VARIANT_PLOT_EXAMPLES } from './plotExamples.ts'
 import { presetColorOf } from './presetColor.ts'
 
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
@@ -159,12 +158,6 @@ export default function stateModelFactory(
        */
       get colorsByConsequenceImpact() {
         return self.colorEncoding === CONSEQUENCE_IMPACT_JEXL
-      },
-      /**
-       * #getter
-       */
-      get plotExamples() {
-        return VARIANT_PLOT_EXAMPLES
       },
       /**
        * #getter

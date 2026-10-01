@@ -2,6 +2,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaF from './models/configSchema.ts'
+import { CHORD_PLOT_EXAMPLES } from './plotExamples.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -20,6 +21,7 @@ export default function ChordVariantDisplayF(pluginManager: PluginManager) {
         ),
       trackType: 'VariantTrack',
       viewType: 'CircularView',
+      plotExamples: CHORD_PLOT_EXAMPLES,
       ReactComponent: lazyWithPreload(
         () => import('./components/ChordVariantDisplay.tsx'),
       ),

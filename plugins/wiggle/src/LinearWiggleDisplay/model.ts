@@ -78,7 +78,6 @@ import {
 } from '../shared/wiggleMenuItems.tsx'
 import { WIGGLE_RENDERINGS } from '../util.ts'
 import { buildLegendItems } from './legendItems.ts'
-import { PLOT_EXAMPLES } from './plotExamples.ts'
 import {
   PER_SOURCE_COLOR,
   baseColorChannel,
@@ -239,13 +238,6 @@ export default function stateModelFactory(
           labels: getConf(self, ['color', 'labels']),
           title: getConf(self, ['color', 'title']),
         }
-      },
-
-      /**
-       * #getter
-       */
-      get plotExamples() {
-        return PLOT_EXAMPLES
       },
 
       /**
