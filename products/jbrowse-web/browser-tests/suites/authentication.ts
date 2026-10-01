@@ -1,3 +1,6 @@
+import { BASE_CHROME_ARGS } from '@jbrowse/browser-test-utils'
+import puppeteer from 'puppeteer'
+
 import {
   clearStorageAndNavigate,
   findByText,
@@ -52,12 +55,28 @@ const webWorkerAuth: TestSuite = {
       },
     },
     {
+      // The harness browser runs without web security, which makes the
+      // challenge a same-origin one: Chrome then raises its own credential
+      // prompt and the request never settles. A user's browser keeps CORS on,
+      // so this test runs in one that does.
       name: 'prompts for BasicAuth when no account covers a URL that challenges',
-      fn: async page => {
-        await clearStorageAndNavigate(page, 'test_data/volvox/config_auth.json')
-        await openTrack(page, 'basicauth_bigwig_challenge')
-        await handleBasicAuthLogin(page, 'carol', 'challenge789')
-        await waitForDisplay(page, 'basicauth_bigwig_challenge')
+      fn: async () => {
+        const browser = await puppeteer.launch({
+          headless: true,
+          args: BASE_CHROME_ARGS.filter(a => a !== '--disable-web-security'),
+        })
+        try {
+          const page = await browser.newPage()
+          await clearStorageAndNavigate(
+            page,
+            'test_data/volvox/config_auth.json',
+          )
+          await openTrack(page, 'basicauth_bigwig_challenge')
+          await handleBasicAuthLogin(page, 'carol', 'challenge789')
+          await waitForDisplay(page, 'basicauth_bigwig_challenge')
+        } finally {
+          await browser.close()
+        }
       },
     },
   ],
