@@ -178,14 +178,9 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           x2: 'end',
           y: 'score',
           row: undefined,
-          color: {
-            field: 'strand',
-            scale: 'categorical',
-            range: undefined,
-            domain: ['1', '-1'],
-          },
+          color: { field: 'strand', scale: 'categorical' },
         },
-        lanes: ['y', 'row', 'color', 'colorValue'],
+        lanes: ['y', 'row', 'colorKey'],
       },
       {
         encoding: {
@@ -196,7 +191,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           color: "jexl:get(feature,'name')=='a'?'red':'blue'",
           shape: 'triangle-down',
         },
-        lanes: ['y', 'row', 'color', 'colorValue', 'glyph', 'index'],
+        lanes: ['y', 'row', 'color', 'glyph', 'index'],
       },
       {
         encoding: {
@@ -204,17 +199,9 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           x2: 'end',
           y: undefined,
           row: undefined,
-          color: {
-            field: 'score',
-            scale: 'log',
-            domainMin: 1,
-            domainMax: 1000,
-            range: ['white', 'red'],
-            reverse: false,
-            domainQuantile: 1,
-          },
+          color: { field: 'score', scale: 'threshold' },
         },
-        lanes: ['row', 'color', 'colorValue'],
+        lanes: ['row', 'colorValue'],
       },
     ],
   })
@@ -236,7 +223,7 @@ test('a text mark asks the worker for the text lane and no hit index, and takes 
     encoding: { y: 'score', text: 'name' },
     lanes: ['y', 'row', 'color', 'text'],
   })
-  expect(bar!.lanes).toEqual(['y', 'row', 'color', 'colorValue'])
+  expect(bar!.lanes).toEqual(['y', 'row', 'color'])
   expect(display.markList.map(m => [m.pass.id, m.markIndex])).toEqual([
     ['bar#1', 1],
   ])
@@ -928,34 +915,14 @@ test.each([
   },
 )
 
-// A text's ramp resolves in the worker, one table per region, under a legend
-// that unions their extents; a span's resolves on the display since ADR-113's
-// 2026-09-28 amendment, so its open end says nothing.
-test('a text painting an unpinned colour ramp says its colours differ by region, and a span or a pinned one says nothing', () => {
+// Every mark's ramp resolves on the display over the extent the regions
+// union, a text's as a span's, so an open end says nothing.
+test('an unpinned colour ramp says nothing, on a text or a span', () => {
   const ramp = { field: 'score', scale: 'linear', range: ['white', 'red'] }
   expect(
     noticesOf([{ mark: 'text', encoding: { text: 'name', color: ramp } }]),
-  ).toEqual([
-    expect.stringMatching(/^mark 0 encoding.color.domainMin: a text's ramp/),
-  ])
-  expect(noticesOf([{ mark: 'span', encoding: { color: ramp } }])).toEqual([])
-  expect(
-    noticesOf([
-      {
-        mark: 'text',
-        encoding: {
-          text: 'name',
-          color: {
-            field: 'score',
-            scale: 'log',
-            domainMin: 1,
-            domainMax: 1000,
-            range: ['white', 'red'],
-          },
-        },
-      },
-    ]),
   ).toEqual([])
+  expect(noticesOf([{ mark: 'span', encoding: { color: ramp } }])).toEqual([])
 })
 
 test('a channel the mark does not read is named, and the rest still draws', () => {
@@ -1060,11 +1027,15 @@ test('a colour ramp pins the end it names, and a domain beside it is named as un
   ])
   // a colour over the plotted field is the display's own, not a fetch input
   expect(display.encodings[0]!.color).toBe(DEFAULT_MARK_COLOR)
-  expect(display.valueColors[0]).toMatchObject({
-    field: 'score',
-    scale: 'linear',
-    domainMin: 0,
-    domainMax: undefined,
+  expect(display.markColors[0]).toMatchObject({
+    kind: 'value',
+    readsY: true,
+    encoding: {
+      field: 'score',
+      scale: 'linear',
+      domainMin: 0,
+      domainMax: undefined,
+    },
   })
 })
 
@@ -1091,7 +1062,7 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
       row: 'sampleIndex',
       color: DEFAULT_MARK_COLOR,
     },
-    lanes: ['row', 'color', 'colorValue'],
+    lanes: ['row', 'color'],
   })
   display.setRpcData(0, result([{ y: [0, 0, 0], row: [0, 2, 1] }]), REGION)
   expect(display.rowCount).toBe(3)
@@ -2650,10 +2621,13 @@ test('a color or shape naming a field other than score and no scale reads it cat
     field: 'type',
     scale: 'categorical',
   })
-  expect(display.encodings[1]!.color).toMatchObject({
+  expect(display.encodings[1]!.color).toEqual({
     field: 'svlen',
     scale: 'categorical',
-    range: ['white', 'red'],
+  })
+  expect(display.markColors[1]).toMatchObject({
+    kind: 'categorical',
+    encoding: { field: 'svlen', range: ['white', 'red'] },
   })
 })
 
@@ -2882,7 +2856,7 @@ test('a link mark sends its far foot as a locus, its size as a scale, and asks f
       x2: { chrom: 'mate.refName', pos: 'mate.start' },
       size: { field: 'score', scale: 'log', range: [1, 8] },
     },
-    lanes: ['row', 'color', 'colorValue', 'size', 'x2Ref', 'index'],
+    lanes: ['row', 'color', 'size', 'x2Ref', 'index'],
     transform: [{ type: 'mate' }],
   })
   expect(display.markList.map(m => m.pass.id)).toEqual(['link#0'])
@@ -2893,7 +2867,7 @@ test('a link mark sends its far foot as a locus, its size as a scale, and asks f
   ]).createDisplay().display
   expect(plain.rpcProps().layers[0]).toMatchObject({
     encoding: { x2: 'mate.start' },
-    lanes: ['row', 'color', 'colorValue', 'x2Ref', 'index'],
+    lanes: ['row', 'color', 'x2Ref', 'index'],
   })
   expect(plain.markSizes).toEqual([3])
   expect(plain.markEntries[0]).toMatchObject({
@@ -3103,9 +3077,8 @@ test('a mark every loaded feature skipped is a notice, as a mistyped field is', 
   expect(display.notices).toEqual([])
 })
 
-// The worker paints from the colour less its `labels`, so the names reach
-// the key and the hover from the config alone, and renaming a row refetches
-// nothing.
+// The worker reads the colour's field alone, so the names reach the key and
+// the hover from the config, and renaming a row refetches nothing.
 test('a colour s labels name its key rows and its hover without crossing the wire', () => {
   const { display } = createTestEnvironment([
     {
@@ -3123,7 +3096,6 @@ test('a colour s labels name its key rows and its hover without crossing the wir
   expect(display.encodings[0]!.color).toEqual({
     field: 'svtype',
     scale: 'categorical',
-    domain: ['DEL', 'DUP'],
   })
   display.setRpcData(
     0,
@@ -3156,10 +3128,13 @@ test('a colour on score paints a ramp, as the feature display s does', () => {
     { mark: 'point', encoding: { y: 'score', color: { field: 'score' } } },
     { mark: 'point', encoding: { y: 'score', color: { field: 'svtype' } } },
   ]).createDisplay()
-  expect(display.valueColors.map(c => c?.scale)).toEqual(['linear', undefined])
-  expect((display.encodings[1]!.color as { scale: string }).scale).toBe(
-    'categorical',
-  )
+  expect(
+    display.markColors.map(c => (c.kind === 'constant' ? c.kind : c.encoding)),
+  ).toMatchObject([{ scale: 'linear' }, { scale: 'categorical' }])
+  expect(display.encodings[1]!.color).toEqual({
+    field: 'svtype',
+    scale: 'categorical',
+  })
 })
 
 test('a shape key draws its glyphs in the default blue where no colour is written', () => {
@@ -3210,9 +3185,13 @@ test('a mark s size and colour default by its type, and a text mark knows whethe
     '#0068d1',
     '#0068d1',
     '#0068d1',
-    'red',
+    '#0068d1',
     { field: 'type', scale: 'categorical' },
   ])
+  expect(display.markColors[4]).toEqual({
+    kind: 'constant',
+    color: cssColorToABGR('red'),
+  })
   expect(display.textMarkEntries.map(e => e.ownColor)).toEqual([
     false,
     false,

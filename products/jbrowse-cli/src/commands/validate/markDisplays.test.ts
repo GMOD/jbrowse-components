@@ -496,7 +496,7 @@ describe('a marks list in a config file', () => {
     expect(found(colored('span', ramp))).toEqual([])
     expect(
       found([{ mark: 'text', encoding: { text: 'name', color: ramp } }]),
-    ).toEqual([`warning unpinned-text-ramp ${color}.domainMin`])
+    ).toEqual([])
     expect(
       found(colored('bar', { field: 'type', domain: ['a'], labels: ['A'] })),
     ).toEqual([])

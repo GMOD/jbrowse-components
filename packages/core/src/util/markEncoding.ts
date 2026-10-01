@@ -790,7 +790,11 @@ export function encodeFeatures<L extends LaneName>(
         ? y
         : new Float32Array(count)
       : undefined
-  const paintsColor = has('color') && !colorValue
+  const colorKey =
+    declaredScale?.scale === 'categorical' && has('colorKey')
+      ? new Uint32Array(count)
+      : undefined
+  const paintsColor = has('color') && !colorValue && !colorKey
   const unscaled =
     paintsColor && declaredScale?.scale !== 'categorical' && !quantitative
       ? unscaledColor(
@@ -803,32 +807,47 @@ export function encodeFeatures<L extends LaneName>(
     paintsColor && typeof unscaled !== 'number'
       ? new Uint32Array(count)
       : undefined
-  const scaled = paintsColor || colorValue ? declaredScale : undefined
+  const scaled =
+    paintsColor || colorValue || colorKey ? declaredScale : undefined
+  const categoryLane = colorKey ?? color
   let scale: ColorScaleTable | undefined
   let missingMet = false
   let notNumberMet = false
-  if (scaled?.scale === 'categorical' && color) {
+  if (scaled?.scale === 'categorical' && categoryLane) {
     const colorField = categoricalField(scaled.field, {
       domain: scaled.domain?.map(String),
       range: scaled.range,
     })
+    let resolved = 0
     const entries = paintCategories(
       table,
       scaled.field,
       jexl,
       colorField,
       { kept, count, report },
-      color,
-      key => cssColorToABGR(colorField.color(key)),
-      abgr => abgr,
+      categoryLane,
+      key => ({
+        color: cssColorToABGR(colorField.color(key)),
+        order: resolved++,
+      }),
+      entry => (colorKey ? entry.order : entry.color),
     )
+    if (colorKey) {
+      const position = new Uint32Array(resolved)
+      for (const [i, e] of entries.entries()) {
+        position[e.entry.order] = i
+      }
+      for (let k = 0; k < count; k++) {
+        colorKey[k] = position[colorKey[k]!]!
+      }
+    }
     scale = {
       kind: 'categorical',
       field: scaled.field,
       domain: [...colorField.domain],
       ...(scaled.range ? { range: [...scaled.range] } : {}),
       ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
-      entries: entries.map(e => ({ value: e.value, color: e.entry })),
+      entries: entries.map(e => ({ value: e.value, color: e.entry.color })),
     }
   } else if (scaled && quantitative) {
     // The raw values, where they are kept: a ramp's always, a threshold's
@@ -942,6 +961,9 @@ export function encodeFeatures<L extends LaneName>(
   if (colorValue) {
     // the y view itself where the colour reads y, so a reader can tell
     encoded.colorValue = colorValue
+  }
+  if (colorKey) {
+    encoded.colorKey = colorKey
   }
   if (glyph) {
     encoded.glyph = glyph
@@ -1182,6 +1204,7 @@ export function encodedChannelTransferables(c: EncodedChannels) {
     c.row,
     typeof c.color === 'number' ? undefined : c.color,
     c.colorValue,
+    c.colorKey,
     c.glyph,
     c.size,
     c.x2Ref,

@@ -176,6 +176,7 @@ export type LaneName =
   | 'y'
   | 'color'
   | 'colorValue'
+  | 'colorKey'
   | 'glyph'
   | 'row'
   | 'text'
@@ -352,6 +353,13 @@ export interface EncodedChannels {
    * colour reads the field `y` plots, this IS the `y` array, not a copy.
    */
   colorValue?: Float32Array
+  /**
+   * Each instance's index into `scale.entries` under a categorical colour, for
+   * a caller that named the `colorKey` lane in place of `color`: the display
+   * then paints each key through its own `domain` and `range`, which never
+   * reach the worker.
+   */
+  colorKey?: Uint32Array
   /** The point painter's code for each feature's `shape`. */
   glyph?: Uint8Array
   row?: Uint32Array

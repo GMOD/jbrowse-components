@@ -11,7 +11,7 @@ import {
   scaleEndProblems,
   universalPresetOf,
 } from './markRuleFacts.ts'
-import { MARK_SPECS, rampResolvesPerRegion, readsValue } from './markSpecs.ts'
+import { MARK_SPECS, readsValue } from './markSpecs.ts'
 import {
   DEFAULT_AGGREGATE_OP,
   BIN_OVERLAP_FIELD,
@@ -85,8 +85,6 @@ export const MARK_RULES = {
   'field-spells-constant': 'warning',
   /** A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. */
   'labels-domain': 'warning',
-  /** A text's colour ramp with an open end, whose colours then differ from one region to the next. */
-  'unpinned-text-ramp': 'warning',
   /** A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. */
   'empty-zoom-range': 'error',
   /** A `filter` or `formula` whose `expr` is not a `jexl:` expression. */
@@ -280,12 +278,6 @@ function colorScaleOf({ scale, field = '' }: ColorSlots) {
     { scale, field },
     fieldScaleOf(FEATURE_FIELD_PRESETS, field),
   )
-}
-
-function rampColor(mark: MarkSnapshot) {
-  const color = mark.encoding?.color ?? {}
-  const painted = colorScaleOf(color)
-  return painted === 'linear' || painted === 'log' ? color : undefined
 }
 
 type SizeSnapshot = NonNullable<NonNullable<MarkSnapshot['encoding']>['size']>
@@ -800,22 +792,6 @@ function ownProblems(
   if (typeof size === 'object') {
     for (const { rule, slot, message } of scaleEndProblems(size)) {
       problems.push(found(rule, `encoding.size.${slot}`, message))
-    }
-  }
-  const ramp = rampColor(mark)
-  if (ramp) {
-    const { domainMin, domainMax } = ramp
-    if (
-      rampResolvesPerRegion(type) &&
-      (domainMin === undefined || domainMax === undefined)
-    ) {
-      problems.push(
-        found(
-          'unpinned-text-ramp',
-          `encoding.color.${domainMin === undefined ? 'domainMin' : 'domainMax'}`,
-          `a ${type}'s ramp resolves an open end against each region's own extremes, so its colours agree across regions only with domainMin and domainMax both pinned`,
-        ),
-      )
     }
   }
   const { minBpPerPx = 0, maxBpPerPx = 0 } = mark

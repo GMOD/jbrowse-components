@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { diffTrackConfig } from '@jbrowse/core/util'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { INDEX_SNP_MISSING } from '../GWASAdapter/ldJoin.ts'
@@ -114,13 +115,19 @@ test("LD colouring makes the default plot LocusZoom's, as the add-track workflow
     marksOf(createTestEnvironment({ marks: LD_MARKS }).createDisplay().display),
   )
   const [partners, index] = display.encodings
-  expect(partners?.color).toMatchObject({
-    field: 'ld',
-    scale: 'threshold',
-    domain: LD_COLOR.domain,
-    range: LD_COLOR.range,
-  })
-  expect(index?.color).toBe(LD_INDEX_COLOR)
+  expect(display.markColors).toMatchObject([
+    {
+      kind: 'value',
+      encoding: {
+        field: 'ld',
+        scale: 'threshold',
+        domain: LD_COLOR.domain,
+        range: LD_COLOR.range,
+      },
+    },
+    { kind: 'constant', color: cssColorToABGR(LD_INDEX_COLOR) },
+  ])
+  expect(partners?.color).toEqual({ field: 'ld', scale: 'threshold' })
   expect(index?.shape).toMatchObject({
     field: 'ld_role',
     domain: ['index'],

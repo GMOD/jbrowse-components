@@ -108,6 +108,7 @@ import {
 } from './legend.ts'
 import { createLinkOwners, withMateRegions } from './linkOwners.ts'
 import { baselineReached, layerSpans } from './markAutoscale.ts'
+import { markColorOf, withMarkColors } from './markColor.ts'
 import {
   buildMarkList,
   highestRow,
@@ -142,7 +143,6 @@ import {
   markRowTable,
 } from './rowTable.ts'
 import { stepChannels } from './stepChannels.ts'
-import { valueColorOf, withValueColors } from './valueColor.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 import type {
@@ -156,6 +156,7 @@ import type { FacetLayout } from './facet.ts'
 import type { MarkHitInfo } from './findMarkHit.ts'
 import type { MateRegion } from './linkOwners.ts'
 import type { RegionLayer } from './markAutoscale.ts'
+import type { MarkColor } from './markColor.ts'
 import type {
   MarkEntry,
   MarkRegionData,
@@ -172,7 +173,6 @@ import type {
 } from './markProblems.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
-import type { ValueColor } from './valueColor.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   ListedRowSource,
@@ -502,16 +502,13 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each mark's colour where it is a quantitative scale over the field
-         * the mark plots, which the display resolves off the `y` lane; the
-         * declaration and not a fetch input, so an edit to it refetches
-         * nothing. Identity-stable, since the regions are re-stamped on it.
+         * Each mark's colour as the display resolves it off what the worker
+         * read; the declaration and not a fetch input, so an edit to it
+         * refetches nothing.
          */
-        get valueColors(): (ValueColor | undefined)[] {
+        get markColors(): MarkColor[] {
           const { markChannels } = this
-          return self.conf.marks.map((m, i) =>
-            valueColorOf(m, markChannels[i]!),
-          )
+          return self.conf.marks.map((m, i) => markColorOf(m, markChannels[i]!))
         },
         /**
          * #getter
@@ -822,15 +819,14 @@ export function stateModelFactory(
             self.hiddenGroupKeys,
           )
         })
-        const valueColors = stableIdentityComputed(() => self.valueColors)
-        // A colour over the plotted value is stamped onto each region here,
-        // before the rows are keyed or the sections offset, so everything
-        // downstream reads the lane and the table as though the worker had
-        // filled them.
+        const markColors = stableIdentityComputed(() => self.markColors)
+        // Each colour is stamped onto each region here, before the rows are
+        // keyed or the sections offset, so everything downstream reads the
+        // lane and the table as though the worker had filled them.
         const colored = createEncodeMemo(
           () => self.featurePayloads,
-          () => valueColors.get(),
-          withValueColors,
+          () => markColors.get(),
+          withMarkColors,
         )
         const keyed = createEncodeMemo(
           () => (self.drawsKeyedRows ? colored() : NO_REGIONS),

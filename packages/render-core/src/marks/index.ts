@@ -27,6 +27,7 @@ export {
   instanceColor,
   isThreshold,
   keepRampValues,
+  paintColors,
   rampUniforms,
   rampValueBits,
   thresholdBandOf,

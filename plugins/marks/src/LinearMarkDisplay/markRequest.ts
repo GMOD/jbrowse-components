@@ -4,14 +4,10 @@
  * a slot left at its default and one written at it are one fetch.
  */
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
-import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
-import {
-  featureColorEncoding,
-  paintedColorEncoding,
-} from '@jbrowse/display-kit/colorConfigSchema'
 
 import { binStepWidth } from './autoBin.ts'
 import { markShapeScale } from './configSchema.ts'
+import { colorLanesOf, markColorOf, wireColorOf } from './markColor.ts'
 import { zoomInRange } from './markList.ts'
 import { MARK_SPECS, markLanes, plotsValue, readsValue } from './markSpecs.ts'
 import {
@@ -25,7 +21,6 @@ import {
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_X2,
 } from './markVocabulary.ts'
-import { valueColorOf } from './valueColor.ts'
 
 import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
 import type { MarkEntry } from './markList.ts'
@@ -47,7 +42,7 @@ export function encodingOf(
   mark: MarkConfig,
   filled: StepChannels = {},
 ): MarkEncoding {
-  const { x, shape, color, text, size } = mark.encoding
+  const { x, shape, text, size } = mark.encoding
   const y = mark.encoding.y || filled.y
   const row = mark.encoding.row || filled.row
   const spec: MarkSpec = MARK_SPECS[mark.mark]
@@ -83,13 +78,9 @@ export function encodingOf(
     // between linear and log would refetch every region to no effect.
     y: reads('y') && y ? y : undefined,
     row: (reads('row') && row) || undefined,
-    // A quantitative colour over the plotted field is the display's to
-    // resolve off the `y` lane (`valueColor.ts`), so it crosses as the
-    // default and an edit to its cuts, ends or colours refetches nothing.
-    color: valueColorOf(mark, filled)
-      ? DEFAULT_MARK_COLOR
-      : (paintedColorEncoding(featureColorEncoding(color)) ??
-        DEFAULT_MARK_COLOR),
+    // The display paints every colour but a `jexl:` callback off what the
+    // worker reads (`markColor.ts`), so an edit to one refetches nothing.
+    color: wireColorOf(markColorOf(mark, filled)),
     ...(reads('shape') ? { shape: shapeEncoding } : {}),
     ...(reads('text') && text ? { text } : {}),
     ...(reads('size') && size.field !== ''
@@ -293,12 +284,13 @@ export function markLayerRequest(
     zoomInRange(mark, bpPerPx),
     binEdges,
   )
-  const valueColored = valueColorOf(mark, channels) !== undefined
-  const lanes = markLanes(mark.mark).filter(
+  const lanes = markLanes(
+    mark.mark,
+    colorLanesOf(markColorOf(mark, channels)),
+  ).filter(
     lane =>
       (lane !== 'y' || marksValue(mark, channels)) &&
-      (lane !== 'size' || mark.encoding.size.field !== '') &&
-      ((lane !== 'color' && lane !== 'colorValue') || !valueColored),
+      (lane !== 'size' || mark.encoding.size.field !== ''),
   )
   return {
     encoding: encodingOf(mark, channels),

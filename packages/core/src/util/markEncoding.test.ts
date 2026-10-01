@@ -1377,3 +1377,53 @@ test('a categorical over a category column lists only the labels its placed rows
     r.scale?.kind === 'categorical' ? r.scale.entries.map(e => e.value) : [],
   ).toEqual(['a'])
 })
+
+test('a colorKey lane names each instance by its entry and paints nothing', () => {
+  const r = encodeFeatures(
+    features,
+    { color: { field: 'type', scale: 'categorical' } },
+    ['colorKey'],
+    { jexl },
+  )
+  expect(r.color).toBeUndefined()
+  const entries =
+    r.scale?.kind === 'categorical' ? r.scale.entries.map(e => e.value) : []
+  expect(entries).toEqual(['cds', 'exon', 'gene'])
+  expect([...r.colorKey].map(k => entries[k])).toEqual([
+    'gene',
+    'exon',
+    'gene',
+    'cds',
+    'gene',
+  ])
+  expect(encodedChannelTransferables(r)).toContain(r.colorKey.buffer)
+})
+
+test('a colorKey lane over a category column indexes the entries its rows met', () => {
+  const table = new ColumnTable(
+    4,
+    new Map<string, Column>([
+      ['start', lane(Uint32Array.from([0, 10, 20, 30]))],
+      ['end', lane(Uint32Array.from([5, 15, 25, 35]))],
+      [
+        'state',
+        {
+          kind: 'category',
+          codes: Uint8Array.from([3, 1, 3, 1]),
+          labels: ['a', 'b', 'c', 'd'],
+          at: undefined,
+        },
+      ],
+    ]),
+    String,
+  )
+  const r = encodeFeatures(
+    table,
+    { color: { field: 'state', scale: 'categorical' } },
+    ['colorKey'],
+  )
+  const entries =
+    r.scale?.kind === 'categorical' ? r.scale.entries.map(e => e.value) : []
+  expect(entries).toEqual(['b', 'd'])
+  expect([...r.colorKey].map(k => entries[k])).toEqual(['d', 'b', 'd', 'b'])
+})

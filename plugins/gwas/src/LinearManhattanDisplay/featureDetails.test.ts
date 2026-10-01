@@ -23,6 +23,13 @@ import type {
   EncodedLayersResult,
 } from '@jbrowse/core/util/markEncoding'
 
+const DISPLAY_REGION = {
+  refName: 'ctgA',
+  start: 0,
+  end: 10_000,
+  assemblyName: 'volvox',
+}
+
 // The worker half, run as the worker runs it: the core methods out of the
 // plugin manager's registry, over the SLE summary statistics and their `.ld`,
 // asked for the layer the LD plot's display sends.
@@ -54,7 +61,10 @@ describe('a point reads back as its whole GWAS record', () => {
             layer: mark,
             featureIndex: featureIndexAt(layer, i),
           })) as SimpleFeatureSerialized)
-    return { glyph: layer.glyph![i], color: colorAt(layer, i), feature }
+    // the colour resolves on the main thread, off what the worker read
+    display.setRpcData(0, encoded.value, DISPLAY_REGION)
+    const drawn = display.rpcDataMap.get(0)!.layers[mark]!
+    return { glyph: layer.glyph![i], color: colorAt(drawn, i), feature }
   }
 
   it("carries the file's own columns and the r² to the index", async () => {

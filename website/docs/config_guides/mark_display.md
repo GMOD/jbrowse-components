@@ -326,8 +326,9 @@ or overlapping spans stay readable.
   Each cut in `domain` opens an interval, so `range` carries one colour more.
   The key lists a row per interval, and a grey one for features with no value.
 
-A scale over the field `y` plots reads the plotted values themselves, so a
-change to its cuts, ends or colours redraws without refetching.
+A change to a colour's constant, scale, cuts, ends, domain or range redraws
+without refetching, since the display paints every colour from the values it
+already loaded. Only a `jexl:` colour, which reads each feature, refetches.
 
 `title` heads the key and has the axis `title`'s three states: unset reads the
 `field` name, text is that text, `""` draws no heading. Marks share one key only
@@ -970,7 +971,6 @@ each reported under its id:
 | `domain-quantile` | warning | A colour ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
 | `field-spells-constant` | warning | A colour's or a shape's `field` spelling a CSS colour or a shape name, which is a constant written `{ value }`. |
 | `labels-domain` | warning | A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
-| `unpinned-text-ramp` | warning | A text's colour ramp with an open end, whose colours then differ from one region to the next. |
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |
 | `bin-field-and-fields` | warning | A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. |
 | `unread-weight` | warning | A `weight` on a `min` or a `max`, which no weight moves. |

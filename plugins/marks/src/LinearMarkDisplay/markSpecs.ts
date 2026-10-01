@@ -4,12 +4,14 @@ import type { MarkType } from './markVocabulary.ts'
 export type MarkChannel = 'y' | 'row' | 'color' | 'shape' | 'text' | 'size'
 
 /**
- * A lane the worker fills: a channel, a ramp's raw values, the point painter's
- * code for a `shape`, the sequence a far `x2` lies on, or the hit index.
+ * A lane the worker fills: a channel, a quantitative colour's raw values, a
+ * categorical colour's keys, the point painter's code for a `shape`, the
+ * sequence a far `x2` lies on, or the hit index.
  */
 export type MarkLane =
   | Exclude<MarkChannel, 'shape'>
   | 'colorValue'
+  | 'colorKey'
   | 'glyph'
   | 'x2Ref'
   | 'index'
@@ -23,12 +25,6 @@ export interface MarkSpec {
    * its band otherwise, `none` reads no value.
    */
   readonly value: 'required' | 'optional' | 'none'
-  /**
-   * Where a ramp colour resolves: `display` from the raw values each region
-   * sends, over the domain unioned across regions; `worker` into packed
-   * colours, per region.
-   */
-  readonly ramp: 'display' | 'worker'
   /**
    * How the mark answers a hover: `index` searches a spatial index the worker
    * builds over its instances, `rows` finds them by the row they stand in and
@@ -65,46 +61,39 @@ export const MARK_SPECS = {
   bar: {
     channels: ['y', 'row', 'color'],
     value: 'required',
-    ramp: 'display',
     hit: 'rows',
   },
   point: {
     channels: ['y', 'row', 'color', 'shape'],
     value: 'required',
-    ramp: 'display',
     hit: 'index',
     size: 'constant',
   },
   rule: {
     channels: ['y', 'row', 'color'],
     value: 'required',
-    ramp: 'display',
     hit: 'rows',
     size: 'constant',
   },
   line: {
     channels: ['y', 'row', 'color'],
     value: 'required',
-    ramp: 'display',
     hit: 'rows',
     size: 'constant',
   },
   span: {
     channels: ['row', 'color'],
     value: 'none',
-    ramp: 'display',
     hit: 'rows',
   },
   text: {
     channels: ['y', 'row', 'color', 'text'],
     value: 'optional',
-    ramp: 'worker',
     hit: false,
   },
   link: {
     channels: ['y', 'row', 'color', 'size'],
     value: 'optional',
-    ramp: 'display',
     hit: 'index',
     farFoot: true,
     size: 'channel',
@@ -130,25 +119,22 @@ export function hitsByIndex(type: MarkType) {
   return specOf(type).hit === 'index'
 }
 
-/** Whether a mark type's ramp colour resolves per region, in the worker. */
-export function rampResolvesPerRegion(type: MarkType) {
-  return specOf(type).ramp === 'worker'
-}
-
 /**
- * The lanes a mark asks the worker to fill: its type's channels, a ramp's raw
- * values beside the colour where the display resolves the ramp, and the hit
- * index where the mark answers a hover through one. The encoder fills whichever of
- * `color` and `colorValue` the colour declaration calls for.
+ * The lanes a mark asks the worker to fill: its type's channels, the colour
+ * as `colorLanes` says its declaration reads, and the hit index where the
+ * mark answers a hover through one.
  */
-export function markLanes(type: MarkType): MarkLane[] {
+export function markLanes(
+  type: MarkType,
+  colorLanes: readonly MarkLane[],
+): MarkLane[] {
   const spec = specOf(type)
   return [
-    ...spec.channels.flatMap((channel): MarkLane[] =>
+    ...spec.channels.flatMap((channel): readonly MarkLane[] =>
       channel === 'shape'
         ? ['glyph']
-        : channel === 'color' && spec.ramp === 'display'
-          ? [channel, 'colorValue']
+        : channel === 'color'
+          ? colorLanes
           : [channel],
     ),
     ...(spec.farFoot ? (['x2Ref'] as const) : []),

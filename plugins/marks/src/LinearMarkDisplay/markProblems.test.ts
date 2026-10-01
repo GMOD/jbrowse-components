@@ -196,20 +196,10 @@ test('a channel the mark does not read waits unread', () => {
   ).toEqual(['warning unread-channel mark 0 encoding.shape'])
 })
 
-test('a text mark cannot draw the density sidecar, and an open ramp on it is named as a text s', () => {
+test('a text mark cannot draw the density sidecar', () => {
   expect(
     found([{ mark: 'text', source: 'density', encoding: { y: 'score' } }]),
   ).toEqual(['warning span-density-source mark 0 source'])
-  expect(
-    problemsOf([
-      {
-        mark: 'text',
-        encoding: {
-          color: { field: 'score', scale: 'linear', domainMin: 0 },
-        },
-      },
-    ]).map(p => p.message),
-  ).toEqual([expect.stringMatching(/^a text's ramp resolves an open end/)])
 })
 
 test('a size on a mark that draws no shape waits unread, and a point or a rule reads a number alone', () => {
@@ -734,7 +724,7 @@ test('a field spelling a colour or a shape is a constant written bare', () => {
   ).toEqual([])
 })
 
-test('a ramp reads its ends, not a domain, and a span wants both ends pinned', () => {
+test('a ramp reads its ends, not a domain, and leaves an end open on any mark', () => {
   const ramp = (mark: string, color: Record<string, unknown>) => [
     {
       mark,
@@ -765,17 +755,7 @@ test('a ramp reads its ends, not a domain, and a span wants both ends pinned', (
       },
     },
   ]
-  expect(found(text({ domainMin: 0 }))).toEqual([
-    'warning unpinned-text-ramp mark 0 encoding.color.domainMax',
-  ])
-  expect(found(text({}))).toEqual([
-    'warning unpinned-text-ramp mark 0 encoding.color.domainMin',
-  ])
-  expect(
-    found([
-      { mark: 'text', encoding: { text: 'name', color: { field: 'score' } } },
-    ]),
-  ).toEqual(['warning unpinned-text-ramp mark 0 encoding.color.domainMin'])
+  expect(found(text({}))).toEqual([])
   expect(found(text({ domainMin: 0, domainMax: 10 }))).toEqual([])
 })
 
