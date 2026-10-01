@@ -55,12 +55,14 @@ having transferred ~80 KiB each, so ~19.5 MiB never downloaded.
 A layer that shares one fetch between logical reads must not let one sharer's abort cancel
 the request the others wait on.
 
-- `@gmod/tabix` and `@gmod/bbi` use `@gmod/abortable-promise-cache`, whose
-  `AggregateAbortController` fires only once every joined consumer has aborted.
-- `@gmod/bam` retries its chunk-cache joins on a foreign abort (`_cachedChunkFeatures`).
-- `RemoteFileWithRangeCache` records the owning signal on each `inFlight` chunk and
-  `joinChunk` re-issues once on a foreign abort. **Only upstream tests cover the retry**
-  (`@gmod/range-cache-filehandle`'s `test/rangeCache.test.ts`).
+- `@gmod/bam`, `@gmod/cram` and `@gmod/tabix` share their chunk reads through
+  `@gmod/shared-read-cache`. The read runs under a controller of its own, which aborts
+  once every caller that joined has aborted, and a caller that aborts is released at once
+  with its own reason. `@gmod/bbi` shares its header and index-node reads the same way;
+  its data-block reads go straight to the filehandle.
+- `RemoteFileWithRangeCache` counts readers per range request the same way: the request
+  is cancelled when its last reader gives up, and a reader with no signal pins it. **Only
+  upstream tests cover the count** (`@gmod/range-cache-filehandle`'s `test/`).
 
 **Don't** send an `AbortSignal` across `postMessage`, rely on `checkAbortSignal` alone in a
 loop that never awaits, or make cross-origin isolation a requirement of anything (an
