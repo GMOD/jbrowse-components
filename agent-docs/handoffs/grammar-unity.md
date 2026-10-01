@@ -1,6 +1,6 @@
 ---
 name: grammar-unity
-description: "The grammar thread's live plan, approved by Colin on 2026-09-30: unity of grammar objects across every display and every surface, not fewer display types. The order of work comes first, starting with main-thread colour on the mark and multi-sample displays, then the scorecard and menu census it rests on, two open threshold defects, and the open calls and quantile leftover carried over from the retired grammar-next-steps."
+description: "The grammar thread's live plan, approved by Colin on 2026-09-30: unity of grammar objects across every display and every surface, not fewer display types. The order of work comes first, starting with main-thread colour on the multi-sample variant display, then the scorecard and menu census it rests on, an open threshold defect, and the open calls and quantile leftover carried over from the retired grammar-next-steps."
 ---
 
 # Grammar unity: one vocabulary, every display, every surface
