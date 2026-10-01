@@ -10,8 +10,7 @@ summary: "The mark display resolves every colour but a `jexl:` callback on the m
 Accepted (2026-09-30). Extends
 [ADR-185](adr-185-a-colour-over-the-plotted-value-reads-the-y-lane.md), which
 moved a quantitative colour over the plotted field off the fetch, to every
-colour the mark display paints. Step 2 of the
-[grammar-unity](../handoffs/grammar-unity.md) handoff.
+colour the mark display paints.
 
 ## Context
 
