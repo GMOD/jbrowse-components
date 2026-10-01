@@ -62,6 +62,9 @@ function colorRow(
   sections: MarkLegendSection[],
 ): ChannelRow | undefined {
   const { color, colorValue } = hit
+  if (hit.heldColor) {
+    return undefined
+  }
   const swatch =
     color === undefined ? undefined : { color: abgrToCssRgba(color) }
   const section = colorSection(sections, hit.markIndex)

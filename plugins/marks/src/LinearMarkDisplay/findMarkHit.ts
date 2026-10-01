@@ -34,6 +34,11 @@ export interface MarkHitInfo {
   color: number | undefined
   /** The raw value of a ramp colour channel, where the display resolves it. */
   colorValue: number | undefined
+  /**
+   * Whether the instance's region still holds an earlier `color`
+   * declaration's data (`HeldColor`), whose colour no key names.
+   */
+  heldColor?: boolean
   /** The point painter's code for the instance's shape, if its mark reads one. */
   glyph: number | undefined
   /**
@@ -172,6 +177,7 @@ export function findMarkHit(
     y: layer.y?.[hit.index],
     color: colorAt(layer, hit.index),
     colorValue: layer.colorValue?.[hit.index],
+    heldColor: layer.heldColor,
     glyph: layer.glyph?.[hit.index],
     row: layer.row?.[hit.index],
     screenX: hit.x,

@@ -57,24 +57,24 @@ colour needs; the main thread turns that data into colours through the config.
 - **A region the worker read for an earlier `color` declaration stays drawn**,
   coloured from what it holds (`colorAsHeld`): keys in their field's default
   colours, numbers through a linear ramp over themselves, the default colour
-  where it holds no colour data, and packed colours as they came.
-  Only the regions in view refetch, so one scrolled away can hold the earlier
-  declaration's data indefinitely. A held layer with keys or numbers is
-  flagged `heldColor`: it
-  paints through its own table (`layerColorScale`, read by the mark display
-  and the multi-way lane layers alike) and stays out of the legend, so the
-  mark's scale and key come only from regions read for the declaration as it
-  now stands. While every visible region is held the mark has no key, under
-  the loading scrim.
+  where it holds no colour data, and packed colours as they came. Only the
+  regions in view refetch, so one scrolled away can hold the earlier
+  declaration's data indefinitely. Every held layer but one of packed colours
+  is flagged `heldColor`: it paints through its own table (`layerColorScale`,
+  read by the mark display and the multi-way lane layers alike) and stays out
+  of the legend and the hover's colour row, so the mark's scale and key come
+  only from regions read for the declaration as it now stands. Until the first
+  region refetched for a new declaration lands, the mark has no key but one
+  over `y`, under the loading scrim.
 - **The colour list keeps its identity across reads nothing observes**,
   through display-kit's `sameAsLast`. An unobserved computed hands out a fresh
   list per read, which recoloured every region and allocated a colour lane per
   categorical layer per read.
 - **Multi-way synteny's lane layers colour their bars the same way.** They
   build their requests with `markLayerRequest`, so `coloredLaneLayer` colours
-  each held payload through `withMarkColor`, and `laneLayerColorScales` gives
+  each lane's payload through `withMarkColor`, and `laneLayerColorScales` gives
   the bars one ramp or threshold per mark, a ramp's domain covering every drawn
-  lane, through legend.ts's `paintScalesOver`, the step the mark display's
+  lane but a held one, which paints its own, through legend.ts's `paintScalesOver`, the step the mark display's
   `paintScales` takes through `paintScaleOf`. The scale rides the bar layer
   the pass reads per block, and a cell is kept per payload and per the arrays
   and ramp table it uploads, so a landing that widens the ramp or an edit to a

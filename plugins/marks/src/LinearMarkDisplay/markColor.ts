@@ -226,10 +226,10 @@ const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
 /**
  * Set on a layer coloured from data the worker read for an earlier `color`
  * declaration: a region its refetch has not reached yet, or never will while
- * it stays off screen. It paints through its own scale table, the ramp or
- * threshold built over its own values, and stays out of the legend, so the
- * mark's scale and key come only from regions read for the declaration as it
- * now stands.
+ * it stays off screen. It paints from what it holds, keys through their
+ * field's default colours and numbers through a linear ramp over themselves,
+ * and stays out of the legend and the hover's colour row, so the mark's scale
+ * and key come only from regions read for the declaration as it now stands.
  */
 export interface HeldColor {
   heldColor?: boolean
@@ -265,8 +265,8 @@ function colorAsHeld<L extends EncodedChannels>(layer: L): L {
 /**
  * The scale a layer paints through: the mark's, for a layer read for the
  * colour as it now stands; its own table, for one still holding an earlier
- * declaration's data (`heldColor`); and none for a layer of packed colours,
- * one per instance, which it paints as they are.
+ * declaration's data (`heldColor`); and none for a layer painting packed
+ * colours, a constant or a lane of them, which it paints as they are.
  */
 export function layerColorScale(
   layer: (EncodedChannels & HeldColor) | undefined,
@@ -316,7 +316,7 @@ export function withMarkColor<L extends EncodedChannels>(
       if (!values || (!fromY && read?.field !== encoding.field)) {
         return colorAsHeld(layer)
       }
-      // which values were missing is the worker's word on this field alone
+      // the worker's missing-value flags count only where it read this field
       const met = read?.field === encoding.field ? read : undefined
       return {
         ...layer,

@@ -4,6 +4,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { isThreshold } from '@jbrowse/render-core/marks'
 
+import { findMarkHit } from './findMarkHit.ts'
 import { regionColorScale } from './markList.ts'
 import {
   REGION,
@@ -508,4 +509,40 @@ test('a held region read for another field takes none of its missing-value flags
 
   expect(layerOf(display).scale).toMatchObject({ field: 'score' })
   expect(layerOf(display).scale).not.toHaveProperty('missing')
+})
+
+// A held region's colour belongs to an earlier declaration no key names, so
+// the hover leaves its colour row out rather than name it under the new field.
+test('a hover on a held region says so, and a landed one does not', () => {
+  const display = loaded([
+    {
+      mark: 'bar',
+      encoding: { y: 'score', color: { field: 'depth', scale: 'linear' } },
+    },
+  ])
+  const hitAnywhere = () => {
+    const { canvasWidth, canvasHeight } = display.renderState
+    for (let x = 0; x < canvasWidth; x += 2) {
+      for (let y = 0; y < canvasHeight; y += 2) {
+        const hit = findMarkHit(
+          x,
+          y,
+          display.renderBlocks,
+          display.rpcDataMap,
+          display.markList,
+          display.renderState,
+          display.host.displayedRegions,
+        )
+        if (hit) {
+          return hit
+        }
+      }
+    }
+    return undefined
+  }
+  expect(hitAnywhere()).toMatchObject({ heldColor: undefined })
+
+  editColor(display, 'field', 'gc')
+
+  expect(hitAnywhere()).toMatchObject({ heldColor: true })
 })
