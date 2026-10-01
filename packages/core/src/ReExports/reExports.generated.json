@@ -4566,6 +4566,7 @@
     "@jbrowse/display-kit/stableIdentityComputed": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "sameAsLast",
         "stableIdentityComputed"
       ],
       "worker": "real"

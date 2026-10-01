@@ -791,7 +791,9 @@ function ownProblems(
       ),
     )
   }
-  const cutCount = (color.domain ?? []).length
+  const cutCount = (color.domain ?? []).filter(cut =>
+    Number.isFinite(Number(cut)),
+  ).length
   if (colorScaleOf(color) === 'threshold' && cutCount > MAX_THRESHOLD_CUTS) {
     problems.push(
       found(
