@@ -61,6 +61,7 @@ import { matchesFilterTokens, parseFilterTokens } from './filter-tokens.ts'
 import { debugDump } from './screenshot-asserts.ts'
 import {
   describeNetwork,
+  isFatalConsole,
   trackNetwork,
   trustCapturePlugins,
 } from './screenshot-page.ts'
@@ -846,8 +847,17 @@ async function main() {
         page.on('error', err => {
           log(`PAGE CRASH: ${err.message}`)
         })
+        // Either fails the tour once it is filmed, as a figure fails over them.
+        let fatal: string | undefined
         page.on('pageerror', (err: unknown) => {
-          log(`PAGE ERROR: ${err instanceof Error ? err.message : String(err)}`)
+          const message = err instanceof Error ? err.message : String(err)
+          log(`PAGE ERROR: ${message}`)
+          fatal ??= `page error: ${message}`
+        })
+        page.on('console', msg => {
+          if (isFatalConsole(msg.text())) {
+            fatal ??= msg.text()
+          }
         })
         // A tour reaches further out than a figure does — a launcher on another
         // site, a tabix index on a public host — and every one of its waits
@@ -917,7 +927,10 @@ async function main() {
             mp4Bytes: fs.statSync(mp4).size,
             posterBytes: fs.statSync(jpg).size,
           })
-          if (filmed.confusing.length > 0) {
+          if (fatal !== undefined) {
+            failures.push(spec.name)
+            log(`${spec.name}: FAILED, ${fatal.slice(0, 300)}`)
+          } else if (filmed.confusing.length > 0) {
             failures.push(spec.name)
             log(
               `${spec.name}: FAILED, filmed ${filmed.confusing

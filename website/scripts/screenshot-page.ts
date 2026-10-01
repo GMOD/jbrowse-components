@@ -216,3 +216,13 @@ export async function waitForRasterize(page: Page) {
       }),
   )
 }
+
+// Console lines that mean a frame or a film is wrong however it looks: a hosted
+// plugin's config naming a display type main no longer registers draws the
+// track without it. An uncaught page error is the other, and each caller
+// listens for that itself.
+const FATAL_CONSOLE = [/^Dropping display of unknown type/]
+
+export function isFatalConsole(text: string) {
+  return FATAL_CONSOLE.some(re => re.test(text))
+}

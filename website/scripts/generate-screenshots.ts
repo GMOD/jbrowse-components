@@ -71,6 +71,7 @@ import {
 import {
   describeNetwork,
   freezeAnimations,
+  isFatalConsole,
   serveUrlOverrides,
   trackNetwork,
   trustCapturePlugins,
@@ -102,6 +103,8 @@ import type { Server } from 'node:http'
 import type { Page } from 'puppeteer'
 
 const execFileAsync = promisify(execFile)
+
+class FatalConsoleError extends Error {}
 
 // Apply the shared pre-shot steps (hide stray tooltip, draw/clear callouts,
 // flush pending WebGL frames) then screenshot straight to `file`.
@@ -966,6 +969,11 @@ async function main() {
   // first, and Chrome can hand the tab a fresh renderer that answers the
   // liveness probe. The probe covers the deaths that event misses. One retry,
   // in a new browser, and a second death is reported as the failure it then is.
+  // A frame can look plausible while the page says it is broken: a hosted
+  // plugin's config naming a display type main no longer registers drew the
+  // track without it, and a menu whose builder threw drew no menu. Both
+  // surfaced only when an unrelated wait later timed out, so either fails the
+  // spec here, by name. `expectedConsole` still exempts a spec about an error.
   async function withFreshPage<T>(
     spec: BrowserScreenshotSpec,
     body: (page: Page) => Promise<T>,
@@ -986,12 +994,16 @@ async function main() {
             ...(spec.viewportHeight ? { height: spec.viewportHeight } : {}),
           })
         }
+        let fatal: string | undefined
         const report = (kind: string, text: string) => {
           const expected = spec.expectedConsole?.some(s => text.includes(s))
           if (!isBrowserConsoleNoise(text) && !expected) {
             console.error(
               `    [${spec.name}] browser[${kind}]: ${text.substring(0, 300)}`,
             )
+            if (kind === 'pageerror' || isFatalConsole(text)) {
+              fatal ??= `browser[${kind}]: ${text.substring(0, 300)}`
+            }
           }
         }
         page.on('console', msg => {
@@ -1014,8 +1026,15 @@ async function main() {
         crash.catch(() => {})
         run.catch(() => {})
         try {
-          return await Promise.race([run, crash])
+          const result = await Promise.race([run, crash])
+          if (fatal !== undefined) {
+            throw new FatalConsoleError(fatal)
+          }
+          return result
         } catch (err) {
+          if (err instanceof FatalConsoleError) {
+            throw err
+          }
           const alive =
             !crashError &&
             (await Promise.race([
