@@ -2,11 +2,6 @@ import {
   STRAND_FIELD,
   categoricalField,
 } from '@jbrowse/core/util/categoricalField'
-import {
-  OVERFLOW_GROUP_KEY,
-  capGroupKeys,
-  overflowLabel,
-} from '@jbrowse/core/util/groupKeys'
 
 import { isPlacedRow } from './rowPlacement.ts'
 
@@ -14,7 +9,6 @@ import type {
   FeatureDataResult,
   SectionStamp,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 
@@ -32,41 +26,19 @@ export function facetField({ field, domain }: FeatureFacet) {
 // Read off the hit item rather than the feature: the worker stamps what a
 // section needs, and strand is already on every item, so a strand facet
 // never refetches.
-function featureGroupId(item: SectionStamp, field: CategoricalField): GroupId {
-  const key = field.key(
-    field.field === STRAND_FIELD ? item.strand : item.groupKey,
-  )
-  return { key, label: field.sectionLabel(key) }
+export function sectionIdsOf(facet: FeatureFacet) {
+  const field = facetField(facet)
+  return (item: SectionStamp): GroupId => {
+    const key = field.key(
+      field.field === STRAND_FIELD ? item.strand : item.groupKey,
+    )
+    return { key, label: field.sectionLabel(key) }
+  }
 }
 
 export interface FeatureGroupSection extends GroupId {
   top: number
   height: number
-}
-
-// Every item's section, capped the same way the layout capped them: the key
-// set is read off ALL items, placed or not, so a hidden section still counts
-// toward the cap it counted toward in the pack.
-export function sectionIdsOf(
-  map: ReadonlyMap<number, FeatureDataResult>,
-  facet: FeatureFacet,
-) {
-  const field = facetField(facet)
-  const keys = new Set<string>()
-  for (const data of map.values()) {
-    for (const item of data.flatbushItems) {
-      keys.add(featureGroupId(item, field).key)
-    }
-  }
-  const { sectionOf, mergedCount } = capGroupKeys(keys, Infinity)
-  const merged: GroupId = {
-    key: OVERFLOW_GROUP_KEY,
-    label: overflowLabel(mergedCount),
-  }
-  return (item: SectionStamp): GroupId => {
-    const id = featureGroupId(item, field)
-    return sectionOf(id.key) === id.key ? id : merged
-  }
 }
 
 // Derived from the laid-out items rather than carried beside them: every y in
@@ -77,8 +49,8 @@ export function featureGroupSections(
   map: ReadonlyMap<number, FeatureDataResult>,
   facet: FeatureFacet,
   chipPx: number,
-  sectionOf = sectionIdsOf(map, facet),
 ): FeatureGroupSection[] {
+  const sectionOf = sectionIdsOf(facet)
   const bounds = new Map<
     string,
     { label: string; top: number; bottom: number }

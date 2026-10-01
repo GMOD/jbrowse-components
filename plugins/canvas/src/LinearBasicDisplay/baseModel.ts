@@ -791,7 +791,7 @@ export default function baseStateModelFactory(
         if (!facet || hiddenGroupKeys.size === 0) {
           return undefined
         }
-        const sectionOf = sectionIdsOf(this.laidOutDataMap, facet)
+        const sectionOf = sectionIdsOf(facet)
         const ids = new Set<string>()
         for (const data of this.laidOutDataMap.values()) {
           for (const item of data.flatbushItems) {
@@ -1543,9 +1543,7 @@ export default function baseStateModelFactory(
           return []
         }
         const sectionOf =
-          facet && hiddenGroupKeys.size > 0
-            ? sectionIdsOf(self.laidOutDataMap, facet)
-            : undefined
+          facet && hiddenGroupKeys.size > 0 ? sectionIdsOf(facet) : undefined
         return derivedColorKey(
           scale,
           [...self.rpcDataMap.values()].filter(

@@ -62,14 +62,12 @@ function sectionOrder(inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>) {
   return facet ? facetField(facet).compare : compareGroupKeys
 }
 
-// Which section every item stacks into, capped over the whole display, or
-// undefined while ungrouped.
 function sectionAssignment(
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LabelRoomFactorFreeInputs,
 ) {
   const facet = effectiveFacet(inputs)
-  return facet ? sectionIdsOf(rpcDataMap, facet) : undefined
+  return facet ? sectionIdsOf(facet) : undefined
 }
 
 interface SectionPrep {

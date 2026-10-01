@@ -1,9 +1,3 @@
-import {
-  OVERFLOW_GROUP_KEY,
-  capGroupKeys,
-  compareGroupKeys,
-  overflowLabel,
-} from '@jbrowse/core/util/groupKeys'
 import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 
 import { drawnScales } from './drawnScales.ts'
@@ -24,7 +18,7 @@ export interface FacetLayout {
   field: string
   sections: FacetBand[]
   rowCount: number
-  /** Where each drawn key's rows start, a merged key's inside the overflow band. */
+  /** Where each drawn key's rows start. */
   firstRowOf: ReadonlyMap<string, number>
   /**
    * One row per value, which `rows` draws: every row a region packed a key
@@ -46,9 +40,7 @@ export function sectionsOn(region: MarkRegionData, field: string) {
 
 /**
  * The sections over every loaded region: each key as tall as the deepest
- * region packed it, the cap over the keys of all of them, the domain's order,
- * and the hidden ones gone. The keys merged into the overflow section keep
- * their own bands inside it, one after another, so their rows never overlap.
+ * region packed it, in the domain's order, less the hidden ones.
  */
 export function facetLayout(
   regions: Iterable<MarkRegionData>,
@@ -61,38 +53,22 @@ export function facetLayout(
       heights.set(key, Math.max(heights.get(key) ?? 0, rowCount))
     }
   }
-  const { sectionOf, mergedCount } = capGroupKeys(heights.keys(), Infinity)
-  const members = new Map<string, string[]>()
-  for (const key of [...heights.keys()].sort(compareGroupKeys)) {
-    const section = sectionOf(key)
-    const keys = members.get(section)
-    if (keys) {
-      keys.push(key)
-    } else {
-      members.set(section, [key])
-    }
-  }
   const sections: FacetBand[] = []
   const firstRowOf = new Map<string, number>()
   let next = 0
-  for (const key of [...members.keys()].sort(field.compare)) {
+  for (const key of [...heights.keys()].sort(field.compare)) {
     if (hidden.has(key)) {
       continue
     }
-    const firstRow = next
-    for (const member of members.get(key)!) {
-      firstRowOf.set(member, next)
-      next += heights.get(member)!
-    }
+    const rowCount = heights.get(key)!
+    firstRowOf.set(key, next)
     sections.push({
       key,
-      label:
-        key === OVERFLOW_GROUP_KEY
-          ? overflowLabel(mergedCount)
-          : field.sectionLabel(key),
-      firstRow,
-      rowCount: next - firstRow,
+      label: field.sectionLabel(key),
+      firstRow: next,
+      rowCount,
     })
+    next += rowCount
   }
   return {
     field: field.field,
