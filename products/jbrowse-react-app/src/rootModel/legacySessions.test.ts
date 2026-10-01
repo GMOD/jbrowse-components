@@ -14,6 +14,41 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 const tracks = [
   {
+    type: 'FeatureTrack',
+    trackId: 'svs',
+    name: 'svs',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'BedpeAdapter', uri: 'svs.bedpe' },
+  },
+  {
+    type: 'FeatureTrack',
+    trackId: 'loops',
+    name: 'loops',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'BedTabixAdapter', uri: 'loops.bed.gz' },
+    displays: [
+      {
+        type: 'LinearArcDisplay',
+        displayId: 'loops-LinearArcDisplay',
+        renderer: { type: 'ArcRenderer', color: 'purple' },
+      },
+    ],
+  },
+  {
+    type: 'FeatureTrack',
+    trackId: 'fusions',
+    name: 'fusions',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'BedpeAdapter', uri: 'fusions.bedpe' },
+    displays: [
+      {
+        type: 'LinearPairedArcDisplay',
+        displayId: 'fusions-LinearPairedArcDisplay',
+        color: 'jexl:defaultPairedArcColor(feature,alt)',
+      },
+    ],
+  },
+  {
     type: 'AlignmentsTrack',
     trackId: 'bam',
     name: 'bam',
@@ -467,4 +502,101 @@ test('a multi-wiggle track a reader overlays stays overlaid after a reload', asy
   const reloaded = await reload(harness)
   expect(reloaded.isRowLayout).toBe(false)
   expect(getConf(reloaded, ['rows', 'field'])).toBe('')
+})
+
+// v4.3.0's arc plugin is gone (ADR-163); its two displays open as the mark
+// display drawing what they drew.
+test('a v4 arc display opens as links', async () => {
+  const { display, notifications } = await load(
+    v4Session('FeatureTrack', 'loops', {
+      type: 'LinearArcDisplay',
+      configuration: 'loops-LinearArcDisplay',
+    }),
+  )
+  expect(notifications).toEqual([])
+  expect(display.type).toBe('LinearMarkDisplay')
+  expect(getConf(display, 'marks')).toEqual([{ mark: 'link' }])
+})
+
+test('a v4 paired arc display opens as links to each mate', async () => {
+  const { display, notifications } = await load(
+    v4Session('FeatureTrack', 'fusions', {
+      type: 'LinearPairedArcDisplay',
+      configuration: 'fusions-LinearPairedArcDisplay',
+    }),
+  )
+  expect(notifications).toEqual([])
+  expect(display.type).toBe('LinearMarkDisplay')
+  expect(getConf(display, 'marks')).toEqual([
+    {
+      mark: 'link',
+      transform: [{ type: 'mate' }],
+      encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+    },
+  ])
+})
+
+test('a v4 arc display on a session track opens as links', async () => {
+  const { display } = await load({
+    name: 'v4',
+    sessionTracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'st_loops',
+        name: 'st_loops',
+        assemblyNames: ['volvox'],
+        adapter: { type: 'BedTabixAdapter', uri: 'st.bed.gz' },
+        displays: [
+          { type: 'LinearArcDisplay', displayId: 'st_loops-LinearArcDisplay' },
+        ],
+      },
+    ],
+    views: [
+      {
+        id: 'lgv',
+        type: 'LinearGenomeView',
+        offsetPx: 0,
+        bpPerPx: 1,
+        displayedRegions: [
+          { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+        ],
+        tracks: [
+          {
+            id: 't1',
+            type: 'FeatureTrack',
+            configuration: 'st_loops',
+            displays: [
+              {
+                id: 'd1',
+                type: 'LinearArcDisplay',
+                configuration: 'st_loops-LinearArcDisplay',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  })
+  expect(display.type).toBe('LinearMarkDisplay')
+  expect(getConf(display, 'marks')).toEqual([{ mark: 'link' }])
+})
+
+// The usual v4 share link: the config names no arc display, and the reader
+// picked one from the track menu, so only the session says so.
+test('a v4 paired arc display picked from the menu opens as links', async () => {
+  const { display, notifications } = await load(
+    v4Session('FeatureTrack', 'svs', {
+      type: 'LinearPairedArcDisplay',
+      configuration: 'svs-LinearPairedArcDisplay',
+    }),
+  )
+  expect(notifications).toEqual([])
+  expect(display.type).toBe('LinearMarkDisplay')
+  expect(getConf(display, 'marks')).toEqual([
+    {
+      mark: 'link',
+      transform: [{ type: 'mate' }],
+      encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+    },
+  ])
 })

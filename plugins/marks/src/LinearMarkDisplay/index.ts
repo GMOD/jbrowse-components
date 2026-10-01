@@ -2,6 +2,7 @@ import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { configSchemaFactory } from './configSchema.ts'
+import { retiredTypes } from './retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -18,6 +19,7 @@ export default function LinearMarkDisplayF(pluginManager: PluginManager) {
       helpText:
         'A plot of the features: bars, points, spans, labels or links, each mapping fields to position and colour; Edit plot... picks them',
       configSchema,
+      retiredTypes,
       stateModel: () =>
         import('./model.ts').then(f =>
           f.stateModelFactory(pluginManager, configSchema),

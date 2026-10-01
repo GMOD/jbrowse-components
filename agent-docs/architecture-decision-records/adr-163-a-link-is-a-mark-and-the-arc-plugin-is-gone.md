@@ -143,6 +143,17 @@ diameter and a rule's thickness read `value`; a field on either is an
 by a field waits on a plot that asks for it. The mark display shipped only in
 v5 betas, so the mark-level `size` goes with no lift.
 
+### Amended 2026-09-30: v4 arc displays load as links
+
+A v4.3.0 share link or config naming `LinearArcDisplay` or
+`LinearPairedArcDisplay` dropped the track with a warning. Colin asked for a
+basic migration, and v4.3.0 shipped both types, so ADR-168's rule applies:
+they are `retiredTypes` on the mark display (`LinearMarkDisplay/retired.ts`).
+The arc display loads as one `link` mark, the paired one as a `link` over a
+`mate` step with `x2` at the mate. The v4 colour, thickness and label were
+callbacks into the deleted jexl functions and are dropped.
+`legacySessions.test.ts` in react-app loads both through `setSession`.
+
 ## Rejected alternatives
 
 - **Keep `LinearArcDisplay` and `LinearPairedArcDisplay` as presets over
