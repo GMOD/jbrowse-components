@@ -150,7 +150,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-anchorspans">**anchorSpans**</span><br><code>Map&lt;string, Span&gt;</code> | the anchor placements in stack px, relative to `renderOriginPx` | MultiWaySyntenyDisplay |
 | <span id="getter-anchorabsx">**anchorAbsX**</span><br><code>Map&lt;string, { coord: AnchorCoord; x: number; }&gt;</code> | each group's viewport-cut centre, in view px before the scroll offset | MultiWaySyntenyDisplay |
 | <span id="getter-rowframes">**rowFrames**</span><br><code>Map&lt;string, RowFrame &#124; undefined&gt;</code> |  | MultiWaySyntenyDisplay |
-| <span id="getter-lanesfrozen">**lanesFrozen**</span><br><code>boolean</code> | true only when the lanes were frozen on the anchor the view is on | MultiWaySyntenyDisplay |
+| <span id="getter-lanesfrozen">**lanesFrozen**</span><br><code>boolean</code> | true only while the view, on the anchor the lanes froze on, still shows part of the window they froze on | MultiWaySyntenyDisplay |
 | <span id="getter-frozendecisions">**frozenDecisions**</span><br><code>ReadonlyMap&lt;string, LaneDecision&gt;</code> | empty unless `lanesFrozen` | MultiWaySyntenyDisplay |
 | <span id="getter-lanegenesfetchspecs">**laneGenesFetchSpecs**</span><br><code>LaneGenesFetchSpec[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanelinksfetchspecs">**laneLinksFetchSpecs**</span><br><code>LaneLinksFetchSpec[]</code> | one spec per adjacent mate-lane pair | MultiWaySyntenyDisplay |
