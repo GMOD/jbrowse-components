@@ -11,33 +11,26 @@ sections after the order of work are the evidence it rests on.
 
 ## Next, in order
 
-1. **Fix the drifted labels and the inverted checkbox**, a few hours.
-   `pairOrientation` reads "Pair orientation" under Color by
-   (`plugins/alignments/src/shared/colorSchemes.ts:101`) and "Orientation"
-   under Arc color (`arcColorOptions.ts:25`); "First of pair strand"
-   (`colorSchemes.ts:96`) sits beside "First-of-pair strand"
-   (`facetLabels.ts:16`). LD's "Show cells with genome proportions"
-   (`plugins/variants/src/LDDisplay/trackMenuItems.ts:71`) and the
-   multi-sample display's "Show as genotype matrix"
-   (`plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts:316`) write
-   one `variantLayout` slot, each checked for the opposite value.
-2. **Resolve every colour on the main thread** on the mark display and the
-   multi-sample variant display. The first move is a test that a constant
-   colour edit leaves `rpcProps()` unchanged, which fails today. Then extend
-   `withValueColors` (`plugins/marks/src/LinearMarkDisplay/valueColor.ts`) to
-   every colour: a constant needs no new lane (ADR-198's scalar), a ramp over
-   another field needs none either since its raw values ride `colorValue`,
-   and a categorical colour needs ADR-167's index into each region's distinct
-   values. The multi-sample display sends
-   `paintedColorEncoding(self.colorEncoding)` in its `rpcProps`
-   (`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts:1146`).
-   Unsized.
-3. **One JSON box for every display**: `MarkPlot` as `ChannelSpec`'s
+1. **Resolve the multi-sample variant display's colour on the main thread**,
+   as the mark display now does
+   ([ADR-202](../architecture-decision-records/adr-202-every-mark-colour-resolves-on-the-main-thread.md)).
+   It sends `paintedColorEncoding(self.colorEncoding)` and `shadeByDosage` in
+   its `rpcProps` (`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`),
+   and the worker bakes each cell's colour in `makeSiteStyler`
+   (`shared/variantCellStyles.ts`) as `cellFill(hue, dosage, shade)`. Moving
+   it means the worker ships each alt cell's exact dosage beside its genotype
+   colour and each variant's key into the colour field's distinct values, and
+   the main thread repaints alt cells, the lane's `featureColors` and the
+   insertion glyphs from them, in both layouts. `cellAltDosage` is a byte, so
+   `shade(hue, 128/255)` can land one hex unit off today's `shade(hue, 1/2)`:
+   ship the dosage exactly or expect golden churn. A phase-set colour is per
+   cell and can stay a fetch input. About two days.
+2. **One JSON box for every display**: `MarkPlot` as `ChannelSpec`'s
    superset, keys taken by slot name, on the seven displays without one
    (§"One spec and one editor"). Unsized.
-4. **A colour-menu builder** over the colour object and the display's field
+3. **A colour-menu builder** over the colour object and the display's field
    presets (§"Menus as views over those objects"). Unsized.
-5. **Wiggle onto render-core's marks**, keeping its display type, with
+4. **Wiggle onto render-core's marks**, keeping its display type, with
    whiskers as three translucent bar marks and captures shown first:
    [wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md)
    is the worked proposal, sized at 7-10 days.
@@ -168,14 +161,13 @@ duplication the census found is cleanup alongside:
 
 ## One resolution path per object
 
-- **Colour.** Step 2. A probe in the Fable review confirmed the refetch on
-  the mark display: a constant, a categorical `domain` or `range`, or a ramp
-  over another field changes `rpcProps()`, and a threshold over the plotted
-  field does not
-  ([ADR-185](../architecture-decision-records/adr-185-a-colour-over-the-plotted-value-reads-the-y-lane.md)).
-  Canvas
+- **Colour.** Step 1. Canvas
   ([ADR-167](../architecture-decision-records/adr-167-the-feature-colours-scale-resolves-on-the-main-thread.md)),
-  multi-row and the alignments read fill resolve on the main thread already.
+  multi-row, the alignments read fill and the mark display
+  ([ADR-202](../architecture-decision-records/adr-202-every-mark-colour-resolves-on-the-main-thread.md))
+  resolve on the main thread, the mark display every colour but a `jexl:`
+  callback. Multi-way synteny's lane layers stamp through the mark display's
+  `withMarkColor`.
 - **The holdouts the grammar doc names.** Hi-C keeps `HicColor`, and its "Log
   scale" and "Emphasize faint contacts" toggles
   (`plugins/hic/src/LinearHicDisplay/trackMenuItems.ts:127-137`) re-implement
@@ -196,7 +188,7 @@ duplication the census found is cleanup alongside:
   is where what it already reads would travel. The mark display's `rows`
   beside a `facet`, which `rows-beside-facet` warns about, is the same
   capability.
-- **Wiggle.** Step 5. Wiggle still holds its own Slang for every picture
+- **Wiggle.** Step 4. Wiggle still holds its own Slang for every picture
   render-core draws (`plugins/wiggle/src/shared/wiggleMarks.ts:14-18`). On
   2026-09-27 Colin asked why wiggle should not move onto `bar` and `point` and
   said to aim for the ideal implementation
@@ -223,22 +215,12 @@ duplication the census found is cleanup alongside:
   removed for typed sources, so re-measure both before citing them again.
 
 The mark display is where each object's best implementation lands first —
-Edit plot, the rule list, main-thread scales once step 2 lands — and each
+Edit plot, the rule list, main-thread colour scales — and each
 capability then reaches every display reading the same object. That, rather
 than subtyping, is what a more powerful mark display buys.
 
 ## Open defects
 
-- **Worker and display disagree at a float32 cut.** The mark encoder's
-  threshold path (`packages/core/src/util/markEncoding.ts:864`, through
-  `thresholdIndex` at `thresholdScale.ts:51`) compares the widened value
-  against the raw cut, while the shader, legend and tooltip compare in
-  float32 (`thresholdBandOf`, `packages/render-core/src/marks/markRamp.ts:162`),
-  so a text mark over a BigWig score at a cut like `0.7` names the band below
-  the one its bar paints. Hand-written configs only. The fix compares in
-  float32 on both sides in the encoder alone, matching what is painted;
-  `thresholdIndex`'s other callers (canvas features, alignments) read float64
-  values and keep the double comparison.
 - **More than eight threshold cuts.** The GPU keeps eight (`markRamp.ts:97`)
   while Canvas2D paints every cut (`markRamp.ts:224`), and `markProblems` has
   no rule for it.
@@ -262,7 +244,7 @@ Colin rather than work:
 - **`scales.y.rules` as a `rule` layer with a constant `y`**, so a reference
   line takes a zoom range and a per-row value.
 - **A `tooltip` channel** naming the fields a hover prints. Wiggle's tooltip,
-  which lists every source's min, mean and max at the cursor, is a step 5 gap
+  which lists every source's min, mean and max at the cursor, is a step 4 gap
   this would answer generally.
 - **Ties fill a nearest-rank quantile**: at 0.95 a segmented copy-number track
   pins 99.5% of its values to one colour, because one value holds the rank. It
