@@ -1325,6 +1325,8 @@ what it does.
 
 ### plotKeysOf
 
+The plot keys a display config declares.
+
 ```js
 // type signature
 (conf: AnyConfigurationModel) => string[]

@@ -163,6 +163,17 @@ and what it does.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
+## plotKeysOf
+
+The plot keys a display config declares.
+
+```js
+// type signature
+(conf: AnyConfigurationModel) => string[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
 ## plotOf
 
 A display's plot as declared, defaults left off. A list sitting at a

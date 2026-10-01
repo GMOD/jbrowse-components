@@ -54,7 +54,10 @@ export interface PlotExample {
 
 const LIFT_ID = 'plotLift'
 
-/** #api core/configuration The plot keys a display config declares. */
+/**
+ * #api core/configuration
+ * The plot keys a display config declares.
+ */
 export function plotKeysOf(conf: AnyConfigurationModel): string[] {
   const definition = getConfigurationSchemaMetadata(conf)?.definition ?? {}
   return Object.keys(PLOT_VOCABULARY).filter(key =>
