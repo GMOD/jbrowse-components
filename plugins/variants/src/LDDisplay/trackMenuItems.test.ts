@@ -17,7 +17,7 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     showLabels: false,
     showVerticalGuides: true,
     squashToHeight: false,
-    useGenomicPositions: false,
+    variantLayout: 'columns' as const,
     setFocalSnp: jest.fn(),
     setLDMetric: jest.fn(),
     setShowLegend: jest.fn(),
@@ -125,6 +125,26 @@ test('the Show menu carries every visibility and layout toggle', () => {
     'Show variant labels',
     'Show vertical guides on hover',
     'Fit to display height',
-    'Show cells with genome proportions',
+    'One column per variant',
   ])
+})
+
+// The multi-sample display shows the same item over the same slot, so a
+// checked box means columns on both.
+test('the layout checkbox is checked in columns', () => {
+  const setVariantLayout = jest.fn()
+  const item = (variantLayout: 'genomic' | 'columns') =>
+    subMenuOf(
+      buildLDTrackMenuItems(makeSelf({ variantLayout, setVariantLayout })),
+      'Show...',
+    )!.find(i => labelOf(i) === 'One column per variant')!
+
+  const columns = item('columns')
+  expect('checked' in columns && columns.checked).toBe(true)
+  const genomic = item('genomic')
+  expect('checked' in genomic && genomic.checked).toBe(false)
+  if ('onClick' in genomic) {
+    genomic.onClick()
+  }
+  expect(setVariantLayout).toHaveBeenCalledWith('columns')
 })

@@ -1,3 +1,5 @@
+import { FACET_LABELS } from './facetLabels.ts'
+
 /**
  * The read fields a paired-end arc and the read cloud can paint, and the
  * radios the 'Arc color' submenu builds from them. They are the reads' own
@@ -22,7 +24,7 @@ export const ARC_COLOR_OPTIONS = [
   },
   {
     value: 'pairOrientation',
-    label: 'Orientation',
+    label: FACET_LABELS.pairOrientation,
     helpText:
       'Colors only by pair orientation (LR/RL/RR/LL), ignoring insert size. Useful when you only care about inversion/duplication signatures.',
   },

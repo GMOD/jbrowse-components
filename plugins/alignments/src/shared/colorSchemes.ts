@@ -1,3 +1,5 @@
+import { FACET_LABELS } from './facetLabels.ts'
+
 import type {
   BaseLayer,
   ColorSchemeType,
@@ -93,12 +95,20 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   firstOfPairStrand: {
     type: 'firstOfPairStrand',
     shaderScheme: 'firstOfPairStrand',
-    menu: { kind: 'radio', label: 'First of pair strand', group: 'pairedEnd' },
+    menu: {
+      kind: 'radio',
+      label: FACET_LABELS.firstOfPairStrand,
+      group: 'pairedEnd',
+    },
   },
   pairOrientation: {
     type: 'pairOrientation',
     shaderScheme: 'pairOrientation',
-    menu: { kind: 'radio', label: 'Pair orientation', group: 'pairedEnd' },
+    menu: {
+      kind: 'radio',
+      label: FACET_LABELS.pairOrientation,
+      group: 'pairedEnd',
+    },
     mateAware: true,
   },
   insertSizeAndOrientation: {

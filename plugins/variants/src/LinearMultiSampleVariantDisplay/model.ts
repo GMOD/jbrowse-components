@@ -32,6 +32,7 @@ import {
 } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
+import { variantLayoutMenuItem } from '../shared/variantLayoutMenuItem.ts'
 import {
   VARIANT_LANE_BOUNDS,
   VARIANT_LANE_LABEL_OPTIONS,
@@ -312,18 +313,7 @@ export function stateModelFactory(
           showSubmenuItems(): MenuItem[] {
             return [
               ...superShowSubmenuItems(),
-              {
-                label: 'Show as genotype matrix',
-                helpText:
-                  'Draw one equal-width column per variant in view, tied to its position by a line, so the genotype pattern across variants a few bases apart stays readable at any zoom. Off, each variant is drawn across the bases it covers, so a deletion reads as long as it is',
-                type: 'checkbox',
-                checked: !self.atGenomicPositions,
-                onClick: () => {
-                  self.setVariantLayout(
-                    self.atGenomicPositions ? 'columns' : 'genomic',
-                  )
-                },
-              },
+              variantLayoutMenuItem(self),
               ...(self.atGenomicPositions
                 ? [
                     {

@@ -320,7 +320,7 @@ describe('arc color follows the reads unless it names its own field', () => {
     display.setReadConnections('arc')
     display.setColorBy({ type: 'insertSize' })
     const arcMenu = () => menuSubItems(display.trackMenuItems(), 'Arc color')
-    clickMenuItem(arcMenu(), 'Orientation')
+    clickMenuItem(arcMenu(), 'Pair orientation')
     expect(display.arcColorField).toBe('pairOrientation')
     expect(findMenuItem(arcMenu(), 'Same as reads')).toMatchObject({
       checked: false,

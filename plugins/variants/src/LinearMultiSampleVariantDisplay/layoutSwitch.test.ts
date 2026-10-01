@@ -20,14 +20,14 @@ test('the layout is a fetch input, and columns spend no band on the lane', () =>
   expect(display.drawsInsertionMarkers).toBe(false)
 })
 
-test('Show as genotype matrix switches the layout both ways', () => {
+test('One column per variant switches the layout both ways', () => {
   const { display } = createTestEnvironment().createDisplay()
   const matrixItem = () => {
     const item = display
       .showSubmenuItems()
-      .find(i => 'label' in i && i.label === 'Show as genotype matrix')
+      .find(i => 'label' in i && i.label === 'One column per variant')
     if (!item || !('checked' in item) || !('onClick' in item)) {
-      throw new Error('no "Show as genotype matrix" checkbox')
+      throw new Error('no "One column per variant" checkbox')
     }
     return item
   }

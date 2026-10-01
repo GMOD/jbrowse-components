@@ -3,7 +3,10 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 
+import { variantLayoutMenuItem } from '../shared/variantLayoutMenuItem.ts'
+
 import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
+import type { VariantLayout } from '../shared/variantLayoutMenuItem.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -16,14 +19,14 @@ export interface LDMenuSelf extends IStateTreeNode {
   showLabels: boolean
   showVerticalGuides: boolean
   squashToHeight: boolean
-  variantLayout: 'genomic' | 'columns'
+  variantLayout: VariantLayout
   setFocalSnp: (snp: LDSnp | undefined) => void
   setLDMetric: (metric: LDMetric) => void
   setShowLegend: (arg: boolean) => void
   setShowLabels: (arg: boolean) => void
   setShowVerticalGuides: (arg: boolean) => void
   setSquashToHeight: (arg: boolean) => void
-  setVariantLayout: (arg: 'genomic' | 'columns') => void
+  setVariantLayout: (arg: VariantLayout) => void
 }
 
 // The radios pick which of the file's columns to draw, and a file that lacks
@@ -67,17 +70,7 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
       self.setShowVerticalGuides,
     ),
     squashToHeightCheckboxItem(self),
-    toggleItem(
-      'Show cells with genome proportions',
-      self.variantLayout === 'genomic',
-      on => {
-        self.setVariantLayout(on ? 'genomic' : 'columns')
-      },
-      {
-        helpText:
-          'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',
-      },
-    ),
+    variantLayoutMenuItem(self),
   ]
 }
 
