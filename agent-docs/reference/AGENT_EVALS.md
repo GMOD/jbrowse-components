@@ -33,6 +33,13 @@ heldout` runs tasks marked `heldOut`, phrased apart from the docs. Read the dev
 score against them; do not tune `jb.help` or the live-model guide on them, or
 they become dev tasks.
 
+`--set tutorials` runs the tasks marked `tutorial`: a request to do what a
+named website tutorial does, on its hosted data, so a run needs the network.
+They are the harder set the dev tasks saturate without, and they ask whether an
+agent can follow a tutorial at all. Their graders open `hg38` and `hs1` from
+genomes.jbrowse.org, which `selfCheck.ts` on Web cannot, so a new one is proven
+on Desktop against both a correct end state and the volvox baseline.
+
 A negative task passes by declining: `nonexistent-track` and `unknown-setting`
 fail an agent that invents a track or reports a setting it could not write.
 

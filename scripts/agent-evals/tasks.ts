@@ -21,17 +21,21 @@ export interface EvalTask {
   // Phrased apart from the docs and never run while editing them, so a change
   // that fits the dev tasks without serving the held-out ones shows as a gap.
   heldOut?: boolean
+  // Asks for what a website tutorial does, on its hosted data: the harder set,
+  // and the one that measures whether an agent can follow a tutorial at all
+  tutorial?: boolean
   // needs a local path, which only Desktop reads
   desktopOnly?: boolean
 }
 
-export type TaskSet = 'dev' | 'heldout' | 'all'
+export type TaskSet = 'dev' | 'heldout' | 'tutorials' | 'all'
 export type Surface = 'desktop' | 'web'
 
 export function selectTasks(set: TaskSet, filter = '', surface: Surface) {
   return TASKS.filter(
     t =>
-      (set === 'all' || (set === 'heldout') === (t.heldOut === true)) &&
+      (set === 'all' ||
+        set === (t.tutorial ? 'tutorials' : t.heldOut ? 'heldout' : 'dev')) &&
       (surface === 'desktop' || t.desktopOnly !== true) &&
       t.name.includes(filter),
   )
@@ -523,6 +527,53 @@ export const TASKS: EvalTask[] = [
       return {
         pass: views.length === 2 && first?.tracks.join() === 'gff3tabix_genes,volvox_test_vcf' && second?.refName === 'ctgB' && second.tracks.join() === 'gff3tabix_genes',
         detail: views,
+      }`,
+  },
+  // Tutorial tasks: hosted data, so a run needs the network and takes longer.
+  // Each names its tutorial the way a reader would, and the grader checks the
+  // state the tutorial's figure shows, by whatever route the agent took.
+  {
+    name: 'tut-methylation-haplotypes',
+    tutorial: true,
+    prompt:
+      "Reproduce the methylation tutorial's haplotype split: HG002's nanopore reads over the SNRPN CpG island on hg38, colored by 5mC and grouped by haplotype.",
+    grade: `
+      const view = session.views.find(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))
+      if (!view) {
+        return { pass: false, detail: session.views.map(v => v.type) }
+      }
+      const regions = await jb.visibleRegions(view.id)
+      const atSnrpn = regions.some(r => r.refName.replace(/^chr/, '') === '15' && r.start < 24962000 && r.end > 24948000)
+      const track = view.tracks.find(t => JSON.stringify(jb.mst.getSnapshot(t.configuration)).includes('HG002_SNRPN_5mC_haplotagged.bam'))
+      const conf = track?.activeDisplay.configuration
+      const baseColor = conf && jb.readConfObject(conf, ['baseColor', 'field'])
+      const facet = conf && jb.readConfObject(conf, 'facet')
+      const facetField = typeof facet === 'string' ? facet : facet?.field
+      return {
+        pass: atSnrpn && baseColor === 'modifications' && /\\bHP$/.test(facetField ?? ''),
+        detail: { regions, track: track?.configuration.trackId, baseColor, facet },
+      }`,
+  },
+  {
+    name: 'tut-synteny-tnnt3',
+    tutorial: true,
+    prompt:
+      'As in the genomes synteny tutorial, compare hg38 with T2T-CHM13 (hs1) at TNNT3 in a synteny view, ribbons colored by strand.',
+    grade: `
+      const view = session.views.find(v => v.type === 'LinearSyntenyView')
+      if (!view) {
+        return { pass: false, detail: session.views.map(v => v.type) }
+      }
+      const rows = view.views.map(v => ({ assembly: v.assemblyNames[0], regions: v.displayedRegions.map(r => r.refName + ':' + r.start + '-' + r.end) }))
+      const hg38 = view.views.find(v => v.assemblyNames.includes('hg38'))
+      const hs1 = view.views.find(v => v.assemblyNames.includes('hs1'))
+      const hg38Regions = hg38 ? await jb.visibleRegions(hg38.id) : []
+      const atTnnt3 = hg38Regions.some(r => r.refName.replace(/^chr/, '') === '11' && r.start < 1938706 && r.end > 1919568)
+      const synteny = view.syntenyTracks().length > 0
+      const field = typeof view.color === 'string' ? view.color : view.color?.field
+      return {
+        pass: Boolean(hs1) && atTnnt3 && synteny && field === 'strand',
+        detail: { rows, hg38Regions, tracks: view.syntenyTracks().map(t => t.configuration.trackId), color: view.color },
       }`,
   },
 ]
