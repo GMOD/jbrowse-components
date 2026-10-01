@@ -28,6 +28,7 @@ import {
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
+import { leftAxisGutterWidth } from '@jbrowse/display-ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   ContextMenuMixin,
@@ -49,6 +50,7 @@ import {
   treeSidebarShowMenuItems,
   fieldColorDeal,
   rowColorIsCustom,
+  svgSidebarWidth,
 } from '@jbrowse/tree-sidebar'
 import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -798,6 +800,22 @@ export default function stateModelFactory(
     .views(self => ({
       get spatialIndex() {
         return buildSpatialIndex(self.hierarchy)
+      },
+      /**
+       * #method
+       * Px the SVG export reserves left of the track for the tree and labels.
+       */
+      svgSidebarWidth() {
+        return svgSidebarWidth({
+          showTree: self.showTree,
+          hierarchy: self.hierarchy,
+          sources: self.sources,
+          rowHeight: self.effectiveRowHeight,
+          treeAreaWidth: self.treeAreaWidth,
+          showLabels:
+            self.numSources > 1 && !self.isOverlay && self.showRowLabels,
+          leftInset: leftAxisGutterWidth(self.axes),
+        })
       },
     }))
     .actions(self => ({

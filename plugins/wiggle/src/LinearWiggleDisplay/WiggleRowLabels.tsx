@@ -19,17 +19,14 @@ interface LabelModel {
   axes: YAxis[]
 }
 
-// Row labels (non-overlay mode), shared by the live WiggleComponent and the SVG
-// export so the two can't drift. `labelOffset` is where they start with no
-// axis, past the dendrogram.
+// Row labels (non-overlay mode) for the live WiggleComponent. `labelOffset` is
+// where they start with no axis, past the dendrogram.
 export default observer(function WiggleRowLabels({
   model,
   labelOffset,
-  exportContentLeft,
 }: {
   model: LabelModel
   labelOffset: number
-  exportContentLeft?: number
 }) {
   const { sources, isOverlay, effectiveRowHeight, numSources, showRowLabels } =
     model
@@ -40,7 +37,7 @@ export default observer(function WiggleRowLabels({
     <SvgRowLabels
       sources={sources}
       rowHeight={effectiveRowHeight}
-      labelOffset={rowLabelOffset(model.axes, labelOffset, exportContentLeft)}
+      labelOffset={rowLabelOffset(model.axes, labelOffset)}
     />
   )
 })

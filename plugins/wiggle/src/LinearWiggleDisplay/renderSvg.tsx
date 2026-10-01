@@ -1,11 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgTreeSidebar, treeSidebarOffset } from '@jbrowse/tree-sidebar'
+import { leftAxisGutterWidth } from '@jbrowse/display-ui'
+import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 import { encodeWiggleRegions } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
-import WiggleRowLabels from './WiggleRowLabels.tsx'
 import WiggleRowSeparators from './WiggleRowSeparators.tsx'
 
 import type { WiggleGpuProps } from '../shared/buildSourceRenderData.ts'
@@ -73,7 +73,7 @@ export async function renderSvg(
 }
 
 function WiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, view, canvasWidth, overlays } = props
+  const { model, canvasWidth, overlays } = props
   // No data-size gate: renderState is always defined (a [0,1] stub until
   // autoscale resolves), so an empty region paints an empty plot; the per-row
   // axes are the shell's, off `valueScales`, and draw only where a real domain
@@ -90,18 +90,16 @@ function WiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
       {overlays ? (
         <>
           <WiggleRowSeparators model={model} width={canvasWidth} />
-          <WiggleRowLabels
-            model={model}
-            labelOffset={treeSidebarOffset(model)}
-            exportContentLeft={Math.max(-view.offsetPx, 0)}
-          />
           <SvgTreeSidebar
             showTree={model.showTree}
-            showLabels={false}
+            showLabels={
+              model.numSources > 1 && !model.isOverlay && model.showRowLabels
+            }
             hierarchy={model.hierarchy}
-            sources={[]}
+            sources={model.sources}
             rowHeight={model.effectiveRowHeight}
             treeAreaWidth={model.treeAreaWidth}
+            leftInset={leftAxisGutterWidth(model.axes)}
           />
         </>
       ) : null}

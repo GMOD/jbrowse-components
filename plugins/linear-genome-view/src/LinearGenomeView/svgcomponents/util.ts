@@ -29,6 +29,7 @@ export interface SvgDisplayResult {
       height: number
       regionTooLarge?: boolean
       drawsWhenTooLarge?: boolean
+      svgSidebarWidth?: () => number
     }[]
   }
   result: ReactNode
@@ -275,6 +276,11 @@ export function labelOffset(
   return trackLabelMode(track, trackLabels) === 'offset' ? textHeight : 0
 }
 
+interface SidebarTrack {
+  configuration: AnyConfigurationModel
+  displays: { svgSidebarWidth?: () => number }[]
+}
+
 // Gap between a 'left' track label's right edge and the track body.
 // SVGTrackLabel right-aligns its text at `trackLabelOffset - TRACK_LABEL_GAP`,
 // so it and trackLabelLeftOffset must agree or the widest name overflows the
@@ -306,7 +312,7 @@ export function trackLabelLeftOffset({
   fontFamily,
   session,
 }: {
-  tracks: { configuration: AnyConfigurationModel }[]
+  tracks: SidebarTrack[]
   trackLabels: TrackLabelMode
   fontSize: number
   fontFamily?: string
@@ -314,14 +320,25 @@ export function trackLabelLeftOffset({
 }) {
   // no labels means no gutter, and that includes having no tracks to label: the
   // gap alone would push the whole figure right of a margin nothing is drawn in
-  return trackLabels === 'left' && tracks.length > 0
-    ? max(
-        tracks.map(t =>
-          measureText(svgTrackName(t, session), fontSize, fontFamily),
-        ),
-        0,
-      ) + TRACK_LABEL_GAP
-    : 0
+  const names =
+    trackLabels === 'left' && tracks.length > 0
+      ? max(
+          tracks.map(t =>
+            measureText(svgTrackName(t, session), fontSize, fontFamily),
+          ),
+          0,
+        ) + TRACK_LABEL_GAP
+      : 0
+  return names + sidebarGutter(tracks)
+}
+
+// The widest tree-and-labels sidebar among these tracks. It sits between the
+// 'left' track names and the track bodies, so the names right-align ahead of it.
+export function sidebarGutter(tracks: Pick<SidebarTrack, 'displays'>[]) {
+  return max(
+    tracks.map(t => t.displays[0]?.svgSidebarWidth?.() ?? 0),
+    0,
+  )
 }
 
 // vertical box a single track occupies. Shared by totalHeight (sum) and

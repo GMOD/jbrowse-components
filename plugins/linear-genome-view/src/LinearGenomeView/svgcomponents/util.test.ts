@@ -10,6 +10,7 @@ import {
   offsetLabelBaselineY,
   refNameLabelBaselineY,
   refNameLabelBoxHeight,
+  sidebarGutter,
 } from './util.ts'
 
 // Chrome reports a 13px Latin string's ink box as 15px tall (12 above the
@@ -141,3 +142,17 @@ test.each(fontSizes)(
     expect(cytobandTop).toBeGreaterThan(assemblyLabelBaselineY)
   },
 )
+
+describe('sidebarGutter', () => {
+  const track = (width?: number) => ({
+    displays: [width === undefined ? {} : { svgSidebarWidth: () => width }],
+  })
+
+  it('is the widest sidebar among the tracks', () => {
+    expect(sidebarGutter([track(40), track(120), track()])).toBe(120)
+  })
+
+  it('is 0 when no display draws a sidebar', () => {
+    expect(sidebarGutter([track(), track()])).toBe(0)
+  })
+})

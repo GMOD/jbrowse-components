@@ -228,13 +228,12 @@ describe('the y axis', () => {
     }
   })
 
-  // A panel at the left (the dendrogram) pushes the gutter inside the image,
-  // past the panel, instead of into the margin.
-  test('a scale with a panel at the left starts its gutter past it', async () => {
+  // The export parks the dendrogram in the margin past the axis strip, so a
+  // scale's on-screen `left` does not move its gutter off the plot.
+  test('a scale with a panel at the left keeps its gutter beside the plot', async () => {
     const { container } = await renderShell(axisHost([scale({ left: 40 })]), [])
     for (const x of labelXs(container)) {
-      expect(x).toBeGreaterThan(40)
-      expect(x).toBeLessThan(90)
+      expect(x).toBeLessThan(0)
     }
   })
 
@@ -365,5 +364,30 @@ describe('SvgLegend', () => {
     )
     expect(container.querySelector('[data-testid="color-legend"]')).toBeTruthy()
     expect(container.querySelector('g[transform="translate(0 28)"]')).toBeNull()
+  })
+})
+
+describe('the sidebar gutter', () => {
+  function withSidebar(width: number) {
+    return Object.create(makeDisplay({}), {
+      svgSidebarWidth: { value: () => width },
+    }) as TestDisplayModel
+  }
+
+  function clipRect(container: HTMLElement) {
+    return container.querySelector('clipPath rect')
+  }
+
+  test('widens the display clip leftwards by the sidebar the display reports', async () => {
+    const model = withSidebar(60)
+    const { container } = await renderShell(model, [])
+    expect(clipRect(container)?.getAttribute('x')).toBe('-60')
+    expect(clipRect(container)?.getAttribute('width')).toBe('868')
+  })
+
+  test('leaves the clip alone under plotOnly, which draws no sidebar', async () => {
+    const model = withSidebar(60)
+    const { container } = await renderShell(model, [], { plotOnly: true })
+    expect(clipRect(container)?.getAttribute('x')).toBe('0')
   })
 })

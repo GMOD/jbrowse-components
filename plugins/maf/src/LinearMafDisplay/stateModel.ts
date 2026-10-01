@@ -48,6 +48,7 @@ import {
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
+  svgSidebarWidth,
 } from '@jbrowse/tree-sidebar'
 import { visibleStatsDomain } from '@jbrowse/wiggle-core'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
@@ -1336,6 +1337,22 @@ export default function stateModelFactory(
             self.treeAreaWidth,
             self.showBranchLength,
           )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         * Px the SVG export reserves left of the track for the tree and labels.
+         */
+        svgSidebarWidth() {
+          return svgSidebarWidth({
+            showTree: self.showTree,
+            hierarchy: self.hierarchy,
+            sources: self.sources,
+            rowHeight: self.effectiveRowHeight,
+            treeAreaWidth: self.treeAreaWidth,
+            showLabels: self.showRowLabels,
+          })
         },
       }))
       .actions(self => ({

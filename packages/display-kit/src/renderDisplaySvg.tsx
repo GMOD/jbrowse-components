@@ -73,6 +73,19 @@ export function exportsTooLargeNote(model: {
 }
 
 /**
+ * Px the export reserves left of the display for its tree and row labels, 0 for
+ * a display with no sidebar. The display answers from its settings and loaded
+ * rows, as `svgLegendWidth` does, so the container can size its left gutter
+ * before it places any body.
+ */
+export function svgSidebarWidthOf(model: object): number {
+  return 'svgSidebarWidth' in model &&
+    typeof model.svgSidebarWidth === 'function'
+    ? (model.svgSidebarWidth() as number)
+    : 0
+}
+
+/**
  * What the shell resolves for the body. `canvasWidth` is the load-bearing one:
  * see {@link renderDisplaySvg}.
  */
@@ -211,7 +224,7 @@ export function SvgYAxis({
         const { ruleMarks = [] } = axis
         const bandTops = bandsOnScreen(axis, height)
         const gutterLeft = axisGutterLeft(
-          axis,
+          { ...axis, left: 0 },
           width,
           AXIS_RIGHT_INSET_PX,
           contentLeft,
@@ -305,6 +318,7 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   const view = containingHost(model)
   const height = model.height
   const overlays = !opts?.plotOnly
+  const sidebarWidth = overlays ? svgSidebarWidthOf(model) : 0
   return (
     <SvgChrome
       regionTooLarge={exportsTooLargeNote(model)}
@@ -313,7 +327,8 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
     >
       <SvgClipRect
         id={`display-clip-${svgNodeId(model)}`}
-        width={view.width}
+        x={-sidebarWidth}
+        width={view.width + sidebarWidth}
         height={height}
       >
         <Body

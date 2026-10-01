@@ -4509,7 +4509,8 @@
         "SvgPinnedHighlight",
         "SvgYAxis",
         "exportsTooLargeNote",
-        "renderDisplaySvg"
+        "renderDisplaySvg",
+        "svgSidebarWidthOf"
       ],
       "worker": "stub",
       "uiVia": [
@@ -4737,6 +4738,7 @@
         "cullOverlappingLabels",
         "formatScore",
         "isLiveModel",
+        "leftAxisGutterWidth",
         "plainChromeOverlays",
         "plainTrackControl",
         "resolveOverlays",
@@ -4762,6 +4764,7 @@
         "axisDrawn",
         "axisGutterLeft",
         "axisGutterWidth",
+        "leftAxisGutterWidth",
         "rulesABand"
       ],
       "worker": "real"

@@ -49,7 +49,10 @@ import {
   stableIdentityComputed,
 } from '@jbrowse/display-kit/stableIdentityComputed'
 import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
+import {
+  YSCALEBAR_LABEL_OFFSET,
+  leftAxisGutterWidth,
+} from '@jbrowse/display-ui'
 import {
   addDisposer,
   getSnapshot,
@@ -74,6 +77,7 @@ import {
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
   treeSidebarOffset,
+  svgSidebarWidth,
 } from '@jbrowse/tree-sidebar'
 import {
   DEFAULT_POINT_DIAMETER_PX,
@@ -1613,6 +1617,23 @@ export function stateModelFactory(
          */
         get spatialIndex() {
           return buildSpatialIndex(this.hierarchy)
+        },
+        /**
+         * #method
+         * Px the SVG export reserves left of the track for the tree and labels.
+         */
+        svgSidebarWidth() {
+          return self.drawsKeyedRows
+            ? svgSidebarWidth({
+                showTree: self.showTree,
+                hierarchy: this.hierarchy,
+                sources: self.sources,
+                rowHeight: self.effectiveRowHeight,
+                treeAreaWidth: self.treeAreaWidth,
+                showLabels: self.showRowLabels,
+                leftInset: leftAxisGutterWidth(self.axes),
+              })
+            : 0
         },
       }))
       .volatile(self => ({

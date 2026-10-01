@@ -20,6 +20,7 @@ export interface SvgExportTrack {
   displays: {
     height: number
     svgLegendWidth?: () => number
+    svgSidebarWidth?: () => number
     /**
      * Optional, and the option is the point: SVG export is a substantial extra
      * implementation for a display type, and a third-party plugin that has not

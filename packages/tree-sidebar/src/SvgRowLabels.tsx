@@ -1,13 +1,12 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
-import { getFillProps, max, measureText } from '@jbrowse/core/util'
+import { getFillProps } from '@jbrowse/core/util'
 
+import { rowLabelFontSize, rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
 import { rowLabelsCarryText } from './rowLabelsCarryText.ts'
 import { rowRuns } from './rowRuns.ts'
 
 import type { RowLabelSource } from './types.ts'
-
-const SWATCH_WIDTH = 8
 
 // Consecutive rows sharing a color paint as one rect (`rowRuns` owns that rule
 // and says why; rows with no color contribute nothing, so a partly-colored
@@ -43,7 +42,7 @@ export function SvgRowLabels({
   opaque?: boolean
 }) {
   const palette = usePalette()
-  const fontSize = Math.min(rowHeight, 12)
+  const fontSize = rowLabelFontSize(rowHeight)
   const stripWash = alpha(palette.background.paper, opaque ? 1 : 0.9)
   const stripTint = alpha(palette.text.primary, opaque ? 0 : 0.04)
   const separator = alpha(palette.text.primary, 0.12)
@@ -59,14 +58,7 @@ export function SvgRowLabels({
     )
   }
 
-  // `name` is the identity (key + hit-test); `label` is the displayed string if
-  // the adapter config supplied one.
-  const boxWidth = textFits
-    ? max(
-        sources.map(s => measureText(s.label ?? s.name, fontSize) + 10),
-        10,
-      )
-    : SWATCH_WIDTH
+  const boxWidth = rowLabelsBoxWidth(sources, rowHeight)
 
   return textFits ? (
     <g transform={`translate(${labelOffset} 0)`}>

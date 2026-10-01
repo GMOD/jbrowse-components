@@ -6,7 +6,12 @@ import { exportsTooLargeNote } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
-import { labelOffset, trackBoxOffsets, trackLabelMode } from './util.ts'
+import {
+  labelOffset,
+  sidebarGutter,
+  trackBoxOffsets,
+  trackLabelMode,
+} from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
@@ -35,6 +40,8 @@ export default function SVGTracks({
 }) {
   const session = getSession(model)
   const x = Math.max(-model.offsetPx, 0)
+  const namesOffset =
+    trackLabelOffset - sidebarGutter(displayResults.map(r => r.track))
   const offsets = trackBoxOffsets(
     displayResults.map(r => r.track),
     trackLabels,
@@ -76,8 +83,8 @@ export default function SVGTracks({
               fontSize={fontSize}
               textHeight={textHeight}
               trackLabels={trackLabelMode(track, trackLabels)}
-              trackLabelOffset={trackLabelOffset}
-              x={x}
+              trackLabelOffset={namesOffset}
+              x={x + trackLabelOffset}
             />
           </g>
         )

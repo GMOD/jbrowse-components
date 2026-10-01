@@ -1,19 +1,18 @@
 import { BAND_LABEL_WIDTH, SvgBandLabels } from './SvgBandLabels.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 import { SvgTreePath } from './SvgTreePath.tsx'
+import { svgSidebarWidth } from './svgSidebarWidth.ts'
 import { treeIsShowing, treeSidebarOffset } from './treeSidebarGeometry.ts'
 
 import type { RowBand } from './arrangeRows.ts'
 import type { ClusterHierarchyNode, RowLabelSource } from './types.ts'
 
 // The SVG-export counterpart of the on-screen `TreeSidebar`: the left sidebar's
-// dendrogram plus its row labels, rendered together. Every clusterable display's
-// `renderSvg` should paint its sidebar through THIS, never `SvgRowLabels`
-// directly — the two are coupled because the labels are offset right by
-// `treeAreaWidth` to clear the tree, so drawing labels without the tree leaves a
-// blank reserved gutter (the bug this component exists to prevent). Ordering is
-// safe either way: the tree strokes occupy x∈[0,treeAreaWidth] and the labels
-// x≥treeAreaWidth, so they never overlap.
+// dendrogram plus its row labels, rendered together and drawn to the left of the
+// display's own box, in the gutter the export reserves from `svgSidebarWidth`.
+// Every clusterable display's `renderSvg` should paint its sidebar through THIS,
+// never `SvgRowLabels` directly: the labels are offset right by `treeAreaWidth`
+// to clear the tree, so drawing labels without the tree leaves a blank gutter.
 export function SvgTreeSidebar({
   showTree,
   hierarchy,
@@ -24,6 +23,7 @@ export function SvgTreeSidebar({
   scrollTop,
   availableHeight,
   bands = [],
+  leftInset = 0,
 }: {
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
@@ -38,6 +38,9 @@ export function SvgTreeSidebar({
   // The bands' strip, beside the tree and ahead of the labels, drawn whatever
   // `showLabels` says.
   bands?: readonly RowBand[]
+  // Px of the export's left margin something else holds beside the plot (the
+  // scalebars), which the sidebar sits past.
+  leftInset?: number
 }) {
   // The tree, but only if it is showing — one binding rather than a boolean
   // beside the hierarchy it is about, so the hint, the path and the label
@@ -48,8 +51,18 @@ export function SvgTreeSidebar({
     ? hierarchy
     : undefined
   const labelOffset = treeSidebarOffset({ showTree, hierarchy, treeAreaWidth })
+  const width = svgSidebarWidth({
+    showTree,
+    hierarchy,
+    sources,
+    rowHeight,
+    treeAreaWidth,
+    showLabels,
+    bands,
+    leftInset,
+  })
   return (
-    <>
+    <g transform={`translate(${-width} 0)`}>
       <SvgBandLabels
         bands={bands}
         rowHeight={rowHeight}
@@ -70,6 +83,6 @@ export function SvgTreeSidebar({
       {drawnTree ? (
         <SvgTreePath hierarchy={drawnTree} scrollTop={scrollTop} />
       ) : null}
-    </>
+    </g>
   )
 }

@@ -240,15 +240,12 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     expect(html).toContain('>b</text>')
   })
 
-  // With no tree the shell moves the axis into the export margin, so the
-  // labels start at the content edge rather than past a strip the axis left.
-  it('starts the labels at the content edge when the axis sits in the margin', async () => {
+  it('parks the labels left of the 50px axis strip', async () => {
     const html = render(await renderSvg(makeModel()))
-    expect(html).toContain('translate(4 0)')
-    expect(html).not.toContain('translate(54 0)')
+    expect(html).toContain('translate(-66.65625 0)')
   })
 
-  it('draws the dendrogram and shifts the labels past it', async () => {
+  it('draws the dendrogram and the labels in the margin, past the axis strip', async () => {
     const html = render(
       await renderSvg(
         makeModel({
@@ -259,17 +256,13 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
       ),
     )
     expect(html).toContain('stroke="#0008"')
-    // past the 40px gutter AND past the 50px axis strip beyond it, plus the
-    // 4px gap — the same place the on-screen path puts them
-    expect(html).toContain('translate(94 0)')
+    expect(html).toContain('translate(-106.65625 0)')
+    expect(html).toContain('translate(40 0)')
   })
 
-  // The axes are left-oriented: their ticks and numbers occupy the gutter that
-  // ends at their spine. With no dendrogram that gutter is the export margin;
-  // a tree panel sits between the two, so an axis left there ran its spine
-  // down the whole height of the panel. The scale's `left` is what moves the
-  // gutter past it, and the shell honours it for every row.
-  it('anchors the per-row axes past the tree gutter rather than inside it', async () => {
+  // The scalebars stay beside the plot in the export margin whether or not a
+  // tree is showing; the tree and labels sit left of them.
+  it('keeps the per-row axes beside the plot when a tree is showing', async () => {
     const gutterXs = (html: string) =>
       [
         ...html.matchAll(
@@ -289,7 +282,7 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
           ),
         ),
       ),
-    ).toEqual([40, 40])
+    ).toEqual([-50, -50])
   })
 
   it('omits the dendrogram when the tree is hidden', async () => {

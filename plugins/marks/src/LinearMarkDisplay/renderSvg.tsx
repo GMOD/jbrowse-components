@@ -3,13 +3,12 @@ import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgHaloText, axisPlotBox } from '@jbrowse/display-ui'
 import {
-  SvgRowLabels,
-  SvgTreeSidebar,
-  treeSidebarOffset,
-} from '@jbrowse/tree-sidebar'
-import { rowLabelOffset } from '@jbrowse/wiggle-core'
+  SvgHaloText,
+  axisPlotBox,
+  leftAxisGutterWidth,
+} from '@jbrowse/display-ui'
+import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 import { TEXT_HALO_PX, TEXT_MARK_FONT_PX, placeTextMarks } from './textMarks.ts'
@@ -71,8 +70,7 @@ export async function renderSvg(
 }
 
 function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, view, canvasWidth, height, overlays, opts, renderBlocks } =
-    props
+  const { model, canvasWidth, height, overlays, opts, renderBlocks } = props
   const { yTop, plotHeight } = axisPlotBox(height)
   const { sections, rows } = model.facetLayout
   const rowHeight = model.effectiveRowHeight
@@ -111,26 +109,14 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
       ) : null}
       {overlays && model.drawsKeyedRows ? (
         <g transform={`translate(0,${yTop})`}>
-          {model.showRowLabels ? (
-            <SvgRowLabels
-              sources={model.sources}
-              rowHeight={model.effectiveRowHeight}
-              labelOffset={rowLabelOffset(
-                model.axes,
-                treeSidebarOffset(model),
-                Math.max(-view.offsetPx, 0),
-              )}
-              scrollTop={model.scrollTop}
-              availableHeight={plotHeight}
-            />
-          ) : null}
           <SvgTreeSidebar
             showTree={model.showTree}
-            showLabels={false}
+            showLabels={model.showRowLabels}
             hierarchy={model.hierarchy}
-            sources={[]}
+            sources={model.sources}
             rowHeight={model.effectiveRowHeight}
             treeAreaWidth={model.treeAreaWidth}
+            leftInset={leftAxisGutterWidth(model.axes)}
             scrollTop={model.scrollTop}
             availableHeight={plotHeight}
           />

@@ -34,6 +34,8 @@ export type {
 } from './clusterProvenance.ts'
 export { SvgTreePath } from './SvgTreePath.tsx'
 export { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
+export { svgSidebarWidth } from './svgSidebarWidth.ts'
+export type { SvgSidebarProps } from './svgSidebarWidth.ts'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
 export { setupRunClusteringAutorun } from './runClusteringAutorun.ts'
 export { setupRowSortAutorun } from './rowSortAutorun.ts'

@@ -144,6 +144,7 @@ export {
   axisDrawn,
   axisGutterLeft,
   axisGutterWidth,
+  leftAxisGutterWidth,
 } from './axisPlacement.ts'
 export { default as AxisGutter } from './AxisGutter.tsx'
 export { AxisCaptionOverlay, default as AxisCaption } from './AxisCaption.tsx'

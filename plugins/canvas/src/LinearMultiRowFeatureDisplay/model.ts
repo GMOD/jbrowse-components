@@ -47,6 +47,7 @@ import {
   rowFieldValue,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
+  svgSidebarWidth,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -805,6 +806,21 @@ export default function stateModelFactory(
        */
       get spatialIndex() {
         return buildSpatialIndex(self.hierarchy)
+      },
+      /**
+       * #method
+       * Px the SVG export reserves left of the track for the tree and labels.
+       */
+      svgSidebarWidth() {
+        return svgSidebarWidth({
+          showTree: self.showTree,
+          hierarchy: self.hierarchy,
+          sources: self.labelSources,
+          rowHeight: self.effectiveRowHeight,
+          treeAreaWidth: self.treeAreaWidth,
+          showLabels: self.showRowLabels,
+          bands: self.rowBands,
+        })
       },
     }))
     .views(self => {
