@@ -1,6 +1,6 @@
 import { colord } from '@jbrowse/core/util/colord'
 
-import { ALT_HUE, cellFill, shadeByDosage } from './cellFill.ts'
+import { ALT_HUE, HET_DOSAGE, cellFill, shadeByDosage } from './cellFill.ts'
 import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { getAlleleColor } from './drawAlleleCount.ts'
 
@@ -75,8 +75,15 @@ describe('shadeByDosage', () => {
 
 describe('cellFill', () => {
   it('shading off is the bare hue at any dosage', () => {
-    expect(cellFill('#d32f2f', 0.5, false)).toBe('#d32f2f')
-    expect(cellFill('#d32f2f', 0.5, true)).not.toBe('#d32f2f')
+    expect(cellFill('#d32f2f', 128, false)).toBe('#d32f2f')
+    expect(cellFill('#d32f2f', 128, true)).not.toBe('#d32f2f')
+  })
+
+  it('reads the dosage as the byte a cell carries', () => {
+    expect(cellFill('#d32f2f', 128, true)).toBe(
+      shadeByDosage('#d32f2f', HET_DOSAGE),
+    )
+    expect(cellFill('#d32f2f', 255, true)).toBe('#d32f2f')
   })
 })
 
@@ -118,7 +125,7 @@ describe('getAlleleColor: dosage over CALLED alleles', () => {
   it('takes the override hue, and shades it the same way', () => {
     expect(getAlleleColor('1/1', true, '#d32f2f')).toBe('#d32f2f')
     expect(getAlleleColor('0/1', true, '#d32f2f')).toBe(
-      shadeByDosage('#d32f2f', 0.5),
+      shadeByDosage('#d32f2f', HET_DOSAGE),
     )
     expect(getAlleleColor('0/1', true, '#d32f2f', false)).toBe('#d32f2f')
   })

@@ -66,8 +66,13 @@ Each channel carries one variable through one scale.
 - **One ramp for every mode**, bounded by a fixed pale ceiling so a het in a
   class colour still reads as that class. Full dosage is the hue itself, which
   is also what makes a legend swatch and a hom cell the same colour. The
-  `shadeByDosage` slot turns it off; it is a fetch input, since the worker
-  colours the cells.
+  `shadeByDosage` slot turns it off.
+- **The main thread paints the hue and the shade (ADR-203).** The worker reads
+  what the hue needs off each variant (`cellHueRead`: a field's value as text,
+  or a `jexl:` callback's colour) and ships it beside each cell's
+  `altDosageByte`; `paintCells` repaints the alt cells and the lane from them.
+  So the dosage is the byte, in the cells and the key's het swatch
+  (`HET_DOSAGE`) alike. A phase-set hue is per cell and stays the worker's.
 - **A scale's domain has no gaps**: a record with no structural class files
   under the SV key's `''`, which core's vocabulary names `SNV/indel`, and an
   unannotated record is `UNANNOTATED_IMPACT`. Without those the mode was class
@@ -85,12 +90,13 @@ Each channel carries one variable through one scale.
 
 `shared/variantLegend.ts` builds from the scale in use plus the absent-data
 categories present, and its swatches come from the same functions the cells do.
-`hasSecondaryAlt`, `hasUnphased`, `hasNoCall` and `paintedDomain` are the cell
-loops' own record of what they emitted (`paintedCategories`, one bit per
-`CELL_*`), merged across regions in `paintedLegendFlags`. "The site is
-multiallelic" is not the same claim as "a secondary-alt cell is in the fetched
-cell data", and the legend makes the second one. Fetched, not visible: the
-regular display fetches wider than the viewport.
+`hasSecondaryAlt`, `hasUnphased` and `hasNoCall` are the cell loops' own record
+of what they emitted (`paintedCategories`, one bit per `CELL_*`), merged across
+regions in `paintedLegendFlags`; `paintedDomain` keys the values a variant with
+an alt cell carried (`paintedColorValues`). "The site is multiallelic" is not
+the same claim as "a secondary-alt cell is in the fetched cell data", and the
+legend makes the second one. Fetched, not visible: the regular display fetches
+wider than the viewport.
 
 ## Mixed ploidy: five consumers, one contract
 

@@ -50,7 +50,7 @@ function cellData(records: LaneRecord[]): CellDataResult {
     hasSecondaryAlt: false,
     hasUnphased: false,
     hasNoCall: false,
-    paintedDomain: [],
+    colorRead: undefined,
     hasConsequence: false,
     hasSvType: false,
     hasPhaseSet: false,
@@ -71,7 +71,8 @@ function cellData(records: LaneRecord[]): CellDataResult {
         numCells: 0,
         refCellCount: 0,
         paintedCategories: 0,
-        paintedDomain: [],
+        colorValues: [],
+        paintedColorValues: [],
         featureGenotypeMap: Object.fromEntries(
           records.map(([id, start, end, description]) => [
             id,
@@ -93,7 +94,7 @@ function cellData(records: LaneRecord[]): CellDataResult {
         ),
         featureIndexData: index.data,
         featureInsertedBp: new Int32Array(records.length),
-        featureColors: new Uint32Array(records.length).fill(0xff00ff00),
+        featureColorValues: new Uint32Array(records.length),
       },
     },
   }

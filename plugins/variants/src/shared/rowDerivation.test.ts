@@ -85,6 +85,9 @@ function landCells(display: Display) {
             { genotypeCodes: codes(gts) },
           ]),
         ),
+        featureColorValues: new Uint32Array(Object.keys(GENOTYPES).length),
+        colorValues: [],
+        paintedColorValues: [],
       },
     },
   } as unknown as Parameters<Display['setCellData']>[0])

@@ -49,7 +49,13 @@ export function shadeByDosage(hue: string, dosage: number) {
   return fill
 }
 
-/** `shade(hue, dosage)`, or the bare hue where the display turns shading off. */
-export function cellFill(hue: string, dosage: number, shade: boolean) {
-  return shade ? shadeByDosage(hue, dosage) : hue
+/**
+ * `shade(hue, dosage)` for a cell, whose dosage crosses from the worker as
+ * `altDosageByte`, or the bare hue where the display turns shading off.
+ */
+export function cellFill(hue: string, altDosage: number, shade: boolean) {
+  return shade ? shadeByDosage(hue, altDosage / 255) : hue
 }
+
+/** A diploid het's dosage as its cell carries it, `altDosageByte` of `0/1`. */
+export const HET_DOSAGE = 128 / 255

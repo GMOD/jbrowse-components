@@ -41,9 +41,9 @@ export interface LaneRegion {
  * **Main thread, and no second fetch.** The variants worker already parsed these
  * records (it read every genotype off them), and everything a variant *record*
  * is already rides in the payload — span in `featurePositions`, ID and
- * description and SO type in `featureGenotypeMap`, resolved color in
- * `featureColors`. So the features are rebuilt here from bytes already on the
- * wire: no extra RPC, no extra payload, and `showVariantLane` stays a
+ * description and SO type in `featureGenotypeMap`, and the color
+ * `paintCells` resolves into `featureColors`. So the features are rebuilt here
+ * from bytes already on the wire: no extra RPC, no extra payload, and `showVariantLane` stays a
  * render-tier setting that a toggle or a band resize must not refetch. The pass
  * is per record (thousands), not per cell (millions), and it is memoized on the
  * model beside the packer — which `plugin-canvas` also runs main-thread.

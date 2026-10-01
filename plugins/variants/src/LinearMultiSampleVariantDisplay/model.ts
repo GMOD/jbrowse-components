@@ -31,6 +31,7 @@ import {
   clampLineZoneHeight,
 } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
+import { paintCells } from '../shared/paintCells.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import {
   VARIANT_LANE_BOUNDS,
@@ -364,6 +365,45 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * Each fetched region with its alt cells and lane colours painted
+         * through the current `color` (`paintCells`). Independent of the rows,
+         * so a reorder repaints nothing and a recolour refetches nothing.
+         */
+        get paintedRegionCells() {
+          const { cellData, cellPaint, cellPaintOptions } = self
+          const out = new Map<
+            number,
+            ShippedRegionData & { featureColors: Uint32Array }
+          >()
+          if (cellData?.mode === 'regular') {
+            for (const k in cellData.perRegionCellData) {
+              const data = cellData.perRegionCellData[k]!
+              out.set(Number(k), {
+                ...data,
+                ...paintCells(data, cellPaint, cellPaintOptions),
+              })
+            }
+          }
+          return out
+        },
+        /**
+         * #getter
+         * The column layout's payload with its alt cells painted.
+         */
+        get paintedMatrixCells() {
+          const { cellData, cellPaint, cellPaintOptions } = self
+          return cellData?.mode === 'matrix'
+            ? {
+                ...cellData,
+                cellColors: paintCells(cellData, cellPaint, cellPaintOptions)
+                  .cellColors,
+              }
+            : undefined
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * The one walk of `perRegionCellData`, and the point where a fetched
          * cell becomes a *placed* cell. Every regular-mode consumer reads this
          * map, so "does the glyph overlay see the same regions, and the same
@@ -384,20 +424,18 @@ export function stateModelFactory(
          * display's is: the overlay draws inside an effect, where nothing it
          * reads is tracked, so the read has to happen here for a refetch to
          * repaint. Rebuilding is cheap (typical view shows 1-3 regions); MobX
-         * caches the computed so only cellData or a reorder invalidates it.
+         * caches the computed so only a payload, a recolour or a reorder
+         * invalidates it.
          */
         get perRegionCellMap() {
-          const { cellData, rowRemap } = self
+          const { paintedRegionCells, rowRemap } = self
           const out = new Map<number, Placed<ShippedRegionData>>()
           // No rowRemap means no data has landed: an empty map is the same
           // "nothing to draw" every consumer already handles. Never fall back to
           // identity placement — the worker's row order is its own.
-          if (cellData?.mode === 'regular' && rowRemap) {
-            for (const k in cellData.perRegionCellData) {
-              out.set(
-                Number(k),
-                placeVariantRows(cellData.perRegionCellData[k]!, rowRemap),
-              )
+          if (rowRemap) {
+            for (const [k, data] of paintedRegionCells) {
+              out.set(k, placeVariantRows(data, rowRemap))
             }
           }
           return out
@@ -410,9 +448,9 @@ export function stateModelFactory(
          * counterpart of `perRegionCellMap`.
          */
         get placedMatrixData(): PlacedMatrixData | undefined {
-          const { cellData, rowRemap } = self
-          return cellData?.mode === 'matrix' && rowRemap
-            ? placeVariantRows(cellData, rowRemap)
+          const { paintedMatrixCells, rowRemap } = self
+          return paintedMatrixCells && rowRemap
+            ? placeVariantRows(paintedMatrixCells, rowRemap)
             : undefined
         },
       }))
@@ -729,9 +767,9 @@ export function stateModelFactory(
          *
          * See `buildLaneRenderData` for why this is main-thread and costs no
          * second fetch. A MobX computed, rebuilt when the payload or the label
-         * mode changes: keyed off the fetched `perRegionCellData`, not the
-         * row-placed `perRegionCellMap`, since a record's mark does not move
-         * with the rows, and off the **displayed regions'** bounds, never
+         * mode changes: keyed off `paintedRegionCells`, not the row-placed
+         * `perRegionCellMap`, since a record's mark does not move with the
+         * rows, and off the **displayed regions'** bounds, never
          * `visibleRegions`, which the LGV rebuilds on every pan and zoom frame.
          * Either would re-run the whole chain below — SimpleFeature per
          * record, jexl color eval, packing, label solves — per reorder or per
@@ -741,19 +779,16 @@ export function stateModelFactory(
           const out = new Map<number, LayoutRegionData>()
           // the payload is read only once the band is on, so an arrival
           // wakes nothing downstream while it is off
-          const cellData =
-            self.canRender && self.topBands.laneHeight > 0
-              ? self.cellData
-              : undefined
-          if (cellData?.mode === 'regular') {
+          if (self.canRender && self.topBands.laneHeight > 0) {
             const config = self.laneDisplayConfig
             const { jexl } = getEnv<{ pluginManager: PluginManager }>(
               self,
             ).pluginManager
             const { displayedRegions } = self.view
-            for (const k in cellData.perRegionCellData) {
-              const displayedRegionIndex = Number(k)
-              const data = cellData.perRegionCellData[k]!
+            for (const [
+              displayedRegionIndex,
+              data,
+            ] of self.paintedRegionCells) {
               const region = displayedRegions[displayedRegionIndex]
               if (region && data.featureIdList.length) {
                 out.set(

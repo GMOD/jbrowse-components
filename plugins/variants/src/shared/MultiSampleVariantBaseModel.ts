@@ -33,7 +33,6 @@ import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorEncodingOf,
-  paintedColorEncoding,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -56,7 +55,12 @@ import {
 } from '@jbrowse/tree-sidebar'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
-import { cellHueField } from './cellHue.ts'
+import {
+  cellHueField,
+  cellHueRead,
+  cellPaintOf,
+  sameHueRead,
+} from './cellHue.ts'
 import {
   HIDDEN_ROW,
   INTERNAL_SOURCE_KEYS,
@@ -74,6 +78,7 @@ import {
   variantShowSubmenuItems,
   variantTrackMenuItems,
 } from './multiSampleVariantMenuItems.ts'
+import { paintedColorKeys } from './paintCells.ts'
 import { getVariantColorScales } from './variantLegend.ts'
 import { variantTopBandsGeometry } from './variantTopBands.ts'
 
@@ -484,14 +489,6 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * The cell scale's domain values an alt cell was painted for in the
-         * fetched cell data — the impact tiers or SV classes the legend lists.
-         */
-        get paintedDomain(): string[] {
-          return self.cellData?.paintedDomain ?? []
-        },
-        /**
-         * #getter
          * Whether any visible variant carries a SnpEff/VEP annotation, gating
          * the "Color by...→Consequence impact" menu option.
          */
@@ -683,7 +680,7 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * Whether an alt cell's hue is composed with the genotype's alt dosage.
-         * A fetch input — the cells are colored in the worker.
+         * The main thread paints it, so a toggle refetches nothing.
          */
         get shadeByDosage(): boolean {
           return getConf(self, 'shadeByDosage')
@@ -857,7 +854,7 @@ export default function MultiSampleVariantBaseModelF(
            * #action
            * Paint the alt cells by a field, or by the genotype colours with
            * `''`, which keeps the field under `scale: 'none'` for the way
-           * back. A fetch input.
+           * back. A fetch input only where it names a different field.
            */
           setColorField(field: string) {
             setConf(self, 'color', colorForField(self.colorSetting, field))
@@ -872,8 +869,8 @@ export default function MultiSampleVariantBaseModelF(
           },
           /**
            * #action
-           * Turn dosage shading on or off. A fetch input — recomputes cells in
-           * the worker.
+           * Turn dosage shading on or off; the main thread repaints the loaded
+           * cells.
            */
           setShadeByDosage(arg: boolean) {
             setConf(self, 'shadeByDosage', arg)
@@ -1143,9 +1140,48 @@ export default function MultiSampleVariantBaseModelF(
             maxMissingnessFilter: self.maxMissingnessFilter,
             filters: self.filters,
             renderingMode: self.renderingMode,
-            color: paintedColorEncoding(self.colorEncoding),
-            shadeByDosage: self.shadeByDosage,
+            color: cellHueRead(self.colorEncoding),
           }
+        },
+        /**
+         * #getter
+         * How the main thread paints the values the worker read for the alt
+         * cells' hue (`paintCells`).
+         */
+        get cellPaint() {
+          return cellPaintOf(self.colorEncoding)
+        },
+        /**
+         * #getter
+         * The options `paintCells` paints the held payload with.
+         */
+        get cellPaintOptions() {
+          return {
+            phased: self.renderingMode === 'phased',
+            shade: self.shadeByDosage,
+            valuesRead: sameHueRead(
+              self.cellData?.colorRead,
+              cellHueRead(self.colorEncoding),
+            ),
+          }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The cell scale's domain values an alt cell was painted for in the
+         * fetched cell data — the impact tiers or SV classes the legend lists.
+         */
+        get paintedDomain(): string[] {
+          const { cellData } = self
+          return cellData && self.cellPaintOptions.valuesRead
+            ? paintedColorKeys(
+                cellData.mode === 'regular'
+                  ? Object.values(cellData.perRegionCellData)
+                  : [cellData],
+                self.cellPaint,
+              )
+            : []
         },
       }))
       .views(self => {

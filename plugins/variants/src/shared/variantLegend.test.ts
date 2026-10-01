@@ -1,7 +1,7 @@
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { ALT_HUE, shadeByDosage } from './cellFill.ts'
+import { ALT_HUE, HET_DOSAGE, shadeByDosage } from './cellFill.ts'
 import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
 import { IMPACT_FIELD, UNANNOTATED_IMPACT } from './variantConsequence.ts'
@@ -62,7 +62,7 @@ describe('getGenotypeEntries', () => {
 
   it('the ramp swatches are the ones the cells take', () => {
     const items = getGenotypeEntries(inputs())
-    expect(items[1]!.color).toBe(shadeByDosage(ALT_HUE, 0.5))
+    expect(items[1]!.color).toBe(shadeByDosage(ALT_HUE, HET_DOSAGE))
     expect(items[2]!.color).toBe(ALT_HUE)
   })
 
@@ -362,8 +362,11 @@ describe('getVariantColorScales', () => {
       sources,
     })
     expect(entriesOf(section)!.map(i => [i.label, i.swatches])).toEqual([
-      ['a, b', [{ color: shadeByDosage('#a00', 0.5) }, { color: '#a00' }]],
-      ['c', [{ color: shadeByDosage('#00a', 0.5) }, { color: '#00a' }]],
+      [
+        'a, b',
+        [{ color: shadeByDosage('#a00', HET_DOSAGE) }, { color: '#a00' }],
+      ],
+      ['c', [{ color: shadeByDosage('#00a', HET_DOSAGE) }, { color: '#00a' }]],
       [DOSAGE_NOTE, undefined],
       ['Homozygous reference', undefined],
       ['No call', undefined],
@@ -431,7 +434,7 @@ describe('getVariantColorScales', () => {
     })
     const [del, note] = entriesOf(section)!
     expect(del!.swatches).toEqual([
-      { color: shadeByDosage('#e41a1c', 0.5) },
+      { color: shadeByDosage('#e41a1c', HET_DOSAGE) },
       { color: '#e41a1c' },
     ])
     expect(note!.label).toBe(DOSAGE_NOTE)
@@ -475,7 +478,7 @@ describe('getVariantColorScales', () => {
     })
     expect(entriesOf(section)!.map(i => [i.label, i.color])).toEqual([
       ['Homozygous reference', REFERENCE_COLOR],
-      ['Alt, half dosage (het)', shadeByDosage('#E69F00', 0.5)],
+      ['Alt, half dosage (het)', shadeByDosage('#E69F00', HET_DOSAGE)],
       ['Alt, full dosage (hom)', '#E69F00'],
     ])
   })

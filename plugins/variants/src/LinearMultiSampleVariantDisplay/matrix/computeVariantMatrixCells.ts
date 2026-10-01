@@ -1,8 +1,10 @@
 import { getInsertedBp } from '../../shared/alleleLength.ts'
+import { makeHueValueTable } from '../../shared/cellHue.ts'
 import { makeSiteStyler } from '../../shared/variantCellStyles.ts'
 
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
+import type { CellColorValues } from '../components/computeVariantCells.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
 type FeatureData = VariantFeatureInfo & { featureId: string }
@@ -30,28 +32,27 @@ function makeFeatureData(
   }
 }
 
-export interface MatrixCellData {
+export interface MatrixCellData extends CellColorValues {
   cellFeatureIndices: Float32Array
   cellRowIndices: Uint32Array
   cellColors: Uint32Array
+  // See computeVariantCells.
+  cellAltDosage: Uint8Array
   numCells: number
   /** Where the non-reference bucket starts; `findCellIndex` searches each. */
   refCellCount: number
   numFeatures: number
   featureData: FeatureData[]
-  // `1 << CELL_*` for every cell-color category this pass painted, and the cell
-  // scale's domain values it painted an alt cell for. See computeVariantCells.
+  // `1 << CELL_*` for every cell-color category this pass painted. See
+  // computeVariantCells.
   paintedCategories: number
-  paintedDomain: string[]
 }
 
 export function computeVariantMatrixCells({
   filteredVariants,
   sources,
   renderingMode,
-  featureColor,
-  featureDomain,
-  shadeDosage = true,
+  hueValue,
   colorByPhaseSet,
   featureGenotypeCodes,
   genotypeDict,
@@ -61,12 +62,8 @@ export function computeVariantMatrixCells({
   filteredVariants: FilteredVariant[]
   sources: ProcessedSource[]
   renderingMode: string
-  // Optional per-variant color override (see computeVariantCells).
-  featureColor?: (feature: Feature) => string | undefined
-  // The cell scale's domain value per variant (see computeVariantCells).
-  featureDomain?: (feature: Feature) => string
-  // Compose the hue with the genotype's alt dosage (`shared/cellFill.ts`).
-  shadeDosage?: boolean
+  // See computeVariantCells.
+  hueValue?: (feature: Feature) => string | undefined
   // Color phased alt cells by FORMAT PS instead of by allele (see
   // computeVariantCells).
   colorByPhaseSet?: boolean
@@ -83,7 +80,6 @@ export function computeVariantMatrixCells({
     renderingMode,
     // columns always draw reference cells
     drawRef: true,
-    shadeDosage,
     colorByPhaseSet,
   })
 
@@ -101,6 +97,7 @@ export function computeVariantMatrixCells({
   const featureIndices = new Float32Array(maxCells)
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint32Array(maxCells)
+  const altDosage = new Uint8Array(maxCells)
 
   // Write cursors for the two buckets. `refEnd` grows up from 0, `nonRefStart`
   // shrinks down from maxCells, so they can never collide before the buffer is
@@ -113,11 +110,13 @@ export function computeVariantMatrixCells({
     rowIdx: number,
     colorAbgr: number,
     isReference: boolean,
+    dosage: number,
   ) {
     const ci = isReference ? refEnd++ : --nonRefStart
     featureIndices[ci] = featureIdx
     rowIndices[ci] = rowIdx
     colors[ci] = colorAbgr
+    altDosage[ci] = dosage
   }
 
   // Exchange two cells across every parallel array. Defined once (not per
@@ -133,10 +132,14 @@ export function computeVariantMatrixCells({
     const c = colors[a]!
     colors[a] = colors[b]!
     colors[b] = c
+    const d = altDosage[a]!
+    altDosage[a] = altDosage[b]!
+    altDosage[b] = d
   }
 
   const featureData: FeatureData[] = []
-  const paintedDomain = new Set<string>()
+  const featureColorValues = new Uint32Array(numFeatures)
+  const hueValues = makeHueValueTable()
   let paintedCategories = 0
   let altPainted = false
 
@@ -146,19 +149,19 @@ export function computeVariantMatrixCells({
     const featureId = feature.id()
     const codes = featureGenotypeCodes.get(featureId)!
     featureData.push(makeFeatureData(feature, featureId, codes))
-    styler.site(feature, codes, mostFrequentAlt, featureColor?.(feature))
+    styler.site(feature, codes, mostFrequentAlt)
     altPainted = false
     for (let j = 0; j < numSources; j++) {
       const style = styler.styleAt(j)
       if (style) {
         paintedCategories |= 1 << style.category
         altPainted ||= style.isAlt
-        addCell(idx, j, style.abgr, style.isRef)
+        addCell(idx, j, style.abgr, style.isRef, style.altDosage)
       }
     }
 
-    if (altPainted && featureDomain) {
-      paintedDomain.add(featureDomain(feature))
+    if (hueValue) {
+      featureColorValues[idx] = hueValues.add(hueValue(feature), altPainted)
     }
   }
 
@@ -178,6 +181,7 @@ export function computeVariantMatrixCells({
     featureIndices.copyWithin(refCellCount, nonRefStart, maxCells)
     rowIndices.copyWithin(refCellCount, nonRefStart, maxCells)
     colors.copyWithin(refCellCount, nonRefStart, maxCells)
+    altDosage.copyWithin(refCellCount, nonRefStart, maxCells)
   }
 
   // Trim to the used prefix. `slice` copies, so it is skipped when nothing was
@@ -191,11 +195,13 @@ export function computeVariantMatrixCells({
       : featureIndices,
     cellRowIndices: trim ? rowIndices.slice(0, numCells) : rowIndices,
     cellColors: trim ? colors.slice(0, numCells) : colors,
+    cellAltDosage: trim ? altDosage.slice(0, numCells) : altDosage,
     numCells,
     refCellCount,
     numFeatures,
     featureData,
     paintedCategories,
-    paintedDomain: [...paintedDomain],
+    featureColorValues,
+    ...hueValues.result(),
   }
 }

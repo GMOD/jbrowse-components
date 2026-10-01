@@ -2,11 +2,13 @@ import VcfParser from '@gmod/vcf'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import VcfFeature from '../../VcfFeature/index.ts'
+import { cellPaintOf } from '../../shared/cellHue.ts'
 import {
   buildSampleIndex,
   decodeGenotype,
   internGenotype,
 } from '../../shared/genotypeCodec.ts'
+import { paintCells, paintedColorKeys } from '../../shared/paintCells.ts'
 import { computeVariantCells } from './computeVariantCells.ts'
 
 import type { ProcessedSource } from '../../shared/types.ts'
@@ -317,7 +319,7 @@ describe('computeVariantCells insertion bounds', () => {
   })
 })
 
-describe('computeVariantCells featureColor override', () => {
+describe('computeVariantCells per-variant hue', () => {
   const sources: ProcessedSource[] = [
     { name: 'S1', sampleName: 'S1', HP: 0 },
     { name: 'S2', sampleName: 'S2', HP: 0 },
@@ -335,35 +337,53 @@ describe('computeVariantCells featureColor override', () => {
     start: 100,
     end: 101,
   })
-
-  const cellsWithOverride = (shadeDosage: boolean) =>
+  const override = 'rgb(1,2,3)'
+  const cells = () =>
     computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'alleleCount',
       referenceDrawingMode: 'draw',
-      featureColor: () => override,
-      shadeDosage,
+      hueValue: () => override,
       ...genotypeArgs([feature]),
     })
-  const override = 'rgb(1,2,3)'
+  const painted = (shade: boolean) =>
+    paintCells(cells(), cellPaintOf(`jexl:'${override}'`), {
+      phased: false,
+      shade,
+      valuesRead: true,
+    })
 
-  test('the override is the hue, and dosage shades it', async () => {
+  test('the worker ships the value and paints the default alt hue', async () => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const { ALT_HUE } = await import('../../shared/cellFill.ts')
+    const result = cells()
+    expect(result.colorValues).toEqual([override])
+    expect([...result.featureColorValues]).toEqual([1])
+    expect(result.paintedColorValues).toEqual([0])
+    expect([...result.cellColors]).toContain(getCachedABGR(ALT_HUE))
+    expect([...result.cellColors]).not.toContain(getCachedABGR(override))
+  })
+
+  test('the value is the hue, and dosage shades it', async () => {
     const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
     const { REFERENCE_COLOR } = await import('../../shared/constants.ts')
-    const { shadeByDosage } = await import('../../shared/cellFill.ts')
-    const colors = [...cellsWithOverride(true).cellColors]
+    const { HET_DOSAGE, shadeByDosage } =
+      await import('../../shared/cellFill.ts')
+    const { cellColors, featureColors } = painted(true)
+    const colors = [...cellColors]
     // the hom-alt cell is the hue itself and the het a lighter version of it;
     // ref keeps its color, no-call is neither
     expect(colors).toContain(getCachedABGR(override))
-    expect(colors).toContain(getCachedABGR(shadeByDosage(override, 0.5)))
+    expect(colors).toContain(getCachedABGR(shadeByDosage(override, HET_DOSAGE)))
     expect(colors).toContain(getCachedABGR(REFERENCE_COLOR))
-    expect(cellsWithOverride(true).numCells).toBe(4)
+    expect(colors).toHaveLength(4)
+    expect([...featureColors]).toEqual([getCachedABGR(override)])
   })
 
   test('shading off paints every alt cell the flat class color', async () => {
     const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-    const colors = [...cellsWithOverride(false).cellColors]
+    const colors = [...painted(false).cellColors]
     expect(colors.filter(c => c === getCachedABGR(override))).toHaveLength(2)
   })
 })
@@ -619,7 +639,7 @@ describe('phase-set coloring is opt-in', () => {
   // PS coloring used to switch itself on for any feature whose FORMAT carried
   // PS, which silently replaced the alt-allele colors the legend was still
   // describing and offered no way back. It is now driven by the explicit
-  // `colorByPhaseSet` flag (the PHASE_SET_COLOR featureColor sentinel).
+  // `colorByPhaseSet` flag.
   const sources: ProcessedSource[] = [
     { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
     { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
@@ -1020,7 +1040,7 @@ test('phase-set coloring honors referenceDrawingMode: skip', () => {
   expect(result.cellRowIndices[0]).toBe(0)
 })
 
-// `paintedCategories` and `paintedDomain` are what the legend is built from, so
+// `paintedCategories` and `paintedColorValues` are what the legend is built from, so
 // each entry claims a cell of that kind is in the fetched data. The claims below
 // are the ones that were only ever asserted through the legend's own inputs.
 describe('the painted record reports what this pass emitted', () => {
@@ -1099,10 +1119,12 @@ describe('the painted record reports what this pass emitted', () => {
       sources: [{ name: 'S1', sampleName: 'S1' }],
       renderingMode: 'alleleCount',
       referenceDrawingMode: 'draw',
-      featureDomain: f => (f.id() === 'carried' ? 'HIGH' : 'MODERATE'),
+      hueValue: f => (f.id() === 'carried' ? 'HIGH' : 'MODERATE'),
       ...genotypeArgs([carried, homRef]),
     })
-    expect(result.paintedDomain).toEqual(['HIGH'])
+    expect(result.colorValues).toEqual(['HIGH', 'MODERATE'])
+    expect([...result.featureColorValues]).toEqual([1, 2])
+    expect(paintedColorKeys([result], { keyOf: v => v })).toEqual(['HIGH'])
   })
 })
 
@@ -1119,14 +1141,18 @@ test('the lane takes the alt hue in phased mode, phase sets or not', async () =>
     'S1',
   ])
   const run = (colorByPhaseSet: boolean) =>
-    computeVariantCells({
-      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
-      sources,
-      renderingMode: 'phased',
-      referenceDrawingMode: 'skip',
-      colorByPhaseSet,
-      ...genotypeArgs([feature]),
-    }).featureColors[0]
+    paintCells(
+      computeVariantCells({
+        filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+        sources,
+        renderingMode: 'phased',
+        referenceDrawingMode: 'skip',
+        colorByPhaseSet,
+        ...genotypeArgs([feature]),
+      }),
+      cellPaintOf(undefined),
+      { phased: true, shade: true, valuesRead: true },
+    ).featureColors[0]
 
   expect(run(true)).toBe(getCachedABGR(ALT_HUE))
   expect(run(false)).toBe(getCachedABGR(ALT_HUE))

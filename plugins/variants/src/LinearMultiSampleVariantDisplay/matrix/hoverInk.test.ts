@@ -30,7 +30,7 @@ function matrixCellData(): MatrixCellDataResult {
     hasSvType: false,
     hasPhaseSet: false,
     paintedCategories: 0,
-    paintedDomain: [],
+    colorRead: undefined,
     simplifiedFeatures: [0, 1000].map((start, i) => ({
       id: `v${i}`,
       data: { start, end: start + 1, refName: 'ctgA', name: `v${i}` },
@@ -41,9 +41,13 @@ function matrixCellData(): MatrixCellDataResult {
     cellFeatureIndices: Float32Array.of(0, 1, 0, 1),
     cellRowIndices: Uint32Array.of(0, 0, 1, 1),
     cellColors: Uint32Array.of(0xffcccccc, 0xffcccccc, 0xff0000ff, 0xff0000ff),
+    cellAltDosage: Uint8Array.of(0, 0, 255, 255),
     numCells: 4,
     refCellCount: 2,
     numFeatures: 2,
+    featureColorValues: new Uint32Array(2),
+    colorValues: [],
+    paintedColorValues: [],
     featureData: [0, 1].map(i => ({
       featureId: `v${i}`,
       ref: 'A',

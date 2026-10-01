@@ -41,7 +41,7 @@ function matrixCellData({ ref = [], alt = [] }: Cells): CellDataResult {
     hasSvType: false,
     hasPhaseSet: false,
     paintedCategories: 0,
-    paintedDomain: [],
+    colorRead: undefined,
     simplifiedFeatures: [
       { id: 'v0', data: { start: 100, end: 101, refName: 'ctgA', name: 'v0' } },
     ],
@@ -50,9 +50,13 @@ function matrixCellData({ ref = [], alt = [] }: Cells): CellDataResult {
     cellFeatureIndices: new Float32Array(rows.length),
     cellRowIndices: Uint32Array.from(rows),
     cellColors: new Uint32Array(rows.length),
+    cellAltDosage: new Uint8Array(rows.length).fill(255, ref.length),
     numCells: rows.length,
     refCellCount: ref.length,
     numFeatures: 1,
+    featureColorValues: new Uint32Array(1),
+    colorValues: [],
+    paintedColorValues: [],
     featureData: [
       {
         featureId: 'v0',

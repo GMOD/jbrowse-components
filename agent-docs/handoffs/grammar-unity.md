@@ -1,6 +1,6 @@
 ---
 name: grammar-unity
-description: "The grammar thread's live plan, approved by Colin on 2026-09-30: unity of grammar objects across every display and every surface, not fewer display types. The order of work comes first, starting with main-thread colour on the multi-sample variant display, then the scorecard and menu census it rests on, an open threshold defect, and the open calls and quantile leftover carried over from the retired grammar-next-steps."
+description: "The grammar thread's live plan, approved by Colin on 2026-09-30: unity of grammar objects across every display and every surface, not fewer display types. The order of work comes first, starting with one JSON box for every display, then the scorecard and menu census it rests on, and the open calls and quantile leftover carried over from the retired grammar-next-steps."
 ---
 
 # Grammar unity: one vocabulary, every display, every surface
@@ -11,26 +11,12 @@ sections after the order of work are the evidence it rests on.
 
 ## Next, in order
 
-1. **Resolve the multi-sample variant display's colour on the main thread**,
-   as the mark display now does
-   ([ADR-202](../architecture-decision-records/adr-202-every-mark-colour-resolves-on-the-main-thread.md)).
-   It sends `paintedColorEncoding(self.colorEncoding)` and `shadeByDosage` in
-   its `rpcProps` (`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`),
-   and the worker bakes each cell's colour in `makeSiteStyler`
-   (`shared/variantCellStyles.ts`) as `cellFill(hue, dosage, shade)`. Moving
-   it means the worker ships each alt cell's exact dosage beside its genotype
-   colour and each variant's key into the colour field's distinct values, and
-   the main thread repaints alt cells, the lane's `featureColors` and the
-   insertion glyphs from them, in both layouts. `cellAltDosage` is a byte, so
-   `shade(hue, 128/255)` can land one hex unit off today's `shade(hue, 1/2)`:
-   ship the dosage exactly or expect golden churn. A phase-set colour is per
-   cell and can stay a fetch input. About two days.
-2. **One JSON box for every display**: `MarkPlot` as `ChannelSpec`'s
+1. **One JSON box for every display**: `MarkPlot` as `ChannelSpec`'s
    superset, keys taken by slot name, on the seven displays without one
    (§"One spec and one editor"). Unsized.
-3. **A colour-menu builder** over the colour object and the display's field
+2. **A colour-menu builder** over the colour object and the display's field
    presets (§"Menus as views over those objects"). Unsized.
-4. **Wiggle onto render-core's marks**, keeping its display type, with
+3. **Wiggle onto render-core's marks**, keeping its display type, with
    whiskers as three translucent bar marks and captures shown first:
    [wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md)
    is the worked proposal, sized at 7-10 days.
@@ -144,7 +130,7 @@ Three of the four object builders exist and are shared: `groupByMenu.ts` for
 (`packages/tree-sidebar/src`) and `scoreMenuItems.ts` for `scales.y`
 (`packages/wiggle-core/src`, through `ScoreScaleMixin`). Colour has none
 across displays: `packages/synteny-core/src/colorByMenuItems.tsx` serves
-multi-way and the circular view alone. Step 4 is that builder, plus the
+multi-way and the circular view alone. Step 2 is that builder, plus the
 displays not yet on the other three moved onto them. Domain actions stay each
 display's own, since they are where its meaning lives. The rest of the
 duplication the census found is cleanup alongside:
@@ -161,12 +147,14 @@ duplication the census found is cleanup alongside:
 
 ## One resolution path per object
 
-- **Colour.** Step 1. Canvas
+- **Colour.** Canvas
   ([ADR-167](../architecture-decision-records/adr-167-the-feature-colours-scale-resolves-on-the-main-thread.md)),
-  multi-row, the alignments read fill and the mark display
+  multi-row, the alignments read fill, the mark display
   ([ADR-202](../architecture-decision-records/adr-202-every-mark-colour-resolves-on-the-main-thread.md))
-  resolve on the main thread, the mark display every colour but a `jexl:`
-  callback. Multi-way synteny's lane layers colour their bars through the mark
+  and the multi-sample variant display
+  ([ADR-203](../architecture-decision-records/adr-203-the-variant-cells-hue-resolves-on-the-main-thread.md))
+  resolve on the main thread, every colour but a `jexl:` callback and the
+  variant display's per-cell phase-set hue. Multi-way synteny's lane layers colour their bars through the mark
   display's `withMarkColor`.
 - **The holdouts the grammar doc names.** Hi-C keeps `HicColor`, and its "Log
   scale" and "Emphasize faint contacts" toggles
@@ -188,7 +176,7 @@ duplication the census found is cleanup alongside:
   is where what it already reads would travel. The mark display's `rows`
   beside a `facet`, which `rows-beside-facet` warns about, is the same
   capability.
-- **Wiggle.** Step 4. Wiggle still holds its own Slang for every picture
+- **Wiggle.** Step 3. Wiggle still holds its own Slang for every picture
   render-core draws (`plugins/wiggle/src/shared/wiggleMarks.ts:14-18`). On
   2026-09-27 Colin asked why wiggle should not move onto `bar` and `point` and
   said to aim for the ideal implementation
@@ -219,19 +207,6 @@ Edit plot, the rule list, main-thread colour scales — and each
 capability then reaches every display reading the same object. That, rather
 than subtyping, is what a more powerful mark display buys.
 
-## Open defects
-
-- **More than eight threshold cuts.** The GPU keeps eight (`markRamp.ts:97`)
-  while Canvas2D paints every cut (`markRamp.ts:224`), and `markProblems` has
-  no rule for it.
-
-The audit that found these also found the table pipeline faithful to the
-`Feature` path over randomized differentials, and its oracle can be rebuilt
-from the pipeline as it stood before ADR-191. The defects it and the Fable
-review found that a user reaches have landed: the commits "A hover under rows
-skips the hidden key; a facet hides a stale region" and "With no split, a
-region fetched under one draws nothing until its refetch".
-
 ## Open calls and a leftover
 
 Carried over from the retired grammar-next-steps handoff, each a question for
@@ -244,7 +219,7 @@ Colin rather than work:
 - **`scales.y.rules` as a `rule` layer with a constant `y`**, so a reference
   line takes a zoom range and a per-row value.
 - **A `tooltip` channel** naming the fields a hover prints. Wiggle's tooltip,
-  which lists every source's min, mean and max at the cursor, is a step 4 gap
+  which lists every source's min, mean and max at the cursor, is a step 3 gap
   this would answer generally.
 - **Ties fill a nearest-rank quantile**: at 0.95 a segmented copy-number track
   pins 99.5% of its values to one colour, because one value holds the rank. It

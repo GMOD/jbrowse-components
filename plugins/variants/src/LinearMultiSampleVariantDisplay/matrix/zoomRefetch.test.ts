@@ -24,7 +24,7 @@ const EMPTY_MATRIX = {
   hasSecondaryAlt: false,
   hasUnphased: false,
   hasNoCall: false,
-  paintedDomain: [],
+  colorRead: undefined,
   hasConsequence: false,
   hasSvType: false,
   hasPhaseSet: false,
@@ -34,10 +34,14 @@ const EMPTY_MATRIX = {
   cellFeatureIndices: new Float32Array(),
   cellRowIndices: new Uint32Array(),
   cellColors: new Uint32Array(),
+  cellAltDosage: new Uint8Array(),
   numCells: 0,
   refCellCount: 0,
   numFeatures: 0,
   featureData: [],
+  featureColorValues: new Uint32Array(),
+  colorValues: [],
+  paintedColorValues: [],
   paintedCategories: 0,
 }
 

@@ -6,6 +6,7 @@ import {
   decodeGenotype,
   internGenotype,
 } from '../../shared/genotypeCodec.ts'
+import { paintedColorKeys } from '../../shared/paintCells.ts'
 import { computeVariantMatrixCells } from './computeVariantMatrixCells.ts'
 
 import type { ProcessedSource } from '../../shared/types.ts'
@@ -431,9 +432,11 @@ describe('the painted record reports what this pass emitted', () => {
       ],
       sources: [{ name: 'S1', sampleName: 'S1' }],
       renderingMode: 'alleleCount',
-      featureDomain: f => (f.id() === 'carried' ? 'HIGH' : 'MODERATE'),
+      hueValue: f => (f.id() === 'carried' ? 'HIGH' : 'MODERATE'),
       ...genotypeArgs([carried, homRef]),
     })
-    expect(result.paintedDomain).toEqual(['HIGH'])
+    expect(result.colorValues).toEqual(['HIGH', 'MODERATE'])
+    expect([...result.featureColorValues]).toEqual([1, 2])
+    expect(paintedColorKeys([result], { keyOf: v => v })).toEqual(['HIGH'])
   })
 })

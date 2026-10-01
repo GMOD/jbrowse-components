@@ -1,16 +1,15 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { getInsertedBp } from '../../shared/alleleLength.ts'
-import { ALT_HUE } from '../../shared/cellFill.ts'
+import { makeHueValueTable } from '../../shared/cellHue.ts'
 import { makeSiteStyler } from '../../shared/variantCellStyles.ts'
-import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
-export interface VariantCellData {
+export interface VariantCellData extends CellColorValues {
   // Absolute genomic positions in uint32 (start, end) interleaved.
   // The renderer + shader split via hpSplitUint against the per-block
   // bpRangeX; no region origin is shipped separately.
@@ -49,24 +48,22 @@ export interface VariantCellData {
   // `getAlleleLength` and the `alleleLength()` jexl the docs already teach; a
   // decomposed pangenome callset is biallelic, so there it is exact.
   featureInsertedBp: Int32Array
-  // Packed ABGR per *feature*, aligned to `featureIdList`: what the variant
-  // lane paints each record with. The `featureColor` override when one resolves
-  // for that record, the default variant color otherwise — so the lane and the
-  // alt-carrying cells beneath it are the same color, which is the whole point
-  // of drawing them in one display.
-  //
-  // Per feature and not per cell, so it costs 4 bytes x variants next to the
-  // payload's 22 B/cell. It is filled whether or not the lane is switched on:
-  // the lane is a render-tier setting (a band resize must not refetch), and the
-  // fill is one array write per variant inside a loop that already resolved the
-  // color.
-  featureColors: Uint32Array
-  // `1 << CELL_*` for every cell-color category this pass actually painted, and
-  // the cell scale's domain values it painted an alt cell for. The legend is
-  // built from these, so an entry means "in the fetched cell data" rather than
-  // "the site could carry one".
+  // `1 << CELL_*` for every cell-color category this pass actually painted. The
+  // legend is built from it, so an entry means "in the fetched cell data"
+  // rather than "the site could carry one".
   paintedCategories: number
-  paintedDomain: string[]
+}
+
+/**
+ * What the alt cells' hue reads off each variant (`cellHueReaderOf`), for the
+ * main thread to paint (`paintCells`): `featureColorValues` is each feature's
+ * one-based index into `colorValues`, 0 where it read none, and
+ * `paintedColorValues` the indices a variant with an alt cell carried.
+ */
+export interface CellColorValues {
+  featureColorValues: Uint32Array
+  colorValues: string[]
+  paintedColorValues: number[]
 }
 
 function getShapeType(featureType: string) {
@@ -88,9 +85,7 @@ export function computeVariantCells({
   sources,
   renderingMode,
   referenceDrawingMode,
-  featureColor,
-  featureDomain,
-  shadeDosage = true,
+  hueValue,
   colorByPhaseSet,
   featureGenotypeCodes,
   genotypeDict,
@@ -101,16 +96,8 @@ export function computeVariantCells({
   sources: ProcessedSource[]
   renderingMode: string
   referenceDrawingMode: string
-  // Optional per-variant color override (e.g. consequence impact). Resolved once
-  // per feature; alt-carrying cells take it, ref/no-call cells keep their normal
-  // coloring. Undefined = default genotype coloring.
-  featureColor?: (feature: Feature) => string | undefined
-  // The cell scale's domain value for a variant (an impact tier, an SV class),
-  // recorded for the features that painted an alt cell. Undefined for the modes
-  // whose scale has a single alt member.
-  featureDomain?: (feature: Feature) => string
-  // Compose the hue with the genotype's alt dosage (`shared/cellFill.ts`).
-  shadeDosage?: boolean
+  // What the alt cells' hue reads off a variant, once per feature.
+  hueValue?: (feature: Feature) => string | undefined
   // Color phased alt cells by their FORMAT PS (phase set) instead of by allele.
   // Explicit rather than inferred from the presence of PS: the implicit trigger
   // silently swapped the alt-allele colors the legend was describing, with no
@@ -135,7 +122,6 @@ export function computeVariantCells({
     genotypeDict,
     renderingMode,
     drawRef: referenceDrawingMode === 'draw',
-    shadeDosage,
     colorByPhaseSet,
   })
   const numSources = sources.length
@@ -158,14 +144,10 @@ export function computeVariantCells({
   const featureIdList: string[] = []
   const insertedBp = new Int32Array(filteredVariants.length)
   const featurePositions = new Uint32Array(filteredVariants.length * 2)
-  const featureColors = new Uint32Array(filteredVariants.length)
-  // The lane's hue where no override resolves: the alt hue every mode paints a
-  // full dose in, so a record and its column stay one color. Packed once rather
-  // than per variant.
-  const defaultFeatureAbgr = getCachedABGR(ALT_HUE)
+  const featureColorValues = new Uint32Array(filteredVariants.length)
+  const hueValues = makeHueValueTable()
 
   const featureGenotypeMap: Record<string, VariantFeatureInfo> = {}
-  const paintedDomain = new Set<string>()
   let paintedCategories = 0
   let altPainted = false
   // Write cursors for the two buckets. `refEnd` grows up from 0, `nonRefStart`
@@ -247,8 +229,7 @@ export function computeVariantCells({
     // `featureGenotypeMap` below, and the ones the styler reads. Prepopulated by
     // `analyzeVariants` for every filtered variant.
     const codes = featureGenotypeCodes.get(featureId)!
-    const overrideColor = featureColor?.(feature)
-    styler.site(feature, codes, mostFrequentAlt, overrideColor)
+    styler.site(feature, codes, mostFrequentAlt)
     altPainted = false
     for (let j = 0; j < numSources; j++) {
       const style = styler.styleAt(j)
@@ -268,8 +249,11 @@ export function computeVariantCells({
       }
     }
 
-    if (altPainted && featureDomain) {
-      paintedDomain.add(featureDomain(feature))
+    if (hueValue) {
+      featureColorValues[featureIdx] = hueValues.add(
+        hueValue(feature),
+        altPainted,
+      )
     }
 
     const inserted = getInsertedBp(feature)
@@ -286,14 +270,6 @@ export function computeVariantCells({
     insertedBp[featureIdx] = inserted
     featurePositions[featureIdx * 2] = start
     featurePositions[featureIdx * 2 + 1] = end
-    // The lane's color for this record: the same hue the alt cells of this
-    // variant took above, so the mark and its column agree in every mode. A
-    // constant of its own here made the lane goldenrod while the cells under it
-    // were blue, i.e. a hue that stood for nothing.
-    featureColors[featureIdx] =
-      overrideColor === undefined
-        ? defaultFeatureAbgr
-        : getCachedABGR(overrideColor)
     featureIdList.push(featureId)
     featureIdx++
   }
@@ -377,8 +353,8 @@ export function computeVariantCells({
     featurePositions,
     featureIndexData: featureIndex.data,
     featureInsertedBp: insertedBp,
-    featureColors,
     paintedCategories,
-    paintedDomain: [...paintedDomain],
+    featureColorValues,
+    ...hueValues.result(),
   }
 }

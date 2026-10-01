@@ -34,7 +34,7 @@ function cellData(insertedBp: number): CellDataResult {
     hasSecondaryAlt: false,
     hasUnphased: false,
     hasNoCall: false,
-    paintedDomain: [],
+    colorRead: undefined,
     hasConsequence: false,
     hasSvType: false,
     hasPhaseSet: false,
@@ -54,13 +54,14 @@ function cellData(insertedBp: number): CellDataResult {
         numCells: 1,
         refCellCount: 0,
         paintedCategories: 0,
-        paintedDomain: [],
+        colorValues: [],
+        paintedColorValues: [],
         featureGenotypeMap: {},
         featureIdList: ['v0'],
         featurePositions: Uint32Array.from([100, 200]),
         featureIndexData: featureIndexData(),
         featureInsertedBp: Int32Array.from([insertedBp]),
-        featureColors: Uint32Array.from([0xff00ff00]),
+        featureColorValues: new Uint32Array(1),
       },
     },
   }
@@ -131,7 +132,19 @@ test('the entry has no swatch and names what the number means', () => {
 test('the SV-type key takes its title and class names from the field preset', () => {
   const display = setup(0)
   display.setColorField(SV_TYPE_FIELD)
-  display.setCellData({ ...cellData(0), paintedDomain: ['DEL'] })
+  const base = cellData(0) as Extract<CellDataResult, { mode: 'regular' }>
+  display.setCellData({
+    ...base,
+    colorRead: { field: SV_TYPE_FIELD },
+    perRegionCellData: {
+      0: {
+        ...base.perRegionCellData[0]!,
+        featureColorValues: Uint32Array.of(1),
+        colorValues: ['DEL'],
+        paintedColorValues: [0],
+      },
+    },
+  })
   const [scale] = display.colorScales
   expect(scale?.title).toBe('SV type')
   expect(scale?.kind === 'categorical' && scale.entries[0]!.label).toBe(

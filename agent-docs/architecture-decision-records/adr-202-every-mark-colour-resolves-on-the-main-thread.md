@@ -96,8 +96,9 @@ colour needs; the main thread turns that data into colours through the config.
   does (ADR-124).
 - A region read under a constant paints the default colour until a
   categorical's keys arrive, since the constant never reached the worker.
-- The multi-sample variant display still sends its colour encoding in
-  `rpcProps()`.
+- The multi-sample variant display still sent its colour encoding in
+  `rpcProps()` until
+  [ADR-203](adr-203-the-variant-cells-hue-resolves-on-the-main-thread.md).
 
 ## Rejected alternatives
 

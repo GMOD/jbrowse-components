@@ -1,8 +1,8 @@
+import type { CellHueRead } from '../shared/cellHue.ts'
 import type { Source } from '../shared/types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
-import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
 interface BaseVariantRpcArgs {
   adapterConfig: Record<string, unknown>
@@ -44,12 +44,8 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   sampleFilter?: string[]
   renderingMode: string
   referenceDrawingMode?: string
-  // The alt cells' hue: the display's `color` object resolved, undefined for
-  // the genotype colours (`shared/cellHue.ts`).
-  color?: ColorEncoding
-  // Compose the mode's hue with each genotype's alt dosage rather than painting
-  // it flat (`shared/cellFill.ts`). Defaults to true.
-  shadeByDosage?: boolean
+  // What the alt cells' hue reads off each variant (`cellHueRead`).
+  color?: CellHueRead
   mode: 'regular' | 'matrix'
   displayedRegionIndices?: number[]
 }

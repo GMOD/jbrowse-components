@@ -5,7 +5,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantDisplay/matrix/computeVariantMatrixCells.ts'
-import { cellHueOf } from '../shared/cellHue.ts'
+import { cellHueReaderOf } from '../shared/cellHue.ts'
 import { buildCanonicalRows } from '../shared/getSources.ts'
 import {
   CELL_ALT_SECONDARY,
@@ -19,31 +19,25 @@ import { orderByScreenPosition } from './orderByScreenPosition.ts'
 
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../LinearMultiSampleVariantDisplay/matrix/computeVariantMatrixCells.ts'
+import type { CellHueRead } from '../shared/cellHue.ts'
 import type { SimplifiedVariantFeature } from './analyzeVariants.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export type { SimplifiedVariantFeature }
 
-// What the paint loops reported, as the three legend booleans and the domain
-// list. One place for both modes, so the regular display's per-region merge and
-// the matrix's single pass cannot answer differently.
-function paintedLegendFlags(
-  passes: { paintedCategories: number; paintedDomain: string[] }[],
-) {
+// What the paint loops reported, as the three legend booleans. One place for
+// both modes, so the regular display's per-region merge and the matrix's single
+// pass cannot answer differently.
+function paintedLegendFlags(passes: { paintedCategories: number }[]) {
   let mask = 0
-  const domain = new Set<string>()
   for (const pass of passes) {
     mask |= pass.paintedCategories
-    for (const value of pass.paintedDomain) {
-      domain.add(value)
-    }
   }
   return {
     hasSecondaryAlt: (mask & (1 << CELL_ALT_SECONDARY)) !== 0,
     hasUnphased: (mask & (1 << CELL_UNPHASED)) !== 0,
     hasNoCall: (mask & (1 << CELL_NO_CALL)) !== 0,
-    paintedDomain: [...domain],
   }
 }
 
@@ -67,9 +61,9 @@ interface CellDataBase {
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   hasNoCall: boolean
-  // The cell scale's domain values an alt cell was painted for in the fetched
-  // cell data — the impact tiers or SV classes the legend lists.
-  paintedDomain: string[]
+  // The `color` the worker read each variant's `colorValues` for, so a payload
+  // read for another field is never painted through the current one's scale.
+  colorRead: CellHueRead
   // Whether any visible variant carries a SnpEff/VEP annotation, gating the
   // "Color by...→Consequence impact" menu option.
   hasConsequence: boolean
@@ -121,7 +115,6 @@ export async function executeVariantCellData({
     renderingMode,
     referenceDrawingMode = 'skip',
     color,
-    shadeByDosage = true,
     minorAlleleFrequencyFilter,
     maxMissingnessFilter,
     filters,
@@ -193,7 +186,7 @@ export async function executeVariantCellData({
   // a phase set is a per-haplotype fact and only the phased loop paints one.
   // `getVariantColorScales` resolves the same combination the same way, so the
   // key and the cells agree.
-  const hue = cellHueOf(color, {
+  const hue = cellHueReaderOf(color, {
     jexl: pluginManager.jexl,
     renderingMode,
   })
@@ -245,9 +238,7 @@ export async function executeVariantCellData({
             sources: effectiveSources,
             renderingMode,
             referenceDrawingMode,
-            featureColor: hue.color,
-            featureDomain: hue.domain,
-            shadeDosage: shadeByDosage,
+            hueValue: hue.value,
             colorByPhaseSet,
             featureGenotypeCodes,
             genotypeDict,
@@ -279,7 +270,7 @@ export async function executeVariantCellData({
       transferables.add(data.featureIndexData)
       transferables.add(data.featurePositions.buffer)
       transferables.add(data.featureInsertedBp.buffer)
-      transferables.add(data.featureColors.buffer)
+      transferables.add(data.featureColorValues.buffer)
     }
 
     return rpcResult(
@@ -288,6 +279,7 @@ export async function executeVariantCellData({
         samplePloidy,
         rowNames,
         hasPhasedOrHaploid,
+        colorRead: color,
         ...painted,
         hasConsequence,
         hasSvType,
@@ -312,9 +304,7 @@ export async function executeVariantCellData({
           filteredVariants,
           sources: effectiveSources,
           renderingMode,
-          featureColor: hue.color,
-          featureDomain: hue.domain,
-          shadeDosage: shadeByDosage,
+          hueValue: hue.value,
           colorByPhaseSet,
           featureGenotypeCodes,
           genotypeDict,
@@ -327,6 +317,8 @@ export async function executeVariantCellData({
       cellData.cellFeatureIndices.buffer,
       cellData.cellRowIndices.buffer,
       cellData.cellColors.buffer,
+      cellData.cellAltDosage.buffer,
+      cellData.featureColorValues.buffer,
     ]
     for (const fd of cellData.featureData) {
       transferables.push(fd.genotypeCodes.buffer)
@@ -338,6 +330,7 @@ export async function executeVariantCellData({
         samplePloidy,
         rowNames,
         hasPhasedOrHaploid,
+        colorRead: color,
         ...paintedLegendFlags([cellData]),
         hasConsequence,
         hasSvType,

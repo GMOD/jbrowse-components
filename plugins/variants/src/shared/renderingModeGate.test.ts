@@ -28,7 +28,7 @@ function cellData({
     hasSecondaryAlt: false,
     hasUnphased: false,
     hasNoCall: false,
-    paintedDomain: [],
+    colorRead: undefined,
     hasConsequence: false,
     hasSvType: false,
     hasPhaseSet: false,

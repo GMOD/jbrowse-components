@@ -1,14 +1,11 @@
 import { ALT_HUE, cellFill } from './cellFill.ts'
-import {
-  GENOTYPE_SPLITTER,
-  NO_CALL_COLOR,
-  REFERENCE_COLOR,
-} from './constants.ts'
+import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
+import { altDosageByte, isNoCall } from './getPhasedColor.ts'
 
 /**
  * One genotype's fill in allele-count mode, through the shared composition rule
- * (`shared/cellFill.ts`): the mode's hue — `altHue`, the per-variant nominal —
- * shaded by the fraction of CALLED alleles that are non-reference.
+ * (`shared/cellFill.ts`): the mode's hue shaded by the fraction of CALLED
+ * alleles that are non-reference, as `altDosageByte` carries it.
  *
  * Which alt is not on the hue here. `1/2` and `0/2` are different dosages of
  * one nominal, and a wholly uncalled genotype is the no-call category rather
@@ -17,8 +14,6 @@ import {
  *
  * `''` means "draw no cell here" — the same sentinel `getPhasedColor` returns,
  * so the two cell-color functions share one `if (c)` at every call site.
- * Uncached: its caller memoizes the whole resolved cell style per distinct
- * genotype string per site (`shared/variantCellStyles.ts`).
  */
 export function getAlleleColor(
   genotype: string,
@@ -26,31 +21,12 @@ export function getAlleleColor(
   altHue = ALT_HUE,
   shade = true,
 ) {
-  let alt = 0
-  let called = 0
-
-  const alleles =
-    genotype.length === 3 && (genotype[1] === '/' || genotype[1] === '|')
-      ? [genotype[0]!, genotype[2]!]
-      : genotype.split(GENOTYPE_SPLITTER)
-  const total = alleles.length
-
-  for (let i = 0; i < total; i++) {
-    const allele = alleles[i]!
-    if (allele === '.' || allele === '') {
-      continue
-    }
-    called++
-    if (allele !== '0') {
-      alt++
-    }
-  }
-
-  if (called === 0) {
+  if (isNoCall(genotype)) {
     return NO_CALL_COLOR
   }
-  if (alt === 0) {
+  const altDosage = altDosageByte(genotype)
+  if (altDosage === 0) {
     return drawRef ? REFERENCE_COLOR : ''
   }
-  return cellFill(altHue, alt / called, shade)
+  return cellFill(altHue, altDosage, shade)
 }

@@ -1,28 +1,20 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { valueText } from '@jbrowse/core/util/groupKeys'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { colorFieldOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { ALT_HUE } from './cellFill.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
 import {
   IMPACT_FIELD,
-  getVariantImpactColor,
+  getImpactColor,
   getVariantImpactDomain,
 } from './variantConsequence.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
-
-/** What the cell loops paint an alt cell's hue by, resolved once per fetch. */
-export interface CellHue {
-  /** The variant's hue, or undefined for the genotype colours. */
-  color?: (feature: Feature) => string | undefined
-  /** The scale's domain value the legend lists, for a field that has one. */
-  domain?: (feature: Feature) => string
-  /** Phase-set hues, read per haplotype by the phased loop. */
-  byPhaseSet?: boolean
-}
 
 /** The field a colour encoding names, or undefined for a constant. */
 export function cellHueField(encoding: ColorEncoding | undefined) {
@@ -52,12 +44,43 @@ export function recordKeyColor(
 }
 
 /**
- * The per-variant hue a `color` encoding paints the alt cells with. Runs once
- * per feature, not per cell, so a jexl callback or a field read costs
- * O(variants).
+ * What the worker reads off each variant for the alt cells' hue: the colour a
+ * `jexl:` callback returns, or a field's value as text. Undefined where the
+ * hue needs nothing from the record: the genotype colours and a constant.
  */
-export function cellHueOf(
-  encoding: ColorEncoding | undefined,
+export type CellHueRead = string | { field: string } | undefined
+
+/**
+ * The fetch's share of a `color` encoding. A field crosses without its scale,
+ * so recolouring one refetches nothing.
+ */
+export function cellHueRead(encoding: ColorEncoding | undefined): CellHueRead {
+  if (typeof encoding === 'string') {
+    return isJexl(encoding) ? encoding : undefined
+  }
+  const field = cellHueField(encoding)
+  return field === IMPACT_FIELD ||
+    field === PHASE_SET_FIELD ||
+    recordHueField(encoding)
+    ? { field: field! }
+    : undefined
+}
+
+export function sameHueRead(a: CellHueRead, b: CellHueRead) {
+  return typeof a === 'object' && typeof b === 'object'
+    ? a.field === b.field
+    : a === b
+}
+
+/** What the cell loops read off each variant, resolved once per fetch. */
+export interface CellHueReader {
+  value?: (feature: Feature) => string | undefined
+  /** Phase-set hues, read per haplotype by the phased loop. */
+  byPhaseSet?: boolean
+}
+
+export function cellHueReaderOf(
+  read: CellHueRead,
   {
     jexl,
     renderingMode,
@@ -65,14 +88,14 @@ export function cellHueOf(
     jexl: JexlInstance
     renderingMode: string
   },
-): CellHue {
-  if (!encoding) {
+): CellHueReader {
+  if (read === undefined) {
     return {}
   }
-  if (typeof encoding === 'string') {
-    const cfg = { color: encoding }
+  if (typeof read === 'string') {
+    const cfg = { color: read }
     return {
-      color: feature => {
+      value: feature => {
         try {
           const css = readConfigValue(cfg, 'color', feature, jexl)
           return typeof css === 'string' ? css : undefined
@@ -82,20 +105,69 @@ export function cellHueOf(
       },
     }
   }
-  switch (encoding.field) {
+  switch (read.field) {
     case IMPACT_FIELD:
-      return { color: getVariantImpactColor, domain: getVariantImpactDomain }
+      return { value: getVariantImpactDomain }
     case PHASE_SET_FIELD:
       return { byPhaseSet: renderingMode === 'phased' }
   }
-  const field = recordHueField(encoding)
-  if (!field) {
-    return {}
-  }
-  const read = fieldReader(field.field, jexl)
-  const domain = (feature: Feature) => field.key(read(feature))
+  const get = fieldReader(read.field, jexl)
+  return { value: feature => valueText(get(feature)) }
+}
+
+/**
+ * The distinct values a cell loop read, and which of them a variant carrying
+ * an alt cell had. `add` answers a variant's one-based index into `values`, 0
+ * where it read none.
+ */
+export function makeHueValueTable() {
+  const indexOf = new Map<string, number>()
+  const values: string[] = []
+  const painted = new Set<number>()
   return {
-    color: feature => recordKeyColor(field, domain(feature)),
-    domain,
+    add(value: string | undefined, altPainted: boolean) {
+      if (value === undefined) {
+        return 0
+      }
+      let index = indexOf.get(value)
+      if (index === undefined) {
+        index = values.push(value)
+        indexOf.set(value, index)
+      }
+      if (altPainted) {
+        painted.add(index - 1)
+      }
+      return index
+    },
+    result() {
+      return { colorValues: values, paintedColorValues: [...painted] }
+    },
   }
+}
+
+/**
+ * How the main thread paints the values the worker read: `hueOf` a value's
+ * colour, `keyOf` the key row it files under, and `constant` the hue of every
+ * alt cell with no value of its own. All unset paints the genotype colours.
+ */
+export interface CellPaint {
+  constant?: string
+  hueOf?: (value: string) => string
+  keyOf?: (value: string) => string
+}
+
+export function cellPaintOf(encoding: ColorEncoding | undefined): CellPaint {
+  if (typeof encoding === 'string') {
+    return isJexl(encoding) ? { hueOf: css => css } : { constant: encoding }
+  }
+  if (cellHueField(encoding) === IMPACT_FIELD) {
+    return { hueOf: getImpactColor, keyOf: tier => tier }
+  }
+  const field = recordHueField(encoding)
+  return field
+    ? {
+        hueOf: value => recordKeyColor(field, field.key(value)),
+        keyOf: value => field.key(value),
+      }
+    : {}
 }

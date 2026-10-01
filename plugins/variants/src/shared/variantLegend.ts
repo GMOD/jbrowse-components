@@ -7,7 +7,7 @@ import {
   everyRowPaints,
 } from '@jbrowse/core/util/legendCandidates'
 
-import { ALT_HUE, shadeByDosage } from './cellFill.ts'
+import { ALT_HUE, HET_DOSAGE, shadeByDosage } from './cellFill.ts'
 import { cellHueField, recordHueField, recordKeyColor } from './cellHue.ts'
 import {
   NO_CALL_COLOR,
@@ -112,7 +112,7 @@ function altEntries(hue: string, inputs: VariantLegendInputs) {
     return [entry('Alt allele', hue)]
   }
   return [
-    entry('Alt, half dosage (het)', shadeByDosage(hue, 0.5)),
+    entry('Alt, half dosage (het)', shadeByDosage(hue, HET_DOSAGE)),
     entry('Alt, full dosage (hom)', shadeByDosage(hue, 1)),
   ]
 }
@@ -210,7 +210,7 @@ function swatchEntries(
       value,
       label: label(value),
       swatches: [
-        { color: shadeByDosage(color(value), 0.5) },
+        { color: shadeByDosage(color(value), HET_DOSAGE) },
         { color: color(value) },
       ],
     })),
@@ -241,7 +241,7 @@ function recordFieldScale(
       field,
       swatches: shaded
         ? ({ value }) => [
-            { color: shadeByDosage(color(value), 0.5) },
+            { color: shadeByDosage(color(value), HET_DOSAGE) },
             { color: color(value) },
           ]
         : undefined,

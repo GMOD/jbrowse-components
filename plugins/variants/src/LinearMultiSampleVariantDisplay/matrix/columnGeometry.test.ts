@@ -19,7 +19,7 @@ function matrixCellData(starts: number[], refNames?: string[]): CellDataResult {
     hasSvType: false,
     hasPhaseSet: false,
     paintedCategories: 0,
-    paintedDomain: [],
+    colorRead: undefined,
     simplifiedFeatures: starts.map((start, i) => ({
       id: `v${i}`,
       data: {
@@ -34,10 +34,14 @@ function matrixCellData(starts: number[], refNames?: string[]): CellDataResult {
     cellFeatureIndices: new Float32Array(0),
     cellRowIndices: new Uint32Array(0),
     cellColors: new Uint32Array(0),
+    cellAltDosage: new Uint8Array(0),
     numCells: 0,
     refCellCount: 0,
     numFeatures: starts.length,
     featureData: [],
+    featureColorValues: new Uint32Array(starts.length),
+    colorValues: [],
+    paintedColorValues: [],
   }
 }
 

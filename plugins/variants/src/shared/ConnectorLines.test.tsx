@@ -21,7 +21,7 @@ function matrixCellData(starts: number[]): CellDataResult {
     hasSvType: false,
     hasPhaseSet: false,
     paintedCategories: 0,
-    paintedDomain: [],
+    colorRead: undefined,
     simplifiedFeatures: starts.map((start, i) => ({
       id: `v${i}`,
       data: { start, end: start + 1, refName: 'ctgA', name: `v${i}` },
@@ -31,10 +31,14 @@ function matrixCellData(starts: number[]): CellDataResult {
     cellFeatureIndices: new Float32Array(0),
     cellRowIndices: new Uint32Array(0),
     cellColors: new Uint32Array(0),
+    cellAltDosage: new Uint8Array(0),
     numCells: 0,
     refCellCount: 0,
     numFeatures: starts.length,
     featureData: [],
+    featureColorValues: new Uint32Array(starts.length),
+    colorValues: [],
+    paintedColorValues: [],
   }
 }
 
