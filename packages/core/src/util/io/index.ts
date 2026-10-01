@@ -115,9 +115,11 @@ export function openLocation(
         `file ("${location.name}") requires permission. Please reopen the file from track settings`,
       )
     }
+    // A File is a snapshot: the handle yields a new one once the file changes
+    // on disk, and its chunks must not be the old snapshot's
     return new CachedFilehandle(
       new BlobFile(file),
-      `filehandle://${location.handleId}`,
+      `filehandle://${location.handleId}@${file.lastModified}:${file.size}`,
     )
   }
   if (isUriLocation(location)) {
