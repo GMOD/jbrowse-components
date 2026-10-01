@@ -23,7 +23,9 @@ probes come from that review and nobody has re-measured them.
    (ADR-185), and the density heatmap as a `span` under a colour scale
    (ADR-113's amendment). Still to build, ranked by how much of the wiggle
    display leans on each: per-source colour on the plot through the row
-   table's colour plane, summary modes and the min–max band (a `y2` channel),
+   table's colour plane, the summary modes (whiskers and the line's min–max
+   band, which lost their `y2` route when `y2` was declined on 2026-09-30;
+   [grammar-unity](grammar-unity.md) holds the whisker decision),
    the layout-dependent colour default and the cut-at-origin default, and the
    typed-array fetch (ADR-152's conditions).
 
