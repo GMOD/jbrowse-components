@@ -174,6 +174,23 @@ describe('the fit solve across settles of the view', () => {
     uncached.dispose()
   })
 
+  it('hands back the same on-screen set while its membership holds', () => {
+    const { display, view, dispose } = fitDisplay(
+      labelled(
+        spaced(100, 100).map(x => x + 50),
+        10,
+        () => 10,
+      ),
+    )
+    const before = display.onScreenFeatureIds!
+    settle(view, 1)
+    expect(display.onScreenFeatureIds).toBe(before)
+    settle(view, 50)
+    expect(display.onScreenFeatureIds).not.toBe(before)
+    expect(before.size).toBeGreaterThan(0)
+    dispose()
+  })
+
   for (const [level, data, height] of [
     ['thinned', () => labelled(spaced(500, 20), 60, taller(25)), 108],
     ['decimated', () => labelled(unevenlySpaced(400), 5, taller(40)), 60],

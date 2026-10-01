@@ -174,6 +174,20 @@ export function featureIdsTouchingBlocks(
   return ids
 }
 
+// Hands back the set it last returned while the members match, so a settle
+// that moved no feature on or off screen invalidates nothing measured over it.
+export function createMembershipMemo() {
+  let last: ReadonlySet<string> | undefined
+  return (next: ReadonlySet<string>) => {
+    const prev = last
+    if (prev?.size === next.size && [...next].every(id => prev.has(id))) {
+      return prev
+    }
+    last = next
+    return next
+  }
+}
+
 // Same `isPlacedRow` test as `maxBottom`.
 export function packedRowsHeight(
   layoutMap: Map<string, number>,

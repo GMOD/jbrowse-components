@@ -107,7 +107,10 @@ import {
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
-import { featureIdsTouchingBlocks } from './layoutQueries.ts'
+import {
+  createMembershipMemo,
+  featureIdsTouchingBlocks,
+} from './layoutQueries.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
 import {
@@ -318,6 +321,10 @@ export default function baseStateModelFactory(
        * from this display, read by the LGV crosshair overlay
        */
       sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
+      /**
+       * #volatile
+       */
+      onScreenIdsMemo: createMembershipMemo(),
       // #endregion
     }))
     .volatile(fitLadderVolatiles)
@@ -379,7 +386,8 @@ export default function baseStateModelFactory(
       },
       /**
        * #getter
-       * The features whose bp span touches the viewport.
+       * The features whose bp span touches the viewport, as one Set for as
+       * long as the membership holds.
        */
       get onScreenFeatureIds(): ReadonlySet<string> | undefined {
         if (!self.layoutReady) {
@@ -388,7 +396,9 @@ export default function baseStateModelFactory(
         const blocks = containingLgv(self).coarseDynamicBlocks
         return blocks.length === 0
           ? undefined
-          : featureIdsTouchingBlocks(self.rpcDataMap.values(), blocks)
+          : self.onScreenIdsMemo(
+              featureIdsTouchingBlocks(self.rpcDataMap.values(), blocks),
+            )
       },
       /**
        * #getter
