@@ -338,7 +338,7 @@ function layoutRefGroups(
 // be measured against it without packing again. Same `isPlacedRow` test and
 // `measureIds` narrowing as `maxBottom`, so a probe and the committed layout
 // answer the same question.
-interface PackedBottoms {
+export interface PackedBottoms {
   ids: string[]
   bottoms: number[]
 }

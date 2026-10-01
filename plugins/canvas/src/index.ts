@@ -72,13 +72,18 @@ export type {
 } from './LinearBasicDisplay/featureHighlight.ts'
 export type { FitStage } from './LinearBasicDisplay/fitLadder.ts'
 export type { FitDrops } from './LinearBasicDisplay/fitNotes.ts'
-export type { IncrementalLayout } from './LinearBasicDisplay/layout.ts'
+export type {
+  IncrementalLayout,
+  PackHeightCache,
+  PackedBottoms,
+} from './LinearBasicDisplay/layout.ts'
 export { layoutRegionKey } from './LinearBasicDisplay/layoutInputs.ts'
 export type {
   IsoformCountFreeInputs,
   LabelRoomFactorFreeInputs,
   LayoutInputs,
   LayoutRegionData,
+  PackKnobFreeInputs,
 } from './LinearBasicDisplay/layoutInputs.ts'
 export type { ShowLabelsMode } from './LinearBasicDisplay/showLabelsMode.ts'
 export type {
