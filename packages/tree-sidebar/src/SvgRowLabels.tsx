@@ -42,8 +42,8 @@ export function SvgRowLabels({
 }) {
   const palette = usePalette()
   const fontSize = Math.min(rowHeight, 12)
-  const boxHeight = Math.min(rowHeight, 20)
-  const defaultBackground = alpha(palette.background.paper, 0.8)
+  const stripBackground = alpha(palette.text.primary, 0.12)
+  const separator = alpha(palette.text.primary, 0.2)
   const textFits = rowLabelsCarryText(rowHeight)
   // Without a tint there is nothing left once the text is gone, so a track whose
   // rows carry no color draws nothing rather than a bare stripe of the default
@@ -67,6 +67,13 @@ export function SvgRowLabels({
 
   return textFits ? (
     <g transform={`translate(${labelOffset} 0)`}>
+      <rect
+        x={0}
+        y={-scrollTop}
+        width={boxWidth}
+        height={sources.length * rowHeight}
+        {...getFillProps(stripBackground)}
+      />
       {sources.map((source, idx) => {
         const y = idx * rowHeight - scrollTop
         // Per-source labelColor tints the label box (identity coding for
@@ -75,16 +82,27 @@ export function SvgRowLabels({
         const fg = lc ? getContrastText(lc) : palette.text.primary
         return offscreen(y, rowHeight) ? null : (
           <g key={source.name}>
-            <rect
-              x={0}
-              y={y}
-              width={boxWidth}
-              height={boxHeight}
-              {...getFillProps(lc ?? defaultBackground)}
-            />
+            {lc ? (
+              <rect
+                x={0}
+                y={y}
+                width={boxWidth}
+                height={rowHeight}
+                {...getFillProps(lc)}
+              />
+            ) : null}
+            {idx > 0 ? (
+              <rect
+                x={0}
+                y={y}
+                width={boxWidth}
+                height={1}
+                {...getFillProps(separator)}
+              />
+            ) : null}
             <text
               x={4}
-              y={y + boxHeight / 2}
+              y={y + rowHeight / 2}
               fontSize={fontSize}
               dominantBaseline="central"
               {...getFillProps(fg)}

@@ -21,8 +21,25 @@ describe('SvgRowLabels', () => {
       rowHeight: 20,
       labelOffset: 0,
     })
-    expect(c.querySelectorAll('rect')).toHaveLength(1)
+    const tint = [...c.querySelectorAll('rect')].find(
+      r => r.getAttribute('fill') === dog,
+    )
+    expect(tint?.getAttribute('height')).toBe('20')
     expect(c.querySelector('text')?.textContent).toBe('Collie 1')
+  })
+
+  it('draws one strip behind the rows and a separator between them', () => {
+    const c = draw({
+      sources: [{ name: 'a' }, { name: 'b' }, { name: 'c' }],
+      rowHeight: 20,
+      labelOffset: 0,
+    })
+    const rects = [...c.querySelectorAll('rect')]
+    expect(rects[0]?.getAttribute('height')).toBe('60')
+    expect(rects.slice(1).map(r => r.getAttribute('y'))).toEqual(['20', '40'])
+    expect(rects.slice(1).every(r => r.getAttribute('height') === '1')).toBe(
+      true,
+    )
   })
 
   it('draws a narrow color swatch, and no text, below the text threshold', () => {
