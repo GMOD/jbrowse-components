@@ -723,6 +723,10 @@ the backend, one Canvas2D function the SVG export calls after `paintMarkBlocks`:
 
 <!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/components/SequenceDisplayComponent.tsx#letters -->
 
+```tsx
+
+```
+
 A display with no shape at all can still skip the mark layer and return a
 hand-written Canvas2D backend through `createCanvas2DBackend`.
 
