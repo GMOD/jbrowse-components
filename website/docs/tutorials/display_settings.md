@@ -91,7 +91,9 @@ edit, and reopening the file restores every setting.
 `height`, `linkedReads` and `color` are the setting names in both apps. The
 [config schema docs](/docs/config_guide) list the names each display takes (e.g.
 [](/docs/config/linearalignmentsdisplay), [](/docs/config/linearwiggledisplay))
-and the values each accepts.
+and the values each accepts. The same read-back finds the key for any other
+setting on any track: change it in the menu, share, and read the new key in the
+JSON.
 
 ## Put the settings in displayDefaults
 

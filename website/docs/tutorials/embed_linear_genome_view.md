@@ -86,9 +86,22 @@ The unversioned unpkg URL fetches the latest release, so pin a version for
 production (`@jbrowse/react-linear-genome-view2@4.3.0/dist/...`).
 
 For other view types, a different bundler, or working demo repos, see
-[](/docs/embedded_components). The
-[LGV storybook](https://jbrowse.org/storybook/lgv/) has copy-pasteable examples
-for everything beyond a basic view.
+[](/docs/embedded_components).
+
+## Using your own files
+
+The browser fetches each file itself, so the files have to satisfy it:
+
+- A relative `uri` such as `uri: 'sample.bam'` resolves against the page, so
+  with `npx serve -S .` a file beside `index.html` loads. Use a full URL for a
+  file hosted elsewhere.
+- A BAM, CRAM, VCF or GFF is indexed (`.bai`, `.crai`, `.tbi`, `.csi`) with the
+  index beside the file under the same name plus its suffix. A VCF or GFF is
+  bgzipped; a FASTA has its `.fai`, and a bgzipped one its `.gzi`.
+- A file on another origin needs CORS headers allowing the page's origin and
+  `Range` requests, since the browser reads slices rather than whole files.
+- Sequence names in tracks match the assembly's, or the assembly's
+  `refNameAliases` map them.
 
 Prep your own data files with the
 [web quickstart](/docs/quickstart_web#adding-tracks) recipes. For more tracks,

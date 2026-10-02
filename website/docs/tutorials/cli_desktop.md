@@ -97,7 +97,7 @@ tracks are loaded, but nothing is displayed until you launch a view and tick
 them in the track selector. To have the folder open ready to read, write the
 session you want and hand it to the CLI. `assembly` is the `--name` you gave
 `add-assembly`, and `tracks` takes the `trackId`s the CLI derived from your
-filenames, which are in `config.json`:
+filenames. `jq '.tracks[].trackId' myproject/config.json` prints them:
 
 ```json
 {
