@@ -140,11 +140,11 @@ test('the phased arrangement dialog waits for the haplotype rows', () => {
   d.setPhasedMode('phased')
   const arrangement = () =>
     findItem(d.trackMenuItems(), 'Edit colors/arrangement...')
-  expect(arrangement()?.disabled).toBe(true)
+  expect(arrangement()).toMatchObject({ disabled: true })
 
   d.setCellData({
     samplePloidy: { HG001: 2, HG002: 2 },
     rowNames: [],
   } as unknown as Parameters<typeof d.setCellData>[0])
-  expect(arrangement()?.disabled).toBe(false)
+  expect(arrangement()).toMatchObject({ disabled: false })
 })
