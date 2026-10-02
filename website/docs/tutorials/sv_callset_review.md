@@ -66,6 +66,18 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
 wrote 135/135 images to tumor
 ```
 
+For your own callset, point `--config` at a JBrowse config that holds the
+assembly and an alignments track. `--assembly` is the assembly's `name` in that
+config and `--track` the track's `trackId`. The track's reads need their index
+beside them (`.bai` or `.crai`), and the VCF's chromosome names must match the
+assembly's.
+
+```bash
+jb2export batch --vcf calls.vcf.gz \
+  --config your/config.json --assembly <assemblyName> --track <trackId> \
+  --outDir out
+```
+
 A record that fits one window is drawn as a single panel: an insertion names one
 locus, and a deletion shorter than `--flank` has both ends in one frame. Callers
 write each breakend pair as two records, and `batch` renders the pair once.

@@ -96,6 +96,46 @@ bgzip calls.hg38.vcf && tabix -p vcf calls.hg38.vcf.gz
 The script's five arguments are the input VCF, the chain, the `liftOver` binary,
 the output VCF and a scratch directory.
 
+## The genome and the long reads
+
+The DNA breakpoints are lifted to hg38 and the Iso-Seq molecules align to it, so
+we load that assembly first.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
+ENCODE releases each Iso-Seq alignment unsorted. Sort each run, merge them into
+one BAM and index it:
+
+<!-- from: scripts/build_cancer_sv_demo.sh -->
+
+```bash
+samtools sort -o s_run1.bam run1.bam
+samtools sort -o s_run2.bam run2.bam
+samtools merge -f K562_isoseq.bam s_run1.bam s_run2.bam
+samtools index K562_isoseq.bam
+```
+
+The merged BAM is one read track. For your own long RNA reads, swap `uri` for
+your BAM, with its `.bai` beside it and alignments to the same assembly:
+
+```json addtrack
+{
+  "trackId": "K562_isoseq",
+  "name": "K562 PacBio Iso-Seq (ENCODE)",
+  "uri": "K562_isoseq.bam",
+  "assemblyNames": ["hg38"]
+}
+```
+
 ## Triaging the calls
 
 The SV inspector opens the STAR-Fusion table beside a circular view of it, one
