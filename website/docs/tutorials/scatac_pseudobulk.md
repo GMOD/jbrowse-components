@@ -219,29 +219,29 @@ pass a `.json` file of subadapter objects instead of the comma list.
 
 ## Reproduce it end to end
 
-One script runs the whole path,
-[`build_scatac_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scatac_pseudobulk.sh):
+[`build_scatac_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scatac_pseudobulk.sh)
+starts from SnapATAC2's annotated release of the 10x 5k-PBMC dataset, what that
+tool's [standard pipeline](https://scverse.org/SnapATAC2/tutorials/pbmc.html)
+and
+[cell-type annotation](https://scverse.org/SnapATAC2/tutorials/annotation.html)
+tutorials produce: every cell already filtered, clustered and labeled, with its
+fragments beside its `cell_type`. The script:
+
+1. pools each cell type's fragments into one BigWig, in 25 bp bins and RPKM, as
+   above
+2. orders the rows by lineage (T cells, NK, B cells, then myeloid) from a map
+   written into the script, because the object's own label order scatters each
+   lineage down the stack. Running it on your own experiment means replacing
+   that map
+3. gives each row its cluster's color from the same object, so a cell type
+   matches its UMAP
+4. loads the set as one track over hg38 and RefSeq genes
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_scatac_pseudobulk.sh
 bash build_scatac_pseudobulk.sh    # builds ./scatac_pseudobulk_build
 npx --yes serve scatac_pseudobulk_build/jbrowse2
 ```
-
-Its input is SnapATAC2's annotated release of the 10x 5k-PBMC dataset, what that
-tool's [standard pipeline](https://scverse.org/SnapATAC2/tutorials/pbmc.html)
-and
-[cell-type annotation](https://scverse.org/SnapATAC2/tutorials/annotation.html)
-tutorials produce: per-barcode fragments alongside an `obs["cell_type"]` call.
-The script then runs these steps:
-
-- `export_coverage(groupby="cell_type", bin_size=25, normalization="RPKM")`, one
-  BigWig per cell type into `bw/`
-- a `sources.json` of subadapters, taking each row's color from the same object
-  and its `group` and position from a lineage map hardcoded in the script.
-  Running it on your own experiment means replacing that map
-- `jbrowse create` plus `add-assembly` for hg38 and a RefSeq gene track, then
-  the one `MultiQuantitativeTrack`
 
 Rows that stay open everywhere usually mean the normalization step was skipped,
 since an unnormalized group's height tracks its cell count.

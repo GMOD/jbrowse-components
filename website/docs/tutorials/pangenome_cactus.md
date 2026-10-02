@@ -518,13 +518,16 @@ bash build_ecoli_pangenome_cactus.sh   # builds ./ecoli_cactus_build/jbrowse2
 npx --yes serve ecoli_cactus_build/jbrowse2
 ```
 
-The script downloads the five RefSeq genomes, runs `cactus-pangenome`, converts
-the HAL, VCF, `odgi depth` and `odgi pav` into the projections above, maps the
-KTa004 reads, indexes the graph with `build_pggb_tabix.sh`, and writes a
-`config.json` with the five assemblies, per-strain gene tracks, the projection
-and segments tracks, the plugin declaration and a default session. It needs the
-tools under [Prerequisites](#prerequisites), and picks its container runtime off
-`PATH`, docker first; force one with `CONTAINER=singularity`.
+The script downloads the five RefSeq genomes, keeping only each one's
+chromosome, runs `cactus-pangenome`, converts the HAL, VCF, `odgi depth` and
+`odgi pav` into the projections above, and maps the KTa004 reads. It indexes the
+base-level graph by walking its paths, the route
+[the graph-hosting tutorial](/docs/tutorials/pangenome_prepare_graph#reproduce-it-end-to-end)
+lays out, and writes a `config.json` with the five assemblies, per-strain gene
+tracks, the projection and segments tracks, the plugin declaration and a default
+session. It needs the tools under [Prerequisites](#prerequisites), and picks its
+container runtime off `PATH`, docker first; force one with
+`CONTAINER=singularity`.
 
 ## See also
 

@@ -600,7 +600,9 @@ layouts and the node menu.
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
 runs every step above except the E146 read mapping, downloads JBrowse, and
 writes a `config.json` with the five assemblies, their gene tracks, every other
-track on this page, and a default session:
+track on this page, and a default session. It also builds a minigraph graph of
+the same five strains and adds its segments, its allele inventory and each
+strain's path through every bubble as further tracks:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_graph.sh

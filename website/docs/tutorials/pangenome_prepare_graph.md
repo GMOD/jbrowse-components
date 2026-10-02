@@ -323,7 +323,17 @@ the lanes this track produces.
 ## Reproduce it end to end
 
 The one command builds the graph track, the bubbles, the tier and the allele
-inventory, with the tools under [Prerequisites](#prerequisites):
+inventory, with the tools under [Prerequisites](#prerequisites). It:
+
+1. places every segment on a genome. An rGFA states each segment's sequence and
+   offset in its own tags. For a plain GFA the command walks the backbone's
+   paths first, so every segment they visit lands on the reference, and places
+   each remaining segment on the first other haplotype that walks it
+2. finds the bubbles, with `gfatools bubble` on an rGFA or from the snarl VCF on
+   a plain GFA, and builds the tier from them
+3. reads each allele out of the links, following it from where it leaves the
+   backbone to where it rejoins. The reference between those two points and the
+   sequence the allele walks give the CIGAR its size
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
@@ -339,9 +349,10 @@ then
 [`build_bubble_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bubble_tier.sh)
 and
 [`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh),
-each runnable alone. A separate script downloads the 5.5 GB `.gbz`, installs
-`gbz-haplotype-index` and builds the
-[haplotype-walk companion](#haplotype-walks-a-gbz-base-database):
+each runnable alone. HPRC publishes the gbz-base database itself, so a separate
+script builds only the
+[haplotype-walk companion](#haplotype-walks-a-gbz-base-database), from the 5.5
+GB `.gbz`:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_gbz_index.sh

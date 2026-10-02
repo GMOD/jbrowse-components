@@ -308,7 +308,16 @@ The script downloads the nine segmentation BEDs, merges, bgzips and tabixes
 them, downloads JBrowse, and writes the `config.json` above, opening on HOXA.
 
 [`build_chromhmm_roadmap.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_roadmap.sh)
-builds the 127-epigenome track by the same steps:
+builds the 127-epigenome track by the same merge. Roadmap's segmentations are
+bare BED4, so the script fills in what the ENCODE files carried:
+
+1. paints each segment its state's color from `colormap_15_coreMarks.tab`,
+   giving the merged file the `itemRgb` column that draws it
+2. labels each row with the epigenome's name from `EID_metadata.tab`, adding its
+   mnemonic where two epigenomes share a name, so the two never merge into one
+   row
+3. orders the rows by tissue group, so a tissue's epigenomes sit together under
+   one stripe color
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_chromhmm_roadmap.sh
@@ -318,9 +327,7 @@ npx --yes serve chromhmm_roadmap_build/jbrowse2
 
 `EIDS` picks a subset, here the four Roadmap re-analyses of the ENCODE lines the
 first track uses. Leave it out for all 127, which takes about twenty minutes and
-~12 GB of scratch. Row labels and order come from `EID_metadata.tab` and the
-state colors from `colormap_15_coreMarks.tab`, since the segmentations
-themselves are BED4 with no color.
+~12 GB of scratch.
 
 ## See also
 

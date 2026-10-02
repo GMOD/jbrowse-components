@@ -294,18 +294,24 @@ from `session.selection`.
 
 ## Reproduce it end to end
 
+[`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
+starts from 10x's filtered count matrix and the BAM. It:
+
+1. clusters the cells with the standard scanpy pipeline: quality filtering,
+   normalization, PCA, a neighbor graph, the UMAP and Leiden clusters
+2. names each cluster after the canonical PBMC marker panel it scores highest
+   on, and prints the whole score matrix so each call can be checked. A cluster
+   that scores weakly against every panel stays unassigned
+3. pools each cell type's reads into one row, with the filters and CPM scaling
+   above
+4. writes the per-cell store over the marker windows, the UMAP's data files, and
+   a JBrowse instance with the pooled track
+
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_scrna_pseudobulk.sh
 bash build_scrna_pseudobulk.sh    # builds ./scrna_pseudobulk_build
 npx --yes serve scrna_pseudobulk_build/jbrowse2
 ```
-
-The script runs the standard scanpy pipeline on the filtered count matrix (QC,
-normalize, PCA, neighbors, UMAP, Leiden), labels each cluster by scoring it
-against canonical PBMC marker panels, printing the score matrix, then
-pseudobulks the BAM against those labels and writes the JBrowse instance plus
-the UMAP's data files. A cluster whose best panel score is weak is labeled
-unassigned.
 
 ## See also
 

@@ -109,9 +109,12 @@ quantifications were made against. RSEM names each transcript with its version,
 transcript, so joining these tables against a later release drops every
 transcript revised since, with no error. ENCODE lists the release on each
 quantification's file page as its genome annotation, `V29` for all eight here.
-The script subsets the called genes out of the GENCODE v29 GFF3 and appends each
-transcript's numbers to its attribute column. The rows come out in coordinate
-order, so indexing is the ordinary pair:
+
+The script keeps each gene with a called transcript that is meaningfully
+expressed, since a fraction can swing widely on a handful of reads. It subsets
+those genes out of the GENCODE v29 GFF3 and appends each transcript's numbers to
+its attribute column. The rows come out in coordinate order, so indexing is the
+ordinary pair:
 
 <!-- from: scripts/build_dtu_demo.sh -->
 
@@ -138,10 +141,11 @@ the transcript value. The keys are lowercase because the GFF parser lowercases
 them, so a color field named `dIF` reads nothing and paints every transcript
 grey.
 
-`dtu` is a flag with the values `muscle`, `liver` and `ns`, set by the same
-threshold the script reports on. `dif_called` is `dif` on the transcripts the
-flag calls and absent on the rest, so a transcript the test could not separate
-has no value to color and stays grey.
+`dtu` is a flag with the values `muscle`, `liver` and `ns`. The script calls a
+transcript when its FDR is below 0.05 and its isoform fraction moves by more
+than 0.1, the same threshold it reports on. `dif_called` is `dif` on the
+transcripts the flag calls and absent on the rest, so a transcript the test
+could not separate has no value to color and stays grey.
 
 ### The effect size and the FDR gate
 
