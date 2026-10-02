@@ -20,3 +20,14 @@ test('a threshold range that does not fit its cuts shows as a notice', () => {
   render(<LinearMultiRowFeatureDisplayComponent model={display} />)
   expect(screen.getByText('1 config problem')).toBeTruthy()
 })
+
+test('a facet on a field the rows do not carry is a notice', () => {
+  const notices = (facet: string) =>
+    createTestEnvironment({ displayConfig: { facet } }).createDisplay().display
+      .notices
+  expect(notices('strand')).toEqual([
+    expect.stringMatching(/^facet\.field: .* strand bands nothing$/),
+  ])
+  expect(notices('group')).toEqual([])
+  expect(notices('name')).toEqual([])
+})

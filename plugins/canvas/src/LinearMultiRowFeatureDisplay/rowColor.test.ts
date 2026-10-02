@@ -131,14 +131,28 @@ test("scale: 'none' paints no palette and no pair", () => {
   ])
 })
 
-// A row's group is tagged after the arrangement, so this display offers no
-// attribute and a config naming one keeps the palette per row.
-test('a rowColor field keeps the palette per row, and offers no attribute', () => {
-  const byName = loaded({})
-  const byGroup = loaded({
-    rowColor: 'group',
-    rowGroups: [{ match: '^a$', group: 'A', color: '#e41a1c' }],
+const GROUPS = {
+  rowGroups: [
+    { match: '^[ab]$', group: 'AB', color: '#e41a1c' },
+    { match: '^c$', group: 'C', color: '#377eb8' },
+  ],
+}
+
+test('rowColor by group deals a colour per group, and offers the field', () => {
+  const display = loaded({ rowColor: 'group', ...GROUPS })
+  expect(display.rowColorFields).toEqual(['group'])
+  const [a, b, c] = display.rowColorStringsByIndex
+  expect(a).toBeDefined()
+  expect(b).toBe(a)
+  expect(c).not.toBe(a)
+  expect(loaded({}).rowColorFields).toEqual([])
+})
+
+test('rowColor by group pairs its domain with its range', () => {
+  const display = loaded({
+    rowColor: { field: 'group', domain: ['C'], range: ['#123456'] },
+    ...GROUPS,
   })
-  expect(byGroup.rowColorFields).toEqual([])
-  expect(byGroup.rowColorStringsByIndex).toEqual(byName.rowColorStringsByIndex)
+  expect(display.rowColorScale.get('c')).toBe('#123456')
+  expect(display.rowColorScale.get('a')).not.toBe('#123456')
 })

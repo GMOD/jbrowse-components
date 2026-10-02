@@ -45,7 +45,7 @@ export const facetConfigSchema = ConfigurationSchema(
      * (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or
      * `strand`. A feature with no value stacks last, under `field: none`.
      * The multi-sample variant displays read a sample attribute instead, and
-     * the multi-row display a row attribute or `group`, its `rowGroups`.
+     * the multi-row display `group`, its `rowGroups`.
      * The alignments displays also take a read dimension here:
      * `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq` or
      * `mateAssembly`. Writing `facet: "strand"` lands here.

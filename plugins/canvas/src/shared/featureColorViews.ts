@@ -304,11 +304,19 @@ export function featureColorViews(self: FeatureColorHost) {
     /**
      * #getter
      * What the `color` object's slots say together that it cannot paint as
-     * written, for the corner notice.
+     * written.
+     */
+    get colorNotices(): string[] {
+      return colorNotices(this.colorSettings, FEATURE_FIELD_PRESETS)
+    },
+
+    /**
+     * #getter
+     * The corner notice's lines: `colorNotices`, which a display with more
+     * to say extends.
      */
     get notices(): string[] {
-      const settings = this.colorSettings
-      return colorNotices(settings, FEATURE_FIELD_PRESETS)
+      return this.colorNotices
     },
   }
 }

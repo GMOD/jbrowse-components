@@ -122,8 +122,9 @@ import type { RowTable } from '@jbrowse/render-core/marks'
 import type {
   RowBanding,
   RowColorDeal,
-  SvgSidebarProps,
+  RowColorEntries,
   RowSource,
+  SvgSidebarProps,
   UnlistedRowsSort,
 } from '@jbrowse/tree-sidebar'
 import type React from 'react'
@@ -363,35 +364,68 @@ export default function stateModelFactory(
          * tagged only after the arrangement.
          */
         rowBand(row: RowSource): string {
-          const field = self.facet?.field ?? ''
+          return this.rowAttribute(row, self.facet?.field ?? '')
+        },
+        /**
+         * #getter
+         * `colorNotices`, and a `facet` naming a field no row carries: a row
+         * here is a value of the `rows` field with only its name and its
+         * `rowGroups` group, so any other field bands nothing.
+         */
+        get notices(): string[] {
+          const field = self.facet?.field
+          return field === undefined || field === 'group' || field === 'name'
+            ? self.colorNotices
+            : [
+                ...self.colorNotices,
+                `facet.field: a row here carries only its name and its rowGroups group, so ${field} bands nothing`,
+              ]
+        },
+        /**
+         * #method
+         * A row's value of `field`: `group` is its `rowGroups` group, any
+         * other field its own attribute, '' where it has none.
+         */
+        rowAttribute(row: RowSource, field: string): string {
           return field === 'group'
             ? (rowGroupOf(self.rowGroupMatchers, row.name)?.group ?? '')
             : rowFieldValue(row, field)
         },
         /**
          * #method
-         * `TreeSidebarMixin`'s hook: a palette colour per row, dealt over the
-         * rows in the base arrangement, a row with a `rowColor` entry still
-         * taking its turn.
+         * `TreeSidebarMixin`'s hook, dealt over the rows in the base
+         * arrangement: under `name` a palette colour per row, a row with a
+         * `rowColor` entry still taking its turn; under `group` a colour per
+         * group, the groups `setting.domain` lists taking its `range`.
          */
-        rowColorDealFor(): RowColorDeal<RowSource> {
+        rowColorDealFor(setting: RowColorEntries): RowColorDeal<RowSource> {
+          const rows = orderRowsByDomain(self.expandedRows, self.baseRowDomain)
+          if (setting.field === 'name') {
+            return {
+              order: rows.map(s => s.name),
+              valueOf: s => s.name,
+              domain: [],
+              range: [],
+              palette: categoricalPalette,
+            }
+          }
+          const valueOf = (row: RowSource) =>
+            this.rowAttribute(row, setting.field)
           return {
-            order: orderRowsByDomain(self.expandedRows, self.baseRowDomain).map(
-              s => s.name,
-            ),
-            valueOf: s => s.name,
-            domain: [],
-            range: [],
+            order: [...setting.domain, ...rows.map(valueOf)],
+            valueOf,
+            domain: setting.domain,
+            range: setting.range,
             palette: categoricalPalette,
           }
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: none, since a row's group is tagged after
-         * the arrangement, where the rows carry no attribute yet.
+         * `TreeSidebarMixin`'s hook: `group` while `rowGroups` tags the rows,
+         * the one attribute they carry.
          */
         get rowColorFields(): readonly string[] {
-          return []
+          return self.rowGroups.length > 0 ? ['group'] : []
         },
         /**
          * #getter
