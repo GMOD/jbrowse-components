@@ -274,6 +274,19 @@ paper lists more.
 
 Two scripts, in order:
 
+1. Both take every animal of the small and giant breeds from the Dog10K sample
+   table by breed name, so genotype plays no part in who sits in which class,
+   and the clustering has a split to recover.
+2. [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
+   counts each class's alleles one autosome at a time, corrects each class's
+   frequency for its own sample size so the unequal classes do not tilt the
+   score, and skips windows with too few sites to score. It prints the
+   percentiles behind the reference line and the top windows.
+3. [`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
+   slices the _IGF1_ window for the same panel plus the Greek wolves, scores
+   each site with the scan's estimator, and prints where the separating sites
+   run and each size class's dosage over them.
+
 ```bash
 BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
 curl -fO $BASE/build_dog10k_size_fst.sh
@@ -281,16 +294,6 @@ curl -fO $BASE/build_dog10k_igf1.sh
 bash build_dog10k_size_fst.sh   # writes ./dog10k_size_fst_build/
 bash build_dog10k_igf1.sh       # writes ./dog10k_igf1_build/
 ```
-
-[`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
-downloads the Dog10K sample table, derives the two breed panels from it, streams
-one autosome at a time out of the phased panel, and prints the ranked windows.
-
-[`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
-derives the same panels plus the metadata TSV, slices the _IGF1_ window out of
-the callset, scores every site in it with the same estimator the scan uses, and
-reports the alt-allele dosage per size class over the sites inside the gene that
-separate the two dog classes.
 
 ## See also
 

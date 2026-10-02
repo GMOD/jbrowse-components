@@ -478,12 +478,23 @@ bash build_dog10k_fgf4_synteny.sh
   alignments lands on an annotated _FGF4_ intron and each deposited CDS is a
   single interval.
 
-The _SLC28A3_ copy-number lanes come from a sixth script. Its first route reads
-the SNV callset's per-sample depth and needs only the tools in Prerequisites.
-When that route finishes, the script prints "Route 2 follows" and goes on to
-re-measure six animals from their SRA runs. That route takes about 35 GB of
-scratch for the reference, its index and one run at a time, and needs
-sra-toolkit (`fastq-dump`), BBMap (`bbduk.sh`), `minimap2`, `samtools` and
+The _SLC28A3_ copy-number lanes come from a sixth script, which measures the
+locus two ways:
+
+1. From the SNV callset's per-sample depth, each canid's depth over the locus
+   against its own flanks, as [the CYP1A2 tutorial](/docs/tutorials/dog10k_lof)
+   does. It paints every canid, and separately every Grand Basset Griffon
+   Vendeen, Basset Hound and German Shepherd, which are the two lanes in the
+   config. This route needs only the tools in Prerequisites.
+2. From reads, for the six panel dogs with an SRA run. All 15 dogs with
+   published CRAMs sit at two copies here, so they cannot check the first route
+   at this locus. The script keeps only the reads sharing a 31-mer with the
+   repeat-masked locus, aligns those to the whole genome, and prints each dog's
+   copy number over the element beside its flanks.
+
+The script prints "Route 2 follows" between the two. The second route takes
+about 35 GB of scratch for the reference, its index and one run at a time, and
+needs sra-toolkit (`fastq-dump`), BBMap (`bbduk.sh`), `minimap2`, `samtools` and
 UCSC's `bedGraphToBigWig`. Stop it at that line if you want only the lanes.
 
 ```bash

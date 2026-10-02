@@ -235,8 +235,18 @@ under [Reproduce it end to end](#reproduce-it-end-to-end).
 ## Reproduce it end to end
 
 [`build_lct_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_ld.sh)
-cuts the region out of the callset without downloading it and writes a
-ready-to-serve config:
+builds the triangles and the narrow Fst lane, and writes a ready-to-serve
+config. It:
+
+1. keeps the release's unrelated samples, since relatives share long haplotypes
+   whether or not a sweep happened, and splits them into the European panel and
+   everyone else
+2. cuts a region wide enough to reach past both edges of the block, and prints
+   mean r² against `rs4988235` along it, so the block's ends show in the data
+3. cuts the European panel out of that same slice, so the pooled and panel
+   triangles hold the same variants and differ only in their samples
+4. correlates each cohort's common variants with PLINK, and scores Fst per
+   variant between the panel and the rest
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_ld.sh
@@ -245,7 +255,11 @@ npx --yes serve lct_ld_build/jbrowse2 # then open the printed URL
 ```
 
 The wide Fst lane is a second file, from
-[`build_lct_fst_scan.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh):
+[`build_lct_fst_scan.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh).
+It scores the same panels with the same estimator over 40 Mb of chr2 with _LCT_
+at its middle, one value per variant, because a window averages a sweep's few
+differentiated variants into the many around them. It prints where `rs4988235`
+ranks across the span.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_fst_scan.sh
@@ -254,7 +268,12 @@ bash build_lct_fst_scan.sh            # builds ./lct_fst_scan_build
 
 The [subsampled haplotype matrix](#rows-have-to-be-worth-a-pixel) is a third
 file, from
-[`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh):
+[`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh).
+It takes the same number of unrelated samples from each of six populations, so
+no population outweighs the rest in the clustering. The six span the
+lactase-persistence allele from common to absent: CEU, FIN, PJL, TSI, YRI and
+CHB. The script prints the allele's frequency in each, over the release and over
+the subsample.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_haploblock.sh

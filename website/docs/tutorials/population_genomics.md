@@ -325,9 +325,10 @@ bash build_dgrp_popgen.sh                  # builds ./dgrp_popgen_build/jbrowse2
 npx --yes serve dgrp_popgen_build/jbrowse2 # then open the printed URL
 ```
 
-The config carries the dm6 assembly plus every scan and the inversion genotypes,
-opening on In(2L)t across arm 2L. The `.bw` and `.vcf.gz` files are written next
-to it, to host elsewhere or
+The config carries the dm6 assembly, every scan, and one `<INV>` record over the
+published In(2L)t breakpoints, genotyped in each line from its DGRPool
+karyotype. It opens on In(2L)t across arm 2L. The `.bw` and `.vcf.gz` files are
+written next to it, to host elsewhere or
 [open as local track files](/docs/user_guides/basic_usage#opening-tracks) in
 JBrowse Desktop.
 

@@ -209,10 +209,20 @@ covers both metrics and the allele-frequency floor.
 ## Reproduce it end to end
 
 [`build_ag1000g_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ag1000g_ld.sh)
-downloads the phased haplotypes, prints the long-range D' profile, the 2La score
-distribution and the karyotype breakdown per population, builds the `.vcor.gz`
-tracks and the karyotype calls, and writes a `config.json` opening on the
-inversion:
+takes the published 2La span only as a probe window, and prints the evidence for
+each choice it makes from there:
+
+1. Each panel is one population, since correlation pooled across populations
+   invents linkage none of them has. The script prints, per population, mean D'
+   between variants more than 5 Mb apart inside the probe window and outside it,
+   because only a population carrying both arrangements can show the block.
+2. It keeps common variants, thins them to a grid, and writes each panel's r²
+   and D' table.
+3. It bins D' to distant partners along the whole arm. The steps up and down are
+   the inversion's breakpoints, recovered from the data alone.
+4. It scores each mosquito's karyotype from the tag SNPs, prints the score
+   histogram, which has to come out with three peaks, and writes the `<INV>`
+   calls and a `config.json` opening on the inversion.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ag1000g_ld.sh

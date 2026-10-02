@@ -307,17 +307,23 @@ then genotypes that one site over all 1,987 canids for the breed and wild-canid
 counts quoted above.
 
 [`build_dog10k_cyp1a2_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_cyp1a2_cn.sh)
-builds the copy-number tracks:
+builds the copy-number tracks. It:
+
+1. reads depth over the gene and the sequence around it from each of the 15
+   published CRAMs, counting only positions RepeatMasker leaves unmasked, the
+   same restriction QuicK-mer2's unique k-mers make
+2. scales each window against that dog's own flanks, taken as two copies, and
+   prints each dog's copy number over the element beside the spread of its
+   flanks around two
+3. takes the same ratio from the callset's per-sample depth for every canid, and
+   prints how closely it agrees with the CRAM estimate in the 15 dogs
+4. drops any flanking window whose median across the animals is off two, rounds
+   the rest to whole copies, and writes one painted row per animal
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_cyp1a2_cn.sh
 bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
 ```
-
-The script reads depth over this gene from each published CRAM, paints the 15
-dogs, then slices the callset's depth field and paints the rest. It prints each
-dog's copy number over the element beside the spread of the sequence around it,
-and the agreement between the two measurements.
 
 ## See also
 
