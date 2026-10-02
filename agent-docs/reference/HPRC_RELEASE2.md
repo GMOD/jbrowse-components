@@ -17,8 +17,8 @@ the graph plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `IDEAS.md`).
 | `v2.0/…/hprc-v2.0-mc-grch38.full.taf.gz` + `.tai` | yes, `BgzipTaffyAdapter` |
 | `v2.1/…/hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` | yes, `BgzipMafAdapter`; the tutorial's file |
 | `sv.gfa` (minigraph rGFA) | yes, graph view plugin |
-| `pgbi.vcf.gz` | yes, genotype matrix; the tutorial's file (below) |
-| `wave.vcf.gz` | yes, genotype matrix; the portal's variants launch |
+| `pgbi.vcf.gz` | yes, genotype matrix; the tutorial's file and the portal's variants launch (below) |
+| `wave.vcf.gz` | yes, genotype matrix; a track in jb2hubs' hg38 and hs1 configs (below) |
 | `hprc25272.aln.paf.gz` and the per-target `impg/pafs/all-vs-1/` split | sparse all-vs-all and unsorted (below) |
 | `hprc465vsgrch38.aln.paf.gz` | yes, but a star (below) |
 | per-chromosome pggb `.gfa.zst` | no (below) |
