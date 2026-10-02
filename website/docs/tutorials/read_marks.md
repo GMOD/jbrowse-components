@@ -325,20 +325,9 @@ bcftools view -s NA12878 1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz 
     -f '%CHROM\t%POS\t%END\t%INFO/SVLEN\t[%GT]\t%INFO/AF\t%INFO/EVIDENCE\n'
 ```
 
-| position, chr20 |    size | genotype |
-| --------------- | ------: | -------- |
-| 1.58 Mb         | 33.1 kb | 0/1      |
-| 32.94 Mb        |  3.9 kb | 0/1      |
-| 34.23 Mb        |  3.3 kb | 1/1      |
-| 43.64 Mb        |  2.7 kb | 0/1      |
-| 43.85 Mb        |  2.6 kb | 0/1      |
-| 52.14 Mb        |  2.1 kb | 1/1      |
-| 54.03 Mb        | 10.9 kb | 0/1      |
-| 55.86 Mb        |  6.0 kb | 0/1      |
-
-Every callset deletion between 2 and 10 kb is a bar, and the two homozygous ones
-are tallest. Other windows hold ten or more such pairs with no call: the
-chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb.
+Every deletion in that listing between 2 and 10 kb is a bar on the track, and
+the two homozygous ones are tallest. Other windows hold ten or more such pairs
+with no call: the chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb.
 
 To check the _EFCAB8_ deletion against the reads, compare the depth inside the
 call with the depth beside it, and count the long pairs around it:

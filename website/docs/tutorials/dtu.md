@@ -193,14 +193,10 @@ could not separate has no value to color and stays grey.
 
 ### The effect size and the FDR gate
 
-The script computes the effect size from TPM and fits the model on counts.
-Isoform fraction is a molar quantity, and read counts scale with abundance times
-effective length, so a count-based fraction is biased toward long isoforms.
-
-The script gates on satuRn's regular FDR. satuRn's empirical FDR assumes most
-tests are null, and this contrast breaks that assumption: `locfdr` reports a
-misfit, and no transcript passes the empirical FDR. The script prints the
-minimum empirical FDR beside the regular-FDR count.
+The script takes the isoform fraction from TPM, because read counts scale with
+effective length and bias a count-based fraction toward long isoforms. It gates
+on satuRn's regular FDR, because the empirical FDR assumes most tests are null
+and this contrast breaks that assumption.
 
 ## The genome
 
