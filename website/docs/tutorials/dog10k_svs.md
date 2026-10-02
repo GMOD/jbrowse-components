@@ -67,6 +67,28 @@ supporting UCSC and OMIA tracks and two sequenced retrocopies from GenBank.
   UCSC's canFam4 REST API:
   https://api.genome.ucsc.edu/getData/sequence?genome=canFam4;chrom=chr18;start=48865000;end=48876000
 
+## The genome
+
+The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
+We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
+GenBank accessions:
+
+```json addassembly
+{
+  "name": "UU_Cfam_GSD_1.0",
+  "aliases": ["canFam4"],
+  "sequence": {
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit"
+    }
+  },
+  "refNameAliases": {
+    "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.chromAlias.txt"
+  }
+}
+```
+
 ## A 7.8 kb deletion in NHEJ1
 
 Schall and Kidd genotyped long-read-discovered structural variants across the
@@ -405,8 +427,24 @@ samtools faidx parent.fa
 minimap2 -x splice -c parent.fa FGF4retro-CFA12.fa > FGF4retro-CFA12.paf
 ```
 
-Load each retrocopy as a one-contig assembly and its alignment as a
-`SyntenyTrack`:
+Load each retrocopy as a one-contig assembly, from the indexed FASTA the build
+script writes:
+
+```json addassembly
+{
+  "name": "FGF4retro-CFA12",
+  "uri": "FGF4retro-CFA12.fa"
+}
+```
+
+```json addassembly
+{
+  "name": "FGF4retro-CFA18",
+  "uri": "FGF4retro-CFA18.fa"
+}
+```
+
+Each alignment is a `SyntenyTrack` between its retrocopy and the dog assembly:
 
 ```json addtrack
 {
@@ -423,18 +461,36 @@ Load each retrocopy as a one-contig assembly and its alignment as a
 }
 ```
 
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "dog10k_fgf4_retro_cfa18",
+  "name": "FGF4 CFA18 retrocopy (MF040222) vs its parent gene",
+  "assemblyNames": ["FGF4retro-CFA18", "UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "PAFAdapter",
+    "uri": "dog10k_fgf4_retro_cfa18.paf",
+    "queryAssembly": "FGF4retro-CFA18",
+    "targetAssembly": "UU_Cfam_GSD_1.0"
+  }
+}
+```
+
 `assemblyNames` is ordered `[query, target]`, the reverse of minimap2's argument
 order. The build script rewrites the `N` operations in each CIGAR to `D`, since
 those bases are absent from the retrocopy. It also writes each GenBank record's
 feature table out as GFF3 for the retrocopy's gene model, and checks that the
 CDS is a single interval (the parent's has three).
 
-Put the parent gene between the two retrocopies, and set the synteny view's
-indel drawing to **Transparent indels**. Colored indels label each CIGAR
-operation from the side it is read, so one gap would be a deletion above the
-parent row and an insertion below it. Both retrocopies align to the same three
-exons, so each intron is a gap in both ribbons. The window ends where the CFA18
-alignment does, and the CFA12 ribbon runs past it.
+To put the parent gene between the two retrocopies, choose **Add → Linear
+synteny view**, switch to **Manual**, and set the rows to `FGF4retro-CFA18`,
+`UU_Cfam_GSD_1.0` and `FGF4retro-CFA12`, top to bottom. Give the upper pair the
+CFA18 alignment and the lower pair the CFA12 one, then click **Launch**. Open
+the view's sliders menu and set **CIGAR indels → Transparent indels**. Colored
+indels label each CIGAR operation from the side it is read, so one gap would be
+a deletion above the parent row and an insertion below it. Both retrocopies
+align to the same three exons, so each intron is a gap in both ribbons. The
+window ends where the CFA18 alignment does, and the CFA12 ribbon runs past it.
 
 <Figure caption="Two independent FGF4 retrocopies aligned to the parent gene between them, with the Manta calls in reference coordinates and then across Dog10K genomes. Every ribbon gap falls on a parent intron and the blue blocks sit in those same two places." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 

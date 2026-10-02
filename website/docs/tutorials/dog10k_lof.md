@@ -51,6 +51,28 @@ directly over HTTP with no local copy of the 397 GB callset.
 - the 15 published CRAMs the copy-number lane validates callset depth against:
   https://kiddlabshare.med.umich.edu/dog10K/cram-share/
 
+## The genome
+
+The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
+We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
+GenBank accessions:
+
+```json addassembly
+{
+  "name": "UU_Cfam_GSD_1.0",
+  "aliases": ["canFam4"],
+  "sequence": {
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit"
+    }
+  },
+  "refNameAliases": {
+    "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.chromAlias.txt"
+  }
+}
+```
+
 ## The CYP1A2 nonsense variant
 
 _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs carry a nonsense
