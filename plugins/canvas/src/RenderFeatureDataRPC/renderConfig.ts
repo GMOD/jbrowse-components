@@ -1,4 +1,5 @@
 import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configuration'
+import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 
 import type { SubfeatureLabels } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -156,15 +157,8 @@ export const GENE_GLYPH_DEFAULTS: GeneGlyphSettings = {
     'D_gene_segment',
     'J_gene_segment',
   ],
-  canonicalTranscriptField: 'tag',
-  canonicalTranscriptTags: [
-    'MANE Select',
-    'MANE_Select',
-    'RefSeq Select',
-    'Ensembl_canonical',
-    'MANE Plus Clinical',
-    'MANE_Plus_Clinical',
-  ],
+  canonicalTranscriptField: DEFAULT_CANONICAL_TRANSCRIPTS.field,
+  canonicalTranscriptTags: [...DEFAULT_CANONICAL_TRANSCRIPTS.tags],
   containerTypes: ['proteoform_orf'],
   subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
   impliedUTRs: true,

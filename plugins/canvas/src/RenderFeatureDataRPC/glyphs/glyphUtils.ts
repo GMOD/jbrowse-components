@@ -102,13 +102,6 @@ export function hasContainerChildren(feature: Feature) {
   return getSubfeatures(feature).some(sub => getSubfeatures(sub).length > 0)
 }
 
-// The feature ITSELF counts, because an isoform can BE the CDS rather than
-// contain one — a viral polyprotein hangs its cleavage products off its CDS,
-// not off further CDSs.
-export function isCodingFeature(feature: Feature): boolean {
-  return isCDS(feature) || getSubfeatures(feature).some(isCodingFeature)
-}
-
 export function boxLayout(feature: Feature, height: number): FeatureLayout {
   return { feature, glyphType: 'Box', y: 0, height, children: [] }
 }

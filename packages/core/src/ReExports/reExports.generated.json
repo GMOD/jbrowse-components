@@ -3137,6 +3137,19 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/isoformRank": {
+      "package": "@jbrowse/core",
+      "names": [
+        "DEFAULT_CANONICAL_TRANSCRIPTS",
+        "featureIsoformReader",
+        "isCanonicalTranscriptsHost",
+        "isCodingIsoform",
+        "isoformScorer",
+        "rankIsoforms",
+        "serializedIsoformReader"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/isTextEntryFocused": {
       "package": "@jbrowse/core",
       "names": [

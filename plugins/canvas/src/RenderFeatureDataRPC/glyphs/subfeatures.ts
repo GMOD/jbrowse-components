@@ -1,17 +1,19 @@
-import { reservesBelowLabelRow } from '../labelUtils.ts'
-import { featureType, getSubfeatures, isCDS } from '../util.ts'
-import { findGlyph } from './findGlyph.ts'
 import {
-  TRANSCRIPT_PADDING_RATIO,
-  featureHeightPx,
-  isCodingFeature,
-} from './glyphUtils.ts'
+  featureIsoformReader,
+  isoformScorer,
+  rankIsoforms as rankIsoformsBy,
+} from '@jbrowse/core/util/isoformRank'
 
-import type { Span } from '../../shared/mergeSpans.ts'
+import { reservesBelowLabelRow } from '../labelUtils.ts'
+import { featureType, getSubfeatures } from '../util.ts'
+import { findGlyph } from './findGlyph.ts'
+import { TRANSCRIPT_PADDING_RATIO, featureHeightPx } from './glyphUtils.ts'
+
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { IsoformStack } from '../rpcTypes.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { IsoformScore } from '@jbrowse/core/util/isoformRank'
 
 // Is this child one of the isoforms the gene chooses among, rather than a
 // decoration beside them (an NCBI source record, a `biological_region`)?
@@ -37,105 +39,22 @@ function getIsoforms(
   return isoforms.length > 0 ? isoforms : subfeatures
 }
 
-// "Longest coding" is the longest protein — summed CDS length, not the widest
-// genomic footprint an isoform with a large intron could win. A duplicated CDS
-// row is a real GFF3 quirk that would otherwise inflate one isoform past a
-// genuinely longer protein, so equal spans count once.
-function codingLength(feature: Feature): number {
-  const spans: Span[] = []
-  const walk = (f: Feature) => {
-    for (const sub of getSubfeatures(f)) {
-      if (isCDS(sub)) {
-        spans.push([sub.get('start'), sub.get('end')])
-      } else {
-        walk(sub)
-      }
-    }
-  }
-  walk(feature)
-  if (spans.length === 0) {
-    return isCDS(feature) ? feature.get('end') - feature.get('start') : 0
-  }
-  spans.sort((a, b) => a[0] - b[0] || a[1] - b[1])
-  let sum = 0
-  for (const [i, span] of spans.entries()) {
-    const prev = spans[i - 1]
-    if (!prev || prev[0] !== span[0] || prev[1] !== span[1]) {
-      sum += span[1] - span[0]
-    }
-  }
-  return sum
-}
-
-// A position in `canonicalTranscriptTags` rather than a boolean, because the
-// default list holds two tags one gene can carry at once and flattening them to
-// "tagged" leaves the coding-length tiebreak to pick between them. A GFF3
-// attribute holding a comma list arrives as an array, hence both shapes.
-function canonicalRank(feature: Feature, field: string, wanted: string[]) {
-  const value = feature.get(field)
-  const values = Array.isArray(value)
-    ? value.map(v => String(v).toLowerCase())
-    : typeof value === 'string'
-      ? [value.toLowerCase()]
-      : []
-  let best = Infinity
-  for (const v of values) {
-    const rank = wanted.indexOf(v)
-    if (rank !== -1 && rank < best) {
-      best = rank
-    }
-  }
-  return best
-}
-
-interface IsoformScore {
-  canonical: number
-  coding: boolean
-  // protein length for a coding isoform, genomic span otherwise
-  size: number
-}
-
 // Scored once per child: the ranking reads these for every gene that stacks
 // more than one child, not only for the ones `longestCoding` collapses.
 function scoreIsoforms(features: Feature[], config: DisplayConfig) {
-  const { canonicalTranscriptField: field, canonicalTranscriptTags } = config
-  const wanted = canonicalTranscriptTags.map(t => t.toLowerCase())
+  const score = isoformScorer(featureIsoformReader, {
+    field: config.canonicalTranscriptField,
+    tags: config.canonicalTranscriptTags,
+  })
   return new Map<string, IsoformScore>(
-    features.map(feature => {
-      const coding = isCodingFeature(feature)
-      return [
-        feature.id(),
-        {
-          canonical: wanted.length
-            ? canonicalRank(feature, field, wanted)
-            : Infinity,
-          coding,
-          size: coding
-            ? codingLength(feature)
-            : feature.get('end') - feature.get('start'),
-        },
-      ]
-    }),
+    features.map(feature => [feature.id(), score(feature)]),
   )
 }
 
 type Scores = ReturnType<typeof scoreIsoforms>
 
-// Best first. A curated tag outranks every measurement, because for a gene whose
-// longest protein is a minor variant it is the only thing that picks the right
-// isoform. A coding-length tie resolves to the LATER isoform, which a stable
-// sort would break the other way — hence the explicit index term.
-function rankIsoforms(isoforms: Feature[], scores: Scores): Feature[] {
-  return isoforms
-    .map((feature, index) => ({ feature, index, ...scores.get(feature.id())! }))
-    .sort(
-      (a, b) =>
-        a.canonical - b.canonical ||
-        Number(b.coding) - Number(a.coding) ||
-        b.size - a.size ||
-        b.index - a.index,
-    )
-    .map(s => s.feature)
+function rankIsoforms(isoforms: Feature[], scores: Scores) {
+  return rankIsoformsBy(isoforms, f => scores.get(f.id())!)
 }
 
 function totalLabelRows(layout: FeatureLayout) {
