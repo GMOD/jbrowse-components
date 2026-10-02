@@ -16,6 +16,7 @@ track with one color-coded row per cell type.
 - htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
 - `python3`, for the [127-epigenome build](#reproduce-it-end-to-end) only
+- `jq`, for the Roadmap tissue stripe only
 
 On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib; `node`
 comes from [nodejs.org](https://nodejs.org/).
@@ -93,9 +94,35 @@ config below.
 
 ## Configure the multi-row feature display
 
+Both releases are on hg19, so we load that assembly and a RefSeq gene track for
+the figures to sit under:
+
+```json addassembly
+{
+  "name": "hg19",
+  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit",
+  "refNameAliases": {
+    "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chromAlias.txt"
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ncbi_gff_hg19",
+  "name": "NCBI RefSeq genes",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz"
+  }
+}
+```
+
 The track config below opens the merged file in a multi-row feature display
-partitioned on `cellType`. It references the `hg19` assembly; see the
-[assemblies configuration guide](/docs/config_guides/assemblies) to set one up:
+partitioned on `cellType`. For your own segmentations, swap `uri` for the
+bgzipped, tabix-indexed BED from the merge above:
 
 ```json addtrack
 {
@@ -267,11 +294,61 @@ lines show PAX5 transcribed without the enhancers.
 
 <Figure src="/img/chromhmm.png" caption="All 127 Roadmap epigenomes over chr9 from FAM205A to ALDH1B1, rows in the paper's tissue order, each label tinted by its tissue group. Promoters are red in every tissue; PAX5 (boxed) is transcribed with genic enhancers only in the B cell rows and GM12878."/>
 
-Six epigenome names in `rows.domain` and `rows.kept` narrow the same track to
-lung fibroblasts, foreskin fibroblasts and ES cells over HOXA, which reproduces
-the chromatin domains
+Listing six epigenome names in `rows.domain` and `rows.kept` narrows the same
+track to lung fibroblasts, foreskin fibroblasts and ES cells over HOXA, which
+reproduces the chromatin domains
 [Rinn et al. 2007](https://doi.org/10.1016/j.cell.2007.05.022) mapped in
-fibroblasts from different parts of the body.
+fibroblasts from different parts of the body. An empty `rowGroups` keeps the
+tissue grouping from reordering them out of `domain`:
+
+```json session
+{
+  "defaultSession": {
+    "name": "HOXA fibroblasts",
+    "views": [
+      {
+        "id": "hoxa_lgv",
+        "type": "LinearGenomeView",
+        "assembly": "hg19",
+        "loc": "chr7:27,110,000-27,265,000",
+        "tracks": [
+          {
+            "type": "FeatureTrack",
+            "configuration": "roadmap_chromhmm_multirow_hg19",
+            "displays": [
+              {
+                "type": "LinearMultiRowFeatureDisplay",
+                "configuration": "roadmap_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay",
+                "rows": {
+                  "field": "cellType",
+                  "domain": [
+                    "NHLF Lung Fibroblast Primary Cells",
+                    "IMR90 fetal lung fibroblasts Cell Line",
+                    "Foreskin Fibroblast Primary Cells skin01",
+                    "Foreskin Fibroblast Primary Cells skin02",
+                    "H1 Cells",
+                    "H9 Cells"
+                  ],
+                  "kept": [
+                    "NHLF Lung Fibroblast Primary Cells",
+                    "IMR90 fetal lung fibroblasts Cell Line",
+                    "Foreskin Fibroblast Primary Cells skin01",
+                    "Foreskin Fibroblast Primary Cells skin02",
+                    "H1 Cells",
+                    "H9 Cells"
+                  ]
+                },
+                "rowGroups": [],
+                "height": 240
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
 <Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA. Lung fibroblasts keep HOXA1-A7 (red box) active and HOXA9-A13 (blue box) Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold the whole cluster repressed."/>
 
@@ -284,8 +361,20 @@ At this scale a row is a few pixels tall and carries no text, so the stripe
 beside the painting marks the tissues. The
 [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) slot
 takes one `{ match, group, color }` per Roadmap tissue group and tints each
-matching row's sidebar swatch. The build script writes those from the `GROUP`
-and `COLOR` columns of `EID_metadata.tab`, which the clustering does not use.
+matching row's sidebar swatch. `match` is a regex over the row names, and the
+`GROUP` and `COLOR` columns of `EID_metadata.tab`, which the clustering does not
+use, supply the rest. One `jq` call writes every entry from the `STD_NAME`
+column, escaping the regex metacharacters in the names:
+
+```bash
+jq -R -s 'split("\n")[1:-1] | map(split("\t")) | group_by(.[1])
+  | map({ match: ("^(" + (map(.[4] | gsub("(?<c>[.()+*?\\[\\]^$|\\\\{}])"; "\\" + .c)) | join("|")) + ")$"),
+          group: .[0][1], color: .[0][2] })' EID_metadata.tab > rowGroups.json
+```
+
+Paste the array into the display as `"rowGroups"`. The build script also appends
+the mnemonic to a name that two epigenomes share, which a `STD_NAME` match
+leaves as one row.
 
 The list includes an ENCODE2012 group. Roadmap folded the ENCODE 2012 reference
 epigenomes (GM12878, K562, HeLa-S3, HepG2, A549, HUVEC, NHEK and the rest) into
@@ -318,6 +407,19 @@ bare BED4, so the script fills in what the ENCODE files carried:
    row
 3. orders the rows by tissue group, so a tissue's epigenomes sit together under
    one stripe color
+
+The color join for one epigenome is a single `awk` call. It looks each state's
+number, the part of the name before the underscore, up in the colormap and
+appends the `itemRgb` and `cellType` columns:
+
+<!-- from: scripts/build_chromhmm_roadmap.sh -->
+
+```bash
+awk -F'\t' -v c="NHLF Lung Fibroblast Primary Cells" 'BEGIN { OFS = "\t" }
+  NR == FNR { rgb[$1] = $2; next }
+  { split($4, s, "_"); print $1, $2, $3, $4, 0, ".", $2, $3, rgb[s[1]], c }' \
+  colormap_15_coreMarks.tab E128_15_coreMarks_mnemonics.bed
+```
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_chromhmm_roadmap.sh
