@@ -85,8 +85,51 @@ prediction and stores the arrays. The public instance is the default, and
 
 ## Ask for a prediction
 
-Open the session below. The locus is in view with RefSeq genes and the oncogenic
-_TAL1_ variants, and no predictions yet.
+AlphaGenome predicts from hg38 sequence, so we load that assembly, the RefSeq
+genes and the oncogenic _TAL1_ variants:
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+  "refNameAliases": {
+    "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt"
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes",
+  "name": "NCBI RefSeq genes",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz"
+  }
+}
+```
+
+The variants are a BED whose header names `REF` and `ALT` columns after the
+usual four. The right-click prediction item needs those alleles on each feature.
+For your own variants, swap `uri` for a VCF or a BED with the same columns:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "tal1_variants",
+  "name": "Oncogenic TAL1 variants",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedAdapter",
+    "uri": "https://jbrowse.org/demos/alphagenome_test.bed"
+  }
+}
+```
+
+The session below puts the locus in view with those tracks and no predictions
+yet. It also loads the hosted config that carries them.
 
 ```json session config=https://jbrowse.org/demos/alphagenome/config.json
 {
