@@ -88,6 +88,8 @@ type Ctx = MarkContext2D
  * the first is what ships. The seam fudge is a Canvas2D compositing correction
  * (see CANVAS_SEAM_PX) with no GPU twin, so it must not reach the
  * shader's rule — feeding it in is the bug the coverage bar already had once.
+ * `reversed` hangs the pad off the left edge, which faces the next bin painted
+ * on a reversed block.
  *
  * The pileup's 1bp CELL layers deliberately do not come through here
  * (`pileupCellWidth` floors one-sidedly, matching `mismatch.slang`'s
@@ -105,12 +107,14 @@ export function fillSpanRect(
   top: number,
   height: number,
   widthCompensation = 0,
+  reversed = false,
 ) {
   const left = spanRectLeftPx(px, px2)
+  const width = spanRectWidthPx(px, px2, left, widthCompensation)
   ctx.fillRect(
-    left,
+    reversed ? expandToMinWidthRightPx(px, px2, 1) - width : left,
     top,
-    spanRectWidthPx(px, px2, left, widthCompensation),
+    width,
     height,
   )
 }
@@ -257,7 +261,15 @@ export function drawCoverageBins(
     // WIDTH at every zoom: sub-pixel bars tile at ~1px pitch, and two opaque
     // fills whose antialiased coverage of one pixel sums to 1 composite to
     // 1-(1-a)(1-b) < 1, i.e. a visible seam.
-    fillSpanRect(ctx, px, px2, barTop, bottom - barTop, widthCompensation)
+    fillSpanRect(
+      ctx,
+      px,
+      px2,
+      barTop,
+      bottom - barTop,
+      widthCompensation,
+      pxB < pxA,
+    )
   }
 }
 
@@ -310,7 +322,7 @@ export function drawCoverageClipStrips(
       setAbgrFill(ctx, CLIP_STRIP_COLOR)
       filled = true
     }
-    fillSpanRect(ctx, px, px2, top, CLIP_STRIP_PX, widthCompensation)
+    fillSpanRect(ctx, px, px2, top, CLIP_STRIP_PX, widthCompensation, pxB < pxA)
   }
 }
 

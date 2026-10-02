@@ -213,6 +213,42 @@ describe('drawCoverageBins', () => {
     expect(fillCall!.args[2]).toBe(10.8)
   })
 
+  // Bins paint in bp order, right to left on a reversed block, so the pad has
+  // to land on the bin painted next rather than the one already painted.
+  it('pads toward the next bin painted, mirrored on a reversed block', () => {
+    const rects = (bpToX: (bp: number) => number) => {
+      const { ctx, calls } = makeCtx()
+      const buf = packBins([0.5, 0.6, 0.7], 100)
+      drawCoverageBins(ctx, buf, identity, 1, 50, 'blue', bpToX, 200, 1, 0.8)
+      drawCoverageClipStrips(
+        ctx,
+        buf,
+        {
+          domainMin: 0,
+          domainMax: 0.1,
+          scaleType: SCALE_TYPE_LINEAR,
+          regionMaxDepth: 1,
+        },
+        50,
+        bpToX,
+        200,
+        1,
+        0.8,
+      )
+      return calls
+        .filter(c => c.method === 'fillRect')
+        .map(c => c.args as number[])
+    }
+    const forward = rects(bp => (bp - 100) * 10)
+    const reversed = rects(bp => 200 - (bp - 100) * 10)
+    expect(forward).toHaveLength(6)
+    reversed.forEach(([x, y, w, h], i) => {
+      const [fx, fy, fw, fh] = forward[i]!
+      expect(x).toBeCloseTo(200 - fx! - fw!)
+      expect([y, w, h]).toEqual([fy, fw, fh])
+    })
+  })
+
   it('skips bins outside viewport', () => {
     const buf = packBins([0.5], 1000)
     const { ctx, calls } = makeCtx()

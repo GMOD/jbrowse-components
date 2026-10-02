@@ -1,6 +1,6 @@
 ---
 name: row-displays-on-shared-kernels
-description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, and the MAF cleanups landed the same day; open are two product calls on row colour, a coverage seam, an insertion mark whose trigger is met, multi-row's hit test and hidden-feature rule, per-mark seams, the one-row-model hook seam, variant wire shapes and stale docs."
+description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, and the MAF cleanups landed the same day; open are two product calls on row colour, an insertion mark whose trigger is met, multi-row's hit test and hidden-feature rule, per-mark seams, the one-row-model hook seam, variant wire shapes and stale docs."
 ---
 
 # Row displays on shared kernels
@@ -32,22 +32,19 @@ thing — not ports onto `LinearMarkDisplay`.
 
 ## Open bugs and calls
 
-1. **Coverage band seam on reversed blocks**: 71e959da59 fixed `spanMark` and
-   `barMark`; alignments-core's `drawCoverageBins` (`rendererUtils.ts:212`)
-   still pads rightward. Low.
-2. **A recolour under `rowColor: { scale: 'none' }` turns the palette on for
+1. **A recolour under `rowColor: { scale: 'none' }` turns the palette on for
    every row** (from
    [row-display-followups](../ideas/collections/row-display-followups.md)).
    Reproduced; a grid recolour needs the dialog's "Each row" choice, which on
    multi-row deals the palette to every row. Recolouring one row while the rest
    stay unpainted needs a "named colours, no palette" state the `rowColor`
    vocabulary lacks — a call for Colin, not a bug fix.
-3. **Multi-row `rowColor: 'group'` deals palette colours per group**, not each
+2. **Multi-row `rowColor: 'group'` deals palette colours per group**, not each
    group's `rowGroups[].color`; the deal reads a row's group off its name
    through `rowGroupMatchers`, which is what retires e735d1a14d's per-row
    stopgap. Whether `rowGroups[].color` should win there is open, and ties to
    step 4's palette flip, not wanted now.
-4. **Multi-row `facet` on any field but `group` or `name` is a corner notice**:
+3. **Multi-row `facet` on any field but `group` or `name` is a corner notice**:
    a row carries no other attribute, and banding by a feature attribute would
    split rows in the worker.
 
