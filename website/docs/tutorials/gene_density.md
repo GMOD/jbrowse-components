@@ -52,13 +52,30 @@ density sidecar beside each file.
 - the simple repeats, the control:
   https://jbrowse.org/demos/gene_density/Simple_repeat.bed.gz
 
+## The genome
+
+We'll load hg38, the assembly the UCSC tables were cut from. Every track below
+names it in `assemblyNames`.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
 ## A chromosome of genes
 
-Open the session on chromosome 1 with the four tracks. At this width no track
-fetches its features. A track that would have to pull tens of thousands of
-records to draw a screen stops at the estimate and, since each of these has a
-density sidecar, draws the sidecar instead. Each band is the features per
-kilobase in that track along the chromosome, scaled to the track's peak.
+Add the four tracks from [the sidecar section](#building-the-density-sidecar),
+then open chromosome 1 with all four. At this width no track fetches its
+features. A track that would have to pull tens of thousands of records to draw a
+screen stops at the estimate and, since each of these has a density sidecar,
+draws the sidecar instead. Each band is the features per kilobase in that track
+along the chromosome, scaled to the track's peak.
 
 <Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes, the Alu and L1 copies from RepeatMasker, and the simple repeats. Each band is that track's features per kilobase, scaled to its own peak. Genes cluster at the 1p36 tip and across 1q21 to 1q23, and Alu rises and falls with them. L1 and the simple repeats run close to level throughout." />
 
@@ -110,14 +127,76 @@ track:
 ```
 
 Because the slot is on the adapter, every display of the track draws the band.
-`densityTierBpPerPx` is optional. On the smaller chromosomes a screen of genes
-fits the fetch budget, but the band is easier to read than individual genes at
-that zoom, so the gene track switches to the band from 50 kb per pixel outward.
-The repeat tracks leave it unset.
+`densityTierBpPerPx` is optional and has no menu entry; the **Density band**
+choices below override it. On the smaller chromosomes a screen of genes fits the
+fetch budget, but the band is easier to read than individual genes at that zoom,
+so the gene track switches to the band from 50 kb per pixel outward. The repeat
+tracks leave it unset.
 
 The three repeat tracks come from cutting the RepeatMasker table into one BED
 per `repFamily`, so the Alu track and its sidecar hold only Alus. The same
 `make-density` line over each family BED builds its sidecar.
+
+Each repeat track has the gene track's shape over a bgzipped, tabix-indexed BED
+with its sidecar beside it. The Alu track:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hg38_Alu",
+  "name": "Alu",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "densityAdapter": {
+      "type": "BigWigAdapter",
+      "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
+    }
+  }
+}
+```
+
+The L1 track and the simple-repeat control follow, with the file names swapped:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hg38_L1",
+  "name": "L1",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://jbrowse.org/demos/gene_density/L1.bed.gz",
+    "densityAdapter": {
+      "type": "BigWigAdapter",
+      "uri": "https://jbrowse.org/demos/gene_density/L1.bed.density.bw"
+    }
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hg38_Simple_repeat",
+  "name": "Simple repeats",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.gz",
+    "densityAdapter": {
+      "type": "BigWigAdapter",
+      "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.density.bw"
+    }
+  }
+}
+```
+
+To use your own BED, swap each `uri` for it and for the sidecar `make-density`
+wrote. The BED needs bgzip and tabix (`.tbi` beside it), the same refNames as
+the assembly, and the `.density.bw` beside it unless `densityAdapter` points
+elsewhere.
 
 ## Zooming in gives the features back
 

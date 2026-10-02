@@ -40,6 +40,48 @@ against GENCODE 47 and the hg38 reference.
 
 ## A merged model
 
+We'll load the GRCh38 sequence the predictions were made on, then the two
+annotations. Each annotation is a GFF3 that is bgzipped, sorted and
+tabix-indexed with its `.tbi` beside it ([prep](/docs/quickstart_web)), and uses
+the assembly's refNames.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "tiberius",
+  "name": "Tiberius predictions",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz"
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "gencode_v47",
+  "name": "GENCODE 47",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz"
+  }
+}
+```
+
 Open the two annotations together at `chr22:49,987,402-50,067,759`. Tiberius
 draws one model, `g14001.t1`, across most of the window, where GENCODE has two
 genes, _IL17REL_ and _TTLL8_, with a gap between them. The GENCODE gene features
@@ -117,7 +159,7 @@ and Iso-Seq into the prediction. The released human annotation read here comes
 from a run with default weights, so the RNA-seq tracks are evidence a reviewer
 judges each model against. On a genome with no reference annotation, read
 support across each predicted junction orders the review queue in place of the
-four classes.
+four disagreement classes.
 
 ## The review page
 

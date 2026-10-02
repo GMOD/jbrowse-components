@@ -99,8 +99,8 @@ the peptide, a short exact match near the start of the transcript row.
 Switch the picker to Chain A. The plugin realigns against MDM2, which turns
 blue, and the GENOME row becomes a scatter of gapped fragments, because the
 transcript does not encode MDM2. Switch back to Chain B. In a complex of two
-paralogs the automatic choice can land on the wrong chain, and the picker
-corrects it.
+different proteins the automatic choice can land on the wrong chain, and the
+picker corrects it.
 
 ## The transactivation domain as an NMR ensemble
 

@@ -46,6 +46,19 @@ Alu rows cut out:
 
 ## Each copy's divergence at a locus
 
+We'll load hg38, the assembly the RepeatMasker coordinates are on.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
 The track reads any BED-like file, bgzipped and tabix-indexed, with a `#` header
 line naming the columns; a mark refers to a column by its name in that header.
 The track below lists three marks. The first draws a `bar` per copy with
@@ -131,8 +144,8 @@ in [Zooming out](#zooming-out).
 }
 ```
 
-Open it on a few tens of kilobases of 1q21. Hover a bar for its values; click it
-to open the row.
+Open it on `chr1:151,000,000-151,030,000`, 30 kb of 1q21. Hover a bar for its
+values; click it to open the row.
 
 <Figure src="/img/alu_age/locus.png" caption="Alu copies over a window of 1q21, one bar per copy with its divergence from its consensus as the height and its lineage as the colour. The AluY bars are the shortest in the window and the AluJ bars the tallest, with AluS between; the fossil monomers are as tall as AluJ." />
 
@@ -164,6 +177,12 @@ The red AluY count is too thin to read against a total that swings several fold,
 so a script writes the share per megabase as a BED with two log2 columns: the
 AluY share against the genome-wide share, and, as the control, the plus-strand
 share against a half.
+
+Fetch the helper, then run it:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/alu_young_share.py
+```
 
 <!-- from: scripts/build_alu_age.sh -->
 
