@@ -48,6 +48,28 @@ directly over HTTP with no local copy of either callset.
   outgroup from:
   https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
 
+## The genome
+
+The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
+We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
+GenBank accessions:
+
+```json addassembly
+{
+  "name": "UU_Cfam_GSD_1.0",
+  "aliases": ["canFam4"],
+  "sequence": {
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit"
+    }
+  },
+  "refNameAliases": {
+    "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.chromAlias.txt"
+  }
+}
+```
+
 ## Scanning for a locus
 
 Body size is the trait, so the two groups are the breeds at its extremes: every
@@ -104,9 +126,11 @@ the axis; **Score → Reference lines...** adds one to a track already open.
 
 Rerunning the same script over one region rebins it, which is the lower half of
 the figure below: the same panel and the same estimator at 20 kb over two
-megabases, where the peak resolves into a sweep.
+megabases, where the peak resolves into a sweep. `WINDOW` is the bin width,
+`REGIONS` any `bcftools -r` target, and `OUTBED` the output name:
 
 ```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_size_fst.sh
 WINDOW=20000 REGIONS=chr15:40600000-42600000 \
   OUTBED=dog10k_size_fst_igf1_20kb.bed \
   bash build_dog10k_size_fst.sh
@@ -232,7 +256,37 @@ Clustering reads the region on screen, and over the whole window the
 undifferentiated sites dilute the separating columns. Zoom to the core, cluster
 there, then widen back out to see how far the block runs. A session can set the
 region directly with `clusterRegion` beside `runClustering`, as the figure below
-does.
+does. The core here is the 140 kb at `chr15:41,440,000-41,580,000`:
+
+```json session
+{
+  "defaultSession": {
+    "name": "IGF1 haplotypes",
+    "views": [
+      {
+        "id": "igf1_lgv",
+        "type": "LinearGenomeView",
+        "assembly": "UU_Cfam_GSD_1.0",
+        "loc": "chr15:41,348,000-41,752,000",
+        "tracks": [
+          {
+            "type": "VariantTrack",
+            "configuration": "dog10k_igf1_haplotype",
+            "displays": [
+              {
+                "type": "LinearMultiSampleVariantDisplay",
+                "configuration": "dog10k_igf1_haplotype-LinearMultiSampleVariantDisplay",
+                "runClustering": true,
+                "clusterRegion": "chr15:41,440,000-41,580,000"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
 <Video src="/media/dog10k/igf1_cluster_route.mp4" caption="The route on the differentiated core: rows in the panel's build order, then the track menu's clustering run, which gathers the size classes into blocks on genotype alone. Widened back out, the small breeds share one haplotype across IGF1 that most giants lack." />
 
@@ -257,18 +311,19 @@ Rows depart from their swatch in both directions: single orange rows sit within
 the giant cluster and single blue rows within the small one. The build script
 prints the range within each size class alongside its median.
 
-The wolves form a contiguous band, on the toy and small side of the split. In
-the other two Dog10K tutorials the wild canids carry none of the allele under
-study; here they carry part of the haplotype.
+The wolves form a contiguous band, on the toy and small side of the split. They
+carry part of the haplotype here, where the stop-gained allele in
+[](/docs/tutorials/dog10k_lof) is absent from them.
 
 ## Scanning another trait
 
 The Fst scan and the IGF1 slice take the same two inputs, a pair of groups and a
-region, so you can substitute any trait the sample table records: change the
-breed lists and rerun the scan to find new peaks, then change the region and the
-metadata column to draw one of them. The Dog10K paper's selection scan (its
-Fig. 8) lists peaks for five ancestry components, and the structural-variant
-paper lists more.
+region, so you can substitute any trait the sample table records. Edit the
+`SMALL` and `GIANT` breed lists in the script's panel step and rerun it to find
+new peaks. Then change `REGIONS` to a peak, slice that window with the
+`bcftools` command above, and add a column to the samples TSV to color by. The
+Dog10K paper's selection scan (its Fig. 8) lists peaks for five ancestry
+components, and the structural-variant paper lists more.
 
 ## Reproduce it end to end
 
