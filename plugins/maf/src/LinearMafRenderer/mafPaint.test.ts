@@ -159,9 +159,10 @@ describe('the MAF rows mark, cell geometry', () => {
 
   test('reversed block: cell covers its own base, not the neighbour', () => {
     // Reversed, START is the RIGHTMOST base: it spans [180,200], so its left
-    // edge is 180. A painter using the bare bp→px mapper would put it at 200 —
-    // off the block entirely, and one base wide of the truth.
-    expect(cellFor(true).x).toBeCloseTo(BLOCK_WIDTH - PX_PER_BP)
+    // edge is 180, less the seam reaching toward the next base painted. A
+    // painter using the bare bp→px mapper would put it at 200 — off the block
+    // entirely, and one base wide of the truth.
+    expect(cellFor(true).x).toBeCloseTo(BLOCK_WIDTH - PX_PER_BP - SEAM)
   })
 })
 
@@ -185,19 +186,23 @@ describe('the MAF rows mark, binned cells', () => {
   test('reversed block: a bin covers its own span, not the one after it', () => {
     const rects = draw(true, N, BIN, TWO_BINS)
     expect(rects).toHaveLength(2)
-    expect(rects[0]!.x).toBeCloseTo(BLOCK_WIDTH - BIN * PX_PER_BP)
-    expect(rects[1]!.x).toBeCloseTo(BLOCK_WIDTH - 2 * BIN * PX_PER_BP)
+    expect(rects[0]!.x).toBeCloseTo(BLOCK_WIDTH - BIN * PX_PER_BP - SEAM)
+    expect(rects[1]!.x).toBeCloseTo(BLOCK_WIDTH - 2 * BIN * PX_PER_BP - SEAM)
     expect(rects[0]!.w).toBeCloseTo(BIN * PX_PER_BP + SEAM)
   })
 
   test('reversing mirrors the bins about the block, base for base', () => {
     // Not "the same screen span": reversed puts the lowest bp on the RIGHT, so
     // the 8 drawn bases move from the block's left 160px to its right 160px.
-    // Dropping the seam pad (which always grows rightward) leaves spans that
-    // are exact mirrors — the strongest statement that no bin drifted.
+    // Dropping the seam pad, which faces the next bin painted, leaves spans
+    // that are exact mirrors — the strongest statement that no bin drifted.
     const spans = (reversed: boolean) =>
       draw(reversed, N, BIN, TWO_BINS)
-        .map(r => [r.x, r.x + r.w - SEAM] as const)
+        .map(r =>
+          reversed
+            ? ([r.x + SEAM, r.x + r.w] as const)
+            : ([r.x, r.x + r.w - SEAM] as const),
+        )
         .sort((a, b) => a[0] - b[0])
 
     const mirrored = spans(false)
@@ -232,7 +237,7 @@ describe('the MAF rows mark, runs', () => {
   test('a reversed run spans the same bases from the other end', () => {
     const rects = draw(true, 5, 1, 'AAAAA')
     expect(rects).toHaveLength(1)
-    expect(rects[0]!.x).toBeCloseTo(BLOCK_WIDTH - 5 * PX_PER_BP)
+    expect(rects[0]!.x).toBeCloseTo(BLOCK_WIDTH - 5 * PX_PER_BP - SEAM)
     expect(rects[0]!.w).toBeCloseTo(5 * PX_PER_BP + SEAM)
   })
 

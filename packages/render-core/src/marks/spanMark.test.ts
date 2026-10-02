@@ -136,10 +136,9 @@ test('paints nothing past the channels count', () => {
   expect(calls).toHaveLength(1)
 })
 
-// A tiling caller pads each span's right edge so two runs meeting on a
-// fractional pixel leave no hairline. The pad grows rightward on both
-// orientations, so reversing mirrors the spans exactly.
-test('the seam pad widens a span without moving its anchor', () => {
+// Instances paint in ascending bp, so the seam goes past the bp-end edge onto
+// the next span painted: right on a forward block, left on a reversed one.
+test('the seam pad reaches toward the next span painted', () => {
   const seamed: SpanParams = { ...params, minWidthPx: 0, seamPx: 0.4 }
   const forward = mockCtx()
   spanMark.paintBlock(
@@ -159,7 +158,7 @@ test('the seam pad widens a span without moving its anchor', () => {
     frame,
     seamed,
   )
-  expect(back.calls[0]).toMatchObject({ x: 800, w: 100.4 })
+  expect(back.calls[0]).toMatchObject({ x: 799.6, w: 100.4 })
 })
 
 // The channels pack straight through: a lane is the struct field of the same
@@ -250,7 +249,7 @@ const retiredSpan: Required<
       const width = Math.max(minWidthPx, Math.abs(xb - xa))
       setFill(color[i]!)
       ctx.fillRect(
-        spanLeft(xa, xb, width),
+        spanLeft(xa, xb, width + seamPx),
         offset + rowHeight * row[i]! - scrollTop,
         width + seamPx,
         h,

@@ -179,6 +179,8 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
     const yScale = valueScaleUniforms(params)
     const table = params.rowTable
     const [domainMin, domainMax] = params.domain
+    const { seamPx } = params
+    const seamLeft = block.reversed ? seamPx : 0
     let clipped = false
     for (let i = 0; i < count; i++) {
       const slot = rowSlot(row, i, table)
@@ -189,7 +191,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       const r = barRect(bpToPx, x[i]!, x2[i]!, y[i]!, top, band, params, yScale)
       if (r) {
         setFill(rowColor(color[i]!, row, i, table))
-        ctx.fillRect(r.left, r.top, r.width + params.seamPx, r.height)
+        ctx.fillRect(r.left - seamLeft, r.top, r.width + seamPx, r.height)
       }
       clipped ||=
         clipSide(y[i]!, domainMin, domainMax, yScale.valueScaleType) !== 0
@@ -217,7 +219,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
         yScale,
       )
       if (s) {
-        ctx.fillRect(s.left, s.top, s.width + params.seamPx, s.height)
+        ctx.fillRect(s.left - seamLeft, s.top, s.width + seamPx, s.height)
       }
     }
   },

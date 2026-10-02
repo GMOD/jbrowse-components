@@ -42,9 +42,10 @@ export interface SpanParams {
    */
   minWidthPx: number
   /**
-   * CSS px the **painter alone** adds to each span's right edge, closing the
-   * hairline two antialiased `fillRect`s leave where tiling runs meet on a
-   * fractional pixel. The GPU pass needs none, and the ink excludes it.
+   * CSS px the **painter alone** adds to each span's edge facing the next span
+   * painted — the left edge on a reversed block — closing the hairline two
+   * antialiased `fillRect`s leave where tiling runs meet on a fractional pixel.
+   * The GPU pass needs none, and the ink excludes it.
    */
   seamPx: number
   /** Rows-area scroll offset in CSS px; 0 for a canvas sized to its content. */
@@ -88,7 +89,7 @@ function spanFrame(block: RenderBlock, params: SpanParams): SpanFrame {
   }
 }
 
-function placeSpan(c: SpanChannels, g: SpanFrame, i: number) {
+function placeSpan(c: SpanChannels, g: SpanFrame, i: number, seamPx = 0) {
   const slot = rowSlot(c.row, i, g.table)
   if (slot === undefined) {
     return false
@@ -96,7 +97,7 @@ function placeSpan(c: SpanChannels, g: SpanFrame, i: number) {
   const xa = projectBp(g, c.x[i]!)
   const xb = projectBp(g, c.x2[i]!)
   const width = Math.max(g.minWidthPx, Math.abs(xb - xa))
-  g.left = spanLeft(xa, xb, width)
+  g.left = spanLeft(xa, xb, width + seamPx)
   g.top = g.bandOffsetPx + g.rowHeight * slot - g.scrollTop
   g.width = width
   return true
@@ -134,7 +135,7 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
     const g = spanFrame(block, params)
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
-      if (placeSpan(channels, g, i)) {
+      if (placeSpan(channels, g, i, seamPx)) {
         setFill(rowColor(color[i]!, row, i, g.table))
         ctx.fillRect(g.left, g.top, g.width + seamPx, g.height)
       }
