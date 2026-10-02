@@ -118,7 +118,10 @@ To read the lengths, take **Display types → Graph**, enter the five names in
 **Settings → Haplotypes**, then pick **Layout → Walk rows** and **Color →
 Uniform**.
 
-<Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, blue where GRCh38 has the same sequence and purple where it does not. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
+<Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, each boxed with its own CAT genes so its AMY1 copies can be counted on the bar. Blue is sequence the graph aligns to GRCh38 and purple sequence it does not. HG00133.1 carries GRCh38's three copies in GRCh38's order and still shows a long purple stretch, because the graph threads copies of a duplication through nodes GRCh38's walk does not visit. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
+
+Right-click a bar to open that haplotype's span in a linear view on its own
+assembly, with its CAT genes.
 
 ## Check it against the published classes
 
@@ -132,6 +135,11 @@ haplotypes land on H1a, H2A0, H3r, H5 and H7:
 | the same              | 3             | H3r       |
 | 94 kb longer          | 5             | H5        |
 | 188 kb longer         | 7             | H7        |
+
+Span alone can mislead. Other structures gain an _AMY2A_ copy along with _AMY1_
+ones: HG00097.2 is 78 kb longer than GRCh38 with four _AMY1_ copies and two
+_AMY2A_. Count the _AMY1_ boxes on each bar rather than reading the copy number
+off its length.
 
 ## Inversions
 

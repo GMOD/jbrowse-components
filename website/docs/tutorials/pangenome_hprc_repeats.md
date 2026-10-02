@@ -107,10 +107,11 @@ and a readout gives its length against the reference walk.
 <Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Walk. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
 Pick **Layout → Walk rows** and **Color → Uniform**: each walk becomes a bar,
-longest first, blue where GRCh38 has the same sequence and purple where it does
-not, so the copies a haplotype adds read as its purple stretch.
+longest first, blue where the graph aligns it to GRCh38 and purple where it does
+not. At KIV-2 each copy a haplotype adds is a run of new nodes, so the added
+copies read as its purple stretch.
 
-<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, under LPA with the KIV-2 bubble boxed in the bubbles lane. The purple stretch of each bar is kringle copies absent from GRCh38, and each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
+<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, under LPA with the KIV-2 bubble boxed in the bubbles lane. The purple stretch of each bar is kringle copies the graph does not align to GRCh38's, and each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 
 Click the KIV-2 bubble boxed in the bubbles lane. Its details give
 `shortestAlleleLength` and `longestAlleleLength`, the shortest and longest
@@ -121,8 +122,11 @@ GRCh38's, with no purple, is the shortest of the nine.
 
 Walk rows count copies. At KIV-2 each extra copy is a run of new nodes, and the
 GRCh38 copy the graph aligns it to is the aligner's pick among near-identical
-sequences, so the walks leave open which copy is which. A record that lists each
-haplotype's copies tells them apart.
+sequences, so the walks leave open which copy is which. At a duplication such as
+amylase's the graph can also thread a copy GRCh38 carries through nodes of its
+own, so there count the genes on each bar instead (see
+[the haplotypes page](/docs/tutorials/pangenome_hprc_haplotypes)). A record that
+lists each haplotype's copies tells them apart.
 
 We host one as a track. It holds a single VCF 4.5 `<CNV:TR>` record at the
 array: each allele lists its runs of one unit and every copy's length, and a
@@ -249,8 +253,8 @@ and the TRGT genotypes, over the gbz-base graph track cut for every haplotype
 ```
 
 Each row is one haplotype's walk between the flanking reference nodes, blue
-where it matches GRCh38 and purple where it does not; GRCh38's walk is the short
-bar at the top.
+where the graph aligns it to GRCh38 and purple where it does not; GRCh38's walk
+is the short bar at the top.
 
 ## TRGT's calls on the same bars
 
