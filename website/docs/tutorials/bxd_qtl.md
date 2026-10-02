@@ -105,10 +105,25 @@ tabix -p bed bxd_painting.bed.gz
 sorts the rest under `LC_ALL=C`, so the adapter can read the column names off
 the file and the order does not shift with your locale.
 
-The track is a `FeatureTrack` with a `LinearMultiRowFeatureDisplay` that splits
-rows on the `sample` column and colors each block from the `itemRgb` field. Both
-tracks on this page use the `mm10` assembly
-([assemblies configuration guide](/docs/config_guides/assemblies)).
+Both tracks on this page use the `mm10` assembly, whose chromosome names the
+marker positions follow:
+
+```json addassembly
+{
+  "name": "mm10",
+  "aliases": ["GRCm38"],
+  "uri": "https://jbrowse.org/genomes/mm10/fasta/mm10.fa.gz",
+  "refNameAliases": {
+    "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/mm10/bigZips/latest/mm10.chromAlias.txt"
+  },
+  "cytobands": "https://jbrowse.org/ucsc/mm10/cytoBandIdeo.bed.gz"
+}
+```
+
+The painting track is a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`
+that splits rows on the `sample` column and colors each block from the `itemRgb`
+field. For your own panel, swap `uri` for the bgzipped, tabix-indexed BED your
+conversion wrote.
 
 ```json addtrack
 {
