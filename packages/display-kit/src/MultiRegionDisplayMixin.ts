@@ -241,7 +241,7 @@ export default function MultiRegionDisplayMixin() {
          * (`searchFeatureByID`) must override it, so callers can
          * tell "laid out, but off-display" from "no layout exists yet" — a
          * distinction only the display can make. See
-         * packages/display-kit/CLAUDE.md §"Four
+         * `agent-docs/reference/DISPLAY_KIT.md` §"Four
          * readiness axes".
          */
         get layoutReady(): boolean {
@@ -377,8 +377,9 @@ export default function MultiRegionDisplayMixin() {
          * frame that changed no data free of it. **While something observes
          * it**: MobX suspends an unobserved computed and rebuilds on every
          * read, so a display whose only reader is a pointer handler needs the
-         * keep-alive canvas and Manhattan both install (display-kit/CLAUDE.md
-         * §"A hit test's index needs an observer"). The render lifecycle's
+         * keep-alive canvas and Manhattan both install
+         * (`agent-docs/reference/DISPLAY_KIT.md` §"A hit test's index needs an
+         * observer"). The render lifecycle's
          * upload autorun is that reader for every display that draws.
          */
         get regionPayloads(): ReadonlyMap<number, unknown> {

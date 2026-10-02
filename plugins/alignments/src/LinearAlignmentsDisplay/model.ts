@@ -390,8 +390,9 @@ export default function stateModelFactory(
         // setConf) so an edit survives hide/retick and a config
         // default can be set declaratively. The plain MST fields below are the
         // remaining toggles. Each setting also has a refetch/relayout/render
-        // blast radius documented in CLAUDE.md §"Which getter decides what a
-        // setting invalidates".
+        // blast radius documented in
+        // `agent-docs/reference/LINEAR_ALIGNMENTS_DISPLAY.md` §"Which getter
+        // decides what a setting invalidates".
         types.model({
           /**
            * #property

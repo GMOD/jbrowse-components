@@ -560,11 +560,11 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // for splitting the family in two did not survive. `GlobalFetchMixin` is the
   // whole family now, so the name must stay unwritten.
   'GlobalDataDisplayMixin',
-  // packages/tree-sidebar/CLAUDE.md §"`RowSource` is the row vocabulary": the
+  // `agent-docs/reference/TREE_SIDEBAR.md` §"`RowSource` is the row vocabulary": the
   // computed MAF bridged its own `color` field with, named because that bridge
   // is why three adapter schemas advertised a slot reaching no renderer.
   'labelSources',
-  // plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md §"A gesture on
+  // `agent-docs/reference/SYNTENY_FOLLOW.md` §"A gesture on
   // a followed row takes the anchor": the drag-vs-navigation heuristic tried
   // before root-action gating, named to say it had an untestable false
   // positive and was replaced. Gone with the snap-back snackbar it explained.
@@ -573,7 +573,7 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // prune": the HAL method the per-key release replaced, named to say why the
   // prune shape cannot come back on a shared canvas.
   'pruneRegions',
-  // packages/tree-sidebar/CLAUDE.md §"`RowSource` is the row vocabulary": the
+  // `agent-docs/reference/TREE_SIDEBAR.md` §"`RowSource` is the row vocabulary": the
   // misspelling one display shipped for `showRowLabels`, named to say why the
   // mixin now declares the accessors — the name must stay unwritten.
   'showSidebarLabels',

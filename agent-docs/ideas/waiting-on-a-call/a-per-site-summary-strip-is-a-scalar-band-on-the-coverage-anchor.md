@@ -28,7 +28,7 @@ Three statistics, one at a time, chosen from the menu:
 ## Everything it needs is already on the wire
 
 `featureGenotypeMap` records every genotype per feature, by reference to the
-interned per-feature array (`plugins/variants/src/CLAUDE.md` §"Genotypes"), and
+interned per-feature array (`agent-docs/reference/VARIANTS_DISPLAY.md` §"Genotypes"), and
 the base model already folds those into `summarizeAlleleCounts` for the MAF
 filter and `calculateMissingnessFrequency` for the missingness one
 (`shared/minorAlleleFrequencyUtils.ts`) — then discards both. So the strip is a

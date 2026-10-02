@@ -16,7 +16,7 @@ invisible-until-hovered prose in the other for the same fact.
 
 The fix is placement, not a control: render the `partial` region names beside
 the toggle the way multiway's header renders `alsoOn`.
-`SyntenyFollow/CLAUDE.md` §"The third rung is offered, not taken
+`agent-docs/reference/SYNTENY_FOLLOW.md` §"The third rung is offered, not taken
 automatically" already settles why no navigating button exists — a control
 that moved a followed row would owe the whole anchor-take/undo dance, and
 scrolling the anchor onto the named region is the ordinary navigation that
