@@ -563,15 +563,11 @@ the resulting PAF:
 <!-- from: scripts/build_sv_visualization_cgiab.sh -->
 
 ```bash
-# asm5: the same-species preset
-# -c: emit a base-level CIGAR, which the synteny view draws at base scale
 minimap2 -cx asm5 GRCh38.fa HG008T_v3.2.fasta > HG008T_v3.2.paf
-
 ```
 
-The track lists the query assembly first and the target second, the reverse of
-the minimap2 argument order. Reversed, the view opens empty and reports no
-error.
+The preset and the track's query-first assembly order are explained in
+[the cancer SV tutorial](/docs/tutorials/cancer_sv#the-derivative-allele).
 
 ```json addtrack
 {
@@ -592,10 +588,6 @@ same way. See the
 
 ## Walkthroughs
 
-Each walkthrough runs on an instance built above, or on
-[the hosted C-GIAB demo](https://jbrowse.org/code/jb2/latest/?config=https://jbrowse.org/demos/cgiab/config.json),
-which already carries the benchmark calls, the reads and the copy-number tracks.
-
 ### A chr3-chr13 translocation
 
 **Add → SV inspector**, then **Open from track** to pick the C-GIAB benchmark
@@ -603,31 +595,22 @@ VCF loaded earlier.
 
 <Figure caption="The SV inspector showing the benchmark VCF as a circular overview alongside a table of calls." src="/img/sv_cgiab/translocation_sv_inspector_view.png" />
 
-Click the chord joining chr3 and chr13, then open the tumor PacBio HiFi reads on
-each panel of the breakpoint split view it launches and set **Read height** →
-**Compact**.
-
-<Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Splines connect tumor PacBio HiFi reads that partially map to each chromosome, evidence of a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
-
-### Reads and assembly at the junction
-
 `SV_20` and `SV_190` are one junction written twice, joining chr3:139,976,414 to
 chr13:114,353,244, filed under `EVENT=cluster_3` with two further breakends and
 tagged `EVENTTYPE=CHROMOPLEXY`. Choose `cluster_3` under **Filter by event**,
-and open a record in a breakpoint split view for a panel at each locus.
+click the chord joining chr3 and chr13, and open the tumor PacBio HiFi reads on
+each panel of the breakpoint split view it launches, with **Read height** →
+**Compact**.
+[The cancer SV tutorial](/docs/tutorials/cancer_sv#following-the-chain-across-panels)
+covers opening the view from a record and following the further breakends.
 
-In that view, splines join the chr13 and chr3 pieces of each split tumor PacBio
-HiFi read: chr13 forward into the junction, then down chr3 inverted. The matched
-normal reads through the same locus with no split.
+<Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Splines connect tumor PacBio HiFi reads that partially map to each chromosome, evidence of a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
 
-The synteny track loaded earlier shows the same junction with no reads: the
-C-GIAB assembly resolves both loci onto one tumor contig, named for the two
-chromosomes it fuses.
-
-The hosted demo carries tumor reads at the loci these walkthroughs visit, which
-include one of the `cluster_3` junctions.
-[The build script](#reproduce-it-end-to-end) converts the whole tumor and normal
-BAMs to CRAM.
+Splines join the chr13 and chr3 pieces of each split tumor read: chr13 forward
+into the junction, then down chr3 inverted. The matched normal reads through the
+same locus with no split. The synteny track loaded earlier shows the same
+junction with no reads: the C-GIAB assembly resolves both loci onto one tumor
+contig, named for the two chromosomes it fuses.
 
 ### A small deletion in CUZD1
 
@@ -666,21 +649,6 @@ Compact** and **Sort by... → Base pair** from the track menu, and center the
 deletion. The view menu's **center line** helps line up the breakpoint.
 
 <Figure caption="Tumor PacBio HiFi reads at compact height, sorted by base pair with the deletion centered, over the gene annotations. The deletion removes two CUZD1 exons and is heterozygous." src="/img/sv_cgiab/deletion_linear_view.png" />
-
-### A tandem-repeat call
-
-Benchmark records tagged `EVENTTYPE=CNV:TR` size a somatic change inside a
-tandem repeat relative to the germline allele of the donor, so `SVLEN` is
-specific to this tumor/normal pair.
-
-`SV_223` on chr5 is the worked example of the benchmark. Open it with both
-samples' PacBio HiFi reads and sort each pileup at the call:
-
-<Figure caption="SV_223 at base level: the benchmark's deletion call over the tumor and matched normal PacBio HiFi pileups. The tumor's reads carry a deletion where the normal's carry an insertion at the same repeat, and the called span is wider than the deletion under it." src="/img/sv_cgiab/vntr_tumor_normal.png" />
-
-The record is also given in the normal assembly's coordinates (`CHROM_HG8N6.3`
-and its siblings), so clicking it shows the same variant against the normal
-assembly.
 
 ### Reading copy number
 
@@ -732,18 +700,8 @@ number steps, and the BAF track shows the allelic balance across each step.
 
 <Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal indexcov coverage as overlapping scatter, B-allele frequency, and the benchmark CNV calls. The normal stays flat while the tumor steps, and the BAF lane shows what each step is." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
-The four driver loci are in four different copy-number states in HG008-T, which
-the depth, BAF and copy-number lanes built above separate:
-
-| Locus  | State in HG008-T                 | Signature on the tracks             |
-| ------ | -------------------------------- | ----------------------------------- |
-| CDKN2A | Focal homozygous deletion (CN 0) | depth to 0, copy number 0           |
-| TP53   | 17p loss + LOH (CN 1, 1+0)       | depth halved, BAF splits to 0 and 1 |
-| SMAD4  | 18q loss + LOH (CN 1, 0+1)       | depth halved, BAF splits to 0 and 1 |
-| KRAS   | Tandem duplication (CN 3, 2+1)   | depth raised, BAF to 1/3 and 2/3    |
-
-Arm-level loss is widespread here, so a single band at 0.5 is the exception;
-chr17 below is LOH end to end.
+Arm-level loss is widespread in HG008-T, so a single band at 0.5 is the
+exception; chr17 below is LOH end to end.
 
 #### CDKN2A homozygous deletion
 
@@ -870,23 +828,6 @@ fusion.
 For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
-
-## Where to go next
-
-Swap in your own VCF, CRAMs, caller output and assembly to run the same tracks
-and walkthroughs. See the
-[SV visualization guide](/docs/user_guides/sv_visualization) for further display
-options.
-
-The C-GIAB FTP also holds:
-
-- a somatic small-variant draft benchmark, which loads as a variant track the
-  same way
-- the matched normal assembly (`HG008N`), which loads as a second JBrowse
-  assembly and can be the synteny target
-- HG009, a second matched pair (PDAC liver metastasis with matched CD4+ T cells)
-  on the
-  [NIST C-GIAB page](https://www.nist.gov/programs-projects/cancer-genome-bottle)
 
 ## Reproduce it end to end
 

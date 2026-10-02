@@ -123,12 +123,22 @@ every panel as if you had.
 A dashed connector marks a read with a segment at a locus outside the frame. The
 der(3) reads at chr3 also visit chr10, so the figure renders that event with
 `jb2export breakpoint` and one `--loc` per panel. The matched normal gets the
-same `--loc` list and `--width`, and sits beside it as the control.
+same `--loc` list and `--width`, and sits beside it as the control:
+
+```bash
+jb2export breakpoint \
+  --config https://jbrowse.org/demos/cancer_sv/config.json --assembly hg38 \
+  --track COLO829_tumor_ont height:130 force:true featureHeight:super-compact \
+  --loc chr3:25,358,511-25,359,711 \
+  --loc chr10:58,716,962-58,718,162 \
+  --loc chr12:72,272,512-72,273,712 \
+  --width 1000 --out der3_tumor.png
+```
 
 <Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumor nanopore reads carry a solid curve at every breakend and the matched normal carries none. On the right, the same three loci as one reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
 
-`featureHeight:super-compact` draws each read 1 px tall, which fits six pileups
-on one screen.
+`featureHeight:super-compact` in that command draws each read 1 px tall, which
+fits six pileups on one screen.
 
 A curve shows that two loci are joined, and the reconstructed contig on the
 right shows the order and orientation of the pieces. The
@@ -181,8 +191,9 @@ through to the breakpoint split view, with the gene track and read details
 attached.
 
 A junction can be one hop of something larger. COLO829's der(3) is three
-junctions across three chromosomes, and the
-[multi-hop tutorial](/docs/tutorials/cancer_sv) follows it the rest of the way.
+junctions across three chromosomes, and
+[the cancer SV tutorial](/docs/tutorials/cancer_sv#following-the-chain-across-panels)
+follows it from the record the rest of the way.
 
 ## Other callers
 

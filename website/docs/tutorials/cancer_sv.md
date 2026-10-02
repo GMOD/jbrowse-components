@@ -217,7 +217,8 @@ samtools faidx contigs.fa
 ```
 
 The track lists the query assembly (the contig) first and the target (GRCh38)
-second:
+second, the reverse of the minimap2 argument order. Reversed, the view opens
+empty and reports no error:
 
 ```json addtrack
 {
