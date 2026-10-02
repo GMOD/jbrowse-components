@@ -92,7 +92,10 @@ off-color ribbon.
 
 The click-path above works for any track under **Pairwise alignments** →
 **liftOver**, one per chain file UCSC publishes against the genome you are in. A
-close pair gives long collinear blocks, a distant one short scattered ones.
+close pair gives long collinear blocks, a distant one short scattered ones. A
+chain or PAF of your own opens the same way once it is added as a synteny track:
+[HG002 haplotypes](/docs/tutorials/hg002_haplotypes) loads a chain, and
+[Synteny (pairwise minimap2)](/docs/tutorials/synteny_visualization) a PAF.
 
 The figure below is that route on **hg38 to Chimp (panTro6) liftOver**, across
 an intron of _FTO_.

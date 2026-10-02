@@ -95,13 +95,21 @@ jbrowse make-pif sim_vs_mau.paf
 The config merges the two hosted ones, keeping each gene track and adding the
 alignment as a synteny track.
 
-Check the order of `assemblyNames` on the adapter it wrote:
+Check the order of `assemblyNames` on the track it wrote. Your own pair takes
+the same track with its `uri` swapped for your `.pif.gz`, which needs its `.tbi`
+beside it, and both assembly names loaded:
 
-```json
-"adapter": {
-  "type": "PairwiseIndexedPAFAdapter",
-  "pifGzLocation": { "localPath": "sim_vs_mau.pif.gz" },
-  "assemblyNames": ["GCF_016746395.2", "GCF_004382145.1"]
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "sim_vs_mau",
+  "name": "D. simulans vs D. mauritiana",
+  "assemblyNames": ["GCF_016746395.2", "GCF_004382145.1"],
+  "adapter": {
+    "type": "PairwiseIndexedPAFAdapter",
+    "uri": "sim_vs_mau.pif.gz",
+    "assemblyNames": ["GCF_016746395.2", "GCF_004382145.1"]
+  }
 }
 ```
 
