@@ -57,6 +57,22 @@ called natively on GRCh38.
 The gene, ClinVar and recombination lanes are tracks of the hosted UCSC hg38
 [hub](/docs/user_guides/hub_url).
 
+## The genome
+
+The tables, the Fst lane and the haplotypes all use GRCh38 coordinates on chr2,
+so the tracks below go on that assembly.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
 ## Reading the triangle
 
 Red means two variants are inherited together, white means independent. The
@@ -98,7 +114,8 @@ the ClinVar entry and frequency table.
 ## Cut the region out of the VCF
 
 Cut the region twice: once over the whole release, once over the European panel
-the sweep happened in.
+the sweep happened in. `unrelated.samples` and `panel.samples` list one sample
+ID per line, as `-S` reads them.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -117,8 +134,19 @@ tabix -p vcf panel.vcf.gz
 
 ## Correlate the variants with PLINK
 
-Pick the common variants per cohort, then correlate every pair; the MAF floor
-keeps the table small enough for a browser to draw.
+PLINK correlates allele indicators, so we first reduce each slice to biallelic
+SNVs with one record per position and the IDs dropped:
+
+<!-- from: scripts/build_lct_ld.sh -->
+
+```bash
+bcftools view -m2 -M2 -v snps panel.vcf.gz | bcftools norm -d both |
+  bcftools annotate -x ID -Oz -o panel.snvs.vcf.gz
+```
+
+Then pick the common variants per cohort and correlate every pair; the MAF floor
+keeps the table small enough for a browser to draw. The same reduction on
+`pooled.vcf.gz` gives `pooled.snvs.vcf.gz` for the pooled table.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -182,7 +210,10 @@ bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
 ## The haplotypes behind the triangle
 
 A track over the six-population VCF, one lane below the triangle, draws the
-haplotypes in equal-width columns, one row per chromosome:
+haplotypes in equal-width columns, one row per chromosome. The samples TSV maps
+each sample ID to its population, a `name` column and a `population` column, and
+`rowColor` colors the rows by the second. For your own cohort, write that table
+and point `samplesTsvLocation` at it:
 
 ```json addtrack
 {
@@ -230,7 +261,15 @@ Run the clustering two ways:
 
 Over the whole release each haplotype row falls below a pixel and blurs flat.
 This figure reads a subsample of six populations, built by the third script
-under [Reproduce it end to end](#reproduce-it-end-to-end).
+under [Reproduce it end to end](#reproduce-it-end-to-end). Its core is one
+`bcftools` call over a list of 150 sample IDs, one per line, 25 from each
+population:
+
+<!-- from: scripts/build_lct_haploblock.sh -->
+
+```bash
+bcftools view -S sub.samples --force-samples -Oz -o lct_1kg38_chr2_6pop.vcf.gz pooled.vcf.gz
+```
 
 ## Reproduce it end to end
 
