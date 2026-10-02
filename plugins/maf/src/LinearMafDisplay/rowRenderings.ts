@@ -24,14 +24,19 @@ export type MafYField = (typeof MAF_Y_FIELDS)[number]
  */
 export type RowRendering = MafColorField | 'xyplot'
 
-/** `[value, menu label]`, the `makeRadioSubMenu` shape. */
-export const ROW_RENDERINGS = [
-  ['mismatch', 'Bases (SNPs vs reference)'],
-  ['base', 'Bases (every base colored)'],
-  ['identity', 'Identity heatmap'],
-  ['xyplot', 'Identity X-Y plot'],
-  ['chromosome', 'Source chromosome'],
-] as const satisfies readonly (readonly [RowRendering, string])[]
+const ROW_RENDERING_LABELS = {
+  mismatch: 'Bases (SNPs vs reference)',
+  base: 'Bases (every base colored)',
+  identity: 'Identity heatmap',
+  xyplot: 'Identity X-Y plot',
+  chromosome: 'Source chromosome',
+} as const satisfies Record<Exclude<RowRendering, 'codon'>, string>
+
+/** `[value, menu label]` in menu order, the `makeRadioSubMenu` shape. */
+export const ROW_RENDERINGS = Object.entries(ROW_RENDERING_LABELS) as [
+  keyof typeof ROW_RENDERING_LABELS,
+  string,
+][]
 
 /** Listed only where a `mafFrames` adapter defines the reading frame. */
 export const CODON_ROW_RENDERING = [

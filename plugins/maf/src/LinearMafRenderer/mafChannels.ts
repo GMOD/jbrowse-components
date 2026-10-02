@@ -59,10 +59,7 @@ function maxInstances(blocks: MafBlock[], binBp: number) {
  *
  * **This is the single walk both backends draw from** — the GPU packs these
  * channels into the shape's instance buffer, the Canvas2D painter and the SVG
- * export walk them directly. The per-column re-walk the Canvas2D fallback used
- * to do (`drawMafBlocks` + `rendering/bases.ts`) merged the same runs by CSS
- * string instead of packed ABGR, which is why `resolveCellColor` had two
- * flavours and a test sweeping them against each other.
+ * export walk them directly.
  *
  * Runs on the *main thread* (the per-region encode autorun in
  * `LinearMafDisplay`) so theme / setting changes re-encode without an RPC

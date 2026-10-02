@@ -111,13 +111,9 @@ describe('LinearMafDisplay alignment fetch count', () => {
     ])
   })
 
-  // A grown sample set is a re-place, not a refetch. It used to bump a
-  // `sampleSetGeneration` counter into `rpcProps()`, from a design where the
-  // worker narrowed each region's blocks to the client's sample list and so
-  // genuinely lost rows it had not been told about. The worker discovers its own
-  // rows now and names them, so the rows already in hand are complete and the
-  // placement autorun re-places them against the widened order — the counter was
-  // only re-downloading every loaded region, once per newly seen genome.
+  // A grown sample set is a re-place, not a refetch: the worker names the rows
+  // it discovers, so the placement autorun re-places the rows already in hand
+  // against the widened order.
   it('re-places, without refetching, when the sample set grows', async () => {
     const { createDisplay, mockRpcCall } = createMafTestEnvironment({
       assemblyEnd: 50_000,

@@ -302,8 +302,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
       self.sources.length,
     ),
     // The way back from a drag-reorder in the arrangement dialog and from a
-    // clustering run alike: both write `layout`, and `resetRowArrangement` also restores
-    // the guide tree the run replaced.
+    // clustering run alike.
     ...resetRowOrderMenuItems(self),
   ]
 }

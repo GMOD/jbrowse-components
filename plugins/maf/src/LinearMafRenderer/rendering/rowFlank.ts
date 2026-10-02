@@ -96,11 +96,8 @@ export function makeRowFlank(blocks: MafBlock[]) {
   // caller skips.
   //
   // That mattered because the lazy fill below does NOT help the caller that
-  // needs this most. The two Canvas2D painters skip the buffered region's
-  // off-screen blocks first (`computeVisibleDeletions` by visible span,
-  // `drawMafBlocks` by render-block clip), so they touch about half the blocks —
-  // but `buildInstanceBuffer` encodes the *whole* region, so it always paid the
-  // worst case: on the UCSC ce11 26-way shape (48k blocks, median 7bp, 26 rows)
+  // needs this most: `buildMafChannels` encodes the *whole* region, so it
+  // always paid the worst case: on the UCSC ce11 26-way shape (48k blocks, median 7bp, 26 rows)
   // ~96k sets and ~1.2M inserts on every encode, which is every zoom tier, theme
   // change and row reorder. Measured over that shape, flank + `resolvedExtent`
   // went 949ms -> 256ms, byte-identical on 1.2M (block, row) pairs.

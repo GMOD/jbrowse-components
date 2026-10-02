@@ -204,34 +204,6 @@ export function* eachVisibleRegion<T>(
   }
 }
 
-/**
- * A bp → `[lo, hi)` pixel-column mapper for one render block, clamped to that
- * block's own `[xLo, xHi)` scissor span (`clip.scissorX` .. `+scissorW`, NOT
- * the whole canvas: the fetched region is the buffered one, so its out-of-block
- * bases map past the block's edges and would paint over the neighboring
- * region). A cell is a column wide before clamping, so a sub-pixel base still
- * lands somewhere; `hi <= lo` means it lands outside the block.
- *
- * One `range` per block, overwritten per call — both callers read it straight
- * back, and this runs once per reference column per block per frame.
- */
-export function makeCellPxRange(bpToX: BpToPx, xLo: number, xHi: number) {
-  const range = { lo: 0, hi: 0 }
-  return (bp: number) => {
-    const xa = bpToX(bp)
-    const xb = bpToX(bp + 1)
-    const cellLeft = Math.floor(Math.min(xa, xb))
-    range.lo = Math.max(xLo, cellLeft)
-    range.hi = Math.min(
-      xHi,
-      Math.max(cellLeft + 1, Math.ceil(Math.max(xa, xb))),
-    )
-    return range
-  }
-}
-
-export type CellPxRange = ReturnType<typeof makeCellPxRange>
-
 // NOTE: an `eachVisibleRow(params)` generator yielding one `{block, row, rowTop,
 // h, bpToPx}` per aligned row reads much better than the region -> block -> row
 // loop the four per-row overlays each spell out, and was tried. It is 4.7x

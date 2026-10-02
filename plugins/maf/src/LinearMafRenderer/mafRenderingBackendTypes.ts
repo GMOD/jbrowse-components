@@ -8,9 +8,6 @@ import type { MafColorPalette } from './util.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-
-export type MafRenderBlock = RenderBlock
 
 export interface MafGPURenderState {
   canvasWidth: number

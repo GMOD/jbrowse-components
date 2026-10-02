@@ -99,8 +99,7 @@ export async function executeMafSummaryData({
   // discovers from every block row before narrowing `blocks`.
   const visible = visibleSamples(subtreeFilter, configSamples)
   const records: MafSummaryRecord[] = []
-  // Insertion-ordered, so a discovered row set has a stable order the way the
-  // alignment path's `discoveredOrder` does.
+  // Insertion-ordered, so a discovered row set has a stable order.
   const discovered = new Set<string>()
   // Unconditional: `loadMafSamplesAdapter` answers a `MafAdapterBase`, which
   // always implements this. An unconfigured `summaryAdapter` slot is what

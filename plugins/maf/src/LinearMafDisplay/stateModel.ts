@@ -516,15 +516,7 @@ export default function stateModelFactory(
          * A set that *changes* after one was already established invalidates
          * nothing: the fetched rows name their species rather than a row index,
          * so the placement autorun re-places them against the widened order and
-         * they are correct again without a refetch. This used to bump a
-         * `sampleSetGeneration` counter into `rpcProps()`, from a design where
-         * the worker narrowed each region's blocks to the client's sample list
-         * and so genuinely lost rows it had not been told about. It no longer
-         * takes one — the row set is config-derived or discovered per region in
-         * the worker, and the only thing the client sends is the focus —
-         * so the counter had become a pure refetch of every loaded region, once
-         * per newly seen genome, on exactly the discovery tracks that can least
-         * afford it.
+         * they are correct again without a refetch.
          */
         setSamples({
           samples,

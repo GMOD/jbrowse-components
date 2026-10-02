@@ -14,8 +14,7 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 // *alignment* score (per-reference-base, squashed into 0..1 by
 // hgLoadMafSummary's scorePairwise), NOT a percent identity — high scores read
 // as "more conserved/aligned", but the mapping to true identity is nonlinear.
-// For an actual percent-identity profile see the conservation band
-// (`drawConservation`). Low-score blocks still need to read as "present", so
+// For an actual percent-identity profile see the conservation band. Low-score blocks still need to read as "present", so
 // map 0..1 onto a floor..1 alpha rather than fading fully transparent.
 const MIN_ALPHA = 0.25
 

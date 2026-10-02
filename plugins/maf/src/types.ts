@@ -35,15 +35,6 @@ export interface MafAdapterOptions extends BaseOptions {
 }
 
 /**
- * Sample set + guide tree every MAF adapter ships alongside features (so a track
- * needs no separate setup RPC). `treeNewick` is undefined when there's no tree.
- */
-export interface MafSamplesResult {
-  samples: Sample[]
-  treeNewick: string | undefined
-}
-
-/**
  * MAF context/empty status characters (UCSC spec). Used on `i` lines (left/
  * right context of an aligned row) and `e` lines (status of a bridged/empty
  * row): C contiguous, I non-aligning bases between, N new chrom/scaffold, n

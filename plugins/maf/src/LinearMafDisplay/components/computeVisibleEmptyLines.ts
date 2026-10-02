@@ -26,8 +26,6 @@ export function computeVisibleEmptyLines(
   const segments: EmptyLineSegment[] = []
   const { h, offset, firstRow, endRow } = rowViewport(params)
 
-  // Not `eachVisibleRow`: e-lines are `block.empties`, a species with no
-  // aligning sequence here, so there is no aligned row to hang them off.
   for (const { data: regionData, bpToPx, overlaps } of eachVisibleRegion(
     view,
     rpcDataMap,

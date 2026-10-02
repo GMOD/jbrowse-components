@@ -103,8 +103,7 @@ const NO_BASE = 255
  * each use. Both walks below used to count a phantom base at every missing
  * column of a truncated row — phantom insertion length, phantom depth, and a
  * mismatch recorded against base code 0. Every other per-column row walk in the
- * plugin stops at the row's end (`renderBases`, `buildInstanceBuffer`,
- * `buildIdentityRuns`); one helper keeps the three conditions together
+ * plugin stops at the row's end; one helper keeps the three conditions together
  * so a new caller can't drop one.
  *
  * The length check got *more* load-bearing when rows moved into the shared

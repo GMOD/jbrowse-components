@@ -89,8 +89,7 @@ function rowStackOf(model: RowGeometry) {
  * slot the pixel centre falls in.
  *
  * Both painters put a row's band at `rowBandOffsetPx` inside its slot and floor
- * its height at `MIN_DRAWN_ROW_PX` (`maf.slang`'s `rowRectClipPos`,
- * `drawMafBlocks`'s `rowBandGeometry`). Below a pixel per row the floor makes
+ * its height at `MIN_DRAWN_ROW_PX` (`rowRect.slang`). Below a pixel per row the floor makes
  * neighbouring bands overlap, several rows paint the same pixel, and the last
  * one drawn — the highest index — is the one on screen; `rowIndexAt` answered
  * with the slot instead, so the tooltip named a neighbour of the cell under the

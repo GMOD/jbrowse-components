@@ -128,8 +128,7 @@ test('multi-column insertion emits one entry per row with the correct length', (
 // typed array reads `undefined`, which is neither '-' nor ' ', so the missing
 // tail used to read as real bases: phantom depth, a mismatch against base code
 // 0, and phantom insertion length. Every other per-column row walk already
-// stopped at the row's end (`renderBases`, `buildInstanceBuffer`,
-// `IdentityColumns.accumulate`), so coverage disagreed with what was drawn.
+// stopped at the row's end, so coverage disagreed with what was drawn.
 test('a row shorter than the reference contributes nothing past its end', () => {
   const blocks: TestWireBlock[] = [
     block(10, 'ACGT', [row(0, 'ACGT'), row(1, 'AC')]),

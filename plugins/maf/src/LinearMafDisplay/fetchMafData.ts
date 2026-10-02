@@ -57,8 +57,7 @@ interface SampleSet {
  * set to stand for the batch dropped the others' rows: a genome only region B
  * aligns has no row to be placed at, so it rendered nothing. Unioning keeps
  * every discovered row, and being order-stable and additive it settles in one
- * round instead of flip-flopping the set (and `sampleSetGeneration` with it) as
- * regions land in different batches.
+ * round instead of flip-flopping the set as regions land in different batches.
  *
  * `treeNewick` and `samplesCanonical` are config-derived, hence identical across
  * a batch — read from the first result. Configured-samples tracks return that
