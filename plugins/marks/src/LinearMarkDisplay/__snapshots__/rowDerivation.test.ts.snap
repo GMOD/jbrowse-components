@@ -317,12 +317,6 @@ exports[`bars faceted by source draw a band per source under its chip 1`] = `
 
 exports[`bars faceted by source draw a band per source under its chip 2`] = `
 {
-  "firstRowOf": Map {
-    "dad" => 0,
-    "mom" => 1,
-    "s2" => 2,
-    "s10" => 3,
-  },
   "rowCount": 4,
   "sections": [
     {

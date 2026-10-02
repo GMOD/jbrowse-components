@@ -16,7 +16,7 @@ const NO_FACET: FacetLayout = {
   field: '',
   sections: [],
   rowCount: 0,
-  firstRowOf: new Map(),
+  bandOf: new Map(),
   rows: false,
 }
 
@@ -124,10 +124,7 @@ test('a mark in an implicit pileup names its section', async () => {
         { key: 'DUP', label: 'svtype: DUP', firstRow: 2, rowCount: 3 },
       ],
       rowCount: 5,
-      firstRowOf: new Map([
-        ['DEL', 0],
-        ['DUP', 2],
-      ]),
+      bandOf: new Map(),
       rows: false,
     },
   })
@@ -155,10 +152,7 @@ test('under a facet the band reads as the section chip rather than an index', as
         { key: 'DUP', label: 'svtype: DUP', firstRow: 2, rowCount: 3 },
       ],
       rowCount: 5,
-      firstRowOf: new Map([
-        ['DEL', 0],
-        ['DUP', 2],
-      ]),
+      bandOf: new Map(),
       rows: false,
     },
   })

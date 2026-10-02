@@ -2217,6 +2217,39 @@ function facetResult(rows: number[]) {
   )
 }
 
+// A per-section pileup drawn zoomed in, a density drawn zoomed out: the worker
+// packs both, but the sections are as deep as what this zoom draws.
+test('a mark outside its zoom range leaves the sections as deep as the marks drawn', () => {
+  const { createDisplay } = createTestEnvironment(
+    [
+      { mark: 'span', maxBpPerPx: 0.01 },
+      { mark: 'bar', encoding: { y: 'score' } },
+    ],
+    REGION,
+    'BedAdapter',
+    { facet: 'sample' },
+  )
+  const { display } = createDisplay()
+  expect(display.markView.visible).toEqual([false, true])
+  display.setRpcData(
+    0,
+    result(
+      [
+        { y: [0, 0, 0, 0, 0], row: [0, 1, 2, 3, 4] },
+        { y: [3, 8], row: [0, 4] },
+      ],
+      [
+        { key: 'a', firstRow: 0, rowCount: 4 },
+        { key: 'b', firstRow: 4, rowCount: 1 },
+      ],
+    ),
+    REGION,
+  )
+  expect(display.facetLayout.sections.map(s => s.rowCount)).toEqual([1, 1])
+  expect(display.rowCount).toBe(2)
+  expect([...display.rpcDataMap.get(0)!.layers[1]!.row!]).toEqual([0, 1])
+})
+
 function rowsOf(display: LinearMarkDisplayModel, region = 0) {
   return [...(display.rpcDataMap.get(region)!.layers[0]!.row ?? [])]
 }

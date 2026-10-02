@@ -37,7 +37,12 @@ function hideFirstSection(layer: StoredLayer) {
       { key: 'b', firstRow: 1, rowCount: 1 },
     ],
   }
-  const layout = facetLayout([region], categoricalField('grp'), new Set(['a']))
+  const layout = facetLayout(
+    [region],
+    categoricalField('grp'),
+    new Set(['a']),
+    [true],
+  )
   return facetRegion(region, layout).layers[0]!
 }
 
@@ -91,13 +96,14 @@ test('a region split on the outgoing field draws nothing, though its keys match 
     [stale, fresh],
     categoricalField('strand'),
     new Set(),
+    [true],
   )
   expect(facetRegion(stale, layout).layers[0]!.count).toBe(0)
   expect(facetRegion(fresh, layout).layers[0]!.count).toBe(4)
 })
 
 test('a region fetched before the facet draws nothing, and the density sidecar keeps its rows', () => {
-  const layout = facetLayout([], categoricalField('strand'), new Set())
+  const layout = facetLayout([], categoricalField('strand'), new Set(), [])
   const unsplit: MarkRegionData = {
     layers: [linkLayer()],
     request: { ...splitOn('strand')!, facet: undefined },
@@ -121,4 +127,42 @@ test('with no split, a region fetched under one draws nothing, and an unsplit on
   expect(unsplitRegion(unsplit)).toBe(unsplit)
   const sidecar: MarkRegionData = { layers: [linkLayer()] }
   expect(unsplitRegion(sidecar)).toBe(sidecar)
+})
+
+function barLayer(rows: number[]): StoredLayer {
+  return {
+    count: rows.length,
+    skipped: 0,
+    x: Uint32Array.from(rows, (_, i) => i * 10),
+    x2: Uint32Array.from(rows, (_, i) => i * 10 + 5),
+    y: Float32Array.from(rows, () => 1),
+    row: Uint32Array.from(rows),
+    color: 0xff0000ff,
+    yMin: 1,
+    yMax: 1,
+  }
+}
+
+// A per-section pileup zoomed in and a density zoomed out: the worker packs
+// both, so each section is as deep as its pileup, but zoomed out only the
+// density's one row a section is drawn.
+test('a section is as deep as the layers drawn at this zoom stand in it', () => {
+  const region: MarkRegionData = {
+    layers: [barLayer([0, 1, 2, 3, 4, 5]), barLayer([0, 4])],
+    facet: [
+      { key: 'a', firstRow: 0, rowCount: 4 },
+      { key: 'b', firstRow: 4, rowCount: 2 },
+    ],
+  }
+  const field = categoricalField('grp')
+  const zoomedOut = facetLayout([region], field, new Set(), [false, true])
+  expect(zoomedOut.sections.map(s => [s.firstRow, s.rowCount])).toEqual([
+    [0, 1],
+    [1, 1],
+  ])
+  const drawn = facetRegion(region, zoomedOut).layers
+  expect([...drawn[1]!.row!]).toEqual([0, 1])
+  expect([...drawn[0]!.row!]).toEqual([0, 1])
+  const zoomedIn = facetLayout([region], field, new Set(), [true, true])
+  expect(zoomedIn.rowCount).toBe(6)
 })

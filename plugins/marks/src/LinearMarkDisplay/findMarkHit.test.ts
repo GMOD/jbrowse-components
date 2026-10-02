@@ -317,7 +317,7 @@ test('a facet with a hidden section answers from the rows it kept', () => {
   } as unknown as CategoricalField
   const shown = facetRegion(
     region,
-    facetLayout([region], field, new Set(['b'])),
+    facetLayout([region], field, new Set(['b']), [true]),
   )
   expect(shown.layers[0]!.count).toBeLessThan(layer.count)
   const { hits, probes } = parity(['bar'], shown, STATE)

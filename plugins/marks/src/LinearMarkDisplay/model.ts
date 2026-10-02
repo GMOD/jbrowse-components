@@ -821,6 +821,7 @@ export function stateModelFactory(
             self.featurePayloads.values(),
             categoricalField(field, { domain }),
             self.hiddenGroupKeys,
+            self.markView.visible,
           )
         })
         // A fresh array per read would recolour every region on each read

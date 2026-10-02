@@ -92,8 +92,8 @@ function drawn(display: LinearMarkDisplayModel) {
 test('bars faceted by source draw a band per source under its chip', () => {
   const display = loaded({ facet: 'source' })
   expect(drawn(display)).toMatchSnapshot()
-  const { sections, rowCount, firstRowOf } = display.facetLayout
-  expect({ sections, rowCount, firstRowOf }).toMatchSnapshot()
+  const { sections, rowCount } = display.facetLayout
+  expect({ sections, rowCount }).toMatchSnapshot()
 })
 
 test('a facet domain leads the bands and the key', () => {

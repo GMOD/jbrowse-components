@@ -4,6 +4,7 @@ import { drawnScales } from './drawnScales.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
+import type { FacetSection } from '@jbrowse/core/util/markEncoding'
 
 /** A section as drawn: its chip, and the band of rows under it. */
 export interface FacetBand {
@@ -18,8 +19,8 @@ export interface FacetLayout {
   field: string
   sections: FacetBand[]
   rowCount: number
-  /** Where each drawn key's rows start. */
-  firstRowOf: ReadonlyMap<string, number>
+  /** Each drawn key's band. */
+  bandOf: ReadonlyMap<string, FacetBand>
   /**
    * One row per value, which `rows` draws: every row a region packed a key
    * into lands on the key's one row, and row labels name them, not chips.
@@ -38,30 +39,78 @@ export function sectionsOn(region: MarkRegionData, field: string) {
   return asked === undefined || asked === field ? region.facet : undefined
 }
 
+const drawnRowsCache = new WeakMap<
+  MarkRegionData,
+  { drawn: string; rows: number[] }
+>()
+
+// The rows each section holds under the layers drawn at this zoom: one past
+// the deepest any of them stands in, and 1 where none reaches. The worker packs
+// every layer, a mark outside its zoom range included, so a section's own
+// `rowCount` is the deepest of them all.
+function drawnSectionRows(
+  region: MarkRegionData,
+  sections: readonly FacetSection[],
+  drawn: readonly boolean[],
+) {
+  const signature = drawn.join(',')
+  const held = drawnRowsCache.get(region)
+  if (held?.drawn === signature) {
+    return held.rows
+  }
+  const total = sections.reduce(
+    (n, s) => Math.max(n, s.firstRow + s.rowCount),
+    0,
+  )
+  const sectionOfRow = new Uint32Array(total)
+  sections.forEach(({ firstRow, rowCount }, s) => {
+    sectionOfRow.fill(s, firstRow, firstRow + rowCount)
+  })
+  const rows = sections.map(() => 1)
+  region.layers.forEach(({ row, count }, i) => {
+    if (drawn[i] && row) {
+      for (let k = 0; k < count; k++) {
+        const r = row[k]!
+        if (r < total) {
+          const s = sectionOfRow[r]!
+          const depth = r - sections[s]!.firstRow + 1
+          if (depth > rows[s]!) {
+            rows[s] = depth
+          }
+        }
+      }
+    }
+  })
+  drawnRowsCache.set(region, { drawn: signature, rows })
+  return rows
+}
+
 /**
  * The sections over every loaded region: each key as tall as the deepest
- * region packed it, in the domain's order, less the hidden ones.
+ * region packed it under the layers `drawn` at this zoom, in the domain's
+ * order, less the hidden ones.
  */
 export function facetLayout(
   regions: Iterable<MarkRegionData>,
   field: CategoricalField,
   hidden: ReadonlySet<string>,
+  drawn: readonly boolean[],
 ): FacetLayout {
   const heights = new Map<string, number>()
   for (const region of regions) {
-    for (const { key, rowCount } of sectionsOn(region, field.field) ?? []) {
-      heights.set(key, Math.max(heights.get(key) ?? 0, rowCount))
-    }
+    const sections = sectionsOn(region, field.field) ?? []
+    const rows = drawnSectionRows(region, sections, drawn)
+    sections.forEach(({ key }, s) => {
+      heights.set(key, Math.max(heights.get(key) ?? 0, rows[s]!))
+    })
   }
   const sections: FacetBand[] = []
-  const firstRowOf = new Map<string, number>()
   let next = 0
   for (const key of [...heights.keys()].sort(field.compare)) {
     if (hidden.has(key)) {
       continue
     }
     const rowCount = heights.get(key)!
-    firstRowOf.set(key, next)
     sections.push({
       key,
       label: field.sectionLabel(key),
@@ -74,7 +123,7 @@ export function facetLayout(
     field: field.field,
     sections,
     rowCount: next,
-    firstRowOf,
+    bandOf: new Map(sections.map(band => [band.key, band])),
     rows: false,
   }
 }
@@ -87,33 +136,34 @@ export function rowsLayout(
   rows: readonly { name: string }[],
   field: CategoricalField,
 ): FacetLayout {
+  const sections = rows.map((row, i) => ({
+    key: row.name,
+    label: field.sectionLabel(row.name),
+    firstRow: i,
+    rowCount: 1,
+  }))
   return {
     field: field.field,
-    sections: rows.map((row, i) => ({
-      key: row.name,
-      label: field.sectionLabel(row.name),
-      firstRow: i,
-      rowCount: 1,
-    })),
+    sections,
     rowCount: rows.length,
-    firstRowOf: new Map(rows.map((row, i) => [row.name, i])),
+    bandOf: new Map(sections.map(band => [band.key, band])),
     rows: true,
   }
 }
 
 const HIDDEN = 0xffffffff
 
-function rowRemap(
-  table: NonNullable<MarkRegionData['facet']>,
-  layout: FacetLayout,
-) {
+// Each of the region's rows on the layout: a section's rows onto its band, and
+// hidden past the band's depth, where only a layer outside its zoom range
+// stands.
+function rowRemap(table: readonly FacetSection[], layout: FacetLayout) {
   const total = table.reduce((n, s) => Math.max(n, s.firstRow + s.rowCount), 0)
   const remap = new Uint32Array(total).fill(HIDDEN)
   for (const { key, firstRow, rowCount } of table) {
-    const to = layout.firstRowOf.get(key)
-    if (to !== undefined) {
-      for (let i = 0; i < rowCount; i++) {
-        remap[firstRow + i] = to + i
+    const band = layout.bandOf.get(key)
+    if (band) {
+      for (let i = 0; i < Math.min(rowCount, band.rowCount); i++) {
+        remap[firstRow + i] = band.firstRow + i
       }
     }
   }
