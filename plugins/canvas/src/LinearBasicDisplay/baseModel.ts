@@ -362,6 +362,41 @@ export default function baseStateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * The `facet` object as written, or undefined while ungrouped.
+       */
+      get facet(): FeatureFacet | undefined {
+        return facetSettingOf({
+          field: getConf(self, ['facet', 'field']),
+          domain: getConf(self, ['facet', 'domain']),
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The features of the sections the user hid, which sit unplaced by
+       * choice and so count as nothing the track failed to show.
+       */
+      get hiddenGroupFeatureIds(): ReadonlySet<string> | undefined {
+        const { facet, hiddenGroupKeys } = self
+        if (!facet || hiddenGroupKeys.size === 0) {
+          return undefined
+        }
+        const sectionOf = sectionIdsOf(facet)
+        const ids = new Set<string>()
+        for (const data of self.rpcDataMap.values()) {
+          for (const item of data.flatbushItems) {
+            if (hiddenGroupKeys.has(sectionOf(item).key)) {
+              ids.add(item.featureId)
+            }
+          }
+        }
+        return ids
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Whether features can be laid out: data is fetched, in-bounds, the
        * view is measured, and the density band is not standing in.
        */
@@ -375,8 +410,8 @@ export default function baseStateModelFactory(
       },
       /**
        * #getter
-       * The features whose bp span touches the viewport, as one Set for as
-       * long as the membership holds.
+       * The features whose bp span touches the viewport, less any in a hidden
+       * section, as one Set for as long as the membership holds.
        */
       get onScreenFeatureIds(): ReadonlySet<string> | undefined {
         if (!self.layoutReady) {
@@ -386,7 +421,11 @@ export default function baseStateModelFactory(
         return blocks.length === 0
           ? undefined
           : self.onScreenIdsMemo(
-              featureIdsTouchingBlocks(self.rpcDataMap.values(), blocks),
+              featureIdsTouchingBlocks(
+                self.rpcDataMap.values(),
+                blocks,
+                self.hiddenGroupFeatureIds,
+              ),
             )
       },
       /**
@@ -475,17 +514,6 @@ export default function baseStateModelFactory(
        */
       get displayMode(): DisplayMode {
         return getConf(self, 'displayMode')
-      },
-
-      /**
-       * #getter
-       * The `facet` object as written, or undefined while ungrouped.
-       */
-      get facet(): FeatureFacet | undefined {
-        return facetSettingOf({
-          field: getConf(self, ['facet', 'field']),
-          domain: getConf(self, ['facet', 'domain']),
-        })
       },
 
       /**
@@ -803,27 +831,6 @@ export default function baseStateModelFactory(
         return facet
           ? featureGroupSections(self.laidOutDataMap, facet, GROUP_LABEL_HEIGHT)
           : []
-      },
-      /**
-       * #getter
-       * The features of the sections the user hid, which sit unplaced by
-       * choice and so count as nothing the track failed to show.
-       */
-      get hiddenGroupFeatureIds(): ReadonlySet<string> | undefined {
-        const { facet, hiddenGroupKeys } = self
-        if (!facet || hiddenGroupKeys.size === 0) {
-          return undefined
-        }
-        const sectionOf = sectionIdsOf(facet)
-        const ids = new Set<string>()
-        for (const data of self.laidOutDataMap.values()) {
-          for (const item of data.flatbushItems) {
-            if (hiddenGroupKeys.has(sectionOf(item).key)) {
-              ids.add(item.featureId)
-            }
-          }
-        }
-        return ids
       },
       /**
        * #getter

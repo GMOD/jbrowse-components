@@ -1429,6 +1429,37 @@ describe('showLabels auto density gate', () => {
     expect(display.effectiveShowDescriptions).toBe(false)
   })
 
+  it('counts no feature of a hidden section toward the crowding', () => {
+    const { display, view } = setup()
+    const crowded = featuresOver(200, 0, 50_000)
+    const data = makeFeatureData({
+      flatbushItems: [
+        ...crowded.flatbushItems.map(item => ({ ...item, strand: -1 })),
+        ...[1000, 20_000, 40_000].map((at, i) =>
+          makeFlatbushItem({
+            featureId: `fwd${i}`,
+            startBp: at,
+            endBp: at + 1,
+            strand: 1,
+          }),
+        ),
+      ],
+    })
+    display.setRpcData(0, data, {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 0,
+      end: 50_000,
+    })
+    display.setFacet({ field: 'strand' })
+    zoomAndSettle(view, 62.5)
+    expect(display.showLabels).toBe(false)
+
+    display.hideGroup('-1')
+    expect(display.labelDensityPerPx).toBeLessThan(0.01)
+    expect(display.showLabels).toBe(true)
+  })
+
   it('keeps only gene names where the genes alone are sparse', () => {
     const { display, view } = setup()
     const data = featuresOver(200, 0, 50_000)

@@ -144,6 +144,7 @@ export function featureIdsTouchingBlocks(
     start: number
     end: number
   }[],
+  skip?: ReadonlySet<string>,
 ): ReadonlySet<string> {
   const rangesByKey = new Map<string, [number, number][]>()
   for (const block of blocks) {
@@ -163,6 +164,7 @@ export function featureIdsTouchingBlocks(
     }
     for (const item of data.flatbushItems) {
       if (
+        !skip?.has(item.featureId) &&
         ranges.some(([start, end]) =>
           spansOverlap(item.startBp, item.endBp, start, end),
         )
