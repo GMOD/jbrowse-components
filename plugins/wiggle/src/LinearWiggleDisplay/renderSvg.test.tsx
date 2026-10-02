@@ -1,5 +1,6 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import { leftAxisGutterWidth } from '@jbrowse/display-ui'
 import { clusterLayout } from '@jbrowse/tree-sidebar'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
@@ -12,6 +13,7 @@ import type {
   ClusterHierarchyNode,
   HierarchyNode,
   NewickNode,
+  SvgSidebarProps,
 } from '@jbrowse/tree-sidebar'
 import type React from 'react'
 
@@ -119,7 +121,10 @@ function makeHierarchy(): ClusterHierarchyNode {
   return clusterLayout(root, 100, 40)
 }
 
-function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
+function makeModel(
+  overrides: Partial<RenderSvgModel> = {},
+  sidebar: Partial<SvgSidebarProps> = {},
+): RenderSvgModel {
   return {
     id: 'test',
     height: 100,
@@ -163,19 +168,22 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
       isDensityMode: false,
       maxGapMultiple: 0,
     }),
-    showTree: false,
-    treeAreaWidth: 40,
-    hierarchy: undefined,
-    sources: [{ name: 'a' }, { name: 'b' }],
+    svgSidebar: {
+      showTree: false,
+      hierarchy: undefined,
+      sources: [{ name: 'a' }, { name: 'b' }],
+      rowHeight: 50,
+      treeAreaWidth: 40,
+      leftInset: leftAxisGutterWidth(overrides.axes ?? axes()),
+      ...sidebar,
+    },
     isOverlay: false,
     isDensityMode: false,
     effectiveRowHeight: 50,
-    numSources: 2,
     numRows: 2,
     axes: axes(),
     canvasWidthPx: 800,
     showRowSeparators: false,
-    showRowLabels: true,
     ...overrides,
   }
 }
@@ -248,11 +256,10 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
   it('draws the dendrogram and the labels in the margin, past the axis strip', async () => {
     const html = render(
       await renderSvg(
-        makeModel({
-          showTree: true,
-          hierarchy: makeHierarchy(),
-          axes: axes({ left: 40 }),
-        }),
+        makeModel(
+          { axes: axes({ left: 40 }) },
+          { showTree: true, hierarchy: makeHierarchy() },
+        ),
       ),
     )
     expect(html).toContain('stroke="#0008"')
@@ -274,11 +281,10 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
       gutterXs(
         render(
           await renderSvg(
-            makeModel({
-              showTree: true,
-              hierarchy: makeHierarchy(),
-              axes: axes({ left: 40 }),
-            }),
+            makeModel(
+              { axes: axes({ left: 40 }) },
+              { showTree: true, hierarchy: makeHierarchy() },
+            ),
           ),
         ),
       ),
@@ -287,17 +293,24 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
 
   it('omits the dendrogram when the tree is hidden', async () => {
     expect(
-      render(await renderSvg(makeModel({ hierarchy: makeHierarchy() }))),
+      render(await renderSvg(makeModel({}, { hierarchy: makeHierarchy() }))),
     ).not.toContain('stroke="#0008"')
   })
 
   it('draws the overlay color key only when it applies', async () => {
     const shown = render(
-      await renderSvg(makeModel({ isOverlay: true, ...withKey(true) })),
+      await renderSvg(
+        makeModel({ isOverlay: true, ...withKey(true) }, { showLabels: false }),
+      ),
     )
     expect(shown).toContain('>a</text>')
     const dismissed = render(
-      await renderSvg(makeModel({ isOverlay: true, ...withKey(false) })),
+      await renderSvg(
+        makeModel(
+          { isOverlay: true, ...withKey(false) },
+          { showLabels: false },
+        ),
+      ),
     )
     // overlay draws no row labels, so with the key off there is no 'a' anywhere
     expect(dismissed).not.toContain('>a</text>')

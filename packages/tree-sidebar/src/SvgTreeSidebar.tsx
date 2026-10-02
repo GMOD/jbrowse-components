@@ -1,83 +1,60 @@
-import { BAND_LABEL_WIDTH, SvgBandLabels } from './SvgBandLabels.tsx'
+import { SvgBandLabels, bandLabelWidth } from './SvgBandLabels.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 import { SvgTreePath } from './SvgTreePath.tsx'
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
 import { treeIsShowing, treeSidebarOffset } from './treeSidebarGeometry.ts'
 
-import type { RowBand } from './arrangeRows.ts'
-import type { ClusterHierarchyNode, RowLabelSource } from './types.ts'
+import type { SvgSidebarProps } from './svgSidebarWidth.ts'
+import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
-// The SVG-export counterpart of the on-screen `TreeSidebar`: the left sidebar's
-// dendrogram plus its row labels, rendered together and drawn to the left of the
-// display's own box, in the gutter the export reserves from `svgSidebarWidth`.
-// Every clusterable display's `renderSvg` should paint its sidebar through THIS,
-// never `SvgRowLabels` directly: the labels are offset right by `treeAreaWidth`
-// to clear the tree, so drawing labels without the tree leaves a blank gutter.
+// The SVG-export counterpart of the on-screen `TreeSidebar`: the dendrogram,
+// the band strip and the row labels, drawn left of the display's own box in the
+// gutter the export reserves from `svgSidebarWidth`. Each display hands it its
+// `svgSidebar` getter, so the width reserved and the sidebar drawn come from
+// one set of props, measured in the export's text.
 export function SvgTreeSidebar({
-  showTree,
-  hierarchy,
-  sources,
-  rowHeight,
-  treeAreaWidth,
-  showLabels = true,
+  sidebar,
+  text,
   scrollTop,
   availableHeight,
-  bands = [],
-  leftInset = 0,
 }: {
-  showTree: boolean
-  hierarchy: ClusterHierarchyNode | undefined
-  sources: RowLabelSource[]
-  rowHeight: number
-  treeAreaWidth: number
-  // Caller-specific label gate (e.g. hidden below a zoom threshold, or for a
-  // single-source track). The tree still draws when this is false.
-  showLabels?: boolean
+  sidebar: SvgSidebarProps
+  text?: ExportTextStyle
   scrollTop?: number
   availableHeight?: number
-  // The bands' strip, beside the tree and ahead of the labels, drawn whatever
-  // `showLabels` says.
-  bands?: readonly RowBand[]
-  // Px of the export's left margin something else holds beside the plot (the
-  // scalebars), which the sidebar sits past.
-  leftInset?: number
 }) {
-  // The tree, but only if it is showing — one binding rather than a boolean
-  // beside the hierarchy it is about, so the hint, the path and the label
-  // offset cannot come apart. `treeSidebarOffset` is this same gate times
-  // `treeAreaWidth`; the two used to be spelled out separately here, under a
-  // comment claiming they were one.
-  const drawnTree = treeIsShowing({ showTree, hierarchy })
-    ? hierarchy
-    : undefined
-  const labelOffset = treeSidebarOffset({ showTree, hierarchy, treeAreaWidth })
-  const width = svgSidebarWidth({
+  const {
     showTree,
     hierarchy,
     sources,
     rowHeight,
     treeAreaWidth,
-    showLabels,
-    bands,
-    leftInset,
-  })
+    showLabels = true,
+    bands = [],
+  } = sidebar
+  const drawnTree = treeIsShowing({ showTree, hierarchy })
+    ? hierarchy
+    : undefined
+  const labelOffset = treeSidebarOffset({ showTree, hierarchy, treeAreaWidth })
   return (
-    <g transform={`translate(${-width} 0)`}>
+    <g transform={`translate(${-svgSidebarWidth(sidebar, text)} 0)`}>
       <SvgBandLabels
         bands={bands}
         rowHeight={rowHeight}
         x={labelOffset}
         scrollTop={scrollTop}
         availableHeight={availableHeight}
+        text={text}
       />
       {showLabels && sources.length ? (
         <SvgRowLabels
           sources={sources}
           rowHeight={rowHeight}
-          labelOffset={labelOffset + (bands.length ? BAND_LABEL_WIDTH : 0)}
+          labelOffset={labelOffset + (bands.length ? bandLabelWidth(text) : 0)}
           scrollTop={scrollTop}
           availableHeight={availableHeight}
           opaque={!!drawnTree}
+          text={text}
         />
       ) : null}
       {drawnTree ? (

@@ -8,11 +8,12 @@ import {
   rowLabelFullText,
   rowLabelText,
   rowLabelsBoxWidth,
+  rowLabelsCarryText,
 } from './rowLabelsBoxWidth.ts'
-import { rowLabelsCarryText } from './rowLabelsCarryText.ts'
 import { rowRuns } from './rowRuns.ts'
 
 import type { RowLabelSource } from './types.ts'
+import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 // Consecutive rows sharing a color paint as one rect (`rowRuns` owns that rule
 // and says why; rows with no color contribute nothing, so a partly-colored
@@ -39,6 +40,7 @@ export function SvgRowLabels({
   scrollTop = 0,
   availableHeight,
   opaque = false,
+  text,
 }: {
   sources: RowLabelSource[]
   rowHeight: number
@@ -46,9 +48,10 @@ export function SvgRowLabels({
   scrollTop?: number
   availableHeight?: number
   opaque?: boolean
+  text?: ExportTextStyle
 }) {
   const palette = usePalette()
-  const fontSize = rowLabelFontSize(rowHeight)
+  const fontSize = rowLabelFontSize(rowHeight, text)
   const stripWash = alpha(palette.background.paper, opaque ? 1 : 0.9)
   const stripTint = alpha(palette.text.primary, opaque ? 0 : 0.04)
   const separator = alpha(palette.text.primary, 0.12)
@@ -64,8 +67,8 @@ export function SvgRowLabels({
     )
   }
 
-  const boxWidth = rowLabelsBoxWidth(sources, rowHeight)
-  const boxHeight = rowLabelBoxHeight(rowHeight)
+  const boxWidth = rowLabelsBoxWidth(sources, rowHeight, text)
+  const boxHeight = rowLabelBoxHeight(rowHeight, text)
   const boxInset = (rowHeight - boxHeight) / 2
   const boxesAbut = boxHeight === rowHeight
   const rows = textFits
@@ -76,50 +79,51 @@ export function SvgRowLabels({
   const boxes = rows
     .map(({ y }) => `M0 ${y + boxInset}h${boxWidth}v${boxHeight}h${-boxWidth}z`)
     .join('')
+  const separators = boxesAbut
+    ? rows
+        .filter(({ idx }) => idx > 0)
+        .map(({ y }) => `M0 ${y}h${boxWidth}v1h${-boxWidth}z`)
+        .join('')
+    : ''
 
   return textFits ? (
     <g transform={`translate(${labelOffset} 0)`}>
       <path d={boxes} {...getFillProps(stripWash)} />
       <path d={boxes} {...getFillProps(stripTint)} />
-      {rows.map(({ source, idx, y }) => {
+      {rows.map(({ source, y }) => {
+        const lc = source.labelColor
+        return lc ? (
+          <rect
+            key={source.name}
+            x={0}
+            y={y + boxInset}
+            width={boxWidth}
+            height={boxHeight}
+            {...getFillProps(lc)}
+          />
+        ) : null
+      })}
+      {separators ? <path d={separators} {...getFillProps(separator)} /> : null}
+      {rows.map(({ source, y }) => {
         // Per-source labelColor tints the label box (identity coding for
         // multirow/density tracks); text auto-contrasts against it.
         const lc = source.labelColor
         const fg = lc ? getContrastText(lc) : palette.text.primary
         const full = rowLabelFullText(source)
-        const text = rowLabelText(source, rowHeight)
+        const shown = rowLabelText(source, rowHeight, text)
         return (
-          <g key={source.name}>
-            {lc ? (
-              <rect
-                x={0}
-                y={y + boxInset}
-                width={boxWidth}
-                height={boxHeight}
-                {...getFillProps(lc)}
-              />
-            ) : null}
-            {boxesAbut && idx > 0 ? (
-              <rect
-                x={0}
-                y={y}
-                width={boxWidth}
-                height={1}
-                {...getFillProps(separator)}
-              />
-            ) : null}
-            <text
-              x={4}
-              y={y + rowHeight / 2}
-              fontSize={fontSize}
-              dominantBaseline="central"
-              style={text === full ? undefined : { pointerEvents: 'auto' }}
-              {...getFillProps(fg)}
-            >
-              {text === full ? null : <title>{full}</title>}
-              {text}
-            </text>
-          </g>
+          <text
+            key={source.name}
+            x={4}
+            y={y + rowHeight / 2}
+            fontSize={fontSize}
+            dominantBaseline="central"
+            style={shown === full ? undefined : { pointerEvents: 'auto' }}
+            {...getFillProps(fg)}
+          >
+            {shown === full ? null : <title>{full}</title>}
+            {shown}
+          </text>
         )
       })}
     </g>

@@ -50,7 +50,6 @@ import {
   treeSidebarShowMenuItems,
   fieldColorDeal,
   rowColorIsCustom,
-  svgSidebarWidth,
 } from '@jbrowse/tree-sidebar'
 import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -110,6 +109,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   IdentityChannel,
   RowColorDeal,
+  SvgSidebarProps,
   RowColorEntries,
   RowColorSnapshot,
 } from '@jbrowse/tree-sidebar'
@@ -802,11 +802,10 @@ export default function stateModelFactory(
         return buildSpatialIndex(self.hierarchy)
       },
       /**
-       * #method
-       * Px the SVG export reserves left of the track for the tree and labels.
+       * #getter
        */
-      svgSidebarWidth() {
-        return svgSidebarWidth({
+      get svgSidebar(): SvgSidebarProps {
+        return {
           showTree: self.showTree,
           hierarchy: self.hierarchy,
           sources: self.sources,
@@ -815,7 +814,7 @@ export default function stateModelFactory(
           showLabels:
             self.numSources > 1 && !self.isOverlay && self.showRowLabels,
           leftInset: leftAxisGutterWidth(self.axes),
-        })
+        }
       },
     }))
     .actions(self => ({

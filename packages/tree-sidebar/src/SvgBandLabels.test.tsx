@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 
 import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
-import { BAND_LABEL_WIDTH } from './SvgBandLabels.tsx'
+import { bandLabelWidth } from './SvgBandLabels.tsx'
 import { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 import { fittedLabel } from './fittedLabel.ts'
 
@@ -17,13 +17,15 @@ function exported(showLabels = true) {
   const { container } = render(
     <svg>
       <SvgTreeSidebar
-        showTree
-        hierarchy={undefined}
-        sources={sources}
-        rowHeight={20}
-        treeAreaWidth={80}
-        showLabels={showLabels}
-        bands={bands}
+        sidebar={{
+          showTree: true,
+          hierarchy: undefined,
+          sources,
+          rowHeight: 20,
+          treeAreaWidth: 80,
+          showLabels,
+          bands,
+        }}
       />
     </svg>,
   )
@@ -76,7 +78,7 @@ describe.each([
     const shifted = [...draw().querySelectorAll('g[transform]')].map(g =>
       g.getAttribute('transform'),
     )
-    expect(shifted).toContain(`translate(${BAND_LABEL_WIDTH} 0)`)
+    expect(shifted).toContain(`translate(${bandLabelWidth()} 0)`)
   })
 
   test('the strip stays when the row labels are off', () => {

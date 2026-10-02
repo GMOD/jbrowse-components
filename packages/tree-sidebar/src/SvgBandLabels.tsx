@@ -3,14 +3,21 @@ import { alpha } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
 
 import { fittedLabel } from './fittedLabel.ts'
+import { sidebarFontSize } from './rowLabelsBoxWidth.ts'
 
 import type { RowBand } from './arrangeRows.ts'
+import type { ExportTextStyle } from '@jbrowse/display-kit/types'
+
+const TEXT_PAD = 6
+
+function bandFontSize(text?: ExportTextStyle) {
+  return Math.round(0.9 * sidebarFontSize(text))
+}
 
 /** Px the band strip takes beside the tree, ahead of the row labels. */
-export const BAND_LABEL_WIDTH = 14
-
-const FONT_SIZE = 11
-const TEXT_PAD = 6
+export function bandLabelWidth(text?: ExportTextStyle) {
+  return bandFontSize(text) + 3
+}
 
 /**
  * The bands' strip in the margin: one column beside the tree, each band's name
@@ -25,12 +32,14 @@ export function SvgBandLabels({
   x,
   scrollTop = 0,
   availableHeight,
+  text,
 }: {
   bands: readonly RowBand[]
   rowHeight: number
   x: number
   scrollTop?: number
   availableHeight?: number
+  text?: ExportTextStyle
 }) {
   const palette = usePalette()
   const first = bands[0]
@@ -38,14 +47,16 @@ export function SvgBandLabels({
   if (!first || !last) {
     return null
   }
-  const mid = BAND_LABEL_WIDTH / 2
+  const fontSize = bandFontSize(text)
+  const width = bandLabelWidth(text)
+  const mid = width / 2
   const top = first.start * rowHeight - scrollTop
   return (
     <g data-testid="row_band_labels" transform={`translate(${x} 0)`}>
       <rect
         x={0}
         y={top}
-        width={BAND_LABEL_WIDTH}
+        width={width}
         height={(last.end - first.start) * rowHeight}
         {...getFillProps(alpha(palette.background.paper, 0.8))}
       />
@@ -58,29 +69,35 @@ export function SvgBandLabels({
         if (offscreen) {
           return null
         }
-        const text = fittedLabel(band.label, height - TEXT_PAD, FONT_SIZE)
+        const label = fittedLabel(
+          band.label,
+          height - TEXT_PAD,
+          fontSize,
+          text?.fontFamily,
+        )
         const cy = y + height / 2
         return (
-          <g key={band.key} style={{ pointerEvents: 'auto' }}>
+          <g key={band.key}>
             <title>{band.label}</title>
             <rect
               x={0}
               y={y}
-              width={BAND_LABEL_WIDTH}
+              width={width}
               height={height}
-              fill="transparent"
+              fill="none"
+              pointerEvents="all"
             />
-            {text ? (
+            {label ? (
               <text
                 x={mid}
                 y={cy}
                 transform={`rotate(-90 ${mid} ${cy})`}
-                fontSize={FONT_SIZE}
+                fontSize={fontSize}
                 textAnchor="middle"
                 dominantBaseline="central"
                 {...getFillProps(palette.text.primary)}
               >
-                {text}
+                {label}
               </text>
             ) : null}
           </g>

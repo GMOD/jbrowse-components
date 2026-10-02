@@ -4,6 +4,7 @@ import { max } from '@jbrowse/core/util'
 import { totalHeight } from './util.ts'
 
 import type { ExportSvgOptions, TrackLabelMode } from '../types.ts'
+import type { LgvSvgExportable } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { ThemeOptions } from '@mui/material'
 import type { ReactNode } from 'react'
@@ -20,7 +21,7 @@ export interface SvgExportTrack {
   displays: {
     height: number
     svgLegendWidth?: () => number
-    svgSidebarWidth?: () => number
+    svgSidebarWidth?: LgvSvgExportable['svgSidebarWidth']
     /**
      * Optional, and the option is the point: SVG export is a substantial extra
      * implementation for a display type, and a third-party plugin that has not

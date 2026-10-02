@@ -23,6 +23,7 @@ import {
 } from './rowColorScale.ts'
 import { rowEdits } from './rowEdits.ts'
 import { IDENTITY_FIELDS, extraColumns } from './sourcesGridUtils.ts'
+import { svgSidebarWidth } from './svgSidebarWidth.ts'
 
 import type {
   IdentityChannel,
@@ -34,8 +35,10 @@ import type {
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { RowColorDeal, RowColorEntries } from './rowColorScale.ts'
 import type { RowSortSpec } from './rowSortAutorun.ts'
+import type { SvgSidebarProps } from './svgSidebarWidth.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
 import type { HoveredTreeNode, RowSource } from './types.ts'
+import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the
@@ -464,6 +467,26 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       expandRows(rows: S[]): S[] {
         return rows
+      },
+      /**
+       * #getter
+       * Overridable hook: what the SVG export draws in the sidebar left of the
+       * track, or undefined, the default, for none. `SvgTreeSidebar` draws it
+       * and `svgSidebarWidth` sizes the gutter from it.
+       */
+      get svgSidebar(): SvgSidebarProps | undefined {
+        return undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Px the SVG export reserves left of the track for `svgSidebar`, measured
+       * in the export's text.
+       */
+      svgSidebarWidth(text?: ExportTextStyle) {
+        const { svgSidebar } = self
+        return svgSidebar ? svgSidebarWidth(svgSidebar, text) : 0
       },
     }))
     .views(self => ({

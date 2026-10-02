@@ -1,10 +1,9 @@
 import { render } from '@testing-library/react'
 
 import { SvgRowLabels } from './SvgRowLabels.tsx'
-import {
-  ROW_LABEL_MAX_TEXT_WIDTH,
-  rowLabelsBoxWidth,
-} from './rowLabelsBoxWidth.ts'
+import { rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
+
+const ROW_LABEL_MAX_TEXT_WIDTH = 120
 
 function draw(props: Parameters<typeof SvgRowLabels>[0]) {
   const { container } = render(
@@ -50,9 +49,9 @@ describe('SvgRowLabels', () => {
     expect(c.querySelector('path')?.getAttribute('d')).toBe(
       [0, 12, 24].map(y => `M0 ${y}h${w}v12h${-w}z`).join(''),
     )
-    const rects = [...c.querySelectorAll('rect')]
-    expect(rects.map(r => r.getAttribute('y'))).toEqual(['12', '24'])
-    expect(rects.every(r => r.getAttribute('height') === '1')).toBe(true)
+    const paths = [...c.querySelectorAll('path')].map(p => p.getAttribute('d'))
+    expect(paths).toContain(`M0 12h${w}v1h${-w}zM0 24h${w}v1h${-w}z`)
+    expect(c.querySelectorAll('rect')).toHaveLength(0)
   })
 
   it('draws a narrow color swatch, and no text, below the text threshold', () => {

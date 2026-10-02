@@ -37,7 +37,7 @@ import type { AxisHost } from './axisHost.ts'
 import type { HighlightRect } from './highlightHost.ts'
 import type { LegendHost } from './legendHost.ts'
 import type { RegionHost } from './regionHost.ts'
-import type { ExportSvgDisplayOptions } from './types.ts'
+import type { ExportSvgDisplayOptions, ExportTextStyle } from './types.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -59,6 +59,11 @@ export interface LgvSvgExportable extends SvgExportable, IStateTreeNode {
    * one thing on screen the export left out.
    */
   drawsWhenTooLarge?: boolean
+  /**
+   * Px the export reserves left of the display for its tree and row labels,
+   * measured in the export's text. Absent for a display with no sidebar.
+   */
+  svgSidebarWidth?: (text?: ExportTextStyle) => number
 }
 
 /**
@@ -70,19 +75,6 @@ export function exportsTooLargeNote(model: {
   drawsWhenTooLarge?: boolean
 }) {
   return !!model.regionTooLarge && !model.drawsWhenTooLarge
-}
-
-/**
- * Px the export reserves left of the display for its tree and row labels, 0 for
- * a display with no sidebar. The display answers from its settings and loaded
- * rows, as `svgLegendWidth` does, so the container can size its left gutter
- * before it places any body.
- */
-export function svgSidebarWidthOf(model: object): number {
-  return 'svgSidebarWidth' in model &&
-    typeof model.svgSidebarWidth === 'function'
-    ? (model.svgSidebarWidth() as number)
-    : 0
 }
 
 /**
@@ -318,7 +310,7 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   const view = containingHost(model)
   const height = model.height
   const overlays = !opts?.plotOnly
-  const sidebarWidth = overlays ? svgSidebarWidthOf(model) : 0
+  const sidebarWidth = overlays ? (model.svgSidebarWidth?.(opts) ?? 0) : 0
   return (
     <SvgChrome
       regionTooLarge={exportsTooLargeNote(model)}

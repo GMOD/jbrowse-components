@@ -69,7 +69,13 @@ export async function renderToSvg(
     // its displays have settled — see the orderings it documents
     awaitSvgRenders(
       views.map(view =>
-        renderViewTracks({ view, opts, theme, textHeight, trackLabels }),
+        renderViewTracks({
+          view,
+          opts: { ...opts, fontSize },
+          theme,
+          textHeight,
+          trackLabels,
+        }),
       ),
     ),
     awaitSvgRenders(

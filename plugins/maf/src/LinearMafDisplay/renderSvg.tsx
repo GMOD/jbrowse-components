@@ -54,11 +54,6 @@ function MafSvgBody({
   // SVG export colors follow the export-chosen theme, not the live session one
   const palette = resolvePalette({ configTheme: opts?.theme })
   const {
-    hierarchy,
-    showTree,
-    showRowLabels,
-    treeAreaWidth,
-    sources,
     effectiveRowHeight,
     rowsHeight,
     topBands,
@@ -205,12 +200,8 @@ function MafSvgBody({
         </SvgClipRect>
         {overlays ? (
           <SvgTreeSidebar
-            showTree={showTree}
-            hierarchy={hierarchy}
-            sources={sources}
-            rowHeight={effectiveRowHeight}
-            treeAreaWidth={treeAreaWidth}
-            showLabels={showRowLabels}
+            sidebar={model.svgSidebar}
+            text={opts}
             scrollTop={scrollTop}
             availableHeight={rowsHeight}
           />

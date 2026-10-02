@@ -2,7 +2,7 @@ import { memo } from 'react'
 
 import { TrackOverlayPortal } from '@jbrowse/display-ui'
 
-import { BAND_LABEL_WIDTH, SvgBandLabels } from './SvgBandLabels.tsx'
+import { SvgBandLabels, bandLabelWidth } from './SvgBandLabels.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 
 import type { RowBand } from './arrangeRows.ts'
@@ -117,7 +117,7 @@ export const RowLabelsOverlay = memo(function RowLabelsOverlay({
           <SvgRowLabels
             sources={sources}
             rowHeight={rowHeight}
-            labelOffset={labelOffset + (bands.length ? BAND_LABEL_WIDTH : 0)}
+            labelOffset={labelOffset + (bands.length ? bandLabelWidth() : 0)}
             scrollTop={scrollTop}
             availableHeight={height}
             opaque={labelOffset > 0}

@@ -77,7 +77,6 @@ import {
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
   treeSidebarOffset,
-  svgSidebarWidth,
 } from '@jbrowse/tree-sidebar'
 import {
   DEFAULT_POINT_DIAMETER_PX,
@@ -213,6 +212,7 @@ import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRe
 import type {
   IdentityChannel,
   RowColorDeal,
+  SvgSidebarProps,
   RowSource,
 } from '@jbrowse/tree-sidebar'
 import type { ValueScale } from '@jbrowse/wiggle-core'
@@ -1619,12 +1619,11 @@ export function stateModelFactory(
           return buildSpatialIndex(this.hierarchy)
         },
         /**
-         * #method
-         * Px the SVG export reserves left of the track for the tree and labels.
+         * #getter
          */
-        svgSidebarWidth() {
+        get svgSidebar(): SvgSidebarProps | undefined {
           return self.drawsKeyedRows
-            ? svgSidebarWidth({
+            ? {
                 showTree: self.showTree,
                 hierarchy: this.hierarchy,
                 sources: self.sources,
@@ -1632,8 +1631,8 @@ export function stateModelFactory(
                 treeAreaWidth: self.treeAreaWidth,
                 showLabels: self.showRowLabels,
                 leftInset: leftAxisGutterWidth(self.axes),
-              })
-            : 0
+              }
+            : undefined
         },
       }))
       .volatile(self => ({

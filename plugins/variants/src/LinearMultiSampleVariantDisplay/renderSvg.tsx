@@ -80,6 +80,7 @@ function VariantSvgBody({
       model={model}
       width={canvasWidth}
       overlays={overlays}
+      text={opts}
       // Its own paint layer in the band above the rows, untranslated — the
       // same split the screen takes (a separate canvas outside the offset
       // container), so the lane cannot pick up the rows' scroll.

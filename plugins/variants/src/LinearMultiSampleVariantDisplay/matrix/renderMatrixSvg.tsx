@@ -65,6 +65,7 @@ function VariantMatrixSvgBody({
       model={model}
       width={canvasWidth}
       overlays={overlays}
+      text={opts}
       lineZone={
         <LinesConnectingMatrixToGenomicPosition
           model={model}

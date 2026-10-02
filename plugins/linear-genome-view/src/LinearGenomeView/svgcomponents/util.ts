@@ -11,16 +11,16 @@ import { REF_NAME_LABEL_FONT_SIZE } from '../util.ts'
 import type { TrackLabelMode } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
+import type { LgvSvgExportable } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 import type { ReactNode } from 'react'
 
 // Just the per-track heights that the vertical-layout math needs; every track
 // shape fed into these helpers (including SvgDisplayResult.track) satisfies it.
+type SidebarDisplay = Pick<LgvSvgExportable, 'svgSidebarWidth'>
+
 interface TrackHeights {
-  displays: {
-    height: number
-    prefersOffset?: boolean
-    svgSidebarWidth?: () => number
-  }[]
+  displays: ({ height: number; prefersOffset?: boolean } & SidebarDisplay)[]
 }
 
 // A rendered track body plus the track it came from, as produced by each
@@ -29,12 +29,11 @@ interface TrackHeights {
 export interface SvgDisplayResult {
   track: {
     configuration: AnyConfigurationModel
-    displays: {
+    displays: ({
       height: number
       regionTooLarge?: boolean
       drawsWhenTooLarge?: boolean
-      svgSidebarWidth?: () => number
-    }[]
+    } & SidebarDisplay)[]
   }
   result: ReactNode
 }
@@ -296,7 +295,7 @@ export function labelOffset(
 
 interface SidebarTrack {
   configuration: AnyConfigurationModel
-  displays: { svgSidebarWidth?: () => number }[]
+  displays: SidebarDisplay[]
 }
 
 // Gap between a 'left' track label's right edge and the track body.
@@ -342,7 +341,7 @@ export function trackLabelLeftOffset({
   return max(
     tracks.map(t =>
       Math.max(
-        trackSidebarWidth(t),
+        trackSidebarWidth(t, { fontSize, fontFamily }),
         trackLabels === 'left'
           ? measureText(svgTrackName(t, session), fontSize, fontFamily) +
               TRACK_LABEL_GAP
@@ -354,8 +353,11 @@ export function trackLabelLeftOffset({
 }
 
 // Px of tree and row labels a track's display draws left of its body.
-export function trackSidebarWidth(track: Pick<SidebarTrack, 'displays'>) {
-  return track.displays[0]?.svgSidebarWidth?.() ?? 0
+export function trackSidebarWidth(
+  track: Pick<SidebarTrack, 'displays'>,
+  text?: ExportTextStyle,
+) {
+  return track.displays[0]?.svgSidebarWidth?.(text) ?? 0
 }
 
 // vertical box a single track occupies. Shared by totalHeight (sum) and

@@ -64,22 +64,17 @@ export function axisGutterWidth(axis: Pick<YAxis, 'ticks' | 'caption'>) {
 }
 
 /**
- * Px the export's left margin holds for these axes: the widest left-side axis
- * that draws, 0 when none does. A sidebar the export parks left of the figure
- * sits past this strip so the scalebars stay beside the plot.
+ * Px the export's left margin holds for these axes, 0 when no left-side axis
+ * draws. `axisGutterLeft` puts every left axis's outer edge this far out, a
+ * wider gutter growing inward over the plot, so a sidebar the export parks left
+ * of the figure sits past this strip.
  */
 export function leftAxisGutterWidth(
-  axes: readonly Pick<
-    YAxis,
-    'side' | 'ticks' | 'caption' | 'height' | 'bandTops'
-  >[],
+  axes: readonly Pick<YAxis, 'side' | 'height' | 'bandTops'>[],
 ) {
-  return Math.max(
-    0,
-    ...axes
-      .filter(axis => axis.side !== 'right' && axisDrawn(axis))
-      .map(axisGutterWidth),
-  )
+  return axes.some(axis => axis.side !== 'right' && axisDrawn(axis))
+    ? AXIS_GUTTER_WIDTH_PX
+    : 0
 }
 
 /** How far in from the plot's right edge a right-side gutter ends in an export. */

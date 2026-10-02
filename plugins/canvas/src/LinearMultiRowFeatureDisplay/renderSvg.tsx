@@ -20,10 +20,9 @@ import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type {
-  ClusterHierarchyNode,
   ClusterProvenance,
-  RowBand,
   RowSource,
+  SvgSidebarProps,
 } from '@jbrowse/tree-sidebar'
 
 export interface RenderSvgModel extends SvgExportable {
@@ -41,18 +40,11 @@ export interface RenderSvgModel extends SvgExportable {
   encodedChannels: ReadonlyMap<number, MultiRowEncoded>
   renderState: MultiRowRenderState
   sources: RowSource[]
-  // The sidebar's view of the rows, and the only one the tree/labels layer
-  // should read.
-  labelSources: RowSource[]
-  rowBands: readonly RowBand[]
+  svgSidebar: SvgSidebarProps
   effectiveRowHeight: number
-  treeAreaWidth: number
-  showTree: boolean
-  hierarchy: ClusterHierarchyNode | undefined
   // Records the color scheme, which is the clustering matrix here.
   rowTreeProvenance?: ClusterProvenance
   showRowSeparators: boolean
-  showRowLabels: boolean
 }
 
 export async function renderSvg(
@@ -126,14 +118,9 @@ function MultiRowSvgBody({
       ) : null}
       {overlays ? (
         <SvgTreeSidebar
-          showTree={self.showTree}
-          showLabels={self.showRowLabels}
-          hierarchy={self.hierarchy}
-          sources={self.labelSources}
-          rowHeight={self.effectiveRowHeight}
-          treeAreaWidth={self.treeAreaWidth}
+          sidebar={self.svgSidebar}
+          text={opts}
           availableHeight={height}
-          bands={self.rowBands}
         />
       ) : null}
     </>

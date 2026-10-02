@@ -15,6 +15,7 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
   ClusterProvenance,
   RowSource,
+  SvgSidebarProps,
   TreeSidebarModel,
 } from '@jbrowse/tree-sidebar'
 import type { WiggleGpuDisplayModel, YAxis } from '@jbrowse/wiggle-core'
@@ -45,6 +46,7 @@ export interface MarkDisplayModel
   facetLayout: FacetLayout
   axes: YAxis[]
   drawsKeyedRows: boolean
+  svgSidebar: SvgSidebarProps | undefined
   sources: RowSource[]
   effectiveRowHeight: number
   nrow: number

@@ -47,7 +47,6 @@ import {
   rowFieldValue,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
-  svgSidebarWidth,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -123,6 +122,7 @@ import type { RowTable } from '@jbrowse/render-core/marks'
 import type {
   RowBanding,
   RowColorDeal,
+  SvgSidebarProps,
   RowSource,
   UnlistedRowsSort,
 } from '@jbrowse/tree-sidebar'
@@ -808,11 +808,10 @@ export default function stateModelFactory(
         return buildSpatialIndex(self.hierarchy)
       },
       /**
-       * #method
-       * Px the SVG export reserves left of the track for the tree and labels.
+       * #getter
        */
-      svgSidebarWidth() {
-        return svgSidebarWidth({
+      get svgSidebar(): SvgSidebarProps {
+        return {
           showTree: self.showTree,
           hierarchy: self.hierarchy,
           sources: self.labelSources,
@@ -820,7 +819,7 @@ export default function stateModelFactory(
           treeAreaWidth: self.treeAreaWidth,
           showLabels: self.showRowLabels,
           bands: self.rowBands,
-        })
+        }
       },
     }))
     .views(self => {

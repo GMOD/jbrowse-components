@@ -48,7 +48,6 @@ import {
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
-  svgSidebarWidth,
 } from '@jbrowse/tree-sidebar'
 import { visibleStatsDomain } from '@jbrowse/wiggle-core'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
@@ -153,6 +152,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   IdentityChannel,
   RowColorDeal,
+  SvgSidebarProps,
   RowSource,
 } from '@jbrowse/tree-sidebar'
 import type { YAxis } from '@jbrowse/wiggle-core'
@@ -1341,18 +1341,17 @@ export default function stateModelFactory(
       }))
       .views(self => ({
         /**
-         * #method
-         * Px the SVG export reserves left of the track for the tree and labels.
+         * #getter
          */
-        svgSidebarWidth() {
-          return svgSidebarWidth({
+        get svgSidebar(): SvgSidebarProps {
+          return {
             showTree: self.showTree,
             hierarchy: self.hierarchy,
             sources: self.sources,
             rowHeight: self.effectiveRowHeight,
             treeAreaWidth: self.treeAreaWidth,
             showLabels: self.showRowLabels,
-          })
+          }
         },
       }))
       .actions(self => ({

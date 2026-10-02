@@ -16,6 +16,7 @@ import type {
   ClusterHierarchyNode,
   HierarchyNode,
   NewickNode,
+  SvgSidebarProps,
 } from '@jbrowse/tree-sidebar'
 
 // renderSvg calls getContainingView(self) to reach the LGV; the model is a plain
@@ -104,9 +105,10 @@ type LegendModel = RenderSvgModel & {
   legendSpec: LegendSpec
 }
 
-function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
-  // The sidebar reads `labelSources`, which is `sources` plus a derived label
-  // tint, so an override naming only one of them means both here.
+function makeModel(
+  overrides: Partial<LegendModel> = {},
+  sidebar: Partial<SvgSidebarProps> = {},
+): LegendModel {
   const sources = overrides.sources ?? [{ name: 'a' }, { name: 'b' }]
   const drawnRegionData = new Map([[0, makeRegionData()]])
   const rowKeys = new RowKeys()
@@ -149,15 +151,17 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     ),
     renderState,
     sources,
-    labelSources: sources,
-    rowBands: [],
+    svgSidebar: {
+      showTree: false,
+      hierarchy: undefined,
+      sources,
+      rowHeight: overrides.effectiveRowHeight ?? 50,
+      treeAreaWidth: 80,
+      ...sidebar,
+    },
     effectiveRowHeight: 50,
-    treeAreaWidth: 80,
-    showTree: false,
-    hierarchy: undefined,
     showLegend: false,
     showRowSeparators: false,
-    showRowLabels: true,
     legendSpec: { sections: [] },
     ...overrides,
   }
@@ -195,11 +199,10 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
   it('draws the dendrogram in the reserved sidebar when the tree is shown', async () => {
     const html = renderResult(
       await renderSvg(
-        makeModel({
-          showTree: true,
-          hierarchy: makeHierarchy(),
-          treeAreaWidth: 40,
-        }),
+        makeModel(
+          {},
+          { showTree: true, hierarchy: makeHierarchy(), treeAreaWidth: 40 },
+        ),
         {},
       ),
     )
@@ -248,7 +251,7 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
     const on = renderResult(await renderSvg(makeModel(), {}))
     expect(on).toContain('>a<')
     const off = renderResult(
-      await renderSvg(makeModel({ showRowLabels: false }), {}),
+      await renderSvg(makeModel({}, { showLabels: false }), {}),
     )
     expect(off).not.toContain('>a<')
     expect(off).not.toContain('>b<')

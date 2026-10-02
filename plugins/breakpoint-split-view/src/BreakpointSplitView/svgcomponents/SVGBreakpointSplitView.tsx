@@ -75,7 +75,13 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // See the orderings it documents.
   const rowTracks = await awaitSvgRenders(
     views.map(view =>
-      renderViewTracks({ view, opts, theme, textHeight, trackLabels }),
+      renderViewTracks({
+        view,
+        opts: { ...opts, fontSize },
+        theme,
+        textHeight,
+        trackLabels,
+      }),
     ),
   )
   // one message for the whole stack, not one per row

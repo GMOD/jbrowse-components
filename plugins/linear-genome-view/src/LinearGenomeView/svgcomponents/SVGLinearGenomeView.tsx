@@ -54,7 +54,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const { tracks, displayResults, tracksHeight, legendWidth, skippedTracks } =
     await renderViewTracks({
       view: model,
-      opts,
+      opts: { ...opts, fontSize },
       theme,
       textHeight,
       trackLabels,

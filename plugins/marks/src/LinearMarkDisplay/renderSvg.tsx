@@ -3,11 +3,7 @@ import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import {
-  SvgHaloText,
-  axisPlotBox,
-  leftAxisGutterWidth,
-} from '@jbrowse/display-ui'
+import { SvgHaloText, axisPlotBox } from '@jbrowse/display-ui'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
@@ -107,16 +103,11 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
           />
         </g>
       ) : null}
-      {overlays && model.drawsKeyedRows ? (
+      {overlays && model.svgSidebar ? (
         <g transform={`translate(0,${yTop})`}>
           <SvgTreeSidebar
-            showTree={model.showTree}
-            showLabels={model.showRowLabels}
-            hierarchy={model.hierarchy}
-            sources={model.sources}
-            rowHeight={model.effectiveRowHeight}
-            treeAreaWidth={model.treeAreaWidth}
-            leftInset={leftAxisGutterWidth(model.axes)}
+            sidebar={model.svgSidebar}
+            text={opts}
             scrollTop={model.scrollTop}
             availableHeight={plotHeight}
           />

@@ -3,6 +3,7 @@ import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { SEPARATOR_OPACITY } from '../constants.ts'
 
 import type { RenderSvgBaseModel } from '../renderSvgUtils.ts'
+import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 import type React from 'react'
 
 // The frame both multi-sample variant SVG exports end in: the row content and
@@ -22,6 +23,7 @@ const SvgVariantOverlay = ({
   model,
   width,
   overlays,
+  text,
   variantLane,
   lineZone,
   children,
@@ -31,6 +33,7 @@ const SvgVariantOverlay = ({
   // false for a reader that samples only the display's canvas: the lane, the
   // connector zone, the separators and the sidebar are all drawn over it
   overlays: boolean
+  text?: ExportTextStyle
   // The variant lane's own painted band, from the display that draws one.
   // Untranslated: it sits at the top of the display, above `lineZone`.
   variantLane?: React.ReactNode
@@ -39,15 +42,10 @@ const SvgVariantOverlay = ({
 }) => {
   const {
     sources,
-    rowBands,
     effectiveRowHeight: rowHeight,
     scrollTop,
-    hierarchy,
-    showTree,
-    showRowLabels,
     showRowSeparators,
     availableHeight,
-    treeAreaWidth,
     rowsTopOffset,
   } = model
   return (
@@ -68,15 +66,10 @@ const SvgVariantOverlay = ({
         ) : null}
         {overlays ? (
           <SvgTreeSidebar
-            showTree={showTree}
-            hierarchy={hierarchy}
-            sources={sources}
-            rowHeight={rowHeight}
-            treeAreaWidth={treeAreaWidth}
-            showLabels={showRowLabels}
+            sidebar={model.svgSidebar}
+            text={text}
             scrollTop={scrollTop}
             availableHeight={availableHeight}
-            bands={rowBands}
           />
         ) : null}
       </g>

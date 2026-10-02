@@ -63,6 +63,9 @@ export interface ExportSvgOptions extends ViewExportSvgOptions {
   showGridlines?: boolean
 }
 
+/** The text an export's labels draw in, and so the text they measure in. */
+export type ExportTextStyle = Pick<ExportSvgOptions, 'fontSize' | 'fontFamily'>
+
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
   theme?: ThemeOptions
   /**

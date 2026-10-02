@@ -1,4 +1,4 @@
-import { BAND_LABEL_WIDTH } from './SvgBandLabels.tsx'
+import { bandLabelWidth } from './SvgBandLabels.tsx'
 import { rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
 
@@ -27,7 +27,7 @@ test('the inset sits past the sidebar, and only when there is one', () => {
 test('a band strip adds its column ahead of the labels', () => {
   const bands = [{ key: 'x', label: 'x', start: 0, end: 2 }]
   expect(svgSidebarWidth({ ...base, bands })).toBe(
-    rowLabelsBoxWidth(sources, 20) + BAND_LABEL_WIDTH,
+    rowLabelsBoxWidth(sources, 20) + bandLabelWidth(),
   )
 })
 
@@ -41,4 +41,15 @@ test('a tree that is showing takes its area width', () => {
       hierarchy: hierarchy as never,
     }),
   ).toBe(80)
+})
+
+test('the labels measure in the export text', () => {
+  const plain = svgSidebarWidth(base)
+  expect(svgSidebarWidth(base, { fontFamily: 'monospace' })).toBeGreaterThan(
+    plain,
+  )
+  expect(svgSidebarWidth(base, { fontSize: 18 })).toBeGreaterThan(plain)
+  expect(svgSidebarWidth(base, { fontSize: 18 })).toBe(
+    rowLabelsBoxWidth(sources, 20, { fontSize: 18 }),
+  )
 })

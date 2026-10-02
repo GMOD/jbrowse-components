@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { leftAxisGutterWidth } from '@jbrowse/display-ui'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
@@ -15,7 +14,7 @@ import type {
   LgvSvgExportable,
 } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
+import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type {
   WiggleDataResult,
   WiggleGPURenderState,
@@ -37,32 +36,18 @@ export interface RenderSvgModel extends LgvSvgExportable {
   gpuProps: () => WiggleGpuProps
   plotGeometry: WigglePlotGeometry
 
-  // the dendrogram
-  showTree: boolean
-  treeAreaWidth: number
-  hierarchy?: ClusterHierarchyNode
-
-  // read by WiggleRowLabels
-  sources: {
-    name: string
-    label?: string
-    color?: string
-    labelColor?: string
-    group?: string
-  }[]
-  isOverlay: boolean
-  isDensityMode: boolean
-  effectiveRowHeight: number
-  numSources: number
-  numRows: number
+  svgSidebar: SvgSidebarProps
 
   // read by the shell's axes
   axes: YAxis[]
   canvasWidthPx: number
 
   // read by WiggleRowSeparators
+  isOverlay: boolean
+  isDensityMode: boolean
   showRowSeparators: boolean
-  showRowLabels: boolean
+  effectiveRowHeight: number
+  numRows: number
 }
 
 export async function renderSvg(
@@ -73,12 +58,11 @@ export async function renderSvg(
 }
 
 function WiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, canvasWidth, overlays } = props
+  const { model, canvasWidth, overlays, opts } = props
   // No data-size gate: renderState is always defined (a [0,1] stub until
   // autoscale resolves), so an empty region paints an empty plot; the per-row
   // axes are the shell's, off `valueScales`, and draw only where a real domain
-  // exists. The row labels are `WiggleRowLabels`, shared with the screen,
-  // so the sidebar draws only the tree.
+  // exists.
   return (
     <ScorePlotSvgFrame
       {...props}
@@ -90,17 +74,7 @@ function WiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
       {overlays ? (
         <>
           <WiggleRowSeparators model={model} width={canvasWidth} />
-          <SvgTreeSidebar
-            showTree={model.showTree}
-            showLabels={
-              model.numSources > 1 && !model.isOverlay && model.showRowLabels
-            }
-            hierarchy={model.hierarchy}
-            sources={model.sources}
-            rowHeight={model.effectiveRowHeight}
-            treeAreaWidth={model.treeAreaWidth}
-            leftInset={leftAxisGutterWidth(model.axes)}
-          />
+          <SvgTreeSidebar sidebar={model.svgSidebar} text={opts} />
         </>
       ) : null}
     </ScorePlotSvgFrame>

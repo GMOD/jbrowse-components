@@ -52,7 +52,6 @@ import {
   loadedRegionIndexAt,
   rowFieldValue,
   valuesByCount,
-  svgSidebarWidth,
 } from '@jbrowse/tree-sidebar'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
@@ -97,6 +96,7 @@ import type {
   RowAlias,
   RowBanding,
   RowColorDeal,
+  SvgSidebarProps,
   RowColorEntries,
 } from '@jbrowse/tree-sidebar'
 
@@ -1341,11 +1341,10 @@ export default function MultiSampleVariantBaseModelF(
             )
           },
           /**
-           * #method
-           * Px the SVG export reserves left of the track for the tree and labels.
+           * #getter
            */
-          svgSidebarWidth() {
-            return svgSidebarWidth({
+          get svgSidebar(): SvgSidebarProps {
+            return {
               showTree: self.showTree,
               hierarchy: this.hierarchy,
               sources: self.sources,
@@ -1353,7 +1352,7 @@ export default function MultiSampleVariantBaseModelF(
               treeAreaWidth: self.treeAreaWidth,
               showLabels: self.showRowLabels,
               bands: self.rowBands,
-            })
+            }
           },
         }
       })
