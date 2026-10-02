@@ -91,6 +91,11 @@ Two input mistakes leave jcvi with no orthologs:
 
 ### dN and dS
 
+`pairs.tsv` is the two gene columns of `human.rhesus.anchors`. The script skips
+`human.rhesus.lifted.anchors`: liftover recruits extra pairs near an established
+block, and their median dS is several times that of the chained ones, which
+marks them as paralogs.
+
 <!-- from: scripts/build_primate_selection.sh -->
 
 ```bash

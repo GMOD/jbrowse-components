@@ -304,8 +304,10 @@ real homology call, such as the one the
 
 ## Reproduce it end to end
 
-The script fetches the eight annotations, builds the table and writes the
-config; see [Prerequisites](#prerequisites).
+The script fetches the eight annotations and keeps the genes on assembled
+chromosomes, which each sequence report names, so no lane lands on an unplaced
+scaffold. It then builds the table and writes the config; see
+[Prerequisites](#prerequisites).
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_primate_orthologs.sh
