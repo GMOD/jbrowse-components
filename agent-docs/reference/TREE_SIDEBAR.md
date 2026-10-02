@@ -424,3 +424,10 @@ reserved for the **positioned** tree, never `rowTree` — a stale tree is
 deliberately not positioned, and reserving off the newick string puts the labels
 right of an empty gutter. Three places decide it: `TreeSidebar`'s early return,
 `SvgTreeSidebar`, and `treeSidebarOffset`.
+
+**A display states its export sidebar once, in the mixin's `svgSidebar`
+getter.** `renderSvg` hands that getter to `SvgTreeSidebar`, and the mixin's
+`svgSidebarWidth(text)` sizes the view's gutter from the same props, so the
+width reserved and the sidebar drawn cannot drift. Both measure in the export's
+`ExportTextStyle`: labels measured in one font and drawn in another run into the
+plot.
