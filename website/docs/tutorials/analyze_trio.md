@@ -44,6 +44,22 @@ chr1 only.
 - the hg38 reference sequence the reproduce script's own JBrowse instance opens
   on, rehosted: https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz
 
+## The genome
+
+The trio calls are on GRCh38, and the hap-ibd blocks below use its chr1
+coordinates, so we load that assembly first.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
 ## The trio VCF
 
 A trio is a mother, father, and child sequenced together. A phased VCF tags each
@@ -51,9 +67,23 @@ variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow each
 variant to the copy of the genome it came from.
 
 The VCF loads on `hg38` as an ordinary `VariantTrack`
-([variant track guide](/docs/config_guides/variant_track)). In JBrowse Web,
-paste its URL into **File → Open track...**, which infers the adapter and the
-`.tbi` index beside the file.
+([variant track guide](/docs/config_guides/variant_track)). For your own trio,
+swap `uri` for a bgzipped VCF with its `.tbi` beside it and the same chromosome
+naming as the assembly. In JBrowse Web you can instead paste the URL into **File
+→ Open track...**, which infers the adapter and the index.
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "khv_trio_vcf",
+  "name": "KHV trio phased calls (chr1)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz"
+  }
+}
+```
 
 <Figure caption="The VCF on initial load, in the default display: one orange box per variant." src="/img/trio-basic.png"/>
 
@@ -225,9 +255,12 @@ because hap-ibd joins the markers on either side of it.
 
 ## Relating the painting back to the genotypes
 
-Stack the painting directly above the same VCF in the **phased multi-sample
-variant display** with the matrix off, so the genotypes sit at their genomic
-positions and line up with the block boundaries.
+Drag the painting's track label above the VCF's, and uncheck **Show... → Show as
+genotype matrix** on the VCF track so the **phased multi-sample variant
+display** draws each genotype at its genomic position and lines up with the
+block boundaries. To show one parent's two rows only, as the figures below do,
+set the painting's `rows.kept` to those two names, for example
+`["Father hap1", "Father hap2"]`.
 
 Zoom to a few hundred kb around one boundary, where the block-step is obvious
 and the genotype columns resolve into individual variants. Start with the
