@@ -10,8 +10,8 @@ transcript, and the aligner records each jump in the read's CIGAR string. In a
 stranded library the pair flags also mark which strand the transcript came from.
 JBrowse draws splice arcs and strand coloring from those two BAM fields, with no
 extra files or configuration. We read spliced alignments over _ACTB_, transcript
-strand at the surfeit locus, and then load a pipeline's junction table as a
-track.
+strand at the surfeit locus and a long-read alignment, and then load a
+pipeline's junction table as a track.
 
 ## Prerequisites
 
@@ -72,6 +72,31 @@ models, each with its index beside it:
 }
 ```
 
+## Loading your own RNA-seq data
+
+An aligned, sorted and indexed BAM or CRAM loads as an `AlignmentsTrack` from
+one `uri`, and JBrowse finds the `.bai` or `.crai` beside the file:
+
+```json addtrack
+{
+  "trackId": "my_rnaseq",
+  "name": "My RNA-seq",
+  "uri": "https://yourhost/rnaseq.bam",
+  "assemblyNames": ["hg38"]
+}
+```
+
+The track's `assemblyNames` must match an assembly already configured in
+JBrowse; see the
+[assemblies configuration guide](/docs/config_guides/assemblies). Align reads
+with a spliced aligner such as STAR, then `samtools sort` and `samtools index`
+so the `.bai` sits beside the BAM.
+
+The [alignments track config guide](/docs/config_guides/alignments_track) covers
+adapter and display options. A precomputed coverage signal, such as a
+strand-specific BigWig from the aligner, loads separately as a
+[quantitative track](/docs/user_guides/quantitative_track).
+
 ## What RNA-seq looks like in the genome browser
 
 The example gene is _ACTB_, a compact gene with deep, even read coverage.
@@ -85,12 +110,9 @@ at each position.
 
 ## Read coverage and read height
 
-The histogram counts the reads in the pileup below it at each position.
-Comparing genes or libraries needs the transcript-length and library-size
-normalization a counts pipeline applies.
-
-Pick **Read height → Compact** in the track menu to pack the full read stack
-into view:
+The histogram counts the reads in the pileup below it at each position. Pick
+**Read height → Compact** in the track menu to pack the full read stack into
+view:
 
 <Figure caption="ACTB under compact read height: the whole read stack fits the track, under the per-position coverage histogram and the hg19 NCBI RefSeq gene model." src="/img/rnaseq/compact_stacked.png" />
 
@@ -124,10 +146,30 @@ strand reads as CT-AC on the reverse. A junction whose reads disagree, or whose
 motif is none of GT-AG, GC-AG and AT-AC, draws in the neutral color. Hovering an
 arc shows the motif beside the read count.
 
-At Normal read height JBrowse draws each spliced read as two grey exon-aligned
-ends joined by a thin teal line across the skipped intron. JBrowse draws one
-teal connector per read, and one red or blue arc per junction for all the reads
-crossing it.
+## Reading a deep pileup
+
+In a deep pileup, reads with a skip sit among many more that carry none, so the
+splicing evidence is hard to pick out. Three settings in the track menu separate
+it.
+
+**Sort by... → Spliced reads first** gives every read whose CIGAR carries a skip
+the lowest rows, so the junction-spanning reads sit together at the top of the
+pileup.
+
+<Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. The same reads in both. The teal lines are the reads whose CIGAR carries a skip. File order scatters them down the stack, and the sort gathers them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
+
+**Filter by...** has a splicing radio: _Only spliced reads_ keeps just those
+reads, and the coverage histogram follows, so what is left is a histogram of the
+junction-spanning evidence alone. _Only unspliced reads_ is the complement,
+useful for checking intron retention.
+
+**Sashimi arcs → Hide non-canonical junctions** drops every arc whose intron
+does not begin and end with GT-AG, GC-AG or AT-AC on either strand. At depth the
+thin arcs are mostly these alignment artefacts. Raising **Sashimi arcs → Min
+read support** removes them too, but only by also removing a real junction
+supported by few reads.
+
+<Figure caption="Every junction the reads carry above, and only the canonical ones below. The same pileup in both, with the gene model above it. The motif filter drops the salmon arc over the second intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 
 ## Strand-specific RNA-seq
 
@@ -177,56 +219,6 @@ assembly:
 ```
 
 <Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. A long read often spans all of a transcript's exons, so one spliced alignment covers the whole transcript." src="/img/rnaseq/longread_isoseq.png" />
-
-## Reading a deep pileup
-
-In a deep pileup, reads with a skip sit among many more that carry none, so the
-splicing evidence is hard to pick out. Three settings in the track menu separate
-it.
-
-**Sort by... → Spliced reads first** gives every read whose CIGAR carries a skip
-the lowest rows, so the junction-spanning reads sit together at the top of the
-pileup.
-
-<Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. The same reads in both. The teal lines are the reads whose CIGAR carries a skip. File order scatters them down the stack, and the sort gathers them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
-
-**Filter by...** has a splicing radio: _Only spliced reads_ keeps just those
-reads, and the coverage histogram follows, so what is left is a histogram of the
-junction-spanning evidence alone. _Only unspliced reads_ is the complement,
-useful for checking intron retention.
-
-**Sashimi arcs → Hide non-canonical junctions** drops every arc whose intron
-does not begin and end with GT-AG, GC-AG or AT-AC on either strand. At depth the
-thin arcs are mostly these alignment artefacts. Raising **Sashimi arcs → Min
-read support** removes them too, but only by also removing a real junction
-supported by few reads.
-
-<Figure caption="Every junction the reads carry above, and only the canonical ones below. The same pileup in both, with the gene model above it. The motif filter drops the salmon arc over the second intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
-
-## Loading your own RNA-seq data
-
-An aligned, sorted and indexed BAM or CRAM loads as an `AlignmentsTrack` from
-one `uri`, and JBrowse finds the `.bai` or `.crai` beside the file:
-
-```json addtrack
-{
-  "trackId": "my_rnaseq",
-  "name": "My RNA-seq",
-  "uri": "https://yourhost/rnaseq.bam",
-  "assemblyNames": ["hg38"]
-}
-```
-
-The track's `assemblyNames` must match an assembly already configured in
-JBrowse; see the
-[assemblies configuration guide](/docs/config_guides/assemblies). Align reads
-with a spliced aligner such as STAR, then `samtools sort` and `samtools index`
-so the `.bai` sits beside the BAM.
-
-The [alignments track config guide](/docs/config_guides/alignments_track) covers
-adapter and display options. A precomputed coverage signal, such as a
-strand-specific BigWig from the aligner, loads separately as a
-[quantitative track](/docs/user_guides/quantitative_track).
 
 ## Junction files from the pipeline
 
