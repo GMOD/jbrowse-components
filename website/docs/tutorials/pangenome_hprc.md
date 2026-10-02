@@ -277,6 +277,9 @@ walks through it.
   `.tai` index that makes the alignment addressable by locus.
 
 [^taf]:
-    Release 2.0 publishes an earlier build of the alignment as a 5.9 GB TAF,
-    which `BgzipTaffyAdapter` reads with the same shorthand. The TAF reads fewer
-    bytes per locus, and has more underalignment and unpatched centromeres.
+    Release 2.0 publishes an earlier run of the same alignment as a 5.9 GB TAF,
+    which `BgzipTaffyAdapter` opens with the same shorthand. The TAF fetches
+    fewer bytes per locus, but release 2.1 fixed two faults in that run: the
+    aligner left some matching sequence unaligned, so a haplotype row shows a
+    gap where it should line up with GRCh38, and some assemblies had not yet
+    been patched so that their centromeres align.
