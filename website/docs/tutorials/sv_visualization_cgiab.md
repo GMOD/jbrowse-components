@@ -111,20 +111,13 @@ script; the sections below give the track config for each file.
 ## The two assemblies
 
 Every track below names one of two assemblies. The calls and reads sit on the
-C-GIAB GRCh38 build, `GRCh38_GIABv3`. Download it and index it with
-`samtools faidx` first, since the FTP file is gzip and an indexed FASTA reads
-random positions:
-
-```bash
-curl -L https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz \
-  | gunzip > GRCh38_GIABv3.fa
-samtools faidx GRCh38_GIABv3.fa
-```
+C-GIAB GRCh38 build, `GRCh38_GIABv3`. GIAB hosts it BGZF-compressed with its
+`.fai` and `.gzi`, so the assembly reads it in place:
 
 ```json addassembly
 {
   "name": "GRCh38_GIABv3",
-  "uri": "GRCh38_GIABv3.fa"
+  "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz"
 }
 ```
 
