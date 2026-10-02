@@ -51,6 +51,32 @@ thing — not ports onto `LinearMarkDisplay`.
    a row carries no other attribute, and banding by a feature attribute would
    split rows in the worker.
 
+## A Fable arbitration of calls 2-4, undecided
+
+A read-only Fable review on 2026-10-02, its code claims re-checked, reads calls
+2-4 and the `rowColor` name as one change: finish step 4's palette flip as a
+model change while keeping each display's palette, so almost no pixel moves
+(about 6 days). Colin had too little to decide on; a decision needs before/after
+captures of volvox, roadmap and bxd.
+
+- **A group is a row attribute**: delete `rowGroups[].color`, so a group's
+  colour lives in `rowColor.domain/range`. Multi-row takes wiggle's dynamic
+  `identityChannel` (`'labelColor'` while itemRgb or a `color` field paints the
+  blocks, `'color'` otherwise), retiring `colorRowLabels`, `rowGroupLegend`,
+  variants' `getSampleGroupEntries` and wiggle's group legend half for one mixin
+  legend scale. Today one group can show a swatch from `rowGroups` and blocks
+  from the palette at once (`rowSources.ts` `applyRowGroups`, `model.ts`
+  `dealtRowPalette`). Cost: volvox loses its red swatch beside per-row blocks.
+- **`scale: 'none'` deals no palette, and pairs still paint**: today
+  `applyRowEdits`' last branch writes `{ field: 'name', ...pairs }` without
+  `scale`. Deletes the `scale !== 'none'` clauses in `paintsNamePairs` and
+  `valuePairs` and the dialog's special cases.
+- **Rows carry attributes generically** (`ListedRowSource`, samplesTsv), so the
+  mixin's defaults serve `rowColorFields`, `rowBand` and one "no row carries X"
+  notice; with step 5's hook seam. A facet on a feature field stays a notice.
+- **Keep `rowColor`**, and reword `PLOT_VOCABULARY.rowColor` to "the colour a row
+  is known by: its content where nothing else paints it, else its label".
+
 ## Convergence, in order
 
 1. **An insertion mark in alignments-core.** Variants
