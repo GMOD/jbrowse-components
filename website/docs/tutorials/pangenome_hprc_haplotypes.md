@@ -140,10 +140,9 @@ haplotypes land on H1a, H2A0, H3r, H5 and H7:
 | 94 kb longer          | 5             | H5        |
 | 188 kb longer         | 7             | H7        |
 
-Span alone can mislead. Other structures gain an _AMY2A_ copy along with _AMY1_
-ones: HG00097.2 is 78 kb longer than GRCh38 with four _AMY1_ copies and two
-_AMY2A_. Count the _AMY1_ boxes on each bar rather than reading the copy number
-off its length.
+Span alone can mislead. HG00097.2 is 78 kb longer than GRCh38, nearer the 94 kb
+of five copies, yet has four _AMY1_ copies. Count the _AMY1_ boxes on each bar
+rather than reading the copy number off its length.
 
 ## Inversions
 
