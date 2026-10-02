@@ -198,28 +198,19 @@ const HPRC_C4_MARKED = 'chr6:32,005,691-32,011,057'
 // MAF is the one product of release 2 it has no track for.
 const HPRC_MAF_TRACK = pageTrack(
   'tutorials/pangenome_hprc.md',
-  'hprc_v2_0_mc_grch38',
+  'hprc_v2_1_mc_grch38',
 )
 
-// UNFILTERED, where every other HPRC figure on the page cuts the callset to
-// `LV==0 && alleleLength>=50`, and both halves of that filter were measured out
-// of this frame rather than dropped by preference.
-//
-// The size half empties the lane: C4 is a copy-number locus, minigraph
-// collapses what it rearranges, and the structural tier captured here as one
-// grey block with a single insertion in it.
-//
-// The `LV==0` half puts a BLANK COLUMN in the middle of the lane, and that is
-// the trap worth recording, because a blank column in a genotype matrix reads
-// as "nobody varies here". Counted off the file itself, chr6:32,000,000-
-// 32,020,000 holds 349 records and not one of them is LV=0 — the whole span is
-// nested inside a top-level bubble that starts before it, so a filter on the
-// parent flag removes every record the window contains. The blank ran across
-// CYP21A1P and TNXA, which is exactly where the alignment rows below it drop
-// out.
-//
-// What the lane is for here is the base-level variation the alignment rows are
-// made of, and every record is that.
+// HPRC's per-allele VCF (pgbi) at the graph's own size, 50 bp and up. One
+// record is one whole allele, so the C4 module deletion is a single record
+// (REF 32,738 bp at chr6:31,996,629, 154 of 462 haplotypes) and the HERV-K
+// deletion that makes a C4 gene short is one record per gene (6,368 bp at
+// 31,984,685 in C4A and 32,017,423 in C4B). Every alignment row the band shows
+// white has the module deletion in this file; read off the file for the
+// sixteen samples below, nine more of their haplotypes have it and still align
+// across the band. The wave VCF drew this window blank under its LV==0 clause,
+// since every record here nests under one parent with no record of its own.
+const HPRC_PGBI_ALLELES = ['jexl:alleleLength(feature)>=50']
 
 // The 26-way alignment's rows minus `ce11` itself, for the two figures that
 // show the whole stack (review: "consider removing the ce11 row"). The
@@ -752,7 +743,7 @@ export const mafSpecs: ScreenshotSpec[] = [
   // around it are the other products of the same release, on one axis:
   //
   //   genes          C4A, CYP21A1P, TNXA, C4B, CYP21A2 -- the RCCX module
-  //   callset        464 haplotypes clustered by genotype
+  //   VCF            462 haplotypes clustered by genotype
   //   alignment      32 of those haplotypes as rows of sequence, clustered
   //   graph          the same window cut as a Bandage drawing
   //
@@ -767,8 +758,8 @@ export const mafSpecs: ScreenshotSpec[] = [
   // was run on it.
   //
   // The correspondence between what is left is an EVENT rather than a row: the
-  // graph credits a segment to whichever assembly first contributed it, the
-  // callset names every haplotype that carries one, and the two clusterings are
+  // graph names the assembly minigraph first took a segment from, the VCF lists
+  // every haplotype's allele, and the two clusterings are
   // over different matrices, so their row orders are not each other's. One band
   // marks one span in all of them (HPRC_C4_MARKED) and the reader reads down the
   // column.
@@ -796,17 +787,17 @@ export const mafSpecs: ScreenshotSpec[] = [
               heightMode: 'grow',
             },
             {
-              // Clustered, so the haplotypes carrying an allele gather into a
-              // block instead of scattering over 464 rows. 464 rows in 240 px
-              // is a texture either way; what clustering buys is that the
-              // texture has edges. No filter — see above.
-              trackId: 'hprc2_wave_grch38',
+              // Clustered, so the haplotypes with an allele gather into a
+              // block instead of scattering over 462 rows, which in 240 px are
+              // a texture either way; clustering gives the texture edges.
+              trackId: 'hprc2_pgbi_grch38',
               type: 'LinearMultiSampleVariantDisplay',
               height: 240,
+              filter: HPRC_PGBI_ALLELES,
               runClustering: true,
             },
             {
-              trackId: 'hprc_v2_0_mc_grch38',
+              trackId: 'hprc_v2_1_mc_grch38',
               type: 'LinearMafDisplay',
               // A NAMED SUBSET, and the row height follows from it. Two
               // reviews pull in opposite directions here and both are right:
@@ -952,7 +943,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         // is what decides where it starts.
         textAlign: 'end' as const,
         anchor: {
-          track: 'hprc_v2_0_mc_grch38',
+          track: 'hprc_v2_1_mc_grch38',
           locus: 'chr6:32,049,000',
           fracY: 0.12,
         },
@@ -979,7 +970,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         // the tail leaves the band at the band's own x rather than beside it
         fromAnchor: {
           view: 0,
-          track: 'hprc_v2_0_mc_grch38',
+          track: 'hprc_v2_1_mc_grch38',
           locus: HPRC_C4_MARKED,
           fracY: 1,
           dy: -8,

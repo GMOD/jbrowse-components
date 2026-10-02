@@ -77,7 +77,7 @@ each rule it out independently and each is sufficient; the three are costed in
 §5.2. The scaling story is two surfaces with a hand-off between them, in three
 steps:
 
-1. **A carriage/genotype-first picker** over the cohort: the `pgbi.vcf.gz` snarl
+1. **A genotype-first picker** over the cohort: the `pgbi.vcf.gz` per-allele
    VCF (462 haplotypes of `GT`, 1.7 s for a 70 kb window remotely,
    [PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md) "Release 2 files
    nothing here reads yet") or the wave VCF through

@@ -17,7 +17,8 @@ the graph plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `IDEAS.md`).
 | `v2.0/…/hprc-v2.0-mc-grch38.full.taf.gz` + `.tai` | yes, `BgzipTaffyAdapter` |
 | `v2.1/…/hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` | yes, `BgzipMafAdapter`; the tutorial's file |
 | `sv.gfa` (minigraph rGFA) | yes, graph view plugin |
-| `wave.vcf.gz` | yes, genotype matrix |
+| `pgbi.vcf.gz` | yes, genotype matrix; the tutorial's file (below) |
+| `wave.vcf.gz` | yes, genotype matrix; the portal's variants launch |
 | `hprc25272.aln.paf.gz` and the per-target `impg/pafs/all-vs-1/` split | sparse all-vs-all and unsorted (below) |
 | `hprc465vsgrch38.aln.paf.gz` | yes, but a star (below) |
 | per-chromosome pggb `.gfa.zst` | no (below) |
@@ -83,13 +84,29 @@ Traps in the summary build, none specific to HPRC:
   message, empty MAF, exit 0, so a harness testing `[ -s file ]` passes a summary
   holding only its header (one build lost 93 of 195 contigs). A per-chromosome
   table catches it; a genome-wide total hides it.
-## What the `LV==0` filter costs
+## Which VCF to read the graph against
 
-The wave VCF is vcfwave-decomposed, so the tutorial teaches `LV==0` to keep the
-top-level record and not paint one event at two positions. The cost is a span
-collapsing onto a column: a parent sits at one position while its children spread
-over its span, so a window can lose all its records to a parent drawn elsewhere
-(CYP21A1P/TNXA, `chr6:32,000,000-32,020,000`, holds records and none with
-`LV==0`). That is why `maf_hprc_pangenome`'s callset lane runs unfiltered. A blank
-column under `LV==0` is a statement about the snarl tree.
+The release builds in one order: `minigraph -cxggs` makes the SV-level `sv.gfa`,
+Cactus aligns every assembly against it (`full.hal`), and HPRC exports that
+alignment as the base-level graph `vg deconstruct -P GRCh38` writes the VCFs
+from and as the MAF. So the MAF is the same alignment as the VCFs, not an
+independent check of them, and the drawn `sv.gfa` came first.
 
+Four VCFs sit beside each build. Measured at MHC class II and C4 (2026-10-02):
+
+- **`pgbi.vcf.gz`** (PanGenie's bi-allelic input) splits each snarl into one
+  record per whole allele. The HLA-DRB5 allele is four records (REF 12,014 bp,
+  ALTs 1,768-1,769 bp, 46 of 462 haplotypes); the C4 module deletion is one
+  (REF 32,738 bp at chr6:31,996,629, 154 haplotypes). `alleleLength>=50` alone
+  matches the graph's tier, which is why `pangenome_hprc` reads this file.
+- **`wave.vcf.gz`** decomposes each allele into its smallest differences: about
+  90 records of 50 bp or more across DRB5, all `LV=1` under a parent snarl with
+  no record. `LV==0` then blanks the region (DRB5, HLA-DRB1 at
+  32,570,542-32,592,610, all of chr6:32,000,000-32,020,000 at C4), and the
+  portal's comment in `pangenomeLinks.ts` records the same at HP.
+- **`vcf.gz`** (vcfbub, top level) has no records at all across
+  chr6:32,486,309-32,575,299, so it cannot stand in.
+- **`pgin.vcf.gz`** matches `vcf.gz` record for record at MHC.
+
+`pgbi` records carry only `AT` and `ID` in INFO, so an allele frequency comes
+from the genotypes, not from `AF`.

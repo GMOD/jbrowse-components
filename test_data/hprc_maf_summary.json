@@ -18,7 +18,7 @@
   "tracks": [
     {
       "type": "MafTrack",
-      "trackId": "hprc_v2_0_mc_grch38_summary",
+      "trackId": "hprc_v2_1_mc_grch38_summary",
       "name": "HPRC release 2 pangenome alignment (with zoom-out tier)",
       "assemblyNames": ["hg38"],
       "adapter": {

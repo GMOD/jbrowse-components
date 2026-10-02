@@ -207,7 +207,7 @@ export const pangenomeVideos: VideoSpec[] = [
     name: 'pangenome/pggb_out_to_strain',
     description:
       "A CFT073 allele opened on CFT073's own coordinates, under the K12 genes it bypasses: right-click the node in the graph track, take its Open in entry, and read the deletion from the donor's side",
-    goal: 'Open a graph allele on the strain that carries it',
+    goal: 'Open a graph allele on its own strain',
     url: PGGB_STRAIN_LAUNCH,
     // the run measured the three views at 1160; the rest is the caption's strip
     viewportHeight: 1290,
@@ -241,8 +241,8 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome/hprc_cluster_callset',
     description:
-      "HPRC's 464 haplotypes clustered by genotype from the track menu, so the haplotypes sharing structural alleles gather into blocks",
-    goal: 'Cluster 464 haplotypes so the ones sharing alleles sit together',
+      "HPRC's 462 haplotypes clustered by genotype from the track menu, so haplotypes with the same alleles gather into blocks",
+    goal: 'Cluster 462 haplotypes so the ones with the same alleles sit together',
     url: hprcClusterFixtures.session,
     // the dendrogram draws beside the rows, so the app holds at 765px, with the
     // caption chip's strip under it
@@ -274,7 +274,7 @@ export const pangenomeVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3500,
-        say: 'Haplotypes sharing alleles now gather into blocks',
+        say: 'Haplotypes with the same alleles now gather into blocks',
       },
     ],
     tailMs: 4000,

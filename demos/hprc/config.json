@@ -175,7 +175,7 @@
     {
       "type": "VariantTrack",
       "trackId": "hprc2_wave_grch38",
-      "name": "HPRC2 pangenome callset (464 haplotypes)",
+      "name": "HPRC release 2 phased VCF, vcfwave-decomposed (464 haplotypes)",
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "VcfTabixAdapter",
@@ -192,7 +192,7 @@
     {
       "type": "VariantTrack",
       "trackId": "hprc2_pgbi_grch38",
-      "name": "HPRC2 pangenome carriage (snarl-level, 462 haplotypes)",
+      "name": "HPRC release 2 phased VCF, one record per allele (462 haplotypes)",
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "VcfTabixAdapter",

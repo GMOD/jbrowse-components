@@ -179,26 +179,11 @@ const MHC_CLASSII_REGION = {
   end: 32600000,
 }
 
-// The one event pangenome/hprc_graph_vs_callset marks in both products: the
-// record at chr6:32,517,422 with a 12,014 bp REF, the largest in the window,
-// whose four 1.8 kb alleles are a 10,246 bp deletion carried by 46 of 437
-// haplotypes (AC 13, 1, 23 and 9; the other alleles are 11 and 6 bp shorter
-// than REF). From the callset itself —
-// `tabix hprc-v2.1-mc-grch38.wave.vcf.gz chr6:32510000-32600000`, longest REF
-// among the records the SV filter keeps — and the same event HPRC_ALLELE is
-// in the graph: 1.8 kb standing in for 12 kb of HLA-DRB5. Release 2.0's
-// largest record here was a 14,596 bp deletion at 32,514,842.
+// The span the HLA-DRB5 allele replaces, which pangenome/hprc_graph_vs_callset
+// bands: the 12,014 bp REF of the four pgbi records at chr6:32,517,422 whose
+// ALTs are the allele's four 1,768-1,769 bp sequences (46 of 462 haplotypes
+// between them). HPRC_ALLELE is the same allele in the graph.
 const MHC_MARKED_DELETION = '6:32,517,422-32,529,435'
-
-// SV_FILTER with that one record let through. vcfwave nests the DRB5 record
-// under the class II snarl at LV=1 in release 2.1 (2.0 had it top-level), and
-// the LV==0 half of the filter would leave the band over an empty column;
-// admitting it by position keeps the rest of the matrix at the top level,
-// which is what stops one event landing in two columns. `feature.start` is
-// 0-based, the VCF POS less one.
-const MHC_CALLSET_FILTER = [
-  'jexl:(feature.INFO.LV[0]==0 || feature.start==32517421) && alleleLength(feature)>=50',
-]
 
 // The HPRC segments lane, shared by every figure that carries it so they read
 // the same. `showLabels: 'none'`: the ids are the graph's own `s101124`
@@ -271,14 +256,15 @@ const HG38_UNIPROT_DOMAINS_TRACK = {
   uri: 'https://jbrowse.org/demos/hprc/lpa_uniprot_domains.bed.gz',
 }
 
-// The structural tier of the wave VCF, which is what makes it comparable to the
-// graph: minigraph collapses everything under ~50 bp, so an unfiltered callset
-// is thousands of SNP columns the graph never had. `alleleLength` rather than
-// end-start because an insertion consumes no reference and a span filter would
-// keep only deletions. LV==0 drops the nested children vcfwave's decomposition
-// writes beside their parents, which would otherwise put one event in two
-// columns. Same filter the hprc2 matrix figures use.
-const SV_FILTER = ['jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50']
+// HPRC's per-allele VCF (pgbi) at the size of the graph's own bubbles: minigraph
+// keeps alleles of 50 bp and up. `alleleLength` rather than end-start because
+// an insertion consumes no reference. One record is one whole allele, so size
+// alone matches the graph. The wave VCF needed an LV==0 clause to keep
+// vcfwave's fragments of one allele out of neighbouring columns, and that
+// clause blanked every snarl whose parent has no record of its own: HLA-DRB5,
+// HLA-DRB1 and all of C4.
+const ALLELE_FILTER = ['jexl:alleleLength(feature)>=50']
+const PGBI_TRACK = 'hprc2_pgbi_grch38'
 
 // The one node the MHC figures ring: the allele itself, black under the
 // reference-position ramp because it has no reference position. Release 2.1
@@ -350,9 +336,9 @@ const mhcLayoutForceSpec: ScreenshotSpec = {
 // What website/scripts/video-specs.ts films on this dataset
 // ---------------------------------------------------------------------------
 
-// The callset lane the clustering tour drives, and the session it sits in.
+// The VCF lane the clustering tour drives, and the session it sits in.
 //
-// The SV filter is already applied, where the tour's own move is the clustering.
+// The size filter is already applied, where the tour's own move is the clustering.
 // Driving the filter too would mean driving the Edit filters dialog, and no spec
 // here does that yet, so a tour that tried would be guessing at labels rather
 // than repeating a route something already proves.
@@ -370,16 +356,16 @@ export const hprcClusterFixtures = {
           hg38GeneLane(60),
           hprcSegmentsLane(MHC_CLASSII_REGION),
           {
-            trackId: 'hprc2_wave_grch38',
+            trackId: PGBI_TRACK,
             type: 'LinearMultiSampleVariantDisplay',
             height: 340,
-            filter: SV_FILTER,
+            filter: ALLELE_FILTER,
           },
         ],
       },
     ],
   }),
-  trackId: 'hprc2_wave_grch38',
+  trackId: PGBI_TRACK,
   // the callset's own fetch finished, rather than first paint, which an empty
   // canvas flips on its own
   ready: `${displayPainted('variant-display')}[data-display-phase="ready"]`,
@@ -1135,7 +1121,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       // longest node in the cut and the widest loop in the drawing
       {
         type: 'text',
-        text: 'kringle copies one haplotype carries and GRCh38 does not',
+        text: 'kringle copies on one haplotype, absent from GRCh38',
         fontSize: 20,
         maxWidth: 260,
         leader: true,
@@ -1176,44 +1162,18 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // The two products at one locus, which is the argument the HPRC tutorial
-  // closes on ("the matrix for base-level variation across haplotypes, the
-  // graph for how the sequence rearranges") and had no picture of. The graph
-  // cannot say who carries an allele — it collapses identical sequence, so an
-  // allele records one donor however many samples walk it — and that gap is the
-  // point the tutorial makes.
+  // The graph and the VCF at one locus. The graph names one source assembly
+  // per allele (rGFA's SN is the assembly minigraph first took a segment
+  // from); the VCF lists every haplotype's allele. So the rows cannot be lined
+  // up with the graph, and the figure marks one ALLELE in both instead: a band
+  // over the span the HLA-DRB5 allele replaces, and a ring on HPRC_ALLELE.
   //
-  // The callset is filtered to the structural tier so the two hold the same
-  // class of event: minigraph collapses everything under ~50 bp, and
-  // `alleleLength(feature)>=50` takes the VCF to the same tier (a span filter
-  // would keep deletions only, since an insertion consumes no reference). The
-  // LV==0 half of SV_FILTER matters here too: vcfwave decomposed this file, so
-  // an undecomposed bubble in the graph can face several records, and the
-  // nested children would put one event in two columns.
+  // The pgbi VCF holds that allele as four bi-allelic records, one per
+  // sequence, so the band's blue block is the haplotypes with any of the four.
+  // An 86 kb pgbi deletion at chr6:32,486,357 (26 haplotypes) spans the band
+  // too, and clustering puts its rows in a block of their own.
   //
-  // The marked deletion survives that filter but is MULTI-ALLELIC -- nine
-  // deletion ALTs, four of them the 1.8 kb allele (10,246 bp gone) and five
-  // within 11 bp of REF -- so the colored block under the band is the site's
-  // carriers, not the 10.2 kb allele's alone. The caption says "a deletion
-  // there" for that reason.
-  //
-  // THE CORRESPONDENCE IS AN EVENT, NOT A ROW. rGFA's SN names the assembly
-  // that FIRST CONTRIBUTED a segment, while a genotype names every haplotype
-  // that CARRIES it. Checked at the marked deletion — the graph attributes
-  // HG04157's only contribution here to HG04157.2, and the callset has HG04157
-  // carrying that deletion on its FIRST haplotype; HG01993 goes the other way.
-  // So graph rows and callset rows cannot be lined up, and relabelling the
-  // callset into PanSN would assert a mapping that is not true.
-  //
-  // So the figure marks one EVENT instead: `highlight` puts a band on the
-  // 12,014 bp record at chr6:32,517,422 across the gene lane and the genotype
-  // matrix — 46 of 437 haplotypes carry its 10.2 kb deletion. The graph under
-  // them is the force drawing (review: "consider using force directed bandage
-  // graph"), where the same event is a bubble rather than a row. What the pair
-  // says: the callset names who carries it, the graph names what the
-  // alternative sequence is.
-  //
-  // ALL 464 HAPLOTYPES, CLUSTERED: clustering gathers the deletion's carriers,
+  // ALL 462 HAPLOTYPES, CLUSTERED: clustering gathers the allele's haplotypes,
   // so the band crosses a solid block of them instead of scattered rows.
   {
     mode: 'url',
@@ -1228,13 +1188,13 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           tracks: [
             hg38GeneLane(60),
             {
-              trackId: 'hprc2_wave_grch38',
+              trackId: PGBI_TRACK,
               type: 'LinearMultiSampleVariantDisplay',
-              // 464 haplotype rows fit in no height a figure can afford, so
+              // 462 haplotype rows fit in no height a figure can afford, so
               // the lane is a texture either way, and the graph under it is
               // the half this figure is about
               height: 340,
-              filter: MHC_CALLSET_FILTER,
+              filter: ALLELE_FILTER,
               runClustering: true,
             },
             graphTrack(SEGMENTS_TRACK, {
@@ -1284,7 +1244,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         type: 'arrow',
         fromAnchor: {
           view: 0,
-          track: 'hprc2_wave_grch38',
+          track: PGBI_TRACK,
           locus: MHC_MARKED_DELETION,
           fracY: 1,
           dy: -8,
@@ -1296,7 +1256,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         type: 'text',
         // no length in the words: the graph labels its longer nodes itself,
         // so a length in a callout would read as one of those
-        text: 'the same deletion, in the graph',
+        text: 'the same allele, in the graph',
         anchor: {
           selector: '[data-testid="graph-genome-canvas"]',
           alignX: 'right',

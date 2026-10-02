@@ -47,7 +47,7 @@ A summary read costs the span on screen against the summary file, not against
 the alignment, so the tier holds at whole-chromosome scale on an alignment deep
 enough that the tier is the only way to see it at all. The HPRC pangenome is
 that case:
-[open the whole of chr6](https://jbrowse.org/code/jb2/main/?config=test_data/hprc_maf_summary.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%22%2C%22tracks%22%3A%5B%22hprc_v2_0_mc_grch38_summary%22%5D%7D%5D%7D)
+[open the whole of chr6](https://jbrowse.org/code/jb2/main/?config=test_data/hprc_maf_summary.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%22%2C%22tracks%22%3A%5B%22hprc_v2_1_mc_grch38_summary%22%5D%7D%5D%7D)
 and its 464 haplotypes draw with no forced load, where the alignment beneath
 them is refused.
 

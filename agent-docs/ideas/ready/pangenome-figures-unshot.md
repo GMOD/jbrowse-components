@@ -28,11 +28,11 @@ the release-2 files, and why CHM13 is the only donor worth loading.
   anchor with a 239,774 bp allele; `chr1:248,122,398-248,180,452` is 18 segments
   and a clean 0 → 247,631 presence/absence over an olfactory-receptor cluster. The
   pangenome's whole claim, in one window, at a segment count that draws instantly.
-- **Allele frequency on the graph-versus-callset figure.** `pgbi.vcf.gz` is hosted
-  and `pangenome_hprc.md` teaches it; what `hprc_graph_vs_callset`
-  (`website/scripts/specs/graph-hprc.ts`) still lacks is its `AF` joined onto the
-  allele inventory, so both panels colour by frequency: this 100 kb insertion is
-  carried by 41% of 462 haplotypes, that one by 0.2%.
+- **Allele frequency on the graph-versus-callset figure.** `hprc_graph_vs_callset`
+  (`website/scripts/specs/graph-hprc.ts`) reads `pgbi.vcf.gz`, whose records
+  have no `AF`, so a frequency comes from the genotypes. Joined onto the allele
+  inventory it would let both panels colour by frequency: one 100 kb insertion
+  is on 41% of 462 haplotypes, another on 0.2%.
 - **What the insertion is** (the WashU MEI BED, 10 MB, one file, hg38). The graph
   says 315 bp of novel sequence attaches here; this says `AluY`, intact, and lists
   the haplotypes carrying it. Cheapest of the data adds, and it contributes
