@@ -105,6 +105,8 @@ export interface FeatureDataResult {
   rectColors: Uint32Array
   rectStrands: Float32Array
   // The worker allocates this zero-filled; the main-thread layout values it.
+  // Dropping it from the wire saves only the allocation and changes a
+  // plugin-ABI type, so it stays (declined 2026-10-02).
   rectDensityFade: Uint32Array
   // LENGTH ZERO when every rect here carries a literal color. The worker has no
   // palette, so a CDS painted by reading frame ships its class and a zero color.
