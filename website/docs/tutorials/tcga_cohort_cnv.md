@@ -313,21 +313,6 @@ Then add the segment track config from
 [Load the segments into JBrowse](#load-the-segments-into-jbrowse) with `uri`
 pointing at `cohort.bed.gz`.
 
-## Other GDC data
-
-The one-row-per-sample layout of the segment stack works for other GDC
-open-access data:
-
-- Allele-specific copy number (ASCAT) reports major and minor allele copy number
-  separately, so it shows copy-neutral loss of heterozygosity. It has the same
-  `.seg` layout and loads in the same display, with a different colour
-  expression.
-- Methylation (Beta Value arrays) is probe-level with genomic coordinates, and
-  loads the same way with beta as the colour field.
-
-Splice junction quantification is controlled access at the GDC; GTEx and
-recount3 publish open junction summaries.
-
 ## Reproduce it end to end
 
 One script builds every file above for any project id,

@@ -187,16 +187,6 @@ introns**, and **Replace current view** (see [](/docs/user_guides/gene_track)):
 
 <Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's context menu, and the 979-tumor matrix redrawn over the coding sequence." />
 
-Two more settings apply to any gene-scale matrix:
-
-- [`lineZoneHeight`](/docs/config/linearmultisamplevariantdisplay/#slot-linezoneheight)
-  (or the handle under the band) opens the connector band, which shows where in
-  the transcript a gene's calls fall. _CDH1_'s fan lands in exon after exon, as
-  a tumor suppressor's truncating calls do
-- A ClinVar track puts the germline record beside the somatic one on the same
-  coordinates. It is readable at hotspot or single-exon zoom; across sixteen
-  collapsed exons its calls are too dense to tell apart
-
 The GDC's open mutation calls are exome only, so these figures are all
 gene-scale.
 
@@ -303,24 +293,10 @@ toward the triple-negative group where _PIK3CA_ falls.
 the ones `impactColor` paints. The rate has no background model, and gene length
 enters directly: _TTN_ ranks near the top on passenger mutations alone.
 
-## Cluster the rows by genotype
-
-**Clustering → Cluster rows by genotype...** in the track menu orders the rows
-by genotype (see [](/docs/user_guides/clustering)), gathering every carrier into
-one block so a hotspot column becomes a solid bar. Clustering replaces the
-clinical bands while it is on.
-
-## Filter to recurrent mutations
-
-**Filter by... → Minor allele frequency** in the track menu (or the
-[`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantdisplay/#slot-minorallelefrequencyfilter)
-slot) drops low-frequency columns, which on somatic data keeps only recurrent
-mutations: at _PIK3CA_ the hotspots survive and the private columns go. See
-[filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness).
-
-Each somatic call is one alt allele out of two, so a mutation carried by 10% of
-the cohort sits at 0.05. _CDH1_'s truncating calls are spread along the gene, so
-a threshold that isolates a hotspot empties that window.
+On the matrix itself, **Clustering → Cluster rows by genotype...** gathers every
+carrier into one block (see [](/docs/user_guides/clustering)), and **Filter
+by... → Minor allele frequency** keeps the recurrent mutations (see
+[filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness)).
 
 ## Use your own cohort
 
@@ -328,14 +304,17 @@ a threshold that isolates a hotspot empties that window.
 takes any directory of MAFs ([vcf2maf](https://github.com/mskcc/vcf2maf) output,
 cBioPortal study downloads, your own caller) whose rows have `Chromosome`,
 `Start_Position`, the two allele columns, `Tumor_Sample_Barcode`, and `CONTEXT`.
-For grouping, any TSV whose first column matches the VCF's sample names works.
+A cohort that never passed through a MAF needs a multi-sample somatic VCF. For
+grouping, any TSV whose first column matches the VCF's sample names works.
 
-## The same tumors in other GDC data
+## Copy number on the same tumors
 
-The [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) paints the same tumors
-one row each, and the
-[other GDC data](/docs/tutorials/tcga_cohort_cnv#other-gdc-data) it lists loads
-the same way here.
+The mutation rates above lean toward a group: _TP53_ climbs toward the
+triple-negative group where _PIK3CA_ falls, and every band carries both. Copy
+number on the same tumors sorts them by amplification instead. In the
+[copy-number cohort's recurrence by subtype](/docs/tutorials/tcga_cohort_cnv#split-the-recurrence-by-clinical-group),
+17q gain is confined to the HER2+ row, and 5q loss and 10p gain to the
+triple-negative row. Both pages group by the same clinical TSV.
 
 ## Reproduce it end to end
 
