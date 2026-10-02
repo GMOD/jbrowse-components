@@ -308,6 +308,11 @@ with the gene track filtered to _Myo5a_, splits the bands the other way:
 
 <Figure src="/img/qtl/bxd_myo5a_locus.png" caption="The whole of chr9, same bands. Under the peak at Myo5a the black and brown bands are B and the grey and dilute brown bands D, while the rest of chr9 is mixed."/>
 
+So the four-step scale is two genes. _Tyrp1_ sets black against brown and
+_Myo5a_ sets full color against dilute, and grey is a black coat diluted. The
+scale puts the brown step at twice the dilute step, which is why the chr4 peak
+stands higher than the chr9 one.
+
 ## Reproduce it end to end
 
 [`bxd_build_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_build_demo.sh)
