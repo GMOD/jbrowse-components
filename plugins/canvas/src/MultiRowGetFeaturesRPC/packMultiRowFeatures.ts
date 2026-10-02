@@ -207,19 +207,22 @@ export function resolvePartitionField(
 }
 
 /**
- * Reads one feature attribute, or derives it from a `jexl:` expression. Both
- * the row a feature paints in and the value it clusters on come through here —
- * were the two to drift, the cluster order would describe rows the painting
- * never drew.
+ * Reads a field the way `color.field` does, through core's `fieldReader`: a
+ * name, a dotted path or a `jexl:` expression. Both the row a feature paints
+ * in and the value it clusters on come through here — were the two to drift,
+ * the cluster order would describe rows the painting never drew. An
+ * expression that fails reads ''.
  */
 export function makeFeatureValueResolver(field: string, jexl: JexlInstance) {
-  if (!isCallbackValue(field)) {
-    return (feature: Feature) => columnValue(feature.get(field))
+  let read: (feature: Feature) => unknown
+  try {
+    read = fieldReader(field, jexl)
+  } catch {
+    return () => ''
   }
-  const cfg = { field }
   return (feature: Feature) => {
     try {
-      return columnValue(readConfigValue(cfg, 'field', feature, jexl))
+      return valueText(read(feature))
     } catch {
       return ''
     }

@@ -299,6 +299,22 @@ test('partitions on a jexl expression, not just an attribute', () => {
   expect([...r.featurePartitionIndex]).toEqual([0, 1, 0, 2])
 })
 
+test('partitions on a dotted path, as color.field reads one', () => {
+  const r = packMultiRowFeatures({
+    features: [
+      feat({ start: 0, end: 50, INFO: { SVTYPE: ['DEL'] } }),
+      feat({ start: 0, end: 30, INFO: { SVTYPE: ['INS'] } }),
+      feat({ start: 30, end: 50, INFO: { SVTYPE: ['DEL'] } }),
+    ],
+    partitionField: 'INFO.SVTYPE',
+    lengthField: '',
+    colorConfig: { value: undefined, field: '' },
+    jexl: createJexlInstance(),
+  })
+  expect(r.partitionValues).toEqual(['DEL', 'INS'])
+  expect([...r.featurePartitionIndex]).toEqual([0, 1, 0])
+})
+
 describe('the empty partitionField picks a column off the data', () => {
   const rmskFeatures = [
     feat({ start: 0, end: 50, name: 'L1HS', repClass: 'LINE' }),
