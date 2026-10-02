@@ -81,3 +81,26 @@ export function findGlyph(
   }
   return layoutBox
 }
+
+/**
+ * The features whose glyph draws codons, which are the ones the worker
+ * translates: walking the dispatch itself keeps a box from asking for a
+ * peptide nobody fetched.
+ */
+export function peptideTargets(
+  feature: Feature,
+  config: DisplayConfig,
+  isTopLevel?: boolean,
+): Feature[] {
+  const glyph = findGlyph(feature, config, isTopLevel)
+  if (
+    glyph === layoutProcessedTranscript ||
+    glyph === layoutMatureProteinRegion ||
+    (glyph === layoutBox && isCDS(feature))
+  ) {
+    return [feature]
+  }
+  return glyph === layoutSubfeatures
+    ? getSubfeatures(feature).flatMap(sub => peptideTargets(sub, config, false))
+    : []
+}

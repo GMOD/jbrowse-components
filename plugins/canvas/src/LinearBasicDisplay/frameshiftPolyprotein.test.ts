@@ -11,11 +11,11 @@ import gff3ConfigSchema from '../../../gff3/src/Gff3Adapter/configSchema.ts'
 import Gff3TabixAdapter from '../../../gff3/src/Gff3TabixAdapter/Gff3TabixAdapter.ts'
 import gff3TabixConfigSchema from '../../../gff3/src/Gff3TabixAdapter/configSchema.ts'
 import { buildFeatureRenderData } from '../RenderFeatureDataRPC/buildFeatureRenderData.ts'
-import { findGlyph } from '../RenderFeatureDataRPC/glyphs/findGlyph.ts'
 import {
-  findTranscriptsWithCDS,
-  processTranscriptFromSeq,
-} from '../RenderFeatureDataRPC/peptides/peptideUtils.ts'
+  findGlyph,
+  peptideTargets,
+} from '../RenderFeatureDataRPC/glyphs/findGlyph.ts'
+import { processTranscriptFromSeq } from '../RenderFeatureDataRPC/peptides/peptideUtils.ts'
 import { GENE_GLYPH_DEFAULTS } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { mockDisplayConfig } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -157,8 +157,8 @@ describe('SARS-CoV-2 ORF1ab translation', () => {
       .split('\n')
       .filter(line => !line.startsWith('>'))
       .join('')
-    const [pp1ab, pp1a] = findTranscriptsWithCDS(
-      new Map(features.map(f => [f.id(), f])),
+    const [pp1ab, pp1a] = features.flatMap(f =>
+      peptideTargets(f, configFor('all')),
     )
     expect([pp1ab, pp1a].map(t => extent(t!))).toEqual([
       [265, 21555],

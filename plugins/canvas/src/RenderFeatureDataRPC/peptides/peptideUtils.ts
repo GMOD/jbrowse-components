@@ -7,10 +7,9 @@ import {
 } from '@jbrowse/core/util/translateTranscript'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import { hasCDSSubfeature } from '../glyphs/glyphUtils.ts'
-import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
-import { getSubfeatures, isCDS } from '../util.ts'
+import { peptideTargets } from '../glyphs/findGlyph.ts'
 
+import type { DisplayConfig } from '../renderConfig.ts'
 import type { PeptideData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -114,40 +113,6 @@ async function fetchSequence(
   }
 }
 
-// Detection is structural, mirroring findGlyph: a feature with a direct CDS
-// child is a coding transcript whatever its type, so mRNA, V_gene_segment and an
-// org-specific type are all picked up without configuration.
-export function findTranscriptsWithCDS(
-  features: Map<string, Feature>,
-): Feature[] {
-  const transcripts: Feature[] = []
-
-  for (const feature of features.values()) {
-    // A top-level CDS with no CDS rows under it is itself the coding unit: the
-    // childless one a prokaryote gene caller emits, and a polyprotein whose
-    // cleavage products satisfy none of the heuristics below.
-    if (isCDS(feature) && !hasCDSSubfeature(feature)) {
-      transcripts.push(feature)
-      continue
-    }
-    // A wrapped polyprotein translates per CDS, not at the wrapper: keying the
-    // gene stitches its overlapping CDS children into one impossible ORF.
-    const polyproteins = collectPolyproteinCDS(feature)
-    if (polyproteins.length > 0) {
-      transcripts.push(...polyproteins)
-      continue
-    }
-    const codingChildren = getSubfeatures(feature).filter(hasCDSSubfeature)
-    if (codingChildren.length > 0) {
-      transcripts.push(...codingChildren)
-    } else if (hasCDSSubfeature(feature)) {
-      transcripts.push(feature)
-    }
-  }
-
-  return transcripts
-}
-
 export function processTranscriptFromSeq(
   seq: string,
   transcript: Feature,
@@ -182,11 +147,14 @@ export async function fetchPeptideData(
   pluginManager: PluginManager,
   props: PeptideFetchProps,
   features: Map<string, Feature>,
+  config: DisplayConfig,
   assemblyGeneticCodeId?: number,
 ): Promise<Map<string, PeptideData>> {
   const peptideDataMap = new Map<string, PeptideData>()
 
-  const transcripts = findTranscriptsWithCDS(features)
+  const transcripts = [...features.values()].flatMap(f =>
+    peptideTargets(f, config),
+  )
   if (transcripts.length === 0) {
     return peptideDataMap
   }

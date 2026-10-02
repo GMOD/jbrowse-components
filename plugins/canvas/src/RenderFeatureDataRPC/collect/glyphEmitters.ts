@@ -35,14 +35,53 @@ import {
 import { aminoAcidsByFeature, aminoAcidsInSpans } from './peptideMapping.ts'
 
 import type { Span } from '../../shared/mergeSpans.ts'
+import type { AggregatedAminoAcid } from '../peptides/aggregateAminoAcids.ts'
 import type { TranscriptCoords } from '../rpcTypes.ts'
 import type { FeatureLayout, GlyphType } from '../types.ts'
+import type { BoxRectArgs } from './emitPrimitives.ts'
 import type {
   Collector,
   GlyphPlacement,
   RenderContext,
 } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
+
+// Codons tinted from the colour the box would have painted, or the box itself
+// (one per part) when nothing translated.
+function emitCodonsOrBoxes(
+  aminoAcids: AggregatedAminoAcid[] | undefined,
+  box: BoxRectArgs & { parts?: Feature[] },
+  strand: number,
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const { feature, parts = [feature], level, glyphDefault } = box
+  if (aminoAcids?.length) {
+    const { topPx, height, flatbushIdx, labelRowsAbove } = box
+    emitCodonRects(
+      {
+        aminoAcids,
+        baseColor: boxColor(
+          feature,
+          ctx,
+          collector.colorKey,
+          level,
+          glyphDefault,
+        ),
+        topPx,
+        height,
+        strand,
+        flatbushIdx,
+        labelRowsAbove,
+      },
+      collector,
+    )
+  } else {
+    for (const part of parts) {
+      pushBoxRect({ ...box, feature: part }, ctx, collector)
+    }
+  }
+}
 
 function emitExonRects(
   transcript: FeatureLayout,
@@ -54,74 +93,36 @@ function emitExonRects(
   const height = transcript.height
   const transcriptFeature = transcript.feature
   const aminoAcidsBySeg = aminoAcidsByFeature(transcriptFeature, ctx)
-  if (!aminoAcidsBySeg) {
-    for (const child of transcript.children) {
-      pushBoxRect(
-        {
-          feature: child.feature,
-          topPx: baseTopPx,
-          height,
-          flatbushIdx,
-          labelRowsAbove,
-          level: transcriptFeature,
-        },
-        ctx,
-        collector,
-      )
-    }
-    return
-  }
-
   // The residues are deduped and the CHILDREN are not, so two copies of one CDS
   // row resolve the same map entry and would emit every residue of it twice. A
-  // repeat is skipped outright rather than falling through to the box below,
-  // which would paint a flat rect over the codons it duplicates.
+  // repeat is skipped outright rather than falling through to a box, which would
+  // paint a flat rect over the codons it duplicates.
   const drawnSegments = new Set<string>()
   const strand = transcriptFeature.get('strand') ?? 0
 
-  for (const childLayout of transcript.children) {
-    const childFeature = childLayout.feature
-    // Segments key off CDS bounds, so a child that matches one is coding and
-    // UTR sizing never applies on this branch.
-    const key = `${childFeature.get('start')}-${childFeature.get('end')}`
-    const aminoAcids = aminoAcidsBySeg.get(key)
-
+  for (const { feature } of transcript.children) {
+    const key = `${feature.get('start')}-${feature.get('end')}`
+    const aminoAcids = aminoAcidsBySeg?.get(key)
     if (aminoAcids?.length) {
       if (drawnSegments.has(key)) {
         continue
       }
       drawnSegments.add(key)
-      emitCodonRects(
-        {
-          aminoAcids,
-          baseColor: boxColor(
-            childFeature,
-            ctx,
-            collector.colorKey,
-            transcriptFeature,
-          ),
-          topPx: baseTopPx,
-          height,
-          strand,
-          flatbushIdx,
-          labelRowsAbove,
-        },
-        collector,
-      )
-    } else {
-      pushBoxRect(
-        {
-          feature: childFeature,
-          topPx: baseTopPx,
-          height,
-          flatbushIdx,
-          labelRowsAbove,
-          level: transcriptFeature,
-        },
-        ctx,
-        collector,
-      )
     }
+    emitCodonsOrBoxes(
+      aminoAcids,
+      {
+        feature,
+        topPx: baseTopPx,
+        height,
+        flatbushIdx,
+        labelRowsAbove,
+        level: transcriptFeature,
+      },
+      strand,
+      ctx,
+      collector,
+    )
   }
 }
 
@@ -284,41 +285,21 @@ function processMatureProteinLayout(
     ])
     const rowAminoAcids = aminoAcids && aminoAcidsInSpans(aminoAcids, spans)
 
-    if (rowAminoAcids?.length) {
-      emitCodonRects(
-        {
-          aminoAcids: rowAminoAcids,
-          baseColor: boxColor(
-            rowFeature,
-            ctx,
-            collector.colorKey,
-            rowFeature,
-            glyphDefault,
-          ),
-          topPx,
-          height: row.height,
-          strand: cdsFeature.get('strand') ?? 0,
-          flatbushIdx,
-          labelRowsAbove,
-        },
-        collector,
-      )
-    } else {
-      for (const { feature } of lines) {
-        pushBoxRect(
-          {
-            feature,
-            topPx,
-            height: row.height,
-            flatbushIdx,
-            labelRowsAbove,
-            glyphDefault,
-          },
-          ctx,
-          collector,
-        )
-      }
-    }
+    emitCodonsOrBoxes(
+      rowAminoAcids,
+      {
+        feature: rowFeature,
+        parts: lines.map(l => l.feature),
+        topPx,
+        height: row.height,
+        flatbushIdx,
+        labelRowsAbove,
+        glyphDefault,
+      },
+      cdsFeature.get('strand') ?? 0,
+      ctx,
+      collector,
+    )
     const rowLabel = subfeatureLabelText(rowFeature, ctx.config, ctx.jexl)
     const displayLabel =
       disambiguateWithCds &&
@@ -551,26 +532,13 @@ function emitBox(
   const { feature, height } = layout
   const bySegment = aminoAcidsByFeature(feature, ctx)
   const aminoAcids = bySegment && [...bySegment.values()].flat()
-  if (aminoAcids?.length) {
-    emitCodonRects(
-      {
-        aminoAcids,
-        baseColor: boxColor(feature, ctx, collector.colorKey),
-        topPx: baseTopPx,
-        height,
-        strand: feature.get('strand') ?? 0,
-        flatbushIdx,
-        labelRowsAbove,
-      },
-      collector,
-    )
-  } else {
-    pushBoxRect(
-      { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
-      ctx,
-      collector,
-    )
-  }
+  emitCodonsOrBoxes(
+    aminoAcids,
+    { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
+    feature.get('strand') ?? 0,
+    ctx,
+    collector,
+  )
   if (isRoot) {
     emitTopLevelStrandArrow(layout, place, ctx, collector)
   } else {

@@ -166,18 +166,20 @@ export function emitCodonRects(
   }
 }
 
+export interface BoxRectArgs {
+  feature: Feature
+  topPx: number
+  height: number
+  flatbushIdx: number
+  labelRowsAbove: number
+  glyphDefault?: string
+  // The feature a color scale reads, where it is not the box: a part's
+  // transcript.
+  level?: Feature
+}
+
 export function pushBoxRect(
-  args: {
-    feature: Feature
-    topPx: number
-    height: number
-    flatbushIdx: number
-    labelRowsAbove: number
-    glyphDefault?: string
-    // The feature a color scale reads, where it is not the box: a part's
-    // transcript.
-    level?: Feature
-  },
+  args: BoxRectArgs,
   ctx: RenderContext,
   collector: Collector,
 ) {

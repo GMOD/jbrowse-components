@@ -134,6 +134,7 @@ export async function executeRenderFeatureData({
             regions: [region],
           },
           features,
+          config,
           geneticCodeId,
         ),
     )
