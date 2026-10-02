@@ -34,7 +34,7 @@ describe('SvgRowLabels', () => {
 
   it('boxes each label one line tall, centered in a tall row, with no separator', () => {
     const sources = [{ name: 'a' }, { name: 'b' }]
-    const c = draw({ sources, rowHeight: 40, labelOffset: 0 })
+    const c = draw({ sources, rowHeight: 40, labelOffset: 0, backdrop: 'wash' })
     const w = rowLabelsBoxWidth(sources, 40)
     expect(c.querySelector('path')?.getAttribute('d')).toBe(
       `M0 12h${w}v16h${-w}zM0 52h${w}v16h${-w}z`,
@@ -44,7 +44,7 @@ describe('SvgRowLabels', () => {
 
   it('abuts the boxes of rows no taller than a line, with a separator between them', () => {
     const sources = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
-    const c = draw({ sources, rowHeight: 12, labelOffset: 0 })
+    const c = draw({ sources, rowHeight: 12, labelOffset: 0, backdrop: 'wash' })
     const w = rowLabelsBoxWidth(sources, 12)
     expect(c.querySelector('path')?.getAttribute('d')).toBe(
       [0, 12, 24].map(y => `M0 ${y}h${w}v12h${-w}z`).join(''),
@@ -52,6 +52,27 @@ describe('SvgRowLabels', () => {
     const paths = [...c.querySelectorAll('path')].map(p => p.getAttribute('d'))
     expect(paths).toContain(`M0 12h${w}v1h${-w}zM0 24h${w}v1h${-w}z`)
     expect(c.querySelectorAll('rect')).toHaveLength(0)
+  })
+
+  it('draws no box without a backdrop, as the export beside its plot does', () => {
+    const sources = [{ name: 'a' }, { name: 'b' }]
+    const bare = draw({ sources, rowHeight: 40, labelOffset: 0 })
+    expect(bare.querySelectorAll('path')).toHaveLength(0)
+    expect(bare.querySelectorAll('text')).toHaveLength(2)
+    const paper = draw({
+      sources,
+      rowHeight: 40,
+      labelOffset: 0,
+      backdrop: 'paper',
+    })
+    expect(paper.querySelectorAll('path')).toHaveLength(1)
+    const wash = draw({
+      sources,
+      rowHeight: 40,
+      labelOffset: 0,
+      backdrop: 'wash',
+    })
+    expect(wash.querySelectorAll('path')).toHaveLength(2)
   })
 
   it('draws a narrow color swatch, and no text, below the text threshold', () => {
@@ -166,7 +187,7 @@ describe('SvgRowLabels', () => {
   it('cuts a label past the cap with an ellipsis, whole in its title, and stops the strip at the cap', () => {
     const long = 'protein_coding_primary_transcript_variant_1'
     const sources = [{ name: 'a' }, { name: long }]
-    const c = draw({ sources, rowHeight: 20, labelOffset: 0 })
+    const c = draw({ sources, rowHeight: 20, labelOffset: 0, backdrop: 'wash' })
     const texts = [...c.querySelectorAll('text')]
     expect(texts[0]?.textContent).toBe('a')
     expect(texts[0]?.querySelector('title')).toBeNull()

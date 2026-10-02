@@ -39,7 +39,7 @@ export function SvgRowLabels({
   labelOffset,
   scrollTop = 0,
   availableHeight,
-  opaque = false,
+  backdrop,
   text,
 }: {
   sources: RowLabelSource[]
@@ -47,13 +47,11 @@ export function SvgRowLabels({
   labelOffset: number
   scrollTop?: number
   availableHeight?: number
-  opaque?: boolean
+  backdrop?: 'paper' | 'wash'
   text?: ExportTextStyle
 }) {
   const palette = usePalette()
   const fontSize = rowLabelFontSize(rowHeight, text)
-  const stripWash = alpha(palette.background.paper, opaque ? 1 : 0.9)
-  const stripTint = alpha(palette.text.primary, opaque ? 0 : 0.04)
   const separator = alpha(palette.text.primary, 0.12)
   const textFits = rowLabelsCarryText(rowHeight)
   // Without a tint there is nothing left once the text is gone, so a track whose
@@ -88,8 +86,22 @@ export function SvgRowLabels({
 
   return textFits ? (
     <g transform={`translate(${labelOffset} 0)`}>
-      <path d={boxes} {...getFillProps(stripWash)} />
-      <path d={boxes} {...getFillProps(stripTint)} />
+      {backdrop ? (
+        <>
+          <path
+            d={boxes}
+            {...getFillProps(
+              alpha(palette.background.paper, backdrop === 'paper' ? 1 : 0.9),
+            )}
+          />
+          {backdrop === 'wash' ? (
+            <path
+              d={boxes}
+              {...getFillProps(alpha(palette.text.primary, 0.04))}
+            />
+          ) : null}
+        </>
+      ) : null}
       {rows.map(({ source, y }) => {
         const lc = source.labelColor
         return lc ? (
