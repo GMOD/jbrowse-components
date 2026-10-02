@@ -131,3 +131,18 @@ test('a genotype the worker drew no cell for does not hover', () => {
   })
   expect(variantMatrixSurface(display).getHit(10, 25)).toBeUndefined()
 })
+
+test('the tooltip reports an insertion on the cells the painter drew as alt', () => {
+  const display = loadedDisplay()
+  const data = matrixCellData()
+  display.setCellData({
+    ...data,
+    cellAltDosage: Uint8Array.of(0, 0, 255, 0),
+    featureData: data.featureData.map(f => ({ ...f, insertedBp: 5 })),
+  })
+  const insertion = (x: number, y: number) =>
+    variantMatrixSurface(display).getHit(x, y)!.fields.insertion
+  expect(insertion(10, 5)).toBe('5bp')
+  expect(insertion(410, 5)).toBe('')
+  expect(insertion(410, 25)).toBe('')
+})

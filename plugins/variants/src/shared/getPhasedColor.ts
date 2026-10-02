@@ -101,15 +101,6 @@ export function isNoCall(genotype: string) {
 // denominator, so `./1` is also full dosage — the sample carries the sequence
 // on the one haplotype that was called, and how many haplotypes went uncalled
 // is missingness, not a smaller dose.
-//
-// **This has to be answered from the genotype, never from the resolved cell
-// color.** The tempting `color !== NO_CALL_COLOR` test holds only for the
-// functions in this file, which return the `NO_CALL_COLOR`/`REFERENCE_COLOR`
-// constants by identity. `getAlleleColor` does not: it blends its no-call shade
-// through colord and returns a hex, so `.` came back `#bfaa40` — never
-// string-equal to the `hsl(...)` literal — and every no-call cell in
-// allele-count mode was flagged alt-carrying. That is how `pangenome/maf`
-// painted an insertion marker on a row the VCF calls `.` for.
 export function altDosageByte(genotype: string) {
   let alt = 0
   let called = 0
@@ -137,31 +128,6 @@ export function altDosageByte(genotype: string) {
     }
   }
   return called === 0 ? 0 : Math.round((255 * alt) / called)
-}
-
-/**
- * Whether the cell at one row carries an alt allele — the question the painter
- * answers per cell as `isAlt` / `altDosage`, asked again where only a genotype
- * string and a row are in hand.
- *
- * `HP` is the haplotype row's index, or undefined in allele-count mode where a
- * row is a whole sample. The test depends on it: in phased mode `1|0`
- * carries the alt on HP0 and not on HP1, so a per-sample test reports a
- * record's inserted bases on a reference haplotype row (the matrix tooltip's
- * bug). An unphased or no-call genotype paints the same non-alt cell on every
- * haplotype row, which is `buildPhasedStyles`' `uncalledStyle`.
- */
-export function cellCarriesAlt(genotype: string, HP: number | undefined) {
-  let carries: boolean
-  if (HP === undefined) {
-    carries = altDosageByte(genotype) > 0
-  } else {
-    const allele = isPhasedOrHaploid(genotype)
-      ? splitPhasedAlleles(genotype)[HP]
-      : undefined
-    carries = allele !== undefined && allele !== '0' && allele !== '.'
-  }
-  return carries
 }
 
 // '' means "draw no cell here" — the same sentinel getAlleleColor returns, so

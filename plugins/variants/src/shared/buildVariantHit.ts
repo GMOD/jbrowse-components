@@ -61,9 +61,8 @@ export function buildVariantHit({
   featureId: string
   // bp of insertion THIS cell reports — the record's count when the sample
   // carries the alt, 0 for a reference cell, which must not claim the
-  // insertion its column's record makes. The regular display takes this off
-  // the picked cell (`pickVariantCell` zeroes it by `cellAltDosage`); the
-  // matrix derives it from the decoded genotype.
+  // insertion its column's record makes. Both layouts zero it by the cell's
+  // `cellAltDosage`.
   insertedBp: number
   displayedRegionIndex?: number
 }): VariantTooltipFields {

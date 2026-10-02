@@ -3,7 +3,6 @@ import { observer } from 'mobx-react'
 import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
-import { cellCarriesAlt } from '../../shared/getPhasedColor.ts'
 import { findCellIndex } from '../../shared/variantCellLookup.ts'
 import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
 import { matrixCellAt } from './matrixHitTest.ts'
@@ -100,9 +99,7 @@ function getHoveredMatrixCell(
           sampleName,
           name: source.name,
           featureId: feature.featureId,
-          // no per-cell alt flag here, so the decoded genotype and the row
-          // answer it: in phased mode `1|0` carries the insertion on HP0 only
-          insertedBp: cellCarriesAlt(genotype, source.HP)
+          insertedBp: cellData.cellAltDosage[top.cellIndex]
             ? feature.insertedBp
             : 0,
         }),
