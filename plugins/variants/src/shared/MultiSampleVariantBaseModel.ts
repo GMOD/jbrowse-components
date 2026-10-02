@@ -15,6 +15,7 @@ import {
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import {
   CATEGORICAL_FIELD_PRESETS,
+  colorNotices,
   withPreset,
 } from '@jbrowse/core/util/colorScale'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
@@ -651,6 +652,14 @@ export default function MultiSampleVariantBaseModelF(
             labels: getConf(self, ['color', 'labels']),
             title: getConf(self, ['color', 'title']),
           }
+        },
+        /**
+         * #getter
+         * What the `color` object's slots say together that it cannot paint as
+         * written, for the corner notice.
+         */
+        get notices(): string[] {
+          return colorNotices(this.colorSetting, CATEGORICAL_FIELD_PRESETS)
         },
         /**
          * #getter

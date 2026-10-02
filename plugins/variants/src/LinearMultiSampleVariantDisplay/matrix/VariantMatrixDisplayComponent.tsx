@@ -11,6 +11,7 @@ import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
+import VariantConfigProblems from '../../shared/components/VariantConfigProblems.tsx'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantMatrixBody, {
@@ -166,6 +167,7 @@ const VariantMatrixDisplayComponent = observer(
                 ) : null
               }
             </PointerLayer>
+            <VariantConfigProblems model={model} />
             <DisplayContextMenu model={model} />
           </>
         )}
