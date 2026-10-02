@@ -169,49 +169,26 @@ loads its modkit aggregate the same way.
 
 ## Load the tracks
 
-TAIR10 is a genome hub on [genomes.jbrowse.org](https://genomes.jbrowse.org),
-and a hub's `config.json` holds a whole JBrowse assembly: the 2bit sequence, an
-alias table, and the NCBI RefSeq genes. The view loads its assembly and gene
-track from there, and the BAM and the optional bigWigs from the pipeline go in
-beside them:
+We load the TAIR10 assembly the reads were aligned to. JBrowse reads each
+cytosine's context off its sequence, and the alias table maps `NC_003070.9`,
+`1`, `Chr1` and `chr1` to one chromosome, so the BAM keeps the RefSeq names
+bwameth wrote. The sequence is UCSC's 2bit of the same TAIR10.1 build, from the
+GenArk hub on [genomes.jbrowse.org](https://genomes.jbrowse.org). For another
+organism, any assembly whose sequence JBrowse can read works the same way
+([assemblies guide](/docs/config_guides/assemblies)).
 
-```bash
-# a GenArk hub's path is its accession cut into threes
-curl -fO https://jbrowse.org/hubs/genark/GCF/000/001/735/GCF_000001735.4/config.json
-```
-
-The [reproduce script](#reproduce-it-end-to-end) keeps the hub's assembly entry
-as written, adding `tair10` as an alias so a session can still name it that way:
-
-```json
+```json addassembly
 {
   "name": "GCF_000001735.4",
   "aliases": ["tair10"],
-  "sequence": {
-    "type": "ReferenceSequenceTrack",
-    "trackId": "GCF_000001735.4-ReferenceSequenceTrack",
-    "adapter": {
-      "type": "TwoBitAdapter",
-      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.2bit",
-      "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.chrom.sizes.txt"
-    }
-  },
+  "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.2bit",
   "refNameAliases": {
-    "adapter": {
-      "type": "RefNameAliasAdapter",
-      "refNameColumnHeaderName": "ucsc",
-      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.chromAlias.txt"
-    }
+    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.chromAlias.txt"
   }
 }
 ```
 
-The 2bit is the same TAIR10.1 sequence the reads were aligned to, and JBrowse
-reads each cytosine's context off it. The alias table maps `NC_003070.9`, `1`,
-`Chr1` and `chr1` to one chromosome, so the BAM keeps the RefSeq names bwameth
-wrote, and `refNameColumnHeaderName` makes `chr1` the name the view shows.
-
-The BAM goes in beside the hub assembly:
+The BAM goes in beside the assembly:
 
 <!-- from: scripts/build_arabidopsis_wgbs.sh -->
 
@@ -272,7 +249,24 @@ context for both regions.
 The RepeatMasker lane names the element `META1_LTR#LTR/Copia`, an LTR
 retrotransposon, which is `AT1TE14315` in the TAIR10 transposable-element
 annotation. No RefSeq transcript overlaps it. The lane is the RepeatMasker track
-from the TAIR10 genome hub, filtered to repeats longer than 1 kb.
+from the TAIR10 genome hub:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "tair10_repeatmasker",
+  "name": "RepeatMasker",
+  "assemblyNames": ["GCF_000001735.4"],
+  "adapter": {
+    "type": "BigBedAdapter",
+    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/bbi/GCF_000001735.4_TAIR10.1.rmsk.bb"
+  }
+}
+```
+
+Choose **Filter by...** in its track menu and enter
+`jexl:feature.end-feature.start>1000` to keep repeats longer than 1 kb. The
+short simple repeats in the window drop out and the LTR element stays.
 
 The figure puts the three contexts side by side by opening the same reads as
 three tracks, which share one file and differ in `trackId` and in the context
