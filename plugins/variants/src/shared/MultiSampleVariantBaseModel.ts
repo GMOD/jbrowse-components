@@ -1054,12 +1054,12 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
-         * Whether the fetched inputs clustering needs are present yet. Phased
-         * clustering clusters haplotypes, which needs `samplePloidy`; that
-         * arrives with `cellData`, later than the header-only `adapterSamples`. Gating the auto-cluster run on this (not just
-         * `adapterSamples`) stops it racing ahead and building a sample-level
-         * tree whose leaves ("HG001") never match the expanded haplotype rows
-         * ("HG001 HP0").
+         * Whether the rows are at the granularity they draw, which clustering
+         * and the arrangement dialog both need. Phased mode draws haplotypes,
+         * which needs `samplePloidy`; that arrives with `cellData`, later than
+         * the header-only `adapterSamples`. Before it a clustering run builds
+         * a sample-level tree whose leaves ("HG001") never match the expanded
+         * haplotype rows ("HG001 HP0"), and the dialog writes a sample order.
          */
         get clusteringReady() {
           return (

@@ -281,9 +281,7 @@ export function variantTrackMenuItems(
           },
         },
         // Only in allele-count mode: a phased row is one haplotype, which either
-        // carries the allele or does not, so the ramp has nothing to express
-        // there — and the setting is a fetch input, so the checkbox would have
-        // refetched the same cells.
+        // carries the allele or does not, so the ramp has nothing to express.
         ...(self.renderingMode === 'phased'
           ? []
           : [
@@ -428,7 +426,7 @@ export function variantTrackMenuItems(
       self.sources.length,
     ),
     rowArrangementMenuItem({
-      ready: !!self.adapterSamples?.length,
+      ready: self.clusteringReady && !!self.adapterSamples?.length,
       onOpen: () => {
         getDialogHost(self).queueDialog(handleClose => [
           SetColorDialog,

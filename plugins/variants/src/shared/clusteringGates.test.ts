@@ -118,3 +118,33 @@ test('says it is still loading before the samples arrive', () => {
   expect(row.disabled).toBe(true)
   expect(row.disabledHelpText).toBe('Loading samples...')
 })
+
+function findItem(items: MenuItem[], label: string): MenuItem | undefined {
+  for (const item of items) {
+    if ('label' in item && item.label === label) {
+      return item
+    }
+    const found =
+      'subMenu' in item ? findItem(resolveSubMenu(item), label) : undefined
+    if (found) {
+      return found
+    }
+  }
+  return undefined
+}
+
+// Before `samplePloidy` the phased rows are still samples, and a submit would
+// write a sample order over the haplotype rows the display is about to draw.
+test('the phased arrangement dialog waits for the haplotype rows', () => {
+  const d = display(two)
+  d.setPhasedMode('phased')
+  const arrangement = () =>
+    findItem(d.trackMenuItems(), 'Edit colors/arrangement...')
+  expect(arrangement()?.disabled).toBe(true)
+
+  d.setCellData({
+    samplePloidy: { HG001: 2, HG002: 2 },
+    rowNames: [],
+  } as unknown as Parameters<typeof d.setCellData>[0])
+  expect(arrangement()?.disabled).toBe(false)
+})
