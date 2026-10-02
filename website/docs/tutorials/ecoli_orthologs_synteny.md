@@ -122,12 +122,36 @@ gzip -dc strain.gff.gz | awk -F'\t' '$3 == "gene" && $9 ~ /;gene=/' | wc -l
 
 ## The ortholog track
 
-One `SyntenyTrack` names all forty-four assemblies, each of which is a
-`ChromSizesAdapter` over its chromosome's length, since the lanes never read
-sequence. `blockAssemblies` and `bedLocations` are positional against the
-table's columns, in the order the helper printed; the config below keeps the
-four genomes the command above joined. The adapter decompresses the gzipped
-table and BEDs itself, reading each file whole before the first lane draws:
+Each strain is an assembly that needs only its chromosome's length, since the
+lanes never read sequence. The build writes `<strain>.chrom.sizes` (a name and a
+length, tab-separated) and loads it as a `ChromSizesAdapter`. A reader with ten
+strains repeats this block and the gene track below once per strain:
+
+```json addassembly
+{ "name": "MG1655", "uri": "MG1655.chrom.sizes" }
+```
+
+Each lane draws gene models from the strain's gene track, the sorted, bgzipped
+and tabix-indexed GFF3 the build made above:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "MG1655_genes",
+  "name": "MG1655 genes",
+  "assemblyNames": ["MG1655"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "MG1655.gff.gz"
+  }
+}
+```
+
+One `SyntenyTrack` names all forty-four assemblies. `blockAssemblies` and
+`bedLocations` are positional against the table's columns, in the order the
+helper printed; the config below keeps the four genomes the command above
+joined. The adapter decompresses the gzipped table and BEDs itself, reading each
+file whole before the first lane draws:
 
 ```json addtrack
 {

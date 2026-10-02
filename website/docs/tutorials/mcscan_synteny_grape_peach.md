@@ -124,6 +124,39 @@ python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
 That leaves `grape.peach.anchors` and `grape.peach.anchors.simple` in the
 working directory. The adapters read anchors and BED files plain or gzipped.
 
+## The genomes
+
+We'll load the two genomes the BEDs describe. `samtools faidx` writes each
+`.fai` the assembly needs beside its FASTA, and column 1 of each BED must name
+the same sequences as that FASTA.
+
+```json addassembly
+{ "name": "grape", "uri": "grape.fa" }
+```
+
+```json addassembly
+{ "name": "peach", "uri": "peach.fa" }
+```
+
+Each genome also gets a gene track, which the
+[close-up](#what-an-anchor-looks-like-up-close) below turns to **Show only
+genes**. Add the same track with `peach.sorted.gff3.gz` under `peach`. Swap the
+`uri` for your own GFF3, bgzipped and tabix-indexed
+([prep](/docs/quickstart_web)).
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "grape_genes",
+  "name": "grape genes",
+  "assemblyNames": ["grape"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "grape.sorted.gff3.gz"
+  }
+}
+```
+
 ## Loading both tracks
 
 Each adapter takes the anchor file plus the two BEDs, and `assemblyNames` lists

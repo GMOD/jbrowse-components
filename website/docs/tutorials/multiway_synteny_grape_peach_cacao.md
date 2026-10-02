@@ -293,35 +293,24 @@ there:
 curl -fO https://jbrowse.org/hubs/genark/GCF/000/346/465/GCF_000346465.2/config.json
 ```
 
-The build keeps each hub entry, labels the row, and adds the short name as an
-alias, so a session can still say `peach`:
+We'll load peach by its own name. The 2bit and the alias table come from the
+hub; `aliases` lets a session still say `peach`:
 
-```json
+```json addassembly
 {
   "name": "GCF_000346465.2",
   "displayName": "peach",
   "aliases": ["peach"],
-  "sequence": {
-    "type": "ReferenceSequenceTrack",
-    "trackId": "GCF_000346465.2-ReferenceSequenceTrack",
-    "adapter": {
-      "type": "TwoBitAdapter",
-      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.2bit",
-      "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chrom.sizes.txt"
-    }
-  },
+  "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.2bit",
   "refNameAliases": {
-    "adapter": {
-      "type": "RefNameAliasAdapter",
-      "refNameColumnHeaderName": "ucsc",
-      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chromAlias.txt"
-    }
+    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chromAlias.txt"
   }
 }
 ```
 
-`refNameColumnHeaderName` makes the UCSC names canonical, naming the first peach
-chromosome `chrG1` where the BED says `NC_034009.1`.
+Grape and cacao take the same entry with their own accession. The alias file
+lets the BED's `NC_034009.1` and the hub's `chrG1` name one chromosome. For a
+genome with no sequence file, a `.chrom.sizes` file works as the `uri`.
 
 ## Loading the blocks file with MCScanBlocksAdapter {#loading-it-in-jbrowse-with-mcscanblocksadapter}
 
@@ -426,7 +415,27 @@ genome:
   including an [OrthoFinder table](/docs/tutorials/orthofinder_synteny) or an
   [all-vs-all PAF](/docs/tutorials/allvsall_synteny)
 
-The lanes above, as a `defaultSession`:
+A lane draws gene models from a gene track under its own assembly name, and
+outlines the gene spans from the table where it has none. We'll add one for
+grape; the other genomes take the same track under their accessions. Swap the
+`uri` for your own GFF3, bgzipped and tabix-indexed
+([prep](/docs/quickstart_web)), with the same refNames as the assembly:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "grape_genes",
+  "name": "grape genes",
+  "assemblyNames": ["GCF_030704535.1"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "grape.sorted.gff3.gz"
+  }
+}
+```
+
+The lanes above, as a `defaultSession` (the track ids come from the hosted
+config, so name your own `trackId` instead):
 
 ```json session config=https://jbrowse.org/demos/grape_peach_cacao/config.json
 {

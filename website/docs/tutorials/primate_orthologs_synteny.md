@@ -129,39 +129,53 @@ track from there, so the ortholog table is the one file built here:
 curl -fO https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json
 ```
 
-The build keeps each entry as the hub wrote it, relabels the lane and adds the
-short name as an alias, so a session can still say `chimp`:
+We'll load chimpanzee by its accession. The 2bit and the alias table come from
+the hub, and `aliases` lets a session still say `chimp`:
 
-```json
+```json addassembly
 {
   "name": "GCF_028858775.2",
   "displayName": "Chimpanzee (NHGRI_mPanTro3-v2.1)",
   "aliases": ["chimp"],
-  "sequence": {
-    "type": "ReferenceSequenceTrack",
-    "trackId": "GCF_028858775.2-ReferenceSequenceTrack",
-    "adapter": {
-      "type": "TwoBitAdapter",
-      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.2bit",
-      "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chrom.sizes.txt"
-    }
-  },
+  "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.2bit",
   "refNameAliases": {
-    "adapter": {
-      "type": "RefNameAliasAdapter",
-      "refNameColumnHeaderName": "ucsc",
-      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chromAlias.txt"
-    }
+    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chromAlias.txt"
   }
 }
 ```
 
-`refNameColumnHeaderName` makes the UCSC names canonical, so the lane headers
-read `chr19` where the assembly names it `chr19_hap1_hsa17`. Human is the one
-exception to the accession rule: UCSC serves GRCh38 as `hg38` rather than as a
-GenArk hub, so the human lane is [hg38](https://genomes.jbrowse.org/ucsc/hg38/).
-A lane finds its gene models through the session, so the gene track from the hub
-only has to exist under the assembly name the lane uses.
+The other apes and the macaque take the same entry with their own accession.
+Human is the one exception to the accession rule: UCSC serves GRCh38 as `hg38`
+rather than as a GenArk hub, so the human lane is
+[hg38](https://genomes.jbrowse.org/ucsc/hg38/):
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
+Each lane draws gene models from a gene track under its own assembly name. For
+your own annotation, add one per genome, with a GFF3 that is bgzipped,
+tabix-indexed ([prep](/docs/quickstart_web)) and uses the assembly's refNames:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "chimp_genes",
+  "name": "chimp genes",
+  "assemblyNames": ["GCF_028858775.2"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "chimp.sorted.gff3.gz"
+  }
+}
+```
 
 ## The ortholog track
 
