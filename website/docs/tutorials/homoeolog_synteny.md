@@ -25,10 +25,8 @@ karyotype.
 - `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-jcvi builds C extensions and will not install against every python. If
-`pip install jcvi` fails compiling them, `uv venv --python 3.12` followed by
-`uv pip install jcvi biopython` gets an interpreter it does build on. DIAMOND
-ships a static binary in its GitHub releases.
+[Selection pressure between two genomes](/docs/tutorials/selection_pressure)
+covers installing jcvi and what dN/dS measures.
 
 ## Where the data comes from
 
@@ -41,9 +39,6 @@ Ensembl Plants release 63 as
   https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/gff3/avena_sativa_gca951802345v1cm/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.63.gff3.gz
 - the CDS the proteome is translated from:
   https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/fasta/avena_sativa_gca951802345v1cm/cds/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.cds.all.fa.gz
-- the wheat stack's annotations (Aegilops tauschii, sorghum, bread wheat) and
-  the sorghum-anchored Compara homology table, same release:
-  https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/
 
 ## Oat subgenomes and homoeologs
 
@@ -118,9 +113,8 @@ off-diagonal noise of gene families' best hits. A self-comparison also chains
 the tandem and segmental duplicates within each subgenome; a homoeolog pair has
 its ends on different subgenomes, so the script filters on the chromosome name.
 
-Take `oat.oat.anchors`, not `oat.oat.lifted.anchors`. Liftover recruits extra
-pairs near an established block, and here their median dS is several times that
-of the chained ones.
+Take `oat.oat.anchors`, not `oat.oat.lifted.anchors`, for the reason
+[selection pressure](/docs/tutorials/selection_pressure#dn-and-ds) gives.
 
 ### dN and dS on each anchor
 
@@ -138,14 +132,10 @@ python3 kaks_from_pairs.py oat.pairs.tsv oat.cds.fa.gz \
   --key record --min-syn-subs 3 -o oat.kaks.tsv
 ```
 
-[`kaks_from_pairs.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/kaks_from_pairs.py)
-aligns each pair as protein, back-translates to codons, and runs Nei-Gojobori.
-`--key record` reads the CDS by transcript id.
-
-`kaks_from_pairs.py` reports the pairs it could not measure: dS past about 2,
-where the correction saturates, and dS of 0, where the ratio has no denominator.
-`--min-syn-subs` is a floor on the synonymous count, since a pair with one or
-two differences can return any ratio at all.
+`--key record` reads the CDS by transcript id, and `--min-syn-subs` drops pairs
+with too few synonymous differences to trust a ratio.
+[Selection pressure](/docs/tutorials/selection_pressure#dn-and-ds) explains the
+method and the filters.
 
 ## Loading the blocks table in JBrowse
 
@@ -177,18 +167,6 @@ button's **dN/dS**, a ramp with 1 at its middle and 2 at its top. `syn_subs` and
 
 **Add → Dotplot view** with oat on both axes opens the track as a dotplot, and
 the session [below](#checking-the-rates-against-the-raw-data) does the same.
-
-## Reading the plot
-
-Every point off the diagonal is a gene paired with its copy on another
-chromosome. Oat is on the right below and bread wheat on the left, both
-hexaploid self-alignments over the same three homoeologous groups.
-
-<Figure caption="Left, the bread wheat self-alignment; right, the oat one. Both hexaploids over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1. Wheat's cross-group pairs are the two 4A translocations the callout marks; oat's segments leave their group throughout." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
-
-The wheat panel comes from the Ensembl Compara homoeolog calls
-([`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py)),
-so the two sides also differ in how the pairs were called.
 
 ## Checking the rates against the raw data
 
@@ -259,10 +237,6 @@ the count clearing the test is close to what chance gives. The
 [primate walkthrough](/docs/tutorials/selection_pressure) goes through that
 arithmetic on a locus small enough to check by eye.
 
-Anchors joining chromosomes from _different_ homoeologous groups show how the
-two karyotypes differ. In wheat they are the two 4A translocations, and in oat
-they come from segments that leave their group repeatedly.
-
 ## Reproduce it end to end
 
 [`build_oat_homoeologs.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_oat_homoeologs.sh)
@@ -276,24 +250,6 @@ npx --yes serve oat_homoeologs_build/jbrowse2  # then open the printed URL
 ```
 
 The script needs the tools under [Prerequisites](#prerequisites) on PATH.
-
-A second script takes the Compara route for bread wheat, reading Compara's
-already-called pairs through
-[`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py),
-so no aligner runs. It builds a three-row stack:
-
-1. sorghum, a diploid outgroup, on top, so each of its genes fans out to bread
-   wheat's three homoeologs, one per subgenome
-2. bread wheat in the middle, each link carrying how many orthologs its sorghum
-   gene has in wheat, so the genes that kept all three copies separate from the
-   ones that lost one
-3. _Aegilops tauschii_, the donor of the D subgenome alone, at the bottom as the
-   control: through the same pipeline it has to come out at one copy per gene
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_wheat_homoeologs.sh
-bash build_wheat_homoeologs.sh   # writes ./wheat_homoeologs_build/
-```
 
 ## See also
 
