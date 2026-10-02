@@ -197,6 +197,44 @@ genome size. **Rows → Re-order chromosomes** sorts each row's chromosomes
 against its neighbour so the links run along a diagonal (`autoDiagonalize` in a
 session spec).
 
+The same view as a session, over the hosted wheat config. It is the heaviest
+stack on this page, so the bands take a while to draw:
+
+```json session config=https://jbrowse.org/demos/orthofinder_wheat/config.json
+{
+  "defaultSession": {
+    "name": "Wheat lineage stack",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "views": [
+          { "assembly": "tauschii" },
+          { "assembly": "wheat" },
+          { "assembly": "durum" },
+          { "assembly": "emmer" },
+          { "assembly": "urartu" },
+          { "assembly": "timopheevii" }
+        ],
+        "tracks": [
+          ["wheat_orthogroups"],
+          ["wheat_orthogroups"],
+          ["wheat_orthogroups"],
+          ["wheat_orthogroups"],
+          ["wheat_orthogroups"]
+        ],
+        "sameScale": true,
+        "autoDiagonalize": true,
+        "collapseEmptyRows": true,
+        "alpha": 0.15
+      }
+    ]
+  }
+}
+```
+
+For your own set, name your assemblies top to bottom in `views` and your
+orthogroups track once per band in `tracks`.
+
 <Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order. All six rows are on one genomic scale, so row length matches genome size: the two diploid donors against the hexaploid they built, with the tetraploids between." src="/img/orthofinder_synteny/wheat.png" />
 
 ### Reading one chromosome out of the stack
