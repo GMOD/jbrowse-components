@@ -52,17 +52,58 @@ or a data-access agreement.
 - the karyotype table the sample lane is grouped by:
   https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam_samples.tsv
 
+## The genome
+
+The LD table and the inversion calls use 2L coordinates of the AgamP4 reference,
+so we load that assembly and its gene models first. The gene lane reads the
+`AgamP4.12` annotation.
+
+```json addassembly
+{
+  "name": "AgamP4",
+  "sequence": {
+    "adapter": {
+      "type": "BgzipFastaAdapter",
+      "uri": "https://jbrowse.org/demos/ag1000g/AgamP4.fa.bgz"
+    }
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "agamp4_genes",
+  "name": "AgamP4.12 genes",
+  "assemblyNames": ["AgamP4"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/demos/ag1000g/AgamP4.sorted.gff3.gz"
+  }
+}
+```
+
 ## The 2La inversion as one LD block
 
 Crossing over is suppressed in a 2La heterokaryotype, so the segment travels as
 a unit. The inversion spans roughly 22 Mb of chromosome arm 2L, past what
-JBrowse can compute live from a VCF, so we precompute the LD with PLINK and read
-it through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
+JBrowse can compute live from a VCF (the [](/docs/tutorials/ld_human) tutorial
+draws r² live over a few hundred kb), so we precompute the LD with PLINK and
+read it through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
 
 ## Precompute the LD with PLINK
 
-Thin the variants, correlate them, then index the table. `keep.CMgam.txt` is the
-population, two tab-separated columns of the same sample id, the
+PLINK reads a binary fileset, so we first convert the phased VCF of common
+variants into one. `--double-id` sets each family id to the sample id:
+
+<!-- from: scripts/build_ag1000g_ld.sh -->
+
+```bash
+plink2 --vcf common.vcf --double-id --allow-extra-chr --make-bed --out common
+```
+
+Then thin the variants, correlate them, and index the table. `keep.CMgam.txt` is
+the population, two tab-separated columns of the same sample id, the
 family/individual pair plink asks for.
 
 <!-- from: scripts/build_ag1000g_ld.sh -->
@@ -102,7 +143,7 @@ metric columns:
   "type": "LDTrack",
   "trackId": "ag1000g_2l_cmgam",
   "name": "Cameroon, both arrangements segregating (r²)",
-  "assemblyNames": ["anoGam3"],
+  "assemblyNames": ["AgamP4"],
   "adapter": {
     "type": "PlinkLDTabixAdapter",
     "uri": "https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz"
@@ -124,9 +165,17 @@ metric columns:
 The 2La inversion also loads as one `<INV>` record spanning the breakpoints,
 genotyped across every mosquito. The
 [regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail)
-draws each genotype at the call's true span. The `karyotype` column names the
-three classes: `2L+a/2L+a`, `2La/2L+a`, `2La/2La`, the `+` marking the
-non-inverted arrangement.
+draws each genotype at the call's true span. `END` is the far breakpoint and
+each sample column holds one `GT`:
+
+```text
+#CHROM  POS       ID   REF  ALT    QUAL  FILTER  INFO                     FORMAT  AN0007-C  AN0009-C
+2L      20524058  2La  N    <INV>  .     PASS    SVTYPE=INV;END=42165532  GT      0/0       0/1
+```
+
+The samples TSV has a `name` column matching the VCF sample ids and a
+`karyotype` column naming the three classes: `2L+a/2L+a`, `2La/2L+a`, `2La/2La`,
+the `+` marking the non-inverted arrangement.
 
 Load each population as a `VariantTrack` whose adapter carries the samples TSV,
 with a `LinearMultiSampleVariantDisplay` that bands (`facet`) and colors
@@ -137,7 +186,7 @@ with a `LinearMultiSampleVariantDisplay` that bands (`facet`) and colors
   "type": "VariantTrack",
   "trackId": "ag1000g_2la_karyotype_cmgam",
   "name": "Cameroon, one row per mosquito",
-  "assemblyNames": ["anoGam3"],
+  "assemblyNames": ["AgamP4"],
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam.vcf.gz",
