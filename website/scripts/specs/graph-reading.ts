@@ -270,7 +270,7 @@ const nntHalosSpec: ScreenshotSpec = {
   annotations: [
     {
       type: 'text',
-      text: 'Sequence the other strains carry and C57BL/6J lacks: its Nnt deletion',
+      text: 'Sequence the other strains have and C57BL/6J lacks: its Nnt deletion',
       fontSize: 17,
       maxWidth: 330,
       leader: true,

@@ -87,7 +87,7 @@ bgzip all.fa
 samtools faidx all.fa.gz
 ```
 
-The pggb image carries every tool below, including
+The pggb image includes every tool below, including
 [odgi](https://github.com/pangenome/odgi), so wrap `docker run` once and run
 pggb:
 
@@ -113,7 +113,7 @@ wrapper body.
 ## Load the genomes
 
 Every projection is a track on a strain's assembly, and each strain's FASTA
-carries one sequence named `chr`, the refName the graph's paths are renamed to
+holds one sequence named `chr`, the refName the graph's paths are renamed to
 below. We'll add K12, the reference the projections land on, from a
 bgzip-compressed, indexed FASTA:
 
@@ -163,7 +163,7 @@ Select a span on K12's ruler and pick **Launch → Linear synteny view** to stac
 the strains over that span alone. The same selection on another strain's row,
 with **Replace current view**, re-anchors the stack on that strain:
 
-<Video src="/media/synteny/ecoli_roundtrip.mp4" caption="One selection, a synteny stack: the Launch menu over a K12 window, the stack anchored on K12, where Sakai's row carries a prophage K12 lacks, and a drag across it on the Sakai row re-anchoring the stack on Sakai." />
+<Video src="/media/synteny/ecoli_roundtrip.mp4" caption="One selection, a synteny stack: the Launch menu over a K12 window, the stack anchored on K12, where Sakai's row has a prophage K12 lacks, and a drag across it on the Sakai row re-anchoring the stack on Sakai." />
 
 ### The projection from odgi untangle {#the-same-picture-read-out-of-the-graph}
 
@@ -253,7 +253,7 @@ in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
 ```
 
 Each strain is one haplotype, so `renderingMode: "phased"` colors each cell by
-the allele that strain carries:
+that strain's allele:
 
 ```json addtrack
 {
@@ -344,8 +344,7 @@ selection covers under two submenus:
 
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
 counts how many paths cross each K12 window: about five over core sequence and
-one over sequence only K12 carries. Make 500 bp windows, count, and write a
-bigWig:
+one over sequence only K12 has. Make 500 bp windows, count, and write a bigWig:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -391,7 +390,7 @@ The config draws reference lines at the strain count and at 1:
 
 Zoomed out, the curve sits on the strain-count line over the core genome, rises
 past it over the rRNA operons that the graph collapses into one copy, and drops
-to 1 over sequence only K12 carries.
+to 1 over sequence only K12 has.
 
 ### Per-strain presence
 
@@ -476,8 +475,8 @@ samtools index ecoli_e146_ont.bam
 }
 ```
 
-Type `chr:2,554,000-2,570,000`. Reads long enough to cross the trough carry it
-as a single labelled deletion.
+Type `chr:2,554,000-2,570,000`. Reads long enough to cross the trough show it as
+a single labelled deletion.
 
 <Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the graph's depth curve and its MAF below. All four lanes break at the edges of the cryptic prophage CPZ-55." src="/img/pangenome/long_reads.png" />
 
@@ -555,7 +554,7 @@ The tier marks where the strains differ, and the
 the tier lane and the graph, and a strain's row breaks across each bubble it
 skips.
 
-<Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane, the MAF's strain rows, and the graph track, which cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 carries and the other four skip, their MAF rows breaking across it." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane, the MAF's strain rows, and the graph track, which cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 has and the other four skip, their MAF rows breaking across it." src="/img/pangenome/pggb_bubble_tier.png" />
 
 Right-click the IS5 node in the graph track and take **Open in K12**, the route
 [the HPRC page](/docs/tutorials/pangenome_hprc#check-it-on-the-haplotype)
@@ -565,7 +564,7 @@ segment and pick **Open in CFT073**.
 
 <Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's menu opened on the CFT073 allele, under the K12 genes it bypasses, and the view its Open in entry adds: CFT073 in CFT073 coordinates, where ssuE runs straight into pyrD." />
 
-### Carriage as a linear lane
+### Strains per segment as a lane
 
 The index records which strains walk each segment, and a feature track over the
 same files colors each segment by that count:
@@ -574,7 +573,7 @@ same files colors each segment by that count:
 {
   "type": "FeatureTrack",
   "trackId": "ecoli_pggb_carriage",
-  "name": "pggb graph: segment carriage",
+  "name": "pggb graph: strains per segment",
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
@@ -584,7 +583,7 @@ same files colors each segment by that count:
     "displayMode": "collapsed",
     "showLabels": "none",
     "color": {
-      "field": "carriers",
+      "field": "sampleCount",
       "domain": ["5", "4", "3", "2", "1"],
       "range": ["#bdbdbd", "#fed976", "#feb24c", "#fd8d3c", "#e31a1c"],
       "labels": [
@@ -594,7 +593,7 @@ same files colors each segment by that count:
         "2 strains",
         "1 strain (private)"
       ],
-      "title": "Strains carrying"
+      "title": "Strains"
     }
   }
 }
@@ -602,7 +601,7 @@ same files colors each segment by that count:
 
 Type `chr:1,299,499-1,300,693`, the IS5 element.
 
-<Figure caption="The IS5 element in K12 as a carriage lane, colored by how many strains walk each segment, so the red box is a segment K12 alone walks." src="/img/pangenome/pggb_carriage_lane.png" />
+<Figure caption="The IS5 element in K12 as a strains-per-segment lane, colored by how many strains walk each segment, so the red box is a segment K12 alone walks." src="/img/pangenome/pggb_carriage_lane.png" />
 
 The [graph genome view guide](/docs/user_guides/graph_genome_view) covers the
 layouts and the node menu.

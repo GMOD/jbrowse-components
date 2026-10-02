@@ -10,14 +10,14 @@ The graph genome view plugin draws a pangenome graph **as a graph**, as a track
 of the linear genome view. The graph sits under the view's other tracks, on the
 view's own coordinates, and moves when the view moves. The reference's path
 through the graph is the **backbone**, and every segment off that path is an
-alternate allele that another assembly carries. Most other pangenome tracks are
+alternate allele from another assembly. Most other pangenome tracks are
 **projections**, which flatten the graph onto one reference's coordinates as
 synteny, variants, alignment, or depth.
 
 **Prerequisites:** the plugin (below), a graph in rGFA or GFA, and the
 contributing assemblies if you want to open a node on them.
 
-<Figure caption="50 kb of K12 with the graph as its bottom track. The segments lane and the graph share the reference-position ramp, so a block and its node share a hue: the blue boxes are one segment in both. The charcoal nodes are alternate alleles, like the ringed one CFT073 carries in place of the boxed segment; with no K12 coordinates, the lane does not draw them." src="/img/pangenome/rgfa_subgraph_launch.png" />
+<Figure caption="50 kb of K12 with the graph as its bottom track. The segments lane and the graph share the reference-position ramp, so a block and its node share a hue: the blue boxes are one segment in both. The charcoal nodes are alternate alleles, like the ringed one CFT073 has in place of the boxed segment; with no K12 coordinates, the lane does not draw them." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 :::info Requires the graph genome view plugin
 
@@ -75,7 +75,7 @@ so a whole chromosome draws as a graph, and zoomed back in it cuts the segments
 again.
 
 Two adapters cut a subgraph: `RgfaTabixAdapter` over the index, and
-`GbzBaseSyntenyAdapter` over a gbz-base database, whose cut carries the
+`GbzBaseSyntenyAdapter` over a gbz-base database, whose cut includes the
 haplotypes' walks. The same index pair behind a `BedTabixAdapter` draws only as
 a lane. To skip indexing entirely, [Route 2](#route-2-a-gfa-file) opens a GFA as
 a file.
@@ -137,18 +137,18 @@ The plain-GFA walk makes four choices:
   to whichever donor path reaches them first. A bare sample (`GRCh38`) is enough
   where the reference is haploid. For a diploid reference, write the haplotype
   (`HG002#1`), or the script picks one and names it on stderr.
-- The walk also records **who carries each segment**, as `SM:Z:` in the index.
-  rGFA has no field for carriers. On this route that value fills `carriedBy` in
-  the node popup.
+- The walk also records **which haplotypes visit each segment**, as `SM:Z:` in
+  the index. rGFA has no field for them. On this route that value fills
+  `samples` in the node popup.
 - When a path reaches a segment twice, **the first visit wins**, and the node
   draws as one tube at one x. The repeat stays visible as depth.
 - A segment the reference never visits is placed on **the coordinates of the
-  assembly that carries it**. rGFA places such segments the same way, which is
-  why a reference query reaches them through the links file.
+  assembly it comes from**. rGFA places such segments the same way, which is why
+  a reference query reaches them through the links file.
 
 Both routes write `<prefix>.segs.bed.gz` and `<prefix>.links.bed.gz` with their
 tabix indexes, and a second such pair for the bubble tier, one node per bubble.
-One adapter reads all four, and `<prefix>.config.json` carries the track:
+One adapter reads all four, and `<prefix>.config.json` holds the track:
 
 ```json addtrack
 {
@@ -230,18 +230,18 @@ name (`K12#1#chr:1004500-1004961`), and the view takes the offsets from that
 name. A whole-genome path starts at zero.
 
 The paths also show which samples go through a node. The `P` and `W` lines state
-every traversal, and **Node details** lists them under `carriedBy`. A true rGFA
-has no traversals to read. There `carriedBy` is empty, and the panel reports
-`contributingAssembly`, the one assembly that `SN` credits the segment to.
+every traversal, and **Node details** lists them under `samples`. A true rGFA
+has no traversals to read. There `samples` is empty, and the panel reports
+`contributingAssembly`, the one assembly `SN` names for the segment.
 
 Route 1 gives the same answer without the GFA file when the index came from a
 plain GFA. On that route `build_pangenome_graph.sh` does the traversal walk
-offline and writes each segment's carriers into the index as `SM:Z:`. Only an
-index built from a minigraph rGFA lacks carriers.
+offline and writes each segment's haplotypes into the index as `SM:Z:`. Only an
+index built from a minigraph rGFA lacks them.
 
 **Sample rows** draws a row per contributing assembly. Each node is drawn once,
-on the row of the first path that reaches it, and the other carriers stay in
-`carriedBy`. A row shows what one assembly does to the reference. A segment that
+on the row of the first path that reaches it, and the other haplotypes stay in
+`samples`. A row shows what one assembly does to the reference. A segment that
 several haplotypes share appears on only one of their rows.
 
 ## On JBrowse Desktop
@@ -316,8 +316,9 @@ charcoal marks sit under it, tied by grey threads to where they attach.
 
 The assembly an allele "came from" depends on the format. On rGFA it is the
 strain that _first contributed_ the sequence, because `SR` is build order and
-the file records no other carriers. A path GFA states every path that visits a
-segment, so a row shows carriage and the node popup lists the other carriers.
+the file records no other assemblies. A path GFA states every path that visits a
+segment, so a row shows which haplotypes have it and the node popup lists the
+rest.
 
 Anchored and Sample rows both draw an allele across **the reference it
 replaces**. An insertion replaces no reference, so it draws as a mark where it
@@ -338,17 +339,17 @@ inside it, so a superbubble opens level by level.
 <Figure caption="The LPA window force-directed with its bubbles haloed and named, LPA pinned under the backbone with its exons along the reference nodes, and clicking a halo label opens its bubble." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 The graph draws the session's gene track onto the backbone. Exons are dark
-stretches along the reference nodes that carry them, and each gene's name is
-pinned under the backbone at the gene's midpoint. An allele has no reference
-coordinates and shows no exon. **Genes on the backbone** in the track menu turns
-the genes off, and **Gene track** in its **Settings** picks the track when the
-assembly has more than one.
+stretches along their reference nodes, and each gene's name is pinned under the
+backbone at the gene's midpoint. An allele has no reference coordinates and
+shows no exon. **Genes on the backbone** in the track menu turns the genes off,
+and **Gene track** in its **Settings** picks the track when the assembly has
+more than one.
 
 A graph with walks, such as a GBZ cut or a GFA with P or W lines, supports three
 more displays. **Node width** in the track menu's **Settings** draws a node
-thicker the more walks carry it, scaled by the square root of its depth against
+thicker the more walks visit it, scaled by the square root of its depth against
 the mean, which is Bandage's rule. **Uniform** turns that off. In a bubble with
-a route over a kilobase, every route carries a chip at the far point of its loop
+a route over a kilobase, every route has a chip at the far point of its loop
 while **Mark bubbles** is on. The chip names the walks that take the route and
 gives the route's length. The track menu's **Walk** submenu highlights one walk.
 Its nodes keep their colour, its links draw dark, and everything else fades, on
@@ -359,8 +360,8 @@ reference walk's.
 A gbz-base track draws one lane per haplotype, and **Display types → Graph** in
 its track menu draws the same track as a graph of the haplotypes' walks. The
 **Haplotypes** field in **Settings** lists the haplotypes the cut holds beside
-the reference, and with the field empty the track cuts every haplotype the graph
-carries.
+the reference, and with the field empty the track cuts every haplotype in the
+graph.
 [Repeat lengths across HPRC haplotypes](/docs/tutorials/pangenome_hprc_repeats#one-haplotypes-copies)
 reads a repeat array this way.
 
@@ -390,11 +391,11 @@ relative length.
 **Graph context**, in the same **Settings**, sets how far the cut follows links
 past the region, and defaults to **1 hop**. It is the in-app counterpart of
 `odgi extract -c N`. An allele's interior segments are indexed under the
-sequence of the haplotype that carries them, so a reference query never reaches
-them. A detour that leaves the backbone before the window and rejoins after it
-therefore arrives as two stubs. A hop closes those stubs, at the cost of one
-query per off-reference segment already reached. **None** shows what the region
-query alone reaches.
+sequence of their haplotype, so a reference query never reaches them. A detour
+that leaves the backbone before the window and rejoins after it therefore
+arrives as two stubs. A hop closes those stubs, at the cost of one query per
+off-reference segment already reached. **None** shows what the region query
+alone reaches.
 
 Both halves below share the genes and segments lanes and color each node the
 same way, so a segment can be found in either. A hop is one step, so the right
@@ -412,8 +413,8 @@ slice comes from a bubble decomposition: cut one with
 ## Color schemes and matching a linear track {#colors-that-mean-the-same-thing-in-both-panels}
 
 The track menu's **Color** submenu opens on **Auto**, which is Reference
-position on any graph carrying reference coordinates and Uniform on one carrying
-none. Three of its schemes are described here:
+position on any graph with reference coordinates and Uniform on one with none.
+Three of its schemes are described here:
 
 - **Reference position** ramps hue over the window the subgraph was cut from,
   red at its start to magenta at its end, with a key in the top right naming the
@@ -426,9 +427,9 @@ none. Three of its schemes are described here:
 - **Depth** is how many paths walk each segment, which is core-versus-accessory
   at the segment level.
 
-A segments lane shares the graph's hues when its track carries the matching
-expression. Reference position, over the 50 kb window from 4,050,000 that the
-figures above are cut from:
+A segments lane shares the graph's hues when its track's `color` holds the
+matching expression. Reference position, over the 50 kb window from 4,050,000
+that the figures above are cut from:
 
 ```json addtrack
 {
@@ -490,7 +491,7 @@ K12 has and none for a base K12 lacks, so it cannot draw 65 kb that exists only
 in CFT073. The graph holds both, and the ringed node in the graph track is that
 65 kb.
 
-<Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies across every lane above it. The ringed node is 65.4 kb carried only by CFT073, and it leaves and rejoins K12 at either end of the 2.1 kb band, which is the pair of teal K12 segments boxed in blue in the graph." src="/img/pangenome/rgfa_hover_sync.png" />
+<Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies across every lane above it. The ringed node is 65.4 kb only CFT073 has, and it leaves and rejoins K12 at either end of the 2.1 kb band, which is the pair of teal K12 segments boxed in blue in the graph." src="/img/pangenome/rgfa_hover_sync.png" />
 
 The same event drawn as an alignment is independent evidence. The graph's
 insertion comes from the graph's segment and link indexes. The alignment below
@@ -534,7 +535,7 @@ opens one this way.
 
 <Figure caption="Top: the graph view's Launch menu over a 50 kb K12 window. Each strain's entry names the locus it contributes, in that strain's coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, here with curved ribbons, transparent indels and Follow switched on so each row tracks the K12 window above it." src="/img/pangenome/rgfa_launch_out_menu.png" />
 
-The per-strain entries show what a strain carries at the locus. K12's
+The per-strain entries show each strain's sequence at the locus. K12's
 `asnW`/`asnU`/`asnV` tRNA genes are integration sites for E. coli pathogenicity
 islands, and in that window the graph gives CFT073 tens of kilobases that the
 reference lacks. Clicking CFT073's entry opens that sequence on CFT073's
@@ -556,10 +557,10 @@ an arm is, and the reference-position ramp shows _where_ each segment sits.
 **Requires the source assemblies.**
 
 The `.segs.bed.gz` and `.links.bed.gz` indexes record what the graph contains.
-Which strain carries which segment is not in them, because rGFA's `SR` tag is
-build order, not sample. minigraph can recompute the walks by aligning each
-assembly back to the graph (`minigraph -cxasm --call`). The call writes one line
-per bubble per sample, with the path that sample takes and its length.
+Which strains have each segment is not in them, because rGFA's `SR` tag is build
+order, not sample. minigraph can recompute the walks by aligning each assembly
+back to the graph (`minigraph -cxasm --call`). The call writes one line per
+bubble per sample, with the path that sample takes and its length.
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
 runs the call for every strain and projects the results into one tabix-indexed
 BED, with a row per bubble per strain:
@@ -619,21 +620,21 @@ Most bubbles here are biallelic. A tail of bubbles has a different allele in all
 five strains, and those are the hypervariable loci at the end of the
 allele-frequency spectrum. `strand` picks out inversions, which on this graph
 are all IAI39's and fall in long contiguous runs. **Clustering → Cluster rows by
-similarity** reorders the rows by which alleles each strain carries. On five
-strains the clustering is a sanity check. On a few hundred haplotypes it is the
+similarity** reorders the rows by which alleles each strain has. On five strains
+the clustering is a sanity check. On a few hundred haplotypes it is the
 analysis.
 
 `gfatools bubble` reports **top-level** bubbles only. On this graph they never
 overlap, so one flat lane per strain is complete. The lane loses variation
 nested _inside_ a bubble, so a 113 kb allele is one block. The
 [variants projection](/docs/tutorials/pangenome_ecoli#pangenome-variants-projection)
-carries that nested tier.
+includes that nested tier.
 
 ## Alleles from the rGFA alone {#when-all-you-have-is-the-graph}
 
 Someone else's rGFA usually arrives without the assemblies it was built from, so
 the re-mapping above is not possible. The two indexes still record every allele
-in the graph, because each L-line row carries both of its endpoints in full. A
+in the graph, because each L-line row records both of its endpoints in full. A
 link between two backbone segments that leaves a coordinate _gap_ is a deletion.
 A link from the backbone into a rank>0 segment enters an allele, and the
 allele's length is the total of the segments it walks before rejoining.
@@ -645,8 +646,8 @@ bash build_rgfa_alleles.sh ecoli_minigraph   # -> ecoli_minigraph.alleles.bed.gz
 ```
 
 Each row describes an allele against the reference it replaces, which makes the
-row an alignment. The BED therefore carries a `CIGAR` column (`2062M63348I`),
-and an [alignments track](/docs/user_guides/alignments_track) reads it directly:
+row an alignment. The BED therefore has a `CIGAR` column (`2062M63348I`), and an
+[alignments track](/docs/user_guides/alignments_track) reads it directly:
 
 ```json addtrack
 {
@@ -681,7 +682,7 @@ file loaded as a `FeatureTrack`, whose default display has that menu item:
   whose walk passed a branch point, so its `delta` is one of several routes
   through a nested bubble.
 
-This route cannot tell you who carries an allele. `discoveryRank` and
+This route cannot tell you which assemblies have an allele. `discoveryRank` and
 `firstSeenIn` name the **first** assembly to contribute a segment, because
 minigraph collapses shared sequence. An allele that four strains share is
 credited to whichever strain was added first. Rank records build order, so a
@@ -701,6 +702,6 @@ per-strain route when you have the assemblies.
 - [](/docs/tutorials/pangenome_cactus)
 - [Configuring plugins](/docs/config_guides/plugins)
 - [PANGENOME_GRAPHS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PANGENOME_GRAPHS.md)
-  — what rGFA and plain GFA can and cannot say about coordinates and carriage,
-  the one-node-per-bubble level of detail, and the decisions here that look like
-  bugs
+  — what rGFA and plain GFA can and cannot say about coordinates and which
+  haplotypes have a segment, the one-node-per-bubble level of detail, and the
+  decisions here that look like bugs

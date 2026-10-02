@@ -281,7 +281,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'graph alleles, listed without their carriers',
+        text: 'graph alleles, each sequence once, whichever assemblies have it',
         fontSize: 18,
         leader: true,
         anchor: {

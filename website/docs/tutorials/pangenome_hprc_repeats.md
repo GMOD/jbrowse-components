@@ -11,10 +11,11 @@ tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
 ---
 
-A tandem repeat is one sequence copied head to tail, and how many copies a
-person carries varies. An assembled haplotype spans the whole array, so the
-Human Pangenome Reference Consortium's release 2 graph holds each haplotype's
-repeat at its full length. We read two repeats off it, one bar per haplotype:
+A tandem repeat is one sequence copied head to tail, and the number of copies
+varies from person to person. An assembled haplotype spans the whole array, so
+the Human Pangenome Reference Consortium's release 2 graph holds each
+haplotype's repeat at its full length. We read two repeats off it, one bar per
+haplotype:
 
 - at _LPA_, count copies of the kringle IV type 2 repeat and tell its two repeat
   types apart
@@ -71,7 +72,7 @@ genotypes of 100 of its samples (Dolzhenko et al. 2024):
 
 ## The LPA kringle repeat
 
-_LPA_ carries a tandem array of kringle IV type 2 (KIV-2) copies, tied to
+_LPA_ contains a tandem array of kringle IV type 2 (KIV-2) copies, tied to
 lipoprotein(a) levels, a heart-disease risk factor (Schmidt et al. 2016). Open
 the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and press
 **graph** on the LPA row. JBrowse opens on `chr6:160,525,000-160,655,000`. Pick
@@ -98,18 +99,18 @@ same track as a graph of the walks. Enter the eight lanes the track drew in the
 `HG00097.1, HG00099.1, HG00128.1, HG00133.1, HG01109.1, HG01123.1, HG01960.1, HG02055.1`,
 and pick **Layout → Force-directed layout**.
 
-A node draws thicker the more walks carry it (Bandage's depth as width), so the
-shared backbone is the thick line and copies that one haplotype carries are thin
-loops. Pick `HG00133` under **Walk**: its route stays dark while everything else
-fades, and a readout gives its length against the reference walk.
+A node draws thicker the more walks visit it (Bandage's depth as width), so the
+shared backbone is the thick line and copies on one haplotype are thin loops.
+Pick `HG00133` under **Walk**: its route stays dark while everything else fades,
+and a readout gives its length against the reference walk.
 
 <Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Walk. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
 Pick **Layout → Walk rows** and **Color → Uniform**: each walk becomes a bar,
-longest first, blue where GRCh38 carries the same sequence and purple where it
-does not, so the copies a haplotype adds read as its purple stretch.
+longest first, blue where GRCh38 has the same sequence and purple where it does
+not, so the copies a haplotype adds read as its purple stretch.
 
-<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, under LPA with the KIV-2 bubble boxed in the bubbles lane. The purple stretch of each bar is kringle copies GRCh38 does not carry, and each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
+<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, under LPA with the KIV-2 bubble boxed in the bubbles lane. The purple stretch of each bar is kringle copies absent from GRCh38, and each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 
 Click the KIV-2 bubble boxed in the bubbles lane. Its details give
 `shortestAlleleLength` and `longestAlleleLength`, the shortest and longest
@@ -294,12 +295,12 @@ order, and set `repeatKey` to `chr19:1049406-1050096`.
 
 HG00099, HG03688 and HG00741 tick at the end of each bar: reads and assemblies
 agree. HG02647 and HG01943 turn red: TRGT calls each near-homozygous while the
-graph carries a haplotype neither call reaches (two, in HG01943). HG02559 and
-HG04199 each carry a walk with no verdict: no read spans one of HG02559's
+graph has a haplotype neither call reaches (two, in HG01943). HG02559 and
+HG04199 each have a walk with no verdict: no read spans one of HG02559's
 alleles, so the tick on HG02559#1 is grey, and HG04199's assembly does not span
 the repeat, so its readout marks that walk partial.
 
-<Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar carrying the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
+<Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar marked with the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
 ## Check it against TRGT's genotypes
 
@@ -338,15 +339,15 @@ track:
 
 Open `chr19:1,049,000-1,050,500` and click the record. A **Tandem repeat** card
 opens above the details. With 94 samples the card starts on **By allele**: one
-bar per allele instead of one per haplotype, each labelled with the share of the
-188 called alleles that carry it, most common first.
+bar per allele instead of one per haplotype, each labelled with its share of the
+188 called alleles, most common first.
 
-<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each bar is one of TRGT's alleles as copies of the 51 bp motif, with its share of the called alleles at left and its length and copy count at right. Almost every bar is one allele carried once." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
+<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each bar is one of TRGT's alleles as copies of the 51 bp motif, with its share of the called alleles at left and its length and copy count at right. Almost every bar is an allele called once." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
-Almost every allele is carried once, and no sample carries GRCh38's allele.
-Click the ALT 1 bar: the other bars fade and the **Samples** card narrows to the
-samples that carry it. **By haplotype** swaps the bars for the first 30 called
-alleles, each labelled with its sample.
+Almost every allele is called once, and no sample has GRCh38's allele. Click the
+ALT 1 bar: the other bars fade and the **Samples** card narrows to the samples
+with it. **By haplotype** swaps the bars for the first 30 called alleles, each
+labelled with its sample.
 
 ## Check the alleles against TRGT's lengths
 

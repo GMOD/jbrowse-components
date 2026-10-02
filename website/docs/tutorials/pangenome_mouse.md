@@ -14,7 +14,7 @@ itself one of the strains, C57BL/6J, which inverts the sign of the best-known
 variant in the panel. No locus list has been published for these strains, so we
 rank the graph for its most variable loci and open the densest bubble. We:
 
-- at _Nnt_, read a C57BL/6J deletion as sequence the other strains carry
+- at _Nnt_, read a C57BL/6J deletion as sequence the other strains have
 - rank the bubbles in the graph and open the densest one that fits in a window,
   at _Dock2_
 - check the bubble against the hosted index
@@ -61,8 +61,8 @@ each file holds.
 
 `minigraph` writes no path lines, so the graph records the assembly that first
 contributed each allele, and `firstSeenIn` in the allele file is that
-construction order. Which strains carry an allele is not in the graph.
-[](/docs/tutorials/pangenome_cattle) is a panel whose path lines give carriage.
+construction order. The graph does not list which strains have an allele.
+[](/docs/tutorials/pangenome_cattle) is a panel whose path lines do.
 
 ## Load the graph
 
@@ -70,7 +70,7 @@ We'll load the reference, then the graph and its bubbles. The graph track names
 the file prefix `build_pangenome_graph.sh` writes, and the `uri`s below are our
 hosted copy, so swap the prefix for your own build. The segments, links and
 bubbles are tabix-indexed, and `assemblyNameToPanSN` maps the assembly's name to
-the name its path lines carry.
+the name in its path lines.
 
 ```json addassembly
 {
@@ -131,11 +131,11 @@ Type `chr13:119,440,000-119,600,000`, and the graph track cuts the segments
 there. Pick **Layout → Force-directed layout** from its track menu and tick
 **Mark bubbles**. Turn on the bubbles track in the track selector.
 
-C57BL/6J carries a multi-exon deletion at _Nnt_ that abolishes the protein and
-makes B6J mice glucose intolerant. **GRCm39 is C57BL/6J**, so the backbone of
-this graph is the strain with the deletion. The graph shows the deletion as
-sequence that the _other_ strains carry and the reference lacks, the opposite
-sign from the published descriptions.
+C57BL/6J has a multi-exon deletion at _Nnt_ that abolishes the protein and makes
+B6J mice glucose intolerant. **GRCm39 is C57BL/6J**, so the backbone of this
+graph is the strain with the deletion. The graph shows the deletion as sequence
+that the _other_ strains have and the reference lacks, the opposite sign from
+the published descriptions.
 
 <Figure caption="The Nnt window with the RefSeq genes and the bubbles lane above the force-directed graph track. The loop hanging off the backbone beside Nnt is haloed and labelled as an insertion, because the reference is the strain that lacks the sequence." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
@@ -155,7 +155,7 @@ inside one intron at `chr11:34,516,044-34,560,497`. Click its **graph** link,
 then pick **Layout → Force-directed layout** from the graph track menu and tick
 **Mark bubbles**:
 
-<Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one cut. The bubbles lane is a single row, the allele inventory draws each alternative path at its size, and the graph carries one superbubble label, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and each charcoal loop is sequence other strains carry and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
+<Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one cut. The bubbles lane is a single row, the allele inventory draws each alternative path at its size, and the graph has one superbubble label, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
 ## Check it against the index
 

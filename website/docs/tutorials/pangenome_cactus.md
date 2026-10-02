@@ -25,7 +25,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- `docker` or `singularity`, for the cactus image, which carries odgi,
+- `docker` or `singularity`, for the cactus image, which includes odgi,
   halSynteny, hal2maf, `vg` and `samtools`
 - htslib (`bgzip`, `tabix`) and `python3`
 - `node`, for the [JBrowse CLI](/docs/cli)
@@ -107,7 +107,7 @@ Contigs keep their plain names here (`chr`). Cactus applies
 [PanSN](https://github.com/pangenome/PanSN-spec) `sample#haplotype#contig`
 naming to the graph internally.
 
-The image carries [odgi](https://github.com/pangenome/odgi), `halSynteny`,
+The image includes [odgi](https://github.com/pangenome/odgi), `halSynteny`,
 `hal2maf` and `vg`, which the projections below need; Cactus also ships a
 [binary release](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/BIN-INSTALL.md)
 for a machine with no container runtime. Every step runs in the same image, so
@@ -152,13 +152,13 @@ One run produces everything the sections below use:
   MAF projections read
 - `mc/ecoli.d2.gbz` and its `.dist`/`.min`/`.zipcodes`: the `vg giraffe` indexes
   from `--giraffe`, built over the graph filtered to sequence at least two
-  haplotypes carry
+  haplotypes have
 - `mc/ecoli.viz/chr.full.viz.png`: the odgi 1D graph raster
 
 ## Load the genomes
 
 Every projection is a track on a strain's assembly, and each strain's FASTA
-carries one sequence named `chr`. The
+holds one sequence named `chr`. The
 [pggb tutorial](/docs/tutorials/pangenome_ecoli#load-the-genomes) loads K12 and
 the other four strains, which this build shares, so the tracks below name the
 same five assemblies.
@@ -226,7 +226,7 @@ in a row per assembly the track lists.
 }
 ```
 
-<Figure caption="The Minigraph-Cactus graph's synteny projection: five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair. The bottom band crosses where IAI39 carries large inversions relative to the others." src="/img/pangenome_cactus/synteny.png" />
+<Figure caption="The Minigraph-Cactus graph's synteny projection: five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair. The bottom band crosses where IAI39 has large inversions relative to the others." src="/img/pangenome_cactus/synteny.png" />
 
 The synteny view stacks the same five strains in the same row order as the
 [all-vs-all tutorial's stack](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
@@ -259,7 +259,7 @@ matrix display, one column per variant and one row per sample:
 ```
 
 Each strain is one haplotype, so `renderingMode: "phased"` colors each cell by
-the allele that strain carries. The
+that strain's allele. The
 [multi-sample variant track guide](/docs/user_guides/multivariant_track) covers
 columns versus genomic positions, the genotype colors, and clustering samples by
 genotype.
@@ -308,7 +308,7 @@ already rooted on K12, the streaming
 }
 ```
 
-<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. The four non-K12 rows stop at the edges of the cryptic prophage CPZ-55, which K12 alone carries." src="/img/pangenome_cactus/maf.png" />
+<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. The four non-K12 rows stop at the edges of the cryptic prophage CPZ-55, which only K12 has." src="/img/pangenome_cactus/maf.png" />
 
 :::tip 💡 See also
 
@@ -343,8 +343,8 @@ and [per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)
 sections, over `mc/ecoli.full.og`, and load as the same
 [`QuantitativeTrack`](/docs/config_guides/quantitative_track) and
 [`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track#many-signals-in-one-track).
-Two names change: the reference path is `K12#0#chr`, and each other strain
-carries a trailing subpath tag (`Sakai#0#chr#0`), so the per-strain filter
+Two names change: the reference path is `K12#0#chr`, and each other strain's
+path name ends in a subpath tag (`Sakai#0#chr#0`), so the per-strain filter
 matches a prefix. The [build script](#reproduce-it-end-to-end) runs both.
 
 Depth counts path **steps** rather than strains, so a repeat the graph folded
@@ -487,21 +487,22 @@ segments as a lane instead, one block each.
 <Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session: the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and the track drawing the graph on K12's coordinates." />
 
 A kilobase or two is the width to draw one at. Past the flagellar operon, K12
-carries an IS1 element the other four skip. Type `chr:1,978,100-1,979,700`, and
-the graph track cuts that window. Pick **Layout → Force-directed layout** from
-its track menu to see the element's shape. A second copy of the segments track,
-colored by the `SM:Z:` carriage the walk recorded, shows which segments those
-are; the pggb page gives
-[that track's config](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane).
+has an IS1 element the other four skip. Type `chr:1,978,100-1,979,700`, and the
+graph track cuts that window. Pick **Layout → Force-directed layout** from its
+track menu to see the element's shape. A second copy of the segments track,
+colored by how many strains the `SM:Z:` tag lists for each segment, shows which
+segments those are; the pggb page gives
+[that track's config](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-lane).
 Show the [MAF track](#whole-genome-alignment-maf-projection) above the graph
-too: the carriage lane counts the strains, and the MAF's rows name them.
+too: the strains-per-segment lane counts the strains, and the MAF's rows name
+them.
 
-<Figure caption="1.6 kb of K12 past flhD, as lanes above and as the graph track below. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, the four non-K12 MAF rows carry it as a deletion, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
+<Figure caption="1.6 kb of K12 past flhD, as lanes above and as the graph track below. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the strains-per-segment lane paints that span as one strain where the rest of the window is all five, the four non-K12 MAF rows show it as a deletion, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
 
 The other four strains' route is a link from the node before the IS1 element to
 the node after it. **Show deletion edges** in the track menu draws that link
-dashed, labelled with the length of the node it skips. The link carries no
-sequence, so its drawn length comes from the layout.
+dashed, labelled with the length of the node it skips. The link has no sequence,
+so its drawn length comes from the layout.
 
 ## Compared to `odgi viz`
 
@@ -509,7 +510,7 @@ sequence, so its drawn length comes from the layout.
 [`odgi viz`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_viz.html)
 raster with one row per strain and graph node order on the horizontal axis.
 
-<Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz, one row per strain. The horizontal axis is graph node order, so its positions do not correspond to genes or coordinates. The gold band marks the locus carried over to the figure below." src="/img/pangenome_cactus/graph.png" />
+<Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz, one row per strain. The horizontal axis is graph node order, so its positions do not correspond to genes or coordinates. The gold band marks the locus the figure below opens." src="/img/pangenome_cactus/graph.png" />
 
 The `odgi pav` track shows the same information. Drawing it on K12's coordinates
 in the raster's row order and colors leaves the horizontal axis as the only
@@ -517,7 +518,7 @@ difference. The gold band marks `chr:1,000,000-1,100,000` in both.
 
 <Figure caption="The same paths and the same colors on K12's coordinates. The gold band is the same 100 kb in both figures, and takes up a visibly smaller share of this axis than of the graph axis above." src="/img/pangenome_cactus/graph_correspondence.png" />
 
-The graph axis counts pangenome bases, so a locus where other strains carry
+The graph axis counts pangenome bases, so a locus where other strains have
 sequence K12 lacks takes up more of it. This 100 kb window has the largest such
 gap, and it sits over a dip in the depth track for that reason. Node ids in a
 Cactus graph run `1..N` in node order, so walking K12's `P` line turns a K12

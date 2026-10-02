@@ -103,22 +103,22 @@ Press **haplotypes** on the C4A / C4B row. In the track menu open **Lanes →
 Choose lanes...**, press **Untick shown**, tick `HG01978.2` and `HG02004.2`, and
 press **Draw these lanes**.
 
-<Figure caption="C4 from the HPRC page's haplotypes launch with two lanes chosen, HG01978.2 and HG02004.2, each carrying three copies of the C4 module, under the RefSeq genes. The band from GRCh38 leaves the third module unmatched, and the band between the two haplotypes matches it off the nodes both walks share." src="/img/multiway_synteny/hprc_c4_graph_stack.png" />
+<Figure caption="C4 from the HPRC page's haplotypes launch with two lanes chosen, HG01978.2 and HG02004.2, each with three copies of the C4 module, under the RefSeq genes. The band from GRCh38 leaves the third module unmatched, and the band between the two haplotypes matches it off the nodes both walks share." src="/img/multiway_synteny/hprc_c4_graph_stack.png" />
 
 ## Amylase: copy number
 
 Press **haplotypes** on the AMY1 row and choose `HG01361.1`, `HG00133.2`,
-`HG00133.1`, `NA18608.2` and `HG00232.1`. A lane carrying more copies spans more
-of its contig in the same width, and its label gives that span as a multiple of
-the window.
+`HG00133.1`, `NA18608.2` and `HG00232.1`. A lane with more copies spans more of
+its contig in the same width, and its label gives that span as a multiple of the
+window.
 
-<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, each from a different span class, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes, and the span in each lane's label carries the copy count; each band draws the extra copies of the longer lane as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
+<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, each from a different span class, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes, and the span in each lane's label gives the copy count; each band draws the extra copies of the longer lane as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
 
 To read the lengths, take **Display types → Graph**, enter the five names in
 **Settings → Haplotypes**, then pick **Layout → Walk rows** and **Color →
 Uniform**.
 
-<Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, blue where GRCh38 carries the same sequence and purple where it does not. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
+<Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, blue where GRCh38 has the same sequence and purple where it does not. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
 
 ## Check it against the published classes
 
@@ -148,11 +148,11 @@ jexl:feature.inversion
 Type `chr1:144,260,000-144,610,000`, the 1q21.1 locus, where the lane flags one
 bubble. The flag fits a polymorphic inversion and an inverted paralog in a
 segmental duplication equally, and the graph draws the breakpoints as two
-deletion arcs because its edges carry no orientation. The haplotype alignments
-tell the two apart. The figure below slices a carrier and a non-carrier out of
-HPRC's all-vs-GRCh38 PAF, each with its CAT annotation
+deletion arcs because its edges record no orientation. The haplotype alignments
+tell the two apart. The figure below slices a haplotype with the inversion and
+one without out of HPRC's all-vs-GRCh38 PAF, each with its CAT annotation
 ([Reproduce it end to end](#reproduce-it-end-to-end) builds it), and the hg38
-row between them agrees with the non-carrier.
+row between them agrees with the one without.
 
 <Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. The pink ribbons are each haplotype's alignment to hg38, and a ribbon that crosses itself is an inversion. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. The boxed pair on each row is PPIAL4F and PPIAL4E, in opposite orders on the two haplotypes." src="/img/pangenome/hprc_inversion.png" />
 
@@ -267,7 +267,7 @@ The session below opens that config; point `config=` at your copy:
 }
 ```
 
-<Figure caption="One haplotype of each common amylase structure, one AMY1 copy at the top to seven at the bottom, each aligned to the row under it by minimap2 and colored by strand. Each step up in copies opens a wedge over the genes only the longer row carries." src="/img/multiway_synteny/hprc_amylase_stack.png" />
+<Figure caption="One haplotype of each common amylase structure, one AMY1 copy at the top to seven at the bottom, each aligned to the row under it by minimap2 and colored by strand. Each step up in copies opens a wedge over the genes only the longer row has." src="/img/multiway_synteny/hprc_amylase_stack.png" />
 
 A separate script builds the [inversion figure](#inversions) from release 2's
 published all-vs-GRCh38 PAF. A reversed alignment alone proves nothing, because
@@ -277,10 +277,10 @@ forward. The script:
 
 1. streams the PAF once, keeping every haplotype's alignments over a window that
    reaches well past the bubble on both sides
-2. sorts each haplotype into carrier (bubble reversed, flanks forward),
-   non-carrier (forward throughout) or neither, and prints how many fall in each
-3. keeps one carrier and one non-carrier, with each one's contig length and CAT
-   genes for the drawn window
+2. sorts each haplotype into inverted (bubble reversed, flanks forward), forward
+   (forward throughout) or neither, and prints how many fall in each
+3. keeps one inverted and one forward haplotype, with each one's contig length
+   and CAT genes for the drawn window
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_inversion_synteny.sh

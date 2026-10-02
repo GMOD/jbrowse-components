@@ -12,7 +12,7 @@ import {
   ecoliPageTrack,
 } from './demoBase.ts'
 import {
-  CARRIAGE_DISPLAY,
+  STRAINS_PER_SEGMENT_DISPLAY,
   GRAPH_DRAWN,
   cutNear,
   graphTrack,
@@ -61,7 +61,7 @@ const MC_CARRIAGE_TRACK = 'ecoli_cactus_carriage'
 const MC_CARRIAGE_SESSION_TRACK = {
   type: 'FeatureTrack',
   trackId: MC_CARRIAGE_TRACK,
-  name: 'MC graph: segment carriage',
+  name: 'MC graph: strains per segment',
   assemblyNames: MC_SEGMENTS_SESSION_TRACK.assemblyNames,
   adapter: MC_SEGMENTS_SESSION_TRACK.adapter,
 }
@@ -173,7 +173,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               // the lane itself is one row; the height is what the five-entry
               // legend needs
               height: 150,
-              ...CARRIAGE_DISPLAY,
+              ...STRAINS_PER_SEGMENT_DISPLAY,
             },
             // which four: the carriage lane counts the strains, and the rows
             // name them, alike for every small variant in the window

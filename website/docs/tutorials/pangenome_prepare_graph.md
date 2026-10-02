@@ -2,20 +2,21 @@
 title: Pangenome (hosting your own graph)
 description:
   One command turns your pangenome graph into the indexed files JBrowse browses
-  by locus, plus the config that carries them
+  by locus, plus the config that puts them on tracks
 guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
 
 To let people browse a pangenome graph in JBrowse, from a whole chromosome down
-to single nodes, the graph has to be cut into small indexed files that answer
-one window at a time. One command writes those files and the config that puts
-them on tracks. We run it on HPRC release 2, and:
+to single nodes, the graph has to be cut into small indexed files that JBrowse
+reads one window at a time. One command writes those files and the config that
+puts them on tracks. We run it on HPRC release 2, and:
 
 - load the plugin and run the command
 - open the track as a graph and as a lane of segments
 - check the index against the graph
-- add two optional layers: carriage per segment, and the walk of each haplotype
+- add two optional layers: the haplotypes on each segment, and the walk of each
+  haplotype
 
 :::caution Experimental
 
@@ -28,7 +29,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`), `bcftools`, `python3`, `sort`
 - [`gfatools`](https://github.com/lh3/gfatools) and GNU awk, for an rGFA
-- [`minigraph`](https://github.com/lh3/minigraph), for carriage
+- [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
+  through the graph
 - [`vg`](https://github.com/vgteam/vg) 1.69.0+,
   [`gbz-base`](https://github.com/jltsiren/gbz-base) and
   [`gbz-haplotype-index`](https://crates.io/crates/gbz-haplotype-index), for
@@ -53,7 +55,7 @@ graph, which every HPRC page on this site reads.
 
 GraphGenomeView loads by URL, from a `plugins` array at the top of `config.json`
 ([configuring plugins](/docs/config_guides/plugins)). The config the command
-writes carries this entry:
+writes holds this entry:
 
 <!-- GRAPH_PLUGIN_CONFIG START -->
 
@@ -204,10 +206,11 @@ matches the fifth.
 - **Backbone rows with no alleles** mark a place where the graph collapsed,
   which minigraph does to near-identical segmental duplications.
 
-## Who carries what
+## Which haplotypes walk each segment
 
-The rank in an rGFA is build order, so it names the first assembly that
-contributed a segment. Carriage comes from one of two sources.
+The rank in an rGFA is build order, so it names the first assembly a segment
+came from. The haplotypes whose paths walk each segment come from one of two
+sources.
 
 With the **assemblies**, map each one back through the graph, reference first,
 and read the path it takes:
@@ -226,19 +229,19 @@ minigraph -cxasm --call -t 8 graph.rgfa.gz sample.fa > sample.call.bed
 runs that per assembly and joins the output into one tabix-indexed row per
 bubble per sample, drawn as one lane per haplotype.
 
-With a **plain GFA**, the command records who visits each segment as an `SM:Z:`
-tag while it walks the paths. The node panel shows it as `carriedBy`, and a
-track reads it as `feature.samples` and `feature.carriers`. **Color by... →
-Attribute...** with `carriers` gives each count a separate colour. Past a
-handful of haplotypes a ramp reads better; **Edit plot...** in the same dialog
-takes one, here red for a segment one haplotype carries to grey for the most
-widely carried:
+With a **plain GFA**, the command records the haplotypes whose paths visit each
+segment as an `SM:Z:` tag while it walks the paths. The node panel lists them as
+`samples`, and a track reads them as `feature.samples` and their count as
+`feature.sampleCount`. **Color by... → Attribute...** with `sampleCount` gives
+each count a separate colour. Past a handful of haplotypes a ramp reads better;
+**Edit plot...** in the same dialog takes one, here red for a segment on one
+haplotype to grey for a segment on most:
 
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "graph_carriage",
-  "name": "graph: carriage per segment",
+  "trackId": "graph_haplotypes_per_segment",
+  "name": "graph: haplotypes per segment",
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
@@ -246,23 +249,23 @@ widely carried:
   },
   "displayDefaults": {
     "color": {
-      "field": "carriers",
+      "field": "sampleCount",
       "scale": "linear",
       "domainMin": 1,
       "range": ["#e31a1c", "#bdbdbd"],
-      "title": "Haplotypes carrying"
+      "title": "Haplotypes"
     }
   }
 }
 ```
 
-[The E. coli pggb tutorial](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane)
-draws carriage over an IS5 insertion.
+[The E. coli pggb tutorial](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-lane)
+draws the count over an IS5 insertion.
 
-Carriage is per haplotype (`HG002.1`), so a diploid sample's two copies count
+The count is per haplotype (`HG002.1`), so a diploid sample's two copies count
 separately.
-[Snarl-level carriage](/docs/tutorials/pangenome_hprc#the-callset-beside-the-graph)
-reads HPRC's published carriage file.
+[The HPRC tutorial](/docs/tutorials/pangenome_hprc#every-haplotype-with-the-allele)
+reads HPRC's phased VCF, which lists every haplotype's allele at every bubble.
 
 ## Haplotype walks: a gbz-base database
 

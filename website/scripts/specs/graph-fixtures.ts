@@ -199,22 +199,22 @@ export const ALT_ALLELE_COLOR = 'rgb(60,65,72)'
 
 // A segments lane colored by how many of the five strains walk each segment,
 // rather than by reference position. The adapter puts the walk's `SM:Z:` tag on
-// the feature as `samples` and `carriers`, so this is the graph's own statement
+// the feature as `samples` and `sampleCount`, so this is the graph's own statement
 // of membership drawn along the reference instead of read off one clicked node.
 //
 // Five discrete steps rather than a continuous ramp, because five strains is
 // five answers and the key then names each one. Grey for all five: the core
 // backbone is the background these figures are not about, and the private boxes
-// have to be what the eye lands on. An rGFA has no tag column, so `carriers` is
-// absent there and paints the no-value grey.
+// have to be what the eye lands on. An rGFA has no tag column, so `sampleCount`
+// is absent there and paints the no-value grey.
 //
-// Shared because both builders' graphs carry the same five strains and the same
+// Shared because both builders' graphs hold the same five strains and the same
 // tag: the pggb figures read it off `ecoli_pggb` and the Minigraph-Cactus one
 // off `ecoli_cactus`, and a second copy of the scale would let the two pages
 // answer the same question in different colors.
-export const CARRIAGE_DISPLAY = {
+export const STRAINS_PER_SEGMENT_DISPLAY = {
   color: {
-    field: 'carriers',
+    field: 'sampleCount',
     domain: ['5', '4', '3', '2', '1'],
     range: ['#bdbdbd', '#fed976', '#feb24c', '#fd8d3c', '#e31a1c'],
     labels: [
@@ -224,7 +224,7 @@ export const CARRIAGE_DISPLAY = {
       '2 strains',
       '1 strain (private)',
     ],
-    title: 'Strains carrying',
+    title: 'Strains',
   },
 }
 

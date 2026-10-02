@@ -1053,7 +1053,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // naming the element that explains both.
   //
   // Needs the plugin bundle pinned in the fixture to be 0093d998d280 or later.
-  // Before that `getFeatures` parsed the tag column and dropped it, so `carriers`
+  // Before that `getFeatures` parsed the tag column and dropped it, so `sampleCount`
   // was absent on every feature and this whole lane rendered in the color the
   // expression falls through to.
   {
@@ -1122,7 +1122,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         // use full naming"). It is: `SM:Z:`, a GFA optional tag in the same
         // TYPE:VALUE form SAM uses, holding the haplotypes that walk the
         // segment. RgfaTabixAdapter puts it on the feature as `samples` and
-        // `carriers`, and the colour is a jexl expression over `carriers` --
+        // `sampleCount`, and the colour is a jexl expression over `sampleCount` --
         // an ordinary FeatureTrack and LinearBasicDisplay with a `color` and a
         // `legend`, NOT a custom display type, which is the other half of the
         // note and is what the tutorial's config fence shows.
@@ -1704,7 +1704,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       // believed.
       {
         type: 'text',
-        text: 'the ringed node is sequence only CFT073 carries',
+        text: 'the ringed node is sequence only CFT073 has',
         anchor: { graphNode: HOVERED_ALLELE },
         dx: 300,
         dy: -60,
@@ -1803,7 +1803,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'sequence only CFT073 carries',
+        text: 'sequence only CFT073 has',
         fontSize: 18,
         anchor: {
           view: [0, 1],

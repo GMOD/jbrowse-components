@@ -1,9 +1,8 @@
 ---
 title: Pangenome (cattle)
 description:
-  Open the bovine super-pangenome, deconstruct it into the callset that names
-  which assembly carries what, and find published breed and species variants in
-  it
+  Open the bovine super-pangenome, deconstruct it into the callset that lists
+  each assembly's alleles, and find published breed and species variants in it
 guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
@@ -12,7 +11,7 @@ The bovine super-pangenome aligns twelve assemblies against the ARS-UCD1.2
 cattle reference: taurine and indicine breeds, yak, bison and gaur. Each
 assembly walks the graph as a named path, and `vg deconstruct` turns those paths
 into a VCF, so one locus reads both as a graph of where sequence is present and
-absent and as a callset naming who carries it. We:
+absent and as a callset listing which assemblies have it. We:
 
 - read a whole chromosome at one node per bubble
 - at _HSPA1A_, compare the graph's allele inventory with the callset
@@ -65,7 +64,7 @@ each of the graph files holds and how a graph produces them.
 We'll load the reference the graph is anchored to, then the graph track. Swap
 the prefix in `uri` for your own build of `build_pangenome_graph.sh`, which
 writes the tabix-indexed segments and links and the tier. `assemblyNameToPanSN`
-maps the assembly's name to the name its path lines carry.
+maps the assembly's name to the name in its path lines.
 
 ```json addassembly
 {
@@ -117,11 +116,11 @@ reference annotation.
 ## HSPA1A in the graph and the callset
 
 ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_ that
-carries _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it in
-every assembly they built. The **graph** holds that segment as alleles in the
+contains _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it
+in every assembly they built. The **graph** holds that segment as alleles in the
 allele inventory. These graphs record no construction rank, so `firstSeenIn` in
-the allele file names the first assembly in a fixed list, which may not carry
-the sequence.
+the allele file names the first assembly in a fixed list, which may not have the
+sequence.
 
 The **callset** gives a genotype per assembly. We ran `vg deconstruct` once per
 chromosome over the same graph:
@@ -155,7 +154,7 @@ one haplotype, and `renderingMode: "phased"` draws one row per assembly with a
 second alternate allele in a separate colour. `showVariantLane` draws each call
 once in a lane above the rows, across the reference span it replaces, labelled
 with its VCF ID (the graph nodes that bound it) and the allele change, so a
-reader sees what a call is before reading who carries it:
+reader sees what a call is before reading which rows have it:
 
 ```json addtrack
 {
@@ -220,9 +219,9 @@ the anchored layout to draw it along, so pick **Layout → Force-directed layout
 and **Bubble spread → Compress lengths** from the graph track's menu; the figure
 shows the three under the RefSeq genes.
 
-<Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. The variant lane over the rows marks the insertion just right of the `>3423>3424` call. Every row but the yak carries the insertion the inventory lists without carriers, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
+<Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. The variant lane over the rows marks the insertion just right of the `>3423>3424` call. Every row but the yak has the insertion, which the inventory lists once, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
 
-The yak row carries the reference. Leonard et al. built no yak assembly, so
+The yak row has the reference allele. Leonard et al. built no yak assembly, so
 their result does not cover it.
 
 A `minigraph` graph has no path lines and so no callset to deconstruct;
@@ -231,7 +230,7 @@ A `minigraph` graph has no path lines and so no callset to deconstruct;
 ## Published variants in the callset
 
 Each locus below is a structural variant a paper reported in one of these breeds
-or species. The rows that do not carry it are the control.
+or species. The rows without it are the control.
 
 ### The Celtic polled allele
 
@@ -255,31 +254,30 @@ OMIA curates as OMIA 000483-9913. Add OMIA's cattle records as a lane:
 
 Then open `chr1:2,424,000-2,436,000`.
 
-<Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset, whose variant lane names the call and its allele change. Only the Angus row carries the insertion under the record." src="/img/pangenome/bovine_polled.png" />
+<Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset, whose variant lane names the call and its allele change. Only the Angus row has the insertion under the record." src="/img/pangenome/bovine_polled.png" />
 
 OMIA also records the Friesian polled allele, an 80 kb duplication 200 kb
-further along, which Holstein cattle carry. The panel has no Holstein, and the
+further along, which Holstein cattle have. The panel has no Holstein, and the
 callset holds nothing that size there.
 
 ### A repeat upstream of KIT in white-headed cattle
 
 Simmental and Hereford cattle have white heads. Milia et al. (2025) tied the
 trait to a 14.3 kb segment repeated in tandem upstream of _KIT_: white-headed
-breeds carry extra copies, colour-headed breeds a deletion. The Hereford
+breeds have extra copies, colour-headed breeds a deletion. The Hereford
 reference holds a collapsed copy. Open `chr6:70,080,000-70,180,000`.
 
-<Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes and the callset, whose variant lane draws the record across the repeat and names its alleles. The Simmental row carries a distinct allele across the repeat, and every other row carries the deletion." src="/img/pangenome/bovine_kit.png" />
+<Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes and the callset, whose variant lane draws the record across the repeat and names its alleles. The Simmental row has a distinct allele across the repeat, and every other row has the deletion." src="/img/pangenome/bovine_kit.png" />
 
 The larger box at the left of the Simmental row is an insertion the length of
-the 14.3 kb segment: Simmental carries one more copy than the Hereford
-reference.
+the 14.3 kb segment: Simmental has one more copy than the Hereford reference.
 
 ### A deletion of TAS2R46 in gaur
 
 _TAS2R46_ encodes a bitter taste receptor. Leonard et al. (2022) found a 17 kb
 deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 
-<Figure caption="TAS2R46 on ARS-UCD1.2: RefSeq genes and the callset, whose variant lane draws the record over the deleted span and names its alleles. The gaur row carries the deletion, and four cattle rows carry a different allele across the same span." src="/img/pangenome/bovine_tas2r46.png" />
+<Figure caption="TAS2R46 on ARS-UCD1.2: RefSeq genes and the callset, whose variant lane draws the record over the deleted span and names its alleles. The gaur row has the deletion, and four cattle rows have a different allele across the same span." src="/img/pangenome/bovine_tas2r46.png" />
 
 The four cattle rows, Angus, Piedmontese, Brahman and Nellore, hold an allele
 slightly longer than the reference, and the insertion boxed in each row, between
@@ -307,7 +305,7 @@ The script writes the same `README.txt` provenance and build audits as
 [the mouse build](/docs/tutorials/pangenome_mouse#build-it-yourself).
 
 For a graph with path lines and no rGFA tags, `build_pangenome_graph.sh` walks
-the paths and writes a carriage tag per segment, so the graph track shows which
+the paths and writes an `SM:Z:` tag per segment, so the graph track shows which
 samples cross each node.
 
 The OMIA lane comes from OMIA's nightly database dump.

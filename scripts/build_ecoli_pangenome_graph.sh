@@ -403,7 +403,7 @@ python3 "$SCRIPT_DIR/gfa_nodes_to_bed.py" ecoli_pggb_subgraph.gfa "${REF}#1#chr"
 tabix -f -p bed ecoli_pggb_subgraph_nodes.bed.gz
 
 # The same walk over the WHOLE pggb graph, so it is browsable by locus: the
-# segment and link indexes RgfaTabixAdapter reads, with each segment's carriers
+# segment and link indexes RgfaTabixAdapter reads, with each segment's haplotypes
 # as an SM:Z: tag, and the one-node-per-bubble tier (ecoli_pggb.tier50) cut from
 # the raw snarl VCF above. Runs on the host (python3 only, no docker).
 bash "$SCRIPT_DIR/build_pangenome_graph.sh" "$GFA" ecoli_pggb --reference "$REF" \
@@ -788,7 +788,7 @@ cat > pggb_carriage_track.json <<'JSON'
 {
   "type": "FeatureTrack",
   "trackId": "ecoli_pggb_carriage",
-  "name": "pggb graph: segment carriage",
+  "name": "pggb graph: strains per segment",
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
@@ -798,7 +798,7 @@ cat > pggb_carriage_track.json <<'JSON'
     "displayMode": "collapsed",
     "showLabels": "none",
     "color": {
-      "field": "carriers",
+      "field": "sampleCount",
       "domain": ["5", "4", "3", "2", "1"],
       "range": ["#bdbdbd", "#fed976", "#feb24c", "#fd8d3c", "#e31a1c"],
       "labels": [
@@ -808,7 +808,7 @@ cat > pggb_carriage_track.json <<'JSON'
         "2 strains",
         "1 strain (private)"
       ],
-      "title": "Strains carrying"
+      "title": "Strains"
     }
   }
 }
