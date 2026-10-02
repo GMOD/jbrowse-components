@@ -74,11 +74,10 @@ JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 
 ## Loading the assemblies and the alignment
 
-We load the assembly the alignment was made against. Each strain's hub
-`config.json` holds a whole JBrowse assembly: the 2bit sequence, an alias table
-and the NCBI RefSeq gene track. The build copies each entry as the hub wrote it
-and adds the old short name as an alias, so a session can still say
-`hpylori_26695`:
+We'll load each strain's assembly from its hub. Each strain's hub `config.json`
+holds a whole JBrowse assembly: the 2bit sequence, an alias table and the NCBI
+RefSeq gene track. The build copies each entry as the hub wrote it and adds the
+old short name as an alias, so a session can still say `hpylori_26695`:
 
 ```json
 {

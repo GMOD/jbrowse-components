@@ -66,8 +66,8 @@ them. That expectation is the control the figures are read against.
 
 ## The two assemblies
 
-The ribbons name chromosomes, so the circle needs both genomes declared. hg38
-and mm39 share their chromosome names, so neither needs an alias table:
+The ribbons name chromosomes, so the circle needs both genomes declared. The
+hg38 alias table lets a track that says `1` find `chr1`:
 
 ```json addassembly
 {

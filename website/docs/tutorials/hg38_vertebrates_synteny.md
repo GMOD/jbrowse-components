@@ -112,8 +112,8 @@ One `SyntenyTrack` names hg38 and every genome it stacks, and its adapter is a
 assembly every child names. The list below is cut to three genomes for the page;
 the hosted config carries all eight. The assemblies and their gene tracks come
 from the hub configs unchanged, and a lane finds its gene models through the
-session, so the track is the one addition to the hub entries. A hub entry is
-what `jbrowse add-assembly` writes for a genome of your own:
+session, so the track is the one addition to the hub entries. A genome of your
+own loads from its FASTA instead:
 
 ```json addassembly
 {
