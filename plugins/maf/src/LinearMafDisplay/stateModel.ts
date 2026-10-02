@@ -2320,12 +2320,12 @@ export default function stateModelFactory(
                     ),
                   ]
                 : rendering === 'identity'
-                  ? [identityColorScale('heatmap', self.zoomedToBaseLevel)]
+                  ? [identityColorScale('heatmap', self.encodeBinBp === 1)]
                   : rendering === 'xyplot'
                     ? [
                         identityColorScale(
                           self.rowsColor === 'identity' ? 'heatmap' : 'xyplot',
-                          self.zoomedToBaseLevel,
+                          self.encodeBinBp === 1,
                         ),
                       ]
                     : []

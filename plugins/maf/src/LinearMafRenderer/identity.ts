@@ -46,15 +46,15 @@ const XYPLOT_BAR_ABGR = IDENTITY_ABGR[STEPS]!
 
 /**
  * The key for whichever identity plot draws: the ramp, the X-Y plot's one bar
- * colour with its height named, or at base level the ramp's two ends. There a
- * cell is one base, which matches or not, so the ramp's middle is never drawn.
+ * colour with its height named, or the ramp's two ends where each cell is one
+ * base, which matches or not, so the ramp's middle is never drawn.
  */
 export function identityColorScale(
   mode: IdentityPlot,
-  baseLevel = false,
+  oneBaseCells = false,
 ): ColorScale {
   const title = 'Per-base identity to reference'
-  if (mode === 'heatmap' && baseLevel) {
+  if (mode === 'heatmap' && oneBaseCells) {
     return {
       kind: 'categorical',
       id: 'heatmap-base',
