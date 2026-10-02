@@ -99,10 +99,11 @@ haplotypes land on H1a, H2A0, H3r, H5 and H7:
 
 ## Inversions
 
-An inversion is the same reference sequence, walked backwards. `gfatools bubble`
-flags it as an `inversion` boolean when a bubble's paths disagree about
-orientation. Press **graph** on the HPRC page's HLA / MHC row, open **Filter
-by... → Edit filters...** on the bubbles lane, and enter:
+A deletion or an extra copy changes how long a lane is. An inversion keeps the
+same sequence and walks it backwards, and `gfatools bubble` flags one as an
+`inversion` boolean when a bubble's paths disagree about orientation. Press
+**graph** on the HPRC page's CFH / CFHR row, open **Filter by... → Edit
+filters...** on the bubbles lane, and enter:
 
 ```text
 jexl:feature.inversion
@@ -218,6 +219,19 @@ bash build_amylase_haplotypes.sh
 
 <Figure caption="One haplotype of each common amylase structure, one AMY1 copy at the top to seven at the bottom, each aligned to the row under it by minimap2 and colored by strand. Each step up in copies opens a wedge over the genes only the longer row carries." src="/img/multiway_synteny/hprc_amylase_stack.png" />
 
+A separate script builds the [inversion figure](#inversions) from release 2's
+published all-vs-GRCh38 PAF:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_inversion_synteny.sh
+bash build_hprc_inversion_synteny.sh
+```
+
+[`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
+keeps the haplotypes whose alignments reverse the block while the flanks stay
+forward, then slices out one haplotype of each kind: the alignment, the contig
+length and the CAT genes.
+
 ## Whole genomes from a GFA
 
 Any GFA with walks converts to PAF against its reference walk, one record per
@@ -254,19 +268,6 @@ and opens at the CFH deletion, one lane per haplotype under GRCh38.
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-a-gbz-base-database)
 builds the gbz-base database for a graph of your own.
-
-A separate script builds the [inversion figure](#inversions) from release 2's
-published all-vs-GRCh38 PAF:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_inversion_synteny.sh
-bash build_hprc_inversion_synteny.sh
-```
-
-[`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
-keeps the haplotypes whose alignments reverse the block while the flanks stay
-forward, then slices out one haplotype of each kind: the alignment, the contig
-length and the CAT genes.
 
 ## See also
 

@@ -41,13 +41,13 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 - the GraphGenomeView plugin, which every launch from the HPRC page loads;
   [hosting your own graph](/docs/tutorials/pangenome_prepare_graph) loads it
-  into your own JBrowse. The callsets load in any JBrowse.
+  into your own JBrowse
 - for [Reproduce it end to end](#reproduce-it-end-to-end):
   [minigraph](https://github.com/lh3/minigraph)
 
 ## Where the data comes from
 
-[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), read through tabix
+[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), with tabix
 projections of its graph that we host.
 
 - the SV-resolution graph (`sv.gfa`) the projections are cut from:
@@ -127,7 +127,7 @@ Zoom out a few steps.
 The haplotype's CAT annotation has _HLA-DRB9_ and _HLA-DRB6_ either side of the
 allele and no _HLA-DRB5_, the gene its band covered on hg38.
 
-## The variant callset
+## Who else carries it
 
 The graph credits each allele to one haplotype. Release 2 publishes who carries
 it as a callset, one genotype per haplotype for all 464. Back on the HPRC page,
@@ -184,11 +184,13 @@ nests it one level down:
 jexl:(feature.INFO.LV[0]==0 || feature.start==32517421) && alleleLength(feature)>=50
 ```
 
-Cluster it, hide the bubbles and the allele inventory, and with the graph track
-still in **Layout → Force-directed layout**, right-click the charcoal allele
-beside _HLA-DRB5_ for **Highlight in hg38**.
+Cluster it, hide the bubbles and the allele inventory, and right-click the
+charcoal allele beside _HLA-DRB5_ in the force-directed graph for **Highlight in
+hg38**.
 
 <Figure caption="The callset and the graph in one window. The band is the HLA-DRB5 deletion site from the callset, over every haplotype clustered by genotype: grey where a haplotype matches the reference, blue where it carries the alt allele, red for another alt. Below, the force-directed graph, where an arrow runs from the band to the same deletion as the graph draws it, alleles in charcoal." src="/img/pangenome/hprc_graph_vs_callset.png" />
+
+The blue rows carry the deletion, the allele the graph credits to `NA20809#2`.
 
 ## Snarl-level carriage
 
