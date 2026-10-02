@@ -204,8 +204,10 @@ bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
 - In the Fst lane at the top, the most differentiated sites in the window sit
   inside the block.
 - The block fills the flat span of the
-  [deCODE map](https://doi.org/10.1126/science.aau1043). Pooling the swept panel
-  with populations the sweep never reached lightens the upper triangle.
+  [deCODE map](https://doi.org/10.1126/science.aau1043). The map counts
+  crossovers in sequenced families rather than estimating them from LD, so it
+  checks the triangle independently. Pooling the swept panel with populations
+  the sweep never reached lightens the upper triangle.
 
 ## The haplotypes behind the triangle
 
