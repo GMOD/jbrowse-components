@@ -216,8 +216,7 @@ bash build_amylase_haplotypes.sh
 
 The build script writes the `config.json` that this session opens, with the five
 haplotypes' assemblies, their gene tracks and the `amylase_adjacent` alignments.
-The session below names it by its path in the repo; point `config=` at your
-copy:
+The session below opens that config; point `config=` at your copy:
 
 ```json session config=test_data/amylase/config.json
 {
