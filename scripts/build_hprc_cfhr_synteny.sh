@@ -18,6 +18,12 @@
 # copy of the blocks table for them, since the table below has a column per
 # panel member.
 #
+# The hosted panel's fourth non-carrier is HG00133.1, picked from release 2.0's
+# wave VCF, where HG00126 carried a same-length replacement allele. This script
+# now picks HG00126.1 in its place; the other seven come out byte-identical. The
+# same eight haplotypes run through demos/hprc_multiway and
+# demos/hprc/hprc_kiv2_copies.vcf, so a redeploy of this panel moves those too.
+#
 #   hprc_cfhr_<sample>.<hap>.paf          the sliced alignment, query names with
 #                                         the PanSN prefix stripped
 #   hprc_cfhr_<sample>.<hap>.chrom.sizes  the query contigs' lengths, for a
@@ -51,7 +57,7 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
 REL=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2
-WAVE=$REL/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz
+VCF=$REL/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz
 PAF=$REL/impg/pafs/hprc465vsgrch38.aln.paf.gz
 # Release 2 annotates every assembly with CAT, and the index says where each
 # haplotype's GFF3 lives (the sample sits under HPRC or HPRC_PLUS, so the path
@@ -60,11 +66,10 @@ CAT_INDEX=https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_
 # flank on the annotation slice, so a gene overlapping the drawn window is whole
 GENE_FLANK=200000
 
-# The deletion, as the callset states it. The wave VCF writes this site as one
-# record with a 84,684 bp REF and two ALTs; the 1 bp ALT is the deletion and the
-# other is a same-length replacement, so the allele has to be selected by LENGTH
-# rather than by index.
-SITE=chr1:196753075
+# The deletion, as the callset states it. The pgbi VCF writes each whole allele
+# of a snarl as its own record, so the deletion is one record with an 84,685 bp
+# REF and a 1 bp ALT, and other records may share its position.
+SITE=chr1:196759449
 # The window the figure draws, and a wider one to slice on so each haplotype's
 # record is whole rather than cut at the frame.
 SLICE_START=196600000
@@ -73,42 +78,43 @@ SLICE_END=197000000
 if [ -f cfhr_candidates.txt ]; then
   echo "== reusing cfhr_candidates.txt: $(wc -l < cfhr_candidates.txt) candidate(s)"
 else
-echo "== genotyping $SITE over the 464 haplotypes"
-bcftools view -r "$SITE-${SITE##*:}" -Oz -o cfhr_site.vcf.gz "$WAVE"
+echo "== genotyping $SITE"
+bcftools view -r "$SITE-${SITE##*:}" -Oz -o cfhr_site.vcf.gz "$VCF"
 python3 - <<'PY'
 import gzip
 
+records = []
 for line in gzip.open('cfhr_site.vcf.gz', 'rt'):
     if line.startswith('#CHROM'):
         samples = line.split()[9:]
     elif not line.startswith('#'):
-        f = line.split('\t')
-        ref, alts, calls = f[3], f[4].split(','), f[9:]
-        # the deletion allele: the one far shorter than the reference span
-        deletion = [
-            str(i + 1) for i, a in enumerate(alts) if len(a) < len(ref) / 2
-        ]
-        hom_alt, hom_ref, carriers = [], [], 0
-        for name, call in zip(samples, calls):
-            gt = call.split(':')[0].replace('/', '|').split('|')
-            carriers += sum(1 for a in gt if a in deletion)
-            if all(a in deletion for a in gt):
-                hom_alt.append(name)
-            elif all(a == '0' for a in gt):
-                hom_ref.append(name)
-        print(f'reference span {len(ref)} bp, alt lengths {[len(a) for a in alts]}')
-        print(f'deletion allele index {deletion}')
-        print(f'{carriers} of {2 * len(samples)} haplotypes carry it')
-        print(f'{len(hom_alt)} samples homozygous for it, {len(hom_ref)} homozygous reference')
-        # Homozygous samples only, so the haplotype drawn carries what the
-        # sample was picked on whichever of the two the assembly names hap 1.
-        # Candidates in callset order; the panel below takes them in that order
-        # and stops when it has enough that survive every check.
-        with open('cfhr_candidates.txt', 'w') as fh:
-            for name in hom_alt:
-                fh.write(f'{name}\t1\tcarrier\n')
-            for name in hom_ref:
-                fh.write(f'{name}\t1\tnon-carrier\n')
+        f = line.rstrip('\n').split('\t')
+        if len(f[4]) < len(f[3]) / 2:
+            records.append(f)
+if len(records) != 1:
+    raise SystemExit(f'expected one deletion record at the site, found {len(records)}')
+f = records[0]
+ref, calls = f[3], f[9:]
+hom_alt, hom_ref, carriers = [], [], 0
+for name, call in zip(samples, calls):
+    gt = call.split(':')[0].replace('/', '|').split('|')
+    carriers += gt.count('1')
+    if gt == ['1', '1']:
+        hom_alt.append(name)
+    elif gt == ['0', '0']:
+        hom_ref.append(name)
+print(f'reference span {len(ref)} bp, deletion allele {len(f[4])} bp')
+print(f'{carriers} of {2 * len(samples)} haplotypes carry it')
+print(f'{len(hom_alt)} samples homozygous for it, {len(hom_ref)} carry it on neither haplotype')
+# Homozygous samples only, so the haplotype drawn carries what the sample was
+# picked on whichever of the two the assembly names hap 1. Candidates in
+# callset order; the panel below takes them in that order and stops when it has
+# enough that survive every check.
+with open('cfhr_candidates.txt', 'w') as fh:
+    for name in hom_alt:
+        fh.write(f'{name}\t1\tcarrier\n')
+    for name in hom_ref:
+        fh.write(f'{name}\t1\tnon-carrier\n')
 PY
 fi
 
