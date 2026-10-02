@@ -107,11 +107,11 @@ and a readout gives its length against the reference walk.
 <Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Walk. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
 Pick **Layout → Walk rows** and **Color → Uniform**: each walk becomes a bar,
-longest first, blue where the graph aligns it to GRCh38 and purple where it does
-not. At KIV-2 each copy a haplotype adds is a run of new nodes, so the added
-copies read as its purple stretch.
+longest first, blue on GRCh38's path through the graph and purple off it. At
+KIV-2 each copy a haplotype adds is a run of new nodes, so the added copies read
+as its purple stretch.
 
-<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, under LPA with the KIV-2 bubble boxed in the bubbles lane. The purple stretch of each bar is kringle copies the graph does not align to GRCh38's, and each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
+<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, under LPA with the KIV-2 bubble boxed in the bubbles lane. The purple stretch of each bar is kringle copies off GRCh38's path, and each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 
 Click the KIV-2 bubble boxed in the bubbles lane. Its details give
 `shortestAlleleLength` and `longestAlleleLength`, the shortest and longest
@@ -252,9 +252,8 @@ and the TRGT genotypes, over the gbz-base graph track cut for every haplotype
 }
 ```
 
-Each row is one haplotype's walk between the flanking reference nodes, blue
-where the graph aligns it to GRCh38 and purple where it does not; GRCh38's walk
-is the short bar at the top.
+Each row is one haplotype's walk between the flanking reference nodes, blue on
+GRCh38's path and purple off it; GRCh38's walk is the short bar at the top.
 
 ## TRGT's calls on the same bars
 
