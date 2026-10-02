@@ -41,10 +41,10 @@ how it is embedded is in `website/CLAUDE.md` § Videos.
 - `static/media/` is gitignored; bytes live in the store (`media.lock`), which
   `pnpm build` pulls through `figures:pull` **because `rclone sync` deletes**
   what dist/ does not carry. `pnpm figures:push` publishes it beside the
-  figures; push before committing a `<Video>` or the embed 404s, and
-  `check-figure-refs` is the gate. A clip is three files there — the mp4, the
-  poster and the caption track — sharing one name, so `--filter` selects a clip
-  rather than one of its files.
+  figures. A `<Video>` may land before its bytes: `check-figure-refs` stays red
+  and the embed 404s until the push-and-lock commit follows. A clip is three
+  files there — the mp4, the poster and the caption track — sharing one name, so
+  `--filter` selects a clip rather than one of its files.
 - **Size the viewport from the run's own content report**, which names the app's
   height at the first frame, the last and its tallest in between. A tour grows
   the app and one frame has to serve every state. The end-of-run summary

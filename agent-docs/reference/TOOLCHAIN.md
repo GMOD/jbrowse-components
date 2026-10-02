@@ -49,9 +49,10 @@ callback, or `contributeToExtensionPoint` rejecting the name outright.
   directive last.
 ## Worktrees
 
-- **Check what the worktree branched from before trusting a gate.** `EnterWorktree`
-  branches from **origin**'s default branch, which can lag local `main`, so a gate
-  fails on a fix the branch predates. `git merge-base --is-ancestor main HEAD` tells
+- **Check what the worktree branched from before trusting a gate.** `setup-worktree.sh`
+  branches from local `main` on purpose, since `origin/main` lags it by dozens of
+  commits. A worktree made another way can still predate a fix, so a gate
+  fails on it. `git merge-base --is-ancestor main HEAD` tells
   you; `git rebase main` fixes it. A `git diff main` naming files you never opened is
   the tell.
 - **A hand-made worktree is not an installed one.** `git worktree add` installs
