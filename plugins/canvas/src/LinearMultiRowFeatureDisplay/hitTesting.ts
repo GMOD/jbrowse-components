@@ -3,6 +3,9 @@ import {
   contentYAt,
   rowsUnderPointer,
 } from '@jbrowse/core/util/rowStackGeometry'
+import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
+import { spansInRow } from '@jbrowse/render-core/marks'
+import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
 import { regionWithDeltas } from './rendering/featurePainting.ts'
@@ -94,38 +97,38 @@ function pointerBase(self: MultiRowHitTestSlice, mouseX: number) {
   return p.oob ? undefined : p
 }
 
-/** The channel indices carrying `key`, back to front. */
-function* channelsOfKey(
-  { rowStart, rowIndices }: MultiRowEncoded,
-  key: number | undefined,
-) {
-  const lo = key === undefined ? undefined : rowStart[key]
-  const hi = key === undefined ? undefined : rowStart[key + 1]
-  if (lo !== undefined && hi !== undefined) {
-    for (let k = hi - 1; k >= lo; k--) {
-      yield rowIndices[k]!
-    }
-  }
-}
+const drawnLastFirst = (a: number, b: number) => b - a
 
 /**
- * The channel indices drawn on rows `nearest` down to `lowest`, each row's
- * bucket back to front: both render paths paint in array order, so a later
- * channel sits on top, and the mark keeps the first zero-distance candidate.
- * The buckets are by key, so each drawn row names its key first.
+ * The channel indices drawn on rows `nearest` down to `lowest` within reach of
+ * `xPx`, each row's back to front: both render paths paint in array order, so
+ * a later channel sits on top, and the mark keeps the first zero-distance
+ * candidate. The reach is the minimum cell and a pixel either side, the most a
+ * span's paint stands past its bp.
  */
-function* channelsOnRows(
+function channelsOnRows(
   self: Pick<MultiRowHitTestSlice, 'sources' | 'rowKeys'>,
-  encoded: MultiRowEncoded,
+  { rowIndex, x, x2 }: MultiRowEncoded,
+  block: RenderBlock,
+  xPx: number,
   nearest: number,
   lowest: number,
 ) {
+  const reachBp =
+    ((MULTI_ROW_MIN_CELL_PX + 1) * (block.end - block.start)) /
+    (block.screenEndPx - block.screenStartPx)
+  const bp = bpAtPxExact(xPx, block)
+  const out: number[] = []
   for (let r = nearest; r >= lowest; r--) {
     const name = self.sources[r]?.name
-    if (name !== undefined) {
-      yield* channelsOfKey(encoded, self.rowKeys.lookup(name))
+    const key = name === undefined ? undefined : self.rowKeys.lookup(name)
+    if (key !== undefined) {
+      const found: number[] = []
+      spansInRow(rowIndex, x, x2, key, bp - reachBp, bp + reachBp, found)
+      out.push(...found.sort(drawnLastFirst))
     }
   }
+  return out
 }
 
 /**
@@ -159,13 +162,14 @@ function featureAtBase(
     { rowHeight, topOffset: band.offset },
     band.height,
   )
+  const xPx = Math.floor(mouseX) + 0.5
   const hit = MULTI_ROW_MARK.hitNearest?.(
     encoded,
     block,
     self.renderState,
-    Math.floor(mouseX) + 0.5,
+    xPx,
     contentYAt(mouseY, { rowHeight }),
-    channelsOnRows(self, encoded, nearest, lowest),
+    channelsOnRows(self, encoded, block, xPx, nearest, lowest),
     INSIDE_ONLY,
   )
   if (!hit) {
@@ -222,8 +226,7 @@ export function contextTargetAtPixel(
 /**
  * The instance a hit names in the live encoding, resolved by row name and
  * feature id rather than trusted from the hit, so a row since filtered away
- * lights nothing. The walk is the row's own bucket, which is a handful of
- * channels.
+ * lights nothing.
  */
 export function hitInstance(
   self: Pick<
@@ -237,15 +240,23 @@ export function hitInstance(
   if (!region || !encoded || !self.rowIndexByValue.has(hit.rowName)) {
     return undefined
   }
-  for (const index of channelsOfKey(
-    encoded,
-    self.rowKeys.lookup(hit.rowName),
-  )) {
-    if (region.featureIds[encoded.featureIndex[index]!] === hit.id) {
-      return { mark: 0, index }
-    }
+  const key = self.rowKeys.lookup(hit.rowName)
+  const found: number[] = []
+  if (key !== undefined) {
+    spansInRow(
+      encoded.rowIndex,
+      encoded.x,
+      encoded.x2,
+      key,
+      hit.start,
+      hit.end,
+      found,
+    )
   }
-  return undefined
+  const index = found.find(
+    c => region.featureIds[encoded.featureIndex[c]!] === hit.id,
+  )
+  return index === undefined ? undefined : { mark: 0, index }
 }
 
 /** The row a hit sits on, off the live order — resolved the way the box is. */

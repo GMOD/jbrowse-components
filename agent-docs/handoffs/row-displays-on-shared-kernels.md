@@ -1,6 +1,6 @@
 ---
 name: row-displays-on-shared-kernels
-description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, and the MAF cleanups landed the same day; open are two product calls on row colour, an insertion mark whose trigger is met, multi-row's hit test and hidden-feature rule, per-mark seams, the one-row-model hook seam, variant wire shapes and stale docs."
+description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, and the MAF cleanups landed the same day; open are two product calls on row colour, an insertion mark whose trigger is met, multi-row's hidden-feature rule, per-mark seams, the one-row-model hook seam, variant wire shapes and stale docs."
 ---
 
 # Row displays on shared kernels
@@ -89,8 +89,7 @@ captures of volvox, roadmap and bxd.
 2. **Multi-row onto shared kernels**: clustering bins on `binColumns` and the
    worker reads `rows`/`clusterField` through `fieldReader` now. Left: the
    presence/categorical encoding into tree-sidebar so the mark display can
-   cluster span rows; hit test on render-core's `rowSpanIndex` instead of a
-   per-row bucket walk (`hitTesting.ts:98`); the candidate scan on canvas's
+   cluster span rows; the candidate scan on canvas's
    `summarizeGroupByCandidates`. The "hidden feature" rule runs three times
    (`multiRowChannels.ts:52`, `featurePainting.ts:94`, `rowOrderByValueAt.ts:22`);
    the overlay and sort can read the encoded channels and row table.

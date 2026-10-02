@@ -1,6 +1,12 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import {
+  contentYAt,
+  rowsUnderPointer,
+} from '@jbrowse/core/util/rowStackGeometry'
 
 import { collectLegendCandidates } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import { MULTI_ROW_MARK } from './rendering/multiRowMarks.ts'
+import { rowBand } from './rendering/rowBand.ts'
 import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
@@ -426,5 +432,105 @@ describe('featureAt', () => {
 
     expect(display.featureAt(edge - 1, 10)).toBeUndefined()
     expect(display.featureAt(edge, 10)?.id).toBe('wide')
+  })
+})
+
+// Every drawn feature of the rows under the pointer, back to front: what the
+// index's candidates must answer exactly as.
+describe('agrees with a walk over every drawn feature', () => {
+  function lcg(seed: number) {
+    let s = seed
+    return () => {
+      s = (s * 1103515245 + 12345) % 2147483648
+      return s / 2147483648
+    }
+  }
+
+  function scattered(seed: number) {
+    const rnd = lcg(seed)
+    return region(
+      Array.from({ length: 120 }, (_, i) => {
+        const start = Math.floor(rnd() * 1000)
+        const len = rnd() < 0.2 ? 0 : Math.floor(rnd() ** 3 * 300)
+        return {
+          row: `r${Math.floor(rnd() * 7)}`,
+          start,
+          end: Math.min(1000, start + len),
+          color: rnd() < 0.5 ? RED : BLUE,
+          id: `f${i}`,
+        }
+      }),
+      { usedItemRgb: true },
+    )
+  }
+
+  function walk(
+    display: ReturnType<typeof twoRowDisplay>['display'],
+    x: number,
+    y: number,
+  ) {
+    const p = display.view.pxToBp(x)
+    if (p.oob) {
+      return undefined
+    }
+    const encoded = display.encodedChannels.get(p.index)!
+    const block = display.renderBlocks.find(
+      b => b.displayedRegionIndex === p.index,
+    )!
+    const rowHeight = display.effectiveRowHeight
+    const band = rowBand(rowHeight, display.rowProportion)
+    const { nearest, lowest } = rowsUnderPointer(
+      y,
+      { rowHeight, topOffset: band.offset },
+      band.height,
+    )
+    const candidates: number[] = []
+    for (let r = nearest; r >= lowest; r--) {
+      const name = display.sources[r]?.name
+      const key = name === undefined ? undefined : display.rowKeys.lookup(name)
+      for (let c = encoded.count - 1; c >= 0; c--) {
+        if (key !== undefined && encoded.row[c] === key) {
+          candidates.push(c)
+        }
+      }
+    }
+    const hit = MULTI_ROW_MARK.hitNearest?.(
+      encoded,
+      block,
+      display.renderState,
+      Math.floor(x) + 0.5,
+      contentYAt(y, { rowHeight }),
+      candidates,
+      Number.MIN_VALUE,
+    )
+    return hit && encoded.featureIndex[hit.index]
+  }
+
+  const cases: [string, { reversed?: boolean; bpPerPx?: number }][] = [
+    ['forward', {}],
+    ['reversed', { reversed: true }],
+    ['sub-pixel features', { bpPerPx: 6 }],
+    ['zoomed in', { bpPerPx: 0.3 }],
+  ]
+
+  it.each(cases)('%s', (_, { reversed, bpPerPx }) => {
+    const data = scattered(reversed ? 3 : (bpPerPx ?? 1) * 10)
+    const regions = [{ ...CTGA_1KB[0]!, reversed }]
+    const { display, view } = twoRowDisplay(data, regions)
+    if (bpPerPx) {
+      view.zoomTo(bpPerPx)
+    }
+    let hits = 0
+    for (let y = 0; y < display.height; y += 5) {
+      for (let x = 0; x < 800; x++) {
+        const want = walk(display, x, y)
+        const got = display.featureAt(x, y)
+        expect(got?.id).toBe(
+          want === undefined ? undefined : data.featureIds[want],
+        )
+        hits += want === undefined ? 0 : 1
+      }
+    }
+    expect(hits).toBeGreaterThan(1000)
   })
 })

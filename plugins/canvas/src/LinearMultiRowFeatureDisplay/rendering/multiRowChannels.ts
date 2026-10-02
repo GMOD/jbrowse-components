@@ -1,10 +1,12 @@
+import { rowSpanIndex } from '@jbrowse/render-core/marks'
+
 import { hiddenByCategory, ownColors } from './featurePainting.ts'
 
 import type {
   MultiRowEncodeInputs,
   MultiRowRegionData,
 } from './multiRowRenderingBackendTypes.ts'
-import type { SpanChannels } from '@jbrowse/render-core/marks'
+import type { RowSpanIndex, SpanChannels } from '@jbrowse/render-core/marks'
 
 /**
  * One region's features as `span` channels, one rect per feature the legend
@@ -12,22 +14,19 @@ import type { SpanChannels } from '@jbrowse/render-core/marks'
  * needs to answer a channel index back to the data. `count` is what was
  * actually written, not the one-per-feature capacity — a hidden category
  * leaves the tail unwritten, so `featureIndex[c]` names the feature channel
- * `c` came from. `rowIndices[rowStart[k] .. rowStart[k + 1])` are the channel
- * indices carrying key `k`, in paint order; a key past `rowStart.length - 1`
- * has no bucket.
+ * `c` came from. `rowIndex` finds a key's channels over a stretch of bp.
  */
 export interface MultiRowEncoded extends SpanChannels {
   color: Uint32Array
   featureIndex: Uint32Array
-  rowStart: Int32Array
-  rowIndices: Int32Array
+  rowIndex: RowSpanIndex
 }
 
 /**
  * Encode one region on the main thread, once: the row table carries the
  * reader's order, focus and colours, so only a category toggle re-encodes.
- * The buckets come out of the same walk, so the hit test cannot answer "is
- * this feature drawn" differently from the paint that put it there.
+ * The row index is over the channels written, so the hit test cannot answer
+ * "is this feature drawn" differently from the paint that put it there.
  */
 export function buildMultiRowChannels(
   data: Pick<
@@ -55,7 +54,6 @@ export function buildMultiRowChannels(
   const color = new Uint32Array(n)
   const featureIndex = new Uint32Array(n)
   let count = 0
-  let keyCount = 0
   for (let i = 0; i < n; i++) {
     const local = featurePartitionIndex[i]!
     const abgr = featureColors[i]!
@@ -69,21 +67,14 @@ export function buildMultiRowChannels(
     color[count] = abgr
     featureIndex[count] = i
     count++
-    if (key >= keyCount) {
-      keyCount = key + 1
-    }
   }
-  const rowStart = new Int32Array(keyCount + 1)
-  for (let c = 0; c < count; c++) {
-    rowStart[row[c]! + 1]!++
+  return {
+    x,
+    x2,
+    row,
+    color,
+    count,
+    featureIndex,
+    rowIndex: rowSpanIndex(x, x2, row, count),
   }
-  for (let k = 0; k < keyCount; k++) {
-    rowStart[k + 1]! += rowStart[k]!
-  }
-  const cursor = Int32Array.from(rowStart.subarray(0, keyCount))
-  const rowIndices = new Int32Array(count)
-  for (let c = 0; c < count; c++) {
-    rowIndices[cursor[row[c]!]!++] = c
-  }
-  return { x, x2, row, color, count, featureIndex, rowStart, rowIndices }
 }

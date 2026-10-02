@@ -93,42 +93,40 @@ test('a hidden category does not drop features on rows with a color override', (
   expect(decode(buffer).map(d => d.startBp)).toEqual([10, 20, 30])
 })
 
-// The per-key buckets, built from the same walk as the channels: a hit on the
-// wrong feature is what getting the index arithmetic wrong looks like, and the
-// buckets hold CHANNEL indices, since the encode compacts what it skips.
-function bucketsOf({ rowStart, rowIndices }: MultiRowEncoded) {
-  return [...rowStart.slice(0, -1)].map((lo, r) => [
-    ...rowIndices.subarray(lo, rowStart[r + 1]),
-  ])
+// The row index holds CHANNEL indices, since the encode compacts what it
+// skips: a hit on the wrong feature is what getting that wrong looks like.
+function rowsOf({ rowIndex: { rowStart, order } }: MultiRowEncoded) {
+  return [...rowStart.slice(0, -1)].map((lo, r) =>
+    [...order.subarray(lo, rowStart[r + 1])].sort(),
+  )
 }
 
-test('buckets each channel under its key, in paint order', () => {
+test('indexes each channel under its key', () => {
   const encoded = buildMultiRowChannels(
     region,
     inputs(['dadHP1', 'other', 'momHP0']),
   )
-  expect(bucketsOf(encoded)).toEqual([[1], [], [0, 2]])
+  expect(rowsOf(encoded)).toEqual([[1], [], [0, 2]])
   expect([...encoded.featureIndex.subarray(0, encoded.count)]).toEqual([
     0, 1, 2,
   ])
 })
 
-test('a skipped feature leaves no bucket entry and the channel indices stay compact', () => {
+test('a skipped feature leaves no index entry and the channel indices stay compact', () => {
   const encoded = buildMultiRowChannels(
     region,
     inputs(['momHP0', 'dadHP1'], { hiddenColors: new Set([0xff00ff00]) }),
   )
   expect(encoded.count).toBe(2)
-  // the buckets run to the last key that drew anything
-  expect(bucketsOf(encoded)).toEqual([[0, 1]])
+  expect(rowsOf(encoded)).toEqual([[0, 1]])
   expect([...encoded.featureIndex.subarray(0, encoded.count)]).toEqual([0, 2])
 })
 
-test('a region with nothing drawn has no buckets', () => {
+test('a region with nothing drawn indexes nothing', () => {
   const encoded = buildMultiRowChannels(
     region,
     inputs([], { hiddenColors: new Set([0xff0000ff, 0xff00ff00, 0xffff0000]) }),
   )
   expect(encoded.count).toBe(0)
-  expect(bucketsOf(encoded)).toEqual([])
+  expect(rowsOf(encoded).flat()).toEqual([])
 })
