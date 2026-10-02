@@ -155,8 +155,12 @@ that allele. We'll add it to the graph launch's session:
   "type": "VariantTrack",
   "trackId": "hprc2_pgbi_grch38",
   "name": "HPRC release 2 phased VCF, one record per allele (462 haplotypes)",
-  "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz",
   "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz",
+    "fetchSizeLimit": 20000000
+  },
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
@@ -172,6 +176,9 @@ that allele. We'll add it to the graph launch's session:
   bubbles minigraph draws. `alleleLength` is the length of the record's longest
   allele, so it counts an insertion's inserted bases. **Filter by... → Edit
   filters...** in the track menu shows the filter and changes it.
+- `fetchSizeLimit` raises the download cap from 5 MB to 20 MB. The VCF spells
+  out each inserted allele, which puts more than 5 MB in the 90 kb MHC class II
+  window and about three times that at LPA's kringle repeat.
 
 Open the track menu again and take **Clustering → Cluster rows by genotype...**,
 then **Run clustering**: the rows reorder so haplotypes with the same alleles
