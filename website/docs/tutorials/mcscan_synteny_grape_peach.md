@@ -9,11 +9,17 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
 ---
 
-A pairwise [jcvi](https://github.com/tanghaibao/jcvi) MCScan run writes two
-files that JBrowse loads as separate synteny tracks: `.anchors` (one orthologous
-gene pair per line, via `MCScanAnchorsAdapter`) and `.anchors.simple` (one
-synteny block per line, via `MCScanSimpleAnchorsAdapter`). Both pair genes by
-name, so each also needs a BED per genome mapping gene ids to coordinates.
+Grape and peach keep long runs of genes in the same order, though the genomes
+have diverged too far to align base by base. We load a
+[jcvi](https://github.com/tanghaibao/jcvi) MCScan run of the two as ribbons
+between a grape view and a peach view, one ribbon per orthologous gene pair and
+one bar per block of them, then as a dotplot.
+
+The run writes two files that JBrowse loads as separate synteny tracks:
+`.anchors` (one gene pair per line, via `MCScanAnchorsAdapter`) and
+`.anchors.simple` (one synteny block per line, via
+`MCScanSimpleAnchorsAdapter`). Both pair genes by name, so each also needs a BED
+per genome mapping gene ids to coordinates.
 
 ## Prerequisites
 
@@ -294,38 +300,9 @@ Naming a third `--species` writes an ortholog table instead, since one
 `.collinearity` covers every pair. See
 [ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao#from-mcscanx).
 
-### A genome against itself
-
-Name a single `--species` and the script keeps the blocks duplicated within that
-genome:
-
-```bash
-python3 mcscanx_to_anchors.py --gff grape.gff --collinearity grape.collinearity \
-  --species vv=grape --strand-gff3 grape=grape.gff3.gz
-```
-
-The anchor files name grape on both sides, so the track lists the assembly
-twice:
-
-```json addtrack
-{
-  "type": "SyntenyTrack",
-  "trackId": "grape_self_anchors",
-  "name": "Grape duplicated blocks (MCScanX)",
-  "assemblyNames": ["grape", "grape"],
-  "adapter": {
-    "type": "MCScanAnchorsAdapter",
-    "uri": "grape.grape.anchors",
-    "bed1": "grape.bed",
-    "bed2": "grape.bed",
-    "assemblyNames": ["grape", "grape"]
-  }
-}
-```
-
-A dotplot of the track puts the genome on both axes, each duplicated block a run
-of points off the diagonal, and the diagonal itself empty, since MCScanX pairs
-no gene with itself.
+Naming a single `--species` keeps the blocks duplicated within that genome,
+which [](/docs/tutorials/homoeolog_synteny) draws as a dotplot of one assembly
+on both axes.
 
 ## Reproduce it end to end
 

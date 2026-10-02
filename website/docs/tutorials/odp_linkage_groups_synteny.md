@@ -53,15 +53,20 @@ as a column beside it. A synteny track can read that column. Your own genomes
 need odp's table with its `gene_group` and `color` columns, written when odp
 runs with `plot_LGs: True`, and a `.chrom` file per genome.
 
-The dotplot uses a jellyfish (`RES`, _Rhopilema esculentum_) and a freshwater
-sponge (`EMU`, _Ephydatia muelleri_). The stack at the end adds two comb jellies
-(`HCA`, _Hormiphora californensis_, and `BIN`, _Bolinopsis microptera_),
-amphioxus (`BFL`, _Branchiostoma floridae_) and a second sponge (`CLAa`, a
-cladorhizid). odp's group database was built from five genomes, three of them on
-this page: the jellyfish, _Ephydatia_ and amphioxus. The comb jellies and the
-cladorhizid took no part in it. odp compares genomes two at a time, so the
-deposit holds one table per pair, each of them every reciprocal best protein hit
-between the two.
+The dotplot uses two genomes and the stack at the end adds four:
+
+- `RES`, the jellyfish _Rhopilema esculentum_, in the dotplot and the stack
+- `EMU`, the freshwater sponge _Ephydatia muelleri_, in the dotplot and the
+  stack
+- `HCA` and `BIN`, the comb jellies _Hormiphora californensis_ and _Bolinopsis
+  microptera_, in the stack only
+- `BFL`, the amphioxus _Branchiostoma floridae_, in the stack only
+- `CLAa`, a cladorhizid sponge, in the stack only
+
+odp's group database was built from five genomes, three of them on this page:
+the jellyfish, _Ephydatia_ and amphioxus. The comb jellies and the cladorhizid
+took no part in it. odp compares genomes two at a time, so the deposit holds one
+table per pair, each of them every reciprocal best protein hit between the two.
 
 A table's row is the gene pair, the group, where each gene sits, and the color:
 
@@ -184,10 +189,6 @@ with the sponge's unplaced scaffolds left off its axis:
 Inside a block the points fill the square: the order of genes along each
 chromosome has been shuffled, and which chromosome each gene sits on has not.
 
-_Rhopilema_ and _Ephydatia_ are two of the genomes odp's group database was
-built from, so these blocks follow from how the groups were defined. The stack
-below adds three genomes that took no part.
-
 ## Six genomes stacked
 
 Figure 1d of the paper stacks the same tables: one row per genome, the ribbons
@@ -272,26 +273,11 @@ awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
   | sort | uniq -c | sort -rn
 ```
 
-Running that over the six largest groups in three tables (`EMU_RES`, `CLAa_EMU`
-and `HCA_RES`) gives how many of a group's orthologs there are and how many sit
-on the one chromosome that holds most of them:
-
-| group | _Ephydatia_ | cladorhizid | _Hormiphora_ |
-| ----- | ----------- | ----------- | ------------ |
-| A1a   | 229 / 229   | 187 / 222   | 48 / 176     |
-| D     | 205 / 205   | 175 / 199   | 44 / 162     |
-| G     | 201 / 201   | 165 / 198   | 58 / 160     |
-| H     | 189 / 189   | 89 / 188    | 56 / 148     |
-| F     | 162 / 162   | 128 / 155   | 25 / 116     |
-| M     | 152 / 152   | 129 / 151   | 26 / 122     |
-
-The _Ephydatia_ column shows every ortholog on its group's chromosome because
-the group database was built with _Ephydatia_ in it: an ortholog assigned to a
-group is on that group's _Ephydatia_ chromosome by definition. The cladorhizid
-took no part, and most of each group still sits on one of its chromosomes; H is
-the exception, and a tally for H (`$4=="H"`) names two chromosomes sharing it.
-In _Hormiphora_ the chromosome holding most of a group holds a minority of it,
-which is the fan in the stack's second band.
+Changing the file and the group in that command gives the counts behind the
+stack. In _Hormiphora_ (`HCA_RES`), the chromosome holding most of a group holds
+a minority of it, which is the fan in the stack's second band. In the
+cladorhizid (`CLAa_EMU`), which took no part in building the group database,
+most of each group still sits on one chromosome.
 
 ## Reproduce it end to end
 
