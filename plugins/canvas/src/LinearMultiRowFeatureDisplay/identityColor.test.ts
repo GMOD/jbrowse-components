@@ -56,7 +56,7 @@ function paintedColors(display: ReturnType<typeof loaded>) {
   })
   const { color, count } = [...display.encodedChannels.values()][0]!
   held()
-  return [...(color as Uint32Array).subarray(0, count)]
+  return [...color.subarray(0, count)]
 }
 
 describe('an identity colour over a file that colours its own features', () => {
