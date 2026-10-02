@@ -1877,6 +1877,51 @@ test('a hovered point lights as a ring around its glyph', () => {
   expect(ring).toMatchObject({ width: 12, height: 12 })
 })
 
+// A rule is as long as its interval, so its ring runs the rule's length rather
+// than circling its middle.
+test('a hovered rule lights a ring along its whole length', () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'rule', encoding: { y: 'score', size: 2 } },
+  ])
+  const { display } = createDisplay()
+  const [layer] = result([{ y: [5] }]).layers
+  display.setRpcData(
+    0,
+    {
+      layers: [
+        { ...layer!, x: Uint32Array.of(1000), x2: Uint32Array.of(9000) },
+      ],
+    },
+    REGION,
+  )
+  display.setHoveredFeature({
+    markIndex: 0,
+    regionIndex: 0,
+    instance: 0,
+    featureIndex: 0,
+    refName: 'ctgA',
+    start: 1000,
+    end: 9000,
+    bp: 5000,
+    y: 5,
+    color: undefined,
+    colorValue: undefined,
+    glyph: undefined,
+    row: undefined,
+    screenX: 0,
+    screenY: 0,
+  })
+  expect(display.highlightStyle).toBe('ring')
+  const [ring] = display.hoverInk
+  const block = display.renderBlocks[0]!
+  const pxPerBp = (block.screenEndPx - block.screenStartPx) / 10_000
+  expect(ring!.left).toBeLessThan(block.screenStartPx + 1000 * pxPerBp)
+  expect(ring!.left + ring!.width).toBeGreaterThan(
+    block.screenStartPx + 9000 * pxPerBp,
+  )
+  expect(ring!.height).toBe(12)
+})
+
 const DENSITY_MARKS = [
   { mark: 'bar', encoding: { y: 'score' } },
   {

@@ -1315,9 +1315,9 @@ export function stateModelFactory(
          * #getter
          * The box the hovered instance painted, for the chrome's highlight; the
          * context menu's hit stands in while a menu is open. In the chrome's px,
-         * so the plot's inset is added to the canvas box. A point's ring sits a
-         * fixed margin outside the glyph and floors at 6 px, so a tiny point
-         * stays findable.
+         * so the plot's inset is added to the canvas box. A ring wraps the ink
+         * a fixed margin out, round a point and along a rule's whole length,
+         * and floors at 6 px, so a tiny point stays findable.
          */
         get hoverInk(): HighlightRect[] {
           const hit = this.highlightedHit
@@ -1345,13 +1345,19 @@ export function stateModelFactory(
           if (this.highlightStyle !== 'ring') {
             return boxes
           }
-          const r = Math.max(6, self.markSizes[hit.markIndex]! / 2 + 4)
-          return boxes.map(box => ({
-            left: box.left + box.width / 2 - r,
-            top: box.top + box.height / 2 - r,
-            width: 2 * r,
-            height: 2 * r,
-          }))
+          const size = self.markSizes[hit.markIndex]!
+          const r = Math.max(6, size / 2 + 4)
+          const margin = r - size / 2
+          return boxes.map(box => {
+            const width = Math.max(2 * r, box.width + 2 * margin)
+            const height = Math.max(2 * r, box.height + 2 * margin)
+            return {
+              left: box.left + (box.width - width) / 2,
+              top: box.top + (box.height - height) / 2,
+              width,
+              height,
+            }
+          })
         },
         /**
          * #getter

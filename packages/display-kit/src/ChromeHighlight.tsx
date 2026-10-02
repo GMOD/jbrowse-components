@@ -19,9 +19,11 @@ function hoverStyle(
     case 'box':
       return hoverBoxStyle
     case 'ring':
+      // a radius past half of either side: a circle round a square box, a
+      // capsule along a long one
       return {
         border: `1.5px solid ${palette.text.primary}`,
-        borderRadius: '50%',
+        borderRadius: 9999,
       }
     default:
       return {
