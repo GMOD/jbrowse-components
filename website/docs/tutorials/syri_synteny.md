@@ -102,7 +102,17 @@ cat Col-0_*.paf Ler_Cvi.paf Cvi_Eri.paf Eri_Kyo.paf Kyo_Sha.paf >syri_pangenome.
 ```
 
 The ribbons need no sequence, so each accession gets an assembly with a
-`ChromSizesAdapter` over its `.chrom.sizes`. On the track:
+`ChromSizesAdapter` over its `.chrom.sizes`. Col-0 is one; Ler, Cvi, Eri, Kyo
+and Sha repeat it with their own name and file:
+
+```json addassembly
+{
+  "name": "Col-0",
+  "uri": "Col-0.chrom.sizes"
+}
+```
+
+On the track:
 
 - `attributeColumns` names the tags the palette button offers: `syri` becomes a
   color-by mode, and `color` is the color the file puts beside each type
