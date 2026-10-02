@@ -71,6 +71,12 @@ one:
 }
 ```
 
+For two haplotypes of your own, put both in one FASTA with contig names that
+tell them apart (`_MATERNAL` and `_PATERNAL`, as above). Align them with
+`minimap2 -cx asm5 --eqx -X hap.fa.gz hap.fa.gz`, which writes a PAF without the
+self-alignments, and give the track a `PAFAdapter` with `assemblyNames` naming
+that one assembly twice.
+
 ## The whole genome first
 
 A dotplot shows whether anything moved between chromosomes. Open **Add → Dotplot

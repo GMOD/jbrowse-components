@@ -169,7 +169,9 @@ filters...** and **Clear all filters**.
 
 The filter works on any column a BigBed carries. ClinVar's clinical
 classification is the column `clinSign`, so the row `clinSign` is `Pathogenic`
-filters that catalog the same way.
+filters that catalog the same way. The same menus apply to a bigWig or BigBed of
+your own added with **Add track**; the
+[web quickstart](/docs/quickstart_web#adding-tracks) covers the steps.
 
 ## Other tracks in the hg38 catalog
 
