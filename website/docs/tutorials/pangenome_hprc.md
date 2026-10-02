@@ -1,6 +1,6 @@
 ---
-title: 'Pangenome (HPRC): browsing the graph'
-sidebar_label: Pangenome (HPRC, browsing the graph)
+title: 'Pangenome (HPRC) part 1: browsing the graph'
+sidebar_label: Pangenome (HPRC 1, browsing the graph)
 description:
   Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of
   the linear view, follow one allele to the haplotype that carries it, and read

@@ -1,6 +1,6 @@
 ---
-title: 'Pangenome (HPRC): haplotypes against each other'
-sidebar_label: Pangenome (HPRC, haplotypes against each other)
+title: 'Pangenome (HPRC) part 3: haplotypes against each other'
+sidebar_label: Pangenome (HPRC 3, haplotypes against each other)
 description:
   Draw HPRC haplotypes as lanes in assembly coordinates, aligned to each other
   by the release's pangenome graph, at a CFH deletion, a C4 duplication and the

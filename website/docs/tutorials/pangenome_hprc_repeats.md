@@ -1,6 +1,6 @@
 ---
-title: 'Pangenome (HPRC): repeat lengths across haplotypes'
-sidebar_label: Pangenome (HPRC, repeat lengths)
+title: 'Pangenome (HPRC) part 4: repeat lengths across haplotypes'
+sidebar_label: Pangenome (HPRC 4, repeat lengths)
 description:
   Count kringle copies in LPA and tell their two repeat types apart, measure the
   ABCA7 VNTR in HPRC haplotypes straight from the graph's walks, then set TRGT's

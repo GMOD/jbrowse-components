@@ -1,6 +1,6 @@
 ---
-title: 'Pangenome (HPRC): allele carriers'
-sidebar_label: Pangenome (HPRC, allele carriers)
+title: 'Pangenome (HPRC) part 2: allele carriers'
+sidebar_label: Pangenome (HPRC 2, allele carriers)
 description:
   Which of HPRC release 2's 464 haplotypes carry each allele, read from the
   release's callsets beside its graph, and checked against the multiple
