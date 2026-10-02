@@ -71,8 +71,7 @@ adapter supplies through `guideTreeNewick` (MAF's `.nh`), never enters
 `rows.domain`, so it carries no provenance and rotates at parse, and maf reads
 its row order back off that same computed, so the leaves and the rows cannot
 drift. Everything else rotates in the run that produced it: `rotateClusterRun`,
-called from `applyClusterRun` and from variants' `applyClusterOrder`, which is
-the path `runGenotypeClustering` takes instead. Rotating an arranged tree on the
+called from `applyClusterRun`, which every display's run goes through. Rotating an arranged tree on the
 way out would turn a restored session's dendrogram away from the order saved
 beside it and draw nothing at all. The R-paste `applyOrder` path carries no tree
 and rotates nothing: a paste is an explicit order.

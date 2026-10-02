@@ -531,8 +531,8 @@ export function clusteredCladeLayout<S extends { name: string }>({
   order,
   matrixRowNames,
 }: {
-  rows: S[]
-  editableSources: S[]
+  rows: readonly S[]
+  editableSources: readonly S[]
   order: number[]
   matrixRowNames?: string[]
 }): S[] {
@@ -546,7 +546,7 @@ export function clusteredCladeLayout<S extends { name: string }>({
 }
 
 export function buildClusteredLayout<S extends { name: string }>(
-  baseSources: S[],
+  baseSources: readonly S[],
   order: number[],
 ): S[] {
   return order.map(idx => {

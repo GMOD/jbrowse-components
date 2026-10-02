@@ -1,9 +1,10 @@
 import type { ProcessedSource } from './types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { ClusterRun } from '@jbrowse/tree-sidebar'
+import type { ClusterRunModel } from '@jbrowse/tree-sidebar'
 
-export interface ReducedModel extends IStateTreeNode {
+export interface ReducedModel
+  extends IStateTreeNode, ClusterRunModel<{ name: string }> {
   // Undefined until the samples land, which is what the matrix export keys its
   // "nothing yet" on.
   sourcesBase?: readonly unknown[]
@@ -11,9 +12,6 @@ export interface ReducedModel extends IStateTreeNode {
   // the focus: what both clustering paths cluster, so a re-run inside a
   // focused clade resolves that clade rather than the whole cohort.
   clusterableSources: ProcessedSource[]
-  // Every row in its current order, unfocused: what a run re-appends the rows
-  // the focus hides from, after the clade.
-  editableSources: readonly { name: string }[]
   // Always resolved off a config slot with a default (0 / 1), so both clustering
   // entry points forward the display's real thresholds rather than restating
   // "off" defaults of their own.
@@ -23,9 +21,6 @@ export interface ReducedModel extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
   renderingMode: string
   samplePloidy?: Readonly<Record<string, number>>
-  // `rows.domain`, off `TreeSidebarMixin`. A run rotates its dendrogram towards
-  // it rather than discarding it, so both entry points forward it.
-  rowDomain: string[]
   // Whether the fetched inputs clustering needs have arrived. Phased mode
   // clusters haplotypes, which needs `samplePloidy` — and that rides with
   // `cellData`, later than the header-only `adapterSamples`.
@@ -44,5 +39,4 @@ export interface ReducedModel extends IStateTreeNode {
   hasClusterableRows: boolean
   // The clustered rows by band, which cluster apart; undefined unbanded.
   clusterPartition?: string[][]
-  setRowOrder: (rows: readonly { name: string }[], run?: ClusterRun) => void
 }

@@ -11,8 +11,9 @@ kind: spec
 (`MultiWiggleClusterScoreMatrix`, `MarkClusterRows`,
 `MultiSampleVariantClusterGenotypeMatrix`) which builds a feature matrix and
 runs `@gmod/hclust`; the dialog commits `{ order, tree }` through
-`model.setRowOrder(rows, { tree, provenance })`. The Manual tab's pasted Newick
-takes the same path through `applyClusterOrder`. Both families compose
+`model.setRowOrder(rows, { tree, provenance })` through `applyClusterRun`. The
+Manual tab's pasted order lands through `clusteredCladeLayout`, the step that
+run ends with. Both families compose
 `TreeSidebarMixin` (`packages/tree-sidebar`), which stores the arrangement in
 the display's `rows` config object (ADR-157) and derives `clusterableSources`.
 

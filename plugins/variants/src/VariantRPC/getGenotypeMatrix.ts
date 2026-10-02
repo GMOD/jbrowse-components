@@ -96,7 +96,7 @@ export async function getGenotypeMatrix({
     }
   }
   // A Map keyed in `resolved` order: the cluster `order` comes back as indices
-  // into it and applyClusterOrder maps them into the display's own source list,
+  // into it and clusteredCladeLayout maps them into the display's own source list,
   // which a plain object cannot carry (see ClusterMatrix) — numeric VCF sample
   // IDs would have arrived at the clusterer renumbered.
   const rows = new Map<string, Float32Array>()

@@ -1,7 +1,6 @@
-import { ClusterDialog } from '@jbrowse/tree-sidebar'
+import { ClusterDialog, clusteredCladeLayout } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import { applyClusterOrder } from '../applyClusterOrder.ts'
 import { genotypeMatrixKey } from '../genotypeMatrixKey.ts'
 import { runGenotypeClustering } from '../runGenotypeClustering.ts'
 
@@ -56,12 +55,12 @@ const MultiSampleVariantClusterDialog = observer(
         }
         applyOrder={(order, matrixRowNames) => {
           model.setRowOrder(
-            applyClusterOrder({
+            clusteredCladeLayout({
               rows: model.clusterableSources,
-              arranged: model.editableSources,
+              editableSources: model.editableSources,
               order,
               matrixRowNames,
-            }).order,
+            }),
           )
         }}
       />

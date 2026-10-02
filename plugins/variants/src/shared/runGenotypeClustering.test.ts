@@ -90,7 +90,9 @@ describe('runGenotypeClustering', () => {
       }),
     )
     expect(model.setRowOrder).toHaveBeenCalledWith(
-      [{ name: 'sampleC' }, { name: 'sampleA' }, { name: 'sampleB' }],
+      ['sampleC', 'sampleA', 'sampleB'].map(name =>
+        expect.objectContaining({ name }),
+      ),
       { tree: '(a,b,c);', provenance: PROVENANCE },
     )
   })
@@ -126,7 +128,6 @@ describe('runGenotypeClustering', () => {
       minorAlleleFrequencyFilter: 0.05,
       maxMissingnessFilter: 0.2,
     })
-    // a complete order — applyClusterOrder validates it covers every row
     const rpcManager = makeRpcManager(async () => ({
       order: [0, 1, 2],
       tree: '(a,b,c);',
@@ -200,10 +201,10 @@ describe('runGenotypeClustering', () => {
 
     expect(model.setRowOrder).toHaveBeenCalledWith(
       [
-        { name: 'sampleB HP1' },
-        { name: 'sampleB HP0' },
-        { name: 'sampleA HP1' },
-        { name: 'sampleA HP0' },
+        expect.objectContaining({ name: 'sampleB HP1' }),
+        expect.objectContaining({ name: 'sampleB HP0' }),
+        expect.objectContaining({ name: 'sampleA HP1' }),
+        expect.objectContaining({ name: 'sampleA HP0' }),
       ],
       {
         tree: '(...);',
@@ -242,7 +243,9 @@ describe('runGenotypeClustering', () => {
       expect.objectContaining({ sources: model.clusterableSources }),
     )
     expect(model.setRowOrder).toHaveBeenCalledWith(
-      [{ name: 'sampleB' }, { name: 'sampleA' }, { name: 'sampleC' }],
+      ['sampleB', 'sampleA', 'sampleC'].map(name =>
+        expect.objectContaining({ name }),
+      ),
       { tree: '(a,b);', provenance: PROVENANCE },
     )
   })

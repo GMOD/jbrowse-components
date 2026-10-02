@@ -1,6 +1,6 @@
 ---
 name: row-displays-on-shared-kernels
-description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, and the MAF cleanups landed the same day; open are two product calls on row colour, an insertion mark whose trigger is met, multi-row's hidden-feature rule, per-mark seams, the one-row-model hook seam, variant wire shapes and stale docs."
+description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, and the MAF cleanups landed the same day; open are two product calls on row colour, an insertion mark whose trigger is met, per-mark seams, the one-row-model hook seam, variant wire shapes and stale docs."
 ---
 
 # Row displays on shared kernels
@@ -90,9 +90,7 @@ captures of volvox, roadmap and bxd.
    worker reads `rows`/`clusterField` through `fieldReader` now. Left: the
    presence/categorical encoding into tree-sidebar so the mark display can
    cluster span rows; the candidate scan on canvas's
-   `summarizeGroupByCandidates`. The "hidden feature" rule runs three times
-   (`multiRowChannels.ts:52`, `featurePainting.ts:94`, `rowOrderByValueAt.ts:22`);
-   the overlay and sort can read the encoded channels and row table.
+   `summarizeGroupByCandidates`.
 3. **One MAF identity walk** stops at shared predicates: core's
    `util/alignedBytes.ts` holds the byte constants, `firstDrawn`/`lastDrawn` and
    the base tests, and a reference `N` counts toward no identity in core, MAF
@@ -134,8 +132,8 @@ captures of volvox, roadmap and bxd.
   casts. Check MST type depth first.
 - The two cell loops share a two-ended bucket writer
   (`computeVariantCells.ts:117-294`, `computeVariantMatrixCells.ts:86-191`);
-  both variant chromes and MAF's mount the same scroll/sidebar/overlay tree;
-  `applyClusterOrder.ts` restates `applyClusterRun`. `spatialIndex` is the
+  both variant chromes and MAF's mount the same scroll/sidebar/overlay tree.
+  `spatialIndex` is the
   same `buildSpatialIndex(self.hierarchy)` on five displays, but the mixin owns
   no `hierarchy`, so it moves with step 5's hook seam.
 - MAF: the coverage band hard-codes a linear scale four times
