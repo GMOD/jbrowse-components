@@ -69,6 +69,7 @@ import {
 import {
   answeredPartitionField,
   effectivePartitionField,
+  clusterCandidates,
   partitionCandidates,
   partitionRowCounts,
   pinnedPartitionField,
@@ -473,7 +474,7 @@ export default function stateModelFactory(
           return resolveClusterField({
             clusterField: self.clusterField,
             color: self.workerColor,
-            candidates: partitionCandidates(self),
+            candidates: clusterCandidates(self),
             partitionField: effectivePartitionField(self),
           })
         },
@@ -493,6 +494,13 @@ export default function stateModelFactory(
          */
         get partitionCandidates(): string[] {
           return partitionCandidates(self)
+        },
+        /**
+         * #getter
+         * The attribute names "Cluster rows by similarity" offers.
+         */
+        get clusterCandidates(): string[] {
+          return clusterCandidates(self)
         },
         /**
          * #getter

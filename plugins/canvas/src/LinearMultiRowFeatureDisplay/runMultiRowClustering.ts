@@ -27,7 +27,7 @@ export interface MultiRowClusterModel extends ClusterRunModel<RowSource> {
 
 export interface MultiRowClusterDialogModel
   extends IStateTreeNode, MultiRowClusterModel {
-  partitionCandidates: string[]
+  clusterCandidates: string[]
   setClusterField: (field: string) => void
 }
 

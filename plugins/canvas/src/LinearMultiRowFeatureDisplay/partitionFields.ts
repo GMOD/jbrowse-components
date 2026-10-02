@@ -73,6 +73,25 @@ export function partitionCandidates(self: PartitionFieldSlice) {
 }
 
 /**
+ * The attributes the rows can cluster on: the row candidates, and the colour
+ * field wherever a region shipped a value for it. `score` and `strand` name no
+ * row, but a ramp over one is what the picture is about.
+ */
+export function clusterCandidates(self: PartitionFieldSlice) {
+  const names = new Set(partitionCandidates(self))
+  for (const { colorValues } of self.rpcDataMap.values()) {
+    if (
+      colorValues &&
+      !isCallbackValue(colorValues.field) &&
+      colorValues.values.some(value => value !== '')
+    ) {
+      names.add(colorValues.field)
+    }
+  }
+  return [...names].sort()
+}
+
+/**
  * The attribute the rows are partitioned on: what a region answered, else what
  * the worker's own resolver would make of `rows.field`. Answering through
  * `resolvePartitionField` rather than a second copy of its default is what

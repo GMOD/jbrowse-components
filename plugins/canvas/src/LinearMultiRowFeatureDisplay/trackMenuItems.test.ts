@@ -32,6 +32,7 @@ function makeSelf(
     // absent condition.
     effectivePartitionField: 'name',
     partitionCandidates: [] as string[],
+    clusterCandidates: [] as string[],
     partitionRowCounts: new Map<string, PartitionRowCount>(),
     setRowsField: () => {},
     showBranchLength: true,

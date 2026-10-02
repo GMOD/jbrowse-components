@@ -115,6 +115,30 @@ describe('a colour field on the multi-row display', () => {
   it('clusters on the field the colour names', () => {
     expect(display().effectiveClusterField).toBe('segmean')
   })
+
+  // `score` and `strand` name no row, so the row menu leaves them out, but a
+  // ramp over the score is what the picture is about.
+  it('clusters on score where the colour names it', () => {
+    const d = createTestEnvironment({
+      displayConfig: { rows: 'sample', color: { field: 'score' } },
+    }).createDisplay().display
+    d.setRpcData(
+      0,
+      packMultiRowFeatures({
+        features: SEGMENTS.map(
+          (f, i) => new SimpleFeature({ ...f.toJSON(), score: i }),
+        ),
+        partitionField: 'sample',
+        lengthField: '',
+        colorConfig: { value: undefined, field: 'score' },
+        jexl: createJexlInstance(),
+      }),
+      ctgA,
+    )
+    expect(d.partitionCandidates).not.toContain('score')
+    expect(d.clusterCandidates).toContain('score')
+    expect(d.effectiveClusterField).toBe('score')
+  })
 })
 
 // The ramp branch of this display's key had no test: `features` and

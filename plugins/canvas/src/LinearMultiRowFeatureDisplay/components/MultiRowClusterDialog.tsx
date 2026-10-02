@@ -25,7 +25,7 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
   const clusterOn = effectiveClusterField
     ? `${effectiveClusterField} their features carry`
     : 'positions they cover'
-  const candidates = model.partitionCandidates.filter(
+  const candidates = model.clusterCandidates.filter(
     field => field !== effectivePartitionField,
   )
   // A configured field the loaded data has not offered still belongs in the
