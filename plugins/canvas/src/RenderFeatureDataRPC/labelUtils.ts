@@ -69,7 +69,6 @@ const SELF_LABELING_GLYPHS: Record<GlyphType, boolean> = {
   MatureProteinRegion: false,
   RepeatRegion: false,
   CrisprGuide: false,
-  Motif: false,
   // never a child of a gene — it IS the gene, and processFeatureRecord draws
   // the feature's own label
   Subfeatures: false,

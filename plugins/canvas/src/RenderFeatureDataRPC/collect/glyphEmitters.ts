@@ -540,28 +540,6 @@ function processCrisprGuideLayout(
   emitTopLevelStrandArrow(layout, place, ctx, collector)
 }
 
-function processMotifLayout(
-  layout: FeatureLayout,
-  place: GlyphPlacement,
-  ctx: RenderContext,
-  collector: Collector,
-) {
-  const { baseTopPx, flatbushIdx, labelRowsAbove } = place
-  const { feature, height } = layout
-
-  pushBoxRect(
-    { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
-    ctx,
-    collector,
-  )
-  pushCutTicks(
-    { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
-    collector,
-  )
-
-  emitTopLevelStrandArrow(layout, place, ctx, collector)
-}
-
 function emitBox(
   layout: FeatureLayout,
   place: GlyphPlacement,
@@ -712,7 +690,6 @@ const GLYPH_EMITTERS: Record<GlyphType, GlyphEmitter> = {
   Segments: processTranscriptLayout,
   MatureProteinRegion: processMatureProteinLayout,
   RepeatRegion: processRepeatRegionLayout,
-  Motif: processMotifLayout,
   CrisprGuide: processCrisprGuideLayout,
   Box: emitBox,
 }

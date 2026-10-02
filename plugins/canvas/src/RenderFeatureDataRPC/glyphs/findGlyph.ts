@@ -6,7 +6,6 @@ import {
   hasMatureProteinChildren,
   layoutMatureProteinRegion,
 } from './matureProteinRegion.ts'
-import { layoutMotif } from './motif.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { isRepeatRegion, layoutRepeatRegion } from './repeatRegion.ts'
 import { layoutSegments } from './segments.ts'
@@ -19,7 +18,7 @@ import type { Feature } from '@jbrowse/core/util'
 // Keyed lowercase, so the lookup below matches whatever casing the file used.
 const TYPE_GLYPHS: Record<string, (args: LayoutArgs) => FeatureLayout> = {
   guide_rna: layoutCrisprGuide,
-  motif: layoutMotif,
+  motif: layoutCrisprGuide,
 }
 
 export function findGlyph(

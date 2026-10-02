@@ -47,7 +47,7 @@ test('palindromic site draws staggered half-height cuts marking the overhang', (
       cutSiteBottom: 105,
     }),
   )
-  expect(layout.glyphType).toBe('Motif')
+  expect(layout.glyphType).toBe('CrisprGuide')
 
   expect(collector.rects).toHaveLength(3)
   const [box, top, bottom] = collector.rects

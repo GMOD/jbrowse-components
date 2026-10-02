@@ -3,7 +3,6 @@ import { layoutBox } from './box.ts'
 import { layoutCrisprGuide } from './crisprGuide.ts'
 import { findGlyph } from './findGlyph.ts'
 import { layoutMatureProteinRegion } from './matureProteinRegion.ts'
-import { layoutMotif } from './motif.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutRepeatRegion } from './repeatRegion.ts'
 import { layoutSegments } from './segments.ts'
@@ -151,7 +150,7 @@ describe.each(['auto', 'all', 'longestCoding'] as const)(
 
     it('matches the semantic types case-insensitively', () => {
       expect(findGlyph(mockFeature({ type: 'Motif' }), config)).toBe(
-        layoutMotif,
+        layoutCrisprGuide,
       )
       expect(
         findGlyph(
