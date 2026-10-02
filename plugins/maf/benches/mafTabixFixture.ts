@@ -18,6 +18,8 @@ export interface MafFixtureSpec {
   columns: number
   /** fraction of reference columns that are `-`, i.e. insertions in other rows */
   refGapRate: number
+  /** fraction of reference bases that are `N`, which identity leaves uncounted */
+  refNRate?: number
   /** genomic distance between one block's start and the next */
   spacing: number
   seed: number
@@ -62,7 +64,13 @@ export function generateMafBed(spec: MafFixtureSpec = DEFAULT_SPEC) {
   for (let b = 0; b < spec.blocks; b++) {
     const ref: string[] = []
     for (let c = 0; c < spec.columns; c++) {
-      ref.push(rand() < spec.refGapRate ? '-' : BASES[(rand() * 4) | 0]!)
+      ref.push(
+        rand() < spec.refGapRate
+          ? '-'
+          : spec.refNRate && rand() < spec.refNRate
+            ? 'N'
+            : BASES[(rand() * 4) | 0]!,
+      )
     }
     const refLen = ref.reduce((n, ch) => n + (ch === '-' ? 0 : 1), 0)
     const blockStart = b * spec.spacing
@@ -119,7 +127,7 @@ export function ensureMafTabixFixture(
   force = false,
 ): MafFixture {
   mkdirSync(dir, { recursive: true })
-  const name = `maf-${spec.blocks}x${spec.species}x${spec.columns}-sp${spec.spacing}-s${spec.seed}`
+  const name = `maf-${spec.blocks}x${spec.species}x${spec.columns}-sp${spec.spacing}-s${spec.seed}${spec.refNRate ? `-n${spec.refNRate}` : ''}`
   const bedPath = join(dir, `${name}.bed`)
   const bedGzPath = join(dir, `${name}.bed.gz`)
   const tbiPath = `${bedGzPath}.tbi`
@@ -153,7 +161,7 @@ export function ensureBigMafFixture(
   spec: MafFixtureSpec = DEFAULT_SPEC,
 ) {
   mkdirSync(dir, { recursive: true })
-  const name = `bigmaf-${spec.blocks}x${spec.species}x${spec.columns}-sp${spec.spacing}-s${spec.seed}`
+  const name = `bigmaf-${spec.blocks}x${spec.species}x${spec.columns}-sp${spec.spacing}-s${spec.seed}${spec.refNRate ? `-n${spec.refNRate}` : ''}`
   const bbPath = join(dir, `${name}.bb`)
   const span = spec.blocks * spec.spacing
   if (!existsSync(bbPath)) {

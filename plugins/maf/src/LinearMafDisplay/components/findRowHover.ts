@@ -1,10 +1,10 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
+import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
 
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
 import { rowFlankAt } from '../../LinearMafRenderer/rendering/rowFlank.ts'
-import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
 import type {
   MafAlignedRow,

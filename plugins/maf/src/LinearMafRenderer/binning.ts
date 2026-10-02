@@ -1,4 +1,4 @@
-import { DASH } from '../util/asciiBytes.ts'
+import { DASH } from '@jbrowse/core/util/alignedBytes'
 
 /**
  * The column index carrying each genomic offset in a block, shared by the two

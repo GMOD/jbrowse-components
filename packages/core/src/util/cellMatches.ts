@@ -1,18 +1,21 @@
 // A `cells` step, the interval `bin` behind it and the `aggregate` of its
 // matches as one walk over the rows' bytes, which `runSteps` in
 // featureTransforms.ts reaches by relative path only.
-import { fusesBinAggregate } from './binnedAggregate.ts'
 import {
   DASH,
-  DEFAULT_CELLS_FIELD,
-  MATCH,
-  MISMATCH,
-  NO_STATE,
   SPACE,
-  cellState,
   firstDrawn,
   isGapByte,
   lastDrawn,
+} from './alignedBytes.ts'
+import { fusesBinAggregate } from './binnedAggregate.ts'
+import {
+  DEFAULT_CELLS_FIELD,
+  MATCH,
+  NO_STATE,
+  cellState,
+  comparesBase,
+  runKey,
   walkedTexts,
 } from './cellsStep.ts'
 import { numberReaderOf, readerOf } from './featureTable.ts'
@@ -149,9 +152,9 @@ class SectionBins {
   /**
    * One row's runs as `cells` writes them, each met by its bins as the bin
    * step cuts it and in the order the lanes hold them: a run when the next
-   * column's state differs, an insertion at the reference base after it,
-   * ahead of the run still open. The bases a run of matches or mismatches
-   * holds are counted in their bins as the walk passes them.
+   * column's `runKey` differs, an insertion at the reference base after it,
+   * ahead of the run still open. The compared bases a run holds are counted
+   * in their bins as the walk passes them.
    */
   walk(
     r: number,
@@ -175,7 +178,7 @@ class SectionBins {
     let runOpen = false
     let runBin = 0
     let runState = NO_STATE
-    let runBase = -1
+    let openKey = -1
     let inserting = false
     for (let col = 0; col < refLen; col++) {
       const refByte = refBytes[refAt + col]!
@@ -195,21 +198,21 @@ class SectionBins {
         rowByte,
         col >= first && col <= last && col < rowLen,
       )
-      const base = st === MISMATCH ? rowByte : -1
-      if (st !== runState || base !== runBase) {
+      const key = runKey(st, refByte, rowByte)
+      if (st !== runState || key !== openKey) {
         if (runOpen) {
           this.touch(runBin, pos > edge - size ? bin : bin - 1, r)
         }
         runOpen = st !== NO_STATE
         runBin = bin
         runState = st
-        runBase = base
+        openKey = key
       }
-      if (st === MATCH) {
-        m++
+      if (comparesBase(st, refByte)) {
         c++
-      } else if (st === MISMATCH) {
-        c++
+        if (st === MATCH) {
+          m++
+        }
       }
       pos++
       if (pos === edge) {

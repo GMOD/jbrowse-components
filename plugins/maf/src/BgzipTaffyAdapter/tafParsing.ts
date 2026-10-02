@@ -1,4 +1,5 @@
-import { DASH } from '../util/asciiBytes.ts'
+import { DASH } from '@jbrowse/core/util/alignedBytes'
+
 import { flipBlockToForwardStrand } from '../util/forwardStrandBlock.ts'
 
 import type { AlignmentRecord } from '../types.ts'

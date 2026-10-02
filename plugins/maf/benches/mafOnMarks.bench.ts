@@ -60,7 +60,8 @@
 // the same colour key; the row lookup must answer what the hit index answers
 // at random hovers; the column identity and the declared one must equal bases
 // matched over bases compared per species and bin, counted straight off the
-// text; and the declared identity must answer the same rows fused and apart,
+// text with no reference `N` compared, and the MAF display's runs must hold
+// it to the hundredth; and the declared identity must answer the same rows fused and apart,
 // over the features and over the typed table. `--identity` runs the identity
 // arms and their checks alone.
 //
@@ -187,7 +188,8 @@ const onlyIdentity = process.argv.includes('--identity')
 // The first shape is MAF_LARGE_BLOCKS.md's profile, the second the narrow
 // blocks MAF_LARGE_BLOCKS.md measures real files at, and the third a 470-way
 // alignment's species count, the hg38 track the mark display's MAF example
-// reads, over a 200 kb stretch.
+// reads, over a 200 kb stretch. The last is the first with a reference `N`
+// in fifty, which identity leaves uncounted.
 const SHAPES: { name: string; spec: MafFixtureSpec }[] = [
   { name: '26 species, 1600 blocks of 250 columns', spec: DEFAULT_SPEC },
   {
@@ -197,6 +199,10 @@ const SHAPES: { name: string; spec: MafFixtureSpec }[] = [
   {
     name: '470 species, 200 blocks of 250 columns',
     spec: { ...DEFAULT_SPEC, blocks: 200, species: 470 },
+  },
+  {
+    name: '26 species, 1600 blocks of 250 columns, 2% reference N',
+    spec: { ...DEFAULT_SPEC, refNRate: 0.02 },
   },
 ]
 
@@ -689,7 +695,7 @@ function checkRowMajor(features: readonly Feature[]) {
 }
 
 // Bases matched over bases compared per species and bin, straight off the
-// text: the identity the MAF display means.
+// text: the identity the MAF display means, which counts no reference N.
 function identityOracle(features: readonly Feature[]) {
   const matched = new Map<string, number>()
   const compared = new Map<string, number>()
@@ -706,7 +712,7 @@ function identityOracle(features: readonly Feature[]) {
           continue
         }
         const b = col < row.length ? row.charCodeAt(col) : 32
-        if (!isGap(b)) {
+        if (!isGap(b) && (r | 0x20) !== 110) {
           const key = `${species}:${Math.floor(pos / binBp)}`
           compared.set(key, (compared.get(key) ?? 0) + 1)
           if ((r | 0x20) === (b | 0x20)) {
@@ -720,6 +726,41 @@ function identityOracle(features: readonly Feature[]) {
   return new Map(
     [...compared].map(([key, n]) => [key, (matched.get(key) ?? 0) / n]),
   )
+}
+
+// The MAF display's runs against the oracle: every bin the oracle values,
+// once, at its mean in the hundredths the runs hold.
+function checkMafIdentity(
+  features: readonly Feature[],
+  rowIndexBySrc: Map<string, number>,
+) {
+  const oracle = identityOracle(features)
+  const species = [...rowIndexBySrc.keys()]
+  const { blocks } = placeMafRegionData(pack(features), rowIndexBySrc)
+  const runs = buildIdentityRuns(blocks, binBp)
+  const seen = new Set<string>()
+  for (let i = 0; i < runs.count; i++) {
+    const last = Math.floor((runs.x2[i]! - 1) / binBp)
+    for (let b = Math.floor(runs.x[i]! / binBp); b <= last; b++) {
+      const key = `${species[runs.row[i]!]}:${b}`
+      const want = oracle.get(key)
+      if (
+        want === undefined ||
+        seen.has(key) ||
+        Math.abs(want * 100 - runs.step[i]!) > 0.5 + 1e-9
+      ) {
+        throw new Error(
+          `the MAF display's identity off the oracle at ${key}: ${runs.step[i]} hundredths against ${want}`,
+        )
+      }
+      seen.add(key)
+    }
+  }
+  if (seen.size !== oracle.size) {
+    throw new Error(
+      `the MAF display's identity covers ${seen.size} of the oracle's ${oracle.size} bins`,
+    )
+  }
 }
 
 // Each declared identity's distance from the oracle, and the column one held
@@ -902,6 +943,7 @@ for (const { name, spec } of stages || parse || readers
   const lookup = onlyIdentity
     ? { probes: 0, hits: 0 }
     : (checkCells(features), checkRowMajor(features))
+  checkMafIdentity(features, rowIndexBySrc)
   const identity = checkIdentity(features)
   const best: Record<string, number> = {}
   const counts: Record<string, number> = {}

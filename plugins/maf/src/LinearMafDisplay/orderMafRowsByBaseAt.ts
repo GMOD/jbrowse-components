@@ -1,8 +1,8 @@
 import { cmpStr } from '@jbrowse/core/util'
+import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
 import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
 
 import { blockIndexAtBp } from '../LinearMafRenderer/blockAtBp.ts'
-import { DASH, LOWER_BIT, SPACE } from '../util/asciiBytes.ts'
 import { refColumnAt } from './components/findRowHover.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'

@@ -1,7 +1,11 @@
+import {
+  DASH,
+  isGapByte,
+  isUnknownBase,
+  sameBase,
+} from '@jbrowse/core/util/alignedBytes'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
-
-import { DASH, LOWER_BIT, N_UPPER, SPACE } from '../util/asciiBytes.ts'
 
 import type { MafBlock, MafIdentityBars } from './mafRenderingBackendTypes.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -109,6 +113,10 @@ export interface MafIdentityRuns {
   count: number
 }
 
+function compares(refByte: number, alnByte: number) {
+  return !isUnknownBase(refByte) && !isGapByte(alnByte)
+}
+
 function capacity(blocks: readonly MafBlock[], binBp: number) {
   let total = 0
   for (const block of blocks) {
@@ -195,9 +203,8 @@ export function buildIdentityRuns(
       for (let col = 0; col < len; col++) {
         const refByte = ref[col]!
         if (refByte !== DASH) {
-          const refUpper = refByte & ~LOWER_BIT
           const a = aln[col]!
-          if (refUpper !== N_UPPER && a !== DASH && a !== SPACE) {
+          if (compares(refByte, a)) {
             const b = Math.floor(bp / binBp)
             if (b !== bin[r]) {
               closeBin(r)
@@ -206,7 +213,7 @@ export function buildIdentityRuns(
             }
             binHi[r] = bp
             classified[r]!++
-            if ((a & ~LOWER_BIT) === refUpper) {
+            if (sameBase(a, refByte)) {
               matches[r]!++
             }
           }
@@ -299,16 +306,10 @@ export function identityOver(
       for (let col = 0; col < len && bp < endBp; col++) {
         const refByte = ref[col]!
         if (refByte !== DASH) {
-          const refUpper = refByte & ~LOWER_BIT
           const a = aln[col]!
-          if (
-            bp >= startBp &&
-            refUpper !== N_UPPER &&
-            a !== DASH &&
-            a !== SPACE
-          ) {
+          if (bp >= startBp && compares(refByte, a)) {
             classifiedBases++
-            if ((a & ~LOWER_BIT) === refUpper) {
+            if (sameBase(a, refByte)) {
               matched++
             }
           }

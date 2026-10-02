@@ -4,9 +4,13 @@
  * reference insertion column, which the insertion pass renders.
  */
 
+import {
+  DASH,
+  LOWER_BIT,
+  isGapByte,
+  sameBase,
+} from '@jbrowse/core/util/alignedBytes'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-
-import { DASH, LOWER_BIT, SPACE } from '../util/asciiBytes.ts'
 
 // Only ever used as stand-in reference bytes while filling `packedByRefAln`.
 const LOWER_A = 97
@@ -46,9 +50,9 @@ export function classifyCell(
 ): CellCategory {
   return refByte === DASH
     ? CellCategory.Skip
-    : alnByte === DASH || alnByte === SPACE
+    : isGapByte(alnByte)
       ? CellCategory.Gap
-      : !colorMatches && (refByte | LOWER_BIT) === (alnByte | LOWER_BIT)
+      : !colorMatches && sameBase(refByte, alnByte)
         ? CellCategory.Match
         : CellCategory.Base
 }

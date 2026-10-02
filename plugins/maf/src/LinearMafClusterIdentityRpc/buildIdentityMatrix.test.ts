@@ -260,4 +260,19 @@ describe('buildIdentityMatrix', () => {
     )
     expect([...m.get('masked')!]).toEqual([1, 1, 1, 1, 1, 1, 1, 1])
   })
+
+  it('counts no reference N toward identity, as the display does', async () => {
+    const m = await matrixOf(
+      [
+        block({
+          start: 0,
+          ref: 'ACNnGTAC',
+          rows: { same: 'ACNnGTAC', other: 'ACGAGTAC' },
+        }),
+      ],
+      ['same', 'other'],
+    )
+    expect([...m.get('same')!]).toEqual([1, 1, 0, 0, 1, 1, 1, 1])
+    expect([...m.get('other')!]).toEqual([1, 1, 0, 0, 1, 1, 1, 1])
+  })
 })

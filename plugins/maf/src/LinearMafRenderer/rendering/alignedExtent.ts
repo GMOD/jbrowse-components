@@ -1,4 +1,4 @@
-import { DASH, SPACE } from '../../util/asciiBytes.ts'
+import { firstDrawn, lastDrawn } from '@jbrowse/core/util/alignedBytes'
 
 import type { RowFlank } from './rowFlank.ts'
 
@@ -12,33 +12,17 @@ export interface ColumnRange {
 const EMPTY: ColumnRange = { firstCol: -1, lastCol: -1 }
 
 /**
- * The columns of `alnBytes` carrying this sample's own sequence. Empty for a
- * row that is gaps end to end.
- *
- * Scanned inward from each end rather than straight through, so a row with no
- * boundary gap — the common case — costs two comparisons instead of one per
- * column. The painters call this per row, and a full walk there would put back
- * the O(columns x rows) block pass that stepping by `binBp` exists to remove.
+ * The columns of `alnBytes` carrying this sample's own sequence, the extent
+ * the mark display's `cells` draws. Empty for a row that is gaps end to end.
  */
 export function alignedExtent(
   alnBytes: Uint8Array,
   len = alnBytes.length,
 ): ColumnRange {
-  let firstCol = 0
-  while (
-    firstCol < len &&
-    (alnBytes[firstCol] === DASH || alnBytes[firstCol] === SPACE)
-  ) {
-    firstCol++
-  }
-  let lastCol = len - 1
-  while (
-    lastCol > firstCol &&
-    (alnBytes[lastCol] === DASH || alnBytes[lastCol] === SPACE)
-  ) {
-    lastCol--
-  }
-  return firstCol === len ? EMPTY : { firstCol, lastCol }
+  const firstCol = firstDrawn(alnBytes, 0, len)
+  return firstCol === len
+    ? EMPTY
+    : { firstCol, lastCol: lastDrawn(alnBytes, 0, len, firstCol) }
 }
 
 /**

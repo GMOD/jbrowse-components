@@ -1,6 +1,7 @@
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { formatBytes } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
+import { DASH, LOWER_BIT, isUnknownBase } from '@jbrowse/core/util/alignedBytes'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 
@@ -11,8 +12,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { StatusCallback } from '@jbrowse/core/util/progress'
 import type { ClusterMatrix } from '@jbrowse/tree-sidebar'
-
-const GAP = 45 // '-'
 
 /**
  * How many columns the matrix gets, whatever the span. Clustering cost is
@@ -119,7 +118,8 @@ export function buildSegments(regions: Region[]) {
  *
  * `columnBin` counts REFERENCE positions rather than alignment columns, so a
  * run of reference gaps -- an insertion carried by some other haplotype -- does
- * not dilute the bins around it.
+ * not dilute the bins around it, and leaves out a reference `N`, which no row
+ * can match.
  */
 export async function buildIdentityMatrix({
   pluginManager,
@@ -247,12 +247,16 @@ class IdentityMatrixSink implements MafBlockSink {
       const refCode = ref.charCodeAt(refFrom + c)
       // soft-masked repeats are lower case in most MAFs, and a masked match
       // is still a match
-      refFolded[c] = refCode | 32
-      if (refCode === GAP) {
+      refFolded[c] = refCode | LOWER_BIT
+      if (refCode === DASH) {
         columnBin[c] = -1
         continue
       }
-      if (refPos >= segment.start && refPos < segment.end) {
+      if (
+        refPos >= segment.start &&
+        refPos < segment.end &&
+        !isUnknownBase(refCode)
+      ) {
         const bin =
           segment.colOffset +
           Math.min(
@@ -281,7 +285,7 @@ class IdentityMatrixSink implements MafBlockSink {
         continue
       }
       const base = text.charCodeAt(from + c)
-      if (base !== GAP && (base | 32) === refFolded[c]!) {
+      if (base !== DASH && (base | LOWER_BIT) === refFolded[c]!) {
         row[bin]! += 1
       }
     }

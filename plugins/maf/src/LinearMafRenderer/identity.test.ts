@@ -60,8 +60,10 @@ test('a reference insertion column takes no reference position', () => {
   ])
 })
 
-test('a reference N is unclassifiable', () => {
-  expect(runs([block(100, 'NA', [[0, 'CA']])])).toEqual([[0, 101, 102, 100]])
+test('a reference N is unclassifiable, to the runs and the hover alike', () => {
+  const blocks = [block(100, 'NnA', [[0, 'CnA']])]
+  expect(runs(blocks)).toEqual([[0, 102, 103, 100]])
+  expect(identityOver(blocks, 0, 100, 103)).toEqual({ identity: 1, bases: 1 })
 })
 
 test('soft-masked bases compare by letter', () => {

@@ -17,7 +17,20 @@
 //   the colour resolve once per distinct value and index per run.
 //
 // It implements what the bench times and throws on the rest.
+import {
+  DASH,
+  SPACE,
+  firstDrawn,
+  isGapByte,
+  lastDrawn,
+} from '../src/util/alignedBytes.ts'
 import { categoricalField } from '../src/util/categoricalField.ts'
+import {
+  NO_STATE,
+  cellState,
+  comparesBase,
+  runKey,
+} from '../src/util/cellsStep.ts'
 import { cssColorToABGR } from '../src/util/colorBits.ts'
 import { hitIndexOf } from '../src/util/markEncoding.ts'
 
@@ -222,20 +235,10 @@ export function flattenRecords(
   })
 }
 
-const DASH = 45
-const SPACE = 32
-const LOWER_BIT = 0x20
-
 export const CELL_STATES = ['match', 'mismatch', 'gap', 'insertion'] as const
 const MATCH = 0
 const MISMATCH = 1
-const GAP = 2
 const INSERTION = 3
-const NONE = 255
-
-function isGapByte(b: number) {
-  return b === DASH || b === SPACE
-}
 
 /**
  * Each row's text and its container's: `cells` reads the row against the
@@ -332,7 +335,11 @@ class CellsTable implements Table {
           const codes = this.state.codes
           for (let i = 0; i < this.length; i++) {
             const s = codes[i]!
-            out[i] = s === MATCH ? 1 : s === MISMATCH ? 0 : Number.NaN
+            out[i] = comparesBase(s, this.ref(i).charCodeAt(this.textStart[i]!))
+              ? s === MATCH
+                ? 1
+                : 0
+              : Number.NaN
           }
           return out
         })
@@ -429,8 +436,8 @@ export function cellsColumns(rows: Table, field = 'seq'): Table {
     }
     let pos = starts[startIdx ? startIdx[r]! : r]!
     let runStart = -1
-    let runState = NONE
-    let runBase = -1
+    let runState = NO_STATE
+    let openKey = -1
     let runText = 0
     let insertAt = -1
     for (let col = 0; col < ref.length; col++) {
@@ -451,16 +458,13 @@ export function cellsColumns(rows: Table, field = 'seq'): Table {
         n++
         insertAt = -1
       }
-      const drawn = col >= first && col <= last && col < row.length
-      const state = !drawn
-        ? NONE
-        : isGapByte(rowByte)
-          ? GAP
-          : (refByte | LOWER_BIT) === (rowByte | LOWER_BIT)
-            ? MATCH
-            : MISMATCH
-      const base = state === MISMATCH ? rowByte : -1
-      if (state !== runState || base !== runBase) {
+      const state = cellState(
+        refByte,
+        rowByte,
+        col >= first && col <= last && col < row.length,
+      )
+      const key = runKey(state, refByte, rowByte)
+      if (state !== runState || key !== openKey) {
         if (runStart >= 0) {
           outStart[n] = runStart
           outEnd[n] = pos
@@ -469,9 +473,9 @@ export function cellsColumns(rows: Table, field = 'seq'): Table {
           outParent[n] = r
           n++
         }
-        runStart = state === NONE ? -1 : pos
+        runStart = state === NO_STATE ? -1 : pos
         runState = state
-        runBase = base
+        openKey = key
         runText = col
       }
       pos++
@@ -554,18 +558,12 @@ export function cellsColumnsBytes(rows: Table, field = 'seq'): Table {
       outText = grow(outText, capacity)
       outParent = grow(outParent, capacity)
     }
-    let first = 0
-    while (first < rowLength && isGapByte(rowBytes[first]!)) {
-      first++
-    }
-    let last = rowLength - 1
-    while (last > first && isGapByte(rowBytes[last]!)) {
-      last--
-    }
+    const first = firstDrawn(rowBytes, 0, rowLength)
+    const last = lastDrawn(rowBytes, 0, rowLength, first)
     let pos = starts[startIdx ? startIdx[r]! : r]!
     let runStart = -1
-    let runState = NONE
-    let runBase = -1
+    let runState = NO_STATE
+    let openKey = -1
     let runText = 0
     let insertAt = -1
     for (let col = 0; col < refLength; col++) {
@@ -586,16 +584,13 @@ export function cellsColumnsBytes(rows: Table, field = 'seq'): Table {
         n++
         insertAt = -1
       }
-      const drawn = col >= first && col <= last && col < rowLength
-      const state = !drawn
-        ? NONE
-        : isGapByte(rowByte)
-          ? GAP
-          : (refByte | LOWER_BIT) === (rowByte | LOWER_BIT)
-            ? MATCH
-            : MISMATCH
-      const base = state === MISMATCH ? rowByte : -1
-      if (state !== runState || base !== runBase) {
+      const state = cellState(
+        refByte,
+        rowByte,
+        col >= first && col <= last && col < rowLength,
+      )
+      const key = runKey(state, refByte, rowByte)
+      if (state !== runState || key !== openKey) {
         if (runStart >= 0) {
           outStart[n] = runStart
           outEnd[n] = pos
@@ -604,9 +599,9 @@ export function cellsColumnsBytes(rows: Table, field = 'seq'): Table {
           outParent[n] = r
           n++
         }
-        runStart = state === NONE ? -1 : pos
+        runStart = state === NO_STATE ? -1 : pos
         runState = state
-        runBase = base
+        openKey = key
         runText = col
       }
       pos++

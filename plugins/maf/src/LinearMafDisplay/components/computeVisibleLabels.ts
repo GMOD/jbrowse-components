@@ -1,7 +1,7 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
+import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
 
 import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
-import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'

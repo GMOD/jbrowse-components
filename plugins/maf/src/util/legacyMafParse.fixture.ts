@@ -1,6 +1,7 @@
 // The MAF-tabix and bigMaf parses `getFeatures` ran before it read through
 // `readBlocks`, and the identity walk clustering ran over their MafFeatures:
 // the oracle the rebuilt paths are held equal to, and the bench's baseline.
+import { isUnknownBase } from '@jbrowse/core/util/alignedBytes'
 import {
   ObservableCreate,
   subscribeToObservable,
@@ -193,7 +194,11 @@ export async function legacyIdentityMatrix(
           columnBin[c] = -1
           continue
         }
-        if (refPos >= segment.start && refPos < segment.end) {
+        if (
+          refPos >= segment.start &&
+          refPos < segment.end &&
+          !isUnknownBase(refCode)
+        ) {
           const bin =
             segment.colOffset +
             Math.min(

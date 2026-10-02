@@ -1,4 +1,5 @@
-import { DASH } from '../util/asciiBytes.ts'
+import { DASH } from '@jbrowse/core/util/alignedBytes'
+
 import {
   RESOLVE_PACKED_SKIP,
   packMafCellColorConfig,

@@ -2,6 +2,15 @@
 // of, and the texts its walk reads, which the fused identity kernel in
 // cellMatches.ts walks too. Imported by relative path only.
 import {
+  DASH,
+  SPACE,
+  firstDrawn,
+  isGapByte,
+  isUnknownBase,
+  lastDrawn,
+  sameBase,
+} from './alignedBytes.ts'
+import {
   DerivedTable,
   numberReaderOf,
   readerOf,
@@ -16,44 +25,12 @@ import type { Staged } from './stepTables.ts'
 
 export const DEFAULT_CELLS_FIELD = 'seq'
 
-export const DASH = 45
-export const SPACE = 32
-const LOWER_BIT = 0x20
-
 const CELL_STATES = ['match', 'mismatch', 'gap', 'insertion'] as const
 export const MATCH = 0
 export const MISMATCH = 1
 const GAP = 2
 const INSERTION = 3
 export const NO_STATE = 255
-
-export function isGapByte(b: number) {
-  return b === DASH || b === SPACE
-}
-
-// The columns carrying the row's own sequence: a gap run reaching either end
-// of the row measures where the block was cut, not the alignment, so it is no
-// cell either.
-export function firstDrawn(bytes: Uint8Array, at: number, len: number) {
-  let first = 0
-  while (first < len && isGapByte(bytes[at + first]!)) {
-    first++
-  }
-  return first
-}
-
-export function lastDrawn(
-  bytes: Uint8Array,
-  at: number,
-  len: number,
-  first: number,
-) {
-  let last = len - 1
-  while (last > first && isGapByte(bytes[at + last]!)) {
-    last--
-  }
-  return last
-}
 
 // A reference base's cell: no state outside the drawn columns, else the row's
 // gap, or its base matched or not regardless of case.
@@ -62,9 +39,24 @@ export function cellState(refByte: number, rowByte: number, drawn: boolean) {
     ? NO_STATE
     : isGapByte(rowByte)
       ? GAP
-      : (refByte | LOWER_BIT) === (rowByte | LOWER_BIT)
+      : sameBase(refByte, rowByte)
         ? MATCH
         : MISMATCH
+}
+
+// Whether a cell counts toward identity: matched or not against a known
+// reference base.
+export function comparesBase(state: number, refByte: number) {
+  return state <= MISMATCH && !isUnknownBase(refByte)
+}
+
+// What the cells of one run share besides their state: a mismatch's base, and
+// whether they are compared, so a run's `match` is one value.
+export function runKey(state: number, refByte: number, rowByte: number) {
+  return (
+    (state === MISMATCH ? rowByte : 0) |
+    (state <= MISMATCH && isUnknownBase(refByte) ? 0x100 : 0)
+  )
 }
 
 // The row a cell step reads against: past any table that only reordered or
@@ -270,8 +262,12 @@ class CellTable extends DerivedTable {
         return this.laneOf(name, () => {
           const values = new Float32Array(this.length)
           for (let i = 0; i < this.length; i++) {
-            const s = this.state[i]
-            values[i] = s === MATCH ? 1 : s === MISMATCH ? 0 : Number.NaN
+            const s = this.state[i]!
+            values[i] = comparesBase(s, this.refByte(i))
+              ? s === MATCH
+                ? 1
+                : 0
+              : Number.NaN
           }
           return { kind: 'number', values, at: undefined, nanIsAbsent: true }
         })
@@ -306,6 +302,12 @@ class CellTable extends DerivedTable {
         return undefined
       }
     }
+  }
+
+  private refByte(i: number) {
+    const { reference: ref } = this.texts
+    const f = this.texts.refOf(this.parentOf(i))
+    return ref.bytes[ref.offset[f]! + this.textAt[i]!]!
   }
 
   private mismatched(i: number) {
@@ -416,7 +418,7 @@ class RunLanes {
     const last = lastDrawn(rowBytes, rowAt, rowLen, first)
     let runStart = -1
     let runState = NO_STATE
-    let runBase = -1
+    let openKey = -1
     let runCol = 0
     let insertAt = -1
     for (let col = 0; col < refLen; col++) {
@@ -442,8 +444,8 @@ class RunLanes {
         rowByte,
         col >= first && col <= last && col < rowLen,
       )
-      const base = st === MISMATCH ? rowByte : -1
-      if (st !== runState || base !== runBase) {
+      const key = runKey(st, refByte, rowByte)
+      if (st !== runState || key !== openKey) {
         if (runStart >= 0) {
           start[n] = runStart
           end[n] = pos
@@ -454,7 +456,7 @@ class RunLanes {
         }
         runStart = st === NO_STATE ? -1 : pos
         runState = st
-        runBase = base
+        openKey = key
         runCol = col
       }
       pos++

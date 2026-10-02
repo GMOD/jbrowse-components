@@ -1,4 +1,5 @@
-import { DASH } from '../util/asciiBytes.ts'
+import { DASH } from '@jbrowse/core/util/alignedBytes'
+
 import { encodeMafStatus } from '../util/mafStatus.ts'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'

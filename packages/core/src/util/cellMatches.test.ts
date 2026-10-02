@@ -115,7 +115,8 @@ function answers(table: FeatureTable) {
   })
 }
 
-// Bases matched over bases compared, per species and bin, off the text.
+// Bases matched over bases compared, per species and bin, off the text; a
+// reference N compares nothing.
 function oracle(input: SimpleFeature[], size: number) {
   const out = new Map<string, number>()
   const compared = new Map<string, number>()
@@ -129,7 +130,7 @@ function oracle(input: SimpleFeature[], size: number) {
           continue
         }
         const b = seq[c] ?? ' '
-        if (b !== '-' && b !== ' ') {
+        if (b !== '-' && b !== ' ' && ref[c]!.toUpperCase() !== 'N') {
           const key = `${species}:${Math.floor(pos / size) * size}`
           compared.set(key, (compared.get(key) ?? 0) + 1)
           out.set(
@@ -333,4 +334,35 @@ test('many species over a wide region take the walk, one dense index reused per 
   expect(answers(fused.layers[0]!.table)).toEqual(
     answers(apart.layers[0]!.table),
   )
+})
+
+test('a reference N splits its run and counts toward no identity', () => {
+  const block = new SimpleFeature({
+    uniqueId: 'b',
+    refName: 'ctgA',
+    start: 0,
+    end: 6,
+    seq: 'AANnAC',
+    alignments: { x: { seq: 'AAGnAA' } },
+  })
+  const runs = runTransforms([block], [FLATTEN, CELLS])
+  expect(
+    Array.from({ length: runs.length }, (_, i) => [
+      runs.row(i).get('start'),
+      runs.row(i).get('end'),
+      runs.row(i).get('state'),
+      runs.row(i).get('match'),
+    ]),
+  ).toEqual([
+    [0, 2, 'match', 1],
+    [2, 3, 'mismatch', undefined],
+    [3, 4, 'match', undefined],
+    [4, 5, 'match', 1],
+    [5, 6, 'mismatch', 0],
+  ])
+  const [bin, agg] = identity(6)
+  const fused = runTransforms([block], [FLATTEN, CELLS, bin, agg])
+  const apart = runTransforms(runTransforms(runs, [bin]), [agg])
+  expect(answers(fused)).toEqual(answers(apart))
+  expect(fused.row(0).get('identity')).toBe(3 / 4)
 })

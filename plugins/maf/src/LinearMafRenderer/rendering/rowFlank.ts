@@ -1,4 +1,4 @@
-import { DASH, SPACE } from '../../util/asciiBytes.ts'
+import { DASH, SPACE } from '@jbrowse/core/util/alignedBytes'
 
 import type { MafBlock } from '../mafRenderingBackendTypes.ts'
 

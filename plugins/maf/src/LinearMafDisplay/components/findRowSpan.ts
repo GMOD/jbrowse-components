@@ -1,4 +1,5 @@
-import { DASH, SPACE } from '../../util/asciiBytes.ts'
+import { DASH, SPACE } from '@jbrowse/core/util/alignedBytes'
+
 import { forwardPos } from './findRowHover.ts'
 
 import type {

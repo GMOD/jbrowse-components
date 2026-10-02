@@ -1,4 +1,4 @@
-import { DASH, LOWER_BIT, SPACE } from './asciiBytes.ts'
+import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
 
 import type { AlignmentRecord, Sample } from '../types.ts'
 import type { Feature, Region } from '@jbrowse/core/util'

@@ -1,6 +1,10 @@
 import { positionOrder } from '@jbrowse/alignments-core'
-
-import { DASH, LOWER_BIT, N_UPPER, SPACE } from '../util/asciiBytes.ts'
+import {
+  DASH,
+  LOWER_BIT,
+  N_UPPER,
+  SPACE,
+} from '@jbrowse/core/util/alignedBytes'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { InsertionEntry } from '@jbrowse/alignments-core'

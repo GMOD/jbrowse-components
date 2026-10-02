@@ -1,11 +1,11 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import { codonTable, complementTable } from '@jbrowse/core/util'
+import { LOWER_BIT, isGapByte } from '@jbrowse/core/util/alignedBytes'
 import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { buildColumnForGenomicOffset } from '../LinearMafRenderer/binning.ts'
 import { blockIndexAtBp } from '../LinearMafRenderer/blockAtBp.ts'
 import { CHAR_SIZE_WIDTH } from '../LinearMafRenderer/rendering/types.ts'
-import { LOWER_BIT, isNoBaseByte } from '../util/asciiBytes.ts'
 import {
   eachVisibleRegion,
   rowViewport,
@@ -67,7 +67,7 @@ function orientedTriplet(
   b2: number,
   strand: number,
 ): string | undefined {
-  if (isNoBaseByte(b0) || isNoBaseByte(b1) || isNoBaseByte(b2)) {
+  if (isGapByte(b0) || isGapByte(b1) || isGapByte(b2)) {
     return undefined
   }
   const c0 = String.fromCharCode(b0 & ~LOWER_BIT)
