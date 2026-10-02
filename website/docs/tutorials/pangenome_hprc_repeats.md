@@ -42,9 +42,11 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
   JBrowse
 - for your own samples: [TRGT](https://github.com/PacificBiosciences/trgt) and
   `bcftools`
-- for
+- for your own array in [Which copy is which](#which-copy-is-which):
+  [`gbz-base`](https://github.com/jltsiren/gbz-base), to cut the graph
+- for [Which copy is which](#which-copy-is-which) and
   [The ABCA7 alleles across 94 samples](#the-abca7-alleles-across-94-samples):
-  Node, to run the conversion script
+  Node, to run the plugin's scripts
 - for [Reproduce it end to end](#reproduce-it-end-to-end):
   [DuckDB](https://duckdb.org)
 
@@ -121,13 +123,24 @@ GRCh38 copy the graph aligns it to is the aligner's pick among near-identical
 sequences, so the walks leave open which copy is which. A record that lists each
 haplotype's copies tells them apart.
 
-The hosted config carries one. The **LPA KIV-2 copies by unit, eight HPRC
-haplotypes** track holds a single VCF 4.5 `<CNV:TR>` record at the array: each
-allele lists its runs of one unit and every copy's length, and a phased genotype
-puts each allele on its haplotype. Turn the track on, right-click the record and
-choose **Show repeat copies**. The TandemRepeat plugin, which the hosted config
-loads beside the graph plugin, opens a view with one bar per haplotype, each on
-a separate bp axis, and each copy coloured by its unit.
+We host one as a track. It holds a single VCF 4.5 `<CNV:TR>` record at the
+array: each allele lists its runs of one unit and every copy's length, and a
+phased genotype puts each allele on its haplotype:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "hprc_kiv2_copies",
+  "name": "LPA KIV-2 copies by unit, eight HPRC haplotypes",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies.vcf"
+}
+```
+
+Turn the track on, right-click the record and choose **Show repeat copies**. The
+TandemRepeat plugin, which the hosted config loads beside the graph plugin,
+opens a view with one bar per haplotype, each on a separate bp axis, and each
+copy coloured by its unit.
 
 <Figure caption="The KIV-2 record under LPA, and the view its right-click item opens: one bar per haplotype, each copy coloured by its unit. GRCh38's short array has one copy of unit 2, and HG00133's runs far past the dashed line that marks GRCh38's length, all of unit 1." src="/img/pangenome/hprc_kiv2_copies_by_unit.png" />
 
@@ -136,11 +149,31 @@ from each other less than the two units do. Unit 2 opens most of the HPRC arrays
 and sits fourth in GRCh38's, and every HG00133 copy is of unit 1. The copy
 counts agree with the walk lengths in walk rows.
 
-The record came from the same graph cut.
+The record came from the same graph cut. To write one for your own array, we'll
+first cut the walks over it out of the gbz-base database as GFA, with enough
+context that the cut reaches the reference nodes on either side:
+
+```bash
+# the reference walk is PanSN GRCh38#0#chr6; the interval is the array
+gbz-base query --sample GRCh38 --contig chr6 -i 160616002..160646753 \
+  --context 1000 graph.gbz.db > cut.gfa
+```
+
 [`tandem-repeat-vcf.mjs`](https://github.com/GMOD/jbrowse-plugin-tandem-repeat/blob/main/scripts/tandem-repeat-vcf.mjs)
 splits each walk into copies wherever the reference array's first 24 bases
-recur, and groups copies within 1% of each other into a unit. A repeat finder's
-output draws the same way once it is written in those fields.
+recur, and groups copies within 1% of each other into a unit. It takes the cut
+and a BED row naming the array on the reference (chrom, start, end, name):
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/main/scripts/tandem-repeat-vcf.mjs
+```
+
+```bash
+printf 'chr6\t160616002\t160646753\tKIV-2\n' > arrays.bed
+node tandem-repeat-vcf.mjs cut.gfa --bed arrays.bed --name KIV-2 > kiv2.vcf
+```
+
+A repeat finder's output draws the same way once it is written in those fields.
 
 ## The ABCA7 VNTR
 

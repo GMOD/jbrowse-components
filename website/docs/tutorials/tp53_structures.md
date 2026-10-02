@@ -132,6 +132,41 @@ track, which is `CGG`, arginine, on the transcript. R248W and R248Q, the two
 commonest substitutions at the codon in tumours, change its first base and its
 middle one.
 
+## Structures of your own gene
+
+The protein3d plugin is in the [plugin store](/docs/user_guides/plugin_store):
+install **Protein3d** from the Tools menu, then right-click a gene and choose
+**Launch protein view** to open its AlphaFold model. For several structures at
+once, write the view as a session spec. This is the spec behind the first link
+on this page; swap the UniProt accession, the PDB ids, the transcript and the
+locus for your gene's, and name a gene track your config carries:
+
+```json live config=test_data/protein3d_config.json
+{
+  "views": [
+    {
+      "type": "ProteinView",
+      "structures": [
+        { "uniprotId": "P04637" },
+        { "pdbId": "1TUP" },
+        { "pdbId": "1YCR" }
+      ],
+      "transcriptId": "NM_000546.6",
+      "colorScheme": "mapped-chain",
+      "connectedView": {
+        "assembly": "hg38",
+        "loc": "chr17:7,671,000-7,684,500",
+        "tracks": ["hg38-ncbiRefSeq"]
+      }
+    }
+  ]
+}
+```
+
+The transcript has to be in one of the `connectedView` tracks at `loc`, since
+the plugin maps each structure by aligning its sequence to that transcript's
+translation.
+
 ## See also
 
 - [](/docs/tutorials/genomes_proteins)
