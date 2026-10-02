@@ -74,10 +74,10 @@ JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 
 ## Loading the assemblies and the alignment
 
-Each strain's hub `config.json` holds a whole JBrowse assembly: the 2bit
-sequence, an alias table and the NCBI RefSeq gene track. The build copies each
-assembly entry and gene track into one config as the hub wrote it, relabels the
-row, and adds the old short name as an alias so a session can still say
+We load the assembly the alignment was made against. Each strain's hub
+`config.json` holds a whole JBrowse assembly: the 2bit sequence, an alias table
+and the NCBI RefSeq gene track. The build copies each entry as the hub wrote it
+and adds the old short name as an alias, so a session can still say
 `hpylori_26695`:
 
 ```json
@@ -105,17 +105,38 @@ row, and adds the old short name as an alias so a session can still say
 ```
 
 `refNameColumnHeaderName` makes the UCSC name canonical, so the views read
-`NC_018939v1` where the FASTA and the PAF say `NC_018939.1`, and the alias table
-maps one to the other. The alignment then goes on under the hub names:
+`NC_018939v1` where the FASTA and the PAF say `NC_018939.1`; the alias table
+maps one to the other. CHC155 (`GCF_025998455.1`) and J99 (`GCF_000982695.1`)
+load the same way from their hubs.
 
-<!-- from: scripts/build_hpylori_synteny.sh -->
+For your own genomes, the FASTA is the assembly. The `.fai` and `.gzi` sit
+beside a bgzipped FASTA, and its sequence names are the ones your PAF uses, so
+no alias table is needed:
 
-```bash
-jbrowse add-track 26695_vs_j99.paf -a GCF_000307795.1,GCF_000982695.1 --load copy
+```json addassembly
+{
+  "name": "strainA",
+  "uri": "strainA.fa.gz"
+}
 ```
 
-The `-a` order is `query,target`, the reverse of the minimap2 argument order:
-`minimap2 target.fa query.fa` becomes `add-track -a query,target`.
+The alignment then goes on under the assembly names. `assemblyNames` runs
+`query,target`, the reverse of the minimap2 argument order:
+`minimap2 target.fa query.fa` becomes `["query", "target"]`. A PAF that is not
+indexed needs only its `uri`; swap in your own file.
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "26695_vs_j99",
+  "name": "26695 vs J99",
+  "assemblyNames": ["GCF_000307795.1", "GCF_000982695.1"],
+  "adapter": {
+    "type": "PAFAdapter",
+    "uri": "26695_vs_j99.paf"
+  }
+}
+```
 
 ## Reading the whole genome in a dotplot
 
