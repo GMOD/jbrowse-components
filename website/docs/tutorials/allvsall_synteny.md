@@ -273,10 +273,10 @@ Three track-menu items separate every alignment in the pileup by strain:
 3. **Show... → Show coverage** adds a histogram of how many other strains cover
    each base.
 
-The figure below adds the pangenome graph as a track under the lanes, the same
-window [the next section](#the-same-gap-drawn-as-a-graph) draws as a graph. The
-shaded band is the phenylacetate (paa) operon on K-12, where three strains stop
-at its left edge and NCTC86 runs through.
+The figure below adds the pangenome graph as a track under the lanes, built in
+the [E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli). The shaded
+band is the phenylacetate (paa) operon on K-12, where three strains stop at its
+left edge and NCTC86 runs through.
 
 <Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph, where the short arm beside the ringed node is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
@@ -332,67 +332,11 @@ The config below is that plot written out, with one addition:
 
 On the K-12 axis, a strain with no alignment to the backbone is a white gap.
 **Display types → Multi-way synteny display** redraws each lane in the
-coordinates of the strain it shows;
-[the ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-walks through the same reading for gene names. With no gene names:
-
-- each PAF record draws as one ribbon, keyed by the `syntenyId` the adapter
-  gives it
-- the gutters carry the direct alignments between each **adjacent** pair, from
-  the same file
-
-The pggb graph-depth wiggle above the lanes comes from the
-[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli#pangenome-depth-projection-core-vs-accessory).
-The `color` setting on the lanes sorts genes into the island by name, using a
-jexl expression in `field`. It paints the island genes red in every lane and
-adds a key naming both groups:
-
-```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
-{
-  "defaultSession": {
-    "name": "E. coli all-vs-all multi-way track",
-    "views": [
-      {
-        "type": "LinearGenomeView",
-        "assembly": "K12",
-        "loc": "chr:1,436,000-1,484,000",
-        "tracks": [
-          { "trackId": "ecoli_pggb_depth", "height": 60 },
-          {
-            "trackId": "ecoli_ava",
-            "type": "MultiWaySyntenyDisplay",
-            "domain": ["NCTC86", "CFT073", "Sakai", "IAI39"],
-            "height": 340,
-            "color": {
-              "field": "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? 'island' : 'other'",
-              "domain": ["island", "other"],
-              "range": ["#d62728", "goldenrod"],
-              "labels": ["feaR, tynA, paa operon", "other genes"],
-              "title": "K-12 island genes"
-            }
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-<Figure caption="The paa operon island on K-12 with a flank on each side. Graph depth drops across the island and comes back after it. In the all-vs-all lanes below, the island genes (feaR, tynA and the paa operon) are red in every lane: K-12 and NCTC86 carry them. CFT073 annotates none and goes straight from one flank to the other. Sakai and IAI39 annotate none either, and their lanes open reversed on a stretch holding the right-hand flank but not ldhA and ydbH on the left." src="/img/multiway_synteny/ecoli_island_lanes.png" />
-
-### The gap in the graph {#the-same-gap-drawn-as-a-graph}
-
-In the graph, the island is a segment; the walk for each strain goes through it
-or detours around it. The
-[graph genome view](/docs/user_guides/graph_genome_view) plugin draws a window
-of it beside the alignment. The ringed segment, `s502`, is the long node
-carrying the island.
-
-The lower band is blank across the island: each strain carries a distinct
-sequence there, the phenylacetate operon and a prophage on K-12, a set of nleG
-effector genes on Sakai.
-
-<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. A shaded box marks the island in each row, and the band between them is blank across both, as a substitution appears from either side. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
+coordinates of the strain it shows, with each PAF record as one ribbon. The
+[ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
+walks through the display, and the
+[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli) draws the same gap
+as a graph.
 
 ### Launching a stacked view at one locus
 
@@ -418,15 +362,16 @@ menu switches between colored, transparent and none.
 
 ## Checking a gap against the PAF
 
-Print the Sakai side of every Sakai/K-12 alignment near the stx2 island. `-X`
-emits each pair once in either direction, so the coordinates come from whichever
-column Sakai landed in:
+Print the alignments between one strain and another near a gap, here Sakai
+against K-12 near the stx2 island. `-X` emits each pair once in either
+direction, so the coordinates come from whichever column the strain landed in.
+Set `s` and `m` to the two strain prefixes and `lo` and `hi` to the window:
 
 ```bash
-awk -F'\t' -v OFS='\t' '
-  $1 ~ /^Sakai#/ && $6 ~ /^K12#/ { print $3, $4; next }
-  $1 ~ /^K12#/   && $6 ~ /^Sakai#/ { print $8, $9 }
-' all_vs_all.paf | sort -n | awk '$1 < 1300000 && $2 > 1200000'
+awk -F'\t' -v OFS='\t' -v s=Sakai -v m=K12 '
+  $1 ~ "^" s "#" && $6 ~ "^" m "#" { print $3, $4; next }
+  $1 ~ "^" m "#" && $6 ~ "^" s "#" { print $8, $9 }
+' all_vs_all.paf | sort -n | awk -v lo=1200000 -v hi=1300000 '$1 < hi && $2 > lo'
 ```
 
 ```text
