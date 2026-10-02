@@ -330,9 +330,7 @@ on `mc/ecoli.full.og` and point `nhLocation` at the tree, as the
 does.
 
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
-per-row identity, and codon view. The same `hal2maf` route works for a
-[progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus) HAL of
-more divergent species.
+per-row identity, and codon view.
 
 ## Pangenome depth and per-strain presence
 
@@ -354,10 +352,6 @@ onto one run of nodes reads above the strain count. seqwish folds the rRNA
 copies together; the reference-first graph keeps them apart.
 
 <Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move." src="/img/pangenome_cactus/builders.png" />
-
-A collapsed repeat is where to look for variation _within_ an array; a
-reference-anchored copy keeps each repeat unit at a distinct coordinate, so the
-depth curve here is a strain tally.
 
 Under the aggregate curve, the pav rows show which strain accounts for each dip,
 as in the pggb tutorial's

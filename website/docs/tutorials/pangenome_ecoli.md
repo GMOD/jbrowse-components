@@ -557,18 +557,13 @@ skips.
 
 <Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane, the MAF's strain rows, and the graph track, which cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 carries and the other four skip, their MAF rows breaking across it." src="/img/pangenome/pggb_bubble_tier.png" />
 
-Right-click the IS5 node in the graph track and take **Open in K12**. The view
-moves to the span the bubble stands for, and the graph track cuts the segments
-there.
-
-A segment K12 never walks sits on its strain's own coordinates. Type
-`chr:1,004,500-1,004,961`, right-click the 75 bp CFT073 segment, and pick **Open
-in CFT073**: it opens CFT073 at `1,048,515` with its gene track.
+Right-click the IS5 node in the graph track and take **Open in K12**, the route
+[the HPRC page](/docs/tutorials/pangenome_hprc#check-it-on-the-haplotype)
+describes for a haplotype. A segment K12 never walks sits on its strain's own
+coordinates: type `chr:1,004,500-1,004,961`, right-click the 75 bp CFT073
+segment and pick **Open in CFT073**.
 
 <Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's menu opened on the CFT073 allele, under the K12 genes it bypasses, and the view its Open in entry adds: CFT073 in CFT073 coordinates, where ssuE runs straight into pyrD." />
-
-K12 carries several genes in the span; CFT073 runs _ssuE_ straight into _pyrD_
-with none between.
 
 ### Carriage as a linear lane
 
@@ -617,9 +612,7 @@ layouts and the node menu.
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
 runs every step above except the E146 read mapping, downloads JBrowse, and
 writes a `config.json` with the five assemblies, their gene tracks, every other
-track on this page, and a default session. It also builds a minigraph graph of
-the same five strains and adds its segments, its allele inventory and each
-strain's path through every bubble as further tracks:
+track on this page, and a default session:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_graph.sh

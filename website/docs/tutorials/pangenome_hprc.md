@@ -42,8 +42,6 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 - the GraphGenomeView plugin, which every launch from the HPRC page loads;
   [hosting your own graph](/docs/tutorials/pangenome_prepare_graph) loads it
   into your own JBrowse
-- for [Reproduce it end to end](#reproduce-it-end-to-end):
-  [minigraph](https://github.com/lh3/minigraph)
 
 ## Where the data comes from
 
@@ -205,36 +203,11 @@ hg38**.
 
 The blue rows carry the deletion, the allele the graph credits to `NA20809#2`.
 
-## Snarl-level carriage
-
 vcfwave splits a snarl's alleles into smaller records, so a callset record may
 cover part of a bubble. Release 2 also publishes the undecomposed form, one
-record per **snarl**, as the `pgbi.vcf.gz` beside each build. Its records are
-the graph's alleles, so it answers who carries a given bubble. Add it to the
-same session:
-
-```json addtrack
-{
-  "type": "VariantTrack",
-  "trackId": "hprc2_pgbi_grch38",
-  "name": "HPRC2 pangenome carriage (snarl-level, 462 haplotypes)",
-  "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz",
-  "assemblyNames": ["hg38"],
-  "displays": [
-    {
-      "type": "LinearMultiSampleVariantDisplay",
-      "renderingMode": "phased"
-    }
-  ]
-}
-```
-
-With one record per snarl, size alone cuts the lane to the tier the graph's
-bubbles hold. Enter this from **Filter by... → Edit filters...**:
-
-```text
-jexl:alleleLength(feature)>=50
-```
+record per snarl, as the `pgbi.vcf.gz` beside each build. The same track config
+with that file's URI and the filter `jexl:alleleLength(feature)>=50` lists who
+carries each bubble.
 
 ## The alignment underneath both
 
@@ -284,21 +257,10 @@ at `hprc-v2.1-mc-grch38.sv.gfa.gz`, it writes the files we host, and
 [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them records
 their provenance.
 
-HPRC publishes carriage as [a file](#snarl-level-carriage). Rebuilding it takes
-a 464-assembly download and a mapping run, one call per sample:
-
-<!-- from: scripts/build_minigraph_paths.sh -->
-
-```bash
-# --call asks, at every bubble, which path this assembly takes through the graph
-minigraph -cxasm --call -t"$(getconf _NPROCESSORS_ONLN)" graph.gfa assembly.fa > sample.call.bed
-```
-
-[`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
-runs that call once per assembly and joins the answers into one table of which
-path each haplotype takes at every bubble, and
+HPRC publishes carriage as [a file](#the-callset-beside-the-graph). Rebuilding
+it takes a 464-assembly download and a mapping run, one call per sample, which
 [hosting your own graph](/docs/tutorials/pangenome_prepare_graph#who-carries-what)
-walks through the script.
+walks through.
 
 ## See also
 

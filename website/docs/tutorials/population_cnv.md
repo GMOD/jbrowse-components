@@ -181,18 +181,12 @@ Two paralogous blocks carry the variation. The right-hand one spans CCL3L1 and
 CCL4L1, chemokine genes that exist in a variable number of tandem copies. The
 left-hand one is a TBC1D3 repeat.
 
-## The same window in the 1000 Genomes SV map
+## A simple deletion in the 1000 Genomes SV map
 
-The 1000 Genomes phase 3 integrated SV map covers this window with one CNV
-record, at chr17:36,108,706-36,155,499 with three symbolic alleles (`<CN2>`,
-`<CN3>`, `<CN4>`). It ends before the block where depth resolves the widest
-range, and between 36,155,499 and 36,461,232 the GRCh38 release has no
-copy-number record.
-
-A VCF record is one interval with fixed breakpoints and a few symbolic alleles,
-which cannot describe nested multiallelic copy number. Depth, for its part,
-gives no genotype, allele frequency or phasing. At a simple biallelic deletion
-the two sources agree. We'll add the SV map as a variant track, then navigate to
+The 1000 Genomes phase 3 integrated SV map records each variant as one interval
+with fixed breakpoints and a few symbolic alleles, and gives genotypes where
+depth gives none. At a simple biallelic deletion the SV map and the depth
+profiles should agree. We'll add the SV map as a variant track, then navigate to
 _UGT2B17_ on chr4 with the PUR panel track from the first section under it. For
 your own callset, swap `uri` for a bgzip-compressed, tabix-indexed VCF on the
 same assembly:

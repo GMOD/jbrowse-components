@@ -256,11 +256,12 @@ widely carried:
 }
 ```
 
-<Figure caption="The carriage ramp on the E. coli pggb graph over an IS5 insertion in K12. The segment K12 alone walks is red; the segments all five strains share are grey." src="/img/pangenome/prepare_graph_carriage.png" links="Open this view=pangenome/prepare_graph_carriage" />
+[The E. coli pggb tutorial](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane)
+draws carriage over an IS5 insertion.
 
 Carriage is per haplotype (`HG002.1`), so a diploid sample's two copies count
 separately.
-[Snarl-level carriage](/docs/tutorials/pangenome_hprc#snarl-level-carriage)
+[Snarl-level carriage](/docs/tutorials/pangenome_hprc#the-callset-beside-the-graph)
 reads HPRC's published carriage file.
 
 ## Haplotype walks: a gbz-base database

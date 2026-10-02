@@ -23,7 +23,7 @@ import {
   local,
   referencePositionColor,
 } from './graph-fixtures.ts'
-import { pageTrack, pageFenceText } from './pageTrack.ts'
+import { pageFenceText } from './pageTrack.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -1135,46 +1135,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         },
       },
     ],
-  },
-  // pangenome_prepare_graph's carriage config, the ramp its Edit plot route
-  // writes, on the pggb graph over the IS5 insertion: the private segment at
-  // the red end, the core at the grey.
-  {
-    mode: 'url',
-    name: 'pangenome/prepare_graph_carriage',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [
-        K12_GENES_SESSION_TRACK,
-        {
-          ...pageTrack(
-            'tutorials/pangenome_prepare_graph.md',
-            'graph_carriage',
-          ),
-          adapter: PGGB_CARRIAGE_SESSION_TRACK.adapter,
-        },
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: PGGB_LOCUS_WINDOW,
-          tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
-            {
-              trackId: 'graph_carriage',
-              type: 'LinearBasicDisplay',
-              displayMode: 'collapsed',
-              showLabels: 'none',
-              height: 110,
-            },
-          ],
-        },
-      ],
-    }),
-    readyTimeout: 120000,
-    viewportWidth: 1000,
-    viewportHeight: 432,
-    hideTooltip: true,
   },
   // The same locus per strain, which is where a path GFA says something an rGFA
   // cannot. Sample rows put each segment on the row of the assembly its stable

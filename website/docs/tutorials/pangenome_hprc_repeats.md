@@ -254,82 +254,10 @@ motif-length units, each walk gets a black tick at the allele TRGT called for it
 
 ## Samples where reads and assemblies disagree
 
-The session below cuts seven samples, named in `subgraphHaplotypes`, and shows
-their walks in pairs in the order `walkRowSamples` lists them:
-
-```json session config=https://jbrowse.org/demos/hprc/config.json
-{
-  "defaultSession": {
-    "name": "ABCA7 VNTR, where reads and assemblies disagree",
-    "sessionTracks": [
-      {
-        "type": "FeatureTrack",
-        "trackId": "abca7_vntr",
-        "name": "Tandem repeat catalogue (adotto)",
-        "assemblyNames": ["hg38"],
-        "adapter": {
-          "type": "FromConfigAdapter",
-          "features": [
-            {
-              "uniqueId": "abca7_vntr",
-              "refName": "chr19",
-              "start": 1049407,
-              "end": 1050096,
-              "name": "ABCA7 VNTR"
-            }
-          ]
-        }
-      }
-    ],
-    "views": [
-      {
-        "type": "LinearGenomeView",
-        "assembly": "hg38",
-        "loc": "chr19:1,049,000-1,050,500",
-        "tracks": [
-          {
-            "trackId": "abca7_vntr",
-            "type": "LinearBasicDisplay",
-            "height": 40
-          },
-          {
-            "trackId": "hprc_abca7_trgt",
-            "type": "LinearVariantDisplay",
-            "height": 40
-          },
-          {
-            "trackId": "hprc_v2_1_gbz_lanes",
-            "type": "LinearGraphDisplay",
-            "layoutMode": "walkrows",
-            "colorScheme": "uniform",
-            "repeatTrackId": "hprc_abca7_trgt",
-            "repeatKey": "chr19:1049406-1050096",
-            "subgraphHaplotypes": [
-              "HG00099",
-              "HG03688",
-              "HG00741",
-              "HG02647",
-              "HG01943",
-              "HG02559",
-              "HG04199"
-            ],
-            "walkRowSamples": [
-              "HG00099",
-              "HG03688",
-              "HG00741",
-              "HG02647",
-              "HG01943",
-              "HG02559",
-              "HG04199"
-            ],
-            "height": 360
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+Cut seven samples by editing the previous session's graph display. List HG00099,
+HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in `subgraphHaplotypes`,
+list the same names in `walkRowSamples` to show their walks in pairs in that
+order, and set `repeatKey` to `chr19:1049406-1050096`.
 
 HG00099, HG03688 and HG00741 tick at the end of each bar: reads and assemblies
 agree. HG02647 and HG01943 turn red: TRGT calls each near-homozygous while the

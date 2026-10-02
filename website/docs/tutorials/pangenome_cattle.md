@@ -103,12 +103,9 @@ maps the assembly's name to the name its path lines carry.
 ## A whole chromosome
 
 Click **chr23** on the **Graph** line of the
-[portal page](https://staging.genomes.jbrowse.org/pangenomes/bovine). JBrowse
-opens ARS-UCD1.2's chromosome 23 with the genes, the curve of segments per
-bubble and the bubble tier as lanes, and the graph track under them. The tier
-has one node per bubble, so a whole chromosome draws; the graph track names the
-tier in its adapter's `coarse` slot and cuts the segments once you zoom in past
-that slot's handover.
+[portal page](https://staging.genomes.jbrowse.org/pangenomes/bovine), which
+opens the chromosome as
+[the HPRC page](/docs/tutorials/pangenome_hprc#a-chromosome-and-back) describes.
 
 <Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
 
@@ -306,12 +303,8 @@ runs:
 
 The whole build takes about half an hour after the download.
 
-The script writes a `README.txt` beside the data recording the source, the
-modifications, the tool versions and the audits that ran. The build stops if the
-reference path does not reproduce the reference chromosome lengths, or if
-renumbering leaves a duplicate segment id; either failure produces a graph with
-wrong coordinates that every later check accepts. Copy these audits into your
-own build.
+The script writes the same `README.txt` provenance and build audits as
+[the mouse build](/docs/tutorials/pangenome_mouse#build-it-yourself).
 
 For a graph with path lines and no rGFA tags, `build_pangenome_graph.sh` walks
 the paths and writes a carriage tag per segment, so the graph track shows which

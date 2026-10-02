@@ -121,16 +121,12 @@ The bubbles lane reads the same build's bubble index:
 }
 ```
 
-## Open a chromosome
-
-On the [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse),
-click **chr13** on the **Graph** line. JBrowse opens GRCm39 chromosome 13 with
-the genes, a curve of segments per bubble and the bubble tier as lanes. Under
-them is the graph track, cut from the same tier at one node per bubble; zoomed
-in past the handover its adapter names, it cuts the segments.
-
 ## Nnt: a deletion that appears as an insertion
 
+Click **chr13** on the **Graph** line of the
+[portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse), which opens
+the chromosome as
+[the HPRC page](/docs/tutorials/pangenome_hprc#a-chromosome-and-back) describes.
 Type `chr13:119,440,000-119,600,000`, and the graph track cuts the segments
 there. Pick **Layout → Force-directed layout** from its track menu and tick
 **Mark bubbles**. Turn on the bubbles track in the track selector.
