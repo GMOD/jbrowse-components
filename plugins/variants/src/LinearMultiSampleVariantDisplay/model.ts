@@ -465,10 +465,10 @@ export function stateModelFactory(
          * reads: each region placed (`placedRegionRows`) and painted
          * (`regionCellColors`). So "does the glyph overlay see the same
          * regions, and the same rows and colours, as the canvas" has a single
-         * answer — the payload structurally satisfies `VariantUploadData`
-         * (GPU/Canvas upload) and `VariantInsertionGlyphData` (overlay), and
-         * carries `featureIndexData` for the hit-test index plus
-         * `cellWorkerRowIndices` for its lookup.
+         * answer — the payload is the `VariantUploadData` the cells and the
+         * insertion markers upload, carries the markers' channels while
+         * `showInsertionGlyphs` is on, and carries `featureIndexData` for the
+         * hit-test index plus `cellWorkerRowIndices` for its lookup.
          *
          * This is the display's "derived region map" in the sense of
          * ARCHITECTURE.md's re-upload-without-refetch pattern: a reorder or a
@@ -710,9 +710,9 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Per-region cell data for the insertion-glyph overlay, or undefined
-         * when no marker can draw in this window, which unmounts the overlay
-         * rather than repainting it empty on every pan frame.
+         * Per-region cell data for the insertion counts' overlay, or
+         * undefined when no marker can draw in this window, which unmounts the
+         * overlay rather than repainting it empty on every pan frame.
          */
         get insertionGlyphRegions() {
           return this.drawsInsertionMarkers ? self.perRegionCellMap : undefined
@@ -731,14 +731,9 @@ export function stateModelFactory(
          * three of the fourteen committed figures carrying this display, each
          * gaining one entry and no glyph.
          *
-         * It asks whether a marker is drawn at ANY sub-pixel pan position, not
-         * at the one on screen. The painter's own answer flips on the snap phase
-         * — a cell of a given span measures `floor(spanPx)` or one more — so an
-         * exactly-painter-faithful entry blinks on and off mid-drag on the
-         * long-REF-plus-longer-ALT shape, and a single-frame export would have
-         * to settle to be right. The only divergence is an entry shown while
-         * the glyph is under the cell floor at this particular phase, which is
-         * strictly narrower than either approximation above.
+         * The insertion mark's gate reads the unsnapped span, so the answer
+         * holds still under a sub-pixel pan and a single-frame export needs no
+         * settling.
          */
         get drawsInsertionMarkers(): boolean {
           if (!self.showInsertionGlyphs || !self.atGenomicPositions) {

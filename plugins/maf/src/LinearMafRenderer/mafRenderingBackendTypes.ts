@@ -40,7 +40,7 @@ export interface MafGPURenderState {
    * Full theme-derived color set (base palette + match/gap/mismatch/unknown/
    * insertion). The row marks resolve their colours at encode time, so what
    * reads this is the overlay and export layers drawn beside them — the
-   * insertion markers, the deletion labels and the empty lines.
+   * deletion labels and the empty lines.
    */
   palette: MafColorPalette
 }

@@ -19,8 +19,8 @@ export interface VariantCellData extends CellHueValues {
   cellColors: Uint32Array
   cellShapeTypes: Uint8Array
   // Fraction of the cell's genotype that is non-reference, as a 0-255 byte (see
-  // `altDosageByte`). Reference and no-call cells are 0: the insertion-glyph
-  // pass widens only the haplotypes that actually have the extra sequence, and
+  // `altDosageByte`). Reference and no-call cells are 0: the insertion mark
+  // widens only the haplotypes that actually have the extra sequence, and
   // widening a reference cell would claim every sample carries it. Above zero it
   // also shades the marker, so a het draws paler than a hom.
   cellAltDosage: Uint8Array

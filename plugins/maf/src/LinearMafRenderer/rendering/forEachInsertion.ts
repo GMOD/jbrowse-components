@@ -10,10 +10,8 @@ import type { MafBlock } from '../mafRenderingBackendTypes.ts'
  * plus its count of non-gap reference bytes (the worker's own definition), so
  * the two agreeing with the column count means the reference has no `-` in it,
  * and `forEachInsertion` can only fire inside a reference-gap run. Most blocks
- * of a real MAF have none — the insertion overlay was calling the per-column
- * walk once per row for each of them, so the answer was being re-derived
- * `rows.length` times per block per frame by walking every column to find
- * nothing.
+ * of a real MAF have none, so the insertion walk skips them without visiting a
+ * row.
  */
 export function blockHasRefGap(block: MafBlock) {
   return block.endBp - block.startBp !== block.refSeqBytes.length

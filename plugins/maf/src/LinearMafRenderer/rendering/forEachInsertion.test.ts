@@ -71,7 +71,7 @@ test('alignment shorter than the reference truncates at the shared length', () =
   expect(runs('ACGT', 'AC')).toEqual([])
 })
 
-// The block-level skip the insertion overlay gates on. It has to agree with the
+// The block-level skip the insertion walk gates on. It has to agree with the
 // walk for every row of the block, so pin it against the walk itself: a block
 // it calls gap-free must produce no run for any conceivable sample row.
 test('blockHasRefGap matches whether the walk can emit anything', () => {

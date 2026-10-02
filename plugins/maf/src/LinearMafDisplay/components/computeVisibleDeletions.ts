@@ -46,9 +46,9 @@ export interface DeletionMarker {
  * comes from the shared `forEachDeletion` walk, the same source the hover
  * hit-test uses.
  *
- * Unlike the insertion overlay this draws *nothing but* the label — the gap
- * cells come from the base pass — so a run that cannot carry one is dead work,
- * and the gates below drop it as early as they can. Zoomed out on a
+ * This draws *nothing but* the label — the gap cells come from the base pass —
+ * so a run that cannot carry one is dead work, and the gates below drop it as
+ * early as they can. Zoomed out on a
  * multi-species alignment that was 679k markers built and 0 drawn per frame. The
  * height gate is the one `computeVisibleLabels` applies, so all row text still
  * reveals together.
