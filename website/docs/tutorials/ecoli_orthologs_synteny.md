@@ -59,8 +59,9 @@ strains to each other, one alignment per pair, which keeps that demo at five.
 RefSeq's prokaryotic annotation pipeline names a gene by its ortholog (_atpA_ is
 _atpA_ in every strain that carries it), so matching symbols across the GFF3
 files fills the same `.blocks` table, the route the
-[primate page](/docs/tutorials/primate_orthologs_synteny) takes for eight apes.
-The download is an annotation and a sequence report per genome:
+[primate page](/docs/tutorials/primate_orthologs_synteny) takes for eight apes;
+what this page adds is PGAP's handling of unnamed and renamed genes. The
+download is an annotation and a sequence report per genome:
 
 <!-- from: scripts/build_ecoli_orthologs.sh -->
 
@@ -79,9 +80,7 @@ that sequence, then sorts, bgzips and tabix-indexes it as in the
 Each lane takes its name from the strain field of the assembly report (MG1655
 rather than "K-12 substr. MG1655", and `Sflexneri_301` for the Shigella so it
 does not read as an E. coli strain). The build also checks the organism name in
-the report: three accessions from the listing turned out to be a Leclercia, a
-Salmonella and a suppressed _Shigella_ sp., and the build drops them and says
-so.
+the report and drops a genome that is neither _E. coli_ nor _Shigella_.
 
 PGAP writes a gene's locus tag into its `Name` when it has no symbol for it, so
 the join has to be told what an unnamed gene looks like, or every hypothetical
@@ -109,10 +108,9 @@ dot in K-12's column.
 
 The helper reports how much of each column it filled, and that number is the
 screen a strain has to pass. Older PGAP runs gave genes a locus tag and no
-symbol, so a genome can be complete, current and join nothing; many of the
-accessions tried for this page were like that, and some were phage genomes.
-Counting the named genes in an annotation shows which genomes will fail the join
-before anything is built:
+symbol, so a genome can be complete, current and join nothing. Counting the
+named genes in an annotation shows which genomes will fail the join before
+anything is built:
 
 <!-- from: scripts/build_ecoli_orthologs.sh -->
 
@@ -182,18 +180,24 @@ file whole before the first lane draws:
 ## One operon, forty-four genomes
 
 Opened on K-12 at the _atp_ operon, the track draws a lane per genome under the
-K-12 axis. Every gene is colored by its ortholog group, which the table names
-after the K-12 gene anchoring it, so a conserved gene is one color running down
-the whole stack. A gene no group claims is grey, which marks the genes specific
-to a strain at a glance. A lane's header names its chromosome, where it is
-looking and `[rev]` where the strain's chromosome reads the other way. The key
-in the top right turns a color back into a group's name, and _Show legend_ on
-the track menu puts it away. The display leaves it out where it would run to a
-list, which is any window holding more than thirty groups. Lanes stack densest
-first, so the genomes placing the most of the window sit at the top and the
-reduced Shigella genomes fall toward the bottom without anything naming them. At
-the default height the display scrolls the stack inside the track; the session
-below sets a `height` that fits every lane:
+K-12 axis, as the
+[multi-way synteny display](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
+does, with its
+[lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows).
+Read the colors this way:
+
+- Every gene is colored by its ortholog group, which the table names after the
+  K-12 gene anchoring it, so a conserved gene is one color running down the
+  whole stack.
+- A gene no group claims is grey, which marks the genes specific to a strain at
+  a glance.
+- The key in the top right turns a color back into a group's name, and _Show
+  legend_ on the track menu puts it away. The display leaves it out in any
+  window holding more than thirty groups.
+
+Lanes stack densest first, so the reduced Shigella genomes fall toward the
+bottom. The default height scrolls the stack inside the track; the session sets
+a `height` that fits every lane:
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {
@@ -223,18 +227,7 @@ below sets a `height` that fits every lane:
 
 The O-antigen cluster between _galF_ and _gnd_ is the locus that differs most
 between strains, because each serotype carries a different set of sugar pathway
-genes. The lanes that keep the whole cluster sort to the top, and their headers
-say why: DH10B, HMS174, C3026, MGY, tolC and MG1655_TMP32XR1 are all K-12
-derivatives, carrying the K-12 cluster gene for gene. Below them the flanking
-genes chain down every lane: _galF_ on one side, _gnd_ (_gndA_ in most lanes),
-_ugd_ and _wzzB_ on the other. Inside the cluster the _rfbB_, _rfbD_, _rfbA_ and
-_rfbC_ genes join wherever a strain carries them, and so do _wzx_ and _wzy_,
-which PGAP annotated in the K-12 derivatives from K-12's _rfbX_ and _wbbH_.
-Every O-antigen cluster carries a flippase and a polymerase under those names,
-though their sequences differ between serotypes, and O-serotype PCR typing
-relies on that difference. The genes between them draw grey below the K-12
-derivatives: they are the serotype's sugar pathway, and a window anchored on
-K-12 draws only the rows holding a K-12 gene. Open the cluster:
+genes. Open the cluster:
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {
@@ -260,8 +253,23 @@ K-12 draws only the rows holding a K-12 gene. Open the cluster:
 
 <Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, gnd, ugd and wzzB chains run through, the rfb genes, wzx and wzy join where a strain carries them, and the serotype-specific genes between them are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
-The variable loci need a homology call across the proteomes to fill the table:
-an [OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or the
+Read the lanes from the top:
+
+- The K-12 derivatives (DH10B, HMS174, C3026, MGY, tolC and MG1655_TMP32XR1)
+  sort to the top and carry the cluster gene for gene.
+- Below them the flanks chain down every lane: _galF_ on one side, _gnd_ (_gndA_
+  in most lanes), _ugd_ and _wzzB_ on the other.
+- The interior is grey, except the _rfb_ genes, _wzx_ and _wzy_, which join
+  wherever a strain carries them.
+
+A window anchored on K-12 draws only the rows holding a K-12 gene, so the
+serotype's own sugar pathway genes stay grey. A gene annotated under a
+placeholder name, such as the `LOC` ids RefSeq gives most copies of the
+[primate](/docs/tutorials/primate_orthologs_synteny) salivary amylase cluster,
+has no row either.
+
+These loci need a homology call across the proteomes to fill the table: an
+[OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or the
 [all-vs-all alignment](/docs/tutorials/allvsall_synteny) that draws the same
 locus base by base for five strains.
 

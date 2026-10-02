@@ -96,24 +96,26 @@ python3 symbols_to_blocks.py --anchor human -o primates.blocks \
   sumatran=sumatran.gff.gz bornean=bornean.gff.gz siamang=siamang.gff.gz macaque=macaque.gff.gz
 ```
 
-The helper compares symbols case-folded, so a mouse `Atp5f1a` would meet the
-human `ATP5F1A`, and a gene whose name is an NCBI `LOC` placeholder joins
-nothing. A link joins one gene to one gene, so a symbol several genes in one
-genome carry gets a row per copy, which the
-[OrthoFinder page](/docs/tutorials/orthofinder_synteny#what-to-do-with-a-duplicated-gene)
-draws as a ribbon per copy over the maize whole-genome duplication. Few such
-rows appear for these eight, because RefSeq gives a duplicated primate gene
-either a distinct lettered symbol, _AMY1A_ against _AMY1B_, or a `LOC`
-placeholder. The pseudoautosomal genes are an exception, annotated on both X and
-Y, so each Y copy gets a separate row. The helper prints how much of each column
-it filled; for these eight the lanes come back nearly full, because the
-annotations share one naming pipeline. It also writes a row for each symbol
-human lacks, which a window anchored on human does not draw. RefSeq names an ape
-gene after its human ortholog except for an open reading frame, where human
-_C1orf35_ becomes chimp _C1H1orf35_, so the helper reads that spelling back and
-the chimp gene joins the _C1orf35_ row. The rows human lacks are then genes
-human carries only as a pseudogene or non-coding RNA, _CMAH_ among them, and
-genes the ape annotations name differently from human's.
+The helper joins on the symbol and handles these cases:
+
+- It compares symbols case-folded, so a mouse `Atp5f1a` would meet the human
+  `ATP5F1A`.
+- A gene whose name is an NCBI `LOC` placeholder joins nothing, as with the
+  salivary amylase copies RefSeq names that way in the other primates
+  ([where the join stops](/docs/tutorials/ecoli_orthologs_synteny#where-the-join-stops)).
+- A symbol several genes in one genome carry gets a row per copy, since a link
+  joins one gene to one gene. RefSeq gives a duplicated primate gene a distinct
+  lettered symbol (_AMY1A_ against _AMY1B_) or a placeholder, so the exception
+  is the pseudoautosomal genes, annotated on both X and Y, where each Y copy
+  gets a separate row.
+- RefSeq names an ape gene after its human ortholog except for an open reading
+  frame, where human _C1orf35_ becomes chimp _C1H1orf35_, so the helper reads
+  that spelling back.
+- It prints how much of each column it filled, nearly full for these eight
+  because the annotations share one naming pipeline, and writes a row for each
+  symbol human lacks, which a window anchored on human does not draw. Those are
+  genes human carries only as a pseudogene or non-coding RNA, _CMAH_ among them,
+  and genes the ape annotations name differently from human's.
 
 ## Setting up the assemblies
 
@@ -251,23 +253,16 @@ enough to list, and stays out of the way at the windows below:
 ## One locus, eight genomes
 
 Opened in a linear genome view on human, the track draws a lane per genome under
-the human axis, each fitted to wherever that genome keeps the genes in the
-window. Each lane header names the chromosome, the span the lane shows and
-`[rev]` where the lane reads the other way, and the ribbons between adjacent
-lanes join each gene to its ortholog. **Color by... → Strand**, under
-**Ribbons** on the track menu, colors each ribbon by the strand of the pair it
-joins, the orientations of the two lanes against the human axis multiplied
-together. The track mirrors a lane reading the block backwards, so its ribbons
-come out straight while the strand color still marks every one of them as an
-inversion.
-
-The stack sorts densest-first, so the genome sharing the most genes in the
-window sits directly under the anchor. A ribbon joins adjacent lanes only, so a
-sparse lane in the middle would cut every chain running through it. Lane order
-therefore depends on the window, and it differs between the pictures below.
-**Move up** and **Move down** on the lane header menu pin an order, **Lanes →
-Reset lane order** on the track menu gives it back, and a session or a config
-authors the same thing as `domain`.
+the human axis, as the
+[multi-way synteny display](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
+does for any ortholog table, with its
+[lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)
+and
+[lane order](/docs/tutorials/multiway_synteny_grape_peach_cacao#ordering-the-lanes).
+**Color by... → Strand**, under **Ribbons** on the track menu, colors each
+ribbon by the strand of the pair it joins, the orientations of the two lanes
+against the human axis multiplied together. The session below opens the TP53
+neighbourhood with it:
 
 ```json session config=https://jbrowse.org/demos/primate_orthologs/config.json
 {
@@ -295,13 +290,7 @@ authors the same thing as `domain`.
 <Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes from one gene-symbol ortholog track, each lane drawing the RefSeq gene models annotated on its chromosome. Every lane has the block in order; the siamang lane has it reversed, so its header shows [rev] and its ribbons are the reversed-strand ones, drawn straight because the lane is mirrored." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
 Navigate to `chr17:34,000,000-38,000,000`, four megabases on 17q, and the strand
-color separates forward blocks from reversed ones. A block painted as reversed
-is one that lane reads backwards from the lane above it, whether the mirroring
-left it drawn straight or crossed. One block runs down the middle of the frame
-with same-orientation flanks on either side of it, and one pair of lanes crosses
-near the right-hand edge. Each lane header gives the offset and scale for the
-lane, and a lane whose header names a multiple holds the same genes over more
-sequence.
+color separates forward blocks from reversed ones.
 
 <Figure caption="Four megabases of human chr17 over the seven primate lanes, ribbons colored by strand. Blue is a block read backwards from the lane above: one runs down the middle of the frame between same-orientation flanks, and the two bottom lanes cross where a block flips between them." src="/img/multiway_synteny/primate_chr17_inversions.png" />
 
@@ -318,16 +307,6 @@ In the lanes, a window across the fusion point has orthologs on both chimpanzee
 chromosomes, and a lane follows one contig at a time. Each ape lane picks the
 one holding more genes in the window and names the other in its header, and
 **Show ⟨contig⟩ in this lane** on the header menu swaps the lane onto it.
-
-## Placeholder names
-
-The salivary amylase cluster on human chr1 is a run of near-identical copies
-with lettered human names (_AMY1A_, _AMY1B_, _AMY1C_), while RefSeq gives most
-of the copies in the other primates placeholder `LOC` ids, so most of them have
-no row in the table. Every lane still draws the gene copies annotated in that
-genome, and the ribbons stop where the naming does. A locus like this needs a
-real homology call, such as the one the
-[OrthoFinder page](/docs/tutorials/orthofinder_synteny) builds, or an alignment.
 
 ## Reproduce it end to end
 

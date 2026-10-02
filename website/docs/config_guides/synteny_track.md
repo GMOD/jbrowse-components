@@ -242,6 +242,119 @@ assembly against one reference. Its lane order, colouring and the rest of its
 own config are
 [grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny).
 
+## Building a table for MCScanBlocksAdapter
+
+`MCScanBlocksAdapter` needs two inputs:
+
+- a tab-delimited table, one row per orthogroup and one column per genome, each
+  cell holding a single gene id (`.` or an empty cell for no ortholog)
+- one BED per column whose fourth field carries those same gene ids
+
+[The grape, peach and cacao tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#producing-the-data)
+builds both from jcvi. Output from other tools converts as follows.
+
+### From MCScanX {#from-mcscanx}
+
+[`mcscanx_to_anchors.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mcscanx_to_anchors.py)
+converts a `.collinearity` file;
+[coming from MCScanX](/docs/tutorials/mcscan_synteny_grape_peach#coming-from-mcscanx)
+walks the two-genome case. Naming a third `--species` writes a table, anchored
+on the first, with ties resolved to the best-scoring block:
+
+```bash
+python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
+  --species vv=grape --species pp=peach --species tc=cacao --blocks-score
+```
+
+`--blocks-score` appends the weakest pairing in each row as a trailing column,
+which `attributeColumns` on the adapter names. Each named column becomes a
+feature attribute and an entry in the palette button menu:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach_cacao_scored",
+  "name": "Grape / peach / cacao (MCScanX, scored)",
+  "assemblyNames": ["grape", "peach", "cacao"],
+  "adapter": {
+    "type": "MCScanBlocksAdapter",
+    "uri": "grape.blocks",
+    "blockAssemblies": ["grape", "peach", "cacao"],
+    "bedLocations": ["grape.bed", "peach.bed", "cacao.bed"],
+    "attributeColumns": ["score"]
+  }
+}
+```
+
+### From OrthoFinder
+
+[`orthogroups_to_blocks.py`](/docs/tutorials/orthofinder_synteny#producing-the-blocks-table)
+reduces `Orthogroups.tsv` to one gene id per cell and prints the column order
+`blockAssemblies` needs. The OrthoFinder tutorial runs it end to end.
+
+### From Ensembl Compara
+
+Compara publishes one homology TSV per species, so the table is a download:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/compara_to_blocks.py
+python3 compara_to_blocks.py Compara.116.protein_default.homologies.tsv.gz \
+  --reference sorghum_bicolor=sorghum --species triticum_aestivum=wheat \
+  --bed sorghum=sorghum.bed --bed wheat=wheat.bed
+```
+
+`attributeColumns` can name `identity`, `homology_identity` and `goc_score` the
+way the scored table above names `score`. For a partner species the export
+lacks, the script writes no table and exits without an error, so check each
+`--species` name against the `homology_species` column in the file.
+
+### From reciprocal best BLAST hits
+
+Reduce each direction of an all-vs-all `blastp` or DIAMOND run (`-outfmt 6`) to
+its best hit per query, then keep the pairs that agree both ways:
+
+```bash
+# sort by bitscore (column 12) descending, keep the first hit per query
+sort -k1,1 -k12,12gr grape_vs_peach.tsv | awk '!seen[$1]++ {print $1 "\t" $2}' > g2p
+sort -k1,1 -k12,12gr peach_vs_grape.tsv | awk '!seen[$1]++ {print $1 "\t" $2}' > p2g
+# keep a pair only where the two genes are each other's best hit
+awk 'NR == FNR {best[$1] = $2; next} best[$2] == $1' p2g g2p > grape_peach.rbh
+```
+
+`grape_peach.rbh` is a two-column table, loadable as-is with
+`blockAssemblies: ["grape", "peach"]`. For more genomes, run the same reduction
+against one reference genome and outer-join the results on the reference gene:
+
+```bash
+export LC_ALL=C  # join and sort must agree on collation
+# -a1 -a2 keep a one-sided grape gene, -e . fills the gap; -o lists the join
+# field then column 2 of each file: grape gene, peach ortholog, cacao ortholog
+join -t $'\t' -a1 -a2 -e . -o 0,1.2,2.2 \
+  <(sort -k1,1 grape_peach.rbh) <(sort -k1,1 grape_cacao.rbh) > grape.blocks
+```
+
+### BED files
+
+The adapter reads the first six BED fields. From a GFF3:
+
+```bash
+# column 3 is the feature type; only gene rows become BED features
+awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=[^;]+/) {
+  id = substr($9, RSTART + 3, RLENGTH - 3)  # strip the leading "ID="
+  sub(/^gene:/, "", id)
+  # BED start is 0-based, so the 1-based GFF3 start shifts down by one
+  print $1, $4 - 1, $5, id, 0, $7
+}' grape.gff3 > grape.bed
+```
+
+Ensembl namespaces its GFF3 ids (`ID=gene:VIT_00000001`); the `sub` strips that.
+
+Column 1 must use the sequence names the JBrowse assembly uses, and column 4
+must match the gene ids in the table
+([gene id matching](#gene-ids-are-the-join-in-the-mcscan-adapters) covers how
+ids get mangled; `--no_strip_names` stops jcvi dropping isoform suffixes).
+Column 6 is strand.
+
 ## In the circular view
 
 A `SyntenyTrack` opens in a [circular view](/docs/user_guides/circular_view)

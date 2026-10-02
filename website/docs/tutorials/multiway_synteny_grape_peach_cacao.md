@@ -23,9 +23,8 @@ and then read one grape locus across all seven plant genomes. With that view we:
   file by path, [Web](/docs/quickstart_web) through **Add track**
 - [jcvi](https://github.com/tanghaibao/jcvi) with the
   [LAST](https://gitlab.com/mcfrith/last) aligner
-- Or any other ortholog table, including an
-  [MCScanX](https://github.com/wyp1125/MCScanX) run
-  ([converting one](#from-mcscanx) needs only python3)
+- Or any other ortholog table, converted as in
+  [building a table for MCScanBlocksAdapter](/docs/config_guides/synteny_track#building-a-table-for-mcscanblocksadapter)
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
@@ -153,133 +152,10 @@ Each per-pair table lists grape then the mate, so the join emits the grape
 column twice; `cut -f1,2,4` keeps it once, in the order `blockAssemblies` and
 `bedLocations` list.
 
-The adapter reads `.blocks` and BED files plain or gzipped.
-
-## Bringing your own ortholog table
-
-`MCScanBlocksAdapter` needs two inputs:
-
-- a tab-delimited table, one row per orthogroup and one column per genome, each
-  cell holding a single gene id (`.` or an empty cell for no ortholog)
-- one BED per column whose fourth field carries those same gene ids
-
-### From MCScanX
-
-[`mcscanx_to_anchors.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mcscanx_to_anchors.py)
-pivots a `.collinearity` file into a table, given the two-letter chromosome tag
-MCScanX uses for each genome:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/mcscanx_to_anchors.py
-python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
-  --species vv=grape --species pp=peach --species tc=cacao
-```
-
-A two-column table is valid too, so a reciprocal-best-hit list already loads as
-a pairwise synteny track.
-
-`mcscanx_to_anchors.py` writes `grape.blocks` and a BED per genome, anchored on
-the first `--species`; ties resolve to the best-scoring block. Given two
-`--species`, it writes `.anchors` files instead, which load a pair the table
-left out as a second track.
-
-`--blocks-score` appends the weakest pairing in each row as a trailing column,
-which `attributeColumns` on the adapter names:
-
-```json addtrack
-{
-  "type": "SyntenyTrack",
-  "trackId": "grape_peach_cacao_scored",
-  "name": "Grape / peach / cacao (MCScanX, scored)",
-  "assemblyNames": ["grape", "peach", "cacao"],
-  "adapter": {
-    "type": "MCScanBlocksAdapter",
-    "uri": "grape.blocks",
-    "blockAssemblies": ["grape", "peach", "cacao"],
-    "bedLocations": ["grape.bed", "peach.bed", "cacao.bed"],
-    "attributeColumns": ["score"]
-  }
-}
-```
-
-Each named column becomes a feature attribute and an entry in the palette button
-menu.
-
-### From OrthoFinder
-
-`Orthogroups.tsv` is one row per orthogroup and one column per genome, with a
-header row, a leading id column and comma-separated gene lists per cell:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/orthogroups_to_blocks.py
-python3 orthogroups_to_blocks.py Orthogroups.tsv -o grape.blocks \
-  --bed grape=grape.bed --bed peach=peach.bed
-```
-
-The script prints the column order `blockAssemblies` needs.
-
-### From Ensembl Compara
-
-Compara publishes one homology TSV per species, so the table is a download:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/compara_to_blocks.py
-python3 compara_to_blocks.py Compara.116.protein_default.homologies.tsv.gz \
-  --reference sorghum_bicolor=sorghum --species triticum_aestivum=wheat \
-  --bed sorghum=sorghum.bed --bed wheat=wheat.bed
-```
-
-`attributeColumns` can name `identity`, `homology_identity` and `goc_score` the
-way the scored table above names `score`. For a partner species the export
-lacks, the script writes no table and exits without an error, so check each
-`--species` name against the `homology_species` column in the file.
-
-### From reciprocal best BLAST hits
-
-Reduce each direction of an all-vs-all `blastp` or DIAMOND run (`-outfmt 6`) to
-its best hit per query, then keep the pairs that agree both ways:
-
-```bash
-# sort by bitscore (column 12) descending, keep the first hit per query
-sort -k1,1 -k12,12gr grape_vs_peach.tsv | awk '!seen[$1]++ {print $1 "\t" $2}' > g2p
-sort -k1,1 -k12,12gr peach_vs_grape.tsv | awk '!seen[$1]++ {print $1 "\t" $2}' > p2g
-# keep a pair only where the two genes are each other's best hit
-awk 'NR == FNR {best[$1] = $2; next} best[$2] == $1' p2g g2p > grape_peach.rbh
-```
-
-`grape_peach.rbh` is a two-column table, loadable as-is with
-`blockAssemblies: ["grape", "peach"]`. For more genomes, run the same reduction
-against one reference genome and outer-join the results on the reference gene:
-
-```bash
-export LC_ALL=C  # join and sort must agree on collation
-# -a1 -a2 keep a one-sided grape gene, -e . fills the gap; -o lists the join
-# field then column 2 of each file: grape gene, peach ortholog, cacao ortholog
-join -t $'\t' -a1 -a2 -e . -o 0,1.2,2.2 \
-  <(sort -k1,1 grape_peach.rbh) <(sort -k1,1 grape_cacao.rbh) > grape.blocks
-```
-
-### BED files
-
-The adapter reads the first six BED fields. From a GFF3:
-
-```bash
-# column 3 is the feature type; only gene rows become BED features
-awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=[^;]+/) {
-  id = substr($9, RSTART + 3, RLENGTH - 3)  # strip the leading "ID="
-  sub(/^gene:/, "", id)
-  # BED start is 0-based, so the 1-based GFF3 start shifts down by one
-  print $1, $4 - 1, $5, id, 0, $7
-}' grape.gff3 > grape.bed
-```
-
-Ensembl namespaces its GFF3 ids (`ID=gene:VIT_00000001`); the `sub` strips that.
-
-Column 1 must use the sequence names the JBrowse assembly uses, and column 4
-must match the gene ids in the table
-([adapter gotchas](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
-cover how ids get mangled; `--no_strip_names` stops jcvi dropping isoform
-suffixes). Column 6 is strand.
+The adapter reads `.blocks` and BED files plain or gzipped. A table from another
+tool loads the same way, and
+[building a table for MCScanBlocksAdapter](/docs/config_guides/synteny_track#building-a-table-for-mcscanblocksadapter)
+converts MCScanX, OrthoFinder, Ensembl Compara and reciprocal-best-hit output.
 
 ## Setting up the three assemblies
 
@@ -401,8 +277,9 @@ genome with **Show only genes**.
 
 ## One locus against all seven genomes
 
-`grape.blocks` carries seven columns, and a plain linear genome view on grape
-draws every mate at once:
+`grape.blocks` carries seven columns, and a track that names all seven in
+`blockAssemblies` and `bedLocations`, as the one above names three, draws every
+mate at once in a plain linear genome view on grape:
 
 - Navigate to `chr11:778,000-866,000` and turn on grape's **NCBI RefSeq - RefSeq
   All** track.
