@@ -315,47 +315,6 @@ the track above:
 
 <Figure caption="The first 6 Mb of Col-0 chromosome 4: the SyRI regions for each accession against Col-0 as a row above, and the accessions as lanes below, each drawn in the coordinates of its assembly, with each band colored by the SyRI type for the two genomes it joins. Every accession is inverted against Col-0 across the same stretch, and the bands between accessions run straight there." src="/img/syri/col0_lanes.png" />
 
-## Twenty-six accessions against TAIR10
-
-Every one of the five accessions is inverted against Col-0 over the same
-stretch, which raises the question of which arrangement is the common one. The
-1001 Genomes Plus project assembled accessions from across the species' range
-([Igolkina et al. 2025](https://doi.org/10.1038/s41588-025-02293-0)), and the
-same pipeline runs on 26 of them against TAIR10. We host the result with the
-genes, transposons and methylation for each accession from the
-[1001 Genomes](https://1001genomes.org/) data centre. Open it over the
-chromosome 4 inversion with the SyRI rows, ordered by admixture group:
-
-```json session config=https://jbrowse.org/demos/arabidopsis_pangenome/config.json
-{
-  "defaultSession": {
-    "name": "26 accessions against TAIR10, chromosome 4",
-    "views": [
-      {
-        "type": "LinearGenomeView",
-        "assembly": "TAIR10",
-        "loc": "Chr4:1-4,000,000",
-        "tracks": [
-          {
-            "trackId": "syri_regions_on_TAIR10",
-            "type": "LinearMultiRowFeatureDisplay",
-            "height": 644
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-<Figure caption="The first 4 Mb of TAIR10 chromosome 4, one row of SyRI regions per 1001 Genomes Plus accession. The top two rows, the Col-0 assembly from the project and KBS-Mac-74, run syntenic across the inversion; every other row is inverted there." src="/img/syri/tair10_1001g.png" />
-
-The hosted demo also carries the 1135-accession Fst scan, the 1001 Genomes SNPs
-and a minigraph pangenome of the same genomes, all built by
-[`build_arabidopsis_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_arabidopsis_pangenome.sh).
-[](/docs/tutorials/pangenome_prepare_graph) turns a graph of your own into the
-files the pangenome tracks read.
-
 ## Check it against syri.out
 
 The largest inverted region of the Col-0 and Ler run, straight from the SyRI
@@ -411,9 +370,6 @@ bash build_syri_synteny.sh my_syri rows.txt
 - Jiao WB, Schneeberger K. Chromosome-level assemblies of multiple Arabidopsis
   genomes reveal hotspots of rearrangements with altered evolutionary dynamics.
   Nat Commun (2020). https://doi.org/10.1038/s41467-020-14779-y
-- Igolkina AA, et al. A comparison of 27 Arabidopsis thaliana genomes and the
-  path toward an unbiased characterization of genetic polymorphism. Nat Genet
-  (2025). https://doi.org/10.1038/s41588-025-02293-0
 - Zapata L, et al. Chromosome-level assembly of Arabidopsis thaliana Ler reveals
   the extent of translocation and inversion polymorphisms. PNAS (2016).
   https://doi.org/10.1073/pnas.1607532113
