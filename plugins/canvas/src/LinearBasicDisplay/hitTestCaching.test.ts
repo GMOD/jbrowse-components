@@ -43,7 +43,7 @@ function setup() {
   // autorun does, and that subscription is what makes MobX cache it.
   const dispose = autorun(() => {
     void display.renderDataMap
-    void display.featureItemMap
+    void display.featureIdIndex
   })
   const index = () => display.flatbushIndexes.get(0)!.feature
   return { display, view, dispose, index }

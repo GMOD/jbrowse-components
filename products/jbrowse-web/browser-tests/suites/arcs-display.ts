@@ -48,7 +48,7 @@ async function geneGlyphPoint(page: Page, name: string) {
           tracks: {
             displays: Pick<
               LinearBasicDisplayModel,
-              'featureItemMap' | 'scrollTop'
+              'featureIdIndex' | 'scrollTop'
             >[]
           }[]
         })[]
@@ -56,9 +56,9 @@ async function geneGlyphPoint(page: Page, name: string) {
     }
     const view = JBrowseSession.views[0]!
     const display = view.tracks[0]!.displays[0]!
-    for (const entry of display.featureItemMap.values()) {
-      if (entry.kind === 'feature' && entry.item.name === name) {
-        const { startBp, endBp, topPx, featureHeightPx } = entry.item
+    for (const item of display.featureIdIndex.values()) {
+      if (item.name === name) {
+        const { startBp, endBp, topPx, featureHeightPx } = item
         const px = view.bpToPx({
           refName: 'ctgA',
           coord: Math.round((startBp + endBp) / 2),

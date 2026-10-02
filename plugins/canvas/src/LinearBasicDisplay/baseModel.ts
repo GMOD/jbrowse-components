@@ -130,10 +130,7 @@ import type {
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
-import type {
-  FeatureItemEntry,
-  FlatbushRegionIndexes,
-} from './components/hitTesting.ts'
+import type { FlatbushRegionIndexes } from './components/hitTesting.ts'
 import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { RegionInstanceIndex } from './featureHighlightInk.ts'
@@ -1045,37 +1042,6 @@ export default function baseStateModelFactory(
           return undefined
         }
         return [item.startBp, item.topPx, item.endBp, item.bottomPx] as const
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      // Keyed off the loaded payloads rather than `visibleRegions`, which
-      // is a fresh array every pan frame: the two overlays that read this
-      // would otherwise rebuild it per frame of every gesture. Feature wins
-      // over subfeature on id collision, so the feature `set` is
-      // unconditional; a spanning feature resolves to the last region's
-      // copy here and the first in `indexById`, which is harmless because
-      // the copies are interchangeable.
-      get featureItemMap(): Map<string, FeatureItemEntry> {
-        const map = new Map<string, FeatureItemEntry>()
-        for (const [idx, { assemblyName, refName }] of self.rpcDataMap) {
-          const data = self.laidOutDataMap.get(idx)
-          if (!data) {
-            continue
-          }
-          const source = { assemblyName, refName }
-          for (const f of data.flatbushItems) {
-            map.set(f.featureId, { kind: 'feature', item: f, source })
-          }
-          for (const s of data.subfeatureInfos) {
-            if (!map.has(s.featureId)) {
-              map.set(s.featureId, { kind: 'subfeature', item: s, source })
-            }
-          }
-        }
-        return map
       },
     }))
     .views(self => {

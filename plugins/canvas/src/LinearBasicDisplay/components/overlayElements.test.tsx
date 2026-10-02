@@ -9,7 +9,7 @@ import {
 } from '../../RenderFeatureDataRPC/testUtils.ts'
 import { FloatingLabelsLayer } from './overlayElements.tsx'
 
-import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
+import type { VisibleRegion } from './hitTesting.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const VR: VisibleRegion = {
@@ -46,9 +46,7 @@ const MODEL = {
   height: 100,
   contentHeight: 100,
   labelScrollBucket: 0,
-  featureItemMap: new Map<string, FeatureItemEntry>([
-    ['f1', { kind: 'feature', item: ITEM, source: VR }],
-  ]),
+  featureIdIndex: new Map([['f1', ITEM]]),
   renderDataMap: new Map([[0, DATA]]),
   openContextMenu: () => {},
   selectFeatureById: () => {},

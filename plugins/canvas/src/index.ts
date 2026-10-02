@@ -55,10 +55,7 @@ export type {
 export type { GeneGlyphNotice } from './LinearBasicDisplay/baseModel.ts'
 export type { RegionDensityStats } from './shared/CanvasFeatureGateMixin.ts'
 export type { CanvasFeatureRenderingBackend } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
-export type {
-  FeatureItemEntry,
-  FlatbushRegionIndexes,
-} from './LinearBasicDisplay/components/hitTesting.ts'
+export type { FlatbushRegionIndexes } from './LinearBasicDisplay/components/hitTesting.ts'
 export type {
   LinearBasicDisplayConfig,
   LinearBasicDisplayConfigModel,

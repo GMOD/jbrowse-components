@@ -23,10 +23,7 @@ import { computeLaidOutData } from './layout.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
-import type {
-  FeatureItemEntry,
-  VisibleRegion,
-} from './components/hitTesting.ts'
+import type { VisibleRegion } from './components/hitTesting.ts'
 import type { LayoutInputs } from './layoutInputs.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
@@ -408,12 +405,7 @@ function renderLabelLayer(
     height: 100,
     contentHeight: 100,
     labelScrollBucket: 0,
-    featureItemMap: new Map<string, FeatureItemEntry>([
-      [
-        'gene1',
-        { kind: 'feature', item: BADGE_DATA.flatbushItems[0]!, source: VR },
-      ],
-    ]),
+    featureIdIndex: new Map([['gene1', BADGE_DATA.flatbushItems[0]!]]),
     renderDataMap: new Map([[0, BADGE_DATA]]),
     openContextMenu: () => {},
     selectFeatureById: () => {},

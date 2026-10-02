@@ -18,16 +18,13 @@ import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
 
 import type {
   FeatureDataResult,
+  FlatbushItem,
   MoreIsoformsLabel,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
-import type {
-  FeatureItemEntry,
-  HitFeatureResult,
-  VisibleRegion,
-} from './hitTesting.ts'
+import type { HitFeatureResult, VisibleRegion } from './hitTesting.ts'
 import type {
   MoreResolvedLabel,
   PlainResolvedLabel,
@@ -50,7 +47,7 @@ interface FloatingLabelsModel {
   height: number
   contentHeight: number
   labelScrollBucket: number
-  featureItemMap: Map<string, FeatureItemEntry>
+  featureIdIndex: ReadonlyMap<string, FlatbushItem>
   renderDataMap: ReadonlyMap<number, FeatureDataResult>
   openContextMenu: (info: FeatureContextMenuInfo) => void
   selectFeatureById: (
@@ -230,7 +227,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
     renderedLabelFontSize,
     height,
     labelScrollBucket,
-    featureItemMap,
+    featureIdIndex,
     renderDataMap,
     openContextMenu,
     selectFeatureById,
@@ -295,7 +292,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       const displayedRegionIndex = vr.displayedRegionIndex
       // Description labels count too: a variant with no ID shows its description
       // ("C -> T") as the only label, and clicking it has to open the details.
-      const clickable = featureItemMap.get(featureId)?.kind === 'feature'
+      const clickable = featureIdIndex.has(featureId)
       for (const resolved of labels) {
         const key = `${displayedRegionIndex}-${featureId}-${resolved.kind}`
         elements.push(
@@ -336,7 +333,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       ? e.target.closest<HTMLElement>('[data-feature-id]')
       : null
 
-  // Answered off the badge's own marker rather than `featureItemMap`, because
+  // Answered off the badge's own marker rather than `featureIdIndex`, because
   // expanding a gene needs nothing but its id.
   const resolveMoreIsoforms = (e: React.MouseEvent) => {
     const el = labelElementAt(e)
@@ -348,10 +345,10 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   const resolveTarget = (e: React.MouseEvent) => {
     const el = labelElementAt(e)
     const featureId = el?.dataset.featureId
-    const entry = featureId ? featureItemMap.get(featureId) : undefined
-    return el && entry?.kind === 'feature'
+    const item = featureId ? featureIdIndex.get(featureId) : undefined
+    return el && item
       ? {
-          item: entry.item,
+          item,
           displayedRegionIndex: Number(el.dataset.regionIndex),
         }
       : undefined

@@ -30,19 +30,6 @@ export interface VisibleRegion {
   screenEndPx: number
 }
 
-// The reference sequence an item was fetched from, which an overlay matches
-// against each visible region to place its box.
-export interface FeatureItemSource {
-  assemblyName: string
-  refName: string
-}
-
-// A feature entry carries its region's render data so overlay code reads label
-// widths without re-walking the data map.
-export type FeatureItemEntry =
-  | { kind: 'feature'; item: FlatbushItem; source: FeatureItemSource }
-  | { kind: 'subfeature'; item: SubfeatureInfo; source: FeatureItemSource }
-
 // Always positive: LGV emits start < end and carries the flip in `reversed`, so
 // no signed span reaches here to read as "zoomed all the way in".
 export function regionBpPerPx(vr: VisibleRegion) {
