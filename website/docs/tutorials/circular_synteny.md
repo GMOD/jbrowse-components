@@ -64,6 +64,29 @@ split, and the X chromosome has not, so a human autosome should fan out across
 several mouse chromosomes while the two X chromosomes hold one bundle between
 them. That expectation is the control the figures are read against.
 
+## The two assemblies
+
+The ribbons name chromosomes, so the circle needs both genomes declared. hg38
+and mm39 share their chromosome names, so neither needs an alias table:
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
+```json addassembly
+{
+  "name": "mm39",
+  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.2bit"
+}
+```
+
 ## The chain as an indexed alignment
 
 jbrowse.org keeps every liftOver chain UCSC publishes as an indexed PAF, one row
@@ -88,6 +111,17 @@ query is the genome it lifts to, so for hg38ToMm39 that is mouse:
 }
 ```
 
+For your own pair, convert the alignment to a PIF. A chain goes through
+`chain2paf` from [paftools](https://github.com/lh3/minimap2/tree/master/misc); a
+PAF from minimap2 or wfmash goes straight in. Then add the track with
+`assemblyNames` as `query,target`:
+
+```bash
+paftools.js chain2paf pair.over.chain.gz > pair.paf
+jbrowse make-pif pair.paf
+jbrowse add-track pair.pif.gz -a query,target --load copy
+```
+
 A liftOver chain set holds a few hundred chains that cover the genome and tens
 of thousands of short ones, most of them repeats and gene copies. **Min length**
 in the view's menu keeps the short ones off the figure, and the sessions below
@@ -101,7 +135,8 @@ next, and a ribbon crosses between them. `displayedRegionNames` is resolved
 against each assembly separately, so one list of chromosome names keeps both
 genomes' unplaced contigs off the circle. The view reorders the mouse arc when
 it opens ([next section](#ordering-the-second-genome)). The import form's Quick
-start opens the same circle from the chain track; as a session it is:
+start opens the same circle from the chain track (**Add → Circular view**, then
+pick the chain track); as a session it is:
 
 ```json session config=https://jbrowse.org/demos/circular_synteny/config.json
 {
@@ -225,6 +260,12 @@ inside the ideogram, so the question of whether the conserved blocks are the
 gene-rich stretches is one more track. `jbrowse make-density` counts a GFF3's
 top-level features per bin into a bigWig, so a gene is one count however many
 transcripts hang under it.
+
+For one genome, `make-density` takes the GFF3 and its chrom.sizes directly:
+
+```bash
+jbrowse make-density genes.gff.gz --chrom-sizes genome.chrom.sizes --bin 100000
+```
 
 A ring on a two-genome circle comes from one track that names both assemblies,
 so both genomes' densities go into one bigWig. The script prefixes each contig
@@ -354,11 +395,11 @@ writes:
 
 - an alignment as a PIF, sorted and tabix-indexed. jbrowse.org's copy of a UCSC
   liftOver chain opens as is, with `"csi": true` beside its URL; a pair with no
-  hosted chain goes through `jbrowse make-pif` over a PAF from minimap2, wfmash
-  or `chain2paf`. Whichever way, the synteny track's `assemblyNames` is
-  `[query, target]`, and the reorder reads the same file
-- both assemblies declared in the config, from a hub entry as here or from
-  `jbrowse add-assembly genome.fa`
+  hosted chain goes through the `make-pif` commands above. Whichever way, the
+  synteny track's `assemblyNames` is `[query, target]`, and the reorder reads
+  the same file
+- both assemblies declared in the config, from a hub entry or the `addassembly`
+  blocks above (`jbrowse add-assembly genome.fa`)
 - one bigWig per ring, naming the ring's assembly; for a ring that covers both
   genomes, one bigWig with prefixed contigs and an alias per assembly as above
 
