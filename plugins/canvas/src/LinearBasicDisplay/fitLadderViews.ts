@@ -192,16 +192,13 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
-     * The `isoforms` rung's reservation.
+     * The `isoforms` rung's reservation: the `labels` rung's when fitting to
+     * the display, else the `full` rung's.
      */
     get isoformsReservation(): LabelReservation {
-      return {
-        showLabels: self.showLabels,
-        showDescriptions: self.fitHeightToDisplay
-          ? false
-          : self.effectiveShowDescriptions,
-        dropBelowLabelRows: false,
-      }
+      return self.fitHeightToDisplay
+        ? this.labelsReservation
+        : this.fullReservation
     },
     /**
      * #getter

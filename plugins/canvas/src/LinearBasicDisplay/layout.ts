@@ -302,8 +302,8 @@ function layoutRefGroups(
       merged.layoutMap,
       inputs.bpPerPx,
     )
-    // Cloned only once the packing is decided: `cloneMutableFields` is ~4/5
-    // of this function's cost, and the probes skip it.
+    // Cloned only once the packing is decided: the height probes skip the
+    // clone and every rewrite below.
     for (const [n, raw] of ref.regions) {
       const cloned = cloneMutableFields(raw)
       // Before the height scale, so the trim's px and its whole label rows

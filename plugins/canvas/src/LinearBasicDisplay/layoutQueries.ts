@@ -71,9 +71,6 @@ export function maxDrawnBoxHeight(
   return drawnBoxHeightRange(map, measureIds).max
 }
 
-// Counted over `measureIds` like `maxBottom`, so the "N not shown" sentence
-// never counts features a pan would reveal, and never the features of a
-// section the user hid, which sit unplaced by their own choice.
 export function keepsAnyName(
   map: ReadonlyMap<number, FeatureDataResult>,
   measureIds?: ReadonlySet<string>,
@@ -92,6 +89,9 @@ export function keepsAnyName(
   return false
 }
 
+// Counted over `measureIds` like `maxBottom`, so the "N not shown" sentence
+// never counts features a pan would reveal, and never the features of a
+// section the user hid, which sit unplaced by their own choice.
 export function countTruncatedFeatures(
   map: ReadonlyMap<number, FeatureDataResult>,
   measureIds?: ReadonlySet<string>,
