@@ -122,8 +122,18 @@ row between them agrees with the non-carrier.
 
 ## Reproduce it end to end
 
-The commands below work on any gbz-base database and any bgzipped, indexed
-assembly.
+The amylase build works in four steps, and the commands below run each one on
+any gbz-base database and any bgzipped, indexed assembly:
+
+1. Ask the graph where each haplotype crosses two single-copy windows, one
+   either side of the array. The distance between the two is that haplotype's
+   span across the locus, and the spans fall into the published structures.
+2. Pick one haplotype per structure and fetch only the locus from its assembly.
+3. Count each haplotype's gene copies, and align it to its neighbour in the
+   stack, so each band is an alignment between two haplotypes and can match
+   copies GRCh38 lacks.
+4. Shift each alignment from the fetched piece's coordinates back onto the whole
+   contig, so every row draws in its own assembly's coordinates under its genes.
 
 Get every haplotype's path through a window:
 
@@ -161,7 +171,7 @@ Align two haplotypes to draw them as synteny:
 minimap2 -c --eqx -x asm20 --secondary=no HG00232.1.fa NA18608.2.fa > adjacent.paf
 ```
 
-The whole build:
+The whole build, for the five haplotypes in the figures above:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_amylase_haplotypes.sh
@@ -220,17 +230,22 @@ bash build_amylase_haplotypes.sh
 <Figure caption="One haplotype of each common amylase structure, one AMY1 copy at the top to seven at the bottom, each aligned to the row under it by minimap2 and colored by strand. Each step up in copies opens a wedge over the genes only the longer row carries." src="/img/multiway_synteny/hprc_amylase_stack.png" />
 
 A separate script builds the [inversion figure](#inversions) from release 2's
-published all-vs-GRCh38 PAF:
+published all-vs-GRCh38 PAF. A reversed alignment alone proves nothing, because
+an assembler can deposit a contig in either orientation, so the test for an
+inversion is a block that reverses while the sequence either side of it stays
+forward. The script:
+
+1. streams the PAF once, keeping every haplotype's alignments over a window that
+   reaches well past the bubble on both sides
+2. sorts each haplotype into carrier (bubble reversed, flanks forward),
+   non-carrier (forward throughout) or neither, and prints how many fall in each
+3. keeps one carrier and one non-carrier, with each one's contig length and CAT
+   genes for the drawn window
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_inversion_synteny.sh
 bash build_hprc_inversion_synteny.sh
 ```
-
-[`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
-keeps the haplotypes whose alignments reverse the block while the flanks stay
-forward, then slices out one haplotype of each kind: the alignment, the contig
-length and the CAT genes.
 
 ## Whole genomes from a GFA
 
@@ -256,7 +271,8 @@ Index the PAF for JBrowse:
 jbrowse make-pif graph.paf --csi --out graph.pif.gz
 ```
 
-The HPRC build, eight haplotypes from the 63 GB release graph:
+The HPRC build downloads the 63 GB release graph, converts eight haplotypes'
+walks against GRCh38, indexes the PAF, and fetches each haplotype's CAT genes:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_multiway_synteny.sh

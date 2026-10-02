@@ -282,7 +282,8 @@ minigraph -cxasm --call -t"$(getconf _NPROCESSORS_ONLN)" graph.gfa assembly.fa >
 ```
 
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
-wraps that call in the per-sample loop and the join, and
+runs that call once per assembly and joins the answers into one table of which
+path each haplotype takes at every bubble, and
 [hosting your own graph](/docs/tutorials/pangenome_prepare_graph#who-carries-what)
 walks through the script.
 

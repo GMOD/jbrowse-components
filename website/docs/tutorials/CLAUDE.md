@@ -111,6 +111,12 @@ script and then runs the copy in the working directory;
 build script invokes are the script's own problem. Each fetches what it is
 missing, and the same check pins that list against what the script calls.
 
+**A script is never handed over bare.** Above the `curl … | bash` fence, a short
+numbered list says what the script does and why, in the reader's terms: three or
+four steps, no commands, the reasoning that makes the result trustworthy (a span
+measured between two single-copy windows, an inversion tested by its forward
+flanks). A tutorial teaches the method; the script only saves typing.
+
 **Mark the fence `<!-- from: scripts/build_<topic>.sh -->`** and
 `check-script-commands` asserts every tool, subcommand and flag in it still runs
 in that script, those rather than text, since the page shows the general form

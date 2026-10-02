@@ -395,6 +395,15 @@ match what TRGT measured.
 
 ## Reproduce it end to end
 
+PacBio publishes TRGT's calls for 100 HPRC samples as a TRGTdb, and the build
+turns its _ABCA7_ locus into the VCF this page loads, without re-genotyping
+anything. It:
+
+1. downloads the TRGTdb and the repeat catalogue
+2. reads the locus's alleles and every sample's calls out of the database
+3. writes one VCF record: each allele's sequence as an ALT, and per sample the
+   genotype, each allele's length (`AL`) and the reads spanning it (`SD`)
+
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_abca7_trgt.sh
 bash build_hprc_abca7_trgt.sh
@@ -414,10 +423,6 @@ duckdb -json -c "
   where LocusID = (select LocusID from read_parquet('hprc_100.tdb/locus.pq')
     where chrom = 'chr19' and start = 1049407)"
 ```
-
-[`build_hprc_abca7_trgt.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_abca7_trgt.sh)
-downloads PacBio's TRGT database and the repeat catalogue, and writes the
-_ABCA7_ record with every sample's genotype.
 
 ## See also
 
