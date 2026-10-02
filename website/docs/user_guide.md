@@ -71,11 +71,11 @@ How to drive JBrowse once it is running. New here? Start with the
 #### Whole-genome alignments
 
 - [](/docs/tutorials/synteny_visualization)
+- [](/docs/tutorials/hg002_haplotypes)
+- [](/docs/tutorials/hg38_vertebrates_synteny)
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/syri_synteny)
 - [](/docs/tutorials/circular_synteny)
-- [](/docs/tutorials/hg002_haplotypes)
-- [](/docs/tutorials/hg38_vertebrates_synteny)
 
 #### Ortholog tables
 
@@ -85,16 +85,16 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/primate_orthologs_synteny)
 - [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/odp_linkage_groups_synteny)
-- [](/docs/tutorials/homoeolog_synteny)
 - [](/docs/tutorials/selection_pressure)
+- [](/docs/tutorials/homoeolog_synteny)
 
 ### Pangenomes
 
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)
+- [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cattle)
-- [](/docs/tutorials/pangenome_prepare_graph)
 
 #### HPRC release 2
 
@@ -104,17 +104,17 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ### Structural variation
 
-- [](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/population_cnv)
+- [](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/hic_structural_variants)
 - [](/docs/tutorials/mappability_qc)
 
 ### Cancer genomics
 
-- [](/docs/tutorials/sv_visualization_cgiab)
-- [](/docs/tutorials/sv_callset_review)
 - [](/docs/tutorials/cancer_sv)
 - [](/docs/tutorials/k562_fusions)
+- [](/docs/tutorials/sv_callset_review)
+- [](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/tutorials/tcga_cohort_mutations)
 - [](/docs/tutorials/tcga_cohort_cnv)
 
