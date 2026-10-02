@@ -129,25 +129,38 @@ track from there, so the ortholog table is the one file built here:
 curl -fO https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json
 ```
 
-We'll load chimpanzee by its accession. The 2bit and the alias table come from
-the hub, and `aliases` lets a session still say `chimp`:
+The build keeps each entry as the hub wrote it, relabels the lane and adds the
+short name as an alias, so a session can still say `chimp`:
 
-```json addassembly
+```json
 {
   "name": "GCF_028858775.2",
   "displayName": "Chimpanzee (NHGRI_mPanTro3-v2.1)",
   "aliases": ["chimp"],
-  "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.2bit",
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "GCF_028858775.2-ReferenceSequenceTrack",
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.2bit",
+      "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chrom.sizes.txt"
+    }
+  },
   "refNameAliases": {
-    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chromAlias.txt"
+    "adapter": {
+      "type": "RefNameAliasAdapter",
+      "refNameColumnHeaderName": "ucsc",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chromAlias.txt"
+    }
   }
 }
 ```
 
-The other apes and the macaque take the same entry with their own accession.
-Human is the one exception to the accession rule: UCSC serves GRCh38 as `hg38`
-rather than as a GenArk hub, so the human lane is
-[hg38](https://genomes.jbrowse.org/ucsc/hg38/):
+`refNameColumnHeaderName` makes the UCSC names canonical, so the lane headers
+read `chr19` where the assembly names it `chr19_hap1_hsa17`. The other apes and
+the macaque take the same entry with their own accession. Human is the one
+exception to the accession rule: UCSC serves GRCh38 as `hg38` rather than as a
+GenArk hub, so the human lane is [hg38](https://genomes.jbrowse.org/ucsc/hg38/):
 
 ```json addassembly
 {

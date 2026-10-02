@@ -293,24 +293,35 @@ there:
 curl -fO https://jbrowse.org/hubs/genark/GCF/000/346/465/GCF_000346465.2/config.json
 ```
 
-We'll load peach by its own name. The 2bit and the alias table come from the
-hub; `aliases` lets a session still say `peach`:
+The build keeps each hub entry, labels the row, and adds the short name as an
+alias, so a session can still say `peach`:
 
-```json addassembly
+```json
 {
   "name": "GCF_000346465.2",
   "displayName": "peach",
   "aliases": ["peach"],
-  "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.2bit",
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "GCF_000346465.2-ReferenceSequenceTrack",
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.2bit",
+      "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chrom.sizes.txt"
+    }
+  },
   "refNameAliases": {
-    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chromAlias.txt"
+    "adapter": {
+      "type": "RefNameAliasAdapter",
+      "refNameColumnHeaderName": "ucsc",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chromAlias.txt"
+    }
   }
 }
 ```
 
-Grape and cacao take the same entry with their own accession. The alias file
-lets the BED's `NC_034009.1` and the hub's `chrG1` name one chromosome. For a
-genome with no sequence file, a `.chrom.sizes` file works as the `uri`.
+`refNameColumnHeaderName` makes the UCSC names canonical, naming the first peach
+chromosome `chrG1` where the BED says `NC_034009.1`.
 
 ## Loading the blocks file with MCScanBlocksAdapter {#loading-it-in-jbrowse-with-mcscanblocksadapter}
 
