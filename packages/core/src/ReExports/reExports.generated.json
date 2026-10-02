@@ -2507,6 +2507,21 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/alignedBytes": {
+      "package": "@jbrowse/core",
+      "names": [
+        "DASH",
+        "LOWER_BIT",
+        "N_UPPER",
+        "SPACE",
+        "firstDrawn",
+        "isGapByte",
+        "isUnknownBase",
+        "lastDrawn",
+        "sameBase"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/analytics": {
       "package": "@jbrowse/core",
       "names": [

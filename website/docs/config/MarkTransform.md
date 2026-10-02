@@ -17,7 +17,8 @@ transform: [
 ]
 ```
 
-The fraction of aligned bases matching the reference per bin, behind a
+The fraction of aligned bases matching the reference per bin, no reference
+`N` counted, behind a
 `cells` step, each run weighted by the bases it puts in the bin:
 
 ```js

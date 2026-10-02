@@ -132,137 +132,138 @@ import * as m127 from '../util/aborting.ts'
 import * as m128 from '../util/adapterMetadata.ts'
 import * as m129 from '../util/addRelativeUris.ts'
 import * as m130 from '../util/aggregateFieldName.ts'
-import * as m131 from '../util/analytics.ts'
-import * as m132 from '../util/animationAllowed.ts'
-import * as m133 from '../util/assemblyConfigUtils.ts'
-import * as m134 from '../util/bandHeight.ts'
-import * as m135 from '../util/bandLayout.ts'
-import * as m136 from '../util/Base1DUtils.ts'
-import * as m137 from '../util/Base1DViewModel.ts'
-import * as m138 from '../util/baseDisplayConfig.ts'
-import * as m139 from '../util/bgzfWorkerPool.ts'
-import * as m140 from '../util/blockTypes.ts'
-import * as m141 from '../util/cacheBudgets.ts'
-import * as m142 from '../util/calculateDynamicBlocks.ts'
-import * as m143 from '../util/calculateStaticBlocks.ts'
-import * as m144 from '../util/categoricalField.ts'
-import * as m145 from '../util/chooseGridPitch.ts'
-import * as m146 from '../util/color/index.ts'
-import * as m147 from '../util/color/cssColorsLevel4.ts'
-import * as m148 from '../util/colorBits.ts'
-import * as m149 from '../util/colord.ts'
-import * as m150 from '../util/colorRamp.ts'
-import * as m151 from '../util/colorScale.ts'
-import * as m152 from '../util/colorSchemes.ts'
-import * as m153 from '../util/convertCodingSequenceToPeptides.ts'
-import * as m154 from '../util/copyText.ts'
-import * as m155 from '../util/createAbortRotation.ts'
-import * as m156 from '../util/createSvgRasterCanvas.ts'
-import * as m157 from '../util/cssColorParse.ts'
-import * as m158 from '../util/deepEqual.ts'
-import * as m159 from '../util/deepMerge.ts'
-import * as m160 from '../util/diagonalizeRegions.ts'
-import * as m161 from '../util/eventPoint.ts'
-import * as m162 from '../util/expandLooseSearchIndex.ts'
-import * as m163 from '../util/featureTable.ts'
-import * as m164 from '../util/featureTransforms.ts'
-import * as m165 from '../util/fetchContext.ts'
-import * as m166 from '../util/fetchHub.ts'
-import * as m167 from '../util/fetchPhases.ts'
-import * as m168 from '../util/fieldReader.ts'
-import * as m169 from '../util/fileHandleStore.ts'
-import * as m170 from '../util/FileSaver/index.ts'
-import * as m171 from '../util/flatbush/index.ts'
-import * as m172 from '../util/formatFastaStrings.ts'
-import * as m173 from '../util/frameCoalescer.ts'
-import * as m174 from '../util/freezeDeep.ts'
-import * as m175 from '../util/geneticCodes.ts'
-import * as m176 from '../util/getRelativeX.ts'
-import * as m177 from '../util/groupKeys.ts'
-import * as m178 from '../util/highlights.ts'
-import * as m179 from '../util/hooks.ts'
-import * as m180 from '../util/htmlText.ts'
-import * as m181 from '../util/indexCandidates.ts'
-import * as m182 from '../util/installClearHoverOnSurfaceMove.ts'
-import * as m183 from '../util/installFetch.ts'
-import * as m184 from '../util/installInitAutorun.ts'
-import * as m185 from '../util/installPrerequisiteFetch.ts'
-import * as m186 from '../util/io/index.ts'
-import * as m187 from '../util/io/RemoteFileWithRangeCache.ts'
-import * as m188 from '../util/isDataCurrent.ts'
-import * as m189 from '../util/isTextEntryFocused.ts'
-import * as m190 from '../util/jexl.ts'
-import * as m191 from '../util/jexlFilters.ts'
-import * as m192 from '../util/jexlStrings.ts'
-import * as m193 from '../util/layouts/index.ts'
-import * as m194 from '../util/layouts/GranularRectLayout.ts'
-import * as m195 from '../util/layouts/placeRect.ts'
-import * as m196 from '../util/lazyAfterAttach.ts'
-import * as m197 from '../util/lazyWithPreload.ts'
-import * as m198 from '../util/leadingEdgeAutorun.ts'
-import * as m199 from '../util/legendCandidates.ts'
-import * as m200 from '../util/librpc.ts'
-import * as m201 from '../util/localStorage.ts'
-import * as m202 from '../util/makeAssembly.ts'
-import * as m203 from '../util/markEncoding.ts'
-import * as m204 from '../util/measureText.ts'
-import * as m205 from '../util/mst-reflection.ts'
-import * as m206 from '../util/mstUtils.ts'
-import * as m207 from '../util/nanoid.ts'
-import * as m208 from '../util/numericUtils.ts'
-import * as m209 from '../util/offscreenCanvasPonyfill.ts'
-import * as m210 from '../util/openViews.ts'
-import * as m211 from '../util/paintLayer.tsx'
-import * as m212 from '../util/parseLineByLine.ts'
-import * as m213 from '../util/preloadComponent.ts'
-import * as m214 from '../util/progress.ts'
-import * as m215 from '../util/quantileExtent.ts'
-import * as m216 from '../util/range.ts'
-import * as m217 from '../util/renderToStaticMarkup.ts'
-import * as m218 from '../util/resolveRowHeight.ts'
-import * as m219 from '../util/rowStackGeometry.ts'
-import * as m220 from '../util/rxjs.ts'
-import * as m221 from '../util/sameStrings.ts'
-import * as m222 from '../util/samplesTsv.ts'
-import * as m223 from '../util/selectEncodedFeature.ts'
-import * as m224 from '../util/setStackTraceLimit.ts'
-import * as m225 from '../util/shapeNameList.ts'
-import * as m226 from '../util/shapeNames.ts'
-import * as m227 from '../util/simpleFeature.ts'
-import * as m228 from '../util/starFusion.ts'
-import * as m229 from '../util/stats.ts'
-import * as m230 from '../util/svAlt.ts'
-import * as m231 from '../util/SvgCanvas.ts'
-import * as m232 from '../util/svgColorProps.ts'
-import * as m233 from '../util/systemColorScheme.ts'
-import * as m234 from '../util/tabix.ts'
-import * as m235 from '../util/thresholdScale.ts'
-import * as m236 from '../util/tickLabels.ts'
-import * as m237 from '../util/TimeTraveller.ts'
-import * as m238 from '../util/tracks.ts'
-import * as m239 from '../util/translateTranscript.ts'
-import * as m240 from '../util/tss-react/index.ts'
-import * as m241 from '../util/tss-react/types.ts'
-import * as m242 from '../util/types/index.ts'
-import * as m243 from '../util/types/data.ts'
-import * as m244 from '../util/types/mst.ts'
-import * as m245 from '../util/unknownSnapshotKeys.ts'
-import * as m246 from '../util/unzip.ts'
-import * as m247 from '../util/useEventCallback.ts'
-import * as m248 from '../util/useFetch.ts'
-import * as m249 from '../util/useFetchPlugins.ts'
-import * as m250 from '../util/useMeasure.ts'
-import * as m251 from '../util/usePanelVirtualScroll.ts'
-import * as m252 from '../util/usePanZoom.ts'
-import * as m253 from '../util/usePointerDrag.ts'
-import * as m254 from '../util/useResizeDrag.ts'
-import * as m255 from '../util/useRowVirtualScroll.ts'
-import * as m256 from '../util/viewHighlights.ts'
-import * as m257 from '../util/viewStatus.ts'
-import * as m258 from '../util/virtualRange.ts'
-import * as m259 from '../util/wheelZoom.ts'
-import * as m260 from '../util/whenViewSettled.ts'
-import * as m261 from '../util/withLaunchInput.ts'
+import * as m131 from '../util/alignedBytes.ts'
+import * as m132 from '../util/analytics.ts'
+import * as m133 from '../util/animationAllowed.ts'
+import * as m134 from '../util/assemblyConfigUtils.ts'
+import * as m135 from '../util/bandHeight.ts'
+import * as m136 from '../util/bandLayout.ts'
+import * as m137 from '../util/Base1DUtils.ts'
+import * as m138 from '../util/Base1DViewModel.ts'
+import * as m139 from '../util/baseDisplayConfig.ts'
+import * as m140 from '../util/bgzfWorkerPool.ts'
+import * as m141 from '../util/blockTypes.ts'
+import * as m142 from '../util/cacheBudgets.ts'
+import * as m143 from '../util/calculateDynamicBlocks.ts'
+import * as m144 from '../util/calculateStaticBlocks.ts'
+import * as m145 from '../util/categoricalField.ts'
+import * as m146 from '../util/chooseGridPitch.ts'
+import * as m147 from '../util/color/index.ts'
+import * as m148 from '../util/color/cssColorsLevel4.ts'
+import * as m149 from '../util/colorBits.ts'
+import * as m150 from '../util/colord.ts'
+import * as m151 from '../util/colorRamp.ts'
+import * as m152 from '../util/colorScale.ts'
+import * as m153 from '../util/colorSchemes.ts'
+import * as m154 from '../util/convertCodingSequenceToPeptides.ts'
+import * as m155 from '../util/copyText.ts'
+import * as m156 from '../util/createAbortRotation.ts'
+import * as m157 from '../util/createSvgRasterCanvas.ts'
+import * as m158 from '../util/cssColorParse.ts'
+import * as m159 from '../util/deepEqual.ts'
+import * as m160 from '../util/deepMerge.ts'
+import * as m161 from '../util/diagonalizeRegions.ts'
+import * as m162 from '../util/eventPoint.ts'
+import * as m163 from '../util/expandLooseSearchIndex.ts'
+import * as m164 from '../util/featureTable.ts'
+import * as m165 from '../util/featureTransforms.ts'
+import * as m166 from '../util/fetchContext.ts'
+import * as m167 from '../util/fetchHub.ts'
+import * as m168 from '../util/fetchPhases.ts'
+import * as m169 from '../util/fieldReader.ts'
+import * as m170 from '../util/fileHandleStore.ts'
+import * as m171 from '../util/FileSaver/index.ts'
+import * as m172 from '../util/flatbush/index.ts'
+import * as m173 from '../util/formatFastaStrings.ts'
+import * as m174 from '../util/frameCoalescer.ts'
+import * as m175 from '../util/freezeDeep.ts'
+import * as m176 from '../util/geneticCodes.ts'
+import * as m177 from '../util/getRelativeX.ts'
+import * as m178 from '../util/groupKeys.ts'
+import * as m179 from '../util/highlights.ts'
+import * as m180 from '../util/hooks.ts'
+import * as m181 from '../util/htmlText.ts'
+import * as m182 from '../util/indexCandidates.ts'
+import * as m183 from '../util/installClearHoverOnSurfaceMove.ts'
+import * as m184 from '../util/installFetch.ts'
+import * as m185 from '../util/installInitAutorun.ts'
+import * as m186 from '../util/installPrerequisiteFetch.ts'
+import * as m187 from '../util/io/index.ts'
+import * as m188 from '../util/io/RemoteFileWithRangeCache.ts'
+import * as m189 from '../util/isDataCurrent.ts'
+import * as m190 from '../util/isTextEntryFocused.ts'
+import * as m191 from '../util/jexl.ts'
+import * as m192 from '../util/jexlFilters.ts'
+import * as m193 from '../util/jexlStrings.ts'
+import * as m194 from '../util/layouts/index.ts'
+import * as m195 from '../util/layouts/GranularRectLayout.ts'
+import * as m196 from '../util/layouts/placeRect.ts'
+import * as m197 from '../util/lazyAfterAttach.ts'
+import * as m198 from '../util/lazyWithPreload.ts'
+import * as m199 from '../util/leadingEdgeAutorun.ts'
+import * as m200 from '../util/legendCandidates.ts'
+import * as m201 from '../util/librpc.ts'
+import * as m202 from '../util/localStorage.ts'
+import * as m203 from '../util/makeAssembly.ts'
+import * as m204 from '../util/markEncoding.ts'
+import * as m205 from '../util/measureText.ts'
+import * as m206 from '../util/mst-reflection.ts'
+import * as m207 from '../util/mstUtils.ts'
+import * as m208 from '../util/nanoid.ts'
+import * as m209 from '../util/numericUtils.ts'
+import * as m210 from '../util/offscreenCanvasPonyfill.ts'
+import * as m211 from '../util/openViews.ts'
+import * as m212 from '../util/paintLayer.tsx'
+import * as m213 from '../util/parseLineByLine.ts'
+import * as m214 from '../util/preloadComponent.ts'
+import * as m215 from '../util/progress.ts'
+import * as m216 from '../util/quantileExtent.ts'
+import * as m217 from '../util/range.ts'
+import * as m218 from '../util/renderToStaticMarkup.ts'
+import * as m219 from '../util/resolveRowHeight.ts'
+import * as m220 from '../util/rowStackGeometry.ts'
+import * as m221 from '../util/rxjs.ts'
+import * as m222 from '../util/sameStrings.ts'
+import * as m223 from '../util/samplesTsv.ts'
+import * as m224 from '../util/selectEncodedFeature.ts'
+import * as m225 from '../util/setStackTraceLimit.ts'
+import * as m226 from '../util/shapeNameList.ts'
+import * as m227 from '../util/shapeNames.ts'
+import * as m228 from '../util/simpleFeature.ts'
+import * as m229 from '../util/starFusion.ts'
+import * as m230 from '../util/stats.ts'
+import * as m231 from '../util/svAlt.ts'
+import * as m232 from '../util/SvgCanvas.ts'
+import * as m233 from '../util/svgColorProps.ts'
+import * as m234 from '../util/systemColorScheme.ts'
+import * as m235 from '../util/tabix.ts'
+import * as m236 from '../util/thresholdScale.ts'
+import * as m237 from '../util/tickLabels.ts'
+import * as m238 from '../util/TimeTraveller.ts'
+import * as m239 from '../util/tracks.ts'
+import * as m240 from '../util/translateTranscript.ts'
+import * as m241 from '../util/tss-react/index.ts'
+import * as m242 from '../util/tss-react/types.ts'
+import * as m243 from '../util/types/index.ts'
+import * as m244 from '../util/types/data.ts'
+import * as m245 from '../util/types/mst.ts'
+import * as m246 from '../util/unknownSnapshotKeys.ts'
+import * as m247 from '../util/unzip.ts'
+import * as m248 from '../util/useEventCallback.ts'
+import * as m249 from '../util/useFetch.ts'
+import * as m250 from '../util/useFetchPlugins.ts'
+import * as m251 from '../util/useMeasure.ts'
+import * as m252 from '../util/usePanelVirtualScroll.ts'
+import * as m253 from '../util/usePanZoom.ts'
+import * as m254 from '../util/usePointerDrag.ts'
+import * as m255 from '../util/useResizeDrag.ts'
+import * as m256 from '../util/useRowVirtualScroll.ts'
+import * as m257 from '../util/viewHighlights.ts'
+import * as m258 from '../util/viewStatus.ts'
+import * as m259 from '../util/virtualRange.ts'
+import * as m260 from '../util/wheelZoom.ts'
+import * as m261 from '../util/whenViewSettled.ts'
+import * as m262 from '../util/withLaunchInput.ts'
 
 const libs: Record<string, unknown> = {
   '@jbrowse/core/assemblyManager': { ...m0, __esModule: true },
@@ -396,137 +397,138 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/util/adapterMetadata': m128,
   '@jbrowse/core/util/addRelativeUris': m129,
   '@jbrowse/core/util/aggregateFieldName': m130,
-  '@jbrowse/core/util/analytics': m131,
-  '@jbrowse/core/util/animationAllowed': m132,
-  '@jbrowse/core/util/assemblyConfigUtils': m133,
-  '@jbrowse/core/util/bandHeight': m134,
-  '@jbrowse/core/util/bandLayout': m135,
-  '@jbrowse/core/util/Base1DUtils': m136,
-  '@jbrowse/core/util/Base1DViewModel': m137.default,
-  '@jbrowse/core/util/baseDisplayConfig': m138,
-  '@jbrowse/core/util/bgzfWorkerPool': m139,
-  '@jbrowse/core/util/blockTypes': m140,
-  '@jbrowse/core/util/cacheBudgets': m141,
-  '@jbrowse/core/util/calculateDynamicBlocks': m142.default,
-  '@jbrowse/core/util/calculateStaticBlocks': m143.default,
-  '@jbrowse/core/util/categoricalField': m144,
-  '@jbrowse/core/util/chooseGridPitch': m145,
-  '@jbrowse/core/util/color': m146,
-  '@jbrowse/core/util/color/cssColorsLevel4': m147,
-  '@jbrowse/core/util/colorBits': m148,
-  '@jbrowse/core/util/colord': m149,
-  '@jbrowse/core/util/colorRamp': m150,
-  '@jbrowse/core/util/colorScale': m151,
-  '@jbrowse/core/util/colorSchemes': m152,
-  '@jbrowse/core/util/convertCodingSequenceToPeptides': m153,
-  '@jbrowse/core/util/copyText': m154,
-  '@jbrowse/core/util/createAbortRotation': m155,
-  '@jbrowse/core/util/createSvgRasterCanvas': m156,
-  '@jbrowse/core/util/cssColorParse': m157,
-  '@jbrowse/core/util/deepEqual': m158,
-  '@jbrowse/core/util/deepMerge': m159,
-  '@jbrowse/core/util/diagonalizeRegions': m160,
-  '@jbrowse/core/util/eventPoint': m161,
-  '@jbrowse/core/util/expandLooseSearchIndex': m162,
-  '@jbrowse/core/util/featureTable': m163,
-  '@jbrowse/core/util/featureTransforms': m164,
-  '@jbrowse/core/util/fetchContext': m165,
-  '@jbrowse/core/util/fetchHub': m166,
-  '@jbrowse/core/util/fetchPhases': m167,
-  '@jbrowse/core/util/fieldReader': m168,
-  '@jbrowse/core/util/fileHandleStore': m169,
-  '@jbrowse/core/util/FileSaver': m170,
-  '@jbrowse/core/util/flatbush': m171.default,
-  '@jbrowse/core/util/formatFastaStrings': m172,
-  '@jbrowse/core/util/frameCoalescer': m173,
-  '@jbrowse/core/util/freezeDeep': m174,
-  '@jbrowse/core/util/geneticCodes': m175,
-  '@jbrowse/core/util/getRelativeX': m176,
-  '@jbrowse/core/util/groupKeys': m177,
-  '@jbrowse/core/util/highlights': m178,
-  '@jbrowse/core/util/hooks': m179,
-  '@jbrowse/core/util/htmlText': m180,
-  '@jbrowse/core/util/indexCandidates': m181,
-  '@jbrowse/core/util/installClearHoverOnSurfaceMove': m182,
-  '@jbrowse/core/util/installFetch': m183,
-  '@jbrowse/core/util/installInitAutorun': m184,
-  '@jbrowse/core/util/installPrerequisiteFetch': m185,
-  '@jbrowse/core/util/io': m186,
-  '@jbrowse/core/util/io/RemoteFileWithRangeCache': m187,
-  '@jbrowse/core/util/isDataCurrent': m188,
-  '@jbrowse/core/util/isTextEntryFocused': m189,
-  '@jbrowse/core/util/jexl': m190.default,
-  '@jbrowse/core/util/jexlFilters': m191,
-  '@jbrowse/core/util/jexlStrings': m192,
-  '@jbrowse/core/util/layouts': m193,
-  '@jbrowse/core/util/layouts/GranularRectLayout': m194.default,
-  '@jbrowse/core/util/layouts/placeRect': m195,
-  '@jbrowse/core/util/lazyAfterAttach': m196,
-  '@jbrowse/core/util/lazyWithPreload': m197,
-  '@jbrowse/core/util/leadingEdgeAutorun': m198,
-  '@jbrowse/core/util/legendCandidates': m199,
-  '@jbrowse/core/util/librpc': m200,
-  '@jbrowse/core/util/localStorage': m201,
-  '@jbrowse/core/util/makeAssembly': m202,
-  '@jbrowse/core/util/markEncoding': m203,
-  '@jbrowse/core/util/measureText': m204,
-  '@jbrowse/core/util/mst-reflection': m205,
-  '@jbrowse/core/util/mstUtils': m206,
-  '@jbrowse/core/util/nanoid': m207,
-  '@jbrowse/core/util/numericUtils': m208,
-  '@jbrowse/core/util/offscreenCanvasPonyfill': m209,
-  '@jbrowse/core/util/openViews': m210,
-  '@jbrowse/core/util/paintLayer': m211,
-  '@jbrowse/core/util/parseLineByLine': m212,
-  '@jbrowse/core/util/preloadComponent': m213,
-  '@jbrowse/core/util/progress': m214,
-  '@jbrowse/core/util/quantileExtent': m215,
-  '@jbrowse/core/util/range': m216,
-  '@jbrowse/core/util/renderToStaticMarkup': m217,
-  '@jbrowse/core/util/resolveRowHeight': m218,
-  '@jbrowse/core/util/rowStackGeometry': m219,
-  '@jbrowse/core/util/rxjs': m220,
-  '@jbrowse/core/util/sameStrings': m221,
-  '@jbrowse/core/util/samplesTsv': m222,
-  '@jbrowse/core/util/selectEncodedFeature': m223,
-  '@jbrowse/core/util/setStackTraceLimit': m224,
-  '@jbrowse/core/util/shapeNameList': m225,
-  '@jbrowse/core/util/shapeNames': m226,
-  '@jbrowse/core/util/simpleFeature': { ...m227, __esModule: true },
-  '@jbrowse/core/util/starFusion': m228,
-  '@jbrowse/core/util/stats': m229,
-  '@jbrowse/core/util/svAlt': m230,
-  '@jbrowse/core/util/SvgCanvas': m231,
-  '@jbrowse/core/util/svgColorProps': m232,
-  '@jbrowse/core/util/systemColorScheme': m233,
-  '@jbrowse/core/util/tabix': m234,
-  '@jbrowse/core/util/thresholdScale': m235,
-  '@jbrowse/core/util/tickLabels': m236,
-  '@jbrowse/core/util/TimeTraveller': m237.default,
-  '@jbrowse/core/util/tracks': m238,
-  '@jbrowse/core/util/translateTranscript': m239,
-  '@jbrowse/core/util/tss-react': m240,
-  '@jbrowse/core/util/tss-react/types': m241,
-  '@jbrowse/core/util/types': m242,
-  '@jbrowse/core/util/types/data': m243,
-  '@jbrowse/core/util/types/mst': m244,
-  '@jbrowse/core/util/unknownSnapshotKeys': m245,
-  '@jbrowse/core/util/unzip': m246,
-  '@jbrowse/core/util/useEventCallback': m247,
-  '@jbrowse/core/util/useFetch': m248,
-  '@jbrowse/core/util/useFetchPlugins': m249,
-  '@jbrowse/core/util/useMeasure': m250.default,
-  '@jbrowse/core/util/usePanelVirtualScroll': m251,
-  '@jbrowse/core/util/usePanZoom': m252,
-  '@jbrowse/core/util/usePointerDrag': m253,
-  '@jbrowse/core/util/useResizeDrag': m254,
-  '@jbrowse/core/util/useRowVirtualScroll': m255,
-  '@jbrowse/core/util/viewHighlights': m256,
-  '@jbrowse/core/util/viewStatus': m257,
-  '@jbrowse/core/util/virtualRange': m258,
-  '@jbrowse/core/util/wheelZoom': m259,
-  '@jbrowse/core/util/whenViewSettled': m260,
-  '@jbrowse/core/util/withLaunchInput': m261,
+  '@jbrowse/core/util/alignedBytes': m131,
+  '@jbrowse/core/util/analytics': m132,
+  '@jbrowse/core/util/animationAllowed': m133,
+  '@jbrowse/core/util/assemblyConfigUtils': m134,
+  '@jbrowse/core/util/bandHeight': m135,
+  '@jbrowse/core/util/bandLayout': m136,
+  '@jbrowse/core/util/Base1DUtils': m137,
+  '@jbrowse/core/util/Base1DViewModel': m138.default,
+  '@jbrowse/core/util/baseDisplayConfig': m139,
+  '@jbrowse/core/util/bgzfWorkerPool': m140,
+  '@jbrowse/core/util/blockTypes': m141,
+  '@jbrowse/core/util/cacheBudgets': m142,
+  '@jbrowse/core/util/calculateDynamicBlocks': m143.default,
+  '@jbrowse/core/util/calculateStaticBlocks': m144.default,
+  '@jbrowse/core/util/categoricalField': m145,
+  '@jbrowse/core/util/chooseGridPitch': m146,
+  '@jbrowse/core/util/color': m147,
+  '@jbrowse/core/util/color/cssColorsLevel4': m148,
+  '@jbrowse/core/util/colorBits': m149,
+  '@jbrowse/core/util/colord': m150,
+  '@jbrowse/core/util/colorRamp': m151,
+  '@jbrowse/core/util/colorScale': m152,
+  '@jbrowse/core/util/colorSchemes': m153,
+  '@jbrowse/core/util/convertCodingSequenceToPeptides': m154,
+  '@jbrowse/core/util/copyText': m155,
+  '@jbrowse/core/util/createAbortRotation': m156,
+  '@jbrowse/core/util/createSvgRasterCanvas': m157,
+  '@jbrowse/core/util/cssColorParse': m158,
+  '@jbrowse/core/util/deepEqual': m159,
+  '@jbrowse/core/util/deepMerge': m160,
+  '@jbrowse/core/util/diagonalizeRegions': m161,
+  '@jbrowse/core/util/eventPoint': m162,
+  '@jbrowse/core/util/expandLooseSearchIndex': m163,
+  '@jbrowse/core/util/featureTable': m164,
+  '@jbrowse/core/util/featureTransforms': m165,
+  '@jbrowse/core/util/fetchContext': m166,
+  '@jbrowse/core/util/fetchHub': m167,
+  '@jbrowse/core/util/fetchPhases': m168,
+  '@jbrowse/core/util/fieldReader': m169,
+  '@jbrowse/core/util/fileHandleStore': m170,
+  '@jbrowse/core/util/FileSaver': m171,
+  '@jbrowse/core/util/flatbush': m172.default,
+  '@jbrowse/core/util/formatFastaStrings': m173,
+  '@jbrowse/core/util/frameCoalescer': m174,
+  '@jbrowse/core/util/freezeDeep': m175,
+  '@jbrowse/core/util/geneticCodes': m176,
+  '@jbrowse/core/util/getRelativeX': m177,
+  '@jbrowse/core/util/groupKeys': m178,
+  '@jbrowse/core/util/highlights': m179,
+  '@jbrowse/core/util/hooks': m180,
+  '@jbrowse/core/util/htmlText': m181,
+  '@jbrowse/core/util/indexCandidates': m182,
+  '@jbrowse/core/util/installClearHoverOnSurfaceMove': m183,
+  '@jbrowse/core/util/installFetch': m184,
+  '@jbrowse/core/util/installInitAutorun': m185,
+  '@jbrowse/core/util/installPrerequisiteFetch': m186,
+  '@jbrowse/core/util/io': m187,
+  '@jbrowse/core/util/io/RemoteFileWithRangeCache': m188,
+  '@jbrowse/core/util/isDataCurrent': m189,
+  '@jbrowse/core/util/isTextEntryFocused': m190,
+  '@jbrowse/core/util/jexl': m191.default,
+  '@jbrowse/core/util/jexlFilters': m192,
+  '@jbrowse/core/util/jexlStrings': m193,
+  '@jbrowse/core/util/layouts': m194,
+  '@jbrowse/core/util/layouts/GranularRectLayout': m195.default,
+  '@jbrowse/core/util/layouts/placeRect': m196,
+  '@jbrowse/core/util/lazyAfterAttach': m197,
+  '@jbrowse/core/util/lazyWithPreload': m198,
+  '@jbrowse/core/util/leadingEdgeAutorun': m199,
+  '@jbrowse/core/util/legendCandidates': m200,
+  '@jbrowse/core/util/librpc': m201,
+  '@jbrowse/core/util/localStorage': m202,
+  '@jbrowse/core/util/makeAssembly': m203,
+  '@jbrowse/core/util/markEncoding': m204,
+  '@jbrowse/core/util/measureText': m205,
+  '@jbrowse/core/util/mst-reflection': m206,
+  '@jbrowse/core/util/mstUtils': m207,
+  '@jbrowse/core/util/nanoid': m208,
+  '@jbrowse/core/util/numericUtils': m209,
+  '@jbrowse/core/util/offscreenCanvasPonyfill': m210,
+  '@jbrowse/core/util/openViews': m211,
+  '@jbrowse/core/util/paintLayer': m212,
+  '@jbrowse/core/util/parseLineByLine': m213,
+  '@jbrowse/core/util/preloadComponent': m214,
+  '@jbrowse/core/util/progress': m215,
+  '@jbrowse/core/util/quantileExtent': m216,
+  '@jbrowse/core/util/range': m217,
+  '@jbrowse/core/util/renderToStaticMarkup': m218,
+  '@jbrowse/core/util/resolveRowHeight': m219,
+  '@jbrowse/core/util/rowStackGeometry': m220,
+  '@jbrowse/core/util/rxjs': m221,
+  '@jbrowse/core/util/sameStrings': m222,
+  '@jbrowse/core/util/samplesTsv': m223,
+  '@jbrowse/core/util/selectEncodedFeature': m224,
+  '@jbrowse/core/util/setStackTraceLimit': m225,
+  '@jbrowse/core/util/shapeNameList': m226,
+  '@jbrowse/core/util/shapeNames': m227,
+  '@jbrowse/core/util/simpleFeature': { ...m228, __esModule: true },
+  '@jbrowse/core/util/starFusion': m229,
+  '@jbrowse/core/util/stats': m230,
+  '@jbrowse/core/util/svAlt': m231,
+  '@jbrowse/core/util/SvgCanvas': m232,
+  '@jbrowse/core/util/svgColorProps': m233,
+  '@jbrowse/core/util/systemColorScheme': m234,
+  '@jbrowse/core/util/tabix': m235,
+  '@jbrowse/core/util/thresholdScale': m236,
+  '@jbrowse/core/util/tickLabels': m237,
+  '@jbrowse/core/util/TimeTraveller': m238.default,
+  '@jbrowse/core/util/tracks': m239,
+  '@jbrowse/core/util/translateTranscript': m240,
+  '@jbrowse/core/util/tss-react': m241,
+  '@jbrowse/core/util/tss-react/types': m242,
+  '@jbrowse/core/util/types': m243,
+  '@jbrowse/core/util/types/data': m244,
+  '@jbrowse/core/util/types/mst': m245,
+  '@jbrowse/core/util/unknownSnapshotKeys': m246,
+  '@jbrowse/core/util/unzip': m247,
+  '@jbrowse/core/util/useEventCallback': m248,
+  '@jbrowse/core/util/useFetch': m249,
+  '@jbrowse/core/util/useFetchPlugins': m250,
+  '@jbrowse/core/util/useMeasure': m251.default,
+  '@jbrowse/core/util/usePanelVirtualScroll': m252,
+  '@jbrowse/core/util/usePanZoom': m253,
+  '@jbrowse/core/util/usePointerDrag': m254,
+  '@jbrowse/core/util/useResizeDrag': m255,
+  '@jbrowse/core/util/useRowVirtualScroll': m256,
+  '@jbrowse/core/util/viewHighlights': m257,
+  '@jbrowse/core/util/viewStatus': m258,
+  '@jbrowse/core/util/virtualRange': m259,
+  '@jbrowse/core/util/wheelZoom': m260,
+  '@jbrowse/core/util/whenViewSettled': m261,
+  '@jbrowse/core/util/withLaunchInput': m262,
 }
 
 export default libs
