@@ -222,7 +222,7 @@ test('orders by the colour the colour field paints, not the baked one', () => {
       names.map((_, row) => ({ start: 0, end: 10, color: 7, row })),
       names,
     ),
-    featureColorValues: new Uint32Array([1, 2, 1]),
+    rectColorValues: new Uint32Array([1, 2, 1]),
     colorValues: { field: 'state', values: ['x', 'y'], painted: [] },
   }
   expect(order(names, fielded, 5)).toEqual(['A', 'B', 'C'])

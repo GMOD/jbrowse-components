@@ -256,7 +256,7 @@ export function packMultiRowFeatures({
   const colorValues = colorConfig.field
     ? createColorValueCollector(colorConfig.field, jexl)
     : undefined
-  const featureColorValues = new Uint32Array(colorValues ? n : 0)
+  const rectColorValues = new Uint32Array(colorValues ? n : 0)
   const partitionCandidates = collectPartitionCandidates(features)
   const resolvedPartitionField = resolvePartitionField(
     partitionField,
@@ -292,7 +292,7 @@ export function packMultiRowFeatures({
     }
     featurePartitionIndex[i] = idx
     if (colorValues) {
-      featureColorValues[i] = colorValues.laneValueOf(feature, idx)
+      rectColorValues[i] = colorValues.laneValueOf(feature, idx)
     }
     if (i < PARTITION_VALUE_COUNT_SAMPLE) {
       candidateValues.add(feature)
@@ -306,7 +306,7 @@ export function packMultiRowFeatures({
     featureStarts,
     featureEnds,
     featureColors,
-    featureColorValues,
+    rectColorValues,
     colorValues: colorValues?.colorValues,
     featureDeltas,
     partitionValues,

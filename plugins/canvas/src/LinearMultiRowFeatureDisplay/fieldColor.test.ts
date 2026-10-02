@@ -56,7 +56,7 @@ test('the worker ships each feature its field value, and each value its row', ()
       { rowIndex: 1, valueIndex: 3 },
     ],
   })
-  expect([...data.featureColorValues!]).toEqual([1, 2, 3, 4])
+  expect([...data.rectColorValues!]).toEqual([1, 2, 3, 4])
   expect(pack('').colorValues).toBeUndefined()
 })
 
@@ -151,6 +151,39 @@ describe('a ramp colour on the multi-row display', () => {
     ).toMatchObject({
       entries: [expect.objectContaining({ missing: true })],
     })
+  })
+
+  it('under a domain quantile weighs each feature, so a lone spike stops short', () => {
+    const scores = [
+      ...Array.from({ length: 50 }, () => 1),
+      ...Array.from({ length: 49 }, () => 2),
+      10_000,
+    ]
+    const data = packMultiRowFeatures({
+      features: scores.map(
+        (score, i) =>
+          new SimpleFeature({
+            uniqueId: `f${i}`,
+            refName: 'ctgA',
+            start: i * 10,
+            end: i * 10 + 5,
+            sample: 's1',
+            score,
+          }),
+      ),
+      partitionField: 'sample',
+      lengthField: '',
+      colorConfig: { value: undefined, field: 'score' },
+      jexl: createJexlInstance(),
+    })
+    const { display: d } = createTestEnvironment({
+      displayConfig: {
+        rows: 'sample',
+        color: { field: 'score', scale: 'linear', domainQuantile: 0.9 },
+      },
+    }).createDisplay()
+    d.setRpcData(0, data, ctgA)
+    expect(d.colorScales[0]).toMatchObject({ kind: 'ramp', domain: [1, 2] })
   })
 
   it('keys no itemRgb colour, since the ramp paints over every one', () => {

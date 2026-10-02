@@ -25,7 +25,7 @@ export function resolveLocalRowIndices(
 
 type OwnColorData = Pick<
   MultiRowRegionData,
-  'featureColors' | 'featureColorValues' | 'colorValues'
+  'featureColors' | 'rectColorValues' | 'colorValues'
 >
 
 /**
@@ -36,17 +36,17 @@ type OwnColorData = Pick<
  * drew.
  */
 export function ownColors(data: OwnColorData, fieldPalette?: FieldPalette) {
-  const { featureColors, featureColorValues, colorValues } = data
+  const { featureColors, rectColorValues, colorValues } = data
   if (
     !fieldPalette ||
-    !featureColorValues?.length ||
+    !rectColorValues?.length ||
     colorValues?.field !== fieldPalette.field
   ) {
     return featureColors
   }
   const table = fieldPalette.tableOf(colorValues.values, false)
   return Uint32Array.from(featureColors, (baked, i) => {
-    const value = featureColorValues[i]!
+    const value = rectColorValues[i]!
     return value > 0 ? table[(value - 1) * 3]! : baked
   })
 }

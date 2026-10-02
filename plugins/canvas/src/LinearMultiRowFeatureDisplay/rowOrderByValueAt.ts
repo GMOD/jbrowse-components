@@ -13,7 +13,7 @@ export type RowValueRegion = Pick<
   | 'featureStarts'
   | 'featureEnds'
   | 'featureColors'
-  | 'featureColorValues'
+  | 'rectColorValues'
   | 'colorValues'
   | 'partitionValues'
   | 'featurePartitionIndex'

@@ -45,7 +45,7 @@ export interface MultiRowRegionData {
   // Absent or length 0 when no colour field is named: each feature's
   // one-based index into `colorValues.values`, which the main thread paints
   // through the scale in `featureColors`' place.
-  featureColorValues?: Uint32Array
+  rectColorValues?: Uint32Array
   colorValues?: MultiRowColorValues
   /**
    * Length 0 when the `lengthField` slot is unset, which gates the whole
