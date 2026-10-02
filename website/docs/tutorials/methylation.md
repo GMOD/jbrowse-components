@@ -21,6 +21,8 @@ parental alleles pulled apart.
   with no hosting step)
 - [modkit](https://github.com/nanoporetech/modkit/releases) for the aggregate
   section only, a single-binary download from its releases page
+- [WhatsHap](https://whatshap.readthedocs.io/), to haplotag reads of your own
+  that carry no `HP` tag
 
 ## Where the data comes from
 
@@ -48,12 +50,27 @@ At this locus on chr15, one parental allele is methylated and the other is
 unmethylated. The reads should split into two populations, and the reads and the
 aggregate profile should agree on which allele is which.
 
+## The genome
+
+The reads are aligned to GRCh38, and the track's `assemblyNames` has to name the
+assembly they were aligned to.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
 ## Per-read methylation from the alignments
 
-Load the modBAM as an alignments track. Its `assemblyNames` must match an
-assembly already configured in JBrowse (see the
-[assemblies configuration guide](/docs/config_guides/assemblies)), and JBrowse
-finds the `.bai` index beside the file:
+Load the modBAM as an alignments track. For your own reads, swap `uri` for a
+sorted modBAM or CRAM with the `.bai` or `.crai` beside it, aligned to the same
+assembly:
 
 ```json addtrack
 {
@@ -67,9 +84,10 @@ finds the `.bai` index beside the file:
 **File → Open track...** also opens the file by URL and infers the `.bai`.
 
 Set **Color by... → Modifications** from the track menu to paint each read with
-its 5mC calls. The first mode paints the positions the MM tag reports as
-modified. The second (IGV's "2-color" scheme) also fills in every CpG the tag
-left implicit, so an unmethylated region is solid blue. The
+its 5mC calls. **One color per modification type** paints the positions the MM
+tag reports as modified. **One color per type, plus low-probability & unmodified
+in blue** (IGV's "2-color" scheme) also fills in every CpG the tag left
+implicit, so an unmethylated region is solid blue. The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes, the probability threshold, and the cytosine-context submenu.
 
@@ -174,7 +192,12 @@ methylated in both.
 See the
 [alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for
 the Group-by dialog. `whatshap haplotag` writes the `HP` tag onto your own reads
-from a phased VCF.
+from a phased VCF:
+
+```bash
+whatshap haplotag --reference reference.fa -o haplotagged.bam phased.vcf.gz reads.bam
+samtools index haplotagged.bam
+```
 
 ## Navigating with bedMethyl and comparing samples
 
