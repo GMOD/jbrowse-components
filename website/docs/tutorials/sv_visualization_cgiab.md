@@ -108,6 +108,42 @@ curl -L https://github.com/PacificBiosciences/HiFiCNV/releases/download/v1.0.1/h
 [Reproduce it end to end](#reproduce-it-end-to-end) builds this instance in one
 script; the sections below give the track config for each file.
 
+## The two assemblies
+
+Every track below names one of two assemblies. The calls and reads sit on the
+C-GIAB GRCh38 build, `GRCh38_GIABv3`. Download it and index it with
+`samtools faidx` first, since the FTP file is gzip and an indexed FASTA reads
+random positions:
+
+```bash
+curl -L https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz \
+  | gunzip > GRCh38_GIABv3.fa
+samtools faidx GRCh38_GIABv3.fa
+```
+
+```json addassembly
+{
+  "name": "GRCh38_GIABv3",
+  "uri": "GRCh38_GIABv3.fa"
+}
+```
+
+The T2T tumor assembly `HG008T_v3.2` is the other, used by the synteny and
+dotplot sections. NIST ships it BGZF-compressed, so `samtools faidx` writes the
+`.fai` and `.gzi` beside it without decompressing:
+
+```bash
+curl -LO https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz
+samtools faidx HG008T_v3.2.fasta.gz
+```
+
+```json addassembly
+{
+  "name": "HG008T_v3.2",
+  "uri": "HG008T_v3.2.fasta.gz"
+}
+```
+
 ## The benchmark SV and CNV calls
 
 The V0.5 HG008-T draft benchmark is two files, the SV calls as an indexed VCF
@@ -455,8 +491,23 @@ hificnv --bam HG008-T.cram --ref GRCh38.fa --maf tumor_smallvariants.vcf.gz \
   --output-prefix hificnv
 ```
 
-HiFiCNV names the depth output for the `--bam` sample. Load it as a quantitative
-track with the **Scatter** plot type.
+HiFiCNV names the depth output for the `--bam` sample, so the file here is
+`HG008-T.hificnv.depth.bw`. Load it as a quantitative track drawn as points, the
+**Scatter** plot type:
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "hg008_depth",
+  "name": "HG008-T HiFiCNV depth",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "HG008-T.hificnv.depth.bw"
+  },
+  "displayDefaults": { "mark": "point", "size": 1 }
+}
+```
 
 The allelic panel is **B-allele frequency**, unfolded: a balanced region is one
 band at 0.5, a loss-of-heterozygosity region splits into two bands at 0 and 1.
@@ -523,9 +574,23 @@ the resulting PAF:
 # -c: emit a base-level CIGAR, which the synteny view draws at base scale
 minimap2 -cx asm5 GRCh38.fa HG008T_v3.2.fasta > HG008T_v3.2.paf
 
-# -a takes query,target, the reverse of the minimap2 argument order;
-# reversed, the view opens empty and reports no error
-jbrowse add-track HG008T_v3.2.paf -a HG008T_v3.2,GRCh38_GIABv3
+```
+
+The track lists the query assembly first and the target second, the reverse of
+the minimap2 argument order. Reversed, the view opens empty and reports no
+error.
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "HG008T_v3.2_paf",
+  "name": "HG008T_v3.2 vs GRCh38_GIABv3",
+  "assemblyNames": ["HG008T_v3.2", "GRCh38_GIABv3"],
+  "adapter": {
+    "type": "PAFAdapter",
+    "uri": "HG008T_v3.2.paf"
+  }
+}
 ```
 
 The matched normal assembly (`HG008N_v6.3.fasta.gz`, same S3 path) loads the
@@ -633,10 +698,39 @@ _CDKN2A_, _TP53_ and _SMAD4_
 figure below draws one MANE Select transcript under the lanes.
 
 For a first check, load the tumor and normal coverage from
-[goleft indexcov](https://github.com/brentp/goleft/tree/master/indexcov),
-published as `HG008-N_indexcov.bw` and `HG008-T_indexcov.bw`, as one
-multi-wiggle track by URL. **Plot type → Overlapping → Scatter** in its track
-menu draws the two samples as points in one band, tumor red and normal blue.
+[goleft indexcov](https://github.com/brentp/goleft/tree/master/indexcov), one
+bigWig per sample, as one multi-wiggle track. indexcov scales each sample to its
+own median, so two samples read against each other; swap each `uri` for your
+sample's bigWig:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "hg008_cnv_indexcov",
+  "name": "HG008 normal vs tumor coverage (indexcov)",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "name": "HG008-N (normal)",
+        "type": "BigWigAdapter",
+        "bigWigLocation": { "uri": "HG008-N_indexcov.bw" }
+      },
+      {
+        "name": "HG008-T (tumor)",
+        "type": "BigWigAdapter",
+        "bigWigLocation": { "uri": "HG008-T_indexcov.bw" }
+      }
+    ]
+  }
+}
+```
+
+**Plot type → Overlapping → Scatter** in its track menu draws the two samples as
+points in one band, tumor red and normal blue, and **Score → Set min/max
+score...** with 0 and 3 stops indexcov's centromere spikes from flattening every
+plateau.
 
 Zoom to a region and open the benchmark CNV BED. Coverage shows where the copy
 number steps, and the BAF track shows the allelic balance across each step.
@@ -667,8 +761,42 @@ deletion over the gene (`SV_75`, CN 0), inside a larger single-copy-loss arm
 
 Load the tumor and matched normal per-base coverage as one
 [multi-quantitative track](/docs/user_guides/quantitative_track), one row per
-sample, with an explicit score range. Thin lines across the gap in the read
-pileup are reads that carry the deletion.
+sample, with an explicit score range. The two bigWigs are the `megadepth`
+outputs for each sample's CRAM; swap in yours:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "hg008_tn_perbase",
+  "name": "HG008 tumor vs matched normal coverage (per-base)",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "name": "HG008-T (tumor)",
+        "type": "BigWigAdapter",
+        "color": "#e41a1c",
+        "bigWigLocation": { "uri": "HG008-T.all.bw" }
+      },
+      {
+        "name": "HG008-N (normal)",
+        "type": "BigWigAdapter",
+        "color": "#377eb8",
+        "bigWigLocation": { "uri": "HG008-N.all.bw" }
+      }
+    ]
+  },
+  "displayDefaults": {
+    "mark": "bar",
+    "summaryScoreMode": "avg",
+    "scales": { "y": { "domainMin": 0, "domainMax": 80, "grid": false } },
+    "height": 280
+  }
+}
+```
+
+Thin lines across the gap in the read pileup are reads that carry the deletion.
 
 The benchmark's `total_copy_number` is absolute: CN 2 is diploid, and 9p has
 already lost a copy, so CN 1 is the local background. Widen the view several

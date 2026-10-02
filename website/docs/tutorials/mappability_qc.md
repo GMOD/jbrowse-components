@@ -94,10 +94,14 @@ The Umap config carries the **Minimum** score mode and the 0 to 1 axis:
 
 ```json addtrack
 {
+  "type": "QuantitativeTrack",
   "trackId": "hg38-umap100Quantitative",
   "name": "Multi-read mappability - Umap M100",
-  "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw",
   "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw"
+  },
   "displays": [
     {
       "type": "LinearWiggleDisplay",
