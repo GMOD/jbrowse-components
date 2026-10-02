@@ -11,6 +11,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "s=.claude/hooks/refuse-commands.sh; [ -x \"$s\" ] || s=\"$CLAUDE_PROJECT_DIR/$s\"; [ -x \"$s\" ] && exec \"$s\"; exit 0"
+          }
+        ]
+      }
     ]
   }
 }

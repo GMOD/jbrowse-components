@@ -67,24 +67,23 @@ const noExportStar = {
   message:
     "Do not use `export *` / `export type *`. List the names explicitly (`export { a, b } from './x.ts'`) so a barrel's public surface is greppable and a new internal export can't silently become package API. Regenerate a list with the TS checker rather than hand-writing it.",
 }
-// Those below pin invariants CLAUDE.md already states, each of which fails
-// silently — the code keeps working, just wrongly, so no test catches them.
-// Unnumbered on purpose: this said "three" while listing four.
+// Those below pin invariants that fail silently — the code keeps working, just
+// wrongly, so no test catches them.
 const noNamedObserver = {
   selector: "CallExpression[callee.name='observer'] > Identifier.arguments",
   message:
-    'Write `observer(function Name() {…})` inline. babel-plugin-react-compiler does not compile an inline observer, but it DOES compile the `function Name(){}; observer(Name)` form, and a compiled MobX render can serve a stale read. See the React Compiler × MobX section of CLAUDE.md.',
+    'Write `observer(function Name() {…})` inline. babel-plugin-react-compiler does not compile an inline observer, but it DOES compile the `function Name(){}; observer(Name)` form, and a compiled MobX render can serve a stale read.',
 }
 const noSetSlot = {
   selector: 'CallExpression[callee.property.name=/^(setSlot|setSubschema)$/]',
   message:
-    "Write config with `setConf`, not a config node's `setSlot` or `setSubschema`. See the MST section of CLAUDE.md.",
+    "Write config with `setConf`, not a config node's `setSlot` or `setSubschema`.",
 }
 const noAnyStateTreeNode = {
   selector:
     "TSInterfaceHeritage > TSQualifiedName[right.name='IAnyStateTreeNode'], TSInterfaceHeritage > Identifier[name='IAnyStateTreeNode']",
   message:
-    'A duck-typed interface extends `IStateTreeNode`, never `IAnyStateTreeNode`. The latter resolves through `STNValue<any, …>` to `any`, which silently turns off checking for every member you just declared. See the MST section of CLAUDE.md.',
+    'A duck-typed interface extends `IStateTreeNode`, never `IAnyStateTreeNode`. The latter resolves through `STNValue<any, …>` to `any`, which silently turns off checking for every member you just declared.',
 }
 const noTrackWidthPx = {
   selector: "MemberExpression[property.name='trackWidthPx']",
@@ -243,7 +242,7 @@ const noSessionAddTrackConf = {
   selector:
     "MemberExpression[object.name=/^(session|sess)$/][property.name='addTrackConf'], Identifier[name='isSessionWithAddTracks']",
   message:
-    'Call `session.addSessionTrackConf` for a track a feature stands up on the user’s behalf, or `session.publishTrackConf` in an Add-track workflow where an admin means to add it for the whole site — and gate on the matching `isSessionWithAddSessionTrack` / `isSessionWithPublishTrackConf`. `addTrackConf` and `isSessionWithAddTracks` survive only for prebuilt plugin bundles. See the tracks section of CLAUDE.md.',
+    'Call `session.addSessionTrackConf` for a track a feature stands up on the user’s behalf, or `session.publishTrackConf` in an Add-track workflow where an admin means to add it for the whole site — and gate on the matching `isSessionWithAddSessionTrack` / `isSessionWithPublishTrackConf`. `addTrackConf` and `isSessionWithAddTracks` survive only for prebuilt plugin bundles.',
 }
 
 // `rpcProps`, `zoomFetchArgs`, `regionHasData` and `isCacheValid` are the
