@@ -85,6 +85,15 @@ whole-chromosome zooms. `tabix` reads the tiers from the index without fetching
 the alignment: the header names the tiers the file carries, and the coarse-tier
 sequence names are the upper-case ones.
 
+To index a chain of your own, convert it to PAF with `chain2paf` from
+[paftools](https://github.com/lh3/minimap2/tree/master/misc), then run
+`make-pif`:
+
+```bash
+paftools.js chain2paf genomeA.genomeB.over.chain.gz > genomeA_genomeB.paf
+jbrowse make-pif genomeA_genomeB.paf
+```
+
 <!-- from: scripts/build_hg38_liftover_multiway.sh -->
 
 ```bash
@@ -98,12 +107,20 @@ tabix -l https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | grep
 
 One `SyntenyTrack` names hg38 and every genome it stacks, and its adapter is a
 `MultiPairwiseSyntenyAdapter` holding one child per chain. Each child is a
-`PairwiseIndexedPAFAdapter` over one chain file, naming its two assemblies in
-the order the file lists them. The anchor is the one assembly every child names.
-The list below is cut to three genomes for the page; the hosted config carries
-all eight. The assemblies and their gene tracks come from the hub configs
-unchanged, and a lane finds its gene models through the session, so the track is
-the one addition to the hub entries.
+`PairwiseIndexedPAFAdapter` over one chain file, naming its two assemblies as
+`query,target`, the genome the chain lifts to first. The anchor is the one
+assembly every child names. The list below is cut to three genomes for the page;
+the hosted config carries all eight. The assemblies and their gene tracks come
+from the hub configs unchanged, and a lane finds its gene models through the
+session, so the track is the one addition to the hub entries. A hub entry is
+what `jbrowse add-assembly` writes for a genome of your own:
+
+```json addassembly
+{
+  "name": "myGenome",
+  "uri": "myGenome.fa.gz"
+}
+```
 
 ```json addtrack
 {
