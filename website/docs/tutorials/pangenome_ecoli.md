@@ -110,6 +110,23 @@ Under singularity,
 `singularity exec --bind "$PWD":/data --pwd /data docker://<image>` replaces the
 wrapper body.
 
+## Load the genomes
+
+Every projection is a track on a strain's assembly, and each strain's FASTA
+carries one sequence named `chr`, the refName the graph's paths are renamed to
+below. We'll add K12, the reference the projections land on, from a
+bgzip-compressed, indexed FASTA:
+
+```json addassembly
+{
+  "name": "K12",
+  "uri": "https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz"
+}
+```
+
+Sakai, CFT073, NCTC86 and IAI39 load the same way, one assembly per strain,
+named as in the `assemblyNames` of the tracks below.
+
 ## Synteny projection
 
 pggb's first step is a wfmash all-vs-all alignment, which JBrowse reads as a

@@ -155,6 +155,14 @@ One run produces everything the sections below use:
   haplotypes carry
 - `mc/ecoli.viz/chr.full.viz.png`: the odgi 1D graph raster
 
+## Load the genomes
+
+Every projection is a track on a strain's assembly, and each strain's FASTA
+carries one sequence named `chr`. The
+[pggb tutorial](/docs/tutorials/pangenome_ecoli#load-the-genomes) loads K12 and
+the other four strains, which this build shares, so the tracks below name the
+same five assemblies.
+
 ## All-vs-all synteny projection
 
 [`halSynteny`](https://github.com/ComparativeGenomicsToolkit/hal) reads the
@@ -385,10 +393,22 @@ in_cactus vg surject -x /data/mc/ecoli.d2.gbz -b -p K12#0#chr \
   -N KTa004 -R KTa004 /data/mapped.gam > mapped.raw.bam
 ```
 
-Rename the surjected path to the assembly's refName in the header, drop the
-unmapped reads, sort and index; the [build script](#reproduce-it-end-to-end)
-does those `samtools` steps and subsamples the reads. The result loads as an
-ordinary alignments track:
+The BAM's one reference sequence is the PanSN path name, which matches no
+assembly. Rename it to the assembly's refName (`chr`) in the header, drop the
+unmapped reads, then sort and index:
+
+<!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
+
+```bash
+samtools view -H mapped.raw.bam | sed 's|SN:K12#0#chr|SN:chr|' > reads_hdr.sam
+samtools reheader reads_hdr.sam mapped.raw.bam > reads_reheader.bam
+samtools view -b -F 4 reads_reheader.bam > reads_mapped.bam
+samtools sort -o ecoli_cactus_reads.bam reads_mapped.bam
+samtools index ecoli_cactus_reads.bam
+```
+
+The [build script](#reproduce-it-end-to-end) also subsamples the reads. The
+result loads as an ordinary alignments track:
 
 ```json addtrack
 {
@@ -433,9 +453,19 @@ bubble, the allele inventory and `ecoli_cactus_sv.config.json`, whose graph
 track names the tier under `coarse`. Zoomed out past that track's handover, the
 graph track cuts the tier, so the whole K12 chromosome draws as a graph.
 
-The figures below draw the base-level graph, where every SNP is a bubble. The
-[build script](#reproduce-it-end-to-end) indexes it by walking its path lines,
-and our hosted copy of that index loads as one `GraphTrack` pointed at the
+The figures below draw the base-level graph, where every SNP is a bubble. That
+graph is a plain GFA with no rGFA tags, so the same script indexes it by walking
+the reference's path lines when it gets `--reference`:
+
+```bash
+bash build_pangenome_graph.sh mc/ecoli.gfa.gz ecoli_cactus --reference K12
+```
+
+Without `--snarls` the script writes the segments and links only, which is all
+the graph track below needs. The
+[pggb tutorial](/docs/tutorials/pangenome_ecoli#opening-the-graph-in-the-graph-genome-view)
+and [](/docs/tutorials/pangenome_prepare_graph) show where a bubble file comes
+from. Our hosted copy of the index loads as one `GraphTrack` pointed at the
 shared prefix:
 
 ```json addtrack
