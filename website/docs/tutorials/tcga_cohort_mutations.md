@@ -82,13 +82,15 @@ when the track loads.
 The assembly comes first. The hosted FASTA calls its contigs bare (`1`) while
 the VCF uses `chr1`, so pass the alias file and both resolve.
 
-```bash
-export OUT=/var/www/html/jbrowse2
-
-jbrowse add-assembly https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
-  --name hg38 --type bgzipFasta \
-  --refNameAliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
-  --out $OUT
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
 ```
 
 The cohort is a `VariantTrack` whose adapter reads the clinical TSV, shown in

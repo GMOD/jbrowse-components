@@ -59,13 +59,15 @@ tumor/normal ratio and colors them.
 Add the assembly first. The hosted FASTA names its contigs `1`, `2`, ... and the
 BED uses `chr1`, so pass the alias file to map one onto the other.
 
-```bash
-export OUT=/var/www/html/jbrowse2
-
-jbrowse add-assembly https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
-  --name hg38 --type bgzipFasta \
-  --refNameAliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
-  --out $OUT
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
 ```
 
 The segments themselves are a `FeatureTrack` whose

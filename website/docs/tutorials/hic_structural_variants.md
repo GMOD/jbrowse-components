@@ -67,6 +67,23 @@ bp-per-pixel, which over a wide window can render the triangle as red speckle.
 coarser bins; if a Hi-C track looks like noise, change it first. See
 [adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution).
 
+## The genome
+
+ENCODE aligned both Hi-C libraries to GRCh38, so we load that assembly before
+adding any track. The track configs are under
+[Configuring the Hi-C tracks](#configuring-the-hi-c-tracks).
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
 ## Two chromosomes in one view
 
 The matrix is fetched for every pair of displayed regions. Open a second region

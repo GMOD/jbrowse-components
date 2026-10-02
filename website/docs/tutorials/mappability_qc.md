@@ -71,7 +71,9 @@ means the chosen position is about as likely wrong as right.
 
 Open the hosted hg38 config at
 [genomes.jbrowse.org](https://genomes.jbrowse.org) and turn on these tracks from
-the track selector:
+the track selector. The lanes are plain bigWig and bigBed files, so the configs
+below add them to any JBrowse with the hg38 assembly loaded. UCSC publishes the
+mappability and problematic-region lanes for hg38 only:
 
 - **Multi-read mappability - Umap M100**, the fraction of overlapping 100-mers
   at each position that are unique in the genome, computed from the reference
@@ -88,7 +90,55 @@ the track selector:
   its benchmark.
 - **Long-read SVs - 1KG Vienna ONT SVs**, the long-read callset.
 
-Then add the NA12878 reads, colored by mapping quality:
+The Umap config carries the **Minimum** score mode and the 0 to 1 axis:
+
+```json addtrack
+{
+  "trackId": "hg38-umap100Quantitative",
+  "name": "Multi-read mappability - Umap M100",
+  "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw",
+  "assemblyNames": ["hg38"],
+  "displays": [
+    {
+      "type": "LinearWiggleDisplay",
+      "displayId": "hg38-umap100Quantitative-LinearWiggleDisplay",
+      "summaryScoreMode": "min",
+      "scales": { "y": { "domainMin": 0, "domainMax": 1 } }
+    }
+  ]
+}
+```
+
+```json addtrack
+{
+  "trackId": "hg38-gnomad3MeanCoverage",
+  "name": "gnomAD v3 Genome Coverage - Mean Coverage",
+  "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gnomAD/coverage/v3-genome/gnomad.coverage.mean.bw",
+  "assemblyNames": ["hg38"]
+}
+```
+
+```json addtrack
+{
+  "trackId": "hg38-alllowmapandsegdupregions",
+  "name": "GIAB Problematic Regions - LowMap+SegDup",
+  "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/GIAB/alllowmapandsegdupregions.bb",
+  "assemblyNames": ["hg38"]
+}
+```
+
+```json addtrack
+{
+  "trackId": "hg38-lrSv1kgOnt",
+  "name": "Long-read SVs - 1KG Vienna ONT SVs",
+  "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/lrSv/1kgOnt.bb",
+  "assemblyNames": ["hg38"]
+}
+```
+
+Then add the NA12878 reads, colored by mapping quality. The CRAM needs its
+`.crai` beside it and decodes against the hg38 assembly; for your own sample,
+swap the `uri`:
 
 ```json addtrack
 {
@@ -131,7 +181,33 @@ tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz \
   tchr5:69200000-71700000
 ```
 
-Drawn as a synteny view between the two assemblies, each chain is a ribbon.
+Drawn as a synteny view between the two assemblies, each chain is a ribbon. The
+hosted hg38 config already carries the track and loads hs1 with it. On another
+JBrowse, load the hs1 assembly and the chain file, which names the genome it
+lifts to as its query:
+
+```json addassembly
+{
+  "name": "hs1",
+  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit"
+}
+```
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "hg38_to_hs1_liftOver",
+  "name": "hg38 to Human (hs1) liftOver",
+  "assemblyNames": ["hs1", "hg38"],
+  "adapter": {
+    "type": "PairwiseIndexedPAFAdapter",
+    "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz",
+    "csi": true,
+    "queryAssembly": "hs1",
+    "targetAssembly": "hg38"
+  }
+}
+```
 
 <Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on that assembly's SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
 
