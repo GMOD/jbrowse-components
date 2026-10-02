@@ -418,6 +418,10 @@ inverted region, most near the breakpoints, where the suppressed recombination
 is strongest. Toward the centromere past the inversion, where the arrangements
 recombine freely, the ratio sits at zero.
 
+Differentiation decays gradually outside the breakpoints
+([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)); the
+extent at the top of the frame marks the published breakpoints.
+
 ## Reproduce it end to end
 
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
