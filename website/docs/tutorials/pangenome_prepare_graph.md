@@ -161,7 +161,7 @@ graph back with **Display types → Graph**.
 A node's right-click menu offers **Open in** the haplotype named in its rGFA id,
 such as `NA20809#2#CM094351.1`, when the session holds an assembly named or
 aliased `sample#haplotype`, here `NA20809#2`.
-[Browsing the graph](/docs/tutorials/pangenome_hprc#check-it-on-the-haplotype)
+[The HPRC tutorial](/docs/tutorials/pangenome_hprc#check-it-on-the-haplotype)
 takes that route.
 
 ## Checking the index against the graph
@@ -243,8 +243,9 @@ widely carried:
 <Figure caption="The carriage ramp on the E. coli pggb graph over an IS5 insertion in K12. The segment K12 alone walks is red; the segments all five strains share are grey." src="/img/pangenome/prepare_graph_carriage.png" links="Open this view=pangenome/prepare_graph_carriage" />
 
 Carriage is per haplotype (`HG002.1`), so a diploid sample's two copies count
-separately. [Allele carriers](/docs/tutorials/pangenome_hprc_carriers) reads
-HPRC's published carriage file.
+separately.
+[Snarl-level carriage](/docs/tutorials/pangenome_hprc#snarl-level-carriage)
+reads HPRC's published carriage file.
 
 ## Haplotype walks: a gbz-base database
 
@@ -350,7 +351,6 @@ bash build_hprc_gbz_index.sh out
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)
-- [](/docs/tutorials/pangenome_hprc_carriers)
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)

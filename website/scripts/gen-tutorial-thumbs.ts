@@ -447,11 +447,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.05, 0.95],
   },
   pangenome_hprc: {
-    // The C4 window force-directed with its backbone, allele and bubble
-    // labelled, the graph track only.
-    src: 'pangenome/hprc_graph_anatomy.png',
-    band: [0.4, 0.9],
-    xband: [0.05, 0.95],
+    // The deletion band running down from the genes, through the rank-colored
+    // segments, into the 464-haplotype matrix, which is the question the page
+    // ends on. Not a force drawing, which the repeats card already is. Stops
+    // above the graph pane because the arrow and the callout into it are
+    // hand-added paint.
+    src: 'pangenome/hprc_graph_vs_callset.png',
+    band: [0.11, 0.51],
   },
   pangenome_hprc_repeats: {
     // The KIV-2 window force-directed with its bubbles haloed: the knot of
@@ -474,15 +476,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'pangenome/hprc_gbz_cfhr_lanes.png',
     band: [0.34, 0.95],
     position: 'left',
-  },
-  pangenome_hprc_carriers: {
-    // The deletion band running down from the genes, through the rank-colored
-    // segments, into the 464-haplotype matrix, which is the question this half
-    // answers. Deliberately not a force drawing, which two other HPRC cards are.
-    // Stops above the graph pane because the arrow and the callout into it are
-    // hand-added paint.
-    src: 'pangenome/hprc_graph_vs_callset.png',
-    band: [0.11, 0.51],
   },
   // The HAL projected onto K12 as a MAF: the coverage band and one colored row
   // per strain, under the K12 gene lane. It used to be this tutorial's variant

@@ -696,7 +696,6 @@ per-strain route when you have the assemblies.
 - [](/docs/user_guides/alignments_track)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_hprc)
-- [](/docs/tutorials/pangenome_hprc_carriers)
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cactus)

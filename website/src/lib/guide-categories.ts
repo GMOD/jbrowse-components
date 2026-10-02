@@ -117,7 +117,6 @@ export const TUTORIAL_ORDER = [
   'pangenome_cattle',
   'pangenome_prepare_graph',
   'pangenome_hprc',
-  'pangenome_hprc_carriers',
   'pangenome_hprc_haplotypes',
   'pangenome_hprc_repeats',
   'sv_multisamples',

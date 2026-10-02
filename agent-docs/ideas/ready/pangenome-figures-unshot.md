@@ -29,7 +29,7 @@ the release-2 files, and why CHM13 is the only donor worth loading.
   and a clean 0 → 247,631 presence/absence over an olfactory-receptor cluster. The
   pangenome's whole claim, in one window, at a segment count that draws instantly.
 - **Allele frequency on the graph-versus-callset figure.** `pgbi.vcf.gz` is hosted
-  and `pangenome_hprc_carriers.md` teaches it; what `hprc_graph_vs_callset`
+  and `pangenome_hprc.md` teaches it; what `hprc_graph_vs_callset`
   (`website/scripts/specs/graph-hprc.ts`) still lacks is its `AF` joined onto the
   allele inventory, so both panels colour by frequency: this 100 kb insertion is
   carried by 41% of 462 haplotypes, that one by 0.2%.

@@ -197,7 +197,7 @@ const HPRC_C4_MARKED = 'chr6:32,005,691-32,011,057'
 // the graph figures load carries the graph, the callset and the genes, and the
 // MAF is the one product of release 2 it has no track for.
 const HPRC_MAF_TRACK = pageTrack(
-  'tutorials/pangenome_hprc_carriers.md',
+  'tutorials/pangenome_hprc.md',
   'hprc_v2_0_mc_grch38',
 )
 

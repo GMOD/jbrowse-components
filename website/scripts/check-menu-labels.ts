@@ -99,7 +99,6 @@ const EXTERNAL_PLUGIN_PAGES = new Map([
   ['user_guides/graph_genome_view.md', GRAPH_SRC],
   ['tutorials/pangenome_ecoli.md', GRAPH_SRC],
   ['tutorials/pangenome_hprc.md', GRAPH_SRC],
-  ['tutorials/pangenome_hprc_carriers.md', GRAPH_SRC],
   ['tutorials/pangenome_hprc_haplotypes.md', GRAPH_SRC],
   ['tutorials/pangenome_hprc_repeats.md', GRAPH_SRC],
   ['tutorials/pangenome_cactus.md', GRAPH_SRC],

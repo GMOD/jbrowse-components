@@ -1,10 +1,10 @@
 ---
-title: 'Pangenome (HPRC) part 3: haplotypes against each other'
-sidebar_label: Pangenome (HPRC 3, haplotypes against each other)
+title: 'Pangenome (HPRC) part 2: haplotypes against each other'
+sidebar_label: Pangenome (HPRC 2, haplotypes against each other)
 description:
   Draw HPRC haplotypes as lanes in assembly coordinates, aligned to each other
-  by the release's pangenome graph, at a CFH deletion, a C4 duplication and the
-  amylase copy-number array
+  by the release's pangenome graph, at a CFH deletion, a C4 duplication, the
+  amylase copy-number array and an inversion at 1q21.1
 guide_category: Tutorials
 tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
@@ -18,6 +18,7 @@ we:
 - at CFH, find haplotypes missing two genes
 - at C4, find two haplotypes sharing a copy GRCh38 lacks
 - at amylase, count gene copies and check them against Yilmaz et al. (2024)
+- at 1q21.1, tell an inversion the graph flags from an inverted paralog
 
 :::caution Experimental
 
@@ -43,6 +44,12 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
   https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
 - the assemblies:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv
+- the CAT gene annotation index, one GFF3 per haplotype:
+  https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
+- the release's all-vs-GRCh38 alignment, sliced for the inversion figure:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/impg/pafs/hprc465vsgrch38.aln.paf.gz
+- our bubble projections of the graph, with the exact build recorded beside
+  them: https://jbrowse.org/demos/hprc/README.txt
 
 ## CFH: a two-gene deletion
 
@@ -89,6 +96,28 @@ haplotypes land on H1a, H2A0, H3r, H5 and H7:
 | 94 kb longer          | 5             | H5        |
 | 188 kb longer         | 7             | H7        |
 | 282 kb longer         | 9             | H9        |
+
+## Inversions
+
+An inversion is the same reference sequence, walked backwards. `gfatools bubble`
+flags it as an `inversion` boolean when a bubble's paths disagree about
+orientation. Press **graph** on the HPRC page's HLA / MHC row, open **Filter
+by... → Edit filters...** on the bubbles lane, and enter:
+
+```text
+jexl:feature.inversion
+```
+
+Type `chr1:144,260,000-144,610,000`, the 1q21.1 locus, where the lane flags one
+bubble. The flag fits a polymorphic inversion and an inverted paralog in a
+segmental duplication equally, and the graph draws the breakpoints as two
+deletion arcs because its edges carry no orientation. The haplotype alignments
+tell the two apart. The figure below slices a carrier and a non-carrier out of
+HPRC's all-vs-GRCh38 PAF, each with its CAT annotation
+([Reproduce it end to end](#reproduce-it-end-to-end) builds it), and the hg38
+row between them agrees with the non-carrier.
+
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. The pink ribbons are each haplotype's alignment to hg38, and a ribbon that crosses itself is an inversion. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. The boxed pair on each row is PPIAL4F and PPIAL4E, in opposite orders on the two haplotypes." src="/img/pangenome/hprc_inversion.png" />
 
 ## Reproduce it end to end
 
@@ -226,10 +255,22 @@ and opens at the CFH deletion, one lane per haplotype under GRCh38.
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-a-gbz-base-database)
 builds the gbz-base database for a graph of your own.
 
+A separate script builds the [inversion figure](#inversions) from release 2's
+published all-vs-GRCh38 PAF:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_inversion_synteny.sh
+bash build_hprc_inversion_synteny.sh
+```
+
+[`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
+keeps the haplotypes whose alignments reverse the block while the flanks stay
+forward, then slices out one haplotype of each kind: the alignment, the contig
+length and the CAT genes.
+
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)
-- [](/docs/tutorials/pangenome_hprc_carriers)
 - [](/docs/tutorials/pangenome_hprc_repeats)
 - [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/tutorials/hg002_haplotypes)
@@ -248,5 +289,7 @@ builds the gbz-base database for a graph of your own.
   https://doi.org/10.1126/science.adn0609
 - Li H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics
   (2018). https://doi.org/10.1093/bioinformatics/bty191
+- Li H. [gfatools](https://github.com/lh3/gfatools), whose `bubble` subcommand
+  flags the inversion.
 - [gbz-base](https://github.com/jltsiren/gbz-base), which stores a GBZ as the
   SQLite database a window is range-requested out of.
