@@ -1,9 +1,115 @@
 # website/scripts/videos
 
-One module per topic, assembled by `../video-specs.ts`. What a tour is FOR, how
-it is embedded, framed, pushed and gated is in `website/CLAUDE.md` § Videos.
-Here: the things that go wrong inside a spec's `steps`, each of which cost a
-refilm and none of which the run reports.
+One module per topic, assembled by `../video-specs.ts`. What a tour is FOR and
+how it is embedded is in `website/CLAUDE.md` § Videos.
+
+## Filming
+
+- **`check-video-specs` is the gate over the list and the pages together**, and
+  the rules are in `video-spec-rules.ts` where `videoSpecRules.test.ts` reaches
+  them. It pairs each spec with the embed that plays it in both directions: a
+  spec nothing embeds is filmed and served with nothing playing it, and an embed
+  whose spec was renamed keeps playing while silently losing the live session
+  link. `pnpm video` runs the spec half before it films.
+- **Width is not a per-tour decision, so a spec states only its height.**
+  `VIDEO_FRAME_DEFAULTS` is a full-screen browser on a 1080p display, which is
+  the window a reader has open. Filmed at 1280 instead, every linear view lays
+  out in a column narrower than anyone runs.
+- **A viewport is even on both sides.** The scale filter's `-2` rounds an odd
+  height up, so the spec's frame is a pixel off the clip every reader plays
+  (`annotation_1d` said 1045 and shipped 1046) — and an odd WIDTH fails the
+  encode outright, after the filming. Even and at or under `VIDEO_OUTPUT_WIDTH`
+  makes the finished clip exactly the viewport, which is what the embed reserves
+  its box from: `videoFrames` in `liveLinks.generated.ts`, checked against the
+  published posters by `videoFrames.test.ts`. **So a re-frame needs
+  `pnpm autogen`**, or the page holds a box the wrong shape and the browser
+  letterboxes the clip inside it.
+- **A clip's figure carries an id built from its SPEC NAME**
+  (`video-pangenome-hprc_cluster_callset`), which DocsLayout's jump bar under
+  the h1 links to. So renaming a spec silently breaks any inbound link to that
+  anchor, and nothing checks it — `check-links` only sees anchors a doc itself
+  writes. The bar labels each link with the h2/h3 above the clip, one entry per
+  section, which is why a page running four clips under one heading gets one
+  link.
+- **`videoEmbedsIn` is the one scanner** — `check-video-specs` and
+  `check-figure-refs` both read it, rather than each carrying a pattern. Match
+  what remark-video matches or a tag goes unjudged while it renders: walking
+  lines loses a tag that wraps, and a `[^>]` scan loses one whose caption holds
+  an angle bracket (`<DEL>` is in a caption today). A tag that never closes with
+  `/>` matches nothing in the plugin at all, and the browser lowercases the raw
+  string into a bare `<video>` with no controls and no poster.
+- `static/media/` is gitignored; bytes live in the store (`media.lock`), which
+  `pnpm build` pulls through `figures:pull` **because `rclone sync` deletes**
+  what dist/ does not carry. `pnpm figures:push` publishes it beside the
+  figures; push before committing a `<Video>` or the embed 404s, and
+  `check-figure-refs` is the gate. A clip is three files there — the mp4, the
+  poster and the caption track — sharing one name, so `--filter` selects a clip
+  rather than one of its files.
+- **Size the viewport from the run's own content report**, which names the app's
+  height at the first frame, the last and its tallest in between. A tour grows
+  the app and one frame has to serve every state. The end-of-run summary
+  (`video-report.ts`) collects that per tour and calls out the two directions —
+  `CONTENT TALLER THAN THE FRAME` and `PAGE BACKGROUND UNDER THE APP` — beside
+  `DISPLAYS NOT PAINTED AT THE LAST FRAME` (a poster of a blank track) and
+  `STEPS FILMED WHILE NOTHING HAPPENED` (a wait that wants `cut: true`). None of
+  them fails the run; a clip nothing diffs is one where a run is the only place
+  a mistake is visible at all.
+- **The harness sets the pace.** A caption stays up for its reading time before
+  the next one may replace it, a typed value goes in at a typist's speed, and a
+  value past 32 characters is pasted behind a Ctrl V keycap. So a spec states
+  holds for what it shows, never for what it says.
+- **A step's `say` is a caption track, not just a chip.** `video-captions.ts`
+  times the lines onto the clip and writes a `.vtt` beside the mp4;
+  `videoCaptioned` in `liveLinks.generated.ts` is what makes remark-video hang a
+  `<track>` off the clip, and `videoFrames.test.ts` fails if a tour the site
+  captions has no track in `media.lock`. So **a tour that grows its first `say`
+  has to be re-filmed**, or the page carries a track whose src 404s.
+- **A rubberband names loci, not pixels.** `fromAnchor`/`toAnchor` on a `drag`
+  resolve through the same model the click anchors use, with `band` naming the
+  strip to take the y from (`rubberband_controls` for the scalebar). A measured
+  `from: {x, y}` is correct only at the width it was measured at, which is
+  exactly what a re-frame invalidates.
+- **`cut` on a step takes the camera off for its wait.** Put it on the wait, not
+  on the click that starts it, or the click is off camera too.
+- **A tour that films a track being ADDED starts from a config without that
+  track**, so the lane it adds is the only one of its kind on screen. Its live
+  link is then the better one of the two kinds: a figure's opens the state it
+  shows, a tour's opens the state it starts in.
+- **What the form is filled from has to be the page's own fence, and
+  `check-paste-configs` is the gate.** The graph tours read every field they
+  type off the fence's JSON; a film is the half nobody re-reads, so a reworded
+  slot drifts one way silently.
+- **`opensTab` follows a launcher into a new tab**, and the camera moves with
+  it. For a route that leaves the app: another site hands the reader a session
+  through a `target="_blank"` link, so the result is a second page rather than a
+  navigation. It implies a cut. A label rendered in caps by CSS is not the
+  string a `text` step matches — read the DOM, and put the caps in the `say`.
+- **The poster is the middle of the payoff line**, not the last frame: a hover
+  payoff is gone once the tail parks the pointer.
+- **The last repaint of a run of them does not reach the file.** Chrome sends
+  screencast frames while the page paints and stops when it goes quiet, and the
+  frames arrive a couple behind — so whatever a clip is doing at the very end is
+  in the mp4 only up to about four fifths of the way through, and the tail then
+  holds THAT frame for its whole length. It is why `parkCursor` hides the drawn
+  cursor in one step rather than gliding it out of the viewport: the glide
+  version froze the arrow near the bottom edge of every clip that ends at its
+  own last frame, which is the frame the poster comes from. Anything that has to
+  be true in the last frame has to be true well before it.
+- **Re-navigate after the drawer closes.** A widget takes ~400 px off the linear
+  view while it is open and an LGV keeps its bp-per-pixel across a resize, so
+  the window standing afterwards is wider than the one the session opened at.
+  Anything reading `dynamicBlocks` (a subgraph launch) then cuts a region the
+  spec never named, and it fails late, at whatever the next step anchors by id.
+- **A tour stays on light tracks, and light is about VOLUME.** A deep human ONT
+  lane under swiftshader blocks the main thread per animated frame until the
+  click's own round trip throws, which is where this rule came from. It is not
+  the display type: `epigenomics/bisulfite_contexts` films a per-read pileup
+  headless with nothing starved, over 14 kb of Illumina WGBS on a plant genome.
+  Measure the tour you have; `--headed` runs on the real GPU when it needs to.
+
+## Inside a spec's `steps`
+
+Each of these cost a refilm, and the run reports none of them.
 
 - **A radio menu item leaves its menu standing over the result it produced.**
   The film fails when one is still open at the payoff, but nothing says so while
