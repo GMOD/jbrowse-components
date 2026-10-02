@@ -26,9 +26,8 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export type { SimplifiedVariantFeature }
 
-// What the paint loops reported, as the three legend booleans. One place for
-// both modes, so the regular display's per-region merge and the matrix's single
-// pass cannot answer differently.
+// What the paint loops reported, as the three legend booleans, for the genomic
+// layout's per-region merge and the columns layout's single pass alike.
 function paintedLegendFlags(passes: { paintedCategories: number }[]) {
   let mask = 0
   for (const pass of passes) {

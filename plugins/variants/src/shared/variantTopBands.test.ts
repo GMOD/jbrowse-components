@@ -141,7 +141,7 @@ describe('the band comes out of the rows, not out of the track', () => {
   })
 })
 
-describe('the lane is the regular display alone', () => {
+describe('the lane is the genomic layout alone', () => {
   // The base declares the geometry (every display's rows sit under whatever is
   // stacked on them) but the slots live on the display that can paint one. A
   // matrix that reserved a lane would take the height from its rows and leave

@@ -28,7 +28,7 @@ function clustered<T extends Clusterable>(display: T) {
   return display
 }
 
-test('the regular display binds the wheel to a panel holding the sidebar', () => {
+test('the genomic layout binds the wheel to a panel holding the sidebar', () => {
   const { display } = createTestEnvironment().createDisplay()
   render(<VariantDisplayComponent model={clustered(display)} />)
 
@@ -37,7 +37,7 @@ test('the regular display binds the wheel to a panel holding the sidebar', () =>
   expect(panel.querySelector('[data-gesture-owner]')).not.toBeNull()
 })
 
-test('the matrix display binds the wheel to a panel holding the sidebar', () => {
+test('the columns layout binds the wheel to a panel holding the sidebar', () => {
   const { display } = createMatrixTestEnvironment().createDisplay()
   render(<VariantMatrixDisplayComponent model={clustered(display)} />)
 

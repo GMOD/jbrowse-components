@@ -309,10 +309,9 @@ test('a site with no ALT alleles reports an empty alt list', () => {
   expect(result.featureData[0]!.alt).toEqual([])
 })
 
-// The matrix's phase-set branch shares `makePhaseSetStyler` with the regular
-// display's, and had no coverage of its own before that extraction — so a change
-// to the shared classification could break exactly one of the two displays in
-// silence. `isRef` is the half no color assertion can see: it files the cell in
+// The columns layout's phase-set branch shares `makePhaseSetStyler` with the
+// genomic one, so a change to the shared classification could break one layout
+// in silence. `isRef` is the half no color assertion can see: it files the cell in
 // the reference bucket, which is what makes alt paint over ref.
 describe('phase-set coloring', () => {
   const sources: ProcessedSource[] = [

@@ -7,9 +7,8 @@ import {
 // are saturated fills edge to edge and swallow a fainter line.
 export const SEPARATOR_OPACITY = 0.4
 
-// The vertical band a row's blocks occupy, shared by the Canvas2D painter, the
-// indel-glyph overlay and the hover box so none of them can inset a row
-// differently from where the blocks land. The height is floored at
+// The vertical band `spanMark` paints a row's blocks in, for the indel-glyph
+// overlay and the hit test's row window. The height is floored at
 // MIN_DRAWN_ROW_PX: below a pixel a rect stops being drawable, so rows would
 // thin out and then silently drop out as they got denser.
 export function rowBand(rowHeight: number, rowProportion: number) {

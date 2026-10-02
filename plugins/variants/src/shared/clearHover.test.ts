@@ -8,9 +8,7 @@ import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEn
 // sample's genotype while the cursor sits over another's.
 //
 // `scrollTop` is the worst of the three here: the rows move but the tooltip is
-// placed from the pointer, so the two visibly separate. Tested on the base
-// model, via the regular display's harness, because both multi-sample variant
-// displays get the hover state and the fix from it.
+// placed from the pointer, so the two visibly separate.
 //
 // See `installClearHoverOnViewportChange` and ARCHITECTURE.md "Don't **store** a
 // hover without clearing it on viewport change".

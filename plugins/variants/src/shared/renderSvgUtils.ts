@@ -14,7 +14,7 @@ export interface RenderSvgBaseModel extends LgvSvgExportable, VariantRowsModel {
   id: string
   configuration?: { displayId?: string }
   cellData: CellDataResult | undefined
-  // Px the rows sit below: the variant lane plus the matrix display's
+  // Px the rows sit below: the variant lane plus the columns layout's
   // connector-line zone. See shared/variantTopBands.ts.
   rowsTopOffset: number
   topBands: VariantTopBands

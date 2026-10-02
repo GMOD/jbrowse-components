@@ -22,10 +22,9 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // One connector, in viewport pixels (0 = the view's left edge): `mx` is the
 // matrix-column center at the bottom of the zone, `gx` the genomic position on
 // the ruler at the top, `label` the tooltip shown on hover (SNP id / feature
-// name; a variant with neither gets none). Each display derives these on its
-// model — the column axis differs (feature index vs the GPU-transformed LD
-// triangle) — but both land in this one frame, so everything below, and the
-// SVG export, is shared and can't drift apart.
+// name; a variant with neither gets none). The columns layout and the LD
+// display derive these on their models — the column axis differs (feature
+// index vs the GPU-transformed LD triangle) — but both land in this one frame.
 export interface ConnectorCoord {
   mx: number
   gx: number
@@ -220,7 +219,7 @@ export const ConnectorZoneResizeHandle = observer(
 
 /**
  * The lines tying each matrix column to its genomic position, shared by the LD
- * and multi-sample-matrix displays: the faint field, the hovered line and its
+ * display and the multi-sample display's columns layout: the faint field, the hovered line and its
  * tooltip, an optional externally driven `highlight` (the matrix crosshair
  * column), and the drag handle that resizes the zone.
  */

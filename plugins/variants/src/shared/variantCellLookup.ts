@@ -1,8 +1,6 @@
-// The cell arrays a (feature, row) -> cell lookup needs. A structural subset of
-// a placed payload, so the regular display's `Placed<ShippedRegionData>` and the
-// matrix display's placed payload both satisfy it; the matrix packs its feature
-// indices as floats for its shader's column attribute, the regular display as
-// integers.
+// The cell arrays a (feature, row) -> cell lookup needs: a structural subset of
+// either layout's placed payload. Columns packs its feature indices as floats
+// for its shader's column attribute, genomic as integers.
 //
 // Rows here are the **worker's** numbering, not the screen's: the arrays are
 // sorted by `(featureIndex, workerRow)` and the binary search below depends on

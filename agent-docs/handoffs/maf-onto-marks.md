@@ -22,8 +22,9 @@ file pointers to re-read.
   and alignments-core's `coverageBandMarks`, all drawn by `createMarkBackend`.
   What is MAF's own is the main-thread packers (`mafChannels.ts`,
   `identity.ts`, `codons.ts`, `summarySpans.ts`, `drawSourceChrom.ts`,
-  `conservationBand.ts`), seven Canvas2D overlays under
-  `LinearMafDisplay/components/rendering`, the hit tests (`findRowHover.ts`,
+  `conservationBand.ts`), seven Canvas2D overlays
+  (`LinearMafDisplay/components/*Overlay.tsx`, painting through
+  `LinearMafRenderer/rendering/`), the hit tests (`findRowHover.ts`,
   `mafHitTest.ts`) and the row and band geometry in `stateModel.ts`. About
   5,300 non-test lines draw; 6,200 fetch and parse; 3,700 are model, config
   and menus.

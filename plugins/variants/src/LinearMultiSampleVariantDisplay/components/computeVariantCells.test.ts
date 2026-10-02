@@ -740,7 +740,7 @@ test('a site with no ALT alleles reports an empty alt list', () => {
 // interned genotypeCodes), not a log of what got painted. Under the default
 // `referenceDrawingMode: 'skip'` a hom-ref call paints nothing, and keying the
 // map off the painted cells made every hom-ref row indistinguishable from a
-// no-call to `sortSourcesAroundVariant` — while the matrix display, which
+// no-call to `sortSourcesAroundVariant` — while the columns layout, which
 // always paints ref, sorted the same data differently.
 describe('featureGenotypeMap records every genotype, not only painted ones', () => {
   const sources: ProcessedSource[] = [
@@ -781,7 +781,7 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
 
   // The record is the adapter's whole genotype map, shipped by reference — not
   // a copy assembled from the rows being drawn. That is what makes it the same
-  // object the matrix display ships, so the two cannot disagree, and it is why
+  // object the columns layout ships, so the two cannot disagree, and it is why
   // narrowing the rows (a subtree filter) cannot quietly narrow the record the
   // anchored sort reads.
   test('a sample the display is not drawing still has its genotype recorded', () => {

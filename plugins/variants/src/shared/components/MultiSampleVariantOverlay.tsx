@@ -9,7 +9,7 @@ import { SEPARATOR_OPACITY } from '../constants.ts'
 
 import type { VariantRowsModel } from './types.ts'
 
-// What the multi-sample variant displays float over their canvas: the row
+// What the multi-sample variant display floats over its canvas: the row
 // labels and the row separators. On-screen counterpart of `SvgVariantOverlay`,
 // which composes the same two for the export, the labels through
 // `SvgTreeSidebar`. The color key is the chrome's, off `colorScales`.

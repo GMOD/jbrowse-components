@@ -4,10 +4,8 @@ import { makeSimpleAltString } from '../VcfFeature/util.ts'
 
 import type { VariantFeatureInfo } from './types.ts'
 
-// The tooltip-field contract shared by both multi-sample variant displays. Both
-// hit-tests produce these identical fields; each display pairs them with a
-// display-specific carrier (`featureInfo`/`cell` vs `featureData`) as a sibling
-// so building them here keeps the two displays from drifting. The index
+// The tooltip fields both layouts' hit tests produce, each beside its own
+// carrier (`featureInfo`/`cell` vs `featureData`). The index
 // signature reflects that these records are open — the model merges sample
 // metadata attributes into them (`{...source, ...hoveredFeature}`) before the
 // tooltip table renders — and lets them satisfy the hook's/model's
@@ -31,8 +29,7 @@ export interface VariantTooltipFields {
 // so `hoverVariantSurface` skips redundant setHoveredFeature calls. The region
 // term matters when overlapping displayed regions show two copies of one
 // record: without it, sliding onto the second copy deduped away the `onHover`
-// that moves the highlight box. Shared so both displays key hovers identically,
-// and typed wider than the fields so the model's own hover slot can be keyed
+// that moves the highlight box. Typed wider than the fields so the model's own hover slot can be keyed
 // too. A variant-lane hover names no sample and carries no genotype, so its key
 // is the record's id plus the region, which is exactly the identity that lane
 // needs.

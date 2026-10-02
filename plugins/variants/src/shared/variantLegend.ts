@@ -346,9 +346,8 @@ export function getVariantColorScales({
   // The order the grouping key lists its values in: the bands' when the facet
   // reads `colorBy`, else the palette's deal.
   groupOrder?: readonly string[]
-  // Whether the display is drawing insertion markers in this window (the
-  // matrix display never does, and the regular one only where a marker outgrows
-  // its cell).
+  // Whether the display is drawing insertion markers in this window (columns
+  // never does, genomic only where a marker outgrows its cell).
   insertionMarkers?: boolean
 }): ColorScale[] {
   const groupEntries = getSampleGroupEntries(colorBy, sources, groupOrder)

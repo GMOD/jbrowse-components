@@ -13,14 +13,14 @@ import { createDisplayTestEnvironment } from './testEnv.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../LinearMultiSampleVariantDisplay/model.ts'
 
 // The jexl-filter contract (`JexlFilterModel`), asserted on the
-// multi-sample variant displays. They used to implement one half of it, and the
+// multi-sample variant display. It used to implement one half of it, and the
 // failures were silent:
 //
-// - the multi-sample displays declared an MST property literally named
-//   `jexlFilters`, which shadowed the config slot of that name they inherited
+// - the display declared an MST property literally named
+//   `jexlFilters`, which shadowed the config slot of that name it inherited
 //   from `baseLinearDisplayConfigSchema`, so a track config declaring filters
 //   was read by nothing;
-// - they did not prefix, so a bare filter reached `stringToJexlExpression`,
+// - it did not prefix, so a bare filter reached `stringToJexlExpression`,
 //   which throws. The slot now refuses one.
 //
 // The LD display was the third participant until it stopped reading genotypes:

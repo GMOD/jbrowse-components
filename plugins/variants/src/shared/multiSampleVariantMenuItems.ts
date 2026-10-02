@@ -111,9 +111,9 @@ function rowColorItems(self: MultiSampleVariantBaseModel): MenuItem[] {
   ]
 }
 
-// Items for the "Show..." submenu — the toggles both displays share. Extended
-// by subclasses via super-capture (the regular display adds its variant lane
-// rows); the subtree filter has its own entry via `clusteringMenuItem`.
+// Items for the "Show..." submenu. The display extends them via super-capture
+// with its variant lane rows; the subtree filter has its own entry via
+// `clusteringMenuItem`.
 export function variantShowSubmenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {
@@ -459,8 +459,7 @@ export function variantContextMenuItems(
             self.selectFeature(feat)
           },
         },
-        // The same label the multi-row painting's menu uses for the same
-        // row, so the two displays don't offer one action under two names
+        // The multi-row painting's label for the same row
         {
           label: 'Copy location',
           icon: ContentCopyIcon,

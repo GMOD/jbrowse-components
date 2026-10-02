@@ -544,8 +544,8 @@ describe('getVariantColorScales insertion marker', () => {
     sources: undefined,
   }
 
-  // The display answers whether a marker is drawn — the matrix never, the
-  // regular display only where one outgrows its cell. Absent means absent.
+  // The display answers whether a marker is drawn — columns never, genomic
+  // only where one outgrows its cell. Absent means absent.
   test('no section when the display draws no markers', () => {
     expect(getVariantColorScales(base).map(s => s.id)).toEqual(['genotypes'])
   })

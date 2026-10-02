@@ -51,9 +51,8 @@ function readIntFromRange(str: string, start: number, end: number) {
  * is 343ms and 239MB per fetch, against 33ms and 4MB for the two-field range
  * walk here; at 500 samples it is 1686ms and 1.17GB against 113ms and 4MB.
  *
- * Shared by both cell loops rather than written twice: the regular and matrix
- * displays paint the same phase sets from the same records, and a second copy
- * of the absent/malformed rules is how they start disagreeing.
+ * Shared by both cell loops: the two layouts paint the same phase sets from
+ * the same records.
  *
  * GT is deliberately NOT read here. The loops already hold the interned
  * genotype codes, and taking GT from `samples` on one path and from the codes

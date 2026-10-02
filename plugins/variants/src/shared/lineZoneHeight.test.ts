@@ -32,8 +32,8 @@ function regularDisplay() {
   })
 }
 
-test('only the index-laid-out displays reserve a zone', () => {
-  // the regular display draws each variant at its genomic position, so it has
+test('only the index-laid-out layouts reserve a zone', () => {
+  // the genomic layout draws each variant at its genomic position, so it has
   // no columns to connect and takes the shared slot's 0 default
   expect(regularDisplay().lineZoneHeight).toBe(0)
   // the matrix redeclares that slot to raise the default

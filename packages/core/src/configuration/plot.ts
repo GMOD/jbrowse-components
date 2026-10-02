@@ -23,7 +23,7 @@ export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   transform: 'the steps run over the features before any mark',
   facet: 'one section per value of a field',
   rows: 'the rows: their field or order, labels, focus and tree',
-  rowColor: 'the colour of each row label',
+  rowColor: 'the colour of each row, by a row attribute',
   color: 'the colour',
   baseColor: 'the per-base layer over the reads',
   arcColor: 'the colour of the arcs between mates',

@@ -26,8 +26,8 @@ export type Placed<T> = T & {
  * Rows the display isn't drawing land on `HIDDEN_ROW` rather than being dropped
  * — see that constant for why nothing downstream needs to test for it.
  *
- * Shared by both multi-sample variant displays: the regular display places one
- * of these per region, the matrix places its single payload.
+ * The genomic layout places one of these per region, the columns layout its
+ * single payload.
  */
 export function placeVariantRows<
   T extends { cellRowIndices: Uint32Array; numCells: number },

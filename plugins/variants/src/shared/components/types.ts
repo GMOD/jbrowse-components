@@ -6,7 +6,7 @@ import type { ClusterHierarchyNode, RowBand } from '@jbrowse/tree-sidebar'
 // sidebar geometry the labels are offset by.
 //
 // The viewport is `availableHeight`, not the display `height`: the rows sit
-// below the bands stacked above them (the variant lane, the matrix display's
+// below the bands stacked above them (the variant lane, the columns layout's
 // connector zone), so the band the labels are culled against is what's left
 // after them — same height the canvas under it is drawn at.
 export interface VariantRowsModel {

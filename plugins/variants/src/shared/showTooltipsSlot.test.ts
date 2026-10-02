@@ -68,7 +68,7 @@ describe('showTooltips', () => {
     })
   })
 
-  it('offers the checkbox in the "Show..." submenu of both displays', () => {
+  it('offers the checkbox in the "Show..." submenu of both layouts', () => {
     const { display: matrix } = createMatrixTestEnvironment().createDisplay()
     for (const display of [regularDisplay(), matrix]) {
       const item = tooltipItem(display.trackMenuItems())

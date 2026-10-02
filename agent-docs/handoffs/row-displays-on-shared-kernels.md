@@ -1,6 +1,6 @@
 ---
 name: row-displays-on-shared-kernels
-description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, and the MAF cleanups landed the same day; open are two product calls on row colour, an insertion mark whose trigger is met, per-mark seams, the one-row-model hook seam, variant wire shapes and stale docs."
+description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, and the MAF cleanups landed the same day; open are two product calls on row colour, an insertion mark whose trigger is met, per-mark seams, the one-row-model hook seam and variant wire shapes."
 ---
 
 # Row displays on shared kernels
@@ -133,30 +133,12 @@ captures of volvox, roadmap and bxd.
 - The two cell loops share a two-ended bucket writer
   (`computeVariantCells.ts:117-294`, `computeVariantMatrixCells.ts:86-191`);
   both variant chromes and MAF's mount the same scroll/sidebar/overlay tree.
-  `spatialIndex` is the
-  same `buildSpatialIndex(self.hierarchy)` on five displays, but the mixin owns
-  no `hierarchy`, so it moves with step 5's hook seam.
+  `spatialIndex` is the same `buildSpatialIndex(self.hierarchy)` on five
+  displays, but the mixin owns no `hierarchy`, so it moves with step 5's hook
+  seam.
 - MAF: the coverage band hard-codes a linear scale four times
   (`stateModel.ts:1592-1664`), the shape `scales.y` would replace when its
   trigger comes.
-- Stale comments: about 25 "two displays" comments in variants since the
-  merge; `rowBand.ts:10` names consumers that moved; `activeFilters()` is now
-  `configuredFilters()`.
-
-## Stale docs
-
-- [multi-sample-variant-display](../ideas/collections/multi-sample-variant-display.md)
-  tells GQ masking, pedigree and haplotype blocks to bake into `cellColors`
-  worker-side "where the `color` hue already applies" — false since ADR-203,
-  and it steers them against ADR-202/203.
-- `PLOT_VOCABULARY.rowColor` (`packages/core/src/configuration/plot.ts:26`)
-  says "the colour of each row label"; on multi-row it paints the blocks.
-- grammar-unity calls the colour builder step 2 and wiggle steps 3 and 5
-  against its own numbered list, and its `rowBanding` pointer has drifted to
-  `TreeSidebarMixin.ts:456`.
-- maf-onto-marks names `LinearMafDisplay/components/rendering`, which does not
-  exist; the overlays are `components/*Overlay.tsx`, the painters
-  `LinearMafRenderer/rendering/`.
 
 ## Not proposed
 

@@ -14,10 +14,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // so the table below can drive each independently; the run itself is pinned in
 // LinearMultiSampleVariantDisplay/clusterAutorunGate.test.ts.
 //
-// Driven off a real display through the regular display's harness, because the
-// row is built by the shared `variantTrackMenuItems` both multi-sample variant
-// displays take, and the gates read `sources`, a getter over `adapterSamples`,
-// `layout` and `subtreeFilter` that a stub would have to restate.
+// Driven off a real display because the gates read `sources`, a getter over
+// `adapterSamples`, `layout` and `subtreeFilter` that a stub would have to
+// restate.
 function display(sources?: { name: string }[]) {
   const { display } = createTestEnvironment().createDisplay()
   if (sources) {

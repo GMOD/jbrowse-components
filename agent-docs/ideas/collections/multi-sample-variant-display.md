@@ -19,9 +19,9 @@ escalation the PS-phasing coloring already takes
 slot (default `0` = off = today's path unchanged); when set, a genotype with
 `GQ < threshold` renders as no-call grey instead of its allele color — masking
 chosen over continuous dimming because it reuses the existing no-call rendering
-end-to-end (no shader/legend work). Bake the decision into the existing
-`cellColors` `Uint32Array` worker-side (same place the `color` hue already
-applies) — no new per-cell arrays, no shader change, no bigger payload. It's a
+end-to-end (no shader/legend work). The `color` hue resolves on the main
+thread ([ADR-203](../../architecture-decision-records/adr-203-the-variant-cells-hue-resolves-on-the-main-thread.md)), so a masked cell has to reach it as a no-call rather
+than as a colour the repaint would overwrite. It's a
 **fetch input** (belongs in `rpcProps()`), threaded through
 `VariantRPC/executeVariantCellData.ts` into both `computeVariantCells.ts` and
 `computeVariantMatrixCells.ts`, with a menu entry (presets GQ ≥ 20/≥ 30 + custom
@@ -38,9 +38,9 @@ If the sample metadata carried `father`/`mother`/`affected`, the per-sample geno
 (already fetched) are enough to compute and highlight **de novo mutations**, **compound
 hets**, and **Mendelian-error sites**. Aligns with the existing trio-crossover work.
 Large but high-value; start by defining the pedigree metadata shape (columns in
-`samplesTsv`, or a dedicated pedigree file) and a worker-side per-site classification
-that bakes a highlight color into the existing `cellColors` array (same
-bake-into-color discipline as the `color` hue), rather than a new render pass.
+`samplesTsv`, or a dedicated pedigree file) and a per-site classification the
+worker ships as values and the main thread paints, as
+[ADR-202](../../architecture-decision-records/adr-202-every-mark-colour-resolves-on-the-main-thread.md) has every colour resolve, rather than a new render pass.
 
 **Per-site summary strip.** Carrier count / allele frequency / call-rate per
 site, as a band above the rows. Designed in
@@ -63,9 +63,9 @@ describes no position in particular. `shared/anchoredHaplotypeSort.ts` addresses
 rather than the row order. Per (row, column), compute the id of the set of rows
 identical over a window around that column and paint it with a stable hash color, rows
 staying in whatever order they are in — a crossover then reads as a color change
-mid-row. The plumbing already exists: `computeVariantCells.ts` ships a per-cell
-`cellColors: Uint32Array`, so this is a worker-side computation plus a color mode, not
-new render infrastructure (same bake-into-color discipline as the `color` hue).
+mid-row. The block id is a per-cell value the worker ships beside the cells and
+the main thread paints as a colour mode ([ADR-203](../../architecture-decision-records/adr-203-the-variant-cells-hue-resolves-on-the-main-thread.md)), not new render
+infrastructure.
 
 Three things separate this from HaploBlocker, whose equivalent plot reads as confetti:
 carry colors across columns (greedily match each column's partition to the previous

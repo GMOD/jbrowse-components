@@ -111,7 +111,7 @@ Three of the four object builders exist and are shared: `groupByMenu.ts` for
 (`packages/tree-sidebar/src`) and `scoreMenuItems.ts` for `scales.y`
 (`packages/wiggle-core/src`, through `ScoreScaleMixin`). Colour has none
 across displays: `packages/synteny-core/src/colorByMenuItems.tsx` serves
-multi-way and the circular view alone. Step 2 is that builder, plus the
+multi-way and the circular view alone. Step 1 is that builder, plus the
 displays not yet on the other three moved onto them. Domain actions stay each
 display's own, since they are where its meaning lives. The rest of the
 duplication the census found is cleanup alongside:
@@ -145,7 +145,7 @@ duplication the census found is cleanup alongside:
   coverage band alignments-core draws for both displays reads `scales.y` only
   under alignments.
 - **Bands of rows.** `TreeSidebarMixin`'s `rowBanding` hook
-  (`packages/tree-sidebar/src/TreeSidebarMixin.ts:484`) is overridden by the
+  (`packages/tree-sidebar/src/TreeSidebarMixin.ts`) is overridden by the
   multi-row and variant displays alone. The missing input is a row's
   attributes: `ListedRowSource`
   (`packages/core/src/data_adapters/BaseAdapter/rowSources.ts:7`) carries a
@@ -157,7 +157,7 @@ duplication the census found is cleanup alongside:
   is where what it already reads would travel. The mark display's `rows`
   beside a `facet`, which `rows-beside-facet` warns about, is the same
   capability.
-- **Wiggle.** Step 3. Wiggle still holds its own Slang for every picture
+- **Wiggle.** Step 2. Wiggle still holds its own Slang for every picture
   render-core draws (`plugins/wiggle/src/shared/wiggleMarks.ts:14-18`). On
   2026-09-27 Colin asked why wiggle should not move onto `bar` and `point` and
   said to aim for the ideal implementation
@@ -200,7 +200,7 @@ Colin rather than work:
 - **`scales.y.rules` as a `rule` layer with a constant `y`**, so a reference
   line takes a zoom range and a per-row value.
 - **A `tooltip` channel** naming the fields a hover prints. Wiggle's tooltip,
-  which lists every source's min, mean and max at the cursor, is a step 3 gap
+  which lists every source's min, mean and max at the cursor, is a step 2 gap
   this would answer generally.
 - **Ties fill a nearest-rank quantile**: at 0.95 a segmented copy-number track
   pins 99.5% of its values to one colour, because one value holds the rank. It

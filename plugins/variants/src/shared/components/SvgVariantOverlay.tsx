@@ -6,12 +6,12 @@ import type { RenderSvgBaseModel } from '../renderSvgUtils.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 import type React from 'react'
 
-// The frame both multi-sample variant SVG exports end in: the row content and
+// The frame both multi-sample variant layouts' SVG exports end in: the row content and
 // the tree/label sidebar, inside the export shell's clip. Row content and sidebar are
 // translated below `rowsTopOffset` together — the same offset the on-screen
 // canvas and `TreeSidebar` take — so a display with bands above its rows can't
 // export its rows 20px high while its labels stay put. `variantLane` and
-// `lineZone` draw in those bands (the variant strip, and the matrix display's
+// `lineZone` draw in those bands (the variant strip, and the columns layout's
 // connector lines, in that stacking order — see shared/variantTopBands.ts).
 // The color key is the export shell's, off the same `colorScales` the screen
 // keys by.

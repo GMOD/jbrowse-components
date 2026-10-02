@@ -14,10 +14,9 @@ export interface Source {
 
 export type ProcessedSource = Source & { sampleName: string }
 
-// Per-feature info for hover tooltips and the feature widget. Single-sourced so
-// the regular and matrix displays can't drift: the regular display keys these by
-// feature id (`featureGenotypeMap`), the matrix carries them positionally
-// (`FeatureData`, which adds `featureId`).
+// Per-feature info for hover tooltips and the feature widget. The genomic
+// layout keys these by feature id (`featureGenotypeMap`), the columns layout
+// carries them positionally (`FeatureData`, which adds `featureId`).
 interface VariantFeatureBase {
   ref: string
   alt: string[]

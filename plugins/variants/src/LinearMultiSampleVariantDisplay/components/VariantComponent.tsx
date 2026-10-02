@@ -112,7 +112,7 @@ function getHoveredFeature(
     source.sampleName,
   )
   // No tooltip rather than a crash when the code doesn't decode — the same
-  // answer the matrix display's hit test already gives. A drawn cell implies a
+  // answer the columns layout's hit test already gives. A drawn cell implies a
   // genotype, so this should not happen, but `makeSimpleAltString` would split
   // undefined if it ever did: the hover reads a sample name off the row while
   // the codes are addressed by the payload's own sample order, and a row whose

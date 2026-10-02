@@ -5,7 +5,7 @@ import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEn
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The regular display lays variants out at their genomic positions, so `skip`
+// The genomic layout lays variants out at their genomic positions, so `skip`
 // drops the reference cells in the worker and the whole row reads as one solid
 // grey band that overlapping SVs stand out against. The matrix packs every
 // column with a variant and paints reference cells in REFERENCE_COLOR, which is
@@ -17,7 +17,7 @@ function referenceItem(items: MenuItem[]) {
   return subMenu.find(i => 'label' in i && i.label === 'Show reference alleles')
 }
 
-test('the regular display offers the reference-alleles checkbox', () => {
+test('the genomic layout offers the reference-alleles checkbox', () => {
   const { display } = createTestEnvironment().createDisplay()
   const item = referenceItem(display.trackMenuItems())
   if (!item || !('type' in item) || item.type !== 'checkbox') {
@@ -36,7 +36,7 @@ test('the regular display offers the reference-alleles checkbox', () => {
 // `referenceDrawingMode` still travels between the two in PORTABLE_CONFIG_KEYS,
 // so a mode set here and carried to the matrix is inert there and comes back
 // intact — nothing gets stuck without the row.
-test('the matrix display does not', () => {
+test('the columns layout does not', () => {
   const { display } = createMatrixTestEnvironment().createDisplay()
   expect(referenceItem(display.trackMenuItems())).toBeUndefined()
 })

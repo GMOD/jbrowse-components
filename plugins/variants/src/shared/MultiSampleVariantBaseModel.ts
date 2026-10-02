@@ -1204,7 +1204,7 @@ export default function MultiSampleVariantBaseModelF(
            * genotype (see genotypeCodec.ts).
            *
            * **Rebuilt per pointer frame, not per `cellData` change.** Its only
-           * readers are the two displays' hit tests, which run in React pointer
+           * readers are the two layouts' hit tests, which run in React pointer
            * handlers where nothing is tracked — and MobX discards an unobserved
            * computed's value as it hands it over. So a hover walks every sample in
            * the callset, ~60×/s, on a cohort VCF.
@@ -1587,7 +1587,7 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * Both displays fill the track with rows, so an overlapping track label
+         * Both layouts fill the track with rows, so an overlapping track label
          * would sit on top of a sample's genotypes.
          */
         get prefersOffset() {

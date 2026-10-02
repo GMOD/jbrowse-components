@@ -135,7 +135,7 @@ describe('row height resolution', () => {
     expect(m.effectiveRowHeight).toBe(m.availableHeight / m.nrow)
   })
 
-  // The matrix display reserves a `lineZoneHeight` (20px) for the connector
+  // The columns layout reserves a `lineZoneHeight` (20px) for the connector
   // zone, so rows live in `availableHeight = height - lineZoneHeight`. A pinned
   // height is unaffected by either; only the row count that fits changes.
   it('resizeHeight leaves a pinned rowHeight alone (matrix)', () => {
