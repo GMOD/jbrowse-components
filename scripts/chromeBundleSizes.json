@@ -1,10 +1,10 @@
 {
   "mui": {
-    "bytes": 481759,
+    "bytes": 481758,
     "gzipBytes": 163474
   },
   "plain": {
-    "bytes": 161172,
+    "bytes": 161171,
     "gzipBytes": 56518
   },
   "seam": {

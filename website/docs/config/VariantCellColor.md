@@ -26,7 +26,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 _See the **Config slots** section below for all available configuration fields._
 
-The multi-sample variant displays' `color` setting: the hue of every
+The multi-sample variant display's `color` setting: the hue of every
 alt-carrying genotype cell, which `shadeByDosage` then lightens for a
 heterozygote. Unset, the cells paint the genotype colours. A CSS colour or
 `jexl:` callback in `value` paints every alt cell of a variant; a `field`
