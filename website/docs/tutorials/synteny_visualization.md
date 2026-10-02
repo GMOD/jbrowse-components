@@ -137,6 +137,13 @@ indexed needs only its `uri`; swap in your own file.
 }
 ```
 
+A track with its `assemblyNames` in the wrong order draws an empty band. JBrowse
+checks at view load whether the top row's chromosome names belong to that
+assembly, and a warning in the view header names the remedy when they belong to
+the other row.
+
+<Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the warning icon in the header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
+
 ## Reading the whole genome in a dotplot
 
 **Add → Dotplot view** opens the import form in **Quick start**: pick the track
@@ -175,9 +182,10 @@ A whole strain has about as many genes as its row has pixels, so zoom each row
 in once with its magnifier, then open each strain's gene track, **NCBI RefSeq -
 RefSeq All (GFF)**, from the track selector for that row.
 
-The dotplot shows pieces off the backbone, and one of them is an inversion
-CHC155 carries on its own. To frame it, type one window into each row's search
-box, top to bottom. `[rev]` flips the J99 row so it reads in 26695's direction:
+CHC155 carries an inversion that 26695 and J99 do not, so the 26695 vs J99
+dotplot shows nothing there and only a row for CHC155 can. To frame it, type one
+window into each row's search box, top to bottom. `[rev]` flips the J99 row so
+it reads in 26695's direction:
 
 ```text
 NC_018939v1:672,000-782,000
@@ -242,19 +250,6 @@ fetches only the alignments in the current viewport:
 jbrowse make-pif alignment.paf
 jbrowse add-track alignment.pif.gz -a query,target --load copy
 ```
-
-## Troubleshooting
-
-A synteny track with its `assemblyNames` in the wrong order draws an empty band.
-JBrowse checks at view load whether the top row's chromosome names belong to
-that assembly, and a warning in the view header names the remedy when they
-belong to the other row.
-
-<Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the warning icon in the header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
-
-Blocks scattered at random come from a minimap2 preset too tight for the
-divergence, which leaves only short spurious anchors. Use a looser preset, such
-as `asm20` over `asm5`, and check that `-c --eqx` were passed.
 
 ## Reproduce it end to end
 

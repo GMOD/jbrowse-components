@@ -182,15 +182,11 @@ the matching region**, the same walk done once.
 
 The clip below opens 2 Mb into the collinear chain past the inversion, both
 panels typed to the same coordinates, where the Liftoff lanes name the same
-genes a few hundred kilobases out of register.
+genes a few hundred kilobases out of register. **Location markers**, in the
+header's settings menu, draw lines through each ribbon joining a point on the
+top row to where it maps on the bottom.
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="Maternal over paternal at chr8:13-15 Mb with the gene lanes and location markers on. The follow button places the paternal panel from the maternal one through the chain, so the same genes line up under each other and the markers are vertical, and the panel below follows as the top one is dragged along." />
-
-**Location markers**, in the header's settings menu, draws lines through each
-ribbon at regular positions, joining a point on the top row to where it maps on
-the bottom.
-
-<Figure caption="Maternal over paternal chr11 across a maternal-only insertion, following, with location markers on and the settings menu that turned them on still open. The markers inside the insertion converge on one point of the paternal row, and those either side bend around it." src="/img/hg002_haplotypes_location_markers.png" />
 
 ## See also
 
