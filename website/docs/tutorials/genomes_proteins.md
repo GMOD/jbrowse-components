@@ -30,32 +30,17 @@ live, per gene, from the services beside them.
 - NCBI's Conserved Domain Database, the alignment's overlay:
   https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml
 
-## Two ways to open a protein view
-
-Two hosted sites reach the same three linked views.
-
-[genomes.jbrowse.org](https://genomes.jbrowse.org) suits starting from a genome.
-It hosts a JBrowse instance for every UCSC genome, each with that genome's UCSC
-track catalog and both protein plugins. Search a gene, right-click it, and the
-two launchers are in the menu. The rest of this page walks that route.
-
-The [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/) suits
-starting from a gene. Pick a species, type a gene symbol, and **Open in
-JBrowse** opens a session with all three views built and connected. It takes a
-`gene` and a `taxon` in the page URL, so
-[?gene=TP53&taxon=9606](https://gmod.org/JBrowseMSA/gene-explorer/?gene=TP53&taxon=9606)
-opens with the gene resolved.
-
-The Gene Explorer's genome view collapses the introns, so the whole CDS is on
-screen at residue zoom. Its catalog is seven species: human genes arrive with
-all three views, and mouse, zebrafish, fly, worm, plant and yeast arrive as a
-genome view and a structure.
-
 ## Launching a structure
 
 Open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org) and type `TP53`
 into the location box. The hosted config ships a name index, so gene symbols
 work with no setup.
+
+The [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/)
+builds the same three linked views from a `gene` and a `taxon` in its URL, such
+as
+[?gene=TP53&taxon=9606](https://gmod.org/JBrowseMSA/gene-explorer/?gene=TP53&taxon=9606).
+The rest of this page starts from the genome view.
 
 Right-click the gene. The menu has **Launch protein view** from protein3d and
 **Launch MSA view** from msaview, which [the next section](#launching-an-msa)
@@ -199,20 +184,9 @@ the same projection of the rest of the record.
 ### Trying other genes
 
 The click-path works on any gene whose symbol NCBI recognises, though how far
-down the tree the panel reaches varies by gene, read off the tree on the left.
-Every _NLRP1_ ortholog NCBI has is a mammal, so the panel stops at mammals
-however high **Rows to align** is set, while _CFTR_ reaches birds, amphibians
-and fish. Genes annotated with an Ensembl identifier and no symbol fall through
-to the BLAST tab.
-
-## Where each MSA comes from
-
-Two routes on this page open the same view type over different MSAs.
-
-| Route                                | MSA                                                              | Rows                                |
-| ------------------------------------ | ---------------------------------------------------------------- | ----------------------------------- |
-| **Launch MSA view** on the gene menu | built per gene from NCBI's ortholog records, aligned at EBI      | one per species, named              |
-| The Gene Explorer                    | UCSC's precomputed multiz alignment across a hundred vertebrates | one per species, named; human genes |
+down the tree the panel reaches varies by gene: every _NLRP1_ ortholog NCBI has
+is a mammal, while _CFTR_ reaches birds, amphibians and fish. Genes annotated
+with an Ensembl identifier and no symbol fall through to the BLAST tab.
 
 ## Sharing a connected view as a URL
 

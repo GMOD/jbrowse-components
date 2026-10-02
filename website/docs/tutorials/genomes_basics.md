@@ -88,8 +88,6 @@ Zoom in until the sequence appears. The exon below is exon 7, which covers G245,
 R248 and R249, three of the codons most often mutated in human cancer.
 
 - Tick **Reference sequence**, which is off by default
-- After you first open its menu, the isoform chip shrinks to the icon circled
-  below, which opens the same options
 - At this zoom the default draws the codon row once per transcript
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
@@ -172,23 +170,6 @@ classification is the column `clinSign`, so the row `clinSign` is `Pathogenic`
 filters that catalog the same way. The same menus apply to a bigWig or BigBed of
 your own added with **Add track**; the
 [web quickstart](/docs/quickstart_web#adding-tracks) covers the steps.
-
-## Other tracks in the hg38 catalog
-
-A few that come up often:
-
-- **Conserved Elements - 100 Vert. El** (Comparative Genomics) is the interval
-  companion to phyloP: phyloP scores each base, phastCons calls the runs.
-- **RepeatMasker** (Repeats) marks which parts of a window are repeat elements.
-- **GTEx cis-eQTLs - GTEx DAP-G eQTLs** (Regulation) names the variants
-  associated with expression of nearby genes.
-- **Long-read SVs - CoLoRSdb 1427 SVs** (Variation and Repeats) covers the size
-  range short reads call badly.
-- **liftOver** (Pairwise alignments) is a genome-to-genome alignment, covered in
-  [](/docs/tutorials/genomes_synteny).
-
-Drag a track by the handle at the left of its header to reorder it; the `×`
-closes it.
 
 ## Where the track data is read from
 
