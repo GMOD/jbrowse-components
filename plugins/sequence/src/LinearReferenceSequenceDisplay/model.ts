@@ -35,11 +35,12 @@ import {
 import { hoverDetailForRow } from './components/sequenceHover.ts'
 
 import type { ReferenceSeqTrackConfigModel } from '../ReferenceSequenceTrack/configSchema.ts'
-import type { SequenceRenderState } from './components/drawSequenceLetters.ts'
-import type { CellEncoding, SequenceCells } from './components/sequenceCells.ts'
+import type { SequenceCells } from './components/sequenceCells.ts'
 import type {
+  CellEncoding,
   ColorPalette,
   RowVisibility,
+  SequenceRenderState,
 } from './components/sequenceGeometry.ts'
 import type { SequenceHover } from './components/sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
@@ -65,12 +66,9 @@ const COLLAPSED_HEIGHT_PX = 50
 
 export interface SequenceRegionData {
   seq: string
-  // absolute genomic start of `seq[0]`; the extent is `start + seq.length`, so
-  // there is no separate `end` to keep in agreement with the string
+  /** absolute genomic start of `seq[0]` */
   start: number
-  // NCBI genetic-code id for this region's refName (1 = standard); resolved from
-  // the assembly's geneticCodes config so mitochondrial/plastid contigs
-  // translate with the right table
+  /** NCBI genetic-code id for this region's refName, from the assembly */
   geneticCodeId: number
 }
 
@@ -168,9 +166,7 @@ export function modelFactory(
       },
       /**
        * #getter
-       * Theme-derived fill + text color for every cell this display paints,
-       * derived from the session theme so it's always available — including
-       * headless SVG export and RPC, where no component mounts to seed it.
+       * Theme-derived fill and text colour for every cell this display paints
        */
       get colorPalette(): ColorPalette {
         return buildColorPalette(
@@ -178,47 +174,45 @@ export function modelFactory(
           self.view.colorByCDS,
         )
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * true for DNA tracks; reverse-complement and translation rows are
-       * gated on this since they are biologically meaningful only for DNA.
+       * the reverse-complement and translation rows are DNA-only
        */
       get isDna() {
-        return self.sequenceType === 'dna'
+        return this.sequenceType === 'dna'
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * reverse-complement row is meaningful only for DNA
        */
       get effectiveShowReverse() {
-        return self.isDna && self.showReverse
+        return this.isDna && this.showReverse
       },
       /**
        * #getter
-       * translation rows are meaningful only for DNA
        */
       get effectiveShowTranslation() {
-        return self.isDna && self.showTranslation
+        return this.isDna && this.showTranslation
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * Which rows the stack is showing, as the one value `rowLayout` takes.
-       * Every consumer — the row count, the render state, the hover's mouse-y
-       * lookup — goes through this rather than re-listing three booleans and
-       * having to remember which two of them are the DNA-gated `effective`
-       * ones.
+       * Which rows the stack is showing, as the one value `rowLayout` takes
        */
       get rowVisibility(): RowVisibility {
         return {
-          showForward: self.showForward,
-          showReverse: self.effectiveShowReverse,
-          showTranslation: self.effectiveShowTranslation,
+          showForward: this.showForward,
+          showReverse: this.effectiveShowReverse,
+          showTranslation: this.effectiveShowTranslation,
+        }
+      },
+      /**
+       * #getter
+       * What the cells' encode reads beyond the sequence itself
+       */
+      get cellEncoding(): CellEncoding {
+        return {
+          ...this.rowVisibility,
+          isDna: this.isDna,
+          palette: this.colorPalette,
         }
       },
     }))
@@ -228,19 +222,13 @@ export function modelFactory(
        * the view is too zoomed out to show individual bases
        */
       get zoomedOut() {
-        const view = self.host
-        return view.bpPerPx > ZOOMED_OUT_BP_PER_PX
+        return self.view.bpPerPx > ZOOMED_OUT_BP_PER_PX
       },
       /**
        * #getter
-       * The static message `SequenceDisplayComponent` renders where the
-       * `<canvas>` would go, or undefined when the sequence actually paints.
-       *
-       * Two states produce a message through this one getter. Zoomed past
-       * base resolution there is nothing to draw and nothing is fetched. With
-       * every row toggled off there is also nothing to draw, and
-       * `numRows * ROW_HEIGHT_PX` is 0, so without the message unticking both
-       * strand rows collapses the track to a 0px sliver with nothing to grab.
+       * The message shown where the canvas would go: zoomed past base
+       * resolution, or every row toggled off (which would otherwise collapse
+       * the track to 0px). Undefined when the sequence paints.
        */
       get placeholderMessage(): string | undefined {
         return this.zoomedOut
@@ -251,19 +239,13 @@ export function modelFactory(
       },
       /**
        * #getter
-       * Showing the message means no fetch is coming and `canvasRef` is never
-       * called. Every consumer of this hook depends on that: the loading scrim
-       * must not cover it, `svgReady` must resolve without data,
-       * and `painted` — so `data-display-drawn`, which `PENDING_DISPLAYS`
-       * selects on — must report finished. See FetchMixin.fetchInert.
+       * A shown message means no paint is coming. See FetchMixin.fetchInert.
        */
       get fetchInert() {
         return this.placeholderMessage !== undefined
       },
       /**
        * #getter
-       * height of the stack in rows, counted off the same `rowLayout` the
-       * painter walks and the hover indexes
        */
       get numRows() {
         return rowCount(self.rowVisibility)
@@ -273,8 +255,7 @@ export function modelFactory(
       },
       /**
        * #getter
-       * collapses to 50px whenever the body is a static message instead of the
-       * sequence; otherwise sized to fit the visible rows.
+       * fits the visible rows, or 50px while a message shows
        */
       get computedHeight() {
         return this.placeholderMessage === undefined
@@ -283,8 +264,7 @@ export function modelFactory(
       },
       /**
        * #getter
-       * override TrackHeightMixin height: use manual resize if set,
-       * otherwise the zoom-aware computed height.
+       * a manual resize if set, else `computedHeight`
        */
       get height() {
         return getConf(self, 'height') ?? this.computedHeight
@@ -300,24 +280,11 @@ export function modelFactory(
        */
       get renderState(): SequenceRenderState {
         return {
-          ...self.rowVisibility,
-          showLetters: showsLetters(self.host.bpPerPx),
-          isDna: self.isDna,
+          ...self.cellEncoding,
+          showLetters: showsLetters(self.view.bpPerPx),
           rowHeight: self.rowHeight,
-          palette: self.colorPalette,
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
-        }
-      },
-      /**
-       * #getter
-       * What the cells' encode reads beyond the sequence itself
-       */
-      get cellEncoding(): CellEncoding {
-        return {
-          ...self.rowVisibility,
-          isDna: self.isDna,
-          palette: self.colorPalette,
         }
       },
     }))
@@ -365,14 +332,8 @@ export function modelFactory(
         })
       },
       async fetchNeeded(needed: IndexedRegion[]) {
-        // `zoomedOut`, deliberately *not* the wider `rendersCanvas`: a
-        // `fetchNeeded` that declines has to be woken by something the
-        // FetchVisibleRegions autorun already tracks (see
-        // packages/display-kit/CLAUDE.md). Zooming back in moves
-        // `view.visibleRegions`, which it does track; re-ticking a strand row
-        // moves nothing it watches, so skipping on no-rows would wedge the
-        // display until the user happened to pan. Fetching sequence nobody
-        // paints for as long as every row is off is the cheaper mistake.
+        // not `rendersCanvas`: re-ticking a row moves nothing the fetch
+        // autorun tracks, so declining on no-rows would wedge the display
         if (self.zoomedOut) {
           return
         }
@@ -391,10 +352,6 @@ export function modelFactory(
             return { features, geneticCodeId }
           },
           onResult: (_idx, { features, geneticCodeId }, region) => {
-            // every sequence adapter answers a region with a single feature
-            // carrying the whole string; take the first that has one rather
-            // than looping and overwriting the same key, which kept whichever
-            // happened to come last
             for (const f of features) {
               const seq = f.get('seq') as string | undefined
               if (seq) {
@@ -405,9 +362,7 @@ export function modelFactory(
                 } satisfies SequenceRegionData
               }
             }
-            // A region an adapter has no sequence for is answered, not
-            // missing: commit the empty record so `regionHasData` reads true
-            // and the plan stops re-issuing it forever.
+            // an empty record, so the plan stops re-issuing the region
             return {
               seq: '',
               start: region.start,
@@ -428,16 +383,11 @@ export function modelFactory(
          * region, or between rows.
          */
         hoverAt(offsetX: number, offsetY: number): SequenceHover | undefined {
-          // nothing painted, nothing under the cursor — and this is also what
-          // makes the `rowHeight` division below safe, since `rendersCanvas`
-          // false is exactly the zoomed-out and zero-row cases
+          // rendersCanvas also rules out the zero-row case the division needs
           const bp = self.rendersCanvas ? self.view.pxToBp(offsetX) : undefined
           if (bp && !bp.oob) {
-            // basePaintedAt, not bp.coord0: this indexes the fetched sequence, so
-            // it has to name the base drawn under the cursor. Reversed, coord0
-            // names the one to its right — and on the region's first column names
-            // a base past its end, which read as "no hover here" rather than as a
-            // wrong letter. Safe to ask here because oob is already ruled out.
+            // not bp.coord0, which on a reversed block names the base to the
+            // right of the one drawn under the cursor
             const base = basePaintedAt(bp, bp.offset)
             const data = self.sequenceData.get(bp.index)
             const idx = data ? base - data.start : -1
@@ -447,7 +397,6 @@ export function modelFactory(
               ]
               return {
                 refName: bp.refName,
-                // 1-based display form of the base actually under the cursor
                 coord: base + 1,
                 detail: row
                   ? hoverDetailForRow(
@@ -456,6 +405,7 @@ export function modelFactory(
                       data.start,
                       base,
                       !!bp.reversed,
+                      self.isDna,
                       getGeneticCode(data.geneticCodeId).codonTable,
                     )
                   : undefined,
@@ -474,10 +424,6 @@ export function modelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            // "Get sequence" otherwise lives only inside the menu a rubberband
-            // opens, so it is found by people who already know it is there. The
-            // visible window is the selection a reader who navigated to a locus
-            // has already made.
             {
               label: LAUNCH_LABEL,
               type: 'subMenu' as const,
@@ -485,10 +431,9 @@ export function modelFactory(
                 {
                   label: 'Get sequence (visible region)',
                   onClick: () => {
-                    const view = containingLgv(self)
-                    // Whole-base: a fractional span reaches `fetchSequence` and
-                    // comes back the wrong length, which the dialog reports as
-                    // "returned N bases, but should have returned M".
+                    const { view } = self
+                    // a fractional span comes back from fetchSequence the
+                    // wrong length
                     const regions = view.visibleWholeBaseRegions
                     if (!regions.length) {
                       return
@@ -501,12 +446,12 @@ export function modelFactory(
                 },
               ],
             },
-            ...makeShowSubMenu(
-              self.isDna
+            ...makeShowSubMenu([
+              checkboxItem('Show forward', self.showForward, () => {
+                self.toggleShowForward()
+              }),
+              ...(self.isDna
                 ? [
-                    checkboxItem('Show forward', self.showForward, () => {
-                      self.toggleShowForward()
-                    }),
                     checkboxItem('Show reverse', self.showReverse, () => {
                       self.toggleShowReverse()
                     }),
@@ -518,8 +463,8 @@ export function modelFactory(
                       },
                     ),
                   ]
-                : [],
-            ),
+                : []),
+            ]),
           ]
         },
       }

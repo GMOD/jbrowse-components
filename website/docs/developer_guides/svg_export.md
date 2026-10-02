@@ -139,8 +139,7 @@ import { encodeSequenceCells } from './components/sequenceCells.ts'
 import { buildColorPalette } from './components/sequenceGeometry.ts'
 import { SEQUENCE_MARKS } from './components/sequenceMarks.ts'
 
-import type { SequenceRenderState } from './components/drawSequenceLetters.ts'
-import type { CellEncoding } from './components/sequenceCells.ts'
+import type { SequenceRenderState } from './components/sequenceGeometry.ts'
 import type { SequenceRegionData } from './model.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -155,10 +154,6 @@ interface SequenceDisplayModel extends SvgExportable {
   height: number
   sequenceData: ReadonlyMap<number, SequenceRegionData>
   renderState: SequenceRenderState
-  cellEncoding: CellEncoding
-  // terminal static-message state (zoomed past base resolution, or every row
-  // toggled off), folded into svgReady via fetchInert; still read
-  // here to skip painting bases
   placeholderMessage: string | undefined
 }
 
@@ -177,36 +172,29 @@ function SequenceSvgBody({
   opts,
 }: LgvSvgBodyProps<SequenceDisplayModel>) {
   const { sequenceData } = model
-  // the terminal static-message state (no fetch); an empty but loaded
-  // sequenceData still paints naturally below.
   if (model.placeholderMessage) {
     return null
   }
 
-  // The export theme can differ from the session theme, so rebuild the palette
-  // here and reuse the rest of the live renderState.
+  // the export theme can differ from the session's
   const state: SequenceRenderState = {
     ...model.renderState,
-    // canvasWidth is the block scissor bound, so it has to be the width this
-    // layer is actually painted at — see LgvSvgBodyProps.canvasWidth.
+    // the width this layer paints at, which is the block scissor bound
     canvasWidth,
     palette: buildColorPalette(
       resolvePalette({ configTheme: opts?.theme }),
       model.view.colorByCDS,
     ),
   }
-
-  const encoding = { ...model.cellEncoding, palette: state.palette }
   const { displayedRegions } = model.view
   const cells = new Map(
     [...sequenceData].map(([key, data]) => [
       key,
-      encodeSequenceCells(data, encoding, !!displayedRegions[key]?.reversed),
+      encodeSequenceCells(data, state, !!displayedRegions[key]?.reversed),
     ]),
   )
 
-  // routed through PaintLayer so rasterizeLayers can PNG-embed when set, but
-  // the default (vector) path keeps letters crisp
+  // PaintLayer stays vector by default and PNG-embeds under rasterizeLayers
   return (
     <PaintLayer
       width={canvasWidth}

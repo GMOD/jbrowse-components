@@ -7,16 +7,15 @@ sequence display. Ordered roughly by value/effort. **Done:** hover introspection
 
 ## Copy / "Get sequence" for a region
 
-Let a rubberband selection (or the whole visible window) be extracted as:
+The track menu's "Get sequence (visible region)" and the rubberband menu open
+`GetSequenceDialog`. Still missing from there:
 
 - FASTA of the forward strand
 - reverse complement
 - protein translation (all 3 frames, or a chosen frame)
 
-The building blocks already exist: `revcom`/`complement` from
-`@jbrowse/core/util` and `getGeneticCode().codonTable`. The main work is a
-selection affordance + a dialog/clipboard write. This is the single
-most-requested bench task the display can't do today.
+`revcom`/`complement` from `@jbrowse/core/util` and
+`getGeneticCode().codonTable` already exist.
 
 ## ORF highlighting
 
@@ -27,8 +26,8 @@ spans within each frame row (or as a hover/summary). This is exactly what users
 scan a 6-frame translation to find, so surfacing it directly is high value.
 
 Implementation sketch: a per-frame scan over the fetched region producing
-`[start, stop)` intervals; paint a subtle underline/box in `drawTranslationRow`.
-Config slot `minOrfLength`.
+`[start, stop)` intervals; draw them as a further mark over the translation
+rows. Config slot `minOrfLength`.
 
 ## Motif search wired into the track menu
 
@@ -48,7 +47,7 @@ a display that is currently pure per-base rendering.
 
 ## Peptide-track features
 
-`trackMenuItems()` returns `[]` for non-DNA (`sequenceType: 'pep'`) tracks, so
-protein reference tracks surface nothing. Candidates: residue property coloring
-(hydrophobicity / charge), and a hover readout of residue properties. Would need
-a peptide-specific palette + hover path parallel to the DNA one.
+A protein reference track (`sequenceType: 'pep'`) shows one row of residues in
+the fallback grey. Candidates: residue property coloring (hydrophobicity /
+charge), and a hover readout of residue properties. Would need a
+peptide-specific palette + hover path parallel to the DNA one.
