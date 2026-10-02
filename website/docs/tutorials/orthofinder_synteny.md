@@ -107,7 +107,9 @@ The `wheat` set is six genomes of wheat's polyploid history:
 
 **Show all regions - same bp per pixel** in the view menu (`sameScale` in a
 session spec) puts the rows on one bp/px, so row length on screen matches genome
-size.
+size. **Rows → Re-order chromosomes** sorts each row's chromosomes against its
+neighbour so the links run along a diagonal (`autoDiagonalize` in a session
+spec).
 
 <Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order. All six rows are on one genomic scale, so row length matches genome size: the two diploid donors against the hexaploid they built, with the tetraploids between." src="/img/orthofinder_synteny/wheat.png" />
 
@@ -384,17 +386,37 @@ that pair, and row order in the stack is free.
 ### Assemblies from a chrom.sizes
 
 A gene-level synteny view reads no sequence, so each assembly is a
-[`ChromSizesAdapter`](/docs/config/chromsizesadapter) built from the
-`##sequence-region` header in its GFF3.
+[`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a `.chrom.sizes` file
+(a name and a length per line) built from the `##sequence-region` header in its
+GFF3. We'll load wheat; the other genomes repeat the block under their own
+names:
 
-<!-- from: scripts/build_orthofinder_synteny.sh -->
-
-```bash
-jbrowse add-assembly wheat.chrom.sizes --name wheat --load copy
+```json addassembly
+{ "name": "wheat", "uri": "wheat.chrom.sizes" }
 ```
 
 The script keeps the `MAXSEQ` sequences carrying the most genes; raise it for a
 genome with more chromosomes than that.
+
+### Gene tracks for the lanes
+
+A lane draws gene models from a gene track under its assembly name. The lane
+sessions above name hosted ones (`human_genes`, `tomato_genes`); for your own
+annotation, add one per genome with a GFF3 that is bgzipped and tabix-indexed
+([prep](/docs/quickstart_web)) and uses the assembly's refNames:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "wheat_genes",
+  "name": "wheat genes",
+  "assemblyNames": ["wheat"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "wheat.gff.gz"
+  }
+}
+```
 
 ## Reproduce it end to end
 

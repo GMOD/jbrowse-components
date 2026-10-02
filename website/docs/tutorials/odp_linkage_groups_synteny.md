@@ -49,7 +49,9 @@ the bilaterians, cnidarians and sponges whose chromosomes carry them, and gave
 each a letter: A1a, A2, B1, and so on to R. A gene belongs to one of them or to
 none. odp ships the groups as a database of protein models, searches every
 proteome it is given against them, and writes the group each ortholog landed in
-as a column beside it. A synteny track can read that column.
+as a column beside it. A synteny track can read that column. Your own genomes
+need odp's table with its `gene_group` and `color` columns, written when odp
+runs with `plot_LGs: True`, and a `.chrom` file per genome.
 
 The dotplot uses a jellyfish (`RES`, _Rhopilema esculentum_) and a freshwater
 sponge (`EMU`, _Ephydatia muelleri_). The stack at the end adds two comb jellies
@@ -94,6 +96,29 @@ columns:
 ```text
 mRNA.RE04286  Em0019g38a  A1a  #C23D51
 mRNA.RE14076  Em0019g57a  .    #000000
+```
+
+## Loading the genomes
+
+We'll load the two genomes of the dotplot. The genome FASTA needs a `.fai`
+beside it (`samtools faidx`), and its sequence names must match the table's
+scaffold columns. The stack adds four more assemblies the same way, one block
+each.
+
+```json addassembly
+{
+  "name": "RES",
+  "displayName": "Rhopilema (jellyfish)",
+  "uri": "RES.fa"
+}
+```
+
+```json addassembly
+{
+  "name": "EMU",
+  "displayName": "Ephydatia (sponge)",
+  "uri": "EMU.fa"
+}
 ```
 
 ## Loading it as a synteny track
@@ -171,14 +196,19 @@ pair's track per band. The build script loads the pairs in the paper's order,
 two comb jellies over the jellyfish, amphioxus and two sponges, and the session
 below sets what the figure needs.
 
-`autoDiagonalize` sorts each row against its neighbour, working outward from
-`diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
-group sits on one chromosome. **Rows → Re-order chromosomes** on the view menu
-runs the same sort and asks for that row. **Hide unlabelled rows** on the
-palette menu (`hideUnlabelled`) draws only the orthologs in a group, and
-`drawCurves` bundles the ribbons. `fadeThinAlignmentsMode` turns off the fade a
-whole-genome view applies to sub-pixel ribbons, since their colors are what the
-figure shows.
+Each setting the session carries has a menu route, except the last:
+
+- `autoDiagonalize` sorts each row against its neighbour, working outward from
+  `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
+  group sits on one chromosome. **Rows → Re-order chromosomes** on the view menu
+  runs the same sort and asks for that row.
+- `hideUnlabelled` draws only the orthologs in a group: **Hide unlabelled rows**
+  on the palette menu.
+- `drawCurves` bundles the ribbons: **Curved lines** on the settings button.
+- `alpha` sets the ribbon opacity: **opacity** on the settings button.
+- `fadeThinAlignmentsMode` turns off the fade a whole-genome view applies to
+  sub-pixel ribbons, since their colors are what the figure shows. It has no
+  menu item.
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
