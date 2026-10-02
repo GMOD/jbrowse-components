@@ -65,7 +65,9 @@ TPM matrix: counts feed the model, TPM feeds the effect size.
 
 **Test usage.** [satuRn](https://doi.org/10.12688/f1000research.51749.1) fits a
 quasi-binomial model to each transcript's share of its gene's reads and tests
-that share between the two tissues, over a counts matrix and a `tissue` column:
+that share between the two tissues. It needs a transcript-by-sample count matrix
+`cnt`, a `coldata` table with one `tissue` row per sample, and a `txinfo` table
+with an `isoform_id` and a `gene_id` for each transcript:
 
 <!-- from: scripts/build_dtu_demo.sh -->
 
@@ -113,8 +115,50 @@ quantification's file page as its genome annotation, `V29` for all eight here.
 The script keeps each gene with a called transcript that is meaningfully
 expressed, since a fraction can swing widely on a handful of reads. It subsets
 those genes out of the GENCODE v29 GFF3 and appends each transcript's numbers to
-its attribute column. The rows come out in coordinate order, so indexing is the
-ordinary pair:
+its attribute column.
+
+To do the same join over your own results, write the table as `results.tsv` with
+one row per transcript and the columns `isoform_id`, `regular_FDR` and `dIF`
+(the isoform-fraction change). This version keeps every GENCODE row and appends
+the numbers to each transcript row, with the keys the track reads: `dif`, `fdr`,
+`dtu` and `dif_called`:
+
+<!-- from: scripts/build_dtu_demo.sh -->
+
+```python
+import csv
+import gzip
+
+stats = {r['isoform_id']: r
+         for r in csv.DictReader(open('results.tsv'), delimiter='\t')}
+
+records = []
+with gzip.open('gencode.v29.annotation.gff3.gz', 'rt') as fh:
+    for line in fh:
+        if line.startswith('#'):
+            continue
+        cols = line.rstrip('\n').split('\t')
+        if cols[2] == 'transcript':
+            d = dict(kv.split('=', 1) for kv in cols[8].split(';') if '=' in kv)
+            r = stats.get(d['transcript_id'])
+            if r:
+                dif, fdr = float(r['dIF']), float(r['regular_FDR'])
+                direction = 'ns'
+                if fdr < 0.05 and abs(dif) > 0.1:
+                    direction = 'muscle' if dif > 0 else 'liver'
+                cols[8] += f';dif={dif:.3f};fdr={fdr:.3g};dtu={direction}'
+                if direction != 'ns':
+                    cols[8] += f';dif_called={dif:.3f}'
+        records.append((cols[0], int(cols[3]), int(cols[4]), '\t'.join(cols)))
+
+records.sort(key=lambda r: r[:3])
+with open('dtu_muscle_vs_liver.gff3', 'w') as out:
+    out.write('##gff-version 3\n')
+    for _, _, _, line in records:
+        out.write(line + '\n')
+```
+
+The rows come out in coordinate order, so indexing is the ordinary pair:
 
 <!-- from: scripts/build_dtu_demo.sh -->
 
@@ -157,6 +201,22 @@ The script gates on satuRn's regular FDR. satuRn's empirical FDR assumes most
 tests are null, and this contrast breaks that assumption: `locfdr` reports a
 misfit, and no transcript passes the empirical FDR. The script prints the
 minimum empirical FDR beside the regular-FDR count.
+
+## The genome
+
+GENCODE v29 is a GRCh38 annotation and the coverage is on GRCh38, so we load the
+hg38 assembly before either track.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
 
 ## Configuring the track
 
@@ -222,6 +282,44 @@ config, each track names the same group:
   "trackId": "liver_plus",
   "name": "Liver RNA-seq, + strand (ENCSR135IAL)",
   "uri": "https://jbrowse.org/demos/dtu/ENCFF565QRM.liver.plus.bigWig",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "scales": { "y": { "autoscaleGroup": "coverage" } }
+  }
+}
+```
+
+The other three lanes differ in their id, name and file:
+
+```json addtrack
+{
+  "trackId": "liver_minus",
+  "name": "Liver RNA-seq, - strand (ENCSR135IAL)",
+  "uri": "https://jbrowse.org/demos/dtu/ENCFF253OSP.liver.minus.bigWig",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "scales": { "y": { "autoscaleGroup": "coverage" } }
+  }
+}
+```
+
+```json addtrack
+{
+  "trackId": "muscle_plus",
+  "name": "Skeletal muscle RNA-seq, + strand (ENCSR609NZM)",
+  "uri": "https://jbrowse.org/demos/dtu/ENCFF007ZBY.muscle.plus.bigWig",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "scales": { "y": { "autoscaleGroup": "coverage" } }
+  }
+}
+```
+
+```json addtrack
+{
+  "trackId": "muscle_minus",
+  "name": "Skeletal muscle RNA-seq, - strand (ENCSR609NZM)",
+  "uri": "https://jbrowse.org/demos/dtu/ENCFF518WGP.muscle.minus.bigWig",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
     "scales": { "y": { "autoscaleGroup": "coverage" } }
