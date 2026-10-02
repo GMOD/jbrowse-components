@@ -110,9 +110,10 @@ at each position.
 
 ## Read coverage and read height
 
-The histogram counts the reads in the pileup below it at each position. Pick
-**Read height → Compact** in the track menu to pack the full read stack into
-view:
+The histogram counts the reads in the pileup below it at each position, so
+comparing genes or libraries needs the transcript-length and library-size
+normalization a counts pipeline applies. Pick **Read height → Compact** in the
+track menu to pack the full read stack into view:
 
 <Figure caption="ACTB under compact read height: the whole read stack fits the track, under the per-position coverage histogram and the hg19 NCBI RefSeq gene model." src="/img/rnaseq/compact_stacked.png" />
 
