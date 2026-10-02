@@ -195,7 +195,23 @@ junction. The repeated chr3 stretch makes the allele an inverted duplication, or
 fold-back, the first step of a breakage-fusion-bridge cycle.
 
 Load the contig as an assembly and the PAF as a synteny track between it and
-GRCh38. The figure, built from the demo config, shows:
+GRCh38. Then add the truth set, called on five platforms before this ONT run
+existed, so every junction has an independent call to check against:
+
+```json addtrack config=https://jbrowse.org/demos/cancer_sv/config.json loc=chr3:25,320,000-25,365,000
+{
+  "type": "VariantTrack",
+  "trackId": "COLO829_truth_set",
+  "name": "COLO829 validated somatic SVs (Valle-Inclán 2022)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfAdapter",
+    "uri": "https://zenodo.org/api/records/4716169/files/truthset_somaticSVs_COLO829_hg38lifted.vcf/content"
+  }
+}
+```
+
+The figure shows:
 
 - ribbons coloured by the reference chromosome each segment came from
 - a BED track on the derivative labelling each segment with its reference

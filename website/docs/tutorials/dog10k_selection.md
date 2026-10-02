@@ -274,18 +274,16 @@ paper lists more.
 
 Two scripts, in order:
 
-1. Both take every animal of the small and giant breeds from the Dog10K sample
-   table by breed name, so genotype plays no part in who sits in which class,
-   and the clustering has a split to recover.
-2. [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
-   counts each class's alleles one autosome at a time, corrects each class's
-   frequency for its own sample size so the unequal classes do not tilt the
-   score, and skips windows with too few sites to score. It prints the
-   percentiles behind the reference line and the top windows.
-3. [`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
-   slices the _IGF1_ window for the same panel plus the Greek wolves, scores
-   each site with the scan's estimator, and prints where the separating sites
-   run and each size class's dosage over them.
+1. [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
+   runs the scan. It corrects each class's allele frequency for its own sample
+   size, so the unequal classes do not tilt the score, skips windows with too
+   few sites to score, and prints the percentiles behind the reference line.
+2. [`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
+   slices the _IGF1_ window for the panel and scores each site with the scan's
+   estimator.
+
+Both take their panels from the Dog10K sample table by breed name, so genotype
+plays no part in who sits in which class.
 
 ```bash
 BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts

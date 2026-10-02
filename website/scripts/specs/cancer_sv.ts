@@ -1,6 +1,7 @@
 import { SPLIT_VIEW_MENU_LABEL } from '../../../plugins/variants/src/LinearVariantDisplay/labels.ts'
 import { lgvSession, sessionSpec } from '../screenshot-spec-helpers.ts'
 import { DER3_GENES_TRACK } from './cancer_sv_der3_genes.ts'
+import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -60,18 +61,7 @@ const DEEP_ONT = { type: 'LinearAlignmentsDisplay', forceLoad: true }
 // this ONT run existed and validated by capture, PCR or optical map. Served
 // straight from Zenodo, which sends CORS headers, so the live link needs no
 // rehosted copy.
-const TRUTH_SET_TRACK = {
-  type: 'VariantTrack',
-  trackId: 'COLO829_truth_set',
-  name: 'COLO829 validated somatic SVs (Valle-Inclán 2022)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'VcfAdapter',
-    vcfLocation: {
-      uri: 'https://zenodo.org/api/records/4716169/files/truthset_somaticSVs_COLO829_hg38lifted.vcf/content',
-    },
-  },
-}
+const TRUTH_SET_TRACK = pageTrack('tutorials/cancer_sv.md', 'COLO829_truth_set')
 const TRUTH_SET = TRUTH_SET_TRACK.trackId
 
 // The two halves of cancer_sv/multihop_reads: the evidence at one breakpoint,
