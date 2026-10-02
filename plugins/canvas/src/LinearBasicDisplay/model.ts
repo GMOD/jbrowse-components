@@ -359,8 +359,9 @@ export default function stateModelFactory(
         contextMenuItems() {
           const base = superContextMenuItems()
           const info = self.contextMenuInfo
-          const data =
-            info && self.laidOutDataMap.get(info.displayedRegionIndex)
+          // Unlike `laidOutDataMap`, it still holds the isoforms the fit trimmed,
+          // which the dialog lists by name.
+          const data = info && self.rpcDataMap.get(info.displayedRegionIndex)
           return info?.item.collapsibleIntrons
             ? [
                 ...base,
