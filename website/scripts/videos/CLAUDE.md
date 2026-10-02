@@ -267,7 +267,7 @@ Each of these cost a refilm, and the run reports none of them.
   of pixels, END ON THE TALL ONE: the slack then falls at the opening, which is
   the shorter half of the clip and not the frame the poster comes from.
 - **A purple chip with a number in it over a MAF row is a rendered insertion**,
-  not a tooltip left standing — `drawMafInsertions` centres the inserted length
+  not a tooltip left standing — the insertion mark centres the inserted length
   in the marker once the row is tall enough for letters, and it does not move
   with the pointer. The page's own still of the same window is the cheapest way
   to tell a drawn feature from a hover artifact: pull the figure beside the

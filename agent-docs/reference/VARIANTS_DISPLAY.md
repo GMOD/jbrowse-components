@@ -295,8 +295,10 @@ displays — and the band cannot drift from the display it stands in for.
 
 ## How wide a cell draws: `variantCellSpanPx`
 
-Three geometries must agree — the insertion-marker overlay, the cells' hover box
-and their click target — and all three go through it. The **lane** is no longer
+Three geometries must agree — the insertion mark, the cells' hover box and
+their click target. The box is the cell united with the marker wherever the
+mark's own gate (`insertionMarkerDraws`, unsnapped, floored at `MIN_CELL_PX`)
+draws one, so it reads no pan phase and the legend asks the painter's question. The **lane** is no longer
 one of them: its marks, their hover box and their click target are
 plugin-canvas's layout (see the band section above), which is why they can
 stack.
@@ -309,8 +311,7 @@ sub-pixel record on one pixel, making a pivot comparison a no-op in the exact
 case it exists for.
 
 **`insertionsWiden` has no default on purpose** — implicitly defaulted, cells
-drew a 2px SNP while the lane drew a 40px bar. Only `markersForBlock` passes a
-literal.
+drew a 2px SNP while the lane drew a 40px bar.
 
 **The band does not widen an insertion at all.** A plugin-canvas box is its
 reference span, and that plugin has no insertion-length glyph — its own

@@ -134,7 +134,13 @@ track needs it rather than to retire the MAF display.
 8. Interbase and texture glyphs: the MAF insertion marker, whose width
    grows with the length and which carries a count label (`cells` emits each
    insertion as an interbase feature a span paints as a `minWidthPx`
-   sliver), the inversion hatch, e-line double lines.
+   sliver), the inversion hatch, e-line double lines. The marker is
+   alignments-core's `insertionMark` now; the mark display lacks an
+   `insertion` entry in `MARK_TYPES`/`MARK_SPECS` (and the `jbrowse validate`
+   copy), a lens from the `size` lane (where `cells`' `length` field would
+   ride) to the mark's `length`, a colour scale on the mark, which packs ABGR
+   only, a hit rule for a zero-width interval, which `rows` never answers, and
+   a call to `paintInsertionLabels` from its text layer.
 9. A second-adapter join for the frames (codon cells, letters, conservation,
    the CDS strip).
 10. Cross-region derived fields: the source-chromosome rank per row, the

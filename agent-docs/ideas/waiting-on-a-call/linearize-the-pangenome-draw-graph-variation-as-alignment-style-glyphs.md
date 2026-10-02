@@ -54,9 +54,9 @@ clip (6 of 78 in MHC). `scripts/build_rgfa_alleles.sh` emits exactly that record
 and 208,308 on HPRC in 23 s from the hosted indexes alone, columns named
 `firstSeenIn`/`discoveryRank` so the name carries the caveat above.
 
-Build the lane on `drawInsertionMarker` (`@jbrowse/alignments-core`) through an
-`OverlayCanvas` pass plus a second `PaintLayer` call on the SVG export, the seam
-two other displays already draw indels through — rules and counter-example in
+Build the lane on `insertionMark` (`@jbrowse/alignments-core`), the mark three
+other displays already draw insertions through, with `paintInsertionLabels`
+for the counts — rules and counter-example in
 [reference/PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md#indel-glyphs).
 Not a new display type, not a shader.
 

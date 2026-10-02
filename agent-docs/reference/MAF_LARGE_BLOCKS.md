@@ -90,9 +90,10 @@ holds the passes and their numbers. Three lessons generalize:
   its marker-side twin cover on-screen bp only; a block-level cull protects
   nothing once one stanza spans the buffer.
 
-**The per-region event index** (`mafRowEvents.ts`) serves insertions and
-inversions, deliberately not deletions, so overlays project it instead of
-re-deriving from alignment bytes.
+**The per-region event index** (`mafRowEvents.ts`) serves inversions,
+deliberately not deletions, so the overlay projects it instead of re-deriving
+from alignment bytes. Insertions are the insertion mark's channels, walked once
+per region and cached on it (`mafInsertionChannels`).
 
 - Deletions want a bound, not an index: millions per region. The per-block
   longest run (`regionDeletionRunBounds`) must cover all rows, and must store a

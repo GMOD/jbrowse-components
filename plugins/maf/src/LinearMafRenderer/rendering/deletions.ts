@@ -15,8 +15,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
  * run is wide/tall enough to fit it. Markers come from `computeVisibleDeletions`
  * (which shares the `forEachDeletion` walk with the hover hit-test).
  *
- * Takes the palette for the same reason `drawMafEmptyLines` and
- * `drawMafInsertions` do, and this was the one marker drawing that didn't: the
+ * Takes the palette for the same reason `drawMafEmptyLines` does: the
  * label sits on the gap cells, which the base pass fills with
  * `palette.gapColor`, and that color is theme-varying: `palette.mafGap`,
  * `#808080` in light and `#c8c8c8` in dark.
@@ -32,7 +31,7 @@ export function drawMafDeletionLabels(
   // effect, right after React committed a frame of dirty inline styles. At the
   // zoom levels where the rows are too short for a letter that was the single
   // most expensive thing in a wheel-zoom profile, spent to draw nothing. Same
-  // gate `drawMafInsertions` keeps, and the cheap height test comes first so a
+  // gate the insertion counts keep, and the cheap height test comes first so a
   // culled marker never reaches the measurement.
   const labeled = markers.filter(
     m =>

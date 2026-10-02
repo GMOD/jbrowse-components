@@ -1,6 +1,6 @@
 ---
 name: row-displays-on-shared-kernels
-description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, and the MAF cleanups landed the same day; open are two product calls on row colour, an insertion mark whose trigger is met, per-mark seams, the one-row-model hook seam and variant wire shapes."
+description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, the MAF cleanups and the shared insertion mark landed the same day; open are two product calls on row colour, per-mark seams, the one-row-model hook seam and variant wire shapes."
 ---
 
 # Row displays on shared kernels
@@ -24,8 +24,8 @@ Each display's main layer already runs through `defineMark` and
 MAF through span, bar and coverage-band marks
 (`plugins/maf/src/LinearMafRenderer/mafMarks.ts`), the variant display through
 its own `cellMark` and `matrixCellMark` over `variant.slang` and
-`variantMatrix.slang`, which grammar-unity accepts. Off the marks: three
-Canvas2D insertion overlays, the matrix's connector lines, multi-row's density
+`variantMatrix.slang`, which grammar-unity accepts. Off the marks: the
+insertion counts, the matrix's connector lines, multi-row's density
 band, MAF's seven overlays, and the row and data plumbing around the marks.
 So the direction is ADR-199's — share kernels where two paths compute the same
 thing — not ports onto `LinearMarkDisplay`.
@@ -76,16 +76,16 @@ captures of volvox, roadmap and bxd.
 
 ## Convergence, in order
 
-1. **An insertion mark in alignments-core.** Variants
-   (`drawVariantInsertionGlyphs.ts`, 251 lines), multi-row
-   (`drawMultiRowIndelGlyphs.ts`, 148) and MAF (`rendering/insertions.ts` and
-   its walkers, ~305) each paint through `drawInsertionMarker` in Canvas2D;
-   alignments has the GPU mark (`plugins/alignments/src/features/insertion/mark.ts`).
-   They have drifted: MAF's count label is hard-coded white, variants use their
-   own luminance formula against core's `getContrastText`, and MAF's insertion
-   hover box ignored row height until 2026-10-02. Moving the mark to alignments-core with x, row,
-   length and colour channels retires the three overlays and gives the mark
-   display's `cells` insertions a glyph (maf-onto-marks item 8).
+1. **The insertion mark landed 2026-10-02**: alignments-core's
+   `insertionMark` (`x`, `x2`, `row`, `length`, `color`, optional `under`)
+   over render-core's `insertionGlyph.slang`, drawn by variants, multi-row and
+   MAF on all three backends. The pileup keeps its own `INSERTION_MARK`, since
+   its fades, hit rules and uniforms are the pileup's, and shares the glyph
+   module. The counts are text, so each display keeps a Canvas2D layer for them
+   (`paintInsertionLabels`), and multi-row's for its deletion lines too. Left:
+   multi-row's hit test (`hitTesting.ts`) answers the block, not a marker
+   wider than it, though `hoverInk` draws both; and the mark display's `cells`
+   insertions need an `insertion` mark type (maf-onto-marks item 8).
 2. **Multi-row onto shared kernels**: clustering bins on `binColumns` and the
    worker reads `rows`/`clusterField` through `fieldReader` now. Left: the
    presence/categorical encoding into tree-sidebar so the mark display can
