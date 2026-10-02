@@ -96,6 +96,10 @@ Two input mistakes leave jcvi with no orthologs:
 block, and their median dS is several times that of the chained ones, which
 marks them as paralogs.
 
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/kaks_from_pairs.py
+```
+
 <!-- from: scripts/build_primate_selection.sh -->
 
 ```bash
@@ -121,6 +125,37 @@ Every row also carries that count and a two-sided Fisher exact p, the test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
 prescribes for small substitution counts. Both are `attributeColumns`, so
 clicking a link shows the evidence under its colour.
+
+## Loading the genomes and genes
+
+A gene-level synteny view reads no sequence, so each assembly is a
+`.chrom.sizes` file (a name and a length per line) that the script writes from
+the GFF3's `##sequence-region` header. We'll load human; rhesus repeats the
+block under its own name:
+
+```json addassembly
+{ "name": "human", "uri": "human.chrom.sizes" }
+```
+
+Each panel draws genes from a track under its assembly. The script writes
+`human.genes.gff3.gz` and `rhesus.genes.gff3.gz`, bgzipped and tabix-indexed
+([prep](/docs/quickstart_web)). For your own annotation the GFF3 needs the same
+refNames as the assembly:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "human_genes",
+  "name": "human genes",
+  "assemblyNames": ["human"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "human.genes.gff3.gz"
+  }
+}
+```
+
+Add the rhesus track the same way, with `rhesus_genes` under `rhesus`.
 
 ## Loading the blocks table in JBrowse
 
@@ -149,9 +184,10 @@ panel lists each as a feature attribute. **Color by value → dN/dS** in the
 palette button menu reads `dn` and `ds`, on a ramp with 1 at the middle and 2 at
 the top.
 
-Two `LinearSyntenyView` properties matter for a view this sparse: `alpha`
+Two `LinearSyntenyView` properties matter for a view this sparse. `alpha`
 defaults to 0.2 for whole-genome views where ribbons overlap, and 0.95 shows the
-colour as it is; `drawCurves` separates stacked neighbours.
+colour as it is: **opacity** on the sliders button in the view header.
+`drawCurves` separates stacked neighbours: **Curved lines** on the same menu.
 
 ## Reading the plot
 

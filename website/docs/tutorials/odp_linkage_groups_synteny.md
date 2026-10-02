@@ -204,8 +204,8 @@ Each setting the session carries has a menu route, except the last:
   runs the same sort and asks for that row.
 - `hideUnlabelled` draws only the orthologs in a group: **Hide unlabelled rows**
   on the palette menu.
-- `drawCurves` bundles the ribbons: **Curved lines** on the settings button.
-- `alpha` sets the ribbon opacity: **opacity** on the settings button.
+- `drawCurves` bundles the ribbons: **Curved lines** on the sliders button.
+- `alpha` sets the ribbon opacity: **opacity** on the sliders button.
 - `fadeThinAlignmentsMode` turns off the fade a whole-genome view applies to
   sub-pixel ribbons, since their colors are what the figure shows. It has no
   menu item.

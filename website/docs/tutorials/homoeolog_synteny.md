@@ -78,9 +78,13 @@ The `awk` keeps the 21 chromosomes and drops the unplaced contigs.
 The [end-to-end script](#reproduce-it-end-to-end) translates the proteome from
 the CDS, keeping the transcript ids the BED uses.
 
-The assembly is a `ChromSizesAdapter` built from the chromosome lengths in the
-GFF3's `##sequence-region` header. See
-[assemblies from a chrom.sizes](/docs/tutorials/orthofinder_synteny#assemblies-from-a-chromsizes).
+The assembly needs no sequence. We'll load it from the chromosome lengths in the
+GFF3's `##sequence-region` header, written to `oat.chrom.sizes` (a name and a
+length per line):
+
+```json addassembly
+{ "name": "oat", "uri": "oat.chrom.sizes" }
+```
 
 ### Syntenic anchors from a self-alignment
 
@@ -122,6 +126,10 @@ of the chained ones.
 
 Ensembl declares `dn` and `ds` in every homology export and leaves both empty in
 every division, so the script computes them:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/kaks_from_pairs.py
+```
 
 <!-- from: scripts/build_oat_homoeologs.sh -->
 
@@ -167,7 +175,8 @@ becomes a feature attribute in the detail panel. `dn` and `ds` drive the palette
 button's **dN/dS**, a ramp with 1 at its middle and 2 at its top. `syn_subs` and
 `fisher_p` are the evidence behind a colour.
 
-The session opens this as a dotplot with the same genome on both axes.
+**Add → Dotplot view** with oat on both axes opens the track as a dotplot, and
+the session [below](#checking-the-rates-against-the-raw-data) does the same.
 
 ## Reading the plot
 
@@ -188,8 +197,9 @@ The [script](#reproduce-it-end-to-end) ends on the numbers behind the picture.
 The control is dS. Oat's A and D subgenomes descend from closely related diploid
 _Avena_ species and its C subgenome from a more distant one, so A-D pairs should
 come out at a lower synonymous divergence than A-C or C-D. The palette button's
-**Color by value → ds** <!-- menu-path-ok --> paints each anchor by it; pinning
-the ramp's ends keeps a colour meaning one dS wherever the view goes:
+**Color by value → ds** <!-- menu-path-ok --> paints each anchor by it. The
+session pins the ramp's ends with `domainMin` and `domainMax`, so a colour means
+one dS wherever the view goes; the menu has no field for them:
 
 ```json session config=https://jbrowse.org/demos/oat_homoeologs/config.json
 {
