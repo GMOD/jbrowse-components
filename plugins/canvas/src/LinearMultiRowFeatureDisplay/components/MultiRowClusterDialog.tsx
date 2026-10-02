@@ -7,6 +7,7 @@ import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
+  featureMatrixArgs,
   featureMatrixKey,
   runMultiRowClustering,
 } from '../runMultiRowClustering.ts'
@@ -48,10 +49,7 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
       run={args => runMultiRowClustering({ model, ...args })}
       fetchMatrix={({ rpcManager, sessionId, ...args }) =>
         rpcManager.call(sessionId, 'MultiRowGetFeatureMatrix', {
-          sources: clusterableSources.map(s => s.name),
-          adapterConfig: model.adapterConfig,
-          partitionField: model.effectivePartitionField,
-          clusterField: model.effectiveClusterField,
+          ...featureMatrixArgs(model),
           ...args,
         })
       }

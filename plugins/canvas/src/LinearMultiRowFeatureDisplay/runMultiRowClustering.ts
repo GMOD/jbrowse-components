@@ -48,6 +48,17 @@ export function featureMatrixKey(model: MultiRowClusterModel) {
     : null
 }
 
+// The matrix the R export downloads is the one the clustering ran on.
+export function featureMatrixArgs(model: MultiRowClusterModel) {
+  return {
+    sources: model.clusterableSources.map(s => s.name),
+    adapterConfig: model.adapterConfig,
+    partitionField: model.effectivePartitionField,
+    clusterField: model.effectiveClusterField,
+    partition: model.clusterPartition,
+  }
+}
+
 export async function runMultiRowClustering({
   model,
   regions,
@@ -63,19 +74,11 @@ export async function runMultiRowClustering({
   signal: AbortSignal
   statusCallback: (status: RpcStatus) => void
 }) {
-  const {
-    clusterableSources,
-    adapterConfig,
-    effectivePartitionField,
-    effectiveClusterField,
-  } = model
+  const { clusterableSources, effectivePartitionField, effectiveClusterField } =
+    model
   const result = await rpcManager.call(sessionId, 'MultiRowClusterFeatures', {
+    ...featureMatrixArgs(model),
     regions,
-    sources: clusterableSources.map(s => s.name),
-    adapterConfig,
-    partitionField: effectivePartitionField,
-    clusterField: effectiveClusterField,
-    partition: model.clusterPartition,
     signal,
     statusCallback,
   })
