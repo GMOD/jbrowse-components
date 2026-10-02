@@ -141,8 +141,11 @@ thing — not ports onto `LinearMarkDisplay`.
 - The two cell loops share a two-ended bucket writer
   (`computeVariantCells.ts:117-294`, `computeVariantMatrixCells.ts:86-191`);
   both variant chromes and MAF's mount the same scroll/sidebar/overlay tree;
-  `svgSidebarWidth` and `spatialIndex` are identical on three displays and
-  could be mixin defaults; `applyClusterOrder.ts` restates `applyClusterRun`.
+  `applyClusterOrder.ts` restates `applyClusterRun`. `svgSidebarWidth` is a
+  mixin method now ([svg-sidebar-text-style](svg-sidebar-text-style.md));
+  `spatialIndex` is the same `buildSpatialIndex(self.hierarchy)` on five
+  displays, but the mixin owns no `hierarchy`, so it moves with step 5's hook
+  seam.
 - MAF: `ROW_RENDERINGS` restates `MAF_COLOR_FIELDS` unchecked
   (`rowRenderings.ts`); dead `makeCellPxRange`, `MafRenderBlock`,
   `MafSamplesResult`; the coverage band hard-codes a linear scale four times

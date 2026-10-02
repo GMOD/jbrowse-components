@@ -1,16 +1,14 @@
 ---
 name: svg-sidebar-text-style
-description: Branch svg-sidebar-cleanup single-sources each row display's export sidebar (`svgSidebar` getter on TreeSidebarMixin) and measures it in the export's text; unlanded — autogen, verify, goldens and three visual calls to Colin remain. Read before touching the multirow SVG sidebar or export font size.
+description: Each row display's export sidebar comes from one `svgSidebar` getter on TreeSidebarMixin and measures in the export's text (landed 2026-10-02). Three visual calls to Colin remain open — label-box fill, a 'left' track name on a sidebar track, export text size — with real exports in an artifact. Read before touching the multirow SVG sidebar or export font size.
 ---
 
 # SVG sidebar: one props getter, measured in the export's text
 
-Branch `svg-sidebar-cleanup` (worktree `.claude/worktrees/svg-sidebar-cleanup`),
-one WIP commit on e2f6785421. `pnpm typecheck` passes; the tree-sidebar,
-wiggle, canvas multi-row, variants, marks, maf, LGV svgcomponents, display-kit
-and display-ui suites pass.
+Branch `svg-sidebar-cleanup` landed on 2026-10-02. The export SVG goldens it
+moves (`vcf_cluster_snapshot.svg`, `wiggle_vector_snapshot.svg`) refresh on CI.
 
-## What the branch does
+## What landed
 
 - **Each row display states its export sidebar once.** `TreeSidebarMixin` has
   an overridable `svgSidebar` getter (undefined by default, like `rowBanding`)
@@ -37,23 +35,15 @@ and display-ui suites pass.
 - `SvgRowLabels` separators are one path; `SvgBandLabels`' hover rect is
   `fill="none" pointerEvents="all"` rather than the CSS-only `transparent`.
 
-## To finish before landing
+## Calls for Colin
 
-1. `pnpm autogen` (reExports JSON / workerReExports still list
-   `svgSidebarWidthOf`, `MIN_TEXT_ROW_HEIGHT`; model docs gain `svgSidebar`),
-   then `pnpm verify`.
-2. Fix the comment in `packages/tree-sidebar/CLAUDE.md` §SVG export to name
-   `svgSidebar` as the one source.
-3. Refresh goldens the font change moves (web suites run on CI; fix forward).
-4. `RenderSvgModel` fixtures in other suites may still spell old fields — the
-   typecheck says not, but grep `showRowLabels` in `*renderSvg*.test.tsx`.
-
-## Calls for Colin (as an artifact with screenshots — his ask)
-
-Capture route that works: `rsvg-convert -w 1400 <golden>.svg`; a throwaway
-jbrowse-web jest test calling `renderToSvg(view, opts)` on a multi-wiggle
-(`volvox_microarray_multi_multirowxy`) and a clustered VCF matrix with tall
-rows (VcfCluster.test.tsx shows the clustering steps) gives real exports.
+The artifact [Export Sidebar Calls](https://claude.ai/artifact/BUhy7WhKEAFoTp37sc4vPN)
+shows each with real exports. A throwaway jbrowse-web test made them:
+`view.exportSvg({ rasterizeLayers: false, ...opts })` on
+`volvox_microarray_multi_multirowxy` and on `volvox_test_vcf` clustered as a
+matrix (VcfCluster.test.tsx's steps), then `rsvg-convert -w 1400`.
+The artifact recommends light grey everywhere, the 'offset' fallback, and
+ratios of one base size with the default left at 13.
 
 1. **Strip fill**: the export now draws white label boxes beside a tree and
    light grey without one (the `opaque` split predates the gutter move,
@@ -68,6 +58,9 @@ rows (VcfCluster.test.tsx shows the clustering steps) gives real exports.
    chrome text a ratio of it (`rel()`), feature labels left alone (they are
    laid out in the worker, like `geom_text`'s separate mm size). Later, size
    for a target page width (`ggsave(width=)`). Default size is the visual call.
+   The captures show why: `fontSize` reaches the assembly name, scalebar, track
+   names and row labels, while the refName, ruler ticks, axis ticks and legend
+   stay fixed, so an 18px export mixes two size systems.
 
 ## Declined, with reasons
 
