@@ -99,9 +99,17 @@ for strain in K12 Sakai CFT073 NCTC86 IAI39; do
 done
 ```
 
+The same step for one strain, as a config or in JBrowse Desktop:
+
+```json addassembly
+{
+  "name": "K12",
+  "uri": "K12.fa.gz"
+}
+```
+
 An assembly whose refNames still carry the PanSN prefix draws empty. The
-[assemblies configuration guide](/docs/config_guides/assemblies) has the
-equivalent JSON.
+[assemblies configuration guide](/docs/config_guides/assemblies) has more.
 
 ## Loading the PAF with MultiGenomePAFAdapter
 
