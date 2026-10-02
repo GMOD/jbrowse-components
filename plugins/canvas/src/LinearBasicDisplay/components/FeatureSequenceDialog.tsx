@@ -8,6 +8,7 @@ import { findSubfeatureById } from '../baseModelHelpers.ts'
 
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { Feature } from '@jbrowse/core/util'
+import type { CanonicalTranscriptsHost } from '@jbrowse/core/util/isoformRank'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // The painting ships only slim render arrays, so the dialog re-fetches the full
@@ -20,14 +21,15 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
   assemblyName,
   handleClose,
 }: {
-  model: IStateTreeNode & {
-    setSequenceHoverPosition: (pos: SequenceHoverPosition | undefined) => void
-    fetchFullFeature: (
-      featureId: string,
-      displayedRegionIndex: number,
-      opts?: { signal?: AbortSignal },
-    ) => Promise<Feature | undefined>
-  }
+  model: IStateTreeNode &
+    CanonicalTranscriptsHost & {
+      setSequenceHoverPosition: (pos: SequenceHoverPosition | undefined) => void
+      fetchFullFeature: (
+        featureId: string,
+        displayedRegionIndex: number,
+        opts?: { signal?: AbortSignal },
+      ) => Promise<Feature | undefined>
+    }
   parentFeatureId: string
   featureId: string
   displayedRegionIndex: number
@@ -71,6 +73,7 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
       session={getSession(model)}
       assemblyName={assemblyName}
       hoverTarget={model}
+      canonicalTranscripts={model.canonicalTranscripts}
       handleClose={handleClose}
     />
   )

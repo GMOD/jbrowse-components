@@ -7,6 +7,8 @@ import {
   resolveShowCoordinates,
 } from './featureTypeUtil.ts'
 
+import type { CanonicalTranscripts } from '../../util/isoformRank.ts'
+
 describe('hasExonOrCDS', () => {
   test('feature with CDS only is true (no exon subfeatures)', () => {
     const feature = {
@@ -61,7 +63,7 @@ describe('hasExonOrCDS', () => {
 })
 
 describe('getTranscripts/pickDefaultTranscriptIndex', () => {
-  test('a gene exposes its mRNA children as transcripts, longest coding span wins', () => {
+  test('a gene exposes its mRNA children as transcripts, longest coding wins', () => {
     const gene = {
       uniqueId: 'gene-a',
       refName: 'chr1',
@@ -137,6 +139,96 @@ describe('getTranscripts/pickDefaultTranscriptIndex', () => {
     const transcripts = getTranscripts(mrna)
     expect(transcripts).toEqual([])
     expect(pickDefaultTranscriptIndex(transcripts)).toBe(0)
+  })
+})
+
+describe('pickDefaultTranscriptIndex ranks like the canvas gene glyph', () => {
+  function mrna(
+    name: string,
+    span: [number, number],
+    cds: [number, number][],
+    extra: Record<string, unknown> = {},
+  ) {
+    return {
+      refName: 'chr1',
+      start: span[0],
+      end: span[1],
+      type: 'mRNA',
+      name,
+      ...extra,
+      subfeatures: cds.map(([start, end]) => ({
+        refName: 'chr1',
+        start,
+        end,
+        type: 'CDS',
+      })),
+    }
+  }
+  function gene(subfeatures: ReturnType<typeof mrna>[]) {
+    return {
+      uniqueId: 'gene',
+      refName: 'chr1',
+      start: 0,
+      end: 5000,
+      type: 'gene',
+      subfeatures,
+    }
+  }
+  const picked = (
+    g: ReturnType<typeof gene>,
+    canonical?: CanonicalTranscripts,
+  ) => {
+    const transcripts = getTranscripts(g)
+    return transcripts[pickDefaultTranscriptIndex(transcripts, canonical)]!.name
+  }
+
+  test('a MANE-tagged shorter isoform beats a longer untagged one', () => {
+    const g = gene([
+      mrna('long', [0, 5000], [[0, 3000]]),
+      mrna('mane', [0, 1000], [[0, 600]], { tag: 'MANE Select' }),
+    ])
+    expect(picked(g)).toBe('mane')
+  })
+
+  test('a tag in a comma-list attribute counts', () => {
+    const g = gene([
+      mrna('long', [0, 5000], [[0, 3000]]),
+      mrna('mane', [0, 1000], [[0, 600]], {
+        tag: ['basic', 'MANE_Select'],
+      }),
+    ])
+    expect(picked(g)).toBe('mane')
+  })
+
+  test('the track’s own field and tags replace the defaults', () => {
+    const g = gene([
+      mrna('long', [0, 5000], [[0, 3000]], { tag: 'MANE Select' }),
+      mrna('flagged', [0, 1000], [[0, 600]], { canonical: 'yes' }),
+    ])
+    expect(picked(g, { field: 'canonical', tags: ['yes'] })).toBe('flagged')
+  })
+
+  test('coding length beats genomic span', () => {
+    const g = gene([
+      mrna(
+        'wide-intron',
+        [0, 5000],
+        [
+          [0, 100],
+          [4900, 5000],
+        ],
+      ),
+      mrna('long-protein', [0, 2000], [[0, 1500]]),
+    ])
+    expect(picked(g)).toBe('long-protein')
+  })
+
+  test('an equal-length tie goes to the later isoform', () => {
+    const g = gene([
+      mrna('first', [0, 1000], [[0, 600]]),
+      mrna('second', [0, 1000], [[0, 600]]),
+    ])
+    expect(picked(g)).toBe('second')
   })
 })
 

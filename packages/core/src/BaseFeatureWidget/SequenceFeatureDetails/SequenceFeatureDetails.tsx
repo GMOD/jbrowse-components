@@ -17,6 +17,7 @@ import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from '../../util/index.ts'
+import type { CanonicalTranscripts } from '../../util/isoformRank.ts'
 import type {
   SequenceFeatureDetailsModel,
   SequenceHoverTarget,
@@ -33,6 +34,7 @@ interface SequenceFeatureDetailsProps {
   feature: SimpleFeatureSerialized
   hoverTarget?: SequenceHoverTarget
   showOpenInDialog?: boolean
+  canonicalTranscripts?: CanonicalTranscripts
 }
 
 const SequenceFeatureDetailsPanel = observer(
@@ -43,17 +45,18 @@ const SequenceFeatureDetailsPanel = observer(
     feature,
     hoverTarget,
     showOpenInDialog = true,
+    canonicalTranscripts,
   }: SequenceFeatureDetailsProps) {
     const { upDownBp } = model
     const seqPanelRef = useRef<HTMLDivElement>(null)
 
     // A container feature (e.g. a gene) has no CDS/exon of its own — one of its
-    // transcript children does. Default to the longest-coding transcript so CDS
-    // and Protein sequence types work without an extra click into Subfeatures,
-    // with a selector to switch transcripts when the gene has more than one.
+    // transcript children does. Default to the transcript the track draws first
+    // so CDS and Protein sequence types work without an extra click into
+    // Subfeatures, with a selector to switch when the gene has more than one.
     const transcripts = getTranscripts(feature)
     const [transcriptIndex, setTranscriptIndex] = useState(() =>
-      pickDefaultTranscriptIndex(transcripts),
+      pickDefaultTranscriptIndex(transcripts, canonicalTranscripts),
     )
     const effectiveFeature = transcripts[transcriptIndex] ?? feature
 

@@ -36,6 +36,7 @@ import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { CanonicalTranscriptsHost } from '@jbrowse/core/util/isoformRank'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ElementType } from 'react'
 
@@ -55,7 +56,8 @@ export interface FeatureContextMenuInfo {
 
 // Structural rather than the factory's instance type: the factory calls these
 // builders, so importing its type back here is a circular reference.
-export interface FeatureMenuSelf extends IStateTreeNode {
+export interface FeatureMenuSelf
+  extends IStateTreeNode, CanonicalTranscriptsHost {
   contextMenuInfo: FeatureContextMenuInfo | undefined
   featureNoun: string
   loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }

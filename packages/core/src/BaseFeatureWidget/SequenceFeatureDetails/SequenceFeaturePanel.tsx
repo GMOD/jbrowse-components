@@ -79,6 +79,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
             })}
             feature={feature}
             hoverTarget={model}
+            canonicalTranscripts={model.canonicalTranscripts}
           />
         </Suspense>
       ) : null}

@@ -149,6 +149,7 @@ import type {
   Region,
   StatusCallback,
 } from '@jbrowse/core/util'
+import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -723,6 +724,19 @@ export default function baseStateModelFactory(
        */
       get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
         return self.autoHeight ? undefined : self.onScreenFeatureIds
+      },
+      /**
+       * #getter
+       * the tags the worker ranks a gene's isoforms by, which the sequence
+       * panel reads to open on the isoform this display draws first
+       */
+      get canonicalTranscripts(): CanonicalTranscripts {
+        const { canonicalTranscriptField, canonicalTranscriptTags } =
+          pickDisplayConfig(fullConfSnapshot(self.configuration))
+        return {
+          field: canonicalTranscriptField,
+          tags: canonicalTranscriptTags,
+        }
       },
       /**
        * #getter

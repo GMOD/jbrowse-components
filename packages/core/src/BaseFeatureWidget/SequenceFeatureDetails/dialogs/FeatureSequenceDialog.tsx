@@ -11,6 +11,7 @@ import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from '../../../util/index.ts'
+import type { CanonicalTranscripts } from '../../../util/isoformRank.ts'
 import type { SequenceHoverTarget } from '../model.ts'
 
 const useStyles = makeStyles()({
@@ -32,6 +33,7 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
   session,
   assemblyName,
   hoverTarget,
+  canonicalTranscripts,
   handleClose,
 }: {
   feature: SimpleFeatureSerialized | undefined
@@ -39,6 +41,7 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
   session: AbstractSessionModel
   assemblyName: string | undefined
   hoverTarget?: SequenceHoverTarget
+  canonicalTranscripts?: CanonicalTranscripts
   handleClose: () => void
 }) {
   const { classes } = useStyles()
@@ -68,6 +71,7 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
             feature={feature}
             hoverTarget={hoverTarget}
             showOpenInDialog={false}
+            canonicalTranscripts={canonicalTranscripts}
           />
         ) : (
           <LoadingEllipses message="Loading feature" />

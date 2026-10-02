@@ -1,4 +1,5 @@
 import type { MenuItem } from '../ui/MenuTypes.ts'
+import type { CanonicalTranscripts } from '../util/isoformRank.ts'
 import type { SimpleFeatureSerialized } from '../util/simpleFeature.ts'
 import type {
   SequenceFeatureDetailsModel,
@@ -16,6 +17,7 @@ export interface FeatureDetailsModel
   maxDepth: number | undefined
   sequenceFeatureDetails: SequenceFeatureDetailsModel
   view: { assemblyNames: string[] } | undefined
+  canonicalTranscripts?: CanonicalTranscripts
 }
 
 // recursive to allow tagging nested data attributes

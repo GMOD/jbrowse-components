@@ -1,7 +1,15 @@
+import {
+  DEFAULT_CANONICAL_TRANSCRIPTS,
+  isoformScorer,
+  rankIsoforms,
+  serializedIsoformReader,
+} from '../../util/isoformRank.ts'
+
 import type {
   SimpleFeatureSerialized,
   SimpleFeatureSerializedNoId,
 } from '../../util/index.ts'
+import type { CanonicalTranscripts } from '../../util/isoformRank.ts'
 import type { SequenceDisplayMode, ShowCoordinatesMode } from './model.ts'
 
 // these predicates only ever read type/subfeatures, so they accept a bare
@@ -48,24 +56,18 @@ export function getTranscripts(
   )
 }
 
-// index of the transcript the gene glyph itself would collapse to in
-// 'longestCoding' mode (RenderFeatureDataRPC/glyphs/subfeatures.ts): prefer a
-// coding transcript, then the longest span — so the sequence panel's default
-// matches what the track already drew. A feature that is itself a transcript
-// (clicked directly, not via its container gene) has no nested transcripts to
-// autopick from.
+// The isoform the canvas gene glyph draws first, so the panel opens on the
+// transcript the track showed. A feature that is itself a transcript has no
+// nested transcripts to pick from.
 export function pickDefaultTranscriptIndex(
   transcripts: SimpleFeatureSerialized[],
+  canonical: CanonicalTranscripts = DEFAULT_CANONICAL_TRANSCRIPTS,
 ) {
-  if (transcripts.length === 0) {
-    return 0
-  }
-  const coding = transcripts.filter(t => featureHasCDS(t))
-  const candidates = coding.length > 0 ? coding : transcripts
-  const longest = candidates.reduce((a, b) =>
-    b.end - b.start > a.end - a.start ? b : a,
+  const [best] = rankIsoforms(
+    transcripts,
+    isoformScorer(serializedIsoformReader, canonical),
   )
-  return transcripts.indexOf(longest)
+  return best ? transcripts.indexOf(best) : 0
 }
 
 export function getDefaultMode(

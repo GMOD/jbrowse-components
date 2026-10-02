@@ -2,6 +2,10 @@ import { getEnv, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import { hydrateTrackConfig } from '../configuration/index.ts'
 import { getSession } from '../util/index.ts'
+import {
+  DEFAULT_CANONICAL_TRANSCRIPTS,
+  isCanonicalTranscriptsHost,
+} from '../util/isoformRank.ts'
 import { ElementId } from '../util/types/mst.ts'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model.ts'
 import { applyFormatDetails, formatDetailsNumber } from './formatDetails.ts'
@@ -12,6 +16,7 @@ import type {
   ParentFeatureSummary,
   SimpleFeatureSerialized,
 } from '../util/index.ts'
+import type { CanonicalTranscripts } from '../util/isoformRank.ts'
 import type { SequenceHoverPosition } from './SequenceFeatureDetails/model.ts'
 import type { FormatDetailsTiers } from './formatDetails.ts'
 import type { Descriptors, MaybeSerializedFeat } from './types.tsx'
@@ -163,6 +168,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
           console.error(error)
           return { error }
         }
+      },
+      /**
+       * #getter
+       * the isoform tags the open track's display ranks by, so the sequence
+       * panel opens on the transcript the track draws first
+       */
+      get canonicalTranscripts(): CanonicalTranscripts {
+        const track = self.track as { displays: unknown[] } | undefined
+        return (
+          track?.displays.find(isCanonicalTranscriptsHost)
+            ?.canonicalTranscripts ?? DEFAULT_CANONICAL_TRANSCRIPTS
+        )
       },
       /**
        * #getter
