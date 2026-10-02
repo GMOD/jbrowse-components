@@ -51,6 +51,43 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 - our bubble projections of the graph, with the exact build recorded beside
   them: https://jbrowse.org/demos/hprc/README.txt
 
+## The lanes track
+
+The lanes come from one track that reads the release's gbz-base database
+directly. The HPRC page's **haplotypes** launch adds it, and this config is the
+one to adapt for your own graph, whose database and haplotype index
+[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-a-gbz-base-database)
+builds. List an assembly per haplotype in `assemblyNames`, and map each to its
+PanSN `sample#haplotype` name in `assemblyNameToPanSN`:
+
+```json addtrack
+{
+  "type": "GraphTrack",
+  "trackId": "hprc_v2_1_gbz_lanes",
+  "name": "HPRC release 2 haplotypes vs GRCh38, read from the graph (gbz-base)",
+  "assemblyNames": ["hg38", "HG00097.1", "HG00099.1"],
+  "adapter": {
+    "type": "GbzBaseSyntenyAdapter",
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db",
+    "haplotypeIndexLocation": {
+      "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db"
+    },
+    "assemblyNames": ["hg38"],
+    "assemblyNameToPanSN": {
+      "hg38": "GRCh38#0",
+      "HG00097.1": "HG00097#1",
+      "HG00099.1": "HG00099#1"
+    },
+    "context": 1000,
+    "nodeLimit": 50000
+  },
+  "displays": [
+    { "type": "MultiWaySyntenyDisplay", "height": 600 },
+    { "type": "LinearGraphDisplay" }
+  ]
+}
+```
+
 ## CFH: a two-gene deletion
 
 Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and
@@ -95,7 +132,6 @@ haplotypes land on H1a, H2A0, H3r, H5 and H7:
 | the same              | 3             | H3r       |
 | 94 kb longer          | 5             | H5        |
 | 188 kb longer         | 7             | H7        |
-| 282 kb longer         | 9             | H9        |
 
 ## Inversions
 
@@ -177,6 +213,11 @@ The whole build, for the five haplotypes in the figures above:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_amylase_haplotypes.sh
 bash build_amylase_haplotypes.sh
 ```
+
+The build script writes the `config.json` that this session opens, with the five
+haplotypes' assemblies, their gene tracks and the `amylase_adjacent` alignments.
+The session below names it by its path in the repo; point `config=` at your
+copy:
 
 ```json session config=test_data/amylase/config.json
 {
