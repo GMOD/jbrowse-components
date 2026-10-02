@@ -92,18 +92,22 @@ alignment as the base-level graph `vg deconstruct -P GRCh38` writes the VCFs
 from and as the MAF. So the MAF is the same alignment as the VCFs, not an
 independent check of them, and the drawn `sv.gfa` came first.
 
-Four VCFs sit beside each build. Measured at MHC class II and C4 (2026-10-02):
+Four VCFs sit beside each build. Measured at MHC class II, C4 and HP (2026-10-02):
 
 - **`pgbi.vcf.gz`** (PanGenie's bi-allelic input) splits each snarl into one
   record per whole allele. The HLA-DRB5 allele is four records (REF 12,014 bp,
   ALTs 1,768-1,769 bp, 46 of 462 haplotypes); the C4 module deletion is one
   (REF 32,738 bp at chr6:31,996,629, 154 haplotypes). `alleleLength>=50` alone
   matches the graph's tier, which is why `pangenome_hprc` reads this file.
-- **`wave.vcf.gz`** decomposes each allele into its smallest differences: about
-  90 records of 50 bp or more across DRB5, all `LV=1` under a parent snarl with
-  no record. `LV==0` then blanks the region (DRB5, HLA-DRB1 at
-  32,570,542-32,592,610, all of chr6:32,000,000-32,020,000 at C4), and the
-  portal's comment in `pangenomeLinks.ts` records the same at HP.
+- **`wave.vcf.gz`** decomposes each allele into its smallest differences, and
+  nests records under a parent snarl that often has no record of its own. In
+  the portal's MHC window (chr6:32,510,000-32,600,000) 181 of its 224 records of
+  50 bp or more are `LV=1`, all inside 32,512,256-32,573,523, so `LV==0` blanks
+  HLA-DRB5 and leaves HLA-DRB1 its records. At HP (chr16:72,040,000-72,090,000)
+  it keeps 1 of 11 and drops the 1.7 kb deletion in 190 of 461 haplotypes. At
+  C4 every record is `LV=0` and the filter drops nothing. wave lists CHM13, so
+  464 haplotypes, and leaves some uncalled at nested records (336 called, at
+  worst, at MHC).
 - **`vcf.gz`** (vcfbub, top level) has no records at all across
   chr6:32,486,309-32,575,299, so it cannot stand in.
 - **`pgin.vcf.gz`** matches `vcf.gz` record for record at MHC.

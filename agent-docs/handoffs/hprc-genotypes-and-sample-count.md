@@ -43,8 +43,10 @@ step also moves every other graph figure
   (`website/docs` outside the pangenome pages). The claudish checklist names the
   pattern and its `scan.sh` labels it under `agency`.
 - jb2hubs: the variants launch still filters `wave.vcf.gz` with `LV==0`, which
-  blanks HLA-DRB1 in its own MHC window. Its comment in `pangenomeLinks.ts`
-  justifies the filter by this tutorial, which no longer uses it. Switching the
-  launch to `pgbi` is Colin's call.
+  blanks HLA-DRB5 in the MHC window and the 1.7 kb HP deletion (not DRB1, as
+  the comment in `pangenomeLinks.ts` says). The comment justifies the filter by
+  this tutorial, which no longer uses it. Switching the launch to `pgbi` is
+  Colin's call; the case, drawn per window, is in `reference/HPRC_RELEASE2.md`
+  §"Which VCF to read the graph against".
 - `~/src/claudish` has `edfa0d6` (the carry entry) on a main that was already
   five commits ahead of origin; nothing pushed.
