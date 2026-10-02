@@ -117,10 +117,23 @@ span of GRCh38 it replaces, which covers most of _HLA-DRB5_.
 ## Check it on the haplotype
 
 Left-click the allele. Its details give `contributingHaplotype`, `NA20809#2`,
-the first assembly the graph saw the allele in. Right-click it again and take
-**Open in NA20809.2**. A second linear view opens below the first, on that
-haplotype's chromosome 6, framed on the allele with its CAT gene annotation.
-Zoom out a few steps.
+the first assembly the graph saw the allele in. **Open in** appears when the
+session holds an assembly named or aliased `sample#haplotype`. The launch's
+config declares every release 2 haplotype that way; to declare one yourself,
+load its contig sizes, or its FASTA, under a name the browser shows and an alias
+that is the graph's name:
+
+```json addassembly
+{
+  "name": "NA20809.2",
+  "aliases": ["NA20809#2"],
+  "uri": "https://jbrowse.org/pangenome/hprc-grch38/NA20809.2.chrom.sizes"
+}
+```
+
+Right-click the allele again and take **Open in NA20809.2**. A second linear
+view opens below the first, on that haplotype's chromosome 6, framed on the
+allele with its CAT gene annotation. Zoom out a few steps.
 
 <Figure caption="The same launch in two frames. First, the MHC class II cut in the force-directed layout, with the NA20809.2 allele ringed and its right-click menu open on Open in NA20809.2. Second, the view that entry opens: NA20809 haplotype 2's chromosome 6 with its CAT genes." src="/img/pangenome/hprc_haplotype_launch.png" />
 

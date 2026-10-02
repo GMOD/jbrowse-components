@@ -26,7 +26,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 ## Prerequisites
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
-- htslib (`bgzip`, `tabix`), `python3`, `sort`
+- htslib (`bgzip`, `tabix`), `bcftools`, `python3`, `sort`
 - [`gfatools`](https://github.com/lh3/gfatools) and GNU awk, for an rGFA
 - [`minigraph`](https://github.com/lh3/minigraph), for carriage
 - [`vg`](https://github.com/vgteam/vg) 1.69.0+,
@@ -90,7 +90,20 @@ bash build_pangenome_graph.sh graph.rgfa.gz out --assembly hg38
 ```
 
 A **plain GFA**, from pggb, odgi, vg or base-level Minigraph-Cactus, also needs
-the backbone sample and its bubbles from `vg deconstruct`:
+the backbone sample and its bubbles. `vg deconstruct` writes the snarl VCF the
+bubbles come from, one record per top-level snarl against the reference path
+(`pggb -V` writes the same file). The VCF's CHROM must be the assembly's
+refName, so rename the PanSN path as the
+[pggb tutorial](/docs/tutorials/pangenome_ecoli#opening-the-graph-in-the-graph-genome-view)
+does:
+
+```bash
+# -p: the reference path to decompose against
+vg deconstruct -p K12#1#chr graph.gbz > graph.snarls.vcf
+printf 'K12#1#chr\tchr\n' > rename_chrs.tsv
+bcftools annotate --rename-chrs rename_chrs.tsv graph.snarls.vcf \
+  | bcftools sort -Oz -o graph.snarls.vcf.gz
+```
 
 ```bash
 bash build_pangenome_graph.sh graph.gfa out --reference K12 --assembly K12 --snarls graph.snarls.vcf.gz
@@ -151,6 +164,9 @@ Turned on, the track draws as a graph. **Display types → Feature display** in
 its track menu draws the same segments as a lane.
 
 <Figure caption="The HPRC graph's segment index drawn over the C4 region on hg38. The segments tile the window end to end and break where the graph branches. The slivers fall among the C4 and CYP21 copies, with long unbroken segments either side." src="/img/pangenome/prepare_graph_segments.png" />
+
+The command writes `out.config.json`. Merge its `plugins` and `tracks` entries
+into your own config.
 
 The other three tracks in the config draw the bubbles as a lane and as a curve,
 and the allele inventory as an alignments track. Turn them on and switch the
