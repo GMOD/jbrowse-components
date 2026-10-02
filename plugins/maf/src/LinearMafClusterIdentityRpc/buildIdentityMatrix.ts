@@ -49,12 +49,9 @@ interface RegionSegment {
  * region's slice contiguous and its own. Binning every region against one
  * `min(starts)`..`max(ends)` ruler instead put two chromosomes' positions in
  * the same bins and spent the budget on the gap between non-overlapping ones.
- * `buildSegments` in `plugins/wiggle/src/WiggleRPC/getScoreMatrix.ts` is the
- * same shape for the same reason, but apportions its columns by pixel width
- * rather than by share of the span; the third region binner,
- * `plugins/canvas/src/MultiRowClusterFeaturesRPC/buildMultiRowMatrix.ts`,
- * emits bin midpoints a binary search reads rather than segments carrying a
- * column offset.
+ * `columnSegments` in `@jbrowse/tree-sidebar/binColumns` is the same shape for
+ * the same reason, but apportions its columns by pixel width rather than by
+ * share of the span.
  *
  * A region gets at least one column and never more than it has bases, so a
  * whole-genome view of many small regions can exceed `MAX_COLUMNS` by at most

@@ -30,7 +30,7 @@ describe('presence: one channel per bin', () => {
       sources: ['s1', 's2', 's3'],
       regions: [{ start: 0, end: 10 }],
       clusterField: '',
-      maxBins: 4, // midpoints at 1.25, 3.75, 6.25, 8.75
+      maxBins: 4, // bins of 2.5 bp
       features: [
         feature('s1', 0, 10, 'ignored'),
         feature('s2', 0, 5, 'ignored'),
@@ -52,15 +52,27 @@ describe('presence: one channel per bin', () => {
     expect(row).toEqual([1, 0])
   })
 
-  test('a feature between two midpoints covers nothing', () => {
+  test('a feature narrower than a bin counts in the bin it starts in', () => {
     const [row] = buildRows({
       sources: ['s1'],
       regions: [{ start: 0, end: 10 }],
       clusterField: '',
-      maxBins: 2, // midpoints at 2.5, 7.5
-      features: [feature('s1', 4, 6)],
+      maxBins: 2, // bins of 5 bp
+      features: [feature('s1', 6, 7)],
     })
-    expect(row).toEqual([0, 0])
+    expect(row).toEqual([0, 1])
+  })
+
+  test('a 1 bp categorical feature in a 200-bin megabase row is not empty', () => {
+    const [row] = buildRows({
+      sources: ['s1'],
+      regions: [{ start: 0, end: 1_000_000 }],
+      clusterField: 'state',
+      maxBins: 200,
+      features: [feature('s1', 500_100, 500_101, 'A')],
+    })
+    // Slots are A, gap; bin 100 starts at 500 kb.
+    expect(row!.slice(200, 202)).toEqual([1, 0])
   })
 
   test('a feature hanging off either end covers the bins it reaches', () => {
@@ -71,7 +83,7 @@ describe('presence: one channel per bin', () => {
       maxBins: 4,
       features: [feature('s1', -100, 7)],
     })
-    expect(row).toEqual([1, 1, 1, 0])
+    expect(row).toEqual([1, 1, 0, 0])
   })
 })
 
@@ -93,7 +105,7 @@ describe('scalar: the mean over each bin', () => {
       sources: ['s1'],
       regions: [{ start: 0, end: 10 }],
       clusterField: 'segmean',
-      maxBins: 2, // midpoints at 2.5, 7.5
+      maxBins: 2, // bins of 5 bp
       features: [feature('s1', 0, 10, '1'), feature('s1', 0, 5, '3')],
     })
     expect(row).toEqual([2, 1])
@@ -163,7 +175,7 @@ describe('categorical: one channel per distinct value', () => {
       sources: ['same', 'oneOff'],
       regions: [{ start: 0, end: 10 }],
       clusterField: 'state',
-      maxBins: 4, // midpoints 1.25, 3.75, 6.25, 8.75
+      maxBins: 4, // bins of 2.5 bp
       features: [
         feature('same', 0, 10, 'A'),
         feature('oneOff', 0, 10, 'A'),
@@ -190,7 +202,7 @@ describe('categorical: one channel per distinct value', () => {
       sources: ['s1'],
       regions: [{ start: 0, end: 10 }],
       clusterField: 'state',
-      maxBins: 2, // midpoints at 2.5, 7.5
+      maxBins: 2, // bins of 5 bp
       features: [feature('s1', 0, 10, 'A'), feature('s1', 0, 5, 'B')],
     })
     // Slots are A, B, gap: the first bin took B, the second kept A.

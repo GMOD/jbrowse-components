@@ -25,10 +25,30 @@ export function columnSegments(
 }
 
 /**
- * Add `value` to every column of `segment` that `[start, end)` covers, in the
- * row starting at `rowOffset` of `sums` and `counts`. Both edges truncate, and
- * a span narrower than a column counts in the column it starts in, so
- * base-resolution data never bins to an all-zero row.
+ * The columns of `segment` that `[start, end)` covers, as offsets from its
+ * first, empty for a span off it. Both edges truncate, and a span narrower
+ * than a column covers the column it starts in, so base-resolution data never
+ * bins to an all-zero row.
+ */
+export function spanColumns(
+  segment: ColumnSegment,
+  invBpPerPx: number,
+  start: number,
+  end: number,
+) {
+  const { width, regionStart } = segment
+  if (end <= regionStart) {
+    return { startX: 0, endX: 0 }
+  }
+  const startX = Math.max(0, ((start - regionStart) * invBpPerPx) | 0)
+  const rawEndX = ((end - regionStart) * invBpPerPx) | 0
+  return { startX, endX: Math.min(width, Math.max(rawEndX, startX + 1)) }
+}
+
+/**
+ * Add `value` to every column of `segment` that `spanColumns` says
+ * `[start, end)` covers, in the row starting at `rowOffset` of `sums` and
+ * `counts`.
  */
 export function binSpan(
   sums: Float64Array,
@@ -40,14 +60,8 @@ export function binSpan(
   end: number,
   value: number,
 ) {
-  const { colOffset, width, regionStart } = segment
-  if (end <= regionStart) {
-    return
-  }
-  const startX = Math.max(0, ((start - regionStart) * invBpPerPx) | 0)
-  const rawEndX = ((end - regionStart) * invBpPerPx) | 0
-  const endX = Math.min(width, Math.max(rawEndX, startX + 1))
-  const base = rowOffset + colOffset
+  const { startX, endX } = spanColumns(segment, invBpPerPx, start, end)
+  const base = rowOffset + segment.colOffset
   for (let x = startX; x < endX; x++) {
     sums[base + x]! += value
     counts[base + x]! += 1
