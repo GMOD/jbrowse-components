@@ -250,11 +250,13 @@ at an exon edge of that same intron, where splicing joins the transcript.
 | _XKR3_ acceptor | chr22:16,808,083, start of exon 3 | chr22:16,819,350          | 11 kb, in intron 2    |
 | none            | no call                           | chr9:131,280,138 to chr13 | no gene at either end |
 
-The amplified block on chr9 ends where the DNA breaks do. The right-hand break
-joins chr9 to a point on chr13 outside any gene, so no transcript crosses it and
-no fusion caller reports it. DepMap's segmentation has no interval over _BCR_,
-so the donor window shows an arc and no copy-number step. SplitThreader applied
-the same reasoning to the _ERBB2_ amplicon in SK-BR-3
+The _ABL1_ break in intron 1 is the same locus that
+[the Hi-C scan](/docs/tutorials/hic_structural_variants) pairs with _BCR_. The
+amplified block on chr9 ends where the DNA breaks do. The right-hand break joins
+chr9 to a point on chr13 outside any gene, so no transcript crosses it and no
+fusion caller reports it. DepMap's segmentation has no interval over _BCR_, so
+the donor window shows an arc and no copy-number step. SplitThreader applied the
+same reasoning to the _ERBB2_ amplicon in SK-BR-3
 ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)): copy-number
 steps and breakpoints describing the same interval are evidence of one event.
 

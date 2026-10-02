@@ -167,9 +167,11 @@ bash scan_hic_translocation.sh
 same scan applies to any two `.hic` files that hold inter-chromosomal blocks.
 The top row pairs _ABL1_ intron 1 with the 5' end of _BCR_. Drop `RES` to
 `10000` and it lands on the junction itself, _ABL1_ intron 1 against the _BCR_
-major breakpoint cluster region. Further down, a second chr9 partner elsewhere
-on chr22 sits well clear of the control; the ranking is a list of candidates to
-open.
+major breakpoint cluster region.
+[The K562 fusions tutorial](/docs/tutorials/k562_fusions) places the DNA break
+of the same fusion in that _ABL1_ intron 1. Further down, a second chr9 partner
+elsewhere on chr22 sits well clear of the control; the ranking is a list of
+candidates to open.
 
 Purpose-built callers scan the whole genome:
 [EagleC](https://github.com/XiaoTaoWang/EagleC),
