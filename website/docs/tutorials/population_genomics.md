@@ -116,8 +116,17 @@ bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
 ```
 
 Diversity is the same three steps with `--window-pi 2000`, reading `$5` of
-`pi_all.windowed.pi`, with `--keep` restricting it to one arrangement. `$4` of
-the same table is the called-variant count the figure below stacks under π.
+`pi_all.windowed.pi`, with `--keep` restricting it to one arrangement:
+
+<!-- from: scripts/build_dgrp_popgen.sh -->
+
+```bash
+vcftools --gzvcf dgrp2.vcf.gz --window-pi 2000 --out pi_all
+vcftools --gzvcf dgrp2.vcf.gz --keep In2Lt_INV.txt --window-pi 2000 --out pi_INV
+```
+
+`$4` of the same table is the called-variant count the figure below stacks under
+π, packed into a bigWig by the same `awk` and `bedGraphToBigWig` pair.
 
 The inverted and standard groups are very unequal in size, since the inverted
 arrangement is the rarer one. Hudson's estimator is the usual recommendation
@@ -164,10 +173,43 @@ of the panel.
 
 ## Loading the scans in JBrowse
 
-With a dm6 assembly and gene track loaded (see
-[configuring assemblies](/docs/config_guides/assemblies) and
-[gene tracks](/docs/user_guides/gene_track)), each scan is a
-[quantitative track](/docs/user_guides/quantitative_track) over its bigWig:
+We load the dm6 assembly from UCSC. Its reference names arms `chr2L`, and the
+alias file maps them to the bare `2L` the scans carry:
+
+```json addassembly
+{
+  "name": "dm6",
+  "aliases": ["BDGP6"],
+  "sequence": {
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit"
+    }
+  },
+  "refNameAliases": {
+    "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.chromAlias.txt"
+  }
+}
+```
+
+The gene track is UCSC's RefSeq annotation of dm6:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "dm6_ncbiRefSeq",
+  "name": "NCBI RefSeq genes",
+  "assemblyNames": ["dm6"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/ucsc/dm6/ncbiRefSeq.gff.gz"
+  }
+}
+```
+
+Each scan is then a [quantitative track](/docs/user_guides/quantitative_track)
+over its bigWig. To load your own, swap `uri` for the bigWig your build wrote;
+its contig names must match the assembly or its aliases.
 
 ```json addtrack
 {
@@ -268,13 +310,51 @@ symmetric axis:
 ## Reading the signals
 
 Search `Cyp6g1` (on `2R`) in the location box. Add three more tracks, each a
-`QuantitativeTrack` shaped like the Fst one above with its own `uri`:
+`QuantitativeTrack` shaped like the Fst one above: Tajima's D over the whole
+panel, π over the whole panel, and the called-variant count per window, column 4
+of the table π comes from.
 
-- Tajima's D over the whole panel,
-  `https://jbrowse.org/demos/popgen/tajimad_all.bw`
-- π over the whole panel, `https://jbrowse.org/demos/popgen/pi_all.bw`
-- the called-variant count per window, column 4 of the table π comes from,
-  `https://jbrowse.org/demos/popgen/sites_all.bw`
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "tajd_all",
+  "name": "Tajima's D (whole panel)",
+  "assemblyNames": ["dm6"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/tajimad_all.bw"
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "pi_all",
+  "name": "π (whole panel)",
+  "assemblyNames": ["dm6"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/pi_all.bw"
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "sites_all",
+  "name": "Called variants per window",
+  "assemblyNames": ["dm6"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/sites_all.bw"
+  }
+}
+```
+
+To band the swept window, drag across `chr2R:12,130,000-12,200,000` on the
+scalebar and pick **Highlight region**.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip together over the highlighted window against their background either side, and the count of called variants under them falls with them."/>
 
@@ -300,6 +380,41 @@ same way.
 Open the assembly with no location to lay the six arms out side by side. The
 `In(2L)t` Fst track rises over the inverted region of 2L against low background
 everywhere else.
+
+The inversion itself is one `<INV>` record spanning the published breakpoints,
+genotyped `1/1` in the inverted lines and `0/0` in the standard ones. The `END`
+field carries the far breakpoint:
+
+```text
+#CHROM  POS      ID     REF  ALT    QUAL  FILTER  INFO                     FORMAT  DGRP-026  DGRP-032
+2L      2225744  In2Lt  N    <INV>  .     PASS    SVTYPE=INV;END=13154180  GT      1/1       0/0
+```
+
+The samples TSV pairs each line with its `karyotype`, which the display bands
+and colors rows by:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "dgrp_In2Lt_sv",
+  "name": "In(2L)t inversion genotyped across DGRP lines",
+  "assemblyNames": ["dm6"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz",
+    "samplesTsvLocation": {
+      "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv"
+    }
+  },
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] },
+      "rowColor": "karyotype"
+    }
+  ]
+}
+```
 
 Then open `chr2L` alone, with the π ratio track under Fst:
 
