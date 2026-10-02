@@ -32,6 +32,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - `python3` and htslib (`bgzip`, `tabix`), to build the
   [OMIA lane](#the-celtic-polled-allele)
+- [`vg`](https://github.com/vgteam/vg), to
+  [deconstruct](#hspa1a-in-the-graph-and-the-callset) the graph into a callset
 
 ## Where the data comes from
 
@@ -57,6 +59,46 @@ and OMIA supplies the curated causal variants:
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) describes what
 each of the graph files holds and how a graph produces them.
+
+## Load the genome and the graph
+
+We'll load the reference the graph is anchored to, then the graph track. Swap
+the prefix in `uri` for your own build of `build_pangenome_graph.sh`, which
+writes the tabix-indexed segments and links and the tier. `assemblyNameToPanSN`
+maps the assembly's name to the name its path lines carry.
+
+```json addassembly
+{
+  "name": "bosTau9",
+  "aliases": ["ARS-UCD1.2"],
+  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/bosTau9/bigZips/bosTau9.2bit",
+  "refNameAliases": {
+    "uri": "https://jbrowse.org/ucsc/bosTau9/bosTau9.chromAlias.txt"
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "GraphTrack",
+  "trackId": "bovine_minigraph_segments",
+  "name": "Bovine super-pangenome (rGFA segments)",
+  "assemblyNames": ["bosTau9"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph",
+    "assemblyNameToPanSN": { "bosTau9": "bosTau9" },
+    "coarse": {
+      "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000",
+      "aboveBpPerPx": 880
+    }
+  },
+  "displays": [
+    { "type": "LinearGraphDisplay" },
+    { "type": "LinearBasicDisplay" }
+  ]
+}
+```
 
 ## A whole chromosome
 
@@ -97,8 +139,19 @@ vg convert -g chr1.gfa -p > chr1.vg
 vg deconstruct -p chr1 -a -t 8 chr1.vg > chr1.vcf
 ```
 
-The VCF names each assembly by the three-letter code on its path in the graph.
-The sample table gives each code a breed and a lineage, so `rows.labels` writes
+The VCF's CHROM column is the `-p` path name, so it has to equal the assembly's
+refName. The VCF names each assembly by the three-letter code on its path in the
+graph. The sample table is a TSV whose first column is that code, so it has to
+equal the VCF's sample names; a mismatch leaves the row unlabelled without an
+error:
+
+```text
+name	breed	lineage
+ANG	Angus	taurine
+BIS	Bison	bison
+```
+
+The other columns give each code a breed and a lineage, so `rows.labels` writes
 the breed beside each row, `rowColor` tints the row by lineage, and
 `rows.domain` lists the cattle breeds above the wild species. Every assembly is
 one haplotype, and `renderingMode: "phased"` draws one row per assembly with a
