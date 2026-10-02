@@ -41,7 +41,7 @@ Ensembl Plants release 63 as
   https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/gff3/avena_sativa_gca951802345v1cm/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.63.gff3.gz
 - the CDS the proteome is translated from:
   https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/fasta/avena_sativa_gca951802345v1cm/cds/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.cds.all.fa.gz
-- the wheat panel's annotations (Aegilops tauschii, sorghum, bread wheat) and
+- the wheat stack's annotations (Aegilops tauschii, sorghum, bread wheat) and
   the sorghum-anchored Compara homology table, same release:
   https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/
 
@@ -267,18 +267,23 @@ npx --yes serve oat_homoeologs_build/jbrowse2  # then open the printed URL
 
 The script needs the tools under [Prerequisites](#prerequisites) on PATH.
 
-The wheat half of the [two-hexaploid figure](#reading-the-plot) is a second
-script, taking the Compara route:
+A second script takes the Compara route for bread wheat, reading Compara's
+already-called pairs through
+[`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py),
+so no aligner runs. It builds a three-row stack:
+
+1. sorghum, a diploid outgroup, on top, so each of its genes fans out to bread
+   wheat's three homoeologs, one per subgenome
+2. bread wheat in the middle, each link carrying how many orthologs its sorghum
+   gene has in wheat, so the genes that kept all three copies separate from the
+   ones that lost one
+3. _Aegilops tauschii_, the donor of the D subgenome alone, at the bottom as the
+   control: through the same pipeline it has to come out at one copy per gene
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_wheat_homoeologs.sh
 bash build_wheat_homoeologs.sh   # writes ./wheat_homoeologs_build/
 ```
-
-[`build_wheat_homoeologs.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_wheat_homoeologs.sh)
-reads Ensembl Compara's homoeolog tables through
-[`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py);
-the pairs are already called, so no aligner runs.
 
 ## See also
 

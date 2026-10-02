@@ -374,6 +374,7 @@ LINEAGE = [
     ("cDC", "Dendritic", "#9467bd"),
     ("pDC", "Dendritic", "#17becf"),
     ("Platelet", "Platelet", "#7f7f7f"),
+    ("Unassigned", "Unassigned", "#c7c7c7"),
 ]
 STYLE = {name: (group, color) for name, group, color in LINEAGE}
 
@@ -551,6 +552,7 @@ STYLE = [
     ("cDC", "Dendritic", "#9467bd"),
     ("pDC", "Dendritic", "#17becf"),
     ("Platelet", "Platelet", "#7f7f7f"),
+    ("Unassigned", "Unassigned", "#c7c7c7"),
 ]
 
 src = json.load(open("out/cells.json"))

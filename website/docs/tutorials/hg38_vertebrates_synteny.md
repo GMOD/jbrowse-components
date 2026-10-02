@@ -249,7 +249,7 @@ set; see [Prerequisites](#prerequisites).
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hg38_liftover_multiway.sh
-bash build_hg38_liftover_multiway.sh
+bash build_hg38_liftover_multiway.sh   # writes ./hg38_vertebrates_build/config.json
 ```
 
 ## See also

@@ -8,11 +8,13 @@
 #
 # Requires: curl, python3, tabix (for the coarse-tier report)
 # Usage:    bash scripts/build_hg38_liftover_multiway.sh [config.json]
+#           bash scripts/build_hg38_liftover_multiway.sh demos/hg38_vertebrates/config.json
+#             (the checked-in demo copy)
 #           GENOMES="panTro6 mm39" bash scripts/build_hg38_liftover_multiway.sh
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="${1:-$REPO_ROOT/demos/hg38_vertebrates/config.json}"
+OUT="${1:-hg38_vertebrates_build/config.json}"
 GENOMES="${GENOMES:-panTro6 gorGor6 ponAbe3 rheMac10 calJac4 mm39 canFam6 bosTau9}"
 HUB=https://jbrowse.org/ucsc
 CACHE="${TMPDIR:-/tmp}/hg38_liftover_multiway"
