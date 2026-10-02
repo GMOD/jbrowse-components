@@ -64,6 +64,63 @@ contributed each allele, and `firstSeenIn` in the allele file is that
 construction order. Which strains carry an allele is not in the graph.
 [](/docs/tutorials/pangenome_cattle) is a panel whose path lines give carriage.
 
+## Load the graph
+
+We'll load the reference, then the graph and its bubbles. The graph track names
+the file prefix `build_pangenome_graph.sh` writes, and the `uri`s below are our
+hosted copy, so swap the prefix for your own build. The segments, links and
+bubbles are tabix-indexed, and `assemblyNameToPanSN` maps the assembly's name to
+the name its path lines carry.
+
+```json addassembly
+{
+  "name": "mm39",
+  "aliases": ["GRCm39"],
+  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.2bit",
+  "refNameAliases": {
+    "uri": "https://jbrowse.org/ucsc/mm39/mm39.chromAlias.txt"
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "GraphTrack",
+  "trackId": "mouse_minigraph_segments",
+  "name": "Mouse strain pangenome (rGFA segments)",
+  "assemblyNames": ["mm39"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph",
+    "assemblyNameToPanSN": { "mm39": "mm39" },
+    "coarse": {
+      "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000",
+      "aboveBpPerPx": 328
+    }
+  },
+  "displays": [
+    { "type": "LinearGraphDisplay" },
+    { "type": "LinearBasicDisplay" }
+  ]
+}
+```
+
+The bubbles lane reads the same build's bubble index:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "mouse_minigraph_bubbles",
+  "name": "Mouse strain pangenome bubbles",
+  "assemblyNames": ["mm39"],
+  "adapter": {
+    "type": "MinigraphBubbleAdapter",
+    "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz",
+    "assemblyNameToPanSN": { "mm39": "mm39" }
+  }
+}
+```
+
 ## Open a chromosome
 
 On the [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse),
