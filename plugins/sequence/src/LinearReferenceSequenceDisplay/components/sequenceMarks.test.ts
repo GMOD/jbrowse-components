@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/render-core/marks/drawAgainstHit'
 
 import { encodeSequenceCells } from './sequenceCells.ts'
-import { rowLayout } from './sequenceGeometry.ts'
+import { rowLayout, seqColor } from './sequenceGeometry.ts'
 import {
   BASE_MARK,
   CODON_MARK,
@@ -19,7 +19,7 @@ import { UNIFORM_OFFSET_U32 } from './shaders/sequenceCell.iface.generated.ts'
 
 import type { SequenceRegionData } from '../model.ts'
 import type { SequenceCellChannels } from './sequenceCells.ts'
-import type { ColorPalette, SeqColor } from './sequenceGeometry.ts'
+import type { ColorPalette } from './sequenceGeometry.ts'
 import type { SequenceMarkState } from './sequenceMarks.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -28,21 +28,21 @@ const END = 1010
 const BLOCK_WIDTH = 200
 const PX_PER_BP = BLOCK_WIDTH / (END - START)
 
-function seqColor(fill = 'rgb(0,128,0)'): SeqColor {
-  return { fill, text: '#000' }
+function color(fill = 'rgb(0,128,0)') {
+  return seqColor(fill, '#000')
 }
 
 const palette: ColorPalette = {
   bases: new Map([
-    ['A', seqColor('rgb(0,200,0)')],
-    ['C', seqColor('rgb(0,0,200)')],
-    ['G', seqColor('rgb(200,200,0)')],
-    ['T', seqColor('rgb(200,0,0)')],
+    ['A', color('rgb(0,200,0)')],
+    ['C', color('rgb(0,0,200)')],
+    ['G', color('rgb(200,200,0)')],
+    ['T', color('rgb(200,0,0)')],
   ]),
   frames: new Map(),
-  start: seqColor('rgb(0,255,0)'),
-  stop: seqColor('rgb(255,0,0)'),
-  fallback: seqColor('rgb(170,170,170)'),
+  start: color('rgb(0,255,0)'),
+  stop: color('rgb(255,0,0)'),
+  fallback: color('rgb(170,170,170)'),
 }
 
 const data: SequenceRegionData = {

@@ -1,9 +1,8 @@
 import { drawSequenceLetters } from './drawSequenceLetters.ts'
-import { rowLayout } from './sequenceGeometry.ts'
+import { rowLayout, seqColor } from './sequenceGeometry.ts'
 
 import type { SequenceRegionData } from '../model.ts'
-import type { SequenceRenderState } from './drawSequenceLetters.ts'
-import type { ColorPalette, SeqColor } from './sequenceGeometry.ts'
+import type { ColorPalette, SequenceRenderState } from './sequenceGeometry.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -33,16 +32,16 @@ function recordingCtx() {
   }
 }
 
-function seqColor(): SeqColor {
-  return { fill: 'rgb(0,128,0)', text: '#000' }
+function color() {
+  return seqColor('rgb(0,128,0)', '#000')
 }
 
 const palette: ColorPalette = {
-  bases: new Map([['A', seqColor()]]),
+  bases: new Map([['A', color()]]),
   frames: new Map(),
-  start: seqColor(),
-  stop: seqColor(),
-  fallback: seqColor(),
+  start: color(),
+  stop: color(),
+  fallback: color(),
 }
 
 const data: SequenceRegionData = {
@@ -102,6 +101,12 @@ test('a reversed block mirrors the letters and complements the top row', () => {
   const texts = lettersFor(true)
   expect(texts[0]).toEqual({ text: 'T', x: BLOCK_WIDTH - PX_PER_BP / 2, y: 5 })
   expect(texts.at(-1)).toEqual({ text: 'G', x: PX_PER_BP / 2, y: 5 })
+})
+
+test('a reversed block paints a peptide’s residues as they are', () => {
+  const texts = lettersFor(true, state({ isDna: false }))
+  expect(texts[0]?.text).toBe('A')
+  expect(texts.at(-1)?.text).toBe('C')
 })
 
 // START % 3 === 1, so frame +1's first whole codon is [START+2, START+5),

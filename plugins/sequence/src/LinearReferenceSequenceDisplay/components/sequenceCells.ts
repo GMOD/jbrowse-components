@@ -1,5 +1,4 @@
 import { complementTable, revcom } from '@jbrowse/core/util'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 
 import {
@@ -11,8 +10,8 @@ import {
 
 import type { SequenceRegionData } from '../model.ts'
 import type {
+  CellEncoding,
   ColorPalette,
-  RowVisibility,
   SeqColor,
 } from './sequenceGeometry.ts'
 import type { Frame } from '@jbrowse/core/util'
@@ -35,11 +34,6 @@ export interface SequenceCellChannels {
 export interface SequenceCells {
   bases: SequenceCellChannels
   codons: SequenceCellChannels
-}
-
-export interface CellEncoding extends RowVisibility {
-  isDna: boolean
-  palette: ColorPalette
 }
 
 /**
@@ -146,26 +140,17 @@ export function encodeSequenceCells(
     (Math.floor(len / 3) + 2) * (layout.length - baseRows),
   )
   const codonTable = getGeneticCode(data.geneticCodeId).codonTable
-  const packed = new Map<string, number>()
-  const abgr = ({ fill }: SeqColor) => {
-    let c = packed.get(fill)
-    if (c === undefined) {
-      c = cssColorToABGR(fill)
-      packed.set(fill, c)
-    }
-    return c
-  }
 
   for (const [slot, row] of layout.entries()) {
     if (row.type === 'base') {
-      const complemented = baseRowComplemented(row.strand, reversed)
+      const complemented = baseRowComplemented(row.strand, reversed, isDna)
       for (let i = 0; i < len; i++) {
         const { color } = baseCell(seq[i]!, complemented, isDna, palette)
-        pushCell(bases, start + i, start + i + 1, slot, abgr(color), true)
+        pushCell(bases, start + i, start + i + 1, slot, color.abgr, true)
       }
     } else {
       const { frame } = row
-      const bg = abgr(frameColor(frame, palette))
+      const bg = frameColor(frame, palette).abgr
       const { frameShift, sliceEnd } = frameShiftBounds(seq, start, frame)
       const lead = Math.min(frameShift, len)
       if (lead > 0) {
@@ -173,7 +158,7 @@ export function encodeSequenceCells(
       }
       for (let i = frameShift; i < sliceEnd; i += 3) {
         const { color } = codonCell(seq, i, frame, codonTable, palette)
-        pushCell(codons, start + i, start + i + 3, slot, abgr(color), true)
+        pushCell(codons, start + i, start + i + 3, slot, color.abgr, true)
       }
       if (sliceEnd < len) {
         pushCell(codons, start + sliceEnd, start + len, slot, bg, false)

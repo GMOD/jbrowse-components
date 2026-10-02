@@ -9,13 +9,29 @@ const seq = 'ATGGCC'
 
 test('forward base row reports the reference base', () => {
   expect(
-    hoverDetailForRow({ type: 'base', strand: 1 }, seq, 0, 0, false, standard),
+    hoverDetailForRow(
+      { type: 'base', strand: 1 },
+      seq,
+      0,
+      0,
+      false,
+      true,
+      standard,
+    ),
   ).toEqual({ type: 'base', strand: 1, base: 'A' })
 })
 
 test('reverse base row reports the complement', () => {
   expect(
-    hoverDetailForRow({ type: 'base', strand: -1 }, seq, 0, 0, false, standard),
+    hoverDetailForRow(
+      { type: 'base', strand: -1 },
+      seq,
+      0,
+      0,
+      false,
+      true,
+      standard,
+    ),
   ).toEqual({ type: 'base', strand: -1, base: 'T' })
 })
 
@@ -24,10 +40,26 @@ test('reverse base row reports the complement', () => {
 // own strand there labelled that complement "+ strand".
 test('reversed block swaps both the complement and the strand it is labelled', () => {
   expect(
-    hoverDetailForRow({ type: 'base', strand: 1 }, seq, 0, 0, true, standard),
+    hoverDetailForRow(
+      { type: 'base', strand: 1 },
+      seq,
+      0,
+      0,
+      true,
+      true,
+      standard,
+    ),
   ).toEqual({ type: 'base', strand: -1, base: 'T' })
   expect(
-    hoverDetailForRow({ type: 'base', strand: -1 }, seq, 0, 0, true, standard),
+    hoverDetailForRow(
+      { type: 'base', strand: -1 },
+      seq,
+      0,
+      0,
+      true,
+      true,
+      standard,
+    ),
   ).toEqual({ type: 'base', strand: 1, base: 'A' })
 })
 
@@ -42,6 +74,7 @@ test('the reported base is always the reported strand’s base', () => {
         0,
         0,
         reversed,
+        true,
         standard,
       )
       expect(detail?.type).toBe('base')
@@ -61,6 +94,7 @@ test('frame +1 translates the ATG start codon anywhere in it', () => {
         0,
         coord0,
         false,
+        true,
         standard,
       ),
     ).toEqual({
@@ -82,6 +116,7 @@ test('negative frame reverse-complements the forward codon', () => {
       0,
       0,
       false,
+      true,
       standard,
     ),
   ).toEqual({
@@ -101,6 +136,7 @@ test('stop codon TAA is flagged', () => {
       0,
       0,
       false,
+      true,
       standard,
     ),
   ).toEqual({
@@ -120,7 +156,22 @@ test('partial codon at the sequence edge yields no amino acid', () => {
       0,
       0,
       false,
+      true,
       standard,
     ),
   ).toBeUndefined()
+})
+
+test('a peptide residue on a reversed block is not complemented', () => {
+  expect(
+    hoverDetailForRow(
+      { type: 'base', strand: 1 },
+      'TKRD',
+      0,
+      0,
+      true,
+      false,
+      standard,
+    ),
+  ).toEqual({ type: 'base', strand: 1, base: 'T' })
 })

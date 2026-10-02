@@ -5,6 +5,7 @@ import {
   baseRowComplemented,
   buildColorPalette,
   codonKind,
+  codonPhase,
   frameShiftBounds,
   rowCount,
   rowLayout,
@@ -88,10 +89,22 @@ test('rowCount is zero only when both base rows are off', () => {
 })
 
 test('the base row showing the complement swaps under reversal', () => {
-  expect(baseRowComplemented(1, false)).toBe(false)
-  expect(baseRowComplemented(-1, false)).toBe(true)
-  expect(baseRowComplemented(1, true)).toBe(true)
-  expect(baseRowComplemented(-1, true)).toBe(false)
+  expect(baseRowComplemented(1, false, true)).toBe(false)
+  expect(baseRowComplemented(-1, false, true)).toBe(true)
+  expect(baseRowComplemented(1, true, true)).toBe(true)
+  expect(baseRowComplemented(-1, true, true)).toBe(false)
+})
+
+test('a peptide row is never complemented', () => {
+  expect(baseRowComplemented(1, true, false)).toBe(false)
+  expect(baseRowComplemented(-1, false, false)).toBe(false)
+})
+
+test('codonPhase is the offset past the frame grid on either strand', () => {
+  expect(codonPhase(0, 1)).toBe(0)
+  expect(codonPhase(2, 1)).toBe(2)
+  expect(codonPhase(1, 2)).toBe(0)
+  expect(codonPhase(0, -3)).toBe(1)
 })
 
 test('visibleRange clamps to sequence bounds', () => {

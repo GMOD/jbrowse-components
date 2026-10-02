@@ -14,15 +14,9 @@ import {
 } from './sequenceGeometry.ts'
 
 import type { SequenceRegionData } from '../model.ts'
-import type { ColorPalette, RowVisibility } from './sequenceGeometry.ts'
-import type { SequenceMarkState } from './sequenceMarks.ts'
+import type { SequenceRenderState } from './sequenceGeometry.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-
-export interface SequenceRenderState extends RowVisibility, SequenceMarkState {
-  isDna: boolean
-  palette: ColorPalette
-}
 
 /**
  * The screen x of the middle of the `bpWidth`-bp span starting at `startBp`.
@@ -67,7 +61,11 @@ export function drawSequenceLetters(
       for (const [slot, row] of rowLayout(state, block.reversed).entries()) {
         const y = slot * rowHeight + rowHeight / 2
         if (row.type === 'base') {
-          const complemented = baseRowComplemented(row.strand, block.reversed)
+          const complemented = baseRowComplemented(
+            row.strand,
+            block.reversed,
+            isDna,
+          )
           const { start, end } = visibleRange(
             block.start,
             block.end,

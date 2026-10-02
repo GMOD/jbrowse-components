@@ -1,20 +1,20 @@
 import { getContrastRatio, getContrastText } from '@jbrowse/core/ui/palette'
 import { defaultStarts } from '@jbrowse/core/util'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
+import type { SequenceMarkState } from './sequenceMarks.ts'
 import type { ColorQuad, JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Frame } from '@jbrowse/core/util'
 
-/**
- * One painted cell: the fill, and the text color legible on top of it. Paired
- * at build time because every draw site needs both and looking them up from two
- * structures keyed the same way is how they drift — the letter contrast used to
- * live in a parallel `TextColors` map computed with its own luminance formula,
- * so a base's letter and a start codon's letter answered "is this background
- * dark?" two different ways in the same function.
- */
+/** One painted cell's fill, packed for the marks, and the letter colour on it. */
 export interface SeqColor {
   fill: string
+  abgr: number
   text: string
+}
+
+export function seqColor(fill: string, text: string): SeqColor {
+  return { fill, abgr: cssColorToABGR(fill), text }
 }
 
 export interface ColorPalette {
@@ -29,47 +29,33 @@ export interface ColorPalette {
 // residue of a peptide track.
 const FALLBACK_FILL = '#aaaaaa'
 
-// The palette already resolved a contrast color for each augmented color, by
-// WCAG contrast ratio — reuse it rather than re-deriving one.
 function fromQuad({ main, contrastText }: ColorQuad): SeqColor {
-  return { fill: main, text: contrastText }
+  return seqColor(main, contrastText)
 }
 
-// For the palette's bare color strings (start/stop codon), which carry no
-// resolved shades.
 function fromString(fill: string): SeqColor {
-  return { fill, text: getContrastText(fill) }
+  return seqColor(fill, getContrastText(fill))
 }
 
 // The translation rows are mid greys, where the palette's 3:1 rule picks white
 // though black reads twice as well, so these take whichever reads better.
 function fromFrameQuad({ main }: ColorQuad): SeqColor {
-  const dark = 'rgba(0, 0, 0, 0.87)'
   const light = '#fff'
-  return {
-    fill: main,
-    text:
-      getContrastRatio(main, '#000') >= getContrastRatio(main, light)
-        ? dark
-        : light,
-  }
+  return seqColor(
+    main,
+    getContrastRatio(main, '#000') >= getContrastRatio(main, light)
+      ? 'rgba(0, 0, 0, 0.87)'
+      : light,
+  )
 }
 
 export function buildColorPalette(
   palette: JBrowsePalette,
   colorByCDS: boolean,
 ): ColorPalette {
-  // Frames array layout: [null, f1, f2, f3, f-3, f-2, f-1]
-  // null at index 0 lets positive frames use 1-based .at(1/2/3);
-  // negative frames use JS .at() negative-index semantics.
-  // colorByCDS matches the bright per-frame CDS palette used by gene tracks so
-  // the translation rows line up visually with colored CDS features.
+  // [null, f1, f2, f3, f-3, f-2, f-1], so `.at(frame)` reads either sign
   const framePalette = colorByCDS ? palette.framesCDS : palette.frames
   return {
-    // every base the palette declares, not a hard-coded A/C/G/T: `N` has a
-    // deliberately distinct hue there ("so it never blends into the grey
-    // coverage histogram") and this was the one consumer painting it with the
-    // grey fallback instead.
     bases: new Map(
       Object.entries(palette.bases).map(([base, quad]) => [
         base,
@@ -88,32 +74,28 @@ export function buildColorPalette(
   }
 }
 
-// A single stacked row as painted by drawSequenceBlocks, top-to-bottom. `base`
-// rows carry a conceptual strand (+ forward, - reverse); `translation` rows
-// carry their reading frame.
 export type SequenceRow =
   | { type: 'base'; strand: 1 | -1 }
   | { type: 'translation'; frame: Frame }
 
-/**
- * Which of the stacked rows this display is showing. The three travel together
- * everywhere — the model's height, the render state, the painter, the hover —
- * so they travel as one value rather than three parallel booleans each caller
- * re-lists.
- */
 export interface RowVisibility {
   showForward: boolean
   showReverse: boolean
   showTranslation: boolean
 }
 
+/** What the cells' encode reads beyond the sequence itself. */
+export interface CellEncoding extends RowVisibility {
+  isDna: boolean
+  palette: ColorPalette
+}
+
+/** Everything the marks and the letters need to paint a frame. */
+export interface SequenceRenderState extends CellEncoding, SequenceMarkState {}
+
 /**
- * Top-to-bottom row order for a block. **Everything downstream is derived from
- * this**: the painter's loop, the hover's mouse-y lookup, and the model's row
- * count. The painter and the hover used to hold separate copies of the frame
- * ordering and the `reversed` swap — kept in agreement by a comment on each
- * asking the reader to go check the other — and the row *count* was a third
- * encoding, as arithmetic (`baseRows * (translation ? 4 : 1)`).
+ * Top-to-bottom row order for a block, which the encode, the letters, the
+ * hover and the row count all walk.
  */
 export function rowLayout(
   { showForward, showReverse, showTranslation }: RowVisibility,
@@ -139,20 +121,18 @@ export function rowLayout(
 
 /**
  * Whether a base row shows the complement of the forward sequence: the forward
- * row does when the block is flipped, the reverse row does when it isn't — the
- * two swap under reversal. Shared so the painted letter and the hovered letter
- * can't disagree.
+ * row does when the block is flipped, the reverse row does when it isn't. A
+ * peptide's residues have no complement.
  */
-export function baseRowComplemented(strand: 1 | -1, reversed: boolean) {
-  return strand === 1 ? reversed : !reversed
+export function baseRowComplemented(
+  strand: 1 | -1,
+  reversed: boolean,
+  isDna: boolean,
+) {
+  return isDna && (strand === 1 ? reversed : !reversed)
 }
 
-/**
- * How many stacked rows the display occupies. Orientation only reorders the
- * stack, so the count is asked for the forward case and holds for both — and it
- * is a `.length`, not arithmetic that has to be re-checked against
- * {@link rowLayout} every time a row is added.
- */
+/** Orientation only reorders the stack, so the forward count holds for both. */
 export function rowCount(visibility: RowVisibility) {
   return rowLayout(visibility, false).length
 }
@@ -183,15 +163,19 @@ export function codonKind(
 }
 
 /**
- * `frameShift` is the index of the first in-frame codon boundary (so the codon
- * grid is anchored to absolute genomic coordinate mod 3, independent of where
- * the fetched region happens to start); `sliceEnd` is the index just past the
- * last complete codon.
+ * How far absolute `coord` sits past the last codon boundary of `frame`'s grid,
+ * which is anchored where `coord % 3 === abs(frame) - 1`.
+ */
+export function codonPhase(coord: number, frame: Frame) {
+  return (((coord - (Math.abs(frame) - 1)) % 3) + 3) % 3
+}
+
+/**
+ * `frameShift` is the index of the first codon boundary in `seq`; `sliceEnd` is
+ * the index just past the last complete codon.
  */
 export function frameShiftBounds(seq: string, seqStart: number, frame: Frame) {
-  const normalizedFrame = Math.abs(frame) - 1
-  const seqFrame = seqStart % 3
-  const frameShift = (normalizedFrame - seqFrame + 3) % 3
+  const frameShift = (3 - codonPhase(seqStart, frame)) % 3
   const adjLen = seq.length - frameShift
   const sliceEnd = frameShift + adjLen - (adjLen % 3)
   return { frameShift, sliceEnd }
