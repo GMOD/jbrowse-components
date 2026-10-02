@@ -6,8 +6,8 @@ projections of a graph published by the Human Pangenome Reference Consortium,
 built so that JBrowse can query a locus without downloading the graph.
 
 The hprc-v2.*-mc-grch38.* files below are that set. This prefix also serves two
-other demos' files, which have their own provenance: hprc_cfhr_* is the CFH
-panel that build_hprc_cfhr_synteny.sh cuts, hprc_abca7_trgt.vcf.gz is PacBio's
+other demos' files, which have their own provenance: hprc_cfhr_* is a CFH
+panel sliced from HPRC's impg PAF that nothing reads any more, hprc_abca7_trgt.vcf.gz is PacBio's
 TRGT genotypes at the ABCA7 VNTR (Zenodo 8329210) that
 build_hprc_abca7_trgt.sh writes, hprc_curated_vntrs.bed is a hand-written
 repeat track and hprc_kiv2_copies.vcf its KIV-2 array's copies (both below),

@@ -1,7 +1,6 @@
 // Candidates for the JBrowse 2 v5 paper's HPRC figure: the eight gbz-base
 // haplotype lanes and the graph of the SAME CFH window in one view, the graph as
-// the bottom track, rather than the lane stack alone or the two-haplotype
-// synteny/graph pair specs/graph-hprc.ts draws (pangenome/hprc_cfhr_deletion).
+// the bottom track, rather than the lane stack alone.
 //
 // The paper uses the force layout (hprc_lanes_graph_stacked_force); the others
 // differ only in the frame and the graph's layout.

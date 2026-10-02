@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # Whole-genome HPRC haplotypes against GRCh38 as one indexed all-vs-all PIF, for
-# a MultiWaySyntenyDisplay lane stack: the eight haplotypes demos/hprc draws at
-# the CFH cluster, taken genome-wide, each with its whole CAT annotation.
+# a MultiWaySyntenyDisplay lane stack: the eight haplotypes demos/hprc's gbz-base
+# lanes track names, taken genome-wide, each with its whole CAT annotation.
 #
 # The alignment is unpacked from the minigraph-cactus GFA. Every haplotype is a
 # walk through the graph's nodes, and two walks through one node carry identical

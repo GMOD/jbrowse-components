@@ -1291,7 +1291,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // SHAPE: one long backbone node with the rest of the graph looping past it.
   // An anchored layout draws that loop flat against the backbone it replaces,
   // which is the same drawing problem deletions have everywhere in these
-  // figures (see hprc_cfhr_deletion).
+  // figures.
   //
   // The panel above the graph is a THREE-ROW SYNTENY VIEW, not a bare linear
   // view (review: "use a linearsyntenyview instead of just lineargenomeview,

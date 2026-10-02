@@ -104,9 +104,9 @@ const CDNASequence = observer(function CDNASequence({
 
   // The stretches of the feature its own exons do not reach. Real annotations
   // produce them: CAT/liftoff emits a transcript spanning the source alignment
-  // with exons only where the CDS is supported, so KCNT2 in
-  // `hprc_cfhr_HG00099.1.genes.gff3.gz` runs 10,207 bp past its first exon and
-  // 28 of that corpus's 438 transcripts do the same.
+  // with exons only where the CDS is supported, so KCNT2 in HG00099.1's HPRC CAT
+  // annotation runs 10,207 bp past its first exon, and 28 of the 438 transcripts
+  // around CFH do the same.
   //
   // Uncolored, like the inter-exon gaps they are — the annotation does not call
   // them exonic, so stretching the first and last exon over them (which is what

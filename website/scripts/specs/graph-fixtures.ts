@@ -132,10 +132,9 @@ export const GRAPH_VIEW_READY = `body:has(${GRAPH_VIEW_DRAWN}) [data-testid="gra
 //
 // The sibling is WRITTEN here rather than kept by hand, because a gitignored
 // copy of a tracked config drifts and nothing notices: `hprc_local.json` was
-// made before the two CFHR gene tracks were added to `hprc.json`, so under
-// GRAPH_PLUGIN_LOCAL those tracks were simply absent and
-// `pangenome/hprc_cfhr_deletion` failed on annotation anchors that resolved to
-// nothing. That reads as a regression in whatever you are testing, which is the
+// made before two gene tracks were added to `hprc.json`, so under
+// GRAPH_PLUGIN_LOCAL those tracks were simply absent and a figure failed on
+// annotation anchors that resolved to nothing. That reads as a regression in whatever you are testing, which is the
 // worst possible failure for the one switch you flip only when hunting one.
 const localEsmUrl =
   '/test_data/graphgenomeview/_localdist/jbrowse-plugin-graphgenomeviewer.esm.js'
