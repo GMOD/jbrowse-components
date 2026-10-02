@@ -108,14 +108,30 @@ Every route ends at one `.bw` per cell type. The tools are linked under
   unnormalized, so scale each group yourself (1e6 / total fragments for CPM)
   before the conversion
 
+## The genome
+
+The fragments are aligned to GRCh38, so the BigWigs carry its `chr1`-style
+chromosome names, and the assembly has to spell them the same way. A BigWig
+whose names differ from the assembly's, such as Ensembl's `1` against `chr1`,
+draws empty unless the assembly carries a name-alias table.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
 ## Loading the BigWigs as a MultiWiggle track
 
 All the per-cell-type BigWigs go into one `MultiQuantitativeTrack` whose
 `MultiWiggleAdapter` holds one `BigWigAdapter` per file, each with a `name`, an
-optional `color`, and an optional `group`. `assemblyNames` names an assembly
-already configured (see the
-[assemblies configuration guide](/docs/config_guides/assemblies)). Three cell
-types:
+optional `color`, and an optional `group`. Swap each `uri` for the BigWig your
+pooling step wrote. Three cell types:
 
 ```json addtrack
 {
@@ -192,6 +208,13 @@ with no data.
 and the track menu switches between them. `bar` (the default, and the figures
 here) compares peak shape; `heatmap` maps score to color and fits more rows.
 [](/docs/user_guides/quantitative_track) covers the rest of the menu.
+
+To check the rows against marker genes, paste two loci into the location box as
+one discontinuous view, a T-cell marker (_CD8A_) and a B-cell marker (_MS4A1_):
+
+```text
+chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
+```
 
 <Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. The CD8, MAIT and NK rows carry signal at CD8A, and only the two B rows carry it at MS4A1." src="/img/scatac/pbmc5k_marker_swap.png" />
 
