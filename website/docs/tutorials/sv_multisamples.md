@@ -15,7 +15,12 @@ same cohort whose coverage does none of that.
 
 ## Prerequisites
 
-- the JBrowse demo instance, which carries the callset and the alignments
+- a JBrowse instance to add tracks to (see the
+  [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop))
+- a multi-sample SV VCF, bgzip-compressed and tabix-indexed, with a `.tbi` or
+  `.csi` beside it
+- CRAMs aligned to the same assembly, each with its `.crai` beside it
 
 ## Where the data comes from
 
@@ -52,17 +57,80 @@ of the RhD-negative blood type. The call is `PASS` and common enough to fill all
 three genotype classes, and read depth shows whether a gene is present twice,
 once, or not at all.
 
-The demo config adds the tracks with `jbrowse add-track`. The callset is
-bgzip-compressed and tabix-indexed, and the alignment tracks stream the CRAMs
-from the urls above.
+## Load the data
 
-In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset under
-**1000 Genomes → SV callsets**, <!-- menu-path-ok --> listed by its file name
-**1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf**, then navigate to
-`chr1:25,200,000-25,400,000`, the window the figures below use.
+The CRAMs decode against the assembly's sequence, so the assembly must be the
+GRCh38 sequence the reads were aligned to, with the chromosome names the VCF
+uses.
 
-Everything below works the same in [JBrowse Desktop](/docs/quickstart_desktop),
-which opens your own VCF and BAM files from disk.
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
+We'll add the callset as a variant track. Swap `uri` for your own VCF, which
+needs per-sample genotype columns and an index beside it:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "kgp_ensemble_sv",
+  "name": "1KGP ensemble SV calls, 3202 samples",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz"
+}
+```
+
+One alignments track per sample comes next, here HG00113, the homozygous alt.
+Swap `uri` for your own CRAM, with its `.crai` beside it. The other two samples
+differ only in the file:
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "hg00113_cram",
+  "name": "HG00113 high coverage",
+  "assemblyNames": ["hg38"],
+  "uri": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240129/HG00113.final.cram"
+}
+```
+
+The copy-number lane reads the Zarr store through a plugin that is not yet in
+the plugin store. The
+[copy-number tutorial](/docs/tutorials/population_cnv#a-zarr-store-for-the-whole-panel)
+shows how to load the plugin and build a store from your own BigWigs:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "cnv_1000g_zarr",
+  "name": "1000 Genomes copy number, 2504 individuals",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleZarrAdapter",
+    "uri": "https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr"
+  },
+  "displayDefaults": {
+    "mark": "heatmap",
+    "origin": 2,
+    "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
+    "color": {
+      "field": "score",
+      "scale": "threshold",
+      "range": ["#2166ac", "#b2182b"],
+      "title": "Copy number"
+    }
+  }
+}
+```
+
+Navigate to `chr1:25,200,000-25,400,000`, the window the figures below use.
 
 ## Genotypes across the cohort
 
@@ -107,9 +175,9 @@ the matrix is a red gain in the copy-number lane. The
 
 ## Reading the genotypes off the reads
 
-Open three samples' alignments from **1000 Genomes → Alignments**, one per
-genotype: HG00113 homozygous alt, HG00096 heterozygous, HG00097 homozygous
-reference. Two settings make them comparable:
+Open three samples' alignments, one per genotype: HG00113 homozygous alt,
+HG00096 heterozygous, HG00097 homozygous reference. Two settings make them
+comparable:
 
 - Turn the pileup off from the track menu's **Show...** submenu, since at this
   width the coverage curve shows the difference
@@ -137,10 +205,10 @@ Most structural variants leave the coverage unchanged. The demo carries a
 complex call on chromosome 1 in HG02768 whose coverage matches the rest of the
 arm.
 
-Put `1:39,658,200-39,661,800` in the location box and open HG02768's alignments
-from **1000 Genomes → Alignments**. Turn on **Track menu → Read connections → SV
-channels (pairs by orientation)**: the reads split into one band per orientation
-class, each with a separate coverage curve and arcs.
+Put `1:39,658,200-39,661,800` in the location box and open HG02768's alignments.
+Turn on **Track menu → Read connections → SV channels (pairs by orientation)**:
+the reads split into one band per orientation class, each with a separate
+coverage curve and arcs.
 
 - The normal band holds the flat profile
 - The two same-strand bands each draw a bundle of arcs on one pair of

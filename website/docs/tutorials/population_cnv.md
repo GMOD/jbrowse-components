@@ -49,6 +49,22 @@ Kidd lab's [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track hub,
 and we read the lab's per-sample bigWigs. QuicK-mer2 counts k-mers that occur
 exactly once in the reference, so each estimate is specific to one _paralog_.
 
+## Load the genome
+
+The copy-number bins are on GRCh38, so the tracks below attach to an hg38
+assembly:
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
 ## Load the panel as one track
 
 The whole panel goes in as one track on hg38, so the display, clustering and
@@ -176,8 +192,20 @@ copy-number record.
 A VCF record is one interval with fixed breakpoints and a few symbolic alleles,
 which cannot describe nested multiallelic copy number. Depth, for its part,
 gives no genotype, allele frequency or phasing. At a simple biallelic deletion
-the two sources agree. Navigate to _UGT2B17_ on chr4 with the PUR panel track
-from the first section under the SV map VCF:
+the two sources agree. We'll add the SV map as a variant track, then navigate to
+_UGT2B17_ on chr4 with the PUR panel track from the first section under it. For
+your own callset, swap `uri` for a bgzip-compressed, tabix-indexed VCF on the
+same assembly:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "integrated_sv_map_v2",
+  "name": "1000 Genomes integrated SV map (phase 3)",
+  "assemblyNames": ["hg38"],
+  "uri": "https://1000genomes.s3.amazonaws.com/phase3/integrated_sv_map/supporting/GRCh38_positions/ALL.wgs.integrated_sv_map_v2_GRCh38.20130502.svs.genotypes.vcf.gz"
+}
+```
 
 <Figure caption="UGT2B17 on chr4 in the PUR panel track, under the SV map. A biallelic deletion: each individual sits flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
@@ -229,36 +257,40 @@ The plugin is in beta and is not yet in the
       "name": "Zarr",
       "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
     }
-  ],
-  "tracks": [
-    {
-      "type": "MultiQuantitativeTrack",
-      "trackId": "cnv_1000g_zarr",
-      "name": "1000 Genomes copy number, 2504 individuals",
-      "assemblyNames": ["hg38"],
-      "adapter": {
-        "type": "MultiWiggleZarrAdapter",
-        "uri": "qm2_cn_1kb.zarr"
-      },
-      "displayDefaults": {
-        "mark": "heatmap",
-        "origin": 2,
-        "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
-        "color": {
-          "field": "score",
-          "scale": "threshold",
-          "range": ["#2166ac", "#b2182b"],
-          "title": "Copy number"
-        }
-      }
-    }
   ]
+}
+```
+
+With the plugin loaded, a track points the adapter at the store:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "cnv_1000g_zarr",
+  "name": "1000 Genomes copy number, 2504 individuals",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleZarrAdapter",
+    "uri": "https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr"
+  },
+  "displayDefaults": {
+    "mark": "heatmap",
+    "origin": 2,
+    "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
+    "color": {
+      "field": "score",
+      "scale": "threshold",
+      "range": ["#2166ac", "#b2182b"],
+      "title": "Copy number"
+    }
+  }
 }
 ```
 
 The adapter config gives the store's location, and the store holds the sample
 list, bin size and resolution levels. A relative `uri` resolves against the
-config that holds it.
+config that holds it, so a store beside your `config.json` takes
+`qm2_cn_1kb.zarr`.
 
 <Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies. The CCL3L1/CCL4L1 block is flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
 
@@ -272,7 +304,25 @@ The store also covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
 **Clustering → Cluster rows by score...**. The panel sorts individuals by which
 of the two deletions they carry, and the long-read assembly calls of the Human
 Genome Structural Variation Consortium
-([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both:
+([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both.
+We'll add them as a variant track:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "hgsvc3_sv_insdel",
+  "name": "HGSVC3 structural variants, 5 kb and longer",
+  "assemblyNames": ["hg38"],
+  "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/GRCh38/variants_GRCh38_sv_insdel_sym_HGSVC2024v1.0.vcf.gz"
+}
+```
+
+The track holds every insertion and deletion, so keep the long ones by entering
+this from **Filter by... → Edit filters...** in the track menu:
+
+```text
+jexl:alleleLength(feature)>=5000
+```
 
 <Figure caption="All 2504 individuals over chr3:162.65-163.05 Mb, clustered, under HGSVC3 structural variants of 5 kb and longer. Each block of rows carries neither deletion, one or two copies of one of them, or one copy of each." src="/img/paper/cohort_cnv.png" />
 
