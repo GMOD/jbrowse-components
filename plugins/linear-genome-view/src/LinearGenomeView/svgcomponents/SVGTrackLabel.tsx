@@ -11,14 +11,12 @@ import type { TrackLabelMode } from '../types.ts'
 
 // Where the label sits, per mode. 'left' right-aligns in the gutter
 // trackLabelLeftOffset reserved (hence the shared TRACK_LABEL_GAP), beside the
-// first row or, `raised`, in the band above a track whose sidebar holds the
-// gutter beside its rows. The other modes hang off the leftmost visible content
+// first row. The other modes hang off the leftmost visible content
 // at `x`, either just above the track body ('offset') or inset over it
 // ('overlapping').
 //
 // Every mode is placed on its alphabetic baseline (the SVG default, so no
-// dominantBaseline is emitted at all): 'offset' and a raised 'left' so their
-// descenders land a known distance above the track body — the band is
+// dominantBaseline is emitted at all): 'offset' so its descenders land a known distance above the track body — the band is
 // `textHeight` tall, and offsetLabelBaselineY owns that arithmetic — and
 // 'left'/'overlapping' so their ascenders stay inside the track box they align
 // with.
@@ -28,21 +26,17 @@ function labelPosition({
   textHeight,
   fontSize,
   x,
-  raised,
 }: {
   trackLabels: TrackLabelMode
   trackLabelOffset: number
   textHeight: number
   fontSize: number
   x: number
-  raised: boolean
 }): { x: number; y: number; textAnchor?: 'end' } {
   if (trackLabels === 'left') {
     return {
       x: trackLabelOffset - TRACK_LABEL_GAP,
-      y: raised
-        ? offsetLabelBaselineY(textHeight, fontSize)
-        : insetLabelBaselineY(fontSize),
+      y: insetLabelBaselineY(fontSize),
       textAnchor: 'end',
     }
   }
@@ -63,7 +57,6 @@ export default function SVGTrackLabel({
   textHeight,
   trackLabelOffset,
   x,
-  raised = false,
 }: {
   // already run through svgTrackName (HTML stripped)
   trackName: string
@@ -72,7 +65,6 @@ export default function SVGTrackLabel({
   textHeight: number
   trackLabelOffset: number
   x: number
-  raised?: boolean
 }) {
   const palette = usePalette()
   if (trackLabels === 'hidden') {
@@ -84,7 +76,6 @@ export default function SVGTrackLabel({
     textHeight,
     fontSize,
     x,
-    raised,
   })
   // 'overlapping' prints over the track's own data, which the on-screen label
   // clears with a paper box, so it carries the halo text over a plot needs

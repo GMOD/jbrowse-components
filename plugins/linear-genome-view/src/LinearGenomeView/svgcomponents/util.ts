@@ -261,36 +261,25 @@ export const refNameLabelBaselineY = labelBaselineFromTop(
 // The mode one track's label is drawn in. 'overlapping' yields to 'offset' for a
 // display that `prefersOffset`, as TrackContainer does on screen: its left edge
 // carries content — an axis, a sample's genotypes — the label would print over.
+// 'left' yields to 'offset' for a track whose sidebar holds the gutter beside
+// its rows.
 export function trackLabelMode(
-  track: TrackHeights,
+  track: { displays: ({ prefersOffset?: boolean } & SidebarDisplay)[] },
   trackLabels: TrackLabelMode,
 ): TrackLabelMode {
-  return trackLabels === 'overlapping' && track.displays[0]?.prefersOffset
+  return (trackLabels === 'overlapping' && track.displays[0]?.prefersOffset) ||
+    (trackLabels === 'left' && trackSidebarWidth(track) > 0)
     ? 'offset'
     : trackLabels
 }
 
-// Whether a 'left' name sits in a band above its track's rows rather than
-// beside the first of them: the gutter beside the rows holds the track's own
-// sidebar, so the name heads it instead of standing off to its left.
-export function leftLabelRaised(
-  track: Pick<TrackHeights, 'displays'>,
-  trackLabels: TrackLabelMode,
-) {
-  return trackLabels === 'left' && trackSidebarWidth(track) > 0
-}
-
-// space the label pushes a track's body down by: an 'offset' label, or a raised
-// 'left' one
+// space an 'offset' label pushes a track's body down by
 export function labelOffset(
   track: TrackHeights,
   trackLabels: TrackLabelMode,
   textHeight: number,
 ) {
-  return trackLabelMode(track, trackLabels) === 'offset' ||
-    leftLabelRaised(track, trackLabels)
-    ? textHeight
-    : 0
+  return trackLabelMode(track, trackLabels) === 'offset' ? textHeight : 0
 }
 
 interface SidebarTrack {
@@ -305,9 +294,7 @@ interface SidebarTrack {
 export const TRACK_LABEL_GAP = 40
 
 // Horizontal gutter left of the track bodies: the widest of each track's
-// sidebar and, in 'left' mode, its name plus TRACK_LABEL_GAP. A sidebar and a
-// name share the column because the name rises above the sidebar
-// (leftLabelRaised). Takes an
+// sidebar and of each name drawn 'left', plus TRACK_LABEL_GAP. Takes an
 // already-minimized-filtered track list, so the reserved width matches the
 // labels that actually get drawn.
 //
@@ -342,7 +329,7 @@ export function trackLabelLeftOffset({
     tracks.map(t =>
       Math.max(
         trackSidebarWidth(t, { fontSize, fontFamily }),
-        trackLabels === 'left'
+        trackLabelMode(t, trackLabels) === 'left'
           ? measureText(svgTrackName(t, session), fontSize, fontFamily) +
               TRACK_LABEL_GAP
           : 0,

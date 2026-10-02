@@ -84,7 +84,7 @@ test('a display drawing its own too-large body keeps its separators', () => {
   ).toBe(2)
 })
 
-test('a left track name right-aligns in one column, raised above a track with a sidebar', () => {
+test('a left track name right-aligns in the gutter, and goes offset above a track with a sidebar', () => {
   const container = drawTracks({
     trackLabels: 'left',
     trackLabelOffset: 300,
@@ -92,10 +92,10 @@ test('a left track name right-aligns in one column, raised above a track with a 
     displays: [{}, { svgSidebarWidth: () => 100 }],
   })
   const texts = [...container.querySelectorAll('text')]
-  expect(texts.map(t => t.getAttribute('x'))).toEqual([
-    String(300 - TRACK_LABEL_GAP),
-    String(300 - TRACK_LABEL_GAP),
-  ])
+  expect(texts[0]!.getAttribute('x')).toBe(String(300 - TRACK_LABEL_GAP))
+  expect(texts[0]!.getAttribute('text-anchor')).toBe('end')
+  expect(texts[1]!.getAttribute('text-anchor')).toBeNull()
+  expect(Number(texts[1]!.getAttribute('x'))).toBeGreaterThanOrEqual(300)
   expect(Number(texts[1]!.getAttribute('y'))).toBeLessThan(20)
   expect(
     [...container.querySelectorAll('[data-testid="body"]')].map(b =>

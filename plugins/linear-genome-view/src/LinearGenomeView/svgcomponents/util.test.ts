@@ -10,7 +10,6 @@ import {
   labelBaselineFromTop,
   labelInkHeight,
   labelOffset,
-  leftLabelRaised,
   offsetLabelBaselineY,
   refNameLabelBaselineY,
   refNameLabelBoxHeight,
@@ -156,7 +155,7 @@ describe('trackLabelLeftOffset', () => {
   })
   const width = (name: string) => measureText(name, 13) + TRACK_LABEL_GAP
 
-  it('sizes the gutter from the wider of each name and sidebar, which share the column', () => {
+  it('sizes the gutter from the wider of each left name and sidebar', () => {
     const tracks = [track('a much longer track name'), track('wig', 100)]
     expect(
       trackLabelLeftOffset({
@@ -168,16 +167,15 @@ describe('trackLabelLeftOffset', () => {
     ).toBe(Math.max(width('a much longer track name'), 100))
   })
 
-  it('lets a name wider than its own sidebar set the gutter', () => {
-    const name = 'a much longer track name'
+  it('leaves out the name of a track with a sidebar, which draws it offset', () => {
     expect(
       trackLabelLeftOffset({
-        tracks: [track(name, 20)],
+        tracks: [track('a much longer track name', 20)],
         trackLabels: 'left',
         fontSize: 13,
         session,
       }),
-    ).toBe(width(name))
+    ).toBe(20)
   })
 
   it('is the widest sidebar when the names are not on the left', () => {
@@ -214,8 +212,7 @@ describe('labelOffset', () => {
     ],
   })
 
-  it('raises a left name above a track with a sidebar, and only then', () => {
-    expect(leftLabelRaised(track(100), 'left')).toBe(true)
+  it('drops a left name to offset above a track with a sidebar, and only then', () => {
     expect(labelOffset(track(100), 'left', 20)).toBe(20)
     expect(labelOffset(track(0), 'left', 20)).toBe(0)
     expect(labelOffset(track(), 'left', 20)).toBe(0)
