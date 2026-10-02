@@ -47,6 +47,22 @@ the 3' end of each transcript, so their coverage is a spike near the
 polyadenylation site. Full-length chemistries (Smart-seq, and 5' kits to a
 lesser degree) spread coverage over the gene body.
 
+## The genome
+
+The BAM was aligned to GRCh38, and the BigWigs inherit its chromosome names, so
+the tracks go on an hg38 assembly that spells them the same way.
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
 ## Generating per-cell-type BigWigs
 
 Clustering and labeling happen upstream, in Seurat, scanpy, or whatever produced
@@ -219,8 +235,8 @@ The `MultiWiggleZarrAdapter` from
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) reads
 the store, the same adapter [](/docs/tutorials/population_cnv) uses for the 1000
 Genomes panel. The build step writes the cell list, bin size and row colors as
-attributes of the store. The plugin is not in the plugin store yet, so add this
-whole fragment, `plugins` and `tracks` together, to `config.json`:
+attributes of the store. The plugin is not in the plugin store yet, so load it
+from `config.json` first:
 
 ```json
 {
@@ -229,25 +245,29 @@ whole fragment, `plugins` and `tracks` together, to `config.json`:
       "name": "Zarr",
       "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
     }
-  ],
-  "tracks": [
-    {
-      "type": "MultiQuantitativeTrack",
-      "trackId": "pbmc5k_scrna_percell",
-      "name": "Per-cell coverage (marker loci)",
-      "category": ["Single cell"],
-      "assemblyNames": ["hg38"],
-      "adapter": {
-        "type": "MultiWiggleZarrAdapter",
-        "uri": "percell.zarr"
-      },
-      "displayDefaults": {
-        "mark": "heatmap",
-        "scales": { "y": { "domainMin": 0, "domainMax": 2 } },
-        "height": 420
-      }
-    }
   ]
+}
+```
+
+With the plugin loaded, the store is one track. For your own cells, `uri` points
+at a store with the same layout, built by the reproduce script below:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "pbmc5k_scrna_percell",
+  "name": "Per-cell coverage (marker loci)",
+  "category": ["Single cell"],
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleZarrAdapter",
+    "uri": "percell.zarr"
+  },
+  "displayDefaults": {
+    "mark": "heatmap",
+    "scales": { "y": { "domainMin": 0, "domainMax": 2 } },
+    "height": 420
+  }
 }
 ```
 
