@@ -17,6 +17,7 @@ function regionData(
 const region = regionData({
   featureStarts: Uint32Array.from([10, 20, 30, 40]),
   featureEnds: Uint32Array.from([15, 25, 35, 45]),
+  rectColorValues: new Uint32Array(0),
   featureColors: Uint32Array.from([
     0xff0000ff, 0xff00ff00, 0xff0000ff, 0xff00ff00,
   ]),
@@ -287,6 +288,7 @@ function statesRegion(n: number) {
     featureStarts: Uint32Array.from({ length: n }, (_, i) => i * 10),
     featureEnds: Uint32Array.from({ length: n }, (_, i) => i * 10 + 5),
     featureColors: Uint32Array.from({ length: n }, (_, i) => 0xff000000 + i),
+    rectColorValues: new Uint32Array(0),
     partitionValues: ['E001'],
     featurePartitionIndex: new Uint32Array(n),
     featureNames: Array.from({ length: n }, (_, i) => `state${i}`),
@@ -311,6 +313,7 @@ test('too many distinct labels is treated as non-categorical', () => {
     featureStarts: Uint32Array.from({ length: n }, (_, i) => i * 10),
     featureEnds: Uint32Array.from({ length: n }, (_, i) => i * 10 + 5),
     featureColors: Uint32Array.from({ length: n }, (_, i) => 0xff000000 + i),
+    rectColorValues: new Uint32Array(0),
     partitionValues: ['E001'],
     featurePartitionIndex: new Uint32Array(n),
     featureNames: Array.from({ length: n }, (_, i) => `gene${i}`),
@@ -332,6 +335,7 @@ test('a candidate list truncated at the cap still reads non-categorical', () => 
     featureStarts: Uint32Array.from({ length: n }, (_, i) => i * 10),
     featureEnds: Uint32Array.from({ length: n }, (_, i) => i * 10 + 5),
     featureColors: Uint32Array.from({ length: n }, (_, i) => 0xff000000 + i),
+    rectColorValues: new Uint32Array(0),
     partitionValues: ['E001'],
     featurePartitionIndex: new Uint32Array(n),
     featureNames: Array.from({ length: n }, (_, i) => `gene${i}`),

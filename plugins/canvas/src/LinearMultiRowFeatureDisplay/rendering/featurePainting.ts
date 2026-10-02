@@ -39,7 +39,7 @@ export function ownColors(data: OwnColorData, fieldPalette?: FieldPalette) {
   const { featureColors, rectColorValues, colorValues } = data
   if (
     !fieldPalette ||
-    !rectColorValues?.length ||
+    !rectColorValues.length ||
     colorValues?.field !== fieldPalette.field
   ) {
     return featureColors

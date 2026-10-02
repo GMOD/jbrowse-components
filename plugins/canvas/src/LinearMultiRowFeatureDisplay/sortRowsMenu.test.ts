@@ -20,6 +20,7 @@ function regionData(
     featureStarts: new Uint32Array(feats.length),
     featureEnds: Uint32Array.from(feats, () => 10_000),
     featureColors: Uint32Array.from(feats, f => f[1]),
+    rectColorValues: new Uint32Array(0),
     featurePartitionIndex: Uint32Array.from(feats, f => f[0]),
     featureNames: feats.map(() => ''),
     featureIds: feats.map((_, i) => `f${i}`),

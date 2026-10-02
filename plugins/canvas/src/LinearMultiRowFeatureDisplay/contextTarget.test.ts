@@ -14,6 +14,7 @@ function region(): MultiRowRegionData {
   return {
     featureStarts: Uint32Array.from([100, 300]),
     featureEnds: Uint32Array.from([200, 400]),
+    rectColorValues: new Uint32Array(0),
     featureColors: Uint32Array.from([
       cssColorToABGR('red'),
       cssColorToABGR('blue'),

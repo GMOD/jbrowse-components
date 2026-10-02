@@ -90,6 +90,7 @@ function region(): MultiRowRegionData {
     featureStarts,
     featureEnds,
     featureColors,
+    rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
     partitionValues: Array.from({ length: rows }, (_, r) => `sample${r}`),
     featurePartitionIndex,

@@ -56,7 +56,7 @@ test('the worker ships each feature its field value, and each value its row', ()
       { rowIndex: 1, valueIndex: 3 },
     ],
   })
-  expect([...data.rectColorValues!]).toEqual([1, 2, 3, 4])
+  expect([...data.rectColorValues]).toEqual([1, 2, 3, 4])
   expect(pack('').colorValues).toBeUndefined()
 })
 
@@ -153,39 +153,6 @@ describe('a ramp colour on the multi-row display', () => {
     })
   })
 
-  it('under a domain quantile weighs each feature, so a lone spike stops short', () => {
-    const scores = [
-      ...Array.from({ length: 50 }, () => 1),
-      ...Array.from({ length: 49 }, () => 2),
-      10_000,
-    ]
-    const data = packMultiRowFeatures({
-      features: scores.map(
-        (score, i) =>
-          new SimpleFeature({
-            uniqueId: `f${i}`,
-            refName: 'ctgA',
-            start: i * 10,
-            end: i * 10 + 5,
-            sample: 's1',
-            score,
-          }),
-      ),
-      partitionField: 'sample',
-      lengthField: '',
-      colorConfig: { value: undefined, field: 'score' },
-      jexl: createJexlInstance(),
-    })
-    const { display: d } = createTestEnvironment({
-      displayConfig: {
-        rows: 'sample',
-        color: { field: 'score', scale: 'linear', domainQuantile: 0.9 },
-      },
-    }).createDisplay()
-    d.setRpcData(0, data, ctgA)
-    expect(d.colorScales[0]).toMatchObject({ kind: 'ramp', domain: [1, 2] })
-  })
-
   it('keys no itemRgb colour, since the ramp paints over every one', () => {
     const features = [
       { start: 0, end: 50, name: 'stateA', itemRgb: '255,0,0', score: 1 },
@@ -232,4 +199,39 @@ describe('a ramp colour on the multi-row display', () => {
       false,
     )
   })
+})
+
+test('a domain quantile weighs each feature, so a lone spike stops short', () => {
+  const features = Array.from(
+    { length: 20 },
+    (_, i) =>
+      new SimpleFeature({
+        uniqueId: `q${i}`,
+        refName: 'ctgA',
+        start: i * 100,
+        end: i * 100 + 50,
+        sample: 'T1',
+        score: i === 19 ? 100 : 1,
+      }),
+  )
+  const env = createTestEnvironment({
+    displayConfig: {
+      rows: 'sample',
+      color: { field: 'score', scale: 'linear', domainQuantile: 0.9 },
+    },
+  }).createDisplay()
+  env.display.setRpcData(
+    0,
+    packMultiRowFeatures({
+      features,
+      partitionField: 'sample',
+      lengthField: '',
+      colorConfig: { value: undefined, field: 'score' },
+      jexl: createJexlInstance(),
+    }),
+    ctgA,
+  )
+  expect(
+    env.display.colorScales.find(scale => scale.kind === 'ramp'),
+  ).toMatchObject({ domain: [1, 1] })
 })

@@ -22,6 +22,7 @@ function regionData(): MultiRowRegionData {
     featureStarts: Uint32Array.from(ROWS.map(() => 0)),
     featureEnds: Uint32Array.from(ROWS.map(() => 1000)),
     featureColors: Uint32Array.from(ROWS.map(() => cssColorToABGR('red'))),
+    rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
     partitionValues: ROWS,
     featurePartitionIndex: Uint32Array.from(ROWS.map((_, i) => i)),

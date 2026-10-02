@@ -63,6 +63,7 @@ function makeRegionData(): MultiRowGetFeaturesResult {
     featureStarts: Uint32Array.from([1100]),
     featureEnds: Uint32Array.from([1200]),
     featureColors: Uint32Array.from([0xff0000ff]),
+    rectColorValues: new Uint32Array(0),
     partitionValues: ['a'],
     featurePartitionIndex: Uint32Array.from([0]),
     featureNames: ['feat'],

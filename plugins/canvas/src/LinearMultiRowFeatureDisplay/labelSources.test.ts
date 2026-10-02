@@ -11,6 +11,7 @@ function rows(names: string[], usedItemRgb = false): MultiRowRegionData {
     featureStarts: new Uint32Array(0),
     featureEnds: new Uint32Array(0),
     featureColors: new Uint32Array(0),
+    rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
     partitionValues: names,
     featurePartitionIndex: new Uint32Array(0),

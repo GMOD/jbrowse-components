@@ -10,6 +10,7 @@ function emptyRegionData(): MultiRowRegionData {
     featureStarts: new Uint32Array(0),
     featureEnds: new Uint32Array(0),
     featureColors: new Uint32Array(0),
+    rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
     partitionValues: [],
     featurePartitionIndex: new Uint32Array(0),

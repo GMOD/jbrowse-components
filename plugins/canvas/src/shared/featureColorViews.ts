@@ -35,7 +35,7 @@ export interface FeatureColorHost {
     {
       colorValues?: Pick<ColorValues, 'field' | 'values'>
       /** each box's one-based index into `colorValues.values`, 0 unpainted */
-      rectColorValues?: Uint32Array
+      rectColorValues: Uint32Array | undefined
     }
   >
 }
@@ -121,7 +121,9 @@ export function featureColorViews(self: FeatureColorHost) {
           }
         }
         if (quantile < 1) {
-          weighed.push(...paintedValues(colorValues, rectColorValues))
+          for (const value of paintedValues(colorValues, rectColorValues)) {
+            weighed.push(value)
+          }
         }
       }
     }

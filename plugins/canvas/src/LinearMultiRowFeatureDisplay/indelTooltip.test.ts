@@ -13,6 +13,7 @@ function region(deltas: number[]): MultiRowRegionData {
     featureStarts: Uint32Array.from(deltas, (_, i) => 100 + i * 200),
     featureEnds: Uint32Array.from(deltas, (_, i) => 200 + i * 200),
     featureColors: Uint32Array.from(deltas, () => cssColorToABGR('red')),
+    rectColorValues: new Uint32Array(0),
     featureDeltas: Int32Array.from(deltas),
     partitionValues: ['strainA'],
     featurePartitionIndex: Uint32Array.from(deltas, () => 0),

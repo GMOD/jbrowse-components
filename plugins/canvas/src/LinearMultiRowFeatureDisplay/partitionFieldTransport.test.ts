@@ -58,6 +58,7 @@ function regionData(resolvedPartitionField: string) {
     featureStarts: new Uint32Array([0]),
     featureEnds: new Uint32Array([100]),
     featureColors: new Uint32Array([0xff0000ff]),
+    rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
     partitionValues: ['LINE'],
     featurePartitionIndex: new Uint32Array([0]),

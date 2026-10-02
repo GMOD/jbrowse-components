@@ -10,6 +10,7 @@ function regionData(): MultiRowRegionData {
     featureStarts: new Uint32Array([0, 100]),
     featureEnds: new Uint32Array([100, 200]),
     featureColors: new Uint32Array([0xff0000ff, 0xff00ff00]),
+    rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
     partitionValues: ['sampleA', 'sampleB'],
     featurePartitionIndex: new Uint32Array([0, 1]),
@@ -128,6 +129,7 @@ describe('encodeInputs', () => {
     const packed = {
       featureStarts: new Uint32Array([0, 100, 200, 300]),
       featureEnds: new Uint32Array([100, 200, 300, 400]),
+      rectColorValues: new Uint32Array(0),
       featureColors: new Uint32Array([
         0xff0000ff, 0xff00ff00, 0xffff0000, 0xff00ffff,
       ]),
