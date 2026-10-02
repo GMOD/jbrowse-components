@@ -203,6 +203,41 @@ describe('the band stands alone, and fetches nothing', () => {
     expect(display.laidOutDataMap.size).toBe(1)
   })
 
+  it('sizes the track to the band, not to the stack it hides', () => {
+    const { display } = refusableDisplay(DENSITY_ADAPTER)
+    const spans = Array.from({ length: 40 }, () => ({
+      startBp: 1000,
+      endBp: 2000,
+    }))
+    display.setRpcData(
+      0,
+      makeFeatureData({
+        ...packFixtureRects(spans),
+        flatbushItems: spans.map((span, i) =>
+          makeFlatbushItem({
+            featureId: `f${i}`,
+            ...span,
+            topPx: 0,
+            bottomPx: 20,
+            featureHeightPx: 20,
+          }),
+        ),
+        featureCount: spans.length,
+      }),
+      REGION,
+    )
+    display.setHeightMode('fit')
+    expect(display.fitNote).toBeDefined()
+
+    setConf(display, 'densityTier', 'density')
+    expect(display.layoutReady).toBe(false)
+    expect(display.fitNote).toBeUndefined()
+    expect(display.hasOverflow).toBe(false)
+
+    display.setHeightMode('grow')
+    expect(display.growTargetHeight).toBe(display.fitTargetHeight)
+  })
+
   // The band paints no feature color, so a key over it names colors nothing on
   // screen; the toggle stays for the zoom back in.
   it('drops the color key while the band stands in, and keeps its toggle', () => {

@@ -91,11 +91,7 @@ import {
   featureHighlightViews,
 } from './featureHighlightViews.ts'
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
-import {
-  EMPTY_LAID_OUT_DATA,
-  fitLadderViews,
-  fitLadderVolatiles,
-} from './fitLadderViews.ts'
+import { fitLadderViews, fitLadderVolatiles } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
@@ -366,12 +362,13 @@ export default function baseStateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Whether features can be laid out: data is fetched, in-bounds, and
-       * the view is measured.
+       * Whether features can be laid out: data is fetched, in-bounds, the
+       * view is measured, and the density band is not standing in.
        */
       get layoutReady() {
         return (
           !self.regionTooLarge &&
+          !self.coarseTierStandsIn &&
           containingLgv(self).initialized &&
           self.rpcDataMap.size > 0
         )
@@ -771,9 +768,6 @@ export default function baseStateModelFactory(
         get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
           const { layout, scale } = self.fitStage
           const { facet } = self
-          if (self.coarseTierStandsIn) {
-            return EMPTY_LAID_OUT_DATA
-          }
           if (scale === 1) {
             return layout
           }
