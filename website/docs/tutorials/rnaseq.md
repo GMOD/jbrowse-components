@@ -36,6 +36,42 @@ Three hg19 alignment sets, hosted on jbrowse.org's demo bucket.
 - the NCBI RefSeq gene models drawn under every figure:
   https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz
 
+## The genome and the tracks
+
+The alignments are against hg19, so we load that assembly. The alias file lets
+the chromosome names in the BAM and the gene models resolve to the assembly's.
+The two tracks below are the stranded paired-end reads and the RefSeq gene
+models, each with its index beside it:
+
+```json addassembly
+{
+  "name": "hg19",
+  "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/ucsc/hg19/cytoBandIdeo.bed.gz"
+}
+```
+
+```json addtrack
+{
+  "trackId": "rnaseq_paired_stranded",
+  "name": "Paired-end stranded RNA-seq (RSeQC sample)",
+  "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam",
+  "assemblyNames": ["hg19"]
+}
+```
+
+```json addtrack
+{
+  "trackId": "ncbi_refseq_hg19",
+  "name": "NCBI RefSeq genes (hg19)",
+  "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz",
+  "assemblyNames": ["hg19"]
+}
+```
+
 ## What RNA-seq looks like in the genome browser
 
 The example gene is _ACTB_, a compact gene with deep, even read coverage.
@@ -128,7 +164,17 @@ Short-read RNA-seq (usually Illumina, ~150 bp per read) fragments each
 transcript, so a transcript is reassembled from many overlapping reads. A long
 read (PacBio IsoSeq, Nanopore) often spans a whole transcript, aligning across
 every exon with one `N` skip per intron. JBrowse derives the same arcs and
-connectors from those skips:
+connectors from those skips. The IsoSeq alignments are a second BAM on the same
+assembly:
+
+```json addtrack
+{
+  "trackId": "alzheimers_isoseq",
+  "name": "IsoSeq high-quality isoforms",
+  "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam",
+  "assemblyNames": ["hg19"]
+}
+```
 
 <Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. A long read often spans all of a transcript's exons, so one spliced alignment covers the whole transcript." src="/img/rnaseq/longread_isoseq.png" />
 
