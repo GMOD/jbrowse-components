@@ -118,7 +118,11 @@ To read the lengths, take **Display types → Graph**, enter the five names in
 **Settings → Haplotypes**, then pick **Layout → Walk rows** and **Color →
 Uniform**.
 
-<Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, each boxed with its own CAT genes so its AMY1 copies can be counted on the bar. Blue is on GRCh38's path through the graph and purple off it. HG00133.1 carries GRCh38's three copies in GRCh38's order and still shows a long purple stretch, because the graph routes copies of a duplication through nodes off GRCh38's path. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
+<Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, each boxed with its own CAT genes so its AMY1 copies can be counted on the bar. Blue is on GRCh38's path through the graph and purple off it. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
+
+Purple here is not a count of extra copies. HG00133.1 has GRCh38's three _AMY1_
+copies and its length and still shows a long purple stretch, because the graph
+routes copies of a duplication through nodes off GRCh38's path.
 
 Right-click a bar to open that haplotype's span in a linear view on its own
 assembly, with its CAT genes.

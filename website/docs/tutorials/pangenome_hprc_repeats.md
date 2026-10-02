@@ -123,8 +123,8 @@ GRCh38's, with no purple, is the shortest of the nine.
 Walk rows count copies. At KIV-2 each extra copy is a run of new nodes, and the
 GRCh38 copy the graph aligns it to is the aligner's pick among near-identical
 sequences, so the walks leave open which copy is which. At a duplication such as
-amylase's the graph can also thread a copy GRCh38 carries through nodes of its
-own, so there count the genes on each bar instead (see
+amylase's the graph can also thread a copy GRCh38 has through nodes of its own,
+so there count the genes on each bar instead (see
 [the haplotypes page](/docs/tutorials/pangenome_hprc_haplotypes)). A record that
 lists each haplotype's copies tells them apart.
 
