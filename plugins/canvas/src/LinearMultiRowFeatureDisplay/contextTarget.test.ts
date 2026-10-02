@@ -20,15 +20,15 @@ function region(): MultiRowRegionData {
       cssColorToABGR('blue'),
     ]),
     featureDeltas: new Int32Array(0),
-    partitionValues: ['a', 'b'],
-    featurePartitionIndex: Uint32Array.from([0, 1]),
+    rowValues: ['a', 'b'],
+    featureRowValueIndex: Uint32Array.from([0, 1]),
     featureNames: ['top', 'bottom'],
     featureIds: ['f0', 'f1'],
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'name',
+    resolvedRowsField: 'name',
   }
 }
 

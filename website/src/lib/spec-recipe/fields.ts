@@ -1362,7 +1362,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   // Which attribute becomes the rows. The submenu's options are discovered from
   // the loaded features rather than configured, so the figure's own value is
   // the label to click — except a `jexl:` partition, which that menu shows as a
-  // disabled row it cannot write (partitionMenuItems in the display's
+  // disabled row it cannot write (rowsFieldMenuItems in the display's
   // trackMenuItems.ts). Otherwise the arrangement: a focus is the rows left
   // ticked in the display's arrangement dialog, and an order the rows dragged
   // there.
@@ -1380,7 +1380,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       displayType === 'LinearMultiRowFeatureDisplay'
     ) {
       return {
-        path: `${TRACK_MENU} → Partition by... → ${field}`,
+        path: `${TRACK_MENU} → One row per... → ${field}`,
         note: 'The list is built from the attributes the loaded features carry, so a track whose data has not loaded yet offers nothing.',
       }
     }

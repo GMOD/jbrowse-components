@@ -18,18 +18,12 @@ export async function collectMultiRowMatrix({
   pluginManager: PluginManager
   args: MultiRowClusterFeaturesArgs & RpcCallContext
 }) {
-  const {
-    regions,
-    sources,
-    partitionField,
-    clusterField,
-    signal,
-    statusCallback,
-  } = args
+  const { regions, sources, rowsField, clusterField, signal, statusCallback } =
+    args
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
-  const featurePartition = makeFeatureValueResolver(
-    partitionField,
+  const featureRowValue = makeFeatureValueResolver(
+    rowsField,
     pluginManager.jexl,
   )
   const featureValue = clusterField
@@ -59,7 +53,7 @@ export async function collectMultiRowMatrix({
     for (const f of dedupeFeaturesById(feats).values()) {
       features.push({
         regionIndex,
-        row: featurePartition(f),
+        row: featureRowValue(f),
         start: f.get('start'),
         end: f.get('end'),
         value: featureValue(f),

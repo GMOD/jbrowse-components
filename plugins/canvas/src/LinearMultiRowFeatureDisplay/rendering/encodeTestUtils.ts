@@ -17,8 +17,8 @@ export type EncodableRegion = Pick<
   | 'featureColors'
   | 'rectColorValues'
   | 'colorValues'
-  | 'partitionValues'
-  | 'featurePartitionIndex'
+  | 'rowValues'
+  | 'featureRowValueIndex'
 >
 
 /**
@@ -41,7 +41,7 @@ export function encodeRows(
   },
 ) {
   const rowKeys = new RowKeys()
-  for (const name of [...data.partitionValues, ...rows]) {
+  for (const name of [...data.rowValues, ...rows]) {
     rowKeys.keyOf(name)
   }
   const slot = new Uint32Array(rowKeys.size).fill(HIDDEN_ROW)

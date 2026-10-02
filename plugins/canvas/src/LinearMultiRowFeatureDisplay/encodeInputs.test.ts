@@ -12,14 +12,14 @@ function regionData(): MultiRowRegionData {
     featureColors: new Uint32Array([0xff0000ff, 0xff00ff00]),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues: ['sampleA', 'sampleB'],
-    featurePartitionIndex: new Uint32Array([0, 1]),
+    rowValues: ['sampleA', 'sampleB'],
+    featureRowValueIndex: new Uint32Array([0, 1]),
     featureNames: ['segA', 'segB'],
     featureIds: ['a', 'b'],
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
-    resolvedPartitionField: 'name',
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
+    resolvedRowsField: 'name',
   }
   return { ...packed, legendCandidates: collectLegendCandidates(packed) }
 }
@@ -134,14 +134,14 @@ describe('encodeInputs', () => {
         0xff0000ff, 0xff00ff00, 0xffff0000, 0xff00ffff,
       ]),
       featureDeltas: new Int32Array(0),
-      partitionValues: names,
-      featurePartitionIndex: new Uint32Array([0, 1, 2, 3]),
+      rowValues: names,
+      featureRowValueIndex: new Uint32Array([0, 1, 2, 3]),
       featureNames: ['segA', 'segB', 'segC', 'segD'],
       featureIds: ['a', 'b', 'c', 'd'],
       usedItemRgb: false,
-      partitionCandidates: [],
-      partitionCandidateValues: [],
-      resolvedPartitionField: 'name',
+      rowsFieldCandidates: [],
+      rowsFieldCandidateValues: [],
+      resolvedRowsField: 'name',
     }
     display.setRpcData(
       0,
@@ -208,7 +208,7 @@ describe('encodeInputs', () => {
       1,
       {
         ...regionData(),
-        partitionValues: ['sampleA', 'sampleC'],
+        rowValues: ['sampleA', 'sampleC'],
       },
       ctgB,
     )

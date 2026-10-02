@@ -17,7 +17,7 @@ function makeModel(names: string[]) {
     editableSources: rows,
     rowDomain: [],
     adapterConfig: { type: 'BedTabixAdapter' },
-    effectivePartitionField: 'sample',
+    effectiveRowsField: 'sample',
     effectiveClusterField: 'state',
     setRowOrder,
   } satisfies MultiRowClusterModel
@@ -44,7 +44,7 @@ test('calls the registry RPC and applies the clustered order + tree', async () =
   expect(sessionId).toBe('sess1')
   expect(method).toBe('MultiRowClusterFeatures')
   expect(args.sources).toEqual(['a', 'b', 'c'])
-  expect(args.partitionField).toBe('sample')
+  expect(args.rowsField).toBe('sample')
   expect(args.clusterField).toBe('state')
   expect(args.regions).toHaveLength(1)
 
@@ -68,7 +68,7 @@ test('clusters the focused clade and keeps the hidden rows', async () => {
       editableSources: [{ name: 'a' }, { name: 'b' }, { name: 'hidden' }],
       rowDomain: [],
       adapterConfig: { type: 'BedTabixAdapter' },
-      effectivePartitionField: 'sample',
+      effectiveRowsField: 'sample',
       effectiveClusterField: '',
       setRowOrder,
     },
@@ -95,7 +95,7 @@ describe('featureMatrixKey', () => {
     editableSources: rows,
     rowDomain: [],
     adapterConfig: { type: 'BedTabixAdapter' },
-    effectivePartitionField: 'repClass',
+    effectiveRowsField: 'repClass',
     effectiveClusterField: 'name',
     setRowOrder: () => {},
   } satisfies MultiRowClusterModel

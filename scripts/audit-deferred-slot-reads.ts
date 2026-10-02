@@ -214,7 +214,7 @@ function main() {
     '# That is a real hole, not a rounding error: `color` is both the most common',
     '# callback slot and one of the uncovered names. The two call sites where it',
     '# bit are pinned by canaries instead (colorSlotTransport.test.ts,',
-    '# partitionFieldTransport.test.ts). Closing it needs each read traced to its',
+    '# rowsFieldTransport.test.ts). Closing it needs each read traced to its',
     '# own schema, which the checker will not do through a widened holder — the',
     '# same wall audit-config-read-types.ts documents.',
     '#',

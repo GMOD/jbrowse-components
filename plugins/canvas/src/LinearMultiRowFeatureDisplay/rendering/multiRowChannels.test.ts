@@ -31,16 +31,16 @@ const region: MultiRowRegionData = {
   featureEnds: Uint32Array.from([15, 25, 35]),
   featureColors: Uint32Array.from([0xff0000ff, 0xff00ff00, 0xffff0000]),
   rectColorValues: new Uint32Array(0),
-  partitionValues: ['momHP0', 'dadHP1'],
-  featurePartitionIndex: Uint32Array.from([0, 1, 0]),
+  rowValues: ['momHP0', 'dadHP1'],
+  featureRowValueIndex: Uint32Array.from([0, 1, 0]),
   featureNames: ['a', 'b', 'c'],
   featureIds: ['f1', 'f2', 'f3'],
   featureDeltas: new Int32Array(0),
   usedItemRgb: false,
-  partitionCandidates: [],
-  partitionCandidateValues: [],
+  rowsFieldCandidates: [],
+  rowsFieldCandidateValues: [],
   legendCandidates: [],
-  resolvedPartitionField: 'name',
+  resolvedRowsField: 'name',
 }
 
 function inputs(

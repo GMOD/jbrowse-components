@@ -15,15 +15,15 @@ function region(deltas: number[]): MultiRowRegionData {
     featureColors: Uint32Array.from(deltas, () => cssColorToABGR('red')),
     rectColorValues: new Uint32Array(0),
     featureDeltas: Int32Array.from(deltas),
-    partitionValues: ['strainA'],
-    featurePartitionIndex: Uint32Array.from(deltas, () => 0),
+    rowValues: ['strainA'],
+    featureRowValueIndex: Uint32Array.from(deltas, () => 0),
     featureNames: deltas.map(() => 'bubble'),
     featureIds: deltas.map((_, i) => `f${i}`),
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'name',
+    resolvedRowsField: 'name',
   }
 }
 

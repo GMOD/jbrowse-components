@@ -16,7 +16,7 @@ export interface MultiRowGetFeaturesArgs extends GatedFetchArgs {
     end: number
     assemblyName: string
   }
-  partitionField: string
+  rowsField: string
   lengthField: string
   colorConfig: WorkerColor
 }
@@ -24,7 +24,7 @@ export interface MultiRowGetFeaturesArgs extends GatedFetchArgs {
 /**
  * The colour field's distinct values in one region, as text, and each value a
  * feature carries with the partition row it lands in (`rowIndex` indexes
- * `partitionValues`), up to `MAX_LEGEND_CANDIDATES`.
+ * `rowValues`), up to `MAX_LEGEND_CANDIDATES`.
  */
 export interface MultiRowColorValues {
   field: string
@@ -32,7 +32,7 @@ export interface MultiRowColorValues {
   painted: { rowIndex: number; valueIndex: number }[]
 }
 
-export interface PartitionCandidateValues {
+export interface RowsFieldCandidateValues {
   field: string
   values: string[]
   overflow: boolean
@@ -54,15 +54,15 @@ export interface MultiRowRegionData {
    * reference-length allele.
    */
   featureDeltas: Int32Array
-  partitionValues: string[]
-  featurePartitionIndex: Uint32Array
+  rowValues: string[]
+  featureRowValueIndex: Uint32Array
   featureNames: string[]
   featureIds: string[]
   usedItemRgb: boolean
-  partitionCandidates: string[]
-  partitionCandidateValues: PartitionCandidateValues[]
+  rowsFieldCandidates: string[]
+  rowsFieldCandidateValues: RowsFieldCandidateValues[]
   legendCandidates: LegendCandidate[]
-  resolvedPartitionField: string
+  resolvedRowsField: string
 }
 
 export interface MultiRowGetFeaturesResult extends MultiRowRegionData {

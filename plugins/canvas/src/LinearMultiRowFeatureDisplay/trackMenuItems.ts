@@ -17,12 +17,12 @@ import {
 import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import TableRowsIcon from '@mui/icons-material/TableRows'
 
-import { partitionRowCountHint } from './partitionFields.ts'
 import { entryHidden } from './rendering/colorLegend.ts'
 import { ROW_HEIGHT_PRESETS } from './rowHeightPresets.ts'
+import { rowCountHint } from './rowsFields.ts'
 
-import type { PartitionRowCount } from './partitionFields.ts'
 import type { LegendEntry } from './rendering/colorLegend.ts'
+import type { RowCountByField } from './rowsFields.ts'
 import type { MultiRowClusterDialogModel } from './runMultiRowClustering.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
@@ -55,9 +55,9 @@ interface MultiRowMenuSelf
   hasLegendKey: boolean
   hiddenCategories: readonly string[]
   hiddenCategorySet: ReadonlySet<string>
-  effectivePartitionField: string
-  partitionCandidates: string[]
-  partitionRowCounts: ReadonlyMap<string, PartitionRowCount>
+  effectiveRowsField: string
+  rowsFieldCandidates: string[]
+  rowCountsByField: ReadonlyMap<string, RowCountByField>
   setRowsField: (field: string) => void
   showBranchLength: boolean
   treeHasBranchLengths: boolean
@@ -135,35 +135,31 @@ function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     : []
 }
 
-// The radio reads `effectivePartitionField` because the checked row is often
+// The radio reads `effectiveRowsField` because the checked row is often
 // one no config names, and its options are discovered off the loaded features'
 // own attribute names. A `jexl:` partition checks none of the radios and gets a
 // disabled row naming it; nothing here can write one, since a menu that could
 // clear an expression but not restore it would be a one-way door.
-function partitionMenuItems(self: MultiRowMenuSelf): MenuItem[] {
-  const { partitionCandidates, partitionRowCounts, effectivePartitionField } =
-    self
-  if (!partitionCandidates.length) {
+function rowsFieldMenuItems(self: MultiRowMenuSelf): MenuItem[] {
+  const { rowsFieldCandidates, rowCountsByField, effectiveRowsField } = self
+  if (!rowsFieldCandidates.length) {
     return []
   }
-  const isExpression = effectivePartitionField.startsWith('jexl:')
+  const isExpression = effectiveRowsField.startsWith('jexl:')
   return [
     {
-      label: 'Partition by...',
+      label: 'One row per...',
       icon: TableRowsIcon,
       subMenu: [
         ...(isExpression
           ? [{ label: 'Custom expression', disabled: true, onClick: () => {} }]
           : []),
         ...radioItems(
-          partitionCandidates.map(value => ({
+          rowsFieldCandidates.map(value => ({
             value,
-            label: withHint(
-              value,
-              partitionRowCountHint(partitionRowCounts.get(value)),
-            ),
+            label: withHint(value, rowCountHint(rowCountsByField.get(value))),
           })),
-          isExpression ? undefined : effectivePartitionField,
+          isExpression ? undefined : effectiveRowsField,
           (field: string) => {
             self.setRowsField(field)
           },
@@ -179,7 +175,7 @@ export function buildMultiRowTrackMenuItems(
   return [
     ...makeShowSubMenu(showMenuItems(self)),
     rowHeightMenuItem(self, ROW_HEIGHT_PRESETS),
-    ...partitionMenuItems(self),
+    ...rowsFieldMenuItems(self),
     ...categoriesMenuItems(self),
     rowArrangementMenuItem({
       ready: !!self.editableSources.length,

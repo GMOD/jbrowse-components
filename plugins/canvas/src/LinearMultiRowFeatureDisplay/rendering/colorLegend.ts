@@ -67,13 +67,13 @@ export function buildColorLegend(
     regions,
     data => {
       const rowForLocal = resolveLocalRowIndices(
-        data.partitionValues,
+        data.rowValues,
         rowIndexByValue,
       )
       return {
         candidates: data.legendCandidates,
-        rowPaintsCandidateColor: partitionIndex => {
-          const row = rowForLocal[partitionIndex]
+        rowPaintsCandidateColor: rowValueIndex => {
+          const row = rowForLocal[rowValueIndex]
           return row !== undefined && rowColorsByIndex[row] === undefined
         },
       }
@@ -121,7 +121,7 @@ export function buildFieldColorLegend(
     data => {
       const { colorValues } = data
       const rowForLocal = resolveLocalRowIndices(
-        data.partitionValues,
+        data.rowValues,
         rowIndexByValue,
       )
       return {
@@ -136,8 +136,8 @@ export function buildFieldColorLegend(
                 }
               })
             : [],
-        rowPaintsCandidateColor: partitionIndex => {
-          const row = rowForLocal[partitionIndex]
+        rowPaintsCandidateColor: rowValueIndex => {
+          const row = rowForLocal[rowValueIndex]
           return row !== undefined && rowColorsByIndex[row] === undefined
         },
       }

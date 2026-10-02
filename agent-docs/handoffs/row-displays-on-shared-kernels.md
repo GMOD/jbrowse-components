@@ -139,8 +139,6 @@ captures of volvox, roadmap and bxd.
 - MAF: the coverage band hard-codes a linear scale four times
   (`stateModel.ts:1592-1664`), the shape `scales.y` would replace when its
   trigger comes.
-- Multi-row keeps pre-ADR-157 names (`partitionField`,
-  `effectivePartitionField`, "Partition by...").
 - Stale comments: about 25 "two displays" comments in variants since the
   merge; `rowBand.ts:10` names consumers that moved; `activeFilters()` is now
   `configuredFilters()`.

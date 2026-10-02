@@ -1,10 +1,10 @@
-import { resolveClusterField } from './partitionFields.ts'
+import { resolveClusterField } from './rowsFields.ts'
 
 const base = {
   clusterField: 'auto',
   color: { value: undefined as string | undefined, field: '' },
   candidates: ['name', 'state', 'itemRgb', 'sample'],
-  partitionField: 'sample',
+  rowsField: 'sample',
 }
 
 describe('auto', () => {
@@ -61,7 +61,7 @@ describe('auto', () => {
   })
 
   test('clusters on presence where name is what the rows already are', () => {
-    expect(resolveClusterField({ ...base, partitionField: 'name' })).toBe('')
+    expect(resolveClusterField({ ...base, rowsField: 'name' })).toBe('')
   })
 
   test('clusters on presence where the features carry no name', () => {

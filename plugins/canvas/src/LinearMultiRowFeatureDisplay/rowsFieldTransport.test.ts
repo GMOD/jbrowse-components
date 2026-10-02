@@ -16,7 +16,7 @@ describe('rows.field reaches the worker unevaluated', () => {
     const { display } = createDisplay()
 
     expect(display.rowsField).toBe(RMSK)
-    expect(display.rpcProps().partitionField).toBe(RMSK)
+    expect(display.rpcProps().rowsField).toBe(RMSK)
   })
 
   it('leaves a plain attribute name alone', () => {
@@ -25,7 +25,7 @@ describe('rows.field reaches the worker unevaluated', () => {
     })
     const { display } = createDisplay()
 
-    expect(display.rpcProps().partitionField).toBe('sample')
+    expect(display.rpcProps().rowsField).toBe('sample')
   })
 
   // The unset slot is the auto sentinel, resolved in the worker off the columns
@@ -36,11 +36,11 @@ describe('rows.field reaches the worker unevaluated', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
-    expect(display.rpcProps().partitionField).toBe('')
+    expect(display.rpcProps().rowsField).toBe('')
   })
 
   // Everything asking "which attribute are these rows" reads
-  // `effectivePartitionField`, so before a region answers it has to say what
+  // `effectiveRowsField`, so before a region answers it has to say what
   // the config asked for rather than the auto fallback nobody chose.
   it('names the configured slot before any region has answered', () => {
     const { createDisplay } = createTestEnvironment({
@@ -48,27 +48,27 @@ describe('rows.field reaches the worker unevaluated', () => {
     })
     const { display } = createDisplay()
 
-    expect(display.answeredPartitionField).toBeUndefined()
-    expect(display.effectivePartitionField).toBe('sample')
+    expect(display.answeredRowsField).toBeUndefined()
+    expect(display.effectiveRowsField).toBe('sample')
   })
 })
 
-function regionData(resolvedPartitionField: string) {
+function regionData(resolvedRowsField: string) {
   return {
     featureStarts: new Uint32Array([0]),
     featureEnds: new Uint32Array([100]),
     featureColors: new Uint32Array([0xff0000ff]),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues: ['LINE'],
-    featurePartitionIndex: new Uint32Array([0]),
+    rowValues: ['LINE'],
+    featureRowValueIndex: new Uint32Array([0]),
     featureNames: ['L1HS'],
     featureIds: ['f1'],
     usedItemRgb: false,
-    partitionCandidates: ['repClass', 'repFamily'],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: ['repClass', 'repFamily'],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField,
+    resolvedRowsField,
   }
 }
 
@@ -78,12 +78,12 @@ function emptyRegionData() {
     featureStarts: new Uint32Array(0),
     featureEnds: new Uint32Array(0),
     featureColors: new Uint32Array(0),
-    partitionValues: [],
-    featurePartitionIndex: new Uint32Array(0),
+    rowValues: [],
+    featureRowValueIndex: new Uint32Array(0),
     featureNames: [],
     featureIds: [],
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
   }
 }
 
@@ -95,7 +95,7 @@ describe('auto resolution is pinned once a region has answered', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
-    expect(display.pinnedPartitionField).toBe('')
+    expect(display.pinnedRowsField).toBe('')
   })
 
   it('takes the loaded region answer, not the display default', () => {
@@ -103,9 +103,9 @@ describe('auto resolution is pinned once a region has answered', () => {
     const { display } = createDisplay()
     display.setRpcData(0, regionData('repClass'), ctgA)
 
-    expect(display.pinnedPartitionField).toBe('repClass')
+    expect(display.pinnedRowsField).toBe('repClass')
     // Still the auto sentinel where it is the invalidation key.
-    expect(display.rpcProps().partitionField).toBe('')
+    expect(display.rpcProps().rowsField).toBe('')
   })
 
   it('leaves a configured slot alone', () => {
@@ -115,7 +115,7 @@ describe('auto resolution is pinned once a region has answered', () => {
     const { display } = createDisplay()
     display.setRpcData(0, regionData('sample'), ctgA)
 
-    expect(display.rpcProps().partitionField).toBe('sample')
+    expect(display.rpcProps().rowsField).toBe('sample')
   })
 
   // A settings change keeps the held regions on screen under the scrim, and
@@ -125,11 +125,11 @@ describe('auto resolution is pinned once a region has answered', () => {
     const { display } = createDisplay()
     display.setRowsField('sample')
     display.setRpcData(0, regionData('sample'), ctgA)
-    expect(display.pinnedPartitionField).toBe('sample')
+    expect(display.pinnedRowsField).toBe('sample')
 
     display.setRowsField('')
 
-    expect(display.pinnedPartitionField).toBe('')
+    expect(display.pinnedRowsField).toBe('')
   })
 
   // An empty region resolves nothing and falls through to the `name` fallback.
@@ -141,15 +141,15 @@ describe('auto resolution is pinned once a region has answered', () => {
     const { display } = createDisplay()
     display.setRpcData(0, emptyRegionData(), ctgA)
 
-    expect(display.pinnedPartitionField).toBe('')
+    expect(display.pinnedRowsField).toBe('')
     // ...and the empty region is not itself treated as unresolved data: it has
     // no feature to land in the wrong row.
     expect(display.regionHasData(0)).toBe(true)
 
     display.setRpcData(1, regionData('repClass'), ctgB)
 
-    expect(display.pinnedPartitionField).toBe('repClass')
-    expect(display.effectivePartitionField).toBe('repClass')
+    expect(display.pinnedRowsField).toBe('repClass')
+    expect(display.effectiveRowsField).toBe('repClass')
   })
 })
 
@@ -164,7 +164,7 @@ describe('regions that resolved differently reconcile to the pin', () => {
     display.setRpcData(0, regionData('repClass'), ctgA)
     display.setRpcData(3, regionData('name'), ctgB)
 
-    expect(display.pinnedPartitionField).toBe('repClass')
+    expect(display.pinnedRowsField).toBe('repClass')
     expect(display.regionHasData(0)).toBe(true)
     expect(display.regionHasData(3)).toBe(false)
   })
@@ -224,8 +224,8 @@ describe('the pin survives the density band standing in', () => {
   it('keeps the field a loaded region answered', () => {
     const display = bandedDisplay()
 
-    expect(display.pinnedPartitionField).toBe('repClass')
-    expect(display.effectivePartitionField).toBe('repClass')
+    expect(display.pinnedRowsField).toBe('repClass')
+    expect(display.effectiveRowsField).toBe('repClass')
   })
 
   it('does not re-issue every held region', () => {
@@ -234,10 +234,10 @@ describe('the pin survives the density band standing in', () => {
     expect(display.regionHasData(0)).toBe(true)
   })
 
-  it('keeps the "Partition by..." candidates the data carries', () => {
+  it('keeps the "One row per..." candidates the data carries', () => {
     const display = bandedDisplay()
 
-    expect(display.partitionCandidates).toEqual(['repClass', 'repFamily'])
+    expect(display.rowsFieldCandidates).toEqual(['repClass', 'repFamily'])
   })
 
   // ...and the rows themselves still go, which is the swap doing its job.

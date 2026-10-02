@@ -1,25 +1,25 @@
-import { MAX_COUNTED_PARTITION_VALUES } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
-import { partitionRowCountHint, partitionRowCounts } from './partitionFields.ts'
+import { MAX_COUNTED_ROW_VALUES } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import { rowCountHint, rowCountsByField } from './rowsFields.ts'
 
-import type { PartitionCandidateValues } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
+import type { RowsFieldCandidateValues } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
-function region(partitionCandidateValues: PartitionCandidateValues[]) {
+function region(rowsFieldCandidateValues: RowsFieldCandidateValues[]) {
   return {
     featureStarts: new Uint32Array(0),
     featureEnds: new Uint32Array(0),
     featureColors: new Uint32Array(0),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues: [],
-    featurePartitionIndex: new Uint32Array(0),
+    rowValues: [],
+    featureRowValueIndex: new Uint32Array(0),
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
-    partitionCandidates: partitionCandidateValues.map(c => c.field),
-    partitionCandidateValues,
+    rowsFieldCandidates: rowsFieldCandidateValues.map(c => c.field),
+    rowsFieldCandidateValues,
     legendCandidates: [],
-    resolvedPartitionField: 'name',
+    resolvedRowsField: 'name',
   } satisfies MultiRowRegionData
 }
 
@@ -28,7 +28,7 @@ function slice(...regions: MultiRowRegionData[]) {
 }
 
 test('unions the values across loaded regions', () => {
-  const counts = partitionRowCounts(
+  const counts = rowCountsByField(
     slice(
       region([
         { field: 'repClass', values: ['LINE', 'SINE'], overflow: false },
@@ -40,7 +40,7 @@ test('unions the values across loaded regions', () => {
 })
 
 test('one overflowing region makes the union an overflow', () => {
-  const counts = partitionRowCounts(
+  const counts = rowCountsByField(
     slice(
       region([{ field: 'name', values: ['a'], overflow: false }]),
       region([{ field: 'name', values: [], overflow: true }]),
@@ -50,11 +50,11 @@ test('one overflowing region makes the union an overflow', () => {
 })
 
 test('a union past the cap is an overflow too', () => {
-  const half = Array.from({ length: MAX_COUNTED_PARTITION_VALUES }, (_, i) =>
+  const half = Array.from({ length: MAX_COUNTED_ROW_VALUES }, (_, i) =>
     String(i),
   )
   const other = half.map(v => `x${v}`)
-  const counts = partitionRowCounts(
+  const counts = rowCountsByField(
     slice(
       region([{ field: 'name', values: half, overflow: false }]),
       region([{ field: 'name', values: other, overflow: false }]),
@@ -64,10 +64,10 @@ test('a union past the cap is an overflow too', () => {
 })
 
 test('the hint spells the three shapes a count takes', () => {
-  expect(partitionRowCountHint(undefined)).toBeUndefined()
-  expect(partitionRowCountHint({ count: 1, overflow: false })).toBe('1 row')
-  expect(partitionRowCountHint({ count: 21, overflow: false })).toBe('21 rows')
-  expect(partitionRowCountHint({ count: 200, overflow: true })).toBe(
-    `${MAX_COUNTED_PARTITION_VALUES}+ rows`,
+  expect(rowCountHint(undefined)).toBeUndefined()
+  expect(rowCountHint({ count: 1, overflow: false })).toBe('1 row')
+  expect(rowCountHint({ count: 21, overflow: false })).toBe('21 rows')
+  expect(rowCountHint({ count: 200, overflow: true })).toBe(
+    `${MAX_COUNTED_ROW_VALUES}+ rows`,
   )
 })

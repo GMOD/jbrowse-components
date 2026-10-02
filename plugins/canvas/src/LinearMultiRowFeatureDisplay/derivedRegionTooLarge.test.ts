@@ -12,15 +12,15 @@ function emptyRegionData(): MultiRowRegionData {
     featureColors: new Uint32Array(0),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues: [],
-    featurePartitionIndex: new Uint32Array(0),
+    rowValues: [],
+    featureRowValueIndex: new Uint32Array(0),
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'name',
+    resolvedRowsField: 'name',
   }
 }
 

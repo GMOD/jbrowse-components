@@ -20,15 +20,15 @@ function regionData(): MultiRowRegionData {
     featureColors: new Uint32Array([0xff0000ff, 0xff00ff00]),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues: ['sampleA', 'sampleB'],
-    featurePartitionIndex: new Uint32Array([0, 1]),
+    rowValues: ['sampleA', 'sampleB'],
+    featureRowValueIndex: new Uint32Array([0, 1]),
     featureNames: ['segA', 'segB'],
     featureIds: ['feat1', 'insertion'],
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'name',
+    resolvedRowsField: 'name',
   }
 }
 

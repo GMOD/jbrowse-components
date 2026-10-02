@@ -2454,7 +2454,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   // (review: "might want to make two-part figure showing result").
   //
   // The pick above partitions on `repClass` by itself whenever the file has
-  // that column (PREFERRED_PARTITION_FIELDS), so this frame is one click from
+  // that column (PREFERRED_ROWS_FIELDS), so this frame is one click from
   // the one above.
   //
   // Declarative rather than driven, per the compose note: the state is a session
@@ -2477,7 +2477,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: 'rmsk_hg38_ucsc',
               type: 'LinearMultiRowFeatureDisplay',
-              // the class column, which is what "Partition by..." offers on this
+              // the class column, which is what "One row per..." offers on this
               // file. No rowColor: this is what the menu path produces, and
               // the cookbook figure is where a chosen palette belongs.
               rows: 'repClass',

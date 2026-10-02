@@ -12,24 +12,24 @@ const SORT = 'Sort rows by color here'
 // The rows this display draws are discovered from the loaded features, so they
 // vanish whenever the display has no data loaded.
 function regionData(
-  partitionValues: string[],
+  rowValues: string[],
   feats: [row: number, color: number][] = [],
 ): MultiRowRegionData {
   return {
-    partitionValues,
+    rowValues,
     featureStarts: new Uint32Array(feats.length),
     featureEnds: Uint32Array.from(feats, () => 10_000),
     featureColors: Uint32Array.from(feats, f => f[1]),
     rectColorValues: new Uint32Array(0),
-    featurePartitionIndex: Uint32Array.from(feats, f => f[0]),
+    featureRowValueIndex: Uint32Array.from(feats, f => f[0]),
     featureNames: feats.map(() => ''),
     featureIds: feats.map((_, i) => `f${i}`),
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'name',
+    resolvedRowsField: 'name',
   }
 }
 

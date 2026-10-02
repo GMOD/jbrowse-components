@@ -16,15 +16,15 @@ function rows(names: string[]): MultiRowRegionData {
     featureColors: new Uint32Array(0),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues: names,
-    featurePartitionIndex: new Uint32Array(0),
+    rowValues: names,
+    featureRowValueIndex: new Uint32Array(0),
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'name',
+    resolvedRowsField: 'name',
   }
 }
 

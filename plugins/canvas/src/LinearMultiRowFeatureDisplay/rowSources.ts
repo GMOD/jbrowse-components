@@ -76,7 +76,7 @@ export function resolveRowColorStrings(
  * order: `domain` lists the values that come first, the rest sorted the way
  * every in-track grouping sorts, digits by magnitude and the `''` row last.
  */
-export function orderPartitionValues(
+export function orderRowValues(
   values: Iterable<string>,
   domain: readonly string[],
 ): string[] {

@@ -13,7 +13,7 @@ import type {
   MultiRowColorValues,
   MultiRowGetFeaturesResult,
   MultiRowRegionData,
-  PartitionCandidateValues,
+  RowsFieldCandidateValues,
 } from './rpcTypes.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -65,22 +65,22 @@ function columnValue(raw: unknown) {
 export function collectLegendCandidates({
   featureNames,
   featureColors,
-  featurePartitionIndex,
+  featureRowValueIndex,
 }: Pick<
   MultiRowRegionData,
-  'featureNames' | 'featureColors' | 'featurePartitionIndex'
+  'featureNames' | 'featureColors' | 'featureRowValueIndex'
 >) {
   const collector = createLegendCandidateCollector()
   for (let i = 0; i < featureNames.length; i++) {
     const name = featureNames[i]!
     if (name !== '') {
-      collector.add(featurePartitionIndex[i]!, name, featureColors[i]!)
+      collector.add(featureRowValueIndex[i]!, name, featureColors[i]!)
     }
   }
   return collector.candidates
 }
 
-const NON_PARTITION_TAGS = new Set([
+const NON_ROW_FIELD_TAGS = new Set([
   'start',
   'end',
   'refName',
@@ -92,19 +92,19 @@ const NON_PARTITION_TAGS = new Set([
   'phase',
 ])
 
-const PARTITION_CANDIDATE_SAMPLE = 20
+const ROWS_FIELD_CANDIDATE_SAMPLE = 20
 
 /**
  * Enumerates attributes through `toJSON`, not `tags()`: `tags` is
  * `SimpleFeature`'s, and the `Feature` interface an adapter may implement
  * carries only the serializer.
  */
-function collectPartitionCandidates(features: Feature[]) {
+function collectRowsFieldCandidates(features: Feature[]) {
   const names = new Set<string>()
-  const n = Math.min(features.length, PARTITION_CANDIDATE_SAMPLE)
+  const n = Math.min(features.length, ROWS_FIELD_CANDIDATE_SAMPLE)
   for (let i = 0; i < n; i++) {
     for (const tag of Object.keys(features[i]!.toJSON())) {
-      if (!NON_PARTITION_TAGS.has(tag)) {
+      if (!NON_ROW_FIELD_TAGS.has(tag)) {
         names.add(tag)
       }
     }
@@ -112,13 +112,13 @@ function collectPartitionCandidates(features: Feature[]) {
   return [...names].sort()
 }
 
-export const MAX_COUNTED_PARTITION_VALUES = 200
+export const MAX_COUNTED_ROW_VALUES = 200
 
 // Truncating makes the count approximate: two values sharing this prefix
 // undercount by one.
-export const MAX_PARTITION_VALUE_LENGTH = 64
+export const MAX_ROW_VALUE_LENGTH = 64
 
-export const PARTITION_VALUE_COUNT_SAMPLE = 5_000
+export const ROW_VALUE_COUNT_SAMPLE = 5_000
 
 /**
  * Collects values rather than counts because regions land independently and the
@@ -131,15 +131,15 @@ function createCandidateValueCounter(candidates: string[]) {
     add(feature: Feature) {
       for (const [field, values] of active) {
         values.add(
-          columnValue(feature.get(field)).slice(0, MAX_PARTITION_VALUE_LENGTH),
+          columnValue(feature.get(field)).slice(0, MAX_ROW_VALUE_LENGTH),
         )
-        if (values.size > MAX_COUNTED_PARTITION_VALUES) {
+        if (values.size > MAX_COUNTED_ROW_VALUES) {
           active.delete(field)
           overflowed.add(field)
         }
       }
     },
-    result(): PartitionCandidateValues[] {
+    result(): RowsFieldCandidateValues[] {
       return candidates.map(field => {
         const overflow = overflowed.has(field)
         return {
@@ -181,29 +181,29 @@ function createColorValueCollector(field: string, jexl: JexlInstance) {
   }
 }
 
-export const AUTO_PARTITION_FIELD = ''
+export const AUTO_ROWS_FIELD = ''
 
-const PREFERRED_PARTITION_FIELDS = ['repClass']
+const PREFERRED_ROWS_FIELDS = ['repClass']
 
-const FALLBACK_PARTITION_FIELD = 'name'
+const FALLBACK_ROWS_FIELD = 'name'
 
 /**
  * Only the worker knows which columns the data carries, so it picks the field
- * and reports it back as `resolvedPartitionField` — clustering has to ask for
+ * and reports it back as `resolvedRowsField` — clustering has to ask for
  * the same one to land each feature in the row the painting drew it in.
  */
-export function resolvePartitionField(
-  partitionField: string,
-  partitionCandidates: string[],
+export function resolveRowsField(
+  rowsField: string,
+  rowsFieldCandidates: string[],
 ) {
-  const preferred = PREFERRED_PARTITION_FIELDS.find(f =>
-    partitionCandidates.includes(f),
+  const preferred = PREFERRED_ROWS_FIELDS.find(f =>
+    rowsFieldCandidates.includes(f),
   )
-  return partitionField === AUTO_PARTITION_FIELD
+  return rowsField === AUTO_ROWS_FIELD
     ? preferred === undefined
-      ? FALLBACK_PARTITION_FIELD
+      ? FALLBACK_ROWS_FIELD
       : preferred
-    : partitionField
+    : rowsField
 }
 
 /**
@@ -231,14 +231,14 @@ export function makeFeatureValueResolver(field: string, jexl: JexlInstance) {
 
 export function packMultiRowFeatures({
   features,
-  partitionField,
+  rowsField,
   lengthField,
   colorConfig,
   jexl,
   report,
 }: {
   features: Feature[]
-  partitionField: string
+  rowsField: string
   lengthField: string
   colorConfig: WorkerColor
   jexl: JexlInstance
@@ -248,28 +248,22 @@ export function packMultiRowFeatures({
   const featureStarts = new Uint32Array(n)
   const featureEnds = new Uint32Array(n)
   const featureColors = new Uint32Array(n)
-  const featurePartitionIndex = new Uint32Array(n)
+  const featureRowValueIndex = new Uint32Array(n)
   const packDeltas = lengthField !== ''
   const featureDeltas = new Int32Array(packDeltas ? n : 0)
   const featureNames: string[] = new Array(n)
   const featureIds: string[] = new Array(n)
-  const partitionValues: string[] = []
+  const rowValues: string[] = []
   const valueIndex = new Map<string, number>()
   const featureColor = makeFeatureColorResolver(colorConfig.value, jexl)
   const colorValues = colorConfig.field
     ? createColorValueCollector(colorConfig.field, jexl)
     : undefined
   const rectColorValues = new Uint32Array(colorValues ? n : 0)
-  const partitionCandidates = collectPartitionCandidates(features)
-  const resolvedPartitionField = resolvePartitionField(
-    partitionField,
-    partitionCandidates,
-  )
-  const candidateValues = createCandidateValueCounter(partitionCandidates)
-  const featurePartition = makeFeatureValueResolver(
-    resolvedPartitionField,
-    jexl,
-  )
+  const rowsFieldCandidates = collectRowsFieldCandidates(features)
+  const resolvedRowsField = resolveRowsField(rowsField, rowsFieldCandidates)
+  const candidateValues = createCandidateValueCounter(rowsFieldCandidates)
+  const featureRowValue = makeFeatureValueResolver(resolvedRowsField, jexl)
   let usedItemRgb = false
 
   for (let i = 0; i < n; i++) {
@@ -286,18 +280,18 @@ export function packMultiRowFeatures({
       featureDeltas[i] = Number.isFinite(num) ? num : 0
     }
 
-    const value = featurePartition(feature)
+    const value = featureRowValue(feature)
     let idx = valueIndex.get(value)
     if (idx === undefined) {
-      idx = partitionValues.length
-      partitionValues.push(value)
+      idx = rowValues.length
+      rowValues.push(value)
       valueIndex.set(value, idx)
     }
-    featurePartitionIndex[i] = idx
+    featureRowValueIndex[i] = idx
     if (colorValues) {
       rectColorValues[i] = colorValues.laneValueOf(feature, idx)
     }
-    if (i < PARTITION_VALUE_COUNT_SAMPLE) {
+    if (i < ROW_VALUE_COUNT_SAMPLE) {
       candidateValues.add(feature)
     }
     const { css, fromBed } = featureColor(feature)
@@ -312,18 +306,18 @@ export function packMultiRowFeatures({
     rectColorValues,
     colorValues: colorValues?.colorValues,
     featureDeltas,
-    partitionValues,
-    featurePartitionIndex,
+    rowValues,
+    featureRowValueIndex,
     featureNames,
     featureIds,
     usedItemRgb,
-    partitionCandidates,
-    partitionCandidateValues: candidateValues.result(),
-    resolvedPartitionField,
+    rowsFieldCandidates,
+    rowsFieldCandidateValues: candidateValues.result(),
+    resolvedRowsField,
     legendCandidates: collectLegendCandidates({
       featureNames,
       featureColors,
-      featurePartitionIndex,
+      featureRowValueIndex,
     }),
   }
 }

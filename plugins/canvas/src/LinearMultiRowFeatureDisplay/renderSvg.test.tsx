@@ -64,16 +64,16 @@ function makeRegionData(): MultiRowGetFeaturesResult {
     featureEnds: Uint32Array.from([1200]),
     featureColors: Uint32Array.from([0xff0000ff]),
     rectColorValues: new Uint32Array(0),
-    partitionValues: ['a'],
-    featurePartitionIndex: Uint32Array.from([0]),
+    rowValues: ['a'],
+    featureRowValueIndex: Uint32Array.from([0]),
     featureNames: ['feat'],
     featureIds: ['f0'],
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'name',
+    resolvedRowsField: 'name',
   }
 }
 

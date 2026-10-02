@@ -34,15 +34,15 @@ function oneRow() {
     featureColors: new Uint32Array(0),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues: ['row0'],
-    featurePartitionIndex: new Uint32Array(0),
+    rowValues: ['row0'],
+    featureRowValueIndex: new Uint32Array(0),
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'name',
+    resolvedRowsField: 'name',
   }
 }
 

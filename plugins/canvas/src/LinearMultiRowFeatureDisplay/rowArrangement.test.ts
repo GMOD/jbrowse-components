@@ -8,25 +8,25 @@ import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTyp
 // declared, so the row set grows as regions load with no action to hook an
 // invalidation onto.
 function regionData(
-  partitionValues: string[],
-  partitionCandidates: string[] = [],
-  resolvedPartitionField = 'name',
+  rowValues: string[],
+  rowsFieldCandidates: string[] = [],
+  resolvedRowsField = 'name',
 ): MultiRowRegionData {
   return {
-    partitionValues,
+    rowValues,
     featureStarts: new Uint32Array(0),
     featureEnds: new Uint32Array(0),
     featureColors: new Uint32Array(0),
     rectColorValues: new Uint32Array(0),
-    featurePartitionIndex: new Uint32Array(0),
+    featureRowValueIndex: new Uint32Array(0),
     featureNames: [],
     featureIds: [],
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
-    partitionCandidates,
-    partitionCandidateValues: [],
+    rowsFieldCandidates,
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField,
+    resolvedRowsField,
   }
 }
 
@@ -83,12 +83,12 @@ describe('the dendrogram positions only while it describes the rows', () => {
 describe('repartitioning', () => {
   it('offers the names the loaded regions carry, unioned and sorted', () => {
     const { display } = createTestEnvironment().createDisplay()
-    expect(display.partitionCandidates).toEqual([])
+    expect(display.rowsFieldCandidates).toEqual([])
 
     display.setRpcData(0, regionData(['a'], ['repFamily', 'repClass']), ctgA)
     display.setRpcData(1, regionData(['b'], ['repClass', 'strain']), ctgB)
 
-    expect(display.partitionCandidates).toEqual([
+    expect(display.rowsFieldCandidates).toEqual([
       'repClass',
       'repFamily',
       'strain',
@@ -100,7 +100,7 @@ describe('repartitioning', () => {
   it('reports the field the worker actually partitioned on', () => {
     const { display } = createTestEnvironment().createDisplay()
     expect(display.rowsField).toBe('')
-    expect(display.effectivePartitionField).toBe('name')
+    expect(display.effectiveRowsField).toBe('name')
 
     display.setRpcData(
       0,
@@ -108,7 +108,7 @@ describe('repartitioning', () => {
       ctgA,
     )
 
-    expect(display.effectivePartitionField).toBe('repClass')
+    expect(display.effectiveRowsField).toBe('repClass')
     expect(display.rowsField).toBe('')
   })
 
@@ -169,7 +169,7 @@ describe('repartitioning', () => {
     display.setRpcData(0, regionData(['a', 'b'], ['sample']), ctgA)
     expect(display.rowsField).toBe('')
 
-    display.setRowsField(display.effectivePartitionField)
+    display.setRowsField(display.effectiveRowsField)
 
     expect(display.rowsField).toBe('')
   })
@@ -179,7 +179,7 @@ describe('repartitioning', () => {
   it('takes a pick back to the loaded field while a repartition is in flight', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample']), ctgA)
-    const loaded = display.effectivePartitionField
+    const loaded = display.effectiveRowsField
 
     display.setRowsField('other')
     display.setRowsField(loaded)

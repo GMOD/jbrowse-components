@@ -31,15 +31,15 @@ function order(
 
 function region(
   feats: { start: number; end: number; color: number; row: number }[],
-  partitionValues: string[],
+  rowValues: string[],
 ): EncodableRegion {
   return {
     featureStarts: new Uint32Array(feats.map(f => f.start)),
     featureEnds: new Uint32Array(feats.map(f => f.end)),
     featureColors: new Uint32Array(feats.map(f => f.color)),
     rectColorValues: new Uint32Array(0),
-    featurePartitionIndex: new Uint32Array(feats.map(f => f.row)),
-    partitionValues,
+    featureRowValueIndex: new Uint32Array(feats.map(f => f.row)),
+    rowValues,
   }
 }
 

@@ -62,24 +62,24 @@ function regionData(
   blocks: Block[],
   { usedItemRgb = false, field = 'sample' } = {},
 ): MultiRowRegionData {
-  const partitionValues = [...new Set(blocks.map(b => b.row))]
+  const rowValues = [...new Set(blocks.map(b => b.row))]
   return {
     featureStarts: Uint32Array.from(blocks.map(b => b.start)),
     featureEnds: Uint32Array.from(blocks.map(b => b.end)),
     featureColors: Uint32Array.from(blocks.map(b => cssColorToABGR(b.color))),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues,
-    featurePartitionIndex: Uint32Array.from(
-      blocks.map(b => partitionValues.indexOf(b.row)),
+    rowValues,
+    featureRowValueIndex: Uint32Array.from(
+      blocks.map(b => rowValues.indexOf(b.row)),
     ),
     featureNames: blocks.map(b => b.row),
     featureIds: blocks.map((_, i) => `f${i}`),
     usedItemRgb,
-    partitionCandidates: ['clade', 'sample'],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: ['clade', 'sample'],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: field,
+    resolvedRowsField: field,
   }
 }
 

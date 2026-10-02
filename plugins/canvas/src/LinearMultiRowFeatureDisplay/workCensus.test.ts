@@ -24,15 +24,15 @@ function regionData(): MultiRowRegionData {
     featureColors: Uint32Array.from(ROWS.map(() => cssColorToABGR('red'))),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues: ROWS,
-    featurePartitionIndex: Uint32Array.from(ROWS.map((_, i) => i)),
+    rowValues: ROWS,
+    featureRowValueIndex: Uint32Array.from(ROWS.map((_, i) => i)),
     featureNames: ROWS,
     featureIds: ROWS.map((_, i) => `f${i}`),
     usedItemRgb: false,
-    partitionCandidates: ['sample'],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: ['sample'],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'sample',
+    resolvedRowsField: 'sample',
   }
 }
 

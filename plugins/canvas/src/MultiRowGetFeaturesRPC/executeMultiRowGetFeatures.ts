@@ -20,7 +20,7 @@ export async function executeMultiRowGetFeatures({
   const {
     region,
     byteLimit,
-    partitionField,
+    rowsField,
     lengthField,
     colorConfig,
     signal,
@@ -51,7 +51,7 @@ export async function executeMultiRowGetFeatures({
 
   const result = packMultiRowFeatures({
     features,
-    partitionField,
+    rowsField,
     lengthField,
     colorConfig,
     jexl: pluginManager.jexl,

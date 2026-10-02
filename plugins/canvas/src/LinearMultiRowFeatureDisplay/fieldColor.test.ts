@@ -28,7 +28,7 @@ const SEGMENTS = [
 function pack(field: string): MultiRowRegionData {
   return packMultiRowFeatures({
     features: SEGMENTS,
-    partitionField: 'sample',
+    rowsField: 'sample',
     lengthField: '',
     colorConfig: { value: undefined, field },
     jexl: createJexlInstance(),
@@ -127,14 +127,14 @@ describe('a colour field on the multi-row display', () => {
         features: SEGMENTS.map(
           (f, i) => new SimpleFeature({ ...f.toJSON(), score: i }),
         ),
-        partitionField: 'sample',
+        rowsField: 'sample',
         lengthField: '',
         colorConfig: { value: undefined, field: 'score' },
         jexl: createJexlInstance(),
       }),
       ctgA,
     )
-    expect(d.partitionCandidates).not.toContain('score')
+    expect(d.rowsFieldCandidates).not.toContain('score')
     expect(d.clusterCandidates).toContain('score')
     expect(d.effectiveClusterField).toBe('score')
   })
@@ -191,7 +191,7 @@ describe('a ramp colour on the multi-row display', () => {
     )
     const data = packMultiRowFeatures({
       features,
-      partitionField: 'sample',
+      rowsField: 'sample',
       lengthField: '',
       colorConfig: { value: undefined, field: 'score' },
       jexl: createJexlInstance(),
@@ -247,7 +247,7 @@ test('a domain quantile weighs each feature, so a lone spike stops short', () =>
     0,
     packMultiRowFeatures({
       features,
-      partitionField: 'sample',
+      rowsField: 'sample',
       lengthField: '',
       colorConfig: { value: undefined, field: 'score' },
       jexl: createJexlInstance(),

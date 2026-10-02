@@ -84,7 +84,7 @@ const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 //   `LinearMultiRowFeatureDisplay`'s `rows` picks `name` by default, which on
 //   a GenArk bigRmskBed is one row per repeat -- thousands of hairlines,
 //   rendered rather than reasoned about. There IS a menu item for it now
-//   ("Partition by...", offering the attribute names the loaded features carry),
+//   ("One row per...", offering the attribute names the loaded features carry),
 //   so this is a click rather than a dead end; the hub still wants to open on
 //   the right one. jb2hubs ALREADY
 //   writes the right display (hubtools' repeatClassDisplay, jexl partition,

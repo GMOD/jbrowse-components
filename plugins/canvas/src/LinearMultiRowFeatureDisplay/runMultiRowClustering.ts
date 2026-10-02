@@ -20,7 +20,7 @@ export interface MultiRowClusterModel extends ClusterRunModel<RowSource> {
   adapterConfig: Record<string, unknown>
   // The resolved field, never the raw slot: the matrix has to bucket each
   // feature into the row the painting drew it in.
-  effectivePartitionField: string
+  effectiveRowsField: string
   // Resolved likewise: `auto` names no attribute the worker could read.
   effectiveClusterField: string
 }
@@ -42,7 +42,7 @@ export function featureMatrixKey(model: MultiRowClusterModel) {
     ? ([
         'featureMatrix',
         clusterableSources.map(s => s.name).join('\t'),
-        model.effectivePartitionField,
+        model.effectiveRowsField,
         model.effectiveClusterField,
       ] as const)
     : null
@@ -53,7 +53,7 @@ export function featureMatrixArgs(model: MultiRowClusterModel) {
   return {
     sources: model.clusterableSources.map(s => s.name),
     adapterConfig: model.adapterConfig,
-    partitionField: model.effectivePartitionField,
+    rowsField: model.effectiveRowsField,
     clusterField: model.effectiveClusterField,
     partition: model.clusterPartition,
   }
@@ -74,7 +74,7 @@ export async function runMultiRowClustering({
   signal: AbortSignal
   statusCallback: (status: RpcStatus) => void
 }) {
-  const { clusterableSources, effectivePartitionField, effectiveClusterField } =
+  const { clusterableSources, effectiveRowsField, effectiveClusterField } =
     model
   const result = await rpcManager.call(sessionId, 'MultiRowClusterFeatures', {
     ...featureMatrixArgs(model),
@@ -88,7 +88,7 @@ export async function runMultiRowClustering({
     // Both fields are the matrix, not a display preference, so the caption has
     // to say which pair produced a given tree.
     provenance: clusterProvenanceFromRegions(regions, [
-      { name: 'rows', value: effectivePartitionField },
+      { name: 'rows', value: effectiveRowsField },
       {
         name: 'field',
         value: clusterFieldLabel(effectiveClusterField, result.encoding),

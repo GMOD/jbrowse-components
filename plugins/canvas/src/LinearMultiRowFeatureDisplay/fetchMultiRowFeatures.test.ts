@@ -46,7 +46,7 @@ function makeSelf() {
       // The fetch spreads this rather than re-reading the slots, so the bytes
       // sent and the cache key they are stored under stay one expression.
       rpcProps: () => ({
-        partitionField: 'name',
+        rowsField: 'name',
         lengthField: '',
         colorConfig: undefined,
       }),

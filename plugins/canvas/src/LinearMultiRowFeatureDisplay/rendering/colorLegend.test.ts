@@ -21,15 +21,15 @@ const region = regionData({
   featureColors: Uint32Array.from([
     0xff0000ff, 0xff00ff00, 0xff0000ff, 0xff00ff00,
   ]),
-  partitionValues: ['E001', 'E002'],
-  featurePartitionIndex: Uint32Array.from([0, 0, 1, 1]),
+  rowValues: ['E001', 'E002'],
+  featureRowValueIndex: Uint32Array.from([0, 0, 1, 1]),
   featureNames: ['TssA', 'Quies', 'TssA', 'Quies'],
   featureIds: ['f1', 'f2', 'f3', 'f4'],
   featureDeltas: new Int32Array(0),
   usedItemRgb: false,
-  partitionCandidates: [],
-  partitionCandidateValues: [],
-  resolvedPartitionField: 'name',
+  rowsFieldCandidates: [],
+  rowsFieldCandidateValues: [],
+  resolvedRowsField: 'name',
 })
 
 const rowIndexByValue = new Map([
@@ -79,9 +79,9 @@ test('reads the packed candidates rather than the features', () => {
       readFeatures = true
       return region.featureColors
     },
-    get featurePartitionIndex() {
+    get featureRowValueIndex() {
       readFeatures = true
-      return region.featurePartitionIndex
+      return region.featureRowValueIndex
     },
   }
   expect(
@@ -94,7 +94,7 @@ test('unions the candidates of every loaded region', () => {
   const second = regionData({
     ...region,
     featureColors: Uint32Array.from([0xffabcdef, 0xffabcdef]),
-    featurePartitionIndex: Uint32Array.from([0, 1]),
+    featureRowValueIndex: Uint32Array.from([0, 1]),
     featureNames: ['Enh', 'Enh'],
     featureIds: ['g1', 'g2'],
     featureStarts: Uint32Array.from([60, 70]),
@@ -224,7 +224,7 @@ test('a second name on a color still carries it when the first is taken', () => 
   const masked = regionData({
     ...region,
     featureNames: ['TssA', 'TssA', 'TssA', 'Quies'],
-    featurePartitionIndex: Uint32Array.from([0, 1, 1, 1]),
+    featureRowValueIndex: Uint32Array.from([0, 1, 1, 1]),
     featureColors: Uint32Array.from([
       0xff0000ff, 0xff00ff00, 0xff00ff00, 0xff00ff00,
     ]),
@@ -289,15 +289,15 @@ function statesRegion(n: number) {
     featureEnds: Uint32Array.from({ length: n }, (_, i) => i * 10 + 5),
     featureColors: Uint32Array.from({ length: n }, (_, i) => 0xff000000 + i),
     rectColorValues: new Uint32Array(0),
-    partitionValues: ['E001'],
-    featurePartitionIndex: new Uint32Array(n),
+    rowValues: ['E001'],
+    featureRowValueIndex: new Uint32Array(n),
     featureNames: Array.from({ length: n }, (_, i) => `state${i}`),
     featureIds: Array.from({ length: n }, (_, i) => `f${i}`),
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
-    resolvedPartitionField: 'name',
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
+    resolvedRowsField: 'name',
   })
 }
 
@@ -314,15 +314,15 @@ test('too many distinct labels is treated as non-categorical', () => {
     featureEnds: Uint32Array.from({ length: n }, (_, i) => i * 10 + 5),
     featureColors: Uint32Array.from({ length: n }, (_, i) => 0xff000000 + i),
     rectColorValues: new Uint32Array(0),
-    partitionValues: ['E001'],
-    featurePartitionIndex: new Uint32Array(n),
+    rowValues: ['E001'],
+    featureRowValueIndex: new Uint32Array(n),
     featureNames: Array.from({ length: n }, (_, i) => `gene${i}`),
     featureIds: Array.from({ length: n }, (_, i) => `f${i}`),
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
-    resolvedPartitionField: 'name',
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
+    resolvedRowsField: 'name',
   })
   expect(buildColorLegend([many], new Map([['E001', 0]]), [undefined])).toEqual(
     [],
@@ -336,15 +336,15 @@ test('a candidate list truncated at the cap still reads non-categorical', () => 
     featureEnds: Uint32Array.from({ length: n }, (_, i) => i * 10 + 5),
     featureColors: Uint32Array.from({ length: n }, (_, i) => 0xff000000 + i),
     rectColorValues: new Uint32Array(0),
-    partitionValues: ['E001'],
-    featurePartitionIndex: new Uint32Array(n),
+    rowValues: ['E001'],
+    featureRowValueIndex: new Uint32Array(n),
     featureNames: Array.from({ length: n }, (_, i) => `gene${i}`),
     featureIds: Array.from({ length: n }, (_, i) => `f${i}`),
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
-    resolvedPartitionField: 'name',
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
+    resolvedRowsField: 'name',
   })
   expect(capped.legendCandidates.length).toBeLessThan(n)
   expect(

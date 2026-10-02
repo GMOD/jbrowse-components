@@ -79,16 +79,16 @@ const narrow: MultiRowRegionData = {
   featureEnds: Uint32Array.from([11, 51]),
   featureColors: Uint32Array.from([RED, BLUE]),
   rectColorValues: new Uint32Array(0),
-  partitionValues: ['mom', 'dad'],
-  featurePartitionIndex: Uint32Array.from([0, 1]),
+  rowValues: ['mom', 'dad'],
+  featureRowValueIndex: Uint32Array.from([0, 1]),
   featureNames: ['a', 'b'],
   featureIds: ['f1', 'f2'],
   featureDeltas: new Int32Array(0),
   usedItemRgb: false,
-  partitionCandidates: [],
-  partitionCandidateValues: [],
+  rowsFieldCandidates: [],
+  rowsFieldCandidateValues: [],
   legendCandidates: [],
-  resolvedPartitionField: 'name',
+  resolvedRowsField: 'name',
 }
 
 // the same two features spanning 10bp (100px) each, wider than any bar this

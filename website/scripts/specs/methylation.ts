@@ -112,7 +112,7 @@ const ARABIDOPSIS_CONTEXT_LANES = [
   // was evaluated on the MAIN THREAD against nothing and its answer
   // shipped to the worker as if it were the attribute name. Fixed in
   // `readConfObject` ("a callback read with no context is not an
-  // evaluation"), pinned by `partitionFieldTransport.test.ts`.
+  // evaluation"), pinned by `rowsFieldTransport.test.ts`.
   //
   // Rendered, the class partition is worse HERE, which only a picture
   // could say: it yields `LTR` / `Low_complexity` / `Simple_repeat`,

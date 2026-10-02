@@ -24,17 +24,17 @@ interface Feat {
 }
 
 function region(feats: Feat[], opts?: { usedItemRgb?: boolean }) {
-  const partitionValues: string[] = []
+  const rowValues: string[] = []
   const index = new Map<string, number>()
-  const featurePartitionIndex = new Uint32Array(feats.length)
+  const featureRowValueIndex = new Uint32Array(feats.length)
   feats.forEach((f, i) => {
     let idx = index.get(f.row)
     if (idx === undefined) {
-      idx = partitionValues.length
-      partitionValues.push(f.row)
+      idx = rowValues.length
+      rowValues.push(f.row)
       index.set(f.row, idx)
     }
-    featurePartitionIndex[i] = idx
+    featureRowValueIndex[i] = idx
   })
   const packed = {
     featureStarts: Uint32Array.from(feats, f => f.start),
@@ -42,14 +42,14 @@ function region(feats: Feat[], opts?: { usedItemRgb?: boolean }) {
     featureColors: Uint32Array.from(feats, f => f.color ?? RED),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues,
-    featurePartitionIndex,
+    rowValues,
+    featureRowValueIndex,
     featureNames: feats.map(f => f.name ?? ''),
     featureIds: feats.map((f, i) => f.id ?? `f${i}`),
     usedItemRgb: opts?.usedItemRgb ?? false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
-    resolvedPartitionField: 'name',
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
+    resolvedRowsField: 'name',
   }
   return {
     ...packed,
@@ -226,7 +226,7 @@ describe('featureAt', () => {
   // what it paints at MIN_DRAWN_ROW_PX.
   describe('sub-pixel rows', () => {
     function cohort(featureRows: number[]) {
-      const partitionValues = Array.from(
+      const rowValues = Array.from(
         { length: 1000 },
         (_, i) => `row${String(i).padStart(3, '0')}`,
       )
@@ -236,15 +236,15 @@ describe('featureAt', () => {
         featureColors: Uint32Array.from(featureRows, () => RED),
         rectColorValues: new Uint32Array(0),
         featureDeltas: new Int32Array(0),
-        partitionValues,
-        featurePartitionIndex: Uint32Array.from(featureRows),
+        rowValues,
+        featureRowValueIndex: Uint32Array.from(featureRows),
         featureNames: featureRows.map(() => ''),
         featureIds: featureRows.map(r => `f${r}`),
         usedItemRgb: false,
-        partitionCandidates: [],
-        partitionCandidateValues: [],
+        rowsFieldCandidates: [],
+        rowsFieldCandidateValues: [],
         legendCandidates: [],
-        resolvedPartitionField: 'name',
+        resolvedRowsField: 'name',
       } satisfies MultiRowRegionData
     }
 

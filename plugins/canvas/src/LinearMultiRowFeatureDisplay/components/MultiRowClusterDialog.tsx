@@ -21,13 +21,13 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
   model: MultiRowClusterDialogModel
   handleClose: () => void
 }) {
-  const { clusterableSources, effectiveClusterField, effectivePartitionField } =
+  const { clusterableSources, effectiveClusterField, effectiveRowsField } =
     model
   const clusterOn = effectiveClusterField
     ? `${effectiveClusterField} their features carry`
     : 'positions they cover'
   const candidates = model.clusterCandidates.filter(
-    field => field !== effectivePartitionField,
+    field => field !== effectiveRowsField,
   )
   // A configured field the loaded data has not offered still belongs in the
   // list: dropped, the control would read "Presence only" and say the wrong

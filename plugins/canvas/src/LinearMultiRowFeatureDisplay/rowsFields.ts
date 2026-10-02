@@ -2,9 +2,9 @@ import { isCallbackValue } from '@jbrowse/core/configuration'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 
 import {
-  AUTO_PARTITION_FIELD,
-  MAX_COUNTED_PARTITION_VALUES,
-  resolvePartitionField,
+  AUTO_ROWS_FIELD,
+  MAX_COUNTED_ROW_VALUES,
+  resolveRowsField,
 } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
 import type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -15,7 +15,7 @@ import type { LoadedRegion } from '@jbrowse/display-kit/regionCommit'
  * The payloads the display holds, never the ones it draws: the density band
  * empties `drawnRegionData`, but the pin is a fact about fetches that landed.
  */
-export interface PartitionFieldSlice {
+export interface RowsFieldSlice {
   rpcDataMap: ReadonlyMap<number, MultiRowRegionData>
 }
 
@@ -25,26 +25,25 @@ export interface PartitionFieldSlice {
  * empty region resolves nothing and falls through to the degenerate `name`,
  * which would pin every later region to tens of thousands of hairline rows.
  */
-export function answeredPartitionField(self: PartitionFieldSlice) {
-  return [...self.rpcDataMap.values()].find(
-    data => data.partitionValues.length > 0,
-  )?.resolvedPartitionField
+export function answeredRowsField(self: RowsFieldSlice) {
+  return [...self.rpcDataMap.values()].find(data => data.rowValues.length > 0)
+    ?.resolvedRowsField
 }
 
-export interface PinSlice extends PartitionFieldSlice {
+export interface PinSlice extends RowsFieldSlice {
   loadedRegions: ReadonlyMap<number, Pick<LoadedRegion, 'fetchInputs'>>
   settingsFetchInputs: unknown
 }
 
 /**
  * What a fetch issued now should partition on under auto. Unlike
- * `effectivePartitionField` this does not guess at what auto would pick — it is
+ * `effectiveRowsField` this does not guess at what auto would pick — it is
  * an instruction to the worker, where "no instruction" is a real answer and the
  * worker is the side that knows which columns the data carries. Only a region
  * fetched under the current settings answers: one held from before a
- * "Partition by..." pick would hand its old field to every refetch.
+ * "One row per..." pick would hand its old field to every refetch.
  */
-export function pinnedPartitionField(self: PinSlice) {
+export function pinnedRowsField(self: PinSlice) {
   const settings = self.settingsFetchInputs
   const current = new Map(
     [...self.rpcDataMap].filter(([idx]) => {
@@ -55,17 +54,17 @@ export function pinnedPartitionField(self: PinSlice) {
       )
     }),
   )
-  return answeredPartitionField({ rpcDataMap: current }) ?? AUTO_PARTITION_FIELD
+  return answeredRowsField({ rpcDataMap: current }) ?? AUTO_ROWS_FIELD
 }
 
 /**
  * The attribute names the loaded features carry, unioned across regions since
  * two regions can be served by adapters that saw different optional columns.
  */
-export function partitionCandidates(self: PartitionFieldSlice) {
+export function rowsFieldCandidates(self: RowsFieldSlice) {
   const names = new Set<string>()
   for (const data of self.rpcDataMap.values()) {
-    for (const name of data.partitionCandidates) {
+    for (const name of data.rowsFieldCandidates) {
       names.add(name)
     }
   }
@@ -77,8 +76,8 @@ export function partitionCandidates(self: PartitionFieldSlice) {
  * field wherever a region shipped a value for it. `score` and `strand` name no
  * row, but a ramp over one is what the picture is about.
  */
-export function clusterCandidates(self: PartitionFieldSlice) {
-  const names = new Set(partitionCandidates(self))
+export function clusterCandidates(self: RowsFieldSlice) {
+  const names = new Set(rowsFieldCandidates(self))
   for (const { colorValues } of self.rpcDataMap.values()) {
     if (
       colorValues &&
@@ -94,16 +93,16 @@ export function clusterCandidates(self: PartitionFieldSlice) {
 /**
  * The attribute the rows are partitioned on: what a region answered, else what
  * the worker's own resolver would make of `rows.field`. Answering through
- * `resolvePartitionField` rather than a second copy of its default is what
+ * `resolveRowsField` rather than a second copy of its default is what
  * keeps the menu's checked radio and the clustering matrix naming the field the
  * next fetch would use.
  */
-export function effectivePartitionField(
-  self: PartitionFieldSlice & { rowsField: string },
+export function effectiveRowsField(
+  self: RowsFieldSlice & { rowsField: string },
 ) {
   return (
-    answeredPartitionField(self) ??
-    resolvePartitionField(self.rowsField, partitionCandidates(self))
+    answeredRowsField(self) ??
+    resolveRowsField(self.rowsField, rowsFieldCandidates(self))
   )
 }
 
@@ -121,12 +120,12 @@ export function regionHasPinnedData(
   const data = self.rpcDataMap.get(displayedRegionIndex)
   return (
     data !== undefined &&
-    (data.partitionValues.length === 0 ||
-      data.resolvedPartitionField === pinnedPartitionField(self))
+    (data.rowValues.length === 0 ||
+      data.resolvedRowsField === pinnedRowsField(self))
   )
 }
 
-export interface PartitionRowCount {
+export interface RowCountByField {
   count: number
   overflow: boolean
 }
@@ -136,11 +135,11 @@ export interface PartitionRowCount {
  * each region's distinct values capped, so a region that overflowed the cap
  * makes the whole union an overflow — its contribution is unknown.
  */
-export function partitionRowCounts(self: PartitionFieldSlice) {
+export function rowCountsByField(self: RowsFieldSlice) {
   const unions = new Map<string, Set<string>>()
   const overflowed = new Set<string>()
   for (const data of self.rpcDataMap.values()) {
-    for (const { field, values, overflow } of data.partitionCandidateValues) {
+    for (const { field, values, overflow } of data.rowsFieldCandidateValues) {
       if (overflow) {
         overflowed.add(field)
       } else {
@@ -152,28 +151,28 @@ export function partitionRowCounts(self: PartitionFieldSlice) {
       }
     }
   }
-  const counts = new Map<string, PartitionRowCount>()
+  const counts = new Map<string, RowCountByField>()
   for (const [field, union] of unions) {
     counts.set(field, {
       count: union.size,
-      overflow: union.size > MAX_COUNTED_PARTITION_VALUES,
+      overflow: union.size > MAX_COUNTED_ROW_VALUES,
     })
   }
   for (const field of overflowed) {
-    counts.set(field, { count: MAX_COUNTED_PARTITION_VALUES, overflow: true })
+    counts.set(field, { count: MAX_COUNTED_ROW_VALUES, overflow: true })
   }
   return counts
 }
 
 /**
- * The aside on a "Partition by..." radio, or nothing while no loaded region has
+ * The aside on a "One row per..." radio, or nothing while no loaded region has
  * counted it.
  */
-export function partitionRowCountHint(rowCount: PartitionRowCount | undefined) {
+export function rowCountHint(rowCount: RowCountByField | undefined) {
   return rowCount === undefined
     ? undefined
     : rowCount.overflow
-      ? `${MAX_COUNTED_PARTITION_VALUES}+ rows`
+      ? `${MAX_COUNTED_ROW_VALUES}+ rows`
       : rowCount.count === 1
         ? '1 row'
         : `${rowCount.count} rows`
@@ -205,12 +204,12 @@ export function resolveClusterField({
   clusterField,
   color,
   candidates,
-  partitionField,
+  rowsField,
 }: {
   clusterField: string
   color: WorkerColor
   candidates: string[]
-  partitionField: string
+  rowsField: string
 }) {
   if (clusterField !== AUTO_CLUSTER_FIELD) {
     return clusterField
@@ -219,5 +218,5 @@ export function resolveClusterField({
   if (fromColor !== undefined && candidates.includes(fromColor)) {
     return fromColor
   }
-  return candidates.includes('name') && partitionField !== 'name' ? 'name' : ''
+  return candidates.includes('name') && rowsField !== 'name' ? 'name' : ''
 }

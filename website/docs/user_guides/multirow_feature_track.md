@@ -22,7 +22,7 @@ Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
 Picking it from **Display types** shows the rows right away, split on whichever
 column the file turns out to have: a RepeatMasker table opens as ~20 rows of
 `repClass`, and anything else falls back to the `name` column. Which column
-assigns a feature to a row is then **Partition by…** in the same track menu,
+assigns a feature to a row is then **One row per…** in the same track menu,
 which lists the attribute names the loaded features have — so RepeatMasker also
 offers `repFamily` and `name` beside the class it started on. Repartitioning
 leaves a saved row order, its labels and colors and a clustering run in place:

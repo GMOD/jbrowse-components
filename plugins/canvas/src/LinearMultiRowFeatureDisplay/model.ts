@@ -67,16 +67,6 @@ import {
   hitRow,
 } from './hitTesting.ts'
 import {
-  answeredPartitionField,
-  effectivePartitionField,
-  clusterCandidates,
-  partitionCandidates,
-  partitionRowCounts,
-  pinnedPartitionField,
-  resolveClusterField,
-  regionHasPinnedData,
-} from './partitionFields.ts'
-import {
   buildColorLegend,
   buildFieldColorLegend,
   entryHidden,
@@ -88,10 +78,20 @@ import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
   compileRowGroups,
-  orderPartitionValues,
+  orderRowValues,
   resolveRowColorStrings,
   rowGroupOf,
 } from './rowSources.ts'
+import {
+  answeredRowsField,
+  effectiveRowsField,
+  clusterCandidates,
+  rowsFieldCandidates,
+  rowCountsByField,
+  pinnedRowsField,
+  resolveClusterField,
+  regionHasPinnedData,
+} from './rowsFields.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -99,7 +99,6 @@ import type {
   LinearMultiRowFeatureDisplayConfigModel,
 } from './configSchema.ts'
 import type { MultiRowContextMenuInfo, MultiRowHit } from './hitTesting.ts'
-import type { PartitionRowCount } from './partitionFields.ts'
 import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
 import type {
   MultiRowEncodeInputs,
@@ -108,6 +107,7 @@ import type {
   MultiRowRenderingBackend,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { RowGroup } from './rowSources.ts'
+import type { RowCountByField } from './rowsFields.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util'
@@ -312,12 +312,12 @@ export default function stateModelFactory(
       const discoveredRows = stableIdentityComputed(() => {
         const values = new Set<string>()
         for (const data of self.drawnRegionData.values()) {
-          for (const v of data.partitionValues) {
+          for (const v of data.rowValues) {
             values.add(v)
           }
         }
-        const unanswered = `(no ${effectivePartitionField(self)})`
-        return orderPartitionValues(values, self.baseRowDomain).map(name =>
+        const unanswered = `(no ${effectiveRowsField(self)})`
+        return orderRowValues(values, self.baseRowDomain).map(name =>
           name === '' ? { name, label: unanswered } : { name },
         )
       })
@@ -452,8 +452,8 @@ export default function stateModelFactory(
          * The attribute a loaded region actually resolved its rows on, or
          * undefined while none has.
          */
-        get answeredPartitionField(): string | undefined {
-          return answeredPartitionField(self)
+        get answeredRowsField(): string | undefined {
+          return answeredRowsField(self)
         },
         /**
          * #getter
@@ -461,8 +461,8 @@ export default function stateModelFactory(
          * the worker picked off the data under auto. Everything asking "which
          * attribute are these rows" reads this rather than the raw slot above.
          */
-        get effectivePartitionField(): string {
-          return effectivePartitionField(self)
+        get effectiveRowsField(): string {
+          return effectiveRowsField(self)
         },
         /**
          * #getter
@@ -474,7 +474,7 @@ export default function stateModelFactory(
             clusterField: self.clusterField,
             color: self.workerColor,
             candidates: clusterCandidates(self),
-            partitionField: effectivePartitionField(self),
+            rowsField: effectiveRowsField(self),
           })
         },
         /**
@@ -483,16 +483,16 @@ export default function stateModelFactory(
          * not an `rpcProps()` key, which would refetch every region the moment
          * the first one answered.
          */
-        get pinnedPartitionField(): string {
-          return pinnedPartitionField(self)
+        get pinnedRowsField(): string {
+          return pinnedRowsField(self)
         },
         /**
          * #getter
          * The attribute names on the loaded features, offered by the
-         * "Partition by..." menu.
+         * "One row per..." menu.
          */
-        get partitionCandidates(): string[] {
-          return partitionCandidates(self)
+        get rowsFieldCandidates(): string[] {
+          return rowsFieldCandidates(self)
         },
         /**
          * #getter
@@ -506,8 +506,8 @@ export default function stateModelFactory(
          * How many rows each candidate would draw, which the menu shows beside
          * each name so a reader can judge it before paying the refetch.
          */
-        get partitionRowCounts(): ReadonlyMap<string, PartitionRowCount> {
-          return partitionRowCounts(self)
+        get rowCountsByField(): ReadonlyMap<string, RowCountByField> {
+          return rowCountsByField(self)
         },
       }
     })
@@ -869,7 +869,7 @@ export default function stateModelFactory(
       // identity moves only when a name is first seen.
       const rowKeyNames = stableIdentityComputed(() => {
         for (const data of self.drawnRegionData.values()) {
-          for (const value of data.partitionValues) {
+          for (const value of data.rowValues) {
             rowKeys.keyOf(value)
           }
         }
@@ -975,7 +975,7 @@ export default function stateModelFactory(
        */
       rpcProps() {
         return {
-          partitionField: self.rowsField,
+          rowsField: self.rowsField,
           lengthField: self.lengthField,
           colorConfig: self.workerColor,
         }
@@ -1119,7 +1119,7 @@ export default function stateModelFactory(
           // Under auto, against what auto picked, so picking that radio pins
           // nothing; otherwise against the slot, since the loaded rows answer
           // the old field until a repartition's refetch lands.
-          if (field === (self.rowsField || self.effectivePartitionField)) {
+          if (field === (self.rowsField || self.effectiveRowsField)) {
             return
           }
           setConf(self, ['rows', 'field'], field)

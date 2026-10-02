@@ -13,7 +13,7 @@ export interface MultiRowClusterFeaturesArgs {
   }[]
   // the returned `order` indexes back into this row list
   sources: string[]
-  partitionField: string
+  rowsField: string
   // '' clusters on presence alone: which bins each row covers
   clusterField: string
   // the rows of each band, which cluster apart

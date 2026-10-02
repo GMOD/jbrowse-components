@@ -72,7 +72,7 @@ function region(): MultiRowRegionData {
   const featureStarts = new Uint32Array(n)
   const featureEnds = new Uint32Array(n)
   const featureColors = new Uint32Array(n)
-  const featurePartitionIndex = new Uint32Array(n)
+  const featureRowValueIndex = new Uint32Array(n)
   let i = 0
   for (let r = 0; r < rows; r++) {
     let pos = 0
@@ -81,7 +81,7 @@ function region(): MultiRowRegionData {
       featureStarts[i] = pos
       featureEnds[i] = pos + len
       featureColors[i] = PALETTE[Math.floor(rand() * PALETTE.length)]!
-      featurePartitionIndex[i] = r
+      featureRowValueIndex[i] = r
       pos += len
       i++
     }
@@ -92,20 +92,20 @@ function region(): MultiRowRegionData {
     featureColors,
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues: Array.from({ length: rows }, (_, r) => `sample${r}`),
-    featurePartitionIndex,
+    rowValues: Array.from({ length: rows }, (_, r) => `sample${r}`),
+    featureRowValueIndex,
     featureNames: Array.from({ length: n }, () => ''),
     featureIds: Array.from({ length: n }, (_, k) => `f${k}`),
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'sample',
+    resolvedRowsField: 'sample',
   }
 }
 
 const data = region()
-const names = data.partitionValues
+const names = data.rowValues
 
 // Every row carries a palette colour, the display's default configuration.
 const colors = names.map((_, r) => PALETTE[r % PALETTE.length]!)
@@ -122,11 +122,11 @@ function repackRegion(
     featureStarts,
     featureEnds,
     featureColors,
-    featurePartitionIndex,
+    featureRowValueIndex,
   }: MultiRowRegionData,
   { rowIndexByValue, rowColorsByIndex }: RepackInputs,
 ): SpanChannels {
-  const rowForLocal = data.partitionValues.map(v => rowIndexByValue.get(v))
+  const rowForLocal = data.rowValues.map(v => rowIndexByValue.get(v))
   const n = featureStarts.length
   const x = new Uint32Array(n)
   const x2 = new Uint32Array(n)
@@ -134,7 +134,7 @@ function repackRegion(
   const color = new Uint32Array(n)
   let count = 0
   for (let i = 0; i < n; i++) {
-    const rowIndex = rowForLocal[featurePartitionIndex[i]!]
+    const rowIndex = rowForLocal[featureRowValueIndex[i]!]
     if (rowIndex === undefined) {
       continue
     }

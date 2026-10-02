@@ -2,7 +2,7 @@ import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
-import type { PartitionRowCount } from './partitionFields.ts'
+import type { RowCountByField } from './rowsFields.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { RowColorSetting, RowSource } from '@jbrowse/tree-sidebar'
 
@@ -28,12 +28,12 @@ function makeSelf(
     colorLegend: [],
     rowGroupLegend: [],
     hiddenCategories: [],
-    // Nothing loaded by default, which is the "Partition by..." item's own
+    // Nothing loaded by default, which is the "One row per..." item's own
     // absent condition.
-    effectivePartitionField: 'name',
-    partitionCandidates: [] as string[],
+    effectiveRowsField: 'name',
+    rowsFieldCandidates: [] as string[],
     clusterCandidates: [] as string[],
-    partitionRowCounts: new Map<string, PartitionRowCount>(),
+    rowCountsByField: new Map<string, RowCountByField>(),
     setRowsField: () => {},
     showBranchLength: true,
     treeHasBranchLengths: false,
@@ -295,7 +295,7 @@ describe('multi-row track menu', () => {
   describe('partition', () => {
     it('offers nothing until the data says what the columns are', () => {
       expect(labels(buildMultiRowTrackMenuItems(makeSelf()))).not.toContain(
-        'Partition by...',
+        'One row per...',
       )
     })
 
@@ -303,11 +303,11 @@ describe('multi-row track menu', () => {
       const items = subMenuOf(
         buildMultiRowTrackMenuItems(
           makeSelf({
-            partitionCandidates: ['repClass', 'repFamily'],
-            effectivePartitionField: 'repClass',
+            rowsFieldCandidates: ['repClass', 'repFamily'],
+            effectiveRowsField: 'repClass',
           }),
         ),
-        'Partition by...',
+        'One row per...',
       )
       expect(items).toMatchObject([
         { label: 'repClass', type: 'radio', checked: true },
@@ -321,16 +321,16 @@ describe('multi-row track menu', () => {
       const items = subMenuOf(
         buildMultiRowTrackMenuItems(
           makeSelf({
-            partitionCandidates: ['name', 'repClass', 'strain'],
-            effectivePartitionField: 'repClass',
-            partitionRowCounts: new Map<string, PartitionRowCount>([
+            rowsFieldCandidates: ['name', 'repClass', 'strain'],
+            effectiveRowsField: 'repClass',
+            rowCountsByField: new Map<string, RowCountByField>([
               ['name', { count: 200, overflow: true }],
               ['repClass', { count: 21, overflow: false }],
               ['strain', { count: 1, overflow: false }],
             ]),
           }),
         ),
-        'Partition by...',
+        'One row per...',
       )
       expect(items.map(i => ('label' in i ? i.label : ''))).toEqual([
         'name — 200+ rows',
@@ -344,14 +344,14 @@ describe('multi-row track menu', () => {
       const items = subMenuOf(
         buildMultiRowTrackMenuItems(
           makeSelf({
-            partitionCandidates: ['repClass', 'repFamily'],
-            effectivePartitionField: 'repClass',
+            rowsFieldCandidates: ['repClass', 'repFamily'],
+            effectiveRowsField: 'repClass',
             setRowsField: (f: string) => {
               picked.push(f)
             },
           }),
         ),
-        'Partition by...',
+        'One row per...',
       )
       const family = items.find(i => 'label' in i && i.label === 'repFamily')!
       ;(family as { onClick: () => void }).onClick()
@@ -364,11 +364,11 @@ describe('multi-row track menu', () => {
       const items = subMenuOf(
         buildMultiRowTrackMenuItems(
           makeSelf({
-            partitionCandidates: ['name'],
-            effectivePartitionField: "jexl:split(feature.name,'#')[1]",
+            rowsFieldCandidates: ['name'],
+            effectiveRowsField: "jexl:split(feature.name,'#')[1]",
           }),
         ),
-        'Partition by...',
+        'One row per...',
       )
       expect(items[0]).toMatchObject({
         label: 'Custom expression',

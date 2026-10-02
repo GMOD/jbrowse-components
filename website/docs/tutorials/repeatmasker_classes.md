@@ -61,7 +61,7 @@ a window with no satellite repeats has no satellite lane.
 
 Open RepeatMasker, then **Display types → Multi-row feature display (painting)**
 in the track menu. The painting partitions on `repClass` whenever the file has
-that column; **Partition by...** in the same menu lists every column the loaded
+that column; **One row per...** in the same menu lists every column the loaded
 features have, `repFamily` among them. <!-- menu-path-ok -->
 
 <Figure src="/img/multirow/display_types_menu.png" caption="The track menu's Display types submenu on the UCSC RepeatMasker track. Any feature track offers the multi-row display beside its default one." />

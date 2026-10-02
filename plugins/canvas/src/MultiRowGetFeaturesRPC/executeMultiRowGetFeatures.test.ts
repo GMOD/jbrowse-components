@@ -40,7 +40,7 @@ function run(byteLimit?: number) {
       adapterConfig: {},
       region: { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
       byteLimit,
-      partitionField: 'sample',
+      rowsField: 'sample',
       lengthField: '',
       colorConfig: { value: 'goldenrod', field: '' },
     },
@@ -57,9 +57,9 @@ async function runPayload(byteLimit?: number) {
 
 test('every buffer in the packed payload is in the transfer list', async () => {
   const { value, transferables } = await runPayload()
-  expect(value.partitionValues).toEqual(['mom', 'offspring01'])
+  expect(value.rowValues).toEqual(['mom', 'offspring01'])
   expect(transferables).toContain(value.featureStarts.buffer)
-  expect(transferables).toContain(value.featurePartitionIndex.buffer)
+  expect(transferables).toContain(value.featureRowValueIndex.buffer)
 })
 
 test('the byte measurement rides along without upsetting the list', async () => {

@@ -9,15 +9,15 @@ function rows(n: number): MultiRowRegionData {
     featureColors: new Uint32Array(0),
     rectColorValues: new Uint32Array(0),
     featureDeltas: new Int32Array(0),
-    partitionValues: Array.from({ length: n }, (_, i) => `dog${i}`),
-    featurePartitionIndex: new Uint32Array(0),
+    rowValues: Array.from({ length: n }, (_, i) => `dog${i}`),
+    featureRowValueIndex: new Uint32Array(0),
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
-    partitionCandidates: [],
-    partitionCandidateValues: [],
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
     legendCandidates: [],
-    resolvedPartitionField: 'name',
+    resolvedRowsField: 'name',
   }
 }
 

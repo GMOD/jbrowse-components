@@ -36,17 +36,15 @@ export function buildMultiRowChannels(
     | 'featureColors'
     | 'rectColorValues'
     | 'colorValues'
-    | 'partitionValues'
-    | 'featurePartitionIndex'
+    | 'rowValues'
+    | 'featureRowValueIndex'
   >,
   { rowKeys, overriddenRows, hiddenColors, fieldPalette }: MultiRowEncodeInputs,
 ): MultiRowEncoded {
-  const { featureStarts, featureEnds, featurePartitionIndex } = data
+  const { featureStarts, featureEnds, featureRowValueIndex } = data
   const featureColors = ownColors(data, fieldPalette)
-  const keyForLocal = Uint32Array.from(data.partitionValues, v =>
-    rowKeys.keyOf(v),
-  )
-  const overriddenLocal = data.partitionValues.map(v => overriddenRows.has(v))
+  const keyForLocal = Uint32Array.from(data.rowValues, v => rowKeys.keyOf(v))
+  const overriddenLocal = data.rowValues.map(v => overriddenRows.has(v))
   const n = featureStarts.length
   const x = new Uint32Array(n)
   const x2 = new Uint32Array(n)
@@ -55,7 +53,7 @@ export function buildMultiRowChannels(
   const featureIndex = new Uint32Array(n)
   let count = 0
   for (let i = 0; i < n; i++) {
-    const local = featurePartitionIndex[i]!
+    const local = featureRowValueIndex[i]!
     const abgr = featureColors[i]!
     if (hiddenByCategory(abgr, overriddenLocal[local]!, hiddenColors)) {
       continue
