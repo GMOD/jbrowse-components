@@ -4509,8 +4509,7 @@
         "SvgPinnedHighlight",
         "SvgYAxis",
         "exportsTooLargeNote",
-        "renderDisplaySvg",
-        "svgSidebarWidthOf"
+        "renderDisplaySvg"
       ],
       "worker": "stub",
       "uiVia": [
