@@ -119,6 +119,40 @@ _TRHDE_ on chr12.
 
 ## Reads at the breakpoints
 
+The ONT reads were aligned to GRCh38, and the CRAM decodes against it, so we
+load that assembly and the two read tracks. Each read file needs its index
+beside it, a `.crai` for the CRAM and a `.bai` for the BAM; for your own sample,
+swap the `uri`:
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+  "refNameAliases": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+  },
+  "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
+}
+```
+
+```json addtrack
+{
+  "trackId": "COLO829_tumor_ont",
+  "name": "COLO829 tumor (ONT R10)",
+  "uri": "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram",
+  "assemblyNames": ["hg38"]
+}
+```
+
+```json addtrack
+{
+  "trackId": "COLO829BL_normal_ont",
+  "name": "COLO829BL matched normal (ONT R10)",
+  "uri": "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam",
+  "assemblyNames": ["hg38"]
+}
+```
+
 Open the tumor and normal read tracks at `chr3:25,357,600-25,361,000`. At the
 chr3 breakpoints the tumor pileup becomes soft-clipped bases, because every read
 crossing the junction has its remainder aligned elsewhere. The matched normal at
@@ -194,9 +228,40 @@ templated insertions, stretches of other chromosomes copied in at a repair
 junction. The repeated chr3 stretch makes the allele an inverted duplication, or
 fold-back, the first step of a breakage-fusion-bridge cycle.
 
-Load the contig as an assembly and the PAF as a synteny track between it and
-GRCh38. Then add the truth set, called on five platforms before this ONT run
-existed, so every junction has an independent call to check against:
+Index the contigs, then load the contig as an assembly and the PAF as a synteny
+track between it and GRCh38:
+
+```bash
+samtools faidx contigs.fa
+```
+
+```json addassembly
+{
+  "name": "der3_RARB_BICC1_TRHDE",
+  "uri": "contigs.fa"
+}
+```
+
+The track lists the query assembly (the contig) first and the target (GRCh38)
+second:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "der3_vs_hg38",
+  "name": "der3 contig vs hg38",
+  "assemblyNames": ["der3_RARB_BICC1_TRHDE", "hg38"],
+  "adapter": {
+    "type": "PairwiseIndexedPAFAdapter",
+    "uri": "der3.vs_reference.pif.gz",
+    "queryAssembly": "der3_RARB_BICC1_TRHDE",
+    "targetAssembly": "hg38"
+  }
+}
+```
+
+Then add the truth set, called on five platforms before this ONT run existed, so
+every junction has an independent call to check against:
 
 ```json addtrack config=https://jbrowse.org/demos/cancer_sv/config.json loc=chr3:25,320,000-25,365,000
 {
@@ -210,6 +275,10 @@ existed, so every junction has an independent call to check against:
   }
 }
 ```
+
+The segment labels, the projected gene annotation and the realigned reads below
+come with the demo's config. The assembly, the synteny track and the truth set
+above reproduce the ribbons and arcs on your own contig.
 
 The figure shows:
 
