@@ -520,7 +520,7 @@ function processCrisprGuideLayout(
     registerSubfeature(
       {
         feature: pam,
-        parentFeatureId: feature.id(),
+        parentFeatureId: place.parentFeature.id(),
         type: 'PAM',
         topPx: baseTopPx,
         heightPx: height,

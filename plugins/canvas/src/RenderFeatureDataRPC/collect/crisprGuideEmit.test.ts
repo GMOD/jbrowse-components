@@ -109,3 +109,21 @@ test('omits the cut tick when the feature has no cutSite', () => {
 
   expect(collector.rects).toHaveLength(2)
 })
+
+// The main thread offsets a subfeature by its top-level feature's row, so a PAM
+// registered under a nested guide's own id stays on row 0.
+test('a nested guide registers its PAM under the top-level feature', () => {
+  const feature = mockFeature(
+    { uniqueId: 'locus1', start: 0, end: 200, strand: 1, type: 'gene' },
+    [guideFeature()],
+  )
+  const ctx = makeContext()
+  const collector = createCollector()
+  const layout = findGlyph(feature, ctx.config)({ feature, config: ctx.config })
+
+  processFeatureRecord(layout, ctx, collector)
+
+  expect(collector.subfeatureInfos).toContainEqual(
+    expect.objectContaining({ type: 'PAM', parentFeatureId: 'locus1' }),
+  )
+})
