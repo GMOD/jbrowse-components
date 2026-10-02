@@ -129,7 +129,7 @@ For your own variants, swap `uri` for a VCF or a BED with the same columns:
 ```
 
 The session below puts the locus in view with those tracks and no predictions
-yet. It also loads the hosted config that carries them.
+yet. It also loads the hosted config that holds them.
 
 ```json session config=https://jbrowse.org/demos/alphagenome/config.json
 {

@@ -176,13 +176,13 @@ export async function run(args?: string[]) {
     '--multiwig bundles several BigWigs into one MultiQuantitativeTrack, in ' +
     'place of the positional track argument: pass a comma-separated list of ' +
     'BigWig files/URLs, or a .json file with an array of BigWig locations or ' +
-    'subadapter objects (each carrying its own name/color/group). With --load, ' +
+    'subadapter objects (each with its own name/color/group). With --load, ' +
     'local list entries are copied like any other track file.\n\n' +
     '--density attaches a features-per-bin bigWig (jbrowse make-density) as the ' +
     "adapter's densityAdapter, the band a display draws where the region is too " +
     'large to fetch features. A local <file>.density.bw beside the track file is ' +
     'attached without the flag; a URL cannot be probed, so a remote sidecar needs ' +
-    'it. The adapters carrying the slot are BamAdapter, CramAdapter, ' +
+    'it. The adapters with the slot are BamAdapter, CramAdapter, ' +
     'HtsgetBamAdapter, Gff3TabixAdapter, GtfTabixAdapter, BedTabixAdapter, ' +
     'BigBedAdapter, VcfTabixAdapter and SplitVcfTabixAdapter.\n\n' +
     'For pairwise synteny adapters (PAF/Delta/Chain) --assemblyNames is ' +
@@ -215,7 +215,7 @@ export async function run(args?: string[]) {
     '# bundle several BigWigs into one MultiQuantitativeTrack (no positional track arg)',
     '$ jbrowse add-track --multiwig a.bw,b.bw,c.bw --load copy --name "Coverage"',
     '',
-    '# ...or from a sources.json carrying per-row name/color for each BigWig',
+    '# ...or from a sources.json with per-row name/color for each BigWig',
     '$ jbrowse add-track --multiwig sources.json --name "CATlas ATAC"',
     '',
     '# attach a remote density sidecar (a local genes.gff3.density.bw needs no flag)',

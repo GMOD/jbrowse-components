@@ -78,7 +78,7 @@ paragraph primes the page, not each section.
 **The opening paragraph reads to someone who has never used JBrowse.** Say what
 the page looks at and why anyone would want to, in the reader's own terms,
 before any JBrowse noun. A display or adapter class name cannot be the thing
-carrying the meaning: `an LDTrackDisplay draws plink's pairwise r2 table` names
+holding the meaning: `an LDTrackDisplay draws plink's pairwise r2 table` names
 nothing the reader recognises, where
 `we look at linkage disequilibrium around the lactase gene` does. Naming the
 feature afterwards is worth doing when it tells the reader a capability exists,
@@ -89,9 +89,9 @@ two computed the numbers is itself the methodological point.
 where the page visits several loci, lists them: "at CFH, find haplotypes missing
 two genes". Each section is the instruction, then its figure. Readers skip prose
 and copy commands, so cut content rather than compress it, and let the figures
-and fences carry the page. `pangenome_hprc_haplotypes` is the page to copy. Cut
-explanation, never a route a reader can run on their own data: the GFA to PAF
-conversion left that page once and came straight back.
+and fences make up the page. `pangenome_hprc_haplotypes` is the page to copy.
+Cut explanation, never a route a reader can run on their own data: the GFA to
+PAF conversion left that page once and came straight back.
 
 **Commands a reader can run on their own data.** Placeholder filenames
 (`graph.gbz.db`, `genes.fa`) over accession-laden URLs, one command per fence,

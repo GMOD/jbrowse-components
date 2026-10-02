@@ -31,8 +31,8 @@ The track is an alignments track. A PSL hit is a list of aligned blocks in query
 and target coordinates, the same information a CIGAR encodes, so each hit is
 drawn the way a read is: blocks as aligned runs, a target gap as a deletion, a
 query gap as an insertion, and the unaligned ends of the query as soft clips.
-Because the sequence you submitted is known, the hit also carries it, and the
-pileup marks every base that disagrees with the reference, so a hit that is your
+Because the sequence you submitted is known, the hit also has it, and the pileup
+marks every base that disagrees with the reference, so a hit that is your
 sequence can be told from one that only scores well.
 
 BLAT returns every placement of a query. The best-scoring one is primary and the
@@ -97,9 +97,9 @@ converge regardless of which strand the product is reported on, because each
 primer's direction does not follow the amplicon's strand. The line between them
 is the interior you never sequence.
 
-Because the primers themselves are carried as the reads' bases, a base where a
-primer disagrees with the template is drawn as a mismatch. UCSC requires the
-last 15 bases at each primer's 3' end to match exactly, and reports no product
+Because the primers themselves appear as the reads' bases, a base where a primer
+disagrees with the template is drawn as a mismatch. UCSC requires the last 15
+bases at each primer's 3' end to match exactly, and reports no product
 otherwise. Upstream of those 15 bases the two primers differ. The reverse
 primer's 5' tail passes with at least two matches per mismatch, so a 20-mer
 sitting over a SNP still amplifies but one with two mismatches in its first five

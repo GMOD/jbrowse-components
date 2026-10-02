@@ -8,15 +8,15 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-genomes.jbrowse.org already carries UCSC's pairwise liftOver alignments for
-every genome, so you can turn one on in a linear genome view and launch a
-two-panel linear synteny view from any chain block. JBrowse resolves the mate
-genome on demand, so the second assembly needs no setup. We compare hg38 against
-T2T-CHM13 (hs1) at _TNNT3_, a locus the two lay out differently.
+genomes.jbrowse.org already has UCSC's pairwise liftOver alignments for every
+genome, so you can turn one on in a linear genome view and launch a two-panel
+linear synteny view from any chain block. JBrowse resolves the mate genome on
+demand, so the second assembly needs no setup. We compare hg38 against T2T-CHM13
+(hs1) at _TNNT3_, a locus the two lay out differently.
 
 ## Where the data comes from
 
-genomes.jbrowse.org hosts a config per genome, each carrying UCSC's pairwise
+genomes.jbrowse.org hosts a config per genome, each with UCSC's pairwise
 liftOver chains to the others.
 
 - hg38: https://jbrowse.org/ucsc/hg38/config.json
@@ -175,10 +175,10 @@ open the strain lanes at that gene:
 
 hg38's star holds both haplotypes of the H9 T2T assembly, so a stack can put one
 person's two chromosomes under the reference. At 17q21.31 the H2 haplotype is a
-900 kb inversion (Stefansson et al. 2005), and H9 carries one of each. Open
-hg38's star at `chr17:45,300,000-46,800,000` and choose the two H9 haplotypes,
-the HG002 maternal assembly, the NA24631 maternal assembly and T2T-CHM13 (hs1)
-as lanes.
+900 kb inversion (Stefansson et al. 2005), and H9 has one of each. Open hg38's
+star at `chr17:45,300,000-46,800,000` and choose the two H9 haplotypes, the
+HG002 maternal assembly, the NA24631 maternal assembly and T2T-CHM13 (hs1) as
+lanes.
 
 <Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes. The H9 hap2 lane crosses the lane above it across the inversion and runs straight either side of it; the other four haplotypes run straight throughout." />
 

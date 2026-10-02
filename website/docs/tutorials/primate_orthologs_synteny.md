@@ -14,7 +14,7 @@ orthologous gene the same symbol in every species it annotates, so an ortholog
 table is a join on the gene name, built from eight GFF3 files in seconds. Each
 primate then becomes a lane under the human view, laid out in the coordinates of
 its genome, with the gene models annotated there. The join covers the genes
-every annotation names alike, and it stops at a gene family whose copies carry
+every annotation names alike, and it stops at a gene family whose copies have
 placeholder names.
 
 ## Prerequisites
@@ -103,7 +103,7 @@ The helper joins on the symbol and handles these cases:
 - A gene whose name is an NCBI `LOC` placeholder joins nothing, as with the
   salivary amylase copies RefSeq names that way in the other primates
   ([where the join stops](/docs/tutorials/ecoli_orthologs_synteny#where-the-join-stops)).
-- A symbol several genes in one genome carry gets a row per copy, since a link
+- A symbol several genes in one genome have gets a row per copy, since a link
   joins one gene to one gene. RefSeq gives a duplicated primate gene a distinct
   lettered symbol (_AMY1A_ against _AMY1B_) or a placeholder, so the exception
   is the pseudoautosomal genes, annotated on both X and Y, where each Y copy
@@ -114,8 +114,8 @@ The helper joins on the symbol and handles these cases:
 - It prints how much of each column it filled, nearly full for these eight
   because the annotations share one naming pipeline, and writes a row for each
   symbol human lacks, which a window anchored on human does not draw. Those are
-  genes human carries only as a pseudogene or non-coding RNA, _CMAH_ among them,
-  and genes the ape annotations name differently from human's.
+  genes human has only as a pseudogene or non-coding RNA, _CMAH_ among them, and
+  genes the ape annotations name differently from human's.
 
 ## Setting up the assemblies
 
@@ -298,7 +298,7 @@ color separates forward blocks from reversed ones.
 
 Human chromosome 2 is two ape chromosomes joined end to end. The same track in a
 linear synteny view shows it, with human chr2 on one row and the two chimpanzee
-chromosomes that carry its halves on the other. **Target** in the palette button
+chromosomes that hold its halves on the other. **Target** in the palette button
 menu paints each ribbon by the chimpanzee chromosome it lands on.
 
 <Figure caption="Human chr2 over chimpanzee chr12 and chr13, the hsa2a and hsa2b chromosomes, from the gene-symbol ortholog track, ribbons colored by the chimpanzee chromosome. The orthologs of one chimpanzee chromosome fill human chr2 up to 2q13 and those of the other fill it past there." src="/img/multiway_synteny/primate_chr2_fusion.png" />

@@ -10,7 +10,7 @@ guide_category: Track types
 Gene and transcript features (GFF3, GTF, BED12, and similar) render as glyphs
 with their exons, UTRs, and CDS segments. Beyond that the track can translate
 the CDS in place (reading frame colors, amino-acid lettering, mature peptides),
-color each transcript from a value carried in the file, and reshape the view
+color each transcript from a value stored in the file, and reshape the view
 around a gene by collapsing its introns.
 
 ## Choosing which transcripts to show
@@ -68,12 +68,12 @@ Track-menu toggles:
   one labelled section above the reverse-strand ones, unstranded features last,
   so convergent and divergent neighbours read apart. _Attribute_ takes a feature
   attribute, `biotype` or `source` say, and packs one section per value, with
-  the features carrying none last
+  the features with none last
 
 ## Grouping features into sections
 
-Each section carries a chip naming it, and the × on a chip hides that section.
-The **Show N hidden** chip at the top of the track, or **Show... → Show N hidden
+Each section has a chip naming it, and the × on a chip hides that section. The
+**Show N hidden** chip at the top of the track, or **Show... → Show N hidden
 groups**,<!-- menu-path-ok --> puts every hidden section back, and changing the
 grouping clears them. **Sections** in the track menu lists the sections drawn,
 each with **Move up**, **Move down** and **Hide section**, and **Reset section
@@ -262,10 +262,10 @@ installation.
 ## A whole chromosome of genes
 
 Zoomed out far enough, a gene track stops fetching and shows a "region too
-large" message with a **Force load** button. A track can carry a sidecar
-instead: a bigWig of feature counts per kilobase, built once from the file,
-drawn as a band wherever the features are too many to fetch. The band names its
-peak in its corner, and hovering reads the count under the cursor.
+large" message with a **Force load** button. A track can have a sidecar instead:
+a bigWig of feature counts per kilobase, built once from the file, drawn as a
+band wherever the features are too many to fetch. The band names its peak in its
+corner, and hovering reads the count under the cursor.
 
 <Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes and three RepeatMasker families, each drawn from its density sidecar. Each band is that track's features per kilobase, scaled to its own peak." />
 
@@ -281,8 +281,8 @@ jbrowse add-track genes.gff3.gz --load copy
 The track menu's **Density band** submenu: **Automatic** swaps where the fetch
 would be too large, **Features only** keeps the message, **Density only** always
 draws the band. While the band is standing in for a fetch that was too large,
-the same submenu carries **Load features anyway**, the banner's force-load. See
-the [gene density tutorial](/docs/tutorials/gene_density).
+the same submenu has **Load features anyway**, the banner's force-load. See the
+[gene density tutorial](/docs/tutorials/gene_density).
 
 ## See also
 

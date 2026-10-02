@@ -36,7 +36,7 @@ epigenomes.
 - the row labels and tissue groups the `rowGroups` stripe reads,
   `EID_metadata.tab`:
   https://egg2.wustl.edu/roadmap/data/byFileType/metadata/EID_metadata.tab
-- the state colors, since the Roadmap segmentations themselves carry none:
+- the state colors, since the Roadmap segmentations themselves have none:
   https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/colormap_15_coreMarks.tab
 - both merged files, rehosted as bigBeds so the tracks below load without the
   build: https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb and
@@ -49,7 +49,7 @@ states (active promoter, strong enhancer, heterochromatin, ...) from
 combinations of histone-mark ChIP-seq, one segmentation per cell type. Its
 output is a stack of BED9 files (`Gm12878.bed`, `K562.bed`, ...) whose `name`
 column holds the state (e.g. `1_Active_Promoter`) and whose `itemRgb` column
-carries the state color. Merging them into one file with an extra `cellType`
+holds the state color. Merging them into one file with an extra `cellType`
 column lets the multi-row feature display draw a labeled sub-row per cell type,
 so 9 cell types (or 127) share one config, one adapter, and one fetch.
 
@@ -210,9 +210,9 @@ applies the filter while drawing, with no refetch.
 Two more track-menu actions turn the painting into a comparison:
 
 - **Clustering → Cluster rows by similarity** reorders the rows by the state
-  each carries across the region in view and draws the dendrogram in the sidebar
+  each has across the region in view and draws the dendrogram in the sidebar
 - Right-click a column and pick **Sort rows by color here** to rank the rows by
-  the state each carries at that base
+  the state each has at that base
 
 ## The 127-epigenome Roadmap track
 
@@ -357,8 +357,8 @@ of all 127 from the data at whatever locus is in view.
 
 <Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Clustering the 127-epigenome ChromHMM track over HOXA. The rows open in Roadmap's tissue order; the track menu's Cluster rows by similarity re-lays them out into blocks and draws the dendrogram beside them." />
 
-At this scale a row is a few pixels tall and carries no text, so the stripe
-beside the painting marks the tissues. The
+At this scale a row is a few pixels tall and has no text, so the stripe beside
+the painting marks the tissues. The
 [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) slot
 takes one `{ match, group, color }` per Roadmap tissue group and tints each
 matching row's sidebar swatch. `match` is a regex over the row names, and the
@@ -398,7 +398,7 @@ them, downloads JBrowse, and writes the `config.json` above, opening on HOXA.
 
 [`build_chromhmm_roadmap.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_roadmap.sh)
 builds the 127-epigenome track by the same merge. Roadmap's segmentations are
-bare BED4, so the script fills in what the ENCODE files carried:
+bare BED4, so the script fills in what the ENCODE files had:
 
 1. paints each segment its state's color from `colormap_15_coreMarks.tab`,
    giving the merged file the `itemRgb` column that draws it

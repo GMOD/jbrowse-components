@@ -10,7 +10,7 @@ tutorial_subcategory: Dog10K
 ---
 
 Some dogs are poor metabolizers of the drugs the liver enzyme CYP1A2 clears,
-because they carry a premature stop codon in _CYP1A2_. The literature names the
+because they have a premature stop codon in _CYP1A2_. The literature names the
 variant only by its protein change, so we derive its genome coordinate by
 translating the reference coding sequence, slice the gene out of the 397 GB
 Dog10K SNV callset over HTTP, and read the genotypes across breeds with the wild
@@ -79,18 +79,17 @@ GenBank accessions:
 
 ## The CYP1A2 nonsense variant
 
-_CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs carry a nonsense
+_CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs have a nonsense
 variant. This tutorial draws one half of the Dog10K paper's figure for the gene:
-the truncating variant and who carries it.
+the truncating variant and who has it.
 
 The consequence is recessive: liver microsomes from dogs homozygous for the
-truncating allele carry no CYP1A2 protein and those dogs are poor metabolizers
-of drugs the enzyme clears, while heterozygotes express it normally
+truncating allele have no CYP1A2 protein and those dogs are poor metabolizers of
+drugs the enzyme clears, while heterozygotes express it normally
 ([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)).
 
-The questions are which breeds carry it and whether it is present in wild
-canids, which are the control: an allele shared with wolves predates
-domestication.
+The questions are which breeds have it and whether it is present in wild canids,
+which are the control: an allele shared with wolves predates domestication.
 
 ## Deriving the variant's coordinate
 
@@ -134,8 +133,8 @@ bcftools view -r chr30:38258000-38265000 -S cyp.samples --force-samples \
 tabix -p vcf dog10k_cyp1a2_snvs.vcf.gz
 ```
 
-`cyp.samples` holds breeds that carry the allele, two that do not, and four
-Greek gray wolves.
+`cyp.samples` holds breeds that have the allele, two that do not, and four Greek
+gray wolves.
 
 ## Loading the slice with breed labels
 
@@ -161,11 +160,11 @@ which exon it sits in.
 
 ## Reading the CYP1A2 genotypes
 
-<Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant lane, then one row per dog. Five breeds carry it; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
+<Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant lane, then one row per dog. Five breeds have it; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
 
 The build script genotypes the same site over every canid in the callset. Dozens
-of breeds carry the allele and it reaches homozygosity in several: every German
-Hound and every Shetland Sheepdog sampled here carries at least one copy, while
+of breeds have the allele and it reaches homozygosity in several: every German
+Hound and every Shetland Sheepdog sampled here has at least one copy, while
 every wolf and every coyote in the collection is homozygous reference.
 
 Three neighbours sit within about a hundred bases, and the display filters them
@@ -189,14 +188,14 @@ out:
 
 Drop the filter to see them. Two are reference in every animal of this panel,
 including the one at the same codon's second base, so each draws an empty
-column. The third sits 15 bp along, and every wolf here carries it.
+column. The third sits 15 bp along, and every wolf here has it.
 
 ## Copy number at CYP1A2
 
 The paper reports half the collection at three or more copies of _CYP1A2_, in
 the other half of its figure. The per-animal estimates are unpublished, but the
-SNV callset carries a per-sample `DP` at every site, so one slice of it,
-stripped to the depth field, covers every canid in the collection:
+SNV callset has a per-sample `DP` at every site, so one slice of it, stripped to
+the depth field, covers every canid in the collection:
 
 <!-- from: scripts/build_dog10k_cyp1a2_cn.sh -->
 
@@ -289,11 +288,11 @@ profiles below.
 <Figure caption="Copy number over CYP1A2 and 185 kb around it, named animals above and the whole collection below. The expansion is a breed-level fact in some breeds and segregates one dog to the next in others." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper lane holds every Golden Retriever, Labrador Retriever and Boxer in the
-collection, plus the four wolves from the genotype figure. Every Golden carries
-the expansion, every Boxer carries two copies, and the Labradors split one dog
-to the next. Row labels come from the sample column, the order from `domain`.
+collection, plus the four wolves from the genotype figure. Every Golden has the
+expansion, every Boxer has two copies, and the Labradors split one dog to the
+next. Row labels come from the sample column, the order from `domain`.
 
-The four wolves, the control, all carry the expansion, so unlike the stop-gained
+The four wolves, the control, all have the expansion, so unlike the stop-gained
 allele it is shared with wild canids and predates domestication. Their calls
 rest on callset depth alone, since none of the dogs with published reads is a
 wolf.

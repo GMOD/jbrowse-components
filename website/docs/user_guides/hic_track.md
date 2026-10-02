@@ -82,7 +82,7 @@ pin the top in each track's config with
 
 ## Normalization
 
-Raw contact counts carry coverage biases from restriction-site density,
+Raw contact counts have coverage biases from restriction-site density,
 mappability, and GC content. `.hic` files ship precomputed matrix-balancing
 vectors, and the track menu's **Normalization** submenu lists only the schemes
 the file actually contains:
@@ -94,7 +94,7 @@ the file actually contains:
 
 Vectors are stored per chromosome and binsize, so a file can list a scheme that
 is missing at the binsize on screen. The menu ticks the normalization the loaded
-matrix actually carries rather than the one requested, and the unavailable entry
+matrix actually has rather than the one requested, and the unavailable entry
 says which scheme was substituted. Stepping to a finer resolution usually
 resolves it.
 
@@ -177,8 +177,8 @@ matrix in the same track:
   ordinary [quantitative track](/docs/user_guides/quantitative_track) and draws
   as a two-color plot around zero.
 - **Subcompartments**, a BED. Clustering the interaction profiles splits A and B
-  further, and the file carries a color per class in its `itemRgb` column, so
-  the track paints itself with no color configuration.
+  further, and the file has a color per class in its `itemRgb` column, so the
+  track paints itself with no color configuration.
 
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1, a B-cell identity gene, is A in the B-cell line and B in the leukemia line while the frame edges agree. The figure has no contact matrix, because the published eigenvector is computed from one." links="Open this view=hic/compartment_switch" />
 

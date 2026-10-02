@@ -65,7 +65,7 @@ export async function run(args?: string[]) {
     'SplitVcfTabixAdapter declare. add-track attaches it on its own when the ' +
     'default <file>.density.bw sits beside the track file, so building it before ' +
     'adding the track is all it takes; --density attaches one by path or URL.\n\n' +
-    'GFF3 counts only top-level features — a line whose attributes carry no ' +
+    'GFF3 counts only top-level features — a line whose attributes have no ' +
     'Parent= — so a gene is one count rather than one per exon. GTF, BED and VCF ' +
     'have no parent link to follow, so every record counts.\n\n' +
     'BAM and CRAM are out of scope: read depth is not feature density, and the ' +

@@ -6,7 +6,7 @@ guide_category: General usage
 
 The in-app plugin store lets you browse, search, and install community plugins
 into the current session. Plugins can add new track types, view types, data
-adapters, and custom menu items, and some carry their own data with them.
+adapters, and custom menu items, and some include their own data with them.
 
 The full catalog of white-listed plugins, each with its config snippet, is also
 listed on the [plugin store page](/plugin_store).
@@ -36,8 +36,8 @@ you open it in this browser.
 - The list is per configuration, not per site. A plugin kept on
   `jbrowse.org/code/jb2/main/?config=demos/hg002/config.json` does not load on
   another demo, or on another version of the app.
-- It lives in this browser and nowhere else. A session you share carries none of
-  it, and neither does the same JBrowse opened on another machine.
+- It lives in this browser and nowhere else. A session you share contains none
+  of it, and neither does the same JBrowse opened on another machine.
 - A kept plugin that did not load this visit — switched off, or skipped after a
   crash — is still a row in **Installed plugins**, with a switch beside it.
 - An admin editing `config.json` is installing for every visitor instead, so the

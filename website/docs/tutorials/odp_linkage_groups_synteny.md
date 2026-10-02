@@ -45,7 +45,7 @@ The genomes and the ortholog tables are the Dryad deposit behind Schultz et al.
 ## The linkage-group label in the ortholog table
 
 Simakov et al. 2022 named a set of gene families the BCnS linkage groups, after
-the bilaterians, cnidarians and sponges whose chromosomes carry them, and gave
+the bilaterians, cnidarians and sponges whose chromosomes have them, and gave
 each a letter: A1a, A2, B1, and so on to R. A gene belongs to one of them or to
 none. odp ships the groups as a database of protein models, searches every
 proteome it is given against them, and writes the group each ortholog landed in
@@ -92,7 +92,7 @@ python3 rbh_to_blocks.py EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plot
 ```
 
 The helper prints how many of each genome's gene ids its `.chrom` placed. About
-half the orthologs carry a group, and one from outside the BCnS families gets
+half the orthologs have a group, and one from outside the BCnS families gets
 `.`, which the browser draws in grey.
 
 A `.blocks` row is the gene ids across the two genomes, then the attribute
@@ -197,7 +197,7 @@ pair's track per band. The build script loads the pairs in the paper's order,
 two comb jellies over the jellyfish, amphioxus and two sponges, and the session
 below sets what the figure needs.
 
-Each setting the session carries has a menu route, except the last:
+Each setting the session has a menu route, except the last:
 
 - `autoDiagonalize` sorts each row against its neighbour, working outward from
   `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
@@ -252,8 +252,8 @@ Each setting the session carries has a menu route, except the last:
 <Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, with only the grouped orthologs drawn. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome fans out over several jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
 
 In the second band, between _Hormiphora_ and the jellyfish, each comb jelly
-chromosome carries a mixture of groups that matches no jellyfish chromosome, so
-the ribbons cross. The two comb jellies agree with each other in the band above.
+chromosome has a mixture of groups that matches no jellyfish chromosome, so the
+ribbons cross. The two comb jellies agree with each other in the band above.
 
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
 running through them are expected. The cladorhizid took no part, and in the

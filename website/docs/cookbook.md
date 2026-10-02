@@ -205,9 +205,8 @@ ribbons included:
 
 <Figure caption="NCBI RefSeq genes on hg38 with this recipe applied: forward-strand genes red, reverse-strand blue." src="/img/cookbook_color_by_strand.png"/>
 
-`field` names any attribute the track carries. On a gene track a transcript's
-parts paint in the transcript's value, or the gene's where the transcript has
-none.
+`field` names any attribute the track has. On a gene track a transcript's parts
+paint in the transcript's value, or the gene's where the transcript has none.
 
 | Recipe                        | `color`                                                                                      |
 | ----------------------------- | -------------------------------------------------------------------------------------------- |

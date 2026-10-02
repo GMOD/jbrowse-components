@@ -140,7 +140,7 @@ colors each arc by transcript strand, red for forward and blue for reverse. The
 relative to the read, and JBrowse combines it with the strand the read aligned
 to.
 
-A BAM aligned by STAR without `--outSAMstrandField intronMotif` carries none of
+A BAM aligned by STAR without `--outSAMstrandField intronMotif` has none of
 those tags. JBrowse then reads the first and last two bases of the intron off
 the reference and takes the strand from the splice motif: GT-AG on the forward
 strand reads as CT-AC on the reverse. A junction whose reads disagree, or whose
@@ -149,15 +149,15 @@ arc shows the motif beside the read count.
 
 ## Reading a deep pileup
 
-In a deep pileup, reads with a skip sit among many more that carry none, so the
+In a deep pileup, reads with a skip sit among many more that have none, so the
 splicing evidence is hard to pick out. Three settings in the track menu separate
 it.
 
-**Sort by... → Spliced reads first** gives every read whose CIGAR carries a skip
-the lowest rows, so the junction-spanning reads sit together at the top of the
+**Sort by... → Spliced reads first** gives every read whose CIGAR has a skip the
+lowest rows, so the junction-spanning reads sit together at the top of the
 pileup.
 
-<Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. The same reads in both. The teal lines are the reads whose CIGAR carries a skip. File order scatters them down the stack, and the sort gathers them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
+<Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. The same reads in both. The teal lines are the reads whose CIGAR has a skip. File order scatters them down the stack, and the sort gathers them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
 
 **Filter by...** has a splicing radio: _Only spliced reads_ keeps just those
 reads, and the coverage histogram follows, so what is left is a histogram of the
@@ -170,14 +170,13 @@ thin arcs are mostly these alignment artefacts. Raising **Sashimi arcs → Min
 read support** removes them too, but only by also removing a real junction
 supported by few reads.
 
-<Figure caption="Every junction the reads carry above, and only the canonical ones below. The same pileup in both, with the gene model above it. The motif filter drops the salmon arc over the second intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
+<Figure caption="Every junction the reads have above, and only the canonical ones below. The same pileup in both, with the gene model above it. The motif filter drops the salmon arc over the second intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 
 ## Strand-specific RNA-seq
 
 Arc colors give the strand of spliced reads. A _strand-specific_ library records
-the transcript strand in which mate of the pair a read is, so every read carries
-it, which separates genes sitting close together or overlapping on opposite
-strands.
+the transcript strand in which mate of the pair a read is, so every read has it,
+which separates genes sitting close together or overlapping on opposite strands.
 
 The surfeit locus packs genes tightly and alternates their strands (_RPL7A_,
 _SURF1_, _SURF2_, _SURF4_), so the coloring, which comes from the reads alone,

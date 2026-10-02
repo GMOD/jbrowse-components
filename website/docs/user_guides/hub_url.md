@@ -27,8 +27,8 @@ JBrowse reads the hub's `shortLabel` and uses it as the session name.
 ## Combining with a config
 
 Drop `config=none` and point [`?config=`](/docs/urlparams#config) at a real
-config when the launch needs something the hub does not carry, such as plugins
-or extra assemblies:
+config when the launch needs something the hub does not have, such as plugins or
+extra assemblies:
 
 ```text
 ?config=myconfig.json&hubURL=https://example.com/hub.txt
@@ -71,7 +71,7 @@ dedicated category in the track selector, and only the tracks you open stored in
 the session.
 
 Hub tracks match to assemblies by genome ID, and the assemblies available are
-whatever the hub carries plus whatever a combined `?config=` defines, so a hub
+whatever the hub has plus whatever a combined `?config=` defines, so a hub
 opened with `config=none` shows only the tracks its own assemblies cover.
 
 ## See also

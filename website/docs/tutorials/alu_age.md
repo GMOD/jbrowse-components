@@ -157,8 +157,8 @@ the count as a bar: one over every copy in grey, one over the AluY copies a
 `filter` admits in red.
 
 Zoomed out to a whole chromosome, the track would fetch more features than its
-budget allows. The grey mark carries `"source": "density"`, so past the budget
-it draws the bins of a density sidecar, a bigWig of feature starts per kilobase:
+budget allows. The grey mark has `"source": "density"`, so past the budget it
+draws the bins of a density sidecar, a bigWig of feature starts per kilobase:
 
 <!-- from: scripts/build_alu_age.sh -->
 

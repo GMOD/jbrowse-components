@@ -13,7 +13,7 @@ parental alleles pulled apart.
 
 ## Prerequisites
 
-- for your own data, long reads whose BAM or CRAM already carries `MM`/`ML`
+- for your own data, long reads whose BAM or CRAM already has `MM`/`ML`
   modification tags, which modern ONT and PacBio basecallers write by default,
   plus a JBrowse instance to load them into (the
   [web quickstart](/docs/quickstart_web), or the
@@ -22,7 +22,7 @@ parental alleles pulled apart.
 - [modkit](https://github.com/nanoporetech/modkit/releases) for the aggregate
   section only, a single-binary download from its releases page
 - [WhatsHap](https://whatshap.readthedocs.io/), to haplotag reads of your own
-  that carry no `HP` tag
+  that have no `HP` tag
 
 ## Where the data comes from
 
@@ -93,7 +93,7 @@ covers both modes, the probability threshold, and the cytosine-context submenu.
 
 <Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its new track menu: Color by..., Modifications, and the two-color mode painting methylated CpGs red and unmethylated ones blue." />
 
-<Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. Top, the MM tag's modified positions alone, red against bare read bodies. Bottom, the same reads with every unmarked CpG filled in, so a read carrying no methylation reads blue where it was blank." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
+<Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. Top, the MM tag's modified positions alone, red against bare read bodies. Bottom, the same reads with every unmarked CpG filled in, so a read with no methylation reads blue where it was blank." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
 
 The pileup over the CpG island interleaves methylated and unmethylated reads.
 Grouping the reads by their `HP` haplotype tag separates them, in
@@ -142,7 +142,7 @@ differentially-methylated regions line up with the positions driving them.
 
 ## Splitting the alleles apart
 
-Each long read is a single DNA molecule, so reads that carry an `HP` haplotype
+Each long read is a single DNA molecule, so reads that have an `HP` haplotype
 tag (from WhatsHap, HiPhase, or ONT's `wf-human-variation`) can be separated by
 allele. Pick **Group by... → Tag...** from the track menu and enter `HP`. The
 dialog scans the reads in view, reports the values it found, and offers to color

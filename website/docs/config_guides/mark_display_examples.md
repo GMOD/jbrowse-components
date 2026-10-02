@@ -530,9 +530,9 @@ because the axis already reads the colour.
 
 <Figure src="/img/mark_display_examples/identity.png" caption="H. pylori 26695 against J99, one line per alignment at its identity and coloured by it, with gaps where nothing aligned." />
 
-A PAF line carries one identity for the whole alignment, so a long alignment
-draws as one flat line however its identity varies along its length. An
-all-vs-all PAF gives one row per genome, which
+A PAF line has one identity for the whole alignment, so a long alignment draws
+as one flat line however its identity varies along its length. An all-vs-all PAF
+gives one row per genome, which
 [the all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny#percent-identity-per-strain)
 walks through.
 

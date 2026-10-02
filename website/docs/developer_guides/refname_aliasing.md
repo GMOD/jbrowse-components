@@ -168,8 +168,8 @@ a contig the sequence adapter never had.
   [SAM-spec refName](https://samtools.github.io/hts-specs/SAMv1.pdf) set (e.g.
   stray whitespace or quoting). Clean the offending row.
 - **NCBI adapter throws about the header line.** The error names the missing
-  column. The first line must carry the three required headers spelled exactly
-  as above; a renamed column reads as an absent one. `Sequence name` is not
+  column. The first line must have the three required headers spelled exactly as
+  above; a renamed column reads as an absent one. `Sequence name` is not
   required, so a file without it parses.
 
 ## See also

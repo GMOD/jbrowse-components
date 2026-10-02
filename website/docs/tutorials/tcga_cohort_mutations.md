@@ -50,8 +50,8 @@ chr3   179234297 .   A   G    GENE=PIK3CA;HGVSP=p.H1047R... GT:AD:DP  0/1:81,29:
 
 Two conventions affect how to read the matrix:
 
-- `0/0` marks a site the caller did not call, since a MAF carries no coverage
-  record for one
+- `0/0` marks a site the caller did not call, since a MAF has no coverage record
+  for one
 - every somatic call is written het, because a MAF gives no ploidy
 
 Read counts are kept in `AD`/`DP`. `INFO/CSQ` re-encodes the VEP columns from
@@ -236,7 +236,7 @@ _PIK3CA_ at the same zoom piles its calls on three columns, H1047R in the kinase
 domain and E542K and E545K side by side in the helical one. All three run
 through every band, densest in HR+/HER2-.
 
-<Figure caption="PIK3CA's exons with the rows banded and colored by receptor subtype and the gene's introns collapsed. Three columns, two in the helical domain and one in the kinase domain, carry most of the cohort's calls, against the private columns spread around them." src="/img/tcga/mutations_pik3ca_grouped.png" />
+<Figure caption="PIK3CA's exons with the rows banded and colored by receptor subtype and the gene's introns collapsed. Three columns, two in the helical domain and one in the kinase domain, hold most of the cohort's calls, against the private columns spread around them." src="/img/tcga/mutations_pik3ca_grouped.png" />
 
 ## Add a mutation recurrence track
 
@@ -294,8 +294,8 @@ the ones `impactColor` paints. The rate has no background model, and gene length
 enters directly: _TTN_ ranks near the top on passenger mutations alone.
 
 On the matrix itself, **Clustering → Cluster rows by genotype...** gathers every
-carrier into one block (see [](/docs/user_guides/clustering)), and **Filter
-by... → Minor allele frequency** keeps the recurrent mutations (see
+mutated sample into one block (see [](/docs/user_guides/clustering)), and
+**Filter by... → Minor allele frequency** keeps the recurrent mutations (see
 [filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness)).
 
 ## Use your own cohort
@@ -310,8 +310,8 @@ grouping, any TSV whose first column matches the VCF's sample names works.
 ## Copy number on the same tumors
 
 The mutation rates above lean toward a group: _TP53_ climbs toward the
-triple-negative group where _PIK3CA_ falls, and every band carries both. Copy
-number on the same tumors sorts them by amplification instead. In the
+triple-negative group where _PIK3CA_ falls, and every band has both. Copy number
+on the same tumors sorts them by amplification instead. In the
 [copy-number cohort's recurrence by subtype](/docs/tutorials/tcga_cohort_cnv#split-the-recurrence-by-clinical-group),
 17q gain is confined to the HER2+ row, and 5q loss and 10p gain to the
 triple-negative row. Both pages group by the same clinical TSV.

@@ -81,7 +81,7 @@ which reference panel a stretch of chromosome most resembles.
 
 The Saarloos Wolfdog and the Czechoslovakian Wolfdog are both 20th-century
 crosses between German Shepherd Dogs and captive gray wolves, bred back to dogs
-afterwards. Each should carry wolf-derived haplotype blocks on a dog background,
+afterwards. Each should have wolf-derived haplotype blocks on a dog background,
 and a German Shepherd essentially none.
 
 Two more breeds are here too, from the Dog10K paper's discussion of wolf-like
@@ -286,8 +286,8 @@ small painting shows the labels and the big one the extent.
 Each pair of rows is the two chromosome copies of one animal. Wolf on one row
 and dog on the other is a heterozygous stretch; both orange is homozygous
 wolf-derived. Orange means a stretch that resembles a present-day gray wolf more
-than a breed dog. Both panels are modern, so haplotypes that domestication
-carried into dogs match both panels equally.
+than a breed dog. Both panels are modern, so haplotypes that entered dogs with
+domestication match both panels equally.
 
 Blocks break up towards the end of chr1, tracking the genetic map. The build
 script tiles the chromosome and prints block-edge count and recombination per
@@ -298,26 +298,26 @@ recombination is far above the median tile's.
 
 Most held-out wolves paint essentially all wolf. The two Swedish museum
 specimens come out partly dog, yet on the second measurement the build script
-prints, the fraction of near-fixed differing sites carrying the wolf allele,
-they score highest of the held-out wolves. That fraction scores alleles one site
-at a time, and FLARE matches whole haplotypes against a panel.
+prints, the fraction of near-fixed differing sites with the wolf allele, they
+score highest of the held-out wolves. That fraction scores alleles one site at a
+time, and FLARE matches whole haplotypes against a panel.
 
 ### The Tamaskan and the Shiloh Shepherd
 
 The build script prints a count of wolf blocks with their median and longest,
 one line per animal. The Tamaskan has many short wolf assignments, the longest
 within the range of the Kars, the Eurasier and the Spanish Mastiff. The Shiloh
-Shepherd carries the longest wolf block of any dog outside the two wolfdog
-breeds, and many blocks besides, where the Great Anglo-French Tricolour Hound
-with the next longest has three. A later genome-wide run over the same
-collection puts it among the three dogs with the longest, most recent wolf
-tracts ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
+Shepherd has the longest wolf block of any dog outside the two wolfdog breeds,
+and many blocks besides, where the Great Anglo-French Tricolour Hound with the
+next longest has three. A later genome-wide run over the same collection puts it
+among the three dogs with the longest, most recent wolf tracts
+([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 **Clustering** → **Cluster rows by similarity...** in the track menu derives the
 order from the blocks themselves, and on the full 243-animal painting it puts
-the held-out wolves on a small branch with the wolfdog haplotypes that carry the
-most wolf, apart from the breed dogs. Clustering runs over the region in view,
-and a chip in the corner of the tree shows the locus.
+the held-out wolves on a small branch with the wolfdog haplotypes with the most
+wolf, apart from the breed dogs. Clustering runs over the region in view, and a
+chip in the corner of the tree shows the locus.
 
 ## Other row fields
 
@@ -341,9 +341,9 @@ the map, runs FLARE, prints every measurement read above, and writes both
 painted BEDs
 ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
 plus indexes. For each painted block edge it also prints how many
-ancestry-informative markers each haplotype carries on either side. The long
-wolfdog blocks have marker support at their edges, and the short blocks in
-ordinary breeds lack it.
+ancestry-informative markers each haplotype has on either side. The long wolfdog
+blocks have marker support at their edges, and the short blocks in ordinary
+breeds lack it.
 
 ## See also
 

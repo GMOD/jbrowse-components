@@ -168,7 +168,7 @@ how many there are, so the arcs count the support as well as locate it.
 <Figure caption="Read arcs over a deletion in the 1000 Genomes Kinh-Vietnamese trio, with the 1KGP ensemble SV call on top. The red arcs are pairs with a larger-than-expected insert size, lining up with the called breakpoints across all three samples." src="/img/multi-sv-trio.png" />
 
 Hover any arc for its classification. A read can have a grey LR fill and still
-carry a colored arc: the read itself crosses the breakpoint, splits into a
+have a colored arc: the read itself crosses the breakpoint, splits into a
 primary and a strand-flipped supplementary alignment, and the arc joining those
 takes the magenta split-read color. That is evidence from one molecule rather
 than from a pair.
@@ -182,7 +182,7 @@ own coverage curve and arcs, the concordant pairs drop out, and the pileup goes
 away. Which band fills names the rearrangement, and a band that stays empty
 under a call is a call with no read-pair evidence behind it.
 
-<Figure caption="The INVdup call above, arranged as one band per pair orientation in HG02768. The two same-strand bands hold arc bundles ending on the same breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band stays near empty. The last band holds reads whose mate is unmapped or on another chromosome, drawn as inter-chromosomal ticks." src="/img/sv_channels.png" />
+<Figure caption="The INVdup call above, arranged as one band per pair orientation in HG02768. The two same-strand bands hold arc bundles ending on the same breakpoints, the normal band holds the ordinary coverage, and the outward-pointing band stays near empty. The last band holds reads whose mate is unmapped or on another chromosome, drawn as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 <figure>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 404" style="max-width:100%;height:auto;display:block" width="900" font-family="system-ui, sans-serif" font-size="13" fill="#333" role="img" aria-label="Which pair-orientation band each SV type fills">
@@ -271,16 +271,16 @@ shows or hides proper pairs and singletons.
 
 ### Split reads
 
-A long read spans the whole event, so it carries what a short-read pair could
-only infer. At an inversion it splits into three alignments, the middle one on
-the opposite strand. With **View as pairs / link supplementary alignments** on,
+A long read spans the whole event, so it has what a short-read pair could only
+infer. At an inversion it splits into three alignments, the middle one on the
+opposite strand. With **View as pairs / link supplementary alignments** on,
 those segments chain onto one row: the inverted middle paints in the
 reverse-strand color between two forward-strand segments, and a magenta arc
 joins the two breakpoints.
 
 **Group by → Split read (SA tag)** splits the pileup into two sections: reads
-carrying a supplementary alignment, and the rest. Together the two sections give
-the genotype directly from the pileup, independent of the caller's `GT` field: a
+with a supplementary alignment, and the rest. Together the two sections give the
+genotype directly from the pileup, independent of the caller's `GT` field: a
 locus where some reads invert and the rest run through unbroken is one inverted
 copy and one uninverted.
 
@@ -294,11 +294,11 @@ breakpoint, the order it visits those loci in is the structure of the
 rearrangement. See
 [one read against the reference](/docs/user_guides/alignments_track#one-read-against-the-reference).
 
-<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions, the ordinary pileup above and the read drawn against the reference below. Each gap in the diagonal is sequence the read carries and the reference does not." src="/img/read_vs_ref_insertion.png" />
+<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions, the ordinary pileup above and the read drawn against the reference below. Each gap in the diagonal is sequence the read has and the reference does not." src="/img/read_vs_ref_insertion.png" />
 
 ### Rebuilding a derivative allele
 
-Where long reads cross every junction of a rearrangement, the allele they carry
+Where long reads cross every junction of a rearrangement, the allele they have
 can be assembled as a sequence and loaded as an assembly of its own, with the
 reads realigned to it. Assembling it is an assembler's job — Flye, Shasta and
 hifiasm all do local assemblies of this kind — and JBrowse shows the contig
@@ -318,8 +318,8 @@ with COLO829's der(3).
 Any one column has artifacts that produce it, and in segmental duplications and
 repeats all of them are common, so combine several before calling. Zoomed inside
 an inverted segment the interior reads look concordant, so the junctions are
-where to look. The clipped bases at an inversion breakpoint often carry the
-short homology the junction formed on. For a translocation, open the
+where to look. The clipped bases at an inversion breakpoint often have the short
+homology the junction formed on. For a translocation, open the
 [breakpoint split view](#breakpoint-split-view) to see both ends at once.
 
 ## Breakpoint split view
@@ -366,7 +366,7 @@ view grows a panel per locus. The COLO829 tutorial follows one such chain across
 three chromosomes and
 [opens this view from a callset record](/docs/tutorials/cancer_sv#following-the-chain-across-panels).
 
-<Figure caption="A COLO829 chain through chr3, chr10 and chr12 and back to chr3, one panel per locus with the tumor pileup in each. The splines carry the same molecules from panel to panel, in the order the reads cross the junctions." src="/img/cancer_sv/multihop_split_view.png" />
+<Figure caption="A COLO829 chain through chr3, chr10 and chr12 and back to chr3, one panel per locus with the tumor pileup in each. The splines connect the same molecules from panel to panel, in the order the reads cross the junctions." src="/img/cancer_sv/multihop_split_view.png" />
 
 ### Following a chain of breakends
 
@@ -389,14 +389,14 @@ screen.
 
 For a heterozygous SV, the supporting reads all coming from one haplotype is
 strong evidence for the call. Where the BAM/CRAM has been haplotagged (WhatsHap,
-HiPhase), reads carry an `HP` tag, and sorting, coloring or
+HiPhase), reads have an `HP` tag, and sorting, coloring or
 [grouping](/docs/user_guides/alignments_track#grouping-reads) by it from the
 track menu clusters each haplotype. Grouping goes furthest: each haplotype gets
 a separate pileup section, and untagged reads get one too, so unphased support
 stays visible. The [phased trio tutorial](/docs/tutorials/analyze_trio) covers
 phased haplotypes end to end.
 
-<Figure caption="A heterozygous deletion in HG002 ONT reads, with the SNP coverage panel above the pileup. The pileup is grouped by HP tag into stacked sections, and the reads carrying the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
+<Figure caption="A heterozygous deletion in HG002 ONT reads, with the SNP coverage panel above the pileup. The pileup is grouped by HP tag into stacked sections, and the reads with the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
 
 ## Working with large SVs
 

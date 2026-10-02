@@ -340,14 +340,14 @@ any other appearance setting (labels, mouseover, jexlFilters).
 --multiwig bundles several BigWigs into one MultiQuantitativeTrack, in place of
 the positional track argument: pass a comma-separated list of BigWig files/URLs,
 or a .json file with an array of BigWig locations or subadapter objects (each
-carrying its own name/color/group). With --load, local list entries are copied
+with its own name/color/group). With --load, local list entries are copied
 like any other track file.
 
 --density attaches a features-per-bin bigWig (jbrowse make-density) as the
 adapter's densityAdapter, the band a display draws where the region is too large
 to fetch features. A local <file>.density.bw beside the track file is attached
 without the flag; a URL cannot be probed, so a remote sidecar needs it. The
-adapters carrying the slot are BamAdapter, CramAdapter, HtsgetBamAdapter,
+adapters with the slot are BamAdapter, CramAdapter, HtsgetBamAdapter,
 Gff3TabixAdapter, GtfTabixAdapter, BedTabixAdapter, BigBedAdapter,
 VcfTabixAdapter and SplitVcfTabixAdapter.
 
@@ -382,7 +382,7 @@ $ jbrowse add-track genes.gff3.gz --load copy --color 'jexl:feature.strand==1?"b
 # bundle several BigWigs into one MultiQuantitativeTrack (no positional track arg)
 $ jbrowse add-track --multiwig a.bw,b.bw,c.bw --load copy --name "Coverage"
 
-# ...or from a sources.json carrying per-row name/color for each BigWig
+# ...or from a sources.json with per-row name/color for each BigWig
 $ jbrowse add-track --multiwig sources.json --name "CATlas ATAC"
 
 # attach a remote density sidecar (a local genes.gff3.density.bw needs no flag)
@@ -428,7 +428,7 @@ what it cannot draw in a corner notice rather than refusing the track. This
 command runs the display's own rule list over every "marks" list in the file: an
 error where a mark draws nothing, never draws or a step cannot run, and a
 warning where a slot waits unread or the marks draw in an arrangement the author
-may not have meant. With --json each finding carries the stable "rule" id of the
+may not have meant. With --json each finding has the stable "rule" id of the
 rule that made it.
 
 Types registered by plugins are not known to this command, so they come through
@@ -749,7 +749,7 @@ SplitVcfTabixAdapter declare. add-track attaches it on its own when the default
 <file>.density.bw sits beside the track file, so building it before adding the
 track is all it takes; --density attaches one by path or URL.
 
-GFF3 counts only top-level features — a line whose attributes carry no Parent= —
+GFF3 counts only top-level features — a line whose attributes have no Parent= —
 so a gene is one count rather than one per exon. GTF, BED and VCF have no parent
 link to follow, so every record counts.
 

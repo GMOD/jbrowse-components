@@ -185,9 +185,9 @@ type: {
 
 `stringEnum` (and `maybeStringEnum`) are the only types the config editor reads
 the `model`'s choices from, so a slot typed anything else renders as a free text
-input however valid its `model` is. A `maybeStringEnum` dropdown carries a
-leading "default" entry above the members, which is how the unset state is both
-shown and set.
+input however valid its `model` is. A `maybeStringEnum` dropdown has a leading
+"default" entry above the members, which is how the unset state is both shown
+and set.
 
 ## Schema inheritance with baseConfiguration
 
@@ -321,7 +321,7 @@ The resolution dispatch is based on `explicitIdentifier` in the schema options:
 - `'displayId'` → `DisplayConfigurationReference`
 - anything else → plain reference
 
-`ConfigurationReference` carries the schema through to `self.configuration`, so
+`ConfigurationReference` passes the schema through to `self.configuration`, so
 `getConf(self, slot)` and `readConfObject(self.configuration, slot)` check the
 slot name and return its real value type — **but only when the schema is
 concrete**. Type the state model factory's `configSchema` parameter to the
@@ -515,4 +515,4 @@ resolution.
 - [](/docs/developer_guides/creating_display)
 - [CONFIG_PATTERN.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/CONFIG_PATTERN.md)
   — the whole path a display's config takes to reach a renderer: config to MST
-  snapshot to plain object to RPC payload, and what each hop may carry
+  snapshot to plain object to RPC payload, and what each hop may hold

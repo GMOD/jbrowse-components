@@ -47,7 +47,7 @@ export default function HelpWidgetF(pluginManager: PluginManager) {
 }
 ```
 
-Every widget state model carries `id` and `type`. `ElementId` is
+Every widget state model has `id` and `type`. `ElementId` is
 `types.optional(types.identifier, …)`, generating a nanoid on the restore path
 when a snapshot arrives without one; `addWidget` always passes the id
 explicitly. The `types.literal` tells MST which model to rehydrate a saved

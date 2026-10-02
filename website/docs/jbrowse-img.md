@@ -52,7 +52,7 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 ```
 
 The `'{"showOnlyGenes":true}'` after the GFF is a raw-JSON per-track override
-(any display setting can be set this way). NCBI RefSeq GFFs carry non-gene
+(any display setting can be set this way). NCBI RefSeq GFFs have non-gene
 support features (`region`, `match`, `biological_region`) that would otherwise
 render as unnamed rows above the genes; `showOnlyGenes` restricts the track to
 gene/transcript features.
@@ -138,8 +138,8 @@ Error: --track "clinvar" not found in the config. Did you mean: hg19-clinvarMain
 hg19-clinvarCnv, hg19-dbSnp155ClinVar, ...?
 ```
 
-Hosted configs also carry a gene text-search index, so `--loc` accepts a **gene
-name** and jumps to it:
+Hosted configs also include a gene text-search index, so `--loc` accepts a
+**gene name** and jumps to it:
 
 <!-- jb2export: gene_name_search -->
 
@@ -237,8 +237,8 @@ jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
 <Figure src="/img/jbrowse-img/alignments_pileup.png" caption="A coverage histogram over a read pileup, with mismatches highlighted" />
 
 Track modifiers color, sort, and group the reads. `sort:base` orders the pileup
-by the base each read carries at the center position: here, HG008-T PacBio HiFi
-reads over the `CUZD1` gene, where the sort pulls every read carrying a ~1.8 kb
+by the base each read has at the center position: here, HG008-T PacBio HiFi
+reads over the `CUZD1` gene, where the sort pulls every read with a ~1.8 kb
 somatic deletion into one contiguous band so the heterozygous deletion (and its
 coverage dip) pops out of the pileup:
 
@@ -251,7 +251,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:55 \
   --out alignments_readgroup.png
 ```
 
-<Figure src="/img/jbrowse-img/alignments_readgroup.png" caption="HG008-T PacBio HiFi reads over CUZD1, sorted by the base at the center position so the reads carrying a ~1.8 kb somatic deletion cluster into one band" />
+<Figure src="/img/jbrowse-img/alignments_readgroup.png" caption="HG008-T PacBio HiFi reads over CUZD1, sorted by the base at the center position so the reads with a ~1.8 kb somatic deletion cluster into one band" />
 
 `group:tag:HP` splits the pileup into one stacked sub-track per haplotype. This
 HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
@@ -344,7 +344,7 @@ to that panel** — the meaning a space already has for a linear view. So the
 two-breakend case is two bare `--loc` flags with no shell quoting, and a quoted
 `--loc` is how a panel takes two windows.
 
-A connector is drawn dashed when the read carrying it has a supplementary
+A connector is drawn dashed when the read holding it has a supplementary
 alignment at a locus that is not on screen: the view is reporting an incomplete
 picture, and the fix is to give it the missing panel. COLO829's der(3) is a
 closed cycle over three chromosomes, so the junction below needs a chr10 panel
@@ -355,7 +355,7 @@ solid.
 is the difference between the tumour and its matched normal, so the figure that
 argues it is two of these side by side: the same `--loc` list and the same
 `--width`, one `--track` each. The connecting curves are drawn per track, so
-they fill the tumour render and the normal render carries none.
+they fill the tumour render and the normal render has none.
 
 <!-- jb2export: sv_review_tumor -->
 
@@ -383,7 +383,7 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
 
 <Figure src="/img/jbrowse-img/sv_review_normal.png" caption="The three der(3) loci in the matched normal, with no connecting curves in any panel" />
 
-Both commands carry these two modifiers:
+Both commands take these two modifiers:
 
 - **`force:true`** is there because the chr3 panel is 1.2 kb of 200x nanopore,
   which is over the byte gate; without it that panel draws the gate's message
@@ -692,7 +692,7 @@ which lets a script pass a category through from a variable that may be empty.
 | `properPairs:only\|exclude` | `properPairs:exclude`  | Concordant pairs — flagged proper (0x2) AND in FR orientation. Excluding them leaves the discordant and split chains, which is an SV view                                                                                                                                                                              |
 | `split:only\|exclude`       | `split:only`           | Reads the aligner gave a supplementary segment (SAM flag 0x800), read off the SA tag                                                                                                                                                                                                                                   |
 | `singletons:only\|exclude`  | `singletons:exclude`   | Reads whose mate and supplementary segments are all outside the window                                                                                                                                                                                                                                                 |
-| `spliced:only\|exclude`     | `spliced:only`         | Reads whose CIGAR carries a reference skip (N) — an intron, in RNA-seq                                                                                                                                                                                                                                                 |
+| `spliced:only\|exclude`     | `spliced:only`         | Reads whose CIGAR has a reference skip (N) — an intron, in RNA-seq                                                                                                                                                                                                                                                     |
 
 Overlays & subtracks:
 
@@ -821,13 +821,13 @@ draws the marks you declare instead of the glyphs its track type would: a list
 of bars, points, spans, text or links, each naming which feature fields feed
 which channel. It opens over a BAM, CRAM, VCF, GFF3, BED, BigBed, BigWig or
 MultiWiggle track — everything but `--hic` — so what differs between them is
-only which fields answer. A read's `score` is its MAPQ; a variant carries its
+only which fields answer. A read's `score` is its MAPQ; a variant has its
 quality as `QUAL` and no `score` at all, so a mark over a VCF names the field it
 wants; a BigWig past its raw section answers a zoom level's mean as `score`,
 with `minScore` and `maxScore` beside it.
 
 A whole plot is a list of objects, so state it as one JSON modifier — the same
-shape the track's config or a session spec would carry. Here one BigWig draws
+shape the track's config or a session spec would hold. Here one BigWig draws
 three marks in one plot: each bin's mean as bars, and its least and greatest
 value as points.
 
@@ -837,9 +837,8 @@ jb2export --fasta ref.fa --bigwig conservation.bw display:marks height:300 \
   --loc chr1:1-100000 --out out.svg
 ```
 
-A mark carries a `transform` list run before it draws, which nests the same way
-— a binned count is two steps, and the aggregate's `ops` a list inside the
-second:
+A mark has a `transform` list run before it draws, which nests the same way — a
+binned count is two steps, and the aggregate's `ops` a list inside the second:
 
 ```bash
 jb2export --fasta ref.fa --gffgz genes.gff.gz display:marks height:160 \
@@ -855,7 +854,7 @@ alone, the way `color.domain=` edits one member of a colour object — and
 than a list with holes in it.
 
 A mark the display cannot draw as declared — a bar naming no `y`, or a `y` the
-data does not carry — fails the export with the rule the display itself states,
+data does not have — fails the export with the rule the display itself states,
 rather than writing a picture of an empty plot.
 
 ### Raw display settings (JSON)
@@ -1094,9 +1093,9 @@ The
 builds this track and the five strain assemblies it names.
 
 Where a config holds more than one such track, `--spec` says which one each band
-uses. The hosted demo below is that case — it carries the same five strains
-aligned four ways (minimap2, pggb/wfmash, cactus, and untangle) — and its spec
-is where the repetition is, one entry per band:
+uses. The hosted demo below is that case — it has the same five strains aligned
+four ways (minimap2, pggb/wfmash, cactus, and untangle) — and its spec is where
+the repetition is, one entry per band:
 
 ```json
 {
@@ -1265,7 +1264,7 @@ the `ngmlr_cov` coverage track that `data/skbr3/session.json` opens.
 
 `data/skbr3/session.json` is also worth reading as the short way to write one by
 hand. A view says where to go and what to open with settings written directly on
-it, and each track entry carries its own display settings inline:
+it, and each track entry has its own display settings inline:
 
 ```json
 {
@@ -1358,7 +1357,7 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
 - `--multiwig` — many BigWigs as one multi-row `MultiQuantitativeTrack`; its
   argument is a comma-separated BigWig file list (local paths or URLs) or a
   `.json` sources file (an array of BigWig paths/URLs, or of subadapter objects
-  carrying per-row `name`/`color`/`group`) — see
+  with per-row `name`/`color`/`group`) — see
   [MultiWiggle](#multiwiggle-many-bigwigs-in-one-track)
 - `--vcfgz`
 - `--gffgz`

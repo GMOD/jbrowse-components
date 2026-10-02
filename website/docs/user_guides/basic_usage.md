@@ -183,7 +183,7 @@ The session URL contains:
 - per-track display state, such as an alignments track's soft-clipping and sort
   settings
 
-A shared link can therefore carry custom tracks the recipient opens directly,
+A shared link can therefore contain custom tracks the recipient opens directly,
 with no admin needed to publish them first.
 
 ## Track menu
@@ -284,7 +284,7 @@ Clicking the scale bar without dragging names a single base. Its menu holds
 The [synteny](/docs/user_guides/linear_synteny_view) and
 [breakpoint split](/docs/user_guides/sv_visualization#breakpoint-split-view)
 views have one strip for the whole stack. A drag there leads with **Zoom to
-region(s)**, which zooms every row at once; below it, one row per genome carries
+region(s)**, which zooms every row at once; below it, one row per genome has
 that row's own menu, because a sequence to fetch or a coordinate to copy belongs
 to one assembly.
 

@@ -96,9 +96,9 @@ A multi-line string, e.g. an HTML template for a feature-details panel.
 and `maybeFileLocation` each accept everything the type without the prefix
 accepts, plus one more state: **unset**.
 
-A slot left unset carries no value of its own, which lets the display decide
-what to do from the data in front of it — a state distinct from any value the
-slot could hold, including one that looks like the display's usual choice. A
+A slot left unset holds no value of its own, which lets the display decide what
+to do from the data in front of it — a state distinct from any value the slot
+could hold, including one that looks like the display's usual choice. A
 `maybeString` left unset is therefore not the empty string: a value scale's
 `title` is derived from the plotted field while unset, and `""` is an axis with
 no title.

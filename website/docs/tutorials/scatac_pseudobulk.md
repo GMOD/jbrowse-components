@@ -44,7 +44,7 @@ coverage track is almost entirely zero. Pseudobulking pools every fragment
 belonging to a label into one profile, a dense track resembling a bulk ATAC
 experiment on that cell type. JBrowse stacks the files as rows of one track.
 
-PBMC marker genes are the control. At a T-cell marker the T-cell rows carry
+PBMC marker genes are the control. At a T-cell marker the T-cell rows have
 signal and the B-cell rows stay flat, and at a B-cell marker the reverse.
 
 The BigWigs can also be viewed inline from the clustering environment through
@@ -110,10 +110,10 @@ Every route ends at one `.bw` per cell type. The tools are linked under
 
 ## The genome
 
-The fragments are aligned to GRCh38, so the BigWigs carry its `chr1`-style
+The fragments are aligned to GRCh38, so the BigWigs use its `chr1`-style
 chromosome names, and the assembly has to spell them the same way. A BigWig
 whose names differ from the assembly's, such as Ensembl's `1` against `chr1`,
-draws empty unless the assembly carries a name-alias table.
+draws empty unless the assembly has a name-alias table.
 
 ```json addassembly
 {
@@ -216,7 +216,7 @@ one discontinuous view, a T-cell marker (_CD8A_) and a B-cell marker (_MS4A1_):
 chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
 ```
 
-<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. The CD8, MAIT and NK rows carry signal at CD8A, and only the two B rows carry it at MS4A1." src="/img/scatac/pbmc5k_marker_swap.png" />
+<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. The CD8, MAIT and NK rows have signal at CD8A, and only the two B rows have it at MS4A1." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 ### Building the subadapter list from files
 

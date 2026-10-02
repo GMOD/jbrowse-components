@@ -45,7 +45,7 @@ search, and this mode runs a scan of the region in view. A protospacer that
 reaches into an assembly gap is skipped.
 
 To order oligos from a search, use **Save track data** on the track's menu. The
-GFF3 export carries the guide sequence, PAM, cut positions, and flags as
+GFF3 export contains the guide sequence, PAM, cut positions, and flags as
 attributes.
 
 ## Restriction enzymes and other named motifs
@@ -73,7 +73,7 @@ set from REBASE or anywhere else. Sites may use
 `GGTNACC`), blank lines and `#` comments are ignored, and a bare site with no
 name names itself.
 
-The cut notation carries the cuts themselves. `(n/m)` pins both strands' cuts
+The cut notation contains the cuts themselves. `(n/m)` pins both strands' cuts
 outright; a `^` pins the top-strand cut, and for a palindromic site the
 bottom-strand cut mirrors it. So each hit reports both cut positions and whether
 the enzyme leaves a 5' overhang, a 3' overhang, or a blunt end. The strand

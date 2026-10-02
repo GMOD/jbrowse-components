@@ -182,10 +182,10 @@ A whole strain has about as many genes as its row has pixels, so zoom each row
 in once with its magnifier, then open each strain's gene track, **NCBI RefSeq -
 RefSeq All (GFF)**, from the track selector for that row.
 
-CHC155 carries an inversion that 26695 and J99 do not, so the 26695 vs J99
-dotplot shows nothing there and only a row for CHC155 can. To frame it, type one
-window into each row's search box, top to bottom. `[rev]` flips the J99 row so
-it reads in 26695's direction:
+CHC155 has an inversion that 26695 and J99 do not, so the 26695 vs J99 dotplot
+shows nothing there and only a row for CHC155 can. To frame it, type one window
+into each row's search box, top to bottom. `[rev]` flips the J99 row so it reads
+in 26695's direction:
 
 ```text
 NC_018939v1:672,000-782,000
@@ -195,7 +195,7 @@ NZ_CP011330v1:305,000-415,000[rev]
 
 <Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, a zoom in on each row, and each strain's gene track from the track selector for that row." />
 
-<Figure caption="Three H. pylori strains stacked with a gene track on each genome, across the stretch CHC155 carries inverted. The ribbons into the middle row cross from both sides, since the same stretch runs one way in 26695 and J99 and the other way in CHC155." src="/img/sv_synteny/linear_synteny_genes.png" />
+<Figure caption="Three H. pylori strains stacked with a gene track on each genome, across the stretch inverted in CHC155. The ribbons into the middle row cross from both sides, since the same stretch runs one way in 26695 and J99 and the other way in CHC155." src="/img/sv_synteny/linear_synteny_genes.png" />
 
 Each panel is a full linear genome view with a separate search box, zoom and
 track selector. See [](/docs/user_guides/linear_synteny_view) for ribbon options
@@ -207,12 +207,12 @@ for building one from a URL.
 In bacteria the gene symbol is effectively the ortholog id, since NCBI reuses
 standardized symbols across strains. On each gene track, pick **Color by... →
 Attribute...** from the track menu and enter `gene`. JBrowse gives each distinct
-value a color from one palette, chosen from the value itself, so an ortholog
-carries one color down all three panels. Features with no value are grey; most
-genes here carry only a locus tag. Across the inversion, the colors run from
-_hydE_ to _uvrA_ in 26695 and J99 and from _uvrA_ back to _hydE_ in CHC155.
+value a color from one palette, chosen from the value itself, so an ortholog is
+one color down all three panels. Features with no value are grey; most genes
+here have only a locus tag. Across the inversion, the colors run from _hydE_ to
+_uvrA_ in 26695 and J99 and from _uvrA_ back to _hydE_ in CHC155.
 
-<Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels, and the middle row carries the colors in reverse order." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
+<Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels, and the middle row shows the colors in reverse order." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
 The dialog writes the field into the display's `color`, one line of config on
 the hub's gene track:

@@ -46,7 +46,7 @@ Three constraints decide what this renderer can be built on:
 | deck.gl (over luma.gl)    | layer framework for geospatial overlays     | a shader per backend anyway, and no Canvas2D path                |
 | Pixi                      | 2D scene graph, WebGL and WebGPU            | composable shader bits pay off under remixing; ours are fixed    |
 | Three.js (and TSL)        | 3D scene graph, node-graph shading language | dual output works, but a node graph replaces shaders we can read |
-| regl                      | thin functional WebGL wrapper               | WebGL only, so it cannot carry the WebGPU path                   |
+| regl                      | thin functional WebGL wrapper               | WebGL only, so it cannot serve the WebGPU path                   |
 | wgpu to wasm              | Rust GPU abstraction                        | megabytes per page load, over a WebGL fallback we would debug    |
 | Babylon.js runtime Tint   | transpiles shaders in the browser           | compiler bytes to every reader, cross-compile failures in prod   |
 | WebGPU Compatibility Mode | one API over older GPU feature levels       | needs a secure context we cannot require                         |
@@ -60,8 +60,8 @@ Slang, cross-compiled to WGSL and GLSL ES at build time.
 
 [GenomeSpy](https://genomespy.app/) hit the coordinate wall first and solved it
 with the same high/low split, so we took the technique rather than
-reimplementing it — `packages/render-core/src/shaders/hpmath.slang` carries the
-MIT attribution and `hpSplitUint` is the function. We did not take GenomeSpy's
+reimplementing it — `packages/render-core/src/shaders/hpmath.slang` has the MIT
+attribution and `hpSplitUint` is the function. We did not take GenomeSpy's
 grammar, because JBrowse composes tracks a plugin registered, not a
 visualization someone authored.
 
@@ -137,7 +137,7 @@ clock.
 
 Identify which clock a change lands on, measure it against the code it would
 replace, and publish the number even when it comes out a loss.
-[](/docs/developer_guides/optimizations) carries those beside the wins, and each
+[](/docs/developer_guides/optimizations) lists those beside the wins, and each
 declined idea is noted at the site that would re-try it. If a library now clears
 the three constraints at the top, that is a measurement worth taking —
 [BENCHMARKING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/BENCHMARKING.md)

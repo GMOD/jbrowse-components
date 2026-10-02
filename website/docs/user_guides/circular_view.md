@@ -64,10 +64,10 @@ const ringView = {
 A multi-source quantitative track with its sources on rows gives each source a
 band inside one ring, so a sample pair or a small cohort is one nested set
 rather than a ring each. The bands are drawn against the display's single score
-domain, and a stack of rows carries no axis of its own, so name that domain
-where the bands are meant to be read against each other. Naming the sources is
-the colour's job here: the row labels are part of the display's chrome and a
-ring samples only its canvas, so give each subtrack a `color` in the adapter.
+domain, and a stack of rows has no axis of its own, so name that domain where
+the bands are meant to be read against each other. Naming the sources is the
+colour's job here: the row labels are part of the display's chrome and a ring
+samples only its canvas, so give each subtrack a `color` in the adapter.
 
 <Figure src="/img/circular_view/tumor_normal_rings.png" caption="A tumour and its matched normal from one multi-source quantitative track, a band each inside the ring, with the somatic SV truth set as chords. The tumour band steps between levels across whole chromosomes; the normal holds even over the same stretches." />
 
@@ -102,8 +102,8 @@ many aligned bases each pair shares, and the circle lays that genome out
 mirrored so the ribbons come out as a band of parallel arcs.
 `autoDiagonalize: false` on the view keeps each genome in its own contig order.
 It is the same pass the linear synteny view and the dotplot run, over the same
-alignment file, and it is offered on a two-genome circle carrying a synteny
-track and nowhere else.
+alignment file, and it is offered on a two-genome circle with a synteny track
+and nowhere else.
 
 A synteny circle, of one genome or two, opens with each ribbon in the ideogram
 color of the first genome's chromosome it leaves. **Color by...** in the view's

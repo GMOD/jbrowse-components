@@ -235,7 +235,7 @@ between the two genomes it joins:
 The stack compares each accession with its neighbour. To compare each accession
 with Col-0 in Col-0 coordinates, `syri_to_paf.py` also writes the regions for
 each pair in reference coordinates, one BED row per region, named by its type,
-colored by `itemRgb` and carrying the accession name in a `query` column. The
+colored by `itemRgb` and holding the accession name in a `query` column. The
 rows against Col-0 concatenate into one track:
 
 <!-- from: scripts/build_syri_synteny.sh -->
@@ -284,7 +284,7 @@ the track above:
 - each accession is a lane, drawn in the coordinates of its assembly and placed
   by the SyRI run against Col-0
 - the band between two lanes comes from the run between those two accessions, so
-  it carries the type SyRI gave that pair
+  it has the type SyRI gave that pair
 
 ```json session config=test_data/syri/config.json
 {

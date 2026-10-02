@@ -82,7 +82,7 @@ between two adjacent mate lanes through the human coordinates they share.
 Each hosted file is a chain converted to PAF and indexed with
 `jbrowse make-pif`, which can write a coarse tier beside the per-base one for
 whole-chromosome zooms. `tabix` reads the tiers from the index without fetching
-the alignment: the header names the tiers the file carries, and the coarse-tier
+the alignment: the header names the tiers the file lists, and the coarse-tier
 sequence names are the upper-case ones.
 
 To index a chain of your own, convert it to PAF with `chain2paf` from
@@ -97,7 +97,7 @@ jbrowse make-pif genomeA_genomeB.paf
 <!-- from: scripts/build_hg38_liftover_multiway.sh -->
 
 ```bash
-# the #pif header, if the file was built recently enough to carry one
+# the #pif header, if the file was built recently enough to have one
 tabix -H https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | awk 'NR==1'
 # how many coarse-tier sequences the index holds; zero means one tier
 tabix -l https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | grep -c '^[TQ]'
@@ -110,7 +110,7 @@ One `SyntenyTrack` names hg38 and every genome it stacks, and its adapter is a
 `PairwiseIndexedPAFAdapter` over one chain file, naming its two assemblies as
 `query,target`, the genome the chain lifts to first. The anchor is the one
 assembly every child names. The list below is cut to three genomes for the page;
-the hosted config carries all eight. The assemblies and their gene tracks come
+the hosted config contains all eight. The assemblies and their gene tracks come
 from the hub configs unchanged, and a lane finds its gene models through the
 session, so the track is the one addition to the hub entries. A genome of your
 own loads from its FASTA instead:
@@ -160,10 +160,10 @@ own loads from its FASTA instead:
 }
 ```
 
-The track menu carries **Level of detail** beside the lane controls, as a
-pairwise synteny track does. The entry picks the stored tier a zoom reads. The
-menu offers it once every child carries a coarse tier; run the `tabix -l` line
-above on each file to check.
+The track menu has **Level of detail** beside the lane controls, as a pairwise
+synteny track does. The entry picks the stored tier a zoom reads. The menu
+offers it once every child has a coarse tier; run the `tabix -l` line above on
+each file to check.
 
 ## One locus, nine genomes
 
@@ -198,13 +198,13 @@ first, so the genomes placing the most of the window sit at the top.
 
 Around _TP53_ every lane places the whole window from one chain, with the same
 genes in the same order, and the ribbons show where that chain is not
-continuous. A liftOver chain carries its insertions and deletions inside one
+continuous. A liftOver chain holds its insertions and deletions inside one
 record, and the track cuts each record at every indel of 10 kb or more. It draws
 a ribbon per gap-free run, so the white wedges between runs are the stretches
-one genome has and the other lacks. The mouse, cow and dog chains carry many
-such gaps, and the ape chains carry gaps under the cut and draw as
-near-continuous ribbons. The mouse lane shows `[rev]`, since its chain runs the
-other way against hg38 here.
+one genome has and the other lacks. The mouse, cow and dog chains have many such
+gaps, and the ape chains have gaps under the cut and draw as near-continuous
+ribbons. The mouse lane shows `[rev]`, since its chain runs the other way
+against hg38 here.
 
 <Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes from one composed liftOver track, each lane drawing the RefSeq gene models annotated on its chromosome. Every lane places the window from one chain; the white wedges in the ribbons are the indels of 10 kb or more in that chain, few in the apes and many in mouse, cow and dog, and the mouse lane is reversed." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
@@ -239,7 +239,7 @@ straight on screen while the strand color still marks every one of them as an
 inversion. A single crossed ribbon into an unflipped lane is one block running
 against its neighbours.
 
-<Figure caption="The same eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. In a flipped lane the ribbons run straight and still carry the reversed color, so crossing and color disagree on the same block." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
+<Figure caption="The same eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. In a flipped lane the ribbons run straight and still have the reversed color, so crossing and color disagree on the same block." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
 
 ## Reading the stack
 

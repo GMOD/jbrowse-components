@@ -70,7 +70,7 @@ block", or random gaps. Serve these files as opaque binary with no
 - **PHP / app servers:** disable auto-content-type middleware on these paths.
 
 To check, request the file in dev tools' Network tab and confirm the response
-carries no `Content-Encoding: gzip`.
+has no `Content-Encoding: gzip`.
 
 ## CORS errors on remote files
 

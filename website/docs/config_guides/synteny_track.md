@@ -47,7 +47,7 @@ explains them.
 - **pairwise vs multi-genome** a pairwise file compares two genomes. A
   multi-genome file holds many, aligned all-vs-all or each against one
   reference, which lets a linear synteny view stack more than two rows. Its
-  sequence names carry a [PanSN](https://github.com/pangenome/PanSN-spec) prefix
+  sequence names have a [PanSN](https://github.com/pangenome/PanSN-spec) prefix
   (`sample#haplotype#contig`, e.g. `K12#1#chr`) so the adapter can tell which
   genome each row belongs to; `make-pif` passes names through unchanged, so the
   naming comes first ([all-vs-all tutorial](/docs/tutorials/allvsall_synteny))
@@ -248,7 +248,7 @@ own config are
 
 - a tab-delimited table, one row per orthogroup and one column per genome, each
   cell holding a single gene id (`.` or an empty cell for no ortholog)
-- one BED per column whose fourth field carries those same gene ids
+- one BED per column whose fourth field holds those same gene ids
 
 [The grape, peach and cacao tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#producing-the-data)
 builds both from jcvi. Output from other tools converts as follows.
@@ -364,7 +364,7 @@ the block's own extent on both arcs and an inversion drawn as a twist — a
 Circos-style picture of where a genome's blocks land. Clicking one opens the
 same synteny feature details panel the linear views open.
 
-The circle has to carry both ends of the alignment, so what the view is opened
+The circle has to include both ends of the alignment, so what the view is opened
 on decides what can be drawn.
 
 **A self-alignment** — a genome against itself, segmental duplications, a

@@ -59,9 +59,9 @@ breakpoints on hg19:
 
 ## K562
 
-K562 is a chronic myeloid leukemia line carrying the Philadelphia chromosome,
-the t(9;22) that fuses _BCR_ to _ABL1_. Its transcripts here are long RNA reads,
-its fusion calls come from DepMap's short-read pipeline, and its DNA breakpoints
+K562 is a chronic myeloid leukemia line with the Philadelphia chromosome, the
+t(9;22) that fuses _BCR_ to _ABL1_. Its transcripts here are long RNA reads, its
+fusion calls come from DepMap's short-read pipeline, and its DNA breakpoints
 from a linked-read run.
 
 The fusion and copy-number tables both cover every line in the release.
@@ -79,9 +79,9 @@ sort -k1,1 -k2,2n K562_cn.bedGraph |
 bedGraphToBigWig K562_cn.sorted.bedGraph hg38.chrom.sizes K562_cn.bw
 ```
 
-The DNA breakpoints arrive on hg19. A breakend record carries a second
-coordinate inside its `ALT` string, so a plain `liftOver` of the `POS` column
-produces a valid VCF whose partner coordinates still point at hg19.
+The DNA breakpoints arrive on hg19. A breakend record has a second coordinate
+inside its `ALT` string, so a plain `liftOver` of the `POS` column produces a
+valid VCF whose partner coordinates still point at hg19.
 [`lift_bnd_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/lift_bnd_vcf.py)
 moves both:
 
@@ -192,7 +192,7 @@ junction is drawn once, thickened by the reads behind it. An arc needs both ends
 in view, and each acceptor window receives one. The vertical line at the _BCR_
 donor marks the molecules whose _ABL1_ alignment lands in neither window.
 
-<Figure caption="BCR on chr22 beside two ABL1 windows on chr9 as three regions of one view, showing only split reads with supplementary alignments linked. The arc band draws one counted arc from the BCR donor into each ABL1 window, and only the right-hand window carries a STAR-Fusion band." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+<Figure caption="BCR on chr22 beside two ABL1 windows on chr9 as three regions of one view, showing only split reads with supplementary alignments linked. The arc band draws one counted arc from the BCR donor into each ABL1 window, and only the right-hand window has a STAR-Fusion band." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 ## Where the DNA broke
 

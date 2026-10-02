@@ -22,7 +22,7 @@ naming what is being clustered.
 Clustering reads **only the region currently in view**, so it describes one
 window: a clustered painting is genome-wide relatedness only when the view is
 the whole genome. After a run, the locus the tree was computed from is shown
-beside the dendrogram and travels with an SVG export, so a figure carries its
+beside the dendrogram and travels with an SVG export, so a figure includes its
 own scope.
 
 Hierarchical clustering returns a fully resolved tree for any input, including
@@ -36,8 +36,8 @@ The dendrogram summarizes similarity over the visible window. It is not a
 phylogeny: no evolutionary model is fitted, branch lengths are merge distances,
 and no support values are computed, so a crisply drawn group is not a
 well-supported one. A [](/docs/user_guides/maf_track) can show a real phylogeny,
-read from an `.nh` file; that tree carries no locus caption, which distinguishes
-the two on screen.
+read from an `.nh` file; that tree has no locus caption, which distinguishes the
+two on screen.
 
 For genotype data the window matters in one more way. A tree asks for a single
 distance summarizing the whole window, and a haplotype is a mosaic of segments

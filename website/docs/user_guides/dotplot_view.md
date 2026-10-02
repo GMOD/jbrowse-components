@@ -33,15 +33,15 @@ below uses the second:
 
 - The palette button's **Color by** menu. **Query** gives each sequence on the
   horizontal axis its own color, and **Strand** colors by that instead. The
-  numbers an alignment carries, identity and mapping quality among them, sit
-  under **Color by value**. Each option carries a description of what it colors.
-  A text column there paints one color per label, the same wherever the plot is
-  opened. The view's `color.domain` lists labels that take the palette in order
-  and lead the legend, and **Pin distinct colors** writes every label seen so
-  far into it. With more than one alignment file plotted together, **Distinct
-  color per track** gives each its own color, and **Track colors** below it pins
-  the color for one track at a time. On a plot whose blocks are all a single
-  pixel wide, reach for **Min length** first.
+  numbers an alignment has, identity and mapping quality among them, sit under
+  **Color by value**. Each option has a description of what it colors. A text
+  column there paints one color per label, the same wherever the plot is opened.
+  The view's `color.domain` lists labels that take the palette in order and lead
+  the legend, and **Pin distinct colors** writes every label seen so far into
+  it. With more than one alignment file plotted together, **Distinct color per
+  track** gives each its own color, and **Track colors** below it pins the color
+  for one track at a time. On a plot whose blocks are all a single pixel wide,
+  reach for **Min length** first.
 - **Min length**, in the settings menu, drops alignments shorter than the slider
   value. Divergent genomes align in many short fragments, and hiding them is
   usually what makes the syntenic blocks visible.
@@ -50,7 +50,7 @@ The settings menu, the sliders button in the header, holds the rest of what the
 plot looks like: **Opacity** and **Line width** for how each alignment draws,
 **CIGAR indels** for whether per-base indels are drawn inside one, **Level of
 detail** for how much of a tiered file is loaded, and **Gridlines**, which
-carries each axis' ruler ticks across the plot. At whole-genome zoom neither
+extends each axis' ruler ticks across the plot. At whole-genome zoom neither
 axis has room to number itself, so the gridlines row says **none at this zoom**
 while it stays ticked.
 
@@ -80,8 +80,8 @@ in a [linear synteny view](/docs/user_guides/linear_synteny_view), both panels
 framing one palindrome and colored by strand: the arms draw as a single
 minus-strand ribbon over the plus-strand match of the sequence to itself.
 
-The gene lanes show the same pattern from the annotation. Each arm carries its
-own copies of the same Y-linked families, RBMY1B and RBMY1A1 on one side against
+The gene lanes show the same pattern from the annotation. Each arm has its own
+copies of the same Y-linked families, RBMY1B and RBMY1A1 on one side against
 RBMY1D and RBMY1E on the other, CDY10P and CDY11P either side of the centre. The
 unpainted gaps inside the arms are where the two copies differ.
 

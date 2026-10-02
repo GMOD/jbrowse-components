@@ -10,7 +10,7 @@ contributions from a plugin's `configure()`, guarded by `isAbstractMenuManager`;
 a track menu and a right-click menu are the display model's `trackMenuItems()`
 and `contextMenuItems()`, captured from the super method where the display is
 defined and added to with `addDisplayMenuItems` from anywhere else. All three
-carry the same `MenuItem[]`.
+hold the same `MenuItem[]`.
 
 ## Adding a top-level menu
 

@@ -52,8 +52,8 @@ called deletions, insertions, inversions and translocations with per-sample
 genotypes across all 3,202 individuals.
 
 `HGSV_1821` is a deletion on chr1 spanning the whole of _RHD_, so samples called
-homozygous carry no copy of that gene. Deleting _RHD_ is the most common cause
-of the RhD-negative blood type. The call is `PASS` and common enough to fill all
+homozygous have no copy of that gene. Deleting _RHD_ is the most common cause of
+the RhD-negative blood type. The call is `PASS` and common enough to fill all
 three genotype classes, and read depth shows whether a gene is present twice,
 once, or not at all.
 
@@ -147,7 +147,7 @@ track menu keys every row on the whole window and draws the dendrogram.
 Dark blue is no copy of _RHD_, light blue one, grey two, and the olive stripe is
 a separate nested call.
 
-A matrix cell marks that a sample carries some call at that column. To see which
+A matrix cell marks that a sample has some call at that column. To see which
 call, load the same VCF again in the ordinary variant display, which draws each
 record on a separate row with its id, class and size. Colouring cells by **SV
 type** also tells the calls apart, as the
@@ -193,9 +193,8 @@ uncertainty in their mapping quality.
 
 ## A complex call read off the pair orientations
 
-Most structural variants leave the coverage unchanged. The demo carries a
-complex call on chromosome 1 in HG02768 whose coverage matches the rest of the
-arm.
+Most structural variants leave the coverage unchanged. The demo has a complex
+call on chromosome 1 in HG02768 whose coverage matches the rest of the arm.
 
 Put `1:39,658,200-39,661,800` in the location box and open HG02768's alignments.
 Turn on **Track menu → Read connections → SV channels (pairs by orientation)**:
@@ -208,7 +207,7 @@ coverage curve and arcs.
 - The outward-pointing band, where a tandem duplication would go, stays near
   empty
 
-<Figure caption="HG02768's reads at the complex call, split into one band per pair orientation. The two same-strand bands hold arc bundles ending on one pair of breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band is near empty. The last band holds reads whose mate is unmapped or on another chromosome, drawn as inter-chromosomal ticks." src="/img/sv_channels.png" />
+<Figure caption="HG02768's reads at the complex call, split into one band per pair orientation. The two same-strand bands hold arc bundles ending on one pair of breakpoints, the normal band shows the ordinary coverage, and the outward-pointing band is near empty. The last band holds reads whose mate is unmapped or on another chromosome, drawn as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 The call also lists a duplicated copy in `INFO.CPX_INTERVALS`, which no band
 shows. A copy inserted beside its origin leaves pair orientation unchanged, so

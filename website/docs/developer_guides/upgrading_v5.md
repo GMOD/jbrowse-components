@@ -32,13 +32,13 @@ The `heightOverride` shadow-prop that existed during development is gone, and
 there is no `<name>Override` shadow-property system.
 
 Highlight visibility is session-wide in v5 rather than per view, and the v4 keys
-that expressed it are **not** migrated. A v4 session carrying a dismissed band —
-the LGV's own `highlightsVisible`, or grid-bookmark's
-`bookmarkHighlightsVisible`, both written out only when the user turned the band
-off — reopens with the band visible, because MST drops a snapshot key the model
-no longer declares. Dismissing it again is one click on the "Toggle highlights"
-item, and it now applies to every view at once. The setting is the only thing
-lost; nothing about the session fails to load.
+that expressed it are **not** migrated. A v4 session with a dismissed band — the
+LGV's own `highlightsVisible`, or grid-bookmark's `bookmarkHighlightsVisible`,
+both written out only when the user turned the band off — reopens with the band
+visible, because MST drops a snapshot key the model no longer declares.
+Dismissing it again is one click on the "Toggle highlights" item, and it now
+applies to every view at once. The setting is the only thing lost; nothing about
+the session fails to load.
 
 Bookmarks are gone; highlights replace them. The session holds one list,
 `session.highlights`, and every view draws the entries on its own assemblies, so
@@ -47,8 +47,8 @@ a view's `highlight` array became the read-only getter `highlights`, and
 to the session as `addHighlight`, `setHighlights`, `removeHighlight` and
 `updateHighlight`. A v4 view snapshot's `highlight` list still loads, onto the
 session's. Bookmarks a v4 browser kept in localStorage, and the
-`sharedBookmarks` a v4 share link carried, are not read; export them as BED from
-v4 and import that file.
+`sharedBookmarks` a v4 share link contained, are not read; export them as BED
+from v4 and import that file.
 
 ## The renderer registry is gone
 
@@ -129,7 +129,7 @@ publishes, and this build does not. Where 4.3.0 served that subpath to runtime
 plugins — `util`, `configuration`, `pluggableElementTypes` and the rest of its
 re-export list — a removed name is `undefined` inside a bundle nobody is going
 to rebuild, which is the quietest failure on this page. From any other subpath a
-4.3.0 bundle carries its own copy, so the removal breaks the plugin's next build
+4.3.0 bundle has its own copy, so the removal breaks the plugin's next build
 instead:
 
 <!-- BEGIN GENERATED ABI_REMOVED_NAMES -->
@@ -277,12 +277,12 @@ and calling it throws inside the reaching plugin's own `install`.
   - `SessionWithDialogs` — same file; the mixin it was an `Instance` of is gone
   - `SessionWithDialogsType` — same file; it was the `ReturnType` of that mixin
 - **the plugin `exports` objects, all of them.** `AuthenticationPlugin`,
-  `DataManagementPlugin`, `LinearGenomeViewPlugin` and `WigglePlugin` carried
-  one; `pluginManager.getPlugin('X').exports` is now `undefined` on every
-  plugin. A runtime plugin gets no other plugin's code: the display schema they
-  carried is `baseLinearDisplayConfigSchema` from
-  `@jbrowse/display-kit/configSchema`, which the host re-exports, and
-  `SearchBox`, `ZoomControls` and `AssemblyManager` have no replacement (see
+  `DataManagementPlugin`, `LinearGenomeViewPlugin` and `WigglePlugin` had one;
+  `pluginManager.getPlugin('X').exports` is now `undefined` on every plugin. A
+  runtime plugin gets no other plugin's code: the display schema they had is
+  `baseLinearDisplayConfigSchema` from `@jbrowse/display-kit/configSchema`,
+  which the host re-exports, and `SearchBox`, `ZoomControls` and
+  `AssemblyManager` have no replacement (see
   [](/docs/developer_guides/imports_and_reexports)). Reading the store bundles
   found no v5-era plugin reaching an `exports` object; the v4 bundles that did
   (`gdc`, `icgc`, `gwas`, `quantseq`, `mafviewer`, `multilevel-linear-view2`)
@@ -359,8 +359,8 @@ stay display props.
 | `clusterTree` | `rows.tree`, beside `rows.treeProvenance` |
 | `subtreeFilter` | `rows.kept` |
 
-A session carrying those props opens with them moved into `rows` and `rowColor`,
-and a v4 session's plot, scale, autoscale, domain and colours move to the config
+A session with those props opens with them moved into `rows` and `rowColor`, and
+a v4 session's plot, scale, autoscale, domain and colours move to the config
 slots that hold them now.
 
 ## The multi-sample variant rows are config too
@@ -382,9 +382,9 @@ one is named.
 | `clusterTree` display prop | `rows.tree` |
 | `subtreeFilter` display prop | `rows.kept` |
 
-A session carrying `layout`, `clusterTree` or `subtreeFilter` opens with them
-moved into `rows`, less the colors, which a v4 `colorBy` copied into `layout`
-from its palette.
+A session with `layout`, `clusterTree` or `subtreeFilter` opens with them moved
+into `rows`, less the colors, which a v4 `colorBy` copied into `layout` from its
+palette.
 
 ## The multi-row feature display's rows are config too
 
@@ -470,7 +470,7 @@ drawing does not change — both shapes were already drawn by the same glyph.
 
 A BED12 alignment promotes the same way, so a UCSC `est`, `intronEst`, `mrna` or
 `xenoMrna` track now reports its features as transcripts. That is deliberate:
-BED12 carries no column separating a spliced EST from an lncRNA, and with no CDS
+BED12 has no column separating a spliced EST from an lncRNA, and with no CDS
 children the promotion claims nothing it cannot back — the sequence panel
 withholds CDS and protein, and HGVS stays `n.`. A BED12 file whose blocks are
 not exons opts out with `disableGeneHeuristic: true` on the adapter, as before.
@@ -501,7 +501,7 @@ declares, so a track that pinned its axis reopens autoscaled. The
 `Number.MIN_VALUE`/`MAX_VALUE` sentinels went with them: an end left unset is
 what autoscales.
 
-[](/docs/config/valuescale) lists the members each display carries.
+[](/docs/config/valuescale) lists the members each display has.
 
 ## An embedded view's track catalog is plain configs
 
@@ -578,7 +578,7 @@ data that is never coming.
 
 ## Every setting goes directly on the view object
 
-A view carried two authoring shapes in v4, and which one was correct depended on
+A view had two authoring shapes in v4, and which one was correct depended on
 where you were writing. Flat on the view is what a session spec, a URL and a
 jbrowse-img spec took; nested under `init` is what a `defaultSession` took. v4's
 docs never said which shape to use where.
@@ -624,7 +624,7 @@ on a view object, and it is unchanged.
 and a `jb2export --spec` already used; the bare array is still read, since a
 positional list under `init` can only be the row list.
 
-Two behavior changes carry no migration:
+Two behavior changes have no migration:
 
 - **A pre-`levels` `LinearSyntenyView` session** — one with a top-level `tracks`
   array of built track snapshots, the shape that predates synteny levels — is
@@ -633,7 +633,7 @@ Two behavior changes carry no migration:
 - **`sameScale` re-fits on launch.** Setting it in a spec latched the shared
   zoom limit without re-zooming the rows, so rows placed by `loc`, and rows
   after an `autoDiagonalize`, kept a scale the mode said they should not have.
-  Restoring a saved session still only latches, since those rows carry their own
+  Restoring a saved session still only latches, since those rows have their own
   window.
 
 ## Extension points changed shape

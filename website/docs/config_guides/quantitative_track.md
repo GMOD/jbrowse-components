@@ -5,9 +5,9 @@ guide_category: Track types
 ---
 
 A `QuantitativeTrack` shows a single BigWig or bedGraph signal; a
-`MultiQuantitativeTrack` carries several of them in one display. Both draw
-through `LinearWiggleDisplay`, so the scale, colour and layout settings below
-apply to either, through `displayDefaults`.
+`MultiQuantitativeTrack` holds several of them in one display. Both draw through
+`LinearWiggleDisplay`, so the scale, colour and layout settings below apply to
+either, through `displayDefaults`.
 
 ```json addtrack
 {
@@ -161,7 +161,7 @@ the `color` below, since a colour per subtrack is the two together.
 
 ### The subadapters form
 
-Each subtrack carries a `source`: its label in the UI, and `feature.source` in a
+Each subtrack has a `source`: its label in the UI, and `feature.source` in a
 [jexl color callback](/docs/config_guides/jexl)
 (`jexl:feature.source=='k1'?'red':'blue'`). `bigWigs` derives it from the file
 name; `subadapters` sets it explicitly (`name` is an alias, and `source` wins

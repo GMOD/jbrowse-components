@@ -101,7 +101,7 @@ assembly no `assemblies` entry defines — so the two agree on every slot. A typ
 a plugin registers is not in the schema and passes with its keys unchecked; a
 `frozen` slot such as the alignments display's `modifications` is any JSON
 value, and its description says what it takes. A session spec written on its
-own, the `views[]` entry a `&session=spec-` URL carries, validates against
+own, the `views[]` entry a `&session=spec-` URL contains, validates against
 `#/$defs/View` inside the same file.
 
 ## See also

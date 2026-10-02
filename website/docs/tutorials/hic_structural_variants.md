@@ -97,7 +97,7 @@ Contact frequency decays with distance along whatever molecule two loci sit on,
 so two regions on separate chromosomes only touch at background rate. If they
 are fused, they contact each other constantly.
 
-K562 carries the Philadelphia chromosome, t(9;22)(q34;q11)
+K562 has the Philadelphia chromosome, t(9;22)(q34;q11)
 ([Rowley 1973](https://doi.org/10.1038/243290a0)), joining _BCR_ on chr22 to
 _ABL1_ on chr9. GM12878 has a normal karyotype. Both have deep in situ Hi-C from
 the same ENCODE lab and pipeline.
@@ -110,11 +110,11 @@ fold normally in K562.
 ## Depth and normalization
 
 **Depth.** ENCODE's GM12878 "supernatant" fraction (`ENCSR730CER`, which the
-script carries commented out) is much shallower over this chromosome pair than
-the in situ file the figure uses, `ENCSR410MDC`, and a wedge empty for want of
-reads looks the same as one empty for want of a translocation. As shipped, the
-scan finds GM12878 carrying more contact than K562 across the whole chr9-chr22
-block, with the order inverting at the junction bin.
+script has commented out) is much shallower over this chromosome pair than the
+in situ file the figure uses, `ENCSR410MDC`, and a wedge empty for want of reads
+looks the same as one empty for want of a translocation. As shipped, the scan
+finds GM12878 with more contact than K562 across the whole chr9-chr22 block,
+with the order inverting at the junction bin.
 
 **Normalization.** Matrix balancing divides out per-bin coverage differences,
 and an amplified fusion is one. Re-run the scan with `NORM=INTER_SCALE` and

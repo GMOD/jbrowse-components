@@ -85,8 +85,8 @@ the assembly's refNames.
 Open the two annotations together at `chr22:49,987,402-50,067,759`. Tiberius
 draws one model, `g14001.t1`, across most of the window, where GENCODE has two
 genes, _IL17REL_ and _TTLL8_, with a gap between them. The GENCODE gene features
-carry `gene_name` and no `Name`, so the track labels them by accession:
-_IL17REL_ is `ENSG00000188263` and _TTLL8_ is `ENSG00000138892`.
+have `gene_name` and no `Name`, so the track labels them by accession: _IL17REL_
+is `ENSG00000188263` and _TTLL8_ is `ENSG00000138892`.
 
 <Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL (ENSG00000188263) and TTLL8 (ENSG00000138892), which GENCODE annotates as separate genes. MLC1 on the right gets a separate prediction." />
 
@@ -147,7 +147,7 @@ it.
 `--rnaseq reads.bam` adds an alignment track under every model, in the captures
 and in the links; repeat it for more BAMs, and label each with `--rnaseq-name`.
 Reads across the exons of a novel locus support it as a gene. The
-[example portal](https://jbrowse.org/demos/tiberius_review/) carries two samples
+[example portal](https://jbrowse.org/demos/tiberius_review/) has two samples
 from the
 [Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/):
 Human Brain Reference and Universal Human Reference, a pool of ten cell lines.

@@ -13,7 +13,7 @@ We look at one K-12 operon across forty-three other E. coli and Shigella genomes
 at once, without aligning any of them. RefSeq's bacterial pipeline gives an
 orthologous gene the same symbol in every strain it names, so the ortholog table
 is a join on the gene name over the GFF3 files, and each genome becomes a lane
-under the K-12 view, carrying the gene models annotated in that genome. The join
+under the K-12 view, holding the gene models annotated in that genome. The join
 connects genes that share a symbol with a K-12 gene, which covers the core
 genome. The page ends at a cluster that differs between strains, where most
 genes in each lane draw grey with no ribbon.
@@ -57,8 +57,8 @@ the four Shigella are:
 The [all-vs-all page](/docs/tutorials/allvsall_synteny) aligns five E. coli
 strains to each other, one alignment per pair, which keeps that demo at five.
 RefSeq's prokaryotic annotation pipeline names a gene by its ortholog (_atpA_ is
-_atpA_ in every strain that carries it), so matching symbols across the GFF3
-files fills the same `.blocks` table, the route the
+_atpA_ in every strain that has it), so matching symbols across the GFF3 files
+fills the same `.blocks` table, the route the
 [primate page](/docs/tutorials/primate_orthologs_synteny) takes for eight apes;
 what this page adds is PGAP's handling of unnamed and renamed genes. The
 download is an annotation and a sequence report per genome:
@@ -101,7 +101,7 @@ PGAP also renames genes between releases, so most strains here call K-12's _gnd_
 _gndA_. PGAP records on each CDS the protein it annotated the gene from
 (`similar to AA sequence:RefSeq:NP_416533.1`, the K-12 _gnd_ protein), and
 `--merge-cited` joins the two symbols when that protein is in the table under
-the other name. Two symbols that one genome carries side by side, such as K-12's
+the other name. Two symbols that one genome has side by side, such as K-12's
 _narH_ and its paralog _narY_, stay apart. After the rows for K-12's genes, the
 table adds a row for each symbol K-12 lacks that two other genomes share, with a
 dot in K-12's column.
@@ -226,7 +226,7 @@ a `height` that fits every lane:
 ## Where the join stops
 
 The O-antigen cluster between _galF_ and _gnd_ is the locus that differs most
-between strains, because each serotype carries a different set of sugar pathway
+between strains, because each serotype has a different set of sugar pathway
 genes. Open the cluster:
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
@@ -251,16 +251,16 @@ genes. Open the cluster:
 }
 ```
 
-<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, gnd, ugd and wzzB chains run through, the rfb genes, wzx and wzy join where a strain carries them, and the serotype-specific genes between them are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, gnd, ugd and wzzB chains run through, the rfb genes, wzx and wzy join where a strain has them, and the serotype-specific genes between them are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
 Read the lanes from the top:
 
 - The K-12 derivatives (DH10B, HMS174, C3026, MGY, tolC and MG1655_TMP32XR1)
-  sort to the top and carry the cluster gene for gene.
+  sort to the top and have the cluster gene for gene.
 - Below them the flanks chain down every lane: _galF_ on one side, _gnd_ (_gndA_
   in most lanes), _ugd_ and _wzzB_ on the other.
 - The interior is grey, except the _rfb_ genes, _wzx_ and _wzy_, which join
-  wherever a strain carries them.
+  wherever a strain has them.
 
 A window anchored on K-12 draws only the rows holding a K-12 gene, so the
 serotype's own sugar pathway genes stay grey. A gene annotated under a

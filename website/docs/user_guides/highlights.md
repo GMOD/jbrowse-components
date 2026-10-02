@@ -6,8 +6,8 @@ guide_category: General usage
 
 A highlight is a translucent band over a genomic region. Every linear genome
 view (LGV) and dotplot showing the region's assembly draws it, and the session
-saves it, so a shared link carries it. The highlight list, opened from **Tools →
-Highlights** or **Highlights → Open highlight list** in an LGV's menu, holds
+saves it, so a shared link contains it. The highlight list, opened from **Tools
+→ Highlights** or **Highlights → Open highlight list** in an LGV's menu, holds
 every highlight with a link back to it.
 
 ## Making a highlight

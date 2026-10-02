@@ -100,7 +100,7 @@ onto the genome**, using the tools scientists already reach for (pysam,
 bioframe, scipy/statsmodels) on real data. Notebooks 09–10 close the loop the
 other way: a widget control or a pan in the view drives Python to **recompute
 and repaint** live. Notebooks 12–13 are where a result outgrows that loop, since
-`features_track` carries every row in the widget's own state.
+`features_track` holds every row in the widget's own state.
 
 ## See also
 

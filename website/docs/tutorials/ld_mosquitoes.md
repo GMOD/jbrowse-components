@@ -41,7 +41,7 @@ or a data-access agreement.
 - the AgamP4 reference and its gene models, which the gene lane reads:
   https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome/
 - the 2La tag SNPs, the ~200 positions whose allele marks which arrangement a
-  chromosome carries, which each mosquito's karyotype is scored from
+  chromosome has, which each mosquito's karyotype is scored from
   ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)):
   https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt
 - the finished `CMgam` LD table, rehosted so the track blocks on this page load
@@ -176,7 +176,7 @@ The samples TSV has a `name` column matching the VCF sample ids and a
 `karyotype` column naming the three classes: `2L+a/2L+a`, `2La/2L+a`, `2La/2La`,
 the `+` marking the non-inverted arrangement.
 
-Load each population as a `VariantTrack` whose adapter carries the samples TSV,
+Load each population as a `VariantTrack` whose adapter includes the samples TSV,
 with a `LinearMultiSampleVariantDisplay` that bands (`facet`) and colors
 (`rowColor`) rows by `karyotype`:
 
@@ -254,7 +254,7 @@ each choice it makes from there:
 1. Each panel is one population, since correlation pooled across populations
    invents linkage none of them has. The script prints, per population, mean D'
    between variants more than 5 Mb apart inside the probe window and outside it,
-   because only a population carrying both arrangements can show the block.
+   because only a population with both arrangements can show the block.
 2. It keeps common variants, thins them to a grid, and writes each panel's r²
    and D' table.
 3. It bins D' to distant partners along the whole arm. The steps up and down are

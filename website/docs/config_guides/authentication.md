@@ -282,7 +282,7 @@ none of the account types above reach it.
 
 ### Presigned URLs
 
-`aws s3 presign` turns a private object into a URL carrying its own signature,
+`aws s3 presign` turns a private object into a URL containing its own signature,
 which needs no `internetAccounts` entry. Sign the data file and its index
 separately, since each is its own object:
 
@@ -292,7 +292,7 @@ aws s3 presign s3://mybucket/sample.bam.bai --expires-in 604800
 ```
 
 Both signed URLs go in the track, spelled out; the
-[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) cannot carry
+[`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) cannot hold
 them:
 
 ```json addtrack

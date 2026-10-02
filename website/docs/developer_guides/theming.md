@@ -142,7 +142,7 @@ alongside Material UI.
 
 <!-- COLOR_TABLE theme-methylation END -->
 
-The palette carries no such key, so the worker, the legend and an SVG export all
+The palette has no such key, so the worker, the legend and an SVG export all
 read the same constant.
 
 ## Example config

@@ -69,7 +69,7 @@ is fuller):
 `example-plugins/score-example/` is the finished plugin — a standalone package
 CI installs from a packed tarball and asserts renders, so it stays buildable
 against the published packages. It draws a box whose height is the feature's
-score, which neither shared shape does, so it carries a shape of its own
+score, which neither shared shape does, so it has a shape of its own
 (`scoreMark.ts` and `shaders/`); a display on `spanMark` or `pointMark` has
 neither file:
 
@@ -612,7 +612,7 @@ how displays attach to a track type.
 ## Hit-testing (clicks and hovers)
 
 The shape defines where its ink is: its `ink` is the rect its painter fills,
-`hitNearest` measures the cursor against it, and the shared shapes carry both.
+`hitNearest` measures the cursor against it, and the shared shapes have both.
 The walk over the blocks under the cursor is render-core's `nearestMarkHit`; the
 display's part is which candidates each mark is asked about, and what to do with
 the answer:
@@ -667,7 +667,7 @@ body reads back. A display with many features per block builds a spatial index
 (e.g.
 [`Flatbush`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/flatbush/index.ts))
 from `rpcDataMap` in a cached view, and its `candidates` answers what the index
-finds in the reach it is handed, which carries the values the shape can ink near
+finds in the reach it is handed, which holds the values the shape can ink near
 the cursor as well as the bp, instead of every instance; `plugins/marks`'s
 `findMarkHit.ts` does that.
 
@@ -747,11 +747,10 @@ hand-written Canvas2D backend through `createCanvas2DBackend`.
 
 ## Writing your own shape
 
-Everything above carries over unchanged — model, fetch chain, `renderState`, the
-mark list, the component and the SVG export. Only the `shape` the mark names
-changes: a `.slang`, a uniform write, a painter and a hit test of your own, held
-to each other by a sweep test. See
-[](/docs/developer_guides/creating_gpu_display).
+Everything above stays unchanged — model, fetch chain, `renderState`, the mark
+list, the component and the SVG export. Only the `shape` the mark names changes:
+a `.slang`, a uniform write, a painter and a hit test of your own, held to each
+other by a sweep test. See [](/docs/developer_guides/creating_gpu_display).
 
 ## In-tree references
 

@@ -14,7 +14,7 @@ session. The config format is below; the
 
 ## Connection config format
 
-Every connection carries the [](/docs/config/baseconnection) slots (`type`,
+Every connection has the [](/docs/config/baseconnection) slots (`type`,
 `connectionId`, `name`, and an optional `assemblyNames` that matches hub tracks
 to your configured assemblies), plus one location slot per type.
 `jbrowse add-connection` writes one from the command line

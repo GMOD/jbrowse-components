@@ -61,7 +61,7 @@ copy of that plugin's models.
 A plugin's one bundle is evaluated on the main thread and again in the RPC
 worker, where nothing renders. The worker serves a module for real unless the
 module reaches react-dom, a Material UI component, the data grid or floating-ui,
-in which case it serves a stub that carries the module's export names, so your
+in which case it serves a stub that lists the module's export names, so your
 bundle still evaluates there. The stub is inert — every read and call on it
 returns another stub, so a number taken off one is 0 and a list is empty — and
 it reports nothing when that happens. Anything the worker has to compute belongs
@@ -181,7 +181,7 @@ Both [plugin templates](/docs/developer_guides/simple_plugin) already set it, so
 a plugin started from one never meets this. Leaving `moduleResolution` out
 entirely also works, because TypeScript now defaults to `bundler`. The error
 reaches you only from a tsconfig naming `"node"` explicitly, which was the
-default years ago and which older plugins still carry. TypeScript 6 deprecates
+default years ago and which older plugins still set. TypeScript 6 deprecates
 that setting and TypeScript 7 removes it.
 
 ### No-build plugins
@@ -233,10 +233,10 @@ inline it into your single file, or switch to a build-step plugin.
 Before the list was generated from the exports maps it named 25 of core's
 subpaths, and a build-step plugin importing any other — or importing
 `@jbrowse/display-kit`, which reaches 33 of them — bundled a copy of that code
-beside the host's. One published plugin carried 84 files of core that way,
-including the blob map that carries a locally opened file to the worker and a
-React context the host's provider never reaches. Every published subpath is
-served now, so a plugin built against the current template cannot do this; a
+beside the host's. One published plugin bundled 84 files of core that way,
+including the blob map JBrowse uses to send a locally opened file to the worker
+and a React context the host's provider never reaches. Every published subpath
+is served now, so a plugin built against the current template cannot do this; a
 plugin built against an older list can, and its next rebuild fixes it.
 
 ## See also

@@ -218,7 +218,7 @@ The bands are counts, so counting the file checks them. Each band prints its
 peak in its corner, and hovering it shows the sidecar value under the cursor.
 Take one megabase under the tallest run of the gene band, at 155 Mb, and one
 under a trough, at 60 Mb, and count what falls in each. A gene's transcripts and
-exons carry `Parent=`, so the gene line drops them and counts each gene once:
+exons have `Parent=`, so the gene line drops them and counts each gene once:
 
 ```bash
 tabix genes.gff.gz chr1:155,000,000-156,000,000 | grep -vc 'Parent='

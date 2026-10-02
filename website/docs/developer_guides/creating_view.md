@@ -88,7 +88,7 @@ against your state model, so a misspelled key is a compile error at the call
 site rather than a key MST drops on attach; `addView`, `replaceView` and
 `addOrReplaceView` read the same type. `addView` is the synchronous one and
 throws for a lazily registered type, so it is only for a view whose `stateModel`
-is the model itself. A name the registry does not carry still takes anything,
+is the model itself. A name the registry does not contain still takes anything,
 and a view keeps that until it augments
 [`ViewTypeRegistry`](/docs/developer_guides/extension_points#typescript-types-for-extension-points).
 

@@ -31,10 +31,9 @@ Its peaks are the ones a BMI scan is known for, FTO at chr16:53.8 Mb first by a
 wide margin, then TMEM18, MC4R and SEC16B, so a view that lands on any of them
 has something to show.
 
-The BMI summary statistics file above carries no LD data. The LD-colored demo
-below is a second pair, `gwas_giant-bmi_meta_women-only.gz` with a PLINK table
-beside it, both under `jbrowse.org/demos/gwas/` and wired together by the demo
-config.
+The BMI summary statistics file above has no LD data. The LD-colored demo below
+is a second pair, `gwas_giant-bmi_meta_women-only.gz` with a PLINK table beside
+it, both under `jbrowse.org/demos/gwas/` and wired together by the demo config.
 
 ## Public data sources
 

@@ -42,9 +42,9 @@ Clicking a variant opens a widget with a per-sample genotype table.
 
 The SAMPLES section lists every sample's genotype (GT) and other per-sample
 fields, with a plain-text or regex filter box per column. Typing '1' in the
-genotype filter keeps only samples carrying the first alternate allele (0|1 or
-1|1). The [1000 Genomes SV tutorial](/docs/tutorials/sv_multisamples) filters a
-trio's genotypes this way to check whether a call is inherited.
+genotype filter keeps only samples with the first alternate allele (0|1 or 1|1).
+The [1000 Genomes SV tutorial](/docs/tutorials/sv_multisamples) filters a trio's
+genotypes this way to check whether a call is inherited.
 
 ## Coloring variants
 

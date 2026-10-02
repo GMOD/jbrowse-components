@@ -107,8 +107,8 @@ duplication. The `grasses` set shows both:
 
 Column 4 of each BED must match the ids in the table exactly. The build script
 keeps each gene's longest protein and names it by the gene id, so OrthoFinder
-sees one protein per gene under the id the BED carries. `--bed name=file`
-reports the share of ids placed, and the conversion stops if it places none.
+sees one protein per gene under the id the BED has. `--bed name=file` reports
+the share of ids placed, and the conversion stops if it places none.
 
 ## Loading the orthogroups in JBrowse
 

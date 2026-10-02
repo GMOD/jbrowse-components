@@ -139,7 +139,7 @@ install **Protein3d** from the Tools menu, then right-click a gene and choose
 **Launch protein view** to open its AlphaFold model. For several structures at
 once, write the view as a session spec. This is the spec behind the first link
 on this page; swap the UniProt accession, the PDB ids, the transcript and the
-locus for your gene's, and name a gene track your config carries:
+locus for your gene's, and name a gene track your config has:
 
 ```json live config=test_data/protein3d_config.json
 {

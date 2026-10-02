@@ -164,13 +164,13 @@ export type LinearGenomeViewLaunchProps = Partial<
 an ordinary session property, so it round-trips through a saved or shared
 session; `drawerPosition` is stripped out of the snapshot on the way out and
 lives only in that browser's localStorage, as a personal layout preference. A
-session cannot carry a drawer position, so a host that wants one sets it after
+session cannot hold a drawer position, so a host that wants one sets it after
 load.
 
 ## Showing a custom widget
 
 A widget you registered yourself opens exactly like a built-in one, by the
-`name` its `WidgetType` carries:
+`name` its `WidgetType` has:
 `session.showWidget(session.addWidget('MyCustomWidget', 'myWidgetId', {}))`. See
 [](/docs/developer_guides/creating_widget) for the registration and the worked
 call. Widgets are lazily loaded via React Suspense, so a custom widget's code is

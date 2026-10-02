@@ -30,8 +30,8 @@ One linear genome view, from a handful of parameters:
 
 - `&assembly=`, `&loc=`, `&regions=`, `&nav=`, `&tracks=`, `&tracklist=`,
   `&highlight=`, `&sessionTracks=` and `&extendSession=` apply only to this
-  launch. Every other launch type carries the same settings inside the session
-  it loads.
+  launch. Every other launch type holds the same settings inside the session it
+  loads.
 - `?config=`, `&sessionName=`, `&hubURL=`, `&renderer=` and `&session=` work for
   any launch type.
 - `&password=` belongs to [`&session=share-`](#sessionshare-), and `&adminKey=`
@@ -136,7 +136,7 @@ assembly, so name it
 &sessionTracks=[{"trackId":"reads","uri":"https://example.com/sample.bam","assemblyNames":["hg38"]}]
 ```
 
-A track with no data file, such as BLAST hits carried inline as a
+A track with no data file, such as BLAST hits included inline as a
 `FromConfigAdapter`, takes the full form.
 [Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL%20track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}]),
 whose value pretty-printed is:
@@ -218,23 +218,22 @@ session.
 
 ## Which parameter decides the launch
 
-A link can carry several of these at once, and they do not combine: one decides
-what opens and the rest are layered onto it or dropped. Highest first:
+A link can contain several of these at once, and they do not combine: one
+decides what opens and the rest are layered onto it or dropped. Highest first:
 
 - **`&session=`**, in any form (`spec-`, `share-`, `encoded-`, `json-`,
   `local-`). A value matching none of those prefixes is an error.
 - **`&extendSession=true`** beside `&loc=`/`&assembly=`, which navigates the
   config's `defaultSession`. It outranks a hub, which would otherwise replace
   that session.
-- **`&hubURL=`**. A link carrying both a hub and `&loc=` navigates inside the
-  hub.
+- **`&hubURL=`**. A link with both a hub and `&loc=` navigates inside the hub.
 - **`&loc=`/`&assembly=`** on their own, a fresh single linear genome view.
 - **Nothing of the above** opens the config's `defaultSession`.
 
 `?config=`, `&sessionName=` and `&renderer=` sit outside the ranking and apply
 to whichever launch wins. `&sessionTracks=` applies to the hub launch and to the
 shorthand on its own, and is not layered onto a default session or any
-`&session=`, which carry tracks their own way.
+`&session=`, which hold tracks in their own way.
 
 ## Session spec
 
@@ -264,7 +263,7 @@ prefixed `spec-`:
 ```
 
 - Each view object lists the keys it launches with, written directly on the
-  view. A `defaultSession` in a config carries the same object
+  view. A `defaultSession` in a config uses the same object
   ([](/docs/automating#where-the-view-object-goes)), so a view moves between a
   spec, a config and an `addView` call unchanged.
 - `views` takes several views, opened together. `loc` is optional; omitting it
@@ -290,7 +289,7 @@ order so each can name what the ones before it registered:
 - `views`, then a `layout` that tiles them into a
   [workspace](#tiled-views--workspaces).
 
-Everything a session carries this way stays with the session: opening the link
+Everything a session holds this way stays with the session: opening the link
 never writes into the `config.json` the instance serves.
 
 ```json
@@ -391,8 +390,7 @@ covers sixteen scaffolds in one entry and survives the assembly being rebuilt.
 
 #### Advanced track configuration
 
-A `tracks` entry is a trackId string, or an object carrying initial display
-state:
+A `tracks` entry is a trackId string, or an object with initial display state:
 
 ```json
 {
@@ -484,8 +482,8 @@ restores natively:
   genomic window now, so neither is a declared property, but both are still
   accepted and converted. `loc` reads better and survives an assembly whose
   regions were rebuilt; reach for these two only to reproduce a viewport to the
-  pixel. The conversion carries the old zoom to the view's first width measure
-  as `legacyBpPerPx`, a declared property that exists for saved sessions — write
+  pixel. The conversion stores the old zoom to the view's first width measure as
+  `legacyBpPerPx`, a declared property that exists for saved sessions — write
   the window fields above (or `loc`) rather than setting it yourself.
 - `displayedRegions` gives the regions the view lays out as full
   `{refName, start, end, assemblyName}` objects, which is the form for showing
@@ -590,8 +588,8 @@ feature" item and a feature search write
 - **By span**, `{"refName": "ctgA", "start": 1049, "end": 9000}`, in interbase
   coordinates, matched within one base of the track's record. A location box
   reads the same feature as `ctgA:1,050-9,000`, so coordinates copied off the
-  screen are a base short at the start. An entry carrying both forms falls back
-  to `name` when the span misses.
+  screen are a base short at the start. An entry with both forms falls back to
+  `name` when the span misses.
 - A span that resolves to nothing logs a console warning once data covering it
   has loaded; a name that resolves to nothing stays silent. The clear-highlights
   button in the view header removes them.
@@ -1036,13 +1034,13 @@ loaded, through the config's `plugins`, a hosted config, or a session's own
 A spec's `layout` arranges its views into a tiled workspace, and turns
 workspaces mode on by doing so. It is a tree of two kinds of node:
 
-- a **panel**, carrying a `views` array of indices into the spec's own `views`,
+- a **panel**, with a `views` array of indices into the spec's own `views`,
   stacked vertically. An index names every view that entry created: a
   [`ProteinView`](#plugin-provided-view-types) with a `connectedView` opens its
   genome view and then the structure, and its index is the pair, stacked. An
   entry may also be a view id the spec pinned with
   [`id`](#fields-every-view-takes), to place one of those views on its own
-- a **container**, carrying `children` and a `direction`: `"horizontal"`,
+- a **container**, with `children` and a `direction`: `"horizontal"`,
   `"vertical"` or `"tabs"` (one tab group, one child visible at a time)
 
 Containers nest arbitrarily deep. An index past the end, or an id no view in the
@@ -1142,7 +1140,7 @@ right:
 
 ## Other session formats
 
-Besides `spec-`, `&session=` takes four formats that carry a session snapshot
+Besides `spec-`, `&session=` takes four formats that contain a session snapshot
 rather than instructions for building one.
 
 ### &session=json-
@@ -1188,7 +1186,7 @@ button.
 
 - The short link is not: each click mints a new key and uploads a new blob, so
   the same view gives a new id and password every time.
-- "Long URL" is: it carries the whole session in the link, so the same view and
+- "Long URL" is: it contains the whole session in the link, so the same view and
   config produce the same link, and it survives moving the instance.
 - The config can still break either. A restored session names tracks by
   `trackId`, so a redeploy that regenerates `config.json` with different ids
@@ -1204,8 +1202,8 @@ being installed for the user.
 
 - **`name` is required for a UMD bundle**, the `.umd.production.min.js` builds
   the plugin store publishes. The loader resolves the bundle as the global
-  `JBrowsePlugin<Name>`, so a definition carrying only a `url` loads the script
-  and then finds nothing in it.
+  `JBrowsePlugin<Name>`, so a definition with only a `url` loads the script and
+  then finds nothing in it.
 - **An unrecognized plugin prompts the visitor.** Anything not served from
   `https://jbrowse.org/plugins/` and not in the
   [plugin store](https://jbrowse.org/jb2/plugin_store/) opens an "unknown

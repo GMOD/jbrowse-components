@@ -30,7 +30,7 @@ what it cannot draw in a corner notice rather than refusing the track.
 This command runs the display's own rule list over every "marks" list in the
 file: an error where a mark draws nothing, never draws or a step cannot run,
 and a warning where a slot waits unread or the marks draw in an arrangement
-the author may not have meant. With --json each finding carries the stable
+the author may not have meant. With --json each finding has the stable
 "rule" id of the rule that made it.
 
 Types registered by plugins are not known to this command, so they come through

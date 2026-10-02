@@ -74,7 +74,7 @@ over HTTP/2.
 
 ### Let browsers keep the scripts
 
-Every file under `static/` carries a hash of its contents in its name
+Every file under `static/` has a hash of its contents in its name
 (`static/js/7889.f7e060b7.chunk.js`), so a name never comes to mean different
 bytes. Browsers can keep those files for a year without asking again. The two
 files that do change in place, `index.html` and `config.json`, should be checked

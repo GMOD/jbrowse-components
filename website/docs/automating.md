@@ -21,8 +21,8 @@ document:
 | [@jbrowse/img](/docs/jbrowse-img)                  | `--config`, and `--spec` for a whole session                    |
 
 A running JBrowse also takes the document a piece at a time, an assembly or a
-track at once, with no file to edit. Every config block in these docs carries
-that route beside the file and the CLI command, on its own tab.
+track at once, with no file to edit. Every config block in these docs has that
+route beside the file and the CLI command, on its own tab.
 
 ## What a session document contains
 
@@ -77,10 +77,10 @@ The genome, a track, and the view to open on:
   under the track's `displayDefaults`. What is open and where it is scrolled to
   is session state. A view can still set a slot per launch by writing the track
   entry as an object: `{ "trackId": "ncbi_genes", "height": 250 }`.
-- **A session can carry tracks of its own.** `sessionTracks` takes the same
-  track configs as `tracks`, but they travel with the session and never reach
-  the `config.json` the server hands every visitor. It is how a link adds a
-  track to somebody else's instance.
+- **A session can hold tracks of its own.** `sessionTracks` takes the same track
+  configs as `tracks`, but they travel with the session and never reach the
+  `config.json` the server hands every visitor. It is how a link adds a track to
+  somebody else's instance.
 - **On desktop the halves are one file.** A `.jbrowse` file is this document
   with the session saved into it.
 
@@ -261,7 +261,7 @@ jb2export --config hg38.json --assembly hg38 \
 For a screenshot of the running app, a menu or a hover, see
 [](/docs/agents_capture). Nearly every figure on this site is rendered from one
 of these documents, and the image and the live session come from the same spec,
-so most figures carry an "Open this view in JBrowse" link.
+so most figures have an "Open this view in JBrowse" link.
 
 ## See also
 

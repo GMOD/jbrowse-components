@@ -357,9 +357,9 @@ item appends a timestamp to the id), so scoping by id keeps applying after the
 first time someone copies the track. Pass a `RegExp` if you want to control the
 matching yourself.
 
-`matchesTrackSelector` reads either the widget model these points carry or the
-track config the About points carry, so one call scopes a contribution to any of
-them. Anything the fields cannot express joins the same condition; the panel
+`matchesTrackSelector` reads either the widget model these points provide or the
+track config the About points provide, so one call scopes a contribution to any
+of them. Anything the fields cannot express joins the same condition; the panel
 below adds `depth` to it.
 
 Don't reach for `matchTrackId` from `@jbrowse/core/util` — that one tests an id
@@ -421,9 +421,9 @@ docs tag goes on its `ExtensionPointRegistry` entry instead.
 
 ### Notification points
 
-A point declaring `args: undefined` carries its whole payload in `props` and
-reads nothing back. Register on it with **`listenToExtensionPoint`**, whose
-callback returns nothing:
+A point declaring `args: undefined` has its whole payload in `props` and reads
+nothing back. Register on it with **`listenToExtensionPoint`**, whose callback
+returns nothing:
 
 <!-- include: plugins/canvas/src/index.ts#searchResultSelected -->
 
@@ -463,13 +463,13 @@ and is derived from the point's `args`:
 
 - **`list`** accumulates, so every plugin's contribution survives; register with
   `contributeToExtensionPoint`.
-- **`notify`** carries no value at all, so every plugin's callback runs;
-  register with `listenToExtensionPoint`.
+- **`notify`** has no value at all, so every plugin's callback runs; register
+  with `listenToExtensionPoint`.
 - **`single`** threads one value along, so each callback overwrites what the one
   before it returned and only the last plugin to register is visible; register
   with `addToExtensionPoint`.
 
-The names don't carry this: `Desktop-StartScreenMenuItems` accumulates and
+The names don't show this: `Desktop-StartScreenMenuItems` accumulates and
 `Desktop-StartScreenLaunchPanel` does not. Check the Shape column before
 registering — a `single` point is a slot, and taking it hides whatever the
 plugin before you put there.
@@ -797,7 +797,7 @@ The dialog fires this for whatever track was opened, so a panel that renders
 unconditionally lands on every track's About dialog.
 [`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for)
 is how it says which tracks it is for, the same way a feature panel does — and
-it reads the track config these points carry rather than a widget model, so a
+it reads the track config these points provide rather than a widget model, so a
 `trackId` selector here also matches the user's copies of that track.
 
 ### Core-replaceWidget
@@ -998,8 +998,8 @@ picture needs go. It runs before every `Core-preProcessTrackConfig` handler, so
 a handler reads current names.
 
 `retiredState` does the same for an old session's display instance: `keys` names
-the props it carried that are config slots now, and `lift` answers the slots
-they become, which the session migration writes into the track's config.
+the props it held that are config slots now, and `lift` answers the slots they
+become, which the session migration writes into the track's config.
 
 ### Core-addTrackComponent
 
@@ -1451,7 +1451,7 @@ function addStartScreenMenuItem(
 ```
 
 A callback that throws here costs the plugin its menu items only: the fold
-reports it and carries on, so the other plugins' items still appear and the
+reports it and continues, so the other plugins' items still appear and the
 dialog that can uninstall the misbehaving one stays reachable.
 
 ### Desktop-StartScreenLaunchPanel

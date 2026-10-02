@@ -23,8 +23,8 @@ in the import form reverses it.
 How the two line up base by base is recorded per alignment as a **CIGAR**, a
 compact code where e.g. `120M3I45M` is 120 matching bases, 3 extra bases in one
 genome, then 45 more matches. The ribbon tooltips report it and the CIGAR indel
-modes paint it, so an alignment file carrying no CIGARs can only be drawn as
-solid blocks. For which file formats carry one and which adapter reads each, see
+modes paint it, so an alignment file with no CIGARs can only be drawn as solid
+blocks. For which file formats have one and which adapter reads each, see
 [the alignment format glossary](/docs/config_guides/synteny_track#alignment-format-glossary).
 
 ## Opening a linear synteny view
@@ -75,7 +75,7 @@ above is for a dataset that is configured but closed.
   **Use CIGAR to map the current visible region to the target** option walks the
   alignment to find the interval that matches what you are looking at; without
   it the panels frame on the whole block's endpoints, and the dialog prints
-  where each panel will open either way. An alignment carrying no CIGAR — a PAF
+  where each panel will open either way. An alignment with no CIGAR — a PAF
   written without minimap2's `-c`, MashMap, MCScan, the coarse tier of a PIF —
   offers the same option as **Clip the panels to the current visible region**,
   estimating the target interval by interpolating across the block, which is the
@@ -140,7 +140,7 @@ their position.
 Panning or zooming any panel makes it the anchor, and the others follow it. Turn
 following off to move one panel on its own.
 
-<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Following on the two haplotypes of T2T-HG002, which carry the same coordinates and different sequence: the panels as they open, the header's toggle, and a second window typed into the anchor panel's search box alone." />
+<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Following on the two haplotypes of T2T-HG002, which have the same coordinates and different sequence: the panels as they open, the header's toggle, and a second window typed into the anchor panel's search box alone." />
 
 ## Interacting with the ribbons
 
@@ -159,11 +159,11 @@ following off to move one panel on its own.
 - The same item is on the right-click menu of a synteny track opened as a track
   _inside_ a panel, as **Move other panel to the matching region** — there the
   panel you clicked in is the one that stays
-- Those items appear only where the alignment carries a CIGAR to walk. A PAF
-  written without `minimap2 -c`, a MashMap or MCScan file, and the coarse tier
-  of a tiered PIF all describe a block without describing the correspondence
-  inside it, so there is no matching region to resolve; zooming in far enough to
-  load the fine tier brings the items back
+- Those items appear only where the alignment has a CIGAR to walk. A PAF written
+  without `minimap2 -c`, a MashMap or MCScan file, and the coarse tier of a
+  tiered PIF all describe a block without describing the correspondence inside
+  it, so there is no matching region to resolve; zooming in far enough to load
+  the fine tier brings the items back
 - To keep a panel on the matching region as you move rather than sending it
   there once, use **Follow** above. It works on CIGAR-less alignments too,
   interpolating across the block
@@ -185,7 +185,7 @@ ribbon band; close it with its own button and it stays away for that mode.
   telling contigs apart when one maps across several
 - Reference - color every level of a stacked view by the shared reference's
   chromosome names, so a region keeps one color as it is traced down the stack
-- Color by value - a submenu of the numbers an alignment can carry, each painted
+- Color by value - a submenu of the numbers an alignment can have, each painted
   on a color ramp. The row names whichever is in use.
   - Identity - per-alignment sequence identity on a viridis ramp. It needs the
     `=`/`X` CIGAR that `minimap2 --eqx` writes
@@ -193,8 +193,8 @@ ribbon band; close it with its own button and it stays away for that mode.
   - dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a
     diverging blue-yellow-red ramp whose pale middle is 1. Blue below it is
     purifying selection, red above it positive selection, clamped at 2. It needs
-    an [ortholog table](/docs/tutorials/homoeolog_synteny) carrying `dn` and
-    `ds` per link
+    an [ortholog table](/docs/tutorials/homoeolog_synteny) with `dn` and `ds`
+    per link
   - Any column the table declares - an ortholog table's `attributeColumns` each
     become an entry named after the column. A numeric column paints a viridis
     ramp labelled with the values seen; a text column, an ancestral linkage
@@ -202,8 +202,7 @@ ribbon band; close it with its own button and it stays away for that mode.
     color the table put beside it in a `color` column, with a legend row per
     label
 
-A mode whose number a track does not carry leaves every ribbon the default
-color.
+A mode whose number a track does not have leaves every ribbon the default color.
 
 A text column's label paints the same color in every window and session. The
 view's `color.domain` lists labels that take the palette in order and lead the
@@ -238,9 +237,8 @@ view _is_ — which genomes it stacks, where they point, what leaves it.
   - **Colored indels** paints them
   - **Transparent indels** leaves them as see-through gaps in the ribbon
   - **Off - don't draw CIGAR indels** draws each alignment as one solid block.
-    It carries a warning icon: overlapping blocks run together with nothing to
-    tell them apart, and a gap inside a block is painted as though it matched
-    across
+    It has a warning icon: overlapping blocks run together with nothing to tell
+    them apart, and a gap inside a block is painted as though it matched across
 - **Level of detail** picks which stored tier is fetched
 - **Opacity** is how much dense overlapping alignments show through each other
 - **Min length** hides alignments shorter than it, clearing the hairball of
@@ -310,7 +308,7 @@ stopping short of the ribbons so it cannot be read as an alignment to whatever
 is directly below. A contig is marked where the sequence going there is worth
 drawing at the window you are on, so a wide view shows the chromosomes most of
 it aligns to and the scattered ones appear as you zoom in. A run of marks to one
-contig carries that contig's name, which may be wider than the run itself and
+contig has that contig's name, which may be wider than the run itself and
 overhang it; where several contigs cover the same stretch, their names stack.
 Zoom out far enough and more stretches want a name than the band has rows to
 give, and the rows go to the ones with the most sequence aligned.
@@ -347,9 +345,9 @@ locus, widened to at least 20kb and a little past its ends, so a single small
 anchor arrives with context around it. Right-clicking a mark offers the same
 navigation and copies the contig's name.
 
-Either way the click raises a notification carrying an **Undo** that puts back
-the row's regions, its zoom and its scroll position. If the rows are following
-each other and the one clicked was not the anchor, the click also makes it the
+Either way the click raises a notification with an **Undo** that puts back the
+row's regions, its zoom and its scroll position. If the rows are following each
+other and the one clicked was not the anchor, the click also makes it the
 anchor, since the follow would otherwise pull the row straight back off the
 contig it was just sent to, and the notification says so. That undo restores the
 previous anchor too.

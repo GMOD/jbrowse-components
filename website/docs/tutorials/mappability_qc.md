@@ -90,7 +90,7 @@ mappability and problematic-region lanes for hg38 only:
   its benchmark.
 - **Long-read SVs - 1KG Vienna ONT SVs**, the long-read callset.
 
-The Umap config carries the **Minimum** score mode and the 0 to 1 axis:
+The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
 
 ```json addtrack
 {
@@ -186,7 +186,7 @@ tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz \
 ```
 
 Drawn as a synteny view between the two assemblies, each chain is a ribbon. The
-hosted hg38 config already carries the track and loads hs1 with it. On another
+hosted hg38 config already has the track and loads hs1 with it. On another
 JBrowse, load the hs1 assembly and the chain file, which names the genome it
 lifts to as its query:
 
@@ -216,7 +216,7 @@ lifts to as its query:
 <Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on that assembly's SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
 
 The gene order is the same in both assemblies, _SMN2_ first and then _SMN1_. The
-crossing chains join each GRCh38 copy to both CHM13 copies, so CHM13 carries the
+crossing chains join each GRCh38 copy to both CHM13 copies, so CHM13 has the
 same duplication, with the two genes closer together.
 
 Long reads test the same question on real data. The 1000 Genomes ONT release
@@ -242,7 +242,7 @@ reads before averaging.
 The long-read SV lane in the wide view is empty across the block.
 `scan_mappability_qc.sh` counts calls over the flagged block and an equal-width
 window on either side, and finds few inside and many on both sides, where the
-older DGV catalogue carries records throughout. Over the whole chromosome, both
+older DGV catalogue has records throughout. Over the whole chromosome, both
 catalogues put a larger share of their calls inside the flagged regions than
 those regions' share of chr5. Segmental duplications are copy-number variable,
 so real variation and artifacts both concentrate there.

@@ -10,8 +10,8 @@ tutorial_category: genomes.jbrowse.org
 ---
 
 genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC genome,
-carrying that genome's UCSC track catalog. We open hg38, find _TP53_, and turn
-on its conservation, regulation and variant tracks from the catalog.
+with that genome's UCSC track catalog. We open hg38, find _TP53_, and turn on
+its conservation, regulation and variant tracks from the catalog.
 
 ## Where the data comes from
 
@@ -90,7 +90,7 @@ R248 and R249, three of the codons most often mutated in human cancer.
 - Tick **Reference sequence**, which is off by default
 - At this zoom the default draws the codon row once per transcript
 
-<Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
+<Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It has the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
 
 The score is now one bar per base, and within a codon the third base is the
 short one: most third-position changes leave the amino acid alone. Hovering a
@@ -111,15 +111,15 @@ Most columns are blank, since every species matches human at those bases, and
 conserved columns give a positive score. phyloP counts substitution events on
 the tree:
 
-- under S240, nearly every species differs from human, but all carry the _same_
+- under S240, nearly every species differs from human, but all have the _same_
   base, which is one substitution on the human branch, so the score stays above
   the line
 - under T256 and G244, fewer rows differ and those that do disagree with each
   other, and the score goes red
 
-A MAF block carries a row per species, so at gene-wide zoom the alignment track
-asks you to confirm before fetching. Further out it draws a precomputed summary
-with a conservation bar per species.
+A MAF block has a row per species, so at gene-wide zoom the alignment track asks
+you to confirm before fetching. Further out it draws a precomputed summary with
+a conservation bar per species.
 
 ## Regulatory tracks at the TP53 promoter
 
@@ -133,15 +133,16 @@ Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 
 The Layered H3K4Me3 and H3K27Ac tracks each hold seven cell lines, and open with
 all seven in one plot box, UCSC's layered arrangement. **Track menu → Plot type
-→ Multi-row → XY plot** gives each cell line a row of its own. Their names carry
-hg19 because ENCODE3 released them on it; the config points at the hg38 files.
+→ Multi-row → XY plot** gives each cell line a row of its own. Their names
+include hg19 because ENCODE3 released them on it; the config points at the hg38
+files.
 
 <Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs coloured by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the two marks with their seven cell lines in one plot box, and the Plot type menu that separates them. Right: the same six tracks with a row per cell line." />
 
 _TP53_ is on the minus strand, so its promoter is at the high-coordinate end.
 The CpG island, a promoter-class cCRE, the EPDnew call and both histone marks
 all sit there. H3K4me3 marks a promoter and H3K27ac an active one, and all seven
-cell lines carry both.
+cell lines have both.
 
 ## Filtering a dense track
 
@@ -165,10 +166,10 @@ filter leaves a track drawn in one colour.
 Once a filter is in effect the same menu row opens a submenu with **Edit
 filters...** and **Clear all filters**.
 
-The filter works on any column a BigBed carries. ClinVar's clinical
-classification is the column `clinSign`, so the row `clinSign` is `Pathogenic`
-filters that catalog the same way. The same menus apply to a bigWig or BigBed of
-your own added with **Add track**; the
+The filter works on any column a BigBed has. ClinVar's clinical classification
+is the column `clinSign`, so the row `clinSign` is `Pathogenic` filters that
+catalog the same way. The same menus apply to a bigWig or BigBed of your own
+added with **Add track**; the
 [web quickstart](/docs/quickstart_web#adding-tracks) covers the steps.
 
 ## Where the track data is read from
@@ -196,10 +197,10 @@ The BigBeds behind the variant and annotation tracks read the same way.
 
 ## Trying another genome
 
-The GenArk configs carry a smaller track set than the UCSC ones. Their name
-index is built from NCBI RefSeq annotation, so a `GCF_` accession has gene
-tracks and resolves gene symbols, while a `GCA_` one generally has neither and
-takes coordinates.
+The GenArk configs have a smaller track set than the UCSC ones. Their name index
+is built from NCBI RefSeq annotation, so a `GCF_` accession has gene tracks and
+resolves gene symbols, while a `GCA_` one generally has neither and takes
+coordinates.
 
 An assembly released both ways appears under both accessions, and gene search
 works on the RefSeq one. The axolotl `Mex_15411` is `GCF_040938575.1` and

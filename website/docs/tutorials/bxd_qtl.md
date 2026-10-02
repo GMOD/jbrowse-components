@@ -8,10 +8,10 @@ tutorial_category: Population genomics
 ---
 
 The BXD mice are inbred strains bred down from two parents, B6 and DBA/2, so
-each strain carries a mosaic of blocks from one or the other. We paint each
-strain by which parent gave it each block and stack that under a GeneNetwork QTL
-scan of coat color, then band the strains by their coat color to see which
-blocks under each peak set it.
+each strain has a mosaic of blocks from one or the other. We paint each strain
+by which parent gave it each block and stack that under a GeneNetwork QTL scan
+of coat color, then band the strains by their coat color to see which blocks
+under each peak set it.
 
 ## Prerequisites
 
@@ -166,8 +166,7 @@ result of a GEMMA run, the mixed model that accounts for how closely the BXD
 strains are related.
 
 Fetch the scan for one trait by its GeneNetwork id and reshape it with `jq`.
-Each record carries a marker, its mm10 position in Mb, a LOD score and a
-p-value:
+Each record has a marker, its mm10 position in Mb, a LOD score and a p-value:
 
 <!-- from: scripts/bxd_build_demo.sh -->
 

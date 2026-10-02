@@ -100,7 +100,7 @@ as the one gene.
   `/tmp`; `TMPDIR=~/alt_tmp_dir jbrowse text-index` moves it.
 - **Only some genes are searchable.** The default attributes are `Name`, `ID`
   and `symbol`; add others with `--attributes=Name,ID,symbol,gene_name`, and
-  check that the feature type carrying the name is not in
+  check that the feature type with the name is not in
   [`--exclude`](/docs/cli#jbrowse-text-index).
 
 ## The trix index format
@@ -124,7 +124,7 @@ Wnt  GENEID001
 ```
 
 and an `.ixx` file recording the byte offset of each prefix (`signa000000435`).
-JBrowse extends the format: each `.ix` line also carries the feature's name and
+JBrowse extends the format: each `.ix` line also contains the feature's name and
 genomic location in an encoded form.
 
 ## See also

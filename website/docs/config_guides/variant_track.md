@@ -107,8 +107,8 @@ default display, so preset its slots in a `displays` array; they are listed on
 
 ### Coloring cells by the variant
 
-`color` paints every alt-carrying cell by the variant itself. A CSS colour or a
-jexl expression paints every alt cell of a variant, the
+`color` paints every cell with an alt allele by the variant itself. A CSS colour
+or a jexl expression paints every alt cell of a variant, the
 [helper functions](#helper-functions-for-jexl-color-expressions) included. A
 `field` gives each of its values a colour, with a key. Three fields are the
 track menu's **Color by...** presets: `impact` for
@@ -224,8 +224,8 @@ jexl) and signed LD are available:
 **Pre-computed with PLINK.** A standalone `LDTrack` serves a cohort too large to
 compute in the browser, or a fixed matrix to publish. `PlinkLDAdapter` reads a
 plain `.ld`; `PlinkLDTabixAdapter` reads a bgzipped, tabix-indexed `.ld.gz` and
-fetches only the visible region. PLINK data carries only the final r²/D' values,
-so the filters and signed LD are absent here. The
+fetches only the visible region. PLINK data has only the final r²/D' values, so
+the filters and signed LD are absent here. The
 [GWAS track guide](/docs/config_guides/gwas_track#preparing-the-ld-file) has the
 `plink` command, and the same file drives LD coloring on a GWAS track.
 

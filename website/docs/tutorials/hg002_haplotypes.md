@@ -14,7 +14,7 @@ T2T-HG002 v1.2 ships both haplotypes as contigs of one FASTA, named
 `chr1_MATERNAL` and `chr1_PATERNAL`, so JBrowse loads it as a single assembly
 and maternal against paternal is a self-alignment. The Q100 project publishes
 the chain between them, which we load as a synteny track to find the 8p23.1
-inversion that HG002 carries on one haplotype.
+inversion that HG002 has on one haplotype.
 
 ## Prerequisites
 
@@ -80,7 +80,7 @@ that one assembly twice.
 ## The whole genome first
 
 A dotplot shows whether anything moved between chromosomes. Open **Add → Dotplot
-view**. Both axes read `T2T-HG002 v1.2 (diploid)`, and an axis set to it carries
+view**. Both axes read `T2T-HG002 v1.2 (diploid)`, and an axis set to it has
 both haplotypes interleaved.
 
 Switch to **Manual** and tick **Plot only certain chromosomes**. Each box takes
@@ -102,11 +102,11 @@ haplotype to chain to, and their column and row stay empty.
 ## The 8p23.1 inversion
 
 Every chromosome in the plot is a red diagonal against the same chromosome on
-the other haplotype, and a few carry small blue marks where a stretch runs
+the other haplotype, and a few have small blue marks where a stretch runs
 inverted. At whole-genome scale those marks look alike, so the literature picks
 which to open: HG002 is heterozygous for the 8p23.1 inversion polymorphism
 (Bosch _et al._ 2009), so the maternal and paternal copies of that arm run in
-opposite directions, and the Q100 chain carries it as its largest inverted
+opposite directions, and the Q100 chain records it as its largest inverted
 block, close to 4 Mb. A linear synteny view reads the two copies against each
 other, with the tracks for each haplotype beside the ribbons.
 

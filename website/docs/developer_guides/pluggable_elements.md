@@ -213,8 +213,8 @@ slots are documented under [](/docs/config/baseinternetaccount).
 ## Extension points
 
 Extension points are named callback chains: a producer fires one, and any plugin
-can register a callback against the same name to transform what it carries, add
-to a list, or just react.
+can register a callback against the same name to transform what it holds, add to
+a list, or just react.
 
 See the [full extension point API](/docs/developer_guides/extension_points) or
 the [menus guide](/docs/developer_guides/menus) for an example of adding context

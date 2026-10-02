@@ -69,8 +69,7 @@ grape03	.	.
 ```
 
 A real cell holds the gene id from the annotation (`rna-XM_007225519.2` for
-NCBI); the table carries no coordinates, so one `.bed` per genome places each
-id.
+NCBI); the table has no coordinates, so one `.bed` per genome places each id.
 
 ### One reference, or all against all
 
@@ -277,7 +276,7 @@ genome with **Show only genes**.
 
 ## One locus against all seven genomes
 
-`grape.blocks` carries seven columns, and a track that names all seven in
+`grape.blocks` has seven columns, and a track that names all seven in
 `blockAssemblies` and `bedLocations`, as the one above names three, draws every
 mate at once in a plain linear genome view on grape:
 
@@ -299,7 +298,7 @@ genome:
   window brings in
 - one grey ribbon per ortholog group joins adjacent lanes, bridging past an
   empty one
-- any track whose features carry a `mate` per assembly feeds the same lanes,
+- any track whose features have a `mate` per assembly feeds the same lanes,
   including an [OrthoFinder table](/docs/tutorials/orthofinder_synteny) or an
   [all-vs-all PAF](/docs/tutorials/allvsall_synteny)
 
@@ -391,7 +390,7 @@ fanning where a copy-number difference exists. Hover a ribbon to highlight its
 ortholog group down every lane, click one to open the details for that pair, and
 click empty canvas to clear the outline.
 
-<Figure caption="The same lanes cut to a few genes, with one ribbon clicked. Each ribbon links one gene to its ortholog in the lane below; the clicked group carries an outline down the lanes that chain it, and the details panel opens on the pair the click landed on." src="/img/multiway_synteny/lgv_track_clicked.png" />
+<Figure caption="The same lanes cut to a few genes, with one ribbon clicked. Each ribbon links one gene to its ortholog in the lane below; the clicked group has an outline down the lanes that chain it, and the details panel opens on the pair the click landed on." src="/img/multiway_synteny/lgv_track_clicked.png" />
 
 ## Restacking around a locus
 

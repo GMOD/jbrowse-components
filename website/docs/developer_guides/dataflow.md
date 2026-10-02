@@ -10,7 +10,7 @@ A track's data crosses one boundary and lands in typed arrays of absolute
 genomic coordinates, and everything after that point is a redraw. A pan or a
 zoom therefore costs a frame and not a fetch.
 
-<Figure caption="A pan or a zoom takes the dashed edge down the right: it re-enters at buffers the GPU already holds, and nothing above that point runs again. The three crossings carry the name of the figure that draws them in full." src="/img/dataflow.png" />
+<Figure caption="A pan or a zoom takes the dashed edge down the right: it re-enters at buffers the GPU already holds, and nothing above that point runs again. Each of the three crossings is labelled with the figure that draws it in full." src="/img/dataflow.png" />
 
 A viewport change first checks one thing: is this region already loaded? Where
 it is, nothing below the top of the figure runs. Where it is not, the display
@@ -24,8 +24,8 @@ Three other pages draw one segment of this path in full, and the figure names
 each one on the edge it details:
 
 - [Data fetching](/docs/developer_guides/data_fetching) owns the decision the
-  top edge carries (`fetch_chain`), with its debounce, byte gate, staleness
-  check and generation counter
+  top edge holds (`fetch_chain`), with its debounce, byte gate, staleness check
+  and generation counter
 - [RPC workers](/docs/developer_guides/rpc_workers) owns the crossing
   (`rpc_lifecycle`), with the serialize and deserialize hooks on it
 - [Creating a GPU display](/docs/developer_guides/creating_gpu_display) owns the
@@ -82,7 +82,7 @@ The dashed branch beside the inflate step is a further pool of
 one pool per JS context — so a full RPC pool nests twenty inflate workers under
 its five. Where nested workers are unavailable the pool resolves to `undefined`
 and the same code inflates in process, so the option is safe to pass
-unconditionally and the degradation carries no error. How large that share is,
+unconditionally and the degradation raises no error. How large that share is,
 what the pool is worth per format, and how to check it engaged are
 [the fetch clock](/docs/developer_guides/optimizations#decompression-is-where-a-cold-querys-time-goes).
 

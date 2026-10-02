@@ -34,7 +34,7 @@ yourself is named by its url.
   listed.
 - **`name` must match the plugin's own registration** (`name = 'MyPlugin'` in
   the plugin class) for a UMD build, which is looked up by that name once its
-  script has run. An ESM build carries its own, and a store entry supplies one.
+  script has run. An ESM build has its own, and a store entry supplies one.
 - **Embedded components load plugins inline**; see the
   [inline plugins example](https://jbrowse.org/storybook/lgv/plugins/#with-inline-plugins).
 

@@ -65,7 +65,7 @@ each chromosome's banding in the view's overview.
 ## Depth as a coverage step
 
 The window covers 30 kb of an _EFCAB8_ intron on chromosome 20, where the
-callset says NA12878 carries one copy of a 3.9 kb deletion. A `bar` mark over a
+callset says NA12878 has one copy of a 3.9 kb deletion. A `bar` mark over a
 `coverage` transform draws the reads as runs of constant depth.
 
 ```json addtrack
@@ -151,7 +151,7 @@ Each pair in the upper group straddles the missing 3.9 kb. On an alignments
 track `score` is the mapping quality. Hover a point for its values, or click it
 to open the read.
 
-## Which reads carry the long inserts
+## Which reads have the long inserts
 
 A `span` mark over a `pileup` transform stacks the reads. A `formula` step
 writes the unsigned insert as `insert`, so both mates of a pair take one colour,

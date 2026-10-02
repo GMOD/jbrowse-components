@@ -33,7 +33,7 @@ Typed one at a time, the requests ask the agent to:
 Two GenArk assemblies and their genome hubs on genomes.jbrowse.org
 ([_D. simulans_](https://genomes.jbrowse.org/accession/GCF_016746395.2/),
 [_D. mauritiana_](https://genomes.jbrowse.org/accession/GCF_004382145.1/)). Each
-hub's config carries the 2bit sequence, a chromAlias file, an NCBI RefSeq gene
+hub's config holds the 2bit sequence, a chromAlias file, an NCBI RefSeq gene
 track and a Trix text index.
 
 - _D. simulans_ GCF_016746395.2 sequence:
@@ -125,7 +125,7 @@ name resolves and the synteny band draws empty.
 Add a dotplot of the same two assemblies underneath.
 ```
 
-_D. simulans_ and _D. mauritiana_ each carry a few hundred unplaced scaffolds,
+_D. simulans_ and _D. mauritiana_ each have a few hundred unplaced scaffolds,
 which interleave the axes if drawn. Naming the arms gives one diagonal:
 
 ```text
@@ -177,7 +177,7 @@ END {
 X    21.04 Mb aligned,  4.44% reverse
 ```
 
-Four arms carry essentially no reverse-strand alignment, and they are the
+Four arms have essentially no reverse-strand alignment, and they are the
 control: 2R and X sit an order of magnitude above them.
 
 Grouping the reverse-strand blocks of 5 kb or more, and cutting a group wherever

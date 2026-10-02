@@ -176,8 +176,8 @@ name (`import hpmath;`), not file path. The shared helpers are in
   box's anchor at the canvas bottom
 
 `packages/render-core/src/shaders/` also holds the shared _shapes_ (`capsule`,
-`rowRect`, `pointGlyph`, `diagonalGrid`). Each carries a mark's geometry
-together with its antialias contract.
+`rowRect`, `pointGlyph`, `diagonalGrid`). Each holds a mark's geometry together
+with its antialias contract.
 [The shader shape library](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SHADER_JS_CODEGEN.md)
 lists what each shape draws, who imports it, and which parts are deliberately
 not shared. The example declares its uniforms inline. If several passes share a
@@ -291,7 +291,7 @@ One `.slang` file with entry points produces up to six modules, and **which
 module you import determines what your users download**. A bundler treats a
 namespace import (`import * as shader from './score.generated.ts'`) as using
 every export, so it includes or excludes a module whole. If any eager code
-imports a module, even for one value, the always-loaded chunk carries the whole
+imports a module, even for one value, the always-loaded chunk contains the whole
 module.
 
 | Module                      | Holds                                                             | Import it from                                                            |
@@ -305,7 +305,7 @@ module.
 
 A display model that reads one threshold should therefore import the `.consts.`
 module, not the shader module that re-exports it. The text is the one part no
-module you import carries: a mark declared at module scope is evaluated when
+module you import contains: a mark declared at module scope is evaluated when
 your plugin registers, in the RPC worker too, so the WGSL and GLSL wait behind
 `import()` until a display builds a GPU backend with the pass. Import neither
 yourself.
@@ -518,10 +518,10 @@ What each member is held to:
 - **`writeUniforms`** uses the generated packer (`shader.writeUniforms`), which
   writes every field. The scratch buffer outlives the frame, so a field left out
   of a manual offset write would redraw with last frame's value. The `bpRangeX`
-  triple comes from `bpRangeXTuple`, never by hand, because it carries the
-  reversed pivot and a hand-written pivot is where the bugs come from. Widths
-  are CSS px (`clip.scissorW`, the block column), so a min-width floor is one
-  CSS pixel on every DPR.
+  triple comes from `bpRangeXTuple`, never by hand, because it has the reversed
+  pivot and a hand-written pivot is where the bugs come from. Widths are CSS px
+  (`clip.scissorW`, the block column), so a min-width floor is one CSS pixel on
+  every DPR.
 - **`placeScore`** places one instance. The painter and the ink both call it, so
   the box geometry is written once. It reads the per-block values from a frame.
   `bpProjection(block)` and `projectBp` mirror bp→px on a reversed block the

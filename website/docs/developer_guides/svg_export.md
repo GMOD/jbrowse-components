@@ -228,7 +228,7 @@ async renderSvg(opts: ExportSvgDisplayOptions) {
 ## Coordinate system
 
 Paint at the `canvasWidth` the shell hands your body, never at
-`model.renderState.canvasWidth`. The on-screen render state carries
+`model.renderState.canvasWidth`. The on-screen render state has
 `view.trackWidthPx` — `view.width` minus the 2px track outline the export does
 not draw — and that same number is the block scissor bound, so painting an
 export at it clips the rightmost 2px column of content inside a `view.width`

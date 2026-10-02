@@ -12,7 +12,7 @@ sized, or filtered.
 
 <Figure caption="An alignments track: coverage histogram on top, pileup below. Reads are grey; mismatches to the reference show as colored ticks in the pileup and as colored segments inside the coverage bars." src="/img/volvox_alignments.png" />
 
-A coverage bar that is part red means that fraction of reads carry a mismatch
+A coverage bar that is part red means that fraction of reads have a mismatch
 there. The track menu's **Show coverage** and **Show pileup** toggles turn
 either panel off independently: coverage-only is compact for surveying depth
 across many samples, and pileup-only gives the reads the vertical space.
@@ -20,10 +20,10 @@ across many samples, and pileup-only gives the reads the vertical space.
 ## Sorting reads
 
 **Right-click a base in the pileup** and choose _Sort by base at position_.
-Reads group by the nucleotide they carry there, so haplotype-correlated SNPs
-line up.
+Reads group by the nucleotide they have there, so haplotype-correlated SNPs line
+up.
 
-<Figure caption="Sort by base groups reads by the nucleotide they carry at the sorted position." src="/img/alignments_sort_by_base.png" />
+<Figure caption="Sort by base groups reads by the nucleotide they have at the sorted position." src="/img/alignments_sort_by_base.png" />
 
 The track menu's **Sort by...** groups reads the same way against the _center
 line_ (a 1bp indicator at the middle of the view), and also sorts by strand,
@@ -98,11 +98,11 @@ Any type in the MM tag paints, so fiber-seq's N6-methyladenine (`A+a`) draws
 like any other modification, and since the assay adds 6mA to accessible DNA the
 call density doubles as a chromatin-accessibility readout.
 
-<Figure caption="ONT HG002 fiber-seq at the GAPDH promoter in modifications mode, where purple marks are 6mA calls left on accessible DNA. The treated sample (top) piles them over the promoter; the no-enzyme control (bottom) carries only scattered background." src="/img/methylation/chromatin_accessibility_6ma.png" />
+<Figure caption="ONT HG002 fiber-seq at the GAPDH promoter in modifications mode, where purple marks are 6mA calls left on accessible DNA. The treated sample (top) piles them over the promoter; the no-enzyme control (bottom) has only scattered background." src="/img/methylation/chromatin_accessibility_6ma.png" />
 
 ### Bisulfite and EM-seq
 
-Bisulfite (WGBS) and EM-seq reads carry no MM/ML tags; methylation is in the C→T
+Bisulfite (WGBS) and EM-seq reads have no MM/ML tags; methylation is in the C→T
 conversion itself. **Color by → Bisulfite / EM-seq** reads it off the aligned
 bases against the reference, so a plain BAM from a bisulfite-aware aligner
 colors without a methylation caller. Methylated cytosines paint red, **Show
@@ -210,10 +210,10 @@ mate the read is; the
 Long-read cDNA is the clearest case, since the reads are oriented to the
 transcript.
 
-<Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the viral genome, grouped by strand and colored by it. UL21 and UL22 are transcribed in opposite directions, so each band carries the coverage over the gene it groups, and the switch falls between them." src="/img/alignments/strand_split_depth.png" />
+<Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the viral genome, grouped by strand and colored by it. UL21 and UL22 are transcribed in opposite directions, so each band holds the coverage over the gene it groups, and the switch falls between them." src="/img/alignments/strand_split_depth.png" />
 
 Grouping by strand also works as a check on the reads. A position colored in one
-band and not the other is carried by one strand alone, the signature of a
+band and not the other comes from one strand alone, the signature of a
 basecalling error; a position that disagrees in both bands is a real variant.
 
 <Figure caption="HG002 nanopore reads grouped by strand, each band colored from only that strand's reads. At the left boxed column only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
@@ -292,11 +292,11 @@ draw, so its clip indicator appears black.
 
 The track menu's **Filter by...** hides reads by SAM flag (drop duplicates and
 secondaries, or keep only properly-paired reads), by read name, or by tag value
-(`HP:1` for one haplotype, `HP:*` for any read carrying the tag). The splicing
+(`HP:1` for one haplotype, `HP:*` for any read with the tag). The splicing
 radios keep only spliced reads (a reference skip, `N`, in the CIGAR) or only
 unspliced ones. The coverage histogram follows the filter.
 
-<Figure caption="The Filter options dialog with HP typed as the tag. A value of * keeps every read carrying the tag; the SAM flag masks sit in a separate section, which by default excludes unmapped, QC-fail and duplicate reads." src="/img/alignments/filter_dialog.png" />
+<Figure caption="The Filter options dialog with HP typed as the tag. A value of * keeps every read with the tag; the SAM flag masks sit in a separate section, which by default excludes unmapped, QC-fail and duplicate reads." src="/img/alignments/filter_dialog.png" />
 
 Right-click a read for the **Filter** submenu: _Filter for this read_, _Filter
 for this haplotype (HP:n)_ and _Filter for this read group (RG:x)_ read their
@@ -325,8 +325,8 @@ The track menu's **Sashimi arcs** submenu controls them:
   three canonical pairs. On deep RNA-seq the thin arcs are mostly these, so it
   is the filter to reach for first
 - **Arc placement** splits the arcs above/below the coverage row
-- **Min read support** drops the junctions carried by fewer reads than the
-  slider's value
+- **Min read support** drops the junctions with fewer reads than the slider's
+  value
 
 Turn the arcs off from the same submenu. See the
 [RNA-seq tutorial](/docs/tutorials/rnaseq). When one junction peak dominates the

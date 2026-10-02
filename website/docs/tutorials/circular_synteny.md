@@ -58,7 +58,7 @@ without the build.
 ## Two genomes on one circle
 
 A Circos-style circle shows, for each chromosome of one genome, which
-chromosomes of the other carry its sequence and how much of each. In human and
+chromosomes of the other contain its sequence and how much of each. In human and
 mouse the autosomes have been cut and rejoined many times since the lineages
 split, and the X chromosome has not, so a human autosome should fan out across
 several mouse chromosomes while the two X chromosomes hold one bundle between
@@ -181,9 +181,9 @@ hg38 and mm39 share their chromosome names, so the arcs are labelled identically
 around the circle: the human chromosomes run clockwise from the top and the
 mouse chromosomes follow, and the view's title bar names the two in that order.
 Each ribbon takes the ideogram colour of the human chromosome it leaves, so a
-human chromosome's pieces can be followed to every mouse chromosome that carries
-one, and a reverse alignment reads as a twist between its two ends. A row
-narrower than a pixel draws at the share of the pixel it covers, as in the
+human chromosome's pieces can be followed to every mouse chromosome that
+contains one, and a reverse alignment reads as a twist between its two ends. A
+row narrower than a pixel draws at the share of the pixel it covers, as in the
 [linear synteny view](/docs/user_guides/linear_synteny_view), so the large
 blocks dominate and the short rows the filter lets through stay faint.
 
@@ -375,7 +375,7 @@ tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz tchrX:104475
 The row's strand column reads `-`, and its query span on mouse chrX is the other
 end of the ribbon. The ring reads back the same way: `bigWigToBedGraph` prints
 the bins under any stretch of either arc, addressed by the prefixed contig name
-the bigWig carries.
+the bigWig has.
 
 ```bash
 # the first 100 kb of the X block, then the start of human chr19

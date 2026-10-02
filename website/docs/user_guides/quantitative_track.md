@@ -113,7 +113,7 @@ An outlier on one signal can blow out the shared Y axis. **Clip outliers** keeps
 the axis at the 99th percentile of the visible data for a more readable view, or
 pin the min and max from the track menu.
 
-<Figure caption="Twelve per-cell-type BigWigs from a 5k PBMC scATAC dataset as one multi-quantitative track, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows and MS4A1 by the two B rows, on one shared scale." src="/img/scatac/pbmc5k_marker_swap.png" />
+<Figure caption="Twelve per-cell-type BigWigs from a 5k PBMC scATAC dataset as one multi-quantitative track, over CD8A and MS4A1 in one discontinuous view. The CD8, MAIT and NK rows have signal at CD8A and the two B rows at MS4A1, on one shared scale." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 ### Adding a multi-quantitative track
 
@@ -158,10 +158,10 @@ modes, the dendrogram, and how to share a result in a session URL.
 ### Sorting rows by score at one position
 
 Right-click a row at the column you want to rank on and choose **Sort rows by
-score here**. This reorders the rows by the score each carries at that base,
-highest at the top, so a cohort reads top-to-bottom at a candidate locus.
-Clustering orders the rows by the whole region in view; this orders them by a
-single column.
+score here**. This reorders the rows by the score each has at that base, highest
+at the top, so a cohort reads top-to-bottom at a candidate locus. Clustering
+orders the rows by the whole region in view; this orders them by a single
+column.
 
 **Reset row order** puts the rows back in the order they were loaded in. It
 appears in the same right-click menu and in the track menu, and it undoes a

@@ -15,15 +15,15 @@ becomes a single track with one config, one adapter, and one fetch.
 Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
 **Display types → Multi-row feature display (painting)**.
 
-<Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM as a multi-row track, all 127 epigenomes over chr9 in tissue order, each row labelled and tinted by its tissue group, with NCBI RefSeq genes above. Each row takes the state color the file carries: promoters are red in every tissue, and PAX5 (boxed) is transcribed with genic enhancers only in the B cell rows and GM12878." />
+<Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM as a multi-row track, all 127 epigenomes over chr9 in tissue order, each row labelled and tinted by its tissue group, with NCBI RefSeq genes above. Each row takes the state color the file has: promoters are red in every tissue, and PAX5 (boxed) is transcribed with genic enhancers only in the B cell rows and GM12878." />
 
 ## Turning a feature track into rows
 
 Picking it from **Display types** shows the rows right away, split on whichever
-column the file turns out to carry: a RepeatMasker table opens as ~20 rows of
+column the file turns out to have: a RepeatMasker table opens as ~20 rows of
 `repClass`, and anything else falls back to the `name` column. Which column
 assigns a feature to a row is then **Partition by…** in the same track menu,
-which lists the attribute names the loaded features carry — so RepeatMasker also
+which lists the attribute names the loaded features have — so RepeatMasker also
 offers `repFamily` and `name` beside the class it started on. Repartitioning
 leaves a saved row order, its labels and colors and a clustering run in place:
 they name rows by value, so they sit idle under the new partition and come back
@@ -62,11 +62,11 @@ has no row for it.
 
 ### Partitioning with a jexl expression {#when-the-category-is-not-a-column}
 
-A file can carry the category without carrying a column for it, in which case
-`rows` takes a [jexl](/docs/config_guides/jexl) expression instead of an
-attribute name. UCSC's `bigRmskBed` is the common case: the repeat class is a
-suffix on the name (`L1HS#LINE/L1`), so an attribute lookup splits on the full
-repeat name, which is thousands of rows rather than twenty.
+A file can have the category without a column for it, in which case `rows` takes
+a [jexl](/docs/config_guides/jexl) expression instead of an attribute name.
+UCSC's `bigRmskBed` is the common case: the repeat class is a suffix on the name
+(`L1HS#LINE/L1`), so an attribute lookup splits on the full repeat name, which
+is thousands of rows rather than twenty.
 
 ```json addtrack
 {
@@ -119,9 +119,8 @@ Four sources of color, in precedence order:
   feature fill: a CSS color, or a field whose values each take a color through a
   scale — a color per value, a color per interval between cut points, or a
   gradient — with a key naming them.
-- `itemRgb` is honored automatically. A BED9 that already carries per-feature
-  colors (ChromHMM state colors, for one) paints correctly with no color
-  configuration.
+- `itemRgb` is honored automatically. A BED9 that already has per-feature colors
+  (ChromHMM state colors, for one) paints correctly with no color configuration.
 - Otherwise each row is auto-assigned a distinct color from a categorical
   palette.
 
@@ -181,26 +180,26 @@ per row.
 
 ## Ordering and clustering rows
 
-Rows start sorted by value, digits by magnitude, with the row of features
-carrying no value last. Three ways to change that:
+Rows start sorted by value, digits by magnitude, with the row of features with
+no value last. Three ways to change that:
 
 - **Edit colors/arrangement...** reorders, relabels or hand-picks rows in a
   dialog, and `rows.domain` pins an explicit order in config: the values it
   lists lead, and the rest sort.
 - Right-click a position and choose **Sort rows by color here** to order rows by
-  the value each carries at that exact base, the analogue of an alignments
-  track's sort-by-base. Rows sharing a value become contiguous blocks, turning a
-  QTL painting at its peak into a clean split by allele.
+  the value each has at that exact base, the analogue of an alignments track's
+  sort-by-base. Rows sharing a value become contiguous blocks, turning a QTL
+  painting at its peak into a clean split by allele.
 - **Clustering → Cluster rows by similarity...** reorders rows so that samples
   with similar paintings sit together, and draws a dendrogram in the sidebar.
   See [](/docs/user_guides/clustering).
 
 All three write the track's
 [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) setting, so undo
-reaches an arrangement, a shared session carries it, and it survives turning the
-track off and on. **Reset row order** appears in the track menu once any of the
-three has run, and returns the rows, their labels and their colors to what the
-config declares.
+reaches an arrangement, a shared session contains it, and it survives turning
+the track off and on. **Reset row order** appears in the track menu once any of
+the three has run, and returns the rows, their labels and their colors to what
+the config declares.
 
 [`facet: "group"`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) stacks
 the rows in bands by their

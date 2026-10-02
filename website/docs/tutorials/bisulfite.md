@@ -63,8 +63,8 @@ bp) through Trim Galore to a sorted BAM.
 
 The aligner is [bwameth](https://github.com/brentp/bwa-meth), which C→T converts
 both reads and reference in silico and runs `bwa mem`. It writes an ordinary BAM
-carrying the original read sequences, so the C→T changes are still in the reads
-for JBrowse to find. Bismark BAMs work the same way.
+with the original read sequences, so the C→T changes are still in the reads for
+JBrowse to find. Bismark BAMs work the same way.
 
 Trimming and alignment, on any pair of WGBS or EM-seq FASTQs:
 
@@ -246,7 +246,7 @@ straight from local disk.
 
 In the alignments track menu, pick **Color by... → Bisulfite / EM-seq**, then a
 cytosine context: **CpG**, **CHG**, **CHH**, or **All cytosines**. Methylated
-cytosines paint red. Once a context is set, the same submenu carries **Show
+cytosines paint red. Once a context is set, the same submenu has **Show
 unmethylated (blue)**, which paints converted sites blue to separate an
 unmethylated cytosine from a position with no cytosine. The figure and clip
 below leave it off.
@@ -264,8 +264,8 @@ distinguish them:
 Red in the CpG row alone is gene body methylation, and red in all three rows is
 silencing.
 
-Type `chr1:4,398,000-4,412,000` into the location box for a window carrying one
-of each: the expressed gene AT1G12930 on the left, and a transposon on the
+Type `chr1:4,398,000-4,412,000` into the location box for a window containing
+one of each: the expressed gene AT1G12930 on the left, and a transposon on the
 right. The [reproduce script](#reproduce-it-end-to-end) prints the fraction per
 context for both regions.
 

@@ -2,7 +2,7 @@
 title: Differential transcript usage
 sidebar_label: RNA-seq (differential transcript usage)
 description:
-  Build a GFF3 carrying a per-transcript statistic in its attribute column, and
+  Build a GFF3 with a per-transcript statistic in its attribute column, and
   configure a gene track to paint it
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins

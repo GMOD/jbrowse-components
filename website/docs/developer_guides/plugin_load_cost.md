@@ -66,7 +66,7 @@ the chunks resolve against the entry's own URL. JBrowse loads an ESM plugin with
 a dynamic import on the main thread and in its RPC workers alike.
 
 Two things to weigh before moving a published plugin off UMD. A UMD build can
-carry a subresource-integrity hash and an ESM one cannot, because dynamic import
+have a subresource-integrity hash and an ESM one cannot, because dynamic import
 takes no integrity attribute. And the split holds only while nothing in the
 entry's graph names the deferred side — one
 `import { thing } from 'heavy-library'` at module scope in an extension point

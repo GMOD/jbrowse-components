@@ -108,7 +108,7 @@ The same step for one strain, as a config or in JBrowse Desktop:
 }
 ```
 
-An assembly whose refNames still carry the PanSN prefix draws empty. The
+An assembly whose refNames still have the PanSN prefix draws empty. The
 [assemblies configuration guide](/docs/config_guides/assemblies) has more.
 
 ## Loading the PAF with MultiGenomePAFAdapter
@@ -232,8 +232,8 @@ walks through the `defaultSession` structure. Row order is a free choice here.
 
 <Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with minAlignmentLength. The continuous ribbons are the backbone shared by all five; the bottom band crosses because IAI39 is inverted against the others." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-The gaps mark where the strains differ: Sakai carries its prophage Shiga-toxin
-genes there, and CFT073 its pathogenicity islands.
+The gaps mark where the strains differ: Sakai has its prophage Shiga-toxin genes
+there, and CFT073 its pathogenicity islands.
 
 ## Adding gene tracks
 

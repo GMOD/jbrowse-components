@@ -41,7 +41,7 @@ check by fixing the manifest, not by removing a skip.
   convert one and lower `DOC_FENCE_BASELINE`. The marker fills an existing
   fence, so write an empty one under it first.
 - **Never retype a measurement table out of `agent-docs`**, and never restate a
-  number the page already carries — bracket the table and quote the cell.
+  number the page already has — bracket the table and quote the cell.
   `agent-docs/CLAUDE.md` has both syntaxes and the checker they answer to. The
   whole table comes across; a page wanting fewer rows is a page arguing with the
   doc that owns the number, and that doc has to be linked or the reader gets a
@@ -52,7 +52,7 @@ check by fixing the manifest, not by removing a skip.
   selects a non-default display type or needs real `displayId`s.
 - **Write a track as the whole-track shorthand** (`trackId`, `uri`,
   `assemblyNames`) when its extension infers the type and adapter the example
-  wants and the adapter carries no other slot. Keep `type` beside a `displays`
+  wants and the adapter has no other slot. Keep `type` beside a `displays`
   array, which the config schema requires. A page whose subject is the adapter
   or the full form keeps it, and so does a fence a figure spec reads through
   `pageTrack`.
@@ -60,14 +60,14 @@ check by fixing the manifest, not by removing a skip.
   however small the point. A bare `{ "color": … }` blob is the one shape a
   reader cannot paste. `check-config-blocks` enforces it.
 - **A tagged fence renders its own routes, so don't narrate them.** The widget
-  carries a Desktop tab beside the config and the CLI
-  (`derive-desktop-steps.ts`) — pasted JSON for a track, the add-genome form for
-  an assembly. So the prose says what the config IS and the tabs say how to
-  apply it: "add this to the `tracks` array", "run the CLI command below" and
-  "in Desktop use Open new genome" each duplicate a tab, and each reads to the
-  other two thirds of the audience as the only way in. An assembly the form has
-  no input for (`aliases`, `geneticCodes`, a non-sibling index) silently gets no
-  such tab, which is the signal that the page owes that reader a sentence.
+  has a Desktop tab beside the config and the CLI (`derive-desktop-steps.ts`) —
+  pasted JSON for a track, the add-genome form for an assembly. So the prose
+  says what the config IS and the tabs say how to apply it: "add this to the
+  `tracks` array", "run the CLI command below" and "in Desktop use Open new
+  genome" each duplicate a tab, and each reads to the other two thirds of the
+  audience as the only way in. An assembly the form has no input for (`aliases`,
+  `geneticCodes`, a non-sibling index) silently gets no such tab, which is the
+  signal that the page owes that reader a sentence.
 - **A whole config (one with `assemblies`) opens with
   `"$schema": "https://jbrowse.org/jb2/schema/v5/config.json"`**, the URL the
   generated schema names, so a reader who copies it gets completion and
@@ -106,7 +106,7 @@ check by fixing the manifest, not by removing a skip.
 
 ## Voice
 
-Dry and scientific — the figure carries the result, the prose says what was done
+Dry and scientific — the figure holds the result, the prose says what was done
 and what it means. No drama, no conclusion one picture can't support.
 
 A page opens with a plain prose paragraph saying what it is about, with no

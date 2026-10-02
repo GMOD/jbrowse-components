@@ -194,7 +194,7 @@ haplotypes:
 
 ## Reads and coverage
 
-The tumor and normal BAMs carry no `MD` tags. Convert each to a local CRAM
+The tumor and normal BAMs have no `MD` tags. Convert each to a local CRAM
 against the reference above and write a coverage bigWig beside it:
 
 <!-- from: scripts/build_sv_visualization_cgiab.sh -->
@@ -308,7 +308,7 @@ in view, which is how both NYGC records at cluster_3 appear in the figure above.
 
 C-GIAB publishes copy-number calls on this pair from four groups:
 
-| Callset                                                                                                                                  | Called from                           | Each segment carries                                                        |
+| Callset                                                                                                                                  | Called from                           | Each segment has                                                            |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------- |
 | NIST V0.5 draft benchmark                                                                                                                | assembly comparison plus read support | absolute total and per-haplotype copy number                                |
 | [Wakhan](https://github.com/KolmogorovLab/Wakhan)                                                                                        | PacBio HiFi, phased with Hi-C         | copy number per parental haplotype, with LOH intervals in a second file     |
@@ -320,7 +320,7 @@ numbers are absolute, so CN 2 marks a diploid region. None of the groups
 publishes depth per bin, so the end of this section builds it from the tumor
 reads.
 
-<Figure caption="Four published CNV callsets over chr9p21.3, with the HiFiCNV depth above them. Depth drops out over CDKN2A, where the benchmark and NYGC both carry a focal call and the two coarser segmentations run straight through." src="/img/sv_cgiab/cnv_callset_comparison.png" />
+<Figure caption="Four published CNV callsets over chr9p21.3, with the HiFiCNV depth above them. Depth drops out over CDKN2A, where the benchmark and NYGC both have a focal call and the two coarser segmentations run straight through." src="/img/sv_cgiab/cnv_callset_comparison.png" />
 
 ### DRAGEN copy number
 
@@ -619,7 +619,7 @@ Use the **search** (magnifying glass) button in the SV inspector to find
 ([NCBI Gene 50624](https://www.ncbi.nlm.nih.gov/gene/50624)). At about 1.8 kb,
 the whole deletion fits in a pileup at base level.
 
-**ClinVar CNVs** carries submitted copy-number variants and their clinical
+**ClinVar CNVs** holds submitted copy-number variants and their clinical
 significance, served by UCSC as a bigBed:
 
 ```json addtrack
@@ -747,7 +747,7 @@ outputs for each sample's CRAM; swap in yours:
 }
 ```
 
-Thin lines across the gap in the read pileup are reads that carry the deletion.
+Thin lines across the gap in the read pileup are reads with the deletion.
 
 The benchmark's `total_copy_number` is absolute: CN 2 is diploid, and 9p has
 already lost a copy, so CN 1 is the local background. Widen the view several
@@ -757,8 +757,8 @@ hundred kilobases right to read CN 2 against it.
 
 #### Chromosome 17 LOH
 
-Chromosome 17 carries a different LOH state on each arm. Open the whole
-chromosome with the depth track above the BAF:
+Chromosome 17 has a different LOH state on each arm. Open the whole chromosome
+with the depth track above the BAF:
 
 - the p-arm (covering _TP53_) is a single-copy loss with LOH (`CNA_20`, CN 1,
   1+0): depth is halved and the BAF splits away from 0.5.
@@ -787,7 +787,7 @@ number. Click a CNV feature to see both columns.
 #### KRAS and SMAD4
 
 _KRAS_ on chr12 sits in a gain (`SV_101`, CN 3, 2+1), a 2 Mb tandem duplication
-carrying the G12V-mutated copy
+with the G12V-mutated copy
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)), a handful of
 pixels wide at whole-chromosome scale.
 
@@ -809,7 +809,7 @@ HG008-T v3.2's scaffold names end in `_hap1` or `_hap2`, so one plot stacks both
 haplotypes and doubles every diagonal. Restrict the y axis to one haplotype at a
 time for a plain assembly-vs-reference diagonal.
 
-<Figure caption="The two haplotypes of HG008-T v3.2 (y) against GRCh38 chromosomes (x), hap1 left and hap2 right. Each scaffold is one diagonal segment. On hap1 the chr3_chr13_hap1 scaffold carries a piece of chr3 and a piece of chr13, the translocation; on hap2 chr13_hap2 is one unbroken diagonal against chr13." src="/img/sv_cgiab/dotplot_haplotypes.png" />
+<Figure caption="The two haplotypes of HG008-T v3.2 (y) against GRCh38 chromosomes (x), hap1 left and hap2 right. Each scaffold is one diagonal segment. On hap1 the chr3_chr13_hap1 scaffold has a piece of chr3 and a piece of chr13, the translocation; on hap2 chr13_hap2 is one unbroken diagonal against chr13." src="/img/sv_cgiab/dotplot_haplotypes.png" />
 
 Drag over a region and take **Launch → Linear synteny view**, keeping **HG008T
 v3.2** as the synteny dataset, then enter `chr3 chr13` in the GRCh38 search box.

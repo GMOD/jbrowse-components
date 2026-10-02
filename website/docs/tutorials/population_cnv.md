@@ -175,9 +175,9 @@ step lines on one pinned axis, so each plateau lines up with a copy count:
 }
 ```
 
-<Figure caption="The CCL3L1 window as six stacked profiles on a shared 0-10 axis, from the individual carrying the most copies down to one carrying none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
+<Figure caption="The CCL3L1 window as six stacked profiles on a shared 0-10 axis, from the individual with the most copies down to one with none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
-Two paralogous blocks carry the variation. The right-hand one spans CCL3L1 and
+Two paralogous blocks hold the variation. The right-hand one spans CCL3L1 and
 CCL4L1, chemokine genes that exist in a variable number of tandem copies. The
 left-hand one is a TBC1D3 repeat.
 
@@ -201,7 +201,7 @@ same assembly:
 }
 ```
 
-<Figure caption="UGT2B17 on chr4 in the PUR panel track, under the SV map. A biallelic deletion: each individual sits flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion." src="/img/cnv1000g/ugt2b17_biallelic.png" />
+<Figure caption="UGT2B17 on chr4 in the PUR panel track, under the SV map. A biallelic deletion: each individual sits flat at two, one or zero copies with the same breakpoints in every individual with it, and the SV map calls it as a CN0 deletion." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
 ## A Zarr store for the whole panel
 
@@ -288,7 +288,7 @@ config that holds it, so a store beside your `config.json` takes
 
 <Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies. The CCL3L1/CCL4L1 block is flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
 
-Past the two metadata reads, each request is a chunk carrying every sample
+Past the two metadata reads, each request is a chunk containing every sample
 across a range of bins, so the cost of a view follows the width of its window.
 
 ## A nested deletion
@@ -296,7 +296,7 @@ across a range of bins, so the cost of a view follows the width of its window.
 The store also covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
 114 kb one. Navigate the Zarr track to `chr3:162,650,000-163,050,000` and run
 **Clustering → Cluster rows by score...**. The panel sorts individuals by which
-of the two deletions they carry, and the long-read assembly calls of the Human
+of the two deletions they have, and the long-read assembly calls of the Human
 Genome Structural Variation Consortium
 ([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both.
 We'll add them as a variant track:
@@ -318,7 +318,7 @@ this from **Filter by... → Edit filters...** in the track menu:
 jexl:alleleLength(feature)>=5000
 ```
 
-<Figure caption="All 2504 individuals over chr3:162.65-163.05 Mb, clustered, under HGSVC3 structural variants of 5 kb and longer. Each block of rows carries neither deletion, one or two copies of one of them, or one copy of each." src="/img/paper/cohort_cnv.png" />
+<Figure caption="All 2504 individuals over chr3:162.65-163.05 Mb, clustered, under HGSVC3 structural variants of 5 kb and longer. Each block of rows has neither deletion, one or two copies of one of them, or one copy of each." src="/img/paper/cohort_cnv.png" />
 
 ## Build the store
 

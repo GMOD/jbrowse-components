@@ -4,7 +4,7 @@ description: Population-level variant views
 guide_category: Track types
 ---
 
-A VCF can carry genotypes for many samples. The multi-sample variant display
+A VCF can hold genotypes for many samples. The multi-sample variant display
 draws one row per sample, and **Show... → Show as genotype matrix** in the track
 menu chooses how the variants run across it:
 
@@ -22,7 +22,7 @@ transparency so you can still tell them apart.
 If overlaps overwhelm the view, use "Edit filters" in the track menu to hide
 variants by size, name, or any Jexl expression.
 
-<Figure caption="1000 Genomes SV ensemble callset (3202 samples) across 5 Mb of chr19, one row per sample, sorted by genotype at a 1.1 Mb inversion. Each call is drawn at its real span, so the sort collects the inversion's carriers into a block against the rest of the cohort." src="/img/multisv.png" />
+<Figure caption="1000 Genomes SV ensemble callset (3202 samples) across 5 Mb of chr19, one row per sample, sorted by genotype at a 1.1 Mb inversion. Each call is drawn at its real span, so the sort collects the inversion's samples with the inversion into a block against the rest of the cohort." src="/img/multisv.png" />
 
 ## Equal-width columns: SNP and indel patterns {#matrix-best-for-snpindel-patterns}
 
@@ -70,7 +70,7 @@ Both layouts color each genotype cell, and how they color it is set by the
 display option.
 
 In **allele-dosage** mode (`'alleleCount'`), one cell is drawn per sample and
-shaded by how many alternate alleles the call carries:
+shaded by how many alternate alleles the call has:
 
 - homozygous reference (`0/0`) → light grey
 - heterozygous (`0/1`) → a medium shade
@@ -84,7 +84,7 @@ uncalled genotype (`./.`) takes the no-call color.
 In **phased** mode (`renderingMode: 'phased'`), each sample is split into one
 row per haplotype and every haplotype cell is colored reference vs alt on its
 own, rather than collapsed to a dosage, so inherited haplotype blocks line up as
-the contiguous vertical bands in the trio matrix above. A haplotype carrying the
+the contiguous vertical bands in the trio matrix above. A haplotype with the
 site's most frequent alt takes the same blue as a homozygous-alt cell in
 allele-dosage mode, and any other alt draws red.
 
@@ -100,8 +100,8 @@ configuration.
 
 ## Coloring by consequence impact (SnpEff/VEP annotations)
 
-If the VCF's `INFO` field carries SnpEff `ANN` or VEP `CSQ` annotations, each
-variant's alt-carrying cells can be colored by the severity of its most severe
+If the VCF's `INFO` field has SnpEff `ANN` or VEP `CSQ` annotations, each
+variant's alt-allele cells can be colored by the severity of its most severe
 predicted consequence. From the track menu, open **Color by...** and choose
 **Consequence impact** under **Cells**. The entry stays visible where no variant
 in view is annotated, but is greyed out and names why: _(checking for SnpEff/VEP
@@ -129,7 +129,7 @@ To have the track load already colored this way, set the display's `color` to
 
 ## Coloring by SV type
 
-Structural variants can be colored by their class: each alt-carrying cell takes
+Structural variants can be colored by their class: each alt-allele cell takes
 the color of its variant's structural-variant type. From the track menu, open
 **Color by...** and choose **SV type** under **Cells**. Like the consequence
 option it greys out rather than disappearing, reading _(no structural variants
@@ -148,10 +148,10 @@ region, and a record with no structural class keeps the default alt color.
 The class is read from the ALT allele first: `<DEL>`, `<DUP:TANDEM>`, breakend
 notation, and 1000 Genomes' `<CN0>` (a deletion) and `<CN2>` and up (a
 duplication). Otherwise it comes from `INFO/EVENTTYPE` or `INFO/SVTYPE`, or from
-a sequence allele 50 bp or more longer or shorter than REF. Every VCF record
-carries the result as its `svType` field.
+a sequence allele 50 bp or more longer or shorter than REF. JBrowse stores the
+result as each VCF record's `svType` field.
 
-<Figure caption="1000 Genomes SV ensemble callset on chr19 colored by SV type, each alt-carrying cell taking its variant's class color, pale for a het and full for a hom. The legend names every class present, including the callset's complex (CPX) events, with both shades beside each." src="/img/multisv_svtype.png" />
+<Figure caption="1000 Genomes SV ensemble callset on chr19 colored by SV type, each alt-allele cell taking its variant's class color, pale for a het and full for a hom. The legend names every class present, including the callset's complex (CPX) events, with both shades beside each." src="/img/multisv_svtype.png" />
 
 A track loads already colored by SV type with `color` set to
 `{ "field": "svType" }`: see
@@ -159,11 +159,11 @@ A track loads already colored by SV type with `color` set to
 
 ## Coloring by any field
 
-**Color by... → Field...** colors each alt-carrying cell by a field of its
-record. The dialog lists the file's columns (QUAL, FILTER, ID, ALT), every INFO
-field its header declares, with the header's description, and the computed
-values such as `maf` and `missingness`; any other field name or a `jexl:`
-expression can be typed in.
+**Color by... → Field...** colors each alt-allele cell by a field of its record.
+The dialog lists the file's columns (QUAL, FILTER, ID, ALT), every INFO field
+its header declares, with the header's description, and the computed values such
+as `maf` and `missingness`; any other field name or a `jexl:` expression can be
+typed in.
 
 - Left as it is, each value of the field takes its own color, as `INFO.CLNSIG`
   gives Pathogenic, Benign and Uncertain_significance one each.

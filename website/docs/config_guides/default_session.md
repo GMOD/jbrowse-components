@@ -51,7 +51,7 @@ it, which is why a pipeline that regenerates `config.json` must
 ## Sessions the app exports
 
 The app's export-session option writes a full state snapshot with every
-coordinate resolved and each track carrying a `configuration` reference and a
+coordinate resolved and each track with a `configuration` reference and a
 `displays` array. It pastes straight in as a `defaultSession`, and a config slot
 written on one of its display nodes (`"height": 250`) is dropped without
 warning, where the same key works in a track entry the view opens by id

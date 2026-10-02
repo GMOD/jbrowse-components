@@ -62,7 +62,7 @@ in place.
   `"jexl:{ncbi:'https://www.ncbi.nlm.nih.gov/gene/?term='+feature.name+'+'+track.assemblyNames[0]}"`.
 - In `subfeatures`, `parent` is the feature this one sits in and `depth` how far
   down, 1 for a gene's transcript and 2 for the transcript's exon, so a
-  transcript row can carry its gene's name: `"jexl:{gene:parent.name}"`.
+  transcript row can hold its gene's name: `"jexl:{gene:parent.name}"`.
 
 ### Values are HTML, and bare URLs become links {#bare-urls}
 
@@ -159,7 +159,7 @@ callback's variable is `config`, the track's own configuration:
 ```
 
 - [`hideUris`](/docs/config/formatabout/#slot-formatabouthideuris) drops every
-  file location from the dialog only; `config.json` still carries them. A
+  file location from the dialog only; `config.json` still has them. A
   session-wide `true` cannot be turned back on by a track.
 - [`config`](/docs/config/formatabout/#slot-formataboutconfig) merges over the
   config shown, exactly as `formatDetails.feature` does.

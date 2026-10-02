@@ -16,9 +16,9 @@ MSA, then read the MSA's domains back on the genome.
 
 ## Where the data comes from
 
-genomes.jbrowse.org's hosted hg38 config carries the gene track the examples
-below click through; the protein3d and msaview plugins resolve everything else
-live, per gene, from the services beside them.
+genomes.jbrowse.org's hosted hg38 config has the gene track the examples below
+click through; the protein3d and msaview plugins resolve everything else live,
+per gene, from the services beside them.
 
 - hg38: https://jbrowse.org/ucsc/hg38/config.json
 - AlphaFold DB, where a launched structure comes from:
@@ -71,12 +71,12 @@ highlights the genomic position.
 A genomic position maps to a residue through the transcript's CDS with
 [g2p_mapper](https://github.com/cmdcolin/g2p_mapper), so introns, UTRs and
 residues the structure is missing highlight nothing. A missing residue shows as
-a gap in the **Pairwise alignment** panel above the structure, which carries the
+a gap in the **Pairwise alignment** panel above the structure, which has the
 transcript row against the structure row with a consensus line. Folding the
 transcript's translation with AlphaFold gives an exact correspondence.
 
-The lookup needs a gene feature carrying a recognizable protein or transcript
-ID, which the RefSeq gene tracks on the hosted configs carry.
+The lookup needs a gene feature with a recognizable protein or transcript ID,
+which the RefSeq gene tracks on the hosted configs have.
 
 The protein view holds the AlphaFold structure, the genome-to-structure
 alignment, and per-residue tracks for pLDDT confidence, domains, helices and
@@ -150,11 +150,10 @@ Each colored block is an NCBI conserved domain, drawn in alignment columns: the
 same domain lands in the same column in every row that has it, whatever the
 proteins' lengths.
 
-Human _NLRP1_ carries a pyrin (PYD) death-fold domain at its N terminus. Some
-rows have it and some do not, mouse _Nlrp1a_ among those that do not. The
-aligner's tree orders the rows, so the rows that have it sit together. The
-shared core is the control: NACHT, the winged helix, HD2, FIIND and CARD run
-across every row.
+Human _NLRP1_ has a pyrin (PYD) death-fold domain at its N terminus. Some rows
+have it and some do not, mouse _Nlrp1a_ among those that do not. The aligner's
+tree orders the rows, so the rows that have it sit together. The shared core is
+the control: NACHT, the winged helix, HD2, FIIND and CARD run across every row.
 
 The calls come from NCBI's protein records. For a protein NCBI has no calls for,
 `react-msaview-cli interproscan` scans the alignment's sequences into a domain
@@ -167,7 +166,7 @@ covers `interpro`, the instant path when the rows are UniProt accessions.
 
 UniProt annotates the same proteins independently of NCBI's conserved-domain
 database, and UCSC projects those annotations onto the genome, so the hosted
-config carries them as ordinary tracks. **UniProt - Domains**, under Genes and
+config holds them as ordinary tracks. **UniProt - Domains**, under Genes and
 Gene Predictions, is the domain architecture in genomic coordinates.
 
 Turn it on in the linear view you launched from. _NLRP1_ is transcribed right to

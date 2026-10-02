@@ -59,14 +59,14 @@ them generically as `field6`, `field7`, ... and a jexl callback reading
 <!-- GOTCHA BedAdapter END -->
 
 An unset [`color`](/docs/config/linearcanvasbasedisplay/#slot-color) paints each
-feature from the colors a BED carries, under whichever of those names they land,
-so a callback is only needed to override that.
+feature from the colors a BED has, under whichever of those names they land, so
+a callback is only needed to override that.
 
 ## Reading the type list off the file
 
 A lookup table keyed on `feature.type` is only as good as its keys, so read the
 types off the file. The `/^##FASTA/{exit}` stops before any inline sequence,
-whose lines carry no `#` and would otherwise count as types:
+whose lines have no `#` and would otherwise count as types:
 
 ```bash
 awk -F'\t' '/^##FASTA/{exit} !/^#/{print $3}' annotations.gff |
@@ -76,7 +76,7 @@ awk -F'\t' '/^##FASTA/{exit} !/^#/{print $3}' annotations.gff |
 Any type missing from the table falls through to `|| 'gray'`, so gray on screen
 is the signal to go back to that list. A worked case: the
 [EBI mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline)
-writes a GFF whose column 3 carries mobile element types (published per genome
+writes a GFF whose column 3 holds mobile element types (published per genome
 under MGnify's
 [`mgnify_genomes`](https://ftp.ebi.ac.uk/pub/databases/metagenomics/mgnify_genomes/)
 as `<accession>_mobilome.gff`), so with no callback the whole mobilome paints
@@ -96,7 +96,7 @@ back:
 ```
 
 - **Two names for the repeat flanks** because the pipeline renamed the type
-  across releases, and a file carries whichever name its release used. A renamed
+  across releases, and a file uses whichever name its release used. A renamed
   type is the usual reason a key is missing.
 - **The sequence is inline after `##FASTA`.** `Gff3Adapter` stops at that
   marker, so the whole file loads as-is. For a `bgzip`/`tabix` track, cut the

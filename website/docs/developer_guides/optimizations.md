@@ -77,8 +77,8 @@ pool speeds up. Running a second pan over the same file answers from the
 decompressed chunk cache and so decompresses nothing, which measures the two
 halves apart: the line scan alone is 28% of the cold query, and the pool reaches
 the rest at 1.83x. Amdahl's law puts the end-to-end figure at 1.49x against
-1.45x measured. A 1000 Genomes line carries a genotype field per sample, so that
-28% is byte scanning on enormous lines. Getting past 1.5x on multi-sample VCF
+1.45x measured. A 1000 Genomes line has a genotype field per sample, so that 28%
+is byte scanning on enormous lines. Getting past 1.5x on multi-sample VCF
 therefore means attacking
 [the scan](https://github.com/GMOD/tabix-js/blob/main/docs/optimizations.md#scanning-lines).
 
@@ -127,14 +127,14 @@ is the reversal that added the batched one.
 A synteny file says which piece of one genome aligns to which piece of another,
 and at whole-genome zoom its per-base detail is invisible. `jbrowse make-pif`
 therefore writes each alignment twice into one indexed file (a PIF): a fine copy
-carrying the per-base alignment string (its CIGAR), and a coarse copy without
-it, cut wherever an insertion or deletion is large enough that one bounding box
+with the per-base alignment string (its CIGAR), and a coarse copy without it,
+cut wherever an insertion or deletion is large enough that one bounding box
 would misrepresent the alignment. A one-letter prefix on the sequence name
 separates the two, so asking for a zoom level is asking for a different region
 name.
 
 How much the coarse copy saves depends entirely on how many CIGAR bytes a row
-carries, since it keeps every other field:
+holds, since it keeps every other field:
 
 <!-- BEGIN GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
@@ -148,7 +148,7 @@ carries, since it keeps every other field:
 
 <!-- END GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
-The table above gives what carrying both copies adds to the file. Reading the
+The table above gives what keeping both copies adds to the file. Reading the
 coarse copy saves a different amount, measured on a real hosted alignment — a
 human/mouse liftOver chain converted to a PIF — by counting the bytes the server
 actually sent for one whole-genome pass:
@@ -166,7 +166,7 @@ The coarse and fine arms each read every row of their own tier out of the same
 file. The `bytes/row` column is the one to read: the coarse copy returns
 alignments that are far smaller, and the CIGAR accounts for the difference.
 
-The coarse copy did not always carry a CIGAR at all: earlier it split an
+The coarse copy did not always include a CIGAR at all: earlier it split an
 alignment into pieces wherever an indel was large enough to matter, and read
 whichever piece bounded the query region. Replacing that with one row per
 alignment plus a folded CIGAR (`cr:Z:`) added bytes back, on the same hosted
@@ -181,13 +181,13 @@ human/mouse file:
 
 <!-- END GENERATED MEASUREMENT pif-coarse-fold-bytes -->
 
-Under 7% of rows carry a fold at all, and most of a fold's bytes are indels
+Under 7% of rows have a fold at all, and most of a fold's bytes are indels
 between 5 and 10 kb — too small to change a whole-genome view, kept anyway
 because the format bounds every run to within `--coarse` of the true path.
 
-Back in the file-size table, the last column is what carrying both copies adds
-to the file, and the `coarse/fine bytes` column beside it is what reading only
-the coarse copy saves. With 1.5 kb alignment blocks it gives up indel detail for
+Back in the file-size table, the last column is what keeping both copies adds to
+the file, and the `coarse/fine bytes` column beside it is what reading only the
+coarse copy saves. With 1.5 kb alignment blocks it gives up indel detail for
 almost nothing; at 5 Mb it is the difference between reading the CIGARs and not.
 **The coarse copy makes each alignment cheaper and does not make them fewer**,
 so it suits a few huge alignments with megabase CIGARs, and does little for a
@@ -197,10 +197,10 @@ Binning alignments together as they are read is the obvious answer to that, and
 it is capped. Profiling a whole-genome fetch of a human-vs-mouse-scale PIF puts
 66% of the cost in reading and parsing lines and 34% in building features and
 everything after, and binning inside the line callback cannot touch the first
-number, so its ceiling is about 1.5x. Only a file that already carries binned
+number, so its ceiling is about 1.5x. Only a file that already contains binned
 alignments cuts the larger half.
 [SYNTENY_LOD.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_LOD.md)
-carries the phase table and the recommended scheme.
+has the phase table and the recommended scheme.
 
 ### Cancelling in-flight reads
 
@@ -224,8 +224,8 @@ wrong when the read being cancelled is one
 
 ### Genotype codes in a multi-sample VCF
 
-A row of a multi-sample VCF carries one genotype per sample, and drawing that
-row used to mean cutting one substring out of the line per sample.
+A row of a multi-sample VCF has one genotype per sample, and drawing that row
+used to mean cutting one substring out of the line per sample.
 [`@gmod/vcf`](https://github.com/GMOD/vcf-js/blob/main/docs/optimizations.md#one-pass-per-sample-however-many-keys-you-ask-for)
 reports each genotype as a pair of offsets into the line it already holds, and
 `analyzeVariants` walks those in a single pass per row: each distinct genotype
@@ -336,7 +336,7 @@ bin, so a zoom-in that crosses an octave refetches — at most once per octave,
 two or three calls over a seven-octave gesture, each a subset of the last
 ([PER_BASE_SUBPIXEL_BIN.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PER_BASE_SUBPIXEL_BIN.md)).
 [BENCHMARKING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/BENCHMARKING.md)
-carries the whole table, why it is imported from a sibling checkout instead of
+has the whole table, why it is imported from a sibling checkout instead of
 measured here, and the two of its neighbours that are not publishable.
 
 ### Coordinates are absolute uint32, split in the shader
@@ -359,8 +359,8 @@ Two alternatives, and what each costs: `uint32` converted in one step loses
 precision above about 16 Mbp, and float hi/lo vertex attributes double
 per-vertex position memory and push the split onto every CPU packer.
 [BP_PRECISION.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/BP_PRECISION.md)
-carries the real `hpToClipX`, which threads an extra term precisely so the
-compiler cannot algebraically collapse the split back into one large-magnitude
+has the real `hpToClipX`, which threads an extra term precisely so the compiler
+cannot algebraically collapse the split back into one large-magnitude
 subtraction.
 
 ### Interaction cost is React re-render
@@ -420,8 +420,8 @@ paid for both and owed one. Split, at real RNA-seq junction counts:
 
 The bigger case is the emptiness, because it is the one that costs when there is
 nothing to draw. Junction arcs are on by default wherever the coverage band
-draws, so every alignments track evaluates that pipeline, and reads off DNA
-carry no splice junction at all — yet the computed still rebuilt a list of empty
+draws, so every alignments track evaluates that pipeline, and reads off DNA have
+no splice junction at all — yet the computed still rebuilt a list of empty
 sections per frame, and its overlay re-rendered on all 20 frames of a zoom to
 return a list of nulls. Handing back one shared empty array takes that to zero.
 
@@ -432,9 +432,8 @@ keyed by junction, so React pools them and a pan patches one path attribute per
 arc while creating and destroying nothing. That is the shape the coordinate
 ruler above was fixed _into_.
 [INTERACTION_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/INTERACTION_PERF.md)
-carries both counts, and says what this still does not measure: a whole-app
-frame budget on RNA-seq, which no fixture in the repo has the junction counts
-for.
+has both counts, and says what this still does not measure: a whole-app frame
+budget on RNA-seq, which no fixture in the repo has the junction counts for.
 
 ### The track selector's per-row cost
 
@@ -560,8 +559,8 @@ Some of the largest wins are decisions about the files.
   `200` to a `Range` request turns every query into a whole-file download.
 - **Write the coarse copy of a synteny file** (`jbrowse make-pif` does by
   default). Suppressing it costs the zoomed-out read the table above measures.
-- **Precompute a summary.** A BigWig carries zoom levels; a pileup does not, and
-  a coverage view over deep alignments pays for that at every zoom.
+- **Precompute a summary.** A BigWig has zoom levels; a pileup does not, and a
+  coverage view over deep alignments pays for that at every zoom.
 - **One chunked array beats one file per sample.** A signal track built from one
   BigWig per sample is latency-bound: each file needs several reads to locate a
   region before it can read it, and those reads wait on one another, so the cost
@@ -592,7 +591,7 @@ where the next attempt starts.
   and the index cannot fix it
   ([SYNTENY_LOD.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_LOD.md#synteny-picking-measured)).
 - **A dense whole-genome synteny view is bound by the number of alignments**,
-  and only a file that already carries binned alignments reaches the dominant
+  and only a file that already contains binned alignments reaches the dominant
   two-thirds of that cost
   ([SYNTENY_LOD.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_LOD.md)).
 - **Dropping small mismatches** would cut the MAF worker's largest remaining
@@ -603,7 +602,7 @@ where the next attempt starts.
 One of these is also an architectural limit rather than a slow path: the sticky
 worker assignment has a retire condition, and
 [ARCHITECTURAL_LIMITS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/ARCHITECTURAL_LIMITS.md)
-carries it beside the GPU and scoping ceilings [](/docs/developer_guides/memory)
+lists it beside the GPU and scoping ceilings [](/docs/developer_guides/memory)
 sends you to. The rest are measured costs of the current design with nothing yet
 proposed to retire them.
 
@@ -633,8 +632,8 @@ with the bogus figure it actually reported. The four that recur:
   figures taken while the box is descheduling are not properties of the code.
 
 Taking a first measurement at all is a different problem from not faking one,
-and the same doc carries the patterns for the frame clock — what to instrument
-for a render or a scroll that feels slow, validated against a real jank report.
+and the same doc has the patterns for the frame clock — what to instrument for a
+render or a scroll that feels slow, validated against a real jank report.
 
 The parser libraries each keep their own equivalent of this page, and the fetch
 half of the path is theirs. Each ends with a "what the consumer has to do"

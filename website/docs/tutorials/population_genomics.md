@@ -179,7 +179,7 @@ of the panel.
 ## Loading the scans in JBrowse
 
 We load the dm6 assembly from UCSC. Its reference names arms `chr2L`, and the
-alias file maps them to the bare `2L` the scans carry:
+alias file maps them to the bare `2L` the scans use:
 
 ```json addassembly
 {
@@ -262,7 +262,7 @@ In 2 kb windows each arrangement's π swings several fold from one window to the
 next, far more than the inversion moves one against the other, so two rows of it
 look alike. Pooling the windows into 250 kb bins and taking log2 of inverted
 over standard gives one lane that sits at zero wherever the two arrangements
-carry equal diversity. The build script's `awk` step writes it from the two π
+have equal diversity. The build script's `awk` step writes it from the two π
 bedGraphs:
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
@@ -376,7 +376,7 @@ everywhere else.
 
 The inversion itself is one `<INV>` record spanning the published breakpoints,
 genotyped `1/1` in the inverted lines and `0/0` in the standard ones. The `END`
-field carries the far breakpoint:
+field holds the far breakpoint:
 
 ```text
 #CHROM  POS      ID     REF  ALT    QUAL  FILTER  INFO                     FORMAT  DGRP-026  DGRP-032
@@ -413,7 +413,7 @@ Then open `chr2L` alone, with the π ratio track under Fst:
 
 <Figure src="/img/popgen/in2lt_pi_ratio.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, chr2L alone with π in the inverted lines over π in the standard ones, log2 in 250 kb bins. Inside the inversion the bins fall below zero, furthest at the two breakpoints, and toward the centromere past the inversion they sit at zero." links="Six arms=popgen/fst_in2lt_2L"/>
 
-The inverted lines carry less diversity than the standard ones across the
+The inverted lines have less diversity than the standard ones across the
 inverted region, most near the breakpoints, where the suppressed recombination
 is strongest. Toward the centromere past the inversion, where the arrangements
 recombine freely, the ratio sits at zero.
@@ -433,7 +433,7 @@ bash build_dgrp_popgen.sh                  # builds ./dgrp_popgen_build/jbrowse2
 npx --yes serve dgrp_popgen_build/jbrowse2 # then open the printed URL
 ```
 
-The config carries the dm6 assembly, every scan, and one `<INV>` record over the
+The config holds the dm6 assembly, every scan, and one `<INV>` record over the
 published In(2L)t breakpoints, genotyped in each line from its DGRPool
 karyotype. It opens on In(2L)t across arm 2L. The `.bw` and `.vcf.gz` files are
 written next to it, to host elsewhere or

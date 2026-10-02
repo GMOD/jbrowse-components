@@ -85,8 +85,8 @@ write each breakend pair as two records, and `batch` renders the pair once.
 `batch` parses the ALT bracket with `@gmod/vcf`, which handles four cases that a
 hand-written parser gets wrong without raising an error:
 
-- the replacement string may carry inserted sequence either side of the bracket
-  (`GTGATGGATTCA[CHR12:72273112[`)
+- the replacement string may contain inserted sequence either side of the
+  bracket (`GTGATGGATTCA[CHR12:72273112[`)
 - callers upper-case the mate contig, and hg38 has no contig named `CHR12`
 - `END=` matches inside `CIEND=`, and the first hit wins
 - the two records of one breakend pair name the same translocation twice
@@ -115,7 +115,7 @@ For a long run:
   do not speed the run up
 
 `batch` streams the reads from the hosted CRAM and fetches a `--config` URL or
-`--hub` once. It reports a row it cannot render and carries on, and `--resume`
+`--hub` once. It reports a row it cannot render and continues, and `--resume`
 retries that row. Deep long reads can put even a `--flank` window over a track's
 size limit, where the app would ask you to press **Force load**; `batch` loads
 every panel as if you had.
@@ -135,7 +135,7 @@ jb2export breakpoint \
   --width 1000 --out der3_tumor.png
 ```
 
-<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumor nanopore reads carry a solid curve at every breakend and the matched normal carries none. On the right, the same three loci as one reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
+<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumor nanopore reads have a solid curve at every breakend and the matched normal has none. On the right, the same three loci as one reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
 
 `featureHeight:super-compact` in that command draws each read 1 px tall, which
 fits six pileups on one screen.
@@ -160,7 +160,7 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
 A somatic call has curves in `tumor/` and none in `normal/`. The same file name
 in both directories puts each call beside its control:
 
-<Figure caption="Three rows of the two batch directories, tumor on the left and the matched normal on the right, each labelled with its file name. The chr7 junction has a fan of curves in the tumor and none in the normal. The chr1 to chr19 junction has curves in both. The chr2 deletion has no curve in either; one tumor read carries it as a gap through both panels." src="/img/jbrowse-img/sv_callset_sheet.png" />
+<Figure caption="Three rows of the two batch directories, tumor on the left and the matched normal on the right, each labelled with its file name. The chr7 junction has a fan of curves in the tumor and none in the normal. The chr1 to chr19 junction has curves in both. The chr2 deletion has no curve in either; one tumor read has it as a gap through both panels." src="/img/jbrowse-img/sv_callset_sheet.png" />
 
 The caller filed the chr1 to chr19 junction as somatic, and the normal's curves
 say it is germline.
@@ -179,8 +179,8 @@ say it is germline.
 The manifest's `links` column counts those curves: the split reads with pieces
 in more than one panel of that image. Sorting `tumor/manifest.tsv` on it puts
 the calls no split read joins at the top, and the same column of
-`normal/manifest.tsv` says which calls the normal carries too. A deletion short
-enough for one alignment to carry draws a gap through both panels and no curve,
+`normal/manifest.tsv` says which calls the normal has too. A deletion short
+enough for one alignment to hold draws a gap through both panels and no curve,
 so it counts zero links although the reads support it.
 
 ## Opening a call in the browser

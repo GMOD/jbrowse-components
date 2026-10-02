@@ -9,7 +9,7 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-Cancer genomes carry rearrangements that join several distant pieces of the
+Cancer genomes have rearrangements that join several distant pieces of the
 genome into one molecule through a chain of junctions. We follow one such chain
 in the COLO829 melanoma cell line across the three chromosomes it visits, in a
 breakpoint split view, then align the derivative allele assembled from the reads
@@ -284,8 +284,8 @@ platforms, is the independent check.
 
 Each hg38 window extends past the segment the allele includes, so the reference
 on either side of the reads is absent from the allele. The read lane shows split
-alignments only, so its coverage band counts the reads carrying a junction and
-steps down as each arm ends.
+alignments only, so its coverage band counts the reads with a junction and steps
+down as each arm ends.
 
 <Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the truth set's validated calls over the same molecules against hg38, split alignments only, each row stopping at a call with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them." src="/img/cancer_sv/derivative_inserts.png" />
 

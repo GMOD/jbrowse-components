@@ -177,7 +177,7 @@ A drag crossing a region boundary clips to the region it began in.
 
 ## Jumping to a species' own genome
 
-The rows of a MAF carry each species' own coordinates, so a row can be opened in
+The rows of a MAF have each species' own coordinates, so a row can be opened in
 its own genome. That same menu's **Open aligned genome at the matching region**
 submenu lists one entry per species the selection covers, naming that species'
 locus in its own coordinates; clicking one opens a view there.
@@ -203,8 +203,8 @@ view, \<ref\> vs...** lists the same species, and picking one opens the
 reference over that species' genome with the alignment drawn between them as
 ribbons. The ribbons come from the MAF's own columns, so every insertion and
 deletion in the block is where the alignment put it, and no synteny file is
-involved. The reference row carries the tracks this view had open, the MAF
-included; the species row carries its own gene track where the session has one.
+involved. The reference row has the tracks this view had open, the MAF included;
+the species row has its own gene track where the session has one.
 
 <Figure caption="The menu a drag across the rows raises on the E. coli pggb alignment: three submenus, the open one listing each strain the drag covers at that strain's locus." src="/img/maf_row_menu.png" />
 

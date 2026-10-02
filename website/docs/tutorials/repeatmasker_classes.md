@@ -16,7 +16,7 @@ difference is hard to read. The same file opened as a
 labelled lane per class. JBrowse reads the classes from the file, so no data
 preparation is needed. Every genome at
 [genomes.jbrowse.org](https://genomes.jbrowse.org), and any other UCSC/GenArk
-hub config, carries a RepeatMasker track to try it on.
+hub config, has a RepeatMasker track to try it on.
 
 ## Prerequisites
 
@@ -50,8 +50,8 @@ UCSC golden-path and GenArk hubs store the repeat class differently:
   `repClass` among them. That column is a feature attribute, so `rows` is
   `"repClass"`.
 - A **GenArk** assembly ships a `bigRmskBed`, whose autoSql has no class column.
-  The name carries the class as a suffix, `L1HS#LINE/L1`, so the value has to be
-  derived, as worked in
+  The name contains the class as a suffix, `L1HS#LINE/L1`, so the value has to
+  be derived, as worked in
   [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column).
 
 In both cases JBrowse builds the lanes from the values in the loaded region, so
@@ -62,11 +62,11 @@ a window with no satellite repeats has no satellite lane.
 Open RepeatMasker, then **Display types → Multi-row feature display (painting)**
 in the track menu. The painting partitions on `repClass` whenever the file has
 that column; **Partition by...** in the same menu lists every column the loaded
-features carry, `repFamily` among them. <!-- menu-path-ok -->
+features have, `repFamily` among them. <!-- menu-path-ok -->
 
 <Figure src="/img/multirow/display_types_menu.png" caption="The track menu's Display types submenu on the UCSC RepeatMasker track. Any feature track offers the multi-row display beside its default one." />
 
-<Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed lane to a labelled lane per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column the file carries." />
+<Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed lane to a labelled lane per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column in the file." />
 
 The colored, packed form and the lane form are the same track and the same
 fetch:
@@ -148,8 +148,8 @@ for what you are reading.
 
 ## Serving your own RepeatMasker output
 
-A hub's RepeatMasker BED carries the `repClass` column the display partitions
-on. The RepeatMasker `.out` file instead writes a single `class/family` field,
+A hub's RepeatMasker BED has the `repClass` column the display partitions on.
+The RepeatMasker `.out` file instead writes a single `class/family` field,
 `LINE/L1` for a repeat with both and a bare `Simple_repeat` for one whose family
 is its class. Splitting that field in two, under a header naming the columns,
 turns the `.out` into the file the track above reads:

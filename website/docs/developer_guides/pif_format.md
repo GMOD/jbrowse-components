@@ -23,8 +23,8 @@ jbrowse make-pif input.paf   # writes input.pif.gz and input.pif.gz.tbi
 ## Lines
 
 Each PAF line becomes two PIF lines, one per indexed perspective. Both keep
-PAF's 12 mandatory columns and its optional tags, in PAF's order. Column 1
-carries a one-letter prefix naming the perspective.
+PAF's 12 mandatory columns and its optional tags, in PAF's order. Column 1 has a
+one-letter prefix naming the perspective.
 
 | Line | Column 1      | Columns 2-4 | Columns 6-9 | `cg:Z:`           |
 | ---- | ------------- | ----------- | ----------- | ----------------- |
@@ -34,9 +34,9 @@ carries a one-letter prefix naming the perspective.
 A [coarse tier](#coarse-tier) repeats both lines under `T`/`Q`. The prefix is
 always the first character of column 1.
 
-Every line of one PAF row carries `pi:i:<n>`, the 0-based index of that row
-among the alignments written: comment lines and rows with fewer than 12 columns
-are skipped and do not advance it. It is the one id the row's two or four lines
+Every line of one PAF row has `pi:i:<n>`, the 0-based index of that row among
+the alignments written: comment lines and rows with fewer than 12 columns are
+skipped and do not advance it. It is the one id the row's two or four lines
 share, so a reader can hold a selection across the tier switch and match a
 coarse line to its fine one. It is file-local, so two PIFs concatenated would
 repeat it. It sits after the input's own tags, before a coarse line's `cr:Z:`.
@@ -55,7 +55,7 @@ A PAF CIGAR is written from the target's perspective, following SAM: `D`
 consumes the target, `I` consumes the query. A PIF line is walked against
 columns 1-4, so:
 
-- the `t` line's own axis is already the target, and carries the CIGAR unchanged
+- the `t` line's own axis is already the target, and has the CIGAR unchanged
 - the `q` line on the plus strand swaps every `I` and `D`
 - the `q` line on the minus strand reverses the op order and swaps `I` and `D`
 
@@ -64,7 +64,7 @@ CIGAR.
 
 ## Alignment strings
 
-A row carries exactly one, `cg:Z:`.
+A row has exactly one, `cg:Z:`.
 
 - a `cs:Z:` is converted to a CIGAR (`=` for matches, `X` for substitutions) and
   replaces any `cg:Z:` the row also had, since `cs` spells out mismatches that
@@ -78,7 +78,7 @@ Run minimap2 with `--eqx` so the CIGAR distinguishes `=` from `X`.
 
 ## Identity
 
-The renderer reads the first of these that a row carries:
+The renderer reads the first of these that a row has:
 
 - `de:f:`, minimap2's gap-compressed per-base divergence, as `1 - de`
 - `id:f:`, written by odgi untangle, as a fraction or a percentage
@@ -87,8 +87,8 @@ The renderer reads the first of these that a row carries:
 This identity value is the same quantity as rustybam's `rb stats --paf`
 `perID_by_all` and [SVbyEye](https://github.com/daewoooo/SVbyEye). It is never
 recomputed from the CIGAR, where a plain `M` folds mismatches into matches and
-would report a divergent alignment as identical. A coarse row carries its fine
-row's counts and tags, so identity coloring does not jump at a tier switch.
+would report a divergent alignment as identical. A coarse row has its fine row's
+counts and tags, so identity coloring does not jump at a tier switch.
 
 ## Header
 
@@ -187,10 +187,9 @@ a new file and draws every coarse row as one straight ribbon, so build with
 ## Multi-genome
 
 A PAF aligning more than two genomes, all-vs-all or each against one reference,
-takes the same format and the same command. What carries the extra genomes is
-the sequence names, following the
-[PanSN](https://github.com/pangenome/PanSN-spec) convention
-`sample#haplotype#contig`:
+takes the same format and the same command. Each sequence name includes its
+genome, following the [PanSN](https://github.com/pangenome/PanSN-spec)
+convention `sample#haplotype#contig`:
 
 ```tsv
 qgrape#1#chr1	1000	100	200	+	peach#1#G1	1000	300	400	90	100	60

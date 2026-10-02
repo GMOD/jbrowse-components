@@ -116,7 +116,7 @@ covers the sign check that goes with it:
 }
 ```
 
-Subcompartments are a BED whose color column carries the class color. ENCODE's
+Subcompartments are a BED whose color column holds the class color. ENCODE's
 copies are not tabix-indexed, so the plain
 [`BedAdapter`](/docs/config/bedadapter) reads the whole file:
 

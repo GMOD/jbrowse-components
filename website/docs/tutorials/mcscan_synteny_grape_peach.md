@@ -248,7 +248,7 @@ Zoom to one block with both gene tracks on and set to **Show only genes**.
 
 <Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Show only genes. Each ribbon is one .anchors line drawn across the extent of each gene; the genes between them have no anchor in this run." src="/img/mcscan_synteny/gene_level.png" />
 
-Most genes carry no ribbon, since MCScan anchors only the pairs it could call
+Most genes have no ribbon, since MCScan anchors only the pairs it could call
 confidently. Zooming further widens the ribbons, since each ribbon spans whole
 genes and the file holds no finer alignment.
 

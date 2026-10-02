@@ -16,8 +16,8 @@ type. Then we add a row per cell underneath.
 ## Prerequisites
 
 - cells already clustered and labeled, plus the barcoded BAM the counts came
-  from (Cell Ranger's `possorted_genome_bam.bam`, or any BAM carrying a
-  corrected cell-barcode tag)
+  from (Cell Ranger's `possorted_genome_bam.bam`, or any BAM with a corrected
+  cell-barcode tag)
 - [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) from the UCSC
   utilities, or `pip install deeptools sinto` plus `samtools` for the
   split-the-BAM route; the [reproduce script](#reproduce-it-end-to-end) bins the
@@ -69,8 +69,8 @@ Two decisions determine whether the rows can be compared:
   track needs scaling (CPM is usual) before one row's height means anything next
   to another's
 
-Coverage must also be splice-aware: a read spanning an intron carries an `N` in
-its CIGAR, and counting that as covered fills in introns no read touched.
+Coverage must also be splice-aware: a read spanning an intron has an `N` in its
+CIGAR, and counting that as covered fills in introns no read touched.
 
 One route splits the BAM by label with
 [`sinto filterbarcodes`](https://timoast.github.io/sinto/basic_usage.html) and
@@ -273,7 +273,7 @@ have reads, so the store covers marker windows and stays under a megabyte.
 <Figure caption="The nine pseudobulk rows at LYZ above the individual cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
 
 Summed, the lymphocyte rows are a low flat line beside the monocyte peak. Per
-cell, many of those cells carry a single UMI of a monocyte gene: ambient RNA in
+cell, many of those cells have a single UMI of a monocyte gene: ambient RNA in
 the droplet.
 
 Two settings in the config above decide whether the speckle is visible:

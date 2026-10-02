@@ -18,9 +18,9 @@ description:
 
 ## Find the tracks you can use
 
-`jb.listTracks` answers `{ total, tracks }`, not an array. A row carries
-`trackId`, `name`, `type` and `assemblyNames`, so a config with several
-assemblies is filtered in code:
+`jb.listTracks` answers `{ total, tracks }`, not an array. A row has `trackId`,
+`name`, `type` and `assemblyNames`, so a config with several assemblies is
+filtered in code:
 
 ```js
 const { total, tracks } = jb.listTracks('vcf')
@@ -149,7 +149,7 @@ Without `loc` the call throws `region too large for jb.getFeatures` naming the
 estimate and the limit, rather than returning a short answer that looks whole.
 Pass `byteLimit` alongside `trackId` for a read you mean to be that big.
 
-## Which genes carry a variant
+## Which genes have a variant
 
 Two reads over the same region and a join in code. Overlap is the half-open
 interval test, and the gene track is filtered to its top-level `gene` features
@@ -234,7 +234,7 @@ loaded.
 
 ## Show a value you computed as a track
 
-A `FromConfigAdapter` carries the features in the track config, so the derived
+A `FromConfigAdapter` holds the features in the track config, so the derived
 track saves and reopens with the session and needs no file. Variant density per
 kilobase across the visible region:
 
@@ -589,7 +589,7 @@ return jb.loadSessionSpec({
 })
 ```
 
-- The hosted configs carry each assembly's sequence and chromAlias file, so
+- The hosted configs include each assembly's sequence and chromAlias file, so
   `chr2R` answers for the `NC_` names the FASTA used.
 - `sessionTracks` takes each config's gene track too; leave out any trackId the
   open session already has, which the notifications name.
@@ -622,7 +622,7 @@ return {
 }
 ```
 
-Against volvox this answers with the linear displays a `VariantTrack` carries —
+Against volvox this answers with the linear displays a `VariantTrack` has —
 `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay`, among them.
 `configuration.displays` also holds the types other views draw, such as a
 circular view's `ChordVariantDisplay`.

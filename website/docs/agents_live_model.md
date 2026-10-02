@@ -113,8 +113,8 @@ Besides `value`, a call answers with:
   returning it.
 - `notifications`, toasts the session raised since the previous call, each with
   its `level`, each reported once.
-- `pageErrors`, the throws no toast carried: an uncaught exception, an unawaited
-  rejection, a mobx reaction that died. Nothing else reports these.
+- `pageErrors`, the throws that got no toast: an uncaught exception, an
+  unawaited rejection, a mobx reaction that died. Nothing else reports these.
 - a thrown error as its message plus `at code line L, column C`, counted in your
   code. A compile error has no line; look for an unbalanced bracket or an
   `await` in a non-async callback.
@@ -214,11 +214,11 @@ own `transform` steps), `transform`, `facet`, `rows` and `scales`, all in its
 thing there. The docs topic `plots` is the whole vocabulary, with the ggplot2
 and Vega-Lite name for each idea.
 
-A feature's label is whatever `name` it carries, else its `id`, and a file
-decides which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and
-carries no `Name`, so `f.get('name')` is `null` there and `f.get('id')` is the
-symbol. `Object.keys(f.toJSON())` says what one feature has before you filter on
-a field.
+A feature's label is whatever `name` it has, else its `id`, and a file decides
+which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and has no
+`Name`, so `f.get('name')` is `null` there and `f.get('id')` is the symbol.
+`Object.keys(f.toJSON())` says what one feature has before you filter on a
+field.
 
 - Reads are plain property or getter access; **mutations only through actions**
   (`view.setWidth(800)` works, `view.width = 800` throws).
@@ -231,10 +231,10 @@ a field.
   state, so `loc` on a patched view navigates it. Every route puts each key
   through the same slot machinery.
 - A misspelled key on a spec's track entry — one that is neither a config slot
-  nor something the display carries — raises an error notification naming it. A
-  spec has no return channel of its own, so that is where it reports, rather
-  than loading the track with the setting missing. A spec `layout` indexes the
-  spec's own `views` array.
+  nor something the display has — raises an error notification naming it. A spec
+  has no return channel of its own, so that is where it reports, rather than
+  loading the track with the setting missing. A spec `layout` indexes the spec's
+  own `views` array.
 - An action's signature is under `docs topic:"model:<modelType>"`
   `section:"Actions"` — the `modelType` `jb.inspect` answered with — config
   slots by type under `docs topic:"config:BamAdapter"`, every name under
@@ -280,13 +280,13 @@ return jb.waitReady(30000)
 ```
 
 `session.layoutViews(spec)` arranges the views already open into panels without
-replacing the session: the same tree as a spec `layout` (a leaf carries `views`,
-a container `children` and a `direction`), with a leaf naming view ids from
+replacing the session: the same tree as a spec `layout` (a leaf has `views`, a
+container `children` and a `direction`), with a leaf naming view ids from
 `jb.sessionSummary()` or indexes into `session.views`. It turns workspaces on,
 applies the stated order and returns the ids it seated; the lower-level
 `session.applyLayoutSpec` does neither and leaves the views stacked down the
 page, which is how a session grows taller than the window (`jb.waitReady`'s
-`offscreen`). `viewIds` is not a key; a node carrying one throws.
+`offscreen`). `viewIds` is not a key; a node with one throws.
 
 ## Reading data directly (fast path)
 
@@ -378,8 +378,8 @@ after every change; `rootModel.flushSession()` forces it. Web has no save from
 ## Showing something you derived
 
 A track built from values you just computed does not need a file.
-`FromConfigAdapter` carries the features in the track's own config, so the
-derived track is part of the session and survives a save and reopen.
+`FromConfigAdapter` holds the features in the track's own config, so the derived
+track is part of the session and survives a save and reopen.
 
 ```js
 session.addSessionTrackConf({
@@ -443,10 +443,10 @@ const { stdout } = await run('samtools', ['idxstats', '/data/sample.bam'])
 return stdout.split('\n').slice(0, 5)
 ```
 
-A `fetch` from here carries a browser Origin and obeys CORS, and some hosts
-refuse it (NCBI's acc.cgi answers 403; eutils does not).
-`window.require('https')` or `curl` under `window.require('child_process')`
-carries neither and reads the same bytes.
+A `fetch` from here has a browser Origin and obeys CORS, and some hosts refuse
+it (NCBI's acc.cgi answers 403; eutils does not). `window.require('https')` or
+`curl` under `window.require('child_process')` has neither and reads the same
+bytes.
 
 ## In a browser
 

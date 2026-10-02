@@ -7,7 +7,7 @@ tutorial_category: Cancer genomics
 ---
 
 Tumors from different patients tend to gain and lose the same regions, because
-those regions carry a gene driving the cancer. We stack copy-number segment
+those regions contain a gene driving the cancer. We stack copy-number segment
 calls for 1104 TCGA breast tumors, one row per tumor colored by gain or loss, so
 a recurrent event reads as a vertical stripe down the stack.
 
@@ -71,7 +71,7 @@ BED uses `chr1`, so pass the alias file to map one onto the other.
 ```
 
 The segments themselves are a `FeatureTrack` whose
-`LinearMultiRowFeatureDisplay` carries the row and color settings:
+`LinearMultiRowFeatureDisplay` holds the row and color settings:
 
 ```json addtrack config=test_data/tcga_cnv/config.json loc=17:39,000,000-40,500,000
 {
@@ -115,7 +115,7 @@ settings do the rest:
   into one labeled row per `sample`
 - [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) bins
   `segmean` onto a diverging blue-to-red scale at four cut points, since this
-  BED carries no `itemRgb`, and `labels` names each bin in the key
+  BED has no `itemRgb`, and `labels` names each bin in the key
 
 The `color` block names the column, the scale type, its cut points, the colours
 they map to and the labels in the key. Any display with a `color` slot takes the
@@ -143,13 +143,13 @@ Every figure below is in the sorted state.
 
 With each row under a pixel tall, the saturated colours crowd out the neutral
 ones. The stack shows where the events are, and the recurrence track below
-counts how many tumors carry them.
+counts how many tumors have them.
 
 ## Add a recurrence track
 
-Each 100 kb bin of `tcga_brca_cnv_recurrence.bedGraph.gz` carries the percent of
-the cohort gained and the percent lost, on the same log2 cutoffs the stack
-colors by (gain above 0.3, loss below -0.3):
+Each 100 kb bin of `tcga_brca_cnv_recurrence.bedGraph.gz` has the percent of the
+cohort gained and the percent lost, on the same log2 cutoffs the stack colors by
+(gain above 0.3, loss below -0.3):
 
 ```text
 #chrom  start      end        gain   loss
@@ -193,7 +193,7 @@ peak sits over a stripe:
 
 <Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one row per tumor, clustered by profile, under the cohort's gain and loss frequency per 100 kb. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
 
-Each bar is the fraction of the cohort carrying a call past the cutoff.
+Each bar is the fraction of the cohort with a call past the cutoff.
 [GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41) tests which peaks rise above
 a background model.
 

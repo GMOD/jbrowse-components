@@ -77,7 +77,7 @@ whatever order the VCF lists them:
 "facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] }
 ```
 
-<Figure src="/img/popgen/in2lt_inversion.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, a second view of chr2L adds one row per DGRP line, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau runs past both." links="Six arms=popgen/fst_in2lt_2L"/>
+<Figure src="/img/popgen/in2lt_inversion.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, a second view of chr2L adds one row per DGRP line, genotyped for the inversion and grouped by karyotype. The block of inverted lines spans breakpoint to breakpoint; the Fst plateau runs past both." links="Six arms=popgen/fst_in2lt_2L"/>
 
 ```json
 "facet": { "field": "karyotype", "domain": ["2L+a/2L+a", "2La/2L+a", "2La/2La"] }
@@ -86,7 +86,7 @@ whatever order the VCF lists them:
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in the Cameroon panel, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard arrangement."/>
 
 The domain in each case is a genetics decision, not an alphabetical one: dosage
-order in the mosquito figure, standard-before-carrier in the fly figure, both
+order in the mosquito figure, standard-before-inverted in the fly figure, both
 read straight off the figure's caption.
 [LD in mosquitoes](/docs/tutorials/ld_mosquitoes#the-block-on-the-karyotype-lanes)
 works through the mosquito one, and
@@ -225,7 +225,7 @@ Every one of these displays writes a drag-to-reorder back into the same `domain`
 slot it read the curated order from — the gene track and mark display's
 **Sections** list, the alignments track menu's group-by sections, multiway
 synteny's **Lanes** menu and lane-header drag, and the multi-row display's row
-drag, which writes `rows.domain`. A session saved after reordering carries the
+drag, which writes `rows.domain`. A session saved after reordering records the
 new order in `config.json` terms, not as separate runtime-only state.
 
 ## See also

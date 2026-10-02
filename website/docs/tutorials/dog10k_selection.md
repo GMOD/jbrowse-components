@@ -16,8 +16,8 @@ dogs and wolves, we scan every window of the genome for how far apart the allele
 frequencies of fourteen toy breeds and eleven giant breeds sit, and draw that as
 a Manhattan track. We then slice the _IGF1_ peak out of the 397 GB SNV callset
 over HTTP, load it as a multi-sample variant track with a sample-metadata TSV,
-and cluster the animals by genotype to see the haplotype each size class carries
-and where the wolves fall.
+and cluster the animals by genotype to see the haplotype each size class has and
+where the wolves fall.
 
 ## Prerequisites
 
@@ -316,7 +316,7 @@ the giant cluster and single blue rows within the small one. The build script
 prints the range within each size class alongside its median.
 
 The wolves form a contiguous band, on the toy and small side of the split. They
-carry part of the haplotype here, where the stop-gained allele in
+have part of the haplotype here, where the stop-gained allele in
 [](/docs/tutorials/dog10k_lof) is absent from them.
 
 ## Scanning another trait

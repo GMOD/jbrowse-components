@@ -106,7 +106,7 @@ cell by genomic distance, and
 which this table has.
 
 The block is a selective sweep. The allele that keeps lactase switched on into
-adulthood, `rs4988235`, rose in frequency and carried its neighbouring variants
+adulthood, `rs4988235`, rose in frequency, and its neighbouring variants rose
 with it ([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)). The
 [dbSNP report](https://www.ncbi.nlm.nih.gov/snp/rs4988235) for `rs4988235` lists
 the ClinVar entry and frequency table.

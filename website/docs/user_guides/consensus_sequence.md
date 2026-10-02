@@ -31,10 +31,10 @@ smaller one typed into the field.
 
 ## How a position is called
 
-Every read covering a position votes for the base it carries there, or for a gap
-if the read has a deletion. Votes are weighted, so a read carrying an ambiguity
-code splits its vote across the bases that code covers, and a read carrying N
-contributes a small amount to all four bases.
+Every read covering a position votes for the base it has there, or for a gap if
+the read has a deletion. Votes are weighted, so a read with an ambiguity code
+splits its vote across the bases that code covers, and a read with N contributes
+a small amount to all four bases.
 
 The base with the most votes wins, provided it clears the minimum call fraction;
 otherwise the position is N (reads were present but did not agree enough).

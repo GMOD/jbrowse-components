@@ -41,11 +41,11 @@ Two Dog10K structural-variant callsets from Schall & Kidd
 ([2025](https://doi.org/10.1093/gbe/evaf173)), read directly over HTTP, plus
 supporting UCSC and OMIA tracks and two sequenced retrocopies from GenBank.
 
-- the Zenodo Paragraph callset, 5.9 GB, carrying the _NHEJ1_ deletion and the
+- the Zenodo Paragraph callset, 5.9 GB, with the _NHEJ1_ deletion and the
   _RNASE1_ insertion:
   https://zenodo.org/api/records/14968874/files/Dog10k_manta_paragraph.vcf.gz/content
-- the Michigan Manta aggregate callset, 1.08 GB, carrying the _AMY2B_
-  duplication and the _FGF4_ intron records:
+- the Michigan Manta aggregate callset, 1.08 GB, with the _AMY2B_ duplication
+  and the _FGF4_ intron records:
   https://kiddlabshare.med.umich.edu/dog10K/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz
 - the sample table, breed and category per animal, behind every panel on this
   page:
@@ -131,7 +131,7 @@ bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
   dog10k_nhej1_svs.vcf.gz | tr ' ' '\n' | grep -v '=0/0'
 ```
 
-Most of the Collies carry it, some homozygous, along with some of the Shetland
+Most of the Collies have it, some homozygous, along with some of the Shetland
 Sheepdogs and Silken Windhounds. Every other animal is homozygous reference.
 
 ## Loading the slice with breed labels
@@ -188,7 +188,7 @@ rearrange and recolour rows by hand.
 Open the session above and add the assembly's gene annotation over the variants
 to see where the deletion falls in _NHEJ1_.
 
-<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every carrier is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The lane between the genes and the genotypes is OMIA's curated record of the same variant." src="/img/dog10k-nhej1-cea-deletion.png" />
+<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every animal with the deletion is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The lane between the genes and the genotypes is OMIA's curated record of the same variant." src="/img/dog10k-nhej1-cea-deletion.png" />
 
 The deletion lies inside an intron, away from the exons, which is how a variant
 this large can be common in a breed.
@@ -208,7 +208,7 @@ curl -fO https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/liftOver/canFam3ToCa
 wc -l < unmapped.bed   # records the chain could not place
 ```
 
-An interval lifts as a unit, so a plain `liftOver` is enough. A BND carries its
+An interval lifts as a unit, so a plain `liftOver` is enough. A BND holds its
 partner coordinate inside `ALT` and needs more; see the
 [cancer SV tutorial](/docs/tutorials/cancer_sv).
 
@@ -264,8 +264,8 @@ bcftools query -r chr37:25578185-25578186 -i 'POS=25578185' \
 ### The Lancashire Heelers
 
 Collie eye anomaly is reported in Lancashire Heelers, and none of the four
-sampled here carry the deletion. Four dogs are too few to estimate how common
-the deletion is in the breed.
+sampled here have the deletion. Four dogs are too few to estimate how common the
+deletion is in the breed.
 
 ## AMY2B duplication and RNASE1 insertion
 
@@ -277,7 +277,7 @@ wolves almost completely: nearly every dog is homozygous for it and nearly every
 wolf lacks it.
 
 A 223 bp SINE insertion in pancreatic ribonuclease, chr15:18,164,072 in the
-Zenodo Paragraph set, is the reverse, carried by wolves and almost no dogs.
+Zenodo Paragraph set, is the reverse, found in wolves and almost no dogs.
 [`build_dog10k_amy2b_sv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_amy2b_sv.sh)
 prints both records' genotypes tallied by population.
 
@@ -312,17 +312,17 @@ sample name and every other column is an attribute; `rowColor` names the
 attribute that colours the swatch. The _RNASE1_ track is the same config with
 the other slice's `uri`.
 
-<Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. The same animals are in the same order in both, so each row is one animal: the dogs carry the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
+<Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. The same animals are in the same order in both, so each row is one animal: the dogs have the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
 
 Most of the Greenland Dogs lack the duplication, while every Alaskan Malamute
-and Samoyed carries it. The grey Czechoslovakian Wolfdog row is CZEC000003, the
+and Samoyed has it. The grey Czechoslovakian Wolfdog row is CZEC000003, the
 animal [the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
-wolf-derived blocks on. Every wolf carrying the insertion is heterozygous. Some
-of the Iranian wolves carry the amylase duplication and none the ribonuclease
+wolf-derived blocks on. Every wolf with the insertion is heterozygous. Some of
+the Iranian wolves have the amylase duplication and none the ribonuclease
 insertion, while the Greek and Swedish wolves do the reverse.
 
-A genotype records whether an animal carries the duplication, so an animal with
-four copies and one with twenty are both `1/1`.
+A genotype records whether an animal has the duplication, so an animal with four
+copies and one with twenty are both `1/1`.
 [The CYP1A2 tutorial](/docs/tutorials/dog10k_lof#copy-number-at-cyp1a2) measures
 copy number from the SNV callset's per-sample `DP`.
 
@@ -354,7 +354,7 @@ intron 48870419-48870952: called as a DEL of 534 bp at 48870418-48870951
 
 ### Slicing the two records out
 
-The _FGF4_ records come from the Michigan aggregate Manta callset, which carries
+The _FGF4_ records come from the Michigan aggregate Manta callset, which has
 `DUP` and `INV` records too. Selecting on `POS` keeps the two intron records:
 
 <!-- from: scripts/build_dog10k_fgf4_retrogene.sh -->
@@ -396,17 +396,18 @@ breeds, and the Greek gray wolves, labelled through a samples TSV with
 ```
 
 Each record draws at the coordinates it names, so the two blocks sit against the
-exons. Every carrier is heterozygous: the parent gene's introns are still on
-both chromosomes, so a carrier's pileup is always a mixture.
+exons. Every animal with the insertion is heterozygous: the parent gene's
+introns are still on both chromosomes, so each such animal's pileup is always a
+mixture.
 
 ### The two known FGF4 retrocopies
 
 Two _FGF4_ retrocopies are known in dogs. Parker et al. tied one to short legs;
 [Brown et al. (2017)](https://doi.org/10.1073/pnas.1709082114) tied a second, on
 a different chromosome, to chondrodystrophy and intervertebral disc disease,
-which is why breeds of ordinary proportions carry a copy too. Both retrocopies
+which is why breeds of ordinary proportions have a copy too. Both retrocopies
 leave the same records at the parent gene, so a genotype here cannot say which
-copy an animal carries. The spaniels are the rows where body proportions and
+copy an animal has. The spaniels are the rows where body proportions and
 genotype disagree. Placing either insertion needs the other side of the
 junction, from a different callset.
 
@@ -527,7 +528,7 @@ bash build_dog10k_fgf4_synteny.sh
   changes from day to day.
 - `build_dog10k_fgf4_retrogene.sh` also writes `dog10k_fgf4_cohort_svs`, the two
   _FGF4_ intron records over every canid in the callset, which this tutorial's
-  config carries as a track.
+  config holds as a track.
 - `build_dog10k_fgf4_synteny.sh` exits non-zero unless every gap in both
   alignments lands on an annotated _FGF4_ intron and each deposited CDS is a
   single interval.

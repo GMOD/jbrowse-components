@@ -107,12 +107,12 @@ one.
 Two names mean something else here. Vega-Lite's `row` is a facet channel; on
 this display `encoding.row` is the band a feature stands in, the integer a
 `pileup` step writes, and the facet is the display's own `facet`. And a
-positional channel is a bare field where Vega-Lite's carries a scale, because
-the y scale is the display's `scales.y` and every mark reads one axis. Stacked
-bars and an `opacity` channel have no row: a bar stands on its own from the
-baseline. A mark's size is `encoding.size`, as its colour is `encoding.color`: a
-number is a point's diameter, a rule's thickness or a link's stroke, and a field
-maps a link's width.
+positional channel is a bare field where Vega-Lite's has a scale, because the y
+scale is the display's `scales.y` and every mark reads one axis. Stacked bars
+and an `opacity` channel have no row: a bar stands on its own from the baseline.
+A mark's size is `encoding.size`, as its colour is `encoding.color`: a number is
+a point's diameter, a rule's thickness or a link's stroke, and a field maps a
+link's width.
 
 ## The encoding
 
@@ -207,7 +207,7 @@ in every band of a faceted plot and at every zoom, including over the other half
 of a multiscale pair.
 
 `title` is optional: unset, the axis has no caption. A plot banded by `facet` or
-`rows` carries the one caption beside its bands.
+`rows` has the one caption beside its bands.
 
 ## One quantity per category
 
@@ -266,9 +266,8 @@ heights compare.
 
 A coverage run in the hundreds and a per-read mapping quality in the tens cannot
 be read off one axis, and the display draws only one. Write them as two tracks,
-each with its own display and its own `scales.y`, so each axis carries the field
-it measures and the reader can stack them in whatever order the comparison
-wants.
+each with its own display and its own `scales.y`, so each axis has the field it
+measures and the reader can stack them in whatever order the comparison wants.
 
 Where the two quantities answer the same question at different zooms, one track
 still does it: give each mark a zoom range and they never draw together.
@@ -323,8 +322,8 @@ or overlapping spans stay readable.
 - **threshold** —
   `{ "field": "signal", "scale": "threshold", "domain": [10, 50], "range": ["#eee", "#f90", "#c00"] }`
 
-  Each cut in `domain` opens an interval, so `range` carries one colour more.
-  The key lists a row per interval, and a grey one for features with no value.
+  Each cut in `domain` opens an interval, so `range` has one colour more. The
+  key lists a row per interval, and a grey one for features with no value.
 
 The display paints every colour from the data it already loaded, so a change to
 a constant colour, a palette, a domain, a threshold's cuts or a ramp's ends
@@ -347,8 +346,8 @@ A scale belongs to a channel, not only to colour. `shape` takes the same
 categorical form — `{ "field": "svType", "scale": "categorical" }` — with
 `range` listing the shapes to hand out as a colour scale's lists colours
 (`circle`, `triangle-down`, `diamond` in that order when left off) and `domain`
-the values in legend order. The legend then carries a second key whose swatches
-are the shapes themselves:
+the values in legend order. The legend then has a second key whose swatches are
+the shapes themselves:
 
 ```json
 {
@@ -505,13 +504,13 @@ Splice junctions from a STAR file, stroked by read support and labelled with it:
 ```
 
 A paired record names its other end elsewhere: a BEDPE or STAR-Fusion adapter
-fills a `mate` field, a VCF states each end in an `ALT`, and a paired read
-carries its mate's position as `next_ref` and `next_pos`. The `mate` step reads
-any of them into `mate.refName`, `mate.start` and `mate.end`, one feature per
-end and a read pair once, with `svType` beside a variant's; `x2` then names
-those as a locus, so a mate on another chromosome draws wherever the view shows
-it. Over a BAM that is the read-pair arcs of the alignments track's band, one
-curve per pair, coloured by whatever field the reads carry:
+fills a `mate` field, a VCF states each end in an `ALT`, and a paired read has
+its mate's position as `next_ref` and `next_pos`. The `mate` step reads any of
+them into `mate.refName`, `mate.start` and `mate.end`, one feature per end and a
+read pair once, with `svType` beside a variant's; `x2` then names those as a
+locus, so a mate on another chromosome draws wherever the view shows it. Over a
+BAM that is the read-pair arcs of the alignments track's band, one curve per
+pair, coloured by whatever field the reads have:
 
 ```json
 {
@@ -556,7 +555,7 @@ rises to it. `"line"` draws a straight segment between the two ends, on the
 baseline or at the `y` value. A pair wider than three screens straightens into a
 leg rising from each end, and a mate the view does not show draws a short stem
 at the end it does. A link answers a hover and a click along its stroke, and the
-SVG export carries it as a path.
+SVG export writes it as a path.
 
 ## Facets
 
@@ -641,7 +640,7 @@ the shared mechanism across all of them.
 ## Rows
 
 The display's `rows` gives each value of a field one row, for bar, point and
-rule marks: over a multi-BigWig, whose features carry the file they came from in
+rule marks: over a multi-BigWig, whose features have the file they came from in
 `source`, it draws one xyplot per file, the value axis repeated on each row tall
 enough to hold it.
 
@@ -655,12 +654,12 @@ enough to hold it.
 ]
 ```
 
-A label names each row, and the track menu carries what the other row displays
-have: **Cluster rows by similarity...**, **Edit colors/arrangement...**, and
-**Sort rows by value here** on a right-click. As an object `rows` takes the
-order too — `{ "field": "source", "domain": ["tumor", "normal"] }` — and a
-reorder, a clustering run or a clade off the tree is written there, so undo,
-**Reset row order** and a share link all reach it.
+A label names each row, and the track menu has what the other row displays have:
+**Cluster rows by similarity...**, **Edit colors/arrangement...**, and **Sort
+rows by value here** on a right-click. As an object `rows` takes the order too —
+`{ "field": "source", "domain": ["tumor", "normal"] }` — and a reorder, a
+clustering run or a clade off the tree is written there, so undo, **Reset row
+order** and a share link all reach it.
 
 The rows divide the plot between them by default, so every row shows.
 `"rowHeight": 20` pins each row at 20 px instead, and the rows that do not fit
@@ -684,8 +683,8 @@ field `key` names, so `rows: "species"` finds a row per species in the features
 themselves. The adapter lists its species too, so every species has a row
 whether or not the loaded regions align it, in the guide tree's order with the
 tree drawn beside the rows, as on the MAF display. Each row keeps its block's
-reference span and carries the species' `chr`, `srcStart`, `strand`, `srcSize`
-and `seq`; a span coloured by `chr` is the MAF display's colour by source
+reference span and has the species' `chr`, `srcStart`, `strand`, `srcSize` and
+`seq`; a span coloured by `chr` is the MAF display's colour by source
 chromosome:
 
 ```json addtrack
@@ -721,7 +720,7 @@ chromosome:
 
 A `cells` step behind the flatten replaces each species row with its runs of
 columns against the reference: one feature per run in one `state`, `match`,
-`mismatch` or `gap`, a mismatch run carrying its `base`, and one interbase
+`mismatch` or `gap`, a mismatch run with its `base`, and one interbase
 `insertion` per run of inserted bases, standing at the reference base it
 precedes with the bases in `base`. A span coloured by `state` is the MAF
 display's mismatch view, an insertion painting as a sliver of the display's
@@ -780,16 +779,16 @@ Each step names its `type` and takes that step's own settings, which the
 [MarkTransform config reference](/docs/config/marktransform) lists; a key
 belonging to another step is refused where the config is read:
 
-| Step        | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                                                                                                                                                                                                                                       |
-| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's                                                                                                                                                                            |
-| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                                                                                                                                                                                                                    |
-| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`) or per entry of a record keyed by name (a VCF's `samples`, a MAF block's `alignments`), each reading its parent for what it lacks, with its position in the field `index` names and its key in the field `key` names; `keepEmpty` holds on to a feature whose field is empty                                                                                                         |
-| `cells`     | replaces each aligned row with its runs of columns in one `state` — `match`, `mismatch` or `gap` — against the reference, reading the row's `field` (`seq`) and the same field on the feature the row was fanned out of, and one interbase `insertion` per run of inserted bases, at the reference base it precedes; a mismatch run carries its `base`, an insertion its bases in `base` and their count in `length`, and a match or mismatch run `match` as 1 or 0 |
-| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                                                                                                                                                                                                                  |
+| Step        | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                                                                                                                                                                                                                                   |
+| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's                                                                                                                                                                        |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                                                                                                                                                                                                                |
+| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`) or per entry of a record keyed by name (a VCF's `samples`, a MAF block's `alignments`), each reading its parent for what it lacks, with its position in the field `index` names and its key in the field `key` names; `keepEmpty` holds on to a feature whose field is empty                                                                                                     |
+| `cells`     | replaces each aligned row with its runs of columns in one `state` — `match`, `mismatch` or `gap` — against the reference, reading the row's `field` (`seq`) and the same field on the feature the row was fanned out of, and one interbase `insertion` per run of inserted bases, at the reference base it precedes; a mismatch run has its `base`, an insertion its bases in `base` and their count in `length`, and a match or mismatch run `match` as 1 or 0 |
+| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                                                                                                                                                                                                              |
 
 A field a step reads is a name or a dotted path into a structured field, so a
 VCF's `INFO.DP` is the `field` of a `mean` and `INFO.SVTYPE` a `groupby`. A
@@ -933,9 +932,9 @@ takes over only past it. The sidecar's bars draw as any other — same axis, sam
 hover, same SVG export — and hovering reads out the bin's count. Other marks
 draw nothing there, a corner chip names the sidecar, and the track menu's
 **Density band** submenu switches between Automatic, Features only and Density
-only, and carries the Force-load. Clicking a bin opens nothing: reading the
-features back is the download the budget refused. With no `"source": "density"`
-the banner appears unchanged.
+only, and has the Force-load. Clicking a bin opens nothing: reading the features
+back is the download the budget refused. With no `"source": "density"` the
+banner appears unchanged.
 
 <Figure src="/img/mark_display/density_sidecar.png" caption="Chromosome 1 end to end, past the budget: the Alu track's sidecar bins draw as the density mark, with the chip in the corner naming what is on screen."/>
 
@@ -992,7 +991,7 @@ the half-written states an editor passes through, at the level the table gives:
 an error is a mark that draws nothing, never draws, or names a step that cannot
 run. The display's own `transform` steps are checked the way a mark's are. Each
 finding names the slot, and the mark when the slot is a mark's, and `--json`
-carries the rule's id beside it.
+shows the rule's id beside it.
 
 ## What the track menu offers
 

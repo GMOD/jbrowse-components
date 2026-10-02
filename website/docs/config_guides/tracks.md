@@ -197,7 +197,7 @@ loads the region regardless.
 ### Raising the byte limit
 
 [`fetchSizeLimit`](/docs/config/baselineardisplay/#slot-fetchsizelimit) is a
-byte count. The BAM, CRAM and VCF adapters carry their own `fetchSizeLimit`,
+byte count. The BAM, CRAM and VCF adapters have their own `fetchSizeLimit`,
 which takes priority over the display's, so for those formats set it on the
 adapter:
 
