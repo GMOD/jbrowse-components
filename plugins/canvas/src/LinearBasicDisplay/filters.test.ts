@@ -125,9 +125,9 @@ function createDisplay(
 }
 
 describe('canvas display filters', () => {
-  it('activeFilters() is the config filter slot', () => {
+  it('configuredFilters() is the config filter slot', () => {
     const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
-    expect(display.activeFilters()).toEqual([
+    expect(display.configuredFilters()).toEqual([
       `jexl:get(feature,'type')=='gene'`,
     ])
   })
@@ -136,7 +136,7 @@ describe('canvas display filters', () => {
     const display = createDisplay(undefined, {
       jexlFilters: [`get(feature,'type')=='gene'`],
     })
-    expect(display.activeFilters()).toEqual([
+    expect(display.configuredFilters()).toEqual([
       `jexl:get(feature,'type')=='gene'`,
     ])
   })
@@ -150,7 +150,7 @@ describe('canvas display filters', () => {
       undefined,
       retiredState!.lift({ jexlFiltersSetting: [`get(feature,'score')>5`] }),
     )
-    expect(display.activeFilters()).toEqual([`jexl:get(feature,'score')>5`])
+    expect(display.configuredFilters()).toEqual([`jexl:get(feature,'score')>5`])
   })
 
   it('refuses a bare expression in the filter slot', () => {
@@ -161,27 +161,27 @@ describe('canvas display filters', () => {
 
   it('a track that declares no filters opens the dialog empty', () => {
     const display = createDisplay()
-    expect(display.activeFilters()).toEqual([])
+    expect(display.configuredFilters()).toEqual([])
   })
 
   it('setFilter writes the filter slot', () => {
     const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
     display.setFilter([`jexl:get(feature,'score')>5`])
     expect(getConf(display, 'filter')).toEqual([`jexl:get(feature,'score')>5`])
-    expect(display.activeFilters()).toEqual([`jexl:get(feature,'score')>5`])
+    expect(display.configuredFilters()).toEqual([`jexl:get(feature,'score')>5`])
   })
 
   it('an empty list clears the filters the track config declares', () => {
     const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
     display.setFilter([])
-    expect(display.activeFilters()).toEqual([])
+    expect(display.configuredFilters()).toEqual([])
   })
 
   it('setFilter(undefined) returns to what the track config declares', () => {
     const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
     display.setFilter([`jexl:get(feature,'score')>5`])
     display.setFilter(undefined)
-    expect(display.activeFilters()).toEqual([
+    expect(display.configuredFilters()).toEqual([
       `jexl:get(feature,'type')=='gene'`,
     ])
   })
@@ -190,11 +190,11 @@ describe('canvas display filters', () => {
     const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
     expect(activeCount(display.featureNarrowings())).toBe(0)
 
-    display.setFilter(display.activeFilters())
+    display.setFilter(display.configuredFilters())
     expect(activeCount(display.featureNarrowings())).toBe(0)
 
     const defaulted = createDisplay()
-    defaulted.setFilter(defaulted.activeFilters())
+    defaulted.setFilter(defaulted.configuredFilters())
     expect(activeCount(defaulted.featureNarrowings())).toBe(0)
   })
 

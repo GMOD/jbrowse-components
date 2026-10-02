@@ -57,7 +57,7 @@ export function laneDisplayConfig({
     // the lane's tooltip is `buildVariantLaneHit`, so none is evaluated here
     mouseover: '',
     // Filtering already happened: the records reaching the lane are the ones
-    // this display's own worker-side `activeFilters()` admitted, so a second
+    // this display's own worker-side `configuredFilters()` admitted, so a second
     // pass here would be a second, differently-spelled filter.
     filter: [],
     // The gene half at what a LinearVariantDisplay sends, all of it inert for

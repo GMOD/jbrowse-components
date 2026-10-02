@@ -420,7 +420,7 @@ test('a v4 clustered multi-sample variant display loads with its order, tree and
     }),
   )
   expect(display.type).toBe('LinearMultiSampleVariantDisplay')
-  expect(display.activeFilters()).toEqual(["jexl:get(feature,'QUAL')>30"])
+  expect(display.configuredFilters()).toEqual(["jexl:get(feature,'QUAL')>30"])
   expect(display.rowDomain).toEqual(['HG00097', 'HG00096'])
   expect(getConf(display, ['rows', 'tree'])).toBe('(HG00097:1,HG00096:1);')
   expect(getConf(display, ['rows', 'kept'])).toEqual(['HG00097'])

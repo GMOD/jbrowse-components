@@ -196,9 +196,6 @@ export type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 export type { GroupByCandidate } from '../RenderFeatureDataRPC/groupByCandidates.ts'
 export type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 export type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
-// Off this subpath rather than the barrel, so a subclass composing its own
-// "Color by..." presets holds no value edge into the eager entry.
-export { defaultColorItem } from './trackMenus.ts'
 
 const ColorByAttributeDialog = lazy(
   () => import('./components/ColorByAttributeDialog.tsx'),
@@ -629,14 +626,6 @@ export default function baseStateModelFactory(
       },
 
       /**
-       * #method
-       * The filters applied, as `jexl:`-prefixed expressions.
-       */
-      activeFilters(): string[] {
-        return self.configuredFilters()
-      },
-
-      /**
        * #getter
        */
       get reversedRegions() {
@@ -668,12 +657,10 @@ export default function baseStateModelFactory(
         const snapshot = fullConfSnapshot(self.configuration)
         const workerConfig = pickDisplayConfig(snapshot)
         return {
-          // Reading `activeFilters()` here makes it a cache key, so
-          // toggling filters refetches.
           displayConfig: {
             ...workerConfig,
             subfeatureLabels: self.effectiveSubfeatureLabels,
-            filter: self.activeFilters(),
+            filter: self.configuredFilters(),
             // A facet other than strand needs a stamp per feature, so only
             // it joins the cache key: a strand facet never refetches.
             ...(self.facet === undefined || self.facet.field === STRAND_FIELD

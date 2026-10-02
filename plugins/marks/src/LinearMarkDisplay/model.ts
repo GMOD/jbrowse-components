@@ -984,13 +984,6 @@ export function stateModelFactory(
           )
         },
         /**
-         * #method
-         * the filters applied
-         */
-        activeFilters(): string[] {
-          return self.configuredFilters()
-        },
-        /**
          * #getter
          * Every mark drawing at this zoom, in list order: what folds into the y
          * domain and what the plot's inset and row count are read from.
@@ -1139,7 +1132,7 @@ export function stateModelFactory(
             ...(opts ? { opts } : {}),
             layers: self.layerRequests,
             transform: [
-              ...self.activeFilters().map(expr => ({
+              ...self.configuredFilters().map(expr => ({
                 type: 'filter' as const,
                 expr,
               })),

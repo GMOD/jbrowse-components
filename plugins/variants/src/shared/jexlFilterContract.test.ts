@@ -52,10 +52,10 @@ const CASES = [
 describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
   it('applies the config slot', () => {
     const { display } = createDisplay()
-    expect(display.activeFilters()).toEqual([])
+    expect(display.configuredFilters()).toEqual([])
 
     setConf(display, 'filter', ["jexl:get(feature,'name')=='BRCA1'"])
-    expect(display.activeFilters()).toEqual([
+    expect(display.configuredFilters()).toEqual([
       "jexl:get(feature,'name')=='BRCA1'",
     ])
   })
@@ -69,7 +69,9 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
 
   it('writes the slot, and a clear goes back to what the track config declares', () => {
     const { display } = declared.createDisplay()
-    expect(display.activeFilters()).toEqual(["jexl:get(feature,'score')>10"])
+    expect(display.configuredFilters()).toEqual([
+      "jexl:get(feature,'score')>10",
+    ])
     expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(0)
 
     display.setFilter(["jexl:get(feature,'score')>99"])
@@ -77,11 +79,13 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
     expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(1)
 
     display.setFilter([])
-    expect(display.activeFilters()).toEqual([])
+    expect(display.configuredFilters()).toEqual([])
     expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(1)
 
     display.setFilter(undefined)
-    expect(display.activeFilters()).toEqual(["jexl:get(feature,'score')>10"])
+    expect(display.configuredFilters()).toEqual([
+      "jexl:get(feature,'score')>10",
+    ])
     expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(0)
   })
 })

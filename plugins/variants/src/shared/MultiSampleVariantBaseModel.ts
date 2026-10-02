@@ -524,13 +524,6 @@ export default function MultiSampleVariantBaseModelF(
       })
       .views(self => ({
         /**
-         * #method
-         * The filters applied, `jexl:`-prefixed.
-         */
-        activeFilters(): string[] {
-          return self.configuredFilters()
-        },
-        /**
          * #getter
          * Returns the rendering mode config slot value
          */
@@ -905,7 +898,7 @@ export default function MultiSampleVariantBaseModelF(
          * this to string[] and rebuilds it in the worker with pluginManager.jexl.
          */
         get filters() {
-          const filters = self.activeFilters()
+          const filters = self.configuredFilters()
           return filters.length
             ? new SerializableFilterChain({
                 filters,

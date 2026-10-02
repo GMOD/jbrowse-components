@@ -7,7 +7,7 @@ test("v4's unprefixed jexlFilters slot loads as a prefixed filter", () => {
     marks: MARKS,
     jexlFilters: ["get(feature,'score')>10"],
   })
-  expect(createDisplay().display.activeFilters()).toEqual([
+  expect(createDisplay().display.configuredFilters()).toEqual([
     "jexl:get(feature,'score')>10",
   ])
 })
