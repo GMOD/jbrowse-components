@@ -221,18 +221,25 @@ steps and breakpoints describing the same interval are evidence of one event.
 ## Reproduce it end to end
 
 [`scripts/build_cancer_sv_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_cancer_sv_demo.sh)
-builds everything above from public sources:
+builds everything above from public sources. For K562 it:
+
+1. sorts the four ENCODE Iso-Seq runs, which ENCODE releases unsorted, and
+   merges them into the one read track the junction counts come from
+2. cuts K562's rows out of DepMap's fusion and copy-number tables, with the
+   fusion calls ordered by FFPM, fusion fragments per million RNA-seq fragments,
+   so the best-supported call comes first
+3. lifts the 10X breakends to hg38 as above, and drops a junction whole when
+   either end fails to lift or lands reversed in hg38, where its orientation
+   would come out wrong
+
+The same run builds the COLO829 half of the demo, which
+[](/docs/tutorials/cancer_sv) walks through.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_cancer_sv_demo.sh
 bash build_cancer_sv_demo.sh    # builds ./cancer_sv_build/jbrowse2
 npx --yes serve cancer_sv_build/jbrowse2
 ```
-
-The script merges the four ENCODE Iso-Seq alignments, converts the DepMap
-release into a STAR-Fusion TSV and a copy-number bigWig, and lifts the ENCODE
-linked-read breakpoints onto hg38. The same run builds the COLO829 half of the
-demo, which [](/docs/tutorials/cancer_sv) walks through.
 
 ## See also
 

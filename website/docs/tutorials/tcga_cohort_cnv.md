@@ -328,10 +328,26 @@ recount3 publish open junction summaries.
 
 ## Reproduce it end to end
 
-One script builds every file above for any project id:
-[`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh),
-which summarizes recurrence with
-[`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py).
+One script builds every file above for any project id,
+[`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh):
+
+1. It asks the GDC for the project's open-access **Masked Copy Number Segment**
+   files (Affymetrix SNP 6.0, harmonized to GRCh38, germline CNV probes
+   removed), which need no dbGaP application, from primary tumors only, so the
+   matched normals stay out of the stack.
+2. It keeps one file per tumor barcode, since a tumor run twice on the array
+   would otherwise draw two overlapping sets of segments in one row.
+3. It joins every tumor's segments into one BED with the barcode as `sample`,
+   adding `chr` to the contig names and moving the 1-based `.seg` starts to
+   BED's 0-based ones. `Segment_Mean` passes through unchanged, so each row's
+   colour is the caller's own log2 ratio.
+4. [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
+   tallies the gained and lost share of the cohort per 100 kb bin, pooled and
+   per clinical group. A tumor counts in a bin when its segment covers the bin's
+   midpoint, so a breakpoint inside a bin puts the tumor on one side of it only.
+   Bins where fewer than half the tumors have any call are left out, so a gap in
+   the track is missing data.
+
 It needs `curl`, `python3`, and `bgzip` + `tabix` from
 [htslib](http://www.htslib.org/), which on Debian/Ubuntu is
 `apt install curl python3 tabix`.
@@ -343,27 +359,14 @@ bash build_tcga_cohort_cnv.sh TCGA-BRCA    # the full cohort, ~20 minutes
 npx --yes serve jbrowse2                   # then open the printed URL
 ```
 
-The script writes `tcga_brca_cnv.bed.gz` (+ `.tbi`), the two recurrence
-bedGraphs (+ `.tbi`) and `tcga_brca_clinical.tsv`, then a `jbrowse2/` opening on
-_ERBB2_. The script copies the assembly entry from the hosted UCSC hg38 hub, so
-it downloads no reference. Swap in any other project id (`TCGA-OV`, `TCGA-LUAD`,
-...), with a third argument to group the recurrence by a different clinical
-column.
+The script then writes a `jbrowse2/` opening on _ERBB2_, with the assembly
+copied from the hosted UCSC hg38 hub, so it downloads no reference. Swap in any
+other project id (`TCGA-OV`, `TCGA-LUAD`, ...), with a third argument to group
+the recurrence by a different clinical column.
 
-Three steps decide whether the track loads correctly:
-
-- The query fetches the open-access **Masked Copy Number Segment** files
-  (Affymetrix SNP 6.0, harmonized to GRCh38, germline CNV probes removed), which
-  need no dbGaP application, and filters to `Primary Tumor`.
-- `.seg` names contigs `1`, `2`, ... and its starts are 1-based inclusive, so
-  the script adds `chr` and subtracts 1 from each start. It keeps one file per
-  barcode.
-- `Segment_Mean` passes through unchanged.
-
-[`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
-runs on its own given a cohort BED. It skips bins where fewer than half the
-cohort has any call, over the whole cohort even with `--groups`, so the grouped
-file has the same gaps as the pooled one. The clinical table comes from
+`cnv_recurrence.py` runs on its own given a cohort BED. It takes the coverage
+gaps over the whole cohort even with `--groups`, so the grouped file has the
+same gaps as the pooled one. The clinical table comes from
 [`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py),
 shared with the [mutation cohort](/docs/tutorials/tcga_cohort_mutations).
 

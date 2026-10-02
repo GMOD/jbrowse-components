@@ -238,17 +238,19 @@ through a segment no panel shows.
 ## Reproduce it end to end
 
 [`scripts/build_cancer_sv_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_cancer_sv_demo.sh)
-builds everything above from public sources into `./cancer_sv_build/jbrowse2`:
+builds everything above from public sources into `./cancer_sv_build/jbrowse2`.
+For COLO829 it converts the coverage to bigWig as above, adds the tumor and
+normal reads as tracks streamed from ONT's bucket, and downloads the published
+der(3) contig with its alignment to GRCh38, its segment labels and the spanning
+reads realigned to it. [The derivative allele](#the-derivative-allele) shows how
+to assemble a contig like it from your own reads. The same run builds the K562
+half of the demo, which [](/docs/tutorials/k562_fusions) walks through.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_cancer_sv_demo.sh
 bash build_cancer_sv_demo.sh
 npx --yes serve cancer_sv_build/jbrowse2
 ```
-
-The script fetches the ONT COLO829 somatic SV calls and coverage, and the
-published der(3) contig and its alignment. It builds the K562 half of the demo
-too, which [](/docs/tutorials/k562_fusions) walks through.
 
 ## Related tools
 

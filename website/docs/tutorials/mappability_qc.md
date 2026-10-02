@@ -203,10 +203,28 @@ Run both on the control window too, at the same width.
 ## Reproduce it end to end
 
 [`scan_mappability_qc.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/scan_mappability_qc.sh)
-produces every number on this page from the files the figures draw. It needs
-kent tools (`bigWigInfo`, `bigWigToBedGraph`, `bigBedToBed`), `bedtools`,
-`samtools`, `curl` and `awk`, downloads the four small annotation files it reads
-twice, and streams the rest.
+produces every number on this page from the files the figures draw. It asks
+whether a read can be placed at a locus several ways, and reads each answer
+against a control:
+
+1. Over _SMN1_, _SMN2_ and two controls, it measures how much of each window the
+   Umap lane has a value for, gnomAD's mean depth, and the share of NA12878's
+   reads at MAPQ 0. The near control is a window of the same width at the 5' end
+   of _BDP1_, past both flagged intervals on the same chromosome, so sample,
+   library and chromosome all match; _ACTB_ on chromosome 7 shows the near
+   control is ordinary.
+2. It lists which problematic-region tracks flag the block, and bins the gnomAD
+   lane across it to find where the depth recovers.
+3. It counts GM18501's long-read records over _SMN1_ at MAPQ 0 and MAPQ 60, once
+   on each reference. The release aligned that sample to both with the same
+   pipeline, so the two counts compare.
+4. It counts each SV catalogue's calls inside the block and in a flank of about
+   the same width on either side, and across chr5 the share of calls whose
+   midpoint falls in a flagged region. Counting by midpoint gives a long record
+   the same weight as a short one.
+
+It needs kent tools (`bigWigInfo`, `bigWigToBedGraph`, `bigBedToBed`),
+`bedtools`, `samtools`, `curl` and `awk`.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/scan_mappability_qc.sh

@@ -337,14 +337,26 @@ the same way here.
 
 ## Reproduce it end to end
 
-One script builds every file above for any project id:
-[`build_tcga_cohort_mutations.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_mutations.sh),
-which merges the MAFs with
-[`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py),
-assembles the clinical table with
-[`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py),
-and tallies the per-gene rates with
-[`mutation_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py).
+One script builds every file above for any project id,
+[`build_tcga_cohort_mutations.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_mutations.sh):
+
+1. It downloads every open-access **Masked Somatic Mutation** MAF in the
+   project, the GDC's aliquot-merged ensemble calls with germline sites masked
+   out, which need no dbGaP application.
+2. [`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py)
+   merges them into one VCF, a column per tumor. A GDC file query filters on
+   what a case has, so it returns metastasis MAFs too, and the merge keeps
+   primary tumors by the sample-type code in each MAF's own barcode (`01`), the
+   tumors the [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) paints. It
+   keeps one aliquot per tumor, names each column by its sample barcode as the
+   copy-number rows are named, and takes each deletion's anchor base from the
+   MAF's `CONTEXT` column, so it needs no reference FASTA.
+3. [`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py)
+   builds the [clinical table](#what-the-two-files-hold).
+4. [`mutation_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py)
+   writes, per gene and group, the share of tumors with at least one call in the
+   `--impact` tiers. A tumor counts once however many calls it has in the gene.
+
 It needs `curl`, `python3`, and `bgzip` + `tabix` from
 [htslib](http://www.htslib.org/), which on Debian/Ubuntu is
 `apt install curl python3 tabix`.
@@ -356,35 +368,15 @@ bash build_tcga_cohort_mutations.sh TCGA-BRCA    # the full cohort, ~10 minutes
 npx --yes serve jbrowse2                         # then open the printed URL
 ```
 
-The script writes `tcga_brca_mutations.vcf.gz` (+ `.tbi`),
-`tcga_brca_clinical.tsv` and
-`tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz` (+ `.tbi`), then a
-`jbrowse2/` opening on _PIK3CA_ with the recurrence rows over the matrix. The
-assembly is the hosted UCSC hg38 hub's entry copied in, so the reference is
-never downloaded.
+The script then writes a `jbrowse2/` opening on _PIK3CA_ with the recurrence
+rows over the matrix. The assembly is the hosted UCSC hg38 hub's entry copied
+in, so the reference is never downloaded.
 
 Swap in any other project id (`TCGA-LUAD`, `TCGA-COAD`, ...) for a different
 cohort, with `--no-receptors` to `tcga_clinical_tsv.py` for a non-breast
 project. A third argument names the clinical column the recurrence track splits
 on; `subtype` is breast only, while `histology` and `stage` work for any
 project.
-
-Four steps in the script affect whether the track is correct:
-
-- The script downloads the open-access Masked Somatic Mutation MAFs, the
-  aliquot-merged ensemble calls with germline sites masked out, which need no
-  dbGaP application.
-- A GDC file query filters on what a case has, so a query for `Primary Tumor`
-  also returns a metastasis MAF. The merge step therefore filters on the
-  sample-type code in each MAF barcode (`01`, primary solid tumor), which
-  selects the same tumors the
-  [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) paints.
-- A MAF writes a deletion against a `-` alt, where VCF needs a shared preceding
-  base. The merge step takes that base from the `CONTEXT` column, so it fetches
-  no reference FASTA.
-- A few cases were sequenced twice under one barcode, and the merge keeps one
-  aliquot. It truncates sample names to the sample barcode, so a tumor has the
-  same row name in both tracks.
 
 ## See also
 
