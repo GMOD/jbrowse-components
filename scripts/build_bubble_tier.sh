@@ -21,7 +21,7 @@
 # Usage:    bash scripts/build_bubble_tier.sh <bubbles.bed[.gz]> [out-prefix] [min-content]
 #
 # The bubble BED is what `gfatools bubble` writes, which for HPRC is published
-# at jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz.
+# at jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.bubbles.bed.gz.
 #
 # For a pggb / Minigraph-Cactus graph there is no such file: `gfatools bubble`
 # places a bubble on a reference by reading rGFA SN/SO/SR and returns nothing at

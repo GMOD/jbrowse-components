@@ -1,7 +1,7 @@
-// gfa_to_pairwise_paf.py is the GFA route of build_hprc_multiway_synteny.sh,
-// and what nothing downstream would catch is the same as for its MAF sibling:
-// a flipped chain's coordinates and CIGAR direction, and where a chain breaks.
-// So the graph is small enough to work every row out by hand.
+// gfa_to_pairwise_paf.py feeds build_hprc_multiway_synteny.sh, and nothing
+// downstream would catch a flipped chain's coordinates and CIGAR direction, or
+// where a chain breaks. So the graph is small enough to work every row out by
+// hand.
 import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'

@@ -40,14 +40,11 @@ const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 // It is 1,780 bp of NA20809 hap 2 (`CM094351.1:32,495,296-32,497,076` in the
 // links index, rank 10), and the two backbone segments it hangs off are
 // s329874+, ending at chr6:32,517,416, and s329886+, starting at 32,529,437 —
-// so the interval it attaches across is 12,021 bp of GRCh38, which release 2.1
+// so the interval it attaches across is 12,021 bp of GRCh38, which the graph
 // cuts into eleven segments (s329875 to s329885, the longest s329879 at 4,280
-// bp) where 2.0 had the one 12 kb node s101145, and which is what
-// **Highlight in hg38** writes into the linear view. That is also, near
-// exactly, HLA-DRB5 (chr6:32,517,353-32,530,287), the gene present only on
-// DR51 haplotypes. Release 2.0 credited the same allele to HG01433 hap 2
-// (s318599); minigraph names an allele after the first assembly it saw it in,
-// and 2.1's build order differs.
+// bp), and which is what **Highlight in hg38** writes into the linear view.
+// That is also, near exactly, HLA-DRB5 (chr6:32,517,353-32,530,287), the gene
+// present only on DR51 haplotypes.
 //
 // Which is why the caption has to say it (review: "it looks like this is
 // highlighting a 'black' node, instead of the green one, which is, afaict, the

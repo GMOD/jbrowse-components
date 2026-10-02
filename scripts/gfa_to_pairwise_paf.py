@@ -3,11 +3,11 @@
 
 Reads a GFA1 (minigraph-cactus or pggb; W or P paths; gz accepted) once and
 writes PAF on stdout: one record per chain of graph nodes a query haplotype
-shares with the reference path, so the output has the same shape as
-maf_to_pairwise_paf.py's -- PanSN names, `cg:Z:` over =/X/I/D, a chrom.sizes
-per query -- without a HAL, a MAF or a projection through the reference.
+shares with the reference path -- PanSN names, `cg:Z:` over =/X/I/D, a
+chrom.sizes per query -- without a HAL, a MAF or a projection through the
+reference.
 
-    pigz -dc hprc-v2.0-mc-grch38.gfa.gz \\
+    pigz -dc hprc-v2.1-mc-grch38.gfa.gz \\
       | python3 gfa_to_pairwise_paf.py --reference GRCh38#0 \\
           --queries HG01109#1,HG01123#1 --chrom-sizes-dir sizes/ > hprc.paf
 

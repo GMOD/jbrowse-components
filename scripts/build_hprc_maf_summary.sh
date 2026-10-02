@@ -13,9 +13,6 @@
 #   whole-chromosome read: 73 kB (chrM) to 212 kB (chr1), vs a 5 MB budget
 #   the alignment tier it stands in for asks 3.19 GB for chr6 alone
 #
-# The v2.0 TAF build of this file had 152 of 195 contigs and 375,888 rows; the
-# 43 it was missing are the `chrUn_*` scaffolds the note below explains.
-#
 # Requires: maf2bed >= 0.6.0, sort, bgzip, tabix, curl
 # Usage:    bash scripts/build_hprc_maf_summary.sh <alignment.maf.gz|URL> <ref-name> <out-prefix>
 #   e.g.    bash scripts/build_hprc_maf_summary.sh https://…/hprc-v2.1-mc-grch38.full.maf.gz GRCh38 hprc-v2.1-mc-grch38.summary
@@ -32,7 +29,7 @@
 # agent-docs/reference/HPRC_RELEASE2.md §"Unpacking pairwise alignments from the graph"):
 # a region past a contig's end silently emitting an empty MAF, and a
 # contig with a single `.tai` entry being unextractable at all, which left 43
-# `chrUn_*` scaffolds out of the v2.0 file. A sequential read asks the index for
+# `chrUn_*` scaffolds out. A sequential read asks the index for
 # nothing and so can miss nothing. What survives is the third, below.
 #
 # `--merge-gap` IS NOT THE LEVER FOR ROW COUNT. In segmental-duplication

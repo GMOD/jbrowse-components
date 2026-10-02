@@ -25,8 +25,9 @@ each haplotype's CAT gene annotation from the release 2 annotation index
 with intron, start_codon and stop_codon rows dropped and genes over
 5000000 bp removed. HPRC data is released under CC0; see
 https://github.com/human-pangenomics/hpp_pangenome_resources for the release
-and its terms. Rebuilt by scripts/build_hprc_multiway_synteny.sh (SOURCE=taf)
-in https://github.com/GMOD/jbrowse-components.
+and its terms. Nothing in https://github.com/GMOD/jbrowse-components rebuilds
+this set any more; README_gfa.txt describes the one config.json serves. These
+files stay hosted for anything pointed at them.
 
 Files
 -----

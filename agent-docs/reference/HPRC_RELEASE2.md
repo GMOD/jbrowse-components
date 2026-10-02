@@ -14,7 +14,6 @@ the graph plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `IDEAS.md`).
 
 | artifact | opens? |
 | --- | --- |
-| `v2.0/…/hprc-v2.0-mc-grch38.full.taf.gz` + `.tai` | yes, `BgzipTaffyAdapter` |
 | `v2.1/…/hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` | yes, `BgzipMafAdapter`; the tutorial's file |
 | `sv.gfa` (minigraph rGFA) | yes, graph view plugin |
 | `pgbi.vcf.gz` | yes, genotype matrix; the tutorial's file and the portal's variants launch (below) |
@@ -24,10 +23,13 @@ the graph plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `IDEAS.md`).
 | per-chromosome pggb `.gfa.zst` | no (below) |
 | impg TPA | no reader |
 
-- v2.0 publishes the alignment as TAF and v2.1 as MAF, never both, and v2.1 is a
-  re-run whose content differs (its README, `…/minigraph-cactus/v2.1/README`,
-  lists the changes). Check it before treating a v2.0 oddity as a JBrowse bug. At
-  C4, a copy-number variable locus, no build is the single correct projection.
+- Read v2.1. v2.0 is an earlier Minigraph-Cactus run, not a repackaging:
+  `…/minigraph-cactus/v2.1/README` lists fewer underalignments, patched
+  assemblies and a missing-genotypes fix in `wave.vcf.gz`. Its alignment ships
+  only as a TAF, which reads in fewer bytes and draws a different build beside
+  2.1's graph and callsets. Sites move between the two: the CFHR3/CFHR1 deletion
+  is `chr1:196753075` in the 2.0 wave VCF and `196758726` in 2.1's. At C4, a
+  copy-number variable locus, no build is the single correct projection.
 ## Measured findings
 
 **impg's PAF output is projections, not compositions.** `impg query -x -o paf`

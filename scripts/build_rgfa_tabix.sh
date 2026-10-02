@@ -10,8 +10,8 @@
 # not the GFA flavour, so pick the producer that matches your file.
 #
 # The distinction matters and is easy to get backwards: HPRC release 2's
-# `hprc-v2.0-mc-grch38.sv.gfa.gz` IS rGFA (it is the minigraph stage), while the
-# `hprc-v2.0-mc-grch38.gfa.gz` beside it is base-level and is not.
+# `hprc-v2.1-mc-grch38.sv.gfa.gz` IS rGFA (it is the minigraph stage), while the
+# `hprc-v2.1-mc-grch38.gfa.gz` beside it is base-level and is not.
 #
 # Requires: gfatools, gawk (as `awk`; macOS's BSD awk builds the same links
 #           table in hours rather than seconds, its hash tables being what they
@@ -20,7 +20,7 @@
 # Usage:    bash scripts/build_rgfa_tabix.sh <graph.rgfa[.gz]> [out-prefix] [ref-prefix]
 #
 # Produces <prefix>.segs.bed.gz{,.tbi} and <prefix>.links.bed.gz{,.tbi}. Runs on
-# a whole human pangenome: HPRC's hprc-v2.0-mc-grch38.sv.gfa.gz is 751k segments
+# a whole human pangenome: HPRC's hprc-v2.1-mc-grch38.sv.gfa.gz is 759k segments
 # and indexes in about 45 seconds, peaking near 3.7 GB.
 #
 # `ref-prefix` (e.g. GRCh38) additionally writes <prefix>.ref.segs.bed.gz and

@@ -133,7 +133,7 @@ visiting a segment is stated (the `SM:Z:` tag above).
 
 **The hosted index is dominated by donor-contig index weight**, which every graph
 track downloads before cutting. A `GRCh38`-only pair (`build_rgfa_tabix.sh` third
-argument; `demos/hprc/hprc-v2.0-mc-grch38.ref.*`) returns identical rows for far
+argument; `demos/hprc/hprc-v2.1-mc-grch38.ref.*`) returns identical rows for far
 less index, **but only at `subgraphContext: 0`.** The default is 1 hop, which
 follows an allele's interior segments indexed under the donor contig; on the
 small pair the expansion finds nothing and the cut silently degrades to context 0

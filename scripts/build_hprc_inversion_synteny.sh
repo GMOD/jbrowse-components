@@ -22,10 +22,10 @@
 #                                        haplotype, cut to the drawn window
 #
 # The locus is chr1:144,419,292-144,572,458 at 1q21.1, which
-# hprc-v2.0-mc-grch38.bubbles.bed.gz reports as inversion-flagged and whose
+# hprc-v2.1-mc-grch38.bubbles.bed.gz reports as inversion-flagged and whose
 # breakpoints are three mixed-orientation rank-0 links in the links index:
 #
-#   tabix hprc-v2.0-mc-grch38.links.bed.gz 'GRCh38#0#chr1:144,400,000-144,600,000' \
+#   tabix hprc-v2.1-mc-grch38.links.bed.gz 'GRCh38#0#chr1:144,400,000-144,600,000' \
 #     | awk -F'\t' '!s[$4$5]++ && $9==0 && $13==0 &&
 #                   substr($4,length($4)) != substr($5,length($5))'
 #

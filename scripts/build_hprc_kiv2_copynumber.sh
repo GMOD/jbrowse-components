@@ -41,7 +41,7 @@ set -euo pipefail
 OUT=${1:-hprc_kiv2_cn}
 mkdir -p "$OUT/bw"
 
-WAVE_VCF=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz
+WAVE_VCF=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz
 TRACKDB=https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt
 BW_BASE=https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv
 

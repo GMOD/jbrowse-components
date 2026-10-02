@@ -683,11 +683,8 @@ export const mafSpecs: ScreenshotSpec[] = [
   // human-pangenomics bucket by BgzipMafAdapter: a 53 GB MAF plus its taffy
   // .tai, no conversion step and no local copy.
   //
-  // v2.1's MAF rather than v2.0's 5.96 GB TAF, because HPRC publishes the
-  // alignment in one format per build and v2.1 is a re-run rather than a
-  // repackaging — minigraph ordered per chromosome to reduce underalignments,
-  // centromeres patched against rCRS. The graph and the callsets on this page
-  // are v2.1, so the TAF drew a different build's alignment beside them.
+  // v2.0's 5.96 GB TAF is cheaper to read, but it is an earlier cactus run, and
+  // the graph and the callsets on this page are v2.1.
   //
   // The MAF costs reads. Measured through queryBlockSpan over the buffered
   // region the fetch uses (the view plus half a screen each side): the window

@@ -217,8 +217,8 @@ GB MAF sits a `.tai` index that makes a locus one ranged read:
 }
 ```
 
-The `uri` shorthand resolves the sibling `.tai`.[^taf] For a MAF of your own,
-taffy writes the index beside it:
+The `uri` shorthand resolves the sibling `.tai`. For a MAF of your own, taffy
+writes the index beside it:
 
 ```bash
 # writes alignment.maf.gz.tai, which the adapter finds by its name
@@ -275,11 +275,3 @@ walks through it.
   bubbles it reads.
 - [taffy](https://github.com/ComparativeGenomicsToolkit/taffy), which writes the
   `.tai` index that makes the alignment addressable by locus.
-
-[^taf]:
-    Release 2.0 publishes an earlier run of the same alignment as a 5.9 GB TAF,
-    which `BgzipTaffyAdapter` opens with the same shorthand. The TAF fetches
-    fewer bytes per locus, but release 2.1 fixed two faults in that run: the
-    aligner left some matching sequence unaligned, so a haplotype row shows a
-    gap where it should line up with GRCh38, and some assemblies had not yet
-    been patched so that their centromeres align.

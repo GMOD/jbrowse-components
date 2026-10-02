@@ -17,10 +17,9 @@ https://github.com/human-pangenomics/hpp_pangenome_resources for the release
 and its terms.
 
 Nothing in GMOD/jbrowse-components rebuilds this set. The impg filter it came
-from was replaced by two routes that read the alignment out of the graph
-itself, scripts/build_hprc_multiway_synteny.sh with SOURCE=gfa or SOURCE=taf,
-and those write the sets described in README_gfa.txt and README_graph.txt
-beside this file. config.json here serves the SOURCE=gfa set, and the tutorial
+from was replaced by scripts/build_hprc_multiway_synteny.sh, which reads the
+alignment out of the graph itself and writes the set described in
+README_gfa.txt beside this file. config.json here serves that set, and the tutorial
 at https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_haplotypes/#whole-genomes-from-a-gfa
 walks that build. These files stay hosted for anything pointed at them.
 
