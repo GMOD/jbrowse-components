@@ -298,7 +298,7 @@ name draws empty. An anchors score becomes `-log10` of MCScanX's e-value.
 
 Naming a third `--species` writes an ortholog table instead, since one
 `.collinearity` covers every pair. See
-[ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao#from-mcscanx).
+[ortholog tables](/docs/config_guides/synteny_track#from-mcscanx).
 
 Naming a single `--species` keeps the blocks duplicated within that genome,
 which [](/docs/tutorials/homoeolog_synteny) draws as a dotplot of one assembly
