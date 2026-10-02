@@ -106,23 +106,14 @@ Turn on **Rendering mode → Phased** from the track menu:
 - it needs phased genotypes, written `0|1`; unphased calls (`0/1`) need a
   phasing program such as SHAPEIT first
 
-<Figure caption="The phased rendering mode, and the 'Rendering mode' → 'Phased' menu item that turns it on." src="/img/trio-matrix-phased.png"/>
+<Figure caption="The phased rendering mode. Rows are child hap1/hap2, mother hap1/hap2, father hap1/hap2, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
-<Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then the phased rendering mode splitting each trio member into its two haplotype rows in place, on the track the figures above are of. The last move zooms out to the window the rest of the page works in." />
+<Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then the phased rendering mode splitting each trio member into its two haplotype rows in place, on the track the figures above are of. The last move zooms out past the default display's feature-density limit to the window the rest of the page works in; the matrix keeps drawing there, because each column is one variant." />
 
-The last move in the clip zooms out past the default display's
-[feature-density limit](/docs/config/linearcanvasbasedisplay/#slot-maxfeaturescreendensity).
-The matrix keeps drawing there, because each column is one variant.
+The child's two haplotypes match the mother's in some blocks and the father's in
+others. The rest of this tutorial turns that pattern into a painted track.
 
-## Reading matching haplotypes off the matrix
-
-Every row is now a strip of colored blocks. The child's two haplotypes match the
-mother's in some blocks and the father's in others. The rest of this tutorial
-turns that pattern into a painted track.
-
-<Figure caption="The phased mode with no markup added. Rows are child hap1/hap2, mother hap1/hap2, father hap1/hap2, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
-
-## Finding the matching blocks programmatically
+## Running hap-ibd
 
 [hap-ibd](https://github.com/browning-lab/hap-ibd) computes the matching
 stretches as "identical by descent" (IBD) segments. hap-ibd is built for
@@ -130,8 +121,6 @@ population-scale cohorts and also runs on a single trio. It takes a phased VCF
 and a genetic map in PLINK format; hap-ibd's README links the GRCh38 maps, and
 `hap-ibd.jar` is on its
 [releases page](https://github.com/browning-lab/hap-ibd/releases).
-
-## Running hap-ibd
 
 The trio VCF calls its chromosome `1`, with no `chr` prefix, so the run uses the
 `no_chr_in_chrom_field` variant of the GRCh38 PLINK map:
@@ -273,17 +262,12 @@ copies:
 
 <Figure caption="Maternal crossover at chr1:55,753,613, in a 400 kb window, the same idea in a different palette: the painting steps from Mother hap2 to Mother hap1, and the frames tie Child hap2 to each in turn." src="/img/trio-crossover-maternal.png"/>
 
-The genotypes underneath switch between the two parental copies more often than
-real crossovers do, and the painting above summarises those switches away.
-
-## Where the boundaries come from
-
-The 1000 Genomes VCF is _statistically_ phased, and its haplotypes carry switch
-errors, which are the extra copy-switches visible in the genotype rows.
-hap-ibd's cM-length threshold filters most of them out, so its blocks track the
-real boundaries more closely. The two crossovers above are well supported, and
-the finer blocks are approximate. For crossover mapping, use a pedigree-aware
-method such as
+The 1000 Genomes VCF is _statistically_ phased, so the genotypes underneath
+switch between the two parental copies more often than real crossovers do. The
+painting summarises those switch errors away, because hap-ibd's cM-length
+threshold filters most of them out. The two crossovers above are well supported,
+and the finer blocks are approximate. For crossover mapping, use a
+pedigree-aware method such as
 [duoHMM](https://mathgen.stats.ox.ac.uk/genetics_software/duohmm/duohmm.html).
 
 ## Reproduce it end to end

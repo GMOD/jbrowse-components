@@ -18,8 +18,7 @@ variant genotyped per mosquito beneath it.
 - a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
   needs nothing hosted
-- [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) (`plink2`), labeled alpha
-  for years despite being the version in general use
+- [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) (`plink2`)
 - htslib (`bgzip`, `tabix`)
 - `samtools`
 - `curl`
@@ -246,15 +245,6 @@ with the karyotype lane beneath, which draws from a different file.
   arrangement, so almost no chromosome pair is a heterokaryotype, and the few
   2La chromosomes fall below the MAF floor with the variants that tag them.
 
-## Which metric recovers the breakpoints
-
-D' saturates wherever the sample holds no recombinant haplotype, so it stays
-high up to where crossing over stops. The
-[reproduce script](#reproduce-it-end-to-end) switches to it to recover the 2La
-breakpoints from the table;
-[the guide](/docs/config_guides/variant_track#which-metric-and-how-far-to-thin)
-covers both metrics and the allele-frequency floor.
-
 ## Reproduce it end to end
 
 [`build_ag1000g_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ag1000g_ld.sh)
@@ -278,11 +268,6 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_ag1000g_ld.sh              # writes ./ag1000g_ld_build/jbrowse2
 npx --yes serve ag1000g_ld_build/jbrowse2
 ```
-
-## The same karyotype track in Drosophila
-
-[](/docs/tutorials/population_genomics) builds the same one-record karyotype
-track for an 11 Mb Drosophila inversion.
 
 ## See also
 

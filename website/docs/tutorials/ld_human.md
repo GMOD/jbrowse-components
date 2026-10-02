@@ -323,8 +323,9 @@ bash build_lct_haploblock.sh          # builds ./lct_haploblock_build
 
 ## A bigger span
 
-[](/docs/tutorials/ld_mosquitoes) draws the same track type over a 22 Mb
-inversion, where the variants are thinned to a grid before correlation.
+Live LD from a VCF reaches a few Mb. [](/docs/tutorials/ld_mosquitoes) draws a
+22 Mb inversion, past that, by thinning the variants to a grid before PLINK
+correlates them.
 
 ## See also
 

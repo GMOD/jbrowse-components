@@ -104,7 +104,7 @@ Grouping the reads by their `HP` haplotype tag separates them, in
 [modkit pileup](https://nanoporetech.github.io/modkit/) collapses the per-read
 calls into a bedMethyl file with one row per CpG per modification type, each
 holding the fraction of reads that were modified. The file is much smaller than
-the reads and draws quickly at whole-genome zoom.
+the reads.
 
 ```bash
 modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
@@ -135,6 +135,10 @@ subtrack per type, with a vertical bar per CpG on a percent-methylation axis:
   }
 }
 ```
+
+To compare two samples, run `modkit dmr` on their per-sample pileups and load
+its BED output as a `FeatureTrack` beside the bedMethyl tracks, so the
+differentially-methylated regions line up with the positions driving them.
 
 ## Splitting the alleles apart
 
@@ -198,17 +202,6 @@ from a phased VCF:
 whatshap haplotag --reference reference.fa -o haplotagged.bam phased.vcf.gz reads.bam
 samtools index haplotagged.bam
 ```
-
-## Navigating with bedMethyl and comparing samples
-
-The bedMethyl track draws quickly at any zoom, so it suits whole-genome
-navigation and a tumor-versus-normal comparison. Add the per-read BAM or CRAM
-below it once you narrow in, for single-molecule and
-[allele-specific](#splitting-the-alleles-apart) detail.
-
-To compare two samples, run `modkit dmr` on their per-sample pileups and load
-its BED output as a `FeatureTrack` beside the bedMethyl tracks, so the
-differentially-methylated regions line up with the positions driving them.
 
 ## See also
 

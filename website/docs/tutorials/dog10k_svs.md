@@ -323,10 +323,8 @@ insertion, while the Greek and Swedish wolves do the reverse.
 
 A genotype records whether an animal carries the duplication, so an animal with
 four copies and one with twenty are both `1/1`.
-[The CYP1A2 tutorial](/docs/tutorials/dog10k_lof) measures copy number from the
-SNV callset's per-sample `DP`, and `dog10k_slc28a3_breed_cn` and
-`dog10k_slc28a3_cohort_cn` in this tutorial's config are the same pair of
-copy-number lanes over a second duplication, at _SLC28A3_.
+[The CYP1A2 tutorial](/docs/tutorials/dog10k_lof#copy-number-at-cyp1a2) measures
+copy number from the SNV callset's per-sample `DP`.
 
 ## FGF4 retrogene
 
@@ -533,30 +531,6 @@ bash build_dog10k_fgf4_synteny.sh
 - `build_dog10k_fgf4_synteny.sh` exits non-zero unless every gap in both
   alignments lands on an annotated _FGF4_ intron and each deposited CDS is a
   single interval.
-
-The _SLC28A3_ copy-number lanes come from a sixth script, which measures the
-locus two ways:
-
-1. From the SNV callset's per-sample depth, each canid's depth over the locus
-   against its own flanks, as [the CYP1A2 tutorial](/docs/tutorials/dog10k_lof)
-   does. It paints every canid, and separately every Grand Basset Griffon
-   Vendeen, Basset Hound and German Shepherd, which are the two lanes in the
-   config. This route needs only the tools in Prerequisites.
-2. From reads, for the six panel dogs with an SRA run. All 15 dogs with
-   published CRAMs sit at two copies here, so they cannot check the first route
-   at this locus. The script keeps only the reads sharing a 31-mer with the
-   repeat-masked locus, aligns those to the whole genome, and prints each dog's
-   copy number over the element beside its flanks.
-
-The script prints "Route 2 follows" between the two. The second route takes
-about 35 GB of scratch for the reference, its index and one run at a time, and
-needs sra-toolkit (`fastq-dump`), BBMap (`bbduk.sh`), `minimap2`, `samtools` and
-UCSC's `bedGraphToBigWig`. Stop it at that line if you want only the lanes.
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_slc28a3_cn.sh
-bash build_dog10k_slc28a3_cn.sh   # writes ./dog10k_slc28a3_cn_build/
-```
 
 ## See also
 

@@ -70,10 +70,8 @@ Chr  Locus         cM    Mb        BXD1  BXD2  BXD5  ...
 1    rs6269442     0.21  3.492195  B     B     D     ...
 ```
 
-The file header lists "198 BXD strains and ... the reciprocal F1s", of which
-"191 are independent, whereas 7 are substrains". The painting skips the F1
-columns, since an F1 is heterozygous at every marker and GeneNetwork computes
-the scan over the strains.
+The painting skips the F1 columns, since an F1 is heterozygous at every marker
+and GeneNetwork computes the scan over the strains.
 
 ## Chromosome painting
 
@@ -269,25 +267,11 @@ together with `facet: "group"`:
 {
   "rowGroups": [
     {
-      "match": "^(BXD100|BXD105|BXD109|BXD11|BXD110|BXD116|BXD119|BXD120|BXD121|BXD123|BXD124|BXD125|BXD128a|BXD131|BXD133|BXD136|BXD14|BXD142|BXD145|BXD148|BXD149|BXD151|BXD152|BXD153|BXD154|BXD156|BXD165|BXD171|BXD173|BXD186|BXD190|BXD191|BXD199|BXD2|BXD20|BXD204|BXD207|BXD210|BXD217|BXD218|BXD219|BXD23|BXD31|BXD32|BXD34|BXD35|BXD42|BXD43|BXD48|BXD48a|BXD50|BXD51|BXD56|BXD86|BXD87)$",
+      "match": "^(BXD100|BXD105|BXD109|...)$",
       "group": "black",
       "color": "rgb(30,30,30)"
     },
-    {
-      "match": "^(BXD101|BXD117|BXD12|BXD122|BXD130|BXD135|BXD139|BXD141|BXD144|BXD146|BXD147|BXD155|BXD157|BXD16|BXD162|BXD169|BXD172|BXD174|BXD175|BXD176|BXD178|BXD18|BXD180|BXD181|BXD183|BXD184|BXD19|BXD198|BXD202|BXD205|BXD208|BXD211|BXD212|BXD215|BXD22|BXD29|BXD33|BXD38|BXD39|BXD40|BXD49|BXD5|BXD6|BXD76|BXD79|BXD8|BXD94)$",
-      "group": "grey",
-      "color": "rgb(150,150,160)"
-    },
-    {
-      "match": "^(BXD102|BXD104|BXD106|BXD108|BXD111|BXD114|BXD115|BXD126|BXD127|BXD128|BXD13|BXD132|BXD134|BXD15|BXD150|BXD177|BXD192|BXD193|BXD194|BXD195|BXD196|BXD197|BXD200|BXD203|BXD209|BXD24|BXD24a|BXD25|BXD27|BXD28|BXD36|BXD52|BXD53|BXD55|BXD59|BXD60|BXD62|BXD65|BXD65a|BXD66|BXD68|BXD72|BXD74|BXD78|BXD88)$",
-      "group": "brown",
-      "color": "rgb(130,80,40)"
-    },
-    {
-      "match": "^(BXD1|BXD107|BXD112|BXD113|BXD138|BXD160|BXD161|BXD168|BXD170|BXD187|BXD188|BXD189|BXD201|BXD206|BXD21|BXD216|BXD220|BXD30|BXD44|BXD45|BXD61|BXD63|BXD64|BXD65b|BXD67|BXD69|BXD70|BXD71|BXD73|BXD73a|BXD73b|BXD75|BXD77|BXD81|BXD83|BXD84|BXD85|BXD89|BXD9|BXD90|BXD91|BXD93|BXD95|BXD98|BXD99)$",
-      "group": "dilute brown",
-      "color": "rgb(210,175,130)"
-    }
+    ...
   ],
   "facet": "group"
 }
@@ -309,11 +293,6 @@ The chr9 peak falls on _Myo5a_, the dilute locus. The same grouped painting,
 with the gene track filtered to _Myo5a_, splits the bands the other way:
 
 <Figure src="/img/qtl/bxd_myo5a_locus.png" caption="The whole of chr9, same bands. Under the peak at Myo5a the black and brown bands are B and the grey and dilute brown bands D, while the rest of chr9 is mixed."/>
-
-So the four-step scale is two genes. _Tyrp1_ sets black against brown and
-_Myo5a_ sets full color against dilute, and grey is a black coat diluted. The
-scale puts the brown step at twice the dilute step, which is why the chr4 peak
-stands higher than the chr9 one.
 
 ## Reproduce it end to end
 

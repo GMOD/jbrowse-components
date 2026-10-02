@@ -8,9 +8,12 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-Compute per-window Fst, nucleotide diversity (π), and Tajima's D from a
-multi-sample VCF, load them as bigWig quantitative tracks stacked in one view,
-each with a separate y-axis, and read where the signals line up against genes.
+In _Drosophila melanogaster_, a selective sweep at the insecticide-resistance
+gene _Cyp6g1_ and the `In(2L)t` inversion on chromosome 2L each leave a mark in
+population-genetic statistics. From a multi-sample VCF of 205 inbred lines we
+compute Fst, nucleotide diversity (π) and Tajima's D per window, load each as a
+bigWig track on the dm6 assembly, read the _Cyp6g1_ sweep against the genes, and
+then read the inversion.
 
 ## Prerequisites
 
@@ -65,12 +68,12 @@ We stack Fst, π and Tajima's D in one view over the
 [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP) on dm6 and
 look at two signals:
 
+- π dips at loci under selection, such as the insecticide-resistance gene
+  _Cyp6g1_ ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
 - Fst across the `In(2L)t` inversion. The inversion suppresses recombination
   between the two arrangements in a heterozygote
   ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)),
   so Fst tracks the arrangement boundary.
-- π dips at loci under selection, such as the insecticide-resistance gene
-  _Cyp6g1_ ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
 
 ## Building the scans
 
@@ -82,7 +85,9 @@ script drops.
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
 derives the two sample lists, one name per line as
 [vcftools](https://vcftools.github.io/) takes for `--weir-fst-pop` and `--keep`,
-normalizing DGRPool's `DGRP_021` to the VCF's `DGRP-021`.
+normalizing DGRPool's `DGRP_021` to the VCF's `DGRP-021`. DGRPool also types
+`In(3R)Payne`, so repeating the grouping step with that phenotype scans `3R` the
+same way.
 
 Each scan is one vcftools run, an awk turning its table into a bedGraph, and a
 pack into a bigWig. Fst uses the Weir & Cockerham estimator
@@ -363,18 +368,6 @@ segregates alongside the resistance allele
 ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and the
 duplicated sequence lowers the number of sites called in the window.
 
-Fst read against within-group π:
-
-| Fst  | Within-group π         | Reading                                          |
-| ---- | ---------------------- | ------------------------------------------------ |
-| High | Low in one group       | Selective sweep / local adaptation in that group |
-| High | High in both, high dxy | Long-standing divergence (e.g. an inversion)     |
-| Low  | High                   | Shared variation / gene flow                     |
-
-_Ace_ and _CHKov1_ on `3R` show the same pattern. DGRPool also types
-`In(3R)Payne`, so repeating the grouping step with that phenotype scans `3R` the
-same way.
-
 ## The inversion, genome-wide and within each arrangement
 
 Open the assembly with no location to lay the six arms out side by side. The
@@ -424,10 +417,6 @@ The inverted lines carry less diversity than the standard ones across the
 inverted region, most near the breakpoints, where the suppressed recombination
 is strongest. Toward the centromere past the inversion, where the arrangements
 recombine freely, the ratio sits at zero.
-
-Differentiation decays gradually outside the breakpoints
-([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)); the
-extent at the top of the frame marks the published breakpoints.
 
 ## Reproduce it end to end
 

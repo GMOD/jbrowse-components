@@ -9,9 +9,13 @@ tutorial_category: Population genomics
 tutorial_subcategory: Dog10K
 ---
 
-Derive a stop-gained variant's coordinate by translating the reference CDS,
-slice that gene out of the 397 GB Dog10K SNV callset over HTTP, and read the
-genotypes across breeds with the wild canids as the control.
+Some dogs are poor metabolizers of the drugs the liver enzyme CYP1A2 clears,
+because they carry a premature stop codon in _CYP1A2_. The literature names the
+variant only by its protein change, so we derive its genome coordinate by
+translating the reference coding sequence, slice the gene out of the 397 GB
+Dog10K SNV callset over HTTP, and read the genotypes across breeds with the wild
+canids as the control. A copy-number lane then shows the gene's expansion across
+every canid in the collection.
 
 ## Prerequisites
 
@@ -159,11 +163,6 @@ which exon it sits in.
 
 <Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant lane, then one row per dog. Five breeds carry it; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
 
-The build script genotypes the same site over every canid in the callset. Dozens
-of breeds carry the allele and it reaches homozygosity in several: every German
-Hound and every Shetland Sheepdog sampled here carries at least one copy, while
-every wolf and every coyote in the collection is homozygous reference.
-
 Three neighbours sit within about a hundred bases, and the display filters them
 out:
 
@@ -183,9 +182,7 @@ out:
 }
 ```
 
-Drop the filter to see them. Two are reference in every animal of this panel,
-including the one at the same codon's second base, so each draws an empty
-column. The third sits 15 bp along, and every wolf here carries it.
+Drop the filter to see them.
 
 ## Copy number at CYP1A2
 
@@ -216,11 +213,6 @@ two copies in every dog, which checks the ratio.
 
 Each window is 5 kb of depth stepped by 1 kb, so a call rests on 5 kb of
 evidence and is painted at 1 kb resolution.
-
-The callset records depth only where a variant was called, so the build script
-checks it against the 15 CRAMs the Dog10K share publishes. Over the shared
-windows the two depth sources agree closely, with no bias. The CRAM-based
-painting is in the config as `dog10k_cyp1a2_cn`.
 
 The output is a BED with the colour in the itemRgb column, a `sample` column and
 the rounded call in `copyNumber`. The multi-row display gives each sample a row,
@@ -274,8 +266,7 @@ label for each, so the legend reads as copy number:
 }
 ```
 
-The build script prints this `color` block from the palette it painted with. For
-named animals in a chosen order, `rows` takes
+For named animals in a chosen order, `rows` takes
 `{ "field": "sample", "domain": [...] }` with the row names listed.
 
 The figure has two lanes, each window coloured by its rounded call and grey at
@@ -285,14 +276,11 @@ profiles below.
 <Figure caption="Copy number over CYP1A2 and 185 kb around it, named animals above and the whole collection below. The expansion is a breed-level fact in some breeds and segregates one dog to the next in others." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper lane holds every Golden Retriever, Labrador Retriever and Boxer in the
-collection, plus the four wolves from the genotype figure. Every Golden carries
-the expansion, every Boxer carries two copies, and the Labradors split one dog
-to the next. Row labels come from the sample column, the order from `domain`.
+collection, plus the four wolves from the genotype figure. Row labels come from
+the sample column, the order from `domain`.
 
 The four wolves, the control, all carry the expansion, so unlike the stop-gained
-allele it is shared with wild canids and predates domestication. Their calls
-rest on callset depth alone, since none of the dogs with published reads is a
-wolf.
+allele it is shared with wild canids and predates domestication.
 
 The white stripes through both lanes are windows with no call. A window whose
 median across the whole collection is not two copies measures a quirk of the
@@ -305,12 +293,6 @@ profile across the window with **Clustering → Cluster rows by similarity** in
 the track menu, or `runClustering`. Clustering groups animals whose expansion
 starts and ends in the same place, and the blocks on either side of the gene are
 deletion polymorphisms.
-
-The depth-based estimate puts far more of the collection at three or more copies
-than the paper reports, and the two depth sources agree too closely for the gap
-to be noise. The two counts cover different intervals: the paper ran QuicK-mer2
-over an element whose extent is unpublished, and the build script counts the
-windows the collection puts above two.
 
 ## Reproduce it end to end
 

@@ -10,10 +10,14 @@ tutorial_category: Population genomics
 tutorial_subcategory: Dog10K
 ---
 
-Score every window of the Dog10K phased panel for how far apart fourteen toy
-breeds and eleven giant breeds sit, draw that as a Manhattan track, then slice
-one peak out of the 397 GB SNV callset over HTTP, load it as a multi-sample
-variant track with a sample-metadata TSV, and cluster the rows.
+Dogs differ in body size more than any other mammal, and a haplotype at the
+growth-factor gene _IGF1_ is a major reason. In the Dog10K panel of sequenced
+dogs and wolves, we scan every window of the genome for how far apart the allele
+frequencies of fourteen toy breeds and eleven giant breeds sit, and draw that as
+a Manhattan track. We then slice the _IGF1_ peak out of the 397 GB SNV callset
+over HTTP, load it as a multi-sample variant track with a sample-metadata TSV,
+and cluster the animals by genotype to see the haplotype each size class carries
+and where the wolves fall.
 
 ## Prerequisites
 
@@ -138,9 +142,8 @@ WINDOW=20000 REGIONS=chr15:40600000-42600000 \
 
 <Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed significance line. Bottom: the wedge's span, two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band marks the 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
-Each point is a window, so a peak marks a region. The genome-wide scan uses wide
-bins to keep the noise across thousands of windows down, so the _IGF1_ peak is a
-single bar.
+The genome-wide scan uses wide bins to keep the noise across thousands of
+windows down, so the _IGF1_ peak is a single bar.
 
 Fst has no p-value, so the threshold is a
 [reference line](/docs/config/valuescale/#slot-scalesyrules) at a quantile of
@@ -234,16 +237,6 @@ CLUPGR000001	Greek gray wolf	Gray wolf
 }
 ```
 
-## Clustering the rows
-
-Rows arrive in the VCF's order, which is the order the panel was built in, so
-they start out grouped by breed. **Clustering → Cluster rows by genotype...** in
-the track menu, then **Run clustering**, reorders them by genotype similarity
-and draws a dendrogram in the sidebar.
-
-Clustering reads the genotypes, and the display applies the swatch afterwards
-from the sample table, so the swatch has no effect on the order.
-
 ## Framing the window
 
 In a matrix every record is one column of equal width, so a window's width in
@@ -252,11 +245,22 @@ the two size classes, and this window is that span with a margin of
 undifferentiated sequence on each side; the Fst lane comes back down over that
 margin.
 
-Clustering reads the region on screen, and over the whole window the
-undifferentiated sites dilute the separating columns. Zoom to the core, cluster
-there, then widen back out to see how far the block runs. A session can set the
-region directly with `clusterRegion` beside `runClustering`, as the figure below
-does. The core here is the 140 kb at `chr15:41,440,000-41,580,000`:
+## Clustering the rows
+
+Rows arrive in the VCF's order, which is the order the panel was built in, so
+they start out grouped by breed. Clustering reads the region on screen, and over
+the whole window the undifferentiated sites dilute the separating columns, so
+zoom to the core first. The core here is the 140 kb at
+`chr15:41,440,000-41,580,000`. **Clustering → Cluster rows by genotype...** in
+the track menu, then **Run clustering**, reorders the rows by genotype
+similarity and draws a dendrogram in the sidebar. Then widen back out to see how
+far the block runs.
+
+Clustering reads the genotypes, and the display applies the swatch afterwards
+from the sample table, so the swatch has no effect on the order.
+
+A session can set the region directly with `clusterRegion` beside
+`runClustering`, as the figure below does:
 
 ```json session
 {

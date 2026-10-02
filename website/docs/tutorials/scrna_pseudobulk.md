@@ -1,8 +1,8 @@
 ---
 title: Single-cell RNA pseudobulk
 description:
-  Aggregate single-cell RNA into per-cell-type coverage BigWigs, and link them
-  to a UMAP
+  Aggregate single-cell RNA into per-cell-type coverage BigWigs, with a row per
+  cell underneath
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
@@ -11,8 +11,7 @@ Pooling the reads of each single-cell cluster and placing them on the genome
 shows which cell types express a marker gene, and where in the gene their reads
 land. We pool the 10x 5k PBMC dataset into one coverage BigWig per cell type
 outside JBrowse and load the set as one multi-wiggle track with a row per cell
-type. Then we add a row per cell underneath, and link the rows to a UMAP that
-filters them.
+type. Then we add a row per cell underneath.
 
 ## Prerequisites
 
@@ -38,14 +37,6 @@ writing the BAM to disk.
   https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam
 - the filtered feature-barcode matrix the clustering runs on:
   https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_filtered_feature_bc_matrix.h5
-
-## Where in the gene the reads land
-
-Putting the cells on genomic coordinates shows where in the gene the reads
-landed: which end, which exons, which annotated transcript. 10x 3' kits sequence
-the 3' end of each transcript, so their coverage is a spike near the
-polyadenylation site. Full-length chemistries (Smart-seq, and 5' kits to a
-lesser degree) spread coverage over the gene body.
 
 ## The genome
 
@@ -211,8 +202,9 @@ stay adjacent and a row keeps the color its cluster had on the UMAP.
 The clusters were named by scoring them against marker panels, so those markers
 would light up their own rows by construction. To test the labels, open nine
 markers the panels leave out, one per cell type: _CD40LG_, _LINC02446_, _SPON2_,
-_CD22_, _S100A12_, _HES4_, _ENHO_, _LRRC26_ and _GNG11_. Paste their 3' ends
-into the location box as one discontinuous view:
+_CD22_, _S100A12_, _HES4_, _ENHO_, _LRRC26_ and _GNG11_. 10x 3' kits sequence
+the 3' end of each transcript, so coverage is a spike near the polyadenylation
+site; paste each gene's 3' end into the location box as one discontinuous view:
 
 ```text
 chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,931 chr19:35,345,361-35,349,361 chr1:153,371,710-153,375,710 chr1:996,963-1,000,963 chr9:34,519,042-34,523,042 chr9:137,166,757-137,170,757 chr7:93,926,610-93,930,610
@@ -293,24 +285,6 @@ Two settings in the config above decide whether the speckle is visible:
   `domainMax` puts one UMI a visible fraction up the color ramp, as in
   [](/docs/tutorials/population_cnv). Autoscale takes its maximum from the
   tallest single cell in view
-
-The demo config also carries a pseudobulk scATAC set over the same PBMCs,
-stacked in one view beside the RNA set.
-
-## Linking the UMAP to the tracks
-
-The
-[single-cell UMAP example](https://jbrowse.org/storybook/lgv/single-cell-umap)
-puts a UMAP beside this track in an embedded view. Selecting cell types calls
-the display's row filter:
-
-```ts
-display.setRowFocus(['CD8 T', 'NK'])
-```
-
-Filtering also tightens the shared score axis onto the rows still drawn.
-Clicking a gene in the track recolors the cells by that gene's expression, read
-from `session.selection`.
 
 ## Reproduce it end to end
 
