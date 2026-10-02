@@ -206,6 +206,7 @@ function insertionHitInRow(
   row: MafAlignedRow,
   gposFrac: number,
   bpPerPx: number,
+  rowBandPx: number,
   showAsUpperCase: boolean,
 ): InsertionHit | undefined {
   const aln = row.alignmentBytes
@@ -215,7 +216,7 @@ function insertionHitInRow(
     aln,
     block.startBp,
     (anchorBp, length, baseOffset, byteStart, byteEnd) => {
-      const rectWidthPx = insertionBarWidth(length, 1 / bpPerPx) + 4
+      const rectWidthPx = insertionBarWidth(length, 1 / bpPerPx, rowBandPx) + 4
       const halfBp = (rectWidthPx / 2) * bpPerPx
       if (!hit && Math.abs(gposFrac - anchorBp) < halfBp) {
         let sequence = ''
@@ -297,6 +298,7 @@ export function findRowHoverAtBp(
   showAsUpperCase: boolean,
   bpPerPx: number,
   insertionsDrawn: boolean,
+  rowBandPx: number,
 ): RowHit | undefined {
   const { gposFrac, baseBp: targetBp } = bp
   const i = blockIndexAtBp(region.blocks, targetBp)
@@ -308,7 +310,14 @@ export function findRowHoverAtBp(
   if (row) {
     return (
       (insertionsDrawn
-        ? insertionHitInRow(block, row, gposFrac, bpPerPx, showAsUpperCase)
+        ? insertionHitInRow(
+            block,
+            row,
+            gposFrac,
+            bpPerPx,
+            rowBandPx,
+            showAsUpperCase,
+          )
         : undefined) ??
       cellHitInRow(block, row, targetBp, showAsUpperCase) ??
       deletionHitInRow(

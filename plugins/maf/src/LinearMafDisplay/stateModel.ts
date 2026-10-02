@@ -34,6 +34,7 @@ import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
+import { drawnRowHeightPx } from '@jbrowse/render-core/shaders/rowRect'
 import {
   ContextMenuMixin,
   RowHeightMixin,
@@ -2065,6 +2066,7 @@ export default function stateModelFactory(
                 self.showAsUpperCase,
                 bpPerPx,
                 self.basesRenderingActive,
+                drawnRowHeightPx(self.effectiveRowHeight, self.rowProportion),
               )
             : undefined
           if (!hit) {
