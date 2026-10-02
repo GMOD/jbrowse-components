@@ -2568,11 +2568,15 @@ test('moving the facet field drops what was hidden, the keys having meant that f
   expect(display.hiddenGroups.size).toBe(0)
 })
 
-test('the chip row names each section at the top of the rows it labels', () => {
+test('the chip row names each section at the top of the rows it labels, from where the plot starts', () => {
   const { display } = facetedEnvironment().createDisplay()
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
   display.setHeight(60 + 2 * YSCALEBAR_LABEL_OFFSET)
-  render(createElement(MarkFacetChips, { model: display, plotHeight: 60 }))
+  const { yTop } = axisPlotBox(display.height)
+  render(
+    createElement(MarkFacetChips, { model: display, yTop, plotHeight: 60 }),
+  )
+  expect(screen.getByTestId('mark-facet-chips').style.top).toBe(`${yTop}px`)
   expect(
     screen.getAllByTestId('group-label-text').map(e => e.textContent),
   ).toEqual(['sample: a', 'sample: b'])
