@@ -16,7 +16,6 @@ export {
   SERIF_H_PX,
   SERIF_HALF_W_PX,
   drawIndicatorTriangle,
-  drawInsertionMarker,
   drawInsertionSerifs,
   insertionSerifsWidthPx,
   formatInsertionLabel,
@@ -29,6 +28,15 @@ export {
   textWidthForNumber,
 } from './labelConstants.ts'
 export type { SnpBaseColors, InsertionType } from './labelConstants.ts'
+export {
+  EMPTY_INSERTIONS,
+  insertionInk,
+  insertionMark,
+  paintBlockInsertionLabels,
+  paintInsertionLabels,
+} from './insertionMark.ts'
+export type { InsertionChannels, InsertionParams } from './insertionMark.ts'
+export { insertionMarkerDraws } from './insertionWidth.generated.ts'
 export { buildSyntheticAssembly } from './buildSyntheticAssembly.ts'
 export type { SyntheticAssembly } from './buildSyntheticAssembly.ts'
 export { buildReadVsRefNames } from './readVsRefNaming.ts'

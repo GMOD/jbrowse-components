@@ -1,4 +1,3 @@
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
@@ -16,10 +15,9 @@ const MultiRowIndelGlyphOverlay = observer(function MultiRowIndelGlyphOverlay({
 }: {
   model: LinearMultiRowFeatureDisplayModel
 }) {
-  const palette = usePalette()
   const {
     indelGlyphRegions,
-    encodedChannels,
+    uploadedChannels,
     renderBlocks,
     renderState,
     height,
@@ -33,10 +31,9 @@ const MultiRowIndelGlyphOverlay = observer(function MultiRowIndelGlyphOverlay({
         drawMultiRowIndelGlyphs(
           ctx,
           indelGlyphRegions,
-          encodedChannels,
+          uploadedChannels,
           renderBlocks,
           renderState,
-          palette.insertion,
         )
       }}
     />

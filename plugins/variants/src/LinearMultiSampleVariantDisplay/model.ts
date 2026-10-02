@@ -37,9 +37,12 @@ import {
   VARIANT_LANE_BOUNDS,
   VARIANT_LANE_LABEL_OPTIONS,
 } from '../shared/variantTopBands.ts'
-import { anyMarkerPossibleForBlock } from './components/drawVariantInsertionGlyphs.ts'
 import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
 import { variantCellSpanPx } from './components/variantCellSpan.ts'
+import {
+  anyMarkerPossibleForBlock,
+  variantInsertionChannels,
+} from './components/variantInsertions.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
 import { laneDisplayConfig } from './laneDisplayConfig.ts'
 import { buildLaneRenderData } from './laneRenderData.ts'
@@ -57,6 +60,7 @@ import type {
   VariantMatrixRenderingBackend,
   VariantMatrixUploadData,
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
+import type { InsertionChannels } from '@jbrowse/alignments-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
@@ -477,12 +481,22 @@ export function stateModelFactory(
          * repaint.
          */
         get perRegionCellMap() {
-          const { placedRegionRows, regionCellColors } = self
-          const out = new Map<number, Placed<ShippedRegionData>>()
+          const { placedRegionRows, regionCellColors, showInsertionGlyphs } =
+            self
+          const out = new Map<
+            number,
+            Placed<ShippedRegionData> & { insertions?: InsertionChannels }
+          >()
           for (const [k, placed] of placedRegionRows) {
-            out.set(k, {
+            const painted = {
               ...placed,
               cellColors: regionCellColors.get(k) ?? placed.cellColors,
+            }
+            out.set(k, {
+              ...painted,
+              insertions: showInsertionGlyphs
+                ? variantInsertionChannels(painted)
+                : undefined,
             })
           }
           return out

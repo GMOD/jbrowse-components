@@ -10,6 +10,7 @@ import {
   EMPTY_MAF_CELLS,
   buildMafChannels,
 } from '../LinearMafRenderer/mafChannels.ts'
+import { mafInsertionChannels } from '../LinearMafRenderer/rendering/insertions.ts'
 import {
   encodeCodonConservation,
   encodeCodonSpans,
@@ -28,6 +29,7 @@ import type {
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord } from '../types.ts'
 import type { CodonFills } from './codons.ts'
+import type { InsertionChannels } from '@jbrowse/alignments-core'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -138,6 +140,13 @@ export function encodeMafRows(
       basesActive && detail
         ? buildMafChannels({ blocks: detail.blocks, ...gpu })
         : EMPTY_MAF_CELLS,
+    insertions:
+      basesActive && detail
+        ? mafInsertionChannels(
+            detail,
+            cssColorToABGR(gpu.palette.insertionColor),
+          )
+        : undefined,
     sourceChrom:
       sourceChromRanks &&
       detail &&
@@ -175,6 +184,21 @@ function pickSpans(spans: SpanChannels, kept: readonly number[]) {
   }
 }
 
+function pickInsertions(
+  c: InsertionChannels,
+  kept: readonly number[],
+): InsertionChannels {
+  const pick = (a: Uint32Array) => Uint32Array.from(kept, i => a[i]!)
+  return {
+    x: pick(c.x),
+    x2: pick(c.x2),
+    row: pick(c.row),
+    length: pick(c.length),
+    color: pick(c.color),
+    count: kept.length,
+  }
+}
+
 /**
  * `payload` less the instances no block of its region can show: rows scrolled
  * out of `rows`, and spans outside every block's painted bp range. What the
@@ -191,6 +215,20 @@ export function cullMafRows(
     const clip = clipBlockForCanvas(block, canvasWidth)
     return clip ? [paintedBpRange(block, clip)] : []
   })
+  const shownInsertions = (c: InsertionChannels) => {
+    const kept: number[] = []
+    for (let i = 0; i < c.count; i++) {
+      const row = c.row[i]!
+      if (
+        row >= rows.firstRow &&
+        row < rows.endRow &&
+        ranges.some(r => r.overlaps(c.x[i]!, c.x2[i]! + 1))
+      ) {
+        kept.push(i)
+      }
+    }
+    return kept
+  }
   const shown = (spans: SpanChannels) => {
     const kept: number[] = []
     for (let i = 0; i < spans.count; i++) {
@@ -214,7 +252,9 @@ export function cullMafRows(
     codonCells,
     codons,
     conservation,
+    insertions,
   } = payload
+  const insertionsKept = insertions && shownInsertions(insertions)
   const summaryKept = summary && shown(summary)
   const barsKept = identityBars && shown(identityBars)
   return {
@@ -234,6 +274,10 @@ export function cullMafRows(
         ...pickSpans(summary, summaryKept),
         records: summaryKept.map(i => summary.records[i]!),
       },
+    insertions:
+      insertions &&
+      insertionsKept &&
+      pickInsertions(insertions, insertionsKept),
   }
 }
 

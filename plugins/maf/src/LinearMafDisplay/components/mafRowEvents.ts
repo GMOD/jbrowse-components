@@ -1,8 +1,3 @@
-import {
-  blockHasRefGap,
-  forEachInsertion,
-} from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
-
 import type {
   MafBlock,
   MafRegionData,
@@ -17,7 +12,7 @@ type FillBlock = (
 ) => void
 
 /**
- * A region's per-row events — insertions, inverted blocks — as
+ * A region's per-row events — inverted blocks — as
  * `(positionBp, rowIndex, length)`, with no screen position in them. Panning
  * changes only the bp→px mapping over these, so the overlays project this
  * instead of re-deriving it from the alignment bytes every frame.
@@ -26,9 +21,10 @@ type FillBlock = (
  * proportional to the viewport, and eagerly indexing a 54k-block region made the
  * first frame after a fetch 145ms against a 4.5ms frame.
  *
- * Deletions get `regionDeletionRunBounds` instead. Insertions need a reference
- * gap and so are sparse; a deletion is any run of alignment gap, millions per
- * region — indexing what is cheap to bound is how this turns into a leak.
+ * Deletions get `regionDeletionRunBounds` instead: a deletion is any run of
+ * alignment gap, millions per region, and indexing what is cheap to bound is
+ * how this turns into a leak. Insertions are the insertion mark's channels,
+ * encoded once per region (`mafInsertionChannels`).
  *
  * Blocks are appended in first-drawn order, so a block's range is
  * `(eventStart, eventCount)` rather than the wire's ascending `blockStart`.
@@ -118,30 +114,6 @@ function cachedBy(
     cache.set(region, index)
   }
   return index
-}
-
-const insertionCache = new WeakMap<MafRegionData, MafRowEventIndex>()
-
-/**
- * Insertions: a run of reference-gap columns where a sample carries bases,
- * anchored at the reference base following the run. `blockHasRefGap` answers for
- * every row of a block at once, and most real MAF blocks have no gap at all.
- */
-export function regionInsertionEvents(region: MafRegionData) {
-  return cachedBy(insertionCache, region, (block, _blockIndex, push) => {
-    if (blockHasRefGap(block)) {
-      for (const row of block.rows) {
-        forEachInsertion(
-          block.refSeqBytes,
-          row.alignmentBytes,
-          block.startBp,
-          (anchorBp, length) => {
-            push(anchorBp, row.rowIndex, length)
-          },
-        )
-      }
-    }
-  })
 }
 
 const inversionCache = new WeakMap<

@@ -1,4 +1,4 @@
-import { coverageBandMarks } from '@jbrowse/alignments-core'
+import { coverageBandMarks, insertionMark } from '@jbrowse/alignments-core'
 import { barMark, defineMark, spanMark } from '@jbrowse/render-core/marks'
 import {
   drawnRowHeightPx,
@@ -162,6 +162,28 @@ export const MAF_COVERAGE_MARKS = coverageBandMarks({
   band: s => ({ top: 0, height: s.coverage.height }),
 })
 
+/**
+ * Each species' insertions over its cells, interbase at their anchors, on the
+ * cells' band.
+ */
+export function mafInsertionParams(s: MafGPURenderState) {
+  return {
+    rowHeight: s.rowHeight,
+    rowOffsetPx:
+      s.rowsTop + rowBandOffsetPx(s.rowHeight, s.rowProportion) - s.scrollTop,
+    bandHeightPx: drawnRowHeightPx(s.rowHeight, s.rowProportion),
+    spanFloorPx: 0,
+    outline: false,
+  }
+}
+
+export const MAF_INSERTION_MARK = defineMark({
+  shape: insertionMark,
+  channels: (d: MafRowsPayload) => d.insertions,
+  params: mafInsertionParams,
+  band: rowsBand,
+})
+
 /** The rows band's marks, in paint order. */
 export const MAF_ROWS_MARKS: Mark<MafRowsPayload, MafGPURenderState>[] = [
   MAF_ROW_MARK,
@@ -170,6 +192,7 @@ export const MAF_ROWS_MARKS: Mark<MafRowsPayload, MafGPURenderState>[] = [
   MAF_CODON_MARK,
   MAF_SOURCE_CHROM_MARK,
   MAF_SUMMARY_MARK,
+  MAF_INSERTION_MARK,
 ]
 
 /** Everything the rows canvas draws, in paint order. */

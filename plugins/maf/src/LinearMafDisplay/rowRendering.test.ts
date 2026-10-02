@@ -149,7 +149,9 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     // and the per-base overlays that gate on it stay off, so no frame pays for
     // markers drawn over a rendering that isn't theirs
     expect(display.visibleLabels).toEqual([])
-    expect(display.visibleInsertions).toEqual([])
+    expect(
+      [...display.encodedUpload.values()].some(p => p.insertions?.count),
+    ).toBe(false)
   })
 
   // The same track below the floor takes the real alignment path, so the base

@@ -3,7 +3,7 @@
 // glyph, a bar pointed at its left end, out of the quad when shapeType != RECT.
 //! targets: wgsl, glsl
 //! blend: premultiplied
-//! export-consts: SHAPE_RECT, SHAPE_TRI_LEFT
+//! export-consts: SHAPE_RECT, SHAPE_TRI_LEFT, MIN_CELL_PX
 //! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx, inversionTipPx
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
 
@@ -51,8 +51,9 @@ float snapCellEdgePx(float xPx) {
   return floor(xPx + 0.5);
 }
 
-// A snapped cell paints at least 2px wide, so a lone variant in a sparse matrix
-// stays visible rather than collapsing to a sliver.
+// A snapped cell paints at least MIN_CELL_PX wide, so a lone variant in a
+// sparse matrix stays visible rather than collapsing to a sliver.
+static const float MIN_CELL_PX = 2.0;
 //
 // Both this and its pivot twin below take the cell's RAW px edges in RECORD
 // order — `toX(start)`, `toX(end)` — and snap inside. That is deliberate: on a
@@ -62,7 +63,7 @@ float snapCellEdgePx(float xPx) {
 // genome-wide zoom, a pivot reading snapped edges would be a no-op exactly where
 // it is needed. Raw in, decision inside, so the orientation survives the snap.
 float snappedCellWidthPx(float x1Px, float x2Px) {
-  return max(2.0, abs(snapCellEdgePx(x2Px) - snapCellEdgePx(x1Px)));
+  return max(MIN_CELL_PX, abs(snapCellEdgePx(x2Px) - snapCellEdgePx(x1Px)));
 }
 
 // Which edge the widened cell hangs off: the record's START, always.

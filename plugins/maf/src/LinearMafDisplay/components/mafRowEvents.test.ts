@@ -1,9 +1,5 @@
 import { emptyMafCoverage } from './coverageTestFixture.ts'
-import {
-  MafRowEventIndex,
-  regionInsertionEvents,
-  regionInversionEvents,
-} from './mafRowEvents.ts'
+import { MafRowEventIndex, regionInversionEvents } from './mafRowEvents.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { StrandConsensus } from './computeVisibleInversions.ts'
@@ -84,19 +80,6 @@ test('the columns survive growth past their initial capacity', () => {
   expect(to - from).toBe(count)
   expect(index.positionBp[count - 1]).toBe(count - 1)
   expect(index.length[count - 1]).toBe(count)
-})
-
-test('insertion events carry anchor, row and inserted length', () => {
-  // ref A--A: a 2bp insertion anchored before reference bp 101
-  const index = regionInsertionEvents(
-    region([block(100, 'A--A', ['AGGA', 'A--A'])]),
-  )
-  expect(events(index, 0)).toEqual([[101, 0, 2]])
-})
-
-test('a region gets one index across calls', () => {
-  const data = region([block(100, 'A--A', ['AGGA'])])
-  expect(regionInsertionEvents(data)).toBe(regionInsertionEvents(data))
 })
 
 // `consensusStrandByRowChr` is scored across every loaded region, so a region

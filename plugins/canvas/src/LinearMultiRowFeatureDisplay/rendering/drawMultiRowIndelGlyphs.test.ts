@@ -1,9 +1,11 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { drawMultiRowIndelGlyphs } from './drawMultiRowIndelGlyphs.ts'
 import { encodeRows } from './encodeTestUtils.ts'
+import { multiRowInsertionChannels } from './multiRowInsertions.ts'
+import { MULTI_ROW_INSERTION_MARK } from './multiRowMarks.ts'
 
 import type {
   MultiRowRegionData,
@@ -100,8 +102,11 @@ const wide: MultiRowRegionData = {
 
 const DELTA = 5000
 const BAR = insertionBarWidth(DELTA, 10, 20)
-const INSERTION_COLOR = resolvePalette().insertion
+const INSERTION_ABGR = cssColorToABGR(resolvePalette().insertion)
+const INSERTION_COLOR = abgrToCssRgba(INSERTION_ABGR)
 
+// The markers are the insertion mark's and the text is the overlay's, so a
+// frame is the mark's painter and then the overlay, as the screen stacks them.
 function draw(
   region: MultiRowRegionData,
   opts?: Partial<Parameters<typeof encodeRows>[1]>,
@@ -111,13 +116,18 @@ function draw(
     rows: ['mom', 'dad'],
     ...opts,
   })
+  const uploaded = {
+    ...encoded,
+    insertions: multiRowInsertionChannels(encoded, region, INSERTION_ABGR),
+  }
+  const state = { ...frame, rowTable }
+  MULTI_ROW_INSERTION_MARK.paintBlock(ctx, uploaded, block, state)
   drawMultiRowIndelGlyphs(
     ctx,
     new Map([[0, region]]),
-    new Map([[0, encoded]]),
+    new Map([[0, uploaded]]),
     [block],
-    { ...frame, rowTable },
-    INSERTION_COLOR,
+    state,
   )
   return { calls, texts }
 }

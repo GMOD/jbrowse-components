@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 
+import { paintInsertionLabels } from '@jbrowse/alignments-core'
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { resolvePalette, colorLongreadInv } from '@jbrowse/core/ui/palette'
@@ -14,12 +15,12 @@ import {
   MAF_CONSERVATION_MARK,
   MAF_COVERAGE_MARKS,
   MAF_ROWS_MARKS,
+  mafInsertionParams,
 } from '../LinearMafRenderer/mafMarks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
 import { drawMafDeletionLabels } from '../LinearMafRenderer/rendering/deletions.ts'
 import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
-import { drawMafInsertions } from '../LinearMafRenderer/rendering/insertions.ts'
 import { drawInversions } from '../LinearMafRenderer/rendering/inversions.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import {
@@ -44,7 +45,6 @@ export async function renderSvg(
 
 function MafSvgBody({
   model,
-  view,
   canvasWidth: width,
   renderBlocks,
   overlays,
@@ -176,11 +176,12 @@ function MafSvgBody({
                 model.visibleFrames,
                 getFrameColors(palette),
               )
-              drawMafInsertions(
+              paintInsertionLabels(
                 ctx,
-                model.visibleInsertions,
-                svgState.palette.insertionColor,
-                1 / view.bpPerPx,
+                renderBlocks,
+                block => svgRows.get(block.displayedRegionIndex)?.insertions,
+                svgState,
+                mafInsertionParams(svgState),
               )
               drawMafDeletionLabels(
                 ctx,

@@ -73,7 +73,6 @@ import {
 } from './components/computeVisibleAnnotations.ts'
 import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
 import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
-import { computeVisibleInsertions } from './components/computeVisibleInsertions.ts'
 import {
   computeVisibleInversions,
   consensusStrandByRowChr,
@@ -2127,21 +2126,6 @@ export default function stateModelFactory(
         get visibleDeletions() {
           return self.rowsVisible && self.basesRenderingActive
             ? computeVisibleDeletions({
-                view: self.host,
-                rpcDataMap: self.rpcDataMap,
-                ...self.rowGeometry(),
-              })
-            : []
-        },
-        /**
-         * #getter
-         * Positioned insertion markers, drawn only while the bases paint the
-         * rows. The hover and the right-click menu name an insertion under the
-         * same gate.
-         */
-        get visibleInsertions() {
-          return self.rowsVisible && self.basesRenderingActive
-            ? computeVisibleInsertions({
                 view: self.host,
                 rpcDataMap: self.rpcDataMap,
                 ...self.rowGeometry(),

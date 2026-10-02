@@ -152,7 +152,6 @@ const MafBody = observer(function MafBody({
   const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
   useRowVirtualScroll(rowsEl, model, model.view.scrollZoom)
   const [resizeActive, setResizeActive] = useState(false)
-  const view = model.view
   // the canvas box, not the viewport: must equal renderState.canvasWidth, and
   // every overlay below is positioned in the same space — see canvasWidthPx
   const width = model.canvasWidthPx
@@ -239,11 +238,11 @@ const MafBody = observer(function MafBody({
           height={rowsHeight}
         />
         <InsertionsOverlay
-          markers={model.visibleInsertions}
+          payloads={model.encodedUpload}
+          renderBlocks={model.renderBlocks}
+          renderState={model.renderState}
           width={width}
           height={rowsHeight}
-          palette={colorPalette}
-          pxPerBp={1 / view.bpPerPx}
         />
         <DeletionsOverlay
           markers={model.visibleDeletions}

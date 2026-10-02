@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
@@ -7,6 +8,7 @@ import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { drawDensityBand } from '../shared/densityBand.ts'
 import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
+import { multiRowInsertionChannels } from './rendering/multiRowInsertions.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from './rendering/rowBand.ts'
 
@@ -15,6 +17,7 @@ import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
+  MultiRowUploadData,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -38,6 +41,7 @@ export interface RenderSvgModel extends SvgExportable {
   // the screen's own channels, so what the upload holds is what the export
   // paints
   encodedChannels: ReadonlyMap<number, MultiRowEncoded>
+  drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
   renderState: MultiRowRenderState
   sources: RowSource[]
   svgSidebar: SvgSidebarProps
@@ -72,6 +76,18 @@ function MultiRowSvgBody({
   // From the user-selected export theme rather than the live on-screen palette,
   // so a light export of a dark session stays light.
   const exportPalette = resolvePalette({ configTheme: opts?.theme })
+  const insertionAbgr = cssColorToABGR(exportPalette.insertion)
+  const uploaded = new Map<number, MultiRowUploadData>()
+  for (const [key, channels] of self.encodedChannels) {
+    uploaded.set(key, {
+      ...channels,
+      insertions: multiRowInsertionChannels(
+        channels,
+        self.drawnRegionData.get(key),
+        insertionAbgr,
+      ),
+    })
+  }
   return (
     <>
       <PaintLayer
@@ -87,23 +103,16 @@ function MultiRowSvgBody({
               palette: exportPalette,
             })
           }
-          paintMarkBlocks(
-            ctx,
-            MULTI_ROW_MARKS,
-            self.encodedChannels,
-            renderBlocks,
-            state,
-          )
+          paintMarkBlocks(ctx, MULTI_ROW_MARKS, uploaded, renderBlocks, state)
           // Same layer, after the blocks, so the export stacks them the way
           // the on-screen overlay composites over the canvas.
           if (overlays && self.indelGlyphRegions) {
             drawMultiRowIndelGlyphs(
               ctx,
               self.indelGlyphRegions,
-              self.encodedChannels,
+              uploaded,
               renderBlocks,
               state,
-              exportPalette.insertion,
             )
           }
         }}

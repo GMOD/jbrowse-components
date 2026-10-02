@@ -7,7 +7,11 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
-import { assembleLocString, getSession } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getPaletteHost,
+  getSession,
+} from '@jbrowse/core/util'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -73,6 +77,10 @@ import {
   resolveIdentityLegend,
 } from './rendering/colorLegend.ts'
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
+import {
+  insertionOfChannel,
+  multiRowInsertionChannels,
+} from './rendering/multiRowInsertions.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
@@ -105,6 +113,7 @@ import type {
   MultiRowRegionData,
   MultiRowRenderState,
   MultiRowRenderingBackend,
+  MultiRowUploadData,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { RowGroup } from './rowSources.ts'
 import type { RowCountByField } from './rowsFields.ts'
@@ -992,6 +1001,18 @@ export default function stateModelFactory(
         () => self.encodeInputs,
         buildMultiRowChannels,
       )
+      const uploaded = createEncodeMemo(
+        () => encoded(),
+        () => cssColorToABGR(getPaletteHost(self).palette.insertion),
+        (channels: MultiRowEncoded, insertionAbgr, key) => ({
+          ...channels,
+          insertions: multiRowInsertionChannels(
+            channels,
+            self.drawnRegionData.get(key),
+            insertionAbgr,
+          ),
+        }),
+      )
       return {
         /**
          * #getter
@@ -1004,6 +1025,15 @@ export default function stateModelFactory(
          */
         get encodedChannels(): ReadonlyMap<number, MultiRowEncoded> {
           return encoded()
+        },
+        /**
+         * #getter
+         * `encodedChannels` with each region's insertion markers, in the
+         * theme's insertion colour: what the backend uploads and the hover
+         * and export draw from.
+         */
+        get uploadedChannels(): ReadonlyMap<number, MultiRowUploadData> {
+          return uploaded()
         },
       }
     })
@@ -1034,15 +1064,23 @@ export default function stateModelFactory(
       get hoverInk(): HighlightRect[] {
         const hit = self.hoveredFeature ?? self.contextMenuInfo?.hit
         const instance = hitInstance(self, hit)
-        return hit && instance
-          ? inkOfInstances(
-              MULTI_ROW_MARKS,
-              self.renderBlocks,
-              index => self.encodedChannels.get(index),
-              self.renderState,
-              index => (index === hit.regionIndex ? [instance] : undefined),
-            )
-          : []
+        const uploaded = hit && self.uploadedChannels.get(hit.regionIndex)
+        if (!hit || !instance || !uploaded) {
+          return []
+        }
+        const marker = insertionOfChannel(uploaded.insertions, instance.index)
+        return inkOfInstances(
+          MULTI_ROW_MARKS,
+          self.renderBlocks,
+          index => self.uploadedChannels.get(index),
+          self.renderState,
+          index =>
+            index === hit.regionIndex
+              ? marker === undefined
+                ? [instance]
+                : [instance, { mark: 1, index: marker }]
+              : undefined,
+        )
       },
       /**
        * #getter
@@ -1242,9 +1280,9 @@ export default function stateModelFactory(
          */
         startRenderingBackend(backend: MultiRowRenderingBackend) {
           installUpload(self, backend, {
-            cells: () => self.encodedChannels,
-            render: (b, encoded) =>
-              b.renderBlocks(self.renderBlocks, encoded, self.renderState),
+            cells: () => self.uploadedChannels,
+            render: (b, uploaded) =>
+              b.renderBlocks(self.renderBlocks, uploaded, self.renderState),
           })
         },
       }
@@ -1286,7 +1324,7 @@ export default function stateModelFactory(
           autorunOnReadyView(
             self,
             () => {
-              void self.encodedChannels
+              void self.uploadedChannels
             },
             { name: 'MultiRowEncodedChannels' },
           )

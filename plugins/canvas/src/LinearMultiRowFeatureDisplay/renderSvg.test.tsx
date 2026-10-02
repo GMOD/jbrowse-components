@@ -144,6 +144,7 @@ function makeModel(
         buildMultiRowChannels(d, encodeInputs),
       ]),
     ),
+    drawnRegionData,
     renderState,
     sources,
     svgSidebar: {

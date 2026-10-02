@@ -6,7 +6,7 @@ import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
-import VariantInsertionGlyphOverlay from './VariantInsertionGlyphOverlay.tsx'
+import VariantInsertionLabels from './VariantInsertionLabels.tsx'
 import { pickVariantCell } from './pickVariantCell.ts'
 import { computeVariantHitQuery } from './variantHitTest.ts'
 
@@ -211,7 +211,7 @@ const VariantBody = observer(function VariantBody({
         }}
         {...variantSurfaceHandlers(model, variantRowsSurface(model))}
       />
-      <VariantInsertionGlyphOverlay model={model} />
+      <VariantInsertionLabels model={model} />
     </>
   )
 })

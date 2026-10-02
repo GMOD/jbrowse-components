@@ -1,25 +1,23 @@
 import {
   MIN_HEIGHT_FOR_TEXT,
-  drawInsertionMarker,
-  getInsertionType,
-  insertionBarWidth,
+  paintBlockInsertionLabels,
 } from '@jbrowse/alignments-core'
 import { getContrastText } from '@jbrowse/core/ui/palette'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   forEachClippedBlock,
   makeBpMapper,
-  pxPerBpOf,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { rowColor, rowSlot } from '@jbrowse/render-core/marks'
 
 import { regionWithDeltas } from './featurePainting.ts'
+import { multiRowInsertionParams } from './multiRowInsertions.ts'
 import { rowBand } from './rowBand.ts'
 
-import type { MultiRowEncoded } from './multiRowChannels.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
+  MultiRowUploadData,
 } from './multiRowRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -32,49 +30,32 @@ const FONT = '10px sans-serif'
 const DELETION_LABEL_MIN_PX = 30
 
 /**
- * Text color for a label drawn ON one of these blocks. No constant reads on
- * every block, because the painting's colors are the user's. Memoized per
- * background because `getContrastText` parses a color string and a painting
- * repeats a handful of them across every block it has.
- */
-function makeLabelColorResolver() {
-  const cache = new Map<string, string>()
-  return (background: string) => {
-    let text = cache.get(background)
-    if (text === undefined) {
-      text = getContrastText(background)
-      cache.set(background, text)
-    }
-    return text
-  }
-}
-
-/**
- * Alignment-style indel glyphs over the multi-row blocks, from the signed bp
- * deltas the `lengthField` slot packs. A block's width can only express how
- * much reference a feature covers, so these glyphs are where the length goes.
- * They walk the encode the blocks were drawn from and place each through the
- * row table, so a glyph sits on its block whatever hid, moved or recoloured it.
- *
- * `insertionColor` must be `palette.insertion`, the color the pileup paints.
- * Alignments-core's `INSERTION_COLOR` is a different purple for worker code
- * with no theme to read, and hardcoding it leaves these glyphs on the old color
- * when a custom theme changes the pileup's.
+ * The text over the multi-row blocks: each insertion marker's count, and each
+ * deletion's line and length, from the signed bp deltas the `lengthField` slot
+ * packs. The markers themselves are the insertion mark's, on either backend.
+ * The walk is the encode the blocks were drawn from, placed through the row
+ * table, so a glyph sits on its block whatever hid, moved or recoloured it.
  */
 export function drawMultiRowIndelGlyphs(
   ctx: Ctx2D,
   regions: { get(key: number): MultiRowRegionData | undefined },
-  encodedChannels: ReadonlyMap<number, MultiRowEncoded>,
+  uploaded: ReadonlyMap<number, MultiRowUploadData>,
   renderBlocks: RenderBlock[],
   state: MultiRowRenderState,
-  insertionColor: string,
 ) {
   const { canvasWidth, canvasHeight, rowHeight, rowProportion, rowTable } =
     state
   const { height: h, offset } = rowBand(rowHeight, rowProportion)
-  const labelColor = makeLabelColorResolver()
-  ctx.font = FONT
-  ctx.textBaseline = 'middle'
+  const insertionParams = multiRowInsertionParams(state)
+  const labelColor = new Map<number, string>()
+  const textOn = (abgr: number) => {
+    let text = labelColor.get(abgr)
+    if (text === undefined) {
+      text = getContrastText(abgrToCssRgba(abgr))
+      labelColor.set(abgr, text)
+    }
+    return text
+  }
 
   forEachClippedBlock(
     ctx,
@@ -83,64 +64,50 @@ export function drawMultiRowIndelGlyphs(
     canvasHeight,
     block => regionWithDeltas(regions.get(block.displayedRegionIndex)),
     (regionData, renderBlock) => {
-      const bpToPx = makeBpMapper(renderBlock)
-      const { featureStarts, featureEnds, featureDeltas } = regionData
-      const encoded = encodedChannels.get(renderBlock.displayedRegionIndex)
+      const encoded = uploaded.get(renderBlock.displayedRegionIndex)
       if (!encoded) {
         return
       }
-      // exact for this block rather than the view's global bpPerPx, which the
-      // bar-width and label-fit thresholds are calibrated against
-      const pxPerBp = pxPerBpOf(renderBlock)
+      paintBlockInsertionLabels(
+        ctx,
+        encoded.insertions,
+        renderBlock,
+        state,
+        insertionParams,
+      )
+      const bpToPx = makeBpMapper(renderBlock)
+      const { featureStarts, featureEnds, featureDeltas } = regionData
       const labelFits = h >= MIN_HEIGHT_FOR_TEXT
-
+      let fontSet = false
       for (let c = 0; c < encoded.count; c++) {
         const i = encoded.featureIndex[c]!
         const delta = featureDeltas[i]!
         const rowIndex = rowSlot(encoded.row, c, rowTable)
-        if (delta === 0 || rowIndex === undefined) {
+        if (delta >= 0 || rowIndex === undefined) {
           continue
         }
-        const color = rowColor(encoded.color[c]!, encoded.row, c, rowTable)
         const xa = bpToPx(featureStarts[i]!)
         const xb = bpToPx(featureEnds[i]!)
-        const top = offset + rowHeight * rowIndex
-        const yMid = Math.round(top + h / 2)
-        if (delta > 0) {
-          // centered because the allele replaces this whole span, unlike a
-          // read's interbase insertion, so it has no boundary to sit at
-          const xCenter = (xa + xb) / 2
-          // Where the block is already wider than the bar the block *is* the
-          // bar — same color, same center — so a second fill only overdraws.
-          const barWidth = insertionBarWidth(delta, pxPerBp, h)
-          const barDrawn = barWidth > Math.abs(xb - xa)
-          if (barDrawn) {
-            ctx.fillStyle = insertionColor
-            drawInsertionMarker(ctx, xCenter, top, h, delta, pxPerBp)
-          }
-          if (getInsertionType(delta, pxPerBp) === 'large' && labelFits) {
-            // against whatever the label lands on: the bar when one was
-            // drawn, else the block
-            ctx.fillStyle = labelColor(
-              barDrawn ? insertionColor : abgrToCssRgba(color),
-            )
+        const yMid = Math.round(offset + rowHeight * rowIndex + h / 2)
+        const left = Math.min(xa, xb)
+        const width = Math.abs(xb - xa)
+        ctx.fillStyle = DELETION_LINE_COLOR
+        ctx.fillRect(left, yMid - DELETION_LINE_H / 2, width, DELETION_LINE_H)
+        if (labelFits && width >= DELETION_LABEL_MIN_PX) {
+          if (!fontSet) {
+            ctx.font = FONT
+            ctx.textBaseline = 'middle'
             ctx.textAlign = 'center'
-            ctx.fillText(String(delta), xCenter, yMid)
+            fontSet = true
           }
-        } else {
-          const left = Math.min(xa, xb)
-          const width = Math.abs(xb - xa)
-          ctx.fillStyle = DELETION_LINE_COLOR
-          ctx.fillRect(left, yMid - DELETION_LINE_H / 2, width, DELETION_LINE_H)
-          if (labelFits && width >= DELETION_LABEL_MIN_PX) {
-            // the label sits above the line, so it reads against the block
-            ctx.fillStyle = labelColor(abgrToCssRgba(color))
-            ctx.textAlign = 'center'
-            // the magnitude, not the signed delta: a bare "-9048" reads as a
-            // sequence length that went negative, and the glyph already says
-            // which direction this is
-            ctx.fillText(String(-delta), left + width / 2, yMid - h / 4)
-          }
+          // the label sits above the line, so it reads against the block
+          ctx.fillStyle = textOn(
+            rowColor(encoded.color[c]!, encoded.row, c, rowTable),
+          )
+          // the magnitude, not the signed delta: a bare "-9048" reads as a
+          // sequence length that went negative, and the glyph already says
+          // which direction this is
+          ctx.fillText(String(-delta), left + width / 2, yMid - h / 4)
         }
       }
     },

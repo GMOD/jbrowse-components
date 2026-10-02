@@ -1,4 +1,4 @@
-// A/B the three per-row MAF overlay walks — insertions, deletions, inversions —
+// A/B the two per-row MAF overlay walks — deletions, inversions —
 // in the working tree against the same functions from another git ref, over a
 // synthetic region panned across.
 //
@@ -14,7 +14,7 @@
 //
 // WHAT IS DIFFERENT HERE, AND WHY THERE ARE TWO TIMES PER ROW.
 //
-// These three overlays are not one-shot computations like coverage: they run on
+// These overlays are not one-shot computations like coverage: they run on
 // every frame of a pan, over region data that does not change while the user
 // pans. So the question is not "how fast is one call" but "how fast is the
 // SECOND call over the same data", and an implementation that pays up front to
@@ -55,7 +55,6 @@ type OverlayFn = (params: never) => Marker[]
 type ConsensusFn = (map: never) => never
 
 interface Arm {
-  insertions: OverlayFn
   deletions: OverlayFn
   inversions: OverlayFn
   consensus: ConsensusFn
@@ -74,11 +73,6 @@ async function loadFrom(dir: string, label: string): Promise<Arm> {
     join(dir, COMPONENTS, 'computeVisibleInversions.ts')
   )
   return {
-    insertions: named(
-      await import(join(dir, COMPONENTS, 'computeVisibleInsertions.ts')),
-      'computeVisibleInsertions',
-      label,
-    ),
     deletions: named(
       await import(join(dir, COMPONENTS, 'computeVisibleDeletions.ts')),
       'computeVisibleDeletions',
@@ -95,7 +89,7 @@ async function loadFrom(dir: string, label: string): Promise<Arm> {
 
 // Whole-package checkout, importable — see `checkoutPackageAtRef` for both
 // halves of why. It matters more here than for coverage: the baseline's
-// `forEachInsertion` and `rowFlank` must be its own.
+// `rowFlank` must be its own.
 async function loadRef(baseRef: string, label: string) {
   const dir = checkoutPackageAtRef(root, baseRef)
   return { arm: await loadFrom(dir, label), dir }
@@ -381,7 +375,6 @@ try {
       arm.consensus(new Map([[0, { blocks, coverage }]]) as never)
 
     const kinds = [
-      ['insertions', (a: Arm) => a.insertions],
       ['deletions', (a: Arm) => a.deletions],
       ['inversions', (a: Arm) => a.inversions],
     ] as const

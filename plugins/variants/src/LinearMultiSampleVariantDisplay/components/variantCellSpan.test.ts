@@ -1,4 +1,4 @@
-import { insertionBarWidth } from '@jbrowse/alignments-core'
+import { insertionBarWidth, insertionInk } from '@jbrowse/alignments-core'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
 import { cellMark } from './cellMark.ts'
@@ -6,6 +6,7 @@ import {
   MAX_INSERTION_MARKER_WIDTH_PX,
   variantCellSpanPx,
 } from './variantCellSpan.ts'
+import { variantInsertionParams } from './variantMarks.ts'
 
 // Row tall enough to draw an insertion's count label, which is what earns a
 // 'large' insertion the wide box (insertionBarWidth's featureHeight arg).
@@ -16,6 +17,16 @@ const TALL_ROW = 10
 // about the grid. The grid itself is `snapVariantCellX.test.ts`'s subject; what
 // the block at the bottom of this file pins is that this function is reading it.
 const CANVAS = 800
+
+// 0.2 px/bp, with bp 1000 at px 200: the cell snaps to [200, 202]
+const INK_BLOCK = {
+  displayedRegionIndex: 0,
+  start: 0,
+  end: CANVAS * 5,
+  screenStartPx: 0,
+  screenEndPx: CANVAS,
+  reversed: false,
+}
 
 describe('variantCellSpanPx without an insertion', () => {
   test('a wide reference span is itself', () => {
@@ -139,25 +150,56 @@ describe('variantCellSpanPx with an insertion', () => {
     ).toEqual({ left: 100, width: 200, drawsMarker: false, center: 200 })
   })
 
-  // `markersForBlock` hands `center` to `drawInsertionMarker`, which centers the
-  // bar on it, while the hover box and the click target take `left`/`width`. The
-  // two numbers therefore have to describe one rect — which they do by
-  // construction only because both now come out of this function.
-  test('the marker the overlay draws is the rect the hit test uses', () => {
-    // 50bp is the narrow bar form, the rest the count-label box — both are
-    // centered marks, and the box is the one wide enough for a mis-centred hit
-    // target to be clickable off the glyph.
+  // The hover box and the click target take `left`/`width`, and the insertion
+  // mark paints the marker, so the box has to be the marker the mark drew
+  // united with the cell under it — the one rule the mark's own `ink` states.
+  test('the box is the drawn marker united with its cell', () => {
+    const toX = makeBpMapper(INK_BLOCK)
     for (const insertedBp of [50, 100, 500, 5000, 65481]) {
-      const { left, width, drawsMarker, center } = variantCellSpanPx({
-        x1: 100,
-        x2: 100.2,
+      const span = variantCellSpanPx({
+        x1: toX(1000),
+        x2: toX(1001),
         insertedBp,
         insertionsWiden: true,
         pxPerBp: 0.2,
         drawnRowHeight: TALL_ROW,
       })
-      expect(drawsMarker).toBe(true)
-      expect(left + width / 2).toBeCloseTo(center, 10)
+      const marker = insertionInk(
+        {
+          x: Uint32Array.of(1000),
+          x2: Uint32Array.of(1001),
+          row: Uint32Array.of(0),
+          length: Uint32Array.of(insertedBp),
+          color: Uint32Array.of(0),
+          count: 1,
+        },
+        INK_BLOCK,
+        variantInsertionParams({
+          canvasWidth: CANVAS,
+          canvasHeight: TALL_ROW,
+          rowHeight: TALL_ROW,
+          scrollTop: 0,
+        }),
+        0,
+      )!
+      const cell = cellMark.ink!(
+        {
+          startEnd: Uint32Array.of(1000, 1001),
+          row: Uint32Array.of(0),
+          shapeType: Uint8Array.of(0),
+          color: Uint32Array.of(0),
+          count: 1,
+        },
+        INK_BLOCK,
+        { canvasWidth: CANVAS, canvasHeight: TALL_ROW },
+        { rowHeight: TALL_ROW, scrollTop: 0 },
+        0,
+      )!
+      const lo = Math.min(marker.left, cell.left)
+      const hi = Math.max(marker.left + marker.width, cell.left + cell.width)
+      expect(span.drawsMarker).toBe(true)
+      expect(span.left).toBeCloseTo(lo, 10)
+      expect(span.left + span.width).toBeCloseTo(hi, 10)
     }
   })
 

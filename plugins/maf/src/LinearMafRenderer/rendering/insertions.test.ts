@@ -1,76 +1,110 @@
-import { textWidthForNumber } from '@jbrowse/alignments-core'
+import { insertionMark, textWidthForNumber } from '@jbrowse/alignments-core'
+import { recordingContext } from '@jbrowse/render-core/marks/drawAgainstHit'
 
-import { drawMafInsertions } from './insertions.ts'
+import { emptyMafCoverage } from '../../LinearMafDisplay/components/coverageTestFixture.ts'
+import { mafInsertionParams } from '../mafMarks.ts'
+import { mafInsertionChannels } from './insertions.ts'
 
-import type { InsertionMarker } from '../../LinearMafDisplay/components/computeVisibleInsertions.ts'
+import type {
+  MafGPURenderState,
+  MafRegionData,
+} from '../mafRenderingBackendTypes.ts'
 
-function makeCtx() {
-  const fillRectCalls: { x: number; y: number; w: number; h: number }[] = []
-  const ctx = {
-    fillStyle: '',
-    font: '',
-    textAlign: '',
-    textBaseline: '',
-    fillRect: (x: number, y: number, w: number, h: number) => {
-      fillRectCalls.push({ x, y, w, h })
-    },
-    fillText: () => {},
-    beginPath: () => {},
-    moveTo: () => {},
-    lineTo: () => {},
-    closePath: () => {},
-    fill: () => {},
+const enc = new TextEncoder()
+const PURPLE = 0xff800080
+
+function region(refSeq: string, rows: string[]): MafRegionData {
+  return {
+    blocks: [
+      {
+        startBp: 100,
+        endBp: 100 + refSeq.replaceAll('-', '').length,
+        refSeqBytes: enc.encode(refSeq),
+        rows: rows.map((alignment, rowIndex) => ({
+          rowIndex,
+          alignmentBytes: enc.encode(alignment),
+        })),
+        empties: [],
+      },
+    ],
+    coverage: emptyMafCoverage(100),
   }
-  return { ctx, fillRectCalls }
 }
 
-const marker = (over: Partial<InsertionMarker> = {}): InsertionMarker => ({
-  xCenter: 100,
-  rowTop: 0,
-  h: 12,
-  length: 3,
-  ...over,
-})
-
-const draw = (
-  ctx: ReturnType<typeof makeCtx>['ctx'],
-  markers: InsertionMarker[],
-  pxPerBp = 10,
-) => {
-  drawMafInsertions(ctx as never, markers, '#800080', pxPerBp)
+// 100bp over 1000px, 10 px/bp
+const block = {
+  displayedRegionIndex: 0,
+  start: 100,
+  end: 200,
+  screenStartPx: 0,
+  screenEndPx: 1000,
+  reversed: false,
 }
 
-test('one marker draws one insertion glyph', () => {
-  const { ctx, fillRectCalls } = makeCtx()
-  draw(ctx, [marker({ length: 3 })])
-  expect(fillRectCalls.length).toBeGreaterThan(0)
+function state(rowHeight: number) {
+  return {
+    canvasWidth: 1000,
+    canvasHeight: 200,
+    rowsTop: 0,
+    rowsHeight: 200,
+    rowHeight,
+    rowProportion: 1,
+    scrollTop: 0,
+  } as MafGPURenderState
+}
+
+test('each insertion is interbase at the reference base after its run, on its row', () => {
+  const c = mafInsertionChannels(
+    region('A--AC-A', ['AGGACTA', 'A--AC-A', 'AG-AC-A']),
+    PURPLE,
+  )
+  expect({
+    x: [...c.x],
+    x2: [...c.x2],
+    row: [...c.row],
+    length: [...c.length],
+    color: [...c.color],
+  }).toEqual({
+    x: [101, 103, 101],
+    x2: [101, 103, 101],
+    row: [0, 0, 2],
+    length: [2, 1, 1],
+    color: [PURPLE, PURPLE, PURPLE],
+  })
 })
 
-test('no markers draws nothing', () => {
-  const { ctx, fillRectCalls } = makeCtx()
-  draw(ctx, [])
-  expect(fillRectCalls).toHaveLength(0)
+test('a re-encode in another colour walks the region once', () => {
+  const data = region('A--A', ['AGGA'])
+  const a = mafInsertionChannels(data, PURPLE)
+  const b = mafInsertionChannels(data, 0xff00ff00)
+  expect(b.x).toBe(a.x)
+  expect([...b.color]).toEqual([0xff00ff00])
 })
 
-test('a small insertion is a single 1px bar', () => {
-  // length 5 stays 'small' (< LONG_INSERTION_MIN_LENGTH=10) → 1px bar
-  const { ctx, fillRectCalls } = makeCtx()
-  draw(ctx, [marker({ length: 5 })])
-  expect(fillRectCalls).toHaveLength(1)
-  expect(fillRectCalls[0]!.w).toBe(1)
+test('a region with no reference gap has no insertions', () => {
+  expect(mafInsertionChannels(region('ACGT', ['ACGT']), PURPLE).count).toBe(0)
 })
 
-test('a large insertion box is number-width when tall but shrinks when the row is too short', () => {
-  // length 10 at pxPerBp 10 → 'large' (length>=10, length*pxPerBp>=15)
-  const tall = makeCtx()
-  draw(tall.ctx, [marker({ length: 10, h: 12 })])
-  expect(tall.fillRectCalls).toHaveLength(1)
-  expect(tall.fillRectCalls[0]!.w).toBe(textWidthForNumber(10))
+function paintedWidths(refSeq: string, rows: string[], rowHeight: number) {
+  const { ctx, calls } = recordingContext()
+  const s = state(rowHeight)
+  insertionMark.paintBlock(
+    ctx,
+    mafInsertionChannels(region(refSeq, rows), PURPLE),
+    block,
+    s,
+    mafInsertionParams(s),
+  )
+  return calls.map(c => c.w)
+}
 
-  const short = makeCtx()
-  draw(short.ctx, [marker({ length: 10, h: 3 })])
-  expect(short.fillRectCalls).toHaveLength(1)
-  // count won't fit → narrow 'long' bar instead of an empty number-width box
-  expect(short.fillRectCalls[0]!.w).toBe(5)
-  expect(short.fillRectCalls[0]!.w).toBeLessThan(tall.fillRectCalls[0]!.w)
+test('a large insertion is a count box in a tall row and the narrow bar in a short one', () => {
+  const ref = `A${'-'.repeat(10)}A`
+  const row = `A${'G'.repeat(10)}A`
+  expect(paintedWidths(ref, [row], 12)).toEqual([textWidthForNumber(10)])
+  expect(paintedWidths(ref, [row], 3)).toEqual([5])
+})
+
+test('a small insertion is a 1px bar under its serif caps', () => {
+  expect(paintedWidths('A--A', ['AGGA'], 12)).toEqual([1, 4, 4])
 })

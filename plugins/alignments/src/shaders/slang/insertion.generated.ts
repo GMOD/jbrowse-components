@@ -4,7 +4,6 @@
 import type { ShaderSource } from '@jbrowse/render-core/hal'
 
 export * from './insertion.iface.generated.ts'
-export * from './insertion.consts.generated.ts'
 
 export const SOURCE: ShaderSource = {
   wgsl: () => import('./insertion.wgsl.generated.ts'),

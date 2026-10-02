@@ -1,3 +1,4 @@
+import { paintInsertionLabels } from '@jbrowse/alignments-core'
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
@@ -7,11 +8,12 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
-import { drawVariantInsertionGlyphs } from './components/drawVariantInsertionGlyphs.ts'
-import { VARIANT_MARKS } from './components/variantMarks.ts'
+import {
+  VARIANT_MARKS,
+  variantInsertionParams,
+} from './components/variantMarks.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
-import type { VariantInsertionGlyphData } from './components/drawVariantInsertionGlyphs.ts'
 import type {
   VariantRenderBlock,
   VariantRenderState,
@@ -26,10 +28,8 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   renderBlocks: VariantRenderBlock[]
   perRegionCellMap: ReadonlyMap<number, VariantUploadData>
   renderState: VariantRenderState
-  // undefined when the `showInsertionGlyphs` slot is off
-  insertionGlyphRegions:
-    | ReadonlyMap<number, VariantInsertionGlyphData>
-    | undefined
+  // undefined when no insertion marker draws in this window
+  insertionGlyphRegions: ReadonlyMap<number, VariantUploadData> | undefined
   // The lane's laid-out band, empty when it is off. plugin-canvas's own render
   // data — see `laneFitStage`.
   laneLaidOutDataMap: ReadonlyMap<number, FeatureDataResult>
@@ -131,14 +131,15 @@ function VariantSvgBody({
             renderBlocks,
             exportState,
           )
-          // Same layer, after the cells, so the export stacks them the way the
-          // on-screen overlay composites over the canvas.
           if (overlays && insertionGlyphRegions) {
-            drawVariantInsertionGlyphs(
+            paintInsertionLabels(
               ctx,
-              insertionGlyphRegions,
               renderBlocks,
+              block =>
+                insertionGlyphRegions.get(block.displayedRegionIndex)
+                  ?.insertions,
               exportState,
+              variantInsertionParams(exportState),
             )
           }
         }}

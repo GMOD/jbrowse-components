@@ -1,33 +1,45 @@
+import { paintInsertionLabels } from '@jbrowse/alignments-core'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
-import { drawMafInsertions } from '../../LinearMafRenderer/rendering/insertions.ts'
+import { mafInsertionParams } from '../../LinearMafRenderer/mafMarks.ts'
 
-import type { MafColorPalette } from '../../LinearMafRenderer/util.ts'
-import type { InsertionMarker } from './computeVisibleInsertions.ts'
+import type {
+  MafGPURenderState,
+  MafUploadPayload,
+} from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
+/**
+ * The insertion markers' counts over the rows, which the insertion mark draws
+ * on either backend. Positioned in the rows container, so the band's origin is
+ * its top rather than the canvas's.
+ */
 const InsertionsOverlay = observer(function InsertionsOverlay({
-  markers,
+  payloads,
+  renderBlocks,
+  renderState,
   width,
   height,
-  palette,
-  pxPerBp,
 }: {
-  markers: InsertionMarker[]
+  payloads: ReadonlyMap<number, MafUploadPayload>
+  renderBlocks: RenderBlock[]
+  renderState: MafGPURenderState
   width: number
   height: number
-  palette: MafColorPalette
-  pxPerBp: number
 }) {
-  if (markers.length === 0) {
-    return null
-  }
   return (
     <OverlayCanvas
       width={width}
       height={height}
       draw={ctx => {
-        drawMafInsertions(ctx, markers, palette.insertionColor, pxPerBp)
+        paintInsertionLabels(
+          ctx,
+          renderBlocks,
+          block => payloads.get(block.displayedRegionIndex)?.insertions,
+          { canvasWidth: width, canvasHeight: height },
+          mafInsertionParams({ ...renderState, rowsTop: 0 }),
+        )
       }}
     />
   )

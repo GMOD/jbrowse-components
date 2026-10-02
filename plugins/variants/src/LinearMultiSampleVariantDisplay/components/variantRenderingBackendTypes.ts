@@ -1,3 +1,4 @@
+import type { InsertionChannels } from '@jbrowse/alignments-core'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 export type { RenderBlock as VariantRenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -10,6 +11,9 @@ export interface VariantUploadData {
   cellColors: Uint32Array
   cellShapeTypes: Uint8Array
   numCells: number
+  // The alt cells of records that insert sequence, widened by the insertion
+  // mark; absent while `showInsertionGlyphs` is off.
+  insertions?: InsertionChannels
 }
 
 export interface VariantRenderState {

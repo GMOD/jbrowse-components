@@ -4,3 +4,5 @@
 export const SHAPE_RECT = 0
 
 export const SHAPE_TRI_LEFT = 1
+
+export const MIN_CELL_PX = 2

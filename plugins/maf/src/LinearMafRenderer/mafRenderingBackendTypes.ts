@@ -5,7 +5,10 @@ import type {
   MafSummaryRecord,
 } from '../types.ts'
 import type { MafColorPalette } from './util.ts'
-import type { CoverageBandState } from '@jbrowse/alignments-core'
+import type {
+  CoverageBandState,
+  InsertionChannels,
+} from '@jbrowse/alignments-core'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
@@ -296,6 +299,8 @@ export interface MafRowsPayload {
   codons?: readonly LocatedCodon[]
   /** The conservation band's bars, per base or per codon. */
   conservation?: MafIdentityBars
+  /** Each species' insertions, while the bases paint the rows. */
+  insertions?: InsertionChannels
 }
 
 /** The `bar` shape's channels, every lane filled. */

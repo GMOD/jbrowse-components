@@ -33,7 +33,13 @@ export {
   thresholdBandOf,
 } from './markRamp.ts'
 export { HIDDEN_ROW, NO_ROW_COLOR, RowKeys, buildRowTable } from './rowTable.ts'
-export { keySlot, rowColor, rowSlot } from './rowLane.ts'
+export {
+  keySlot,
+  rowColor,
+  rowSlot,
+  rowTableKeys,
+  rowTableTextures,
+} from './rowLane.ts'
 export { rowSpanIndex, spansInRow } from './rowSpanIndex.ts'
 
 export type { MarkPlan } from './markPlan.ts'

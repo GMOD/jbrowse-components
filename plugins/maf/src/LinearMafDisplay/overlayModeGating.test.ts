@@ -35,18 +35,19 @@ function seedRegion(display: LinearMafDisplayModel) {
   )
 }
 
-// The insertion markers are drawn only by the `bases` rendering — the overlay
-// and the SVG export both gate on `basesRenderingActive` — so computing them in
-// any other mode is a full per-column walk of every visible block x row, per
-// frame, thrown away. The identity plot is the case that matters: it is the
-// zoom-out default once `rowIdentityMode` is set, which is where the walk
-// covers the most blocks. See agent-docs/reference/MAF_LARGE_BLOCKS.md.
-describe('insertion markers are only computed for the rendering that draws them', () => {
+// The insertion markers are drawn only by the `bases` rendering, so encoding
+// them in any other mode is a walk of every block x row thrown away. The
+// identity plot is the case that matters: it is the zoom-out default once
+// `rowIdentityMode` is set. See agent-docs/reference/MAF_LARGE_BLOCKS.md.
+const insertionsOf = (display: LinearMafDisplayModel) =>
+  display.encodedUpload.get(0)?.insertions?.count ?? 0
+
+describe('insertion markers are only encoded for the rendering that draws them', () => {
   it('emits markers in bases mode', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
     expect(display.activeRowRendering).toBe('mismatch')
-    expect(display.visibleInsertions.length).toBeGreaterThan(0)
+    expect(insertionsOf(display)).toBe(2)
   })
 
   it('emits none while the per-row identity plot owns the rows', () => {
@@ -56,7 +57,7 @@ describe('insertion markers are only computed for the rendering that draws them'
     display.setRowIdentityAutoZoom(false)
     display.setRowRendering('identity')
     expect(display.activeRowRendering).toBe('identity')
-    expect(display.visibleInsertions).toEqual([])
+    expect(insertionsOf(display)).toBe(0)
   })
 
   it('emits none while color-by-source-chromosome owns the rows', () => {
@@ -64,7 +65,7 @@ describe('insertion markers are only computed for the rendering that draws them'
     seedRegion(display)
     display.setRowRendering('chromosome')
     expect(display.activeRowRendering).toBe('chromosome')
-    expect(display.visibleInsertions).toEqual([])
+    expect(insertionsOf(display)).toBe(0)
   })
 
   it('draws deletion counts with the bases alone', () => {

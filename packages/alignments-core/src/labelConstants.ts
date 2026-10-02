@@ -12,16 +12,15 @@ import {
   SERIF_H_PX,
   SERIF_HALF_W_PX,
 } from './insertionLabel.generated.ts'
+import { insertionSizeAlpha } from './insertionSizeAlpha.generated.ts'
 import {
   insertionBarWidthPx,
-  insertionSizeAlpha,
+  insertionSerifsDraw,
 } from './insertionWidth.generated.ts'
 
-// The insertion thresholds are insertion.slang's, generated in by
-// `pnpm gen:shaders` — re-exported here because this module is the vocabulary
-// every consumer imports (plugin-alignments, plugin-maf, plugin-variants).
-// INSERTION_SERIF_MIN_PX_PER_BP is the zoom below which a small insertion's
-// serif caps are dropped; the others gate which of the three markers is drawn.
+// The insertion thresholds are render-core's insertionGlyph.slang, generated
+// in by `pnpm gen:shaders` and re-exported as the vocabulary every consumer
+// imports.
 export {
   INSERTION_SERIF_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
@@ -142,7 +141,7 @@ export function labelFadeOpacity(availPx: number, neededPx: number) {
 
 // Width in CSS px of the GPU count-label box, for the count drawn into it.
 //
-// This IS insertion.slang's `textWidth()`, transliterated from slangc's WGSL by
+// This IS insertionGlyph.slang's `textWidth()`, transliterated from slangc's WGSL by
 // `pnpm gen:shaders`. It used to be a hand-mirrored copy of the digit-count
 // branching over two constants exported from the shader, which is the twin
 // adr-051 is about: the box is sized on the GPU and the text is measured here,
@@ -165,7 +164,7 @@ export function getInsertionType(
 
 // Single source of truth for an insertion marker's width, shared by the GPU
 // shader, the Canvas2D/SVG renderer, hit-testing (both alignments and MAF), and
-// SNP-letter shadowing. The rule itself is `insertion.slang`'s — generated in
+// SNP-letter shadowing. The rule itself is `insertionGlyph.slang`'s — generated in
 // via its `//! js-export-out` (adr-051), which is what lets a package that
 // can't depend on plugin-alignments still run the shader's own arithmetic.
 // This wrapper exists only for the default: `featureHeight` falls back to
@@ -194,41 +193,10 @@ export function formatInsertionLabel(length: number, sequence?: string) {
     : `Insertion (${length}bp)`
 }
 
-// Draw one insertion marker centered on `xCenter`: a box whose width follows
-// insertionBarWidth (1px small / short bar long / number-label-width large) plus
-// serif caps on small insertions when zoomed in. The box width is gated on
-// `height` (the marker's pixel height) so a 'large' insertion in a row too short
-// to fit its count label shrinks to the narrow bar instead of an empty wide box.
-// The caller sets `ctx.fillStyle` (including any frequency alpha) and draws the
-// count text. Shared by plugin-alignments (Canvas2D/SVG export) and plugin-maf
-// (insertion overlay + export) so the marker geometry can't drift between the
-// two displays.
-//
-// The caps are `SERIF_HALF_W_PX` / `SERIF_H_PX`, generated from insertion.slang
-// so this and the GPU pass draw the same glyph. They had drifted: the shader
-// drew 3x1px RECTANGLES sitting OUTSIDE the row while this drew 4x2px triangles
-// inside it, which on a small insertion — 1px of bar — is most of the mark, so
-// the on-screen render disagreed with its own SVG export. The bottom cap's base
-// also sat a pixel inside the row while the top's sat on the edge; both are on
-// their edge now, which is what a symmetric I-beam wants.
-export function drawInsertionMarker(
-  ctx: DrawCtx,
-  xCenter: number,
-  y: number,
-  height: number,
-  length: number,
-  pxPerBp: number,
-) {
-  const w = insertionBarWidth(length, pxPerBp, height)
-  ctx.fillRect(xCenter - w / 2, y, w, height)
-  drawInsertionSerifs(ctx, xCenter, y, height, length, pxPerBp)
-}
-
-// The caps alone, without the bar under them. Split out because the bar is the
-// shape library's point glyph — plugin-alignments draws it from the insertion
-// mark's own `widthPx`, through the one `fillRect` every point mark shares — and
-// what remains is the decoration this feature adds on top. A long insertion has
-// no caps, and neither has any insertion zoomed out past
+// An insertion marker's serif caps, without the bar under them: two wedges
+// `SERIF_HALF_W_PX` / `SERIF_H_PX` from insertionGlyph.slang, each base on its
+// row edge, so the mark reads as a symmetric I-beam on every backend. A long
+// insertion has no caps, and neither has any insertion zoomed out past
 // `INSERTION_SERIF_MIN_PX_PER_BP`.
 export function drawInsertionSerifs(
   ctx: DrawCtx,
@@ -246,14 +214,11 @@ export function drawInsertionSerifs(
 
 /** How wide the caps reach about the bar's centre, 0 where none draw. */
 export function insertionSerifsWidthPx(length: number, pxPerBp: number) {
-  return length < LONG_INSERTION_MIN_LENGTH &&
-    pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP
-    ? 2 * SERIF_HALF_W_PX
-    : 0
+  return insertionSerifsDraw(length, pxPerBp) ? 2 * SERIF_HALF_W_PX : 0
 }
 
 // One serif cap: a wedge `SERIF_HALF_W_PX` either side of `xCenter` at `baseY`,
-// tapering to a point at `apexY`. Mirrors `serifPos` in insertion.slang.
+// tapering to a point at `apexY`. Mirrors the serif quads of insertion.slang and insertionMark.slang.
 function drawSerif(
   ctx: DrawCtx,
   xCenter: number,
@@ -268,9 +233,9 @@ function drawSerif(
   ctx.fill()
 }
 
-// The context members the marker and its caps touch — a structural subset both
-// `Ctx2D` and render-core's `MarkContext2D` satisfy, so the pileup's insertion
-// mark can hand its painter's context straight through.
+// The context members the caps touch — a structural subset both `Ctx2D` and
+// render-core's `MarkContext2D` satisfy, so an insertion painter can hand its
+// context straight through.
 interface DrawCtx {
   fillStyle: string | CanvasGradient | CanvasPattern
   fillRect(x: number, y: number, w: number, h: number): void
