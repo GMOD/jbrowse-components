@@ -50,6 +50,28 @@ canFam4 genetic map published separately.
   ([Wang et al. 2025](https://doi.org/10.5281/zenodo.17095604)):
   https://zenodo.org/records/17095604/files/campbell_sex_average_canFam4.tar.gz?download=1
 
+## The genome
+
+The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
+We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
+GenBank accessions:
+
+```json addassembly
+{
+  "name": "UU_Cfam_GSD_1.0",
+  "aliases": ["canFam4"],
+  "sequence": {
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit"
+    }
+  },
+  "refNameAliases": {
+    "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.chromAlias.txt"
+  }
+}
+```
+
 ## Two wolfdog breeds and their wolf blocks
 
 The [Dog10K consortium](https://www.dog10kgenomes.org/) publishes a phased panel
@@ -129,7 +151,11 @@ per line; the build script derives them from the Dog10K sample table.
 
 FLARE requires one. The Campbell pedigree map has been transitioned onto
 `UU_Cfam_GSD_1.0`, so no liftover is needed. The build script reshapes its
-`POS`/`rate`/`Map(cM)` columns into the four PLINK columns FLARE reads.
+`POS`/`rate`/`Map(cM)` columns into the four PLINK columns FLARE reads:
+chromosome, a marker ID, genetic position in cM and base-pair position. The
+chromosome names must match the VCF's. With no map for your organism, write one
+at a constant rate per megabase from the assembly's `chrom.sizes`, and read the
+segment edges as approximate.
 
 ### Running FLARE
 
@@ -247,10 +273,11 @@ one `labels` entry per `domain` color.
 ```
 
 `rows.domain` is abbreviated here; the build script writes all sixty-four rows
-in descending order of chr1 wolf fraction from FLARE's summary. A second BED
-holds all 243 animals, loaded the same way with no `domain`; at two rows per
-animal there is no room for labels, so the small painting shows the labels and
-the big one the extent.
+in descending order of chr1 wolf fraction from FLARE's summary. For your own
+animals, omit `domain` and cluster the rows, or list the animals you want in the
+order you want them. A second BED holds all 243 animals, loaded the same way
+with no `domain`; at two rows per animal there is no room for labels, so the
+small painting shows the labels and the big one the extent.
 
 ## Reading the painting
 
