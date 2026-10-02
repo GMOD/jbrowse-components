@@ -4,6 +4,7 @@ import { waitFor } from '@testing-library/react'
 import {
   makeFeatureData,
   makeFlatbushItem,
+  packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment, rightClick } from './testEnv.ts'
 
@@ -291,5 +292,61 @@ describe('the collapsed view is titled the way the track labels', () => {
 
     const { transcriptLabels } = await queuedDialogProps(session)
     expect(transcriptLabels).toEqual(new Map([['EDEN.1', 'dystrophin-201']]))
+  })
+})
+
+describe('isoforms the fit trimmed', () => {
+  function setupTrimmed() {
+    const { createDisplay } = createTestEnvironment()
+    const { display, session, mockRpcCall } = createDisplay()
+    mockRpcCall.mockResolvedValue({ feature: fullGene })
+    display.setGeneGlyphMode('auto')
+    display.configuration.setSlot('height', 15)
+    const stacked = packStackedGenes([
+      { featureId: 'EDEN', startBp: 0, endBp: 9000, isoforms: 2 },
+    ])
+    const stackedGene = {
+      ...stacked.flatbushItems[0]!,
+      collapsibleIntrons: true,
+    }
+    display.setRpcData(
+      0,
+      {
+        ...stacked,
+        flatbushItems: [stackedGene],
+        subfeatureInfos: [
+          {
+            ...isoform('EDEN.1', 'mRNA'),
+            childOrdinal: 0,
+            displayLabel: 'EDEN-201',
+          },
+          {
+            ...isoform('EDEN.2', 'mRNA'),
+            childOrdinal: 1,
+            displayLabel: 'EDEN-202',
+          },
+        ],
+      },
+      ctgA,
+    )
+    return { display, session, stackedGene }
+  }
+
+  it('still carries their drawn labels to the dialog', async () => {
+    const { display, session, stackedGene } = setupTrimmed()
+    expect(
+      display.laidOutDataMap.get(0)!.subfeatureInfos.map(s => s.featureId),
+    ).toEqual(['EDEN.1'])
+
+    rightClick(display, stackedGene)
+    clickCollapse(display)
+
+    const { transcriptLabels } = await queuedDialogProps(session)
+    expect(transcriptLabels).toEqual(
+      new Map([
+        ['EDEN.1', 'EDEN-201'],
+        ['EDEN.2', 'EDEN-202'],
+      ]),
+    )
   })
 })
