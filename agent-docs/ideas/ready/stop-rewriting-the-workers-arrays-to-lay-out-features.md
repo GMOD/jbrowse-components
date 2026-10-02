@@ -71,7 +71,7 @@ N=60k `Set<number>.has` is 20.7ms against `Set<string>.has`'s 31.8ms, while
 
 The cost is the churn: `FlatbushItem` and `SubfeatureInfo` are read by the hover
 readout, the context menu, the highlight resolver, the label layer, `renderSvg`,
-`featureItemMap`, `hitTesting`, `layout`, and the LD display — about 30 source
+`hitTesting`, `layout`, and the LD display — about 30 source
 files and 25 test files — and `FlatbushItem` is exported from
 `plugins/canvas/src/index.ts`, so it is a plugin-ABI change too
 (`reference/PLUGIN_ABI_STABILITY.md`). A half-landed conversion is worse than
@@ -121,26 +121,13 @@ calibrated against `website/scripts/specs/graph-hprc.ts`'s `repeatLane`, where t
 recorded result is "at 3 nothing on screen fades, at any pane width the figure is
 captured at". Re-capture that figure before taking the 7.5x.
 
-### `featureItemMap` is the same allocation, in the same file
+### `featureItemMap` is gone
 
-Take it in the same pass as the SoA conversion; it is the same shape of problem.
-`baseModel.ts`'s `featureItemMap` allocates one entry object per feature AND per
-subfeature across every visible region, on every layout change, pan or zoom. Its
-consumers ask very little of it: since the highlight boxes became the chrome's
-guide (ADR-110) `FloatingLabelsLayer` is the only one, and it asks twice — the
-`?.kind === 'feature'` check at `components/overlayElements.tsx`, which decides
-whether a label is clickable, and `resolveTarget`.
-
-Only the first of the two is removable. `emitSubfeatureLabel` always sets
-`parentFeatureId` and `processFeatureRecord` never does, so
-`clickable === (labelData.parentFeatureId === undefined)` with no map at all.
-`resolveTarget` is not that: it returns `entry.item` to the click, context-menu
-and mousemove handlers, which a `parentFeatureId` cannot supply.
-
-So the map stays and what is open is what it costs: replace it with an on-demand
-region scan or a lazily-populated per-id cache, and fold in `baseModel.ts`'s
-`featureIdIndex` / `subfeatureIdIndex`, which build two neighbouring id indexes
-the same way.
+On 2026-10-02 the label overlay moved onto `featureIdIndex`, which holds
+exactly the flatbush items, so `has(id)` is the clickable check and `get(id)`
+the item `resolveTarget` hands the handlers. What stays open here is
+`featureIdIndex` and `subfeatureIdIndex` themselves, two id indexes built the
+same way on every layout.
 
 ## 2026-09-19: this entry's headline, measured on the encoder
 
