@@ -103,7 +103,6 @@ import type { PartitionRowCount } from './partitionFields.ts'
 import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
 import type {
   MultiRowEncodeInputs,
-  MultiRowFeaturePaintInputs,
   MultiRowRegionData,
   MultiRowRenderState,
   MultiRowRenderingBackend,
@@ -308,7 +307,7 @@ export default function stateModelFactory(
     .views(featureColorViews)
     .views(self => {
       // A plain getter hands out a fresh array on every write to `rpcDataMap`,
-      // and this list reaches `featurePaintInputs`, whose identity has to hold
+      // and this list reaches the row table, whose identity has to hold
       // steady.
       const discoveredRows = stableIdentityComputed(() => {
         const values = new Set<string>()
@@ -946,21 +945,6 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The three inputs to "does this feature paint, and in what color", in
-       * drawn row space, for the indel-glyph overlay and the sort at a
-       * column. Split out of `renderState`, whose canvas box and row geometry
-       * move on every frame of a resize drag.
-       */
-      get featurePaintInputs(): MultiRowFeaturePaintInputs {
-        return {
-          rowIndexByValue: self.rowIndexByValue,
-          rowColorsByIndex: self.rowColorsByIndex,
-          hiddenColors: self.hiddenColors,
-          fieldPalette: self.fieldPalette,
-        }
-      },
-      /**
-       * #getter
        * Render state passed to the GPU/Canvas2D backend each frame.
        */
       get renderState(): MultiRowRenderState {
@@ -970,7 +954,6 @@ export default function stateModelFactory(
           rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
           rowTable: self.rowTable,
-          ...this.featurePaintInputs,
         }
       },
       /**
@@ -1160,12 +1143,17 @@ export default function stateModelFactory(
             self,
             refName,
             pos,
-            index => self.drawnRegionData.get(index),
-            // The same triple the painters resolve "does this feature paint"
-            // from, so a hidden legend category orders the rows as it draws
-            // them.
-            (sources, region) =>
-              rowOrderByValueAt(sources, region, pos, self.featurePaintInputs),
+            // The encode the painters drew, so a hidden legend category orders
+            // the rows as it draws them.
+            index => self.encodedChannels.get(index),
+            (sources, encoded) =>
+              rowOrderByValueAt(
+                sources,
+                encoded,
+                pos,
+                self.rowKeys,
+                self.rowTable,
+              ),
           )
         },
         /**

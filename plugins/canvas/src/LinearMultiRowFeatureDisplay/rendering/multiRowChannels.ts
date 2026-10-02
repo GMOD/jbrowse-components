@@ -17,6 +17,7 @@ import type { SpanChannels } from '@jbrowse/render-core/marks'
  * has no bucket.
  */
 export interface MultiRowEncoded extends SpanChannels {
+  color: Uint32Array
   featureIndex: Uint32Array
   rowStart: Int32Array
   rowIndices: Int32Array
@@ -29,7 +30,16 @@ export interface MultiRowEncoded extends SpanChannels {
  * this feature drawn" differently from the paint that put it there.
  */
 export function buildMultiRowChannels(
-  data: MultiRowRegionData,
+  data: Pick<
+    MultiRowRegionData,
+    | 'featureStarts'
+    | 'featureEnds'
+    | 'featureColors'
+    | 'rectColorValues'
+    | 'colorValues'
+    | 'partitionValues'
+    | 'featurePartitionIndex'
+  >,
   { rowKeys, overriddenRows, hiddenColors, fieldPalette }: MultiRowEncodeInputs,
 ): MultiRowEncoded {
   const { featureStarts, featureEnds, featurePartitionIndex } = data

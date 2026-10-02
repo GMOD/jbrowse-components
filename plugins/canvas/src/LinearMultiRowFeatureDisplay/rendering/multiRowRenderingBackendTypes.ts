@@ -8,24 +8,6 @@ import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRe
 
 export type { MultiRowRegionData } from '../../MultiRowGetFeaturesRPC/rpcTypes.ts'
 
-// The three inputs to "does this feature paint, and in what color", in drawn
-// row space: what the indel-glyph overlay and the sort-at-column read. All
-// three are required, because `featurePainting` reads them together and the
-// rule inverts if one goes missing.
-export interface MultiRowFeaturePaintInputs {
-  // partition value -> global row index
-  rowIndexByValue: ReadonlyMap<string, number>
-  // ABGR per-row override by global row index; `undefined` entries paint the
-  // worker-baked per-feature color
-  rowColorsByIndex: readonly (number | undefined)[]
-  // ABGR colors of legend categories toggled off; matching features are omitted
-  // at encode time and so reach neither backend
-  hiddenColors: ReadonlySet<number>
-  // the color field's scale while a field paints, which a feature's value
-  // paints through in place of its worker-baked color
-  fieldPalette?: FieldPalette
-}
-
 /**
  * What the encode reads: the keys the instances carry, and the two inputs the
  * hidden-category rule needs. The drawn row and the row colour are the row
@@ -42,7 +24,7 @@ export interface MultiRowEncodeInputs {
   fieldPalette?: FieldPalette
 }
 
-export interface MultiRowRenderState extends MultiRowFeaturePaintInputs {
+export interface MultiRowRenderState {
   canvasWidth: number
   canvasHeight: number
   rowHeight: number

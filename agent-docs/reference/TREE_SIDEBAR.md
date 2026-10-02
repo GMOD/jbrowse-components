@@ -129,7 +129,7 @@ only the stages downstream of it:
 3. `editableSources`: `arrangeRows` orders by `rowOrder`, relabels by
    `rows.labels` and tints by the `rowColor` pairs on the `identityChannel`. It
    hands back `expandedRows` itself while nothing is arranged, which the `!==`
-   caches downstream (`featurePaintInputs`, `createEncodeMemo`) key on.
+   caches downstream (`encodeInputs`, `createEncodeMemo`) key on.
 4. `clusterableSources`: the focus (`keptRows`).
 5. `bandedSources`: the bands `rowBanding` names (`bandRows`), each band's rows
    in their arranged order; `clusterableSources` itself while nothing bands.

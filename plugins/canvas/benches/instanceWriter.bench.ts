@@ -24,7 +24,7 @@ const STRIDE_BYTES = 16
 // multiRow's Instance struct, all four fields u32.
 const O = { startBp: 0, endBp: 1, rowIndex: 2, color: 3 }
 
-// Stand-in for `forEachDrawnFeature`: a callback per feature, skipping the ones
+// A callback per feature, skipping the ones
 // a hidden legend category filters out. The skip is what makes the final count
 // unknown up front, which is the property the writer exists for.
 function forEachDrawn(

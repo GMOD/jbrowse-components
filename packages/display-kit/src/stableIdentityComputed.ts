@@ -7,7 +7,7 @@ import { compareStructural, computed } from 'mobx'
  * For a derivation whose consumers cache on `!==` rather than on content. A row
  * list rebuilt from `rpcDataMap` is the case both multi-row families hit: a
  * plain getter hands out a fresh array on every region arrival, that array
- * reaches `gpuProps()` / `featurePaintInputs`, and its identity clears
+ * reaches `gpuProps()` / `encodeInputs`, and its identity clears
  * render-core `installUpload`'s encode cache — so region k's arrival re-encodes
  * regions 1..k-1 into the bytes they already held, and a progressive load pays
  * O(N^2) for rediscovering the same rows.

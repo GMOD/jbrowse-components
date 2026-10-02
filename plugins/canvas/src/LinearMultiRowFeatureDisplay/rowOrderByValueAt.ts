@@ -1,58 +1,27 @@
+import { keySlot } from '@jbrowse/render-core/marks'
 import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
 
 import { featureSpanContainsBp } from '../shared/featureSpanBp.ts'
-import { hiddenByCategory, ownColors } from './rendering/featurePainting.ts'
 
-import type {
-  MultiRowFeaturePaintInputs,
-  MultiRowRegionData,
-} from './rendering/multiRowRenderingBackendTypes.ts'
+import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
+import type { RowKeys, RowTable } from '@jbrowse/render-core/marks'
 
-export type RowValueRegion = Pick<
-  MultiRowRegionData,
-  | 'featureStarts'
-  | 'featureEnds'
-  | 'featureColors'
-  | 'rectColorValues'
-  | 'colorValues'
-  | 'partitionValues'
-  | 'featurePartitionIndex'
+export type RowValueChannels = Pick<
+  MultiRowEncoded,
+  'x' | 'x2' | 'row' | 'color' | 'count'
 >
 
-function paintsAt(
-  name: string,
-  color: number,
-  paint: MultiRowFeaturePaintInputs,
-) {
-  const rowIndex = paint.rowIndexByValue.get(name)
-  return !hiddenByCategory(
-    color,
-    rowIndex !== undefined && paint.rowColorsByIndex[rowIndex] !== undefined,
-    paint.hiddenColors,
-  )
-}
-
-// Where features overlap the last one that paints wins, matching paint order.
+// Read off the encode, which has already dropped what a hidden legend category
+// hides. Where features overlap the last one wins, matching paint order.
 function colorsPaintedAt(
-  region: RowValueRegion,
+  encoded: RowValueChannels,
+  rowKeys: RowKeys,
   pos: number,
-  paint: MultiRowFeaturePaintInputs,
 ) {
-  const colors = ownColors(region, paint.fieldPalette)
   const byRow = new Map<string, number>()
-  for (let i = 0; i < region.featureStarts.length; i++) {
-    if (
-      featureSpanContainsBp(
-        region.featureStarts[i]!,
-        region.featureEnds[i]!,
-        pos,
-      )
-    ) {
-      const name = region.partitionValues[region.featurePartitionIndex[i]!]!
-      const color = colors[i]!
-      if (paintsAt(name, color, paint)) {
-        byRow.set(name, color)
-      }
+  for (let c = 0; c < encoded.count; c++) {
+    if (featureSpanContainsBp(encoded.x[c]!, encoded.x2[c]!, pos)) {
+      byRow.set(rowKeys.names[encoded.row[c]!]!, encoded.color[c]!)
     }
   }
   return byRow
@@ -64,11 +33,12 @@ function colorsPaintedAt(
 // the same locus; equal-sized blocks fall back to the color for determinism.
 export function rowOrderByValueAt<T extends { name: string }>(
   sources: T[],
-  region: RowValueRegion,
+  encoded: RowValueChannels,
   pos: number,
-  paint: MultiRowFeaturePaintInputs,
+  rowKeys: RowKeys,
+  rowTable: RowTable,
 ): T[] {
-  const colorByRow = colorsPaintedAt(region, pos, paint)
+  const colorByRow = colorsPaintedAt(encoded, rowKeys, pos)
   // Sized over the rows on screen, not over `sources`, which arrives unfiltered
   // so that hidden rows keep their place and overrides. Every color the column
   // carries is seeded at zero, so a block whose rows are all filtered away
@@ -78,7 +48,12 @@ export function rowOrderByValueAt<T extends { name: string }>(
   )
   for (const { name } of sources) {
     const color = colorByRow.get(name)
-    if (color !== undefined && paint.rowIndexByValue.has(name)) {
+    const key = rowKeys.lookup(name)
+    if (
+      color !== undefined &&
+      key !== undefined &&
+      keySlot(key, rowTable) !== undefined
+    ) {
       blockSize.set(color, blockSize.get(color)! + 1)
     }
   }

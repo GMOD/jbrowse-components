@@ -294,27 +294,3 @@ describe('encodeInputs', () => {
     expect(uploads).toHaveLength(4)
   })
 })
-
-describe('featurePaintInputs', () => {
-  // `renderState` must keep carrying all three: the indel-glyph overlay walks
-  // the region data in drawn row space under a `renderState`-derived state,
-  // and the two agree only while the overlay's inputs are the paint half of
-  // it.
-  it('is the paint half of renderState, not a second copy of it', () => {
-    const display = makeDisplay()
-    // Inside a reaction, where MobX actually memoizes a computed: read bare it
-    // re-evaluates per access and every identity below would differ for a reason
-    // unrelated to the sharing under test.
-    const dispose = autorun(() => {
-      const paint = display.featurePaintInputs
-      const { rowIndexByValue, rowColorsByIndex, hiddenColors, rowTable } =
-        display.renderState
-
-      expect(rowIndexByValue).toBe(paint.rowIndexByValue)
-      expect(rowColorsByIndex).toBe(paint.rowColorsByIndex)
-      expect(hiddenColors).toBe(paint.hiddenColors)
-      expect(rowTable).toBe(display.rowTable)
-    })
-    dispose()
-  })
-})

@@ -118,12 +118,6 @@ function makeModel(
     canvasHeight: 100,
     rowHeight: 50,
     rowProportion: 0.8,
-    rowIndexByValue: new Map([
-      ['a', 0],
-      ['b', 1],
-    ]),
-    hiddenColors: new Set<number>(),
-    rowColorsByIndex: [undefined, undefined],
     rowTable: buildRowTable(
       Uint32Array.from(['a', 'b'], name => rowKeys.keyOf(name)),
     ),
@@ -131,7 +125,7 @@ function makeModel(
   const encodeInputs = {
     rowKeys,
     overriddenRows: new Set<string>(),
-    hiddenColors: renderState.hiddenColors,
+    hiddenColors: new Set<number>(),
   }
   return {
     id: 'test',

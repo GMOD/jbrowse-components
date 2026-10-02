@@ -1,40 +1,38 @@
 import { createFieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
+import { encodeRows } from './rendering/encodeTestUtils.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 
-import type { MultiRowFeaturePaintInputs } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { RowValueRegion } from './rowOrderByValueAt.ts'
+import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
+import type { EncodableRegion } from './rendering/encodeTestUtils.ts'
 
 function rows(...names: string[]) {
   return names.map(name => ({ name }))
 }
 
-function paintInputs(
-  names: string[],
-  opts: {
-    hiddenColors?: Set<number>
-    rowColorsByIndex?: (number | undefined)[]
-  } = {},
-): MultiRowFeaturePaintInputs {
-  return {
-    rowIndexByValue: new Map(names.map((name, i) => [name, i] as const)),
-    rowColorsByIndex: opts.rowColorsByIndex ?? names.map(() => undefined),
-    hiddenColors: opts.hiddenColors ?? new Set<number>(),
-  }
-}
-
 function order(
   names: string[],
-  region: RowValueRegion,
+  data: EncodableRegion,
   pos: number,
-  paint = paintInputs(names),
+  opts: {
+    rows?: string[]
+    rowColors?: (number | undefined)[]
+    hiddenColors?: Set<number>
+    fieldPalette?: FieldPalette
+  } = {},
 ) {
-  return rowOrderByValueAt(rows(...names), region, pos, paint).map(s => s.name)
+  const { encoded, rowKeys, rowTable } = encodeRows(data, {
+    rows: names,
+    ...opts,
+  })
+  return rowOrderByValueAt(rows(...names), encoded, pos, rowKeys, rowTable).map(
+    s => s.name,
+  )
 }
 
 function region(
   feats: { start: number; end: number; color: number; row: number }[],
   partitionValues: string[],
-): RowValueRegion {
+): EncodableRegion {
   return {
     featureStarts: new Uint32Array(feats.map(f => f.start)),
     featureEnds: new Uint32Array(feats.map(f => f.end)),
@@ -115,9 +113,12 @@ test('a hidden legend category carries no value, and sinks its rows', () => {
   expect(order(names, r, 50)).toEqual(['a', 'c', 'b', 'd'])
   // Red toggled off in the legend paints nothing, so a and c sink with d rather
   // than leading on a block the user cannot see.
-  expect(
-    order(names, r, 50, paintInputs(names, { hiddenColors: new Set([1]) })),
-  ).toEqual(['b', 'a', 'c', 'd'])
+  expect(order(names, r, 50, { hiddenColors: new Set([1]) })).toEqual([
+    'b',
+    'a',
+    'c',
+    'd',
+  ])
 })
 
 test('a hidden color does not overwrite the visible feature under it', () => {
@@ -133,9 +134,11 @@ test('a hidden color does not overwrite the visible feature under it', () => {
     ['a', 'b', 'c'],
   )
   const names = ['a', 'b', 'c']
-  expect(
-    order(names, r, 50, paintInputs(names, { hiddenColors: new Set([1]) })),
-  ).toEqual(['a', 'b', 'c'])
+  expect(order(names, r, 50, { hiddenColors: new Set([1]) })).toEqual([
+    'a',
+    'b',
+    'c',
+  ])
 })
 
 test('a row painting a per-row override is not hidden by its baked color', () => {
@@ -151,15 +154,10 @@ test('a row painting a per-row override is not hidden by its baked color', () =>
   )
   const names = ['a', 'b', 'c']
   expect(
-    order(
-      names,
-      r,
-      50,
-      paintInputs(names, {
-        hiddenColors: new Set([1]),
-        rowColorsByIndex: [0xff123456, undefined, undefined],
-      }),
-    ),
+    order(names, r, 50, {
+      hiddenColors: new Set([1]),
+      rowColors: [0xff123456, undefined, undefined],
+    }),
   ).toEqual(['a', 'c', 'b'])
 })
 
@@ -205,12 +203,7 @@ test('sizes the blocks by the rows on screen, not the rows being ordered', () =>
   // With only a, d and e drawn, color 2 is the bigger block on screen, and the
   // rows the filter hides still come along in their own block.
   expect(
-    rowOrderByValueAt(
-      rows('a', 'b', 'c', 'd', 'e'),
-      r,
-      50,
-      paintInputs(['a', 'd', 'e']),
-    ).map(s => s.name),
+    order(['a', 'b', 'c', 'd', 'e'], r, 50, { rows: ['a', 'd', 'e'] }),
   ).toEqual(['d', 'e', 'a', 'b', 'c'])
 })
 
@@ -218,7 +211,7 @@ test('sizes the blocks by the rows on screen, not the rows being ordered', () =>
 // column groups by what the field painted.
 test('orders by the colour the colour field paints, not the baked one', () => {
   const names = ['A', 'B', 'C']
-  const fielded: RowValueRegion = {
+  const fielded: EncodableRegion = {
     ...region(
       names.map((_, row) => ({ start: 0, end: 10, color: 7, row })),
       names,
@@ -230,7 +223,5 @@ test('orders by the colour the colour field paints, not the baked one', () => {
   const fieldPalette = createFieldPalette('state', value =>
     value === 'x' ? 'red' : 'blue',
   )
-  expect(
-    order(names, fielded, 5, { ...paintInputs(names), fieldPalette }),
-  ).toEqual(['A', 'C', 'B'])
+  expect(order(names, fielded, 5, { fieldPalette })).toEqual(['A', 'C', 'B'])
 })

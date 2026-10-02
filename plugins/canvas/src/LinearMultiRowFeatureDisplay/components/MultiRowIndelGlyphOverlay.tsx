@@ -19,6 +19,7 @@ const MultiRowIndelGlyphOverlay = observer(function MultiRowIndelGlyphOverlay({
   const palette = usePalette()
   const {
     indelGlyphRegions,
+    encodedChannels,
     renderBlocks,
     renderState,
     height,
@@ -32,6 +33,7 @@ const MultiRowIndelGlyphOverlay = observer(function MultiRowIndelGlyphOverlay({
         drawMultiRowIndelGlyphs(
           ctx,
           indelGlyphRegions,
+          encodedChannels,
           renderBlocks,
           renderState,
           palette.insertion,

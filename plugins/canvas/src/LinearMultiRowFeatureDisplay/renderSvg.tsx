@@ -35,8 +35,8 @@ export interface RenderSvgModel extends SvgExportable {
   densityBandLayer: DensityBandLayer
   densityPeakReadout: string
   indelGlyphRegions: ReadonlyMap<number, MultiRowRegionData> | undefined
-  // the screen's own channels: `renderState` spreads `featurePaintInputs`, the
-  // encode's only inputs, so what the upload holds is what the export paints
+  // the screen's own channels, so what the upload holds is what the export
+  // paints
   encodedChannels: ReadonlyMap<number, MultiRowEncoded>
   renderState: MultiRowRenderState
   sources: RowSource[]
@@ -100,6 +100,7 @@ function MultiRowSvgBody({
             drawMultiRowIndelGlyphs(
               ctx,
               self.indelGlyphRegions,
+              self.encodedChannels,
               renderBlocks,
               state,
               exportPalette.insertion,

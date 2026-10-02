@@ -1,8 +1,5 @@
 import type { FieldPalette } from '../../RenderFeatureDataRPC/colorClasses.ts'
-import type {
-  MultiRowFeaturePaintInputs,
-  MultiRowRegionData,
-} from './multiRowRenderingBackendTypes.ts'
+import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 
 // `featureDeltas` is EMPTY, not zero-filled, when the `lengthField` slot is
 // unset, so "has deltas" is a length agreement with `featureStarts` — and every
@@ -52,36 +49,11 @@ export function ownColors(data: OwnColorData, fieldPalette?: FieldPalette) {
 }
 
 /**
- * Resolved once per region so the per-feature answer is array reads.
- */
-interface DrawnFeatureContext {
-  rowForLocal: readonly (number | undefined)[]
-  rowColorsByIndex: readonly (number | undefined)[]
-  hiddenColors: ReadonlySet<number>
-  colors: Uint32Array
-}
-
-export function drawnFeatureContext(
-  data: Pick<MultiRowRegionData, 'partitionValues'> & OwnColorData,
-  state: MultiRowFeaturePaintInputs,
-): DrawnFeatureContext {
-  return {
-    rowForLocal: resolveLocalRowIndices(
-      data.partitionValues,
-      state.rowIndexByValue,
-    ),
-    rowColorsByIndex: state.rowColorsByIndex,
-    hiddenColors: state.hiddenColors,
-    colors: ownColors(data, state.fieldPalette),
-  }
-}
-
-/**
  * Whether a legend toggle hides a feature painted `abgr`. Only a row painting
  * the feature's own colour answers to the legend: a row with an override
  * paints something the legend never lists, so an own colour equal to a hidden
- * category must not hide its features. The encode and every overlay read this
- * one rule.
+ * category must not hide its features. The encode applies it, and every
+ * overlay reads the encode.
  */
 export function hiddenByCategory(
   abgr: number,
@@ -89,40 +61,4 @@ export function hiddenByCategory(
   hiddenColors: ReadonlySet<number>,
 ) {
   return !rowOverridden && hiddenColors.has(abgr)
-}
-
-function drawnRowAt(
-  data: Pick<MultiRowRegionData, 'featurePartitionIndex'>,
-  ctx: DrawnFeatureContext,
-  i: number,
-) {
-  const rowIndex = ctx.rowForLocal[data.featurePartitionIndex[i]!]
-  if (rowIndex === undefined) {
-    return undefined
-  }
-  return hiddenByCategory(
-    ctx.colors[i]!,
-    ctx.rowColorsByIndex[rowIndex] !== undefined,
-    ctx.hiddenColors,
-  )
-    ? undefined
-    : rowIndex
-}
-
-/**
- * The features that actually paint, in paint order, each with its display row
- * and ABGR color, for the overlays that walk the region data in drawn row
- * space. The encode walks it in key space through the same rule.
- */
-export function forEachDrawnFeature(
-  data: Pick<MultiRowRegionData, 'featureStarts' | 'featurePartitionIndex'>,
-  ctx: DrawnFeatureContext,
-  visit: (i: number, rowIndex: number, color: number) => void,
-) {
-  for (let i = 0; i < data.featureStarts.length; i++) {
-    const rowIndex = drawnRowAt(data, ctx, i)
-    if (rowIndex !== undefined) {
-      visit(i, rowIndex, ctx.rowColorsByIndex[rowIndex] ?? ctx.colors[i]!)
-    }
-  }
 }

@@ -1,9 +1,9 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { buildRowTable } from '@jbrowse/render-core/marks'
 
 import { drawMultiRowIndelGlyphs } from './drawMultiRowIndelGlyphs.ts'
+import { encodeRows } from './encodeTestUtils.ts'
 
 import type {
   MultiRowRegionData,
@@ -65,18 +65,11 @@ const block: RenderBlock = {
   reversed: false,
 }
 
-const state: MultiRowRenderState = {
+const frame: Omit<MultiRowRenderState, 'rowTable'> = {
   canvasWidth: 1000,
   canvasHeight: 40,
   rowHeight: 20,
   rowProportion: 1,
-  rowIndexByValue: new Map([
-    ['mom', 0],
-    ['dad', 1],
-  ]),
-  rowColorsByIndex: [],
-  hiddenColors: new Set<number>(),
-  rowTable: buildRowTable(Uint32Array.of(0, 1)),
 }
 
 // Two 1bp features on two rows: x 100-110 (center 105) and x 500-510 (center
@@ -111,17 +104,19 @@ const INSERTION_COLOR = resolvePalette().insertion
 
 function draw(
   region: MultiRowRegionData,
-  overrides?: Partial<MultiRowRenderState>,
+  opts?: Partial<Parameters<typeof encodeRows>[1]>,
 ) {
   const { ctx, calls, texts } = mockCtx()
+  const { encoded, rowTable } = encodeRows(region, {
+    rows: ['mom', 'dad'],
+    ...opts,
+  })
   drawMultiRowIndelGlyphs(
     ctx,
     new Map([[0, region]]),
+    new Map([[0, encoded]]),
     [block],
-    {
-      ...state,
-      ...overrides,
-    },
+    { ...frame, rowTable },
     INSERTION_COLOR,
   )
   return { calls, texts }
@@ -182,7 +177,7 @@ test('labels read against a pale block rather than staying white on it', () => {
   const region = { ...wide, featureDeltas: Int32Array.from([113174, -3217]) }
   const { texts } = draw(region, {
     // '#BBCCEE' is tagColorPalette[0]; '#800080' is the theme insertion purple
-    rowColorsByIndex: [cssColorToABGR('#BBCCEE'), cssColorToABGR('#800080')],
+    rowColors: [cssColorToABGR('#BBCCEE'), cssColorToABGR('#800080')],
   })
 
   expect(texts).toEqual([
@@ -194,7 +189,7 @@ test('labels read against a pale block rather than staying white on it', () => {
 test('a label on the insertion bar reads against the bar', () => {
   const region = { ...narrow, featureDeltas: Int32Array.from([113174, 0]) }
   const { texts } = draw(region, {
-    rowColorsByIndex: [cssColorToABGR('#BBCCEE')],
+    rowColors: [cssColorToABGR('#BBCCEE')],
   })
 
   expect(texts).toEqual([{ text: '113174', x: 105, y: 10, fillStyle: '#fff' }])
@@ -207,11 +202,9 @@ test('a deletion narrower than the label threshold draws the line only', () => {
   expect(texts).toEqual([])
 })
 
-test('skips glyphs whose row is filtered out of rowIndexByValue', () => {
+test('skips glyphs whose row is filtered off screen', () => {
   const region = { ...narrow, featureDeltas: Int32Array.from([DELTA, DELTA]) }
-  expect(
-    draw(region, { rowIndexByValue: new Map([['mom', 0]]) }).calls,
-  ).toEqual(
+  expect(draw(region, { rows: ['mom'] }).calls).toEqual(
     draw({ ...region, featureDeltas: Int32Array.from([DELTA, 0]) }).calls,
   )
 })

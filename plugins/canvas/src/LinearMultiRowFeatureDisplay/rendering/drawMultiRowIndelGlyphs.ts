@@ -11,14 +11,12 @@ import {
   makeBpMapper,
   pxPerBpOf,
 } from '@jbrowse/render-core/canvas2dUtils'
+import { rowColor, rowSlot } from '@jbrowse/render-core/marks'
 
-import {
-  drawnFeatureContext,
-  forEachDrawnFeature,
-  regionWithDeltas,
-} from './featurePainting.ts'
+import { regionWithDeltas } from './featurePainting.ts'
 import { rowBand } from './rowBand.ts'
 
+import type { MultiRowEncoded } from './multiRowChannels.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
@@ -55,6 +53,8 @@ function makeLabelColorResolver() {
  * Alignment-style indel glyphs over the multi-row blocks, from the signed bp
  * deltas the `lengthField` slot packs. A block's width can only express how
  * much reference a feature covers, so these glyphs are where the length goes.
+ * They walk the encode the blocks were drawn from and place each through the
+ * row table, so a glyph sits on its block whatever hid, moved or recoloured it.
  *
  * `insertionColor` must be `palette.insertion`, the color the pileup paints.
  * Alignments-core's `INSERTION_COLOR` is a different purple for worker code
@@ -64,11 +64,13 @@ function makeLabelColorResolver() {
 export function drawMultiRowIndelGlyphs(
   ctx: Ctx2D,
   regions: { get(key: number): MultiRowRegionData | undefined },
+  encodedChannels: ReadonlyMap<number, MultiRowEncoded>,
   renderBlocks: RenderBlock[],
   state: MultiRowRenderState,
   insertionColor: string,
 ) {
-  const { canvasWidth, canvasHeight, rowHeight, rowProportion } = state
+  const { canvasWidth, canvasHeight, rowHeight, rowProportion, rowTable } =
+    state
   const { height: h, offset } = rowBand(rowHeight, rowProportion)
   const labelColor = makeLabelColorResolver()
   ctx.font = FONT
@@ -83,66 +85,64 @@ export function drawMultiRowIndelGlyphs(
     (regionData, renderBlock) => {
       const bpToPx = makeBpMapper(renderBlock)
       const { featureStarts, featureEnds, featureDeltas } = regionData
+      const encoded = encodedChannels.get(renderBlock.displayedRegionIndex)
+      if (!encoded) {
+        return
+      }
       // exact for this block rather than the view's global bpPerPx, which the
       // bar-width and label-fit thresholds are calibrated against
       const pxPerBp = pxPerBpOf(renderBlock)
       const labelFits = h >= MIN_HEIGHT_FOR_TEXT
 
-      forEachDrawnFeature(
-        regionData,
-        drawnFeatureContext(regionData, state),
-        (i, rowIndex, color) => {
-          const delta = featureDeltas[i]!
-          if (delta === 0) {
-            return
+      for (let c = 0; c < encoded.count; c++) {
+        const i = encoded.featureIndex[c]!
+        const delta = featureDeltas[i]!
+        const rowIndex = rowSlot(encoded.row, c, rowTable)
+        if (delta === 0 || rowIndex === undefined) {
+          continue
+        }
+        const color = rowColor(encoded.color[c]!, encoded.row, c, rowTable)
+        const xa = bpToPx(featureStarts[i]!)
+        const xb = bpToPx(featureEnds[i]!)
+        const top = offset + rowHeight * rowIndex
+        const yMid = Math.round(top + h / 2)
+        if (delta > 0) {
+          // centered because the allele replaces this whole span, unlike a
+          // read's interbase insertion, so it has no boundary to sit at
+          const xCenter = (xa + xb) / 2
+          // Where the block is already wider than the bar the block *is* the
+          // bar — same color, same center — so a second fill only overdraws.
+          const barWidth = insertionBarWidth(delta, pxPerBp, h)
+          const barDrawn = barWidth > Math.abs(xb - xa)
+          if (barDrawn) {
+            ctx.fillStyle = insertionColor
+            drawInsertionMarker(ctx, xCenter, top, h, delta, pxPerBp)
           }
-          const xa = bpToPx(featureStarts[i]!)
-          const xb = bpToPx(featureEnds[i]!)
-          const top = offset + rowHeight * rowIndex
-          const yMid = Math.round(top + h / 2)
-          if (delta > 0) {
-            // centered because the allele replaces this whole span, unlike a
-            // read's interbase insertion, so it has no boundary to sit at
-            const xCenter = (xa + xb) / 2
-            // Where the block is already wider than the bar the block *is* the
-            // bar — same color, same center — so a second fill only overdraws.
-            const barWidth = insertionBarWidth(delta, pxPerBp, h)
-            const barDrawn = barWidth > Math.abs(xb - xa)
-            if (barDrawn) {
-              ctx.fillStyle = insertionColor
-              drawInsertionMarker(ctx, xCenter, top, h, delta, pxPerBp)
-            }
-            if (getInsertionType(delta, pxPerBp) === 'large' && labelFits) {
-              // against whatever the label lands on: the bar when one was
-              // drawn, else the block
-              ctx.fillStyle = labelColor(
-                barDrawn ? insertionColor : abgrToCssRgba(color),
-              )
-              ctx.textAlign = 'center'
-              ctx.fillText(String(delta), xCenter, yMid)
-            }
-          } else {
-            const left = Math.min(xa, xb)
-            const width = Math.abs(xb - xa)
-            ctx.fillStyle = DELETION_LINE_COLOR
-            ctx.fillRect(
-              left,
-              yMid - DELETION_LINE_H / 2,
-              width,
-              DELETION_LINE_H,
+          if (getInsertionType(delta, pxPerBp) === 'large' && labelFits) {
+            // against whatever the label lands on: the bar when one was
+            // drawn, else the block
+            ctx.fillStyle = labelColor(
+              barDrawn ? insertionColor : abgrToCssRgba(color),
             )
-            if (labelFits && width >= DELETION_LABEL_MIN_PX) {
-              // the label sits above the line, so it reads against the block
-              ctx.fillStyle = labelColor(abgrToCssRgba(color))
-              ctx.textAlign = 'center'
-              // the magnitude, not the signed delta: a bare "-9048" reads as a
-              // sequence length that went negative, and the glyph already says
-              // which direction this is
-              ctx.fillText(String(-delta), left + width / 2, yMid - h / 4)
-            }
+            ctx.textAlign = 'center'
+            ctx.fillText(String(delta), xCenter, yMid)
           }
-        },
-      )
+        } else {
+          const left = Math.min(xa, xb)
+          const width = Math.abs(xb - xa)
+          ctx.fillStyle = DELETION_LINE_COLOR
+          ctx.fillRect(left, yMid - DELETION_LINE_H / 2, width, DELETION_LINE_H)
+          if (labelFits && width >= DELETION_LABEL_MIN_PX) {
+            // the label sits above the line, so it reads against the block
+            ctx.fillStyle = labelColor(abgrToCssRgba(color))
+            ctx.textAlign = 'center'
+            // the magnitude, not the signed delta: a bare "-9048" reads as a
+            // sequence length that went negative, and the glyph already says
+            // which direction this is
+            ctx.fillText(String(-delta), left + width / 2, yMid - h / 4)
+          }
+        }
+      }
     },
   )
 }
