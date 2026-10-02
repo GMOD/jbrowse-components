@@ -9,7 +9,7 @@ import {
 
 import { densityRegionData } from './densityLayer.ts'
 import { facetLayout, facetRegion } from './facet.ts'
-import { findMarkHit } from './findMarkHit.ts'
+import { findMarkHit, hitLocString } from './findMarkHit.ts'
 import { buildMarkList } from './markList.ts'
 
 import type { MarkHitInfo } from './findMarkHit.ts'
@@ -343,4 +343,51 @@ test('the density tier builds no Flatbush for a bar, and answers the same', () =
     densityRegionData({ starts, ends, scores }, 1, 0, 1, true).layers[0]!
       .flatbush,
   ).toBeDefined()
+})
+
+test('a link to another sequence names both feet, each on its own sequence', () => {
+  const [mark] = buildMarkList([{ ...entries('link')[0]!, linkShape: 'line' }])
+  const layer: StoredLayer = {
+    count: 1,
+    skipped: 0,
+    x: Uint32Array.of(100),
+    x2: Uint32Array.of(50),
+    y: Float32Array.of(5),
+    x2Ref: Uint32Array.of(0),
+    x2RefNames: ['ctgB'],
+    x2Region: Uint32Array.of(1),
+    color: 0xff0000ff,
+    yMin: 5,
+    yMax: 5,
+  }
+  const data = withFlatbush({ layers: [layer] })
+  const blocks: RenderBlock[] = [
+    { ...BLOCK, screenEndPx: 400 },
+    { ...BLOCK, displayedRegionIndex: 1, screenStartPx: 400 },
+  ]
+  const state: MarkRenderState = {
+    ...STATE,
+    bpPerPx: 2.5,
+    linkRegions: blocks.map(b => ({
+      anchorPx: b.screenStartPx,
+      anchorBp: 0,
+      signedPxPerBp: 0.4,
+      leftPx: b.screenStartPx,
+      rightPx: b.screenEndPx,
+    })),
+  }
+  const regions = [{ refName: 'ctgA' }, { refName: 'ctgB' }]
+  const hits = Array.from({ length: 360 }, (_, y) =>
+    findMarkHit(40, y, blocks, new Map([[0, data]]), [mark!], state, regions),
+  ).filter(h => h !== undefined)
+  expect(hits.length).toBeGreaterThan(0)
+  const [hit] = hits
+  expect(hit).toMatchObject({ refName: 'ctgA', x2RefName: 'ctgB', bp: 100 })
+  expect(hitLocString(hit!)).toBe('ctgA:101 → ctgB:51')
+})
+
+test('a span written end first reads as the range it covers', () => {
+  const hit = { refName: 'ctgA', start: 500, end: 100 } as MarkHitInfo
+  expect(hitLocString(hit)).toBe('ctgA:101..500')
+  expect(hitLocString({ ...hit, x2RefName: 'ctgA' })).toBe('ctgA:101..500')
 })

@@ -1,3 +1,4 @@
+import { assembleLocString } from '@jbrowse/core/util'
 import { colorAt, featureIndexAt } from '@jbrowse/core/util/markEncoding'
 import { clamp } from '@jbrowse/core/util/numericUtils'
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
@@ -26,6 +27,11 @@ export interface MarkHitInfo {
   refName: string
   start: number
   end: number
+  /**
+   * The sequence `end` lies on, where a link's far foot is on another one
+   * than `refName`.
+   */
+  x2RefName?: string
   /** The base under the cursor, inside the instance's span. */
   bp: number
   /** The plotted value, or undefined for a mark with no `y`. */
@@ -51,6 +57,35 @@ export interface MarkHitInfo {
 }
 
 const HIT_RADIUS_PX = 8
+
+// The sequence a link's far foot lies on: the displayed region it draws to,
+// else the name the file gives it; undefined for a mark whose `x2` is its own.
+function farRefNameOf(
+  layer: StoredLayer,
+  i: number,
+  displayedRegions: readonly { refName: string }[],
+) {
+  const region = layer.x2Region?.[i]
+  const shown = region === undefined ? undefined : displayedRegions[region]
+  const ref = layer.x2Ref?.[i]
+  return (
+    shown?.refName ?? (ref === undefined ? undefined : layer.x2RefNames?.[ref])
+  )
+}
+
+/**
+ * The hovered instance's locus: its span, or a link's two feet where the far
+ * one lies on another sequence.
+ */
+export function hitLocString({ refName, start, end, x2RefName }: MarkHitInfo) {
+  return x2RefName === undefined || x2RefName === refName
+    ? assembleLocString({
+        refName,
+        start: Math.min(start, end),
+        end: Math.max(start, end),
+      })
+    : `${assembleLocString({ refName, start, end: start + 1 })} → ${assembleLocString({ refName: x2RefName, start: end, end: end + 1 })}`
+}
 
 const rowIndexes = new WeakMap<StoredLayer, RowSpanIndex>()
 
@@ -163,17 +198,24 @@ export function findMarkHit(
   const regionIndex = hit.block.displayedRegionIndex
   const start = layer.x[hit.index]!
   const end = layer.x2[hit.index]!
+  const { refName } = displayedRegions[regionIndex]!
+  const farRefName = farRefNameOf(layer, hit.index, displayedRegions)
+  const x2RefName = farRefName === refName ? undefined : farRefName
+  const lo = Math.min(start, end)
+  const hi = Math.max(start, end)
   return {
     markIndex,
     regionIndex,
     instance: hit.index,
     featureIndex: featureIndexAt(layer, hit.index),
-    refName: displayedRegions[regionIndex]!.refName,
+    refName,
     start,
     end,
-    bp: spansView
-      ? start
-      : clamp(bpAtPx(mouseX, hit.block), start, Math.max(start, end - 1)),
+    ...(x2RefName === undefined ? {} : { x2RefName }),
+    bp:
+      spansView || x2RefName !== undefined
+        ? start
+        : clamp(bpAtPx(mouseX, hit.block), lo, Math.max(lo, hi - 1)),
     y: layer.y?.[hit.index],
     color: colorAt(layer, hit.index),
     colorValue: layer.colorValue?.[hit.index],

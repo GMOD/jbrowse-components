@@ -1,6 +1,5 @@
 import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { LegendSwatchGlyph } from '@jbrowse/core/ui/LegendSwatchGlyph'
-import { assembleLocString } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { SHAPE_CODES, SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
@@ -9,6 +8,7 @@ import { keySlot, thresholdBandOf } from '@jbrowse/render-core/marks'
 import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
+import { hitLocString } from '../findMarkHit.ts'
 import {
   categoryLabel,
   colorSection,
@@ -201,7 +201,7 @@ const MarkTooltip = observer(function MarkTooltip({
     <HoverTooltip hit={hit} mouseState={mouseState}>
       {hit ? (
         <div>
-          <div>{assembleLocString(hit)}</div>
+          <div>{hitLocString(hit)}</div>
           {markTooltipRows(
             hit,
             encodings[hit.markIndex],
