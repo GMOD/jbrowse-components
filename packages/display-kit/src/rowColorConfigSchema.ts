@@ -22,7 +22,9 @@ import {
  * MAF display's label tint, over the adapter's `samples[].color`; the mark
  * display's label tint, over a listed source's colour. Where the rows carry
  * attributes, a samplesTsv column or a subtrack's group, `field` may name one,
- * and its values each take a palette colour. A string is the field.
+ * and its values each take a palette colour. `scale: 'none'` deals no palette,
+ * so a row the reader coloured keeps its colour and the rest keep their data's.
+ * A string is the field.
  *
  * #example
  * ```js
@@ -46,7 +48,7 @@ export const rowColorConfigSchema = ConfigurationSchema(
       field:
         "the row attribute whose values take the colours: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group",
       scale:
-        'none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field',
+        'none deals no palette, so only the values domain lists take a colour; categorical a colour per value of field, those domain lists taking range; unset follows field',
     }),
     ...colorDomainSlot({
       domain:

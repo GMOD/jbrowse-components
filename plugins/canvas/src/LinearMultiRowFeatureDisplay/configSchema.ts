@@ -214,8 +214,9 @@ export default function configSchemaF() {
        * #slot
        * An array of `{ match, group, color }` tagging each row with the group
        * of the first entry whose regex its name matches, and tinting its
-       * sidebar swatch — never its blocks. `facet: 'group'` stacks the groups
-       * in bands.
+       * sidebar swatch. Its blocks take the colour only under
+       * `rowColor: 'group'`, where a group colour `rowColor` lists wins on
+       * both. `facet: 'group'` stacks the groups in bands.
        *
        * #example
        * ```js
@@ -229,7 +230,7 @@ export default function configSchemaF() {
         type: 'frozen',
         defaultValue: [],
         description:
-          'array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch only',
+          'array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch, and the blocks under rowColor: group',
       },
       /**
        * #slot facet

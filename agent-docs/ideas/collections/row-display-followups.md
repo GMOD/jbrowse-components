@@ -44,8 +44,6 @@ data) and a per-feature "Color by..." menu are new UI.
 
 - a phased dialog opened before the first cellData and submitted over
   haplotype rows still writes the sample order;
-- a dialog recolour under a multi-row `rowColor: { scale: 'none' }` replaces
-  the object and turns the palette back on for every row;
 - a density sidecar standing in under `rows` draws in the first row only, and
   `valueMarkIndex` picks the hidden mark;
 - `refillArray` in `packages/core/src/configuration/configurationSchema.ts`

@@ -1,6 +1,6 @@
 ---
 name: row-displays-on-shared-kernels
-description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, the MAF cleanups and the shared insertion mark landed the same day; open are two product calls on row colour, per-mark seams, the one-row-model hook seam and variant wire shapes."
+description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, the MAF cleanups and the shared insertion mark landed the same day, the two row-colour bugs on 2026-10-03; open are multi-row faceting by other fields, per-mark seams, the one-row-model hook seam and variant wire shapes."
 ---
 
 # Row displays on shared kernels
@@ -32,29 +32,24 @@ thing — not ports onto `LinearMarkDisplay`.
 
 ## Open bugs and calls
 
-1. **A recolour under `rowColor: { scale: 'none' }` turns the palette on for
-   every row** (from
-   [row-display-followups](../ideas/collections/row-display-followups.md)).
-   Reproduced; a grid recolour needs the dialog's "Each row" choice, which on
-   multi-row deals the palette to every row. Recolouring one row while the rest
-   stay unpainted needs a "named colours, no palette" state the `rowColor`
-   vocabulary lacks — a call for Colin, not a bug fix.
-2. **Multi-row `rowColor: 'group'` deals palette colours per group**, not each
-   group's `rowGroups[].color`; the deal reads a row's group off its name
-   through `rowGroupMatchers`, which is what retires e735d1a14d's per-row
-   stopgap. Whether `rowGroups[].color` should win there is open, and ties to
-   step 4's palette flip, not wanted now.
-3. **Multi-row `facet` on any field but `group` or `name` is a corner notice**:
-   a row carries no other attribute, and banding by a feature attribute would
-   split rows in the worker.
+Landed 2026-10-03: `rowColor: { scale: 'none' }` deals no palette while the
+values its `domain` lists still paint, so the dialog's None recolours one row
+and leaves the rest unpainted; and multi-row's `group` deal takes each group's
+`rowGroups[].color`, a group colour `rowColor` lists winning on the blocks and
+the stripe alike.
 
-## A Fable arbitration of calls 2-4, undecided
+- **Multi-row `facet` on any field but `group` or `name` is a corner notice**:
+  a row carries no other attribute, and banding by a feature attribute would
+  split rows in the worker. Nobody has asked for more.
 
-A read-only Fable review on 2026-10-02, its code claims re-checked, reads calls
-2-4 and the `rowColor` name as one change: finish step 4's palette flip as a
-model change while keeping each display's palette, so almost no pixel moves
-(about 6 days). Colin had too little to decide on; a decision needs before/after
-captures of volvox, roadmap and bxd.
+## A Fable arbitration of the row-colour model, not wanted now
+
+A read-only Fable review on 2026-10-02, its code claims re-checked, read the
+row-colour calls and the `rowColor` name as one change: finish step 4's palette
+flip as a model change while keeping each display's palette, so almost no pixel
+moves (about 6 days). Its `scale: 'none'` half landed with the two bugs above;
+the rest retires parallel legend and colour paths and changes nothing a reader
+sees, so it waits for step 5's hook seam, which touches the same code.
 
 - **A group is a row attribute**: delete `rowGroups[].color`, so a group's
   colour lives in `rowColor.domain/range`. Multi-row takes wiggle's dynamic
@@ -64,10 +59,6 @@ captures of volvox, roadmap and bxd.
   legend scale. Today one group can show a swatch from `rowGroups` and blocks
   from the palette at once (`rowSources.ts` `applyRowGroups`, `model.ts`
   `dealtRowPalette`). Cost: volvox loses its red swatch beside per-row blocks.
-- **`scale: 'none'` deals no palette, and pairs still paint**: today
-  `applyRowEdits`' last branch writes `{ field: 'name', ...pairs }` without
-  `scale`. Deletes the `scale !== 'none'` clauses in `paintsNamePairs` and
-  `valuePairs` and the dialog's special cases.
 - **Rows carry attributes generically** (`ListedRowSource`, samplesTsv), so the
   mixin's defaults serve `rowColorFields`, `rowBand` and one "no row carries X"
   notice; with step 5's hook seam. A facet on a feature field stays a notice.

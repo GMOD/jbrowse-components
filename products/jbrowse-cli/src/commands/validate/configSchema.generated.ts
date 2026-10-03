@@ -4126,7 +4126,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": "name"
             },
             "scale": {
-              "description": "none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field.",
+              "description": "none deals no palette, so only the values domain lists take a colour; categorical a colour per value of field, those domain lists taking range; unset follows field.",
               "enum": [
                 "none",
                 "categorical"
@@ -4247,7 +4247,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": true
         },
         "rowGroups": {
-          "description": "array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch only. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch, and the blocks under rowColor: group. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "not": {
             "$ref": "#/$defs/JexlString"
           }
