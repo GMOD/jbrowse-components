@@ -2078,6 +2078,16 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/ui/SubmitDialog": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
     "@jbrowse/core/ui/SvgColorLegend": {
       "package": "@jbrowse/core",
       "names": [
@@ -4612,9 +4622,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/material"
       ]
     },
     "@jbrowse/display-kit/stableIdentityComputed": {

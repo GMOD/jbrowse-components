@@ -249,6 +249,7 @@ export default [
   '@jbrowse/core/ui/SnackbarModel',
   '@jbrowse/core/ui/StackTraceButton',
   '@jbrowse/core/ui/styleTheme',
+  '@jbrowse/core/ui/SubmitDialog',
   '@jbrowse/core/ui/SvgColorLegend',
   '@jbrowse/core/ui/theme',
   '@jbrowse/core/ui/useCoalescedPointer',

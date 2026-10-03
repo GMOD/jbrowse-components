@@ -67,10 +67,12 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
   expect(display.colorByMode).toBe('default')
   display.setFeatureColor('red')
   expect(display.featureColor).toBe('red')
-  expect(display.colorByMode).toBe('default')
+  expect(display.colorByMode).toBe('solid')
 
   const radio = (label: string) =>
     display.colorMenuItems()[0]!.subMenu!.find(item => item.label === label)!
+  expect(radio('Solid color...').checked).toBe(true)
+  expect(radio('Default').checked).toBe(false)
   radio('Consequence impact').onClick!()
   expect(radio('Consequence impact').checked).toBe(true)
   expect(radio('Default').checked).toBe(false)

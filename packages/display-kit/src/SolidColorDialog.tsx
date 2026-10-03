@@ -1,5 +1,5 @@
-import { SubmitDialog } from '@jbrowse/core/ui'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
+import SubmitDialog from '@jbrowse/core/ui/SubmitDialog'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { Typography } from '@mui/material'
 
