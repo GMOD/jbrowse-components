@@ -36,6 +36,7 @@ export default observer(function WiggleRowLabels({
       sources={sources}
       rowHeight={effectiveRowHeight}
       labelOffset={rowLabelOffset(model.axes, labelOffset)}
+      backdrop="wash"
     />
   )
 })
