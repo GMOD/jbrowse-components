@@ -1,78 +1,78 @@
 {
   "index": {
-    "chunks": 252,
-    "gzipKb": 446
+    "chunks": 261,
+    "gzipKb": 455
   },
   "a-plot-from-json": {
-    "chunks": 253,
-    "gzipKb": 446
+    "chunks": 262,
+    "gzipKb": 455
   },
   "a-table-of-calls": {
-    "chunks": 252,
-    "gzipKb": 445
+    "chunks": 261,
+    "gzipKb": 455
   },
   "color-and-group-by-a-field": {
-    "chunks": 252,
-    "gzipKb": 445
+    "chunks": 261,
+    "gzipKb": 454
   },
   "controlling-the-view": {
-    "chunks": 256,
-    "gzipKb": 449
+    "chunks": 265,
+    "gzipKb": 459
   },
   "gene-lanes": {
-    "chunks": 330,
-    "gzipKb": 563
+    "chunks": 342,
+    "gzipKb": 574
   },
   "genome-by-name": {
-    "chunks": 252,
-    "gzipKb": 445
+    "chunks": 261,
+    "gzipKb": 454
   },
   "highlight-a-region": {
-    "chunks": 252,
-    "gzipKb": 445
+    "chunks": 261,
+    "gzipKb": 454
   },
   "loading-and-errors": {
-    "chunks": 251,
-    "gzipKb": 444
+    "chunks": 260,
+    "gzipKb": 454
   },
   "local-files": {
-    "chunks": 251,
-    "gzipKb": 445
+    "chunks": 260,
+    "gzipKb": 454
   },
   "multiple-tracks": {
-    "chunks": 243,
-    "gzipKb": 437
+    "chunks": 252,
+    "gzipKb": 447
   },
   "removing-material-ui": {
-    "chunks": 250,
-    "gzipKb": 444
+    "chunks": 259,
+    "gzipKb": 454
   },
   "scalebar-and-labels": {
-    "chunks": 253,
-    "gzipKb": 447
+    "chunks": 262,
+    "gzipKb": 456
   },
   "search-by-name": {
-    "chunks": 254,
-    "gzipKb": 447
+    "chunks": 263,
+    "gzipKb": 456
   },
   "svg-figures": {
-    "chunks": 257,
-    "gzipKb": 452
+    "chunks": 266,
+    "gzipKb": 461
   },
   "synteny": {
-    "chunks": 358,
-    "gzipKb": 603
+    "chunks": 369,
+    "gzipKb": 613
   },
   "track-settings": {
-    "chunks": 252,
-    "gzipKb": 445
+    "chunks": 261,
+    "gzipKb": 455
   },
   "ultraminimal": {
-    "chunks": 243,
-    "gzipKb": 437
+    "chunks": 252,
+    "gzipKb": 446
   },
   "web-workers": {
-    "chunks": 251,
-    "gzipKb": 444
+    "chunks": 260,
+    "gzipKb": 453
   }
 }
