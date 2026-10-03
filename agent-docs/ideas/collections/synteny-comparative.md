@@ -50,6 +50,16 @@ browser verification. Sources: Sugiyama-Tagawa-Toda 1981; Eades & Wormald 1994 (
 (focal-propagation barycenter). Orthogonal to the "phylogeny-aware row ordering" note
 below (that orders *rows* by relatedness; this orders *chromosomes within a row*).
 
+One measured data point, the six-genome linkage-group stack (2026-10-03, a Python
+re-layout counting ribbon crossings, plus a blind visual ranking): with the
+significance-filtered tables, every ordering variant tried landed within ~10% of
+main's 1.01M crossings — free-anchor sweeps 0.77M, orienting each chromosome by
+covariance with *all* partners' displayed positions 0.90M. The blind ranking
+preferred main's ordering by half a point. The filter itself took 2.88M to 1.01M.
+Gating reversal on within-best-pair rank correlation was worse: it misses fused
+chromosomes, whose arms go to different partners. The same run found
+[ready/diagonalize-ignores-a-reversed-reference](../ready/diagonalize-ignores-a-reversed-reference.md).
+
 **CIGAR draw toggles via gpuProps.** Shader uniform bit flags to gate
 `drawCIGAR`/`drawCIGARMatchesOnly`; worker always emits full geometry, flags control
 visibility. Only worth it if users toggle frequently.
