@@ -7484,6 +7484,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "auto"
         },
+        "showGenotypeFrequencies": {
+          "description": "draw a band above the genotype rows showing, per variant, the share of the drawn rows in each genotype class.",
+          "type": "boolean",
+          "default": false
+        },
+        "genotypeFrequenciesHeight": {
+          "type": "number",
+          "default": 40
+        },
         "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -10407,6 +10416,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "variantLaneLabels": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLaneLabels"
+            },
+            "showGenotypeFrequencies": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showGenotypeFrequencies"
+            },
+            "genotypeFrequenciesHeight": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/genotypeFrequenciesHeight"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
