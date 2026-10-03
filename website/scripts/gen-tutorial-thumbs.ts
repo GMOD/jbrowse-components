@@ -396,7 +396,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // regions is the whole shape, and the two empty track panels above and
     // below it add nothing at card size.
     src: 'syri/col_ler_chr4.png',
-    band: [0.4, 0.86],
+    band: [0.1, 0.95],
   },
   ecoli_orthologs_synteny: {
     // The top of the 44-lane stack at the atp operon, where the ortholog
