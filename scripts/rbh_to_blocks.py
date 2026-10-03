@@ -16,6 +16,12 @@ a species: the ortholog's gene id in that species looks up its group. The
 join rate is printed, and a row with no group gets `.`, which the display
 paints as missing rather than as a group of its own.
 
+**`--significant` keeps a label only where the chromosomes share the group.**
+odp tests each pair of chromosomes for more orthologs than chance (Fisher's
+exact test, `break_FET`), and its ribbon plots draw only the pairs that pass.
+With the flag, a row on a pair above 0.05 keeps its genes and loses its
+attributes, so a display that hides unlabelled rows draws what odp draws.
+
 **Gene intervals come from the `.chrom`, not from `_pos`.** `_pos` is one
 coordinate per gene, and a BED made from it alone is a 1 bp feature the
 browser cannot show as a gene. odp's `.chrom` (protein, scaffold, strand,
@@ -30,7 +36,7 @@ Requires: python3 only.
 Usage:
   python3 rbh_to_blocks.py table.rbh -o alg.blocks --bed-dir beds \\
       [--species COW HCA EMU RES] [--chrom RES=rhopilema.chrom ...] \\
-      [--alg BCnSSimakov2022.rbh] [--attributes gene_group color]
+      [--alg BCnSSimakov2022.rbh] [--attributes gene_group color] [--significant]
 """
 
 import argparse
@@ -93,6 +99,7 @@ def main():
     ap.add_argument("--alg", help="a colored .rbh to take gene_group and color from, joined by a shared species' gene ids")
     ap.add_argument("--alg-species", metavar="SP[=ALGSP]", help="the species to join --alg on, and its code in the --alg table where the two differ (RESLi=RES); default is the first code the two tables share")
     ap.add_argument("--attributes", nargs="*", default=["gene_group", "color"], help="attribute columns to carry, in order")
+    ap.add_argument("--significant", action="store_true", help="drop the attributes of rows whose chromosome pair has break_FET above 0.05")
     args = ap.parse_args()
 
     header, rows = read_table(args.rbh)
@@ -126,12 +133,16 @@ def main():
     scaf_col = {sp: header.index(f"{sp}_scaf") for sp in species}
     pos_col = {sp: header.index(f"{sp}_pos") for sp in species}
     attr_col = {a: header.index(a) for a in args.attributes if a in header}
+    if args.significant and "break_FET" not in header:
+        sys.exit(f"--significant needs odp's break_FET column, which {args.rbh} lacks")
+    fet_col = header.index("break_FET") if args.significant else None
 
     os.makedirs(args.bed_dir, exist_ok=True)
     beds = {sp: {} for sp in species}
     seen = {sp: 0 for sp in species}
     resolved = {sp: 0 for sp in species}
     joined = 0
+    dropped = 0
     with open(args.out, "w") as out:
         for row in rows:
             genes = [cell(row, gene_col[sp]) for sp in species]
@@ -142,6 +153,9 @@ def main():
                 attrs = {"gene_group": group, "color": color}
             else:
                 attrs = {a: cell(row, attr_col[a]) for a in attr_col}
+            if fet_col is not None and float(cell(row, fet_col) or 1) > 0.05:
+                dropped += bool(attrs.get("gene_group"))
+                attrs = {}
             for sp, gene in zip(species, genes):
                 if gene:
                     seen[sp] += 1
@@ -168,6 +182,8 @@ def main():
         print(f"{sp}: {resolved[sp]}/{seen[sp]} ids resolved {how}", file=sys.stderr)
         if seen[sp] and not resolved[sp]:
             sys.exit(f"{sp}: none of its ids resolve; the .chrom and the table name genes differently")
+    if args.significant:
+        print(f"gene_group dropped on non-significant chromosome pairs: {dropped} rows", file=sys.stderr)
     if lookup:
         print(f"gene_group joined on {lookup[0]}: {joined}/{len(rows)} rows", file=sys.stderr)
     print(" ".join(species))

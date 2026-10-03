@@ -1802,6 +1802,25 @@ check("the reference BED names the type, colors it and carries the query",
       ["Chr4\t1000\t2000\tSYN\t0\t+\t1000\t2000\t200,200,200\tLer",
        "Chr4\t3000\t4000\tINV\t0\t-\t3000\t4000\t255,165,0\tLer"])
 
+# rbh_to_blocks.py --significant: the stack's hosted tables. A row on a pair
+# above break_FET 0.05 keeps its genes and loses its group, so hideUnlabelled
+# hides it without the table losing the ortholog.
+with tempfile.TemporaryDirectory() as d:
+    rbh = os.path.join(d, "A_B.rbh")
+    with open(rbh, "w") as fh:
+        fh.write("rbh\tA_gene\tB_gene\tgene_group\tA_scaf\tA_pos\tB_scaf\tB_pos"
+                 "\tbreak_FET\tcolor\n"
+                 "r1\ta1\tb1\tM\tA1\t10\tB1\t20\t0.001\t#C23D51\n"
+                 "r2\ta2\tb2\tM\tA1\t30\tB2\t40\t0.4\t#C23D51\n")
+    out = os.path.join(d, "A_B.blocks")
+    subprocess.run([sys.executable, "scripts/rbh_to_blocks.py", rbh, "-o", out,
+                    "--bed-dir", d, "--species", "A", "B", "--significant"],
+                   check=True, capture_output=True)
+    check("--significant keeps the group on a significant pair and drops it "
+          "elsewhere, keeping the row",
+          open(out).read().splitlines(),
+          ["a1\tb1\tM\t#C23D51", "a2\tb2\t.\t."])
+
 if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "

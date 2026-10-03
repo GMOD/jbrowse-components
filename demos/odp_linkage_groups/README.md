@@ -9,7 +9,8 @@ Six ortholog tables from the Schultz et al. 2023 Dryad deposit
 (10.5061/dryad.dncjsxm47, CC0), each converted by `scripts/rbh_to_blocks.py`
 exactly as `scripts/build_odp_linkage_groups_synteny.sh` does: a
 `<pair>.blocks.gz` and one `<pair>.<code>.bed.gz` per genome, carrying
-`gene_group` and `color`.
+`gene_group` and `color`. The five stack pairs are converted with
+`--significant`; `RES_EMU`, the dotplot's, keeps every label.
 
 The six assemblies are `ChromSizesAdapter` over `<code>.chrom.sizes`, the first
 two columns of `samtools faidx` on the deposit's FASTAs (and, for Ephydatia, on

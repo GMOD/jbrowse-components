@@ -197,14 +197,20 @@ pair's track per band. The build script loads the pairs in the paper's order,
 two comb jellies over the jellyfish, amphioxus and two sponges, and the session
 below sets what the figure needs.
 
+Like the paper's figure, the stack draws an ortholog only where its two
+chromosomes share more orthologs than chance. odp tests each pair of chromosomes
+(Fisher's exact test, the table's `break_FET` column), and the build script
+converts the stack's tables with `--significant`, which drops the group of a row
+on a pair above 0.05. The row stays in the table, unlabelled.
+
 Each setting the session has a menu route, except the last:
 
 - `autoDiagonalize` sorts each row against its neighbour, working outward from
   `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
   group sits on one chromosome. **Rows → Re-order chromosomes** on the view menu
   runs the same sort and asks for that row.
-- `hideUnlabelled` draws only the orthologs in a group: **Hide unlabelled rows**
-  on the palette menu.
+- `hideUnlabelled` draws only the orthologs that still have a group: **Hide
+  unlabelled rows** on the palette menu.
 - `drawCurves` bundles the ribbons: **Curved lines** on the sliders button.
 - `alpha` sets the ribbon opacity: **opacity** on the sliders button.
 - `fadeThinAlignmentsMode` turns off the fade a whole-genome view applies to
@@ -251,9 +257,11 @@ Each setting the session has a menu route, except the last:
 
 <Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, with only the grouped orthologs drawn. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome fans out over several jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
 
-In the second band, between _Hormiphora_ and the jellyfish, each comb jelly
-chromosome has a mixture of groups that matches no jellyfish chromosome, so the
-ribbons cross. The two comb jellies agree with each other in the band above.
+In the second band, between _Hormiphora_ and the jellyfish, 40% of the grouped
+orthologs sit on a significant pair, against 82–95% in the other bands: each
+comb jelly chromosome mixes groups that match no jellyfish chromosome. Without
+`--significant` that band is a wash of crossing ribbons. The two comb jellies
+agree with each other in the band above.
 
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
 running through them are expected. The cladorhizid took no part, and in the
@@ -275,9 +283,9 @@ awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
 
 Changing the file and the group in that command gives the counts behind the
 stack. In _Hormiphora_ (`HCA_RES`), the chromosome holding most of a group holds
-a minority of it, which is the fan in the stack's second band. In the
-cladorhizid (`CLAa_EMU`), which took no part in building the group database,
-most of each group still sits on one chromosome.
+a minority of it, which is why most of the stack's second band drops out under
+`--significant`. In the cladorhizid (`CLAa_EMU`), which took no part in building
+the group database, most of each group still sits on one chromosome.
 
 ## Reproduce it end to end
 
