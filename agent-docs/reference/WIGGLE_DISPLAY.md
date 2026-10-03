@@ -84,15 +84,15 @@ box and the export's clip translate. Wiggle-core's `ScorePlotChrome` and
 `ScorePlotSvgFrame` take it as a prop defaulting to the single-plot box, which
 is what the Manhattan and mark displays (no such getter) draw in.
 
-**The layout's colour default lives in `effectiveColor`, not in a slot
-default.** A slot default cannot move with the layout, and this one does:
-several sources sharing one plot box default to `{ field: 'source' }`, because
-overlaid plots need a colour each to be told apart, while a row per source and a
-lone plot in the box default to the threshold pair a quantitative track has
-always drawn. `colorEncoding` resolves it through display-kit's
+**`color` maps `score` alone; a subtrack's colour is `rowColor`'s.** Unset,
+`effectiveColor` is the threshold pair a quantitative track has always drawn.
+Several sources sharing one plot box (`sharesPanel`) are told apart by the row
+palette instead, which deals each one a tableau10 colour by name while
+`rowColorPaintsMarks`, and `perSource` then paints each on both sides of the
+cut. `colorEncoding` resolves the colour through display-kit's
 `colorEncodingOf`, the one resolver every display's colour object goes through,
 and `resolveWiggleColor` turns that into
-`{ posColor, negColor, pivot, rampLut, rampMid, perSource }`, which is the whole
+`{ posColor, negColor, pivot, rampLut, rampMid }`, which is the whole
 of what the layers and both backends read. `pivot` is where the colour parts and
 never where bars grow from: the render state carries both, bars read `origin`,
 and the lines, band and density fade read `pivot`. A gradient (`rampLut`, from
@@ -287,42 +287,24 @@ because a channel replaces its setting. Three rules it turns on:
 - **`Edit plot...` in the dialog is the escape**, on the display's `plot` — a
   ramp, several cut points, hand-written stops, a typed row order. ADR-204.
 
-**"Color rows by → Each row" writes two settings here**, and only this display
-can write the second: `rowColor` names each row, and
-`color: { field: 'source' }` is what makes `sourcePalette` answer, so without it
-the control was pressed by default while a colourless multi-BigWig drew every
-row one `WIGGLE_POS_COLOR_DEFAULT`. `applyRowEdits` adds it, **not** under a
-gradient, where it deals nothing to an ungrouped subtrack and collapses the pair
-the fade runs on, and **not** over one subtrack, where `perSource` makes the
-negative side take the positive colour; `rowPaletteDeals` is the same rule, so
-Each row is offered only where it can turn the palette on. The dialog opens on
-what is drawn: `rowColorChoice` reads Each row only while `sourcePalette`
-answers, and an untouched submit passes no colour object, so it leaves the
-switch alone. `rowStylingIsCustom` counts it and `resetRowArrangement` returns
-it, or a reader who turned it on is offered no way back — the `rowColor` half
-often did not change, `name` being its default.
+**The palette deals by name only over a shared box.** `sharesPanel` is an
+overlay of several subtracks, and `rowColorPaintsMarks` holds while no gradient
+and no declared `color` paints the plot, so a lone BigWig keeps the red below
+its baseline and a row per subtrack draws each in the plot colour unless
+`rowColor` or the file gives it one.
 
 **A reader's colour for a row is `rowColor`, and its label is `rows.labels`.**
 `TreeSidebarMixin` arranges them over `discoveredRows` and writes the dialog's
 submit; what is this display's is `identityChannel`, the channel a `rowColor`
-entry lands on — `color`, or `labelColor` wherever `scoreGradientPaints` — ahead
-of the adapter's colour and the palette, so a colour set on the plot moves to
-the label tint when a gradient starts painting rather than into the ramp; in one
-shared box there is no label to tint, so the colour goes to the plot whatever
-the gradient. `group` has no config home, so a `group` pasted into the bulk
+entry lands on — `color` while `rowColorPaintsMarks`, else `labelColor` — so a
+colour set on the plot moves to the label tint when a gradient starts painting
+rather than into the ramp; in one shared box there is no label to tint, so the
+colour goes to the plot whatever the gradient. `group` has no config home, so a `group` pasted into the bulk
 editor is not kept.
 
-**The palette is dealt by `TreeSidebarMixin`, over this display's order.** Under
-`name` the `rowColorDealFor` hook is `sourceColorDeal`: one cursor over a colour
-per source's `range` then `set1`, the groups first as they appear, then, for a
-colour per source outside a gradient, the ungrouped subtracks its `domain` lists
-ahead. It deals over the rows as currently arranged, as the display always has,
-so a reorder can still recolour a row; the base arrangement is the flip ADR-160
-names. `buildSources` paints the dealt colour after the row's own: on `color`,
-or under a gradient on `labelColor` after the row's own `color`. Under an
-attribute the hook deals that attribute's values from `set1` over the base
-arrangement, and the dealt colour leads the row's own, since the reader asked
-for the attribute.
+**`buildSources` lands `resolvedRowColors` on the `identityChannel`**: on
+`color`, or on `labelColor` with the row's own `color` left for the density
+fade. A `group` colours nothing until `rowColor` names it.
 
 **Density is where the fallback differs.** Outside it an unset row `color` is
 painted in the resolved `posColor`, so the key resolves to it; in density that

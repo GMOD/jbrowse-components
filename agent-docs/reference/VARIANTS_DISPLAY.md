@@ -178,16 +178,16 @@ arrival re-derives no row.
 
 **The row tint is `labelColor`**, the channel tree-sidebar's `RowLabelsOverlay`
 and `SvgRowLabels` draw — the cells are colored by genotype, so a row has no
-`color` of its own to spend. `applyAttributeColors` writes it there, the group
+`color` of its own to spend. `sources` writes `resolvedRowColors` there, the group
 legend and the tooltip swatch read it there, and `discoveredRows` folds a
 `samplesTsv` `color` column onto it. Carrying the tint under `color` is what
 kept these displays on a label gutter of their own.
 
 **An attribute in `rowColor.field` beats a `samplesTsv` `color` column**: a
-channel bound to a variable beats a per-row constant. The palette is dealt by
-`TreeSidebarMixin` over this display's `rowColorDealFor` (`attributeColorDeal`),
-the values ranked by how many samples carry them, so a focus or the phased
-expansion recolours nothing. `setRowColorField` writes the object through
+channel bound to a variable beats a per-row constant. `TreeSidebarMixin` deals
+the attribute's values first seen first over the base arrangement, so a focus
+or the phased expansion recolours nothing, and `rowColorPaintsMarks` is false,
+since the cells paint by genotype. `setRowColorField` writes the object through
 `colorForField`: a new attribute starts with no entries, '' is `scale: 'none'`
 keeping the attribute, and `name` is each row its own. The menu's Samples group
 and the arrangement dialog offer the same choices (`rowColorChoice`), and under

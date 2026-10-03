@@ -112,7 +112,7 @@ display-kit's `RowColor` on every row display, one categorical channel whose
 `field` names a row attribute, `name` by default, with `domain`/`range` pairing
 that field's values with colours (ADR-160). **Shared code reads the mixin's API,
 never a config member behind it**: `rowDomain`, `rowTree`, `rowTreeProvenance`,
-`rowFocus`, `rowColorScale`, `rowArrangementIsCustom`, `rowOrderWillDropTree`,
+`rowFocus`, `resolvedRowColors`, `rowArrangementIsCustom`, `rowOrderWillDropTree`,
 `setRowOrder`, `setRowFocus`, `resetRowArrangement`.
 
 **The rows are derived in stages, each its own computed**, so a change reaches
@@ -145,8 +145,12 @@ hook's name throws at `create`:
 - `rowAlias` — variants: the sample a haplotype row answers to, so an order, a
   label, a tint and a focus written against a sample reach its haplotypes, and
   the edit diff falls back to the sample's entry.
-- `identityChannel` — `color` by default; wiggle's follows the mode, variants,
-  MAF and marks tint the label.
+- `identityChannel` — `color` by default; wiggle's follows
+  `rowColorPaintsMarks`, variants, MAF and marks tint the label.
+- `sharesPanel` — false by default; a wiggle overlay of several subtracks.
+- `rowColorPaintsMarks` — true by default; false where something else colours
+  the marks: multi-row's `color` setting or itemRgb, wiggle's gradient or
+  declared `color`, variants' genotypes.
 - `unlistedRowsSort` — `source` by default; multi-row's discovered values sort.
 - `rowOrder` — `rows.domain` by default; MAF leads with a drawn tree's leaves.
 - `rowBanding` — none by default; the variant displays' `facet`, and the
@@ -155,14 +159,9 @@ hook's name throws at `create`:
 - `rowBand(row)` — the row's value of the banding attribute by default;
   multi-row matches `rowGroups` on the name, since its rows are tagged after the
   arrangement.
-- `rowColorDealFor(setting)` — what `dealRowColors` deals under a `rowColor`
-  object, the config's (`rowColorDeal`, none under `scale: 'none'`, its
-  `unknown` in place of the palette where set, dealt into
-  `dealtRowColors`, which `rowColorScale` maps each row onto) or one the dialog
-  previews (`rowColorsFor`): by default the field's values over the base
-  arrangement, so no reorder, focus or relabel recolours a row. Under `name`
-  wiggle, multi-row and variants hand in the order and palette they dealt before
-  ADR-160; MAF and the mark display deal none.
+- `rowColorEntriesFor(setting)` — the pairs an attribute deal seats first,
+  `setting`'s own by default; multi-row adds its `rowGroups` colours under
+  `group` until step 3 of the row-colour redesign deletes them.
 - `rowColorFields` — the row attributes offered to colour by: by default every
   attribute the rows carry but their name, label and colours; variants' are its
   samplesTsv columns; MAF, the mark display and multi-row, whose groups are
@@ -171,6 +170,18 @@ hook's name throws at `create`:
 MAF also overrides `clusterableSources`, since on a track that discovers its
 species a focus applies as given, as the worker's does. `focusLegendEntry` stays
 each display's: each key names rows by a different predicate.
+
+**A row's colour is one getter, `resolvedRowColors`**: its `rowColor` entry (a
+`name` pair, or the colour its attribute value is dealt), else its own `color`,
+else the palette's by name where `rowPaletteDeals` — `sharesPanel &&
+rowColorPaintsMarks`. `dealtRowColors` is the value-to-colour map behind it and
+`rowColorsFor` the dialog's preview of another setting. `dealRowColors` deals
+d3's ordinal way over the base arrangement, so no reorder, focus or relabel
+recolours a row: listed values take their `range` colour, the rest first seen
+first from tableau10 less its grey and then re-lit laps of it (`rowPaletteColorAt`),
+and a set `unknown` stands in for the palette. A name deal skips a row carrying
+its own colour; an attribute no row carries deals nothing; `scale: 'none'`
+deals nothing. Each display paints the getter where its rows take a colour.
 
 What else the mixin owns:
 

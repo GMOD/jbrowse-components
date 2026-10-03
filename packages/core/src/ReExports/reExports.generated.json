@@ -1593,6 +1593,7 @@
         "paletteFromSpec",
         "refNameColor",
         "refNamePaletteColorAt",
+        "rowPaletteColorAt",
         "set1",
         "similarColors"
       ],

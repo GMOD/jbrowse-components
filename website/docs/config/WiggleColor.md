@@ -29,16 +29,14 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 _See the **Config slots** section below for all available configuration fields._
 
-The quantitative display's `color`: one CSS colour for every bar, or one of
-its two fields through a scale. `score` through a `threshold` scale is the
-bicolor plot — a colour each side of one cut, the `origin` where the domain
-names none, and a colour per band where it names more — and through `linear`
-a gradient across the y domain, through the y scale's own type, which colours
-each bar, point and density cell by its score. A line still parts in the gradient's two end colours.
-`source` through a `categorical` scale gives each subtrack a colour of its
-own, which is what several sources sharing one plot box need to be told
-apart. Any other pairing paints the misconfiguration grey. A wiggle colours
-per signal rather than per feature, so a `jexl:` callback over a feature has
+The quantitative display's `color`: one CSS colour for every bar, or `score`
+through a scale. Through a `threshold` scale it is the bicolor plot — a
+colour each side of one cut, the `origin` where the domain names none, and a
+colour per band where it names more — and through `linear` a gradient across
+the y domain, through the y scale's own type, which colours each bar, point
+and density cell by its score. A line still parts in the gradient's two end
+colours. A subtrack's own colour is `rowColor`'s. A wiggle colours per
+signal rather than per feature, so a `jexl:` callback over a feature has
 nothing to read here.
 
 ## Config slots
@@ -48,11 +46,11 @@ These slots go on a display entry: `"displays": [{ "type": "WiggleColor", ... }]
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-value">**value**</span><br>`maybeColor` | One CSS colour for every bar. Writing `color: "darkgreen"` lands here. Unset, the display paints the picture its layout asks for: a palette entry per source where several share one plot box, and the pos/neg pair about the `origin` otherwise. |
-| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (score, source) | `score`, the value each bar carries, or `source`, the subtrack it came from. Unset, the colour paints `value`. |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, linear, threshold) | how field becomes a colour: threshold paints each band between two of its cuts; linear runs range, else scheme, else viridis across the y domain through scales.y.type, with domainMid at the middle stop, colouring each bar, point and density cell by its score, and a one-colour range runs from white to that colour; a line still parts in the two end colours; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | for a threshold scale, up to eight cut points, sorted, empty meaning one at the origin; for a categorical scale over source, the subtracks outside a group that take the range first, in order |
-| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | a threshold scale's colour for each band, lowest first, one more than the cuts, a missing middle band grey; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear scale's stops, evenly spaced, one colour meaning white to it |
+| <span id="slot-value">**value**</span><br>`maybeColor` | One CSS colour for every bar. Writing `color: "darkgreen"` lands here. Unset, the display paints the pos/neg pair about the `origin`, and several sources sharing one plot box each paint their row colour. |
+| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (score) | `score`, the value each bar carries. Unset, the colour paints `value`. |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, linear, threshold) | how score becomes a colour: threshold paints each band between two of its cuts; linear runs range, else scheme, else viridis across the y domain through scales.y.type, with domainMid at the middle stop, colouring each bar, point and density cell by its score, and a one-colour range runs from white to that colour; a line still parts in the two end colours; none paints value, keeping the field for a switch back; unset beside the field, it is threshold |
+| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | for a threshold scale, up to eight cut points, sorted, empty meaning one at the origin |
+| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | a threshold scale's colour for each band, lowest first, one more than the cuts, a missing middle band grey; a linear scale's stops, evenly spaced, one colour meaning white to it |
 | <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange) | a named ramp for a linear or log scale; range's colours, where it lists any, win over it |
 | <span id="slot-reverse">**reverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain |
 | <span id="slot-domainmid">**domainMid**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it |

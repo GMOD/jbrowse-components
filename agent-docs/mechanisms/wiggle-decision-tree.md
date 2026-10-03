@@ -69,24 +69,20 @@ Config bounds are still checked first.
 ![What a quantitative track's colour resolves to](diagrams/wiggle-colour.svg)
 
 `color` is one object — a CSS string, or `{ field, scale, domain, range,
-scheme }` — and where the config leaves it unset the layout answers for it:
+scheme }` over `score` — and a subtrack's colour is `rowColor`'s:
 
-| the layout | an unset `color` means | identity lives in | palette fills |
+| the layout | an unset `color` means | a row's colour lives in | the palette deals |
 | --- | --- | --- | --- |
-| shared: several sources in one box | `{ field: 'source' }`, a palette entry each | `color` | group, then row |
-| row: a row per source, or a lone plot | the threshold pair about the `origin` | `color` | group only |
-| density, either of the above | the **score ramp** | `labelColor` | group only |
+| shared: several sources in one box | the threshold pair, each source painting its row colour on both sides | `color` | by name |
+| row: a row per source, or a lone plot | the threshold pair about the `origin` | `color` | by an attribute only |
+| density, either of the above | the **score ramp** | `labelColor` (overlay: `color`) | by an attribute only |
 
-- **The default moves with the layout, so it is a resolved getter
-  (`effectiveColor`) rather than a slot default** — a `defaultValue` cannot ask
-  how many plots share the box.
 - `colorEncoding` resolves the object through display-kit's `colorEncodingOf`,
   as every display's colour does, and `resolveWiggleColor` turns that into
-  `{ posColor, negColor, pivot, rampLut, perSource }`, which is the whole of
-  what the encoder and both backends read: the pair every mode partitions by,
-  the value they part at, the density LUT, and whether a source paints its own
-  colour on both sides. A pairing the two sides cannot paint, a colour per
-  score or a cut over subtrack names, paints the misconfiguration grey.
+  `{ posColor, negColor, pivot, rampLut }`, which with gpuProps' `perSource`
+  is the whole of what the encoder and both backends read: the pair every mode
+  partitions by, the value they part at, the density LUT, and whether a source
+  paints its own colour on both sides.
 - **In density, `color` is a scale, not an identity**, so identity moves one
   channel over to `labelColor` — which the row-label sidebar paints and the ramp
   ignores.

@@ -13,10 +13,12 @@ The rows are derived in stages, each a computed of its own: the display's
 haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
 `rows.labels` and tinted by the `rowColor` pairs on the `identityChannel`,
 then `clusterableSources`, narrowed to the focus, then `bandedSources`,
-stacked in the bands `rowBanding` names. The row palette is
-`dealtRowColors`, dealt by `rowColorDeal` once per change to the deal, and
-`rowColorScale` hands each row its value's colour, which each display
-paints over those.
+stacked in the bands `rowBanding` names.
+
+A row's colour is `resolvedRowColors`: its `rowColor` entry (a `name` pair,
+or the colour `dealtRowColors` deals its attribute value), else its own
+`color`, else the row palette's colour by name where `rowPaletteDeals`.
+Each display paints it where its rows take a colour.
 
 Every arrangement write reaches the session at once rather than after the
 track's 400 ms save, so a clustering run is one undo step and undoable the
@@ -70,16 +72,18 @@ or what a track the session owns was added with, and never touches
 | <span id="getter-guidetreehonoursdomain">**guideTreeHonoursDomain**</span><br><code>boolean</code> | Whether the rotated guide tree lists `rows.domain`'s names in `rows.domain`'s order, which holds exactly when some rotation of it does. |
 | <span id="getter-rowtree">**rowTree**</span><br><code>string &#124; undefined</code> | The tree the rows are arranged by, as newick: `rows.tree`, else the guide tree while `guideTreeHonoursDomain`. A reorder no rotation produces hides the guide tree, and a reset brings it back. |
 | <span id="getter-roworder">**rowOrder**</span><br><code>readonly string[]</code> | Overridable hook: the names the rows are placed by, `rows.domain` by default; MAF leads with a drawn tree's leaves. |
-| <span id="getter-rowcolors">**rowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour a reader set on each named row: the `rowColor` pairs while it paints by `name`, and none while it paints by another field. |
+| <span id="getter-rowcolorpairs">**rowColorPairs**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour a reader set on each named row: the `rowColor` pairs while it paints by `name`, and none while it paints by another field. |
 | <span id="getter-rowstylingiscustom">**rowStylingIsCustom**</span><br><code>boolean</code> | Whether `rowColor` sets a row, or a value of the attribute it paints by, a colour the config does not, so "Reset row order" is offered for a recolour too. Picking a colour by attribute sets no colour, so over a config setting none it is not a custom arrangement. |
 | <span id="getter-expandedrows">**expandedRows**</span><br><code>S[]</code> | `discoveredRows` through `expandRows`: the rows at the granularity drawn, before any arrangement. |
+| <span id="getter-sharespanel">**sharesPanel**</span><br><code>boolean</code> | Overridable hook: whether the rows share one panel, so nothing but colour tells them apart. False by default. |
+| <span id="getter-rowcolorpaintsmarks">**rowColorPaintsMarks**</span><br><code>boolean</code> | Overridable hook: whether a row's colour paints its data marks, which holds while nothing else colours them. True by default. |
 | <span id="getter-rowcolorfields">**rowColorFields**</span><br><code>readonly string[]</code> | Overridable hook: the row attributes a reader can colour the rows by, offered beside None and Each row. By default every attribute a row carries but its name, label and colours. |
 | <span id="getter-rowbandingnotices">**rowBandingNotices**</span><br><code>string[]</code> | A line for the corner notice when rows have arrived and none carries the field `rowBanding` bands by, which then bands nothing. Each display spreads it into its `notices`. |
-| <span id="getter-rowcolordeal">**rowColorDeal**</span><br><code>RowColorDeal&lt;S&gt; &#124; undefined</code> | What the row palette deals under the config's `rowColor`, none under `scale: 'none'`. |
-| <span id="getter-rowpalettedeals">**rowPaletteDeals**</span><br><code>boolean</code> | Overridable: whether the palette deals the rows a colour each under `name`, so Each row differs from None, which sets `unknown: ''`. |
+| <span id="getter-rowpalettedeals">**rowPaletteDeals**</span><br><code>boolean</code> | Whether the palette deals each row a colour by name: only where the rows share one panel and their colour paints the marks. |
+| <span id="getter-rowcolordealrows">**rowColorDealRows**</span><br><code>readonly S[]</code> | The rows the palette deals over: `expandedRows` in the base arrangement, so no reorder, focus or relabel recolours a row. |
 | <span id="getter-rowcolorchoice">**rowColorChoice**</span><br><code>string</code> | What the rows are coloured by, as the arrangement dialog and a menu offer it: '' for none dealt, `name` for a palette colour each, or an attribute. |
-| <span id="getter-dealtrowcolors">**dealtRowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour the row palette deals each value of `rowColorDeal`, dealt again only when the deal changes, never on a region arrival that leaves it alone. |
-| <span id="getter-rowcolorscale">**rowColorScale**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour the row palette deals each row, by name: each row's value looked up in `dealtRowColors`. Each display paints it where its palette lands, with its own precedence over a row's own colour. |
+| <span id="getter-dealtrowcolors">**dealtRowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour each value of the config's `rowColor` field takes, listed pairs first and then in the order dealt. |
+| <span id="getter-resolvedrowcolors">**resolvedRowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | Each row's colour, by name: its `rowColor` entry, else its own `color`, else the palette's where `rowPaletteDeals`. The one answer every display paints a row's colour from. |
 | <span id="getter-rowarrangementiscustom">**rowArrangementIsCustom**</span><br><code>boolean</code> | Whether the arrangement differs from what the config declares — what "Reset row order" is offered on. |
 | <span id="getter-editablesources">**editableSources**</span><br><code>S[]</code> | The rows in the reader's arrangement, with no focus, palette or band: the list the arrangement dialog edits, so a submit writes back only what the reader chose. `expandedRows` itself while nothing is arranged. |
 | <span id="getter-clusterablesources">**clusterableSources**</span><br><code>S[]</code> | `editableSources` narrowed to the focus: the rows a clustering run clusters, and deliberately not the display's decorated `sources`, whose palette and band a run has no business writing back. |
@@ -100,8 +104,8 @@ or what a track the session owns was added with, and never touches
 | <span id="method-expandrows">**expandRows**</span><br><code>(rows: S[]) =&gt; S[]</code> | Overridable hook: the discovered rows as the rows drawn, the rows themselves by default; a variant display's phased mode expands each sample to its haplotypes. |
 | <span id="method-svgsidebarwidth">**svgSidebarWidth**</span><br><code>(text?: ExportTextStyle &#124; undefined) =&gt; number</code> | Px the SVG export reserves left of the track for `svgSidebar`, measured in the export's text. |
 | <span id="method-rowband">**rowBand**</span><br><code>(row: S) =&gt; string</code> | Overridable hook: the band a row stacks in while `rowBanding` is set, by default its value of the banding attribute, '' for none. |
-| <span id="method-rowcolordealfor">**rowColorDealFor**</span><br><code>(setting: RowColorEntries) =&gt; RowColorDeal&lt;S&gt; &#124; undefined</code> | Overridable hook: what the row palette deals under `setting`, the config's or one the arrangement dialog previews, or undefined to deal none. By default the values of `setting.field` over the rows in the base arrangement, the values its `domain` lists taking its `range`, and every other value the next palette colour, so no reorder, focus or relabel recolours a row. |
-| <span id="method-rowcolorsfor">**rowColorsFor**</span><br><code>(setting: RowColorSetting) =&gt; ReadonlyMap&lt;string, string&gt;</code> | The colour each value takes under `setting`, which the arrangement dialog shows before it writes the setting. |
+| <span id="method-rowcolorentriesfor">**rowColorEntriesFor**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(setting: RowColorEntries) =&gt; Pick&lt;RowColorEntries, "domain" &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(setting: RowColorEntries) =&gt; Pick&lt;RowColorEntries, "domain" &#124; "range"&gt;</code></pre></dialog></span> | Overridable hook: the pairs an attribute deal under `setting` seats first, `setting`'s own by default. |
+| <span id="method-rowcolorsfor">**rowColorsFor**</span><br><code>(setting: RowColorSetting) =&gt; ReadonlyMap&lt;string, string&gt;</code> | The colour each value takes under `setting` (`dealtValueColors`), which the arrangement dialog shows before it writes the setting. |
 | <span id="method-roworderwilldroptree">**rowOrderWillDropTree**</span><br><code>(next: readonly { name: string; }[]) =&gt; boolean</code> | Whether the arrangement dialog's submit of `next` drops the tree: an order that moves no row is not written, so it drops nothing, and the guide tree drops only for an order no rotation of it lists. |
 
 ## Actions

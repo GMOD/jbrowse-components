@@ -5555,9 +5555,6 @@ export const configManifest: ConfigManifest = {
             "string": "value"
           },
           "fieldPresets": {
-            "source": {
-              "scale": "categorical"
-            },
             "*": {
               "scale": "threshold"
             }
