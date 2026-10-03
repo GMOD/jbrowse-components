@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A value a categorical colour's `domain` does not list is dealt a palette slot once, on first sight, and keeps it: its hashed slot unless a value met before holds it or a near twin, else another slot derived from itself, recorded in a caller-owned `HeldSlots` map (`categoricalScale`'s `held`). protein_coding, snRNA and TEC no longer share #e41a1c, a value nothing collides with keeps exactly its hashed colour, and a colour once shown never changes while the track is open. `heldColorSlots` keeps one map per track id, field, domain and range under the session, so two views of a track agree and a colour edit deals afresh; nothing is persisted. Each reader deals a region's values in `field.compare` order (`dealKeyColors`) before painting. Synteny deals a text column's labels in the order the view first saw them (`CategoricalMode.seen`). Every colour \"Pin distinct colors\" item and its model members go; shapes keep theirs. Not ADR-160's row dealer. Amends ADR-131, ADR-136 and ADR-156"
+summary: "A value a categorical colour's `domain` does not list is dealt a palette slot once, on first sight, and keeps it: its hashed slot unless a value met before holds it or a near twin, else another slot derived from itself, recorded in a caller-owned `HeldSlots` map (`categoricalScale`'s `held`). protein_coding, snRNA and TEC no longer share #e41a1c, a value nothing collides with keeps exactly its hashed colour, and a colour once shown never changes while the track is open. `heldColorSlots` keeps one map per field, domain and range under the session, shared by every track colouring by that field, so a gene symbol paints one colour down every panel and a colour edit deals afresh; nothing is persisted. Each reader deals a region's values in `field.compare` order (`dealKeyColors`) before painting. Synteny deals a text column's labels in the order the view first saw them (`CategoricalMode.seen`). Every colour \"Pin distinct colors\" item and its model members go; shapes keep theirs. Not ADR-160's row dealer. Amends ADR-131, ADR-136 and ADR-156"
 ---
 
 # ADR-205: A categorical colour is dealt once, on first sight
@@ -38,9 +38,15 @@ colour, once on screen, does not move.
   worker and every caller that passes nothing are unchanged.
 - **The caller owns `held`.** `heldSlotsOf(owner, key)` keeps one per owner and
   key in a `WeakMap`; `heldColorSlots(node, encoding)` (display-kit) keys it by
-  track id, field, `domain` and `range` under the session. Two views of one
-  track, or a hide and show, deal into the same map. A colour object that
-  changes any of the four is a new key and deals afresh. Nothing is persisted.
+  field, `domain` and `range` under the session, with no track in the key. Every
+  track colouring by one field deals into the same map, as the hash agreed
+  across tracks before: three strains' gene tracks coloured by `gene` paint a
+  shared symbol one colour down all three panels, collided or not. Two views of
+  a track, or a hide and show, deal into it too. A colour object that changes
+  any of the three is a new key and deals afresh. Nothing is persisted. Keying
+  by track as well was tried first and dropped: a collided symbol could then
+  take a different colour in each panel, which the synteny tutorial's ortholog
+  figure promises against.
 - **The map is a write-once memo, not MobX state.** A held slot never changes,
   so a colour read inside a computed stays true, and the field palette and the
   encode memo keep their identity as values arrive: a new value is one new
@@ -70,11 +76,14 @@ colour, once on screen, does not move.
 
 ## Consequences
 
-- **Two tracks colouring by one field can disagree on a collided pair** if
-  their regions load in a different order. A value nothing collides with
-  paints its hashed colour on every track. Reloading a session at the same
-  locus reproduces the same colours; a share link landing elsewhere may not,
-  for collided pairs only.
+- **Tracks sharing a field share its 30 colours.** Unrelated tracks that happen
+  to colour by one field name (`type` on a gene track and a repeat track) draw
+  from one deal, so a value paints one colour on both and the two together run
+  out of distinct colours sooner.
+- **A collided pair's colours follow the order the session first met them.**
+  Reloading a session at the same locus reproduces them; a share link landing
+  elsewhere may swap a collided pair. A value nothing collides with paints its
+  hashed colour everywhere.
 - Within one multi-region view, the deal follows the order regions arrive in,
   which is the fetches' order.
 - The 40-entry palette has 30 distinct colours once near twins are stepped

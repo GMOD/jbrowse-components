@@ -22,13 +22,13 @@ function session(trackIds: string[][]) {
 
 const biotype = { field: 'biotype', scale: 'categorical' as const }
 
-test('two views of one track deal into one set of slots', () => {
-  const s = session([['genes'], ['genes', 'repeats']])
+test('every track colouring by one field deals into one set of slots', () => {
+  const s = session([['genes'], ['genes', 'orthologs']])
   const [a, b] = s.views
   const one = heldColorSlots(a!.tracks[0]!.display, biotype)
   expect(one).toBeDefined()
   expect(heldColorSlots(b!.tracks[0]!.display, biotype)).toBe(one)
-  expect(heldColorSlots(b!.tracks[1]!.display, biotype)).not.toBe(one)
+  expect(heldColorSlots(b!.tracks[1]!.display, biotype)).toBe(one)
 })
 
 test('a colour object naming another domain or range deals afresh', () => {
