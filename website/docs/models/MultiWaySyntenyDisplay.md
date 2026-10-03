@@ -111,9 +111,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-layerpx">**layerPx**</span><br><code>number</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorsettings">**geneColorSettings**</span><br><code>GeneColorSettings</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorencoding">**geneColorEncoding**</span><br><code>string &#124; FieldColorEncoding &#124; undefined</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-genecolorslots">**geneColorSlots**</span><br><code>HeldSlots &#124; undefined</code> | The slots a categorical gene colour deals its values into. | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorfield">**geneColorField**</span><br><code>string</code> | `''` while `color.value` paints | MultiWaySyntenyDisplay |
-| <span id="getter-genecolorscale">**geneColorScale**</span><br><code>ColorScaleName</code> | `none` while `color.value` paints | MultiWaySyntenyDisplay |
-| <span id="getter-genecolordomain">**geneColorDomain**</span><br><code>readonly string[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-boxcolors">**boxColors**</span><br><code>GeneColors</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanegenecolors">**laneGeneColors**</span><br><code>ReadonlyMap&lt;string, GeneColors&gt;</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | MultiWaySyntenyDisplay |
@@ -172,7 +171,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-pinnedlabelgroups">**pinnedLabelGroups**</span><br><code>ReadonlySet&lt;string&gt;</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-genetextof">**geneTextOf**</span><br><code>(feature: Feature) =&gt; string &#124; undefined</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorscales">**geneColorScales**</span><br><code>ColorScale[]</code> | keys the anchor lane alone, over the settled window | MultiWaySyntenyDisplay |
-| <span id="getter-pinnedgenecolordomain">**pinnedGeneColorDomain**</span><br><code>string[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-legendright">**legendRight**</span><br><code>number</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanelayerplacements">**laneLayerPlacements**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ specLane: string; held: HeldLaneLayer; row: number; top: numb…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ specLane: string; held: HeldLaneLayer; row: number; top: number; height: number; px: Span; }[]</code></pre></dialog></span> | each payload's region placed in its lane's own frame; a payload whose lane or contig no longer draws is left out | MultiWaySyntenyDisplay |
@@ -330,7 +328,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-advanceanimation">**advanceAnimation**</span><br><code>(nowMs: number) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-endanimation">**endAnimation**</span><br><code>() =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setgenecolorby">**setGeneColorBy**</span><br><code>(field: string) =&gt; void</code> | `''` paints by `color.value` | MultiWaySyntenyDisplay |
-| <span id="action-pingenecolordomain">**pinGeneColorDomain**</span><br><code>() =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-openinnewview">**openInNewView**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-reanchor">**reanchor**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  | MultiWaySyntenyDisplay |

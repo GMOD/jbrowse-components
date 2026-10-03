@@ -3575,7 +3575,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colours the key names, in order.",
+              "description": "the values that take the range first, in order; a value left out takes a colour no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colours the key names, in order.",
               "anyOf": [
                 {
                   "type": "array",
@@ -5648,7 +5648,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
+              "description": "the values that take the range first, in order; a value left out takes a colour no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
               "anyOf": [
                 {
                   "type": "array",
@@ -5731,7 +5731,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "const": "none"
             },
             "domain": {
-              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it.",
+              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a colour no listed label or label met before it paints, the first time the view meets it, and keeps it.",
               "anyOf": [
                 {
                   "type": "array",
@@ -18113,7 +18113,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "const": "none"
             },
             "domain": {
-              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it.",
+              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a colour no listed label or label met before it paints, the first time the view meets it, and keeps it.",
               "anyOf": [
                 {
                   "type": "array",

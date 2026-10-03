@@ -2685,6 +2685,8 @@
         "STRAND_FIELD",
         "SV_TYPE_FIELD",
         "categoricalField",
+        "dealKeyColors",
+        "heldSlotsOf",
         "keyNames"
       ],
       "worker": "real"
@@ -4392,6 +4394,13 @@
       "names": [
         "default",
         "installGrowExitBake"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/heldColorSlots": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "heldColorSlots"
       ],
       "worker": "real"
     },

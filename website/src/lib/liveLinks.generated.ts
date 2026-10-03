@@ -2756,7 +2756,6 @@ export const videoSteps: Record<string, string[]> = {
   "ui/gene_track_sections": [
     "Group the genes by their gene_biotype attribute",
     "Move protein_coding to the top from the Sections menu",
-    "Then give each biotype a color of its own",
     "A section per biotype, protein_coding first, each in its own color"
   ],
   "ui/gene_track_channel_spec": [

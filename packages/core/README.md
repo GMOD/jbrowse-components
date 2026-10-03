@@ -235,11 +235,13 @@ a refName.
 ### categoricalField
 
 `labels` names the `domain`'s values in a key, one each in order, where a config
-spells them for a reader rather than as the data does.
+spells them for a reader rather than as the data does. `held` deals each key the
+domain does not list a color of its own on first sight (`categoricalScale`); the
+caller keeps it for as long as the colors should hold.
 
 ```js
 // type signature
-(field: string, {…}?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; }) => CategoricalField
+(field: string, {…}?: {…}) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -250,7 +252,9 @@ One categorical field as every channel reads it — a facet's sections, a color'
 range entries, a key's rows. `key` files a value, `compare` orders keys (the
 `domain` first, the rest by `compareGroupKeys`, `''` after them), `label` names
 a key in a legend, `sectionLabel` on a chip, and `color` paints it. A key's
-color depends only on the key and the declaration, so every region agrees on it.
+color depends only on the key and the declaration, so every region agrees on it,
+except that a field dealing its colors (`categoricalField`'s `held`) also steps
+a key off the colors of the keys met before it.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
@@ -509,6 +513,19 @@ siblings do, juicebox, fall, reds and blues do not.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
+### dealKeyColors
+
+Deals `keys` their colours in `field.compare` order, so the colours a set of
+keys first seen together takes do not depend on the order they arrive in. A
+no-op for a field that deals nothing.
+
+```js
+// type signature
+(field: CategoricalField, keys: Iterable<string>) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
 ### DEFAULT_COLOR_SCHEME
 
@@ -902,6 +919,18 @@ module actually uses.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
+
+### heldSlotsOf
+
+The `HeldSlots` `owner` keeps under `key`, made empty on first ask. Lives as
+long as `owner` and is never persisted, so a reload deals afresh.
+
+```js
+// type signature
+(owner: object, key: string) => HeldSlots
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
 ### HitIndexed
 

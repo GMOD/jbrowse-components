@@ -439,6 +439,7 @@ export default [
   '@jbrowse/display-kit/heightModeConfigSchemaFields',
   '@jbrowse/display-kit/heightModeMenu',
   '@jbrowse/display-kit/HeightModeMixin',
+  '@jbrowse/display-kit/heldColorSlots',
   '@jbrowse/display-kit/HiddenGroupsMixin',
   '@jbrowse/display-kit/highlightHost',
   '@jbrowse/display-kit/installClearHoverOnViewportChange',
