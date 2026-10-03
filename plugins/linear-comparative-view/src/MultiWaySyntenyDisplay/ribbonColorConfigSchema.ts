@@ -57,7 +57,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
     }),
     ...colorDomainSlot({
       domain:
-        "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it",
+        "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a colour no listed label or label met before it paints, the first time the view meets it, and keeps it",
     }),
     ...colorRangeSlot({
       range:

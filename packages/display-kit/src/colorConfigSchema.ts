@@ -584,7 +584,7 @@ export const colorConfigSchema = ConfigurationSchema(
     }),
     ...colorDomainSlot({
       domain:
-        'the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colours the key names, in order',
+        'the values that take the range first, in order; a value left out takes a colour no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colours the key names, in order',
     }),
     ...colorRangeSlot({
       range:

@@ -473,14 +473,13 @@ export const uiVideos: VideoSpec[] = [
     tailMs: 4000,
   },
 
-  // The runtime half of the facet's and the color's `domain`: a grouping picked
-  // from the dialog, one section moved from the Sections submenu, then the
-  // key's values pinned into the color domain.
+  // The runtime half of the facet's `domain`: a grouping picked from the
+  // dialog, then one section moved from the Sections submenu.
   {
     name: 'ui/gene_track_sections',
     description:
-      'NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from the Group by dialog, protein_coding moved to the top from the Sections submenu, then Pin distinct colors giving every biotype its own color',
-    goal: 'Group genes into sections by biotype, reorder them, and color them',
+      'NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from the Group by dialog, each biotype in its own color, then protein_coding moved to the top from the Sections submenu',
+    goal: 'Group genes into sections by biotype, colored, and reorder them',
     url: geneGroupingVideoFixtures.session,
     viewportHeight: 740,
     readySelector: '::-p-text(NCBI RefSeq)',
@@ -524,20 +523,6 @@ export const uiVideos: VideoSpec[] = [
       { type: 'waitForText', text: 'Move up' },
       { type: 'click', text: 'Move up', hold: 1800 },
       ...leaveMenu('::-p-text(Move up)'),
-      { type: 'delay', ms: 2500 },
-      {
-        type: 'click',
-        selector: trackMenu(geneGroupingVideoFixtures.trackId),
-        say: 'Then give each biotype a color of its own',
-        hold: 1000,
-      },
-      { type: 'waitForText', text: 'Color by...' },
-      { type: 'click', text: 'Color by...', hold: 800 },
-      { type: 'waitForText', text: 'Pin distinct colors' },
-      { type: 'click', text: 'Pin distinct colors', hold: 0 },
-      { type: 'waitForText', text: 'Pin distinct colors', hidden: true },
-      { type: 'click', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'waitForText', text: 'Track settings', hidden: true },
       { type: 'waitForAppSettled', timeout: 120000 },
       {
         type: 'delay',

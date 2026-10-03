@@ -119,8 +119,9 @@ duplication the census found is cleanup alongside:
 
 - "Open feature details" is seven literals
   (`plugins/marks/src/LinearMarkDisplay/markMenus.ts:146` among them), "Copy
-  location" four inline copies beside canvas's `copyItem`, "Pin distinct
-  colors" four implementations, and Group by over `facet` three mechanisms.
+  location" four inline copies beside canvas's `copyItem`, and Group by over
+  `facet` three mechanisms. ("Pin distinct colors"' four implementations went
+  with ADR-205.)
 - The strand radio has five spellings beside `UNIVERSAL_FIELD_PRESETS`
   (`packages/core/src/util/colorScale.ts:64`); impact and SV type are written
   twice; MAF's `ROW_RENDERINGS`

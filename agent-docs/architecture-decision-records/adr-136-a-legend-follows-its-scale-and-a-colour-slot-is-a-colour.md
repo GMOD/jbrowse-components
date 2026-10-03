@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Three legend and colour-slot rules brought level with ggplot2. A derived key row is a colour naming every value painted in it (`CategoricalEntry.values`), so two values on one palette slot read as one swatch with both labels and Pin distinct colors pins them both. Two marks colouring or glyphing by one field through one domain and palette share one key section (`buildMarkLegend` keys on the declaration, not the mark); a ramp with an open end stays per mark. A `color` / `maybeColor` slot refuses a value the painters cannot parse — `color: 'biotype'` fails at load naming the slot and the value — and the JSON schema carries the same check as `CssColor`. Amended 2026-09-23: a ramp pinned at both ends is its declaration, so marks declaring one alike share its key. Amended 2026-09-24: the synteny views' text-column keys merge a colour's labels the same way, and the mark, multi-row and multi-sample variant keys run `derivedColorScale` rather than spelling the rule by hand"
+summary: "Three legend and colour-slot rules brought level with ggplot2. A derived key row is a colour naming every value painted in it (`CategoricalEntry.values`), so two values on one palette slot read as one swatch with both labels. Two marks colouring or glyphing by one field through one domain and palette share one key section (`buildMarkLegend` keys on the declaration, not the mark); a ramp with an open end stays per mark. A `color` / `maybeColor` slot refuses a value the painters cannot parse — `color: 'biotype'` fails at load naming the slot and the value — and the JSON schema carries the same check as `CssColor`. Amended 2026-09-23: a ramp pinned at both ends is its declaration, so marks declaring one alike share its key. Amended 2026-09-24: the synteny views' text-column keys merge a colour's labels the same way, and the mark, multi-row and multi-sample variant keys run `derivedColorScale` rather than spelling the rule by hand. Amended 2026-10-03 (ADR-205): an unlisted value is dealt a colour of its own, so a shared swatch comes from a range or domain the config wrote, and Pin distinct colors is gone"
 ---
 
 # ADR-136: A legend follows its scale, and a colour slot is a colour
@@ -49,9 +49,10 @@ ggplot2 accepted three findings.
   values by the field's comparator, labels the row with their `field.label`s
   joined by `, `, and carries them as `CategoricalEntry.values` beside `value`,
   the first, which stays the row's id. Rows stay keyed by colour because the
-  hide toggle hides by colour. `pinnedColorDomain` on the canvas feature
-  display appends every value of every row, so Pin distinct colors makes the
-  values distinct rather than pinning the one the row named. The multi-row
+  hide toggle hides by colour. (Amended 2026-10-03: `pinnedColorDomain`, which
+  appended every value of every row for Pin distinct colors, went with the pin
+  in [ADR-205](adr-205-a-categorical-colour-is-dealt-once-on-first-sight.md).)
+  The multi-row
   feature display's key, which has no field, joins its values the same way.
   Amended 2026-09-24: so do the synteny views' text-column keys
   (`getColorBySwatch`), where SyRI's palette paints INVDP in DUP's colour as

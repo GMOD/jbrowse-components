@@ -19,13 +19,10 @@ function shape(items: MenuItem[]) {
   )
 }
 
-test('each block in turn, a pin after a divider, then Additional coloring', () => {
+test('each block in turn, then Additional coloring', () => {
   const item = colorByMenuItem({
     blocks: [
-      {
-        rows: [radio('Normal'), radio('Strand')],
-        pin: { label: 'Pin distinct colors', onClick: () => {} },
-      },
+      { rows: [radio('Normal'), radio('Strand')] },
       { header: 'Per-base coloring', rows: [radio('None')] },
     ],
     additional: [{ label: 'Arc color', subMenu: [] }],
@@ -34,8 +31,6 @@ test('each block in turn, a pin after a divider, then Additional coloring', () =
   expect(shape(item.subMenu)).toEqual([
     'Normal',
     'Strand',
-    '---',
-    'Pin distinct colors',
     '# Per-base coloring',
     'None',
     '# Additional coloring',

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "FeatureColor's scales are `none | categorical | threshold`, so a feature's number paints the range colour of the interval between cut points it falls in. `thresholdField` gives a threshold the interface `categoricalField` answers — a value files under its bin's label, a value-less feature under `''` in the no-value grey, text that is no number under its own key in the misconfiguration grey — so the canvas worker's walk, parent inheritance and the derived key take it unchanged. The field's domain is `closed`, and a key lists every bin of a closed domain once anything painted. `colorFieldOf` answers either field; `categoricalColorField` and the canvas display's `colorField` stay categorical for the facet, Group by and the pin. Not `linear` or `log`: an unpinned ramp needs a domain unioned across regions, which a display packing a colour per box in the worker has no place for"
+summary: "FeatureColor's scales are `none | categorical | threshold`, so a feature's number paints the range colour of the interval between cut points it falls in. `thresholdField` gives a threshold the interface `categoricalField` answers — a value files under its bin's label, a value-less feature under `''` in the no-value grey, text that is no number under its own key in the misconfiguration grey — so the canvas worker's walk, parent inheritance and the derived key take it unchanged. The field's domain is `closed`, and a key lists every bin of a closed domain once anything painted. `colorFieldOf` answers either field; `categoricalColorField` and the canvas display's `colorField` stay categorical for the facet and Group by. Not `linear` or `log`: an unpinned ramp needs a domain unioned across regions, which a display packing a colour per box in the worker has no place for"
 ---
 
 # ADR-156: The feature colour takes a threshold
@@ -55,9 +55,11 @@ categorical.** The canvas display's `paintedColorField` paints and keys, its
 `colorByMode` reads it, and Group by reads it to leave alone a colour already
 painting, so the dialog neither starts ticked over a threshold nor rewrites one
 on the field it groups by. `colorField` stays the categorical field, which the
-facet reads to share its order, Group by clears when it was the grouping's own,
-and "Pin distinct colors" writes the domain of: under a threshold the domain is
-the cuts. The multi-way display gates its pin on `geneColorScale`.
+facet reads to share its order and Group by clears when it was the grouping's
+own. (Amended 2026-10-03: "Pin distinct colors", which wrote its domain and so
+had to stay off a threshold's cuts, is gone with the multi-way display's
+`geneColorScale` gate;
+[ADR-205](adr-205-a-categorical-colour-is-dealt-once-on-first-sight.md).)
 
 **The canvas feature display shows `colorNotices`** in its corner, as the mark,
 quantitative, alignments and Manhattan displays do, so unsorted cuts or a range
@@ -83,7 +85,7 @@ that is not one colour per interval surface there.
   `domain` through `groupKeyComparator`, so with cuts `[1, 2, 5]` the indices
   `'1'` and `'2'` sort ahead of `'0'`. The label is a key no cut spells.
 - **`categoricalColorField` answering a threshold too.** It is plugin ABI, and
-  its callers in the facet and the pin mean a categorical scale.
+  its callers in the facet and Group by mean a categorical scale.
 - **Keying only the painted bins**, the categorical rule. A locus showing two
   bins keyed two rows of the ramp, and one painted colour dropped the key
   (`legendIsReadable`).

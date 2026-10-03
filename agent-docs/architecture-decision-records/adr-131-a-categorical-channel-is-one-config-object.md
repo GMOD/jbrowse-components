@@ -64,8 +64,10 @@ The rules a writer can rely on:
   `{ value }` exists only as what a colour string lifts into, and no example
   shows it.
 - **An object replaces the channel; `null` clears it.** There is no merge. A
-  writer that changes only the order (the Sections menu, Pin distinct colors)
-  knows the field and writes the whole object back.
+  writer that changes only the order (the Sections menu) knows the field and
+  writes the whole object back. Amended 2026-10-03: "Pin distinct colors" was
+  the other such writer and is gone; an unlisted value is dealt its own colour
+  instead ([ADR-205](adr-205-a-categorical-colour-is-dealt-once-on-first-sight.md)).
 - **The shorthand is declared, not conventional.** `ConfigurationSchema`
   takes `shorthand: 'field'` (or `'value'`), lifts a bare string into that
   slot on every path a snapshot arrives by, and the JSON schema generator,

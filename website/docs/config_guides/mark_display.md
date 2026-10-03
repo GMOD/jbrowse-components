@@ -302,13 +302,12 @@ or overlapping spans stay readable.
 - **categorical** —
   `{ "field": "strand", "scale": "categorical", "range": ["#1f77b4", "#ff7f0e"] }`
 
-  Each distinct value takes a colour derived from itself, so every region paints
-  it alike. `domain` lists values in legend order and spends `range` from the
-  first entry; values it leaves out follow, sorted. One row per colour, so two
-  values painted alike share a row. Two unlisted values can derive one colour;
-  the track's corner notice says which, and **Pin distinct colors** in the track
-  menu writes every value the key lists into `domain`, so each spends its own. A
-  key of one colour, or over 20 rows, is not drawn.
+  `domain` lists values in legend order and spends `range` from the first entry;
+  values it leaves out follow, sorted. Each value it leaves out takes a colour
+  of its own the first time the track shows it, and keeps it as other regions
+  load; one no other value competes with paints the colour derived from itself.
+  One row per colour, so two values painted alike share a row. A key of one
+  colour, or over 20 rows, is not drawn.
 
 - **linear** or **log** —
   `{ "field": "signal", "scale": "linear", "domainMin": 0, "domainMax": 50, "range": ["white", "red"] }`

@@ -79,7 +79,7 @@ grouping clears them. **Sections** in the track menu lists the sections drawn,
 each with **Move up**, **Move down** and **Hide section**, and **Reset section
 order** returns them to the sorted order.
 
-<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from Group by..., with lncRNA and pseudogene in near-identical greens. Sections then moves protein_coding to the top, and Color by... → Pin distinct colors gives each biotype a distinct color." />
+<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from Group by..., each biotype in a color of its own. Sections then moves protein_coding to the top." />
 
 The `facet` setting pre-groups a track, so a shared link opens grouped. As a
 string it names the field: a feature attribute, a dotted path into a structured
@@ -153,16 +153,16 @@ filter alone:
 <Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit plot from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype colored by its position in the color's domain." />
 
 A color by a field is the `color` setting's `{ "field", "domain", "range" }`
-form, and the track draws a key from the values it painted. Every value keeps a
-color derived from itself, so a pan or a reload paints it the same; a `domain`
-spends the `range` colors on the values it lists, in order, and a value it
-leaves out never takes one of their colors. Two unlisted values can share a
-color, and **Color by... → Pin distinct colors** lists every value the key shows
-in the color's `domain`, in its order, so each takes its own. A transcript and
-all its parts paint the transcript's value, or its gene's where the transcript
-has none. `strand` is a field too, painting forward tomato and reverse
-cornflowerblue unless a domain or range says otherwise. Each channel is the same
-setting its menu writes, so the Sections menu reorders a facet written this way.
+form, and the track draws a key from the values it painted. A `domain` spends
+the `range` colors on the values it lists, in order, and a value it leaves out
+never takes one of their colors. Every other value takes a color of its own the
+first time the track shows it, and keeps it while the track is open; a value no
+other value competes with paints the color derived from itself, the same on
+every reload. A transcript and all its parts paint the transcript's value, or
+its gene's where the transcript has none. `strand` is a field too, painting
+forward tomato and reverse cornflowerblue unless a domain or range says
+otherwise. Each channel is the same setting its menu writes, so the Sections
+menu reorders a facet written this way.
 
 ## Color by CDS
 
