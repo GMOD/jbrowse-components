@@ -2,18 +2,22 @@
  * The bands a multi-sample variant display stacks above its genotype rows, as
  * one pure function.
  *
- * There are two, and they are independent settings:
+ * There are three, and they are independent settings:
  *
  * - the **variant lane**, a `LinearVariantDisplay`-style strip painting each
  *   record at its genomic span, so a genotype matrix can be read against the
  *   variants it genotypes without a second track (`showVariantLane`);
  * - the **connector-line zone**, which ties an index-laid-out matrix column to
  *   its genomic position (`lineZoneHeight`, non-zero only on the matrix
- *   display).
+ *   display);
+ * - the **frequency band**, each column's share of the drawn rows by genotype
+ *   class (`showGenotypeFrequencies`).
  *
- * The lane is on top, because both bands address the genome the same way and
- * the connector lines end at genomic positions — so the lane sits exactly where
- * those lines point, and the matrix reads as columns → positions → variants.
+ * The lane is on top, because it and the connector lines address the genome
+ * the same way, so the lane sits exactly where those lines point. The frequency
+ * band sits directly on the rows, because its x is theirs: a column's span at
+ * genomic positions, a column index in the matrix, where the connector zone
+ * above it ties it back to a position.
  *
  * This exists as a function, and not as three getters, for the reason
  * `belowCoverageBandsGeometry` does in `LinearAlignmentsDisplay`: the layout
@@ -47,6 +51,8 @@ export interface VariantTopBandsInput {
   variantLaneLabels: ShowLabelsMode
   /** `lineZoneHeight`: the connector-line zone, 0 on genomic-position displays. */
   lineZoneHeight: number
+  showGenotypeFrequencies: boolean
+  genotypeFrequenciesHeight: number
 }
 
 export interface VariantTopBands {
@@ -73,6 +79,9 @@ export interface VariantTopBands {
   wantsDescription: boolean
   /** Top of the connector-line zone, i.e. the bottom of the lane. */
   lineZoneTop: number
+  frequencyTop: number
+  /** Drawn height of the frequency band; 0 when it is off. */
+  frequencyHeight: number
   /**
    * Where the genotype rows begin, and so what `availableHeight` subtracts from
    * the display height. The sum of every band above.
@@ -126,11 +135,19 @@ export const VARIANT_LANE_BOUNDS = {
   max: MAX_VARIANT_LANE_HEIGHT,
 }
 
+export const DEFAULT_GENOTYPE_FREQUENCIES_HEIGHT = 40
+
+// The floor keeps a singleton's 1px floor readable against the band's insets;
+// below 30px the chrome captions the 0–100% axis instead of drawing it.
+export const GENOTYPE_FREQUENCIES_BOUNDS = { min: 12, max: 200 }
+
 export function variantTopBandsGeometry({
   showVariantLane,
   variantLaneHeight,
   variantLaneLabels,
   lineZoneHeight,
+  showGenotypeFrequencies,
+  genotypeFrequenciesHeight,
 }: VariantTopBandsInput): VariantTopBands {
   // The fold gives the two contract rules: off spends nothing rather than a
   // clamped minimum (the toggle has to leave the display pixel-identical to
@@ -139,20 +156,30 @@ export function variantTopBandsGeometry({
   // drag-resize twin is `clampBandHeight` in the setter, which additionally
   // leaves a config-declared sub-floor lane where it is. The connector zone
   // carries no bounds and no toggle: its "off" is the slot being 0.
-  const { top, reserved, bottom } = stackBands(['lane', 'lineZone'], {
-    lane: {
-      active: showVariantLane,
-      height: variantLaneHeight,
-      bounds: VARIANT_LANE_BOUNDS,
+  const { top, reserved, bottom } = stackBands(
+    ['lane', 'lineZone', 'frequencies'],
+    {
+      lane: {
+        active: showVariantLane,
+        height: variantLaneHeight,
+        bounds: VARIANT_LANE_BOUNDS,
+      },
+      lineZone: { active: true, height: lineZoneHeight },
+      frequencies: {
+        active: showGenotypeFrequencies,
+        height: genotypeFrequenciesHeight,
+        bounds: GENOTYPE_FREQUENCIES_BOUNDS,
+      },
     },
-    lineZone: { active: true, height: lineZoneHeight },
-  })
+  )
   return {
     laneTop: top.lane,
     laneHeight: reserved.lane,
     wantsName: modeCanShowName(variantLaneLabels),
     wantsDescription: modeCanShowDescription(variantLaneLabels),
     lineZoneTop: top.lineZone,
+    frequencyTop: top.frequencies,
+    frequencyHeight: reserved.frequencies,
     bottom,
   }
 }

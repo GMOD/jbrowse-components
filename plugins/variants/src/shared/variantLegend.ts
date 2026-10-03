@@ -43,6 +43,21 @@ import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 // comes from what the worker painted, so the key cannot describe a scheme that
 // is not on the screen.
 
+/**
+ * The key's names for the genotype classes, which the frequency band's tooltip
+ * counts under too.
+ */
+export const GENOTYPE_CLASS_LABELS = {
+  homRef: 'Homozygous reference',
+  ref: 'Reference',
+  het: 'Alt, half dosage (het)',
+  hom: 'Alt, full dosage (hom)',
+  alt: 'Alt allele',
+  otherAlt: 'Other alt allele',
+  unphased: 'Unphased',
+  noCall: 'No call',
+}
+
 // A fixed-vocabulary row: the value is its label.
 function entry(label: string, color?: string): CategoricalEntry {
   return { value: label, label, color }
@@ -92,13 +107,11 @@ function absentDataEntries({
   hasUnphased,
   hasNoCall,
 }: VariantLegendInputs): CategoricalEntry[] {
+  const L = GENOTYPE_CLASS_LABELS
   return [
-    entry(
-      renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
-      REFERENCE_COLOR,
-    ),
-    ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
-    ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
+    entry(renderingMode === 'phased' ? L.ref : L.homRef, REFERENCE_COLOR),
+    ...(hasUnphased ? [entry(L.unphased, UNPHASED_COLOR)] : []),
+    ...(hasNoCall ? [entry(L.noCall, NO_CALL_COLOR)] : []),
   ]
 }
 
@@ -109,12 +122,13 @@ function absentDataEntries({
 // dosage, not the zygosity: the ramp is continuous, and a triploid `0/0/1`
 // paints at a third, which "Heterozygous alt" did not list.
 function altEntries(hue: string, inputs: VariantLegendInputs) {
+  const L = GENOTYPE_CLASS_LABELS
   if (inputs.renderingMode === 'phased' || !inputs.shadeByDosage) {
-    return [entry('Alt allele', hue)]
+    return [entry(L.alt, hue)]
   }
   return [
-    entry('Alt, half dosage (het)', shadeByDosage(hue, HET_DOSAGE)),
-    entry('Alt, full dosage (hom)', shadeByDosage(hue, 1)),
+    entry(L.het, shadeByDosage(hue, HET_DOSAGE)),
+    entry(L.hom, shadeByDosage(hue, 1)),
   ]
 }
 
@@ -134,7 +148,9 @@ export function getGenotypeEntries(
   return [
     reference!,
     ...altEntries(altColorOverride || ALT_HUE, inputs),
-    ...(secondary ? [entry('Other alt allele', SECONDARY_ALT_COLOR)] : []),
+    ...(secondary
+      ? [entry(GENOTYPE_CLASS_LABELS.otherAlt, SECONDARY_ALT_COLOR)]
+      : []),
     ...rest,
   ]
 }
@@ -300,10 +316,14 @@ function getCellColorScale(
       // arbitrarily. The rule is what a reader needs — equal hue down a row means
       // one phasing block.
       entries: [
-        entry('Reference', REFERENCE_COLOR),
+        entry(GENOTYPE_CLASS_LABELS.ref, REFERENCE_COLOR),
         entry('Alt allele (hue identifies the phase set)'),
-        ...(inputs.hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
-        ...(inputs.hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
+        ...(inputs.hasUnphased
+          ? [entry(GENOTYPE_CLASS_LABELS.unphased, UNPHASED_COLOR)]
+          : []),
+        ...(inputs.hasNoCall
+          ? [entry(GENOTYPE_CLASS_LABELS.noCall, NO_CALL_COLOR)]
+          : []),
       ],
     }
   }

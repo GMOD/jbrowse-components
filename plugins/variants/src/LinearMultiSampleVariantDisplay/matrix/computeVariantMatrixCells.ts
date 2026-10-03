@@ -38,6 +38,7 @@ export interface MatrixCellData extends CellHueValues {
   cellColors: Uint32Array
   // See computeVariantCells.
   cellAltDosage: Uint8Array
+  cellCategories: Uint8Array
   numCells: number
   /** Where the non-reference bucket starts; `findCellIndex` searches each. */
   refCellCount: number
@@ -98,6 +99,7 @@ export function computeVariantMatrixCells({
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint32Array(maxCells)
   const altDosage = new Uint8Array(maxCells)
+  const categories = new Uint8Array(maxCells)
 
   // Write cursors for the two buckets. `refEnd` grows up from 0, `nonRefStart`
   // shrinks down from maxCells, so they can never collide before the buffer is
@@ -111,12 +113,14 @@ export function computeVariantMatrixCells({
     colorAbgr: number,
     isReference: boolean,
     dosage: number,
+    category: number,
   ) {
     const ci = isReference ? refEnd++ : --nonRefStart
     featureIndices[ci] = featureIdx
     rowIndices[ci] = rowIdx
     colors[ci] = colorAbgr
     altDosage[ci] = dosage
+    categories[ci] = category
   }
 
   // Exchange two cells across every parallel array. Defined once (not per
@@ -135,6 +139,9 @@ export function computeVariantMatrixCells({
     const d = altDosage[a]!
     altDosage[a] = altDosage[b]!
     altDosage[b] = d
+    const k = categories[a]!
+    categories[a] = categories[b]!
+    categories[b] = k
   }
 
   const featureData: FeatureData[] = []
@@ -156,7 +163,14 @@ export function computeVariantMatrixCells({
       if (style) {
         paintedCategories |= 1 << style.category
         altPainted ||= style.isAlt
-        addCell(idx, j, style.abgr, style.isRef, style.altDosage)
+        addCell(
+          idx,
+          j,
+          style.abgr,
+          style.isRef,
+          style.altDosage,
+          style.category,
+        )
       }
     }
 
@@ -182,6 +196,7 @@ export function computeVariantMatrixCells({
     rowIndices.copyWithin(refCellCount, nonRefStart, maxCells)
     colors.copyWithin(refCellCount, nonRefStart, maxCells)
     altDosage.copyWithin(refCellCount, nonRefStart, maxCells)
+    categories.copyWithin(refCellCount, nonRefStart, maxCells)
   }
 
   // Trim to the used prefix. `slice` copies, so it is skipped when nothing was
@@ -196,6 +211,7 @@ export function computeVariantMatrixCells({
     cellRowIndices: trim ? rowIndices.slice(0, numCells) : rowIndices,
     cellColors: trim ? colors.slice(0, numCells) : colors,
     cellAltDosage: trim ? altDosage.slice(0, numCells) : altDosage,
+    cellCategories: trim ? categories.slice(0, numCells) : categories,
     numCells,
     refCellCount,
     numFeatures,

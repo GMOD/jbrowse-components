@@ -1,10 +1,10 @@
+import { percentAxisTicks } from '@jbrowse/alignments-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 import { renderToString } from 'react-dom/server'
 
 import MafBandHandles from './components/MafBandHandles.tsx'
-import { conservationTicks } from './components/conservationBand.ts'
 import { renderSvg } from './renderSvg.tsx'
 import { createMafTestEnvironment } from './testEnv.ts'
 
@@ -35,7 +35,7 @@ function overStatedBand() {
 // was scaled to. The end ticks are crispened inward by `YScaleBar` and so are a
 // pixel off the band edge; the middle one is not touched.
 function midAxisTick(height: number) {
-  const { yTop, yBottom } = conservationTicks(height)
+  const { yTop, yBottom } = percentAxisTicks(height)
   return `translate(0,${(yTop + yBottom) / 2 + 0.5})`
 }
 
@@ -74,7 +74,7 @@ describe('the conservation band paints the height it reserved', () => {
     expect(axis.height).toBe(display.conservationDisplayHeight)
     expect(axis.bandTops).toEqual([display.topBands.top.conservation])
     expect(axis.ticks).toEqual(
-      conservationTicks(display.conservationDisplayHeight),
+      percentAxisTicks(display.conservationDisplayHeight),
     )
   })
 

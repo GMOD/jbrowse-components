@@ -13,6 +13,9 @@ import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
 import VariantConfigProblems from '../../shared/components/VariantConfigProblems.tsx'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
+import FrequencyBandOverlay, {
+  frequencyBandSurface,
+} from '../components/FrequencyBandOverlay.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantMatrixBody, {
   variantMatrixSurface,
@@ -70,6 +73,7 @@ const VariantMatrixDisplayComponent = observer(
   }) {
     const { model } = props
     const { rowsTopOffset } = model
+    const { frequencyTop } = model.topBands
     const canvasId = useId()
     // the rows panel, so a wheel over the dendrogram beside the matrix is theirs
     const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
@@ -96,6 +100,17 @@ const VariantMatrixDisplayComponent = observer(
               state.x - model.columnGeometry.left,
               state.y - rowsTopOffset,
             )
+          } else if (
+            state &&
+            state.y >= frequencyTop &&
+            state.y < rowsTopOffset
+          ) {
+            hoverVariantSurface(
+              model,
+              frequencyBandSurface(model),
+              state.x,
+              state.y - frequencyTop,
+            )
           } else {
             model.clearHoveredFeature()
           }
@@ -103,13 +118,11 @@ const VariantMatrixDisplayComponent = observer(
       >
         {({ canvasRef, mouseTracker }) => (
           <>
+            <FrequencyBandOverlay model={model} />
             {/* Both pointer-driven pieces share one definition of "the cursor
-                is in the matrix rather than in the bands above it".
-                `rowsTopOffset` and not `lineZoneHeight`: the connector zone is
-                the only band this display currently stacks, so the two are
-                equal here — but the offset the rows actually begin at is the
-                total, and reaching for one band's height as if it were that
-                total is what `shared/variantTopBands.ts` exists to stop. */}
+                is in the matrix rather than in the bands above it":
+                `rowsTopOffset`, the total `shared/variantTopBands.ts` folds,
+                never one band's height. */}
             <PointerLayer
               mouseTracker={mouseTracker}
               rowsTopOffset={rowsTopOffset}

@@ -4,6 +4,7 @@ import {
   computeVisibleCoverageStats,
   coverageBinAt,
   hitCoverageBand,
+  percentAxisTicks,
 } from '@jbrowse/alignments-core'
 import {
   ConfigurationReference,
@@ -78,7 +79,6 @@ import {
   consensusStrandByRowChr,
 } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { conservationTicks } from './components/conservationBand.ts'
 import {
   perRowChromRanks,
   sourceChromLegendItems,
@@ -1605,7 +1605,7 @@ export default function stateModelFactory(
               domain: [0, 100],
               scaleType: 'linear',
               height,
-              ticks: conservationTicks(height),
+              ticks: percentAxisTicks(height),
               bandTops: [topBands.top.conservation],
             })
           }

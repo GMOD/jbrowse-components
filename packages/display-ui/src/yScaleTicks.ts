@@ -10,8 +10,8 @@ import { YSCALEBAR_LABEL_OFFSET } from './yAxisConstants.ts'
 // same `y` are what they'd align against to check.
 //
 // Four producers feed this — `computeYTicks` (the wiggle family),
-// `computeCoverageTicks`, `computeInsertSizeTicks` and MAF's
-// `conservationTicks` — against different renderers, so the agreement is per
+// `computeCoverageTicks`, `computeInsertSizeTicks` and `percentAxisTicks` —
+// against different renderers, so the agreement is per
 // producer and each one owns it. `computeInsertSizeTicks` derives its geometry
 // from the very functions the arcs are drawn with. Its down-anchored mode
 // returns the pair reversed, `yTop` at domain-min, so a consumer wanting a

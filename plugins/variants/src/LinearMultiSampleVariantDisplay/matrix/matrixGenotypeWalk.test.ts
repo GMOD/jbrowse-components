@@ -1,3 +1,4 @@
+import { CELL_ALT } from '../../shared/variantCellStyles.ts'
 import { variantMatrixSurface } from './VariantMatrixComponent.tsx'
 import { matrixCellAt } from './matrixHitTest.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -51,6 +52,7 @@ function matrixCellData({ ref = [], alt = [] }: Cells): CellDataResult {
     cellRowIndices: Uint32Array.from(rows),
     cellColors: new Uint32Array(rows.length),
     cellAltDosage: new Uint8Array(rows.length).fill(255, ref.length),
+    cellCategories: new Uint8Array(rows.length).fill(CELL_ALT, ref.length),
     numCells: rows.length,
     refCellCount: ref.length,
     numFeatures: 1,
