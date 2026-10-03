@@ -172,7 +172,6 @@ export function colorRangeSlot({
 }
 
 /**
- * #slot unknown
  * What a value `domain` does not list takes, as d3's `ordinal.unknown`: unset,
  * the next palette colour; a colour, that colour; `""`, no colour from this
  * setting, so the value keeps its own. `range` entries past the domain go
