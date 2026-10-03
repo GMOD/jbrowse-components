@@ -14,7 +14,7 @@ const CONFIG_1000G = encodeURIComponent(
 const SV_TRACK = {
   type: 'VariantTrack',
   trackId: 'kgp3202_sv',
-  name: '1000 Genomes short-read structural variants, 5 kb and longer',
+  name: '1000 Genomes short-read deletions, 5 kb and longer',
   assemblyNames: ['hg38'],
   adapter: {
     type: 'VcfTabixAdapter',
@@ -68,8 +68,17 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
               trackId: SV_TRACK.trackId,
               type: 'LinearMultiSampleVariantDisplay',
               forceLoad: true,
-              filter: ['jexl:alleleLength(feature)>=5000'],
+              // Deletions only: a 35 Mb duplication at the window's edge and
+              // complex calls loaded just outside it put Duplication and
+              // Complex in the legend with nothing visible to key
+              filter: [
+                "jexl:svType(feature)=='DEL' && alleleLength(feature)>=5000",
+              ],
               color: { field: 'svType' },
+              showVariantLane: true,
+              // The key would cover the lane's label at the window's right
+              // edge; the paper's caption gives it instead
+              showLegend: false,
               height: 360,
             },
           ],
