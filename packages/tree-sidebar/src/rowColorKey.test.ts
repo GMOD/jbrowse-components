@@ -138,10 +138,8 @@ describe('the entries', () => {
       name: `r${i}`,
       group: `g${i}`,
     }))
-    const [{ entries }] = makeDisplay(
-      { rowColor: 'group' },
-      { rows },
-    ).rowColorScales
+    const { entries } = makeDisplay({ rowColor: 'group' }, { rows })
+      .rowColorScales[0]!
     expect(entries).toHaveLength(MAX_LEGEND_ITEMS + 1)
     expect(entries[MAX_LEGEND_ITEMS - 1]!.label).toBe('g19')
     expect(entries.at(-1)).toEqual({ value: '', label: '+5 more' })
