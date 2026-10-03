@@ -89,14 +89,12 @@ export default function RowColorPanel({
           ))}
         </ToggleButtonGroup>
       </div>
-      {choice === '' ? (
-        <Typography variant="body2" color="textSecondary">
-          Rows show only the colors their data gives them.
-        </Typography>
-      ) : choice === 'name' ? (
+      {choice === '' || choice === 'name' ? (
         <div className={classes.line}>
           <Typography variant="body2" color="textSecondary">
-            Click a swatch in the list to color that row.
+            {choice === ''
+              ? 'Rows show the colors their data gives them. Click a swatch in the list to color one row.'
+              : 'Each row takes a palette color. Click a swatch in the list to change one.'}
           </Typography>
           {fields.length ? (
             <TextField

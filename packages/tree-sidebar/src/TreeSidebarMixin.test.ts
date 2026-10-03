@@ -424,46 +424,52 @@ describe('a dialog submit of the row colours', () => {
     expect(Object.fromEntries(display.rowColors)).toEqual({ b: '#123456' })
   })
 
-  it('keeps the field and its colors under None, and returns to them', () => {
+  it('paints only the values None lists, dealing the palette none', () => {
     const display = makeGrouped({
-      rowColor: { field: 'group', domain: ['y'], range: ['#abcdef'] },
-    })
-    display.applyRowEdits(display.editableSources, {
-      field: 'group',
-      scale: 'none',
-      domain: ['y'],
-      range: ['#abcdef'],
+      rowColor: {
+        field: 'group',
+        scale: 'none',
+        domain: ['y'],
+        range: ['#abcdef'],
+      },
     })
     expect(display.rowColorChoice).toBe('')
-    expect(display.rowColorScale.size).toBe(0)
+    expect(Object.fromEntries(display.rowColorScale)).toEqual({ b: '#abcdef' })
+  })
+
+  it('recolours one row under None and leaves the rest unpainted', () => {
+    const display = makeGrouped({ rowColor: { scale: 'none' } })
+    display.applyRowEdits(recoloured(display), { field: 'name', scale: 'none' })
+    expect(display.rowColorChoice).toBe('')
+    expect(Object.fromEntries(display.rowColors)).toEqual({ b: '#123456' })
+    expect(Object.fromEntries(display.rowColorScale)).toEqual({ b: '#123456' })
+  })
+
+  it('keeps the colours set on rows when Each row turns into None', () => {
+    const display = makeGrouped({
+      rowColor: { domain: ['b'], range: ['#00f'] },
+    })
+    expect(display.rowColorScale.size).toBe(3)
     display.applyRowEdits(display.editableSources, {
-      field: 'group',
-      domain: ['y'],
-      range: ['#abcdef'],
+      field: 'name',
+      scale: 'none',
     })
-    expect(display.rowColorScale.get('b')).toBe('#abcdef')
+    expect(display.rowColorChoice).toBe('')
+    expect(Object.fromEntries(display.rowColorScale)).toEqual({ b: '#00f' })
   })
 
-  it('brings back the pairs None kept when each row is its own again', () => {
+  it('clears a row colour under None', () => {
     const display = makeGrouped({
       rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] },
     })
-    expect(display.rowColors.size).toBe(0)
-    display.applyRowEdits(display.dialogSources, { field: 'name' })
-    expect(display.rowColorChoice).toBe('name')
-    expect(Object.fromEntries(display.rowColors)).toEqual({ b: '#00f' })
-  })
-
-  it('opens on the pairs None kept, so a clear under Each row reaches them', () => {
-    const display = makeGrouped({
-      rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] },
-    })
-    expect(display.dialogSources.find(r => r.name === 'b')!.color).toBe('#00f')
-    display.applyRowEdits(
-      display.dialogSources.map(r => ({ ...r, color: undefined })),
-      { field: 'name' },
+    expect(display.editableSources.find(r => r.name === 'b')!.color).toBe(
+      '#00f',
     )
-    expect(display.rowColorChoice).toBe('name')
+    display.applyRowEdits(
+      display.editableSources.map(r => ({ ...r, color: undefined })),
+      { field: 'name', scale: 'none' },
+    )
+    expect(display.rowColorChoice).toBe('')
     expect(display.rowColors.size).toBe(0)
   })
 

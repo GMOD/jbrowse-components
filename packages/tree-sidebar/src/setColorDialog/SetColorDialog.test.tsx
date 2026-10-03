@@ -243,39 +243,34 @@ describe('colored by an attribute', () => {
     })
   })
 
-  test('None keeps the attribute and its colors for the way back', () => {
+  test('None drops the attribute, its colors gone with the palette', () => {
     const model = byGroup()
     setup(model)
 
     fireEvent.click(screen.getByRole('button', { name: 'None' }))
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({
-      field: 'group',
-      scale: 'none',
-      domain: ['g2'],
-      range: ['#abcdef'],
-    })
+    expect(submitted(model)[1]).toEqual({ field: 'name', scale: 'none' })
   })
 })
 
-test('None keeps the attribute last chosen in the sitting', () => {
+test('None edits the row colors, which stay without the palette', () => {
   const model = fakeModel({
-    editableSources: GROUPED,
-    rowColorFields: ['group'],
+    rowColorSetting: {
+      field: 'name',
+      scale: 'none',
+      domain: ['a'],
+      range: ['#f00'],
+    },
   })
   setup(model)
 
-  fireEvent.click(screen.getByRole('button', { name: 'Group' }))
-  fireEvent.click(screen.getByRole('button', { name: 'None' }))
+  fireEvent.click(screen.getByText('Clear row colors'))
   fireEvent.click(screen.getByText('Submit'))
 
-  expect(submitted(model)[1]).toEqual({
-    field: 'group',
-    scale: 'none',
-    domain: [],
-    range: [],
-  })
+  const [rows, rowColor] = submitted(model)
+  expect(rows[0]!.color).toBeUndefined()
+  expect(rowColor).toEqual({ field: 'name', scale: 'none' })
 })
 
 test('a color by the display does not offer still shows as chosen', () => {

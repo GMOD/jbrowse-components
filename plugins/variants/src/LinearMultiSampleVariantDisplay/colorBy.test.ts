@@ -107,8 +107,8 @@ describe('multi-sample variant colorBy', () => {
     expect(model.sources[0]!.labelColor).toBe(before.get('HG002'))
   })
 
-  // None and Each row are two choices over one field, `name`: None hides the
-  // tints set row by row and Each row brings them back.
+  // None and Each row are two choices over one field, `name`: None stops the
+  // palette and keeps the tints set row by row.
   it('switches between None and each row its own tint', () => {
     const model = makeModel()
     model.setSources(sources)
@@ -118,7 +118,8 @@ describe('multi-sample variant colorBy', () => {
 
     model.setRowColorField('')
     expect(model.rowColorChoice).toBe('')
-    expect(model.sources[0]!.labelColor).toBeUndefined()
+    expect(model.sources[0]!.labelColor).toBe('#123456')
+    expect(model.sources[1]!.labelColor).toBeUndefined()
 
     model.setRowColorField('name')
     expect(model.rowColorChoice).toBe('name')

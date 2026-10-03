@@ -86,7 +86,9 @@ import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
   compileRowGroups,
+  groupColorEntries,
   orderRowValues,
+  recolorRowGroups,
   resolveRowColorStrings,
   rowGroupOf,
 } from './rowSources.ts'
@@ -405,7 +407,8 @@ export default function stateModelFactory(
          * `TreeSidebarMixin`'s hook, dealt over the rows in the base
          * arrangement: under `name` a palette colour per row, a row with a
          * `rowColor` entry still taking its turn; under `group` a colour per
-         * group, the groups `setting.domain` lists taking its `range`.
+         * group, the groups `setting.domain` lists taking its `range` and the
+         * rest their `rowGroups` colour where they have one.
          */
         rowColorDealFor(setting: RowColorEntries): RowColorDeal<RowSource> {
           const rows = orderRowsByDomain(self.expandedRows, self.baseRowDomain)
@@ -420,11 +423,15 @@ export default function stateModelFactory(
           }
           const valueOf = (row: RowSource) =>
             this.rowAttribute(row, setting.field)
+          const { domain, range } =
+            setting.field === 'group'
+              ? groupColorEntries(self.rowGroups, setting)
+              : setting
           return {
-            order: [...setting.domain, ...rows.map(valueOf)],
+            order: [...domain, ...rows.map(valueOf)],
             valueOf,
-            domain: setting.domain,
-            range: setting.range,
+            domain,
+            range,
             palette: categoricalPalette,
           }
         },
@@ -523,13 +530,26 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * `rowGroups` with the colours `rowColor` sets on groups while it
+       * paints by `group`, so the stripe and the blocks agree.
+       */
+      get paintedRowGroups(): RowGroup[] {
+        const setting = self.rowColorSetting
+        return setting.field === 'group'
+          ? recolorRowGroups(self.rowGroups, setting)
+          : self.rowGroups
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * The rows tagged with their `rowGroups` group and left in their current
        * order. A legend swatch focuses from these rows, because a second click
        * on another group has to reach the rows the first click hid, and the
        * filter matches the same `name`s.
        */
       get groupedSources(): RowSource[] {
-        return applyRowGroups(self.editableSources, self.rowGroups)
+        return applyRowGroups(self.editableSources, self.paintedRowGroups)
       },
     }))
     .views(self => ({
@@ -539,7 +559,7 @@ export default function stateModelFactory(
        * all key off: `bandedSources` tagged with their `rowGroups` group.
        */
       get sources(): RowSource[] {
-        return applyRowGroups(self.bandedSources, self.rowGroups)
+        return applyRowGroups(self.bandedSources, self.paintedRowGroups)
       },
     }))
     .views(self => ({

@@ -52,6 +52,7 @@ import {
   focusRowGroup,
   keptRows,
   loadedRegionIndexAt,
+  rowColorWithoutPalette,
   rowFieldValue,
   valuesByCount,
 } from '@jbrowse/tree-sidebar'
@@ -610,13 +611,12 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * The sample-metadata attribute the rows are tinted by: `rowColor.field`
-         * while it paints and names one, '' while it names `name`, the rows
-         * themselves, or sits under `scale: 'none'`. Drives the sidebar row
-         * coloring and the legend's group section.
+         * while it names one, '' while it names `name`, the rows themselves.
+         * Drives the sidebar row coloring and the legend's group section.
          */
         get rowColorField(): string {
-          const { field, scale } = self.rowColorSetting
-          return field === 'name' || scale === 'none' ? '' : field
+          const { field } = self.rowColorSetting
+          return field === 'name' ? '' : field
         },
         /**
          * #getter
@@ -753,19 +753,21 @@ export default function MultiSampleVariantBaseModelF(
           /**
            * #action
            * Recolor sample rows by a metadata attribute (e.g. 'population'), or
-           * pass '' to clear the coloring, which keeps the attribute under
-           * `scale: 'none'` for the way back. Writes the `rowColor` object
-           * through `colorForField`, so a new attribute starts with no
-           * entries: those a reader set row by row belong to `name`. The tint
-           * is resolved on every read of `sources`, so a recolor moves no rows
-           * and drops no cluster tree.
+           * pass '' to stop the palette, keeping the colours a reader set row
+           * by row. Writes the `rowColor` object through `colorForField`, so a
+           * new attribute starts with no entries: those a reader set row by
+           * row belong to `name`. The tint is resolved on every read of
+           * `sources`, so a recolor moves no rows and drops no cluster tree.
            */
           setRowColorField(field: string) {
             if (field !== self.rowColorChoice) {
+              const current = self.rowColorSetting
               setConf(
                 self,
                 'rowColor',
-                colorForField(self.rowColorSetting, field),
+                field === ''
+                  ? rowColorWithoutPalette(current)
+                  : colorForField(current, field),
               )
             }
             warnUnknownArrangementAttributes(self, self.adapterSamples ?? [])

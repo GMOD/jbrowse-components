@@ -121,12 +121,26 @@ test('the row palette keeps its identity across a reorder, a focus and a relabel
   expect(display.rowColorScale).toBe(palette)
 })
 
-test("scale: 'none' paints no palette and no pair", () => {
+test("scale: 'none' deals no palette, and its pairs still paint", () => {
   const display = loaded({ rowColor: { ...DECLARED.rowColor, scale: 'none' } })
-  expect(display.rowColorScale.size).toBe(0)
+  expect(display.rowColorStringsByIndex).toEqual([
+    '#00f',
+    undefined,
+    '#0f0',
+    undefined,
+  ])
+})
+
+test('a recolour under None paints that row and deals the rest nothing', () => {
+  const display = loaded({ rowColor: { scale: 'none' } })
+  const [a, b, ...rest] = display.editableSources
+  display.applyRowEdits([a!, { ...b!, color: '#123456' }, ...rest], {
+    field: 'name',
+    scale: 'none',
+  })
   expect(display.rowColorStringsByIndex).toEqual([
     undefined,
-    undefined,
+    '#123456',
     undefined,
     undefined,
   ])
@@ -156,4 +170,28 @@ test('rowColor by group pairs its domain with its range', () => {
   })
   expect(display.rowColorScale.get('c')).toBe('#123456')
   expect(display.rowColorScale.get('a')).not.toBe('#123456')
+})
+
+test('rowColor by group paints a group its rowGroups colour, the stripe alike', () => {
+  const display = loaded({ rowColor: 'group', ...GROUPS })
+  expect(display.rowColorStringsByIndex.slice(0, 3)).toEqual([
+    '#e41a1c',
+    '#e41a1c',
+    '#377eb8',
+  ])
+  expect(display.sources.slice(0, 3).map(s => s.labelColor)).toEqual([
+    '#e41a1c',
+    '#e41a1c',
+    '#377eb8',
+  ])
+})
+
+test('a group colour rowColor sets beats rowGroups, on the stripe too', () => {
+  const display = loaded({
+    rowColor: { field: 'group', domain: ['C'], range: ['#123456'] },
+    ...GROUPS,
+  })
+  expect(display.rowColorStringsByIndex[2]).toBe('#123456')
+  expect(display.sources[2]!.labelColor).toBe('#123456')
+  expect(display.sources[0]!.labelColor).toBe('#e41a1c')
 })

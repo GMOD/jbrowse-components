@@ -40,13 +40,12 @@ const useStyles = makeStyles()({
 
 // The slice of a TreeSidebarMixin display the dialog drives. Consumers pass the
 // model itself (not four separate callbacks) so every plugin shares one
-// contract. `dialogSources` is the dialog-editable list (no palette
+// contract. `editableSources` is the dialog-editable list (no palette
 // synthesis, no subtree filter). The dialog snapshots it into local state on
 // open and re-reads it after "Clear custom settings", so edits stay uncommitted
 // until Submit.
 export interface TreeLayoutModel<S extends { name: string }> {
   editableSources: S[]
-  dialogSources: S[]
   applyRowEdits: (s: S[], rowColor?: RowColorSnapshot) => void
   resetRowArrangement: () => void
   // Whether submitting `next` would invalidate a loaded cluster tree; when true
@@ -148,7 +147,7 @@ export default observer(function SetColorDialog<
   onEditAsJson,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
-  const getSources = () => model.dialogSources
+  const getSources = () => model.editableSources
   // Undefined until a swatch is touched, so a reset re-reads the model rather
   // than restoring a pair snapshotted before it.
   const [plotPair, setPlotPair] = useState<{
@@ -158,7 +157,6 @@ export default observer(function SetColorDialog<
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(getSources)
   const [choice, setChoice] = useState(model.rowColorChoice)
-  const [kept, setKept] = useState(model.rowColorSetting.field)
   const [entries, setEntries] = useState(() => entriesOf(model.rowColorSetting))
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
   const [activeField, setActiveField] = useState(
@@ -193,23 +191,11 @@ export default observer(function SetColorDialog<
       ? model.rowColorFields
       : [...model.rowColorFields, current]
 
-  // What the submit writes: the object as the reader left it, keeping the
-  // last field chosen and its entries under None for the way back.
+  // What the submit writes; under None and Each row the grid's row colours
+  // become the pairs.
   const chosenRowColor = (): RowColorSnapshot => {
-    const setting = model.rowColorSetting
     if (choice === '') {
-      const { domain, range } =
-        kept === 'name'
-          ? setting.field === 'name'
-            ? setting
-            : { domain: [], range: [] }
-          : settingFor(kept, entries)
-      return {
-        field: kept,
-        scale: 'none',
-        domain: [...domain],
-        range: [...range],
-      }
+      return { field: 'name', scale: 'none' }
     }
     if (choice === 'name') {
       return { field: 'name' }
@@ -217,6 +203,8 @@ export default observer(function SetColorDialog<
     const { domain, range } = settingFor(choice, entries)
     return { field: choice, domain, range }
   }
+
+  const colorsRows = choice === '' || choice === 'name'
 
   const paintRows = (colorOf: (row: S) => string | undefined) => {
     if (activeColumn) {
@@ -253,7 +241,6 @@ export default observer(function SetColorDialog<
     model.resetRowArrangement()
     setCurrLayout(getSources())
     setChoice(model.rowColorChoice)
-    setKept(model.rowColorSetting.field)
     setEntries(entriesOf(model.rowColorSetting))
     setPlotPair(undefined)
   }
@@ -307,12 +294,7 @@ export default observer(function SetColorDialog<
                       ? valueColors(currLayout, byField, fieldColors)
                       : []
                   }
-                  onChoice={value => {
-                    setChoice(value)
-                    if (value !== '') {
-                      setKept(value)
-                    }
-                  }}
+                  onChoice={setChoice}
                   onValueColor={(value, color) => {
                     if (byField) {
                       setEntries({
@@ -337,7 +319,7 @@ export default observer(function SetColorDialog<
                   }}
                 />
 
-                {choice === 'name' && colorColumns.length > 1 ? (
+                {colorsRows && colorColumns.length > 1 ? (
                   <ToggleButtonGroup
                     exclusive
                     size="small"
@@ -359,7 +341,7 @@ export default observer(function SetColorDialog<
                 <SourceGrid
                   rows={currLayout}
                   onChange={setCurrLayout}
-                  colorColumn={choice === 'name' ? activeColumn : undefined}
+                  colorColumn={colorsRows ? activeColumn : undefined}
                   swatchOf={
                     fieldColors && byField
                       ? row => fieldColors.get(rowFieldValue(row, byField))

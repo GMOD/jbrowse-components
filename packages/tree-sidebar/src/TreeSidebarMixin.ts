@@ -102,20 +102,17 @@ function liftRowColor(value: unknown): RowColorSnapshot {
   return typeof value === 'string' ? { field: value } : (value ?? {})
 }
 
-function paintsNamePairs({ field, scale }: RowColorSnapshot) {
-  return (field || 'name') === 'name' && scale !== 'none'
+function paintsNamePairs({ field }: RowColorSnapshot) {
+  return (field || 'name') === 'name'
 }
 
 // The colours a `rowColor` object sets on the values of `field`, an attribute
-// it paints by: none while it paints by another field, by `name`, or under
-// `scale: 'none'`.
+// it paints by: none while it paints by another field or by `name`.
 function valuePairs(
   color: RowColorSnapshot,
   field = color.field || 'name',
 ): Record<string, string> {
-  return (color.field || 'name') === field &&
-    field !== 'name' &&
-    color.scale !== 'none'
+  return (color.field || 'name') === field && field !== 'name'
     ? Object.fromEntries(
         pairedColorsOf({
           domain: color.domain ?? [],
@@ -145,6 +142,30 @@ function namePairs(color: RowColorSnapshot): Record<string, string> {
         }),
       )
     : {}
+}
+
+/**
+ * The `rowColor` object that stops the palette and keeps the colours set on
+ * single rows: what None writes from a menu.
+ */
+export function rowColorWithoutPalette(
+  current: RowColorSnapshot,
+): RowColorSnapshot {
+  const pairs = namePairs(current)
+  return {
+    field: 'name',
+    scale: 'none',
+    domain: Object.keys(pairs),
+    range: Object.values(pairs),
+  }
+}
+
+// Under `scale: 'none'` a deal hands out only the colours its entries list.
+function dealUnder<S>(
+  { scale }: RowColorSnapshot,
+  deal: RowColorDeal<S> | undefined,
+) {
+  return deal && scale === 'none' ? { ...deal, order: [] } : deal
 }
 
 /**
@@ -605,14 +626,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * What the row palette deals under the config's `rowColor`, none under
-       * `scale: 'none'`.
+       * What the row palette deals under the config's `rowColor`: only the
+       * colours it lists under `scale: 'none'`.
        */
       get rowColorDeal(): RowColorDeal<S> | undefined {
         const setting = self.rowColorSetting
-        return setting.scale === 'none'
-          ? undefined
-          : self.rowColorDealFor(setting)
+        return dealUnder(setting, self.rowColorDealFor(setting))
       },
       /**
        * #method
@@ -620,9 +639,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * dialog shows before it writes the setting.
        */
       rowColorsFor(setting: RowColorSetting): ReadonlyMap<string, string> {
-        return dealtColors(
-          setting.scale === 'none' ? undefined : self.rowColorDealFor(setting),
-        )
+        return dealtColors(dealUnder(setting, self.rowColorDealFor(setting)))
       },
     }))
     .views(self => ({
@@ -685,28 +702,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           },
           self,
         )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The rows the arrangement dialog opens on: `editableSources`, with the
-       * `name` pairs a `scale: 'none'` keeps for the way back on them, so Each
-       * row shows what a submit writes and a clear reaches them.
-       */
-      get dialogSources(): S[] {
-        const setting = self.rowColorSetting
-        return setting.scale === 'none' && setting.field === 'name'
-          ? arrangeRows(
-              self.expandedRows,
-              {
-                domain: self.rowOrder,
-                labels: self.rowLabels,
-                rowColors: pairedColorsOf(setting),
-              },
-              self,
-            )
-          : self.editableSources
       },
     }))
     .views(self => ({
@@ -883,14 +878,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       function write(member: ArrangementMember, value: unknown) {
         setConf(confNode(self), ['rows', member], value)
       }
-      function writeRowColor(pairs: RowColorSnapshot) {
-        setConf(
-          confNode(self),
-          ['rowColor', 'domain'],
-          [...(pairs.domain ?? [])],
-        )
-        setConf(confNode(self), ['rowColor', 'range'], [...(pairs.range ?? [])])
-      }
       function persist() {
         if (hasParent(self)) {
           getContainingTrack(self).persistConfigurationNow?.()
@@ -974,7 +961,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             current.field === 'name' ? pairedColorsOf(current) : new Map()
           const edits = rowEdits({
             rows,
-            shown: self.dialogSources,
+            shown: self.editableSources,
             adapter: self.expandedRows,
             labels: self.rowLabels,
             colors: pairs,
@@ -982,21 +969,15 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             identityChannel: self.identityChannel,
             rowAlias: self.rowAlias,
           })
-          if (!paintsNamePairs(next)) {
-            if (!sameRowColor(next, current)) {
-              setConf(confNode(self), 'rowColor', next)
-            }
-          } else if (paintsNamePairs(current)) {
-            if (
-              !compareStructural(namePairs(edits.rowColor), namePairs(current))
-            ) {
-              writeRowColor(edits.rowColor)
-            }
-          } else {
-            setConf(confNode(self), 'rowColor', {
-              field: 'name',
-              ...edits.rowColor,
-            })
+          const written = paintsNamePairs(next)
+            ? {
+                field: 'name',
+                ...(next.scale ? { scale: next.scale } : {}),
+                ...edits.rowColor,
+              }
+            : next
+          if (!sameRowColor(written, current)) {
+            setConf(confNode(self), 'rowColor', written)
           }
           write('labels', edits.labels)
           if (!movesNoRow(rows, self.editableSources)) {

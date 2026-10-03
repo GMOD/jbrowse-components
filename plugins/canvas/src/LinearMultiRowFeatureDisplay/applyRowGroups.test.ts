@@ -1,4 +1,4 @@
-import { applyRowGroups } from './rowSources.ts'
+import { applyRowGroups, groupColorEntries } from './rowSources.ts'
 
 const WOLF = { match: '^CLUP', group: 'Wolf', color: 'rgb(27,120,55)' }
 const VILLAGE = {
@@ -71,5 +71,24 @@ describe('applyRowGroups', () => {
       'Village dog',
       'Wolf',
     ])
+  })
+})
+
+describe('groupColorEntries', () => {
+  it('adds each unlisted group its own colour, keeping the spare range', () => {
+    expect(
+      groupColorEntries([WOLF, VILLAGE], {
+        domain: ['Wolf'],
+        range: ['red', 'pink'],
+      }),
+    ).toEqual({
+      domain: ['Wolf', 'Village dog'],
+      range: ['red', 'rgb(90,174,97)', 'pink'],
+    })
+  })
+
+  it('returns the entries themselves when every group is listed', () => {
+    const entries = { domain: ['Wolf', 'Village dog'], range: ['a', 'b'] }
+    expect(groupColorEntries([WOLF, VILLAGE], entries)).toBe(entries)
   })
 })
