@@ -119,7 +119,6 @@ function trackModel({
   domain = [],
   hasLegendKey = false,
   geneColorField = '',
-  geneColorScale = geneColorField ? 'categorical' : 'none',
 }: {
   universe?: number
   laneFilter?: LaneFilter
@@ -127,7 +126,6 @@ function trackModel({
   domain?: string[]
   hasLegendKey?: boolean
   geneColorField?: string
-  geneColorScale?: string
 } = {}) {
   const { model: header, calls } = headerModel()
   const model = {
@@ -156,8 +154,6 @@ function trackModel({
     setRibbonColorField: () => {},
     ribbonColorAttributes: [],
     ribbonAttributeRanges: {},
-    ribbonColorDomain: [],
-    setRibbonColorDomain: () => {},
     hideUnlabelled: false,
     setHideUnlabelled: () => {},
     showLaneTicks: true,
@@ -174,14 +170,8 @@ function trackModel({
     setShowLegend: () => {},
     hasLegendKey,
     geneColorField,
-    geneColorScale,
     setGeneColorBy: (field: string) => {
       calls.push(`gene color ${field}`)
-    },
-    geneColorDomain: [],
-    pinnedGeneColorDomain: ['psbA'],
-    pinGeneColorDomain: () => {
-      calls.push('pin gene colors')
     },
     setLanesFrozen: (flag: boolean) => {
       calls.push(`freeze ${flag}`)
@@ -250,8 +240,8 @@ function genesOf(model: Parameters<typeof multiWayTrackMenuItems>[0]) {
   return colorBy.slice(1, labelsOf(colorBy).indexOf('Ribbons'))
 }
 
-test('the gene modes name a configured field and offer the pin under it', () => {
-  const { model, calls } = trackModel({ geneColorField: 'biotype' })
+test('the gene modes name a configured field, with no pin under it', () => {
+  const { model } = trackModel({ geneColorField: 'biotype' })
   const genes = genesOf(model)
   expect(labelsOf(genes)).toEqual([
     'Default',
@@ -259,35 +249,15 @@ test('the gene modes name a configured field and offer the pin under it', () => 
     'Name',
     'Strand',
     'biotype',
-    '—',
-    'Pin distinct colors',
   ])
-  expect(labelsOf(geneColorMenuItems(model))).toEqual(
-    labelsOf(genes).slice(0, 5),
-  )
+  expect(labelsOf(geneColorMenuItems(model))).toEqual(labelsOf(genes))
   expect(genes.map(i => 'checked' in i && i.checked)).toEqual([
     false,
     false,
     false,
     false,
     true,
-    false,
-    false,
   ])
-  click(genes[6])
-  expect(calls).toEqual(['pin gene colors'])
-  expect(labelsOf(genesOf(trackModel().model))).not.toContain(
-    'Pin distinct colors',
-  )
-})
-
-// The pin writes values into `domain`, which under a threshold is the cuts
-test('a threshold gene color offers no pin', () => {
-  const { model } = trackModel({
-    geneColorField: 'score',
-    geneColorScale: 'threshold',
-  })
-  expect(labelsOf(genesOf(model))).not.toContain('Pin distinct colors')
 })
 
 test('Show offers the legend only when something is keyed, and the hidden lanes once there are some', () => {

@@ -38,10 +38,8 @@ const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
   },
   surface: 'ribbons',
   hideUnlabelled: false,
-  colorDomain: [],
   setHideUnlabelled: noop,
   setColorField: noop,
-  setColorDomain: noop,
   trackColors: trackColors([track(0), track(1)]),
   ...over,
 })
@@ -101,13 +99,11 @@ function viewModel(tracks: number, reference = false): TrackColorsModel {
     attributeRanges: {},
     colorField: '',
     hideUnlabelled: false,
-    colorDomain: [],
     trackColorFor: () => '#4e79a7',
     colorSurface: () => 'ribbons',
     offersReferenceColor: () => reference,
     setColorField: noop,
     setHideUnlabelled: noop,
-    setColorDomain: noop,
     setTrackColor: noop,
     clearTrackColors: noop,
   }
@@ -141,39 +137,17 @@ test('each surface gets its own help text where the mode reads differently there
   expect(helpOf('points', 1)).toBe(helpOf('ribbons', 1))
 })
 
-// Under a text column the labels seen so far can be pinned, so each keeps its
-// palette slot; a label already in the domain keeps its place.
-test('a text column offers its unlabelled toggle and a pin for the labels not yet pinned', () => {
-  const written: string[][] = []
-  const categorical = (colorDomain: string[]) =>
-    colorByMenuItems(
-      target({
-        field: 'group',
-        attributeRanges: {
-          group: { labels: ['B1', 'A1a', 'C1'], colors: {} },
-        },
-        colorDomain,
-        setColorDomain: domain => {
-          written.push(domain)
-        },
-        trackColors: undefined,
-      }),
-    )
-  const rows = categorical(['A1a'])
-  expect(labels(rows).slice(-2)).toEqual([
-    'Hide unlabelled rows',
-    'Pin distinct colors',
-  ])
-  const pin = rows.at(-1)!
-  expect('disabled' in pin && pin.disabled).toBe(false)
-  ;(pin as { onClick: () => void }).onClick()
-  expect(written).toEqual([['A1a', 'B1', 'C1']])
-
-  const pinned = categorical(['C1', 'B1', 'A1a']).at(-1)!
-  expect('disabled' in pinned && pinned.disabled).toBe(true)
-  expect(labels(colorByMenuItems(target()))).not.toContain(
-    'Pin distinct colors',
+// Each label takes a colour of its own as it arrives, so there is nothing to pin
+test('a text column offers its unlabelled toggle and no pin', () => {
+  const rows = colorByMenuItems(
+    target({
+      field: 'group',
+      attributeRanges: { group: { labels: ['B1', 'A1a', 'C1'], colors: {} } },
+      trackColors: undefined,
+    }),
   )
+  expect(labels(rows).at(-1)).toBe('Hide unlabelled rows')
+  expect(labels(rows)).not.toContain('Pin distinct colors')
 })
 
 // The measurements sit one hop in, so a plain PAF's user meets five radios

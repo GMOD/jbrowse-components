@@ -119,6 +119,7 @@ export function orderAttributeLabels(
             {
               ...range,
               labels,
+              seen: range.seen ?? range.labels,
               ...(domain.length > 0 ? { domain } : {}),
               ...(palette.length > 0 ? { palette } : {}),
             },

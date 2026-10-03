@@ -65,7 +65,7 @@ test('Pin distinct shapes lists the colliding values in the domain, and the key 
   expect(display.cornerNotices.join('\n')).toMatch(
     /share one shape.*Pin distinct shapes/,
   )
-  display.pinDistinct('shape')
+  display.pinDistinctShapes()
   expect(
     [...getSnapshot(display.conf.marks[0]!.encoding.shape).domain].sort(),
   ).toEqual(['SNV', 'deletion', 'insertion'])

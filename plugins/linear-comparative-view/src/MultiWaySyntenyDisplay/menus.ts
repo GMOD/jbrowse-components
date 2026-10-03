@@ -58,8 +58,6 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   setRibbonColorField: (field: string) => void
   ribbonColorAttributes: readonly string[]
   ribbonAttributeRanges: Record<string, AttributeRange>
-  ribbonColorDomain: readonly string[]
-  setRibbonColorDomain: (domain: string[]) => void
   hideUnlabelled: boolean
   setHideUnlabelled: (flag: boolean) => void
   showLaneTicks: boolean
@@ -76,11 +74,7 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   setShowLegend: (flag: boolean) => void
   hasLegendKey: boolean
   geneColorField: string
-  geneColorScale: string
   setGeneColorBy: (field: string) => void
-  geneColorDomain: readonly string[]
-  pinnedGeneColorDomain: readonly string[]
-  pinGeneColorDomain: () => void
   setLanesFrozen: (flag: boolean) => void
 }
 
@@ -278,19 +272,6 @@ export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
   })
 }
 
-function geneColorPinItem(model: MultiWayMenuModel): MenuItem | undefined {
-  return model.geneColorScale === 'categorical'
-    ? {
-        label: 'Pin distinct colors',
-        disabled:
-          model.pinnedGeneColorDomain.length === model.geneColorDomain.length,
-        onClick: () => {
-          model.pinGeneColorDomain()
-        },
-      }
-    : undefined
-}
-
 export function ribbonColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return colorByMenuItems({
     field: model.ribbonColorField,
@@ -299,10 +280,8 @@ export function ribbonColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
     attributeRanges: model.ribbonAttributeRanges,
     surface: 'lanes',
     hideUnlabelled: model.hideUnlabelled,
-    colorDomain: model.ribbonColorDomain,
     setColorField: model.setRibbonColorField,
     setHideUnlabelled: model.setHideUnlabelled,
-    setColorDomain: model.setRibbonColorDomain,
   })
 }
 
@@ -361,11 +340,7 @@ export function multiWayTrackMenuItems(model: MultiWayMenuModel): MenuItem[] {
     ...makeShowSubMenu(showSubMenuItems(model)),
     colorByMenuItem({
       blocks: [
-        {
-          header: 'Genes',
-          rows: geneColorMenuItems(model),
-          pin: geneColorPinItem(model),
-        },
+        { header: 'Genes', rows: geneColorMenuItems(model) },
         { header: 'Ribbons', rows: ribbonColorMenuItems(model) },
       ],
     }),

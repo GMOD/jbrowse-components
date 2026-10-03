@@ -504,7 +504,9 @@ export function stateModelFactory(
          */
         get markColors(): ColorSource[] {
           const { markChannels } = this
-          return self.conf.marks.map((m, i) => markColorOf(m, markChannels[i]!))
+          return self.conf.marks.map((m, i) =>
+            markColorOf(m, markChannels[i]!, self),
+          )
         },
         /**
          * #getter
@@ -1407,8 +1409,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The keys whose unlisted values collide on one colour or shape, each
-         * with the domain Pin distinct colors or shapes writes.
+         * The shape keys whose unlisted values collide on one shape, each
+         * with the domain Pin distinct shapes writes.
          */
         get sharedKeys() {
           return sharedKeysOf(this.legendSections)
@@ -1865,20 +1867,18 @@ export function stateModelFactory(
         /**
          * #action
          * The categorical analogue of the min/max dialog's "Use current
-         * range": every value a colliding key lists goes into the channel's
-         * `domain`, in key order after what it already lists, so each spends
-         * a slot of its own.
+         * range": every value a colliding shape key lists goes into the
+         * shape's `domain`, in key order after what it already lists, so each
+         * takes a shape of its own.
          */
-        pinDistinct(channel: 'color' | 'shape') {
+        pinDistinctShapes() {
           for (const key of self.sharedKeys) {
-            if (key.channel === channel) {
-              for (const i of key.markIndexes) {
-                setConf(
-                  self.conf.marks[i]!,
-                  ['encoding', channel, 'domain'],
-                  key.pinned,
-                )
-              }
+            for (const i of key.markIndexes) {
+              setConf(
+                self.conf.marks[i]!,
+                ['encoding', 'shape', 'domain'],
+                key.pinned,
+              )
             }
           }
         },

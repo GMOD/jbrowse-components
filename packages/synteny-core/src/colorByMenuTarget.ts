@@ -40,15 +40,11 @@ export function colorByMenuTargetFor(
     attributeRanges: model.attributeRanges,
     surface: model.colorSurface(),
     hideUnlabelled: model.hideUnlabelled,
-    colorDomain: model.colorDomain,
     setColorField: field => {
       model.setColorField(field)
     },
     setHideUnlabelled: value => {
       model.setHideUnlabelled(value)
-    },
-    setColorDomain: domain => {
-      model.setColorDomain(domain)
     },
     trackColors: {
       tracks,
@@ -71,13 +67,11 @@ export interface TrackColorsModel {
   attributeRanges: Record<string, AttributeRange>
   colorField: string
   hideUnlabelled: boolean
-  colorDomain: readonly string[]
   trackColorFor: (trackId: string) => string
   colorSurface: () => SyntenyColorSurface
   offersReferenceColor: () => boolean
   setColorField: (field: string) => void
   setHideUnlabelled: (value: boolean) => void
-  setColorDomain: (domain: string[]) => void
   setTrackColor: (trackId: string, value: string | undefined) => void
   clearTrackColors: () => void
 }
@@ -102,11 +96,8 @@ export interface ColorByMenuTarget {
   /** what draws the alignments, which some modes' help describes differently */
   surface: ColorModeSurface
   hideUnlabelled: boolean
-  /** the order a text column's labels take, which Pin distinct colors writes */
-  colorDomain: readonly string[]
   setColorField: (field: string) => void
   setHideUnlabelled: (value: boolean) => void
-  setColorDomain: (domain: string[]) => void
   /** the per-track swatches of a view overlaying tracks */
   trackColors?: {
     tracks: ColorByMenuTrack[]

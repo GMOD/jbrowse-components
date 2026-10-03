@@ -5,12 +5,14 @@ import {
   DEFAULT_RIBBON_COLOR,
   MISSING_VALUE_COLOR,
   UNLABELLED_COLOR,
+  categoricalColor as labelColor,
   createComparativeColorFunction,
   makeNameColorFunction,
   paletteColorAt,
   refNamePositionFor,
 } from './colorFunctions.ts'
 import { getColorBySwatch } from './colorLegend.ts'
+import { resolveCategoricalMode } from './colorRamps.ts'
 
 import type { ColorFunctionInputs, RefNamePosition } from './colorFunctions.ts'
 
@@ -241,6 +243,20 @@ describe('a categorical attribute', () => {
     expect(paint(['B1', 'C1', 'A1a'], ['C1', 'B1'])(0)).toBe(
       cssColorToABGR(categoricalColor('B1', ['C1', 'B1'])),
     )
+  })
+
+  test('deals labels the hash puts on one color a color each, and keeps them as labels arrive', () => {
+    const colorsOf = (labels: string[]) => {
+      const mode = resolveCategoricalMode('group', {
+        group: { labels, colors: {} },
+      })!
+      return labels.map(label => labelColor(mode, label))
+    }
+    const three = colorsOf(['protein_coding', 'snRNA', 'TEC'])
+    expect(new Set(three).size).toBe(3)
+    expect(
+      colorsOf(['protein_coding', 'snRNA', 'TEC', 'lncRNA']).slice(0, 3),
+    ).toEqual(three)
   })
 
   test("the view's range paints the domain's labels in order, and the file color still wins", () => {

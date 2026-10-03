@@ -476,22 +476,17 @@ test('Default keeps the field, and the field keeps its order', () => {
   })
 })
 
-test('Pin distinct colors writes the keyed values into the domain', () => {
+test('gene names the hash puts on one colour each take their own', () => {
   const display = createDisplay()
   anchorGenes(display, [
-    namedGene('g1', 'atpA', 100, 300),
-    namedGene('g2', 'atpB', 400, 600),
+    namedGene('g1', 'protein_coding', 100, 300),
+    namedGene('g2', 'snRNA', 400, 600),
+    namedGene('g3', 'TEC', 700, 900),
   ])
   display.setGeneColorBy('name')
-  setConf(display, ['color', 'labels'], ['ATP synthase A'])
-  setConf(display, ['color', 'title'], 'My genes')
-  expect(display.pinnedGeneColorDomain).toEqual(['atpA', 'atpB'])
-  display.pinGeneColorDomain()
-  expect(display.geneColorDomain).toEqual(['atpA', 'atpB'])
-  expect(display.geneColorSettings.color).toMatchObject({
-    labels: ['ATP synthase A'],
-    title: 'My genes',
-  })
+  const fills = anchorGeneFills(display).map(([, css]) => css)
+  expect(fills).toHaveLength(3)
+  expect(new Set(fills).size).toBe(3)
 })
 
 test('a ribbon colour pick keeps the ramp the config declares', () => {

@@ -133,8 +133,8 @@ describe('a categorical column', () => {
   })
 
   // The accumulation stays first-seen and the domain applies at the read, so
-  // clearing it gives back the order the fetches found. A label's color is its
-  // position in the list, so this moves the drawing with the key.
+  // clearing it gives back the order the fetches found. The first-seen order
+  // rides beside the sorted one, since it is what deals the colours.
   it('reads its labels in the declared order, and gives them back when it is cleared', () => {
     const view = viewWith([])
     view.observeAttributeRanges({
@@ -142,7 +142,12 @@ describe('a categorical column', () => {
     })
     view.setColorDomain(['C1'])
     expect(view.attributeRanges).toEqual({
-      group: { labels: ['C1', 'A1a', 'B1'], colors: {}, domain: ['C1'] },
+      group: {
+        labels: ['C1', 'A1a', 'B1'],
+        seen: ['B1', 'A1a', 'C1'],
+        colors: {},
+        domain: ['C1'],
+      },
     })
     view.setColorDomain([])
     expect(view.attributeRanges).toBe(view.seenAttributeRanges)

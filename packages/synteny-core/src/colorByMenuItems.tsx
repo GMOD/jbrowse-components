@@ -5,7 +5,6 @@ import { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
 import { presetRamp, resolveCategoricalMode } from './colorRamps.ts'
 
 import type { ColorByMenuTarget } from './colorByMenuTarget.ts'
-import type { CategoricalMode } from './colorRamps.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ModeEntry {
@@ -83,14 +82,8 @@ function radios(target: ColorByMenuTarget, modes: ModeEntry[]): MenuItem[] {
   }))
 }
 
-// Under a text column: hide the rows it leaves unlabelled, and pin the labels
-// seen so far into the domain so each takes a palette color of its own
-function categoricalItems(
-  target: ColorByMenuTarget,
-  { labels }: CategoricalMode,
-): MenuItem[] {
-  const { colorDomain } = target
-  const unpinned = labels.filter(label => !colorDomain.includes(label))
+// Under a text column: hide the rows it leaves unlabelled
+function categoricalItems(target: ColorByMenuTarget): MenuItem[] {
   return [
     {
       label: 'Hide unlabelled rows',
@@ -100,13 +93,6 @@ function categoricalItems(
         'Draw only the rows the text column labels, so the groups carry the picture on their own.',
       onClick: () => {
         target.setHideUnlabelled(!target.hideUnlabelled)
-      },
-    },
-    {
-      label: 'Pin distinct colors',
-      disabled: unpinned.length === 0,
-      onClick: () => {
-        target.setColorDomain([...colorDomain, ...unpinned])
       },
     },
   ]
@@ -191,7 +177,7 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
       helpText: 'A number each alignment carries, on a ramp the legend labels.',
       subMenu: radios(target, values),
     },
-    ...(categorical ? categoricalItems(target, categorical) : []),
+    ...(categorical ? categoricalItems(target) : []),
     ...(trackColors && trackColors.tracks.length > 1
       ? trackColorItems(trackColors)
       : []),

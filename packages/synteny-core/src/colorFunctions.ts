@@ -1,5 +1,5 @@
 import {
-  categoricalColor as labelColor,
+  categoricalColorScale,
   refNameColor,
   refNamePaletteColorAt,
 } from '@jbrowse/core/ui/colors'
@@ -214,14 +214,46 @@ export function makeContinuousColorFunction(
   }
 }
 
+const dealtScales = new WeakMap<
+  readonly string[],
+  {
+    mode: Pick<CategoricalMode, 'domain' | 'palette' | 'colors'>
+    scale: (label: string) => string
+  }
+>()
+
+// The labels dealt in the order the view first saw them, each skipping the
+// colours dealt before it; the list only grows, so a label keeps its colour
+// as others arrive.
+function dealtScale(mode: CategoricalMode) {
+  const cached = dealtScales.get(mode.seen)
+  if (
+    cached?.mode.domain === mode.domain &&
+    cached.mode.palette === mode.palette &&
+    cached.mode.colors === mode.colors
+  ) {
+    return cached.scale
+  }
+  const scale = categoricalColorScale(mode.domain, mode.palette, new Map())
+  for (const label of mode.seen) {
+    if (label !== '' && mode.colors[label] === undefined) {
+      scale(label)
+    }
+  }
+  dealtScales.set(mode.seen, { mode, scale })
+  return scale
+}
+
 /**
  * The color a label paints: the file's own if the row carried one, else the
- * one core's categorical channel paints it under the declared domain and
- * range, so the same label is the same color whichever window, session or
- * view met it first.
+ * one core's categorical channel deals it under the declared domain and range
+ * (ADR-205), in the order the view first saw the labels.
  */
 export function categoricalColor(mode: CategoricalMode, label: string) {
-  return mode.colors[label] ?? labelColor(label, mode.domain, mode.palette)
+  return (
+    mode.colors[label] ??
+    (label === '' ? NO_CATEGORY_COLOR : dealtScale(mode)(label))
+  )
 }
 
 /**

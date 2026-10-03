@@ -14,7 +14,10 @@
  * `score` asks the worker for nothing extra: it reads the heights the bar
  * already has.
  */
-import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import {
+  categoricalField,
+  dealKeyColors,
+} from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
@@ -27,6 +30,7 @@ import {
   featureColorEncoding,
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { MAX_COLOR_CUTS } from '@jbrowse/render-core/shaders/markColorConsts'
 
 import { paintScaleOf } from './legend.ts'
@@ -36,6 +40,7 @@ import type { MarkConfig } from './configSchema.ts'
 import type { MarkRegionData } from './markList.ts'
 import type { MarkLane } from './markSpecs.ts'
 import type { StepChannels } from './stepChannels.ts'
+import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type {
   CategoricalRef,
   ColorEncoding,
@@ -56,9 +61,13 @@ export type ColorSource =
   /**
    * A colour per category; the worker sends each feature's category as an
    * index into the categories it met, and each is painted here through the
-   * config's `domain` and `range`.
+   * config's `domain` and `range`, dealt into `held` (`heldColorSlots`).
    */
-  | { kind: 'categories'; encoding: CategoricalRef & { range?: string[] } }
+  | {
+      kind: 'categories'
+      encoding: CategoricalRef & { range?: string[] }
+      held?: HeldSlots
+    }
   /**
    * A ramp or threshold over a number; the worker sends the numbers, unless
    * they are the `y` values the mark already plots (`fromY`).
@@ -67,9 +76,15 @@ export type ColorSource =
   /** A `jexl:` expression the worker evaluates per feature into a colour. */
   | { kind: 'expression'; encoding: string }
 
+/**
+ * `owner` is the display holding the mark, whose track's categorical colours
+ * deal into one set of slots; a caller that only asks the worker leaves it
+ * out.
+ */
 export function markColorOf(
   mark: MarkConfig,
   channels: StepChannels,
+  owner?: object,
 ): ColorSource {
   // a key's labels change what the legend says, not what any feature paints
   const encoding = paintedColorEncoding(
@@ -82,7 +97,11 @@ export function markColorOf(
       : { kind: 'constant', color: cssColorToABGR(value) }
   }
   if (encoding.scale === 'categorical') {
-    return { kind: 'categories', encoding }
+    return {
+      kind: 'categories',
+      encoding,
+      held: owner && heldColorSlots(owner, encoding),
+    }
   }
   const y = mark.encoding.y || channels.y
   return {
@@ -185,6 +204,7 @@ function colorByKeys<L extends EncodedChannels>(
   layer: L,
   keys: Uint32Array,
   encoding?: CategoricalRef & { range?: string[] },
+  held?: HeldSlots,
 ): L {
   const read = layer.scale
   if (read?.kind !== 'categorical') {
@@ -195,7 +215,12 @@ function colorByKeys<L extends EncodedChannels>(
   const declared = categoricalField(field, {
     domain: own?.domain?.map(String),
     range: own?.range,
+    held: own && held,
   })
+  dealKeyColors(
+    declared,
+    read.entries.map(e => e.value),
+  )
   const palette = Uint32Array.from(read.entries, e =>
     cssColorToABGR(declared.color(e.value)),
   )
@@ -307,7 +332,7 @@ export function withMarkColor<L extends EncodedChannels>(
           }
     case 'categories':
       return layer.colorKey && layer.scale?.field === color.encoding.field
-        ? colorByKeys(layer, layer.colorKey, color.encoding)
+        ? colorByKeys(layer, layer.colorKey, color.encoding, color.held)
         : colorAsHeld(layer)
     case 'numbers': {
       const { fromY, encoding } = color

@@ -41,6 +41,7 @@ import {
   colorFieldOf,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -217,7 +218,6 @@ import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
-import type { ColorScaleName } from '@jbrowse/display-kit/colorConfigSchema'
 import type {
   HighlightRect,
   HighlightStyle,
@@ -716,6 +716,13 @@ export function stateModelFactory(
       get geneColorEncoding() {
         return colorEncodingOf(self.geneColorSettings.color)
       },
+      /**
+       * #getter
+       * The slots a categorical gene colour deals its values into.
+       */
+      get geneColorSlots() {
+        return heldColorSlots(self, this.geneColorEncoding)
+      },
     }))
     .views(self => ({
       /**
@@ -724,18 +731,6 @@ export function stateModelFactory(
        */
       get geneColorField(): string {
         return colorFieldOf(self.geneColorEncoding)?.field ?? ''
-      },
-      /**
-       * #getter
-       * `none` while `color.value` paints
-       */
-      get geneColorScale(): ColorScaleName {
-        const encoding = self.geneColorEncoding
-        return typeof encoding === 'object' ? encoding.scale : 'none'
-      },
-      /** #getter */
-      get geneColorDomain(): readonly string[] {
-        return self.geneColorSettings.color.domain
       },
     }))
     .views(self => {
@@ -765,6 +760,7 @@ export function stateModelFactory(
                 self.geneColorEncoding,
                 geneColorSettings.utrColor,
                 jexl,
+                self.geneColorSlots,
               ),
             }
           }
@@ -792,6 +788,7 @@ export function stateModelFactory(
                       self.geneColorEncoding,
                       geneColorSettings.utrColor,
                       jexl,
+                      self.geneColorSlots,
                     ),
                   },
             )
@@ -2234,7 +2231,7 @@ export function stateModelFactory(
         const onScreen: Span = [0, self.canvasWidth]
         const encoding = self.geneColorEncoding
         const { title } = self.geneColorSettings.color
-        const field = colorFieldOf(encoding)
+        const field = colorFieldOf(encoding, self.geneColorSlots)
         if (field) {
           return laneFieldKey(hits, onScreen, field, title)
         }
@@ -2251,21 +2248,6 @@ export function stateModelFactory(
           : []
       },
     }))
-    .views(self => ({
-      /** #getter */
-      get pinnedGeneColorDomain(): string[] {
-        const { domain } = self.geneColorSettings.color
-        const listed = new Set(domain)
-        const keyed = self.geneColorScales.flatMap(scale =>
-          scale.kind === 'categorical'
-            ? scale.entries
-                .flatMap(e => e.values ?? [e.value])
-                .filter(v => v !== '')
-            : [],
-        )
-        return [...domain, ...keyed.filter(v => !listed.has(v))]
-      },
-    }))
     .actions(self => ({
       /**
        * #action
@@ -2277,10 +2259,6 @@ export function stateModelFactory(
           'color',
           colorForField(self.geneColorSettings.color, field),
         )
-      },
-      /** #action */
-      pinGeneColorDomain() {
-        setConf(self, ['color', 'domain'], [...self.pinnedGeneColorDomain])
       },
     }))
     .views(self => ({
@@ -2389,7 +2367,9 @@ export function stateModelFactory(
         get laneLayerColors(): ColorSource[][] {
           return sameColors(
             self.configuration.laneLayers.map(layer =>
-              layer.marks.map(m => markColorOf(m, stepChannels(m.transform))),
+              layer.marks.map(m =>
+                markColorOf(m, stepChannels(m.transform), self),
+              ),
             ),
           )
         },

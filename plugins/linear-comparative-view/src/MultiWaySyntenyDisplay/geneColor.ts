@@ -6,6 +6,7 @@ import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { colorFieldOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { MultiWaySyntenyDisplayConfig } from './configSchema.ts'
+import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type {
@@ -43,12 +44,16 @@ function memo<K, V>(map: Map<K, V>, key: K, make: () => V) {
   return value
 }
 
-/** `encoding` is `geneColorEncoding`; `utrColor` is the slot as written. */
+/**
+ * `encoding` is `geneColorEncoding`; `utrColor` is the slot as written;
+ * `held`, where a categorical field deals its colours.
+ */
 export function geneColors(
   conf: MultiWaySyntenyDisplayConfig,
   encoding: string | undefined | FieldColorEncoding,
   utrColor: unknown,
   jexl: JexlInstance,
+  held?: HeldSlots,
 ): GeneColors {
   const byCss = new Map<string, PaintedFill>()
   const byKey = new Map<string, PaintedFill>()
@@ -70,7 +75,7 @@ export function geneColors(
     )
   // #endregion
 
-  const field = colorFieldOf(encoding)
+  const field = colorFieldOf(encoding, held)
   if (field) {
     const keyed = (key: string) =>
       memo(byKey, key, () => {

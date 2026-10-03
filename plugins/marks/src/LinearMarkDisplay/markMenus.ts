@@ -73,16 +73,17 @@ function rowsMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
   ]
 }
 
-// One item per channel whose key has values sharing a swatch, as the feature
-// display offers Pin distinct colors
-function pinDistinctMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
-  const channels = new Set(self.sharedKeys.map(k => k.channel))
-  return [...channels].map(channel => ({
-    label: channel === 'color' ? 'Pin distinct colors' : 'Pin distinct shapes',
-    onClick: () => {
-      self.pinDistinct(channel)
-    },
-  }))
+function pinDistinctShapesMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
+  return self.sharedKeys.length > 0
+    ? [
+        {
+          label: 'Pin distinct shapes',
+          onClick: () => {
+            self.pinDistinctShapes()
+          },
+        },
+      ]
+    : []
 }
 
 /** The track menu: the plot editor, the axis, the filter, the sections and rows, and the chrome toggles. */
@@ -105,7 +106,7 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
         self.setPointSize(n)
       },
     }),
-    ...pinDistinctMenuItems(self),
+    ...pinDistinctShapesMenuItems(self),
     ...filterMenuItems({
       narrowings: { filter: jexlFilterNarrowing(self) },
       onEdit: () => {

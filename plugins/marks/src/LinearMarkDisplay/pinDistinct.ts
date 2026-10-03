@@ -1,63 +1,50 @@
-import type { MarkLegendSection, ScaledChannel } from './legend.ts'
+import type { MarkLegendSection } from './legend.ts'
 
 /**
- * A key whose unlisted values hash onto one colour or shape: which values
- * share one, and the domain that would give each its own.
+ * A shape key whose unlisted values hash onto one shape: which values share
+ * one, and the domain that would give each its own. Colours need no such key,
+ * since a categorical colour deals each value its own (ADR-205).
  */
 export interface SharedKey {
   markIndexes: number[]
-  channel: ScaledChannel
-  /** Each set of values painted alike, in the key's order. */
+  channel: 'shape'
+  /** Each set of values drawn alike, in the key's order. */
   shared: string[][]
   /** The declared domain followed by every value the key lists that it does not. */
   pinned: string[]
 }
 
 /**
- * The keys whose values collide, from the legend's unioned sections: a
- * categorical colour or a shape scale with two or more values outside its
- * `domain` on one swatch, since an unlisted value takes a slot derived from
- * itself and two values can derive one. A listed value has a slot of its own.
+ * The shape keys whose values collide, from the legend's unioned sections:
+ * two or more values outside the `domain` on one shape, since an unlisted
+ * value takes a shape derived from itself and two values can derive one. A
+ * listed value has a shape of its own.
  */
 export function sharedKeysOf(sections: MarkLegendSection[]): SharedKey[] {
-  return sections.flatMap(({ markIndexes, channel, scale }) => {
-    const keyed:
-      | { entries: [value: string, swatch: string][]; domain: string[] }
-      | undefined =
-      scale.kind === 'categorical'
-        ? {
-            entries: scale.entries.map(e => [e.value, String(e.color)]),
-            domain: scale.domain,
-          }
-        : scale.kind === 'shape'
-          ? {
-              entries: scale.entries.map(e => [e.value, e.shape]),
-              domain: scale.domain,
-            }
-          : undefined
-    if (!keyed) {
+  return sections.flatMap(({ markIndexes, scale }) => {
+    if (scale.kind !== 'shape') {
       return []
     }
-    const { entries, domain } = keyed
+    const { entries, domain } = scale
     const listed = new Set(domain)
-    const bySwatch = new Map<string, string[]>()
-    for (const [value, swatch] of entries) {
+    const byShape = new Map<string, string[]>()
+    for (const { value, shape } of entries) {
       if (value !== '') {
-        bySwatch.set(swatch, [...(bySwatch.get(swatch) ?? []), value])
+        byShape.set(shape, [...(byShape.get(shape) ?? []), value])
       }
     }
-    const shared = [...bySwatch.values()].filter(
+    const shared = [...byShape.values()].filter(
       values => values.length > 1 && values.some(v => !listed.has(v)),
     )
     return shared.length > 0
       ? [
           {
             markIndexes,
-            channel,
+            channel: 'shape' as const,
             shared,
             pinned: [
               ...domain,
-              ...entries.flatMap(([value]) =>
+              ...entries.flatMap(({ value }) =>
                 value !== '' && !listed.has(value) ? [value] : [],
               ),
             ],
@@ -75,7 +62,6 @@ function quoted(values: readonly string[]) {
 }
 
 /** The corner notice for a shared key, naming the menu item that lists the values. */
-export function sharedKeyNotice({ markIndexes, channel, shared }: SharedKey) {
-  const what = channel === 'color' ? 'colour' : 'shape'
-  return `mark ${markIndexes.join(', ')} ${channel}: ${shared.map(quoted).join('; ')} share one ${what}, since a value the domain does not list takes a ${what} derived from itself; Pin distinct ${channel === 'color' ? 'colors' : 'shapes'} lists them`
+export function sharedKeyNotice({ markIndexes, shared }: SharedKey) {
+  return `mark ${markIndexes.join(', ')} shape: ${shared.map(quoted).join('; ')} share one shape, since a value the domain does not list takes a shape derived from itself; Pin distinct shapes lists them`
 }

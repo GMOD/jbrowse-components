@@ -115,6 +115,46 @@ test('a categorical colour crosses as its field, and its domain and range repain
   expect(layerOf(display).colorKey).toBeUndefined()
 })
 
+test('categories the hash puts on one colour each take their own, and keep it as regions arrive', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        mark: 'bar',
+        encoding: {
+          y: 'score',
+          color: { field: 'biotype', scale: 'categorical' },
+        },
+      },
+    ],
+  }).createDisplay()
+  const biotypes = (names: string[]) =>
+    features(
+      names.map((biotype, i) => ({
+        start: i * 100,
+        end: i * 100 + 50,
+        score: 1,
+        biotype,
+      })),
+    )
+  display.setRpcData(
+    0,
+    workerResult(display, biotypes(['snRNA', 'protein_coding'])),
+    REGION,
+  )
+  const first = colorLane(display)
+  expect(new Set(first).size).toBe(2)
+  display.setRpcData(
+    1,
+    workerResult(display, biotypes(['TEC', 'protein_coding', 'snRNA'])),
+    { ...REGION, refName: 'ctgB' },
+  )
+  const second = display.rpcDataMap.get(1)!.layers[0]!.color as Uint32Array
+  expect(new Set(second).size).toBe(3)
+  expect(second[1]).toBe(first[1])
+  expect(second[2]).toBe(first[0])
+  expect(display.cornerNotices.join('\n')).not.toMatch(/share one colour/)
+})
+
 test('a threshold over the plotted field ships no colour lane and is not a fetch input', () => {
   const display = loaded([
     {
