@@ -60,6 +60,27 @@ describe('cullMafRows', () => {
     expect(culled.summary!.count).toBe(3)
   })
 
+  it('keeps an insertion just past the block whose marker reaches into it', () => {
+    const x = Uint32Array.from([1500, 2150, 2300, 1500])
+    const culled = cullMafRows(
+      {
+        cells: EMPTY_MAF_CELLS,
+        insertions: {
+          x,
+          x2: x,
+          row: Uint32Array.from([0, 0, 0, 3]),
+          length: Uint32Array.from([20, 20, 20, 20]),
+          color: new Uint32Array(4),
+          count: 4,
+        },
+      },
+      [BLOCK],
+      100,
+      { firstRow: 0, endRow: 2 },
+    )
+    expect([...culled.insertions!.x]).toEqual([1500, 2150])
+  })
+
   it('keeps nothing for a region no block shows', () => {
     const culled = cullMafRows({ cells: EMPTY_MAF_CELLS, summary }, [], 100, {
       firstRow: 0,

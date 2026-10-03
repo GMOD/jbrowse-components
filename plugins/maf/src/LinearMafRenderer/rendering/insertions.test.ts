@@ -57,6 +57,7 @@ test('each insertion is interbase at the reference base after its run, on its ro
   const c = mafInsertionChannels(
     region('A--AC-A', ['AGGACTA', 'A--AC-A', 'AG-AC-A']),
     PURPLE,
+    1,
   )
   expect({
     x: [...c.x],
@@ -75,14 +76,16 @@ test('each insertion is interbase at the reference base after its run, on its ro
 
 test('a re-encode in another colour walks the region once', () => {
   const data = region('A--A', ['AGGA'])
-  const a = mafInsertionChannels(data, PURPLE)
-  const b = mafInsertionChannels(data, 0xff00ff00)
+  const a = mafInsertionChannels(data, PURPLE, 1)
+  const b = mafInsertionChannels(data, 0xff00ff00, 1)
   expect(b.x).toBe(a.x)
   expect([...b.color]).toEqual([0xff00ff00])
 })
 
 test('a region with no reference gap has no insertions', () => {
-  expect(mafInsertionChannels(region('ACGT', ['ACGT']), PURPLE).count).toBe(0)
+  expect(mafInsertionChannels(region('ACGT', ['ACGT']), PURPLE, 1).count).toBe(
+    0,
+  )
 })
 
 function paintedWidths(refSeq: string, rows: string[], rowHeight: number) {
@@ -90,7 +93,7 @@ function paintedWidths(refSeq: string, rows: string[], rowHeight: number) {
   const s = state(rowHeight)
   insertionMark.paintBlock(
     ctx,
-    mafInsertionChannels(region(refSeq, rows), PURPLE),
+    mafInsertionChannels(region(refSeq, rows), PURPLE, 1),
     block,
     s,
     mafInsertionParams(s),
@@ -107,4 +110,23 @@ test('a large insertion is a count box in a tall row and the narrow bar in a sho
 
 test('a small insertion is a 1px bar under its serif caps', () => {
   expect(paintedWidths('A--A', ['AGGA'], 12)).toEqual([1, 4, 4])
+})
+
+test("zoomed out, each row keeps the longest of a bin's insertions", () => {
+  const data = region('A-A-A--A', ['AGAGAGGA', 'A-AGA--A'])
+  const merged = (binBp: number) => {
+    const c = mafInsertionChannels(data, PURPLE, binBp)
+    return { x: [...c.x], row: [...c.row], length: [...c.length] }
+  }
+  expect(merged(1)).toEqual({
+    x: [101, 102, 103, 102],
+    row: [0, 0, 0, 1],
+    length: [1, 1, 2, 1],
+  })
+  expect(merged(2)).toEqual({
+    x: [101, 103, 102],
+    row: [0, 0, 1],
+    length: [1, 2, 1],
+  })
+  expect(merged(4)).toEqual({ x: [103, 102], row: [0, 1], length: [2, 1] })
 })

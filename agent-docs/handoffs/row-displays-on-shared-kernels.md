@@ -84,8 +84,12 @@ captures of volvox, roadmap and bxd.
    module. The counts are text, so each display keeps a Canvas2D layer for them
    (`paintInsertionLabels`), and multi-row's for its deletion lines too. Left:
    multi-row's hit test (`hitTesting.ts`) answers the block, not a marker
-   wider than it, though `hoverInk` draws both; and the mark display's `cells`
-   insertions need an `insertion` mark type (maf-onto-marks item 8).
+   wider than it, though `hoverInk` draws both; the mark display's `cells`
+   insertions need an `insertion` mark type (maf-onto-marks item 8); MAF walks
+   a region's insertions eagerly on the main thread per fetch, about a fifth
+   of what `buildMafChannels` already costs over the same blocks, so both
+   encodes moving to the worker is the fix, not a lazy index; and no test runs
+   `insertionMark.slang`'s vertex geometry, only its Canvas2D twin.
 2. **Multi-row onto shared kernels**: clustering bins on `binColumns` and the
    worker reads `rows`/`clusterField` through `fieldReader` now. Left: the
    presence/categorical encoding into tree-sidebar so the mark display can

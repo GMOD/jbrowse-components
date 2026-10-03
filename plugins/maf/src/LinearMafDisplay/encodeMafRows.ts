@@ -1,3 +1,4 @@
+import { textWidthForNumber } from '@jbrowse/alignments-core'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { clipBlockForCanvas } from '@jbrowse/render-core/canvas2dUtils'
 
@@ -54,6 +55,8 @@ export const EMPTY_MAF_COVERAGE: MafCoverageRegion = {
   interbaseMaxCount: 0,
   indicatorPackedBuffer: new ArrayBuffer(0),
 }
+
+const WIDEST_MARKER_PX = textWidthForNumber(Number.MAX_SAFE_INTEGER)
 
 /**
  * How identity draws, where it does: the heatmap's cells, or the X-Y plot's
@@ -145,6 +148,7 @@ export function encodeMafRows(
         ? mafInsertionChannels(
             detail,
             cssColorToABGR(gpu.palette.insertionColor),
+            gpu.binBp,
           )
         : undefined,
     sourceChrom:
@@ -195,6 +199,7 @@ function pickInsertions(
     row: pick(c.row),
     length: pick(c.length),
     color: pick(c.color),
+    under: c.under && pick(c.under),
     count: kept.length,
   }
 }
@@ -211,10 +216,13 @@ export function cullMafRows(
   canvasWidth: number,
   rows: { firstRow: number; endRow: number },
 ): MafRowsPayload {
-  const ranges = blocks.flatMap(block => {
-    const clip = clipBlockForCanvas(block, canvasWidth)
-    return clip ? [paintedBpRange(block, clip)] : []
-  })
+  const rangesWithin = (slackPx?: number) =>
+    blocks.flatMap(block => {
+      const clip = clipBlockForCanvas(block, canvasWidth)
+      return clip ? [paintedBpRange(block, clip, slackPx)] : []
+    })
+  const ranges = rangesWithin()
+  const markerRanges = rangesWithin(WIDEST_MARKER_PX / 2)
   const shownInsertions = (c: InsertionChannels) => {
     const kept: number[] = []
     for (let i = 0; i < c.count; i++) {
@@ -222,7 +230,7 @@ export function cullMafRows(
       if (
         row >= rows.firstRow &&
         row < rows.endRow &&
-        ranges.some(r => r.overlaps(c.x[i]!, c.x2[i]! + 1))
+        markerRanges.some(r => r.overlaps(c.x[i]!, c.x2[i]! + 1))
       ) {
         kept.push(i)
       }

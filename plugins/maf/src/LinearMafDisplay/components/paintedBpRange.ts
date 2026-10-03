@@ -4,8 +4,8 @@ import type { BlockClip } from '@jbrowse/render-core/canvas2dUtils'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 /**
- * The `bpCull` a render block can actually paint into, widened by one pixel's
- * worth of bp — the Canvas2D twin of the one `eachVisibleRegion` yields, which
+ * The `bpCull` a render block can actually paint into, widened by `slackPx`
+ * (one pixel by default) worth of bp — the Canvas2D twin of the one `eachVisibleRegion` yields, which
  * bounds against a visible region instead.
  *
  * The padding matters: `clampBlockScissor` floors/ceils the block's screen
@@ -17,7 +17,11 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
  * stays the authority on what paints, so slack costs a little work and can
  * never change the picture.
  */
-export function paintedBpRange(block: RenderBlock, clip: BlockClip) {
-  const slack = Math.ceil(clip.bpLength / clip.fullBlockWidth) + 1
+export function paintedBpRange(
+  block: RenderBlock,
+  clip: BlockClip,
+  slackPx = 1,
+) {
+  const slack = Math.ceil((slackPx * clip.bpLength) / clip.fullBlockWidth) + 1
   return bpCull(block.start - slack, block.end + slack)
 }

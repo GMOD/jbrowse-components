@@ -205,6 +205,7 @@ export const insertionMark: MarkShape<InsertionChannels, InsertionParams> = {
       ctx.strokeStyle = OUTLINE_CSS
       ctx.lineWidth = 1
     }
+    let fill: number | undefined
     for (let i = 0; i < c.count; i++) {
       if (
         placeInsertion(c, g, i) &&
@@ -213,7 +214,10 @@ export const insertionMark: MarkShape<InsertionChannels, InsertionParams> = {
         g.top <= frame.canvasHeight
       ) {
         const w = g.barWidth
-        ctx.fillStyle = abgrToCssRgba(c.color[i]!)
+        if (c.color[i] !== fill) {
+          fill = c.color[i]!
+          ctx.fillStyle = abgrToCssRgba(fill)
+        }
         ctx.fillRect(g.center - w / 2, g.top, w, h)
         drawInsertionSerifs(ctx, g.center, g.top, h, c.length[i]!, g.pxPerBp)
         if (outlines && w >= MIN_OUTLINED_PX) {
