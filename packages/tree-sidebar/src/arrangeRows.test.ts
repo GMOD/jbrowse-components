@@ -18,11 +18,10 @@ function haplotypeAlias(samples: string[]): RowAlias {
 }
 
 const hooks: ArrangeRowsHooks = {
-  identityChannel: 'color',
   unlistedRowsSort: 'source',
   rowAlias: undefined,
 }
-const none = { domain: [], labels: {}, rowColors: new Map<string, string>() }
+const none = { domain: [], labels: {} }
 const names = (rows: { name: string }[]) => rows.map(r => r.name)
 
 describe('orderRowsByDomain', () => {
@@ -129,29 +128,21 @@ describe('arrangeRows', () => {
         {
           domain: ['a'],
           labels: { b: 'Bee', ghost: 'Boo' },
-          rowColors: new Map([['a', 'red']]),
         },
         hooks,
       ),
     ).toBe(rows)
   })
 
-  test('a label replaces the row label, a colour lands on the channel', () => {
-    const out = arrangeRows(
-      rows,
-      {
-        domain: ['c'],
-        labels: { a: 'Ay' },
-        rowColors: new Map([['b', 'blue']]),
-      },
-      { ...hooks, identityChannel: 'labelColor' },
-    )
+  test('a label replaces the row label and leaves its colour', () => {
+    const out = arrangeRows(rows, { domain: ['c'], labels: { a: 'Ay' } }, hooks)
     expect(out).toEqual([
       { name: 'c' },
       { name: 'a', color: 'red', label: 'Ay' },
-      { name: 'b', label: 'Bee', labelColor: 'blue' },
+      { name: 'b', label: 'Bee' },
     ])
     expect(out[0]).toBe(rows[2])
+    expect(out[2]).toBe(rows[1])
   })
 
   test('sorted: unlisted rows sort, digits by magnitude, the empty row last', () => {
@@ -174,7 +165,7 @@ describe('arrangeRows', () => {
     ).toBe(values)
   })
 
-  test('a label or colour by row name, then by its alias', () => {
+  test('a label by row name, then by its alias', () => {
     const haplotypes = ['HG001', 'HG002'].flatMap(sample => [
       { name: `${sample} HP0` },
       { name: `${sample} HP1` },
@@ -184,21 +175,16 @@ describe('arrangeRows', () => {
       {
         domain: [],
         labels: { 'HG001 HP1': 'One, second', HG002: 'Second' },
-        rowColors: new Map([
-          ['HG001', 'blue'],
-          ['HG002 HP0', 'green'],
-        ]),
       },
       {
-        identityChannel: 'labelColor',
         unlistedRowsSort: 'source',
         rowAlias: haplotypeAlias(['HG001', 'HG002']),
       },
     )
     expect(out).toEqual([
-      { name: 'HG001 HP0', labelColor: 'blue' },
-      { name: 'HG001 HP1', label: 'One, second', labelColor: 'blue' },
-      { name: 'HG002 HP0', label: 'Second', labelColor: 'green' },
+      { name: 'HG001 HP0' },
+      { name: 'HG001 HP1', label: 'One, second' },
+      { name: 'HG002 HP0', label: 'Second' },
       { name: 'HG002 HP1', label: 'Second' },
     ])
   })

@@ -242,8 +242,8 @@ export default function configSchemaFactory() {
       },
       /**
        * #slot rowColor
-       * The tint beside each row's label: a sample-metadata attribute whose
-       * palette tints every row, or under `name` the colours a reader set row
+       * The bar beside each row's label: a sample-metadata attribute whose
+       * palette colours every row, or under `name` the colours a reader set row
        * by row.
        */
       rowColor: rowColorConfigSchema,

@@ -81,7 +81,8 @@ export function findRowHit(
 // than taking the full model so the hit logic stays unit-testable without MST.
 export interface WiggleHitModel {
   effectiveRowHeight: number
-  sources: VisibleSource[]
+  // each visible source and the colour its marks paint in
+  markSources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   // the resolved mode, never the raw `summaryScoreMode` slot: density draws
   // averages whatever the slot says, and the tooltip has to report what the
@@ -111,7 +112,7 @@ export function findWiggleHit(
 ): WiggleHoveredFeature | undefined {
   const {
     effectiveRowHeight,
-    sources,
+    markSources: sources,
     rpcDataMap,
     effectiveSummaryScoreMode,
     isOverlay,

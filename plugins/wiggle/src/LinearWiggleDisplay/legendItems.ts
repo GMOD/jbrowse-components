@@ -1,3 +1,5 @@
+import { markColorOf } from './sourcesLogic.ts'
+
 import type { LegendItem } from '@jbrowse/core/ui'
 
 // A source, as the color key sees it — spelled out rather than taking `Source`
@@ -6,7 +8,7 @@ interface LegendSource {
   name: string
   label?: string
   color?: string
-  labelColor?: string
+  rowColor?: string
   group?: string
 }
 
@@ -24,19 +26,19 @@ interface LegendSource {
  * group do not. An ungrouped source keeps a row of its own, since
  * nothing else identifies it.
  *
- * **A score gradient decides which channel the color comes from.** `color` is
- * a row's identity except where a gradient paints (density, or bars and points
- * under a declared `linear` colour): there it is the score ramp and identity
- * sits in `labelColor` — see the channel note in sourcesLogic.ts. Reading
- * `color` in density gave a grouped-but-uncolored cohort N rows that were all
- * `fallbackColor`, naming groups that were on screen in as many different
- * colors.
+ * **A score gradient decides which color a row is keyed by.** A row is keyed
+ * by the colour its marks paint in (`markColorOf`) except where a gradient
+ * paints (density, or bars and points under a declared `linear` colour):
+ * there the marks are the score ramp and the row's `rowColor` shows only on
+ * its label bar. Keying the marks in density gave a grouped-but-uncolored
+ * cohort N rows that were all `fallbackColor`, naming groups that were on
+ * screen in as many different colors.
  *
  * **The fallback belongs to the mode as much as the channel does, and only
  * overlay/multirow have one.** There, an unset `color` really is painted in
  * `posColor` (`buildSourceRenderData`'s `defaultPosColor`), so resolving to it
  * states what is on screen. In density nothing does: identity is drawn by
- * `SvgRowLabels`, which paints a row with no `labelColor` as no swatch at all
+ * `SvgRowLabels`, which paints a row with no `rowColor` as no swatch at all
  * rather than a default one — and `posColor` there is the score ramp, so a key
  * row in it points at a color every row is on. An uncolored density row
  * therefore gets no key entry, matching the drawing side's own choice to draw
@@ -51,13 +53,22 @@ interface LegendSource {
  */
 export function buildLegendItems(
   sources: LegendSource[],
-  gradientPaints: boolean,
-  fallbackColor: string,
+  {
+    gradientPaints,
+    marksTakeRowColor,
+    fallbackColor,
+  }: {
+    gradientPaints: boolean
+    marksTakeRowColor: boolean
+    fallbackColor: string
+  },
 ): LegendItem[] {
   const seen = new Set<string>()
   const items: LegendItem[] = []
   for (const s of sources) {
-    const color = gradientPaints ? s.labelColor : (s.color ?? fallbackColor)
+    const color = gradientPaints
+      ? s.rowColor
+      : (markColorOf(s, marksTakeRowColor) ?? fallbackColor)
     if (color === undefined) {
       continue
     }

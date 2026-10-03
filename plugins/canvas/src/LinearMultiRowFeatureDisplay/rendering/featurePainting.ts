@@ -47,18 +47,3 @@ export function ownColors(data: OwnColorData, fieldPalette?: FieldPalette) {
     return value > 0 ? table[(value - 1) * 3]! : baked
   })
 }
-
-/**
- * Whether a legend toggle hides a feature painted `abgr`. Only a row painting
- * the feature's own colour answers to the legend: a row with an override
- * paints something the legend never lists, so an own colour equal to a hidden
- * category must not hide its features. The encode applies it, and every
- * overlay reads the encode.
- */
-export function hiddenByCategory(
-  abgr: number,
-  rowOverridden: boolean,
-  hiddenColors: ReadonlySet<number>,
-) {
-  return !rowOverridden && hiddenColors.has(abgr)
-}

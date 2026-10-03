@@ -19,13 +19,13 @@ import {
   dealtValueColors,
   resolveRowColors,
   rowFieldValue,
+  withRowColors,
 } from './rowColorScale.ts'
 import { rowEdits } from './rowEdits.ts'
 import { IDENTITY_FIELDS, extraColumns } from './sourcesGridUtils.ts'
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
 
 import type {
-  IdentityChannel,
   RowAlias,
   RowBand,
   RowBanding,
@@ -59,7 +59,7 @@ const NOT_COLOUR_FIELDS = new Set<string>([
   'id',
   'label',
   'color',
-  'labelColor',
+  'rowColor',
 ])
 
 // What "Reset row order" is offered on: the focus has a clear of its own, and
@@ -259,14 +259,15 @@ export interface ClusterRun {
  * The rows are derived in stages, each a computed of its own: the display's
  * `discoveredRows`, then `expandedRows` (`expandRows`: a variant display's
  * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
- * `rows.labels` and tinted by the `rowColor` pairs on the `identityChannel`,
- * then `clusterableSources`, narrowed to the focus, then `bandedSources`,
- * stacked in the bands `rowBanding` names.
+ * `rows.labels` and each carrying its resolved `rowColor`, then
+ * `clusterableSources`, narrowed to the focus, then `bandedSources`, stacked
+ * in the bands `rowBanding` names.
  *
  * A row's colour is `resolvedRowColors`: its `rowColor` entry (a `name` pair,
  * or the colour `dealtRowColors` deals its attribute value), else its own
- * `color`, else the row palette's colour by name where `rowPaletteDeals`.
- * Each display paints it where its rows take a colour.
+ * `color`, else the row palette's colour by name where `rowPaletteDeals`. The
+ * sidebar draws it as a bar beside the row's label, and a display paints its
+ * marks in it where `rowColorPaintsMarks`.
  *
  * Every arrangement write reaches the session at once rather than after the
  * track's 400 ms save, so a clustering run is one undo step and undoable the
@@ -438,19 +439,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * Overridable hook: the name a row also answers to, for a display whose
        * rows stand for something named by another name (a variant display's
        * haplotype rows, each answering to its sample). An order, a label, a
-       * tint and a focus written against the alias reach every row answering
+       * colour and a focus written against the alias reach every row answering
        * to it. None by default.
        */
       get rowAlias(): RowAlias | undefined {
         return undefined
-      },
-      /**
-       * #getter
-       * Overridable hook: the row channel a `rowColor` entry paints, `color`
-       * by default.
-       */
-      get identityChannel(): IdentityChannel {
-        return 'color'
       },
       /**
        * #getter
@@ -727,20 +720,19 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The rows in the reader's arrangement, with no focus, palette or band:
-       * the list the arrangement dialog edits, so a submit writes back only
-       * what the reader chose. `expandedRows` itself while nothing is
-       * arranged.
+       * The rows in the reader's arrangement, each with its resolved
+       * `rowColor`, and with no focus or band: the list the arrangement dialog
+       * edits, so a submit writes back only what the reader chose.
+       * `expandedRows` itself while nothing is arranged or coloured.
        */
       get editableSources(): S[] {
-        return arrangeRows(
-          self.expandedRows,
-          {
-            domain: self.rowOrder,
-            labels: self.rowLabels,
-            rowColors: self.rowColorPairs,
-          },
-          self,
+        return withRowColors(
+          arrangeRows(
+            self.expandedRows,
+            { domain: self.rowOrder, labels: self.rowLabels },
+            self,
+          ),
+          self.resolvedRowColors,
         )
       },
     }))
@@ -1001,17 +993,13 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         applyRowEdits(rows: readonly S[], rowColor?: RowColorSnapshot) {
           const current = self.rowColorSetting
           const next = rowColor ? liftRowColor(rowColor) : current
-          const pairs: ReadonlyMap<string, string> = paintsNamePairs(current)
-            ? pairedColorsOf(current)
-            : new Map()
           const edits = rowEdits({
             rows,
             shown: self.editableSources,
             adapter: self.expandedRows,
             labels: self.rowLabels,
-            colors: pairs,
+            colors: self.rowColorPairs,
             baseOrder: self.baseRowColor.domain ?? [],
-            identityChannel: self.identityChannel,
             rowAlias: self.rowAlias,
           })
           const written = paintsNamePairs(next)

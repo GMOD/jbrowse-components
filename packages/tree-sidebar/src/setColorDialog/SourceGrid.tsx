@@ -21,40 +21,28 @@ const useStyles = makeStyles()({
   },
 })
 
-// A PopoverPicker column. `name`, `source`, `baseUri` are always reserved;
-// each color column field is also reserved (so it doesn't render twice).
-export interface ColorColumn<S> {
-  field: keyof S & string
-  headerName: string
-  // Label for the header "Change … of selected" button. Falls back to a
-  // default constructed from headerName when omitted.
-  bulkLabel?: string
-}
-
 // Permanently empty: the grid's sort is controlled externally via
 // onSortModelChange (see useSourceSort), so MUI's own model stays unset.
 const EMPTY_SORT_MODEL: GridSortModel = []
 
 export default observer(function SourceGrid<
-  S extends { name: string; color?: string },
+  S extends { name: string; rowColor?: string },
 >({
   rows,
   onChange,
-  colorColumn,
+  editsColor,
   swatchOf,
   reserved,
 }: {
   rows: S[]
   onChange: (arg: S[]) => void
-  // The single color column shown as editable swatches, while the rows are
-  // colored each their own. The dialog owns which one is active.
-  colorColumn: ColorColumn<S> | undefined
+  // Whether each row's `rowColor` shows as an editable swatch, while the
+  // rows are coloured each their own.
+  editsColor: boolean
   // The color each row takes from an attribute, shown and not edited.
   swatchOf?: (row: S) => string | undefined
   // Fields that drive their own dedicated column or are plumbing, so they must
-  // not appear in the auto-derived extras. Includes every color field, not just
-  // the active one — an inactive color column would otherwise render as a raw
-  // hex text column.
+  // not appear in the auto-derived extras.
   reserved: ReadonlySet<string>
 }) {
   const { classes } = useStyles()
@@ -65,7 +53,7 @@ export default observer(function SourceGrid<
   return (
     <div>
       <BulkColorControls
-        colorColumn={colorColumn}
+        editsColor={editsColor}
         rows={rows}
         selected={selected}
         onChange={onChange}
@@ -92,7 +80,7 @@ export default observer(function SourceGrid<
           rowHeight={25}
           columnHeaderHeight={33}
           columns={buildSourceColumns({
-            colorColumn,
+            editsColor,
             swatchOf,
             extras,
             rows,

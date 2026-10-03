@@ -104,7 +104,7 @@ test('a facet domain leads the bands and the key', () => {
 function sidebar(display: LinearMarkDisplayModel) {
   return {
     editableSources: display.editableSources.map(
-      ({ name, label, labelColor }) => ({ name, label, labelColor }),
+      ({ name, label, rowColor }) => ({ name, label, rowColor }),
     ),
     sources: display.sources.map(row => row.name),
     rowTree: display.rowTree,
@@ -359,17 +359,17 @@ test('a listing over a field the rows are not on, directly or through a flatten,
 test("under rows: 'source' every source the adapter lists has a row, with its label and colour", async () => {
   const display = await listingSources({ rows: 'source' })
   expect(
-    display.editableSources.map(({ name, label, labelColor }) => ({
+    display.editableSources.map(({ name, label, rowColor }) => ({
       name,
       label,
-      labelColor,
+      rowColor,
     })),
   ).toEqual([
-    { name: 'dad', label: undefined, labelColor: undefined },
-    { name: 'mom', label: 'Mother', labelColor: '#aa0000' },
-    { name: 's2', label: undefined, labelColor: undefined },
-    { name: 's10', label: undefined, labelColor: undefined },
-    { name: 's99', label: 'Unsequenced', labelColor: undefined },
+    { name: 'dad', label: undefined, rowColor: undefined },
+    { name: 'mom', label: 'Mother', rowColor: '#aa0000' },
+    { name: 's2', label: undefined, rowColor: undefined },
+    { name: 's10', label: undefined, rowColor: undefined },
+    { name: 's99', label: 'Unsequenced', rowColor: undefined },
   ])
   expect(display.rowCount).toBe(5)
 })
@@ -411,7 +411,7 @@ test('a reset returns the order, labels, tree and focus to the config', async ()
   const [first, ...rest] = display.editableSources
   display.applyRowEdits([
     ...rest,
-    { ...first!, label: 'Last', labelColor: '#0000ff' },
+    { ...first!, label: 'Last', rowColor: '#0000ff' },
   ])
   display.setRowFocus(['mom'])
   expect(display.rowArrangementIsCustom).toBe(true)

@@ -20,24 +20,6 @@ exports[`a cluster run lands its tree turned towards the seed, and a reorder dro
       "name": "s2",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-  ],
   "rowArrangementIsCustom": true,
   "rowColorStringsByIndex": [
     undefined,
@@ -51,26 +33,26 @@ exports[`a cluster run lands its tree turned towards the seed, and a reorder dro
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": true,
@@ -120,24 +102,6 @@ exports[`a cluster run lands its tree turned towards the seed, and a reorder dro
       "name": "s2",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-  ],
   "rowArrangementIsCustom": true,
   "rowColorStringsByIndex": [
     undefined,
@@ -151,26 +115,26 @@ exports[`a cluster run lands its tree turned towards the seed, and a reorder dro
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -197,24 +161,6 @@ exports[`a color slot paints the blocks, so a colour entry paints none 1`] = `
       "name": "s10",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-  ],
   "rowArrangementIsCustom": false,
   "rowColorStringsByIndex": [
     undefined,
@@ -228,26 +174,26 @@ exports[`a color slot paints the blocks, so a colour entry paints none 1`] = `
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": "#00ff00",
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -274,24 +220,6 @@ exports[`a colour entry paints its row, the rest the default colour 1`] = `
       "name": "s10",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-  ],
   "rowArrangementIsCustom": false,
   "rowColorStringsByIndex": [
     undefined,
@@ -305,26 +233,26 @@ exports[`a colour entry paints its row, the rest the default colour 1`] = `
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": "#123456",
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -351,24 +279,6 @@ exports[`a declared order leads and the rest sort 1`] = `
       "name": "s2",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-  ],
   "rowArrangementIsCustom": false,
   "rowColorStringsByIndex": [
     undefined,
@@ -382,26 +292,26 @@ exports[`a declared order leads and the rest sort 1`] = `
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -428,16 +338,6 @@ exports[`a focus hides rows without recolouring the kept ones 1`] = `
       "name": "s10",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-  ],
   "rowArrangementIsCustom": false,
   "rowColorStringsByIndex": [
     "#4e79a7",
@@ -449,14 +349,14 @@ exports[`a focus hides rows without recolouring the kept ones 1`] = `
     {
       "group": "Parents",
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": "#4e79a7",
     },
     {
       "group": "Kids",
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": "#f28e2c",
     },
   ],
   "treeDrawn": false,
@@ -475,16 +375,6 @@ exports[`a repartition keeps the arrangement, idle under rows it does not name 1
       "name": "wolf",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "coyote",
-    },
-    {
-      "labelColor": undefined,
-      "name": "wolf",
-    },
-  ],
   "rowArrangementIsCustom": true,
   "rowColorStringsByIndex": [
     undefined,
@@ -496,14 +386,73 @@ exports[`a repartition keeps the arrangement, idle under rows it does not name 1
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "coyote",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "wolf",
+      "rowColor": undefined,
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`a row's colour entry reaches its label bar, its group's colour the rest 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    undefined,
+    undefined,
+    "#123456",
+    undefined,
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": "Parents",
+      "label": undefined,
+      "name": "dad",
+      "rowColor": "#377eb8",
+    },
+    {
+      "group": "Parents",
+      "label": undefined,
+      "name": "mom",
+      "rowColor": "#377eb8",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "name": "s2",
+      "rowColor": "#123456",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "name": "s10",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -527,24 +476,6 @@ exports[`a run under the bands clusters each apart 1`] = `
     },
     {
       "label": undefined,
-      "name": "mom",
-    },
-  ],
-  "labelSources": [
-    {
-      "labelColor": "#e41a1c",
-      "name": "s2",
-    },
-    {
-      "labelColor": "#e41a1c",
-      "name": "s10",
-    },
-    {
-      "labelColor": "#377eb8",
-      "name": "dad",
-    },
-    {
-      "labelColor": "#377eb8",
       "name": "mom",
     },
   ],
@@ -578,106 +509,29 @@ exports[`a run under the bands clusters each apart 1`] = `
     {
       "group": "Kids",
       "label": undefined,
-      "labelColor": "#e41a1c",
       "name": "s2",
+      "rowColor": "#e41a1c",
     },
     {
       "group": "Kids",
       "label": undefined,
-      "labelColor": "#e41a1c",
       "name": "s10",
+      "rowColor": "#e41a1c",
     },
     {
       "group": "Parents",
       "label": undefined,
-      "labelColor": "#377eb8",
       "name": "dad",
+      "rowColor": "#377eb8",
     },
     {
       "group": "Parents",
       "label": undefined,
-      "labelColor": "#377eb8",
       "name": "mom",
+      "rowColor": "#377eb8",
     },
   ],
   "treeDrawn": true,
-}
-`;
-
-exports[`colorRowLabels carries the painted colour, a group swatch winning 1`] = `
-{
-  "editableSources": [
-    {
-      "label": undefined,
-      "name": "dad",
-    },
-    {
-      "label": undefined,
-      "name": "mom",
-    },
-    {
-      "label": undefined,
-      "name": "s2",
-    },
-    {
-      "label": undefined,
-      "name": "s10",
-    },
-  ],
-  "labelSources": [
-    {
-      "labelColor": "#377eb8",
-      "name": "dad",
-    },
-    {
-      "labelColor": "#377eb8",
-      "name": "mom",
-    },
-    {
-      "labelColor": "#123456",
-      "name": "s2",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-  ],
-  "rowArrangementIsCustom": false,
-  "rowColorStringsByIndex": [
-    undefined,
-    undefined,
-    "#123456",
-    undefined,
-  ],
-  "rowGroupsScale": undefined,
-  "rowTree": undefined,
-  "sources": [
-    {
-      "group": "Parents",
-      "label": undefined,
-      "labelColor": "#377eb8",
-      "name": "dad",
-    },
-    {
-      "group": "Parents",
-      "label": undefined,
-      "labelColor": "#377eb8",
-      "name": "mom",
-    },
-    {
-      "group": undefined,
-      "label": undefined,
-      "labelColor": undefined,
-      "name": "s2",
-    },
-    {
-      "group": undefined,
-      "label": undefined,
-      "labelColor": undefined,
-      "name": "s10",
-    },
-  ],
-  "treeDrawn": false,
 }
 `;
 
@@ -705,28 +559,6 @@ exports[`dialog edits reorder, relabel and recolour, and a reset returns to the 
       "name": "s10",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-  ],
   "rowArrangementIsCustom": true,
   "rowColorStringsByIndex": [
     undefined,
@@ -741,32 +573,32 @@ exports[`dialog edits reorder, relabel and recolour, and a reset returns to the 
     {
       "group": undefined,
       "label": "Mother",
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": "(no sample)",
-      "labelColor": undefined,
       "name": "",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": "#0000ff",
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -797,28 +629,6 @@ exports[`dialog edits reorder, relabel and recolour, and a reset returns to the 
       "name": "",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-    {
-      "labelColor": undefined,
-      "name": "",
-    },
-  ],
   "rowArrangementIsCustom": false,
   "rowColorStringsByIndex": [
     undefined,
@@ -833,32 +643,32 @@ exports[`dialog edits reorder, relabel and recolour, and a reset returns to the 
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": "(no sample)",
-      "labelColor": undefined,
       "name": "",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -885,24 +695,6 @@ exports[`itemRgb paints the blocks 1`] = `
       "name": "s10",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-  ],
   "rowArrangementIsCustom": false,
   "rowColorStringsByIndex": [
     undefined,
@@ -916,26 +708,26 @@ exports[`itemRgb paints the blocks 1`] = `
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -963,28 +755,6 @@ exports[`rowGroups tag the rows and facet group bands them, keyed under short ro
     },
     {
       "label": "(no sample)",
-      "name": "",
-    },
-  ],
-  "labelSources": [
-    {
-      "labelColor": "#e41a1c",
-      "name": "s2",
-    },
-    {
-      "labelColor": "#e41a1c",
-      "name": "s10",
-    },
-    {
-      "labelColor": "#377eb8",
-      "name": "dad",
-    },
-    {
-      "labelColor": "#377eb8",
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
       "name": "",
     },
   ],
@@ -1019,32 +789,32 @@ exports[`rowGroups tag the rows and facet group bands them, keyed under short ro
     {
       "group": "Kids",
       "label": undefined,
-      "labelColor": "#e41a1c",
       "name": "s2",
+      "rowColor": "#e41a1c",
     },
     {
       "group": "Kids",
       "label": undefined,
-      "labelColor": "#e41a1c",
       "name": "s10",
+      "rowColor": "#e41a1c",
     },
     {
       "group": "Parents",
       "label": undefined,
-      "labelColor": "#377eb8",
       "name": "dad",
+      "rowColor": "#377eb8",
     },
     {
       "group": "Parents",
       "label": undefined,
-      "labelColor": "#377eb8",
       "name": "mom",
+      "rowColor": "#377eb8",
     },
     {
       "group": undefined,
       "label": "(no sample)",
-      "labelColor": undefined,
       "name": "",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -1075,28 +845,6 @@ exports[`sort at a column orders rows by the colour painted there 1`] = `
       "name": "s10",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-    {
-      "labelColor": undefined,
-      "name": "",
-    },
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-  ],
   "rowArrangementIsCustom": true,
   "rowColorStringsByIndex": [
     undefined,
@@ -1111,32 +859,32 @@ exports[`sort at a column orders rows by the colour painted there 1`] = `
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": "(no sample)",
-      "labelColor": undefined,
       "name": "",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -1161,24 +909,6 @@ exports[`the bands win over a whole-cohort tree holding no clade of either 1`] =
     {
       "label": undefined,
       "name": "s10",
-    },
-  ],
-  "labelSources": [
-    {
-      "labelColor": "#e41a1c",
-      "name": "s2",
-    },
-    {
-      "labelColor": "#e41a1c",
-      "name": "s10",
-    },
-    {
-      "labelColor": "#377eb8",
-      "name": "dad",
-    },
-    {
-      "labelColor": "#377eb8",
-      "name": "mom",
     },
   ],
   "rowArrangementIsCustom": true,
@@ -1211,26 +941,26 @@ exports[`the bands win over a whole-cohort tree holding no clade of either 1`] =
     {
       "group": "Kids",
       "label": undefined,
-      "labelColor": "#e41a1c",
       "name": "s2",
+      "rowColor": "#e41a1c",
     },
     {
       "group": "Kids",
       "label": undefined,
-      "labelColor": "#e41a1c",
       "name": "s10",
+      "rowColor": "#e41a1c",
     },
     {
       "group": "Parents",
       "label": undefined,
-      "labelColor": "#377eb8",
       "name": "dad",
+      "rowColor": "#377eb8",
     },
     {
       "group": "Parents",
       "label": undefined,
-      "labelColor": "#377eb8",
       "name": "mom",
+      "rowColor": "#377eb8",
     },
   ],
   "treeDrawn": false,
@@ -1257,24 +987,6 @@ exports[`the rows sort, digits by magnitude, none dealt a colour 1`] = `
       "name": "s10",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-  ],
   "rowArrangementIsCustom": false,
   "rowColorStringsByIndex": [
     undefined,
@@ -1288,26 +1000,26 @@ exports[`the rows sort, digits by magnitude, none dealt a colour 1`] = `
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,
@@ -1338,28 +1050,6 @@ exports[`the unanswered row sorts last and is labelled for the field 1`] = `
       "name": "",
     },
   ],
-  "labelSources": [
-    {
-      "labelColor": undefined,
-      "name": "dad",
-    },
-    {
-      "labelColor": undefined,
-      "name": "mom",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s2",
-    },
-    {
-      "labelColor": undefined,
-      "name": "s10",
-    },
-    {
-      "labelColor": undefined,
-      "name": "",
-    },
-  ],
   "rowArrangementIsCustom": false,
   "rowColorStringsByIndex": [
     undefined,
@@ -1374,32 +1064,32 @@ exports[`the unanswered row sorts last and is labelled for the field 1`] = `
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
       "label": "(no sample)",
-      "labelColor": undefined,
       "name": "",
+      "rowColor": undefined,
     },
   ],
   "treeDrawn": false,

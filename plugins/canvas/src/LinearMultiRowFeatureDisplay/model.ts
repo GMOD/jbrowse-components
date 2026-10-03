@@ -86,6 +86,7 @@ import {
   groupColorEntries,
   orderRowValues,
   recolorRowGroups,
+  rowGroupOf,
   tagRowGroups,
 } from './rowSources.ts'
 import {
@@ -136,11 +137,6 @@ import type {
 import type React from 'react'
 
 const EMPTY_REGION_DATA: ReadonlyMap<number, MultiRowRegionData> = new Map()
-
-// The override exemption from a category hide matters only while a category
-// is hidden, so until one is the encode reads no rows and a first override
-// re-encodes nothing.
-const NO_ROWS: ReadonlySet<string> = new Set()
 
 export type { MultiRowContextMenuInfo, MultiRowHit } from './hitTesting.ts'
 
@@ -239,13 +235,6 @@ export default function stateModelFactory(
        */
       get showRowSeparators(): boolean {
         return getConf(self, 'showRowSeparators')
-      },
-      /**
-       * #getter
-       * Whether the sidebar label box is tinted with its row's painted color.
-       */
-      get colorRowLabels(): boolean {
-        return getConf(self, 'colorRowLabels')
       },
     }))
     .views(self => ({
@@ -541,21 +530,6 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The rows as the sidebar draws them, with each row's colour carried
-       * into `labelColor` when `colorRowLabels` is on, whether or not it
-       * paints the blocks. A `rowGroups` `labelColor` wins.
-       */
-      get labelSources(): RowSource[] {
-        const colors = self.resolvedRowColors
-        return self.colorRowLabels
-          ? self.sources.map(s => ({
-              ...s,
-              labelColor: s.labelColor ?? colors.get(s.name),
-            }))
-          : self.sources
-      },
-      /**
-       * #getter
        * Number of displayed rows, at least 1 so the auto-fit division is safe
        * and the canvas mounts before data arrives.
        */
@@ -698,14 +672,17 @@ export default function stateModelFactory(
         ) {
           return []
         }
+        const compiled = compileRowGroups(self.paintedRowGroups)
         const seen = new Set<string>()
         const items: LegendItem[] = []
-        for (const { group, labelColor } of self.sources) {
-          if (group !== undefined && labelColor !== undefined) {
-            const key = `${group} ${labelColor}`
+        for (const { name, group } of self.sources) {
+          const color =
+            group === undefined ? undefined : rowGroupOf(compiled, name)?.color
+          if (color) {
+            const key = `${group} ${color}`
             if (!seen.has(key)) {
               seen.add(key)
-              items.push({ color: labelColor, label: group })
+              items.push({ color, label: group! })
             }
           }
         }
@@ -821,7 +798,7 @@ export default function stateModelFactory(
         return {
           showTree: self.showTree,
           hierarchy: self.hierarchy,
-          sources: self.labelSources,
+          sources: self.sources,
           rowHeight: self.effectiveRowHeight,
           treeAreaWidth: self.treeAreaWidth,
           showLabels: self.showRowLabels,
@@ -844,20 +821,6 @@ export default function stateModelFactory(
         }
         return rowKeys.names.slice()
       })
-      // Over the unfocused arrangement, so a focus leaves the set alone, and
-      // in name order, since the structural comparer walks a Set in insertion
-      // order and a reorder would move its identity.
-      const overriddenRows = stableIdentityComputed(() => {
-        const colors = self.rowColorPaintsMarks
-          ? self.resolvedRowColors
-          : undefined
-        return new Set(
-          self.editableSources
-            .filter(s => colors?.has(s.name))
-            .map(s => s.name)
-            .sort(),
-        )
-      })
       const tableInputs = stableIdentityComputed(() => ({
         order: self.sources.map(s => s.name),
         colors: self.rowColorsByIndex,
@@ -875,16 +838,13 @@ export default function stateModelFactory(
         /**
          * #getter
          * What the encode reads, and so what re-encodes every region on its
-         * identity: the keys, the rows painting an override, the hidden
-         * categories and the colour field's palette. The reader's order, focus and colours are the table's.
+         * identity: the keys, the hidden categories and the colour field's
+         * palette. The reader's order, focus and colours are the table's.
          */
         get encodeInputs(): MultiRowEncodeInputs {
-          const hiddenColors = self.hiddenColors
           return {
             rowKeys,
-            overriddenRows:
-              hiddenColors.size === 0 ? NO_ROWS : overriddenRows.get(),
-            hiddenColors,
+            hiddenColors: self.hiddenColors,
             fieldPalette: self.fieldPalette,
           }
         },
@@ -1064,12 +1024,6 @@ export default function stateModelFactory(
          */
         setShowRowSeparators(f: boolean) {
           setConf(self, 'showRowSeparators', f)
-        },
-        /**
-         * #action
-         */
-        setColorRowLabels(f: boolean) {
-          setConf(self, 'colorRowLabels', f)
         },
         /**
          * #action

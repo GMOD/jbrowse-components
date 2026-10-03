@@ -28,7 +28,7 @@ function makeDisplay({
 }
 
 function rowColors(display: ReturnType<typeof makeDisplay>) {
-  return display.sources.map(s => s.color)
+  return display.markSources.map(s => s.color)
 }
 
 const TABLEAU = [0, 1, 2].map(rowPaletteColorAt)
@@ -121,7 +121,7 @@ describe('a row per subtrack deals no palette', () => {
   it('plots a colour set on one subtrack, the rest unchanged', () => {
     const display = makeDisplay()
     const [a, b, c] = display.editableSources
-    display.applyRowEdits([a!, { ...b!, color: '#123456' }, c!], {
+    display.applyRowEdits([a!, { ...b!, rowColor: '#123456' }, c!], {
       field: 'name',
       unknown: '',
     })
@@ -134,5 +134,5 @@ it('a reorder writes no colour', () => {
   const display = makeDisplay({ rows: false })
   display.applyRowEdits([...display.editableSources].reverse())
   expect(display.rowStylingIsCustom).toBe(false)
-  expect(display.sources.map(s => s.color)).toEqual([...TABLEAU].reverse())
+  expect(display.markSources.map(s => s.color)).toEqual([...TABLEAU].reverse())
 })

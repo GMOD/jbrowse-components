@@ -124,7 +124,6 @@ function makeModel(
   }
   const encodeInputs = {
     rowKeys,
-    overriddenRows: new Set<string>(),
     hiddenColors: new Set<number>(),
   }
   return {

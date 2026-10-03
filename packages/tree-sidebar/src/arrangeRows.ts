@@ -2,9 +2,6 @@ import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 
 import type { RowSource } from './types.ts'
 
-/** The row channel a reader's colour for a row lands on. */
-export type IdentityChannel = 'color' | 'labelColor'
-
 /**
  * Where the rows an order does not list go: `source` keeps the order they
  * arrived in, `sorted` sorts them the way every in-track grouping sorts.
@@ -20,11 +17,9 @@ export type RowAlias = (name: string) => string | undefined
 export interface RowArrangementInput {
   domain: readonly string[]
   labels: Readonly<Record<string, string>>
-  rowColors: ReadonlyMap<string, string>
 }
 
 export interface ArrangeRowsHooks {
-  readonly identityChannel: IdentityChannel
   readonly unlistedRowsSort: UnlistedRowsSort
   readonly rowAlias: RowAlias | undefined
 }
@@ -58,17 +53,6 @@ function labelEntry(
     : other !== undefined && Object.hasOwn(labels, other)
       ? labels[other]
       : undefined
-}
-
-function colorEntry(
-  rowColors: ReadonlyMap<string, string>,
-  name: string,
-  other: string | undefined,
-) {
-  return (
-    rowColors.get(name) ??
-    (other === undefined ? undefined : rowColors.get(other))
-  )
 }
 
 function sortedRows<S extends RowSource>(rows: S[], domain: readonly string[]) {
@@ -131,30 +115,15 @@ function orderByRank<S extends { name: string }>(
 function relabelRows<S extends RowSource>(
   rows: S[],
   labels: Readonly<Record<string, string>>,
-  rowColors: ReadonlyMap<string, string>,
-  channel: IdentityChannel,
   others: readonly (string | undefined)[] | undefined,
 ) {
   let out: S[] | undefined
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]!
-    const other = others?.[i]
-    const label = labelEntry(labels, row.name, other)
-    const color = colorEntry(rowColors, row.name, other)
-    if (
-      (label !== undefined && label !== row.label) ||
-      (color !== undefined && color !== row[channel])
-    ) {
+    const label = labelEntry(labels, row.name, others?.[i])
+    if (label !== undefined && label !== row.label) {
       out ??= [...rows]
-      out[i] = {
-        ...row,
-        ...(label === undefined ? {} : { label }),
-        ...(color === undefined
-          ? {}
-          : channel === 'color'
-            ? { color }
-            : { labelColor: color }),
-      }
+      out[i] = { ...row, label }
     }
   }
   return out ?? rows
@@ -247,10 +216,9 @@ export function bandRows<S>(
 
 /**
  * The rows in a reader's arrangement: the rows `domain` lists lead, in its
- * order, and the rest follow as `unlistedRowsSort` says; a `labels` entry
- * replaces a row's label and a `rowColors` entry lands on the row's
- * `identityChannel`. Where `rowAlias` is given, a row with no entry of its own
- * answers to its alias's, so an order, a label or a tint written against a
+ * order, and the rest follow as `unlistedRowsSort` says, and a `labels`
+ * entry replaces a row's label. Where `rowAlias` is given, a row with no entry
+ * of its own answers to its alias's, so an order or a label written against a
  * sample reaches each of its haplotypes.
  *
  * Hands back `rows` itself whenever nothing moves or changes, so a consumer
@@ -258,16 +226,14 @@ export function bandRows<S>(
  */
 export function arrangeRows<S extends RowSource>(
   rows: S[],
-  { domain, labels, rowColors }: RowArrangementInput,
+  { domain, labels }: RowArrangementInput,
   hooks: ArrangeRowsHooks,
 ): S[] {
   const alias = hooks.rowAlias
-  const relabel = rowColors.size > 0 || Object.keys(labels).length > 0
+  const relabel = Object.keys(labels).length > 0
   const others =
     alias && relabel ? rows.map(row => otherName(alias, row.name)) : undefined
-  const relabelled = relabel
-    ? relabelRows(rows, labels, rowColors, hooks.identityChannel, others)
-    : rows
+  const relabelled = relabel ? relabelRows(rows, labels, others) : rows
   return hooks.unlistedRowsSort === 'sorted'
     ? sortedRows(relabelled, domain)
     : orderByRank(

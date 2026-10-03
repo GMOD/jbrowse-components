@@ -21,7 +21,8 @@ export interface WiggleDisplayModel
   configuration: { displayId: string }
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   notices: readonly string[]
-  sources: { name: string; color?: string; labelColor?: string }[]
+  sources: { name: string; color?: string; rowColor?: string }[]
+  markSources: { name: string; color?: string }[]
   discoveredRows: { name: string }[]
   domain: [number, number] | undefined
   scaleType: string

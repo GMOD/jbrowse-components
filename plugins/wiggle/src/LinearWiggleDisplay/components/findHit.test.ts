@@ -275,7 +275,7 @@ describe('findWiggleHit', () => {
   function makeModel(over: Partial<WiggleHitModel> = {}) {
     return {
       effectiveRowHeight: 20,
-      sources: [{ name: 's1' }],
+      markSources: [{ name: 's1' }],
       rpcDataMap: new Map([
         [
           0,
@@ -296,7 +296,7 @@ describe('findWiggleHit', () => {
   })
 
   test('returns undefined with no sources', () => {
-    const model = makeModel({ sources: [] })
+    const model = makeModel({ markSources: [] })
     expect(findWiggleHit(model, regions, 50, 5)).toBeUndefined()
   })
 
@@ -328,7 +328,7 @@ describe('findWiggleHit', () => {
   test('overlay mode collects a row per source at the cursor bp', () => {
     const model = makeModel({
       isOverlay: true,
-      sources: [{ name: 's1' }, { name: 's2' }],
+      markSources: [{ name: 's1' }, { name: 's2' }],
       rpcDataMap: new Map([
         [
           0,

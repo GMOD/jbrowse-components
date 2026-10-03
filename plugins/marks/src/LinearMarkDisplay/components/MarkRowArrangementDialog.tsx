@@ -1,17 +1,6 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
 
-import type {
-  ColorColumn,
-  RowSource,
-  TreeLayoutModel,
-} from '@jbrowse/tree-sidebar'
-
-// A row's one colour is the tint beside its label: each mark paints the plot
-// in its own.
-const ROW_COLOR: ColorColumn<RowSource> = {
-  field: 'labelColor',
-  headerName: 'Color',
-}
+import type { RowSource, TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 export default function MarkRowArrangementDialog({
   model,
@@ -25,7 +14,6 @@ export default function MarkRowArrangementDialog({
       model={model}
       handleClose={handleClose}
       title="Mark display — row arrangement"
-      colorColumns={[ROW_COLOR]}
     />
   )
 }

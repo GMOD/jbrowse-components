@@ -47,9 +47,7 @@ test('sidebar row color swatches export', () => {
     { name: 'HG002', population: 'AFR' },
   ])
   model.setRowColorField('population')
-  const colors = model.sources
-    .map(s => s.labelColor)
-    .filter(c => c !== undefined)
+  const colors = model.sources.map(s => s.rowColor).filter(c => c !== undefined)
   expect(new Set(colors).size).toBe(2)
 
   const { container } = renderOverlay(model)

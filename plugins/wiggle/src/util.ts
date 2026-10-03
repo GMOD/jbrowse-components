@@ -22,8 +22,11 @@ export {
   WIGGLE_POS_COLOR_DEFAULT,
 } from './colorDefaults.ts'
 
-// A row of the wiggle display: exactly the metadata its adapter reported.
-export type Source = SourceInfo
+// A row of the wiggle display: the metadata its adapter reported, and the
+// row's resolved colour.
+export interface Source extends SourceInfo {
+  rowColor?: string
+}
 
 // One score entry shown in a wiggle tooltip. `source`/`color` are populated
 // only where a source is named. The summary

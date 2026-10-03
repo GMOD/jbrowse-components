@@ -24,23 +24,23 @@ exports[`a cluster run lands its tree turned towards the seed, and orders the ro
   "editableSources": [
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
   ],
   "rowArrangementIsCustom": true,
@@ -190,23 +190,23 @@ exports[`a focus draws the rows it keeps and leaves the rest out of the plot 1`]
   "editableSources": [
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
   ],
   "rowArrangementIsCustom": false,
@@ -371,23 +371,23 @@ exports[`rows draw what the facet drew, one labelled row per source and no chips
   "editableSources": [
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "dad",
+      "rowColor": undefined,
     },
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "mom",
+      "rowColor": undefined,
     },
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "s2",
+      "rowColor": undefined,
     },
     {
       "label": undefined,
-      "labelColor": undefined,
       "name": "s10",
+      "rowColor": undefined,
     },
   ],
   "rowArrangementIsCustom": false,

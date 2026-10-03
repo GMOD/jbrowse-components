@@ -22,7 +22,7 @@ test('a configured colorBy writes no order and is not a custom row order', () =>
   const display = colored()
   expect(display.rowDomain).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
-  expect(display.sources.every(s => s.labelColor)).toBe(true)
+  expect(display.sources.every(s => s.rowColor)).toBe(true)
 })
 
 test('a configured facet writes no order and is not a custom row order', () => {

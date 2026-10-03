@@ -63,7 +63,6 @@ export { orderRowsByDomain } from './arrangeRows.ts'
 export { rowFieldValue } from './rowColorScale.ts'
 export type { RowColorEntries } from './rowColorScale.ts'
 export type {
-  IdentityChannel,
   RowAlias,
   RowBand,
   RowBanding,
@@ -131,7 +130,6 @@ export type {
   SetColorDialogProps,
   TreeLayoutModel,
 } from './setColorDialog/SetColorDialog.tsx'
-export type { ColorColumn } from './setColorDialog/SourceGrid.tsx'
 // Displays reach the layout through `computeClusterHierarchy` (clusterUtils);
 // the raw `clusterLayout` primitive stays public only for SVG-export tests.
 // hierarchy/leaves/links/sum and the y-assignment/traversal helpers remain

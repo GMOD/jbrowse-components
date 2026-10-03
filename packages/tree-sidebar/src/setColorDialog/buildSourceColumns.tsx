@@ -4,18 +4,19 @@ import { getStr, measureGridWidth } from '@jbrowse/core/util'
 
 import { updateRows } from '../sourcesGridUtils.ts'
 
-import type { ColorColumn } from './SourceGrid.tsx'
 import type { GridColDef } from '@mui/x-data-grid'
 
-export function buildSourceColumns<S extends { name: string; color?: string }>({
-  colorColumn,
+export function buildSourceColumns<
+  S extends { name: string; rowColor?: string },
+>({
+  editsColor,
   swatchOf,
   extras,
   rows,
   onChange,
   cellClassName,
 }: {
-  colorColumn: ColorColumn<S> | undefined
+  editsColor: boolean
   swatchOf?: (row: S) => string | undefined
   extras: string[]
   rows: S[]
@@ -48,11 +49,11 @@ export function buildSourceColumns<S extends { name: string; color?: string }>({
           } satisfies GridColDef<S>,
         ]
       : []),
-    ...(colorColumn
+    ...(editsColor
       ? [
           {
-            field: colorColumn.field,
-            headerName: colorColumn.headerName,
+            field: 'rowColor',
+            headerName: 'Color',
             width: 100,
             renderCell: ({ value, id }) => (
               <PopoverPicker
@@ -63,7 +64,7 @@ export function buildSourceColumns<S extends { name: string; color?: string }>({
                 onChange={color => {
                   onChange(
                     updateRows(rows, [id], {
-                      [colorColumn.field]: color,
+                      rowColor: color,
                     } as Partial<S>),
                   )
                 }}

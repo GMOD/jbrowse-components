@@ -38,7 +38,7 @@ describe('recoloring does not disturb the arrangement', () => {
     expect(display.rowTree).toBe(CLUSTERED_TREE)
     // the dendrogram still positions, i.e. its leaves are still these rows
     expect(display.hierarchy).toBeDefined()
-    expect(display.sources.every(s => s.labelColor)).toBe(true)
+    expect(display.sources.every(s => s.rowColor)).toBe(true)
   })
 
   it('clearing the coloring strips the palette without resetting the order', () => {
@@ -48,7 +48,7 @@ describe('recoloring does not disturb the arrangement', () => {
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.rowTree).toBe(CLUSTERED_TREE)
-    expect(display.sources.some(s => s.labelColor)).toBe(false)
+    expect(display.sources.some(s => s.rowColor)).toBe(false)
   })
 
   // Rows are haplotypes after a phased clustering run, while `adapterSamples`
@@ -345,9 +345,9 @@ describe('a rendering-mode switch renames the rows', () => {
     display.setPhasedMode('phased')
 
     expect(display.rowColorField).toBe('population')
-    expect(display.sources.every(s => s.labelColor)).toBe(true)
+    expect(display.sources.every(s => s.rowColor)).toBe(true)
     const byName = Object.fromEntries(
-      display.sources.map(s => [s.name, s.labelColor]),
+      display.sources.map(s => [s.name, s.rowColor]),
     )
     expect(byName.S0).toBe(byName.S2)
     expect(byName.S0).not.toBe(byName.S1)
@@ -395,7 +395,7 @@ describe('an adapter swap to a new cohort', () => {
     expect(display.rowTree).toBeUndefined()
     expect(rowNames(display)).toEqual(['T0', 'T1'])
     // the configured coloring is re-seeded against the new cohort
-    expect(display.sources.every(s => s.labelColor)).toBe(true)
+    expect(display.sources.every(s => s.rowColor)).toBe(true)
   })
 
   it('keeps the arrangement when the cohorts overlap', () => {
@@ -439,17 +439,17 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   it('keeps the colorBy palette through a sort', () => {
     const display = sortableDisplay()
     display.setRowColorField('population')
-    const before = new Map(display.sources.map(s => [s.name, s.labelColor]))
+    const before = new Map(display.sources.map(s => [s.name, s.rowColor]))
     expect([...before.values()].every(Boolean)).toBe(true)
 
     display.sortByGenotype('v1')
 
     // hom-alt leads, no-call last — so the order really did change
     expect(rowNames(display)).toEqual(['S2', 'S1', 'S0'])
-    expect(display.sources.every(s => s.labelColor)).toBe(true)
+    expect(display.sources.every(s => s.rowColor)).toBe(true)
     // ...and each row kept ITS colour, not merely some colour
     for (const s of display.sources) {
-      expect(s.labelColor).toBe(before.get(s.name))
+      expect(s.rowColor).toBe(before.get(s.name))
     }
   })
 
@@ -468,27 +468,27 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
       },
     } as unknown as Parameters<typeof display.setCellData>[0])
     display.setRowColorField('population')
-    const before = new Map(display.sources.map(s => [s.name, s.labelColor]))
+    const before = new Map(display.sources.map(s => [s.name, s.rowColor]))
     expect(display.sources).toHaveLength(6)
     expect([...before.values()].every(Boolean)).toBe(true)
 
     display.sortByGenotype('v1')
 
     expect(display.sources).toHaveLength(6)
-    expect(display.sources.every(s => s.labelColor)).toBe(true)
+    expect(display.sources.every(s => s.rowColor)).toBe(true)
     for (const s of display.sources) {
-      expect(s.labelColor).toBe(before.get(s.name))
+      expect(s.rowColor).toBe(before.get(s.name))
     }
   })
 
   // Same rule, for the overrides the arrangement dialog writes rather than a
   // palette: `rows.labels` and `rowColor` hold them by name, so they follow the
   // row.
-  it('keeps a hand-set label and labelColor through a sort', () => {
+  it('keeps a hand-set label and rowColor through a sort', () => {
     const display = sortableDisplay()
     const [s0, s1, s2] = display.editableSources
     display.applyRowEdits([
-      { ...s0!, label: 'first', labelColor: 'red' },
+      { ...s0!, label: 'first', rowColor: 'red' },
       s1!,
       s2!,
     ])
@@ -498,7 +498,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     expect(rowNames(display)).toEqual(['S2', 'S1', 'S0'])
     expect(display.sources.find(s => s.name === 'S0')).toMatchObject({
       label: 'first',
-      labelColor: 'red',
+      rowColor: 'red',
     })
   })
 })

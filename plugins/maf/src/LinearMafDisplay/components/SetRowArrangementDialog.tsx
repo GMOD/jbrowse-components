@@ -1,15 +1,7 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
 
 import type { MafSource } from '../stateModel.ts'
-import type { ColorColumn, TreeLayoutModel } from '@jbrowse/tree-sidebar'
-
-// The one colour a species row has: its label tint, `labelColor`, which the
-// adapter's `samples[].color` seeds and `rowColor` overrides. The cells are
-// coloured by base, so a row has no `color` of its own.
-const ROW_COLOR: ColorColumn<MafSource> = {
-  field: 'labelColor',
-  headerName: 'Color',
-}
+import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 /**
  * Reorder, relabel and recolor the species rows.
@@ -29,7 +21,6 @@ export default function SetRowArrangementDialog({
       model={model}
       handleClose={handleClose}
       title="MAF display — row arrangement"
-      colorColumns={[ROW_COLOR]}
     />
   )
 }

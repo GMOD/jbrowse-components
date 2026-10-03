@@ -1,12 +1,14 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
 
 import {
+  ROW_COLOR_BAR_WIDTH,
   rowLabelBoxHeight,
   rowLabelFontSize,
   rowLabelFullText,
   rowLabelText,
+  rowLabelTextX,
   rowLabelsBoxWidth,
   rowLabelsCarryText,
 } from './rowLabelsBoxWidth.ts'
@@ -28,7 +30,7 @@ import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 // mark survives. Painting order is all this changes; every rect keeps its true
 // `y`.
 function colorRuns(sources: RowLabelSource[]) {
-  return rowRuns(sources, source => source.labelColor).sort(
+  return rowRuns(sources, source => source.rowColor).sort(
     (a, b) => b.end - b.start - (a.end - a.start),
   )
 }
@@ -54,9 +56,9 @@ export function SvgRowLabels({
   const fontSize = rowLabelFontSize(rowHeight, text)
   const separator = alpha(palette.text.primary, 0.12)
   const textFits = rowLabelsCarryText(rowHeight)
-  // Without a tint there is nothing left once the text is gone, so a track whose
-  // rows carry no color draws nothing rather than a bare stripe of the default
-  // background.
+  // Without a colour there is nothing left once the text is gone, so a track
+  // whose rows carry no colour draws nothing rather than a bare stripe of the
+  // default background.
   const runs = textFits ? [] : colorRuns(sources)
 
   function offscreen(y: number, height: number) {
@@ -69,6 +71,7 @@ export function SvgRowLabels({
   const boxHeight = rowLabelBoxHeight(rowHeight, text)
   const boxInset = (rowHeight - boxHeight) / 2
   const boxesAbut = boxHeight === rowHeight
+  const textX = rowLabelTextX(sources)
   const rows = textFits
     ? sources
         .map((source, idx) => ({ source, idx, y: idx * rowHeight - scrollTop }))
@@ -102,36 +105,32 @@ export function SvgRowLabels({
           ) : null}
         </>
       ) : null}
-      {rows.map(({ source, y }) => {
-        const lc = source.labelColor
-        return lc ? (
+      {rows.map(({ source, y }) =>
+        source.rowColor ? (
           <rect
             key={source.name}
+            data-testid="row-color-bar"
             x={0}
             y={y + boxInset}
-            width={boxWidth}
+            width={ROW_COLOR_BAR_WIDTH}
             height={boxHeight}
-            {...getFillProps(lc)}
+            {...getFillProps(source.rowColor)}
           />
-        ) : null
-      })}
+        ) : null,
+      )}
       {separators ? <path d={separators} {...getFillProps(separator)} /> : null}
       {rows.map(({ source, y }) => {
-        // Per-source labelColor tints the label box (identity coding for
-        // multirow/density tracks); text auto-contrasts against it.
-        const lc = source.labelColor
-        const fg = lc ? getContrastText(lc) : palette.text.primary
         const full = rowLabelFullText(source)
         const shown = rowLabelText(source, rowHeight, text)
         return (
           <text
             key={source.name}
-            x={4}
+            x={textX}
             y={y + rowHeight / 2}
             fontSize={fontSize}
             dominantBaseline="central"
             style={shown === full ? undefined : { pointerEvents: 'auto' }}
-            {...getFillProps(fg)}
+            {...getFillProps(palette.text.primary)}
           >
             {shown === full ? null : <title>{full}</title>}
             {shown}

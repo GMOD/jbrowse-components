@@ -97,19 +97,15 @@ function loaded(
 
 function derived(display: Display) {
   return {
-    sources: display.sources.map(({ name, label, group, labelColor }) => ({
+    sources: display.sources.map(({ name, label, group, rowColor }) => ({
       name,
       label,
       group,
-      labelColor,
+      rowColor,
     })),
     editableSources: display.editableSources.map(({ name, label }) => ({
       name,
       label,
-    })),
-    labelSources: display.labelSources.map(({ name, labelColor }) => ({
-      name,
-      labelColor,
     })),
     rowColorStringsByIndex: display.rowColorStringsByIndex,
     rowGroupsScale: display.colorScales.find(s => s.id === 'rowGroups'),
@@ -208,10 +204,10 @@ test('a run under the bands clusters each apart', async () => {
   expect(display.hierarchy?.children).toHaveLength(2)
 })
 
-test('colorRowLabels carries the painted colour, a group swatch winning', () => {
+test("a row's colour entry reaches its label bar, its group's colour the rest", () => {
   const display = loaded(
     { colors: { s2: '#123456' } },
-    { colorRowLabels: true, rowGroups: [ROW_GROUPS[1]] },
+    { rowGroups: [ROW_GROUPS[1]] },
   )
   expect(derived(display)).toMatchSnapshot()
 })
@@ -246,12 +242,12 @@ test('dialog edits reorder, relabel and recolour, and a reset returns to the see
   display.applyRowEdits([
     { ...mom!, label: 'Mother' },
     unanswered!,
-    { ...s2!, color: '#0000ff' },
+    { ...s2!, rowColor: '#0000ff' },
     dad!,
     s10!,
   ])
   expect(derived(display)).toMatchSnapshot()
-  expect(display.editableSources.find(s => s.name === 's2')?.color).toBe(
+  expect(display.editableSources.find(s => s.name === 's2')?.rowColor).toBe(
     '#0000ff',
   )
   display.resetRowArrangement()
@@ -281,7 +277,7 @@ test('a repartition keeps the arrangement, idle under rows it does not name', as
   const [a, b, ...rest] = display.editableSources
   display.applyRowEdits([
     b!,
-    { ...a!, label: 'First', color: '#0000ff' },
+    { ...a!, label: 'First', rowColor: '#0000ff' },
     ...rest,
   ])
   display.setRowFocus(['dad', 'mom'])

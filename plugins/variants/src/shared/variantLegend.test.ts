@@ -102,10 +102,10 @@ describe('getGenotypeEntries', () => {
 
 describe('getSampleGroupEntries', () => {
   const sources: Source[] = [
-    { name: 'HG1', population: 'EUR', labelColor: '#a' },
-    { name: 'HG2', population: 'AFR', labelColor: '#b' },
-    { name: 'HG3', population: 'EUR', labelColor: '#a' },
-    { name: 'HG4', population: 'EUR', labelColor: '#a' },
+    { name: 'HG1', population: 'EUR', rowColor: '#a' },
+    { name: 'HG2', population: 'AFR', rowColor: '#b' },
+    { name: 'HG3', population: 'EUR', rowColor: '#a' },
+    { name: 'HG4', population: 'EUR', rowColor: '#a' },
   ]
 
   it('returns [] when colorBy is unset', () => {
@@ -130,8 +130,8 @@ describe('getSampleGroupEntries', () => {
 
   it('labels missing values as (no value), last, and tolerates missing color', () => {
     const mixed: Source[] = [
-      { name: 'a', population: 'EUR', labelColor: '#a' },
-      { name: 'b', labelColor: '#b' }, // no population
+      { name: 'a', population: 'EUR', rowColor: '#a' },
+      { name: 'b', rowColor: '#b' }, // no population
     ]
     const items = getSampleGroupEntries('population', mixed)
     expect(items).toContainEqual({ value: 'EUR', label: 'EUR', color: '#a' })
@@ -144,8 +144,8 @@ describe('getSampleGroupEntries', () => {
 
   it('returns [] when colorBy attribute is absent from every source', () => {
     const noPop: Source[] = [
-      { name: 'a', labelColor: '#a' },
-      { name: 'b', labelColor: '#b' },
+      { name: 'a', rowColor: '#a' },
+      { name: 'b', rowColor: '#b' },
     ]
     expect(getSampleGroupEntries('population', noPop)).toEqual([])
   })
@@ -153,8 +153,8 @@ describe('getSampleGroupEntries', () => {
 
 describe('getVariantColorScales', () => {
   const sources: Source[] = [
-    { name: 'HG1', population: 'EUR', labelColor: '#a' },
-    { name: 'HG2', population: 'AFR', labelColor: '#b' },
+    { name: 'HG1', population: 'EUR', rowColor: '#a' },
+    { name: 'HG2', population: 'AFR', rowColor: '#b' },
   ]
 
   it('only the genotype section when colorBy is unset', () => {

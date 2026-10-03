@@ -481,7 +481,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "colorRowLabels": true,
           "displayId": "volvox_mouse_inheritance_rows-LinearMultiRowFeatureDisplay",
           "facet": "group",
           "rowColor": {

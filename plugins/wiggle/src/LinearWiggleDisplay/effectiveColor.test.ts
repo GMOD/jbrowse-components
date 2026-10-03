@@ -246,17 +246,19 @@ test('density keeps its key: the fade is keyed until a row brings its own colour
 })
 
 // The gradient's one table ignores a row's own colour, so the key still
-// describes every row, and the row's colour moves to its label.
-test('a gradient keys its ramp over rows with their own colours, which move to the label', () => {
+// describes every row, and the row's colour stays on its label bar.
+test('a gradient keys its ramp over rows with their own colours, which keep their label bars', () => {
   const display = scoredDisplay([
     { name: 'a', color: '#ff0000' },
     { name: 'b', color: '#0000ff' },
   ])
   expect(scoreKey(display)).toBeUndefined()
-  expect(display.sources.map(s => s.labelColor)).toEqual([undefined, undefined])
+  expect(display.rowColorPaintsMarks).toBe(true)
+  expect(display.sources.map(s => s.rowColor)).toEqual(['#ff0000', '#0000ff'])
   display.setColor(viridis)
   expect(scoreKey(display)?.kind).toBe('ramp')
-  expect(display.sources.map(s => s.labelColor)).toEqual(['#ff0000', '#0000ff'])
+  expect(display.rowColorPaintsMarks).toBe(false)
+  expect(display.sources.map(s => s.rowColor)).toEqual(['#ff0000', '#0000ff'])
 })
 
 test('a gradient on a line keys nothing and says why', () => {

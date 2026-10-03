@@ -4,9 +4,11 @@ export interface Source {
   // Display override for `name` in the sidebar (e.g. a friendly sample label).
   // `name` stays the stable identity used for hit-testing and genotype lookup.
   label?: string
-  labelColor?: string
   sampleName?: string
+  // the samplesTsv's own colour for the sample
   color?: string
+  // the resolved colour the row's label bar draws
+  rowColor?: string
   group?: string
   HP?: number
   [key: string]: unknown

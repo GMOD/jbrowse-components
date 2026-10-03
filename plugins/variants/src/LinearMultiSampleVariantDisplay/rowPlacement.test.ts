@@ -117,7 +117,7 @@ describe('multi-sample variant row placement', () => {
     const before = display.perRegionCellMap.get(0)
     display.applyRowEdits(
       display.editableSources.map((s, i) =>
-        i === 0 ? { ...s, label: 'Renamed', labelColor: '#123456' } : s,
+        i === 0 ? { ...s, label: 'Renamed', rowColor: '#123456' } : s,
       ),
     )
     expect(display.perRegionCellMap.get(0)).toBe(before)

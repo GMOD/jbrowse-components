@@ -1,23 +1,12 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
 
 import type { ProcessedSource } from '../types.ts'
-import type { ColorColumn, TreeLayoutModel } from '@jbrowse/tree-sidebar'
-
-// The one color a sample row has: its label tint, `labelColor`, which the
-// sidebar draws and the group legend reads. The cells are colored by genotype,
-// so there is no per-row `color` to edit — a leftover `color` (a samplesTsv
-// column, or a session from when the palette was written there) is reserved so
-// it doesn't render as a raw hex column.
-const ROW_COLOR: ColorColumn<ProcessedSource> = {
-  field: 'labelColor',
-  headerName: 'Row color',
-  bulkLabel: 'Change color of selected rows',
-}
+import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 // Variants' `editableSources` is the arranged, unfocused view, haplotype
 // rows in phased mode. `sampleName`/`HP` are internal plumbing — keep them out
 // of the auto-derived extras list.
-const RESERVED_EXTRA = new Set(['sampleName', 'HP', 'color'])
+const RESERVED_EXTRA = new Set(['sampleName', 'HP'])
 
 export default function MultiSampleVariantSetColorDialog({
   model,
@@ -31,7 +20,6 @@ export default function MultiSampleVariantSetColorDialog({
       model={model}
       handleClose={handleClose}
       title="Multi-sample variant display - Color/arrangement editor"
-      colorColumns={[ROW_COLOR]}
       enableBulkEdit
       reservedFields={RESERVED_EXTRA}
     />

@@ -182,7 +182,6 @@ function recolourInputs() {
 const rowKeys = new RowKeys()
 const keyed = buildMultiRowChannels(data, {
   rowKeys,
-  overriddenRows: new Set<string>(),
   hiddenColors: new Set<number>(),
 })
 function tableOf({ rowIndexByValue, rowColorsByIndex }: RepackInputs) {

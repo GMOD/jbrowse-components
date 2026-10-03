@@ -176,8 +176,8 @@ export default function configSchemaF() {
       rows: rowArrangementConfigSchema,
       /**
        * #slot rowColor
-       * A tint per species row, over the colour the adapter's `samples` entry
-       * gives it.
+       * A colour per species row, drawn as the bar beside its label, over the
+       * colour the adapter's `samples` entry gives it.
        *
        * #example
        * ```js

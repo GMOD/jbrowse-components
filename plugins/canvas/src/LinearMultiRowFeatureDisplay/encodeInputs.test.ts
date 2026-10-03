@@ -88,7 +88,7 @@ describe('encodeInputs', () => {
       'a recolor',
       (d: ReturnType<typeof makeDisplay>) => {
         d.applyRowEdits([
-          { name: 'sampleA', color: 'red' },
+          { name: 'sampleA', rowColor: 'red' },
           { name: 'sampleB' },
         ])
       },

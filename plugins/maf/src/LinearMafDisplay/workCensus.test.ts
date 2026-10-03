@@ -100,7 +100,7 @@ test('what each row step recomputes', async () => {
     {
       name: 'recolour',
       run: () => {
-        display.applyRowEdits(firstEdited({ labelColor: '#123456' }))
+        display.applyRowEdits(firstEdited({ rowColor: '#123456' }))
       },
     },
     {

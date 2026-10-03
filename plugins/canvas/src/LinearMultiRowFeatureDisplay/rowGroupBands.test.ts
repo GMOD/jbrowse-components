@@ -130,11 +130,11 @@ test('facet group bands and rowColor group deals a colour per group', () => {
     },
   )
   expect(display.sources).toEqual([
-    { name: 'CLUPGR000001', group: 'Wolf', labelColor: 'rgb(27,120,55)' },
-    { name: 'CLUPRU000001', group: 'Wolf', labelColor: 'rgb(27,120,55)' },
-    { name: 'VILLCN000001', group: 'Village dog', labelColor: '#123456' },
-    { name: 'COLL000001' },
-    { name: 'DACH000001' },
+    { name: 'CLUPGR000001', group: 'Wolf', rowColor: 'rgb(27,120,55)' },
+    { name: 'CLUPRU000001', group: 'Wolf', rowColor: 'rgb(27,120,55)' },
+    { name: 'VILLCN000001', group: 'Village dog', rowColor: '#123456' },
+    { name: 'COLL000001', rowColor: '#4e79a7' },
+    { name: 'DACH000001', rowColor: '#4e79a7' },
   ])
   expect(display.rowBands).toEqual([
     { key: 'Wolf', label: 'Wolf', start: 0, end: 2 },

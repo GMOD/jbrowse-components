@@ -1,7 +1,9 @@
 import { render } from '@testing-library/react'
 
+import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
-import { rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
+import { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
+import { ROW_COLOR_BAR_WIDTH, rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
 
 const ROW_LABEL_MAX_TEXT_WIDTH = 120
 
@@ -18,18 +20,48 @@ const wolf = '#67001f'
 const dog = '#f4a582'
 
 describe('SvgRowLabels', () => {
-  it('draws a label box and its text when the row fits text', () => {
+  it("draws a row's colour as a 4px bar at its label's left, the text past it", () => {
+    const sources = [{ name: 'COLL000001', label: 'Collie 1', rowColor: dog }]
+    const c = draw({ sources, rowHeight: 20, labelOffset: 0, backdrop: 'wash' })
+    const bars = c.querySelectorAll('[data-testid="row-color-bar"]')
+    expect(bars).toHaveLength(1)
+    const bar = bars[0]!
+    expect(ROW_COLOR_BAR_WIDTH).toBe(4)
+    expect(bar.getAttribute('fill')).toBe(dog)
+    expect(bar.getAttribute('x')).toBe('0')
+    expect(bar.getAttribute('width')).toBe('4')
+    expect(bar.getAttribute('height')).toBe('16')
+    expect(bar.getAttribute('y')).toBe('2')
+    const text = c.querySelector('text')!
+    expect(text.textContent).toBe('Collie 1')
+    expect(Number(text.getAttribute('x'))).toBeGreaterThan(4)
+    expect(text.getAttribute('fill')).not.toBe(dog)
+    const w = rowLabelsBoxWidth(sources, 20)
+    expect(w).toBe(rowLabelsBoxWidth([{ name: 'Collie 1' }], 20) + 4)
+    expect(c.querySelector('path')?.getAttribute('d')).toContain(`h${w}`)
+  })
+
+  it('draws no bar for a row with no colour, beside one that has one', () => {
     const c = draw({
-      sources: [{ name: 'COLL000001', label: 'Collie 1', labelColor: dog }],
+      sources: [{ name: 'a', rowColor: wolf }, { name: 'b' }],
       rowHeight: 20,
       labelOffset: 0,
     })
-    const tint = [...c.querySelectorAll('rect')].find(
-      r => r.getAttribute('fill') === dog,
-    )
-    expect(tint?.getAttribute('height')).toBe('16')
-    expect(tint?.getAttribute('y')).toBe('2')
-    expect(c.querySelector('text')?.textContent).toBe('Collie 1')
+    const bars = c.querySelectorAll('[data-testid="row-color-bar"]')
+    expect(bars).toHaveLength(1)
+    expect(bars[0]!.getAttribute('y')).toBe('2')
+    const [a, b] = [...c.querySelectorAll('text')]
+    expect(a!.getAttribute('x')).toBe(b!.getAttribute('x'))
+  })
+
+  it('draws no bar, and starts the text at the box edge, when no row has a colour', () => {
+    const c = draw({
+      sources: [{ name: 'a' }, { name: 'b' }],
+      rowHeight: 20,
+      labelOffset: 0,
+    })
+    expect(c.querySelectorAll('rect')).toHaveLength(0)
+    expect(c.querySelector('text')?.getAttribute('x')).toBe('4')
   })
 
   it('boxes each label one line tall, centered in a tall row, with no separator', () => {
@@ -75,15 +107,20 @@ describe('SvgRowLabels', () => {
     expect(wash.querySelectorAll('path')).toHaveLength(2)
   })
 
-  it('draws a narrow color swatch, and no text, below the text threshold', () => {
+  it('fills the label run with the colour, and draws no text, below the text threshold', () => {
     const c = draw({
-      sources: [{ name: 'a', label: 'Collie 1', labelColor: dog }],
+      sources: [{ name: 'a', label: 'Collie 1', rowColor: dog }],
       rowHeight: 0.32,
       labelOffset: 0,
     })
     expect(c.querySelectorAll('text')).toHaveLength(0)
     const rect = c.querySelector('rect')
-    // narrow enough to be a stripe rather than the text-width box
+    expect(rect?.getAttribute('fill')).toBe(dog)
+    expect(rect?.dataset.testid).toBeUndefined()
+    // the whole run, narrow enough to be a stripe rather than the text box
+    expect(rect?.getAttribute('width')).toBe(
+      String(rowLabelsBoxWidth([{ name: 'a', rowColor: dog }], 0.32)),
+    )
     expect(Number(rect?.getAttribute('width'))).toBeLessThan(10)
     // floored at a pixel so the mark survives; y stays exact
     expect(Number(rect?.getAttribute('height'))).toBe(1)
@@ -92,7 +129,7 @@ describe('SvgRowLabels', () => {
 
   it('keeps a sub-pixel mark on its own row rather than shifting it', () => {
     const c = draw({
-      sources: [{ name: 'a' }, { name: 'b' }, { name: 'c', labelColor: wolf }],
+      sources: [{ name: 'a' }, { name: 'b' }, { name: 'c', rowColor: wolf }],
       rowHeight: 0.32,
       labelOffset: 0,
     })
@@ -114,10 +151,10 @@ describe('SvgRowLabels', () => {
   it('merges consecutive same-color rows into one rect spanning them', () => {
     const c = draw({
       sources: [
-        { name: 'a', labelColor: dog },
-        { name: 'b', labelColor: dog },
-        { name: 'c', labelColor: dog },
-        { name: 'd', labelColor: wolf },
+        { name: 'a', rowColor: dog },
+        { name: 'b', rowColor: dog },
+        { name: 'c', rowColor: dog },
+        { name: 'd', rowColor: wolf },
       ],
       rowHeight: 2,
       labelOffset: 0,
@@ -133,9 +170,9 @@ describe('SvgRowLabels', () => {
   it('does not bridge a run across an uncolored row', () => {
     const c = draw({
       sources: [
-        { name: 'a', labelColor: dog },
+        { name: 'a', rowColor: dog },
         { name: 'b' },
-        { name: 'c', labelColor: dog },
+        { name: 'c', rowColor: dog },
       ],
       rowHeight: 2,
       labelOffset: 0,
@@ -152,12 +189,12 @@ describe('SvgRowLabels', () => {
     const sources = [
       ...Array.from({ length: 20 }, (_, i) => ({
         name: `village${i}`,
-        labelColor: dog,
+        rowColor: dog,
       })),
-      { name: 'wolf', labelColor: wolf },
+      { name: 'wolf', rowColor: wolf },
       ...Array.from({ length: 20 }, (_, i) => ({
         name: `village${i + 20}`,
-        labelColor: dog,
+        rowColor: dog,
       })),
     ]
     const rects = [
@@ -171,8 +208,8 @@ describe('SvgRowLabels', () => {
   it('culls swatch runs outside the available height', () => {
     const c = draw({
       sources: [
-        { name: 'onscreen', labelColor: dog },
-        { name: 'offscreen', labelColor: wolf },
+        { name: 'onscreen', rowColor: dog },
+        { name: 'offscreen', rowColor: wolf },
       ],
       rowHeight: 4,
       labelOffset: 0,
@@ -197,5 +234,75 @@ describe('SvgRowLabels', () => {
     expect(c.querySelector('path')?.getAttribute('d')).toContain(
       `h${ROW_LABEL_MAX_TEXT_WIDTH + 10}`,
     )
+  })
+})
+
+// The screen and the export draw the same labels: `RowLabelsOverlay` on
+// screen, `SvgTreeSidebar` in the export, both through `SvgRowLabels`.
+describe('the label bar on screen and in the export', () => {
+  const sources = [
+    { name: 'a', rowColor: dog },
+    { name: 'b' },
+    { name: 'c', rowColor: wolf },
+  ]
+
+  function onScreen(rowHeight: number) {
+    return render(
+      <RowLabelsOverlay
+        sources={sources}
+        rowHeight={rowHeight}
+        labelOffset={0}
+        width={400}
+        height={200}
+        testId="labels"
+      />,
+    ).getByTestId('labels')
+  }
+
+  function inExport(rowHeight: number) {
+    return render(
+      <svg>
+        <SvgTreeSidebar
+          sidebar={{
+            showTree: false,
+            hierarchy: undefined,
+            sources,
+            rowHeight,
+            treeAreaWidth: 0,
+          }}
+          text={{ fontSize: 12, fontFamily: 'Arial' }}
+        />
+      </svg>,
+    ).container
+  }
+
+  it.each([
+    ['on screen', onScreen],
+    ['in the export', inExport],
+  ])(
+    'draws a 4px bar per coloured row above the text threshold %s',
+    (_, at) => {
+      const bars = [...at(20).querySelectorAll('[data-testid="row-color-bar"]')]
+      expect(bars.map(b => b.getAttribute('fill'))).toEqual([dog, wolf])
+      expect(bars.map(b => b.getAttribute('width'))).toEqual(['4', '4'])
+    },
+  )
+
+  it.each([
+    ['on screen', onScreen],
+    ['in the export', inExport],
+  ])('fills each coloured run below the text threshold %s', (_, at) => {
+    const el = at(2)
+    expect(el.querySelectorAll('[data-testid="row-color-bar"]')).toHaveLength(0)
+    expect(el.querySelectorAll('text')).toHaveLength(0)
+    const runs = [...el.querySelectorAll('rect')]
+    expect(runs.map(r => r.getAttribute('fill')).sort()).toEqual(
+      [dog, wolf].sort(),
+    )
+    for (const run of runs) {
+      expect(run.getAttribute('width')).toBe(
+        String(rowLabelsBoxWidth(sources, 2)),
+      )
+    }
   })
 })

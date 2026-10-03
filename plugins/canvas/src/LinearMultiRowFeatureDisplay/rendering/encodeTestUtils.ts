@@ -52,7 +52,6 @@ export function encodeRows(
   }
   const encoded = buildMultiRowChannels(data, {
     rowKeys,
-    overriddenRows: new Set(rows.filter((_, i) => rowColors[i] !== undefined)),
     hiddenColors,
     fieldPalette,
   })

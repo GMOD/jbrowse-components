@@ -8,9 +8,7 @@ interface LabelModel {
   sources: {
     name: string
     label?: string
-    color?: string
-    labelColor?: string
-    group?: string
+    rowColor?: string
   }[]
   isOverlay: boolean
   effectiveRowHeight: number

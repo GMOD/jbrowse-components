@@ -3,13 +3,7 @@ import { useState } from 'react'
 import DraggableDialog from '@jbrowse/core/ui/DraggableDialog'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  ToggleButton,
-  ToggleButtonGroup,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { rowFieldValue } from '../rowColorScale.ts'
@@ -22,7 +16,6 @@ import SourceGrid from './SourceGrid.tsx'
 
 import type { RowColorSetting, RowColorSnapshot } from '../TreeSidebarMixin.ts'
 import type { ValueColor } from './RowColorPanel.tsx'
-import type { ColorColumn } from './SourceGrid.tsx'
 
 const useStyles = makeStyles()({
   content: {
@@ -59,15 +52,10 @@ export interface TreeLayoutModel<S extends { name: string }> {
 }
 
 export interface SetColorDialogProps<
-  S extends { name: string; color?: string },
+  S extends { name: string; rowColor?: string },
 > {
   model: TreeLayoutModel<S>
   handleClose: () => void
-  // PopoverPicker columns. Defaults to a single `color` column. With more than
-  // one, a header toggle switches which single column the grid edits.
-  colorColumns?: ColorColumn<S>[]
-  // Which color column starts active; defaults to the first.
-  defaultColorField?: keyof S & string
   title?: string
   enableBulkEdit?: boolean
   // Plugin-specific field names that are internal plumbing (e.g. variants'
@@ -75,8 +63,8 @@ export interface SetColorDialogProps<
   reservedFields?: ReadonlySet<string>
   // The display's own colour rather than a row's, on one line above the rows.
   // Held here and written in `submit()` AFTER the row edits, so Cancel reverts
-  // it like everything else and the write cannot move the channel
-  // `applyRowEdits` compares a row's swatch on.
+  // it like everything else and the write cannot recolour the rows
+  // `applyRowEdits` compares the grid's against.
   plotColor?: PlotColorControl
   // False where the display has nothing to arrange — one row, or none arrived
   // yet. The row color choice, the grid and the bulk editor go with it.
@@ -143,12 +131,10 @@ function valueColors(
 }
 
 export default observer(function SetColorDialog<
-  S extends { name: string; color?: string },
+  S extends { name: string; rowColor?: string },
 >({
   model,
   handleClose,
-  colorColumns = [{ field: 'color', headerName: 'Color' }],
-  defaultColorField,
   title = 'Color/arrangement editor',
   enableBulkEdit = false,
   reservedFields,
@@ -174,20 +160,12 @@ export default observer(function SetColorDialog<
   const [choice, setChoice] = useState(opened.choice)
   const [entries, setEntries] = useState(opened.entries)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
-  const [activeField, setActiveField] = useState(
-    defaultColorField ?? colorColumns[0]?.field,
-  )
 
-  // The grid edits one color column at a time; the bulk button paints that
-  // same one.
-  const activeColumn =
-    colorColumns.find(c => c.field === activeField) ?? colorColumns[0]
-
-  // Every color column is reserved from the auto-derived extras, not just the
-  // active one, so an inactive swatch field never leaks as a raw hex column.
+  // A row's own `color` and its resolved `rowColor` never show as raw hex.
   const reserved = new Set<string>([
     ...IDENTITY_FIELDS,
-    ...colorColumns.map(c => c.field),
+    'color',
+    'rowColor',
     ...(reservedFields ?? []),
   ])
 
@@ -240,26 +218,18 @@ export default observer(function SetColorDialog<
     return (
       choice !== opened.choice ||
       entries !== opened.entries ||
-      currLayout.some(row =>
-        colorColumns.some(
-          ({ field }) => row[field] !== before.get(row.name)?.[field],
-        ),
-      )
+      currLayout.some(row => row.rowColor !== before.get(row.name)?.rowColor)
     )
   }
 
   const colorsRows = choice === '' || choice === 'name'
 
   const paintRows = (colorOf: (row: S) => string | undefined) => {
-    if (activeColumn) {
-      setCurrLayout(
-        currLayout.map(row => ({ ...row, [activeColumn.field]: colorOf(row) })),
-      )
-    }
+    setCurrLayout(currLayout.map(row => ({ ...row, rowColor: colorOf(row) })))
   }
 
-  // The row edits go first: a plot colour can move which channel carries a
-  // row's identity, and `applyRowEdits` reads a row's swatch off that channel.
+  // The row edits go first: a plot colour can change which rows the palette
+  // deals, and `applyRowEdits` compares each row against its colour now.
   const submit = () => {
     model.applyRowEdits(
       currLayout,
@@ -369,29 +339,10 @@ export default observer(function SetColorDialog<
                   }}
                 />
 
-                {colorsRows && colorColumns.length > 1 ? (
-                  <ToggleButtonGroup
-                    exclusive
-                    size="small"
-                    value={activeColumn?.field}
-                    onChange={(_event, value) => {
-                      if (value) {
-                        setActiveField(value)
-                      }
-                    }}
-                  >
-                    {colorColumns.map(c => (
-                      <ToggleButton key={c.field} value={c.field}>
-                        {c.headerName}
-                      </ToggleButton>
-                    ))}
-                  </ToggleButtonGroup>
-                ) : null}
-
                 <SourceGrid
                   rows={currLayout}
                   onChange={setCurrLayout}
-                  colorColumn={colorsRows ? activeColumn : undefined}
+                  editsColor={colorsRows}
                   swatchOf={
                     fieldColors && byField
                       ? row => fieldColors.get(rowFieldValue(row, byField))

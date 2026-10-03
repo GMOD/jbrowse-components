@@ -94,9 +94,8 @@ export function tagRowGroups(
 }
 
 /**
- * Each row's sidebar swatch, `labelColor`, set to the colour of the first entry
- * its name matches, where it has none of its own. Not `color`, which this
- * display spends on the per-feature painting.
+ * Each row with no `rowColor` of its own given the colour of the first entry
+ * its name matches, so the label bar shows the row's group.
  */
 export function applyRowGroupColors(
   sources: RowSource[],
@@ -106,8 +105,8 @@ export function applyRowGroupColors(
   return compiled.length
     ? sources.map(s => {
         const hit = rowGroupOf(compiled, s.name)
-        return hit?.color && s.labelColor === undefined
-          ? { ...s, labelColor: hit.color }
+        return hit?.color && s.rowColor === undefined
+          ? { ...s, rowColor: hit.color }
           : s
       })
     : sources

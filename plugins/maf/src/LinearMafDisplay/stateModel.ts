@@ -149,27 +149,14 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  IdentityChannel,
-  SvgSidebarProps,
-  RowSource,
-} from '@jbrowse/tree-sidebar'
+import type { RowSource, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type { YAxis } from '@jbrowse/wiggle-core'
 
 /**
  * One species row. `RowSource` is the shared vocabulary every display with a
  * dendrogram sidebar draws rows by; this adds the two navigation fields only
- * MAF has.
- *
- * The adapter's `samples[].color` slot lands on **`labelColor`**, the name the
- * sidebar tints with, because that is the only thing MAF ever does with it —
- * nothing here paints a row in it, and a `rowColor` entry tints over it. It
- * used to be carried as `color` and translated by a `labelSources` computed,
- * which existed because `RowLabelSource` is satisfied structurally: handing
- * `sources` straight to the sidebar type-checked and dropped the tint in
- * silence, which is how the slot came to be documented in three adapter
- * schemas while reaching no renderer at all. Naming it what it is removes the
- * translation and the trap together.
+ * MAF has. The adapter's `samples[].color` is the row's own `color`, which
+ * its label bar shows unless a `rowColor` entry sets another.
  */
 /**
  * The row under the pointer, which the display publishes as its
@@ -528,7 +515,7 @@ export default function stateModelFactory(
           const incoming = samples.map(s => ({
             name: s.id,
             label: s.label,
-            labelColor: s.color,
+            color: s.color,
             ...navigationFields(s),
           }))
           const next = samplesCanonical
@@ -717,14 +704,6 @@ export default function stateModelFactory(
          */
         get guideTreeNewick(): string | undefined {
           return self.treeNewickVolatile
-        },
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: a `rowColor` entry tints the label, over
-         * the adapter's `samples[].color`.
-         */
-        get identityChannel(): IdentityChannel {
-          return 'labelColor'
         },
         /**
          * #getter
@@ -935,7 +914,7 @@ export default function stateModelFactory(
           return self.sources.map(s => ({
             id: s.name,
             label: s.label ?? s.name,
-            color: s.labelColor,
+            color: s.rowColor,
             ...navigationFields(s),
           }))
         },

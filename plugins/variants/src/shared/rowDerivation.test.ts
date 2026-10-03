@@ -107,13 +107,13 @@ async function cluster(display: Display, order: number[], tree: string) {
 function row({
   name,
   label,
-  labelColor,
+  rowColor,
   color,
   sampleName,
   HP,
   population,
 }: ProcessedSource) {
-  return { name, label, labelColor, color, sampleName, HP, population }
+  return { name, label, rowColor, color, sampleName, HP, population }
 }
 
 function derived(display: Display) {
@@ -165,8 +165,8 @@ describe('allele count', () => {
     display.applyRowEdits([
       { ...s2!, label: 'Two' },
       s0!,
-      { ...s3!, labelColor: '#123456' },
-      { ...s1!, labelColor: '#654321' },
+      { ...s3!, rowColor: '#123456' },
+      { ...s1!, rowColor: '#654321' },
     ])
     expect(derived(display)).toMatchSnapshot()
     display.resetRowArrangement()
@@ -178,9 +178,9 @@ describe('allele count', () => {
   test("a dialog recolours a population's rows, and keeps the Color by", () => {
     const display = loaded({ rowColor: 'population' })
     const [s0, s1, ...rest] = display.editableSources
-    display.applyRowEdits([s0!, { ...s1!, labelColor: '#123456' }, ...rest])
+    display.applyRowEdits([s0!, { ...s1!, rowColor: '#123456' }, ...rest])
     expect(display.rowColorChoice).toBe('population')
-    expect(display.sources.find(s => s.name === s1!.name)!.labelColor).not.toBe(
+    expect(display.sources.find(s => s.name === s1!.name)!.rowColor).not.toBe(
       '#123456',
     )
 
@@ -191,7 +191,7 @@ describe('allele count', () => {
     })
     const afr = display.sources.filter(s => s.population === 'AFR')
     expect(afr.length).toBeGreaterThan(1)
-    expect(afr.every(s => s.labelColor === '#123456')).toBe(true)
+    expect(afr.every(s => s.rowColor === '#123456')).toBe(true)
     expect(derived(display).groupLegend).toBeDefined()
   })
 
@@ -277,7 +277,7 @@ describe('phased', () => {
       h6!,
       { ...h1!, label: 'Zero, second' },
       h0!,
-      { ...h4!, labelColor: '#123456' },
+      { ...h4!, rowColor: '#123456' },
       h2!,
       h3!,
       h5!,

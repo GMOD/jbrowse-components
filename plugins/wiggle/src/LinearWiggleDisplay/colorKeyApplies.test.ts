@@ -106,7 +106,7 @@ it('never applies to a single source', () => {
 })
 
 // Density spends `color` on the score ramp, so a row's identity colour is its
-// `labelColor` — which is where a grouped-but-uncoloured cohort's colour by
+// `rowColor` — which is where a grouped-but-uncoloured cohort's colour by
 // group lands. The key has to draw the colour the rows actually are.
 describe('density mode keys off the row identity colour', () => {
   function byGroup(display: ReturnType<typeof makeDisplay>) {
@@ -126,11 +126,11 @@ describe('density mode keys off the row identity colour', () => {
     const display = makeDisplay(groupedUncoloured(4390, 4), 620)
     display.setRenderingType('density')
     byGroup(display)
-    // the ramp still owns `color`; identity moved to labelColor
+    // the ramp still owns `color`; identity moved to rowColor
     expect(display.sources.every(s => !s.color)).toBe(true)
     const colors = display.legendItems.map(i => i.color)
     expect(new Set(colors).size).toBe(4)
-    expect(colors[0]).toBe(display.sources[0]!.labelColor)
+    expect(colors[0]).toBe(display.sources[0]!.rowColor)
     expect(display.overlayLegendApplies).toBe(true)
   })
 
@@ -164,7 +164,7 @@ describe('density mode keys off the row identity colour', () => {
     )
     display.setRenderingType('density')
     byGroup(display)
-    expect(display.sources.filter(s => !s.labelColor)).toHaveLength(0)
+    expect(display.sources.filter(s => !s.rowColor)).toHaveLength(0)
     expect(display.legendItems.map(i => i.label)).toEqual([
       'g0',
       'g1',

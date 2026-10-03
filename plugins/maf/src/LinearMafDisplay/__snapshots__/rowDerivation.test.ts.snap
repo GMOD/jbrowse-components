@@ -5,18 +5,18 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
   "editableSources": [
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "rowArrangementIsCustom": true,
@@ -27,18 +27,18 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
   "sources": [
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "subtreeFilterSet": undefined,
@@ -69,18 +69,18 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -91,18 +91,18 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
   "sources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -120,18 +120,18 @@ exports[`a cluster run rotates towards the declared order 1`] = `
   "editableSources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": true,
@@ -142,18 +142,18 @@ exports[`a cluster run rotates towards the declared order 1`] = `
   "sources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -171,18 +171,18 @@ exports[`a declared order leads with no tree 1`] = `
   "editableSources": [
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -193,18 +193,18 @@ exports[`a declared order leads with no tree 1`] = `
   "sources": [
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -218,18 +218,18 @@ exports[`a declared order rotates a supplied tree 1`] = `
   "editableSources": [
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "rowArrangementIsCustom": false,
@@ -240,18 +240,18 @@ exports[`a declared order rotates a supplied tree 1`] = `
   "sources": [
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "subtreeFilterSet": undefined,
@@ -269,18 +269,18 @@ exports[`a declared order rotates a supplied tree 2`] = `
   "editableSources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -291,18 +291,18 @@ exports[`a declared order rotates a supplied tree 2`] = `
   "sources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -320,18 +320,18 @@ exports[`a dialog recolour over an adapter colour, in place 1`] = `
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#00ff00",
       "name": "hg38",
+      "rowColor": "#00ff00",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": true,
@@ -342,18 +342,18 @@ exports[`a dialog recolour over an adapter colour, in place 1`] = `
   "sources": [
     {
       "label": "Human",
-      "labelColor": "#00ff00",
       "name": "hg38",
+      "rowColor": "#00ff00",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -367,18 +367,18 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
   "editableSources": [
     {
       "label": "House mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": "#123456",
       "name": "panTro4",
+      "rowColor": "#123456",
     },
   ],
   "rowArrangementIsCustom": true,
@@ -389,18 +389,18 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
   "sources": [
     {
       "label": "House mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": "#123456",
       "name": "panTro4",
+      "rowColor": "#123456",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -418,18 +418,18 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -440,18 +440,18 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
   "sources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -469,23 +469,23 @@ exports[`a discovered row joins after a reorder 1`] = `
   "editableSources": [
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Rat",
-      "labelColor": undefined,
       "name": "rn6",
+      "rowColor": undefined,
     },
   ],
   "rowArrangementIsCustom": true,
@@ -496,23 +496,23 @@ exports[`a discovered row joins after a reorder 1`] = `
   "sources": [
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Rat",
-      "labelColor": undefined,
       "name": "rn6",
+      "rowColor": undefined,
     },
   ],
   "subtreeFilterSet": undefined,
@@ -526,18 +526,18 @@ exports[`a focus narrows the rows and the fetch key 1`] = `
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -551,13 +551,13 @@ exports[`a focus narrows the rows and the fetch key 1`] = `
   "sources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "subtreeFilterSet": [
@@ -577,18 +577,18 @@ exports[`a focus narrows the rows and the fetch key 2`] = `
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -602,13 +602,13 @@ exports[`a focus narrows the rows and the fetch key 2`] = `
   "sources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": [
@@ -628,18 +628,18 @@ exports[`a focus narrows the rows and the fetch key 3`] = `
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -650,18 +650,18 @@ exports[`a focus narrows the rows and the fetch key 3`] = `
   "sources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -679,18 +679,18 @@ exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
   "editableSources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": true,
@@ -704,13 +704,13 @@ exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
   "sources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
   ],
   "subtreeFilterSet": [
@@ -730,18 +730,18 @@ exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
   "editableSources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": true,
@@ -752,18 +752,18 @@ exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
   "sources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -780,18 +780,18 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "rowArrangementIsCustom": true,
@@ -802,18 +802,18 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
   "sources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "subtreeFilterSet": undefined,
@@ -827,18 +827,18 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
   "editableSources": [
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "rowArrangementIsCustom": false,
@@ -849,18 +849,18 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
   "sources": [
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "subtreeFilterSet": undefined,
@@ -878,18 +878,18 @@ exports[`a supplied guide tree leads the rows 1`] = `
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -900,18 +900,18 @@ exports[`a supplied guide tree leads the rows 1`] = `
   "sources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -929,18 +929,18 @@ exports[`adapter labels and colours are the rows own 1`] = `
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -951,18 +951,18 @@ exports[`adapter labels and colours are the rows own 1`] = `
   "sources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -976,18 +976,18 @@ exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -998,13 +998,13 @@ exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
   "sources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "subtreeFilterSet": undefined,
@@ -1022,18 +1022,18 @@ exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
   "editableSources": [
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -1047,8 +1047,8 @@ exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
   "sources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "subtreeFilterSet": [
@@ -1068,18 +1068,18 @@ exports[`sort at a column orders the rows by base and drops the supplied tree 1`
   "editableSources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
   ],
   "rowArrangementIsCustom": true,
@@ -1090,18 +1090,18 @@ exports[`sort at a column orders the rows by base and drops the supplied tree 1`
   "sources": [
     {
       "label": "Chimp",
-      "labelColor": undefined,
       "name": "panTro4",
+      "rowColor": undefined,
     },
     {
       "label": "Mouse",
-      "labelColor": "#0000aa",
       "name": "mm10",
+      "rowColor": "#0000aa",
     },
     {
       "label": "Human",
-      "labelColor": "#aa0000",
       "name": "hg38",
+      "rowColor": "#aa0000",
     },
   ],
   "subtreeFilterSet": undefined,

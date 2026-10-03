@@ -119,7 +119,7 @@ test('what each row step recomputes, phased', async () => {
     {
       name: 'recolour',
       run: () => {
-        display.applyRowEdits(firstEdited({ labelColor: '#123456' }))
+        display.applyRowEdits(firstEdited({ rowColor: '#123456' }))
       },
     },
     {
@@ -191,7 +191,7 @@ test('what each row step recomputes, phased and coloured by population', async (
       },
     },
   ])
-  expect(display.sources.every(row => row.labelColor)).toBe(true)
+  expect(display.sources.every(row => row.rowColor)).toBe(true)
   expect(table).toMatchSnapshot()
 })
 

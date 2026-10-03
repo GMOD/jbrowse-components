@@ -91,7 +91,6 @@ import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 import type {
-  IdentityChannel,
   RowAlias,
   RowBanding,
   SvgSidebarProps,
@@ -244,22 +243,22 @@ function fetchRegionsForMode(
  * ## How the rows are arranged
  *
  * The arrangement is config: `rows` holds the order, the labels, the cluster
- * tree with its provenance and the focus, and `rowColor` the tint, each by row
- * name at the mode's granularity — a sample in allele-count mode, a haplotype
- * (`"<sample> HP<n>"`) in phased mode, where a sample name stands for its
- * haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
+ * tree with its provenance and the focus, and `rowColor` the colours, each by
+ * row name at the mode's granularity — a sample in allele-count mode, a
+ * haplotype (`"<sample> HP<n>"`) in phased mode, where a sample name stands
+ * for its haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
  * a clustering run write it; the rows are derived from it on every read:
  *
  * 1. the adapter's samples (`adapterSamples`) are focused by `rows.kept`,
  *    which is the set the fetch asks for (`sourcesBase`, `sampleFilter`),
  * 2. phased mode expands each sample to its haplotypes (`expandedRows`), and
- *    `rows.domain` orders, `rows.labels` relabels and the `rowColor` pairs
- *    tint them (`editableSources`, the dialog's list), each from
+ *    `rows.domain` orders, `rows.labels` relabels and each row carries its
+ *    resolved `rowColor` (`editableSources`, the dialog's list), each from
  *    `TreeSidebarMixin` over this display's hooks,
  * 3. the focus narrows those (`clusterableSources`, what a run clusters),
  * 4. `facet` stacks those in bands (`bandedSources`), each band's rows in their
  *    arranged order,
- * 5. the `rowColor` palette tints the result (`sources`).
+ * 5. the result is `sources`, each row's `rowColor` its label bar.
  *
  * **The `rowColor` palette wins over a colour the row already carried**, a
  * `samplesTsv` `color` column: a channel bound to a variable beats a per-row
@@ -896,7 +895,7 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: never, since the cells paint by genotype
-         * and a row's colour tints only its label.
+         * and a row's colour shows only on its label bar.
          */
         get rowColorPaintsMarks(): boolean {
           return false
@@ -912,18 +911,14 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: the adapter's samples as rows, each
-         * answering to its sample name, with a samplesTsv `color` column as the
-         * label tint where the sample names none of its own.
+         * answering to its sample name, a samplesTsv `color` column the row's
+         * own colour.
          */
         get discoveredRows(): ProcessedSource[] {
-          return (self.adapterSamples ?? []).map(source => {
-            const labelColor = source.labelColor ?? source.color
-            return {
-              ...source,
-              sampleName: resolveSampleName(source),
-              ...(labelColor === undefined ? {} : { labelColor }),
-            }
-          })
+          return (self.adapterSamples ?? []).map(source => ({
+            ...source,
+            sampleName: resolveSampleName(source),
+          }))
         },
         /**
          * #getter
@@ -933,14 +928,6 @@ export default function MultiSampleVariantBaseModelF(
          */
         get rowAlias(): RowAlias {
           return rowAliasOf(self.adapterSamples ?? [])
-        },
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: a `rowColor` entry tints the label, the
-         * one channel a row has, since the cells paint by genotype.
-         */
-        get identityChannel(): IdentityChannel {
-          return 'labelColor'
         },
         /**
          * #getter
@@ -981,9 +968,8 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
-         * The display rows: `bandedSources`, each label tinted by its
-         * `resolvedRowColors` colour. A cross-band drag snaps back while the
-         * facet is on.
+         * The display rows, `bandedSources`, each carrying its `rowColor`. A
+         * cross-band drag snaps back while the facet is on.
          *
          * **Resolved — an array, never `undefined`**, which is the shared
          * spelling across the row displays. `adapterSamples` and `sourcesBase`
@@ -994,14 +980,7 @@ export default function MultiSampleVariantBaseModelF(
          * read unconditionally").
          */
         get sources(): ProcessedSource[] {
-          const rows = self.bandedSources
-          const colors = self.resolvedRowColors
-          return colors.size
-            ? rows.map(s => ({
-                ...s,
-                labelColor: colors.get(s.name) ?? s.labelColor,
-              }))
-            : rows
+          return self.bandedSources
         },
       }))
       .views(self => ({

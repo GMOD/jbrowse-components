@@ -3,7 +3,6 @@ import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRang
 export interface SourceInfo {
   name: string
   color?: string
-  labelColor?: string
   label?: string
   group?: string
   baseUri?: string

@@ -119,7 +119,7 @@ describe('repartitioning', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample', 'clade']), ctgA)
     display.setRowOrder([{ name: 'b' }, { name: 'a' }], { tree: '(b,a);' })
-    display.applyRowEdits([{ name: 'b', color: '#00f' }, { name: 'a' }])
+    display.applyRowEdits([{ name: 'b', rowColor: '#00f' }, { name: 'a' }])
     display.setHiddenCategories(['a'])
 
     display.setRowsField('clade')
@@ -218,7 +218,7 @@ describe('a reorder over the rows a window holds', () => {
       false,
     )
 
-    display.applyRowEdits([{ name: 'd', color: '#f00' }, { name: 'b' }])
+    display.applyRowEdits([{ name: 'd', rowColor: '#f00' }, { name: 'b' }])
     expect(display.rowTree).toBe('(d,b);')
 
     display.setRowOrder([{ name: 'b' }, { name: 'd' }])

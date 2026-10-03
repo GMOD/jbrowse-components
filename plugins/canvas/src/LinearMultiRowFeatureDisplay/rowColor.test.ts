@@ -33,7 +33,7 @@ const DECLARED = { rowColor: { domain: ['c', 'a'], range: ['#0f0', '#00f'] } }
 
 test('the dialog seeds each row with the colour the config gives it', () => {
   const display = loaded(DECLARED)
-  expect(display.editableSources.map(s => s.color)).toEqual([
+  expect(display.editableSources.map(s => s.rowColor)).toEqual([
     '#00f',
     undefined,
     '#0f0',
@@ -54,7 +54,7 @@ test('a reorder writes the declared pairs back in their own order', () => {
 test('a recolour is custom until a reset returns the declared colours', () => {
   const display = loaded(DECLARED)
   const [a, b, ...rest] = display.editableSources
-  display.applyRowEdits([a!, { ...b!, color: '#f00' }, ...rest])
+  display.applyRowEdits([a!, { ...b!, rowColor: '#f00' }, ...rest])
   expect(display.rowColorPairs.get('b')).toBe('#f00')
   expect(display.rowStylingIsCustom).toBe(true)
   expect(display.rowArrangementIsCustom).toBe(true)
@@ -70,7 +70,7 @@ test('a recolour is custom until a reset returns the declared colours', () => {
 test('a colour the painters cannot parse is left out', () => {
   const display = loaded({})
   const [a, ...rest] = display.editableSources
-  display.applyRowEdits([{ ...a!, color: 'reddish' }, ...rest])
+  display.applyRowEdits([{ ...a!, rowColor: 'reddish' }, ...rest])
   expect(display.rowColorPairs.size).toBe(0)
 })
 
@@ -95,7 +95,7 @@ test('a submit over a window holding a fraction of the rows leaves the rest stan
   }).createDisplay()
   display.setRpcData(0, rows(['a', 'b']), ctgA)
   const [a, b] = display.editableSources
-  display.applyRowEdits([b!, { ...a!, color: '#f00' }])
+  display.applyRowEdits([b!, { ...a!, rowColor: '#f00' }])
   expect(display.configuration.rowColor.domain).toEqual(['c', 'a'])
   expect(Object.fromEntries(display.rowColorPairs)).toEqual({
     c: '#0f0',
@@ -159,7 +159,7 @@ test("unknown: '' deals no palette, and the pairs still paint", () => {
 test('a recolour under None paints that row and deals the rest nothing', () => {
   const display = loaded({ rowColor: { scale: 'none' } })
   const [a, b, ...rest] = display.editableSources
-  display.applyRowEdits([a!, { ...b!, color: '#123456' }, ...rest], {
+  display.applyRowEdits([a!, { ...b!, rowColor: '#123456' }, ...rest], {
     field: 'name',
     unknown: '',
   })
@@ -211,7 +211,7 @@ test('rowColor by group paints a group its rowGroups colour, the stripe alike', 
     '#e41a1c',
     '#377eb8',
   ])
-  expect(display.sources.slice(0, 3).map(s => s.labelColor)).toEqual([
+  expect(display.sources.slice(0, 3).map(s => s.rowColor)).toEqual([
     '#e41a1c',
     '#e41a1c',
     '#377eb8',
@@ -224,6 +224,6 @@ test('a group colour rowColor sets beats rowGroups, on the stripe too', () => {
     ...GROUPS,
   })
   expect(display.rowColorStringsByIndex[2]).toBe('#123456')
-  expect(display.sources[2]!.labelColor).toBe('#123456')
-  expect(display.sources[0]!.labelColor).toBe('#e41a1c')
+  expect(display.sources[2]!.rowColor).toBe('#123456')
+  expect(display.sources[0]!.rowColor).toBe('#e41a1c')
 })

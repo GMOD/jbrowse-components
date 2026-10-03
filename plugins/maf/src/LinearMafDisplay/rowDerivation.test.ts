@@ -79,8 +79,8 @@ async function cluster(display: Display, order: number[], tree: string) {
   })
 }
 
-function row({ name, label, labelColor }: MafSource) {
-  return { name, label, labelColor }
+function row({ name, label, rowColor }: MafSource) {
+  return { name, label, rowColor }
 }
 
 function derived(display: Display) {
@@ -184,7 +184,7 @@ test('a dialog reorder to a rotation keeps the supplied tree beside a relabel an
   display.applyRowEdits([
     { ...mm10!, label: 'House mouse' },
     hg38!,
-    { ...panTro4!, labelColor: '#123456' },
+    { ...panTro4!, rowColor: '#123456' },
   ])
   expect(derived(display)).toMatchSnapshot()
   display.resetRowArrangement()
@@ -194,7 +194,7 @@ test('a dialog reorder to a rotation keeps the supplied tree beside a relabel an
 test('a dialog recolour over an adapter colour, in place', () => {
   const display = loaded()
   const [hg38, ...rest] = display.editableSources
-  display.applyRowEdits([{ ...hg38!, labelColor: '#00ff00' }, ...rest])
+  display.applyRowEdits([{ ...hg38!, rowColor: '#00ff00' }, ...rest])
   expect(derived(display)).toMatchSnapshot()
 })
 

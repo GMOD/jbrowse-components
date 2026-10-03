@@ -15,10 +15,7 @@ import type { VariantRowsModel } from './types.ts'
 // `SvgTreeSidebar`. The color key is the chrome's, off `colorScales`.
 //
 // The labels are tree-sidebar's `RowLabelsOverlay`, the same one the other
-// three row displays mount, tinted by `labelColor`. These displays used to draw
-// their own gutter, because the palette wrote `color` and the shared labels
-// read `labelColor` — the trap tree-sidebar's CLAUDE.md records MAF falling
-// into too.
+// row displays mount, each with its `rowColor` bar.
 const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
   model,
   top = 0,

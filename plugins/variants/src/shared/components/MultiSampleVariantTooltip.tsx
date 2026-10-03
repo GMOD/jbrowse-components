@@ -38,7 +38,7 @@ const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
   y,
 }: {
   source: {
-    labelColor?: string
+    rowColor?: string
     name?: string
     label?: string
     [key: string]: unknown
@@ -55,10 +55,10 @@ const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
     <BaseTooltip clientPoint={{ x, y }}>
       {heading ? (
         <div className={classes.header}>
-          {source.labelColor ? (
+          {source.rowColor ? (
             <div
               className={classes.colorBox}
-              style={{ backgroundColor: source.labelColor }}
+              style={{ backgroundColor: source.rowColor }}
             />
           ) : null}
           <b>{heading}</b>

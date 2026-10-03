@@ -65,7 +65,7 @@ export const INTERNAL_SOURCE_KEYS = new Set([
   'baseUri',
   'color',
   'label',
-  'labelColor',
+  'rowColor',
   'id',
 ])
 

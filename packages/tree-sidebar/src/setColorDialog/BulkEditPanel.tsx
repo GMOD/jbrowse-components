@@ -66,9 +66,9 @@ export default observer(function BulkEditPanel<S extends { name: string }>({
           <strong>name</strong> column joins rows to existing sources.
           <br />
           <strong>Update rows</strong> patches only the pasted fields; existing
-          fields (e.g. color) are preserved. <strong>Replace rows</strong> drops
-          all fields not in the paste for matched rows — include every field you
-          want to keep.
+          fields (e.g. rowColor) are preserved. <strong>Replace rows</strong>{' '}
+          drops all fields not in the paste for matched rows — include every
+          field you want to keep.
         </Typography>
 
         {parseError ? <ErrorBanner error={parseError} /> : null}
@@ -86,7 +86,9 @@ export default observer(function BulkEditPanel<S extends { name: string }>({
           variant="outlined"
           multiline
           minRows={5}
-          placeholder={'name,color,group\nHG00098,#e41a1c,GBR\nHG00101,,GBR\n…'}
+          placeholder={
+            'name,rowColor,group\nHG00098,#e41a1c,GBR\nHG00101,,GBR\n…'
+          }
           maxRows={10}
           fullWidth
           value={val}

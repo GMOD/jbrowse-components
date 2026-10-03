@@ -57,7 +57,7 @@ describe('a discovered row set widens under a custom arrangement', () => {
     expect(display.sources[1]).toMatchObject({
       name: 'panTro4',
       label: 'Chimp',
-      labelColor: 'red',
+      rowColor: 'red',
     })
   })
 
@@ -309,14 +309,10 @@ describe('the declared `rows.domain` seeds the row order', () => {
 })
 
 // The adapter schemas advertise a per-sample `color` and the track guide calls
-// it "the row's color". It lands on `MafSource.labelColor`, the field the
-// sidebar's label half tints from — it used to be carried as `color` and
-// translated on the way over, and because an object with extra properties
-// satisfies `RowLabelSource`, handing `sources` straight to the sidebar
-// type-checked and dropped it. Both the on-screen labels and the SVG export
-// read `sources` directly now.
+// it "the row's color". It is the row's own `color`, and so its resolved
+// `rowColor`, which the label bar draws on screen and in the SVG export.
 describe('the configured per-sample color reaches the sidebar', () => {
-  it('lands on the `labelColor` the labels tint with', () => {
+  it('lands as the row colour, and so on the label bar', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
       samples: [
@@ -327,8 +323,8 @@ describe('the configured per-sample color reaches the sidebar', () => {
       samplesCanonical: true,
     })
     expect(display.sources).toEqual([
-      { name: 'hg38', label: 'Human', labelColor: 'red' },
-      { name: 'mm10', label: 'Mouse', labelColor: undefined },
+      { name: 'hg38', label: 'Human', color: 'red', rowColor: 'red' },
+      { name: 'mm10', label: 'Mouse', color: undefined },
     ])
   })
 
@@ -360,8 +356,8 @@ describe('rowColor tints a row over the adapter colour', () => {
     return display
   }
 
-  const tints = (display: { sources: { labelColor?: string }[] }) =>
-    display.sources.map(s => s.labelColor)
+  const tints = (display: { sources: { rowColor?: string }[] }) =>
+    display.sources.map(s => s.rowColor)
 
   it('paints a declared entry ahead of the adapter colour', () => {
     const display = tinted({ domain: ['hg38'], range: ['#00ff00'] })
@@ -375,8 +371,8 @@ describe('rowColor tints a row over the adapter colour', () => {
     const display = tinted({ domain: ['hg38'], range: ['#00ff00'] })
     const [hg38, mm10] = display.editableSources
     display.applyRowEdits([
-      { ...hg38!, labelColor: 'red' },
-      { ...mm10!, labelColor: '#0000ff' },
+      { ...hg38!, rowColor: 'red' },
+      { ...mm10!, rowColor: '#0000ff' },
     ])
     expect(getConf(display, ['rowColor', 'domain'])).toEqual(['mm10'])
     expect(getConf(display, ['rowColor', 'range'])).toEqual(['#0000ff'])

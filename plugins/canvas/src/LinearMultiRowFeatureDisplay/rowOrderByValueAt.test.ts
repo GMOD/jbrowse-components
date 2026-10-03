@@ -141,26 +141,6 @@ test('a hidden color does not overwrite the visible feature under it', () => {
   ])
 })
 
-test('a row painting a per-row override is not hidden by its baked color', () => {
-  // a and b are baked in the hidden color; a carries an arrangement-dialog
-  // override, which the legend never lists, so a still paints.
-  const r = region(
-    [
-      { start: 0, end: 100, color: 1, row: 0 }, // a
-      { start: 0, end: 100, color: 1, row: 1 }, // b
-      { start: 0, end: 100, color: 2, row: 2 }, // c
-    ],
-    ['a', 'b', 'c'],
-  )
-  const names = ['a', 'b', 'c']
-  expect(
-    order(names, r, 50, {
-      hiddenColors: new Set([1]),
-      rowColors: [0xff123456, undefined, undefined],
-    }),
-  ).toEqual(['a', 'c', 'b'])
-})
-
 test('a zero-length feature carries a value at the base it is painted from', () => {
   // b's only feature at pos 50 is an insertion, which both painters draw there,
   // so the sort has to read a value off it rather than sinking the row.

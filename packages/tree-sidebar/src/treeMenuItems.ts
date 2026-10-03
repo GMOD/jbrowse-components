@@ -51,7 +51,7 @@ interface RowLabelsMenuModel {
  * own, and they had drifted in three ways at once — one called the slot
  * `showSidebarLabels`, one dropped the row from the menu entirely while the
  * tree was off, and one explained the swatch degradation that is true of all of
- * them (`SvgRowLabels` falls back to a `labelColor`
+ * them (`SvgRowLabels` falls back to a `rowColor`
  * stripe below `MIN_TEXT_ROW_HEIGHT` whoever is drawing).
  *
  * The labels draw with or without a tree on every display: `RowLabelsOverlay`

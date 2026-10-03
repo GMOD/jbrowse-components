@@ -10,9 +10,9 @@ const adapter: RowSource[] = [
   { name: 'c' },
 ]
 const shown: RowSource[] = [
-  { name: 'a', label: 'Ay', color: '#00f' },
+  { name: 'a', label: 'Ay', rowColor: '#00f' },
   { name: 'b' },
-  { name: 'c', label: 'Sea', color: '#0f0' },
+  { name: 'c', label: 'Sea', rowColor: '#0f0' },
 ]
 const live = {
   shown,
@@ -23,7 +23,6 @@ const live = {
     ['a', '#00f'],
   ]),
   baseOrder: ['c', 'a'],
-  identityChannel: 'color' as const,
   rowAlias: undefined,
 }
 
@@ -58,16 +57,15 @@ test('a dialog row the current rows no longer hold writes nothing', () => {
   const haplotypes: RowSource[] = ['S0 HP0', 'S0 HP1'].map(name => ({
     name,
     label: 'Sample zero',
-    labelColor: '#a00',
+    rowColor: '#a00',
   }))
   const { labels, rowColor } = rowEdits({
-    rows: [{ name: 'S0', label: 'Sample zero', labelColor: '#a00' }],
+    rows: [{ name: 'S0', label: 'Sample zero', rowColor: '#a00' }],
     shown: haplotypes,
     adapter: haplotypes,
     labels: {},
     colors: new Map(),
     baseOrder: [],
-    identityChannel: 'labelColor',
     rowAlias: name => name.replace(/ HP\d+$/, ''),
   })
   expect(labels).toEqual({})
@@ -77,7 +75,7 @@ test('a dialog row the current rows no longer hold writes nothing', () => {
 test('a changed row is written as the reader left it', () => {
   const { labels, rowColor } = rowEdits({
     ...live,
-    rows: [shown[0]!, { name: 'b', label: 'Bee', color: '#f00' }, shown[2]!],
+    rows: [shown[0]!, { name: 'b', label: 'Bee', rowColor: '#f00' }, shown[2]!],
   })
   expect(labels).toEqual({ c: 'Sea', b: 'Bee' })
   expect(rowColor).toEqual({
@@ -89,7 +87,11 @@ test('a changed row is written as the reader left it', () => {
 test('a value changed back to the adapter one removes the entry', () => {
   const { labels, rowColor } = rowEdits({
     ...live,
-    rows: [{ name: 'a', label: 'Ay' }, shown[1]!, { name: 'c', color: '#0f0' }],
+    rows: [
+      { name: 'a', label: 'Ay' },
+      shown[1]!,
+      { name: 'c', rowColor: '#0f0' },
+    ],
   })
   expect(labels).toEqual({})
   expect(rowColor).toEqual({ domain: ['c'], range: ['#0f0'] })
@@ -98,7 +100,17 @@ test('a value changed back to the adapter one removes the entry', () => {
 test('a colour the painters cannot parse is left out', () => {
   const { rowColor } = rowEdits({
     ...live,
-    rows: [{ ...shown[0]!, color: 'reddish' }],
+    rows: [{ ...shown[0]!, rowColor: 'reddish' }],
+  })
+  expect(rowColor).toEqual({ domain: ['c'], range: ['#0f0'] })
+})
+
+// A row whose own colour shows with no entry takes none for that colour.
+test("a colour changed back to the row's own colour removes the entry", () => {
+  const { rowColor } = rowEdits({
+    ...live,
+    adapter: [{ name: 'a', color: '#abc' }, adapter[1]!, adapter[2]!],
+    rows: [{ ...shown[0]!, rowColor: '#abc' }],
   })
   expect(rowColor).toEqual({ domain: ['c'], range: ['#0f0'] })
 })

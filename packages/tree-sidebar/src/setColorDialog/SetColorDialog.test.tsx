@@ -8,12 +8,11 @@ import SetColorDialog from './SetColorDialog.tsx'
 
 import type { RowColorSetting } from '../TreeSidebarMixin.ts'
 import type { TreeLayoutModel } from './SetColorDialog.tsx'
-import type { ColorColumn } from './SourceGrid.tsx'
 
 interface Src {
   name: string
   color?: string
-  labelColor?: string
+  rowColor?: string
   group?: string
 }
 
@@ -41,7 +40,7 @@ function previewOf(rows: Src[]) {
 
 function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
   const editableSources = overrides.editableSources ?? [
-    { name: 'a', color: '#f00' },
+    { name: 'a', rowColor: '#f00' },
     { name: 'b' },
   ]
   const rowColorSetting: RowColorSetting = overrides.rowColorSetting ?? {
@@ -70,11 +69,6 @@ const GROUPED: Src[] = [
   { name: 'a', group: 'g1' },
   { name: 'b', group: 'g2' },
   { name: 'c', group: 'g1' },
-]
-
-const TWO_COLOR_COLUMNS: ColorColumn<Src>[] = [
-  { field: 'color', headerName: 'Track color' },
-  { field: 'labelColor', headerName: 'Label color' },
 ]
 
 function setup(model: TreeLayoutModel<Src>) {
@@ -123,56 +117,29 @@ test('Submit warns first when it would invalidate a loaded cluster tree', () => 
   expect(handleClose).toHaveBeenCalled()
 })
 
-test('the header toggle switches which color column the grid edits', () => {
-  render(
-    <SetColorDialog
-      model={fakeModel()}
-      handleClose={jest.fn()}
-      colorColumns={TWO_COLOR_COLUMNS}
-      defaultColorField="labelColor"
-    />,
-  )
-
-  // defaultColorField makes label color the active (visible) swatch column
+test("the grid edits one colour column, the rows' rowColor", () => {
+  setup(fakeModel())
   expect(
-    screen.getByRole('columnheader', { name: 'Label color' }),
+    screen.getByRole('columnheader', { name: 'Color' }),
   ).toBeInTheDocument()
-  expect(
-    screen.queryByRole('columnheader', { name: 'Track color' }),
-  ).not.toBeInTheDocument()
-
-  fireEvent.click(screen.getByRole('button', { name: 'Track color' }))
-
-  expect(
-    screen.getByRole('columnheader', { name: 'Track color' }),
-  ).toBeInTheDocument()
-  expect(
-    screen.queryByRole('columnheader', { name: 'Label color' }),
-  ).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Label color' })).toBeNull()
 })
 
 // "Start from" is how a reader colours by an attribute and then changes one
-// row: a one-off copy onto the rows, in the column the grid edits.
-test('Start from copies the attribute colors onto the active color column', () => {
+// row: a one-off copy onto the rows' colours.
+test('Start from copies the attribute colors onto the rows', () => {
   const model = fakeModel({
     editableSources: GROUPED,
     rowColorFields: ['group'],
   })
-  render(
-    <SetColorDialog
-      model={model}
-      handleClose={jest.fn()}
-      colorColumns={TWO_COLOR_COLUMNS}
-      defaultColorField="labelColor"
-    />,
-  )
+  setup(model)
 
   fireEvent.mouseDown(screen.getByLabelText('Start from'))
   fireEvent.click(screen.getByRole('option', { name: 'Group colors' }))
   fireEvent.click(screen.getByText('Submit'))
 
   const [rows, rowColor] = submitted(model)
-  expect(rows.map(s => s.labelColor)).toEqual(['#111111', '#222222', '#111111'])
+  expect(rows.map(s => s.rowColor)).toEqual(['#111111', '#222222', '#111111'])
   expect(rows.every(s => s.color === undefined)).toBe(true)
   expect(rowColor).toEqual({ field: 'name' })
 })
@@ -195,24 +162,17 @@ test('a touched Each row keeps the unknown colour its config sets', () => {
   expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '#cccccc' })
 })
 
-test('Clear row colors unsets only the active column', () => {
+test("Clear row colors unsets each row's colour and leaves its own", () => {
   const model = fakeModel({
-    editableSources: [{ name: 'a', color: '#f00', labelColor: '#0f0' }],
+    editableSources: [{ name: 'a', color: '#f00', rowColor: '#0f0' }],
   })
-  render(
-    <SetColorDialog
-      model={model}
-      handleClose={jest.fn()}
-      colorColumns={TWO_COLOR_COLUMNS}
-      defaultColorField="labelColor"
-    />,
-  )
+  setup(model)
 
   fireEvent.click(screen.getByText('Clear row colors'))
   fireEvent.click(screen.getByText('Submit'))
 
   const [rows] = submitted(model)
-  expect(rows[0]!.labelColor).toBeUndefined()
+  expect(rows[0]!.rowColor).toBeUndefined()
   expect(rows[0]!.color).toBe('#f00')
 })
 
@@ -335,7 +295,7 @@ test('None edits the row colors, which stay without the palette', () => {
   fireEvent.click(screen.getByText('Submit'))
 
   const [rows, rowColor] = submitted(model)
-  expect(rows[0]!.color).toBeUndefined()
+  expect(rows[0]!.rowColor).toBeUndefined()
   expect(rowColor).toEqual({ field: 'name', unknown: '' })
 })
 
@@ -394,7 +354,7 @@ describe('the colour object a submit passes', () => {
     fireEvent.click(screen.getByText('Submit'))
 
     const [rows, rowColor] = submitted(model)
-    expect(rows[1]!.color).toBe('rgb(0, 255, 0)')
+    expect(rows[1]!.rowColor).toBe('rgb(0, 255, 0)')
     expect(rowColor).toEqual({ field: 'name', unknown: '' })
   })
 })

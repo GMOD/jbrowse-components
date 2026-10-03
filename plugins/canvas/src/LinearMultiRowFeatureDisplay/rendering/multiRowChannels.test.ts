@@ -43,17 +43,13 @@ const region: MultiRowRegionData = {
   resolvedRowsField: 'name',
 }
 
-function inputs(
-  keyed: string[],
-  opts?: { overriddenRows?: Set<string>; hiddenColors?: Set<number> },
-) {
+function inputs(keyed: string[], opts?: { hiddenColors?: Set<number> }) {
   const rowKeys = new RowKeys()
   for (const name of keyed) {
     rowKeys.keyOf(name)
   }
   return {
     rowKeys,
-    overriddenRows: opts?.overriddenRows ?? new Set<string>(),
     hiddenColors: opts?.hiddenColors ?? new Set<number>(),
   }
 }
@@ -80,17 +76,6 @@ test('skips features whose color is a hidden category', () => {
     inputs(['momHP0', 'dadHP1'], { hiddenColors: new Set([0xff00ff00]) }),
   )
   expect(decode(buffer).map(d => d.startBp)).toEqual([10, 30])
-})
-
-test('a hidden category does not drop features on rows with a color override', () => {
-  const buffer = buildMultiRowChannels(
-    region,
-    inputs(['momHP0', 'dadHP1'], {
-      overriddenRows: new Set(['momHP0']),
-      hiddenColors: new Set([0xff0000ff]),
-    }),
-  )
-  expect(decode(buffer).map(d => d.startBp)).toEqual([10, 20, 30])
 })
 
 // The row index holds CHANNEL indices, since the encode compacts what it

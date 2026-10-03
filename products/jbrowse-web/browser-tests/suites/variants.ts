@@ -222,8 +222,8 @@ const suite: TestSuite = {
 
     // rowColor:'population' + samplesTsvLocation end to end: the sample-metadata
     // TSV must parse, reach the display's sources, and drive the palette so
-    // same-population rows share a tint and different populations differ. The
-    // tint is `labelColor`, the channel tree-sidebar draws a row label with.
+    // same-population rows share a colour and different populations differ.
+    // The colour is `rowColor`, which tree-sidebar draws a row's label bar in.
     {
       name: 'rowColor population colors sample rows from samplesTsv metadata',
       fn: async page => {
@@ -234,7 +234,7 @@ const suite: TestSuite = {
           interface Src {
             name: string
             population?: string
-            labelColor?: string
+            rowColor?: string
           }
           const session = (
             window as unknown as {
@@ -253,7 +253,7 @@ const suite: TestSuite = {
             sources: (display.sources ?? []).map(s => ({
               name: s.name,
               population: s.population,
-              labelColor: s.labelColor,
+              rowColor: s.rowColor,
             })),
           }
         })
@@ -266,22 +266,22 @@ const suite: TestSuite = {
           throw new Error('no sample sources loaded from samplesTsv')
         }
         // every source carries a population attribute and a resolved tint
-        const missing = info.sources.filter(s => !s.population || !s.labelColor)
+        const missing = info.sources.filter(s => !s.population || !s.rowColor)
         if (missing.length) {
           throw new Error(
-            `sources missing population/labelColor: ${JSON.stringify(missing.slice(0, 3))}`,
+            `sources missing population/rowColor: ${JSON.stringify(missing.slice(0, 3))}`,
           )
         }
         // one color per population: same pop => same color, and >1 distinct color
         const colorByPop = new Map<string, string>()
         for (const s of info.sources) {
           const prev = colorByPop.get(s.population!)
-          if (prev && prev !== s.labelColor) {
+          if (prev && prev !== s.rowColor) {
             throw new Error(
-              `population ${s.population} has two colors: ${prev} vs ${s.labelColor}`,
+              `population ${s.population} has two colors: ${prev} vs ${s.rowColor}`,
             )
           }
-          colorByPop.set(s.population!, s.labelColor!)
+          colorByPop.set(s.population!, s.rowColor!)
         }
         if (new Set(colorByPop.values()).size < 2) {
           throw new Error(

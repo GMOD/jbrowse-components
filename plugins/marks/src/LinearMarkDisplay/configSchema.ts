@@ -494,7 +494,7 @@ export function configSchemaFactory() {
       rows: rowsConfigSchema,
       /**
        * #slot rowColor
-       * The tint beside each row's label, the marks keeping their own colour:
+       * The bar beside each row's label, the marks keeping their own colour:
        * under the default field `name`, a row's value paired with a colour in
        * `domain`/`range`, which the arrangement dialog writes.
        */

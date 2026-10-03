@@ -112,7 +112,6 @@ describe('the declared hooks', () => {
     expect(display.discoveredRows).toEqual([])
     expect(display.editableSources).toEqual([])
     expect(display.clusterableSources).toEqual([])
-    expect(display.identityChannel).toBe('color')
     expect(display.unlistedRowsSort).toBe('source')
     expect(display.rowOrder).toEqual(['a'])
   })
@@ -136,9 +135,6 @@ describe('a display supplying the hooks', () => {
         get discoveredRows() {
           return self.names.map(name => ({ name }))
         },
-        get identityChannel(): 'color' | 'labelColor' {
-          return 'labelColor'
-        },
       }))
       .create({
         type: 'SuppliedTreeDisplay',
@@ -154,7 +150,7 @@ describe('a display supplying the hooks', () => {
     expect(display.editableSources).toEqual([
       { name: 'c' },
       { name: 'a', label: 'Ay' },
-      { name: 'b', labelColor: '#00f' },
+      { name: 'b', rowColor: '#00f' },
     ])
     expect(display.clusterableSources.map(r => r.name)).toEqual(['c', 'a'])
   })
@@ -498,7 +494,7 @@ describe('a dialog submit of the row colours', () => {
     makeRowDisplay(configuration, { shared: true })
   const recoloured = (display: ReturnType<typeof makeGrouped>) => {
     const [a, b, c] = display.editableSources
-    return [a!, { ...b!, color: '#123456' }, c!]
+    return [a!, { ...b!, rowColor: '#123456' }, c!]
   }
 
   it('reads no row colour while the rows are colored by an attribute', () => {
@@ -582,11 +578,11 @@ describe('a dialog submit of the row colours', () => {
     const display = makeGrouped({
       rowColor: { domain: ['b'], range: ['#00f'], unknown: '' },
     })
-    expect(display.editableSources.find(r => r.name === 'b')!.color).toBe(
+    expect(display.editableSources.find(r => r.name === 'b')!.rowColor).toBe(
       '#00f',
     )
     display.applyRowEdits(
-      display.editableSources.map(r => ({ ...r, color: undefined })),
+      display.editableSources.map(r => ({ ...r, rowColor: undefined })),
       { field: 'name', unknown: '' },
     )
     expect(display.rowColorChoice).toBe('')

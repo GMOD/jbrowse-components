@@ -8,7 +8,7 @@ import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 /**
  * Below this a label's text is illegible, so the row draws as a color swatch
  * only. The swatch still draws at a fraction of a pixel a row (1,987 canids in
- * 640px is 0.32px), where the tint is the only thing carrying row identity.
+ * 640px is 0.32px), where the colour is the only thing carrying row identity.
  */
 const MIN_TEXT_ROW_HEIGHT = 6
 
@@ -24,6 +24,21 @@ const ROW_LABEL_MAX_EMS = 10
 const ROW_LABEL_PAD = 10
 
 export const ROW_SWATCH_WIDTH = 8
+
+/** Width of the bar a row's colour draws at its label's left. */
+export const ROW_COLOR_BAR_WIDTH = 4
+
+const TEXT_INSET = 4
+
+/**
+ * Where a label's text starts: past the colour bars where any row has one, so
+ * every name in the column starts at the same x.
+ */
+export function rowLabelTextX(sources: readonly RowLabelSource[]) {
+  return sources.some(s => s.rowColor)
+    ? ROW_COLOR_BAR_WIDTH + TEXT_INSET
+    : TEXT_INSET
+}
 
 /**
  * Whether a row this tall draws its name rather than a bare color swatch. A
@@ -78,14 +93,16 @@ export function rowLabelsBoxWidth(
   const fontSize = rowLabelFontSize(rowHeight, text)
   return rowLabelsCarryText(rowHeight)
     ? max(
-        sources.map(
-          s =>
-            Math.min(
-              measureText(rowLabelFullText(s), fontSize, text?.fontFamily),
-              ROW_LABEL_MAX_EMS * fontSize,
-            ) + ROW_LABEL_PAD,
+        sources.map(s =>
+          Math.min(
+            measureText(rowLabelFullText(s), fontSize, text?.fontFamily),
+            ROW_LABEL_MAX_EMS * fontSize,
+          ),
         ),
-        ROW_LABEL_PAD,
-      )
+        0,
+      ) +
+        ROW_LABEL_PAD +
+        rowLabelTextX(sources) -
+        TEXT_INSET
     : ROW_SWATCH_WIDTH
 }

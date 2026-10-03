@@ -56,15 +56,14 @@ function derived(display: LinearWiggleDisplayModel) {
     isOverlay: display.isOverlay,
     numRows: display.numRows,
     effectiveColor: display.effectiveColor,
-    sources: display.sources.map(
-      ({ name, label, color, labelColor, group }) => ({
-        name,
-        label,
-        color,
-        labelColor,
-        group,
-      }),
-    ),
+    sources: display.sources.map(({ name, label, color, rowColor, group }) => ({
+      name,
+      label,
+      color,
+      rowColor,
+      group,
+    })),
+    markColors: display.markSources.map(s => s.color),
     legendItems: display.legendItems,
     overlayLegendApplies: display.overlayLegendApplies,
     rowTree: display.rowTree,
@@ -119,7 +118,7 @@ test('rows colored by an attribute take its values colors over their own', async
   })
   expect(display.rowColorFields).toEqual(['group'])
   expect(
-    Object.fromEntries(display.sources.map(s => [s.name, s.color])),
+    Object.fromEntries(display.markSources.map(s => [s.name, s.color])),
   ).toEqual({
     Grain1: rowPaletteColorAt(0),
     Grain2: rowPaletteColorAt(0),
@@ -166,7 +165,7 @@ test('rows, line: dialog edits reorder, recolour the plot and relabel', async ()
   const [g1, g2, g3, g4] = display.editableSources
   display.applyRowEdits([
     { ...g3!, label: 'Liver 3' },
-    { ...g2!, color: '#00f' },
+    { ...g2!, rowColor: '#00f' },
     g4!,
     g1!,
   ])
@@ -181,7 +180,7 @@ test('rows, density: a dialog edit tints the label', async () => {
     defaultRendering: 'density',
   })
   const [g1, g2, ...rest] = display.editableSources
-  display.applyRowEdits([g1!, { ...g2!, labelColor: '#00f' }, ...rest])
+  display.applyRowEdits([g1!, { ...g2!, rowColor: '#00f' }, ...rest])
   expect(derived(display)).toMatchSnapshot()
 })
 
@@ -213,8 +212,8 @@ test('rows: a run lands its tree, a reorder drops it, a reset returns to the see
 test('overlay, density: a dialog edit paints the plot', async () => {
   const display = await loaded(GROUPED, { defaultRendering: 'density' })
   const [g1, ...rest] = display.editableSources
-  display.applyRowEdits([{ ...g1!, color: '#00f' }, ...rest])
-  expect(display.sources[0]).toMatchObject({ name: 'Grain1', color: '#00f' })
+  display.applyRowEdits([{ ...g1!, rowColor: '#00f' }, ...rest])
+  expect(display.markSources[0]).toEqual({ name: 'Grain1', color: '#00f' })
   expect(display.rowColorPairs.get('Grain1')).toBe('#00f')
 })
 
@@ -268,6 +267,6 @@ test('rows: a reorder keeps the declared rowColor as it was', async () => {
   expect(display.configuration.rowColor.domain).toEqual(['Grain3', 'Grain1'])
   expect(display.rowStylingIsCustom).toBe(false)
 
-  display.applyRowEdits([{ ...g2!, color: 'reddish' }, g1!, g3!, g4!])
+  display.applyRowEdits([{ ...g2!, rowColor: 'reddish' }, g1!, g3!, g4!])
   expect(display.rowColorPairs.has('Grain2')).toBe(false)
 })

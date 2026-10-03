@@ -35,7 +35,7 @@ describe('multi-sample variant colorBy', () => {
     )
     // same population => same color, different => different
     const byName = Object.fromEntries(
-      model.sources.map(s => [s.name, s.labelColor]),
+      model.sources.map(s => [s.name, s.rowColor]),
     )
     expect(byName.HG001).toBe(byName.HG003)
     expect(byName.HG001).not.toBe(byName.HG002)
@@ -64,7 +64,7 @@ describe('multi-sample variant colorBy', () => {
 
     expect(model.rowColorField).toBe('')
     expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
-    expect(model.sources.some(s => s.labelColor)).toBe(false)
+    expect(model.sources.some(s => s.rowColor)).toBe(false)
   })
 
   // While a channel is bound to a variable it beats a per-row constant — the
@@ -74,14 +74,10 @@ describe('multi-sample variant colorBy', () => {
     const model = makeModel()
     model.setSources(sources.map(s => ({ ...s, color: 'rebeccapurple' })))
     model.setRowColorField('population')
-    expect(model.sources.some(s => s.labelColor === 'rebeccapurple')).toBe(
-      false,
-    )
+    expect(model.sources.some(s => s.rowColor === 'rebeccapurple')).toBe(false)
 
     model.setRowColorField('')
-    expect(model.sources.every(s => s.labelColor === 'rebeccapurple')).toBe(
-      true,
-    )
+    expect(model.sources.every(s => s.rowColor === 'rebeccapurple')).toBe(true)
   })
 
   it('writes no arrangement at all', () => {
@@ -99,12 +95,12 @@ describe('multi-sample variant colorBy', () => {
     const model = makeModel()
     model.setSources(sources)
     model.setRowColorField('population')
-    const before = new Map(model.sources.map(s => [s.name, s.labelColor]))
+    const before = new Map(model.sources.map(s => [s.name, s.rowColor]))
 
     model.setRowFocus(['HG002'])
 
     expect(model.sources.map(s => s.name)).toEqual(['HG002'])
-    expect(model.sources[0]!.labelColor).toBe(before.get('HG002'))
+    expect(model.sources[0]!.rowColor).toBe(before.get('HG002'))
   })
 
   // No palette deals the rows by name here, so None is the one choice over
@@ -114,15 +110,15 @@ describe('multi-sample variant colorBy', () => {
     model.setSources(sources)
     expect(model.rowPaletteDeals).toBe(false)
     const [first, ...rest] = model.editableSources
-    model.applyRowEdits([{ ...first!, labelColor: '#123456' }, ...rest])
+    model.applyRowEdits([{ ...first!, rowColor: '#123456' }, ...rest])
     expect(model.rowColorChoice).toBe('')
-    expect(model.sources[0]!.labelColor).toBe('#123456')
-    expect(model.sources[1]!.labelColor).toBeUndefined()
+    expect(model.sources[0]!.rowColor).toBe('#123456')
+    expect(model.sources[1]!.rowColor).toBeUndefined()
 
     model.setRowColorField('population')
     expect(model.rowColorChoice).toBe('population')
     model.setRowColorField('')
     expect(model.rowColorChoice).toBe('')
-    expect(model.sources[1]!.labelColor).toBeUndefined()
+    expect(model.sources[1]!.rowColor).toBeUndefined()
   })
 })

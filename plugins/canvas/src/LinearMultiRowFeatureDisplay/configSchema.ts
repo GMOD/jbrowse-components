@@ -189,18 +189,6 @@ export default function configSchemaF() {
       ...densityTierConfigSchemaFields,
       /**
        * #slot
-       * Tint each sidebar label box with the color that row's blocks are painted
-       * in; a `rowGroups` swatch wins over it, and per-feature color mode leaves
-       * no one row color to tint with.
-       */
-      colorRowLabels: {
-        type: 'boolean',
-        defaultValue: false,
-        description:
-          "tint each sidebar label with the color that row's blocks are painted in",
-      },
-      /**
-       * #slot
        * Show the categorical color key, which appears only in per-feature color
        * mode — elsewhere the sidebar labels are already the key.
        */
@@ -230,7 +218,7 @@ export default function configSchemaF() {
         type: 'frozen',
         defaultValue: [],
         description:
-          'array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch, and the blocks under rowColor: group',
+          'array of {match,group,color} tagging rows by a regex on their name; color draws the label bar of a row with no colour of its own, and the blocks under rowColor: group',
       },
       /**
        * #slot facet

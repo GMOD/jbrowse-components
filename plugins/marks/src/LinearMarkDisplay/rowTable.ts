@@ -39,7 +39,8 @@ export function keyRegion(
 /**
  * The row table for `order`, top to bottom, over the keys `keyNames` names:
  * each key's slot is its name's place in the order, hidden where the order
- * leaves it out, and no colour override, since a row's tint is its label's.
+ * leaves it out, and no colour override, since a row's colour draws only its
+ * label bar.
  */
 export function markRowTable(
   keyNames: readonly string[],

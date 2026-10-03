@@ -40,7 +40,6 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
     canvasWidthPx,
     height,
     sources,
-    labelSources,
     rowBands,
     effectiveRowHeight,
     sidebarOffset,
@@ -90,7 +89,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           loaded and been binned into rows. */}
       <RowLabelsOverlay
         testId="multirow-row-labels"
-        sources={labelSources}
+        sources={sources}
         rowHeight={effectiveRowHeight}
         labelOffset={sidebarOffset}
         width={canvasWidthPx}

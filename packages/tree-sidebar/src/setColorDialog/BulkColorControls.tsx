@@ -6,20 +6,19 @@ import { observer } from 'mobx-react'
 
 import { updateRows } from '../sourcesGridUtils.ts'
 
-import type { ColorColumn } from './SourceGrid.tsx'
 import type { GridRowId } from '@mui/x-data-grid'
 
-// Bulk header button + its popover for the active color column. The popover
-// portals via MUI Popover, so rendering it as a sibling of the button is fine.
+// Bulk header button + its popover for the rows' colour. The popover portals
+// via MUI Popover, so rendering it as a sibling of the button is fine.
 export default observer(function BulkColorControls<
-  S extends { name: string; color?: string },
+  S extends { name: string; rowColor?: string },
 >({
-  colorColumn,
+  editsColor,
   rows,
   selected,
   onChange,
 }: {
-  colorColumn: ColorColumn<S> | undefined
+  editsColor: boolean
   rows: S[]
   selected: GridRowId[]
   onChange: (arg: S[]) => void
@@ -27,7 +26,7 @@ export default observer(function BulkColorControls<
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [widgetColor, setWidgetColor] = useState('blue')
 
-  return colorColumn ? (
+  return editsColor ? (
     <>
       <Button
         variant="contained"
@@ -36,8 +35,7 @@ export default observer(function BulkColorControls<
           setAnchorEl(event.currentTarget)
         }}
       >
-        {colorColumn.bulkLabel ??
-          `Change ${colorColumn.headerName.toLowerCase()} of selected`}
+        Change color of selected rows
       </Button>
       <ColorPopover
         anchorEl={anchorEl}
@@ -45,9 +43,7 @@ export default observer(function BulkColorControls<
         onChange={value => {
           setWidgetColor(value)
           onChange(
-            updateRows(rows, selected, {
-              [colorColumn.field]: value,
-            } as Partial<S>),
+            updateRows(rows, selected, { rowColor: value } as Partial<S>),
           )
         }}
         onClose={() => {

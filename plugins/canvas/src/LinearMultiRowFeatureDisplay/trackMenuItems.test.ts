@@ -22,8 +22,6 @@ function makeSelf(
     showRowSeparators: false,
     showRowLabels: true,
     setShowRowLabels: () => {},
-    colorRowLabels: false,
-    setColorRowLabels: () => {},
     effectiveRowHeight: 14,
     colorLegend: [],
     rowGroupLegend: [],
@@ -124,7 +122,6 @@ describe('multi-row track menu', () => {
       'Tree branch lengths',
       'Show row labels',
       'Show row separators',
-      'Color row labels by row color',
     ])
   })
 

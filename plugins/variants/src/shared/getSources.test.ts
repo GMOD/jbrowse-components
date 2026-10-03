@@ -141,7 +141,7 @@ test('rowAliasOf answers as parseRowName does, asked again', () => {
 
 describe('expandPhasedRows', () => {
   const rows = [
-    { name: 'HG001', sampleName: 'HG001', labelColor: 'red' },
+    { name: 'HG001', sampleName: 'HG001', rowColor: 'red' },
     { name: 'HG002', sampleName: 'HG002', label: 'Two' },
     { name: 'HG003', sampleName: 'HG003' },
   ]
@@ -161,7 +161,7 @@ describe('expandPhasedRows', () => {
     expect(out[1]).toMatchObject({
       sampleName: 'HG001',
       HP: 1,
-      labelColor: 'red',
+      rowColor: 'red',
     })
     expect(out[2]).toMatchObject({ label: 'Two' })
   })

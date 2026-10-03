@@ -565,7 +565,6 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LinearMultiRowFeatureDisplay": {
     "clusterField": "featureField = "auto"",
-    "colorRowLabels": "boolean = false",
     "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
     "densityTierBpPerPx": "number = 0",
     "fetchSizeLimit": "number = 5000000",

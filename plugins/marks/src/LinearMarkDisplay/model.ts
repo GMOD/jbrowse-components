@@ -209,11 +209,7 @@ import type {
   RowTable,
 } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import type {
-  IdentityChannel,
-  SvgSidebarProps,
-  RowSource,
-} from '@jbrowse/tree-sidebar'
+import type { RowSource, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type { ValueScale } from '@jbrowse/wiggle-core'
 
 export type MarkRenderingBackend = PerRegionRenderingBackend<
@@ -608,14 +604,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: a `rowColor` entry tints the label, since
-         * each mark's own `color` paints the plot.
-         */
-        get identityChannel(): IdentityChannel {
-          return 'labelColor'
-        },
-        /**
-         * #getter
          * `TreeSidebarMixin`'s hook: none, since a row is a value of the rows
          * field and carries no attribute of its own.
          */
@@ -758,7 +746,7 @@ export function stateModelFactory(
               return {
                 name,
                 ...(label === name ? {} : { label }),
-                ...(own?.color ? { labelColor: own.color } : {}),
+                ...(own?.color ? { color: own.color } : {}),
               }
             },
           )

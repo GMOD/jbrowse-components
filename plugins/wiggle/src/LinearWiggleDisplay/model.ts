@@ -35,6 +35,7 @@ import {
   clusteringMenuItem,
   computeClusterHierarchy,
   focusRowGroup,
+  keptRows,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   rowLabelsCarryText,
@@ -74,7 +75,7 @@ import {
 import { WIGGLE_RENDERINGS } from '../util.ts'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import { buildSources, sourcesFromRegionData } from './sourcesLogic.ts'
+import { markColorOf, sourcesFromRegionData } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
@@ -91,7 +92,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RowsSetting } from '@jbrowse/display-kit/rowsConfigSchema'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { IdentityChannel, SvgSidebarProps } from '@jbrowse/tree-sidebar'
+import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
@@ -320,8 +321,8 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Whether colour is spent on the score, so a row's identity moves to
-       * its `labelColor`: density always, where the white fade counts, and
+       * Whether colour is spent on the score, so a row's colour shows only on
+       * its label bar: density always, where the white fade counts, and
        * bars or points under a declared `linear` colour. Lines part
        * in two colours even then.
        */
@@ -366,17 +367,6 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: a subtrack's colour lands on the plot
-       * while `rowColorPaintsMarks`, and on the label tint otherwise. In one
-       * shared box there is no label to tint, so it goes to the plot there.
-       */
-      get identityChannel(): IdentityChannel {
-        return this.rowColorPaintsMarks || self.isOverlay
-          ? 'color'
-          : 'labelColor'
-      },
-      /**
-       * #getter
        * `TreeSidebarMixin`'s hook: a subtrack's colour paints its plot while
        * nothing else colours it: no score gradient, and no declared `color`.
        */
@@ -395,12 +385,32 @@ export default function stateModelFactory(
         return self.rowPaletteDeals
       },
       get sources(): Source[] {
-        return buildSources(
-          self.editableSources,
-          self.rowFocus,
-          self.resolvedRowColors,
-          self.identityChannel,
-        )
+        return keptRows(self.editableSources, self.rowFocus)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether each source's marks paint in its `rowColor`: while
+       * `rowColorPaintsMarks`, and always in one shared box, which draws no
+       * label bar to carry it.
+       */
+      get marksTakeRowColor(): boolean {
+        return self.rowColorPaintsMarks || self.isOverlay
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Each source and the colour its marks paint in (`markColorOf`), which
+       * the encoder and the tooltip read.
+       */
+      get markSources(): { name: string; color?: string }[] {
+        const paints = self.marksTakeRowColor
+        return self.sources.map(s => ({
+          name: s.name,
+          color: markColorOf(s, paints),
+        }))
       },
     }))
     .views(self => ({
@@ -436,11 +446,11 @@ export default function stateModelFactory(
        * disagree. See `buildLegendItems`.
        */
       get legendItems(): LegendItem[] {
-        return buildLegendItems(
-          self.sources,
-          self.scoreGradientPaints,
-          self.wiggleColor.posColor,
-        )
+        return buildLegendItems(self.sources, {
+          gradientPaints: self.scoreGradientPaints,
+          marksTakeRowColor: self.marksTakeRowColor,
+          fallbackColor: self.wiggleColor.posColor,
+        })
       },
     }))
     .views(self => ({
@@ -594,7 +604,7 @@ export default function stateModelFactory(
       gpuProps() {
         return {
           ...self.sharedGpuProps(),
-          sources: self.sources,
+          sources: self.markSources,
           rowLayout: self.isRowLayout,
           perSource: self.perSource,
         }

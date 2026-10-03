@@ -67,11 +67,11 @@ describe('tagRowGroups', () => {
 })
 
 describe('applyRowGroupColors', () => {
-  it('gives a matching row its entry colour as the swatch', () => {
+  it('gives a matching row its entry colour as its rowColor', () => {
     expect(
       applyRowGroupColors([{ name: 'CLUPGR000001', group: 'Wolf' }], [WOLF]),
     ).toEqual([
-      { name: 'CLUPGR000001', group: 'Wolf', labelColor: 'rgb(27,120,55)' },
+      { name: 'CLUPGR000001', group: 'Wolf', rowColor: 'rgb(27,120,55)' },
     ])
   })
 
@@ -81,11 +81,11 @@ describe('applyRowGroupColors', () => {
       [WOLF],
     )
     expect(row?.color).toBe('rgb(1,2,3)')
-    expect(row?.labelColor).toBe('rgb(27,120,55)')
+    expect(row?.rowColor).toBe('rgb(27,120,55)')
   })
 
-  it('keeps an explicitly set labelColor', () => {
-    const row = { name: 'CLUPGR000001', labelColor: 'rebeccapurple' }
+  it('keeps a resolved rowColor', () => {
+    const row = { name: 'CLUPGR000001', rowColor: 'rebeccapurple' }
     expect(applyRowGroupColors([row], [WOLF])[0]).toBe(row)
   })
 

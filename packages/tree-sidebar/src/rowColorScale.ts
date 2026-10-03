@@ -81,6 +81,26 @@ export function resolveRowColors(
   return colors
 }
 
+/**
+ * Each row carrying its colour from `colors` as `rowColor`; `rows` itself
+ * while every row already does.
+ */
+export function withRowColors<S extends RowSource>(
+  rows: S[],
+  colors: ReadonlyMap<string, string>,
+): S[] {
+  let out: S[] | undefined
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]!
+    const rowColor = colors.get(row.name)
+    if (rowColor !== row.rowColor) {
+      out ??= [...rows]
+      out[i] = { ...row, rowColor }
+    }
+  }
+  return out ?? rows
+}
+
 function aliasColor(
   dealt: ReadonlyMap<string, string>,
   name: string,

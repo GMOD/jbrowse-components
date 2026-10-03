@@ -17,8 +17,8 @@ import type React from 'react'
 // keys by.
 //
 // The sidebar is `SvgTreeSidebar` with its default labels, the same
-// `SvgRowLabels` the other row displays export — tinted by `labelColor`, the
-// channel the on-screen `RowLabelsOverlay` reads too.
+// `SvgRowLabels` the other row displays export, as the on-screen
+// `RowLabelsOverlay` draws it.
 const SvgVariantOverlay = ({
   model,
   width,

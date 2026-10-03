@@ -7,7 +7,7 @@ import SourceGrid from './SourceGrid.tsx'
 interface Src {
   name: string
   color?: string
-  labelColor?: string
+  rowColor?: string
 }
 
 // These tests deliberately drive the @mui/x-data-grid interaction surface
@@ -16,7 +16,7 @@ interface Src {
 // upgrade changes that shape, `onRowSelectionModelChange`/`onSortModelChange`
 // wiring in SourceGrid breaks silently in the app but loudly here.
 
-const RESERVED = new Set(['name', 'source', 'baseUri', 'color'])
+const RESERVED = new Set(['name', 'source', 'baseUri', 'color', 'rowColor'])
 
 function renderGrid(rows: Src[]) {
   const onChange = jest.fn()
@@ -24,7 +24,7 @@ function renderGrid(rows: Src[]) {
     <SourceGrid
       rows={rows}
       onChange={onChange}
-      colorColumn={{ field: 'color', headerName: 'Color' }}
+      editsColor
       reserved={RESERVED}
     />,
   )
@@ -56,23 +56,19 @@ test('checkbox selection feeds the move-to-bottom action (arg.ids wiring)', () =
   ])
 })
 
-// An inactive color column must not fall through to the auto-derived extras and
-// render as a raw hex text column (the bug overlay mode hit with `labelColor`).
-test('a reserved non-active color field is not rendered as an extras column', () => {
-  const rows: Src[] = [{ name: 'a', labelColor: '#f00' }]
-  render(
-    <SourceGrid
-      rows={rows}
-      onChange={jest.fn()}
-      colorColumn={{ field: 'color', headerName: 'Color' }}
-      reserved={new Set([...RESERVED, 'labelColor'])}
-    />,
-  )
+// A row's own colour must not fall through to the auto-derived extras and
+// render as a raw hex text column.
+test("a row's own colour is not rendered as an extras column", () => {
+  const rows: Src[] = [{ name: 'a', color: '#f00', rowColor: '#0f0' }]
+  renderGrid(rows)
 
   expect(
-    screen.queryByRole('columnheader', { name: 'labelColor' }),
+    screen.queryByRole('columnheader', { name: 'color' }),
   ).not.toBeInTheDocument()
   expect(screen.queryByText('#f00')).not.toBeInTheDocument()
+  expect(
+    screen.getByRole('columnheader', { name: 'Color' }),
+  ).toBeInTheDocument()
 })
 
 test('clicking the Name header sorts rows through onSortModelChange', () => {

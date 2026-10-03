@@ -1,6 +1,6 @@
 import { rowSpanIndex } from '@jbrowse/render-core/marks'
 
-import { hiddenByCategory, ownColors } from './featurePainting.ts'
+import { ownColors } from './featurePainting.ts'
 
 import type {
   MultiRowEncodeInputs,
@@ -39,12 +39,11 @@ export function buildMultiRowChannels(
     | 'rowValues'
     | 'featureRowValueIndex'
   >,
-  { rowKeys, overriddenRows, hiddenColors, fieldPalette }: MultiRowEncodeInputs,
+  { rowKeys, hiddenColors, fieldPalette }: MultiRowEncodeInputs,
 ): MultiRowEncoded {
   const { featureStarts, featureEnds, featureRowValueIndex } = data
   const featureColors = ownColors(data, fieldPalette)
   const keyForLocal = Uint32Array.from(data.rowValues, v => rowKeys.keyOf(v))
-  const overriddenLocal = data.rowValues.map(v => overriddenRows.has(v))
   const n = featureStarts.length
   const x = new Uint32Array(n)
   const x2 = new Uint32Array(n)
@@ -55,7 +54,7 @@ export function buildMultiRowChannels(
   for (let i = 0; i < n; i++) {
     const local = featureRowValueIndex[i]!
     const abgr = featureColors[i]!
-    if (hiddenByCategory(abgr, overriddenLocal[local]!, hiddenColors)) {
+    if (hiddenColors.has(abgr)) {
       continue
     }
     const key = keyForLocal[local]!

@@ -94,7 +94,7 @@ test('acts on the column the menu was opened over, not the one it is closed from
 
 test('keeps a per-source color across the reorder', () => {
   const display = makeDisplay({ a: 1, b: 5 })
-  display.applyRowEdits([{ name: 'a', color: 'red' }, { name: 'b' }])
+  display.applyRowEdits([{ name: 'a', rowColor: 'red' }, { name: 'b' }])
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
@@ -104,7 +104,7 @@ test('keeps a per-source color across the reorder', () => {
 
   click(display.contextMenuItems(), 'Sort rows by score here')
 
-  expect(display.sources.map(s => [s.name, s.color])).toEqual([
+  expect(display.markSources.map(s => [s.name, s.color])).toEqual([
     ['b', undefined],
     ['a', 'red'],
   ])

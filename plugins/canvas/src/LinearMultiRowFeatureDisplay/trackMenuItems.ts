@@ -46,8 +46,6 @@ interface MultiRowMenuSelf
   showRowSeparators: boolean
   showRowLabels: boolean
   setShowRowLabels: (f: boolean) => void
-  colorRowLabels: boolean
-  setColorRowLabels: (f: boolean) => void
   effectiveRowHeight: number
   colorLegend: LegendEntry[]
   // Reads "has a key at all", not "one is drawn right now": a configured key
@@ -85,18 +83,6 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     // who dismissed the group key with no item to bring it back.
     ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
     showRowSeparatorsMenuItem(self),
-    // Only while the labels are on, since with them hidden this tints nothing.
-    ...(self.showRowLabels
-      ? [
-          checkboxItem(
-            'Color row labels by row color',
-            self.colorRowLabels,
-            () => {
-              self.setColorRowLabels(!self.colorRowLabels)
-            },
-          ),
-        ]
-      : []),
   ]
 }
 
