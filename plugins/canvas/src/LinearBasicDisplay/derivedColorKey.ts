@@ -1,3 +1,4 @@
+import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { derivedColorScale } from '@jbrowse/core/util/legendCandidates'
 
@@ -33,17 +34,22 @@ export function derivedColorKey(
   }
   return derivedColorScale(
     regions,
-    ({ colorValues }) => ({
-      candidates:
-        colorValues?.painted.map(({ rowIndex, valueIndex }) => {
-          const value = field.key(colorValues.values[valueIndex])
-          return { rowIndex, value, color: colorOf(value) }
-        }) ?? [],
-      rowPaintsCandidateColor: rowIndex => {
-        const section = colorValues?.rows[rowIndex]
-        return !(isHidden && section && isHidden(section))
-      },
-    }),
+    ({ colorValues }) => {
+      if (colorValues) {
+        dealKeyColors(field, colorValues.values.map(field.key))
+      }
+      return {
+        candidates:
+          colorValues?.painted.map(({ rowIndex, valueIndex }) => {
+            const value = field.key(colorValues.values[valueIndex])
+            return { rowIndex, value, color: colorOf(value) }
+          }) ?? [],
+        rowPaintsCandidateColor: rowIndex => {
+          const section = colorValues?.rows[rowIndex]
+          return !(isHidden && section && isHidden(section))
+        },
+      }
+    },
     { id: 'color', field: order, title },
   )
 }

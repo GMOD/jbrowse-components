@@ -1647,7 +1647,7 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
       domain: ['lncRNA'],
       range: ['#123456'],
     })
-    display.pinColorDomain()
+    setConf(display, ['color', 'domain'], ['lncRNA', 'protein_coding'])
     setConf(display, ['color', 'scale'], 'threshold')
     display.setColorScale()
     display.colorByField('biotype')

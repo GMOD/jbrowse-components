@@ -1,4 +1,7 @@
-import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import {
+  categoricalField,
+  dealKeyColors,
+} from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   MAX_LEGEND_ENTRIES,
@@ -124,6 +127,9 @@ export function buildFieldColorLegend(
         data.rowValues,
         rowIndexByValue,
       )
+      if (colorValues?.field === field.field) {
+        dealKeyColors(field, colorValues.values.map(field.key))
+      }
       return {
         candidates:
           colorValues?.field === field.field

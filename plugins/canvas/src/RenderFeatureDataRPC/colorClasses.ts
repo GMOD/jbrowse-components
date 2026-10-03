@@ -55,11 +55,13 @@ function isFieldTint(colorClass: number) {
  * value's packed color and its two codon tints, resolved once for the
  * palette's life however many regions and re-encodes ask for them. `field`
  * is the field it paints, which a region's values have to name to be painted
- * by it.
+ * by it. `deal` sees each region's values before any is painted, so a scale
+ * dealing colours on first sight deals them in an order of its own.
  */
 export function createFieldPalette(
   field: string,
   paint: (value: string) => string,
+  deal?: (values: readonly string[]) => void,
 ) {
   const solid = new Map<string, number>()
   const tints = new Map<string, readonly [number, number]>()
@@ -92,6 +94,7 @@ export function createFieldPalette(
      * only where `withTints` says a stripe will read them.
      */
     tableOf(values: readonly string[], withTints: boolean) {
+      deal?.(values)
       const table = new Uint32Array(values.length * 3)
       for (const [i, value] of values.entries()) {
         table[i * 3] = solidOf(value)

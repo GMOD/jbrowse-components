@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
@@ -13,6 +14,7 @@ import {
   featureColorEncoding,
   identityKeyEntries,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
 import { createFieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
@@ -175,11 +177,11 @@ export function featureColorViews(self: FeatureColorHost) {
     /**
      * #getter
      * The color channel's field while it paints through a categorical scale,
-     * which a facet on the same field shares and "Pin distinct colors"
-     * writes the domain of.
+     * which a facet on the same field shares.
      */
     get colorField() {
-      return categoricalColorField(this.colorEncoding)
+      const encoding = this.colorEncoding
+      return categoricalColorField(encoding, heldColorSlots(self, encoding))
     },
 
     /**
@@ -188,7 +190,8 @@ export function featureColorViews(self: FeatureColorHost) {
      * scale, a threshold's values filed under their bins.
      */
     get paintedColorField() {
-      return colorFieldOf(this.colorEncoding)
+      const encoding = this.colorEncoding
+      return colorFieldOf(encoding, heldColorSlots(self, encoding))
     },
 
     /**
@@ -273,9 +276,17 @@ export function featureColorViews(self: FeatureColorHost) {
      */
     get fieldPalette(): FieldPalette | undefined {
       const paint = this.paintColorValue
-      const field = this.colorFieldName
-      return paint && field !== undefined
-        ? createFieldPalette(field, paint)
+      const name = this.colorFieldName
+      const field = this.colorRamp ? undefined : this.paintedColorField
+      return paint && name !== undefined
+        ? createFieldPalette(
+            name,
+            paint,
+            field &&
+              (values => {
+                dealKeyColors(field, values.map(field.key))
+              }),
+          )
         : undefined
     },
 

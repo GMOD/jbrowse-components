@@ -38,6 +38,7 @@ import {
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
+import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
@@ -1132,7 +1133,11 @@ export default function MultiSampleVariantBaseModelF(
            */
           get cellHue() {
             const { encoding, keptField } = hueInput.get()
-            return cellHueOf(encoding, keptField)
+            return cellHueOf(
+              encoding,
+              keptField,
+              heldColorSlots(self, encoding),
+            )
           },
         }
       })
@@ -1625,6 +1630,7 @@ export default function MultiSampleVariantBaseModelF(
             paintedDomain: self.paintedDomain,
             shadeByDosage: self.shadeByDosage,
             color: self.colorEncoding,
+            colorSlots: heldColorSlots(self, self.colorEncoding),
             colorTitle: withPreset(self.colorSetting, CATEGORICAL_FIELD_PRESETS)
               .title,
             colorBy: self.rowColorField,

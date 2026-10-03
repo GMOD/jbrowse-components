@@ -19,6 +19,7 @@ function hueTable(data: CellHueValues, hue: CellHue, valuesRead: boolean) {
   const hues: (string | undefined)[] = [hue.constant]
   const valueHue = new Uint32Array(colorValues.length + 1)
   if (valuesRead && hue.hueOf) {
+    hue.deal?.(colorValues)
     const indexOf = new Map(hues.map((h, i) => [h, i]))
     for (let v = 0; v < colorValues.length; v++) {
       const css = hue.hueOf(colorValues[v]!)

@@ -217,63 +217,37 @@ describe('derived color key', () => {
     ])
   })
 
-  describe('Pin distinct colors', () => {
-    const colorByRows = (display: ReturnType<typeof coloredDisplay>) => {
-      const item = display
-        .trackMenuItems()
-        .find(i => 'label' in i && i.label === 'Color by...')!
-      return resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0])
-    }
-    const pinRow = (display: ReturnType<typeof coloredDisplay>) =>
-      colorByRows(display).find(
-        i => 'label' in i && i.label === 'Pin distinct colors',
-      ) as { disabled?: boolean; onClick: () => void } | undefined
+  describe('colours dealt on first sight', () => {
+    const colorsOf = (display: ReturnType<typeof coloredDisplay>) =>
+      new Map(
+        display.legendSpec.sections[0]?.items.map(i => [i.label, i.color]),
+      )
 
-    function paint(
-      display: ReturnType<typeof coloredDisplay>,
-      labels: string[],
-    ) {
-      display.setRpcData(0, paintedData(labels), ctgA)
-    }
-
-    it('is offered only while a field paints', () => {
-      const { createDisplay } = createTestEnvironment()
-      const { display } = createDisplay()
-      expect(pinRow(display)).toBeUndefined()
-      display.setFeatureColor('red')
-      expect(pinRow(display)).toBeUndefined()
-      expect(pinRow(coloredDisplay({ field: 'biotype' }))).toBeDefined()
-    })
-
-    it('writes the key in its order after the domain, less the no-value row', () => {
-      const display = coloredDisplay({ field: 'biotype', domain: ['snoRNA'] })
-      paint(display, ['protein_coding', '', 'snoRNA', 'lncRNA'])
-      pinRow(display)!.onClick()
-      expect(display.colorSettings.domain).toEqual([
-        'snoRNA',
-        'lncRNA',
-        'protein_coding',
-      ])
-      expect(pinRow(display)!.disabled).toBe(true)
-    })
-
-    it('keeps the earlier order when a second pin adds the values that arrived since', () => {
+    it('paints three values the hash puts on one colour three colours', () => {
       const display = coloredDisplay({ field: 'biotype' })
-      paint(display, ['protein_coding', 'lncRNA'])
-      pinRow(display)!.onClick()
-      paint(display, ['protein_coding', 'antisense', 'miRNA'])
-      expect(pinRow(display)!.disabled).toBe(false)
-      pinRow(display)!.onClick()
-      expect(display.colorSettings.domain).toEqual([
-        'lncRNA',
-        'protein_coding',
-        'antisense',
-        'miRNA',
-      ])
+      display.setRpcData(
+        0,
+        paintedData(['protein_coding', 'snRNA', 'TEC']),
+        ctgA,
+      )
+      expect(new Set(colorsOf(display).values()).size).toBe(3)
     })
 
-    it('pins every value of a row two values share, so the pin tells them apart', () => {
-      // Two colors for three values: two of them share one.
+    it('keeps every colour shown as another region brings new values', () => {
+      const display = coloredDisplay({ field: 'biotype' })
+      display.setRpcData(0, paintedData(['protein_coding', 'lncRNA']), ctgA)
+      const before = colorsOf(display)
+      display.setRpcData(1, paintedData(['snRNA', 'TEC', 'lncRNA']), {
+        ...ctgA,
+        refName: 'ctgB',
+      })
+      const after = colorsOf(display)
+      expect(after.get('protein_coding')).toBe(before.get('protein_coding'))
+      expect(after.get('lncRNA')).toBe(before.get('lncRNA'))
+      expect(new Set(after.values()).size).toBe(after.size)
+    })
+
+    it('spills a range too short for the values into the wide palette', () => {
       const display = coloredDisplay({
         field: 'biotype',
         range: ['red', 'blue'],
@@ -284,15 +258,19 @@ describe('derived color key', () => {
         ctgA,
       )
       const items = display.legendSpec.sections[0]?.items ?? []
-      expect(items).toHaveLength(2)
-      expect(items.some(i => i.label.includes(', '))).toBe(true)
-      pinRow(display)!.onClick()
-      expect(display.colorSettings.domain.toSorted()).toEqual([
-        'lncRNA',
-        'protein_coding',
-        'snoRNA',
-      ])
-      expect(display.legendSpec.sections[0]?.items).toHaveLength(3)
+      expect(items).toHaveLength(3)
+      expect(items.some(i => i.label.includes(', '))).toBe(false)
+    })
+
+    it('offers no pin', () => {
+      const item = coloredDisplay({ field: 'biotype' })
+        .trackMenuItems()
+        .find(i => 'label' in i && i.label === 'Color by...')!
+      expect(
+        resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0]).map(
+          i => 'label' in i && i.label,
+        ),
+      ).not.toContain('Pin distinct colors')
     })
   })
 
@@ -344,17 +322,6 @@ describe('derived color key', () => {
       ])
     })
 
-    it('offers no pin, which would write values into the cuts', () => {
-      const item = thresholdDisplay()
-        .trackMenuItems()
-        .find(i => 'label' in i && i.label === 'Color by...')!
-      expect(
-        resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0]).map(
-          i => 'label' in i && i.label,
-        ),
-      ).not.toContain('Pin distinct colors')
-    })
-
     it('notices a range that is not one colour per interval', () => {
       expect(thresholdDisplay().notices).toEqual([])
       expect(thresholdDisplay(['#0000ff', '#ff0000']).notices).toEqual([
@@ -380,33 +347,6 @@ describe('derived color key', () => {
     ])
     setConf(display, ['color', 'title'], '')
     expect(display.colorScales[0]?.title ?? '').toBe('')
-  })
-
-  it('pins the domain alone, keeping the scale, labels and title', () => {
-    const display = coloredDisplay({ field: 'score' })
-    setConf(display, 'color', {
-      field: 'score',
-      scale: 'categorical',
-      domain: ['1'],
-      labels: ['one'],
-      title: 'My score',
-    })
-    display.setRpcData(
-      0,
-      paintedData(['1', '2', '3'], noSection, 'score'),
-      ctgA,
-    )
-    display.pinColorDomain()
-    expect(display.colorSettings).toMatchObject({
-      scale: 'categorical',
-      domain: ['1', '2', '3'],
-      labels: ['one'],
-      title: 'My score',
-    })
-    expect(display.colorScales[0]).toMatchObject({
-      kind: 'categorical',
-      title: 'My score',
-    })
   })
 
   // A settings change keeps the held regions drawn until the refetch lands,

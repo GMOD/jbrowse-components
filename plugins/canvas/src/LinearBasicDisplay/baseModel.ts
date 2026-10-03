@@ -1571,23 +1571,6 @@ export default function baseStateModelFactory(
         )
       },
       /**
-       * #getter
-       * `colorDomain` followed by the values the color key lists that it
-       * does not, in the key's order and less the no-value row.
-       */
-      get pinnedColorDomain(): string[] {
-        const { domain } = self.colorSettings
-        const listed = new Set(domain)
-        const keyed = this.derivedColorScales.flatMap(scale =>
-          scale.kind === 'categorical'
-            ? scale.entries
-                .flatMap(e => e.values ?? [e.value])
-                .filter(v => v !== '')
-            : [],
-        )
-        return [...domain, ...keyed.filter(v => !listed.has(v))]
-      },
-      /**
        * #method
        * The Group by dialog's choice of field as plot settings: the facet,
        * keeping its domain while the field is the one already set, a color by
@@ -1668,16 +1651,6 @@ export default function baseStateModelFactory(
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       * The categorical analogue of the min/max dialog's "Use current range"
-       * (ADR-124): writes `pinnedColorDomain`, so every value the key lists
-       * spends its own range color in key order, where the hash could give
-       * two values one color.
-       */
-      pinColorDomain() {
-        setConf(self, ['color', 'domain'], self.pinnedColorDomain)
-      },
       /**
        * #action
        * What a menu or dialog naming only a field writes: the field, keeping

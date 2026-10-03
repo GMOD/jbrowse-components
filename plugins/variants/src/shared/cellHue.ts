@@ -1,4 +1,5 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
+import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -12,6 +13,7 @@ import {
   getVariantImpactDomain,
 } from './variantConsequence.ts'
 
+import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
@@ -22,17 +24,20 @@ export function cellHueField(encoding: ColorEncoding | undefined) {
 }
 
 /**
- * The categorical or threshold field a record field paints through, or
- * undefined for a preset or a constant. A record with no value keeps the
- * default alt hue.
+ * The categorical or threshold field a record field paints through, dealing
+ * its colours into `held`, or undefined for a preset or a constant. A record
+ * with no value keeps the default alt hue.
  */
-export function recordHueField(encoding: ColorEncoding | undefined) {
+export function recordHueField(
+  encoding: ColorEncoding | undefined,
+  held?: HeldSlots,
+) {
   const field = cellHueField(encoding)
   return field === undefined ||
     field === IMPACT_FIELD ||
     field === PHASE_SET_FIELD
     ? undefined
-    : colorFieldOf(encoding)
+    : colorFieldOf(encoding, held)
 }
 
 /** A record field's key colour, the no-value key taking the default alt hue. */
@@ -53,7 +58,8 @@ export type CellHueRead = string | { field: string } | undefined
 /**
  * Where the alt cells' hue comes from: `read`, what the worker reads off each
  * variant, a field without its scale so recolouring one refetches nothing;
- * `hueOf`, a read value's colour; `keyOf`, the key row it files under; and
+ * `hueOf`, a read value's colour; `keyOf`, the key row it files under;
+ * `deal`, which sees a region's values before `hueOf` paints any; and
  * `constant`, the hue of every alt cell with no value of its own. No paint
  * member set paints the genotype colours.
  */
@@ -62,6 +68,7 @@ export interface CellHue {
   constant?: string
   hueOf?: (value: string) => string
   keyOf?: (value: string) => string
+  deal?: (values: readonly string[]) => void
 }
 
 /**
@@ -73,6 +80,7 @@ export interface CellHue {
 export function cellHueOf(
   encoding: ColorEncoding | undefined,
   keptField?: string,
+  held?: HeldSlots,
 ): CellHue {
   if (typeof encoding === 'string' && isJexl(encoding)) {
     return { read: encoding, hueOf: css => css }
@@ -84,12 +92,15 @@ export function cellHueOf(
   if (field === PHASE_SET_FIELD) {
     return { read: { field } }
   }
-  const record = recordHueField(encoding)
+  const record = recordHueField(encoding, held)
   if (record) {
     return {
       read: { field: record.field },
       hueOf: value => recordKeyColor(record, record.key(value)),
       keyOf: value => record.key(value),
+      deal: values => {
+        dealKeyColors(record, values.map(record.key))
+      },
     }
   }
   return {

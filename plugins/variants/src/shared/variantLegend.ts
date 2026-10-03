@@ -30,6 +30,7 @@ import type {
   CategoricalScale,
   ColorScale,
 } from '@jbrowse/core/ui/colorScale'
+import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
@@ -269,6 +270,7 @@ function recordFieldScale(
 function getCellColorScale(
   encoding: ColorEncoding | undefined,
   inputs: VariantLegendInputs,
+  held: HeldSlots | undefined,
 ): CategoricalScale | undefined {
   const cellField = cellHueField(encoding)
   if (cellField === IMPACT_FIELD) {
@@ -305,7 +307,7 @@ function getCellColorScale(
       ],
     }
   }
-  const recordField = recordHueField(encoding)
+  const recordField = recordHueField(encoding, held)
   if (recordField) {
     return recordFieldScale(recordField, inputs)
   }
@@ -336,11 +338,14 @@ export function getVariantColorScales({
   sources,
   groupOrder,
   insertionMarkers = false,
+  colorSlots,
   ...inputs
 }: VariantLegendInputs & {
   // The alt cells' hue as the display resolved its `color`; undefined for the
   // genotype colours.
   color: ColorEncoding | undefined
+  // The slots a categorical `color` deals its values into (`heldColorSlots`).
+  colorSlots?: HeldSlots
   colorBy: string
   sources: Source[] | undefined
   // The order the grouping key lists its values in: the bands' when the facet
@@ -361,6 +366,7 @@ export function getVariantColorScales({
       ? undefined
       : color,
     inputs,
+    colorSlots,
   )
   return [
     ...(cellScale ? [cellScale] : []),

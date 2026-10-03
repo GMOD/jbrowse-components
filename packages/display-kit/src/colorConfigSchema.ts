@@ -16,6 +16,7 @@ import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type {
   ColorScaleName,
   ColorSlots,
@@ -471,14 +472,19 @@ export function colorForValue(current: ColorSlots, value: string | undefined) {
 
 /**
  * A categorical encoding's field as every categorical channel keys, orders,
- * names and paints it, or `undefined` for any other encoding.
+ * names and paints it, dealing its colours into `held` (`heldColorSlots`), or
+ * `undefined` for any other encoding.
  */
-export function categoricalColorField(encoding: ColorEncoding | undefined) {
+export function categoricalColorField(
+  encoding: ColorEncoding | undefined,
+  held?: HeldSlots,
+) {
   return typeof encoding === 'object' && encoding.scale === 'categorical'
     ? categoricalField(encoding.field, {
         domain: encoding.domain?.map(String),
         range: encoding.range,
         labels: encoding.labels,
+        held,
       })
     : undefined
 }
@@ -489,14 +495,17 @@ export function categoricalColorField(encoding: ColorEncoding | undefined) {
  * threshold's values filed under their bins — or `undefined` for any other
  * encoding.
  */
-export function colorFieldOf(encoding: ColorEncoding | undefined) {
+export function colorFieldOf(
+  encoding: ColorEncoding | undefined,
+  held?: HeldSlots,
+) {
   return typeof encoding === 'object' && encoding.scale === 'threshold'
     ? thresholdField(encoding.field, {
         domain: encoding.domain?.map(String),
         range: encoding.range,
         labels: encoding.labels,
       })
-    : categoricalColorField(encoding)
+    : categoricalColorField(encoding, held)
 }
 
 /**

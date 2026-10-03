@@ -187,6 +187,21 @@ describe('a record field', () => {
     expect(color(variant({ AF: [undefined] }))).toBe(abgr(ALT_HUE))
   })
 
+  test('deals values the hash puts on one hue a hue each, whatever their order', () => {
+    const values = ['TEC', 'snRNA', 'protein_coding']
+    const hues = (order: string[]) => {
+      const cellHue = cellHueOf(
+        { field: 'INFO.BIOTYPE', scale: 'categorical' },
+        undefined,
+        new Map(),
+      )
+      cellHue.deal!(order)
+      return values.map(cellHue.hueOf!)
+    }
+    expect(new Set(hues(values)).size).toBe(3)
+    expect(hues([...values].reverse())).toEqual(hues(values))
+  })
+
   test('reads a jexl expression as the field', () => {
     expect(
       key({ field: "jexl:get(feature,'REF')", scale: 'categorical' })(
