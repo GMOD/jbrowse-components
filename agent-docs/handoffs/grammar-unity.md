@@ -9,14 +9,14 @@ Colin approved this plan on 2026-09-30. Read
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) first; the
 sections after the order of work are the evidence it rests on.
 
-## Next, in order
+## Next
 
-1. **A colour-menu builder** over the colour object and the display's field
-   presets (§"Menus as views over those objects"). Unsized.
-2. **Wiggle onto render-core's marks**, keeping its display type, with
-   whiskers as three translucent bar marks and captures shown first:
-   [wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md)
-   is the worked proposal, sized at 7-10 days.
+Nothing queued. On 2026-10-02 Colin questioned the colour-menu builder over the
+colour object (§"Menus as views over those objects"): it gives users no new
+control, only one shared "Color by" submenu in place of six hand-written ones.
+He answered "not now" to wiggle onto render-core's marks, whose worked proposal
+[wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md) is
+sized at 7-10 days.
 
 Not now, each on its trigger: bands of rows, until a track asks for subtrack
 bands or clades; the colour holdouts (Hi-C, LD, MAF); and §"Where it grows".
