@@ -3,6 +3,8 @@ import { NO_CATEGORY_COLOR } from './color/index.ts'
 import { universalPresetOf } from './colorScale.ts'
 import { groupKeyComparator, valueText } from './groupKeys.ts'
 
+import type { HeldSlots } from '../ui/colors.ts'
+
 /** #api */
 export const STRAND_FIELD = 'strand'
 
@@ -27,7 +29,9 @@ export const NO_VALUE_LABEL = '(no value)'
  * orders keys (the `domain` first, the rest by `compareGroupKeys`, `''`
  * after them), `label` names a key in a legend, `sectionLabel` on a chip, and
  * `color` paints it. A key's color depends only on the key and the
- * declaration, so every region agrees on it.
+ * declaration, so every region agrees on it, except that a field dealing its
+ * colors (`categoricalField`'s `held`) also steps a key off the colors of the
+ * keys met before it.
  */
 export interface CategoricalField {
   field: string
@@ -70,7 +74,10 @@ export function keyNames(
 /**
  * #api
  * `labels` names the `domain`'s values in a key, one each in order, where a
- * config spells them for a reader rather than as the data does.
+ * config spells them for a reader rather than as the data does. `held` deals
+ * each key the domain does not list a color of its own on first sight
+ * (`categoricalScale`); the caller keeps it for as long as the colors should
+ * hold.
  */
 export function categoricalField(
   field: string,
@@ -78,10 +85,12 @@ export function categoricalField(
     domain = [],
     range = [],
     labels = [],
+    held,
   }: {
     domain?: readonly string[]
     range?: readonly string[]
     labels?: readonly string[]
+    held?: HeldSlots
   } = {},
 ): CategoricalField {
   // a field with a vocabulary of its own reads it on every channel, a facet's
@@ -111,8 +120,41 @@ export function categoricalField(
       if (key === '') {
         return NO_CATEGORY_COLOR
       }
-      colorOf ??= categoricalColorScale(paired, colors)
+      colorOf ??= categoricalColorScale(paired, colors, held)
       return colorOf(key)
     },
   }
+}
+
+/**
+ * #api
+ * Deals `keys` their colours in `field.compare` order, so the colours a set
+ * of keys first seen together takes do not depend on the order they arrive
+ * in. A no-op for a field that deals nothing.
+ */
+export function dealKeyColors(field: CategoricalField, keys: Iterable<string>) {
+  for (const key of [...new Set(keys)].sort(field.compare)) {
+    field.color(key)
+  }
+}
+
+const heldByOwner = new WeakMap<object, Map<string, HeldSlots>>()
+
+/**
+ * #api
+ * The `HeldSlots` `owner` keeps under `key`, made empty on first ask. Lives as
+ * long as `owner` and is never persisted, so a reload deals afresh.
+ */
+export function heldSlotsOf(owner: object, key: string) {
+  let byKey = heldByOwner.get(owner)
+  if (byKey === undefined) {
+    byKey = new Map()
+    heldByOwner.set(owner, byKey)
+  }
+  let held = byKey.get(key)
+  if (held === undefined) {
+    held = new Map()
+    byKey.set(key, held)
+  }
+  return held
 }

@@ -149,6 +149,69 @@ describe('categoricalColorScale', () => {
   })
 })
 
+describe('a dealt scale', () => {
+  it('paints the values the hash puts on one colour each its own', () => {
+    const hashed = categoricalColorScale(undefined)
+    expect(new Set(['protein_coding', 'snRNA', 'TEC'].map(hashed)).size).toBe(1)
+    const dealt = categoricalColorScale(undefined, [], new Map())
+    expect(new Set(['protein_coding', 'snRNA', 'TEC'].map(dealt)).size).toBe(3)
+  })
+
+  it('keeps a value its hashed colour while no value met before has it', () => {
+    const dealt = categoricalColorScale(undefined, [], new Map())
+    const hashed = categoricalColorScale(undefined)
+    const met: string[] = []
+    let kept = 0
+    for (const value of BIOTYPES) {
+      const free = !met.some(c => similarColors(c, hashed(value)))
+      met.push(dealt(value))
+      if (free) {
+        expect(dealt(value)).toBe(hashed(value))
+        kept++
+      } else {
+        expect(dealt(value)).not.toBe(hashed(value))
+      }
+    }
+    expect(kept).toBeGreaterThan(5)
+  })
+
+  it('deals 30 values 30 colours none of which read alike', () => {
+    const dealt = categoricalColorScale(undefined, [], new Map())
+    const colors = BIOTYPES.map(dealt)
+    for (const [i, a] of colors.entries()) {
+      for (const b of colors.slice(i + 1)) {
+        expect(similarColors(a, b)).toBe(false)
+      }
+    }
+  })
+
+  it('never moves a held value as others arrive', () => {
+    const held = new Map<string, number>()
+    const first = categoricalColorScale(undefined, [], held)
+    const before = BIOTYPES.slice(0, 5).map(first)
+    BIOTYPES.slice(5).forEach(first)
+    const later = categoricalColorScale(undefined, [], held)
+    expect(BIOTYPES.slice(0, 5).map(later)).toEqual(before)
+  })
+
+  it('keeps a listed value its range colour and deals the rest around it', () => {
+    const dealt = categoricalColorScale(['lncRNA'], ['#e41a1c'], new Map())
+    expect(dealt('lncRNA')).toBe('#e41a1c')
+    const others = ['protein_coding', 'snRNA', 'TEC'].map(dealt)
+    expect(new Set(others).size).toBe(3)
+    expect(others.some(c => similarColors(c, '#e41a1c'))).toBe(false)
+  })
+
+  it('deals a range before spilling into the wide palette', () => {
+    const range = ['#1f77b4', '#ff7f0e']
+    const dealt = categoricalColorScale(undefined, range, new Map())
+    const colors = ['a', 'b', 'c', 'd'].map(dealt)
+    expect(colors.slice(0, 2).sort()).toEqual([...range].sort())
+    expect(new Set(colors).size).toBe(4)
+    expect(range).not.toContain(colors[2])
+  })
+})
+
 describe('categoricalColor', () => {
   it('spends the palette in domain order', () => {
     expect(categoricalColor('b', ['a', 'b'], ['red', 'blue'])).toBe('blue')

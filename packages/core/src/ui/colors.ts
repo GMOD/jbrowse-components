@@ -120,21 +120,16 @@ export const paletteColors = {
  * re-palettes), while a by-position painter has no value to hash and wraps.
  *
  * **It holds 14 pairs `similarColors` calls the same** — five schemes' blues,
- * oranges, greens, reds and pinks — and deduping it at construction is the
- * wrong reading of that, measured on the 38 GENCODE gene biotypes. Hashed,
- * which is what a track with no `colorDomain` does, 30 of them land on 22
- * colors and 38 on 26; the loss is the birthday collision on 40 slots, not the
- * near-twins, and only 3 of the pairs they land on read alike. Pruning to the
- * 30 distinct entries makes that 23 and 24, so it costs ten colors and buys
- * nothing.
+ * oranges, greens, reds and pinks. A dealt scale (`categoricalScale`'s `held`)
+ * steps over a twin of a color already dealt, so they cost a track only once
+ * it has more values than the 30 distinct entries.
  *
- * The near-twins bite the PINNED case instead, where a `domain` spends the
- * list in order: 30 listed values take 30 colors today and 7 of those pairs
- * read alike. Ordering the distinct 30 first and the twins behind them fixes
- * that outright (0 pairs at 30 listed values, 11 at 38 where the twins are
- * reached anyway) and costs no colors — but it moves every hashed color in
- * marks, GWAS, canvas, multi-row and the arrangement dialog, so it is a pass
- * with a figure refresh in it.
+ * The near-twins bite a `domain` instead, which spends the list in order: 30
+ * listed values take 30 colors and 7 of those pairs read alike. Ordering the
+ * distinct 30 first and the twins behind them fixes that outright (0 pairs at
+ * 30 listed values, 11 at 38 where the twins are reached anyway) and costs no
+ * colors — but it moves every hashed color in marks, GWAS, canvas, multi-row
+ * and the arrangement dialog, so it is a pass with a figure refresh in it.
  */
 export const categoricalPalette = [
   ...new Set(
@@ -191,14 +186,26 @@ function freeSlot(value: string, size: number, taken: ReadonlySet<number>) {
 }
 
 /**
- * The categorical rule every scaled channel resolves through. With no
- * `domain` a value takes `categoricalValueColor`'s slot in `range`. With one,
- * the listed values take `range` in order, continuing into the `fallback`
- * entries `range` lacks past its end, and any other value takes a slot of the
- * whole list derived from itself that no listed value holds, nor one
- * `isNear` calls the same. A value's entry depends only on the value and the
- * declaration, so every region agrees on it, and adding a listed value moves
- * only the unlisted values on the slots it takes.
+ * The slots a categorical scale has dealt the values it met that its `domain`
+ * does not list, each recorded on first sight and never dealt again. The
+ * caller owns it and hands the same one to every scale that should agree.
+ */
+export type HeldSlots = Map<string, number>
+
+/**
+ * The categorical rule every scaled channel resolves through. The values
+ * `domain` lists take `range` in order, continuing into the `fallback`
+ * entries `range` lacks past its end. Any other value takes the slot derived
+ * from itself (`categoricalValueColor`'s, with no `domain`) unless a listed
+ * value holds it or one `isNear` calls the same, and then another slot derived
+ * from itself.
+ *
+ * With `held`, a value is dealt once, on first sight: its slot avoids every
+ * slot `held` already records and their near twins as well, so values met
+ * together never share an entry while the list has room, and the slot is
+ * recorded so the value keeps it as others arrive. A value nothing else
+ * collides with keeps the entry it takes without `held`. With no `domain`, the
+ * deal spends `range` before spilling into the `fallback` entries it lacks.
  */
 export function categoricalScale<T>(
   domain: readonly (string | number)[] | undefined,
@@ -206,14 +213,16 @@ export function categoricalScale<T>(
   {
     fallback = [],
     isNear,
+    held,
   }: {
     fallback?: readonly T[]
     isNear?: (a: T, b: T) => boolean
+    held?: HeldSlots
   } = {},
 ): (value: string) => T {
   const base = range.length ? range : fallback
   const listed = [...new Set((domain ?? []).map(String))].filter(v => v !== '')
-  if (listed.length === 0) {
+  if (listed.length === 0 && !held) {
     return value => base[valueSlot(value, base.length)]!
   }
   const seen = new Set(base.map(entryKey))
@@ -225,25 +234,51 @@ export function categoricalScale<T>(
     }),
   ]
   const size = entries.length
+  const twins: (readonly number[])[] = []
+  const twinsOf = (slot: number) =>
+    (twins[slot] ??= entries.flatMap((entry, i) =>
+      i === slot || isNear?.(entries[slot]!, entry) ? [i] : [],
+    ))
   const rank = new Map(listed.map((value, i) => [value, i]))
-  const listedSlots = new Set(listed.map((_, i) => i % size))
-  const taken = new Set(
-    entries.flatMap((entry, i) =>
-      listedSlots.has(i) ||
-      (isNear && [...listedSlots].some(j => isNear(entries[j]!, entry)))
-        ? [i]
-        : [],
-    ),
-  )
+  const listedTaken = new Set(listed.flatMap((_, i) => twinsOf(i % size)))
+  const tiers =
+    listed.length > 0
+      ? [[0, size] as const]
+      : [[0, base.length] as const, [base.length, size] as const]
+  const deal = (value: string, taken: ReadonlySet<number>) => {
+    for (const [from, to] of tiers) {
+      const inTier =
+        from === 0 && to === size
+          ? taken
+          : new Set(
+              [...taken].filter(s => s >= from && s < to).map(s => s - from),
+            )
+      if (inTier.size < to - from) {
+        return from + freeSlot(value, to - from, inTier)
+      }
+    }
+    return valueSlot(value, tiers[0]![1])
+  }
   return value => {
     const i = rank.get(value)
-    return entries[
-      i !== undefined
-        ? i % size
-        : taken.size < size
-          ? freeSlot(value, size, taken)
-          : valueSlot(value, size)
-    ]!
+    if (i !== undefined) {
+      return entries[i % size]!
+    }
+    if (!held) {
+      return entries[deal(value, listedTaken)]!
+    }
+    let slot = held.get(value)
+    if (slot === undefined) {
+      const taken = new Set(listedTaken)
+      for (const s of held.values()) {
+        for (const twin of twinsOf(s)) {
+          taken.add(twin)
+        }
+      }
+      slot = deal(value, taken)
+      held.set(value, slot)
+    }
+    return entries[slot]!
   }
 }
 
@@ -275,15 +310,18 @@ export function similarColors(a: string, b: string) {
 /**
  * `categoricalScale` for a color channel: `palette` (the wide palette when
  * empty) spent in `domain` order and continued into the wide palette, and an
- * unlisted value never on a listed value's color or one that reads the same.
+ * unlisted value never on a listed value's color or one that reads the same,
+ * nor, with `held`, on the color of a value met before it.
  */
 export function categoricalColorScale(
   domain: readonly (string | number)[] | undefined,
   palette: readonly string[] = [],
+  held?: HeldSlots,
 ) {
   return categoricalScale(domain, palette, {
     fallback: categoricalPalette,
     isNear: similarColors,
+    held,
   })
 }
 

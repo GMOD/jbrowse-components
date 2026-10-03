@@ -1,6 +1,8 @@
 import {
   NO_VALUE_LABEL,
   categoricalField,
+  dealKeyColors,
+  heldSlotsOf,
   keyNames,
 } from './categoricalField.ts'
 import { NO_CATEGORY_COLOR } from './color/index.ts'
@@ -117,4 +119,26 @@ test('a written domain keeps each strand its own colour', () => {
   const reordered = categoricalField('strand', { domain: ['-1', '1'] })
   expect(reordered.color('-1')).toBe(own.color('-1'))
   expect(reordered.label('-1')).toBe('Reverse strand')
+})
+
+test('three biotypes the hash puts on one colour paint three colours', () => {
+  const field = categoricalField('biotype', { held: new Map() })
+  const colors = ['protein_coding', 'snRNA', 'TEC'].map(field.color)
+  expect(new Set(colors).size).toBe(3)
+})
+
+test('keys met together take the same colours whatever order they arrive in', () => {
+  const keys = ['TEC', 'snRNA', 'lncRNA', 'protein_coding', 'miRNA']
+  const a = categoricalField('biotype', { held: new Map() })
+  const b = categoricalField('biotype', { held: new Map() })
+  dealKeyColors(a, keys)
+  dealKeyColors(b, [...keys].reverse())
+  expect(keys.map(a.color)).toEqual(keys.map(b.color))
+})
+
+test('an owner keeps one held map per key until the owner goes', () => {
+  const owner = {}
+  expect(heldSlotsOf(owner, 'k')).toBe(heldSlotsOf(owner, 'k'))
+  expect(heldSlotsOf(owner, 'k')).not.toBe(heldSlotsOf(owner, 'j'))
+  expect(heldSlotsOf({}, 'k')).not.toBe(heldSlotsOf(owner, 'k'))
 })
