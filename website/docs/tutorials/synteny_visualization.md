@@ -276,6 +276,8 @@ the tools under [Prerequisites](#prerequisites).
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
+- [](/docs/tutorials/syri_synteny)
+- [](/docs/tutorials/circular_synteny)
 - [](/docs/config_guides/maf_track)
 
 ## References

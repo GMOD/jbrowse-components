@@ -1,6 +1,6 @@
 ---
 title: A loss-of-function allele across breeds (Dog10K)
-sidebar_label: Loss-of-function allele (Dog10K)
+sidebar_label: Dog10K (loss-of-function allele)
 description:
   Locate a nonsense variant from the reference sequence, then read its genotypes
   across dog breeds and wolves

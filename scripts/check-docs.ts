@@ -127,6 +127,13 @@ const VALIDATORS: Validator[] = [
     argv: web('check-guide-order.ts'),
   },
   {
+    // The landing page and the user guide index list every tutorial, so an
+    // orphan stays reachable; this catches the one a reader finishes with
+    // nowhere to go.
+    name: 'every tutorial linked from another tutorial',
+    argv: web('check-tutorial-orphans.ts'),
+  },
+  {
     // `sync-measurements` gates the measurement TABLES on a public page; this
     // is the prose around them, which is where most of the figures are. An
     // existence check, so it pins a distinctive figure and not a round one —

@@ -373,6 +373,8 @@ each isoform.
 - [](/docs/tutorials/dtu)
 - [](/docs/tutorials/scrna_pseudobulk)
 - [](/docs/tutorials/methylation)
+- [](/docs/tutorials/gene_prediction_review)
+- [](/docs/tutorials/alphagenome)
 - [](/docs/user_guides/alignments_track)
 - [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/gene_track)

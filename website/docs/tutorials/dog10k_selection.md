@@ -1,6 +1,6 @@
 ---
 title: A selected haplotype (Dog10K)
-sidebar_label: Selected haplotype (Dog10K)
+sidebar_label: Dog10K (selected haplotype)
 description:
   Scan the Dog10K panel for allele-frequency differences between breeds at both
   ends of a trait, then slice one peak out of the SNV callset and cluster its

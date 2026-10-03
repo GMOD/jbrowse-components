@@ -223,3 +223,5 @@ the smaller `assembly`/`tracks`/`view`.
 - [LGV storybook](https://jbrowse.org/storybook/lgv/)
 - [](/docs/jbrowse_anywidget)
 - [](/docs/jbrowser)
+- [](/docs/tutorials/cli_desktop)
+- [](/docs/tutorials/display_settings)

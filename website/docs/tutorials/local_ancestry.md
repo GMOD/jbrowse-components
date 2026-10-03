@@ -1,5 +1,6 @@
 ---
 title: Local ancestry (Dog10K)
+sidebar_label: Dog10K (local ancestry)
 description:
   Paint wolf-derived haplotype blocks in two wolfdog breeds, against 219 other
   breeds and eight held-out wolves, from the Dog10K phased panel

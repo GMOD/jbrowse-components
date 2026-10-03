@@ -262,6 +262,7 @@ returns the same stored arrays with fresh URLs.
 - [](/docs/tutorials/rnaseq)
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/hic_structural_variants)
+- [](/docs/tutorials/tp53_structures)
 - [](/docs/config_guides/plugins)
 
 ## References

@@ -855,6 +855,7 @@ take hours.
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/sv_callset_review)
 - [](/docs/tutorials/cancer_sv)
+- [](/docs/tutorials/k562_fusions)
 - [](/docs/user_guides/sv_visualization)
 - [](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/quantitative_track)

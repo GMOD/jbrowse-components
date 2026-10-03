@@ -253,6 +253,8 @@ the ones under [Prerequisites](#prerequisites).
 ## See also
 
 - [](/docs/tutorials/repeatmasker_classes)
+- [](/docs/tutorials/circular_synteny)
+- [](/docs/tutorials/gene_prediction_review)
 - [](/docs/cli)
 - [](/docs/quickstart_web)
 

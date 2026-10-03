@@ -1,6 +1,6 @@
 ---
 title: Structural variants (Dog10K)
-sidebar_label: SVs (Dog10K)
+sidebar_label: Dog10K (SVs)
 description:
   Genotype four classes of structural variant across dog breeds and read each
   against the gene it sits in

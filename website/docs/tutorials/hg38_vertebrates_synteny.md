@@ -276,6 +276,7 @@ bash build_hg38_liftover_multiway.sh   # writes ./hg38_vertebrates_build/config.
 - [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/circular_synteny)
 
 ## References
 

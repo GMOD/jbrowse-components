@@ -438,6 +438,7 @@ first track uses. Leave it out for all 127, which takes about twenty minutes and
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/scatac_pseudobulk)
 - [](/docs/tutorials/alu_age)
+- [](/docs/tutorials/alphagenome)
 - [](/docs/user_guides/clustering)
 - [](/docs/config_guides/tracks)
 - [](/docs/config_guides/grouping_and_ordering)

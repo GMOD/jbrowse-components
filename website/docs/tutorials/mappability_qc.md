@@ -320,6 +320,7 @@ locus added to its `LOCI` list the same way.
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/user_guides/alignments_track)
 - [](/docs/tutorials/genomes_synteny)
+- [](/docs/tutorials/read_marks)
 
 ## References
 

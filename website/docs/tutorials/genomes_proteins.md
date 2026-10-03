@@ -244,6 +244,7 @@ The approach is described in
 
 - [](/docs/tutorials/genomes_basics)
 - [](/docs/tutorials/genomes_synteny)
+- [](/docs/tutorials/tp53_structures)
 - [JBrowseMSA user guide](https://github.com/GMOD/JBrowseMSA/blob/main/docs/user_guide.md)
 - [jbrowse-plugin-protein3d](https://github.com/GMOD/jbrowse-plugin-protein3d)
 - [jbrowse-plugin-msaview](https://github.com/GMOD/jbrowse-plugin-msaview)

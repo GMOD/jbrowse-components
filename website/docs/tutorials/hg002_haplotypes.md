@@ -193,6 +193,7 @@ top row to where it maps on the bottom.
 - [](/docs/tutorials/homoeolog_synteny)
 - [](/docs/tutorials/methylation)
 - [](/docs/tutorials/synteny_visualization)
+- [](/docs/tutorials/syri_synteny)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/dotplot_view)
 

@@ -14,6 +14,7 @@
     "check-handoff-pointers": "node scripts/check-handoff-pointers.ts",
     "check-rename-archaeology": "node scripts/check-rename-archaeology.ts",
     "check-guide-order": "node scripts/check-guide-order.ts",
+    "check-tutorial-orphans": "node scripts/check-tutorial-orphans.ts",
     "check-sidebar": "node scripts/check-sidebar.ts",
     "check-wiki-titles": "node scripts/check-wiki-titles.ts",
     "check-captions": "node scripts/check-captions.ts",

@@ -188,6 +188,8 @@ lanes.
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/agent_synteny)
+- [](/docs/tutorials/genomes_proteins)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/dotplot_view)
 - [The T2T human variation paper](https://www.science.org/doi/10.1126/science.abl3533)

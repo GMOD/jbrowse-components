@@ -331,6 +331,7 @@ correlates them.
 
 - [](/docs/tutorials/ld_mosquitoes)
 - [](/docs/tutorials/population_genomics)
+- [](/docs/tutorials/analyze_trio)
 - [](/docs/user_guides/variant_track)
 - [](/docs/user_guides/gwas_track)
 - [Variant track configuration](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display)

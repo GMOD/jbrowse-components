@@ -310,6 +310,7 @@ lineage.
 - [](/docs/config_guides/mark_display)
 - [](/docs/tutorials/gene_density)
 - [](/docs/tutorials/repeatmasker_classes)
+- [](/docs/tutorials/read_marks)
 - [](/docs/quickstart_web)
 
 ## References
