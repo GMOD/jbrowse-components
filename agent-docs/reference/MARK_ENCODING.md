@@ -8,6 +8,8 @@ kind: spec
 
 A track config names marks and which feature fields feed each channel; one worker
 call per region evaluates that and the display draws the result through the
+shared shapes.
+
 ## Scales
 
 **A positional channel is a field and the value scale is the plot's.** The

@@ -470,8 +470,7 @@ export function configSchemaFactory() {
        * steps pack it: `"HP"`, or `{ field, domain, transform }` with the
        * order the sections stack in and the steps each runs before any mark's,
        * a per-section `pileup` among them. A chip names each section and hides
-       * it, and past forty values the tail merges into one. Split after
-       * `transform` and before any mark's own steps.
+       * it. Split after `transform` and before any mark's own steps.
        */
       facet: markFacetSchema,
       /**

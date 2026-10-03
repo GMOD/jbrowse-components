@@ -7,11 +7,11 @@ kind: spec
 # The mark layer against the grammar of graphics
 
 The grammar of graphics is a pipeline: data, transform, scale, mark, guide,
-layer, coordinates. The decisions that built the layer are ADR-095 §"The grammar
-position", ADR-106 through ADR-119, ADR-150, ADR-153 and ADR-162; each position
-below points at the record that holds its measurement.
+layer, facet, coordinates. The decisions that built the layer are ADR-095
+§"The grammar position", ADR-106 through ADR-119, ADR-150, ADR-153 and ADR-162;
+each position below points at the record that holds its measurement.
 
-![The grammar's seven stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
+![The grammar's eight stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
 
 ## Four rules for how far to take it
 
