@@ -4126,7 +4126,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": "name"
             },
             "scale": {
-              "description": "none deals no palette, so only the values domain lists take a colour; categorical a colour per value of field, those domain lists taking range; unset follows field.",
+              "description": "none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field.",
               "enum": [
                 "none",
                 "categorical"
@@ -4156,6 +4156,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "items": {
                 "$ref": "#/$defs/CssColor"
               }
+            },
+            "unknown": {
+              "description": "what a value domain does not list takes: unset the next palette colour, a colour that colour, \\"\\" none from this setting.",
+              "$ref": "#/$defs/CssColor"
             }
           },
           "patternProperties": {

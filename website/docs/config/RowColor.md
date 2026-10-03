@@ -19,6 +19,13 @@ Auto-generated config schema for the current JBrowse release — see the [config
 { type: 'LinearMultiSampleVariantDisplay', rowColor: 'population' }
 ```
 
+```js
+{
+  type: 'LinearMultiRowFeatureDisplay',
+  rowColor: { domain: ['mom'], range: ['#b2182b'], unknown: '' },
+}
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
 The `rowColor` setting of the row displays: one categorical colour channel
@@ -32,9 +39,9 @@ feature display's blocks; the multi-sample variant displays' label tint; the
 MAF display's label tint, over the adapter's `samples[].color`; the mark
 display's label tint, over a listed source's colour. Where the rows carry
 attributes, a samplesTsv column or a subtrack's group, `field` may name one,
-and its values each take a palette colour. `scale: 'none'` deals no palette,
-so a row the reader coloured keeps its colour and the rest keep their data's.
-A string is the field.
+and its values each take a palette colour. `unknown: ''` deals none, so only
+the values `domain` lists take a colour and every other row keeps its own. A
+string is the field.
 
 ## Config slots
 
@@ -44,6 +51,7 @@ These slots go on a display entry: `"displays": [{ "type": "RowColor", ... }]`, 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'name'</code> | the row attribute whose values take the colours: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical) | none deals no palette, so only the values domain lists take a colour; categorical a colour per value of field, those domain lists taking range; unset follows field |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical) | none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field |
 | <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | the field's values given a colour of their own, in order: under name, rows by name |
 | <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | the CSS colour each value in domain takes, in the same order |
+| <span id="slot-unknown">**unknown**</span><br>`maybeColor` | what a value domain does not list takes: unset the next palette colour, a colour that colour, "" none from this setting |

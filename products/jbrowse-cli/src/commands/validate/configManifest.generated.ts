@@ -3297,6 +3297,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "unknown",
+              "type": "(CssColor | undefined)"
             }
           ],
           "shorthand": {
@@ -5291,6 +5295,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "unknown",
+              "type": "(CssColor | undefined)"
             }
           ],
           "shorthand": {
@@ -5482,6 +5490,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "unknown",
+              "type": "(CssColor | undefined)"
             }
           ],
           "shorthand": {
@@ -5819,6 +5831,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "unknown",
+              "type": "(CssColor | undefined)"
             }
           ],
           "shorthand": {
@@ -6316,6 +6332,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "unknown",
+              "type": "(CssColor | undefined)"
             }
           ],
           "shorthand": {
@@ -6803,6 +6823,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "unknown",
+              "type": "(CssColor | undefined)"
             }
           ],
           "shorthand": {
