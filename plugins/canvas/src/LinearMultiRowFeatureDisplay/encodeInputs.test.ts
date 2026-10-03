@@ -117,12 +117,10 @@ describe('encodeInputs', () => {
     encode.dispose()
   })
 
-  // A row painting an override is exempt from a category hide, so the first
-  // override a row takes while a category is hidden changes which features
-  // the buffer holds; a change to an override's colour does not. Four rows,
-  // because the legend drops an overridden row's colour and keys nothing
-  // with one entry left.
-  it('re-encodes for a new override only while a category is hidden', () => {
+  // Under a `color` value a row's colour paints no block, so no row is exempt
+  // from a category hide and no recolour changes which features the buffer
+  // holds.
+  it('re-encodes for no row colour while the colour object paints the blocks', () => {
     const { createDisplay } = createTestEnvironment({ displayConfig: KEYED })
     const { display } = createDisplay()
     const names = ['sampleA', 'sampleB', 'sampleC', 'sampleD']
@@ -165,7 +163,7 @@ describe('encodeInputs', () => {
     expect(encode.count()).toBe(2)
 
     display.applyRowEdits(rows({ sampleA: 'blue', sampleD: 'red' }))
-    expect(encode.count()).toBe(3)
+    expect(encode.count()).toBe(2)
     encode.dispose()
   })
 

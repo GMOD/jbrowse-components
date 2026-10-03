@@ -152,6 +152,7 @@ function makeModel(
     gpuProps: () => ({
       sources: [{ name: 'a' }, { name: 'b' }],
       rowLayout: true,
+      perSource: false,
       origin: 0,
       wiggleColor: {
         posColor: '#0068d1',
@@ -161,7 +162,6 @@ function makeModel(
         innerColors: [],
         rampLut: null,
         rampMid: undefined,
-        perSource: false,
       },
       effectiveSummaryScoreMode: 'avg',
       renderingType: 'xyplot',

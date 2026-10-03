@@ -16,10 +16,12 @@ test('a bare color is the constant', () => {
   expect(readConfObject(conf, ['color', 'field'])).toBeUndefined()
 })
 
-test('the field is score or source, and any other name is refused', () => {
+// A subtrack's colour is `rowColor`'s, so `source` is no colour field.
+test('the field is score, and any other name is refused', () => {
   expect(
-    readConfObject(create({ color: { field: 'source' } }), ['color', 'field']),
-  ).toBe('source')
+    readConfObject(create({ color: { field: 'score' } }), ['color', 'field']),
+  ).toBe('score')
+  expect(() => create({ color: { field: 'source' } })).toThrow()
   expect(() => create({ color: { field: 'pvalue' } })).toThrow()
 })
 

@@ -27,7 +27,6 @@ test('a bare value paints both sides', () => {
     cuts: [0],
     innerColors: [],
     rampLut: null,
-    perSource: false,
   })
 })
 
@@ -39,7 +38,6 @@ test('an empty threshold domain cuts at the origin, in the wiggle defaults', () 
     cuts: [3],
     innerColors: [],
     rampLut: null,
-    perSource: false,
   })
 })
 
@@ -87,10 +85,6 @@ test('a threshold domain names the cut and the range the two sides', () => {
   expect(out.pivot).toBe(2)
   expect(out.negColor).toBe('#2166ac')
   expect(out.posColor).toBe('#b2182b')
-})
-
-test('source through a categorical scale is a colour per source', () => {
-  expect(resolved(color({ field: 'source' }), 0).perSource).toBe(true)
 })
 
 test('a scheme resolves to the LUT both backends index', () => {

@@ -7,10 +7,8 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
-import { set1 } from '@jbrowse/core/ui/colors'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
-import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
@@ -37,7 +35,6 @@ import {
   clusteringMenuItem,
   computeClusterHierarchy,
   focusRowGroup,
-  orderRowsByDomain,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   rowLabelsCarryText,
@@ -48,9 +45,6 @@ import {
   sortRowsHereMenuItem,
   treeSidebarOffset,
   treeSidebarShowMenuItems,
-  fieldColorDeal,
-  rowColorChoiceOf,
-  rowColorIsCustom,
 } from '@jbrowse/tree-sidebar'
 import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -61,7 +55,6 @@ import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingB
 import {
   declaredCuts,
   resolveWiggleColor,
-  sourcePalette,
   wiggleColorEncoding,
   wiggleColorNotices,
 } from '../shared/wiggleColor.ts'
@@ -80,17 +73,8 @@ import {
 } from '../shared/wiggleMenuItems.tsx'
 import { WIGGLE_RENDERINGS } from '../util.ts'
 import { buildLegendItems } from './legendItems.ts'
-import {
-  PER_SOURCE_COLOR,
-  baseColorChannel,
-  isPerSourceColor,
-} from './rowPalette.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import {
-  buildSources,
-  sourceColorDeal,
-  sourcesFromRegionData,
-} from './sourcesLogic.ts'
+import { buildSources, sourcesFromRegionData } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
@@ -107,13 +91,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RowsSetting } from '@jbrowse/display-kit/rowsConfigSchema'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  IdentityChannel,
-  RowColorDeal,
-  SvgSidebarProps,
-  RowColorEntries,
-  RowColorSnapshot,
-} from '@jbrowse/tree-sidebar'
+import type { IdentityChannel, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
@@ -299,30 +277,25 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Whether several plots share one box, which is the one thing the layout
-       * decides about colour: overlaid sources need a palette entry each to be
-       * told apart, where a lone plot has nothing to be told apart from and is
-       * the pos/neg picture a quantitative track has always drawn.
+       * `TreeSidebarMixin`'s hook: whether several plots share one box, where
+       * only colour tells the sources apart. A lone plot has nothing to be
+       * told apart from and is the pos/neg picture a quantitative track has
+       * always drawn.
        */
-      get sharesOnePlot(): boolean {
+      get sharesPanel(): boolean {
         return self.isOverlay && self.discoveredRows.length > 1
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * The colour actually painted: what the config says, or the picture the
-       * layout asks for where it says nothing. A resolved getter rather than a
-       * `defaultValue`, because the default moves with the layout and a slot
-       * default cannot.
+       * The colour actually painted: what the config says, else the pos/neg
+       * pair about the `origin`.
        */
       get effectiveColor(): ColorSetting {
         const color = self.colorSetting
-        if (color.value !== undefined || color.field) {
-          return color
-        }
-        return self.sharesOnePlot
-          ? { ...color, field: 'source', scale: 'categorical' }
+        return color.value !== undefined || color.field
+          ? color
           : { ...color, field: 'score', scale: 'threshold' }
       },
     }))
@@ -393,82 +366,40 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: a reader's colour for a subtrack lands on
-       * the label tint where the rows are labelled and a gradient has the
-       * plot, on the plot colour otherwise. In one shared box there is no
-       * label to tint, so the colour goes to the plot whatever the gradient.
+       * `TreeSidebarMixin`'s hook: a subtrack's colour lands on the plot
+       * while `rowColorPaintsMarks`, and on the label tint otherwise. In one
+       * shared box there is no label to tint, so it goes to the plot there.
        */
       get identityChannel(): IdentityChannel {
-        return self.scoreGradientPaints && self.isRowLayout
-          ? 'labelColor'
-          : 'color'
+        return this.rowColorPaintsMarks || self.isOverlay
+          ? 'color'
+          : 'labelColor'
       },
       /**
        * #getter
-       * `TreeSidebarMixin`'s getter, plus the palette switch the dialog writes
-       * beside a row colour. Without it here, a reader who turned a colour per
-       * subtrack on is offered neither "Reset row order" nor an undo from
-       * "Clear custom settings", because the `rowColor` half often did not
-       * change: `name` is already its default.
+       * `TreeSidebarMixin`'s hook: a subtrack's colour paints its plot while
+       * nothing else colours it: no score gradient, and no declared `color`.
        */
-      get rowStylingIsCustom(): boolean {
-        return (
-          rowColorIsCustom(self.rowColorSetting, self.baseRowColor) ||
-          isPerSourceColor(self.colorSetting) !==
-            isPerSourceColor(baseColorChannel(self))
-        )
-      },
-      /**
-       * #method
-       * `TreeSidebarMixin`'s hook: under `name` the group palette, and a
-       * colour per source where the colour is one, dealt over the rows as
-       * currently arranged (`sourceColorDeal`); under an attribute, its
-       * values' from the same palette.
-       */
-      rowColorDealFor(setting: RowColorEntries): RowColorDeal<Source> {
-        return setting.field === 'name'
-          ? sourceColorDeal(
-              orderRowsByDomain(self.expandedRows, self.rowOrder),
-              sourcePalette(self.colorEncoding),
-              self.scoreGradientPaints,
-            )
-          : fieldColorDeal(
-              setting,
-              orderRowsByDomain(self.expandedRows, self.baseRowDomain),
-              set1,
-            )
-      },
-      /**
-       * #getter
-       * `TreeSidebarMixin`'s getter: Each row is offered where it can turn the
-       * palette on, over several subtracks with no gradient taking the colour.
-       */
-      get rowPaletteDeals(): boolean {
-        return self.discoveredRows.length > 1 && !self.scoreGradientPaints
+      get rowColorPaintsMarks(): boolean {
+        const { value, field } = self.colorSetting
+        return !self.scoreGradientPaints && value === undefined && !field
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * `TreeSidebarMixin`'s getter, reading Each row only while the palette
-       * deals each subtrack a colour, so the dialog opens on what is drawn.
+       * Whether each source paints both sides of the cut in its own colour,
+       * as sources sharing one plot do while the palette deals them.
        */
-      get rowColorChoice(): string {
-        return rowColorChoiceOf(
-          self.rowColorSetting,
-          self.rowPaletteDeals &&
-            sourcePalette(self.colorEncoding) !== undefined,
-        )
+      get perSource(): boolean {
+        return self.rowPaletteDeals
       },
-    }))
-    .views(self => ({
       get sources(): Source[] {
         return buildSources(
           self.editableSources,
           self.rowFocus,
-          self.rowColorScale,
-          self.scoreGradientPaints,
-          self.rowColorSetting.field !== 'name',
+          self.resolvedRowColors,
+          self.identityChannel,
         )
       },
     }))
@@ -665,6 +596,7 @@ export default function stateModelFactory(
           ...self.sharedGpuProps(),
           sources: self.sources,
           rowLayout: self.isRowLayout,
+          perSource: self.perSource,
         }
       },
     }))
@@ -686,9 +618,7 @@ export default function stateModelFactory(
        * 2. **Does anything ELSE on the frame name the colors?** Overlay
        *    collapses every source onto one plot, so nothing does and the key is
        *    the only identification there has ever been — but it still has to
-       *    pass (3): overlay's row palette is `set1`, which wraps every nine
-       *    sources (`sourcesLogic.ts`), so 40 ungrouped overlay rows would draw
-       *    a 40-row key in nine repeating colors. A multi-row track names
+       *    pass (3): 40 overlay rows would draw a 40-row key. A multi-row track names
        *    its rows beside them — but only while they carry text
        *    (`rowLabelsCarryText`, asked of the drawing side rather than
        *    restated) AND is drawing them at all — `showRowLabels` off means
@@ -770,7 +700,7 @@ export default function stateModelFactory(
        * group or subtrack `focusLegendEntry` narrows to.
        */
       get colorScales(): ColorScale[] {
-        const { field, title } = self.colorSetting
+        const { title } = self.colorSetting
         const scales: ColorScale[] = []
         if (self.scoreColorScale) {
           scales.push({
@@ -785,7 +715,6 @@ export default function stateModelFactory(
           scales.push({
             kind: 'categorical',
             id: 'sources',
-            ...(field === 'source' && title !== undefined ? { title } : {}),
             focusesRows: true,
             entries: self.legendItems.map(({ label, color }) => ({
               value: label,
@@ -925,65 +854,6 @@ export default function stateModelFactory(
         )
       },
     }))
-    .actions(self => {
-      const {
-        applyRowEdits: superApplyRowEdits,
-        resetRowArrangement: superResetRowArrangement,
-      } = self
-      // The reader's own `color`, the switch behind "Color rows by → Each row",
-      // returned to whatever the display's base declares.
-      function clearPalette() {
-        self.setColor(baseDisplayConfig(self).color as Partial<ColorSetting>)
-      }
-      return {
-        /**
-         * #action
-         * `TreeSidebarMixin`'s action, plus the half of "a colour per subtrack"
-         * that lives on this display's own channel: the dialog writes the
-         * `rowColor` naming each row, and only `color: { field: 'source' }`
-         * makes the palette deal one.
-         *
-         * Two states where the switch is wrong and the row colour alone is
-         * right. Under a gradient it deals nothing to an ungrouped subtrack and
-         * takes the pair the fade runs on with it — four shipped CNV figures
-         * read that fade. Over one subtrack it makes the negative side take the
-         * positive colour, so a lone BigWig loses the red below its baseline.
-         */
-        applyRowEdits(rows: readonly Source[], rowColor?: RowColorSnapshot) {
-          superApplyRowEdits(rows, rowColor)
-          if (!rowColor) {
-            return
-          }
-          const byName =
-            (rowColor.field ?? 'name') === 'name' &&
-            rowColor.scale !== 'none' &&
-            rowColor.unknown === undefined
-          const wants = byName && self.rowPaletteDeals
-          const has = isPerSourceColor(self.colorSetting)
-          if (wants && !has) {
-            self.setColor(PER_SOURCE_COLOR)
-          } else if (
-            !wants &&
-            has &&
-            !isPerSourceColor(baseColorChannel(self))
-          ) {
-            clearPalette()
-          }
-        },
-        /**
-         * #action
-         * `TreeSidebarMixin`'s action, plus the same switch: "Clear custom
-         * settings" and "Reset row order" both come through here, and a colour
-         * a reader cannot get back off is worse than one they could not set.
-         */
-        resetRowArrangement() {
-          superResetRowArrangement()
-          if (isPerSourceColor(self.colorSetting)) {
-            clearPalette()
-          }
-        },
-      }
-    })
     .actions(self => ({
       fetchNeeded(needed: IndexedRegion[]) {
         const view = self.host

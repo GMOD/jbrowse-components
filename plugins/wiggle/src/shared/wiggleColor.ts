@@ -9,16 +9,9 @@ import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { MAX_WIGGLE_CUTS } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
-import {
-  SOURCE_FIELD,
-  WIGGLE_FIELD_PRESETS,
-} from './wiggleColorConfigSchema.ts'
+import { WIGGLE_FIELD_PRESETS } from './wiggleColorConfigSchema.ts'
 
-import type { SourcePalette } from '../LinearWiggleDisplay/sourcesLogic.ts'
-import type {
-  ColorSetting,
-  FieldColorEncoding,
-} from '@jbrowse/display-kit/colorConfigSchema'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 function lutColor(lut: Uint8Array, entry: number) {
   return `rgb(${lut[entry * 4]},${lut[entry * 4 + 1]},${lut[entry * 4 + 2]})`
@@ -45,14 +38,9 @@ export interface ResolvedWiggleColor {
   rampLut: Uint8Array | null
   /** The score at the ramp's middle stop; unset runs the ramp straight across the domain. */
   rampMid: number | undefined
-  /** Each source takes a palette entry of its own (`field: 'source'`). */
-  perSource: boolean
 }
 
-/**
- * A wiggle colour as it paints. Unset beside a field, the scale follows the
- * field: `source` is categorical, and `score` the bicolor cut.
- */
+/** A wiggle colour as it paints. Unset beside `score`, the scale is the bicolor cut. */
 export function wiggleColorEncoding(color: ColorSetting) {
   return colorEncodingOf(color, WIGGLE_FIELD_PRESETS)
 }
@@ -63,45 +51,14 @@ export function wiggleColorNotices(color: ColorSetting) {
 }
 
 /**
- * Whether the display paints this encoding: `source` through a categorical
- * scale, `score` through any other. The layers part into two sides of one
- * value, so a colour per score and a cut or ramp over subtrack names have
- * nothing to paint with.
- */
-function paints(encoding: FieldColorEncoding) {
-  return (
-    (encoding.field === SOURCE_FIELD) === (encoding.scale === 'categorical')
-  )
-}
-
-/**
  * The cuts a threshold over `score` declares, ascending, at most
  * `MAX_WIGGLE_CUTS`. Empty for any other encoding, and for a threshold naming
  * no cut, which parts at the `origin`.
  */
 export function declaredCuts(encoding: ReturnType<typeof wiggleColorEncoding>) {
-  return typeof encoding === 'object' &&
-    encoding.scale === 'threshold' &&
-    paints(encoding)
+  return typeof encoding === 'object' && encoding.scale === 'threshold'
     ? thresholdCuts(encoding.domain ?? []).slice(0, MAX_WIGGLE_CUTS)
     : []
-}
-
-/**
- * What a colour per source hands out: the sources its `domain` lists take its
- * `range` first. Undefined for any other encoding.
- */
-export function sourcePalette(
-  encoding: ReturnType<typeof wiggleColorEncoding>,
-): SourcePalette | undefined {
-  return typeof encoding === 'object' &&
-    encoding.scale === 'categorical' &&
-    paints(encoding)
-    ? {
-        domain: encoding.domain?.map(String) ?? [],
-        range: encoding.range ?? [],
-      }
-    : undefined
 }
 
 function solid(color: string, pivot: number): ResolvedWiggleColor {
@@ -113,7 +70,6 @@ function solid(color: string, pivot: number): ResolvedWiggleColor {
     innerColors: [],
     rampLut: null,
     rampMid: undefined,
-    perSource: false,
   }
 }
 
@@ -124,12 +80,9 @@ export function resolveWiggleColor(
   if (typeof encoding !== 'object') {
     return solid(encoding ?? WIGGLE_POS_COLOR_DEFAULT, origin)
   }
-  if (!paints(encoding)) {
-    return solid(MISCONFIGURED_COLOR, origin)
-  }
   switch (encoding.scale) {
     case 'categorical':
-      return { ...solid(WIGGLE_POS_COLOR_DEFAULT, origin), perSource: true }
+      return solid(MISCONFIGURED_COLOR, origin)
     case 'threshold': {
       const declared = declaredCuts(encoding)
       const cuts = declared.length > 0 ? declared : [origin]
@@ -144,7 +97,6 @@ export function resolveWiggleColor(
           .map((_, i) => range[i + 1] ?? NO_CATEGORY_COLOR),
         rampLut: null,
         rampMid: undefined,
-        perSource: false,
       }
     }
     case 'linear':
@@ -168,7 +120,6 @@ export function resolveWiggleColor(
         innerColors: [],
         rampLut,
         rampMid: domainMid,
-        perSource: false,
       }
     }
   }

@@ -287,7 +287,7 @@ const ROW_GETTERS = [
   'bandedSources',
   'sources',
   'dealtRowColors',
-  'rowColorScale',
+  'resolvedRowColors',
 ] as const
 
 /**

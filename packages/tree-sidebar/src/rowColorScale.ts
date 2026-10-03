@@ -1,42 +1,9 @@
-import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { dealRowColors } from '@jbrowse/display-kit/colorConfigSchema'
 
-/**
- * What a display's row palette deals: the values in the order they take
- * colours, the value each row takes its colour by (undefined for a row the
- * palette skips), and `dealRowColors`' entries and palette.
- */
-export interface RowColorDeal<S> {
-  order: readonly string[]
-  valueOf: (row: S) => string | undefined
-  domain: readonly string[]
-  range: readonly string[]
-  unknown?: string
-  palette: readonly string[]
-}
+import { otherName } from './arrangeRows.ts'
 
-const NONE: ReadonlyMap<string, string> = new Map()
-
-/**
- * The deal of `setting.field`'s values over `rows`, taken in the order given:
- * the values `setting.domain` lists take its `range`, and every other value
- * the next `palette` colour, first seen first.
- */
-export function fieldColorDeal<S extends { name: string }>(
-  { field, domain, range }: RowColorEntries,
-  rows: readonly S[],
-  palette: readonly string[] = categoricalPalette,
-): RowColorDeal<S> {
-  const valueOf = (row: S) =>
-    field === 'name' ? row.name : rowFieldValue(row, field)
-  return {
-    order: [...domain, ...rows.map(valueOf)],
-    valueOf,
-    domain,
-    range,
-    palette,
-  }
-}
+import type { RowAlias } from './arrangeRows.ts'
+import type { RowSource } from './types.ts'
 
 /** A `rowColor` object's field and the colours it pairs with that field's values. */
 export interface RowColorEntries {
@@ -45,39 +12,82 @@ export interface RowColorEntries {
   range: readonly string[]
 }
 
-/** The colour `deal` gives each value it deals. */
-export function dealtColors<S>(
-  deal: RowColorDeal<S> | undefined,
-): ReadonlyMap<string, string> {
-  return deal ? dealRowColors(deal.order, deal, deal.palette) : NONE
+/** What `dealtValueColors` reads of a `rowColor` object. */
+export interface RowColorDealSetting extends RowColorEntries {
+  scale?: string
+  unknown?: string
 }
 
-/** The colour each of `rows` takes by its value in `dealt`, by row name. */
-export function colorsByRow<S extends { name: string }>(
-  rows: readonly S[],
-  deal: RowColorDeal<S> | undefined,
-  dealt: ReadonlyMap<string, string>,
+const NONE: ReadonlyMap<string, string> = new Map()
+
+/**
+ * The colour `setting` gives each value of its field over `rowsOf()`, the
+ * rows in the base arrangement: its pairs, and the row palette dealt over the
+ * rest by `dealRowColors`. An attribute's values deal always, first seen
+ * first; a row name deals only while `namesDeal` or an `unknown` stands in for
+ * the palette, and a row with its own colour takes no turn. None under
+ * `scale: 'none'`, or for an attribute no row carries. Reads no row where only
+ * the pairs paint, so a reorder deals nothing again.
+ */
+export function dealtValueColors(
+  setting: RowColorDealSetting,
+  rowsOf: () => readonly RowSource[],
+  namesDeal: boolean,
 ): ReadonlyMap<string, string> {
-  if (!deal) {
+  const { field, scale, unknown } = setting
+  if (scale === 'none') {
     return NONE
   }
-  const byName = new Map<string, string>()
-  for (const row of rows) {
-    const value = deal.valueOf(row)
-    const color = value === undefined ? undefined : dealt.get(value)
-    if (color !== undefined) {
-      byName.set(row.name, color)
-    }
+  if (field === 'name') {
+    return dealRowColors(
+      namesDeal || unknown !== undefined
+        ? rowsOf()
+            .filter(row => row.color === undefined)
+            .map(row => row.name)
+        : [],
+      setting,
+    )
   }
-  return byName
+  const rows = rowsOf()
+  return rows.some(row => Object.hasOwn(row, field))
+    ? dealRowColors(
+        rows.map(row => rowFieldValue(row, field)),
+        setting,
+      )
+    : NONE
 }
 
-/** The colour `deal` gives each of `rows`, by row name. */
-export function rowColorScale<S extends { name: string }>(
-  rows: readonly S[],
-  deal: RowColorDeal<S> | undefined,
+/**
+ * Each row's colour, by name: what `dealt` gives its value of `field` (under
+ * `name`, its own entry, else its alias's), else its own `color`.
+ */
+export function resolveRowColors(
+  rows: readonly RowSource[],
+  field: string,
+  dealt: ReadonlyMap<string, string>,
+  alias: RowAlias | undefined,
 ): ReadonlyMap<string, string> {
-  return colorsByRow(rows, deal, dealtColors(deal))
+  const colors = new Map<string, string>()
+  const aliased = dealt.size > 0 ? alias : undefined
+  for (const row of rows) {
+    const color =
+      (field === 'name'
+        ? (dealt.get(row.name) ?? aliasColor(dealt, row.name, aliased))
+        : dealt.get(rowFieldValue(row, field))) ?? row.color
+    if (color !== undefined) {
+      colors.set(row.name, color)
+    }
+  }
+  return colors
+}
+
+function aliasColor(
+  dealt: ReadonlyMap<string, string>,
+  name: string,
+  alias: RowAlias | undefined,
+) {
+  const other = alias && otherName(alias, name)
+  return other === undefined ? undefined : dealt.get(other)
 }
 
 /** `field`'s value on `row`, `''` where the row has none of its own. */
@@ -86,13 +96,4 @@ export function rowFieldValue(row: object, field: string) {
     ? Reflect.get(row, field)
     : undefined
   return value === undefined || value === null ? '' : String(value)
-}
-
-/** The distinct `values`, the most frequent first and ties first seen first. */
-export function valuesByCount(values: readonly string[]) {
-  const counts = new Map<string, number>()
-  for (const value of values) {
-    counts.set(value, (counts.get(value) ?? 0) + 1)
-  }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
 }

@@ -438,6 +438,7 @@ function runEncodeScenario(fixture: SourceColumns[]) {
   const gpuProps: WiggleGpuProps = {
     sources: fixture.map(s => ({ name: s.name })),
     rowLayout: true,
+    perSource: false,
     origin: 0,
     wiggleColor: {
       posColor: WIGGLE_POS_COLOR_DEFAULT,
@@ -447,7 +448,6 @@ function runEncodeScenario(fixture: SourceColumns[]) {
       innerColors: [],
       rampLut: null,
       rampMid: undefined,
-      perSource: false,
     },
     effectiveSummaryScoreMode: 'avg',
     renderingType: 'xyplot',

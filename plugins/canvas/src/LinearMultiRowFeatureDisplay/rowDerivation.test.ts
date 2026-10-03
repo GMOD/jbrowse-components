@@ -148,7 +148,9 @@ async function clusterRun(display: Display, tree: string) {
   return partition
 }
 
-test('the rows sort, digits by magnitude, each dealt a palette entry', () => {
+// Each row has a lane of its own, so no palette deals the rows a colour, and
+// an unpaired row paints the default block colour.
+test('the rows sort, digits by magnitude, none dealt a colour', () => {
   expect(derived(loaded({}))).toMatchSnapshot()
 })
 
@@ -161,16 +163,16 @@ test('a declared order leads and the rest sort', () => {
   expect(derived(loaded({ domain: ['s10', 'mom'] }))).toMatchSnapshot()
 })
 
-test('a colour entry paints its row, the rest keep their palette entries', () => {
+test('a colour entry paints its row, the rest the default colour', () => {
   expect(derived(loaded({ colors: { mom: '#123456' } }))).toMatchSnapshot()
 })
 
-test('a color slot turns the palette off, a colour entry still paints', () => {
+test('a color slot paints the blocks, so a colour entry paints none', () => {
   const display = loaded({ colors: { dad: '#00ff00' } }, { color: 'steelblue' })
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('itemRgb turns the palette off', () => {
+test('itemRgb paints the blocks', () => {
   const display = loaded({}, {}, regionData(FAMILY, { usedItemRgb: true }))
   expect(derived(display)).toMatchSnapshot()
 })
@@ -215,7 +217,13 @@ test('colorRowLabels carries the painted colour, a group swatch winning', () => 
 })
 
 test('a focus hides rows without recolouring the kept ones', () => {
-  const display = loaded({})
+  const display = loaded(
+    {},
+    {
+      rowColor: 'group',
+      rowGroups: ROW_GROUPS.map(g => ({ ...g, color: '' })),
+    },
+  )
   display.setRowFocus(['mom', 's10'])
   expect(derived(display)).toMatchSnapshot()
   display.setRowFocus(undefined)

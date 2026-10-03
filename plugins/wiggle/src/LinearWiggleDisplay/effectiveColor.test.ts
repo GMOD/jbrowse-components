@@ -1,5 +1,3 @@
-import { set1 } from '@jbrowse/core/ui/colors'
-
 import { makeWiggleRenderState } from '../shared/wiggleComponentUtils.ts'
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { createTestEnvironment, makeSource } from './testEnv.ts'
@@ -26,19 +24,18 @@ test('a row per source defaults to the pos/neg pair about the origin', () => {
     cuts: [0],
     innerColors: [],
     rampLut: null,
-    perSource: false,
   })
 })
 
 test('one source in a shared plot keeps the pair, several take a colour each', () => {
-  expect(makeDisplay(['a'], false).wiggleColor.perSource).toBe(false)
-  expect(makeDisplay(['a', 'b'], false).wiggleColor.perSource).toBe(true)
+  expect(makeDisplay(['a'], false).perSource).toBe(false)
+  expect(makeDisplay(['a', 'b'], false).perSource).toBe(true)
 })
 
 test('a written colour wins over the layout, whatever it is', () => {
   const display = makeDisplay(['a', 'b'], false)
   display.setColor('green')
-  expect(display.wiggleColor.perSource).toBe(false)
+  expect(display.perSource).toBe(false)
   expect(display.wiggleColor.posColor).toBe('green')
 })
 
@@ -94,21 +91,19 @@ test('the plot reads back what was written', () => {
   expect(display.plot.color).toBe('green')
 })
 
-test('the colour reads the display’s two fields and refuses any other', () => {
+// A subtrack's colour is `rowColor`'s, so `source` is no colour field and
+// `categorical` no colour scale here.
+test('the colour reads score alone and refuses any other field or a categorical scale', () => {
   const display = makeDisplay(['a'], true)
-  expect(() => {
-    display.setColor({ field: 'pvalue', scale: 'threshold' })
-  }).toThrow()
-})
-
-test('categorical reads source alone, so over score it paints grey', () => {
-  const display = makeDisplay(['a', 'b'], false)
-  display.setColor({ field: 'score', scale: 'categorical' })
-  expect(display.wiggleColor).toMatchObject({
-    posColor: '#808080',
-    negColor: '#808080',
-    perSource: false,
-  })
+  for (const color of [
+    { field: 'pvalue', scale: 'threshold' },
+    { field: 'source' },
+    { field: 'score', scale: 'categorical' },
+  ] as const) {
+    expect(() => {
+      display.setColor(color)
+    }).toThrow()
+  }
 })
 
 test("a threshold key takes color's title and a label per interval", () => {
@@ -127,30 +122,6 @@ test("a threshold key takes color's title and a label per interval", () => {
     'loss',
     '≥ 2',
   ])
-})
-
-test('threshold reads score alone, so over source it paints grey and keys nothing', () => {
-  const display = makeDisplay(['a'], true)
-  display.setColor({ field: 'source', scale: 'threshold', domain: ['2'] })
-  expect(display.wiggleColor).toMatchObject({
-    posColor: '#808080',
-    negColor: '#808080',
-    perSource: false,
-  })
-  expect(display.colorScales.map(s => s.id)).not.toContain('threshold')
-})
-
-test('a colour per source hands out its range, the domain’s sources first', () => {
-  const display = makeDisplay(['a', 'b', 'c'], false)
-  display.setColor({ field: 'source', range: ['#ff0000', '#0000ff'] })
-  const colors = () => display.sources.map(s => s.color)
-  expect(colors()).toEqual(['#ff0000', '#0000ff', set1[0]])
-  display.setColor({
-    field: 'source',
-    domain: ['c'],
-    range: ['#ff0000', '#0000ff'],
-  })
-  expect(colors()).toEqual(['#0000ff', set1[0], '#ff0000'])
 })
 
 test('a threshold paints a band per cut, sorted as every threshold scale sorts them', () => {
@@ -259,7 +230,7 @@ test.each([
 test('a colour per source on xyplot draws no gradient key', () => {
   const display = scoredDisplay([{ name: 'a' }, { name: 'b' }])
   display.setRowLayout(false)
-  expect(display.wiggleColor.perSource).toBe(true)
+  expect(display.perSource).toBe(true)
   expect(display.domain).toBeDefined()
   expect(scoreKey(display)).toBeUndefined()
 })

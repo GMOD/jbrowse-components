@@ -104,11 +104,9 @@ export const paletteColors = {
  * The wide qualitative palette: every scheme above, in order, deduped and with
  * the neutrals dropped. ~40 entries.
  *
- * One list, because "give each row a distinct color" is one question this repo
- * answers in two places — the multi-row painter handing colors out by row
- * index, and the arrangement dialog's palette-by-attribute — and two lists
- * would mean a track's automatic colors and the colors it takes when a user
- * palettes it by hand were different palettes for no reason a reader could see.
+ * A feature's categorical colour deals from it; a row's deals from
+ * `rowPaletteColorAt`, which re-lights tableau10 rather than reaching for
+ * another scheme's hues.
  *
  * `tableau10` leads because its hues are the most evenly separated, so a track
  * with a handful of rows spends only that. The tail is what makes the 26
@@ -428,14 +426,29 @@ const PALETTE_LAP_TONES = [
   { lightnessShift: 0.18, chromaScale: 0.8 },
 ]
 
-/** The palette color for a chromosome at `position` in its assembly. */
-export function refNamePaletteColorAt(position: number) {
-  const hex = refNameColorHexes[position % refNameColorHexes.length]!
+// The colour at `position` in `hexes`, each lap past the end re-lit.
+function lapColorAt(hexes: readonly string[], position: number) {
+  const hex = hexes[position % hexes.length]!
   const lap =
     PALETTE_LAP_TONES[
-      Math.floor(position / refNameColorHexes.length) % PALETTE_LAP_TONES.length
+      Math.floor(position / hexes.length) % PALETTE_LAP_TONES.length
     ]
   return lap ? relight(hex, lap.lightnessShift, lap.chromaScale) : hex
+}
+
+/** The palette color for a chromosome at `position` in its assembly. */
+export function refNamePaletteColorAt(position: number) {
+  return lapColorAt(refNameColorHexes, position)
+}
+
+const rowColorHexes = tableau10.filter(hex => !NEUTRALS.has(hex))
+
+/**
+ * The colour the row palette deals the row or value at `position`: tableau10
+ * less its grey, then re-lit laps of it, as a karyotype's are.
+ */
+export function rowPaletteColorAt(position: number) {
+  return lapColorAt(rowColorHexes, position)
 }
 
 /**

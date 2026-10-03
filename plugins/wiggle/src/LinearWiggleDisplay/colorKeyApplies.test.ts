@@ -106,9 +106,13 @@ it('never applies to a single source', () => {
 })
 
 // Density spends `color` on the score ramp, so a row's identity colour is its
-// `labelColor` — which is where a grouped-but-uncoloured cohort's group palette
-// lands. The key has to draw the colour the rows actually are.
+// `labelColor` — which is where a grouped-but-uncoloured cohort's colour by
+// group lands. The key has to draw the colour the rows actually are.
 describe('density mode keys off the row identity colour', () => {
+  function byGroup(display: ReturnType<typeof makeDisplay>) {
+    display.applyRowEdits(display.editableSources, { field: 'group' })
+  }
+
   // no `color` of their own, which is what a MultiWiggleAdapter that sets
   // `group` and nothing else produces
   function groupedUncoloured(n: number, groups: number) {
@@ -121,6 +125,7 @@ describe('density mode keys off the row identity colour', () => {
   it('draws the swatches the rows are tinted with, not the pos colour', () => {
     const display = makeDisplay(groupedUncoloured(4390, 4), 620)
     display.setRenderingType('density')
+    byGroup(display)
     // the ramp still owns `color`; identity moved to labelColor
     expect(display.sources.every(s => !s.color)).toBe(true)
     const colors = display.legendItems.map(i => i.color)
@@ -146,11 +151,10 @@ describe('density mode keys off the row identity colour', () => {
     expect(display.overlayLegendApplies).toBe(false)
   })
 
-  // The mixed track: grouped subtracks always take a group palette entry, so
-  // they key; ungrouped ones take none and have no identity colour at all. They
-  // used to key in `posColor` — the ramp — which put swatches in the key for
-  // rows whose label boxes are the plain theme background.
-  it('keys the grouped rows and leaves the uncoloured ones out', () => {
+  // The mixed track: an ungrouped subtrack's group is '', a value the deal
+  // colours like any other, so it keys in that colour and never in
+  // `posColor`, the ramp.
+  it('keys the ungrouped rows in the colour of their empty group', () => {
     const display = makeDisplay(
       [
         ...groupedUncoloured(6, 3),
@@ -159,8 +163,16 @@ describe('density mode keys off the row identity colour', () => {
       40,
     )
     display.setRenderingType('density')
-    expect(display.sources.filter(s => !s.labelColor)).toHaveLength(2)
-    expect(display.legendItems.map(i => i.label)).toEqual(['g0', 'g1', 'g2'])
+    byGroup(display)
+    expect(display.sources.filter(s => !s.labelColor)).toHaveLength(0)
+    expect(display.legendItems.map(i => i.label)).toEqual([
+      'g0',
+      'g1',
+      'g2',
+      'ref0',
+      'ref1',
+    ])
+    expect(display.legendItems[3]!.color).toBe(display.legendItems[4]!.color)
     expect(
       display.legendItems.every(i => i.color !== display.wiggleColor.posColor),
     ).toBe(true)

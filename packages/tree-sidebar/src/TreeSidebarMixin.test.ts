@@ -3,7 +3,7 @@ import {
   getConf,
   setConf,
 } from '@jbrowse/core/configuration'
-import { categoricalPalette } from '@jbrowse/core/ui/colors'
+import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
@@ -280,73 +280,201 @@ describe('a dialog submit after a region adds a row', () => {
   })
 })
 
-// What the flip deals every display's palette by, before any display opts in:
-// the rowColor field's values over the base arrangement, the listed values
-// taking their range colour.
-describe('the default row palette', () => {
-  function makePalette(configuration: Record<string, unknown> = {}) {
-    return types
-      .compose(
-        'PaletteTreeDisplay',
-        TreeSidebarMixin(),
-        types.model({
-          type: types.literal('PaletteTreeDisplay'),
-          configuration: configSchema,
-        }),
-      )
-      .volatile(() => ({
-        rows: [
-          { name: 'a', group: 'x' },
-          { name: 'b', group: 'y' },
-          { name: 'c', group: 'x' },
-        ],
-      }))
-      .views(self => ({
-        get discoveredRows() {
-          return self.rows
-        },
-      }))
-      .create({ type: 'PaletteTreeDisplay', configuration })
-  }
+const p = rowPaletteColorAt
 
-  it('deals the unlisted rows the palette in the base arrangement', () => {
-    const display = makePalette({
-      rowColor: { domain: ['b'], range: ['#00f'] },
-    })
-    expect(Object.fromEntries(display.rowColorScale)).toEqual({
-      a: categoricalPalette[0],
-      b: '#00f',
-      c: categoricalPalette[1],
+interface TestRow {
+  name: string
+  group?: string
+  color?: string
+}
+
+const GROUPED: TestRow[] = [
+  { name: 'a', group: 'x' },
+  { name: 'b', group: 'y' },
+  { name: 'c', group: 'x' },
+]
+
+// A display over `rows`, sharing one panel where `shared` is set and its row
+// colours painting its marks unless `paintsMarks` is false.
+function makeRowDisplay(
+  configuration: Record<string, unknown> = {},
+  {
+    rows = GROUPED,
+    shared = false,
+    paintsMarks = true,
+  }: { rows?: TestRow[]; shared?: boolean; paintsMarks?: boolean } = {},
+) {
+  return types
+    .compose(
+      'RowColorTreeDisplay',
+      TreeSidebarMixin(),
+      types.model({
+        type: types.literal('RowColorTreeDisplay'),
+        configuration: configSchema,
+      }),
+    )
+    .volatile(() => ({ rows }))
+    .views(self => ({
+      get discoveredRows() {
+        return self.rows
+      },
+      get sharesPanel() {
+        return shared
+      },
+      get rowColorPaintsMarks() {
+        return paintsMarks
+      },
+    }))
+    .create({ type: 'RowColorTreeDisplay', configuration })
+}
+
+const colorsOf = (display: {
+  resolvedRowColors: ReadonlyMap<string, string>
+}) => Object.fromEntries(display.resolvedRowColors)
+
+describe('rowPaletteDeals', () => {
+  it.each([
+    [false, true, false],
+    [true, false, false],
+    [true, true, true],
+  ])(
+    'sharesPanel %s and rowColorPaintsMarks %s deal names: %s',
+    (shared, paintsMarks, deals) => {
+      const display = makeRowDisplay({}, { shared, paintsMarks })
+      expect(display.rowPaletteDeals).toBe(deals)
+      expect(display.resolvedRowColors.size).toBe(deals ? 3 : 0)
+    },
+  )
+})
+
+describe('resolvedRowColors', () => {
+  const OWN: TestRow[] = [
+    { name: 'a' },
+    { name: 'b', color: '#0b0b0b' },
+    { name: 'c' },
+    { name: 'd', color: '#0d0d0d' },
+  ]
+
+  it('takes a pair over the own colour, and the own colour over the palette', () => {
+    const display = makeRowDisplay(
+      { rowColor: { domain: ['d'], range: ['#00f'] } },
+      { rows: OWN, shared: true },
+    )
+    expect(colorsOf(display)).toEqual({
+      a: p(0),
+      b: '#0b0b0b',
+      c: p(1),
+      d: '#00f',
     })
   })
 
-  it('deals by another row attribute', () => {
-    const display = makePalette({ rowColor: 'group' })
-    expect(Object.fromEntries(display.rowColorScale)).toEqual({
-      a: categoricalPalette[0],
-      b: categoricalPalette[1],
-      c: categoricalPalette[0],
+  it('deals no name a turn to a row carrying its own colour', () => {
+    const display = makeRowDisplay({}, { rows: OWN, shared: true })
+    expect(Object.fromEntries(display.dealtRowColors)).toEqual({
+      a: p(0),
+      c: p(1),
     })
+  })
+
+  it('gives a row only its pair or its own colour where no panel is shared', () => {
+    const display = makeRowDisplay(
+      { rowColor: { domain: ['a'], range: ['#00f'] } },
+      { rows: OWN },
+    )
+    expect(colorsOf(display)).toEqual({
+      a: '#00f',
+      b: '#0b0b0b',
+      d: '#0d0d0d',
+    })
+  })
+
+  it("takes an attribute's colour over the own colour", () => {
+    const display = makeRowDisplay(
+      { rowColor: 'group' },
+      { rows: [{ name: 'a', group: 'x', color: '#0a0a0a' }, { name: 'b' }] },
+    )
+    expect(colorsOf(display)).toEqual({ a: p(0), b: p(1) })
+  })
+
+  it("leaves the own colour under scale: 'none'", () => {
+    const display = makeRowDisplay(
+      { rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] } },
+      { rows: OWN, shared: true },
+    )
+    expect(colorsOf(display)).toEqual({ b: '#0b0b0b', d: '#0d0d0d' })
+  })
+
+  it('deals nothing by an attribute no row carries', () => {
+    expect(makeRowDisplay({ rowColor: 'tissue' }).resolvedRowColors.size).toBe(
+      0,
+    )
+  })
+
+  it('paints an unknown colour on the unlisted rows without their own, shared panel or not', () => {
+    for (const shared of [false, true]) {
+      const display = makeRowDisplay(
+        { rowColor: { domain: ['a'], range: ['#00f'], unknown: '#ccc' } },
+        { rows: OWN, shared },
+      )
+      expect(colorsOf(display)).toEqual({
+        a: '#00f',
+        b: '#0b0b0b',
+        c: '#ccc',
+        d: '#0d0d0d',
+      })
+      expect(display.rowColorChoice).toBe('name')
+    }
+  })
+
+  it("paints only the pairs under unknown: ''", () => {
+    const display = makeRowDisplay(
+      { rowColor: { domain: ['a'], range: ['#00f'], unknown: '' } },
+      { rows: OWN, shared: true },
+    )
+    expect(colorsOf(display)).toEqual({
+      a: '#00f',
+      b: '#0b0b0b',
+      d: '#0d0d0d',
+    })
+  })
+})
+
+// The palette deals the rowColor field's values over the base arrangement,
+// the listed values taking their range colour.
+describe('the row palette', () => {
+  const makePalette = (configuration: Record<string, unknown> = {}) =>
+    makeRowDisplay(configuration, { shared: true })
+
+  it('deals the unlisted rows tableau10 in the base arrangement', () => {
+    const display = makePalette({
+      rowColor: { domain: ['b'], range: ['#00f'] },
+    })
+    expect(colorsOf(display)).toEqual({ a: p(0), b: '#00f', c: p(1) })
+  })
+
+  it('deals by another row attribute, first seen first', () => {
+    const display = makeRowDisplay({ rowColor: 'group' })
+    expect(colorsOf(display)).toEqual({ a: p(0), b: p(1), c: p(0) })
   })
 
   it('deals none under scale none', () => {
     const display = makePalette({ rowColor: { field: 'group', scale: 'none' } })
-    expect(display.rowColorScale.size).toBe(0)
+    expect(display.resolvedRowColors.size).toBe(0)
   })
 
   // Observed, as a display's paint path observes it: an unobserved computed
   // deals again on every read.
   it('keeps its identity across a reorder, a focus and a relabel', () => {
     const display = makePalette()
-    const stop = autorun(() => display.rowColorScale)
-    const palette = display.rowColorScale
+    const stop = autorun(() => display.resolvedRowColors)
+    const palette = display.resolvedRowColors
     display.setRowOrder([{ name: 'c' }, { name: 'b' }, { name: 'a' }])
     display.setRowFocus(['a'])
     display.applyRowEdits(
       display.editableSources.map(r => ({ ...r, label: r.name.toUpperCase() })),
     )
     expect(display.rowLabels).toEqual({ a: 'A', b: 'B', c: 'C' })
-    expect(display.rowColorScale).toBe(palette)
+    expect(display.resolvedRowColors).toBe(palette)
     stop()
   })
 
@@ -359,72 +487,15 @@ describe('the default row palette', () => {
       domain: ['y'],
       range: ['#abcdef'],
     })
-    expect(Object.fromEntries(preview)).toEqual({
-      x: categoricalPalette[0],
-      y: '#abcdef',
-    })
+    expect(Object.fromEntries(preview)).toEqual({ x: p(0), y: '#abcdef' })
   })
-})
-
-// `unknown` stands in for the palette a display deals, so a display dealing
-// none under `name` — MAF, marks, multi-sample variants — has nothing for it to
-// replace.
-it('unknown changes nothing on a display that deals no palette', () => {
-  const makeUndealt = (rowColor: Record<string, unknown>) =>
-    types
-      .compose(
-        'UndealtTreeDisplay',
-        TreeSidebarMixin(),
-        types.model({
-          type: types.literal('UndealtTreeDisplay'),
-          configuration: configSchema,
-        }),
-      )
-      .volatile(() => ({ rows: [{ name: 'a' }, { name: 'b' }] }))
-      .views(self => ({
-        get discoveredRows() {
-          return self.rows
-        },
-        rowColorDealFor() {
-          return undefined
-        },
-      }))
-      .create({ type: 'UndealtTreeDisplay', configuration: { rowColor } })
-  const pairs = { domain: ['b'], range: ['#00f'] }
-  const plain = makeUndealt(pairs)
-  const grey = makeUndealt({ ...pairs, unknown: '#ccc' })
-  expect(grey.rowColorScale).toEqual(plain.rowColorScale)
-  expect(Object.fromEntries(grey.rowColors)).toEqual({ b: '#00f' })
-  expect(grey.rowColors).toEqual(plain.rowColors)
 })
 
 // The dialog shows one `rowColor` object and submits it: a row's colour is
 // read only while the rows are coloured each their own.
 describe('a dialog submit of the row colours', () => {
-  function makeGrouped(configuration: Record<string, unknown> = {}) {
-    return types
-      .compose(
-        'GroupedTreeDisplay',
-        TreeSidebarMixin(),
-        types.model({
-          type: types.literal('GroupedTreeDisplay'),
-          configuration: configSchema,
-        }),
-      )
-      .volatile(() => ({
-        rows: [
-          { name: 'a', group: 'x' },
-          { name: 'b', group: 'y' },
-          { name: 'c', group: 'x' },
-        ],
-      }))
-      .views(self => ({
-        get discoveredRows() {
-          return self.rows
-        },
-      }))
-      .create({ type: 'GroupedTreeDisplay', configuration })
-  }
+  const makeGrouped = (configuration: Record<string, unknown> = {}) =>
+    makeRowDisplay(configuration, { shared: true })
   const recoloured = (display: ReturnType<typeof makeGrouped>) => {
     const [a, b, c] = display.editableSources
     return [a!, { ...b!, color: '#123456' }, c!]
@@ -432,10 +503,10 @@ describe('a dialog submit of the row colours', () => {
 
   it('reads no row colour while the rows are colored by an attribute', () => {
     const display = makeGrouped({ rowColor: 'group' })
-    const before = Object.fromEntries(display.rowColorScale)
+    const before = colorsOf(display)
     display.applyRowEdits(recoloured(display))
     expect(display.rowColorChoice).toBe('group')
-    expect(Object.fromEntries(display.rowColorScale)).toEqual(before)
+    expect(colorsOf(display)).toEqual(before)
   })
 
   it("writes an attribute's colors as the dialog shows them", () => {
@@ -445,15 +516,15 @@ describe('a dialog submit of the row colours', () => {
       domain: ['y'],
       range: ['#abcdef'],
     })
-    expect(display.rowColorScale.get('b')).toBe('#abcdef')
-    expect(display.rowColorScale.get('a')).toBe(categoricalPalette[0])
+    expect(display.resolvedRowColors.get('b')).toBe('#abcdef')
+    expect(display.resolvedRowColors.get('a')).toBe(p(0))
   })
 
   it('starts each row its own from the colors the dialog left on the rows', () => {
     const display = makeGrouped({ rowColor: 'group' })
     display.applyRowEdits(recoloured(display), { field: 'name' })
     expect(display.rowColorChoice).toBe('name')
-    expect(Object.fromEntries(display.rowColors)).toEqual({ b: '#123456' })
+    expect(Object.fromEntries(display.rowColorPairs)).toEqual({ b: '#123456' })
   })
 
   it("paints nothing under scale: 'none', its pairs kept for the way back", () => {
@@ -461,8 +532,8 @@ describe('a dialog submit of the row colours', () => {
       rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] },
     })
     expect(display.rowColorChoice).toBe('')
-    expect(display.rowColors.size).toBe(0)
-    expect(display.rowColorScale.size).toBe(0)
+    expect(display.rowColorPairs.size).toBe(0)
+    expect(display.resolvedRowColors.size).toBe(0)
   })
 
   it("paints only the values an unknown: '' lists", () => {
@@ -475,7 +546,7 @@ describe('a dialog submit of the row colours', () => {
       },
     })
     expect(display.rowColorChoice).toBe('group')
-    expect(Object.fromEntries(display.rowColorScale)).toEqual({ b: '#abcdef' })
+    expect(colorsOf(display)).toEqual({ b: '#abcdef' })
   })
 
   it('gives every value an unknown colour the pairs leave out', () => {
@@ -483,32 +554,28 @@ describe('a dialog submit of the row colours', () => {
       rowColor: { domain: ['b'], range: ['#00f'], unknown: '#ccc' },
     })
     expect(display.rowColorChoice).toBe('name')
-    expect(Object.fromEntries(display.rowColorScale)).toEqual({
-      a: '#ccc',
-      b: '#00f',
-      c: '#ccc',
-    })
+    expect(colorsOf(display)).toEqual({ a: '#ccc', b: '#00f', c: '#ccc' })
   })
 
   it('recolours one row under None and leaves the rest unpainted', () => {
     const display = makeGrouped({ rowColor: { scale: 'none' } })
     display.applyRowEdits(recoloured(display), { field: 'name', unknown: '' })
     expect(display.rowColorChoice).toBe('')
-    expect(Object.fromEntries(display.rowColors)).toEqual({ b: '#123456' })
-    expect(Object.fromEntries(display.rowColorScale)).toEqual({ b: '#123456' })
+    expect(Object.fromEntries(display.rowColorPairs)).toEqual({ b: '#123456' })
+    expect(colorsOf(display)).toEqual({ b: '#123456' })
   })
 
   it('keeps the colours set on rows when Each row turns into None', () => {
     const display = makeGrouped({
       rowColor: { domain: ['b'], range: ['#00f'] },
     })
-    expect(display.rowColorScale.size).toBe(3)
+    expect(display.resolvedRowColors.size).toBe(3)
     display.applyRowEdits(display.editableSources, {
       field: 'name',
       unknown: '',
     })
     expect(display.rowColorChoice).toBe('')
-    expect(Object.fromEntries(display.rowColorScale)).toEqual({ b: '#00f' })
+    expect(colorsOf(display)).toEqual({ b: '#00f' })
   })
 
   it('clears a row colour under None', () => {
@@ -523,7 +590,7 @@ describe('a dialog submit of the row colours', () => {
       { field: 'name', unknown: '' },
     )
     expect(display.rowColorChoice).toBe('')
-    expect(display.rowColors.size).toBe(0)
+    expect(display.rowColorPairs.size).toBe(0)
   })
 
   it('a submit with no colour object keeps a parked object', () => {
@@ -547,11 +614,7 @@ describe('a dialog submit of the row colours', () => {
       display.editableSources.map(r => ({ ...r, label: r.name.toUpperCase() })),
     )
     expect(display.rowColorSetting.unknown).toBe('#ccc')
-    expect(Object.fromEntries(display.rowColorScale)).toEqual({
-      a: '#ccc',
-      b: '#00f',
-      c: '#ccc',
-    })
+    expect(colorsOf(display)).toEqual({ a: '#ccc', b: '#00f', c: '#ccc' })
   })
 
   it('counts None as custom, and a reset deals the palette again', () => {
@@ -560,11 +623,11 @@ describe('a dialog submit of the row colours', () => {
       field: 'name',
       unknown: '',
     })
-    expect(display.rowColorScale.size).toBe(0)
+    expect(display.resolvedRowColors.size).toBe(0)
     expect(display.rowStylingIsCustom).toBe(true)
     display.resetRowArrangement()
     expect(display.rowColorSetting.unknown).toBeUndefined()
-    expect(display.rowColorScale.size).toBe(3)
+    expect(display.resolvedRowColors.size).toBe(3)
   })
 
   it('counts a value recolour as custom, and a reset keeps the color by', () => {
@@ -579,7 +642,7 @@ describe('a dialog submit of the row colours', () => {
     expect(display.rowStylingIsCustom).toBe(true)
     display.resetRowArrangement()
     expect(display.rowColorChoice).toBe('group')
-    expect(display.rowColorScale.get('b')).toBe(categoricalPalette[1])
+    expect(display.resolvedRowColors.get('b')).toBe(p(1))
   })
 
   it('writes nothing on a submit that changes nothing', () => {

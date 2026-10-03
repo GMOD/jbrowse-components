@@ -55,12 +55,12 @@ test('a recolour is custom until a reset returns the declared colours', () => {
   const display = loaded(DECLARED)
   const [a, b, ...rest] = display.editableSources
   display.applyRowEdits([a!, { ...b!, color: '#f00' }, ...rest])
-  expect(display.rowColors.get('b')).toBe('#f00')
+  expect(display.rowColorPairs.get('b')).toBe('#f00')
   expect(display.rowStylingIsCustom).toBe(true)
   expect(display.rowArrangementIsCustom).toBe(true)
 
   display.resetRowArrangement()
-  expect(Object.fromEntries(display.rowColors)).toEqual({
+  expect(Object.fromEntries(display.rowColorPairs)).toEqual({
     c: '#0f0',
     a: '#00f',
   })
@@ -71,7 +71,7 @@ test('a colour the painters cannot parse is left out', () => {
   const display = loaded({})
   const [a, ...rest] = display.editableSources
   display.applyRowEdits([{ ...a!, color: 'reddish' }, ...rest])
-  expect(display.rowColors.size).toBe(0)
+  expect(display.rowColorPairs.size).toBe(0)
 })
 
 test('the unanswered row stores a label only once it is renamed', () => {
@@ -97,7 +97,7 @@ test('a submit over a window holding a fraction of the rows leaves the rest stan
   const [a, b] = display.editableSources
   display.applyRowEdits([b!, { ...a!, color: '#f00' }])
   expect(display.configuration.rowColor.domain).toEqual(['c', 'a'])
-  expect(Object.fromEntries(display.rowColors)).toEqual({
+  expect(Object.fromEntries(display.rowColorPairs)).toEqual({
     c: '#0f0',
     a: '#f00',
   })
@@ -105,12 +105,26 @@ test('a submit over a window holding a fraction of the rows leaves the rest stan
   expect(display.rowDomain).toEqual(['b', 'a'])
 })
 
-// The palette is dealt over the base arrangement, once per change to the rows,
-// so no reorder, focus or relabel deals it again.
-test('the row palette keeps its identity across a reorder, a focus and a relabel', () => {
+// Each row has a lane of its own, so no palette deals the rows a colour by
+// name: with no pair, no `color` and no itemRgb every block draws in the
+// default colour, where a rainbow used to deal one per row.
+test('deals no rainbow: an unpaired row paints the default block colour', () => {
+  const display = loaded({})
+  expect(display.rowPaletteDeals).toBe(false)
+  expect(display.rowColorStringsByIndex).toEqual([
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+  ])
+})
+
+// The colours resolve over the base arrangement, once per change to the rows,
+// so no reorder, focus or relabel resolves them again.
+test('the row colours keep their identity across a reorder, a focus and a relabel', () => {
   const display = loaded(DECLARED)
-  const palette = display.rowColorScale
-  expect(palette.size).toBe(4)
+  const palette = display.resolvedRowColors
+  expect(palette.size).toBe(2)
   const [a, b, c, none] = display.editableSources
   display.setRowOrder([c!, b!, a!, none!])
   display.setRowFocus(['a', 'b'])
@@ -118,12 +132,12 @@ test('the row palette keeps its identity across a reorder, a focus and a relabel
     display.editableSources.map(s => ({ ...s, label: `${s.name}!` })),
   )
   expect(display.rowLabels).toMatchObject({ a: 'a!' })
-  expect(display.rowColorScale).toBe(palette)
+  expect(display.resolvedRowColors).toBe(palette)
 })
 
 test("scale: 'none' paints no palette and no pair", () => {
   const display = loaded({ rowColor: { ...DECLARED.rowColor, scale: 'none' } })
-  expect(display.rowColorScale.size).toBe(0)
+  expect(display.resolvedRowColors.size).toBe(0)
   expect(display.rowColorStringsByIndex).toEqual([
     undefined,
     undefined,
@@ -186,8 +200,8 @@ test('rowColor by group pairs its domain with its range', () => {
     rowColor: { field: 'group', domain: ['C'], range: ['#123456'] },
     ...GROUPS,
   })
-  expect(display.rowColorScale.get('c')).toBe('#123456')
-  expect(display.rowColorScale.get('a')).not.toBe('#123456')
+  expect(display.resolvedRowColors.get('c')).toBe('#123456')
+  expect(display.resolvedRowColors.get('a')).toBe('#e41a1c')
 })
 
 test('rowColor by group paints a group its rowGroups colour, the stripe alike', () => {

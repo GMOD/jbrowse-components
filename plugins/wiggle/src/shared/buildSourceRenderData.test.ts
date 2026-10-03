@@ -43,14 +43,12 @@ const baseColor: ResolvedWiggleColor = {
   innerColors: [],
   rampLut: null,
   rampMid: undefined,
-  perSource: false,
 }
-
-const perSourceColor: ResolvedWiggleColor = { ...baseColor, perSource: true }
 
 const baseGpuProps: WiggleGpuProps = {
   sources: [{ name: 'default' }],
   rowLayout: true,
+  perSource: false,
   wiggleColor: baseColor,
   origin: 0,
   effectiveSummaryScoreMode: 'avg',
@@ -149,7 +147,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
           { name: 'b', color: '#ff00ff' },
         ],
         rowLayout: false,
-        wiggleColor: perSourceColor,
+        perSource: true,
         effectiveSummaryScoreMode: 'whiskers',
         renderingType: 'linecenter',
       },
@@ -268,7 +266,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
           { name: 'b', color: '#ff00ff' },
         ],
         rowLayout: false,
-        wiggleColor: perSourceColor,
+        perSource: true,
       },
     )
     expect(layers.map(l => l.rowIndex)).toEqual([0, 0])

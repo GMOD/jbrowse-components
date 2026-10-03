@@ -151,7 +151,6 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   IdentityChannel,
-  RowColorDeal,
   SvgSidebarProps,
   RowSource,
 } from '@jbrowse/tree-sidebar'
@@ -726,14 +725,6 @@ export default function stateModelFactory(
          */
         get identityChannel(): IdentityChannel {
           return 'labelColor'
-        },
-        /**
-         * #method
-         * `TreeSidebarMixin`'s hook: no row palette, since a species row
-         * takes its adapter's colour or none.
-         */
-        rowColorDealFor(): RowColorDeal<MafSource> | undefined {
-          return undefined
         },
         /**
          * #getter

@@ -24,13 +24,16 @@ export interface PlotColorLine {
   reason?: string
 }
 
-export function plotColorLine(resolved: ResolvedWiggleColor): PlotColorLine {
+export function plotColorLine(
+  resolved: ResolvedWiggleColor,
+  perSource: boolean,
+): PlotColorLine {
   const line = {
     above: resolved.posColor,
     below: resolved.negColor,
     cut: resolved.pivot,
   }
-  if (resolved.perSource) {
+  if (perSource) {
     return { ...line, mode: 'hide' }
   }
   if (resolved.rampLut !== null) {

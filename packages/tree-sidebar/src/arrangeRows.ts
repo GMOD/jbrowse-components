@@ -31,7 +31,7 @@ export interface ArrangeRowsHooks {
 
 type OtherOf = (index: number) => string | undefined
 
-function otherName(alias: RowAlias, name: string) {
+export function otherName(alias: RowAlias, name: string) {
   const other = alias(name)
   return other === name ? undefined : other
 }

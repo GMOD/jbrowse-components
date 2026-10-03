@@ -39,6 +39,7 @@ export default observer(function WiggleSetColorDialog({
   model: TreeLayoutModel<Source> & {
     identityChannel: IdentityChannel
     wiggleColor: ResolvedWiggleColor
+    perSource: boolean
     colorSetting: ColorSetting
     discoveredRows: readonly unknown[]
     setColor: (color?: Partial<ColorSetting> | string) => void
@@ -49,7 +50,7 @@ export default observer(function WiggleSetColorDialog({
   // One subtrack has nothing to arrange, so the dialog is the plot's colours
   // and the buttons — which is the whole colour UI a plain BigWig needs.
   const showRows = model.discoveredRows.length > 1
-  const line = plotColorLine(model.wiggleColor)
+  const line = plotColorLine(model.wiggleColor, model.perSource)
   return (
     <SetColorDialog
       model={model}

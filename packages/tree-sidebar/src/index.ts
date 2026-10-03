@@ -60,13 +60,8 @@ export {
   validateClusterOrder,
 } from './clusterUtils.ts'
 export { orderRowsByDomain } from './arrangeRows.ts'
-export {
-  fieldColorDeal,
-  rowColorScale,
-  rowFieldValue,
-  valuesByCount,
-} from './rowColorScale.ts'
-export type { RowColorDeal, RowColorEntries } from './rowColorScale.ts'
+export { rowFieldValue } from './rowColorScale.ts'
+export type { RowColorEntries } from './rowColorScale.ts'
 export type {
   IdentityChannel,
   RowAlias,
@@ -89,12 +84,7 @@ export type { RpcMethodCaller } from './rpcMethodCaller.ts'
 export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { default as ClusterProgress } from './ClusterProgress.tsx'
 export { useClusterRun } from './useClusterRun.ts'
-export {
-  TreeSidebarMixin,
-  orderOver,
-  rowColorChoiceOf,
-  rowColorIsCustom,
-} from './TreeSidebarMixin.ts'
+export { TreeSidebarMixin, orderOver } from './TreeSidebarMixin.ts'
 export type {
   ClusterRun,
   RowColorSetting,

@@ -83,8 +83,11 @@ export interface WiggleGpuProps {
   // Whether the display puts its sources on rows, one each (`rows: 'source'`).
   // Otherwise every source is drawn on row 0 in one shared plot.
   rowLayout: boolean
-  // The `color` object resolved: the pair each mode partitions by, the value
-  // they part at, and whether each source paints its own colour on both sides.
+  // Whether each source paints its own colour on both sides of the cut, as
+  // sources sharing one plot do while their row colour paints it.
+  perSource: boolean
+  // The `color` object resolved: the pair each mode partitions by and the
+  // value they part at.
   wiggleColor: ResolvedWiggleColor
   // The score filled bars grow from, which orders a band's layers.
   origin: number
@@ -143,6 +146,7 @@ export function buildSourceRenderData(
   const {
     sources,
     rowLayout,
+    perSource,
     wiggleColor,
     origin,
     effectiveSummaryScoreMode: summaryScoreMode,
@@ -150,8 +154,8 @@ export function buildSourceRenderData(
     maxGapMultiple,
   } = gpuProps
   // A colour per source paints both sides of the cut in it, so the plot reads
-  // as one colour each; every other scale keeps the pair.
-  const { perSource, pivot, cuts } = wiggleColor
+  // as one colour each; otherwise the pair stands.
+  const { pivot, cuts } = wiggleColor
   const innerColors = wiggleColor.innerColors.map(c =>
     cssColorToNormalizedRgb(c),
   )

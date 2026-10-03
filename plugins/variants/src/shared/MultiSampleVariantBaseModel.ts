@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import {
   canonicalizeViewRefName,
   getNotificationSink,
@@ -52,8 +51,6 @@ import {
   focusRowGroup,
   keptRows,
   loadedRegionIndexAt,
-  rowFieldValue,
-  valuesByCount,
 } from '@jbrowse/tree-sidebar'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
@@ -97,9 +94,7 @@ import type {
   IdentityChannel,
   RowAlias,
   RowBanding,
-  RowColorDeal,
   SvgSidebarProps,
-  RowColorEntries,
 } from '@jbrowse/tree-sidebar'
 
 type CellDataMode = CellDataResult['mode']
@@ -107,45 +102,6 @@ type CellDataMode = CellDataResult['mode']
 type VariantHoverFields = Record<string, unknown> & {
   genotype: string
   name: string
-}
-
-// The `rowColor` attribute's palette, its values ranked by how many adapter
-// rows carry each. Ranked over the drawn rows instead, a subtree focus or the
-// haplotype expansion would re-rank the values and recolor everything left on
-// screen. `undefined` is "nothing to color by": no attribute painting, or one
-// no source carries.
-export function attributeColorDeal<S extends Source>(
-  field: string,
-  entries: { domain: readonly string[]; range: readonly string[] },
-  sources: readonly Source[],
-): RowColorDeal<S> | undefined {
-  if (!field || !sources.some(source => field in source)) {
-    return undefined
-  }
-  const valueOf = (row: object) => rowFieldValue(row, field)
-  return {
-    order: valuesByCount(sources.map(valueOf)),
-    valueOf,
-    domain: entries.domain,
-    range: entries.range,
-    palette: categoricalPalette,
-  }
-}
-
-// Paint the palette onto the rows being drawn. The tint lands on `labelColor`,
-// the channel tree-sidebar draws a row's label in: these displays paint their
-// cells by genotype, so a row has no `color` of its own to spend.
-//
-// **The palette wins over whatever the row already carried**, a `samplesTsv`
-// `color` column. See the class docstring for why.
-export function applyAttributeColors<S extends Source>(
-  rows: S[],
-  colors: ReadonlyMap<string, string>,
-): S[] {
-  return rows.map(s => ({
-    ...s,
-    labelColor: colors.get(s.name) ?? s.labelColor,
-  }))
 }
 
 // One spelling of "the config names an attribute the metadata doesn't have", for
@@ -938,18 +894,12 @@ export default function MultiSampleVariantBaseModelF(
         },
 
         /**
-         * #method
-         * `TreeSidebarMixin`'s hook: the attribute's palette
-         * (`attributeColorDeal`), none while `setting` names no attribute.
+         * #getter
+         * `TreeSidebarMixin`'s hook: never, since the cells paint by genotype
+         * and a row's colour tints only its label.
          */
-        rowColorDealFor(
-          setting: RowColorEntries,
-        ): RowColorDeal<ProcessedSource> | undefined {
-          return attributeColorDeal(
-            setting.field === 'name' ? '' : setting.field,
-            setting,
-            self.adapterSamples ?? [],
-          )
+        get rowColorPaintsMarks(): boolean {
+          return false
         },
         /**
          * #getter
@@ -1031,8 +981,9 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
-         * The display rows: `bandedSources` tinted by the `rowColor` palette.
-         * A cross-band drag snaps back while the facet is on.
+         * The display rows: `bandedSources`, each label tinted by its
+         * `resolvedRowColors` colour. A cross-band drag snaps back while the
+         * facet is on.
          *
          * **Resolved — an array, never `undefined`**, which is the shared
          * spelling across the row displays. `adapterSamples` and `sourcesBase`
@@ -1044,8 +995,13 @@ export default function MultiSampleVariantBaseModelF(
          */
         get sources(): ProcessedSource[] {
           const rows = self.bandedSources
-          const colors = self.rowColorScale
-          return colors.size ? applyAttributeColors(rows, colors) : rows
+          const colors = self.resolvedRowColors
+          return colors.size
+            ? rows.map(s => ({
+                ...s,
+                labelColor: colors.get(s.name) ?? s.labelColor,
+              }))
+            : rows
         },
       }))
       .views(self => ({

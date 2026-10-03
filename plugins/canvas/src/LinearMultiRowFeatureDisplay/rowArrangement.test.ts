@@ -130,7 +130,7 @@ describe('repartitioning', () => {
     expect(display.hierarchy).toBeUndefined()
     expect(display.hiddenCategories).toEqual([])
     expect(display.rowDomain).toEqual(['b', 'a'])
-    expect(display.rowColors.get('b')).toBe('#00f')
+    expect(display.rowColorPairs.get('b')).toBe('#00f')
     expect(display.rowTree).toBe('(b,a);')
   })
 

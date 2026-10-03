@@ -1,5 +1,3 @@
-import { categoricalPalette } from '@jbrowse/core/ui/colors'
-
 import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
@@ -42,12 +40,13 @@ it('leaves the labels untinted until asked', () => {
   ])
 })
 
-it('tints each label with the color its own row is painted in', () => {
+// The rows have a lane each, so no palette deals them a colour by name.
+it('tints no label where nothing gives its row a colour', () => {
   const display = makeDisplay(rows(['mom', 'dad']), { colorRowLabels: true })
   expect(display.labelSources.map(s => s.name)).toEqual(['dad', 'mom'])
   expect(display.labelSources.map(s => s.labelColor)).toEqual([
-    categoricalPalette[0],
-    categoricalPalette[1],
+    undefined,
+    undefined,
   ])
 })
 
@@ -75,33 +74,36 @@ it('follows the same precedence the blocks follow', () => {
   })
   expect(display.labelSources.map(s => s.labelColor)).toEqual([
     'blue',
-    categoricalPalette[1],
+    undefined,
   ])
 })
 
 // rowGroups spends the same label box and was asked for by name, so this
-// derived tint yields. Its band pulls `mom` to the front while the palette
-// still indexes the unbanded order.
+// derived tint yields. Its band pulls `mom` to the front.
 it('yields the label box to a rowGroups color', () => {
   const display = makeDisplay(rows(['mom', 'dad']), {
     colorRowLabels: true,
     rowGroups: [{ match: '^mom$', group: 'Parents', color: '#e41a1c' }],
+    rowColor: { domain: ['mom', 'dad'], range: ['blue', 'green'] },
     facet: 'group',
   })
   expect(display.labelSources.map(s => s.name)).toEqual(['mom', 'dad'])
   expect(display.labelSources.map(s => s.labelColor)).toEqual([
     '#e41a1c',
-    categoricalPalette[0],
+    'green',
   ])
 })
 
-// An itemRgb painting has no one color per row, so the toggle does nothing.
-it('tints nothing in per-feature color mode', () => {
+// Under an itemRgb painting a row's colour paints no block, and still tints
+// its label.
+it('tints the label with a pair the blocks do not paint', () => {
   const display = makeDisplay(rows(['mom', 'dad'], true), {
     colorRowLabels: true,
+    rowColor: { domain: ['dad'], range: ['blue'] },
   })
+  expect(display.rowColorStringsByIndex).toEqual([undefined, undefined])
   expect(display.labelSources.map(s => s.labelColor)).toEqual([
-    undefined,
+    'blue',
     undefined,
   ])
 })

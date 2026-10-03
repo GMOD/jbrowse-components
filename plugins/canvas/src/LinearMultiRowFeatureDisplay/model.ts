@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
-import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import {
   assembleLocString,
   getPaletteHost,
@@ -43,9 +42,7 @@ import {
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
-  fieldColorDeal,
   focusRowGroup,
-  orderRowsByDomain,
   resetRowOrderMenuItems,
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
@@ -89,7 +86,6 @@ import {
   groupColorEntries,
   orderRowValues,
   recolorRowGroups,
-  resolveRowColorStrings,
   tagRowGroups,
 } from './rowSources.ts'
 import {
@@ -132,7 +128,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { RowTable } from '@jbrowse/render-core/marks'
 import type {
   RowBanding,
-  RowColorDeal,
   RowColorEntries,
   RowSource,
   SvgSidebarProps,
@@ -386,31 +381,13 @@ export default function stateModelFactory(
         },
         /**
          * #method
-         * `TreeSidebarMixin`'s hook, dealt over the rows in the base
-         * arrangement: under `name` a palette colour per row, a row with a
-         * `rowColor` entry still taking its turn; under any other field a
-         * colour per value, a `rowGroups` group `setting.domain` leaves out
-         * taking its own colour where it has one.
+         * `TreeSidebarMixin`'s hook: under `group`, a `rowGroups` group
+         * `setting.domain` leaves out takes its own colour where it has one.
          */
-        rowColorDealFor(setting: RowColorEntries): RowColorDeal<RowSource> {
-          const rows = orderRowsByDomain(self.expandedRows, self.baseRowDomain)
-          return setting.field === 'name'
-            ? {
-                order: rows.map(s => s.name),
-                valueOf: s => s.name,
-                domain: [],
-                range: [],
-                palette: categoricalPalette,
-              }
-            : fieldColorDeal(
-                setting.field === 'group'
-                  ? {
-                      field: 'group',
-                      ...groupColorEntries(self.rowGroups, setting),
-                    }
-                  : setting,
-                rows,
-              )
+        rowColorEntriesFor(setting: RowColorEntries) {
+          return setting.field === 'group'
+            ? groupColorEntries(self.rowGroups, setting)
+            : setting
         },
         /**
          * #getter
@@ -431,6 +408,16 @@ export default function stateModelFactory(
           return [...self.drawnRegionData.values()].some(
             data => data.usedItemRgb,
           )
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: a row's colour paints its blocks while
+         * nothing else colours them: no `color` value or field, and no itemRgb
+         * in the file.
+         */
+        get rowColorPaintsMarks(): boolean {
+          const { value, field } = self.workerColor
+          return value === undefined && !field && !this.usedItemRgb
         },
         /**
          * #getter
@@ -526,26 +513,19 @@ export default function stateModelFactory(
       get rowIndexByValue(): Map<string, number> {
         return new Map(self.sources.map((s, i) => [s.name, i] as const))
       },
-      /**
-       * #getter
-       * The row palette, while nothing else colours the features: no `color`
-       * value or field, and no itemRgb in the file.
-       */
-      get dealtRowPalette() {
-        const { value, field } = self.workerColor
-        return value === undefined && !field && !self.usedItemRgb
-          ? self.rowColorScale
-          : undefined
-      },
     }))
     .views(self => ({
       /**
        * #getter
        * Per-row CSS color by display row, `undefined` where the row has none
-       * and the feature's own color paints instead.
+       * or `rowColorPaintsMarks` is off, and the feature's own color paints
+       * instead.
        */
       get rowColorStringsByIndex(): (string | undefined)[] {
-        return resolveRowColorStrings(self.sources, self.dealtRowPalette)
+        const colors = self.rowColorPaintsMarks
+          ? self.resolvedRowColors
+          : undefined
+        return self.sources.map(s => colors?.get(s.name))
       },
     }))
     .views(self => ({
@@ -561,16 +541,16 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The rows as the sidebar draws them, with each row's painted color
-       * carried into `labelColor` when `colorRowLabels` is on. A `rowGroups`
-       * `labelColor` wins, and per-feature color mode is a no-op.
+       * The rows as the sidebar draws them, with each row's colour carried
+       * into `labelColor` when `colorRowLabels` is on, whether or not it
+       * paints the blocks. A `rowGroups` `labelColor` wins.
        */
       get labelSources(): RowSource[] {
-        const colors = self.rowColorStringsByIndex
+        const colors = self.resolvedRowColors
         return self.colorRowLabels
-          ? self.sources.map((s, i) => ({
+          ? self.sources.map(s => ({
               ...s,
-              labelColor: s.labelColor ?? colors[i],
+              labelColor: s.labelColor ?? colors.get(s.name),
             }))
           : self.sources
       },
@@ -868,11 +848,12 @@ export default function stateModelFactory(
       // in name order, since the structural comparer walks a Set in insertion
       // order and a reorder would move its identity.
       const overriddenRows = stableIdentityComputed(() => {
-        const rows = self.editableSources
-        const colors = resolveRowColorStrings(rows, self.dealtRowPalette)
+        const colors = self.rowColorPaintsMarks
+          ? self.resolvedRowColors
+          : undefined
         return new Set(
-          rows
-            .filter((_, i) => colors[i] !== undefined)
+          self.editableSources
+            .filter(s => colors?.has(s.name))
             .map(s => s.name)
             .sort(),
         )

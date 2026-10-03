@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { paletteColors, rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { compareStructural } from 'mobx'
 
 import {
@@ -175,11 +176,22 @@ describe('colorForValue', () => {
 })
 
 describe('dealRowColors', () => {
-  const PALETTE = ['p0', 'p1', 'p2']
+  const [p0, p1, p2] = [0, 1, 2].map(rowPaletteColorAt)
   const deal = (
     order: string[],
     entries: { domain: string[]; range: string[]; unknown?: string },
-  ) => Object.fromEntries(dealRowColors(order, entries, PALETTE))
+  ) => Object.fromEntries(dealRowColors(order, entries))
+
+  it('deals tableau10 less its grey, then re-lit laps of it rather than wrapping', () => {
+    const order = Array.from({ length: 28 }, (_, i) => `v${i}`)
+    const colors = [...dealRowColors(order, { domain: [], range: [] }).values()]
+    expect(colors.slice(0, 9)).toEqual(
+      paletteColors.tableau10.filter(hex => hex !== '#bab0ab'),
+    )
+    expect(new Set(colors.slice(0, 27)).size).toBe(27)
+    expect(colors[9]).not.toBe(colors[0])
+    expect(colors[27]).toBe(colors[0])
+  })
 
   it("deals nothing past the pairs under unknown: '', the spares unread", () => {
     expect(
@@ -201,30 +213,26 @@ describe('dealRowColors', () => {
     ).toEqual({ a: '#ccc', b: '#00f', c: '#ccc' })
   })
 
-  it('deals the palette in first-seen order and wraps it', () => {
-    expect(deal(['a', 'b', 'a', 'c', 'd'], { domain: [], range: [] })).toEqual({
-      a: 'p0',
-      b: 'p1',
-      c: 'p2',
-      d: 'p0',
+  it('deals the palette in first-seen order', () => {
+    expect(deal(['a', 'b', 'a', 'c'], { domain: [], range: [] })).toEqual({
+      a: p0,
+      b: p1,
+      c: p2,
     })
   })
 
   it('pairs a listed value with its range colour, which takes no turn', () => {
     expect(deal(['a', 'b', 'c'], { domain: ['b'], range: ['#00f'] })).toEqual({
-      a: 'p0',
+      a: p0,
       b: '#00f',
-      c: 'p1',
+      c: p1,
     })
   })
 
-  it('spends the range past the domain before the palette, wrapping only the palette', () => {
+  it('spends the range past the domain before the palette', () => {
     expect(
-      deal(['a', 'b', 'c', 'd', 'e'], { domain: [], range: ['r0', 'r1'] }),
-    ).toEqual({ a: 'r0', b: 'r1', c: 'p0', d: 'p1', e: 'p2' })
-    expect(
-      deal(['a', 'b', 'c', 'd', 'e', 'f'], { domain: [], range: ['r0'] }),
-    ).toEqual({ a: 'r0', b: 'p0', c: 'p1', d: 'p2', e: 'p0', f: 'p1' })
+      deal(['a', 'b', 'c', 'd'], { domain: [], range: ['r0', 'r1'] }),
+    ).toEqual({ a: 'r0', b: 'r1', c: p0, d: p1 })
   })
 })
 

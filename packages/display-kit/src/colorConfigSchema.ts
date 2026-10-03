@@ -2,7 +2,7 @@ import {
   ConfigurationSchema,
   isCallbackValue,
 } from '@jbrowse/core/configuration'
-import { paletteFromSpec } from '@jbrowse/core/ui/colors'
+import { paletteFromSpec, rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { categoricalField, keyNames } from '@jbrowse/core/util/categoricalField'
 import {
   CATEGORICAL_FIELD_PRESETS,
@@ -231,18 +231,25 @@ export function pairedColorsOf({
 }
 
 // A capture run sets `window.jbrowseRowPalette` before the app loads, to a
-// palette name or a comma-separated colour list, and every row palette deals
-// from it in place of the display's own.
+// palette name or a comma-separated colour list, and every row deal wraps
+// through it in place of the row palette.
 const dealtPaletteOverride = paletteFromSpec(
   (globalThis as { jbrowseRowPalette?: unknown }).jbrowseRowPalette,
 )
 
+function deckColorAt(position: number) {
+  return dealtPaletteOverride
+    ? dealtPaletteOverride[position % dealtPaletteOverride.length]!
+    : rowPaletteColorAt(position)
+}
+
 /**
- * A colour for every value in `order`: a value `domain` lists takes its
- * `range` entry, and every other value, first seen first, takes the next entry
- * of one cursor over the `range` entries past the domain and then `palette`,
- * which wraps. A set `unknown` takes the cursor's place: every other value
- * takes it, or none where it is `''`.
+ * A colour for every value in `order`, as d3's ordinal scale over the row
+ * palette deals them: a value `domain` lists takes its `range` entry, and
+ * every other value, first seen first, takes the next entry of one cursor over
+ * the `range` entries past the domain and then `rowPaletteColorAt`. A set
+ * `unknown` takes the cursor's place: every other value takes it, or none
+ * where it is `''`.
  */
 export function dealRowColors(
   order: Iterable<string>,
@@ -251,7 +258,6 @@ export function dealRowColors(
     range: readonly string[]
     unknown?: string
   },
-  palette: readonly string[],
 ): ReadonlyMap<string, string> {
   const colors = new Map(pairedColorsOf(entries))
   const { unknown } = entries
@@ -266,18 +272,13 @@ export function dealRowColors(
     return colors
   }
   const spare = entries.range.slice(entries.domain.length)
-  const deck = dealtPaletteOverride ?? palette
   let next = 0
   for (const value of order) {
     if (!colors.has(value)) {
-      const color =
-        next < spare.length
-          ? spare[next]
-          : deck[(next - spare.length) % deck.length]
-      if (color === undefined) {
-        break
-      }
-      colors.set(value, color)
+      colors.set(
+        value,
+        next < spare.length ? spare[next]! : deckColorAt(next - spare.length),
+      )
       next++
     }
   }

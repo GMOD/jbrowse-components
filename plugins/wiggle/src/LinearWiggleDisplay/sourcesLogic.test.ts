@@ -1,209 +1,43 @@
-import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
-import { rowColorScale } from '@jbrowse/tree-sidebar'
+import { buildSources } from './sourcesLogic.ts'
 
-import { buildSources as build, sourceColorDeal } from './sourcesLogic.ts'
+import type { Source } from '../util.ts'
 
-import type { SourcePalette } from './sourcesLogic.ts'
-import type { SourceInfo } from '@jbrowse/wiggle-core'
-
-const PER_SOURCE = { domain: [], range: [] }
-
-const adapter = (count: number): SourceInfo[] =>
-  Array.from({ length: count }, (_, i) => ({ name: `source_${i}` }))
-
-// Each list stands in for the display's `editableSources`, whose arrangement is
-// tree-sidebar's (`arrangeRows.test.ts`); what's left here is the colour
-// synthesis that is wiggle's, dealt as `TreeSidebarMixin` deals it.
-function buildSources(
-  editable: SourceInfo[],
-  kept: string[] | undefined,
-  palette: SourcePalette | undefined,
-  gradientPaints: boolean,
-) {
-  const deal = sourceColorDeal(editable, palette, gradientPaints)
-  return build(editable, kept, rowColorScale(editable, deal), gradientPaints)
-}
+// Each list stands in for the display's `editableSources` and each map for its
+// `resolvedRowColors`, both tree-sidebar's; what's left here is where wiggle
+// lands a row's colour.
+const editable: Source[] = [
+  { name: 'a', color: '#0a0a0a', labelColor: '#a0a0a0' },
+  { name: 'b' },
+  { name: 'c', labelColor: '#c0c0c0' },
+]
+const resolved = new Map([
+  ['a', '#0a0a0a'],
+  ['b', '#0000ff'],
+])
 
 describe('buildSources', () => {
-  it('synthesizes overlay palette only in overlay mode', () => {
-    const editable = adapter(3)
-    const overlay = buildSources(editable, undefined, PER_SOURCE, false)
-    expect(overlay.map(s => s.color)).toEqual([
-      overlayColors[0],
-      overlayColors[1],
-      overlayColors[2],
-    ])
-    const rows = buildSources(editable, undefined, undefined, false)
-    expect(rows.every(s => s.color === undefined)).toBe(true)
-  })
-
-  it('preserves explicit colors over palette synthesis in overlay mode', () => {
-    const editable = [
-      { name: 'a', color: '#ff0000' },
-      { name: 'b' },
-      { name: 'c', color: '#00ff00' },
-    ]
-    const out = buildSources(editable, undefined, PER_SOURCE, false)
-    expect(out[0]!.color).toBe('#ff0000')
-    expect(out[1]!.color).toBe(overlayColors[1])
-    expect(out[2]!.color).toBe('#00ff00')
-  })
-
-  it('wraps the overlay palette modulo palette length', () => {
-    const n = overlayColors.length
-    const out = buildSources(adapter(n + 2), undefined, PER_SOURCE, false)
-    expect(out[n]!.color).toBe(overlayColors[0])
-    expect(out[n + 1]!.color).toBe(overlayColors[1])
-  })
-
-  it('keeps each overlay palette color across a subtree filter', () => {
-    const editable = adapter(12)
-    const unfiltered = buildSources(editable, undefined, PER_SOURCE, false)
-    const out = buildSources(
-      editable,
-      ['source_0', 'source_5'],
-      PER_SOURCE,
-      false,
-    )
-    expect(out.map(s => s.name)).toEqual(['source_0', 'source_5'])
-    expect(out[0]!.color).toBe(unfiltered[0]!.color)
-    expect(out[1]!.color).toBe(unfiltered[5]!.color)
-  })
-
-  it('keeps each group color across a subtree filter', () => {
-    const editable = [
-      { name: 'a', group: 'g1' },
-      { name: 'b', group: 'g2' },
-      { name: 'c', group: 'g3' },
-    ]
-    const unfiltered = buildSources(editable, undefined, undefined, false)
-    const out = buildSources(editable, ['c'], undefined, false)
-    expect(out[0]!.color).toBe(unfiltered[2]!.color)
-  })
-
-  it('an arranged colour survives through to sources view', () => {
-    const editable: SourceInfo[] = [
-      { name: 'a', color: '#0000ff' },
-      { name: 'b' },
-    ]
-    const out = buildSources(editable, undefined, undefined, false)
-    expect(out[0]!.color).toBe('#0000ff')
-    expect(out[1]!.color).toBeUndefined()
-  })
-
-  it('an arranged colour survives through overlay synthesis too', () => {
-    const editable: SourceInfo[] = [
-      { name: 'a', color: '#0000ff' },
-      { name: 'b' },
-    ]
-    const out = buildSources(editable, undefined, PER_SOURCE, false)
-    expect(out[0]!.color).toBe('#0000ff')
-    // 'b' had no explicit color, so palette synthesizes by its index
-    expect(out[1]!.color).toBe(overlayColors[1])
-  })
-
-  it('assigns same color to sources sharing a group, with a row each or not', () => {
-    const editable = [
-      { name: 'a', group: 'tumor' },
-      { name: 'b', group: 'normal' },
-      { name: 'c', group: 'tumor' },
-    ]
-    for (const perSource of [false, true]) {
-      const out = buildSources(
-        editable,
-        undefined,
-        perSource ? PER_SOURCE : undefined,
-        false,
-      )
-      // 'a' and 'c' share 'tumor' → same color
-      expect(out[0]!.color).toBe(out[2]!.color)
-      // 'b' is 'normal' → different color from 'tumor'
-      expect(out[1]!.color).not.toBe(out[0]!.color)
-    }
-  })
-
-  // A MultiWiggleAdapter where only some subadapters set `group`. Both palettes
-  // used to index from 0, so the first group and the first ungrouped row came
-  // out the same color — two different things one hue, in the plot and in the
-  // legend naming it.
-  it('never reuses a group color for an ungrouped row in overlay mode', () => {
-    const editable = [
-      { name: 'a' },
-      { name: 'b', group: 'tumor' },
-      { name: 'c' },
-      { name: 'd', group: 'normal' },
-    ]
-    const out = buildSources(editable, undefined, PER_SOURCE, false)
-    expect(new Set(out.map(s => s.color)).size).toBe(4)
-    // groups take the head of the palette, ungrouped rows continue past them
-    expect(out[1]!.color).toBe(overlayColors[0])
-    expect(out[3]!.color).toBe(overlayColors[1])
-    expect(out[0]!.color).toBe(overlayColors[2])
-    expect(out[2]!.color).toBe(overlayColors[3])
-  })
-
-  // The split leaves an all-ungrouped track exactly where it was: no groups
-  // means the row range starts at 0, which is the source index.
-  it('leaves the ungrouped palette at the source index when nothing is grouped', () => {
-    const out = buildSources(adapter(3), undefined, PER_SOURCE, false)
-    expect(out.map(s => s.color)).toEqual([
-      overlayColors[0],
-      overlayColors[1],
-      overlayColors[2],
+  it('lands each row its resolved colour on the plot, none where it has none', () => {
+    const out = buildSources(editable, undefined, resolved, 'color')
+    expect(out.map(s => s.color)).toEqual(['#0a0a0a', '#0000ff', undefined])
+    expect(out.map(s => s.labelColor)).toEqual([
+      '#a0a0a0',
+      undefined,
+      '#c0c0c0',
     ])
   })
 
-  it('explicit color takes priority over group color', () => {
-    const editable = [{ name: 'a', color: '#ff0000', group: 'tumor' }]
-    const out = buildSources(editable, undefined, undefined, false)
-    expect(out[0]!.color).toBe('#ff0000')
+  it('lands it on the label tint, leaving the plot its own colour', () => {
+    const out = buildSources(editable, undefined, resolved, 'labelColor')
+    expect(out.map(s => s.color)).toEqual(['#0a0a0a', undefined, undefined])
+    expect(out.map(s => s.labelColor)).toEqual([
+      '#0a0a0a',
+      '#0000ff',
+      '#c0c0c0',
+    ])
   })
 
-  // In density `color` IS the score ramp, so a group's identity hue there would
-  // replace the pos/neg scale rather than sit beside it. It goes to the row
-  // label instead, matching where the Set Color dialog writes in this mode.
-  it('routes a group color to labelColor in density mode, leaving the ramp alone', () => {
-    const editable = [
-      { name: 'a', group: 'PUR' },
-      { name: 'b', group: 'YRI' },
-      { name: 'c', group: 'PUR' },
-    ]
-    const out = buildSources(editable, undefined, undefined, true)
-    for (const s of out) {
-      expect(s.color).toBeUndefined()
-    }
-    expect(out[0]!.labelColor).toBe(out[2]!.labelColor)
-    expect(out[1]!.labelColor).not.toBe(out[0]!.labelColor)
-  })
-
-  it('keeps an explicitly set color in density mode', () => {
-    const editable = [{ name: 'a', color: '#ff0000', group: 'PUR' }]
-    const out = buildSources(editable, undefined, undefined, true)
-    expect(out[0]!.color).toBe('#ff0000')
-    expect(out[0]!.labelColor).toBeDefined()
-  })
-
-  // The row label is the key to the rows, so where the source ships its own
-  // color -- which is what the density ramp paints the row with -- the label has
-  // to be that color rather than the group palette's entry for its group.
-  it('labels a density row with the source color rather than the group palette', () => {
-    const editable = [
-      { name: 'a', color: '#8c564b', group: 'Monocyte' },
-      { name: 'b', color: '#e377c2', group: 'Monocyte' },
-      { name: 'c', group: 'Platelet' },
-    ]
-    const out = buildSources(editable, undefined, undefined, true)
-    expect(out[0]!.labelColor).toBe('#8c564b')
-    // two cell types inside one group keep their own colors rather than
-    // collapsing to the group's
-    expect(out[1]!.labelColor).toBe('#e377c2')
-    // no color of its own, so the group palette still fills it in
-    expect(out[2]!.labelColor).toBe(overlayColors[1])
-  })
-
-  it('keeps an explicitly set labelColor over the group color', () => {
-    const editable = [{ name: 'a', labelColor: '#00ff00', group: 'PUR' }]
-    const out = buildSources(editable, undefined, undefined, true)
-    expect(out[0]!.labelColor).toBe('#00ff00')
+  it('narrows to the focus without recolouring the kept rows', () => {
+    const out = buildSources(editable, ['b'], resolved, 'color')
+    expect(out).toEqual([{ name: 'b', color: '#0000ff' }])
   })
 })

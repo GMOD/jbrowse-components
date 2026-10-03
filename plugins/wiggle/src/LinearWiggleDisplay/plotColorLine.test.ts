@@ -38,17 +38,21 @@ function makeDisplay({
   return display
 }
 
+function lineOf(display: ReturnType<typeof makeDisplay>) {
+  return plotColorLine(display.wiggleColor, display.perSource)
+}
+
 // The whole contract in one call: read the line, write it back unchanged, and
 // the colours the plot paints have not moved.
 function roundTrips(display: ReturnType<typeof makeDisplay>) {
-  const before = plotColorLine(display.wiggleColor)
+  const before = lineOf(display)
   display.setColor(plotColorEdit(display.colorSetting, before))
-  return { before, after: plotColorLine(display.wiggleColor) }
+  return { before, after: lineOf(display) }
 }
 
 describe('what the line reads out', () => {
   it('shows the pair the layout paints where nothing is written', () => {
-    expect(plotColorLine(makeDisplay().wiggleColor)).toEqual({
+    expect(lineOf(makeDisplay())).toEqual({
       above: WIGGLE_POS_COLOR_DEFAULT,
       below: WIGGLE_NEG_COLOR_DEFAULT,
       cut: 0,
@@ -57,9 +61,12 @@ describe('what the line reads out', () => {
   })
 
   it('shows one colour twice for a constant, which is what a flat plot is', () => {
-    expect(
-      plotColorLine(makeDisplay({ color: '#C8B414' }).wiggleColor),
-    ).toEqual({ above: '#C8B414', below: '#C8B414', cut: 0, mode: 'edit' })
+    expect(lineOf(makeDisplay({ color: '#C8B414' }))).toEqual({
+      above: '#C8B414',
+      below: '#C8B414',
+      cut: 0,
+      mode: 'edit',
+    })
   })
 
   it('reads a threshold pair out in the order the range holds it', () => {
@@ -71,7 +78,7 @@ describe('what the line reads out', () => {
       },
     })
 
-    expect(plotColorLine(display.wiggleColor)).toMatchObject({
+    expect(lineOf(display)).toMatchObject({
       above: '#b2182b',
       below: '#2166ac',
       mode: 'edit',
@@ -81,13 +88,13 @@ describe('what the line reads out', () => {
   // The cut follows the origin until a domain names one, so the line has to
   // say where the colour actually changes rather than print a zero.
   it('names the origin as the cut where the domain declares none', () => {
-    expect(plotColorLine(makeDisplay({ origin: 2 }).wiggleColor).cut).toBe(2)
+    expect(lineOf(makeDisplay({ origin: 2 })).cut).toBe(2)
     expect(
-      plotColorLine(
+      lineOf(
         makeDisplay({
           origin: 2,
           color: { field: 'score', scale: 'threshold', domain: ['5'] },
-        }).wiggleColor,
+        }),
       ).cut,
     ).toBe(5)
   })
@@ -105,7 +112,7 @@ describe('what the line reads out', () => {
     })
 
     expect(display.scoreGradientPaints).toBe(true)
-    expect(plotColorLine(display.wiggleColor)).toMatchObject({
+    expect(lineOf(display)).toMatchObject({
       above: '#b2182b',
       mode: 'edit',
     })
@@ -118,7 +125,7 @@ describe('what the line declines to edit, and why', () => {
       color: { field: 'score', scale: 'linear', scheme: 'viridis' },
     })
 
-    expect(plotColorLine(display.wiggleColor)).toMatchObject({
+    expect(lineOf(display)).toMatchObject({
       mode: 'read',
       reason: 'a gradient paints this plot',
     })
@@ -127,8 +134,8 @@ describe('what the line declines to edit, and why', () => {
   it('hides itself where a colour per subtrack paints', () => {
     const display = makeDisplay({ rows: false })
 
-    expect(display.wiggleColor.perSource).toBe(true)
-    expect(plotColorLine(display.wiggleColor).mode).toBe('hide')
+    expect(display.perSource).toBe(true)
+    expect(lineOf(display).mode).toBe('hide')
   })
 
   // Two swatches cannot say four bands, and writing them would drop the two in
@@ -144,7 +151,7 @@ describe('what the line declines to edit, and why', () => {
     })
 
     expect(display.wiggleColor.cuts).toHaveLength(3)
-    expect(plotColorLine(display.wiggleColor)).toMatchObject({
+    expect(lineOf(display)).toMatchObject({
       mode: 'read',
       reason: '3 cuts, a colour each',
     })
@@ -196,7 +203,7 @@ describe('what a swatch writes', () => {
 
     display.setColor(written)
     display.setOrigin(3)
-    expect(plotColorLine(display.wiggleColor).cut).toBe(3)
+    expect(lineOf(display).cut).toBe(3)
   })
 
   it("keeps the key's title and labels", () => {

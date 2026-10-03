@@ -355,9 +355,9 @@ describe('featureAt', () => {
       expect(display.featureAt(150, 75)?.id).toBe('b1')
     })
 
-    it('keeps a feature on a row painting its own color override', () => {
-      // The row paints the override, which the legend never lists, so a baked
-      // color matching a hidden category must not hide it.
+    it('hides a feature on a row whose colour paints no block under itemRgb', () => {
+      // itemRgb paints the blocks, so a row's colour tints only its label and
+      // the baked colour of a hidden category hides the feature on every row.
       const { display } = twoRowDisplay(
         region(
           [
@@ -392,7 +392,7 @@ describe('featureAt', () => {
       display.applyRowEdits([{ name: 'a', color: 'green' }, { name: 'b' }])
       display.toggleCategory(['cat1'])
 
-      expect(display.featureAt(150, 10)?.id).toBe('a1')
+      expect(display.featureAt(150, 10)).toBeUndefined()
       expect(display.featureAt(150, 75)).toBeUndefined()
     })
   })

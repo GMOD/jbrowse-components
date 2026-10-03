@@ -106,25 +106,11 @@ export function applyRowGroupColors(
   return compiled.length
     ? sources.map(s => {
         const hit = rowGroupOf(compiled, s.name)
-        return hit && s.labelColor === undefined
+        return hit?.color && s.labelColor === undefined
           ? { ...s, labelColor: hit.color }
           : s
       })
     : sources
-}
-
-/**
- * The one place "color a whole row" is decided, in CSS rather than ABGR because
- * the sidebar label is tinted with the same color its row paints in: a row's
- * `rowColor` entry, else its `palette` colour, by name. An `undefined` row
- * falls through to the worker-baked per-feature `color`, so per-row and
- * per-feature coloring compose; an undefined palette deals none.
- */
-export function resolveRowColorStrings(
-  rows: RowSource[],
-  palette: ReadonlyMap<string, string> | undefined,
-): (string | undefined)[] {
-  return rows.map(s => s.color ?? palette?.get(s.name))
 }
 
 /**

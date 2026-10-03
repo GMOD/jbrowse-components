@@ -1,4 +1,4 @@
-import { set1 } from '@jbrowse/core/ui/colors'
+import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { waitFor } from '@testing-library/react'
 
 import { createTestEnvironment, makeSource } from './testEnv.ts'
@@ -77,19 +77,23 @@ test('overlay: adapter colours paint the plot', async () => {
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('overlay: a group palette, then a per-row palette for the ungrouped', async () => {
+// Several subtracks share the box, so the palette deals tableau10 by name; a
+// group is an attribute and colours nothing until rowColor names it.
+test('overlay: tableau10 by name, grouped or not', async () => {
   const display = await loaded(GROUPED, {})
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('overlay: a declared source palette leads the default one', async () => {
+test("overlay: rowColor's spare range leads the palette", async () => {
   const display = await loaded(GROUPED, {
-    color: { field: 'source', range: ['#111111', '#222222'] },
+    rowColor: { range: ['#111111', '#222222'] },
   })
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('rows, line: the adapter colour, then the group palette, then posColor', async () => {
+// Each subtrack has a row of its own, so it draws in the plot colour unless
+// rowColor or the file gives it one.
+test('rows, line: the adapter colour, else the plot colour', async () => {
   const display = await loaded(GROUPED, {
     ...rowsPerSource(),
     defaultRendering: 'line',
@@ -117,10 +121,10 @@ test('rows colored by an attribute take its values colors over their own', async
   expect(
     Object.fromEntries(display.sources.map(s => [s.name, s.color])),
   ).toEqual({
-    Grain1: set1[0],
-    Grain2: set1[0],
-    Grain3: set1[1],
-    Grain4: set1[2],
+    Grain1: rowPaletteColorAt(0),
+    Grain2: rowPaletteColorAt(0),
+    Grain3: rowPaletteColorAt(1),
+    Grain4: rowPaletteColorAt(2),
   })
 })
 
@@ -130,7 +134,10 @@ test('rows: the declared order leads and the rest keep adapter order', async () 
 })
 
 test('rows: a focus hides rows without recolouring the kept ones', async () => {
-  const display = await loaded(GROUPED, rowsPerSource())
+  const display = await loaded(GROUPED, {
+    ...rowsPerSource(),
+    rowColor: 'group',
+  })
   display.setRowFocus(['Grain2', 'Grain4'])
   expect(derived(display)).toMatchSnapshot()
   display.setRowFocus(undefined)
@@ -208,7 +215,7 @@ test('overlay, density: a dialog edit paints the plot', async () => {
   const [g1, ...rest] = display.editableSources
   display.applyRowEdits([{ ...g1!, color: '#00f' }, ...rest])
   expect(display.sources[0]).toMatchObject({ name: 'Grain1', color: '#00f' })
-  expect(display.rowColors.get('Grain1')).toBe('#00f')
+  expect(display.rowColorPairs.get('Grain1')).toBe('#00f')
 })
 
 // The Edit plot box writes rows whole: an order typed over what it shows keeps
@@ -262,5 +269,5 @@ test('rows: a reorder keeps the declared rowColor as it was', async () => {
   expect(display.rowStylingIsCustom).toBe(false)
 
   display.applyRowEdits([{ ...g2!, color: 'reddish' }, g1!, g3!, g4!])
-  expect(display.rowColors.has('Grain2')).toBe(false)
+  expect(display.rowColorPairs.has('Grain2')).toBe(false)
 })

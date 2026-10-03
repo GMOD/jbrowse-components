@@ -16,9 +16,8 @@ import {
 } from './clusterUtils.ts'
 import { maxNodeHeight } from './hierarchy.ts'
 import {
-  colorsByRow,
-  dealtColors,
-  fieldColorDeal,
+  dealtValueColors,
+  resolveRowColors,
   rowFieldValue,
 } from './rowColorScale.ts'
 import { rowEdits } from './rowEdits.ts'
@@ -33,7 +32,7 @@ import type {
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
-import type { RowColorDeal, RowColorEntries } from './rowColorScale.ts'
+import type { RowColorEntries } from './rowColorScale.ts'
 import type { RowSortSpec } from './rowSortAutorun.ts'
 import type { SvgSidebarProps } from './svgSidebarWidth.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
@@ -136,18 +135,16 @@ function sameRowColor(a: RowColorSnapshot, b: RowColorSnapshot) {
   )
 }
 
-/**
- * What the dialog and a menu show a `rowColor` object as: '' where nothing
- * deals the rows a colour each, else its field. `paletteDeals` is whether the
- * display deals each row a palette colour under `name`: `rowPaletteDeals`,
- * unless the display's palette has a switch of its own, as wiggle's does.
- */
-export function rowColorChoiceOf(
+// What the dialog and a menu show a `rowColor` object as: '' where nothing
+// deals the rows a colour each, else its field. Under `name` that is the
+// palette where `paletteDeals`, or a set `unknown` standing in for it.
+function rowColorChoiceOf(
   { field = 'name', scale, unknown }: RowColorSnapshot,
   paletteDeals: boolean,
 ) {
   return scale === 'none' ||
-    (field === 'name' && (unknown === '' || !paletteDeals))
+    (field === 'name' &&
+      (unknown === '' || (unknown === undefined && !paletteDeals)))
     ? ''
     : field
 }
@@ -165,26 +162,9 @@ function namePairs(color: RowColorSnapshot): Record<string, string> {
     : {}
 }
 
-// A deal under `setting`: none under `scale: 'none'`, and its `unknown` in
-// place of the palette where it sets one.
-function dealUnder<S>(
-  { scale, unknown }: RowColorSnapshot,
-  deal: RowColorDeal<S> | undefined,
-) {
-  return !deal || scale === 'none'
-    ? undefined
-    : unknown === undefined
-      ? deal
-      : { ...deal, unknown }
-}
-
-/**
- * Whether a `rowColor` object sets a row, or a value of the attribute it paints
- * by, a colour the base does not. Exported because a display whose reader can
- * reach a second colour setting from the same dialog — the quantitative
- * display's `color` — has to ask the same question about both.
- */
-export function rowColorIsCustom(
+// Whether a `rowColor` object sets a row, or a value of the attribute it paints
+// by, a colour the base does not.
+function rowColorIsCustom(
   live: RowColorSnapshot,
   base: RowColorSnapshot,
 ): boolean {
@@ -281,10 +261,12 @@ export interface ClusterRun {
  * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
  * `rows.labels` and tinted by the `rowColor` pairs on the `identityChannel`,
  * then `clusterableSources`, narrowed to the focus, then `bandedSources`,
- * stacked in the bands `rowBanding` names. The row palette is
- * `dealtRowColors`, dealt by `rowColorDeal` once per change to the deal, and
- * `rowColorScale` hands each row its value's colour, which each display
- * paints over those.
+ * stacked in the bands `rowBanding` names.
+ *
+ * A row's colour is `resolvedRowColors`: its `rowColor` entry (a `name` pair,
+ * or the colour `dealtRowColors` deals its attribute value), else its own
+ * `color`, else the row palette's colour by name where `rowPaletteDeals`.
+ * Each display paints it where its rows take a colour.
  *
  * Every arrangement write reaches the session at once rather than after the
  * track's 400 ms save, so a clustering run is one undo step and undoable the
@@ -576,7 +558,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * The colour a reader set on each named row: the `rowColor` pairs while
        * it paints by `name`, and none while it paints by another field.
        */
-      get rowColors(): ReadonlyMap<string, string> {
+      get rowColorPairs(): ReadonlyMap<string, string> {
         const setting = self.rowColorSetting
         return paintsNamePairs(setting) ? pairedColorsOf(setting) : new Map()
       },
@@ -601,23 +583,30 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     }))
     .views(self => ({
       /**
-       * #method
-       * Overridable hook: what the row palette deals under `setting`, the
-       * config's or one the arrangement dialog previews, or undefined to deal
-       * none. By default the values of `setting.field` over the rows in the
-       * base arrangement, the values its `domain` lists taking its `range`,
-       * and every other value the next palette colour, so no reorder, focus or
-       * relabel recolours a row.
+       * #getter
+       * Overridable hook: whether the rows share one panel, so nothing but
+       * colour tells them apart. False by default.
        */
-      rowColorDealFor(setting: RowColorEntries): RowColorDeal<S> | undefined {
-        return fieldColorDeal(
-          setting,
-          orderRowsByDomain(
-            self.expandedRows,
-            self.baseRowDomain,
-            self.rowAlias,
-          ),
-        )
+      get sharesPanel(): boolean {
+        return false
+      },
+      /**
+       * #getter
+       * Overridable hook: whether a row's colour paints its data marks, which
+       * holds while nothing else colours them. True by default.
+       */
+      get rowColorPaintsMarks(): boolean {
+        return true
+      },
+      /**
+       * #method
+       * Overridable hook: the pairs an attribute deal under `setting` seats
+       * first, `setting`'s own by default.
+       */
+      rowColorEntriesFor(
+        setting: RowColorEntries,
+      ): Pick<RowColorEntries, 'domain' | 'range'> {
+        return setting
       },
       /**
        * #getter
@@ -649,30 +638,38 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * What the row palette deals under the config's `rowColor`, none under
-       * `scale: 'none'`.
+       * Whether the palette deals each row a colour by name: only where the
+       * rows share one panel and their colour paints the marks.
        */
-      get rowColorDeal(): RowColorDeal<S> | undefined {
-        const setting = self.rowColorSetting
-        return dealUnder(setting, self.rowColorDealFor(setting))
-      },
-      /**
-       * #method
-       * The colour each value takes under `setting`, which the arrangement
-       * dialog shows before it writes the setting.
-       */
-      rowColorsFor(setting: RowColorSetting): ReadonlyMap<string, string> {
-        return dealtColors(dealUnder(setting, self.rowColorDealFor(setting)))
+      get rowPaletteDeals(): boolean {
+        return self.sharesPanel && self.rowColorPaintsMarks
       },
       /**
        * #getter
-       * Overridable: whether the palette deals the rows a colour each under
-       * `name`, so Each row differs from None, which sets `unknown: ''`.
+       * The rows the palette deals over: `expandedRows` in the base
+       * arrangement, so no reorder, focus or relabel recolours a row.
        */
-      get rowPaletteDeals(): boolean {
-        return (
-          self.rowColorDealFor({ field: 'name', domain: [], range: [] }) !==
-          undefined
+      get rowColorDealRows(): readonly S[] {
+        return orderRowsByDomain(
+          self.expandedRows,
+          self.baseRowDomain,
+          self.rowAlias,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * The colour each value takes under `setting` (`dealtValueColors`),
+       * which the arrangement dialog shows before it writes the setting.
+       */
+      rowColorsFor(setting: RowColorSetting): ReadonlyMap<string, string> {
+        return dealtValueColors(
+          setting.field === 'name'
+            ? setting
+            : { ...setting, ...self.rowColorEntriesFor(setting) },
+          () => self.rowColorDealRows,
+          self.rowPaletteDeals,
         )
       },
     }))
@@ -686,30 +683,28 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get rowColorChoice(): string {
         return rowColorChoiceOf(self.rowColorSetting, self.rowPaletteDeals)
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * The colour the row palette deals each value of `rowColorDeal`, dealt
-       * again only when the deal changes, never on a region arrival that
-       * leaves it alone.
+       * The colour each value of the config's `rowColor` field takes, listed
+       * pairs first and then in the order dealt.
        */
       get dealtRowColors(): ReadonlyMap<string, string> {
-        return dealtColors(self.rowColorDeal)
+        return self.rowColorsFor(self.rowColorSetting)
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * The colour the row palette deals each row, by name: each row's value
-       * looked up in `dealtRowColors`. Each display paints it where its
-       * palette lands, with its own precedence over a row's own colour.
+       * Each row's colour, by name: its `rowColor` entry, else its own
+       * `color`, else the palette's where `rowPaletteDeals`. The one answer
+       * every display paints a row's colour from.
        */
-      get rowColorScale(): ReadonlyMap<string, string> {
-        return colorsByRow(
+      get resolvedRowColors(): ReadonlyMap<string, string> {
+        return resolveRowColors(
           self.expandedRows,
-          self.rowColorDeal,
+          self.rowColorSetting.field,
           self.dealtRowColors,
+          self.rowAlias,
         )
       },
     }))
@@ -743,7 +738,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           {
             domain: self.rowOrder,
             labels: self.rowLabels,
-            rowColors: self.rowColors,
+            rowColors: self.rowColorPairs,
           },
           self,
         )
