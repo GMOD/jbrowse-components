@@ -32,11 +32,11 @@ thing — not ports onto `LinearMarkDisplay`.
 
 ## Open bugs and calls
 
-Landed 2026-10-03: `rowColor: { scale: 'none' }` deals no palette while the
+Landed 2026-10-03: `rowColor: { unknown: '' }` deals no palette while the
 values its `domain` lists still paint, so the dialog's None recolours one row
-and leaves the rest unpainted; and multi-row's `group` deal takes each group's
-`rowGroups[].color`, a group colour `rowColor` lists winning on the blocks and
-the stripe alike.
+and leaves the rest unpainted (ADR-164, amended); and multi-row's `group` deal
+takes each group's `rowGroups[].color`, a group colour `rowColor` lists winning
+on the blocks and the stripe alike.
 
 - **Multi-row `facet` on any field but `group` or `name` is a corner notice**:
   a row carries no other attribute, and banding by a feature attribute would
@@ -47,8 +47,8 @@ the stripe alike.
 A read-only Fable review on 2026-10-02, its code claims re-checked, read the
 row-colour calls and the `rowColor` name as one change: finish step 4's palette
 flip as a model change while keeping each display's palette, so almost no pixel
-moves (about 6 days). Its `scale: 'none'` half landed with the two bugs above;
-the rest retires parallel legend and colour paths and changes nothing a reader
+moves (about 6 days). Its "no palette, pairs still paint" half landed with the
+two bugs above as `unknown: ''`, not by bending `scale: 'none'`; the rest retires parallel legend and colour paths and changes nothing a reader
 sees, so it waits for step 5's hook seam, which touches the same code.
 
 - **A group is a row attribute**: delete `rowGroups[].color`, so a group's

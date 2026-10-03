@@ -48,7 +48,6 @@ export interface ValueColor {
  */
 export default function RowColorPanel({
   eachRow,
-  editsRows,
   fields,
   choice,
   values,
@@ -59,7 +58,6 @@ export default function RowColorPanel({
   onClearRows,
 }: {
   eachRow: boolean
-  editsRows: boolean
   fields: readonly string[]
   choice: string
   values: ValueColor[]
@@ -94,11 +92,7 @@ export default function RowColorPanel({
           ))}
         </ToggleButtonGroup>
       </div>
-      {!editsRows && choice === '' ? (
-        <Typography variant="body2" color="textSecondary">
-          Rows keep the colors the track's configuration gives them.
-        </Typography>
-      ) : choice === '' || choice === 'name' ? (
+      {choice === '' || choice === 'name' ? (
         <div className={classes.line}>
           <Typography variant="body2" color="textSecondary">
             {choice === ''

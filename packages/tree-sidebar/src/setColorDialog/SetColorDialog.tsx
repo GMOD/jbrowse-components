@@ -107,13 +107,22 @@ function entriesOf(setting: RowColorSetting): Entries {
     : { [setting.field]: Object.fromEntries(pairedColorsOf(setting)) }
 }
 
-function settingFor(field: string, entries: Entries): RowColorSetting {
+// The setting an attribute choice writes: its entries, and the `unknown` the
+// config sets on that same field.
+function settingFor(
+  field: string,
+  entries: Entries,
+  current: RowColorSetting,
+): RowColorSetting {
   const own = entries[field] ?? {}
   return {
     field,
     scale: undefined,
     domain: Object.keys(own),
     range: Object.values(own),
+    ...(current.field === field && current.unknown !== undefined
+      ? { unknown: current.unknown }
+      : {}),
   }
 }
 
@@ -179,7 +188,7 @@ export default observer(function SetColorDialog<
 
   const byField = choice !== '' && choice !== 'name' ? choice : undefined
   const fieldColors = byField
-    ? model.rowColorsFor(settingFor(byField, entries))
+    ? model.rowColorsFor(settingFor(byField, entries, model.rowColorSetting))
     : undefined
 
   // A color by the config names that the display does not offer, a column
@@ -192,30 +201,31 @@ export default observer(function SetColorDialog<
       ? model.rowColorFields
       : [...model.rowColorFields, current]
 
-  // A config colouring an attribute's listed values with no palette, which
-  // None keeps as written until another choice is picked.
-  const keepsAttribute =
-    choice === '' &&
-    model.rowColorChoice === '' &&
-    model.rowColorSetting.field !== 'name'
-
   // What the submit writes; under None and Each row the grid's row colours
-  // become the pairs.
+  // become the pairs, and None deals no palette where the display has one.
   const chosenRowColor = (): RowColorSnapshot => {
-    if (keepsAttribute) {
-      return model.rowColorSetting
-    }
     if (choice === '') {
-      return { field: 'name', scale: 'none' }
+      return model.rowPaletteDeals
+        ? { field: 'name', unknown: '' }
+        : { field: 'name' }
     }
     if (choice === 'name') {
       return { field: 'name' }
     }
-    const { domain, range } = settingFor(choice, entries)
-    return { field: choice, domain, range }
+    const { domain, range, unknown } = settingFor(
+      choice,
+      entries,
+      model.rowColorSetting,
+    )
+    return {
+      field: choice,
+      domain,
+      range,
+      ...(unknown === undefined ? {} : { unknown }),
+    }
   }
 
-  const colorsRows = choice === 'name' || (choice === '' && !keepsAttribute)
+  const colorsRows = choice === '' || choice === 'name'
 
   const paintRows = (colorOf: (row: S) => string | undefined) => {
     if (activeColumn) {
@@ -299,7 +309,6 @@ export default observer(function SetColorDialog<
               <>
                 <RowColorPanel
                   eachRow={model.rowPaletteDeals}
-                  editsRows={colorsRows}
                   fields={fields}
                   choice={choice}
                   values={
@@ -323,7 +332,7 @@ export default observer(function SetColorDialog<
                   }}
                   onStartFrom={field => {
                     const colors = model.rowColorsFor(
-                      settingFor(field, entries),
+                      settingFor(field, entries, model.rowColorSetting),
                     )
                     paintRows(row => colors.get(rowFieldValue(row, field)))
                   }}

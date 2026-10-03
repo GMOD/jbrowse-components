@@ -171,6 +171,21 @@ export function colorRangeSlot({
   } as const
 }
 
+/**
+ * #slot unknown
+ * What a value `domain` does not list takes, as d3's `ordinal.unknown`: unset,
+ * the next palette colour; a colour, that colour; `""`, no colour from this
+ * setting, so the value keeps its own. `range` entries past the domain go
+ * unread while it is set.
+ */
+export const colorUnknownSlot = {
+  unknown: {
+    type: 'maybeColor',
+    description:
+      'what a value domain does not list takes: unset the next palette colour, a colour that colour, "" none from this setting',
+  },
+} as const
+
 /** What a key names each `domain` value, one each in order. */
 export const colorLabelsSlot = {
   labels: {
@@ -225,14 +240,30 @@ const dealtPaletteOverride = paletteFromSpec(
  * A colour for every value in `order`: a value `domain` lists takes its
  * `range` entry, and every other value, first seen first, takes the next entry
  * of one cursor over the `range` entries past the domain and then `palette`,
- * which wraps.
+ * which wraps. A set `unknown` takes the cursor's place: every other value
+ * takes it, or none where it is `''`.
  */
 export function dealRowColors(
   order: Iterable<string>,
-  entries: { domain: readonly string[]; range: readonly string[] },
+  entries: {
+    domain: readonly string[]
+    range: readonly string[]
+    unknown?: string
+  },
   palette: readonly string[],
 ): ReadonlyMap<string, string> {
   const colors = new Map(pairedColorsOf(entries))
+  const { unknown } = entries
+  if (unknown !== undefined) {
+    if (unknown !== '') {
+      for (const value of order) {
+        if (!colors.has(value)) {
+          colors.set(value, unknown)
+        }
+      }
+    }
+    return colors
+  }
   const spare = entries.range.slice(entries.domain.length)
   const deck = dealtPaletteOverride ?? palette
   let next = 0

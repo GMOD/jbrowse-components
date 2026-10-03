@@ -424,22 +424,43 @@ describe('a dialog submit of the row colours', () => {
     expect(Object.fromEntries(display.rowColors)).toEqual({ b: '#123456' })
   })
 
-  it('paints only the values None lists, dealing the palette none', () => {
+  it("paints nothing under scale: 'none', its pairs kept for the way back", () => {
+    const display = makeGrouped({
+      rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] },
+    })
+    expect(display.rowColorChoice).toBe('')
+    expect(display.rowColors.size).toBe(0)
+    expect(display.rowColorScale.size).toBe(0)
+  })
+
+  it("paints only the values an unknown: '' lists", () => {
     const display = makeGrouped({
       rowColor: {
         field: 'group',
-        scale: 'none',
         domain: ['y'],
         range: ['#abcdef'],
+        unknown: '',
       },
     })
-    expect(display.rowColorChoice).toBe('')
+    expect(display.rowColorChoice).toBe('group')
     expect(Object.fromEntries(display.rowColorScale)).toEqual({ b: '#abcdef' })
+  })
+
+  it('gives every value an unknown colour the pairs leave out', () => {
+    const display = makeGrouped({
+      rowColor: { domain: ['b'], range: ['#00f'], unknown: '#ccc' },
+    })
+    expect(display.rowColorChoice).toBe('name')
+    expect(Object.fromEntries(display.rowColorScale)).toEqual({
+      a: '#ccc',
+      b: '#00f',
+      c: '#ccc',
+    })
   })
 
   it('recolours one row under None and leaves the rest unpainted', () => {
     const display = makeGrouped({ rowColor: { scale: 'none' } })
-    display.applyRowEdits(recoloured(display), { field: 'name', scale: 'none' })
+    display.applyRowEdits(recoloured(display), { field: 'name', unknown: '' })
     expect(display.rowColorChoice).toBe('')
     expect(Object.fromEntries(display.rowColors)).toEqual({ b: '#123456' })
     expect(Object.fromEntries(display.rowColorScale)).toEqual({ b: '#123456' })
@@ -452,7 +473,7 @@ describe('a dialog submit of the row colours', () => {
     expect(display.rowColorScale.size).toBe(3)
     display.applyRowEdits(display.editableSources, {
       field: 'name',
-      scale: 'none',
+      unknown: '',
     })
     expect(display.rowColorChoice).toBe('')
     expect(Object.fromEntries(display.rowColorScale)).toEqual({ b: '#00f' })
@@ -460,17 +481,52 @@ describe('a dialog submit of the row colours', () => {
 
   it('clears a row colour under None', () => {
     const display = makeGrouped({
-      rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] },
+      rowColor: { domain: ['b'], range: ['#00f'], unknown: '' },
     })
     expect(display.editableSources.find(r => r.name === 'b')!.color).toBe(
       '#00f',
     )
     display.applyRowEdits(
       display.editableSources.map(r => ({ ...r, color: undefined })),
-      { field: 'name', scale: 'none' },
+      { field: 'name', unknown: '' },
     )
     expect(display.rowColorChoice).toBe('')
     expect(display.rowColors.size).toBe(0)
+  })
+
+  it('leaves a field under scale: none parked on a None that colours no row', () => {
+    const parked = {
+      field: 'group',
+      scale: 'none',
+      domain: ['y'],
+      range: ['#abcdef'],
+    }
+    const display = makeGrouped({ rowColor: parked })
+    display.applyRowEdits(display.editableSources, {
+      field: 'name',
+      unknown: '',
+    })
+    expect(display.configuration.rowColor.field).toBe('group')
+    expect(display.configuration.rowColor.scale).toBe('none')
+    display.applyRowEdits(display.editableSources, {
+      field: 'group',
+      domain: ['y'],
+      range: ['#abcdef'],
+    })
+    expect(display.rowColorScale.get('b')).toBe('#abcdef')
+  })
+
+  it('counts None as custom, and a reset deals the palette again', () => {
+    const display = makeGrouped()
+    display.applyRowEdits(display.editableSources, {
+      field: 'name',
+      unknown: '',
+    })
+    expect(display.rowColorScale.size).toBe(0)
+    expect(display.rowStylingIsCustom).toBe(true)
+    display.resetRowArrangement()
+    expect(display.rowColorSetting.unknown).toBeUndefined()
+    expect(display.rowColorScale.size).toBe(3)
   })
 
   it('counts a value recolour as custom, and a reset keeps the color by', () => {

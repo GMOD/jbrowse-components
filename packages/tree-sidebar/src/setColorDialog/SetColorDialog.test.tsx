@@ -244,14 +244,38 @@ describe('colored by an attribute', () => {
     })
   })
 
-  test('None drops the attribute, its colors gone with the palette', () => {
+  test('None writes the rows with no palette, the attribute gone', () => {
     const model = byGroup()
     setup(model)
 
     fireEvent.click(screen.getByRole('button', { name: 'None' }))
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({ field: 'name', scale: 'none' })
+    expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '' })
+  })
+
+  test('an attribute keeps the unknown its config sets', () => {
+    const model = fakeModel({
+      editableSources: GROUPED,
+      rowColorFields: ['group'],
+      rowColorSetting: {
+        field: 'group',
+        scale: undefined,
+        domain: ['g2'],
+        range: ['#abcdef'],
+        unknown: '',
+      },
+    })
+    setup(model)
+
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({
+      field: 'group',
+      domain: ['g2'],
+      range: ['#abcdef'],
+      unknown: '',
+    })
   })
 })
 
@@ -259,10 +283,12 @@ test('None edits the row colors, which stay without the palette', () => {
   const model = fakeModel({
     rowColorSetting: {
       field: 'name',
-      scale: 'none',
+      scale: undefined,
       domain: ['a'],
       range: ['#f00'],
+      unknown: '',
     },
+    rowColorChoice: '',
   })
   setup(model)
 
@@ -271,26 +297,16 @@ test('None edits the row colors, which stay without the palette', () => {
 
   const [rows, rowColor] = submitted(model)
   expect(rows[0]!.color).toBeUndefined()
-  expect(rowColor).toEqual({ field: 'name', scale: 'none' })
+  expect(rowColor).toEqual({ field: 'name', unknown: '' })
 })
 
-test('None keeps an attribute a config colours with no palette', () => {
-  const model = fakeModel({
-    editableSources: GROUPED,
-    rowColorFields: ['group'],
-    rowColorSetting: {
-      field: 'group',
-      scale: 'none',
-      domain: ['g2'],
-      range: ['#abcdef'],
-    },
-  })
+test('None on a display dealing no palette writes the rows alone', () => {
+  const model = fakeModel({ rowPaletteDeals: false, rowColorChoice: '' })
   setup(model)
 
-  expect(screen.queryByText('Clear row colors')).toBeNull()
   fireEvent.click(screen.getByText('Submit'))
 
-  expect(submitted(model)[1]).toEqual(model.rowColorSetting)
+  expect(submitted(model)[1]).toEqual({ field: 'name' })
 })
 
 test('a display dealing no palette offers no Each row', () => {

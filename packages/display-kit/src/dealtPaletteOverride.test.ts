@@ -16,6 +16,15 @@ test('a palette named before the dealer loads replaces every dealt palette', asy
         b: '#010101',
         c: '#020202',
       })
+      const unknown = dealRowColors(
+        ['a', 'b'],
+        { domain: ['a'], range: ['#0000ff'], unknown: '#cccccc' },
+        ['#ff0000'],
+      )
+      expect(Object.fromEntries(unknown)).toEqual({
+        a: '#0000ff',
+        b: '#cccccc',
+      })
     })
   } finally {
     delete page.jbrowseRowPalette

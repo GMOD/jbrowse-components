@@ -93,7 +93,6 @@ export {
   TreeSidebarMixin,
   orderOver,
   rowColorIsCustom,
-  rowColorWithoutPalette,
 } from './TreeSidebarMixin.ts'
 export type {
   ClusterRun,

@@ -121,8 +121,19 @@ test('the row palette keeps its identity across a reorder, a focus and a relabel
   expect(display.rowColorScale).toBe(palette)
 })
 
-test("scale: 'none' deals no palette, and its pairs still paint", () => {
+test("scale: 'none' paints no palette and no pair", () => {
   const display = loaded({ rowColor: { ...DECLARED.rowColor, scale: 'none' } })
+  expect(display.rowColorScale.size).toBe(0)
+  expect(display.rowColorStringsByIndex).toEqual([
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+  ])
+})
+
+test("unknown: '' deals no palette, and the pairs still paint", () => {
+  const display = loaded({ rowColor: { ...DECLARED.rowColor, unknown: '' } })
   expect(display.rowColorStringsByIndex).toEqual([
     '#00f',
     undefined,
@@ -136,7 +147,7 @@ test('a recolour under None paints that row and deals the rest nothing', () => {
   const [a, b, ...rest] = display.editableSources
   display.applyRowEdits([a!, { ...b!, color: '#123456' }, ...rest], {
     field: 'name',
-    scale: 'none',
+    unknown: '',
   })
   expect(display.rowColorStringsByIndex).toEqual([
     undefined,

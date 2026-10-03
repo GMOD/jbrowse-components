@@ -93,6 +93,7 @@ export interface RowColorSetting {
   scale: 'none' | 'categorical' | undefined
   domain: readonly string[]
   range: readonly string[]
+  unknown?: string
 }
 
 /** The `rowColor` object as a config writes it, a string lifted to its field. */
@@ -102,17 +103,20 @@ function liftRowColor(value: unknown): RowColorSnapshot {
   return typeof value === 'string' ? { field: value } : (value ?? {})
 }
 
-function paintsNamePairs({ field }: RowColorSnapshot) {
-  return (field || 'name') === 'name'
+function paintsNamePairs({ field, scale }: RowColorSnapshot) {
+  return (field || 'name') === 'name' && scale !== 'none'
 }
 
 // The colours a `rowColor` object sets on the values of `field`, an attribute
-// it paints by: none while it paints by another field or by `name`.
+// it paints by: none while it paints by another field, by `name`, or under
+// `scale: 'none'`.
 function valuePairs(
   color: RowColorSnapshot,
   field = color.field || 'name',
 ): Record<string, string> {
-  return (color.field || 'name') === field && field !== 'name'
+  return (color.field || 'name') === field &&
+    field !== 'name' &&
+    color.scale !== 'none'
     ? Object.fromEntries(
         pairedColorsOf({
           domain: color.domain ?? [],
@@ -127,8 +131,21 @@ function sameRowColor(a: RowColorSnapshot, b: RowColorSnapshot) {
     (a.field || 'name') === (b.field || 'name') &&
     (a.scale ?? 'categorical') === (b.scale ?? 'categorical') &&
     compareStructural(a.domain ?? [], b.domain ?? []) &&
-    compareStructural(a.range ?? [], b.range ?? [])
+    compareStructural(a.range ?? [], b.range ?? []) &&
+    a.unknown === b.unknown
   )
+}
+
+// What the dialog and a menu show a `rowColor` object as: '' where nothing
+// deals the rows a colour each, else its field.
+function choiceOf(
+  { field = 'name', scale, unknown }: RowColorSnapshot,
+  rowPaletteDeals: boolean,
+) {
+  return scale === 'none' ||
+    (field === 'name' && (unknown === '' || !rowPaletteDeals))
+    ? ''
+    : field
 }
 
 // The colours a `rowColor` object sets row by row: its pairs while it paints
@@ -144,28 +161,17 @@ function namePairs(color: RowColorSnapshot): Record<string, string> {
     : {}
 }
 
-/**
- * The `rowColor` object that stops the palette and keeps the colours set on
- * single rows: what None writes from a menu.
- */
-export function rowColorWithoutPalette(
-  current: RowColorSnapshot,
-): RowColorSnapshot {
-  const pairs = namePairs(current)
-  return {
-    field: 'name',
-    scale: 'none',
-    domain: Object.keys(pairs),
-    range: Object.values(pairs),
-  }
-}
-
-// Under `scale: 'none'` a deal hands out only the colours its entries list.
+// A deal under `setting`: none under `scale: 'none'`, and its `unknown` in
+// place of the palette where it sets one.
 function dealUnder<S>(
-  { scale }: RowColorSnapshot,
+  { scale, unknown }: RowColorSnapshot,
   deal: RowColorDeal<S> | undefined,
 ) {
-  return deal && scale === 'none' ? { ...deal, order: [] } : deal
+  return !deal || scale === 'none'
+    ? undefined
+    : unknown === undefined
+      ? deal
+      : { ...deal, unknown }
 }
 
 /**
@@ -180,7 +186,11 @@ export function rowColorIsCustom(
 ): boolean {
   return (
     !compareStructural(namePairs(live), namePairs(base)) ||
-    !compareStructural(valuePairs(live), valuePairs(base, live.field || 'name'))
+    !compareStructural(
+      valuePairs(live),
+      valuePairs(base, live.field || 'name'),
+    ) ||
+    live.unknown !== base.unknown
   )
 }
 
@@ -395,6 +405,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           scale: getConf(confNode(self), ['rowColor', 'scale']),
           domain: getConf(confNode(self), ['rowColor', 'domain']),
           range: getConf(confNode(self), ['rowColor', 'range']),
+          unknown: getConf(confNode(self), ['rowColor', 'unknown']),
         }
       },
       /**
@@ -617,8 +628,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * What the row palette deals under the config's `rowColor`: only the
-       * colours it lists under `scale: 'none'`.
+       * What the row palette deals under the config's `rowColor`, none under
+       * `scale: 'none'`.
        */
       get rowColorDeal(): RowColorDeal<S> | undefined {
         const setting = self.rowColorSetting
@@ -635,7 +646,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * Whether the palette deals the rows a colour each under `name`, so
-       * Each row differs from None.
+       * Each row differs from None, which sets `unknown: ''`.
        */
       get rowPaletteDeals(): boolean {
         return (
@@ -648,14 +659,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * What the rows are coloured by, as the arrangement dialog and a menu
-       * offer it: '' for no palette, `name` for a palette colour each, or an
+       * offer it: '' for none dealt, `name` for a palette colour each, or an
        * attribute.
        */
       get rowColorChoice(): string {
-        const { field, scale } = self.rowColorSetting
-        return scale === 'none' || (field === 'name' && !self.rowPaletteDeals)
-          ? ''
-          : field
+        return choiceOf(self.rowColorSetting, self.rowPaletteDeals)
       },
     }))
     .views(self => ({
@@ -918,7 +926,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         const live = self.rowColorSetting
         const base = self.baseRowColor
         const values = valuePairs(base, live.field)
-        if (!compareStructural(namePairs(live), namePairs(base))) {
+        if (
+          !compareStructural(namePairs(live), namePairs(base)) ||
+          live.unknown !== base.unknown
+        ) {
           setConf(confNode(self), 'rowColor', base)
         } else if (!compareStructural(valuePairs(live), values)) {
           setConf(confNode(self), 'rowColor', {
@@ -968,13 +979,16 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          * nothing writes nothing. The rows' colours are read only under an
          * object painting by `name`, whose pairs they become; any other object
          * is written as the dialog shows it, so a colour set on one row never
-         * stands for its attribute's value.
+         * stands for its attribute's value. A None that sets no row a colour
+         * leaves a config under `scale: 'none'` as it was, its way back with
+         * it.
          */
         applyRowEdits(rows: readonly S[], rowColor?: RowColorSnapshot) {
           const current = self.rowColorSetting
           const next = rowColor ? liftRowColor(rowColor) : current
-          const pairs: ReadonlyMap<string, string> =
-            current.field === 'name' ? pairedColorsOf(current) : new Map()
+          const pairs: ReadonlyMap<string, string> = paintsNamePairs(current)
+            ? pairedColorsOf(current)
+            : new Map()
           const edits = rowEdits({
             rows,
             shown: self.editableSources,
@@ -985,13 +999,22 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             identityChannel: self.identityChannel,
             rowAlias: self.rowAlias,
           })
-          const written = paintsNamePairs(next)
-            ? {
-                field: 'name',
-                ...(next.scale ? { scale: next.scale } : {}),
-                ...edits.rowColor,
-              }
-            : next
+          const parked =
+            current.scale === 'none' &&
+            choiceOf(next, self.rowPaletteDeals) === '' &&
+            edits.rowColor.domain.length === 0
+          const written = parked
+            ? current
+            : paintsNamePairs(next)
+              ? {
+                  field: 'name',
+                  ...(next.scale ? { scale: next.scale } : {}),
+                  ...(next.unknown === undefined
+                    ? {}
+                    : { unknown: next.unknown }),
+                  ...edits.rowColor,
+                }
+              : next
           if (!sameRowColor(written, current)) {
             setConf(confNode(self), 'rowColor', written)
           }

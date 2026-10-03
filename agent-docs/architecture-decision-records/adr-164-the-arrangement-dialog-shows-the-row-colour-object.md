@@ -88,6 +88,23 @@ runs on, and over one subtrack, where it takes the negative colour with it.
 reset offers a way back; the mixin's own rule is `rowColorIsCustom`, exported
 rather than restated.
 
+**Amended 2026-10-03: None is `unknown: ''`, and the swatches edit under it.**
+On multi-row a reader could not colour one row and leave the rest unpainted:
+the swatches edited only under Each row, which deals every row a palette
+colour. A first fix made `scale: 'none'` paint the pairs it listed, which gave
+`none` the opposite meaning on `rowColor` to the one ADR-135 gives it on every
+other colour object. Instead `rowColor` takes `unknown`, d3's
+`ordinal.unknown`: unset, a value `domain` does not list takes the next palette
+colour; a colour, that colour; `''`, none from this setting (Vega's
+`domainImplicit: false`). None writes `{ field: 'name', unknown: '' }` where
+the display deals a palette under `name` (`rowPaletteDeals`), else
+`{ field: 'name' }`, and its swatches edit as Each row's do; Each row is
+offered only where it differs. `scale: 'none'` keeps ADR-135's meaning, the
+variant menu's None parks an attribute there for the way back, and a None that
+colours no row leaves a parked object as written. `dialogSources` is gone: the
+pairs under `scale: 'none'` stay parked rather than open on the swatches.
+Wiggle's None takes the per-source switch off as before.
+
 ## Consequences
 
 - A dialog swatch under a Color by no longer recolours anything; the value's

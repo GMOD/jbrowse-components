@@ -535,7 +535,7 @@ export default function stateModelFactory(
        */
       get paintedRowGroups(): RowGroup[] {
         const setting = self.rowColorSetting
-        return setting.field === 'group'
+        return setting.field === 'group' && setting.scale !== 'none'
           ? recolorRowGroups(self.rowGroups, setting)
           : self.rowGroups
       },

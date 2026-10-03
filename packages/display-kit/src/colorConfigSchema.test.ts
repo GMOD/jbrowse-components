@@ -178,8 +178,28 @@ describe('dealRowColors', () => {
   const PALETTE = ['p0', 'p1', 'p2']
   const deal = (
     order: string[],
-    entries: { domain: string[]; range: string[] },
+    entries: { domain: string[]; range: string[]; unknown?: string },
   ) => Object.fromEntries(dealRowColors(order, entries, PALETTE))
+
+  it("deals nothing past the pairs under unknown: '', the spares unread", () => {
+    expect(
+      deal(['a', 'b', 'c'], {
+        domain: ['b'],
+        range: ['#00f', '#0f0'],
+        unknown: '',
+      }),
+    ).toEqual({ b: '#00f' })
+  })
+
+  it('gives every unlisted value an unknown colour', () => {
+    expect(
+      deal(['a', 'b', 'c'], {
+        domain: ['b'],
+        range: ['#00f'],
+        unknown: '#ccc',
+      }),
+    ).toEqual({ a: '#ccc', b: '#00f', c: '#ccc' })
+  })
 
   it('deals the palette in first-seen order and wraps it', () => {
     expect(deal(['a', 'b', 'a', 'c', 'd'], { domain: [], range: [] })).toEqual({

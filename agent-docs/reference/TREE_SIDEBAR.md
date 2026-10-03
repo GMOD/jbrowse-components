@@ -156,7 +156,8 @@ hook's name throws at `create`:
   multi-row matches `rowGroups` on the name, since its rows are tagged after the
   arrangement.
 - `rowColorDealFor(setting)` — what `dealRowColors` deals under a `rowColor`
-  object, the config's (`rowColorDeal`, none under `scale: 'none'`, dealt into
+  object, the config's (`rowColorDeal`, none under `scale: 'none'`, its
+  `unknown` in place of the palette where set, dealt into
   `dealtRowColors`, which `rowColorScale` maps each row onto) or one the dialog
   previews (`rowColorsFor`): by default the field's values over the base
   arrangement, so no reorder, focus or relabel recolours a row. Under `name`
@@ -188,20 +189,20 @@ What else the mixin owns:
   base's, keeping the attribute, so over a config setting no row colour a Color
   by alone survives a reset and a mode switch.
 - **The dialog shows the `rowColor` object and submits it**
-  (`applyRowEdits(rows, rowColor)`, ADR-164): "Color rows by" None, Each row or
-  an attribute; under an attribute a table of its values, each with its colour
-  and row count, and read-only row swatches; under Each row editable swatches,
-  with "Start from" copying an attribute's colours onto them once. A row's
-  swatch is read only under Each row, over `dialogSources`, the rows with the
-  pairs a None keeps on them, where `rowEdits` is the rule: an entry the config
+  (`applyRowEdits(rows, rowColor)`, ADR-164): "Color rows by" None
+  (`unknown: ''`), Each row where the display deals a palette under `name`
+  (`rowPaletteDeals`), or an attribute; under an attribute a table of its
+  values, each with its colour and row count, and read-only row swatches; under
+  None and Each row editable swatches, with "Start from" copying an attribute's
+  colours onto them once. A row's swatch is read only under `name`, where
+  `rowEdits` is the rule: an entry the config
   holds stands unless the reader changed that row, so an entry repeating the
   adapter's value survives an unchanged submit; a value changed back to what the
   row shows with no entry of its own removes the entry; a row the dialog never
   showed keeps its entry. Any other object is written as the dialog shows it, so
   a colour set on one row never stands for its value, and nothing is
-  materialised. An order that moves no row is not written. The pairs are written
-  with two `setConf`s, never `setSubschema`, which would drop `field` and
-  `scale`.
+  materialised. An order that moves no row is not written, and a None that
+  colours no row leaves an object under `scale: 'none'` parked as written.
 - **A display's own colour rides above the rows, and is written on Submit.**
   `plotColor` is the quantitative display's two plot colours on one line
   (`PlotColorRow`): held in the dialog's local state and written in `submit()`

@@ -102,9 +102,9 @@ function pickCellSolidColor(self: MultiSampleVariantBaseModel) {
   ])
 }
 
-// The rows' colour, as the arrangement dialog offers it: the colours set row
-// by row, or an attribute's values. No palette deals the rows by name here, so
-// there is no Each row.
+// The rows' colour, as the arrangement dialog offers it: none, or an
+// attribute's values. No palette deals the rows by name here, so there is no
+// Each row.
 function rowColorItems(self: MultiSampleVariantBaseModel): MenuItem[] {
   const current = self.rowColorChoice
   const pick = (field: string) => () => {
@@ -113,7 +113,6 @@ function rowColorItems(self: MultiSampleVariantBaseModel): MenuItem[] {
   return [
     {
       label: 'None',
-      helpText: 'The colours set row by row in Edit colors/arrangement...',
       type: 'radio',
       checked: current === '',
       onClick: pick(''),

@@ -80,7 +80,7 @@ describe('Each row turns the palette on as well as naming the rows', () => {
 
     display.applyRowEdits([a!, { ...b!, color: '#123456' }, c!], {
       field: 'name',
-      scale: 'none',
+      unknown: '',
     })
 
     expect(isPerSourceColor(display.colorSetting)).toBe(false)

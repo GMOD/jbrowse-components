@@ -932,7 +932,9 @@ export default function stateModelFactory(
             return
           }
           const byName =
-            (rowColor.field ?? 'name') === 'name' && rowColor.scale !== 'none'
+            (rowColor.field ?? 'name') === 'name' &&
+            rowColor.scale !== 'none' &&
+            rowColor.unknown === undefined
           const wants =
             byName &&
             !self.scoreGradientPaints &&

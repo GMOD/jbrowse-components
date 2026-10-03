@@ -5,6 +5,7 @@ import {
   colorChannelSlots,
   colorDomainSlot,
   colorRangeSlot,
+  colorUnknownSlot,
   normalizeChannel,
 } from './colorConfigSchema.ts'
 
@@ -22,9 +23,9 @@ import {
  * MAF display's label tint, over the adapter's `samples[].color`; the mark
  * display's label tint, over a listed source's colour. Where the rows carry
  * attributes, a samplesTsv column or a subtrack's group, `field` may name one,
- * and its values each take a palette colour. `scale: 'none'` deals no palette,
- * so a row the reader coloured keeps its colour and the rest keep their data's.
- * A string is the field.
+ * and its values each take a palette colour. `unknown: ''` deals none, so only
+ * the values `domain` lists take a colour and every other row keeps its own. A
+ * string is the field.
  *
  * #example
  * ```js
@@ -35,6 +36,12 @@ import {
  * ```
  * ```js
  * { type: 'LinearMultiSampleVariantDisplay', rowColor: 'population' }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearMultiRowFeatureDisplay',
+ *   rowColor: { domain: ['mom'], range: ['#b2182b'], unknown: '' },
+ * }
  * ```
  */
 export const rowColorConfigSchema = ConfigurationSchema(
@@ -48,7 +55,7 @@ export const rowColorConfigSchema = ConfigurationSchema(
       field:
         "the row attribute whose values take the colours: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group",
       scale:
-        'none deals no palette, so only the values domain lists take a colour; categorical a colour per value of field, those domain lists taking range; unset follows field',
+        'none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field',
     }),
     ...colorDomainSlot({
       domain:
@@ -57,6 +64,7 @@ export const rowColorConfigSchema = ConfigurationSchema(
     ...colorRangeSlot({
       range: 'the CSS colour each value in domain takes, in the same order',
     }),
+    ...colorUnknownSlot,
   },
   {
     shorthand: 'field',

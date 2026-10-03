@@ -11,6 +11,7 @@ export interface RowColorDeal<S> {
   valueOf: (row: S) => string | undefined
   domain: readonly string[]
   range: readonly string[]
+  unknown?: string
   palette: readonly string[]
 }
 
