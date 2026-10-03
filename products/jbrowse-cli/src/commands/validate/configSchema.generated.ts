@@ -4158,7 +4158,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "what a value domain does not list takes: unset the next palette colour, a colour that colour, \\"\\" none from this setting.",
+              "description": "what a value domain does not list takes: unset the next palette colour, a colour that colour, \\"\\" none from this setting; it stands in for the palette the display deals, so one dealing none ignores it.",
               "$ref": "#/$defs/CssColor"
             }
           },
