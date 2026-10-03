@@ -42,11 +42,6 @@ Large but high-value; start by defining the pedigree metadata shape (columns in
 worker ships as values and the main thread paints, as
 [ADR-202](../../architecture-decision-records/adr-202-every-mark-colour-resolves-on-the-main-thread.md) has every colour resolve, rather than a new render pass.
 
-**Per-site summary strip.** Carrier count / allele frequency / call-rate per
-site, as a band above the rows. Designed in
-[a-per-site-summary-strip-is-a-scalar-band-on-the-coverage-anchor](../waiting-on-a-call/a-per-site-summary-strip-is-a-scalar-band-on-the-coverage-anchor.md),
-which is also the second consumer the coverage y anchor has been waiting for.
-
 **Filter & sort samples by metadata attribute.** Since 2026-08-25 a `colorBy`
 group's legend swatch focuses that group (`focusGroup`, over `subtreeFilter`),
 and the genotype sort has a column-anchored form a session can name

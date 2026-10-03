@@ -229,8 +229,8 @@ and was reverted on 2026-09-30.
 
 ## Bands above the rows
 
-`variantTopBands.ts` resolves both bands, and **the layout reserving a strip and
-the painter filling it read that one function**.
+`variantTopBands.ts` resolves the three bands, and **the layout reserving a
+strip and the painter filling it read that one function**.
 
 - `rowsTopOffset` is the total and is where rows begin; `lineZoneHeight` is the
   connector zone alone, not an offset.
@@ -252,6 +252,11 @@ track width off the display's LEFT edge, where `contain: strict` clipped it, and
 gave the edge fade zero width. Anything anchored to the right edge, or that
 applies `rowsTopOffset` itself, goes on the display's own box beside
 `VariantOverlay`.
+
+The frequency band sits directly on the rows and counts what each column's
+cells paint, by class, dosage and colour, so it follows every colour mode
+without a table of its own
+([ADR-206](../architecture-decision-records/adr-206-a-row-display-summarizes-its-rows-in-a-frequency-band.md)).
 
 The lane **is** a plugin-canvas feature band, not a painter of ours. It is not a
 _hosted_ `LinearVariantDisplay` — a track renders one display, and a second one
