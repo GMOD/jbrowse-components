@@ -43,12 +43,12 @@ import {
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
+  fieldColorDeal,
   focusRowGroup,
   orderRowsByDomain,
   resetRowOrderMenuItems,
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
-  rowFieldValue,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
   treeSidebarOffset,
@@ -84,13 +84,13 @@ import {
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
-  applyRowGroups,
+  applyRowGroupColors,
   compileRowGroups,
   groupColorEntries,
   orderRowValues,
   recolorRowGroups,
   resolveRowColorStrings,
-  rowGroupOf,
+  tagRowGroups,
 } from './rowSources.ts'
 import {
   answeredRowsField,
@@ -287,9 +287,10 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Regex-to-group entries tagging rows with a sidebar swatch color, applied
-       * downstream of the arrangement so the derived color never lands in
-       * persisted state and loses to a stale copy.
+       * Regex-to-group entries: a row takes the `group` of the first entry
+       * its name matches, and its swatch colour downstream of the arrangement,
+       * so the derived colour never lands in persisted state and loses to a
+       * stale copy.
        */
       get rowGroups(): RowGroup[] {
         return readConfObject(self.conf, 'rowGroups')
@@ -370,78 +371,46 @@ export default function stateModelFactory(
         },
         /**
          * #method
-         * `TreeSidebarMixin`'s hook: under `facet: 'group'` the group of the
-         * first `rowGroups` entry a row's name matches, since the rows are
-         * tagged only after the arrangement.
+         * `TreeSidebarMixin`'s hook: each row tagged with the group of the
+         * first `rowGroups` entry its name matches.
          */
-        rowBand(row: RowSource): string {
-          return this.rowAttribute(row, self.facet?.field ?? '')
+        expandRows(rows: RowSource[]): RowSource[] {
+          return tagRowGroups(rows, self.rowGroupMatchers)
         },
         /**
          * #getter
-         * `colorNotices`, and a `facet` naming a field no row carries: a row
-         * here is a value of the `rows` field with only its name and its
-         * `rowGroups` group, so any other field bands nothing.
+         * `colorNotices` and `rowBandingNotices`.
          */
         get notices(): string[] {
-          const field = self.facet?.field
-          return field === undefined || field === 'group' || field === 'name'
-            ? self.colorNotices
-            : [
-                ...self.colorNotices,
-                `facet.field: a row here carries only its name and its rowGroups group, so ${field} bands nothing`,
-              ]
-        },
-        /**
-         * #method
-         * A row's value of `field`: `group` is its `rowGroups` group, any
-         * other field its own attribute, '' where it has none.
-         */
-        rowAttribute(row: RowSource, field: string): string {
-          return field === 'group'
-            ? (rowGroupOf(self.rowGroupMatchers, row.name)?.group ?? '')
-            : rowFieldValue(row, field)
+          return [...self.colorNotices, ...self.rowBandingNotices]
         },
         /**
          * #method
          * `TreeSidebarMixin`'s hook, dealt over the rows in the base
          * arrangement: under `name` a palette colour per row, a row with a
-         * `rowColor` entry still taking its turn; under `group` a colour per
-         * group, the groups `setting.domain` lists taking its `range` and the
-         * rest their `rowGroups` colour where they have one.
+         * `rowColor` entry still taking its turn; under any other field a
+         * colour per value, a `rowGroups` group `setting.domain` leaves out
+         * taking its own colour where it has one.
          */
         rowColorDealFor(setting: RowColorEntries): RowColorDeal<RowSource> {
           const rows = orderRowsByDomain(self.expandedRows, self.baseRowDomain)
-          if (setting.field === 'name') {
-            return {
-              order: rows.map(s => s.name),
-              valueOf: s => s.name,
-              domain: [],
-              range: [],
-              palette: categoricalPalette,
-            }
-          }
-          const valueOf = (row: RowSource) =>
-            this.rowAttribute(row, setting.field)
-          const { domain, range } =
-            setting.field === 'group'
-              ? groupColorEntries(self.rowGroups, setting)
-              : setting
-          return {
-            order: [...domain, ...rows.map(valueOf)],
-            valueOf,
-            domain,
-            range,
-            palette: categoricalPalette,
-          }
-        },
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: `group` while `rowGroups` tags the rows,
-         * the one attribute they carry.
-         */
-        get rowColorFields(): readonly string[] {
-          return self.rowGroups.length > 0 ? ['group'] : []
+          return setting.field === 'name'
+            ? {
+                order: rows.map(s => s.name),
+                valueOf: s => s.name,
+                domain: [],
+                range: [],
+                palette: categoricalPalette,
+              }
+            : fieldColorDeal(
+                setting.field === 'group'
+                  ? {
+                      field: 'group',
+                      ...groupColorEntries(self.rowGroups, setting),
+                    }
+                  : setting,
+                rows,
+              )
         },
         /**
          * #getter
@@ -543,23 +512,11 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The rows tagged with their `rowGroups` group and left in their current
-       * order. A legend swatch focuses from these rows, because a second click
-       * on another group has to reach the rows the first click hid, and the
-       * filter matches the same `name`s.
-       */
-      get groupedSources(): RowSource[] {
-        return applyRowGroups(self.editableSources, self.paintedRowGroups)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * The display rows, which render order, label order and `rowIndexByValue`
-       * all key off: `bandedSources` tagged with their `rowGroups` group.
+       * all key off: `bandedSources` with their `rowGroups` swatch.
        */
       get sources(): RowSource[] {
-        return applyRowGroups(self.bandedSources, self.paintedRowGroups)
+        return applyRowGroupColors(self.bandedSources, self.paintedRowGroups)
       },
     }))
     .views(self => ({
@@ -1142,7 +1099,7 @@ export default function stateModelFactory(
          */
         focusLegendEntry(scaleId: string, value: string) {
           if (scaleId === 'rowGroups') {
-            focusRowGroup(self, self.groupedSources, s => s.group === value)
+            focusRowGroup(self, self.editableSources, s => s.group === value)
           }
         },
         /**

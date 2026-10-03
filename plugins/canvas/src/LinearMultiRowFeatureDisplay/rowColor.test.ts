@@ -174,6 +174,13 @@ test('rowColor by group deals a colour per group, and offers the field', () => {
   expect(loaded({}).rowColorFields).toEqual([])
 })
 
+test('rowGroups that tag no row offer no group field', () => {
+  const display = loaded({
+    rowGroups: [{ match: '^z$', group: 'Z', color: '#e41a1c' }],
+  })
+  expect(display.rowColorFields).toEqual([])
+})
+
 test('rowColor by group pairs its domain with its range', () => {
   const display = loaded({
     rowColor: { field: 'group', domain: ['C'], range: ['#123456'] },

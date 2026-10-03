@@ -78,12 +78,27 @@ export function recolorRowGroups(
 }
 
 /**
- * Each row tagged with the group of the first entry its name matches, in the
- * order the rows came in. The group color lands in `labelColor` (the sidebar
- * swatch) rather than `color`, which this display spends on the per-feature
- * painting; `facet: 'group'` is what stacks the groups in bands.
+ * Each row tagged with the group of the first entry its name matches, so
+ * `group` reads like any other row attribute.
  */
-export function applyRowGroups(
+export function tagRowGroups(
+  rows: RowSource[],
+  compiled: readonly CompiledRowGroup[],
+): RowSource[] {
+  return compiled.length
+    ? rows.map(row => {
+        const hit = rowGroupOf(compiled, row.name)
+        return hit ? { ...row, group: hit.group } : row
+      })
+    : rows
+}
+
+/**
+ * Each row's sidebar swatch, `labelColor`, set to the colour of the first entry
+ * its name matches, where it has none of its own. Not `color`, which this
+ * display spends on the per-feature painting.
+ */
+export function applyRowGroupColors(
   sources: RowSource[],
   rowGroups: RowGroup[],
 ): RowSource[] {
@@ -91,8 +106,8 @@ export function applyRowGroups(
   return compiled.length
     ? sources.map(s => {
         const hit = rowGroupOf(compiled, s.name)
-        return hit
-          ? { ...s, group: hit.group, labelColor: s.labelColor ?? hit.color }
+        return hit && s.labelColor === undefined
+          ? { ...s, labelColor: hit.color }
           : s
       })
     : sources

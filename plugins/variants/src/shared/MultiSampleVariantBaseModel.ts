@@ -650,10 +650,13 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * What the `color` object's slots say together that it cannot paint as
-         * written, for the corner notice.
+         * written, and `rowBandingNotices`, for the corner notice.
          */
         get notices(): string[] {
-          return colorNotices(this.colorSetting, CATEGORICAL_FIELD_PRESETS)
+          return [
+            ...colorNotices(this.colorSetting, CATEGORICAL_FIELD_PRESETS),
+            ...self.rowBandingNotices,
+          ]
         },
         /**
          * #getter
@@ -992,7 +995,7 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: the `facet` bands the rows by a samplesTsv
-         * attribute; one no sample carries bands nothing.
+         * attribute.
          */
         get rowBanding(): RowBanding | undefined {
           return self.facet

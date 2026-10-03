@@ -103,3 +103,51 @@ test('a recoloured row stays in its band', () => {
   })
   expect(drawn(display)).toEqual(['CLUPGR000001', 'CLUPRU000001', 'COLL000001'])
 })
+
+test('each row carries its rowGroups group from expandedRows on', () => {
+  const display = banded(['VILLCN000001', 'COLL000001', 'CLUPGR000001'], {
+    rowGroups: [WOLF, VILLAGE],
+  })
+  expect(display.expandedRows).toEqual([
+    { name: 'CLUPGR000001', group: 'Wolf' },
+    { name: 'COLL000001' },
+    { name: 'VILLCN000001', group: 'Village dog' },
+  ])
+})
+
+test('facet group bands and rowColor group deals a colour per group', () => {
+  const display = banded(
+    [
+      'VILLCN000001',
+      'COLL000001',
+      'CLUPGR000001',
+      'DACH000001',
+      'CLUPRU000001',
+    ],
+    {
+      rowGroups: [WOLF, VILLAGE],
+      rowColor: { field: 'group', domain: ['Village dog'], range: ['#123456'] },
+    },
+  )
+  expect(display.sources).toEqual([
+    { name: 'CLUPGR000001', group: 'Wolf', labelColor: 'rgb(27,120,55)' },
+    { name: 'CLUPRU000001', group: 'Wolf', labelColor: 'rgb(27,120,55)' },
+    { name: 'VILLCN000001', group: 'Village dog', labelColor: '#123456' },
+    { name: 'COLL000001' },
+    { name: 'DACH000001' },
+  ])
+  expect(display.rowBands).toEqual([
+    { key: 'Wolf', label: 'Wolf', start: 0, end: 2 },
+    { key: 'Village dog', label: 'Village dog', start: 2, end: 3 },
+    { key: '', label: '(no group)', start: 3, end: 5 },
+  ])
+  expect(display.rowColorStringsByIndex).toEqual([
+    'rgb(27,120,55)',
+    'rgb(27,120,55)',
+    '#123456',
+    '#4e79a7',
+    '#4e79a7',
+  ])
+  expect(display.rowColorFields).toEqual(['group'])
+  expect(display.notices).toEqual([])
+})

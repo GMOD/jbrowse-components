@@ -628,6 +628,23 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get rowColorFields(): readonly string[] {
         return extraColumns(self.expandedRows, NOT_COLOUR_FIELDS)
       },
+      /**
+       * #getter
+       * A line for the corner notice when rows have arrived and none carries
+       * the field `rowBanding` bands by, which then bands nothing. Each
+       * display spreads it into its `notices`.
+       */
+      get rowBandingNotices(): string[] {
+        const banding = self.rowBanding
+        const rows = self.expandedRows
+        return banding &&
+          rows.length > 0 &&
+          rows.every(row => self.rowBand(row) === '')
+          ? [
+              `facet.field: no row carries ${banding.field}, so it bands nothing`,
+            ]
+          : []
+      },
     }))
     .views(self => ({
       /**

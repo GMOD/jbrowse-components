@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react'
 
 import LinearMultiRowFeatureDisplayComponent from './components/LinearMultiRowFeatureDisplayComponent.tsx'
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment, ctgA } from './testEnv.ts'
+
+import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
 test('a threshold range that does not fit its cuts shows as a notice', () => {
   const { display } = createTestEnvironment({
@@ -21,13 +23,41 @@ test('a threshold range that does not fit its cuts shows as a notice', () => {
   expect(screen.getByText('1 config problem')).toBeTruthy()
 })
 
-test('a facet on a field the rows do not carry is a notice', () => {
-  const notices = (facet: string) =>
-    createTestEnvironment({ displayConfig: { facet } }).createDisplay().display
-      .notices
-  expect(notices('strand')).toEqual([
-    expect.stringMatching(/^facet\.field: .* strand bands nothing$/),
+function rows(names: string[]): MultiRowRegionData {
+  return {
+    featureStarts: new Uint32Array(0),
+    featureEnds: new Uint32Array(0),
+    featureColors: new Uint32Array(0),
+    rectColorValues: new Uint32Array(0),
+    featureDeltas: new Int32Array(0),
+    rowValues: names,
+    featureRowValueIndex: new Uint32Array(0),
+    featureNames: [],
+    featureIds: [],
+    usedItemRgb: false,
+    rowsFieldCandidates: [],
+    rowsFieldCandidateValues: [],
+    legendCandidates: [],
+    resolvedRowsField: 'name',
+  }
+}
+
+test('a facet on a field no loaded row carries is a notice', () => {
+  const notices = (displayConfig: Record<string, unknown>, loaded = true) => {
+    const { display } = createTestEnvironment({ displayConfig }).createDisplay()
+    if (loaded) {
+      display.setRpcData(0, rows(['CLUPGR000001', 'COLL000001']), ctgA)
+    }
+    return display.notices
+  }
+  const wolf = [{ match: '^CLUP', group: 'Wolf', color: 'red' }]
+  expect(notices({ facet: 'strand' })).toEqual([
+    'facet.field: no row carries strand, so it bands nothing',
   ])
-  expect(notices('group')).toEqual([])
-  expect(notices('name')).toEqual([])
+  expect(notices({ facet: 'group' })).toEqual([
+    'facet.field: no row carries group, so it bands nothing',
+  ])
+  expect(notices({ facet: 'group', rowGroups: wolf })).toEqual([])
+  expect(notices({ facet: 'name' })).toEqual([])
+  expect(notices({ facet: 'strand' }, false)).toEqual([])
 })

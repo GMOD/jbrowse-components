@@ -36,3 +36,16 @@ test('a colour that paints as written has no notice', () => {
   render(<VariantDisplayComponent model={display} />)
   expect(screen.queryByText(/config problem/)).toBeNull()
 })
+
+test('a facet on an attribute no loaded sample carries is a notice', () => {
+  const { display } = createTestEnvironment({
+    displayConfig: { facet: 'population' },
+  }).createDisplay()
+  expect(display.notices).toEqual([])
+  display.setSources([{ name: 'S0' }, { name: 'S1', superpop: 'EUR' }])
+  expect(display.notices).toEqual([
+    'facet.field: no row carries population, so it bands nothing',
+  ])
+  display.setSources([{ name: 'S0', population: 'AFR' }, { name: 'S1' }])
+  expect(display.notices).toEqual([])
+})
