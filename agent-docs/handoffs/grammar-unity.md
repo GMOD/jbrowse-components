@@ -11,10 +11,11 @@ sections after the order of work are the evidence it rests on.
 
 ## Next
 
-Nothing queued. On 2026-10-02 Colin questioned the colour-menu builder over the
-colour object (§"Menus as views over those objects"): it gives users no new
-control, only one shared "Color by" submenu in place of six hand-written ones.
-He answered "not now" to wiggle onto render-core's marks, whose worked proposal
+Nothing queued. The colour-menu builder landed as display-kit's
+`colorByMenuItem`, laid out as the alignments menu, which it reproduces
+unchanged; the feature track, both variant displays and multi-way synteny build
+through it. Colin answered "not now" to wiggle onto render-core's marks, whose
+worked proposal
 [wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md) is
 sized at 7-10 days.
 
