@@ -400,7 +400,7 @@ exports[`a repartition keeps the arrangement, idle under rows it does not name 1
 }
 `;
 
-exports[`a row's colour entry reaches its label bar, its group's colour the rest 1`] = `
+exports[`a row's colour entry reaches its label bar, and a group alone colours nothing 1`] = `
 {
   "editableSources": [
     {
@@ -434,13 +434,13 @@ exports[`a row's colour entry reaches its label bar, its group's colour the rest
       "group": "Parents",
       "label": undefined,
       "name": "dad",
-      "rowColor": "#377eb8",
+      "rowColor": undefined,
     },
     {
       "group": "Parents",
       "label": undefined,
       "name": "mom",
-      "rowColor": "#377eb8",
+      "rowColor": undefined,
     },
     {
       "group": undefined,
@@ -481,10 +481,10 @@ exports[`a run under the bands clusters each apart 1`] = `
   ],
   "rowArrangementIsCustom": true,
   "rowColorStringsByIndex": [
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    "#e41a1c",
+    "#e41a1c",
+    "#377eb8",
+    "#377eb8",
   ],
   "rowGroupsScale": {
     "entries": [
@@ -760,10 +760,10 @@ exports[`rowGroups tag the rows and facet group bands them, keyed under short ro
   ],
   "rowArrangementIsCustom": false,
   "rowColorStringsByIndex": [
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    "#e41a1c",
+    "#e41a1c",
+    "#377eb8",
+    "#377eb8",
     undefined,
   ],
   "rowGroupsScale": {
@@ -913,10 +913,10 @@ exports[`the bands win over a whole-cohort tree holding no clade of either 1`] =
   ],
   "rowArrangementIsCustom": true,
   "rowColorStringsByIndex": [
-    undefined,
-    undefined,
-    undefined,
-    undefined,
+    "#e41a1c",
+    "#e41a1c",
+    "#377eb8",
+    "#377eb8",
   ],
   "rowGroupsScale": {
     "entries": [

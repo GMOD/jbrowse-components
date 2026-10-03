@@ -1,3 +1,5 @@
+import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
+
 import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
@@ -173,8 +175,8 @@ test('a recolour under None paints that row and deals the rest nothing', () => {
 
 const GROUPS = {
   rowGroups: [
-    { match: '^[ab]$', group: 'AB', color: '#e41a1c' },
-    { match: '^c$', group: 'C', color: '#377eb8' },
+    { match: '^[ab]$', group: 'AB' },
+    { match: '^c$', group: 'C' },
   ],
 }
 
@@ -182,48 +184,69 @@ test('rowColor by group deals a colour per group, and offers the field', () => {
   const display = loaded({ rowColor: 'group', ...GROUPS })
   expect(display.rowColorFields).toEqual(['group'])
   const [a, b, c] = display.rowColorStringsByIndex
-  expect(a).toBeDefined()
+  expect(a).toBe(rowPaletteColorAt(0))
   expect(b).toBe(a)
-  expect(c).not.toBe(a)
+  expect(c).toBe(rowPaletteColorAt(1))
   expect(loaded({}).rowColorFields).toEqual([])
 })
 
 test('rowGroups that tag no row offer no group field', () => {
-  const display = loaded({
-    rowGroups: [{ match: '^z$', group: 'Z', color: '#e41a1c' }],
-  })
+  const display = loaded({ rowGroups: [{ match: '^z$', group: 'Z' }] })
   expect(display.rowColorFields).toEqual([])
 })
 
-test('rowColor by group pairs its domain with its range', () => {
+test('rowColor by group pairs its domain with its range, on the blocks and the label bar alike', () => {
   const display = loaded({
-    rowColor: { field: 'group', domain: ['C'], range: ['#123456'] },
+    rowColor: {
+      field: 'group',
+      domain: ['AB', 'C'],
+      range: ['#e41a1c', '#123456'],
+    },
     ...GROUPS,
   })
-  expect(display.resolvedRowColors.get('c')).toBe('#123456')
-  expect(display.resolvedRowColors.get('a')).toBe('#e41a1c')
-})
-
-test('rowColor by group paints a group its rowGroups colour, the stripe alike', () => {
-  const display = loaded({ rowColor: 'group', ...GROUPS })
   expect(display.rowColorStringsByIndex.slice(0, 3)).toEqual([
     '#e41a1c',
     '#e41a1c',
-    '#377eb8',
+    '#123456',
   ])
   expect(display.sources.slice(0, 3).map(s => s.rowColor)).toEqual([
     '#e41a1c',
     '#e41a1c',
-    '#377eb8',
+    '#123456',
   ])
 })
 
-test('a group colour rowColor sets beats rowGroups, on the stripe too', () => {
-  const display = loaded({
-    rowColor: { field: 'group', domain: ['C'], range: ['#123456'] },
+// A row matching no `rowGroups` entry has no group, which is a missing value
+// rather than a category, as ggplot's `na.value`: the palette deals it nothing,
+// and neither does `unknown`.
+test('a row with no group takes no colour from the deal', () => {
+  const dealt = loaded({ rowColor: 'group', ...GROUPS })
+  expect(dealt.sources[3]!.name).toBe('')
+  expect(dealt.sources[3]!.rowColor).toBeUndefined()
+  expect(dealt.dealtRowColors.has('')).toBe(false)
+  expect(dealt.rowColorStringsByIndex[3]).toBeUndefined()
+
+  const unknown = loaded({
+    rowColor: {
+      field: 'group',
+      domain: ['C'],
+      range: ['#123456'],
+      unknown: '#999999',
+    },
     ...GROUPS,
   })
-  expect(display.rowColorStringsByIndex[2]).toBe('#123456')
-  expect(display.sources[2]!.rowColor).toBe('#123456')
-  expect(display.sources[0]!.rowColor).toBe('#e41a1c')
+  expect(unknown.rowColorStringsByIndex).toEqual([
+    '#999999',
+    '#999999',
+    '#123456',
+    undefined,
+  ])
+})
+
+test('a pair naming the empty value paints the rows with no group', () => {
+  const display = loaded({
+    rowColor: { field: 'group', domain: [''], range: ['#cccccc'] },
+    ...GROUPS,
+  })
+  expect(display.rowColorStringsByIndex[3]).toBe('#cccccc')
 })

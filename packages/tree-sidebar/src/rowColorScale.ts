@@ -5,15 +5,11 @@ import { otherName } from './arrangeRows.ts'
 import type { RowAlias } from './arrangeRows.ts'
 import type { RowSource } from './types.ts'
 
-/** A `rowColor` object's field and the colours it pairs with that field's values. */
-export interface RowColorEntries {
+/** What `dealtValueColors` reads of a `rowColor` object. */
+export interface RowColorDealSetting {
   field: string
   domain: readonly string[]
   range: readonly string[]
-}
-
-/** What `dealtValueColors` reads of a `rowColor` object. */
-export interface RowColorDealSetting extends RowColorEntries {
   scale?: string
   unknown?: string
 }
@@ -24,8 +20,10 @@ const NONE: ReadonlyMap<string, string> = new Map()
  * The colour `setting` gives each value of its field over `rowsOf()`, the
  * rows in the base arrangement: its pairs, and the row palette dealt over the
  * rest by `dealRowColors`. An attribute's values deal always, first seen
- * first; a row name deals only while `namesDeal` or an `unknown` stands in for
- * the palette, and a row with its own colour takes no turn. None under
+ * first, except the empty value, which takes a colour only from a pair: a row
+ * with no value is missing, not a category, as ggplot's `na.value`. A row name
+ * deals only while `namesDeal` or an `unknown` stands in for the palette, and
+ * a row with its own colour takes no turn. None under
  * `scale: 'none'`, or for an attribute no row carries. Reads no row where only
  * the pairs paint, so a reorder deals nothing again.
  */
@@ -51,7 +49,9 @@ export function dealtValueColors(
   const rows = rowsOf()
   return rows.some(row => Object.hasOwn(row, field))
     ? dealRowColors(
-        rows.map(row => rowFieldValue(row, field)),
+        rows
+          .map(row => rowFieldValue(row, field))
+          .filter(value => value !== ''),
         setting,
       )
     : NONE

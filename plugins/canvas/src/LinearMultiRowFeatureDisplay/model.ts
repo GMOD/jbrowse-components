@@ -80,15 +80,7 @@ import {
 } from './rendering/multiRowInsertions.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
-import {
-  applyRowGroupColors,
-  compileRowGroups,
-  groupColorEntries,
-  orderRowValues,
-  recolorRowGroups,
-  rowGroupOf,
-  tagRowGroups,
-} from './rowSources.ts'
+import { compileRowGroups, orderRowValues, tagRowGroups } from './rowSources.ts'
 import {
   answeredRowsField,
   effectiveRowsField,
@@ -129,7 +121,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { RowTable } from '@jbrowse/render-core/marks'
 import type {
   RowBanding,
-  RowColorEntries,
   RowSource,
   SvgSidebarProps,
   UnlistedRowsSort,
@@ -272,9 +263,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * Regex-to-group entries: a row takes the `group` of the first entry
-       * its name matches, and its swatch colour downstream of the arrangement,
-       * so the derived colour never lands in persisted state and loses to a
-       * stale copy.
+       * its name matches.
        */
       get rowGroups(): RowGroup[] {
         return readConfObject(self.conf, 'rowGroups')
@@ -367,16 +356,6 @@ export default function stateModelFactory(
          */
         get notices(): string[] {
           return [...self.colorNotices, ...self.rowBandingNotices]
-        },
-        /**
-         * #method
-         * `TreeSidebarMixin`'s hook: under `group`, a `rowGroups` group
-         * `setting.domain` leaves out takes its own colour where it has one.
-         */
-        rowColorEntriesFor(setting: RowColorEntries) {
-          return setting.field === 'group'
-            ? groupColorEntries(self.rowGroups, setting)
-            : setting
         },
         /**
          * #getter
@@ -475,24 +454,11 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `rowGroups` with the colours `rowColor` sets on groups while it
-       * paints by `group`, so the stripe and the blocks agree.
-       */
-      get paintedRowGroups(): RowGroup[] {
-        const setting = self.rowColorSetting
-        return setting.field === 'group' && setting.scale !== 'none'
-          ? recolorRowGroups(self.rowGroups, setting)
-          : self.rowGroups
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * The display rows, which render order, label order and `rowIndexByValue`
-       * all key off: `bandedSources` with their `rowGroups` swatch.
+       * all key off.
        */
       get sources(): RowSource[] {
-        return applyRowGroupColors(self.bandedSources, self.paintedRowGroups)
+        return self.bandedSources
       },
     }))
     .views(self => ({
@@ -660,32 +626,29 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Key for the `rowGroups` stripe, empty unless that stripe is the only
-       * thing carrying row identity: above `rowLabelsCarryText` the sidebar
-       * writes each row's name and a key would restate them, and with
-       * `showRowLabels` off nothing draws the stripe for a key to name.
+       * Key for the label bars `rowColor: 'group'` paints, empty unless those
+       * bars are the only thing carrying row identity: above
+       * `rowLabelsCarryText` the sidebar writes each row's name and a key
+       * would restate them, and with `showRowLabels` off nothing draws the
+       * bars for a key to name.
        */
       get rowGroupLegend(): LegendItem[] {
         if (
+          self.rowColorSetting.field !== 'group' ||
           !self.showRowLabels ||
           rowLabelsCarryText(self.effectiveRowHeight)
         ) {
           return []
         }
-        const compiled = compileRowGroups(self.paintedRowGroups)
-        const seen = new Set<string>()
-        const items: LegendItem[] = []
-        for (const { name, group } of self.sources) {
-          const color =
-            group === undefined ? undefined : rowGroupOf(compiled, name)?.color
-          if (color) {
-            const key = `${group} ${color}`
-            if (!seen.has(key)) {
-              seen.add(key)
-              items.push({ color, label: group! })
-            }
+        const colors = self.dealtRowColors
+        const byGroup = new Map<string, LegendItem>()
+        for (const { group = '' } of self.sources) {
+          const color = colors.get(group)
+          if (color && !byGroup.has(group)) {
+            byGroup.set(group, { color, label: group })
           }
         }
+        const items = [...byGroup.values()]
         return legendIsReadable(items) ? items : []
       },
     }))

@@ -109,7 +109,8 @@ test('rows, density: identity moves to the label tint', async () => {
 })
 
 // A colour by an attribute is the reader's choice, so its colour leads a
-// subtrack's own, which leads the palette only under `name`.
+// subtrack's own, which leads the palette only under `name`. A subtrack with no
+// group is missing a value rather than in a category, so the deal skips it.
 test('rows colored by an attribute take its values colors over their own', async () => {
   const display = await loaded(GROUPED, {
     ...rowsPerSource(),
@@ -123,7 +124,7 @@ test('rows colored by an attribute take its values colors over their own', async
     Grain1: rowPaletteColorAt(0),
     Grain2: rowPaletteColorAt(0),
     Grain3: rowPaletteColorAt(1),
-    Grain4: rowPaletteColorAt(2),
+    Grain4: undefined,
   })
 })
 

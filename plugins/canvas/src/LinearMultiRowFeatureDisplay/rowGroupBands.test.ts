@@ -2,12 +2,8 @@ import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
-const WOLF = { match: '^CLUP', group: 'Wolf', color: 'rgb(27,120,55)' }
-const VILLAGE = {
-  match: '^VILL',
-  group: 'Village dog',
-  color: 'rgb(90,174,97)',
-}
+const WOLF = { match: '^CLUP', group: 'Wolf' }
+const VILLAGE = { match: '^VILL', group: 'Village dog' }
 
 function rows(names: string[]): MultiRowRegionData {
   return {
@@ -115,7 +111,9 @@ test('each row carries its rowGroups group from expandedRows on', () => {
   ])
 })
 
-test('facet group bands and rowColor group deals a colour per group', () => {
+// The ungrouped rows have no value, which is missing rather than a category,
+// so the deal passes them by.
+test('facet group bands, and rowColor by group colours every group but none', () => {
   const display = banded(
     [
       'VILLCN000001',
@@ -130,11 +128,11 @@ test('facet group bands and rowColor group deals a colour per group', () => {
     },
   )
   expect(display.sources).toEqual([
-    { name: 'CLUPGR000001', group: 'Wolf', rowColor: 'rgb(27,120,55)' },
-    { name: 'CLUPRU000001', group: 'Wolf', rowColor: 'rgb(27,120,55)' },
+    { name: 'CLUPGR000001', group: 'Wolf', rowColor: '#4e79a7' },
+    { name: 'CLUPRU000001', group: 'Wolf', rowColor: '#4e79a7' },
     { name: 'VILLCN000001', group: 'Village dog', rowColor: '#123456' },
-    { name: 'COLL000001', rowColor: '#4e79a7' },
-    { name: 'DACH000001', rowColor: '#4e79a7' },
+    { name: 'COLL000001' },
+    { name: 'DACH000001' },
   ])
   expect(display.rowBands).toEqual([
     { key: 'Wolf', label: 'Wolf', start: 0, end: 2 },
@@ -142,11 +140,11 @@ test('facet group bands and rowColor group deals a colour per group', () => {
     { key: '', label: '(no group)', start: 3, end: 5 },
   ])
   expect(display.rowColorStringsByIndex).toEqual([
-    'rgb(27,120,55)',
-    'rgb(27,120,55)',
+    '#4e79a7',
+    '#4e79a7',
     '#123456',
-    '#4e79a7',
-    '#4e79a7',
+    undefined,
+    undefined,
   ])
   expect(display.rowColorFields).toEqual(['group'])
   expect(display.notices).toEqual([])

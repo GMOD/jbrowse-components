@@ -50,7 +50,7 @@ test('a facet on a field no loaded row carries is a notice', () => {
     }
     return display.notices
   }
-  const wolf = [{ match: '^CLUP', group: 'Wolf', color: 'red' }]
+  const wolf = [{ match: '^CLUP', group: 'Wolf' }]
   expect(notices({ facet: 'strand' })).toEqual([
     'facet.field: no row carries strand, so it bands nothing',
   ])

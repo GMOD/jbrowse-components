@@ -1,13 +1,11 @@
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
-import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 
-import type { RowColorEntries, RowSource } from '@jbrowse/tree-sidebar'
+import type { RowSource } from '@jbrowse/tree-sidebar'
 
 // Ordered: a row joins the first entry whose `match` regex it matches.
 export interface RowGroup {
   match: string
   group: string
-  color: string
 }
 
 export interface CompiledRowGroup extends RowGroup {
@@ -38,46 +36,6 @@ export function rowGroupOf(
 }
 
 /**
- * `entries` under `group`, with each group they leave out taking its own
- * `rowGroups` colour, so the palette deals only to groups that have none.
- */
-export function groupColorEntries(
-  rowGroups: readonly RowGroup[],
-  entries: Pick<RowColorEntries, 'domain' | 'range'>,
-) {
-  const colors = new Map(pairedColorsOf(entries))
-  const listed = colors.size
-  for (const { group, color } of rowGroups) {
-    if (color && !colors.has(group)) {
-      colors.set(group, color)
-    }
-  }
-  return colors.size === listed
-    ? entries
-    : {
-        domain: [...colors.keys()],
-        range: [
-          ...colors.values(),
-          ...entries.range.slice(entries.domain.length),
-        ],
-      }
-}
-
-/**
- * `rowGroups` with each group's colour the one `entries` pair it with, where
- * they pair one.
- */
-export function recolorRowGroups(
-  rowGroups: RowGroup[],
-  entries: Pick<RowColorEntries, 'domain' | 'range'>,
-): RowGroup[] {
-  const colors = pairedColorsOf(entries)
-  return colors.size
-    ? rowGroups.map(g => ({ ...g, color: colors.get(g.group) ?? g.color }))
-    : rowGroups
-}
-
-/**
  * Each row tagged with the group of the first entry its name matches, so
  * `group` reads like any other row attribute.
  */
@@ -91,25 +49,6 @@ export function tagRowGroups(
         return hit ? { ...row, group: hit.group } : row
       })
     : rows
-}
-
-/**
- * Each row with no `rowColor` of its own given the colour of the first entry
- * its name matches, so the label bar shows the row's group.
- */
-export function applyRowGroupColors(
-  sources: RowSource[],
-  rowGroups: RowGroup[],
-): RowSource[] {
-  const compiled = compileRowGroups(rowGroups)
-  return compiled.length
-    ? sources.map(s => {
-        const hit = rowGroupOf(compiled, s.name)
-        return hit?.color && s.rowColor === undefined
-          ? { ...s, rowColor: hit.color }
-          : s
-      })
-    : sources
 }
 
 /**

@@ -151,10 +151,10 @@ describe('density mode keys off the row identity colour', () => {
     expect(display.overlayLegendApplies).toBe(false)
   })
 
-  // The mixed track: an ungrouped subtrack's group is '', a value the deal
-  // colours like any other, so it keys in that colour and never in
-  // `posColor`, the ramp.
-  it('keys the ungrouped rows in the colour of their empty group', () => {
+  // The mixed track: an ungrouped subtrack's group is '', a missing value
+  // rather than a category, so the deal gives it no colour and the key no
+  // entry, and nothing keys in `posColor`, the ramp.
+  it('keys the grouped rows alone, the ungrouped ones taking no colour', () => {
     const display = makeDisplay(
       [
         ...groupedUncoloured(6, 3),
@@ -164,15 +164,11 @@ describe('density mode keys off the row identity colour', () => {
     )
     display.setRenderingType('density')
     byGroup(display)
-    expect(display.sources.filter(s => !s.rowColor)).toHaveLength(0)
-    expect(display.legendItems.map(i => i.label)).toEqual([
-      'g0',
-      'g1',
-      'g2',
+    expect(display.sources.filter(s => !s.rowColor).map(s => s.name)).toEqual([
       'ref0',
       'ref1',
     ])
-    expect(display.legendItems[3]!.color).toBe(display.legendItems[4]!.color)
+    expect(display.legendItems.map(i => i.label)).toEqual(['g0', 'g1', 'g2'])
     expect(
       display.legendItems.every(i => i.color !== display.wiggleColor.posColor),
     ).toBe(true)

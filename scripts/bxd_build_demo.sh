@@ -79,6 +79,7 @@ scan() {  # <trait_id> <out_stem>
 scan 11280 bxd_gwas_coatcolor
 
 # ── Coat-color scores per strain, as one rowGroups entry per score ───────────
+# Each group's colour goes in a rowColor by group, which paints its label bar.
 # GeneNetwork's 11280 scale: black 4, grey 3, brown 2, DBA/2's dilute brown 1.
 # A strain scored between two steps matches no entry and bands on its own.
 [ -f coat_color_values.json ] || curl -fsSL https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280 -o coat_color_values.json
@@ -182,7 +183,11 @@ JSON
 # band the painting's rows by coat color
 jq --slurpfile groups rowGroups.json \
   '(.tracks[] | select(.trackId == "bxd_chromosome_painting_mm10") | .displays[0])
-     += { rowGroups: $groups[0], facet: "group" }' \
+     += { rowGroups: ($groups[0] | map(del(.color))),
+          rowColor: { field: "group",
+                      domain: ($groups[0] | map(.group)),
+                      range: ($groups[0] | map(.color)) },
+          facet: "group" }' \
   "$APP"/config.json > config.tmp.json && mv config.tmp.json "$APP"/config.json
 
 echo

@@ -52,9 +52,15 @@ const FAMILY: Block[] = [
 const UNANSWERED: Block = { row: '', start: 0, end: 1000, color: 'green' }
 
 const ROW_GROUPS: RowGroup[] = [
-  { match: '^s', group: 'Kids', color: '#e41a1c' },
-  { match: '^(mom|dad)$', group: 'Parents', color: '#377eb8' },
+  { match: '^s', group: 'Kids' },
+  { match: '^(mom|dad)$', group: 'Parents' },
 ]
+
+const BY_GROUP = {
+  field: 'group',
+  domain: ['Kids', 'Parents'],
+  range: ['#e41a1c', '#377eb8'],
+}
 
 const REGIONS = [{ ...ctgA, end: 1000 }]
 
@@ -176,14 +182,17 @@ test('itemRgb paints the blocks', () => {
 test('rowGroups tag the rows and facet group bands them, keyed under short rows', () => {
   const display = loaded(
     {},
-    { rowGroups: ROW_GROUPS, rowHeight: 4, facet: 'group' },
+    { rowGroups: ROW_GROUPS, rowColor: BY_GROUP, rowHeight: 4, facet: 'group' },
     regionData([...FAMILY, UNANSWERED]),
   )
   expect(derived(display)).toMatchSnapshot()
 })
 
 test('the bands win over a whole-cohort tree holding no clade of either', async () => {
-  const display = loaded({}, { rowGroups: ROW_GROUPS, rowHeight: 4 })
+  const display = loaded(
+    {},
+    { rowGroups: ROW_GROUPS, rowColor: BY_GROUP, rowHeight: 4 },
+  )
   await clusterRun(display, '((dad,s2),(mom,s10));')
   setConf(display, 'facet', 'group')
   expect(derived(display)).toMatchSnapshot()
@@ -193,7 +202,7 @@ test('the bands win over a whole-cohort tree holding no clade of either', async 
 test('a run under the bands clusters each apart', async () => {
   const display = loaded(
     {},
-    { rowGroups: ROW_GROUPS, rowHeight: 4, facet: 'group' },
+    { rowGroups: ROW_GROUPS, rowColor: BY_GROUP, rowHeight: 4, facet: 'group' },
   )
   const partitions = await clusterRun(display, '((s2,s10),(dad,mom));')
   expect(partitions).toEqual([
@@ -204,7 +213,7 @@ test('a run under the bands clusters each apart', async () => {
   expect(display.hierarchy?.children).toHaveLength(2)
 })
 
-test("a row's colour entry reaches its label bar, its group's colour the rest", () => {
+test("a row's colour entry reaches its label bar, and a group alone colours nothing", () => {
   const display = loaded(
     { colors: { s2: '#123456' } },
     { rowGroups: [ROW_GROUPS[1]] },
@@ -217,7 +226,7 @@ test('a focus hides rows without recolouring the kept ones', () => {
     {},
     {
       rowColor: 'group',
-      rowGroups: ROW_GROUPS.map(g => ({ ...g, color: '' })),
+      rowGroups: ROW_GROUPS,
     },
   )
   display.setRowFocus(['mom', 's10'])
@@ -227,7 +236,10 @@ test('a focus hides rows without recolouring the kept ones', () => {
 })
 
 test('a legend click focuses the group it names', () => {
-  const display = loaded({}, { rowGroups: ROW_GROUPS, rowHeight: 4 })
+  const display = loaded(
+    {},
+    { rowGroups: ROW_GROUPS, rowColor: BY_GROUP, rowHeight: 4 },
+  )
   display.focusLegendEntry('rowGroups', 'Parents')
   expect(display.sources.map(s => s.name)).toEqual(['dad', 'mom'])
 })

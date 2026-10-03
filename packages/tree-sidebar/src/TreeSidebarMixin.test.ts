@@ -389,7 +389,61 @@ describe('resolvedRowColors', () => {
       { rowColor: 'group' },
       { rows: [{ name: 'a', group: 'x', color: '#0a0a0a' }, { name: 'b' }] },
     )
-    expect(colorsOf(display)).toEqual({ a: p(0), b: p(1) })
+    expect(colorsOf(display)).toEqual({ a: p(0) })
+  })
+
+  // A row with no value is missing, not a category, as ggplot's `na.value`:
+  // the deal and `unknown` pass it by, and it keeps its own colour.
+  describe('a row with no value of the attribute', () => {
+    const SPARSE: TestRow[] = [
+      { name: 'a', group: 'x' },
+      { name: 'b', group: '' },
+      { name: 'c' },
+      { name: 'd', color: '#0d0d0d' },
+      { name: 'e', group: 'y' },
+    ]
+
+    it('takes no palette turn, and keeps its own colour', () => {
+      for (const shared of [false, true]) {
+        const display = makeRowDisplay(
+          { rowColor: 'group' },
+          { rows: SPARSE, shared },
+        )
+        expect(colorsOf(display)).toEqual({
+          a: p(0),
+          d: '#0d0d0d',
+          e: p(1),
+        })
+      }
+    })
+
+    it('takes no unknown colour', () => {
+      const display = makeRowDisplay(
+        {
+          rowColor: { field: 'group', domain: [], range: [], unknown: '#ccc' },
+        },
+        { rows: SPARSE },
+      )
+      expect(colorsOf(display)).toEqual({
+        a: '#ccc',
+        d: '#0d0d0d',
+        e: '#ccc',
+      })
+    })
+
+    it("takes the colour a pair names '' by", () => {
+      const display = makeRowDisplay(
+        { rowColor: { field: 'group', domain: [''], range: ['#eee'] } },
+        { rows: SPARSE },
+      )
+      expect(colorsOf(display)).toEqual({
+        a: p(0),
+        b: '#eee',
+        c: '#eee',
+        d: '#eee',
+        e: p(1),
+      })
+    })
   })
 
   it("leaves the own colour under scale: 'none'", () => {

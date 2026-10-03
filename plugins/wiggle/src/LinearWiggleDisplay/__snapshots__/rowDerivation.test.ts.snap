@@ -597,13 +597,13 @@ exports[`rows: a focus hides rows without recolouring the kept ones 1`] = `
       "label": "Islet",
     },
     {
-      "color": "#e15759",
+      "color": "#0068d1",
       "label": "Grain4",
     },
   ],
   "markColors": [
     "#4e79a7",
-    "#e15759",
+    undefined,
   ],
   "numRows": 2,
   "overlayLegendApplies": false,
@@ -622,7 +622,7 @@ exports[`rows: a focus hides rows without recolouring the kept ones 1`] = `
       "group": undefined,
       "label": undefined,
       "name": "Grain4",
-      "rowColor": "#e15759",
+      "rowColor": undefined,
     },
   ],
 }

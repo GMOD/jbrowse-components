@@ -32,7 +32,6 @@ import type {
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
-import type { RowColorEntries } from './rowColorScale.ts'
 import type { RowSortSpec } from './rowSortAutorun.ts'
 import type { SvgSidebarProps } from './svgSidebarWidth.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
@@ -592,16 +591,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return true
       },
       /**
-       * #method
-       * Overridable hook: the pairs an attribute deal under `setting` seats
-       * first, `setting`'s own by default.
-       */
-      rowColorEntriesFor(
-        setting: RowColorEntries,
-      ): Pick<RowColorEntries, 'domain' | 'range'> {
-        return setting
-      },
-      /**
        * #getter
        * Overridable hook: the row attributes a reader can colour the rows by,
        * offered beside None and Each row. By default every attribute a row
@@ -658,9 +647,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       rowColorsFor(setting: RowColorSetting): ReadonlyMap<string, string> {
         return dealtValueColors(
-          setting.field === 'name'
-            ? setting
-            : { ...setting, ...self.rowColorEntriesFor(setting) },
+          setting,
           () => self.rowColorDealRows,
           self.rowPaletteDeals,
         )

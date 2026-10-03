@@ -169,15 +169,18 @@
           "rowGroups": [
             {
               "match": "^A ",
-              "group": "A",
-              "color": "#0072b2"
+              "group": "A"
             },
             {
               "match": "^B ",
-              "group": "B",
-              "color": "#e69f00"
+              "group": "B"
             }
           ],
+          "rowColor": {
+            "field": "group",
+            "domain": ["A", "B"],
+            "range": ["#0072b2", "#e69f00"]
+          },
           "color": {
             "value": "jexl:get(feature,'color')",
             "scale": "identity",

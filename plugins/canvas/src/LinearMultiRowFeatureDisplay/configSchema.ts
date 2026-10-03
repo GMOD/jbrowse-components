@@ -200,25 +200,30 @@ export default function configSchemaF() {
       },
       /**
        * #slot
-       * An array of `{ match, group, color }` tagging each row with the group
-       * of the first entry whose regex its name matches, and tinting its
-       * sidebar swatch. Its blocks take the colour only under
-       * `rowColor: 'group'`, where a group colour `rowColor` lists wins on
-       * both. `facet: 'group'` stacks the groups in bands.
+       * An array of `{ match, group }` tagging each row with the `group` of
+       * the first entry whose regex its name matches, an attribute like any
+       * other: `facet: 'group'` stacks the groups in bands, and
+       * `rowColor: { field: 'group' }` colours them. A row no entry matches
+       * has no group, and takes no colour from the deal.
        *
        * #example
        * ```js
        * rowGroups: [
-       *   { match: '^CLUP', group: 'Wolf', color: 'rgb(27,120,55)' },
-       *   { match: '^CLAT', group: 'Coyote', color: 'rgb(224,130,20)' },
-       * ]
+       *   { match: '^CLUP', group: 'Wolf' },
+       *   { match: '^CLAT', group: 'Coyote' },
+       * ],
+       * rowColor: {
+       *   field: 'group',
+       *   domain: ['Wolf', 'Coyote'],
+       *   range: ['rgb(27,120,55)', 'rgb(224,130,20)'],
+       * },
        * ```
        */
       rowGroups: {
         type: 'frozen',
         defaultValue: [],
         description:
-          'array of {match,group,color} tagging rows by a regex on their name; color draws the label bar of a row with no colour of its own, and the blocks under rowColor: group',
+          'array of {match,group} tagging each row with the group of the first entry whose regex its name matches; rowColor: {field: "group"} colours the groups',
       },
       /**
        * #slot facet

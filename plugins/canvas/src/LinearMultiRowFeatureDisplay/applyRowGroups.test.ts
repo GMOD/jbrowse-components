@@ -1,18 +1,9 @@
-import {
-  applyRowGroupColors,
-  compileRowGroups,
-  groupColorEntries,
-  tagRowGroups,
-} from './rowSources.ts'
+import { compileRowGroups, tagRowGroups } from './rowSources.ts'
 
 import type { RowGroup } from './rowSources.ts'
 
-const WOLF = { match: '^CLUP', group: 'Wolf', color: 'rgb(27,120,55)' }
-const VILLAGE = {
-  match: '^VILL',
-  group: 'Village dog',
-  color: 'rgb(90,174,97)',
-}
+const WOLF = { match: '^CLUP', group: 'Wolf' }
+const VILLAGE = { match: '^VILL', group: 'Village dog' }
 
 const tag = (rows: { name: string }[], groups: RowGroup[]) =>
   tagRowGroups(rows, compileRowGroups(groups))
@@ -30,14 +21,14 @@ describe('tagRowGroups', () => {
   })
 
   it('takes the first matching entry when several match', () => {
-    const broad = { match: '^C', group: 'Broad', color: 'red' }
+    const broad = { match: '^C', group: 'Broad' }
     expect(tag([{ name: 'CLUPGR000001' }], [WOLF, broad])[0]?.group).toBe(
       'Wolf',
     )
   })
 
   it('costs only its own entry when a pattern is not a valid regex', () => {
-    const bad = { match: '([', group: 'Bad', color: 'red' }
+    const bad = { match: '([', group: 'Bad' }
     expect(tag([{ name: 'CLUPGR000001' }], [bad, WOLF])).toEqual([
       { name: 'CLUPGR000001', group: 'Wolf' },
     ])
@@ -63,53 +54,5 @@ describe('tagRowGroups', () => {
       'Village dog',
       'Wolf',
     ])
-  })
-})
-
-describe('applyRowGroupColors', () => {
-  it('gives a matching row its entry colour as its rowColor', () => {
-    expect(
-      applyRowGroupColors([{ name: 'CLUPGR000001', group: 'Wolf' }], [WOLF]),
-    ).toEqual([
-      { name: 'CLUPGR000001', group: 'Wolf', rowColor: 'rgb(27,120,55)' },
-    ])
-  })
-
-  it('never touches color, so an itemRgb painting survives', () => {
-    const [row] = applyRowGroupColors(
-      [{ name: 'CLUPGR000001', color: 'rgb(1,2,3)' }],
-      [WOLF],
-    )
-    expect(row?.color).toBe('rgb(1,2,3)')
-    expect(row?.rowColor).toBe('rgb(27,120,55)')
-  })
-
-  it('keeps a resolved rowColor', () => {
-    const row = { name: 'CLUPGR000001', rowColor: 'rebeccapurple' }
-    expect(applyRowGroupColors([row], [WOLF])[0]).toBe(row)
-  })
-
-  it('returns the input unchanged when no entries are configured', () => {
-    const sources = [{ name: 'a' }]
-    expect(applyRowGroupColors(sources, [])).toBe(sources)
-  })
-})
-
-describe('groupColorEntries', () => {
-  it('adds each unlisted group its own colour, keeping the spare range', () => {
-    expect(
-      groupColorEntries([WOLF, VILLAGE], {
-        domain: ['Wolf'],
-        range: ['red', 'pink'],
-      }),
-    ).toEqual({
-      domain: ['Wolf', 'Village dog'],
-      range: ['red', 'rgb(90,174,97)', 'pink'],
-    })
-  })
-
-  it('returns the entries themselves when every group is listed', () => {
-    const entries = { domain: ['Wolf', 'Village dog'], range: ['a', 'b'] }
-    expect(groupColorEntries([WOLF, VILLAGE], entries)).toBe(entries)
   })
 })

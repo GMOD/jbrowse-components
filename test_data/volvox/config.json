@@ -358,9 +358,7 @@
             "domain": ["mom", "offspring03"],
             "range": ["#222222", "#bbbbbb"]
           },
-          "rowGroups": [
-            { "match": "^(mom|dad)$", "group": "Parents", "color": "#e41a1c" }
-          ],
+          "rowGroups": [{ "match": "^(mom|dad)$", "group": "Parents" }],
           "facet": "group",
           "rowHeight": 14
         }
