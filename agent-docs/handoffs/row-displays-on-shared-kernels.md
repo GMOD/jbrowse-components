@@ -1,6 +1,6 @@
 ---
 name: row-displays-on-shared-kernels
-description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, the MAF cleanups and the shared insertion mark landed the same day, the two row-colour bugs on 2026-10-03; open are multi-row faceting by other fields, per-mark seams, the one-row-model hook seam and variant wire shapes."
+description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, the MAF cleanups and the shared insertion mark landed the same day, row colour on 2026-10-03 (ADR-207); open are per-mark seams and variant wire shapes."
 ---
 
 # Row displays on shared kernels
@@ -32,38 +32,13 @@ thing — not ports onto `LinearMarkDisplay`.
 
 ## Open bugs and calls
 
-Landed 2026-10-03: `rowColor: { unknown: '' }` deals no palette while the
-values its `domain` lists still paint, so the dialog's None recolours one row
-and leaves the rest unpainted (ADR-164, amended). Step 3 of the row-colour
-redesign deleted `rowGroups[].color`: a group's colour is
-`rowColor: { field: 'group' }`, and a row with no value takes no colour. Step 4
-replaced `rowGroupLegend`, `getSampleGroupEntries` and wiggle's source key with
-one mixin key, `rowColorScales`.
+Row colour landed whole on 2026-10-03 as
+[ADR-207](../architecture-decision-records/adr-207-a-rows-colour-resolves-once-and-shows-beside-its-label.md):
+one resolution, a label bar, groups as attributes, one key and one dialog.
 
-- **Multi-row `facet` on any field but `group` or `name` is a corner notice**:
-  a row carries no other attribute, and banding by a feature attribute would
-  split rows in the worker. Nobody has asked for more.
-
-## A Fable arbitration of the row-colour model, not wanted now
-
-A read-only Fable review on 2026-10-02, its code claims re-checked, read the
-row-colour calls and the `rowColor` name as one change: finish step 4's palette
-flip as a model change while keeping each display's palette, so almost no pixel
-moves (about 6 days). Its "no palette, pairs still paint" half landed with the
-two bugs above as `unknown: ''`, not by bending `scale: 'none'`; the rest retires parallel legend and colour paths and changes nothing a reader
-sees, so it waits for step 5's hook seam, which touches the same code.
-
-- **A group is a row attribute** (landed: `rowGroups[].color` is gone, a
-  group's colour lives in `rowColor.domain/range`). Multi-row takes wiggle's dynamic
-  `identityChannel` (`'labelColor'` while itemRgb or a `color` field paints the
-  blocks, `'color'` otherwise), retiring `colorRowLabels`, `rowGroupLegend`,
-  variants' `getSampleGroupEntries` and wiggle's group legend half for one mixin
-  legend scale.
-- **Rows carry attributes generically** (`ListedRowSource`, samplesTsv), so the
-  mixin's defaults serve `rowColorFields`, `rowBand` and one "no row carries X"
-  notice; with step 5's hook seam. A facet on a feature field stays a notice.
-- **Keep `rowColor`**, and reword `PLOT_VOCABULARY.rowColor` to "the colour a row
-  is known by: its content where nothing else paints it, else its label".
+- **Multi-row `facet` on a feature field is a notice** (`rowBandingNotices`):
+  a row carries only its name and `group`, and banding by a feature attribute
+  would split rows in the worker. Nobody has asked for more.
 
 ## Convergence, in order
 
@@ -99,17 +74,6 @@ sees, so it waits for step 5's hook seam, which touches the same code.
    takes `CANVAS_SEAM_PX`), so it cannot reproduce MAF cells
    (`minWidthPx: 0`, `seamPx: GAP_STROKE_OFFSET`). The row offset has two
    spellings, `scrollTop` on span and `rowOffsetPx` on the rest.
-5. **one-row-model step 7, the hook seam**, which no handoff tracked after
-   grammar-unity replaced that doc's order of work. `TreeSidebarMixin()` takes
-   no options; displays override 3-8 hooks each, many returning constants
-   (`identityChannel`, `rowColorFields`, `rowColorDealFor`). Members outside
-   the hook list are overridden anyway: MAF `clusterableSources`, wiggle
-   `rowStylingIsCustom`, multi-row `effectiveRowHeight`. With
-   `identityChannel` an option, the four ~33-line row-arrangement dialog
-   wrappers (multi-row, MAF, mark, variants' `SetColorDialog.tsx`) collapse.
-   Step 4's palette flip and its retirements (`colorRowLabels`,
-   `rowGroups[].color`, `rowGroupLegend`, `getSampleGroupEntries`) are not
-   wanted now (Colin, 2026-10-02).
 
 ## Simplifications
 
@@ -129,8 +93,7 @@ sees, so it waits for step 5's hook seam, which touches the same code.
   (`computeVariantCells.ts:117-294`, `computeVariantMatrixCells.ts:86-191`);
   both variant chromes and MAF's mount the same scroll/sidebar/overlay tree.
   `spatialIndex` is the same `buildSpatialIndex(self.hierarchy)` on five
-  displays, but the mixin owns no `hierarchy`, so it moves with step 5's hook
-  seam.
+  displays, but the mixin owns no `hierarchy`.
 - MAF: the coverage band hard-codes a linear scale four times
   (`stateModel.ts:1592-1664`), the shape `scales.y` would replace when its
   trigger comes.

@@ -116,19 +116,11 @@ sort. Those are today's two rules, stated by their source.
 
 ## Colour, after the rows
 
-Each row display first states what a row's colour paints: the label (the
-variant displays), the row's content (multi-row's `rowColor` pairs), or the plot
-(wiggle, which moves identity to `labelColor` under a gradient). Then one
-colour object (ADR-135's shape) carries it, with a declared target per display,
-and the label swatch always reads it, which retires `colorRowLabels`. Per-row
-colours are the object's `domain`/`range` pairs, which already pair by position.
-One dealer hands out a palette over an order it is given, ties in source order,
-so a drag no longer recolours a wiggle row; never a bare hash over discovered
-rows, which collides. One precedence: an explicit entry, then the feature's own
-colour, then the palette. An adapter's per-row colour (a subtrack's `color`,
-MAF's `samples[].color`, a samples TSV column) enters as an explicit entry and
-stays, since a discovered row set has no other place to state one. Which palette is a visual call, captured side by side
-before it is asked.
+Decided by
+[ADR-207](../../architecture-decision-records/adr-207-a-rows-colour-resolves-once-and-shows-beside-its-label.md):
+one resolution (entry, then the row's own colour, then a palette by name only in
+a shared panel), a label bar in place of `colorRowLabels`, groups as an
+attribute, one key and one dialog.
 
 ## Order of work
 
@@ -143,10 +135,8 @@ before it is asked.
    `rows` replaces `layout`, `clusterTree`, `clusterProvenance` and
    `subtreeFilter`; `facet.hidden` replaces the volatile hide-set. ~~The
    changes table's array summary~~ (`86cadb9f94`). About 7–11 days.
-4. **Colour**, as above: ~~the `rowColor` object and one dealer, each display
-   handing in its old order and palette at a zero image diff~~ (ADR-160); then
-   the palette flip after the side-by-side capture, the base arrangement on
-   wiggle and the one precedence on the variant displays.
+4. ~~**Colour**: the `rowColor` object and one dealer~~ (ADR-160), ~~then one
+   resolution, the palette and the precedence~~ (ADR-207).
 5. ~~**A tree per band**, ComplexHeatmap's `row_split` with `cluster_rows`, which
    retires "a band yields to a tree"~~ (ADR-169, `ba2c68e31d`…`ccc131d14f`).
 6. ~~**The mark display takes `rows`** for bar and point marks, whose rows are
@@ -154,9 +144,10 @@ before it is asked.
    a pileup's variable-height sections need a tree laid against section tops.
    Its integer `encoding.row` gets another name then — not "lane", which
    already names a synteny section.
-7. **Harden the hook seam**: static hooks become mixin factory options and
-   dynamic ones getters, plus a test that no display redefines a mixin member
-   outside the declared list.
+7. ~~**Harden the hook seam**~~ (ADR-207): every hook stays an overridable
+   getter, a constant one included, since factory options beside getters would
+   be two mechanisms for one; `declaredHooks.test.ts` holds each display to the
+   members documented as hooks.
 
 ## Declined
 
@@ -170,31 +161,3 @@ before it is asked.
   repeats below nine.
 - **A `layout` config slot** carrying whole row records: order, labels and
   colours each have a home in the two objects and the colour object.
-
-## Step 4 plan (design pass, 2026-09-23)
-
-Notes as the design pass left them; file and line references are to main of that day.
-
-
-### Object
-`rowColor: field | { field, scale, domain, range }` on all four displays (display-kit factory: colorChannelSlots categorical + colorDomainSlot + colorRangeSlot; shorthand field; closed; no value, no scheme). `field` = row attribute, default `name`; `group`; a samplesTsv column. `domain` = the field's values; unlisted values take the dealt palette. Per-row entries = `field: 'name'` pairs. VariantRowColor folds in. A hand recolour under a non-name field materialises resolved colours as name pairs (~60 KB / 2,500 rows) — keep in one function. Target = display fact = `identityChannel`. `colorRowLabels` goes (labelColor = resolved row colour everywhere) → tinted label boxes on multi-row and rows-layout wiggle figures = named pixel change + visual call. `rowGroups[].color` goes → `rowGroups: [{match, group}]` derives `group`; `rowColor: { field: 'group', domain, range }`; wiggle's groups-first rule = `rowColor: { field: 'group' }` default where a source carries a group (`effectiveRowColor`). Wiggle `color: { field: 'source' }` stays the plot-side switch but `sourcePalette` reads rowColor; domain/range under color.field source → colorProblems.
-
-### Dealer
-`dealRowColors(order, {domain, range}, palette)`: listed → range[i]; others first-seen over one cursor `[...range.slice(domain.length), ...palette]`; past end: wrap vs re-lit laps (question 2); no hash, no randomColor. Order = base arrangement `orderRowsByDomain(expandedRows, baseRowDomain)`. One computed `rowColorScale` on the mixin; arrangeRows' relabel pass takes the Map. Fixtures that move at the flip: wiggle overlay (volvox_microarray_multi*, microarray_multi 21, pur_copynumber_1000g 104 → cnv1000g/*, paper/cohort_cnv, methylation/*, tcga/cohort_cnv_*); multi-row (bxd painting, broad_chromhmm 9, roadmap 127/19 groups, dog10k 14 → qtl/bxd_*, dog10k-*, ui.ts roadmap); variants (population_1000genomes, ld/*, popgen/*, jbrowse-img/multisample_variants, volvox_variants); MAF unchanged (no default palette; opt-in `rowColor: 'name'`).
-
-### Palette call (Colin) — page: scenes × palettes (+ deuteranopia column via feColorMatrix)
-Candidates: set1 (9; #ffff33 vanishes; #999 = no-value grey), categoricalPalette (~40, tableau10-first, 14 near-twins), tableau10, Okabe-Ito (8, CVD), Tol bright/vibrant (7), Tol muted (9, lines), d3 schemeSet2 (8 pastels, poor at 1 px), Tableau 20, re-lit laps off 9–10 base (karyotype mechanism). Scenes at 5/20/100 rows: wiggle overlay line+xy (volvox_microarray_multi, microarray_multi, pur_copynumber_1000g); wiggle rows density with groups (volvox_microarray_multi_grouped, microarray_multi_groups); multi-row blocks (volvox_mouse_inheritance_rows, broad_chromhmm, roadmap_chromhmm); variants label tint (volvox multi-sample sv; variants/population_1000genomes population 26); MAF label tint (volvox_maf, hg38.multiz470way). How: `generate-screenshots.ts --check --filter <spec> --exact --localport 3355` (FIGURE_CAPTURE.md:184) + dealer palette override, one run per candidate; one HTML page. One-look question: at 20 rows on a 1 px line and a 4 px block, which palette keeps every neighbour apart with nothing vanishing on white — and past its length, re-lit lap or wrap?
-The flip should deal over an order no save changes. Until it does, the multi-row display recolours rows on a pan, and "Save track settings to config" recolours every row, since the palette is dealt over the base order and the save rewrites the base. A second page goes with the call: a tour of what steps 3–4 changed on screen (drag, cluster, undo, reset on an agent-built track, the MAF guide tree turning).
-Questions: 1 palette; 2 past-length rule; 3 label boxes always tinted (tint on/off pair at 20 rows); 4 variants value order first-seen vs count-ranked (legend both ways); 5 field mapping vs TSV colour column (no fixture; design says own colour stays).
-
-### The rowGroups colour against GenomeSpy (2026-09-27)
-GenomeSpy's groups carry no colour; a group's is its attribute's scale (`getGroupColorScale`, `packages/app/src/charts/sampleAttributePlotUtils.js`), and attribute colours paint the metadata cells, never the marks. So `rowGroups[].color` → `rowColor: { field: 'group' }` is right, but it cannot ship alone: `rowColor` targets multi-row's blocks, and an explicit entry beats itemRgb, so the roadmap/chromHMM and dog10k figures would paint group colours over their states. It needs question 3's answer — an attribute's colour on the label box, a row's own (`field: 'name'`) on its content — first.
-
-### Precedence
-explicit entry (pair in the field's keyspace) → row's own colour (subtrack color, MAF samples[].color, samplesTsv color column, multi-row itemRgb/color slot) → dealt palette. Variants deviates (field palette beats own + pairs) → fixed at the flip (no fixture TSV has a color column → no pixel moves). Wiggle follows. Multi-row withholds palette under color slot/itemRgb = display fact. Gradient→label identity, rowColor entry replacing threshold pair = display facts.
-
-### Sequencing (≈6.5 d + the call)
-5a object 1.5 d (zero images; web ConfigSlotDefaults snap moves on CI); 5b dealer 2 d (each display hands today's order+palette → zero diff; retire buildPaletteColors, resolveRowColorStrings palette half, colorByPalette; speed gate: rowColorScale identity across setRowOrder/setRowFocus/relabel; categoricalScale dealt-order option 0.5 d); 5c legend 1 d (one ColorScale id 'rowColor' focusesRows via unionLegendCandidates; one focusLegendEntry by field value; retire legendItems.ts, getSampleGroupEntries, rowGroupLegend; text-snapshot diffs, zero pixels); 5d retirements 1.5 d (colorRowLabels, rowGroups[].color: config_demo roadmap, demos/arg, ui.ts:2369, dog10k.ts, chromhmm.md, videos/epigenomics.ts; palettizer writing rowColor.field; wiggle source-range notice; named pixels: tinted label boxes); 5e flip 0.5 d + call (one commit per display naming its figures; goldens refresh; figures:push --filter per family).
-
-### Already decided / undo / defer
-ADR-151 palette→range; no categorical scheme. ADR-153: categoricalScale hashes unlisted → dealt-order option. ADR-154: Color by none = scale none keeping field. Undo: VariantRowColor schema; amend ADR-153 "range in domain's order" → rowColor; ADR-157 "pairs, which the palette still beats" reverses. Defer: rowGroups partition → facet 'group' (step 5); mark display (step 6); MAF default palette (opt-in).

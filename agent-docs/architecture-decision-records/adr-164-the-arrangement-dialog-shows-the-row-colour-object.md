@@ -7,7 +7,7 @@ summary: "The row displays' arrangement dialog is a view of the `rowColor` objec
 
 ## Status
 
-Accepted (2026-09-24), Colin's answer to ADR-160's call 5 after a mock of the
+Accepted (2026-09-24); amended by [ADR-207](adr-207-a-rows-colour-resolves-once-and-shows-beside-its-label.md), which drops the identity channel the dialog read. It was Colin's answer to ADR-160's call 5 after a mock of the
 dialog (today's beside this one). A recolour under a Color by had to guess what
 the reader meant; he asked for the form to be redesigned instead.
 
