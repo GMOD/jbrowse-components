@@ -1,6 +1,5 @@
-import { NO_VALUE_LABEL, keyNames } from '@jbrowse/core/util/categoricalField'
+import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
   derivedColorScale,
@@ -14,7 +13,6 @@ import {
   REFERENCE_COLOR,
   SECONDARY_ALT_COLOR,
   UNPHASED_COLOR,
-  capitalizeFirst,
 } from './constants.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
 import {
@@ -24,7 +22,6 @@ import {
   getImpactColor,
 } from './variantConsequence.ts'
 
-import type { Source } from './types.ts'
 import type {
   CategoricalEntry,
   CategoricalScale,
@@ -137,42 +134,6 @@ export function getGenotypeEntries(
     ...(secondary ? [entry('Other alt allele', SECONDARY_ALT_COLOR)] : []),
     ...rest,
   ]
-}
-
-// The sample-grouping scale (the per-row sidebar colouring): one entry per
-// `colorBy` value among the drawn rows, in `order` and then the field's own
-// order, the blank group last unless `order` lists it, reusing the
-// `rowColor` that group's rows resolved to. Empty when colorBy is
-// unset or no row carries it.
-export function getSampleGroupEntries(
-  colorBy: string,
-  sources: Source[] | undefined,
-  order: readonly string[] = [],
-): CategoricalEntry[] {
-  if (!colorBy || !sources?.length) {
-    return []
-  }
-  const colorByValue = new Map<string, string | undefined>()
-  for (const source of sources) {
-    const value = String(source[colorBy] ?? '')
-    const { rowColor } = source
-    if (rowColor !== undefined || !colorByValue.has(value)) {
-      colorByValue.set(value, rowColor)
-    }
-  }
-  // A single group (whether unset '' or one shared real value) distinguishes
-  // nothing, so the group scale is omitted — matches getVariantColorScales'
-  // "omitted when colorBy is unset or carries a single value".
-  if (colorByValue.size <= 1) {
-    return []
-  }
-  return [...colorByValue.keys()]
-    .sort(groupKeyComparator(order))
-    .map(value => ({
-      value,
-      label: value || NO_VALUE_LABEL,
-      color: colorByValue.get(value),
-    }))
 }
 
 export const DOSAGE_NOTE = 'Pale: het, full: hom'
@@ -326,17 +287,12 @@ function getCellColorScale(
 }
 
 /**
- * The display's color scales, each a section of the key the reader can close on
- * its own: the genotype/cell coloring, the insertion marker where one is drawn,
- * and (when colorBy is set) the sample-grouping coloring used for the sidebar
- * row labels. The group scale is omitted when colorBy is unset or carries a
- * single value.
+ * The display's own color scales, each a section of the key the reader can
+ * close on its own: the genotype/cell coloring and the insertion marker where
+ * one is drawn.
  */
 export function getVariantColorScales({
   color,
-  colorBy,
-  sources,
-  groupOrder,
   insertionMarkers = false,
   colorSlots,
   ...inputs
@@ -346,16 +302,10 @@ export function getVariantColorScales({
   color: ColorEncoding | undefined
   // The slots a categorical `color` deals its values into (`heldColorSlots`).
   colorSlots?: HeldSlots
-  colorBy: string
-  sources: Source[] | undefined
-  // The order the grouping key lists its values in: the bands' when the facet
-  // reads `colorBy`, else the palette's deal.
-  groupOrder?: readonly string[]
   // Whether the display is drawing insertion markers in this window (columns
   // never does, genomic only where a marker outgrows its cell).
   insertionMarkers?: boolean
 }): ColorScale[] {
-  const groupEntries = getSampleGroupEntries(colorBy, sources, groupOrder)
   // Phase-set coloring exists only on the phased path — the allele-count cell
   // loop never reads PS — so outside phased mode the cells are genotype-colored
   // and the legend has to say that instead of describing a scheme that isn't on
@@ -384,17 +334,6 @@ export function getVariantColorScales({
             id: 'insertions',
             title: 'Insertions',
             entries: [entry('Widened to inserted bp')],
-          },
-        ]
-      : []),
-    ...(groupEntries.length
-      ? [
-          {
-            kind: 'categorical' as const,
-            id: 'group',
-            title: capitalizeFirst(colorBy) || 'Samples',
-            focusesRows: true,
-            entries: groupEntries,
           },
         ]
       : []),

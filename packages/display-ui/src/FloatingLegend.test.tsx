@@ -181,6 +181,26 @@ describe('FloatingLegend', () => {
     expect(getByText('item1').closest('button')).toBeNull()
   })
 
+  it('leaves a note row inert in a section that names rows', () => {
+    const { getByText } = render(
+      <FloatingLegend
+        sections={[
+          {
+            id: 'rowColor',
+            focusesRows: true,
+            items: [
+              { label: 'Wolf', color: 'red', value: 'Wolf' },
+              { label: '+3 more', value: '' },
+            ],
+          },
+        ]}
+        onItemClick={jest.fn()}
+      />,
+    )
+    expect(getByText('Wolf').closest('button')).not.toBeNull()
+    expect(getByText('+3 more').closest('button')).toBeNull()
+  })
+
   it('renders no Material UI, in every state that has a control', () => {
     const { container } = render(
       <FloatingLegend

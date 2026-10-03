@@ -1495,21 +1495,25 @@ export function stateModelFactory(
         /**
          * #getter
          * `LegendMixin`'s hook: the keys as color scales, so the chrome and the
-         * export draw the legend off the tables the worker resolved
+         * export draw the legend off the tables the worker resolved, then the
+         * row colour key
          */
         get colorScales() {
-          return markColorScales(
-            this.legendSections,
-            self.facet
-              ? categoricalField(self.facet.field, {
-                  domain: self.facet.domain,
-                })
-              : self.drawsRows
-                ? categoricalField(self.rowsField, {
-                    domain: self.editableSources.map(row => row.name),
+          return [
+            ...markColorScales(
+              this.legendSections,
+              self.facet
+                ? categoricalField(self.facet.field, {
+                    domain: self.facet.domain,
                   })
-                : undefined,
-          )
+                : self.drawsRows
+                  ? categoricalField(self.rowsField, {
+                      domain: self.editableSources.map(row => row.name),
+                    })
+                  : undefined,
+            ),
+            ...self.rowColorScales,
+          ]
         },
       }))
       .views(self => ({

@@ -172,10 +172,10 @@ function renderResult(result: React.ReactNode) {
   )
 }
 
-const rowGroups: ColorScale = {
+const rowColorKey: ColorScale = {
   kind: 'categorical',
-  id: 'rowGroups',
-  title: 'Row groups',
+  id: 'rowColor',
+  title: 'Group',
   entries: [
     { value: 'Village dog', label: 'Village dog', color: '#e41a1c' },
     { value: 'Wolf', label: 'Wolf', color: '#377eb8' },
@@ -270,7 +270,7 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
       await renderSvg(
         makeModel({
           showLegend: true,
-          legendSpec: legendSpecOf([rowGroups]),
+          legendSpec: legendSpecOf([rowColorKey]),
         }),
         {},
       ),
@@ -279,7 +279,7 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
     expect(html).toContain('>Wolf</text>')
     expect(html).toContain('fill="#e41a1c"')
     // A lone scale names the box, per legendSpecOf's shared rule.
-    expect(html).toContain('>Row groups</text>')
+    expect(html).toContain('>Group</text>')
   })
 
   // With both vocabularies present each gets its heading, so a reader can tell
@@ -296,14 +296,14 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
               title: 'Feature colors',
               entries: [{ value: 'exon', label: 'exon', color: 'red' }],
             },
-            rowGroups,
+            rowColorKey,
           ]),
         }),
         {},
       ),
     )
     expect(html).toContain('>Feature colors</text>')
-    expect(html).toContain('>Row groups</text>')
+    expect(html).toContain('>Group</text>')
   })
 
   // An export is a standalone figure, so a track whose data would not load

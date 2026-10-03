@@ -307,7 +307,7 @@ const LegendItemList = observer(function LegendItemList({
           </>
         )
         const itemClass = cx(classes.item, item.hidden && classes.hiddenItem)
-        return onItemClick ? (
+        return onItemClick && legendSwatches(item).length > 0 ? (
           <button
             // eslint-disable-next-line @eslint-react/no-array-index-key
             key={`${item.label}-${i}`}

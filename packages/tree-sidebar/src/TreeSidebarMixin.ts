@@ -1,5 +1,5 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { getContainingTrack } from '@jbrowse/core/util'
+import { capitalizeFirst, getContainingTrack } from '@jbrowse/core/util'
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
@@ -14,10 +14,14 @@ import {
   keptRows,
   matchBandClades,
 } from './clusterUtils.ts'
+import { focusRows } from './focusRows.ts'
 import { maxNodeHeight } from './hierarchy.ts'
 import {
+  ROW_COLOR_SCALE_ID,
   dealtValueColors,
   resolveRowColors,
+  rowColorKeyEntries,
+  rowColorKeyValue,
   rowFieldValue,
   withRowColors,
 } from './rowColorScale.ts'
@@ -32,10 +36,12 @@ import type {
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
+import type { RowColorKeyInputs } from './rowColorScale.ts'
 import type { RowSortSpec } from './rowSortAutorun.ts'
 import type { SvgSidebarProps } from './svgSidebarWidth.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
 import type { HoveredTreeNode, RowSource } from './types.ts'
+import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 /**
@@ -266,7 +272,8 @@ export interface ClusterRun {
  * or the colour `dealtRowColors` deals its attribute value), else its own
  * `color`, else the row palette's colour by name where `rowPaletteDeals`. The
  * sidebar draws it as a bar beside the row's label, and a display paints its
- * marks in it where `rowColorPaintsMarks`.
+ * marks in it where `rowColorPaintsMarks`. Its key is `rowColorScales`, and a
+ * click on an entry focuses that entry's rows (`focusLegendEntry`).
  *
  * Every arrangement write reaches the session at once rather than after the
  * track's 400 ms save, so a clustering run is one undo step and undoable the
@@ -722,6 +729,57 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           self.resolvedRowColors,
         )
       },
+      /**
+       * #getter
+       * What the row colour key and its focus read of the colours.
+       */
+      get rowColorKeyInputs(): RowColorKeyInputs {
+        const setting = self.rowColorSetting
+        return {
+          setting,
+          pairs: pairedColorsOf(setting),
+          dealt: self.dealtRowColors,
+          resolved: self.resolvedRowColors,
+        }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The row colour key, which every display spreads into its
+       * `colorScales`: one scale titled by the `rowColor` field, or none
+       * where it has no entries. Its entries (`rowColorKeyEntries`) show
+       * where the labels cannot name the colours: by an attribute, or by
+       * name in a shared panel. By name on stacked rows the labels are the
+       * key.
+       */
+      get rowColorScales(): CategoricalScale[] {
+        const { field } = self.rowColorSetting
+        if (field === 'name' && !self.sharesPanel) {
+          return []
+        }
+        const labels = new Map(
+          field === 'name'
+            ? self.editableSources.map(row => [row.name, row.label ?? row.name])
+            : [],
+        )
+        const entries = rowColorKeyEntries(
+          self.rowColorDealRows,
+          self.rowColorKeyInputs,
+          name => labels.get(name) ?? name,
+        )
+        return entries.length > 0
+          ? [
+              {
+                kind: 'categorical',
+                id: ROW_COLOR_SCALE_ID,
+                title: capitalizeFirst(field),
+                focusesRows: true,
+                entries,
+              },
+            ]
+          : []
+      },
     }))
     .views(self => ({
       /**
@@ -1033,4 +1091,27 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         },
       }
     })
+    .actions(self => ({
+      /**
+       * #action
+       * `LegendHost`'s hook: a click on a row colour key entry narrows the
+       * rows to those it lists. Every other scale's entries name colours, not
+       * rows, and stay inert.
+       */
+      focusLegendEntry(scaleId: string, value: string) {
+        const key = self.rowColorKeyInputs
+        const names =
+          scaleId === ROW_COLOR_SCALE_ID
+            ? self.editableSources
+                .filter(row => rowColorKeyValue(row, key) === value)
+                .map(row => row.name)
+            : []
+        if (names.length > 0) {
+          focusRows(
+            self as typeof self & { setScrollTop(top: number): void },
+            names,
+          )
+        }
+      },
+    }))
 }

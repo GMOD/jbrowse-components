@@ -11,7 +11,7 @@ import type { RowColorSetting, RowSource } from '@jbrowse/tree-sidebar'
 function makeSelf(
   overrides: Partial<
     Parameters<typeof buildMultiRowTrackMenuItems>[0] & {
-      rowGroupLegend: LegendItem[]
+      rowColorKey: LegendItem[]
     }
   > = {},
 ) {
@@ -24,7 +24,7 @@ function makeSelf(
     setShowRowLabels: () => {},
     effectiveRowHeight: 14,
     colorLegend: [],
-    rowGroupLegend: [],
+    rowColorKey: [],
     hiddenCategories: [],
     // Nothing loaded by default, which is the "One row per..." item's own
     // absent condition.
@@ -74,7 +74,7 @@ function makeSelf(
   return {
     ...self,
     hiddenCategorySet: new Set(self.hiddenCategories),
-    hasLegendKey: self.colorLegend.length > 0 || self.rowGroupLegend.length > 0,
+    hasLegendKey: self.colorLegend.length > 0 || self.rowColorKey.length > 0,
   }
 }
 
@@ -215,15 +215,15 @@ describe('multi-row track menu', () => {
     expect(labels(subMenuOf(withLegend, 'Show...'))).toContain('Show legend')
   })
 
-  // The row-group key is drawn under the same `showLegend` slot but is not a
+  // The row colour key is drawn under the same `showLegend` slot but is not a
   // category vocabulary, so it contributes no "Categories" submenu — and its
   // ordinary track has an empty colorLegend, so gating "Show legend" on
   // colorLegend alone makes the legend's own "x" a one-way door.
-  it('offers "Show legend" for the row-group key with no color key at all', () => {
+  it('offers "Show legend" for the row colour key with no color key at all', () => {
     const items = buildMultiRowTrackMenuItems(
       makeSelf({
         colorLegend: [],
-        rowGroupLegend: [{ label: 'Wolf', color: '#377eb8' }],
+        rowColorKey: [{ label: 'Wolf', color: '#377eb8' }],
       }),
     )
 

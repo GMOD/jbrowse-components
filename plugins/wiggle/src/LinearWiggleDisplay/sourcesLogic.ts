@@ -30,6 +30,12 @@ export function sourcesFromRegionData(
 }
 
 /**
+ * The grey a source with no colour paints in beside dealt ones in one panel,
+ * as ggplot's `na.value`: the default plot colour would read as a dealt one.
+ */
+export const UNCOLORED_ROW = '#999'
+
+/**
  * The colour a source's marks paint in: its resolved `rowColor` where
  * `marksTakeRowColor`, else its own `color`, which a density row fades to.
  */

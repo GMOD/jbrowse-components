@@ -2230,7 +2230,8 @@ export default function stateModelFactory(
          * #getter
          * `LegendMixin`'s hook: the key for whatever `activeRowRendering` is
          * painting, or none where the rendering needs no key (plain bases),
-         * then the CDS frame key while the strip is drawn.
+         * then the CDS frame key while the strip is drawn, then the row colour
+         * key.
          *
          * A dispatch, not a description: each key is built by the module that
          * paints the rendering, out of the colors it paints with. Written out
@@ -2280,24 +2281,27 @@ export default function stateModelFactory(
           // The CDS strip draws *over* whichever rendering won, so it is its
           // own section rather than a branch of the dispatch, and last, in
           // paint order.
-          return self.visibleFrames.length > 0
-            ? [
-                ...rendered,
-                categoricalScale(
-                  'cdsFrame',
-                  'CDS frame',
-                  getFrameLegendItems(palette),
-                ),
-              ]
-            : rendered
+          return [
+            ...rendered,
+            ...(self.visibleFrames.length > 0
+              ? [
+                  categoricalScale(
+                    'cdsFrame',
+                    'CDS frame',
+                    getFrameLegendItems(palette),
+                  ),
+                ]
+              : []),
+            ...self.rowColorScales,
+          ]
         },
         /**
          * #getter
          * Whether this display HAS a color key, as opposed to whether one is
          * drawn right now — which is the question "Show legend" is offered on.
          * The bases key nothing, since they paint the theme's base colours;
-         * every other rendering keys what it paints, and the CDS strip keys
-         * itself over whichever won.
+         * every other rendering keys what it paints, the CDS strip keys
+         * itself over whichever won, and a row colour keys itself.
          *
          * Overrides `LegendMixin`'s, which reads the scales: those decline on
          * an uninitialized view and on a rank the data has not reported yet, so
@@ -2307,7 +2311,8 @@ export default function stateModelFactory(
         get hasLegendKey(): boolean {
           return (
             !paintsBases(self.activeRowRendering) ||
-            self.visibleFrames.length > 0
+            self.visibleFrames.length > 0 ||
+            self.rowColorScales.length > 0
           )
         },
       }))

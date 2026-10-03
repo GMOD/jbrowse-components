@@ -230,14 +230,6 @@ describe('a tree per band', () => {
     ])
     expect(display.treelessBandCount).toBe(0)
   })
-
-  it('keys the row colours in the band order', async () => {
-    const { display } = await bandedRun()
-    display.setRowColorField('population')
-    setConf(display, 'facet', { field: 'population', domain: ['EUR'] })
-
-    expect(display.rowColorKeyOrder).toEqual(['EUR'])
-  })
 })
 
 describe('the config `domain` seeds the sample order', () => {

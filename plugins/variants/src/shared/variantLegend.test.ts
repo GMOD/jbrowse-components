@@ -8,11 +8,9 @@ import { IMPACT_FIELD, UNANNOTATED_IMPACT } from './variantConsequence.ts'
 import {
   DOSAGE_NOTE,
   getGenotypeEntries,
-  getSampleGroupEntries,
   getVariantColorScales,
 } from './variantLegend.ts'
 
-import type { Source } from './types.ts'
 import type { VariantLegendInputs } from './variantLegend.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
@@ -100,92 +98,19 @@ describe('getGenotypeEntries', () => {
   })
 })
 
-describe('getSampleGroupEntries', () => {
-  const sources: Source[] = [
-    { name: 'HG1', population: 'EUR', rowColor: '#a' },
-    { name: 'HG2', population: 'AFR', rowColor: '#b' },
-    { name: 'HG3', population: 'EUR', rowColor: '#a' },
-    { name: 'HG4', population: 'EUR', rowColor: '#a' },
-  ]
-
-  it('returns [] when colorBy is unset', () => {
-    expect(getSampleGroupEntries('', sources)).toEqual([])
-  })
-
-  it('returns [] when sources are undefined/empty', () => {
-    expect(getSampleGroupEntries('population', undefined)).toEqual([])
-    expect(getSampleGroupEntries('population', [])).toEqual([])
-  })
-
-  it('one entry per distinct value in the given order, with its color', () => {
-    expect(getSampleGroupEntries('population', sources, ['EUR'])).toEqual([
-      { value: 'EUR', label: 'EUR', color: '#a' },
-      { value: 'AFR', label: 'AFR', color: '#b' },
-    ])
-    expect(getSampleGroupEntries('population', sources)).toEqual([
-      { value: 'AFR', label: 'AFR', color: '#b' },
-      { value: 'EUR', label: 'EUR', color: '#a' },
-    ])
-  })
-
-  it('labels missing values as (no value), last, and tolerates missing color', () => {
-    const mixed: Source[] = [
-      { name: 'a', population: 'EUR', rowColor: '#a' },
-      { name: 'b', rowColor: '#b' }, // no population
-    ]
-    const items = getSampleGroupEntries('population', mixed)
-    expect(items).toContainEqual({ value: 'EUR', label: 'EUR', color: '#a' })
-    expect(items.at(-1)).toEqual({
-      value: '',
-      label: '(no value)',
-      color: '#b',
-    })
-  })
-
-  it('returns [] when colorBy attribute is absent from every source', () => {
-    const noPop: Source[] = [
-      { name: 'a', rowColor: '#a' },
-      { name: 'b', rowColor: '#b' },
-    ]
-    expect(getSampleGroupEntries('population', noPop)).toEqual([])
-  })
-})
-
 describe('getVariantColorScales', () => {
-  const sources: Source[] = [
-    { name: 'HG1', population: 'EUR', rowColor: '#a' },
-    { name: 'HG2', population: 'AFR', rowColor: '#b' },
-  ]
-
-  it('only the genotype section when colorBy is unset', () => {
+  it('only the genotype section under the default colour', () => {
     const sections = getVariantColorScales({
       ...inputs(),
       color: undefined,
-      colorBy: '',
-      sources,
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes'])
-  })
-
-  it('adds a title-cased group section when colorBy is set', () => {
-    const sections = getVariantColorScales({
-      ...inputs(),
-      color: undefined,
-      colorBy: 'population',
-      sources,
-      groupOrder: ['EUR'],
-    })
-    expect(sections.map(s => s.id)).toEqual(['genotypes', 'group'])
-    expect(sections[1]!.title).toBe('Population')
-    expect(entriesOf(sections[1])!.map(i => i.label)).toEqual(['EUR', 'AFR'])
   })
 
   it('lists only the impact tiers a cell was painted for', () => {
     const sections = getVariantColorScales({
       ...inputs({ paintedDomain: ['MODIFIER', 'HIGH'], shadeByDosage: false }),
       color: IMPACT,
-      colorBy: '',
-      sources,
     })
     expect(sections.map(s => s.id)).toEqual(['consequenceImpact'])
     expect(entriesOf(sections[0])!.map(i => i.label)).toEqual([
@@ -206,8 +131,6 @@ describe('getVariantColorScales', () => {
         colorTitle: 'Effect',
       }),
       color: { ...IMPACT, domain: ['HIGH'], labels: ['Loss of function'] },
-      colorBy: '',
-      sources,
     })
     expect(sections[0]!.title).toBe('Effect')
     expect(entriesOf(sections[0])!.map(i => i.label)).toEqual([
@@ -222,8 +145,6 @@ describe('getVariantColorScales', () => {
       getVariantColorScales({
         ...inputs({ colorTitle }),
         color: undefined,
-        colorBy: '',
-        sources,
       })[0]!.title
     expect(titleOf(undefined)).toBe('Genotypes')
     expect(titleOf('Calls')).toBe('Calls')
@@ -237,8 +158,6 @@ describe('getVariantColorScales', () => {
         shadeByDosage: false,
       }),
       color: { field: 'INFO.CLNSIG', scale: 'categorical' },
-      colorBy: '',
-      sources,
     })
     expect(section!.title).toBe('INFO.CLNSIG')
     const entries = entriesOf(section)!
@@ -264,8 +183,6 @@ describe('getVariantColorScales', () => {
     const [section] = getVariantColorScales({
       ...inputs({ paintedDomain: ['< 0.01'], shadeByDosage: false }),
       color: AF,
-      colorBy: '',
-      sources,
     })
     expect(
       entriesOf(section)!.map(i => [i.label, cssColorToABGR(i.color!)]),
@@ -284,8 +201,6 @@ describe('getVariantColorScales', () => {
       getVariantColorScales({
         ...inputs(over),
         color,
-        colorBy: '',
-        sources,
       })[0],
     )!.map(i => i.label)
 
@@ -358,8 +273,6 @@ describe('getVariantColorScales', () => {
         domain: ['a', 'b', 'c'],
         range: ['#a00', '#a00', '#00a'],
       },
-      colorBy: '',
-      sources,
     })
     expect(entriesOf(section)!.map(i => [i.label, i.swatches])).toEqual([
       [
@@ -380,8 +293,6 @@ describe('getVariantColorScales', () => {
         shadeByDosage: false,
       }),
       color: IMPACT,
-      colorBy: '',
-      sources,
     })
     const entries = entriesOf(section)!
     const modifier = entries.find(i => i.label === 'MODIFIER')!
@@ -395,8 +306,6 @@ describe('getVariantColorScales', () => {
       getVariantColorScales({
         ...inputs(over),
         color: SV_TYPE,
-        colorBy: '',
-        sources,
       })[0],
     )!.map(i => [i.label, i.color && cssColorToABGR(i.color)])
 
@@ -429,8 +338,6 @@ describe('getVariantColorScales', () => {
     const [section] = getVariantColorScales({
       ...inputs({ paintedDomain: ['DEL'] }),
       color: SV_TYPE,
-      colorBy: '',
-      sources,
     })
     const [del, note] = entriesOf(section)!
     expect(del!.swatches).toEqual([
@@ -456,8 +363,6 @@ describe('getVariantColorScales', () => {
         hasNoCall: true,
       }),
       color: '#E69F00',
-      colorBy: '',
-      sources,
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes'])
     // one alt entry in the chosen hue: the secondary-alt color is replaced too,
@@ -473,8 +378,6 @@ describe('getVariantColorScales', () => {
     const [section] = getVariantColorScales({
       ...inputs(),
       color: '#E69F00',
-      colorBy: '',
-      sources,
     })
     expect(entriesOf(section)!.map(i => [i.label, i.color])).toEqual([
       ['Homozygous reference', REFERENCE_COLOR],
@@ -487,18 +390,14 @@ describe('getVariantColorScales', () => {
     const sections = getVariantColorScales({
       ...inputs(),
       color: 'jexl:get(feature,"foo")',
-      colorBy: 'population',
-      sources,
     })
-    expect(sections.map(s => s.id)).toEqual(['group'])
+    expect(sections.map(s => s.id)).toEqual([])
   })
 })
 
 describe('phase-set legend section', () => {
   const base = {
     ...inputs(),
-    colorBy: '',
-    sources: undefined,
   }
 
   test('replaces the alt-allele swatches with the hue rule', () => {
@@ -540,8 +439,6 @@ describe('getVariantColorScales insertion marker', () => {
   const base = {
     ...inputs(),
     color: undefined,
-    colorBy: '',
-    sources: undefined,
   }
 
   // The display answers whether a marker is drawn — columns never, genomic

@@ -114,7 +114,7 @@ function derived(display: Display) {
       label,
     })),
     rowColorStringsByIndex: display.rowColorStringsByIndex,
-    rowGroupsScale: display.colorScales.find(s => s.id === 'rowGroups'),
+    rowColorScale: display.colorScales.find(s => s.id === 'rowColor'),
     rowTree: display.rowTree,
     treeDrawn: display.hierarchy !== undefined,
     rowArrangementIsCustom: display.rowArrangementIsCustom,
@@ -240,7 +240,7 @@ test('a legend click focuses the group it names', () => {
     {},
     { rowGroups: ROW_GROUPS, rowColor: BY_GROUP, rowHeight: 4 },
   )
-  display.focusLegendEntry('rowGroups', 'Parents')
+  display.focusLegendEntry('rowColor', 'Parents')
   expect(display.sources.map(s => s.name)).toEqual(['dad', 'mom'])
 })
 

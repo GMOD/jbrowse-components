@@ -20,7 +20,7 @@ export {
 } from './RowSeparatorLines.tsx'
 export { StaleTreeHint } from './StaleTreeHint.tsx'
 export { SubtreeFilterHint } from './SubtreeFilterHint.tsx'
-export { focusRowGroup, focusRows } from './focusRows.ts'
+export { focusRows } from './focusRows.ts'
 export {
   clusterProvenanceFromRegions,
   describeClusterProvenance,
@@ -60,7 +60,7 @@ export {
   validateClusterOrder,
 } from './clusterUtils.ts'
 export { orderRowsByDomain } from './arrangeRows.ts'
-export { rowFieldValue } from './rowColorScale.ts'
+export { ROW_COLOR_SCALE_ID, rowFieldValue } from './rowColorScale.ts'
 export type {
   RowAlias,
   RowBand,

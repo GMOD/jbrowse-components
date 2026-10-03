@@ -15,28 +15,30 @@ exports[`overlay: adapter colours paint the plot 1`] = `
     "value": undefined,
   },
   "isOverlay": true,
-  "legendItems": [
-    {
-      "color": "#f00",
-      "label": "Grain1",
-    },
-    {
-      "color": "#f60",
-      "label": "Grain2",
-    },
-    {
-      "color": "#fa0",
-      "label": "Grain3",
-    },
-  ],
   "markColors": [
     "#f00",
     "#f60",
     "#fa0",
   ],
   "numRows": 1,
-  "overlayLegendApplies": true,
   "rowArrangementIsCustom": false,
+  "rowColorKey": [
+    {
+      "color": "#f00",
+      "label": "Grain1",
+      "value": "Grain1",
+    },
+    {
+      "color": "#f60",
+      "label": "Grain2",
+      "value": "Grain2",
+    },
+    {
+      "color": "#fa0",
+      "label": "Grain3",
+      "value": "Grain3",
+    },
+  ],
   "rowTree": undefined,
   "sources": [
     {
@@ -79,24 +81,6 @@ exports[`overlay: rowColor's spare range leads the palette 1`] = `
     "value": undefined,
   },
   "isOverlay": true,
-  "legendItems": [
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-    {
-      "color": "#111111",
-      "label": "Islet",
-    },
-    {
-      "color": "#222222",
-      "label": "Liver",
-    },
-    {
-      "color": "#4e79a7",
-      "label": "Grain4",
-    },
-  ],
   "markColors": [
     "#f00",
     "#111111",
@@ -104,8 +88,29 @@ exports[`overlay: rowColor's spare range leads the palette 1`] = `
     "#4e79a7",
   ],
   "numRows": 1,
-  "overlayLegendApplies": true,
   "rowArrangementIsCustom": false,
+  "rowColorKey": [
+    {
+      "color": "#f00",
+      "label": "Grain1",
+      "value": "Grain1",
+    },
+    {
+      "color": "#111111",
+      "label": "Grain2",
+      "value": "Grain2",
+    },
+    {
+      "color": "#222222",
+      "label": "Grain3",
+      "value": "Grain3",
+    },
+    {
+      "color": "#4e79a7",
+      "label": "Grain4",
+      "value": "Grain4",
+    },
+  ],
   "rowTree": undefined,
   "sources": [
     {
@@ -155,24 +160,6 @@ exports[`overlay: tableau10 by name, grouped or not 1`] = `
     "value": undefined,
   },
   "isOverlay": true,
-  "legendItems": [
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-    {
-      "color": "#4e79a7",
-      "label": "Islet",
-    },
-    {
-      "color": "#f28e2c",
-      "label": "Liver",
-    },
-    {
-      "color": "#e15759",
-      "label": "Grain4",
-    },
-  ],
   "markColors": [
     "#f00",
     "#4e79a7",
@@ -180,8 +167,29 @@ exports[`overlay: tableau10 by name, grouped or not 1`] = `
     "#e15759",
   ],
   "numRows": 1,
-  "overlayLegendApplies": true,
   "rowArrangementIsCustom": false,
+  "rowColorKey": [
+    {
+      "color": "#f00",
+      "label": "Grain1",
+      "value": "Grain1",
+    },
+    {
+      "color": "#4e79a7",
+      "label": "Grain2",
+      "value": "Grain2",
+    },
+    {
+      "color": "#f28e2c",
+      "label": "Grain3",
+      "value": "Grain3",
+    },
+    {
+      "color": "#e15759",
+      "label": "Grain4",
+      "value": "Grain4",
+    },
+  ],
   "rowTree": undefined,
   "sources": [
     {
@@ -231,16 +239,6 @@ exports[`rows, density: a dialog edit tints the label 1`] = `
     "value": undefined,
   },
   "isOverlay": false,
-  "legendItems": [
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-    {
-      "color": "#00f",
-      "label": "Islet",
-    },
-  ],
   "markColors": [
     "#f00",
     undefined,
@@ -248,8 +246,8 @@ exports[`rows, density: a dialog edit tints the label 1`] = `
     undefined,
   ],
   "numRows": 4,
-  "overlayLegendApplies": false,
   "rowArrangementIsCustom": true,
+  "rowColorKey": [],
   "rowTree": undefined,
   "sources": [
     {
@@ -299,12 +297,6 @@ exports[`rows, density: identity moves to the label tint 1`] = `
     "value": undefined,
   },
   "isOverlay": false,
-  "legendItems": [
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-  ],
   "markColors": [
     "#f00",
     undefined,
@@ -312,8 +304,8 @@ exports[`rows, density: identity moves to the label tint 1`] = `
     undefined,
   ],
   "numRows": 4,
-  "overlayLegendApplies": false,
   "rowArrangementIsCustom": false,
+  "rowColorKey": [],
   "rowTree": undefined,
   "sources": [
     {
@@ -363,24 +355,6 @@ exports[`rows, line: dialog edits reorder, recolour the plot and relabel 1`] = `
     "value": undefined,
   },
   "isOverlay": false,
-  "legendItems": [
-    {
-      "color": "#0068d1",
-      "label": "Liver",
-    },
-    {
-      "color": "#00f",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Grain4",
-    },
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-  ],
   "markColors": [
     undefined,
     "#00f",
@@ -388,8 +362,8 @@ exports[`rows, line: dialog edits reorder, recolour the plot and relabel 1`] = `
     "#f00",
   ],
   "numRows": 4,
-  "overlayLegendApplies": false,
   "rowArrangementIsCustom": true,
+  "rowColorKey": [],
   "rowTree": undefined,
   "sources": [
     {
@@ -439,24 +413,6 @@ exports[`rows, line: dialog edits reorder, recolour the plot and relabel 2`] = `
     "value": undefined,
   },
   "isOverlay": false,
-  "legendItems": [
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Liver",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Grain4",
-    },
-  ],
   "markColors": [
     "#f00",
     undefined,
@@ -464,8 +420,8 @@ exports[`rows, line: dialog edits reorder, recolour the plot and relabel 2`] = `
     undefined,
   ],
   "numRows": 4,
-  "overlayLegendApplies": false,
   "rowArrangementIsCustom": false,
+  "rowColorKey": [],
   "rowTree": undefined,
   "sources": [
     {
@@ -515,24 +471,6 @@ exports[`rows, line: the adapter colour, else the plot colour 1`] = `
     "value": undefined,
   },
   "isOverlay": false,
-  "legendItems": [
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Liver",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Grain4",
-    },
-  ],
   "markColors": [
     "#f00",
     undefined,
@@ -540,8 +478,8 @@ exports[`rows, line: the adapter colour, else the plot colour 1`] = `
     undefined,
   ],
   "numRows": 4,
-  "overlayLegendApplies": false,
   "rowArrangementIsCustom": false,
+  "rowColorKey": [],
   "rowTree": undefined,
   "sources": [
     {
@@ -591,23 +529,24 @@ exports[`rows: a focus hides rows without recolouring the kept ones 1`] = `
     "value": undefined,
   },
   "isOverlay": false,
-  "legendItems": [
-    {
-      "color": "#4e79a7",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Grain4",
-    },
-  ],
   "markColors": [
     "#4e79a7",
     undefined,
   ],
   "numRows": 2,
-  "overlayLegendApplies": false,
   "rowArrangementIsCustom": false,
+  "rowColorKey": [
+    {
+      "color": "#4e79a7",
+      "label": "Islet",
+      "value": "Islet",
+    },
+    {
+      "color": "#f28e2c",
+      "label": "Liver",
+      "value": "Liver",
+    },
+  ],
   "rowTree": undefined,
   "sources": [
     {
@@ -643,24 +582,6 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
     "value": undefined,
   },
   "isOverlay": false,
-  "legendItems": [
-    {
-      "color": "#0068d1",
-      "label": "Islet",
-    },
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Liver",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Grain4",
-    },
-  ],
   "markColors": [
     undefined,
     "#f00",
@@ -668,8 +589,8 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
     undefined,
   ],
   "numRows": 4,
-  "overlayLegendApplies": false,
   "rowArrangementIsCustom": true,
+  "rowColorKey": [],
   "rowTree": "((Grain2,Grain1),(Grain3,Grain4));",
   "sources": [
     {
@@ -719,24 +640,6 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
     "value": undefined,
   },
   "isOverlay": false,
-  "legendItems": [
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Liver",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Grain4",
-    },
-  ],
   "markColors": [
     "#f00",
     undefined,
@@ -744,8 +647,8 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
     undefined,
   ],
   "numRows": 4,
-  "overlayLegendApplies": false,
   "rowArrangementIsCustom": true,
+  "rowColorKey": [],
   "rowTree": undefined,
   "sources": [
     {
@@ -795,24 +698,6 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
     "value": undefined,
   },
   "isOverlay": false,
-  "legendItems": [
-    {
-      "color": "#0068d1",
-      "label": "Liver",
-    },
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Grain4",
-    },
-  ],
   "markColors": [
     undefined,
     "#f00",
@@ -820,8 +705,8 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
     undefined,
   ],
   "numRows": 4,
-  "overlayLegendApplies": false,
   "rowArrangementIsCustom": false,
+  "rowColorKey": [],
   "rowTree": undefined,
   "sources": [
     {
@@ -871,24 +756,6 @@ exports[`rows: the declared order leads and the rest keep adapter order 1`] = `
     "value": undefined,
   },
   "isOverlay": false,
-  "legendItems": [
-    {
-      "color": "#0068d1",
-      "label": "Liver",
-    },
-    {
-      "color": "#f00",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Islet",
-    },
-    {
-      "color": "#0068d1",
-      "label": "Grain4",
-    },
-  ],
   "markColors": [
     undefined,
     "#f00",
@@ -896,8 +763,8 @@ exports[`rows: the declared order leads and the rest keep adapter order 1`] = `
     undefined,
   ],
   "numRows": 4,
-  "overlayLegendApplies": false,
   "rowArrangementIsCustom": false,
+  "rowColorKey": [],
   "rowTree": undefined,
   "sources": [
     {

@@ -43,7 +43,7 @@ worker ships as values and the main thread paints, as
 [ADR-202](../../architecture-decision-records/adr-202-every-mark-colour-resolves-on-the-main-thread.md) has every colour resolve, rather than a new render pass.
 
 **Filter & sort samples by metadata attribute.** Since 2026-08-25 a `colorBy`
-group's legend swatch focuses that group (`focusGroup`, over `subtreeFilter`),
+group's legend swatch focuses that group (`focusLegendEntry`, over `rows.kept`),
 and the genotype sort has a column-anchored form a session can name
 (`sortRowsByGenotypeAt` / `sortRowsBy`). What is still missing is a predicate
 over `samplesTsv` columns — *cases only, in EUR* — and a metadata SORT (order

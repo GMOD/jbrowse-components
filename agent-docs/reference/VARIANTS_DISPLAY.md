@@ -179,7 +179,9 @@ arrival re-derives no row.
 **A row's colour is its `rowColor`**, the label bar tree-sidebar's
 `RowLabelsOverlay` and `SvgRowLabels` draw — the cells are colored by genotype,
 so `rowColorPaintsMarks` is false and the bar is the only place it shows. The
-group legend and the tooltip swatch read it too. A `samplesTsv` `color` column
+tooltip swatch reads it too, and tree-sidebar's row colour key
+(`rowColorScales`) keys it by an attribute, after the genotype key; by `name` the
+labels are the key. A `samplesTsv` `color` column
 is the row's own `color`, which `resolvedRowColors` falls back to.
 
 **An attribute in `rowColor.field` beats a `samplesTsv` `color` column**: a
@@ -198,9 +200,7 @@ The flip ADR-160 names puts the row's own colour ahead of the palette here too.
 **The `facet` bands win over a cluster tree** (tree-sidebar's "A tree per
 band"): `rowBanding` is the `facet`, each band draws the clade of exactly its
 rows, and a run under bands clusters each band apart into one forest. A run
-never writes the `facet` slot, so a session spec's own `facet` survives it, and
-the colour key lists its values in the band order while both read one attribute
-(`rowColorKeyOrder`).
+never writes the `facet` slot, so a session spec's own `facet` survives it.
 
 ## One display, two layouts: `variantLayout`
 

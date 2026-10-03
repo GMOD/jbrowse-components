@@ -152,15 +152,9 @@ export const scrnaSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // NO OVERLAY ANNOTATION HERE: the color key is the app's own, drawn by the
-    // per-cell track itself. It could not be, until this round -- the display
-    // offered a key in overlay mode only, on the reasoning that a multi-row
-    // track names its sources in the sidebar. At 4,390 rows over 620 px that is
-    // 0.14 px a row, far under the 6 px SvgRowLabels needs for text, so the
-    // sidebar is an unlabelled stripe of nine colors and the reasoning does not
-    // hold. `overlayLegendApplies` now asks whether anything else on the frame
-    // names the colors, and the collapsed key is nine rows because the store
-    // groups its cells.
+    // NO COLOR KEY HERE: the per-cell rows take their colours by name, and the
+    // app keys a row colour only by an attribute or in a shared panel, so the
+    // 0.14 px rows' label bars are the only thing naming the cell types.
     //
     // The pseudobulk lane above stays multi-row (review: "i do not like the
     // multixyplot remove"), where its own sidebar names its nine rows.

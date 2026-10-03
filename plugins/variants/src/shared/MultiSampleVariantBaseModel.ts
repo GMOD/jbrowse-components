@@ -48,7 +48,6 @@ import {
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
-  focusRowGroup,
   keptRows,
   loadedRegionIndexAt,
 } from '@jbrowse/tree-sidebar'
@@ -1437,33 +1436,6 @@ export default function MultiSampleVariantBaseModelF(
               : undefined
           return hit ? self.sortByGenotype(hit.id) : false
         },
-        /**
-         * #action
-         * Narrow the rows to one `rowColor` group, by the group's value — `''`
-         * for the rows the attribute is blank on.
-         */
-        focusGroup(value: string) {
-          // Before the samples land there is no group to focus, and an empty
-          // pick would read as clearing the focus.
-          if (self.adapterSamples) {
-            focusRowGroup(
-              self,
-              self.editableSources,
-              s => String(s[self.rowColorField] ?? '') === value,
-            )
-          }
-        },
-        /**
-         * #action
-         * The chrome's legend hook: a click on a row of the group scale
-         * focuses that group; the cell-color scales name genotypes and stay
-         * inert.
-         */
-        focusLegendEntry(scaleId: string, value: string) {
-          if (scaleId === 'group') {
-            this.focusGroup(value)
-          }
-        },
       }))
       .views(self => ({
         /**
@@ -1554,40 +1526,29 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * `LegendMixin`'s hook: the cell coloring, the insertion marker where
-         * one is drawn, and (when `rowColor.field` is set) the sample-grouping coloring
-         * shown on the sidebar row labels. Whether the marker is keyed is
-         * `drawsInsertionMarkers`' answer, the painter's own test on the
+         * one is drawn, and the row colour key. Whether the marker is keyed
+         * is `drawsInsertionMarkers`' answer, the painter's own test on the
          * painter's own blocks.
          */
         get colorScales(): ColorScale[] {
-          return getVariantColorScales({
-            renderingMode: self.renderingMode,
-            hasSecondaryAlt: self.hasSecondaryAlt,
-            hasUnphased: self.hasUnphased,
-            hasNoCall: self.hasNoCall,
-            paintedDomain: self.paintedDomain,
-            shadeByDosage: self.shadeByDosage,
-            color: self.colorEncoding,
-            colorSlots: heldColorSlots(self, self.colorEncoding),
-            colorTitle: withPreset(self.colorSetting, CATEGORICAL_FIELD_PRESETS)
-              .title,
-            colorBy: self.rowColorField,
-            sources: self.sources,
-            groupOrder: this.rowColorKeyOrder,
-            insertionMarkers: self.drawsInsertionMarkers,
-          })
-        },
-        /**
-         * #getter
-         * The order the row colour key lists its values in: the bands' while
-         * the rows are banded by the same attribute, so the key reads as the
-         * rows do, else the palette's deal, which a focus never re-ranks.
-         */
-        get rowColorKeyOrder(): readonly string[] {
-          const { rowBanding, rowBands, rowColorField } = self
-          return rowBands.length && rowBanding?.field === rowColorField
-            ? rowBanding.domain
-            : [...self.dealtRowColors.keys()].filter(value => value !== '')
+          return [
+            ...getVariantColorScales({
+              renderingMode: self.renderingMode,
+              hasSecondaryAlt: self.hasSecondaryAlt,
+              hasUnphased: self.hasUnphased,
+              hasNoCall: self.hasNoCall,
+              paintedDomain: self.paintedDomain,
+              shadeByDosage: self.shadeByDosage,
+              color: self.colorEncoding,
+              colorSlots: heldColorSlots(self, self.colorEncoding),
+              colorTitle: withPreset(
+                self.colorSetting,
+                CATEGORICAL_FIELD_PRESETS,
+              ).title,
+              insertionMarkers: self.drawsInsertionMarkers,
+            }),
+            ...self.rowColorScales,
+          ]
         },
 
         /**

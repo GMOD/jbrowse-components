@@ -40,7 +40,8 @@ exports[`allele count a cluster run lands its order and tree, and a facet keeps 
       "sampleName": "S1",
     },
   ],
-  "groupLegend": {
+  "rowArrangementIsCustom": true,
+  "rowColorLegend": {
     "entries": [
       {
         "color": "#4e79a7",
@@ -59,11 +60,10 @@ exports[`allele count a cluster run lands its order and tree, and a facet keeps 
       },
     ],
     "focusesRows": true,
-    "id": "group",
+    "id": "rowColor",
     "kind": "categorical",
     "title": "Population",
   },
-  "rowArrangementIsCustom": true,
   "rowTree": "((S2,S0),(S3,S1));",
   "sampleFilter": [
     "S0",
@@ -153,7 +153,8 @@ exports[`allele count a cluster run lands its order and tree, and a facet keeps 
       "sampleName": "S1",
     },
   ],
-  "groupLegend": {
+  "rowArrangementIsCustom": true,
+  "rowColorLegend": {
     "entries": [
       {
         "color": "#4e79a7",
@@ -161,22 +162,21 @@ exports[`allele count a cluster run lands its order and tree, and a facet keeps 
         "value": "AFR",
       },
       {
-        "color": "#e15759",
-        "label": "EAS",
-        "value": "EAS",
-      },
-      {
         "color": "#f28e2c",
         "label": "EUR",
         "value": "EUR",
       },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
     ],
     "focusesRows": true,
-    "id": "group",
+    "id": "rowColor",
     "kind": "categorical",
     "title": "Population",
   },
-  "rowArrangementIsCustom": true,
   "rowTree": "((S2,S0),(S3,S1));",
   "sampleFilter": [
     "S0",
@@ -266,8 +266,8 @@ exports[`allele count a cluster run rotates towards the declared order 1`] = `
       "sampleName": "S0",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": true,
+  "rowColorLegend": undefined,
   "rowTree": "((S3,S1),(S2,S0));",
   "sampleFilter": [
     "S0",
@@ -357,8 +357,8 @@ exports[`allele count a declared order leads and a facet bands within it 1`] = `
       "sampleName": "S2",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -448,8 +448,8 @@ exports[`allele count a declared order leads and a facet bands within it 2`] = `
       "sampleName": "S2",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -539,8 +539,8 @@ exports[`allele count a facet bands the rows 1`] = `
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -630,8 +630,30 @@ exports[`allele count a focus narrows the rows and the fetch 1`] = `
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowColor",
+    "kind": "categorical",
+    "title": "Population",
+  },
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -701,8 +723,30 @@ exports[`allele count a focus narrows the rows and the fetch 2`] = `
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowColor",
+    "kind": "categorical",
+    "title": "Population",
+  },
   "rowTree": undefined,
   "sampleFilter": [
     "S1",
@@ -762,8 +806,8 @@ exports[`allele count a focused cluster run keeps the hidden rows after the clad
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": true,
+  "rowColorLegend": undefined,
   "rowTree": "(S1,(S2,S0));",
   "sampleFilter": [
     "S0",
@@ -843,8 +887,8 @@ exports[`allele count a focused cluster run keeps the hidden rows after the clad
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": true,
+  "rowColorLegend": undefined,
   "rowTree": "(S1,(S2,S0));",
   "sampleFilter": [
     "S0",
@@ -934,7 +978,8 @@ exports[`allele count a rowColor attribute tints every row over its own colour 1
       "sampleName": "S3",
     },
   ],
-  "groupLegend": {
+  "rowArrangementIsCustom": false,
+  "rowColorLegend": {
     "entries": [
       {
         "color": "#4e79a7",
@@ -953,11 +998,10 @@ exports[`allele count a rowColor attribute tints every row over its own colour 1
       },
     ],
     "focusesRows": true,
-    "id": "group",
+    "id": "rowColor",
     "kind": "categorical",
     "title": "Population",
   },
-  "rowArrangementIsCustom": false,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -1047,8 +1091,8 @@ exports[`allele count a switch to phased mode resets the arrangement 1`] = `
       "sampleName": "S2",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -1165,8 +1209,8 @@ exports[`allele count a switch to phased mode resets the arrangement 2`] = `
       "sampleName": "S2",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -1283,8 +1327,8 @@ exports[`allele count dialog edits relabel, recolour and reorder, and a reset re
       "sampleName": "S1",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": true,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -1374,8 +1418,8 @@ exports[`allele count dialog edits relabel, recolour and reorder, and a reset re
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -1465,8 +1509,8 @@ exports[`allele count samplesTsv colours and labels are the rows own 1`] = `
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -1556,7 +1600,8 @@ exports[`allele count sort by genotype orders the rows at a variant 1`] = `
       "sampleName": "S2",
     },
   ],
-  "groupLegend": {
+  "rowArrangementIsCustom": true,
+  "rowColorLegend": {
     "entries": [
       {
         "color": "#4e79a7",
@@ -1575,11 +1620,10 @@ exports[`allele count sort by genotype orders the rows at a variant 1`] = `
       },
     ],
     "focusesRows": true,
-    "id": "group",
+    "id": "rowColor",
     "kind": "categorical",
     "title": "Population",
   },
-  "rowArrangementIsCustom": true,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -1696,8 +1740,8 @@ exports[`phased a declared sample order and a facet over the haplotypes 1`] = `
       "sampleName": "S2",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -1814,8 +1858,30 @@ exports[`phased a legend focus keeps whole samples 1`] = `
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowColor",
+    "kind": "categorical",
+    "title": "Population",
+  },
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -1912,8 +1978,30 @@ exports[`phased a legend focus keeps whole samples 2`] = `
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowColor",
+    "kind": "categorical",
+    "title": "Population",
+  },
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -2028,8 +2116,30 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 1`] = `
       "sampleName": "S1",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": true,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowColor",
+    "kind": "categorical",
+    "title": "Population",
+  },
   "rowTree": "(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S3 HP0,(S1 HP0,S1 HP1)));",
   "sampleFilter": [
     "S0",
@@ -2144,8 +2254,30 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 2`] = `
       "sampleName": "S1",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": true,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowColor",
+    "kind": "categorical",
+    "title": "Population",
+  },
   "rowTree": "(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S3 HP0,(S1 HP0,S1 HP1)));",
   "sampleFilter": [
     "S0",
@@ -2260,8 +2392,30 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
       "sampleName": "S1",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": true,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowColor",
+    "kind": "categorical",
+    "title": "Population",
+  },
   "rowTree": "(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S3 HP0,(S1 HP0,S1 HP1)));",
   "sampleFilter": [
     "S1",
@@ -2348,8 +2502,30 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
       "sampleName": "S1",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": true,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowColor",
+    "kind": "categorical",
+    "title": "Population",
+  },
   "rowTree": "(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S3 HP0,(S1 HP0,S1 HP1)));",
   "sampleFilter": [
     "S1",
@@ -2409,7 +2585,8 @@ exports[`phased after a cluster run lands haplotype rows a switch back to allele
       "sampleName": "S3",
     },
   ],
-  "groupLegend": {
+  "rowArrangementIsCustom": false,
+  "rowColorLegend": {
     "entries": [
       {
         "color": "#4e79a7",
@@ -2428,11 +2605,10 @@ exports[`phased after a cluster run lands haplotype rows a switch back to allele
       },
     ],
     "focusesRows": true,
-    "id": "group",
+    "id": "rowColor",
     "kind": "categorical",
     "title": "Population",
   },
-  "rowArrangementIsCustom": false,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -2549,7 +2725,8 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
       "sampleName": "S1",
     },
   ],
-  "groupLegend": {
+  "rowArrangementIsCustom": true,
+  "rowColorLegend": {
     "entries": [
       {
         "color": "#4e79a7",
@@ -2568,11 +2745,10 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
       },
     ],
     "focusesRows": true,
-    "id": "group",
+    "id": "rowColor",
     "kind": "categorical",
     "title": "Population",
   },
-  "rowArrangementIsCustom": true,
   "rowTree": "(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S3 HP0,(S1 HP0,S1 HP1)));",
   "sampleFilter": [
     "S0",
@@ -2716,7 +2892,8 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
       "sampleName": "S1",
     },
   ],
-  "groupLegend": {
+  "rowArrangementIsCustom": true,
+  "rowColorLegend": {
     "entries": [
       {
         "color": "#4e79a7",
@@ -2724,22 +2901,21 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
         "value": "AFR",
       },
       {
-        "color": "#e15759",
-        "label": "EAS",
-        "value": "EAS",
-      },
-      {
         "color": "#f28e2c",
         "label": "EUR",
         "value": "EUR",
       },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
     ],
     "focusesRows": true,
-    "id": "group",
+    "id": "rowColor",
     "kind": "categorical",
     "title": "Population",
   },
-  "rowArrangementIsCustom": true,
   "rowTree": "(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S3 HP0,(S1 HP0,S1 HP1)));",
   "sampleFilter": [
     "S0",
@@ -2883,8 +3059,8 @@ exports[`phased dialog edits at haplotype granularity 1`] = `
       "sampleName": "S2",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": true,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -3028,8 +3204,8 @@ exports[`phased dialog edits at haplotype granularity 2`] = `
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": false,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -3146,7 +3322,8 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 1`] = `
       "sampleName": "S3",
     },
   ],
-  "groupLegend": {
+  "rowArrangementIsCustom": false,
+  "rowColorLegend": {
     "entries": [
       {
         "color": "#4e79a7",
@@ -3165,11 +3342,10 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 1`] = `
       },
     ],
     "focusesRows": true,
-    "id": "group",
+    "id": "rowColor",
     "kind": "categorical",
     "title": "Population",
   },
-  "rowArrangementIsCustom": false,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -3286,7 +3462,8 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
       "sampleName": "S3",
     },
   ],
-  "groupLegend": {
+  "rowArrangementIsCustom": false,
+  "rowColorLegend": {
     "entries": [
       {
         "color": "#4e79a7",
@@ -3305,11 +3482,10 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
       },
     ],
     "focusesRows": true,
-    "id": "group",
+    "id": "rowColor",
     "kind": "categorical",
     "title": "Population",
   },
-  "rowArrangementIsCustom": false,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",
@@ -3453,8 +3629,8 @@ exports[`phased sort by genotype orders haplotypes 1`] = `
       "sampleName": "S3",
     },
   ],
-  "groupLegend": undefined,
   "rowArrangementIsCustom": true,
+  "rowColorLegend": undefined,
   "rowTree": undefined,
   "sampleFilter": [
     "S0",

@@ -159,13 +159,12 @@ hook's name throws at `create`:
   multi-row matches `rowGroups` on the name, since its rows are tagged after the
   arrangement.
 - `rowColorFields` — the row attributes offered to colour by: by default every
-  attribute the rows carry but their name, label and colours; variants' are its
-  samplesTsv columns; MAF, the mark display and multi-row, whose groups are
-  tagged after the arrangement, offer none.
+  attribute the rows carry but their name, label and colours, which on
+  multi-row is the `group` its `rowGroups` tag; variants' are its samplesTsv
+  columns; MAF and the mark display offer none.
 
 MAF also overrides `clusterableSources`, since on a track that discovers its
-species a focus applies as given, as the worker's does. `focusLegendEntry` stays
-each display's: each key names rows by a different predicate.
+species a focus applies as given, as the worker's does.
 
 **A row's colour is one getter, `resolvedRowColors`**: its `rowColor` entry (a
 `name` pair, or the colour its attribute value is dealt), else its own `color`,
@@ -183,6 +182,23 @@ multi-row `rowGroups` entry only tags a row's `group`; the group's colour is
 `rowColor: { field: 'group' }`. Every row carries it as `rowColor`: the sidebar always draws
 it as the row's label bar, and a display paints its marks in it only where
 `rowColorPaintsMarks`. A row's own `color` stays the file's attribute.
+
+**A row colour has one key, `rowColorScales`**, which every display spreads last
+into its `colorScales`: one scale titled by the `rowColor` field, capitalised,
+or none where it would have no entries. It keys wherever the labels cannot name
+the colours: by an attribute on any display at any row height, and by `name`
+only in a shared panel. By `name` on stacked rows the labels are the key. `rowColorKeyEntries` lists
+one entry per value some row carries with a colour, in deal order (pairs first,
+then first seen over the base arrangement, so a focus never re-ranks or drops
+one); the empty value has none, even under a `''` pair. Past
+`MAX_LEGEND_ITEMS` it stops and adds one colourless "+N more", which
+`FloatingLegend` leaves inert. A set `unknown` adds one trailing "Other" in that
+colour for the rows that took it; `unknown: ''` adds nothing. The scale declares
+`focusesRows`, and the mixin's `focusLegendEntry` answers it: a click focuses
+the rows `rowColorKeyValue` lists under the entry, out of `editableSources`, so
+a second click reaches the rows the first hid. Every other scale's entries name
+colours and stay inert. Wiggle drops the key in an overlay painting a score
+gradient, where no row colour shows.
 
 What else the mixin owns:
 

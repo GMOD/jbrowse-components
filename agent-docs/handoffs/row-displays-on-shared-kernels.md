@@ -36,7 +36,9 @@ Landed 2026-10-03: `rowColor: { unknown: '' }` deals no palette while the
 values its `domain` lists still paint, so the dialog's None recolours one row
 and leaves the rest unpainted (ADR-164, amended). Step 3 of the row-colour
 redesign deleted `rowGroups[].color`: a group's colour is
-`rowColor: { field: 'group' }`, and a row with no value takes no colour.
+`rowColor: { field: 'group' }`, and a row with no value takes no colour. Step 4
+replaced `rowGroupLegend`, `getSampleGroupEntries` and wiggle's source key with
+one mixin key, `rowColorScales`.
 
 - **Multi-row `facet` on any field but `group` or `name` is a corner notice**:
   a row carries no other attribute, and banding by a feature attribute would

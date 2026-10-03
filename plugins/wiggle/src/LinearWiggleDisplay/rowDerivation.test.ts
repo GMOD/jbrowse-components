@@ -64,8 +64,8 @@ function derived(display: LinearWiggleDisplayModel) {
       group,
     })),
     markColors: display.markSources.map(s => s.color),
-    legendItems: display.legendItems,
-    overlayLegendApplies: display.overlayLegendApplies,
+    rowColorKey:
+      display.legendSpec.sections.find(s => s.id === 'rowColor')?.items ?? [],
     rowTree: display.rowTree,
     rowArrangementIsCustom: display.rowArrangementIsCustom,
   }
@@ -153,8 +153,9 @@ test('rows: a legend click focuses the group it names', async () => {
   const display = await loaded(GROUPED, {
     ...rowsPerSource(),
     defaultRendering: 'density',
+    rowColor: 'group',
   })
-  display.focusLegendEntry('sources', 'Islet')
+  display.focusLegendEntry('rowColor', 'Islet')
   expect(display.sources.map(s => s.name)).toEqual(['Grain1', 'Grain2'])
 })
 

@@ -6,7 +6,6 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { legendIsReadable } from '@jbrowse/core/ui'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { keyNames } from '@jbrowse/core/util/categoricalField'
@@ -34,11 +33,9 @@ import {
   buildSpatialIndex,
   clusteringMenuItem,
   computeClusterHierarchy,
-  focusRowGroup,
   keptRows,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
-  rowLabelsCarryText,
   setupTreeSidebarAutoruns,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
@@ -73,9 +70,12 @@ import {
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { WIGGLE_RENDERINGS } from '../util.ts'
-import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import { markColorOf, sourcesFromRegionData } from './sourcesLogic.ts'
+import {
+  UNCOLORED_ROW,
+  markColorOf,
+  sourcesFromRegionData,
+} from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
@@ -85,7 +85,7 @@ import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Plot } from '@jbrowse/core/configuration'
-import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
@@ -403,13 +403,20 @@ export default function stateModelFactory(
       /**
        * #getter
        * Each source and the colour its marks paint in (`markColorOf`), which
-       * the encoder and the tooltip read.
+       * the encoder and the tooltip read. Where the palette deals the shared
+       * panel and some row took a colour, a row left without one paints
+       * `UNCOLORED_ROW` grey rather than the plot colour, which reads as one
+       * of the dealt.
        */
       get markSources(): { name: string; color?: string }[] {
         const paints = self.marksTakeRowColor
+        const uncolored =
+          self.rowPaletteDeals && self.resolvedRowColors.size > 0
+            ? UNCOLORED_ROW
+            : undefined
         return self.sources.map(s => ({
           name: s.name,
-          color: markColorOf(s, paints),
+          color: markColorOf(s, paints) ?? uncolored,
         }))
       },
     }))
@@ -436,21 +443,6 @@ export default function stateModelFactory(
       // (a subtree filter hides some), so hidden sources don't stretch the axis.
       get autoscaleSourceNames() {
         return new Set(self.sources.map(s => s.name))
-      },
-
-      /**
-       * #getter
-       * The source key's rows — one per (group, color) pair, colors resolved.
-       * `colorScales` and `overlayLegendApplies` both read this one list, so
-       * what is drawn and what was counted before deciding to draw cannot
-       * disagree. See `buildLegendItems`.
-       */
-      get legendItems(): LegendItem[] {
-        return buildLegendItems(self.sources, {
-          gradientPaints: self.scoreGradientPaints,
-          marksTakeRowColor: self.marksTakeRowColor,
-          fallbackColor: self.wiggleColor.posColor,
-        })
       },
     }))
     .views(self => ({
@@ -617,52 +609,6 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Whether the source color key applies at all. Gates the menu checkbox,
-       * which has to stay visible while the legend is toggled off.
-       *
-       * Four questions in order, each with its own guard below:
-       *
-       * 1. **Is there anything to key?** One source names itself by the track
-       *    name, and an overlay painting a score gradient draws every source
-       *    in the ramp with no row labels, so no source color is on screen.
-       * 2. **Does anything ELSE on the frame name the colors?** Overlay
-       *    collapses every source onto one plot, so nothing does and the key is
-       *    the only identification there has ever been — but it still has to
-       *    pass (3): 40 overlay rows would draw a 40-row key. A multi-row track names
-       *    its rows beside them — but only while they carry text
-       *    (`rowLabelsCarryText`, asked of the drawing side rather than
-       *    restated) AND is drawing them at all — `showRowLabels` off means
-       *    nothing beside the rows names anything, so the key is once again the
-       *    only identification there is. Below that `SvgRowLabels` drops to an
-       *    unlabelled swatch,
-       *    and a per-cell density track at 0.14 px a row is then a stripe of
-       *    nine colors with nothing saying what any of them is; that is the case
-       *    this was widened for ("we need to make it so density can show legend
-       *    also ideally because the left side labels are too small to see").
-       *    `showTree` is deliberately no part of this: the labels are
-       *    `WiggleRowLabels`' own and draw whether or not a dendrogram
-       *    does, so reading it here drew a key restating labels still on screen.
-       * 3. **Is the key worth its rows?** Short enough to read, and made of
-       *    more than one color — both `legendIsReadable`, shared with the other
-       *    display that has to decide. Asked of `legendItems`, the very list
-       *    that gets drawn, so a key can't be counted in one form and rendered
-       *    in another. Every mode answers it, overlay included.
-       */
-      get overlayLegendApplies() {
-        const namedBesideTheRows =
-          !self.isOverlay &&
-          self.showRowLabels &&
-          rowLabelsCarryText(self.effectiveRowHeight)
-        return (
-          self.numSources >= 2 &&
-          !(self.isOverlay && self.scoreGradientPaints) &&
-          !namedBesideTheRows &&
-          legendIsReadable(self.legendItems)
-        )
-      },
-
-      /**
-       * #getter
        * The key a threshold with declared cuts draws: one row per interval,
        * labelled by the span it covers. A threshold cutting at the `origin`
        * draws none, because the axis already shows where the origin is and a
@@ -705,9 +651,9 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `LegendMixin`'s hook: the density ramp where one describes every row,
-       * then the source key where it is worth its rows. A row's `value` is the
-       * group or subtrack `focusLegendEntry` narrows to.
+       * `LegendMixin`'s hook: the score ramp or threshold key, then the row
+       * colour key, except in a shared panel painting the score gradient,
+       * where no row colour shows.
        */
       get colorScales(): ColorScale[] {
         const { title } = self.colorSetting
@@ -721,17 +667,8 @@ export default function stateModelFactory(
         if (self.thresholdColorScale) {
           scales.push(self.thresholdColorScale)
         }
-        if (self.overlayLegendApplies) {
-          scales.push({
-            kind: 'categorical',
-            id: 'sources',
-            focusesRows: true,
-            entries: self.legendItems.map(({ label, color }) => ({
-              value: label,
-              label,
-              color,
-            })),
-          })
+        if (!(self.isOverlay && self.scoreGradientPaints)) {
+          scales.push(...self.rowColorScales)
         }
         return scales
       },
@@ -806,21 +743,6 @@ export default function stateModelFactory(
        */
       setRowLayout(on: boolean) {
         setConf(self, ['rows', 'field'], on ? 'source' : '')
-      },
-
-      /**
-       * #action
-       * `LegendMixin`'s hook: narrow the rows to the subtracks one key row
-       * stands for — what clicking that swatch does. A key row is a group
-       * where the subtrack has one and the subtrack itself otherwise
-       * (`buildLegendItems`), so this matches the same way.
-       */
-      focusLegendEntry(_scaleId: string, label: string) {
-        focusRowGroup(
-          self,
-          self.editableSources,
-          s => (s.group ?? s.label ?? s.name) === label,
-        )
       },
 
       /**

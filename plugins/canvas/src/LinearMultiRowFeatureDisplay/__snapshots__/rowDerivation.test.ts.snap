@@ -21,13 +21,13 @@ exports[`a cluster run lands its tree turned towards the seed, and a reorder dro
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": "((s10,mom),(dad,s2));",
   "sources": [
     {
@@ -103,13 +103,13 @@ exports[`a cluster run lands its tree turned towards the seed, and a reorder dro
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -162,13 +162,13 @@ exports[`a color slot paints the blocks, so a colour entry paints none 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -221,13 +221,13 @@ exports[`a colour entry paints its row, the rest the default colour 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     "#123456",
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -280,13 +280,13 @@ exports[`a declared order leads and the rest sort 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -339,11 +339,28 @@ exports[`a focus hides rows without recolouring the kept ones 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowColorScale": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "Parents",
+        "value": "Parents",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "Kids",
+        "value": "Kids",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowColor",
+    "kind": "categorical",
+    "title": "Group",
+  },
   "rowColorStringsByIndex": [
     "#4e79a7",
     "#f28e2c",
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -376,11 +393,11 @@ exports[`a repartition keeps the arrangement, idle under rows it does not name 1
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -421,13 +438,13 @@ exports[`a row's colour entry reaches its label bar, and a group alone colours n
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
     "#123456",
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -480,13 +497,7 @@ exports[`a run under the bands clusters each apart 1`] = `
     },
   ],
   "rowArrangementIsCustom": true,
-  "rowColorStringsByIndex": [
-    "#e41a1c",
-    "#e41a1c",
-    "#377eb8",
-    "#377eb8",
-  ],
-  "rowGroupsScale": {
+  "rowColorScale": {
     "entries": [
       {
         "color": "#e41a1c",
@@ -500,10 +511,16 @@ exports[`a run under the bands clusters each apart 1`] = `
       },
     ],
     "focusesRows": true,
-    "id": "rowGroups",
+    "id": "rowColor",
     "kind": "categorical",
-    "title": "Row groups",
+    "title": "Group",
   },
+  "rowColorStringsByIndex": [
+    "#e41a1c",
+    "#e41a1c",
+    "#377eb8",
+    "#377eb8",
+  ],
   "rowTree": "((s2,s10),(dad,mom));",
   "sources": [
     {
@@ -560,6 +577,7 @@ exports[`dialog edits reorder, relabel and recolour, and a reset returns to the 
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
@@ -567,7 +585,6 @@ exports[`dialog edits reorder, relabel and recolour, and a reset returns to the 
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -630,6 +647,7 @@ exports[`dialog edits reorder, relabel and recolour, and a reset returns to the 
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
@@ -637,7 +655,6 @@ exports[`dialog edits reorder, relabel and recolour, and a reset returns to the 
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -696,13 +713,13 @@ exports[`itemRgb paints the blocks 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -759,14 +776,7 @@ exports[`rowGroups tag the rows and facet group bands them, keyed under short ro
     },
   ],
   "rowArrangementIsCustom": false,
-  "rowColorStringsByIndex": [
-    "#e41a1c",
-    "#e41a1c",
-    "#377eb8",
-    "#377eb8",
-    undefined,
-  ],
-  "rowGroupsScale": {
+  "rowColorScale": {
     "entries": [
       {
         "color": "#e41a1c",
@@ -780,10 +790,17 @@ exports[`rowGroups tag the rows and facet group bands them, keyed under short ro
       },
     ],
     "focusesRows": true,
-    "id": "rowGroups",
+    "id": "rowColor",
     "kind": "categorical",
-    "title": "Row groups",
+    "title": "Group",
   },
+  "rowColorStringsByIndex": [
+    "#e41a1c",
+    "#e41a1c",
+    "#377eb8",
+    "#377eb8",
+    undefined,
+  ],
   "rowTree": undefined,
   "sources": [
     {
@@ -846,6 +863,7 @@ exports[`sort at a column orders rows by the colour painted there 1`] = `
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
@@ -853,7 +871,6 @@ exports[`sort at a column orders rows by the colour painted there 1`] = `
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -912,13 +929,7 @@ exports[`the bands win over a whole-cohort tree holding no clade of either 1`] =
     },
   ],
   "rowArrangementIsCustom": true,
-  "rowColorStringsByIndex": [
-    "#e41a1c",
-    "#e41a1c",
-    "#377eb8",
-    "#377eb8",
-  ],
-  "rowGroupsScale": {
+  "rowColorScale": {
     "entries": [
       {
         "color": "#e41a1c",
@@ -932,10 +943,16 @@ exports[`the bands win over a whole-cohort tree holding no clade of either 1`] =
       },
     ],
     "focusesRows": true,
-    "id": "rowGroups",
+    "id": "rowColor",
     "kind": "categorical",
-    "title": "Row groups",
+    "title": "Group",
   },
+  "rowColorStringsByIndex": [
+    "#e41a1c",
+    "#e41a1c",
+    "#377eb8",
+    "#377eb8",
+  ],
   "rowTree": "((dad,s2),(mom,s10));",
   "sources": [
     {
@@ -988,13 +1005,13 @@ exports[`the rows sort, digits by magnitude, none dealt a colour 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {
@@ -1051,6 +1068,7 @@ exports[`the unanswered row sorts last and is labelled for the field 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowColorScale": undefined,
   "rowColorStringsByIndex": [
     undefined,
     undefined,
@@ -1058,7 +1076,6 @@ exports[`the unanswered row sorts last and is labelled for the field 1`] = `
     undefined,
     undefined,
   ],
-  "rowGroupsScale": undefined,
   "rowTree": undefined,
   "sources": [
     {

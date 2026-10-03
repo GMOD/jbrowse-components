@@ -124,7 +124,7 @@ function derived(display: Display) {
     rowTree: display.rowTree,
     treeDrawn: display.hierarchy !== undefined,
     rowArrangementIsCustom: display.rowArrangementIsCustom,
-    groupLegend: display.colorScales.find(s => s.id === 'group'),
+    rowColorLegend: display.colorScales.find(s => s.id === 'rowColor'),
   }
 }
 
@@ -155,7 +155,7 @@ describe('allele count', () => {
     display.setRowFocus(['S2', 'S0'])
     expect(derived(display)).toMatchSnapshot()
     display.setRowFocus(undefined)
-    display.focusGroup('EUR')
+    display.focusLegendEntry('rowColor', 'EUR')
     expect(derived(display)).toMatchSnapshot()
   })
 
@@ -192,7 +192,7 @@ describe('allele count', () => {
     const afr = display.sources.filter(s => s.population === 'AFR')
     expect(afr.length).toBeGreaterThan(1)
     expect(afr.every(s => s.rowColor === '#123456')).toBe(true)
-    expect(derived(display).groupLegend).toBeDefined()
+    expect(derived(display).rowColorLegend?.title).toBe('Population')
   })
 
   test('a cluster run lands its order and tree, and a facet keeps each band clade', async () => {
@@ -263,7 +263,7 @@ describe('phased', () => {
   test('a legend focus keeps whole samples', () => {
     const display = loaded({ phased: true, rowColor: 'population' })
     landCells(display)
-    display.focusGroup('AFR')
+    display.focusLegendEntry('rowColor', 'AFR')
     expect(derived(display)).toMatchSnapshot()
     landCells(display)
     expect(derived(display)).toMatchSnapshot()

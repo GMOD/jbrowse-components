@@ -97,8 +97,8 @@ test('hidden travels with the item, not with the label', () => {
         items: [{ label: 'Wolf', color: 'red', hidden: true }],
       },
       {
-        id: 'rowGroups',
-        title: 'Row groups',
+        id: 'rowColor',
+        title: 'Group',
         items: [{ label: 'Wolf', color: 'blue' }],
       },
     ],
@@ -106,7 +106,7 @@ test('hidden travels with the item, not with the label', () => {
   expect(entries.map(e => [e.label, e.hidden])).toEqual([
     ['Feature colors', undefined],
     ['Wolf', true],
-    ['Row groups', undefined],
+    ['Group', undefined],
     ['Wolf', undefined],
   ])
 })

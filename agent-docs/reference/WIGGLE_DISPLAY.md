@@ -257,11 +257,15 @@ origin is. Density's white fade is keyed only while no row brings its own
 colour; a declared gradient ignores row colours, so it is keyed regardless, and
 only density gives the ramp the axis's place.
 
-**`scoreGradientPaints` leaves a row's colour on its label bar only** — the
-source key keys `rowColor` then, so no key shows a swatch the plot does not
-paint, and the plot's per-row fade end is the row's own `color`, which nothing in
-the UI reaches. The arrangement dialog's one swatch column edits `rowColor`
-whatever paints the plot.
+**The row colours are keyed by tree-sidebar's one row colour key**
+(`rowColorScales`, TREE_SIDEBAR.md): an overlay of several subtracks keys each by
+name, a row per subtrack keys only an attribute such as `group`, and an overlay
+painting a score gradient keys none, since no row colour shows there.
+
+**`scoreGradientPaints` leaves a row's colour on its label bar only**, and the
+plot's per-row fade end is the row's own `color`, which nothing in the UI
+reaches. The arrangement dialog's one swatch column edits `rowColor` whatever
+paints the plot.
 
 ## The whole colour UI is one menu row
 
@@ -305,12 +309,11 @@ label bar reads `rowColor` always, so a colour set on a row stays on its bar
 when a gradient starts painting rather than going into the ramp. A `group`
 colours nothing until `rowColor` names it.
 
-**Density is where the fallback differs.** Outside it an unset row `color` is
-painted in the resolved `posColor`, so the key resolves to it; in density that
-colour is the score ramp and identity comes from `SvgRowLabels`, which paints a
-row with no `rowColor` as no swatch — so an uncoloured density row gets no key
-entry either. Reachable whenever a density track mixes grouped subtracks with
-ungrouped ones.
+**A row left uncoloured beside dealt ones paints grey** (`UNCOLORED_ROW`,
+`#999`, ggplot's `na.value`): where the palette deals the shared box and some
+row took a colour, a subtrack with no value of the `rowColor` field would
+otherwise paint the plot colour, which reads as palette colour 0. Rows of their
+own keep the plot colour, since nothing beside them is dealt.
 
 ## The shipped arrays are aliased — read, never write
 

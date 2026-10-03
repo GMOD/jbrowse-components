@@ -5,7 +5,6 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { legendIsReadable } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   getPaletteHost,
@@ -42,9 +41,7 @@ import {
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
-  focusRowGroup,
   resetRowOrderMenuItems,
-  rowLabelsCarryText,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
@@ -108,7 +105,7 @@ import type {
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { RowGroup } from './rowSources.ts'
 import type { RowCountByField } from './rowsFields.ts'
-import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
@@ -626,38 +623,9 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Key for the label bars `rowColor: 'group'` paints, empty unless those
-       * bars are the only thing carrying row identity: above
-       * `rowLabelsCarryText` the sidebar writes each row's name and a key
-       * would restate them, and with `showRowLabels` off nothing draws the
-       * bars for a key to name.
-       */
-      get rowGroupLegend(): LegendItem[] {
-        if (
-          self.rowColorSetting.field !== 'group' ||
-          !self.showRowLabels ||
-          rowLabelsCarryText(self.effectiveRowHeight)
-        ) {
-          return []
-        }
-        const colors = self.dealtRowColors
-        const byGroup = new Map<string, LegendItem>()
-        for (const { group = '' } of self.sources) {
-          const color = colors.get(group)
-          if (color && !byGroup.has(group)) {
-            byGroup.set(group, { color, label: group })
-          }
-        }
-        const items = [...byGroup.values()]
-        return legendIsReadable(items) ? items : []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * `LegendMixin`'s hook, two vocabularies as two scales: the per-feature
        * painting, toggleable and dimmed where a category is hidden, and the
-       * row-group stripe, which names rows and is not.
+       * row colour key, which names rows and is not.
        */
       get colorScales(): ColorScale[] {
         const hidden = self.hiddenCategorySet
@@ -680,17 +648,7 @@ export default function stateModelFactory(
               hidden: entryHidden(e, hidden),
             })),
           },
-          {
-            kind: 'categorical' as const,
-            id: 'rowGroups',
-            title: 'Row groups',
-            focusesRows: true,
-            entries: self.rowGroupLegend.map(({ label, color }) => ({
-              value: label,
-              label,
-              color,
-            })),
-          },
+          ...self.rowColorScales,
         ].filter(scale => scale.kind === 'ramp' || scale.entries.length > 0)
       },
     }))
@@ -987,18 +945,6 @@ export default function stateModelFactory(
          */
         setShowRowSeparators(f: boolean) {
           setConf(self, 'showRowSeparators', f)
-        },
-        /**
-         * #action
-         * `LegendMixin`'s hook: a click on a row-group swatch narrows the rows
-         * to that group. A feature-color row names a color rather than a set
-         * of rows — the "Categories" submenu is what acts on those — so it
-         * stays inert.
-         */
-        focusLegendEntry(scaleId: string, value: string) {
-          if (scaleId === 'rowGroups') {
-            focusRowGroup(self, self.editableSources, s => s.group === value)
-          }
         },
         /**
          * #action
