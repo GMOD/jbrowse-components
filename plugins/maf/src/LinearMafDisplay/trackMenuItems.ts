@@ -30,10 +30,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
-const SetRowArrangementDialog = lazy(
-  () => import('./components/SetRowArrangementDialog.tsx'),
-)
-
 const MafClusterDialog = lazy(() => import('./components/MafClusterDialog.tsx'))
 
 // Compact row for the plain show/hide toggles, which are otherwise a dozen
@@ -268,15 +264,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
     // their equivalent ("Plot type") at the top level too.
     rowRenderingMenuItem(self),
     ...makeShowSubMenu(showMenuItems(self)),
-    rowArrangementMenuItem({
-      ready: !!self.editableSources.length,
-      onOpen: () => {
-        getDialogHost(self).queueDialog(handleClose => [
-          SetRowArrangementDialog,
-          { model: self, handleClose },
-        ])
-      },
-    }),
+    rowArrangementMenuItem(self, { ready: !!self.editableSources.length }),
     // maf used to have no "Clustering" submenu, on the grounds that its tree is
     // the adapter's guide phylogeny rather than a run, and it took the shared
     // subtree-filter item flat instead. There is a run now — per-bin identity to

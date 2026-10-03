@@ -901,6 +901,14 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * `TreeSidebarMixin`'s hook: a haplotype row's `sampleName` and `HP`,
+         * which the arrangement dialog lists as no column.
+         */
+        get internalRowFields(): readonly string[] {
+          return ['sampleName', 'HP']
+        },
+        /**
+         * #getter
          * `TreeSidebarMixin`'s hook: the samplesTsv attributes, the ones
          * "Color by..." offers.
          */

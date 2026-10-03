@@ -41,7 +41,6 @@ import {
   CellSolidColorDialog,
   MultiSampleVariantClusterDialog as ClusterDialog,
   JexlFilterDialog,
-  SetColorDialog,
 } from './lazyDialogs.ts'
 import { IMPACT_FIELD } from './variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from './variantFilterExamples.ts'
@@ -446,17 +445,8 @@ export function variantTrackMenuItems(
       },
       self.sources.length,
     ),
-    rowArrangementMenuItem({
+    rowArrangementMenuItem(self, {
       ready: self.clusteringReady && !!self.adapterSamples?.length,
-      onOpen: () => {
-        getDialogHost(self).queueDialog(handleClose => [
-          SetColorDialog,
-          {
-            model: self,
-            handleClose,
-          },
-        ])
-      },
     }),
     // Three things write this display's row order — a clustering run, the
     // arrangement dialog, and the right-click "Sort by genotype" below — and

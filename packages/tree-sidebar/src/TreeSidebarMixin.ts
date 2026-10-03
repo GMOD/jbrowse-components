@@ -599,6 +599,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
+       * Overridable hook: the row fields that are a display's own plumbing,
+       * which the arrangement dialog never lists as a column.
+       */
+      get internalRowFields(): readonly string[] {
+        return []
+      },
+      /**
+       * #getter
        * Overridable hook: the row attributes a reader can colour the rows by,
        * offered beside None and Each row. By default every attribute a row
        * carries but its name, label and colours.
@@ -784,9 +792,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * `editableSources` narrowed to the focus: the rows a clustering run
-       * clusters, and deliberately not the display's decorated `sources`,
-       * whose palette and band a run has no business writing back.
+       * Overridable hook: `editableSources` narrowed to the focus, the rows a
+       * clustering run clusters, and deliberately not the display's decorated
+       * `sources`, whose palette and band a run has no business writing back.
+       * MAF applies a focus as given on a track that discovers its species.
        */
       get clusterableSources(): S[] {
         return keptRows(self.editableSources, self.rowFocus, self.rowAlias)

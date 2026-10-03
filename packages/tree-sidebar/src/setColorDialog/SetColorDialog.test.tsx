@@ -59,6 +59,7 @@ function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
     rowColorChoice:
       rowColorSetting.scale === 'none' ? '' : rowColorSetting.field,
     rowPaletteDeals: true,
+    internalRowFields: [],
     rowColorFields: [],
     rowColorsFor: previewOf(editableSources),
     ...overrides,
@@ -481,7 +482,6 @@ test('showRows false drops the row choice, the grid and the bulk editor', () => 
     <SetColorDialog
       model={fakeModel({ editableSources: [{ name: 'a' }] })}
       handleClose={jest.fn()}
-      enableBulkEdit
       showRows={false}
       plotColor={{
         above: '#b2182b',

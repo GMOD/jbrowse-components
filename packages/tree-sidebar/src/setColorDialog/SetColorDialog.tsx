@@ -48,6 +48,7 @@ export interface TreeLayoutModel<S extends { name: string }> {
   rowColorChoice: string
   rowPaletteDeals: boolean
   rowColorFields: readonly string[]
+  internalRowFields: readonly string[]
   rowColorsFor: (setting: RowColorSetting) => ReadonlyMap<string, string>
 }
 
@@ -57,10 +58,6 @@ export interface SetColorDialogProps<
   model: TreeLayoutModel<S>
   handleClose: () => void
   title?: string
-  enableBulkEdit?: boolean
-  // Plugin-specific field names that are internal plumbing (e.g. variants'
-  // `sampleName`/`HP`): hidden from the auto-derived "extras" column list.
-  reservedFields?: ReadonlySet<string>
   // The display's own colour rather than a row's, on one line above the rows.
   // Held here and written in `submit()` AFTER the row edits, so Cancel reverts
   // it like everything else and the write cannot recolour the rows
@@ -136,8 +133,6 @@ export default observer(function SetColorDialog<
   model,
   handleClose,
   title = 'Color/arrangement editor',
-  enableBulkEdit = false,
-  reservedFields,
   plotColor,
   showRows = true,
   onEditAsJson,
@@ -166,7 +161,7 @@ export default observer(function SetColorDialog<
     ...IDENTITY_FIELDS,
     'color',
     'rowColor',
-    ...(reservedFields ?? []),
+    ...model.internalRowFields,
   ])
 
   const byField = choice !== '' && choice !== 'name' ? choice : undefined
@@ -266,7 +261,7 @@ export default observer(function SetColorDialog<
 
   return (
     <DraggableDialog open onClose={handleClose} maxWidth="xl" title={title}>
-      {showBulkEditor && enableBulkEdit ? (
+      {showBulkEditor ? (
         <BulkEditPanel
           currLayout={currLayout}
           onClose={next => {
@@ -279,7 +274,7 @@ export default observer(function SetColorDialog<
       ) : (
         <>
           <DialogContent className={classes.content}>
-            {enableBulkEdit && showRows ? (
+            {showRows ? (
               <div className={classes.fr}>
                 <Button
                   color="secondary"

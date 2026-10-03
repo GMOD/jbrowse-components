@@ -31,7 +31,6 @@ export default observer(function WiggleSetColorDialog({
       model={model}
       handleClose={handleClose}
       title={showRows ? 'Wiggle color/arrangement editor' : 'Wiggle color'}
-      enableBulkEdit
       showRows={showRows}
       plotColor={
         line.mode === 'hide'

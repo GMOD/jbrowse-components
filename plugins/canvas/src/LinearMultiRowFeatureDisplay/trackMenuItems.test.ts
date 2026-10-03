@@ -63,6 +63,7 @@ function makeSelf(
     } as RowColorSetting,
     rowColorChoice: 'name',
     rowPaletteDeals: true,
+    internalRowFields: [],
     rowColorFields: [],
     rowColorsFor: () => new Map(),
     setRowHeight: () => {},

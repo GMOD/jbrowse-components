@@ -29,9 +29,6 @@ import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { RowSource, TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
-const SetRowArrangementDialog = lazy(
-  () => import('./components/SetRowArrangementDialog.tsx'),
-)
 const MultiRowClusterDialog = lazy(
   () => import('./components/MultiRowClusterDialog.tsx'),
 )
@@ -163,15 +160,7 @@ export function buildMultiRowTrackMenuItems(
     rowHeightMenuItem(self, ROW_HEIGHT_PRESETS),
     ...rowsFieldMenuItems(self),
     ...categoriesMenuItems(self),
-    rowArrangementMenuItem({
-      ready: !!self.editableSources.length,
-      onOpen: () => {
-        getDialogHost(self).queueDialog(handleClose => [
-          SetRowArrangementDialog,
-          { model: self, handleClose },
-        ])
-      },
-    }),
+    rowArrangementMenuItem(self, { ready: !!self.editableSources.length }),
     // Top-level, since clustering is only one of the three things writing
     // `rows.domain`.
     ...resetRowOrderMenuItems(self),

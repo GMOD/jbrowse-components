@@ -903,7 +903,7 @@ export default function stateModelFactory(
           // dialog no longer needs one — a swatch waits for no row list, and
           // greying the only colour route out until a fetch lands is what the
           // gate would do on a plain BigWig.
-          rowArrangementMenuItem({
+          rowArrangementMenuItem(self, {
             ready: true,
             onOpen: () => {
               getDialogHost(self).queueDialog(handleClose => [

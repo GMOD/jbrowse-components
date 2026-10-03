@@ -22,9 +22,6 @@ import { lazy } from 'react'
 export const JexlFilterDialog = lazy(
   () => import('@jbrowse/core/ui/JexlFilterDialog'),
 )
-export const SetColorDialog = lazy(
-  () => import('./components/SetColorDialog.tsx'),
-)
 export const CellSolidColorDialog = lazy(
   () => import('./components/CellSolidColorDialog.tsx'),
 )
