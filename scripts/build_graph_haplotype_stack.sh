@@ -26,7 +26,7 @@ OUT="${1:-graph_haplotype_stack}"
 REGION="${REGION:-chr6:31940000-32090000}"
 ROWS="${ROWS:-HG01978#2 HG02004#2 GRCh38#0 HG02818#1 HG00146#1}"
 GBZ_DB="${GBZ_DB:-https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db}"
-GBZ_INDEX="${GBZ_INDEX:-https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db}"
+GBZ_INDEX="${GBZ_INDEX:-https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db}"
 HOSTED=https://jbrowse.org/pangenome/hprc-grch38
 
 mkdir -p "$OUT"

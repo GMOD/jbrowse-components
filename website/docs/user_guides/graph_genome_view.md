@@ -361,7 +361,9 @@ A gbz-base track draws one lane per haplotype, and **Display types → Graph** i
 its track menu draws the same track as a graph of the haplotypes' walks. The
 **Haplotypes** field in **Settings** lists the haplotypes the cut holds beside
 the reference, and with the field empty the track cuts every haplotype in the
-graph.
+graph. Past 5 Mb, or for a cut over the adapter's `nodeLimit`, the graph gives
+way to the haplotype index's overview: a density band over one row per
+haplotype.
 [Repeat lengths across HPRC haplotypes](/docs/tutorials/pangenome_hprc_repeats#one-haplotypes-copies)
 reads a repeat array this way.
 

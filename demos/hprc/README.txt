@@ -73,19 +73,26 @@ Files
                                              insertions, 90,204 deletions,
                                              4,404 same-length substitutions)
 
-  hprc-v2.1-mc-grch38.haplotype-index.anchored.db
+  hprc-v2.1-mc-grch38.haplotype-index.f3.db
                                              the companion gbz-base index
-                                             (7.87 GB) that names the walks
-                                             read from HPRC's published
-                                             hprc-v2.1-mc-grch38.gbz.db, which
-                                             stores no map from a GBWT position
-                                             back to a sample; built by
-                                             scripts/build_hprc_gbz_index.sh.
+                                             (5.09 GB, format 3) that names
+                                             the walks read from HPRC's
+                                             published hprc-v2.1-mc-grch38.gbz.db,
+                                             which stores no map from a GBWT
+                                             position back to a sample; built
+                                             by scripts/build_hprc_gbz_index.sh
+                                             with gbz-haplotype-index 0.3.0.
                                              Its anchors sit every 131 kb along
                                              GRCh38 and CHM13, so a window for
                                              a chosen set of lanes walks those
                                              haplotypes from the anchor before
-                                             it.
+                                             it, and its 0.47 GB overview
+                                             summarizes every haplotype per
+                                             4 kb bin for windows too large to
+                                             cut. It replaces the format 2
+                                             hprc-v2.1-mc-grch38.haplotype-index.anchored.db
+                                             (7.87 GB), which @gmod/gbz-base 7
+                                             no longer reads.
 
   hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
                                              the KIV-2 bubble

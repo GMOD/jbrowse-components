@@ -288,7 +288,9 @@ gbz-base construct --chains graph.chains graph.gbz
 ```
 
 Name the haplotypes. `gbz-base` reports the walks in a subgraph as `unknown#1`,
-`unknown#2`, and `gbz-haplotype-index` writes their names to a companion file:
+`unknown#2`, and `gbz-haplotype-index` writes their names to a companion file,
+with a per-haplotype overview of each reference chromosome. It reads the
+database beside the GBZ to check that the two match:
 
 <!-- from: scripts/build_hprc_gbz_index.sh -->
 
@@ -298,11 +300,12 @@ Name the haplotypes. `gbz-base` reports the walks in a subgraph as `unknown#1`,
 # --anchor-spacing: bp between anchor nodes on the reference path, so a window
 #   walks only the chosen lanes
 gbz-haplotype-index --interval 16384 --anchor-spacing 131072 \
-  graph.gbz graph.haplotype-index.db
+  graph.gbz graph.gbz.db graph.haplotype-index.db
 ```
 
 `cargo install gbz-base` and `cargo install gbz-haplotype-index` install the two
-tools.[^gbz-cost]
+tools. The browser reads only the format 3 companion that `gbz-haplotype-index`
+0.3.0 and later writes.[^gbz-cost]
 
 Serve the database and the companion from URLs that answer range requests, and
 point the track's `uri` and `haplotypeIndexLocation` at them:
@@ -336,7 +339,9 @@ point the track's `uri` and `haplotypeIndexLocation` at them:
 ```
 
 The adapter rejects a companion built from a graph with a different path count.
-`nodeLimit` fails a window with too many nodes and names a zoom that fits.
+A window past `nodeLimit` nodes stops the lanes, which point at the Graph
+display. That display draws the companion's overview past `nodeLimit` or 5 Mb: a
+density band and one row per haplotype.
 [Haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes) draws
 the lanes this track produces.
 
@@ -372,7 +377,7 @@ and
 each runnable alone. HPRC publishes the gbz-base database itself, so a separate
 script builds only the
 [haplotype-walk companion](#haplotype-walks-a-gbz-base-database), from the 5.5
-GB `.gbz`:
+GB `.gbz` and the 10 GB database:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_gbz_index.sh
@@ -403,7 +408,7 @@ bash build_hprc_gbz_index.sh out
     minutes.
 
 [^gbz-cost]:
-    Over HPRC's 464 haplotypes the companion is 7.9 GB, built in about a quarter
-    of an hour on 24 cores with a 12 GB memory peak. On a 16-thread Intel Mac
-    the build aborts inside libmalloc's nano zone; `MallocNanoZone=0` or
-    `--threads 8` avoids it.
+    Over HPRC's 464 haplotypes the companion is 5.1 GB, 0.47 GB of it the
+    overview, built in 35 minutes on 22 threads of a 125 GB machine. On a
+    16-thread Intel Mac the build aborts inside libmalloc's nano zone;
+    `MallocNanoZone=0` or `--threads 8` avoids it.

@@ -41,7 +41,7 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 - the graph as a gbz-base database:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
 - our index naming its haplotypes:
-  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
+  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db
 - the assemblies:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv
 - the CAT gene annotation index, one GFF3 per haplotype:
@@ -70,7 +70,7 @@ PanSN `sample#haplotype` name in `assemblyNameToPanSN`:
     "type": "GbzBaseSyntenyAdapter",
     "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db",
     "haplotypeIndexLocation": {
-      "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db"
+      "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db"
     },
     "assemblyNames": ["hg38"],
     "assemblyNameToPanSN": {

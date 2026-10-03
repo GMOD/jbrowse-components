@@ -62,7 +62,7 @@ genotypes of 100 of its samples (Dolzhenko et al. 2024):
   request:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
 - our companion index naming that database's haplotypes:
-  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
+  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db
 - TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb:
   https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar
 - the catalogue itself:

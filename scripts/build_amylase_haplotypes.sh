@@ -35,7 +35,7 @@ cd "$OUT"
 HPRC=https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC
 HOSTED=https://jbrowse.org/pangenome/hprc-grch38
 GBZ_DB=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
-GBZ_INDEX=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
+GBZ_INDEX=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db
 
 echo "== every haplotype's span across the locus, from the graph database"
 # One window inside RNPC3 and one past AMY1C, both single-copy, so each
