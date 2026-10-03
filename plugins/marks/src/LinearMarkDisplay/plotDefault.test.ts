@@ -1,7 +1,17 @@
+import { runTransforms } from '@jbrowse/core/util/featureTransforms'
+import createJexlInstance from '@jbrowse/core/util/jexl'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { defaultPlot } from './plotDefault.ts'
+import { KEEP_MAPPED_PASSING_UNIQUE_READS, defaultPlot } from './plotDefault.ts'
 import { scanPlotFields } from './scanPlotFields.ts'
+
+const readDepth = {
+  mark: 'bar',
+  transform: [
+    { type: 'filter', expr: KEEP_MAPPED_PASSING_UNIQUE_READS },
+    { type: 'coverage' },
+  ],
+}
 
 function features(recs: Record<string, unknown>[]) {
   return recs.map(
@@ -38,13 +48,27 @@ test('aligned reads draw their depth, whatever score each read carries', () => {
     { listedSources: 0 },
   )
   expect(reads.reads).toBe(true)
-  expect(defaultPlot(reads)?.marks).toEqual([
-    { mark: 'bar', transform: [{ type: 'coverage' }] },
-  ])
+  expect(defaultPlot(reads)?.marks).toEqual([readDepth])
   const peaks = scanPlotFields(features([{ score: 5 }, { score: 9 }]), {
     listedSources: 0,
   })
   expect(peaks.reads).toBeUndefined()
+})
+
+test('the default read depth leaves out unmapped, QC-failed and duplicate reads', () => {
+  const reads = features([
+    { flags: 99 },
+    { flags: 147 },
+    { flags: 4 },
+    { flags: 99 | 0x200 },
+    { flags: 147 | 0x400 },
+  ])
+  const { transform } = defaultPlot(
+    scanPlotFields(reads, { listedSources: 0 }),
+  )!.marks[0]!
+  const depth = runTransforms(reads, transform as never, createJexlInstance())
+  expect(depth.length).toBe(1)
+  expect(depth.row(0).get('coverage')).toBe(2)
 })
 
 test('the default is a bar of score, and nothing where the features carry none', () => {
@@ -173,9 +197,7 @@ test('paired reads name their other end, and still draw their depth by default',
   )
   expect(reads.mated).toBe('pair')
   expect(reads.reads).toBe(true)
-  expect(defaultPlot(reads)?.marks).toEqual([
-    { mark: 'bar', transform: [{ type: 'coverage' }] },
-  ])
+  expect(defaultPlot(reads)?.marks).toEqual([readDepth])
 })
 
 test('an ordinary VCF names no other end, so its default is what its fields say', () => {

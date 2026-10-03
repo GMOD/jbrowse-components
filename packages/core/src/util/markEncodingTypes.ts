@@ -505,7 +505,9 @@ export interface AggregateStep {
  * #api
  * Replace the features with runs of constant depth: how many of them overlap
  * each stretch of the region, in a field `as` (`coverage` by default), with
- * the stretches nothing overlaps left out.
+ * the stretches nothing overlaps left out. A read counts across its whole
+ * span, deletions and introns included; gap-aware depth stays the alignments
+ * display's (ADR-118).
  */
 export interface CoverageStep {
   type: 'coverage'

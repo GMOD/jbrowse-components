@@ -492,7 +492,9 @@ ramp is `range`'s CSS colours, evenly spaced, where it lists any, else the named
 
 Replace the features with runs of constant depth: how many of them overlap each
 stretch of the region, in a field `as` (`coverage` by default), with the
-stretches nothing overlaps left out.
+stretches nothing overlaps left out. A read counts across its whole span,
+deletions and introns included; gap-aware depth stays the alignments display's
+(ADR-118).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
