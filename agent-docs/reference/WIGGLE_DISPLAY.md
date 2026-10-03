@@ -257,12 +257,11 @@ origin is. Density's white fade is keyed only while no row brings its own
 colour; a declared gradient ignores row colours, so it is keyed regardless, and
 only density gives the ramp the axis's place.
 
-**`scoreGradientPaints` moves a row's identity to `labelColor`** — the source
-key, the row-label swatches and the arrangement dialog's one swatch column all
-read it there, so no key shows a swatch the plot does not paint. That column is
-titled **Label color** under a gradient and **Color** otherwise, because under a
-gradient it is the tint beside the row and not the plot: the plot's per-row fade
-end is the row's own `color`, which nothing in the UI reaches.
+**`scoreGradientPaints` leaves a row's colour on its label bar only** — the
+source key keys `rowColor` then, so no key shows a swatch the plot does not
+paint, and the plot's per-row fade end is the row's own `color`, which nothing in
+the UI reaches. The arrangement dialog's one swatch column edits `rowColor`
+whatever paints the plot.
 
 ## The whole colour UI is one menu row
 
@@ -294,22 +293,22 @@ its baseline and a row per subtrack draws each in the plot colour unless
 `rowColor` or the file gives it one.
 
 **A reader's colour for a row is `rowColor`, and its label is `rows.labels`.**
-`TreeSidebarMixin` arranges them over `discoveredRows` and writes the dialog's
-submit; what is this display's is `identityChannel`, the channel a `rowColor`
-entry lands on — `color` while `rowColorPaintsMarks`, else `labelColor` — so a
-colour set on the plot moves to the label tint when a gradient starts painting
-rather than into the ramp; in one shared box there is no label to tint, so the
-colour goes to the plot whatever the gradient. `group` has no config home, so a `group` pasted into the bulk
-editor is not kept.
+`TreeSidebarMixin` arranges them over `discoveredRows`, stamps each row's
+resolved `rowColor` and writes the dialog's submit. `group` has no config home,
+so a `group` pasted into the bulk editor is not kept.
 
-**`buildSources` lands `resolvedRowColors` on the `identityChannel`**: on
-`color`, or on `labelColor` with the row's own `color` left for the density
-fade. A `group` colours nothing until `rowColor` names it.
+**`markSources` is what the plot paints.** A source's marks take its `rowColor`
+where `marksTakeRowColor` — `rowColorPaintsMarks`, or one shared box, which has
+no label bar to carry it — and its own `color` otherwise, which the density fade
+ends on (`markColorOf`). The encoder and the tooltip read `markSources`; the
+label bar reads `rowColor` always, so a colour set on a row stays on its bar
+when a gradient starts painting rather than going into the ramp. A `group`
+colours nothing until `rowColor` names it.
 
 **Density is where the fallback differs.** Outside it an unset row `color` is
 painted in the resolved `posColor`, so the key resolves to it; in density that
 colour is the score ramp and identity comes from `SvgRowLabels`, which paints a
-row with no `labelColor` as no swatch — so an uncoloured density row gets no key
+row with no `rowColor` as no swatch — so an uncoloured density row gets no key
 entry either. Reachable whenever a density track mixes grouped subtracks with
 ungrouped ones.
 

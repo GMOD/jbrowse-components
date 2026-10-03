@@ -176,12 +176,11 @@ settings change triggers rather than folding back to samples. `samplePloidy`
 keeps its identity while each fetch reports the same ploidies, so a region
 arrival re-derives no row.
 
-**The row tint is `labelColor`**, the channel tree-sidebar's `RowLabelsOverlay`
-and `SvgRowLabels` draw — the cells are colored by genotype, so a row has no
-`color` of its own to spend. `sources` writes `resolvedRowColors` there, the group
-legend and the tooltip swatch read it there, and `discoveredRows` folds a
-`samplesTsv` `color` column onto it. Carrying the tint under `color` is what
-kept these displays on a label gutter of their own.
+**A row's colour is its `rowColor`**, the label bar tree-sidebar's
+`RowLabelsOverlay` and `SvgRowLabels` draw — the cells are colored by genotype,
+so `rowColorPaintsMarks` is false and the bar is the only place it shows. The
+group legend and the tooltip swatch read it too. A `samplesTsv` `color` column
+is the row's own `color`, which `resolvedRowColors` falls back to.
 
 **An attribute in `rowColor.field` beats a `samplesTsv` `color` column**: a
 channel bound to a variable beats a per-row constant. `TreeSidebarMixin` deals

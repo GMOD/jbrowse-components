@@ -124,7 +124,7 @@
 <text xml:space="preserve" text-anchor="middle" x="1572" y="-143.25" font-family="monospace" font-size="10.00">under density the pair is the ramp&#39;s</text>
 <text xml:space="preserve" text-anchor="middle" x="1572" y="-130.5" font-family="monospace" font-size="10.00">two fade ends, so a hue set on a row</text>
 <text xml:space="preserve" text-anchor="middle" x="1572" y="-117.75" font-family="monospace" font-size="10.00">would replace the scale it is read by:</text>
-<text xml:space="preserve" text-anchor="middle" x="1572" y="-105" font-family="monospace" font-size="10.00">identity moves to labelColor</text>
+<text xml:space="preserve" text-anchor="middle" x="1572" y="-105" font-family="monospace" font-size="10.00">the row colour stays on its label bar</text>
 </g>
 <!-- resolved&#45;&gt;density -->
 <g id="edge8" class="edge">
@@ -153,5 +153,5 @@
 <polygon fill="black" stroke="black" points="1719.99,-105.19 1729.24,-100.03 1718.79,-98.29 1719.99,-105.19"/>
 </g>
 </g>
-<!-- diagram-source-sha256 8aa354f3c000733bb677cbaa26cefc018bad804fca0f0f1e8a2bdaf79aae019a -->
+<!-- diagram-source-sha256 42b2e438b6bd5d2c658243d45ad124156ffdfe31d1eefade27c4d4273e5aa920 -->
 </svg>

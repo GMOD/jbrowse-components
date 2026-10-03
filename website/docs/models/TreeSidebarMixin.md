@@ -11,14 +11,15 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 The rows are derived in stages, each a computed of its own: the display's
 `discoveredRows`, then `expandedRows` (`expandRows`: a variant display's
 haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
-`rows.labels` and tinted by the `rowColor` pairs on the `identityChannel`,
-then `clusterableSources`, narrowed to the focus, then `bandedSources`,
-stacked in the bands `rowBanding` names.
+`rows.labels` and each carrying its resolved `rowColor`, then
+`clusterableSources`, narrowed to the focus, then `bandedSources`, stacked
+in the bands `rowBanding` names.
 
 A row's colour is `resolvedRowColors`: its `rowColor` entry (a `name` pair,
 or the colour `dealtRowColors` deals its attribute value), else its own
-`color`, else the row palette's colour by name where `rowPaletteDeals`.
-Each display paints it where its rows take a colour.
+`color`, else the row palette's colour by name where `rowPaletteDeals`. The
+sidebar draws it as a bar beside the row's label, and a display paints its
+marks in it where `rowColorPaintsMarks`.
 
 Every arrangement write reaches the session at once rather than after the
 track's 400 ms save, so a clustering run is one undo step and undoable the
@@ -63,8 +64,7 @@ or what a track the session owns was added with, and never touches
 | <span id="getter-baserowdomain">**baseRowDomain**</span><br><code>readonly string[]</code> | The `rows.domain` this display's base declares: the base arrangement a row palette deals over, so no reorder recolours a row. |
 | <span id="getter-discoveredrows">**discoveredRows**</span><br><code>S[]</code> | Overridable hook, which every display overrides: the rows as the data reports them, before any arrangement. A getter, and a stable-identity one wherever the rows come off region payloads, so a refetch of the same rows re-derives nothing. |
 | <span id="getter-guidetreenewick">**guideTreeNewick**</span><br><code>string &#124; undefined</code> | Overridable hook: the guide tree the display's adapter supplies, as newick, which `rowTree` draws while some rotation of it lists `rows.domain`. It never enters `rows.tree`, since the adapter re-supplies it on every load. None by default. |
-| <span id="getter-rowalias">**rowAlias**</span><br><code>RowAlias &#124; undefined</code> | Overridable hook: the name a row also answers to, for a display whose rows stand for something named by another name (a variant display's haplotype rows, each answering to its sample). An order, a label, a tint and a focus written against the alias reach every row answering to it. None by default. |
-| <span id="getter-identitychannel">**identityChannel**</span><br><code>IdentityChannel</code> | Overridable hook: the row channel a `rowColor` entry paints, `color` by default. |
+| <span id="getter-rowalias">**rowAlias**</span><br><code>RowAlias &#124; undefined</code> | Overridable hook: the name a row also answers to, for a display whose rows stand for something named by another name (a variant display's haplotype rows, each answering to its sample). An order, a label, a colour and a focus written against the alias reach every row answering to it. None by default. |
 | <span id="getter-unlistedrowssort">**unlistedRowsSort**</span><br><code>UnlistedRowsSort</code> | Overridable hook: where the rows `rowOrder` does not list go, in the order they arrived by default. |
 | <span id="getter-rowbanding">**rowBanding**</span><br><code>RowBanding &#124; undefined</code> | Overridable hook: the attribute the rows stack in bands by and the bands listed first, or undefined, the default, for no bands. |
 | <span id="getter-svgsidebar">**svgSidebar**</span><br><code>SvgSidebarProps &#124; undefined</code> | Overridable hook: what the SVG export draws in the sidebar left of the track, or undefined, the default, for none. `SvgTreeSidebar` draws it and `svgSidebarWidth` sizes the gutter from it. |
@@ -85,7 +85,7 @@ or what a track the session owns was added with, and never touches
 | <span id="getter-dealtrowcolors">**dealtRowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour each value of the config's `rowColor` field takes, listed pairs first and then in the order dealt. |
 | <span id="getter-resolvedrowcolors">**resolvedRowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | Each row's colour, by name: its `rowColor` entry, else its own `color`, else the palette's where `rowPaletteDeals`. The one answer every display paints a row's colour from. |
 | <span id="getter-rowarrangementiscustom">**rowArrangementIsCustom**</span><br><code>boolean</code> | Whether the arrangement differs from what the config declares — what "Reset row order" is offered on. |
-| <span id="getter-editablesources">**editableSources**</span><br><code>S[]</code> | The rows in the reader's arrangement, with no focus, palette or band: the list the arrangement dialog edits, so a submit writes back only what the reader chose. `expandedRows` itself while nothing is arranged. |
+| <span id="getter-editablesources">**editableSources**</span><br><code>S[]</code> | The rows in the reader's arrangement, each with its resolved `rowColor`, and with no focus or band: the list the arrangement dialog edits, so a submit writes back only what the reader chose. `expandedRows` itself while nothing is arranged or coloured. |
 | <span id="getter-clusterablesources">**clusterableSources**</span><br><code>S[]</code> | `editableSources` narrowed to the focus: the rows a clustering run clusters, and deliberately not the display's decorated `sources`, whose palette and band a run has no business writing back. |
 | <span id="getter-parsedtree">**parsedTree**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> | `rowTree` parsed. A run rotated its tree in the same write as the order it produced; a tree that arrived as data rotates towards `rows.domain` here, and the guide tree is `guideTree`'s parse. |
 | <span id="getter-root">**root**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> | The parsed tree narrowed to the focus. |

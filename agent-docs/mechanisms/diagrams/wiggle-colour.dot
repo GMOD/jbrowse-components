@@ -20,7 +20,7 @@ digraph wiggle_colour {
   resolved [label="resolveWiggleColor:\nposColor, negColor, pivot,\nrampLut, perSource", style=bold]
   encoding -> resolved
 
-  density [label="under density the pair is the ramp's\ntwo fade ends, so a hue set on a row\nwould replace the scale it is read by:\nidentity moves to labelColor"]
+  density [label="under density the pair is the ramp's\ntwo fade ends, so a hue set on a row\nwould replace the scale it is read by:\nthe row colour stays on its label bar"]
   resolved -> density
 
   legend [label="the colour key follows the SCALE,\nso the channel and its fallback\ncome from one table"]

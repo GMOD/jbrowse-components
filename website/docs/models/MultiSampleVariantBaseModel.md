@@ -42,22 +42,22 @@ displays: [
 ## How the rows are arranged
 
 The arrangement is config: `rows` holds the order, the labels, the cluster
-tree with its provenance and the focus, and `rowColor` the tint, each by row
-name at the mode's granularity — a sample in allele-count mode, a haplotype
-(`"<sample> HP<n>"`) in phased mode, where a sample name stands for its
-haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
+tree with its provenance and the focus, and `rowColor` the colours, each by
+row name at the mode's granularity — a sample in allele-count mode, a
+haplotype (`"<sample> HP<n>"`) in phased mode, where a sample name stands
+for its haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
 a clustering run write it; the rows are derived from it on every read:
 
 1. the adapter's samples (`adapterSamples`) are focused by `rows.kept`,
    which is the set the fetch asks for (`sourcesBase`, `sampleFilter`),
 2. phased mode expands each sample to its haplotypes (`expandedRows`), and
-   `rows.domain` orders, `rows.labels` relabels and the `rowColor` pairs
-   tint them (`editableSources`, the dialog's list), each from
+   `rows.domain` orders, `rows.labels` relabels and each row carries its
+   resolved `rowColor` (`editableSources`, the dialog's list), each from
    `TreeSidebarMixin` over this display's hooks,
 3. the focus narrows those (`clusterableSources`, what a run clusters),
 4. `facet` stacks those in bands (`bandedSources`), each band's rows in their
    arranged order,
-5. the `rowColor` palette tints the result (`sources`).
+5. the result is `sources`, each row's `rowColor` its label bar.
 
 **The `rowColor` palette wins over a colour the row already carried**, a
 `samplesTsv` `color` column: a channel bound to a variable beats a per-row
@@ -160,14 +160,13 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-filters">**filters**</span><br><code>SerializableFilterChain &#124; undefined</code> | The jexl filter expressions (from the Edit filters dialog) as a SerializableFilterChain, ready to pass as the RPC `filters` arg. MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix} all extend RpcMethodTypeWithFiltersAndRenameRegions, which serializes this to string[] and rebuilds it in the worker with pluginManager.jexl. | MultiSampleVariantBaseModel |
 | <span id="getter-referencedrawingmode">**referenceDrawingMode**</span><br><code>string</code> |  | MultiSampleVariantBaseModel |
 | <span id="getter-colorbyattributes">**colorByAttributes**</span><br><code>string[]</code> | Distinct sample-metadata attributes (from samplesTsv) the user can color rows by — every key the sources carry except internal plumbing. | MultiSampleVariantBaseModel |
-| <span id="getter-rowcolorpaintsmarks">**rowColorPaintsMarks**</span><br><code>boolean</code> | `TreeSidebarMixin`'s hook: never, since the cells paint by genotype and a row's colour tints only its label. | MultiSampleVariantBaseModel |
+| <span id="getter-rowcolorpaintsmarks">**rowColorPaintsMarks**</span><br><code>boolean</code> | `TreeSidebarMixin`'s hook: never, since the cells paint by genotype and a row's colour shows only on its label bar. | MultiSampleVariantBaseModel |
 | <span id="getter-rowcolorfields">**rowColorFields**</span><br><code>readonly string[]</code> | `TreeSidebarMixin`'s hook: the samplesTsv attributes, the ones "Color by..." offers. | MultiSampleVariantBaseModel |
-| <span id="getter-discoveredrows">**discoveredRows**</span><br><code>ProcessedSource[]</code> | `TreeSidebarMixin`'s hook: the adapter's samples as rows, each answering to its sample name, with a samplesTsv `color` column as the label tint where the sample names none of its own. | MultiSampleVariantBaseModel |
+| <span id="getter-discoveredrows">**discoveredRows**</span><br><code>ProcessedSource[]</code> | `TreeSidebarMixin`'s hook: the adapter's samples as rows, each answering to its sample name, a samplesTsv `color` column the row's own colour. | MultiSampleVariantBaseModel |
 | <span id="getter-rowalias">**rowAlias**</span><br><code>RowAlias</code> | `TreeSidebarMixin`'s hook: a haplotype row answers to its sample's name, so an order, a label, a tint or a focus written against a sample reaches each of its haplotypes. | MultiSampleVariantBaseModel |
-| <span id="getter-identitychannel">**identityChannel**</span><br><code>IdentityChannel</code> | `TreeSidebarMixin`'s hook: a `rowColor` entry tints the label, the one channel a row has, since the cells paint by genotype. | MultiSampleVariantBaseModel |
 | <span id="getter-rowbanding">**rowBanding**</span><br><code>RowBanding &#124; undefined</code> | `TreeSidebarMixin`'s hook: the `facet` bands the rows by a samplesTsv attribute. | MultiSampleVariantBaseModel |
 | <span id="getter-sourcesbase">**sourcesBase**</span><br><code>Source[] &#124; undefined</code> | The adapter's samples narrowed to the focus, `rows.kept` — a haplotype named there keeps its sample. The row set the fetch asks for, and so it must not read `samplePloidy` (see `sampleFilter`). `undefined` until the samples land. | MultiSampleVariantBaseModel |
-| <span id="getter-sources">**sources**</span><br><code>ProcessedSource[]</code> | The display rows: `bandedSources`, each label tinted by its `resolvedRowColors` colour. A cross-band drag snaps back while the facet is on.<br><br>**Resolved — an array, never `undefined`**, which is the shared spelling across the row displays. `adapterSamples` and `sourcesBase` keep their `undefined`, because there it is genuinely load-bearing: `sampleFilter` and `fetchNeeded` both read `sourcesBase`, and its `undefined` → list transition is what wakes the fetch autorun (reference/FETCH_KEYS.md §"The global-fetch trigger list must be read unconditionally"). | MultiSampleVariantBaseModel |
+| <span id="getter-sources">**sources**</span><br><code>ProcessedSource[]</code> | The display rows, `bandedSources`, each carrying its `rowColor`. A cross-band drag snaps back while the facet is on.<br><br>**Resolved — an array, never `undefined`**, which is the shared spelling across the row displays. `adapterSamples` and `sourcesBase` keep their `undefined`, because there it is genuinely load-bearing: `sampleFilter` and `fetchNeeded` both read `sourcesBase`, and its `undefined` → list transition is what wakes the fetch autorun (reference/FETCH_KEYS.md §"The global-fetch trigger list must be read unconditionally"). | MultiSampleVariantBaseModel |
 | <span id="getter-clusteringready">**clusteringReady**</span><br><code>boolean</code> | Whether the rows are at the granularity they draw, which clustering and the arrangement dialog both need. Phased mode draws haplotypes, which needs `samplePloidy`; that arrives with `cellData`, later than the header-only `adapterSamples`. Before it a clustering run builds a sample-level tree whose leaves ("HG001") never match the expanded haplotype rows ("HG001 HP0"), and the dialog writes a sample order. | MultiSampleVariantBaseModel |
 | <span id="getter-hasclusterablerows">**hasClusterableRows**</span><br><code>boolean</code> | Whether there is anything to cluster: clustering reorders rows, so it needs at least two rows to put in an order. An empty list is "none" and "the sample list hasn't landed yet" alike — both mean "not now", which is why one boolean answers for both and the menu's help text asks `adapterSamples` itself which of the two it is.<br><br>**The rows on screen**, which is the list the run clusters (`clusterableSources`) and so the row set the tree comes back describing. Counting the unfiltered list instead offered — and let the declarative path fire — a run over a clade focused down to one row. | MultiSampleVariantBaseModel |
 | <span id="getter-autoclusterready">**autoClusterReady**</span><br><code>boolean</code> | Whether the declarative `runClustering: true` path may fire: the inputs have landed AND there are rows worth ordering. Both halves are named booleans rather than one expression at the autorun, so each can be read — and tested — on its own.<br><br>The dialog gates on the same pair, spelled at its own call site: the menu row that opens it carries `hasClusterableRows` too, but a subtree filter applied while the dialog is open can take the rows away underneath it. | MultiSampleVariantBaseModel |
@@ -295,7 +294,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-dealtrowcolors">**dealtRowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | <span data-pagefind-ignore>The colour each value of the config's `rowColor` field takes, listed pairs first and then in the order dealt.</span> | [TreeSidebarMixin](../treesidebarmixin#getter-dealtrowcolors) |
 | <span id="getter-resolvedrowcolors">**resolvedRowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | <span data-pagefind-ignore>Each row's colour, by name: its `rowColor` entry, else its own `color`, else the palette's where `rowPaletteDeals`. The one answer every display paints a row's colour from.</span> | [TreeSidebarMixin](../treesidebarmixin#getter-resolvedrowcolors) |
 | <span id="getter-rowarrangementiscustom">**rowArrangementIsCustom**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the arrangement differs from what the config declares — what "Reset row order" is offered on.</span> | [TreeSidebarMixin](../treesidebarmixin#getter-rowarrangementiscustom) |
-| <span id="getter-editablesources">**editableSources**</span><br><code>S[]</code> | <span data-pagefind-ignore>The rows in the reader's arrangement, with no focus, palette or band: the list the arrangement dialog edits, so a submit writes back only what the reader chose. `expandedRows` itself while nothing is arranged.</span> | [TreeSidebarMixin](../treesidebarmixin#getter-editablesources) |
+| <span id="getter-editablesources">**editableSources**</span><br><code>S[]</code> | <span data-pagefind-ignore>The rows in the reader's arrangement, each with its resolved `rowColor`, and with no focus or band: the list the arrangement dialog edits, so a submit writes back only what the reader chose. `expandedRows` itself while nothing is arranged or coloured.</span> | [TreeSidebarMixin](../treesidebarmixin#getter-editablesources) |
 | <span id="getter-clusterablesources">**clusterableSources**</span><br><code>S[]</code> | <span data-pagefind-ignore>`editableSources` narrowed to the focus: the rows a clustering run clusters, and deliberately not the display's decorated `sources`, whose palette and band a run has no business writing back.</span> | [TreeSidebarMixin](../treesidebarmixin#getter-clusterablesources) |
 | <span id="getter-parsedtree">**parsedTree**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> | <span data-pagefind-ignore>`rowTree` parsed. A run rotated its tree in the same write as the order it produced; a tree that arrived as data rotates towards `rows.domain` here, and the guide tree is `guideTree`'s parse.</span> | [TreeSidebarMixin](../treesidebarmixin#getter-parsedtree) |
 | <span id="getter-root">**root**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> | <span data-pagefind-ignore>The parsed tree narrowed to the focus.</span> | [TreeSidebarMixin](../treesidebarmixin#getter-root) |

@@ -4240,18 +4240,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0
         },
-        "colorRowLabels": {
-          "description": "tint each sidebar label with the color that row's blocks are painted in.",
-          "type": "boolean",
-          "default": false
-        },
         "showLegend": {
           "description": "show the categorical color key for per-feature coloring. Defaults to on.",
           "type": "boolean",
           "default": true
         },
         "rowGroups": {
-          "description": "array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch, and the blocks under rowColor: group. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "array of {match,group,color} tagging rows by a regex on their name; color draws the label bar of a row with no colour of its own, and the blocks under rowColor: group. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "not": {
             "$ref": "#/$defs/JexlString"
           }
@@ -9319,9 +9314,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
                 }
               ]
-            },
-            "colorRowLabels": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/colorRowLabels"
             },
             "rowGroups": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"

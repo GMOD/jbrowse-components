@@ -3328,10 +3328,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "colorRowLabels",
-          "type": "boolean"
-        },
-        {
           "name": "showLegend",
           "type": "boolean"
         },

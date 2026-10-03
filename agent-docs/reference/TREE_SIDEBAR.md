@@ -125,10 +125,11 @@ only the stages downstream of it:
    themselves elsewhere. Variants' `sourcesBase`, the focused samples the fetch
    asks for, is a stage of the display's beside this one and never reads it,
    since expansion reads `samplePloidy`, a fetch result.
-3. `editableSources`: `arrangeRows` orders by `rowOrder`, relabels by
-   `rows.labels` and tints by the `rowColor` pairs on the `identityChannel`. It
-   hands back `expandedRows` itself while nothing is arranged, which the `!==`
-   caches downstream (`encodeInputs`, `createEncodeMemo`) key on.
+3. `editableSources`: `arrangeRows` orders by `rowOrder` and relabels by
+   `rows.labels`, and `withRowColors` stamps each row's `resolvedRowColors`
+   colour as `rowColor`. It hands back `expandedRows` itself while nothing is
+   arranged or coloured, which the `!==` caches downstream (`encodeInputs`,
+   `createEncodeMemo`) key on.
 4. `clusterableSources`: the focus (`keptRows`).
 5. `bandedSources`: the bands `rowBanding` names (`bandRows`), each band's rows
    in their arranged order; `clusterableSources` itself while nothing bands.
@@ -143,10 +144,8 @@ hook's name throws at `create`:
 - `guideTreeNewick` — none by default; MAF's adapter newick.
 - `expandRows(rows)` — variants.
 - `rowAlias` — variants: the sample a haplotype row answers to, so an order, a
-  label, a tint and a focus written against a sample reach its haplotypes, and
-  the edit diff falls back to the sample's entry.
-- `identityChannel` — `color` by default; wiggle's follows
-  `rowColorPaintsMarks`, variants, MAF and marks tint the label.
+  label, a colour and a focus written against a sample reach its haplotypes,
+  and the edit diff falls back to the sample's entry.
 - `sharesPanel` — false by default; a wiggle overlay of several subtracks.
 - `rowColorPaintsMarks` — true by default; false where something else colours
   the marks: multi-row's `color` setting or itemRgb, wiggle's gradient or
@@ -181,7 +180,9 @@ recolours a row: listed values take their `range` colour, the rest first seen
 first from tableau10 less its grey and then re-lit laps of it (`rowPaletteColorAt`),
 and a set `unknown` stands in for the palette. A name deal skips a row carrying
 its own colour; an attribute no row carries deals nothing; `scale: 'none'`
-deals nothing. Each display paints the getter where its rows take a colour.
+deals nothing. Every row carries it as `rowColor`: the sidebar always draws
+it as the row's label bar, and a display paints its marks in it only where
+`rowColorPaintsMarks`. A row's own `color` stays the file's attribute.
 
 What else the mixin owns:
 
@@ -205,12 +206,12 @@ What else the mixin owns:
   (`rowPaletteDeals`), or an attribute; under an attribute a table of its
   values, each with its colour and row count, and read-only row swatches; under
   None and Each row editable swatches, with "Start from" copying an attribute's
-  colours onto them once. A row's swatch is read only under `name`, where
-  `rowEdits` is the rule: an entry the config
+  colours onto them once. The swatch column edits each row's `rowColor`, and
+  is read only under `name`, where `rowEdits` is the rule: an entry the config
   holds stands unless the reader changed that row, so an entry repeating the
   adapter's value survives an unchanged submit; a value changed back to what the
-  row shows with no entry of its own removes the entry; a row the dialog never
-  showed keeps its entry. Any other object is written as the dialog shows it, so
+  row shows with no entry of its own (its alias's entry, else its own `color`)
+  removes the entry; a row the dialog never showed keeps its entry. Any other object is written as the dialog shows it, so
   a colour set on one row never stands for its value, and nothing is
   materialised. An order that moves no row is not written, and a submit whose
   colour panel the reader left alone passes no `rowColor` object, so one the
@@ -218,8 +219,8 @@ What else the mixin owns:
 - **A display's own colour rides above the rows, and is written on Submit.**
   `plotColor` is the quantitative display's two plot colours on one line
   (`PlotColorRow`): held in the dialog's local state and written in `submit()`
-  **after** `applyRowEdits`, because a colour that changes a display's
-  `identityChannel` changes the channel the row edits compare a swatch on.
+  **after** `applyRowEdits`, because a plot colour can change which rows the
+  palette deals, and so the colours the row edits compare against.
   `showRows` drops the row choice, the grid and the bulk editor where the
   display has nothing to arrange, and `onEditAsJson` is the channel-spec escape
   as a button rather than a track-menu row. This replaced `displayControls`, a
@@ -297,14 +298,15 @@ separate declarations — the bound used to be `{ name: string }`, the weakest
 possible, and the four displays composing the mixin each wrote their own row
 type against it.
 
-**The tint is `labelColor`, always.** `SvgRowLabels` drops to a `labelColor`
-swatch below `MIN_TEXT_ROW_HEIGHT`, and because `RowLabelSource` is satisfied
-structurally, a row type carrying the color under any other name type-checks and
-paints nothing. MAF called it `color` and bridged with a `labelSources`
-computed; that is why three adapter schemas advertised a slot reaching no
-renderer at all. The multi-sample variant displays called it `color` too and
-bridged with a label gutter of their own, ~350 lines that existed because the
-shared one read the other name.
+**A row has two colours, never more.** `color` is the row's own, an attribute
+the file gave it (MAF's `samples[].color`, a samplesTsv `color` column, a
+multi-wiggle subtrack's colour). `rowColor` is the resolved one the mixin
+stamps, which `SvgRowLabels` draws and the dialog edits; a display needing a
+third colour for its marks derives it (wiggle's `markSources`) rather than
+storing it on the row. Because `RowLabelSource` is satisfied structurally, a
+row type carrying the colour under any other name type-checks and paints
+nothing, which is how MAF once shipped a per-sample colour reaching no
+renderer.
 
 `treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
 `showBranchLength` / `showRowLabels` / `treeAreaWidth`), taking only the
@@ -355,10 +357,14 @@ parameter is named to refuse.
 
 ## Drawing rows
 
-- **A sub-pixel row still draws.** Below `MIN_TEXT_ROW_HEIGHT` `SvgRowLabels`
-  draws a `labelColor` swatch, floored to a pixel, **longest-first** so the
-  rarest group isn't overdrawn. So **the stripe is a marker, not a proportional
-  encoding.**
+- **A row's colour is a bar, not a tinted box.** Above `MIN_TEXT_ROW_HEIGHT`
+  `SvgRowLabels` draws `rowColor` as a `ROW_COLOR_BAR_WIDTH` (4 px) bar at the
+  label's left, and every name in the column starts past the bars once any row
+  has one; the text keeps the theme's colour. There is no toggle.
+- **A sub-pixel row still draws.** Below `MIN_TEXT_ROW_HEIGHT`, where no text
+  draws, `SvgRowLabels` fills the label run with `rowColor`, floored to a pixel,
+  **longest-first** so the rarest group isn't overdrawn. So **the stripe is a
+  marker, not a proportional encoding.**
 - **Anything marking rows draws runs, never a rect per row (`rowRuns`).**
   `effectiveRowHeight` is fractional and deliberately never floored, so a rect
   per row blends twice at every boundary under a translucent fill. The part

@@ -71,11 +71,13 @@ Config bounds are still checked first.
 `color` is one object — a CSS string, or `{ field, scale, domain, range,
 scheme }` over `score` — and a subtrack's colour is `rowColor`'s:
 
-| the layout | an unset `color` means | a row's colour lives in | the palette deals |
+| the layout | an unset `color` means | the marks paint | the palette deals |
 | --- | --- | --- | --- |
-| shared: several sources in one box | the threshold pair, each source painting its row colour on both sides | `color` | by name |
-| row: a row per source, or a lone plot | the threshold pair about the `origin` | `color` | by an attribute only |
-| density, either of the above | the **score ramp** | `labelColor` (overlay: `color`) | by an attribute only |
+| shared: several sources in one box | the threshold pair, each source painting its row colour on both sides | `rowColor` | by name |
+| row: a row per source, or a lone plot | the threshold pair about the `origin` | `rowColor` | by an attribute only |
+| density, either of the above | the **score ramp** | the row's own `color` (overlay: `rowColor`) | by an attribute only |
+
+A row's `rowColor` draws its label bar in every layout that has row labels.
 
 - `colorEncoding` resolves the object through display-kit's `colorEncodingOf`,
   as every display's colour does, and `resolveWiggleColor` turns that into
@@ -83,9 +85,9 @@ scheme }` over `score` — and a subtrack's colour is `rowColor`'s:
   is the whole of what the encoder and both backends read: the pair every mode
   partitions by, the value they part at, the density LUT, and whether a source
   paints its own colour on both sides.
-- **In density, `color` is a scale, not an identity**, so identity moves one
-  channel over to `labelColor` — which the row-label sidebar paints and the ramp
-  ignores.
+- **In density, `color` is a scale, not an identity**, so the marks fade to
+  the row's own colour and its `rowColor` shows only on the label bar, which the
+  ramp ignores.
 - The colour key follows the scale, so which channel it reads and what an unset
   one falls back to come from the same table.
 - One cursor hands out every palette entry, the colour's `range` and then the
