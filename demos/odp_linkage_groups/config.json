@@ -104,7 +104,7 @@
             "uri": "RES_EMU.EMU.bed.gz"
           }
         ],
-        "attributeColumns": ["gene_group", "color"]
+        "attributeColumns": ["gene_group", "color", "break_FET"]
       }
     },
     {
@@ -124,7 +124,7 @@
             "uri": "RES_HCA.HCA.bed.gz"
           }
         ],
-        "attributeColumns": ["gene_group", "color"]
+        "attributeColumns": ["gene_group", "color", "break_FET"]
       }
     },
     {
@@ -144,7 +144,7 @@
             "uri": "BIN_HCA.HCA.bed.gz"
           }
         ],
-        "attributeColumns": ["gene_group", "color"]
+        "attributeColumns": ["gene_group", "color", "break_FET"]
       }
     },
     {
@@ -164,7 +164,7 @@
             "uri": "RES_BFL.BFL.bed.gz"
           }
         ],
-        "attributeColumns": ["gene_group", "color"]
+        "attributeColumns": ["gene_group", "color", "break_FET"]
       }
     },
     {
@@ -184,7 +184,7 @@
             "uri": "BFL_EMU.EMU.bed.gz"
           }
         ],
-        "attributeColumns": ["gene_group", "color"]
+        "attributeColumns": ["gene_group", "color", "break_FET"]
       }
     },
     {
@@ -204,7 +204,7 @@
             "uri": "EMU_CLAa.CLAa.bed.gz"
           }
         ],
-        "attributeColumns": ["gene_group", "color"]
+        "attributeColumns": ["gene_group", "color", "break_FET"]
       }
     }
   ],

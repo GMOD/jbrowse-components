@@ -89,7 +89,12 @@ export const linkageGroupsSpecs: ScreenshotSpec[] = [
           diagonalizeAnchorRow: 2,
           drawCurves: true,
           fadeThinAlignmentsMode: 'off',
-          opacity: 0.65,
+          opacity: {
+            field: 'break_FET',
+            scale: 'threshold',
+            domain: [0.05],
+            range: [0.8, 0.15],
+          },
           levelHeights: [130, 130, 130, 130, 130],
           collapseEmptyRows: true,
         },

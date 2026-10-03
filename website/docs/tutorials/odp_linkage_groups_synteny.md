@@ -85,10 +85,11 @@ holds one coordinate per gene and would make every feature one base long:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/rbh_to_blocks.py
 # --species sets the column order, anchor first, which the track then follows
 # --chrom gives each species' genes their real start and stop
-# gene_group and color pass through as the attribute columns
+# --attributes names the columns that pass through after the gene ids
 python3 rbh_to_blocks.py EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plotted.rbh \
   -o RES_EMU.blocks --bed-dir RES_EMU \
-  --species RES EMU --chrom RES=RES.chrom EMU=EMU.chrom
+  --species RES EMU --chrom RES=RES.chrom EMU=EMU.chrom \
+  --attributes gene_group color break_FET
 ```
 
 The helper prints how many of each genome's gene ids its `.chrom` placed. About
@@ -99,8 +100,8 @@ A `.blocks` row is the gene ids across the two genomes, then the attribute
 columns:
 
 ```text
-mRNA.RE04286  Em0019g38a  A1a  #C23D51
-mRNA.RE14076  Em0019g57a  .    #000000
+mRNA.RE04286  Em0019g38a  A1a  #C23D51  0.0000
+mRNA.RE14076  Em0019g57a  .    #000000  1.8213
 ```
 
 ## Loading the genomes
@@ -128,10 +129,11 @@ each.
 
 ## Loading it as a synteny track
 
-`attributeColumns` makes the last two columns reachable. Each name in it becomes
-a color-by mode named after the column, so `gene_group` becomes a mode; `color`
-is the palette the file puts beside each label, and the menu leaves it out of
-the modes.
+`attributeColumns` makes the last three columns reachable. Each name in it
+becomes a color-by mode named after the column, so `gene_group` becomes a mode;
+`color` is the palette the file puts beside each label, and the menu leaves it
+out of the modes. `break_FET` is odp's test of the row's chromosome pair, which
+the stack below reads as opacity.
 
 ```json addtrack
 {
@@ -144,7 +146,7 @@ the modes.
     "uri": "RES_EMU.blocks.gz",
     "blockAssemblies": ["RES", "EMU"],
     "bedLocations": ["RES_EMU.RES.bed.gz", "RES_EMU.EMU.bed.gz"],
-    "attributeColumns": ["gene_group", "color"]
+    "attributeColumns": ["gene_group", "color", "break_FET"]
   }
 }
 ```
@@ -197,11 +199,10 @@ pair's track per band. The build script loads the pairs in the paper's order,
 two comb jellies over the jellyfish, amphioxus and two sponges, and the session
 below sets what the figure needs.
 
-Like the paper's figure, the stack draws an ortholog only where its two
-chromosomes share more orthologs than chance. odp tests each pair of chromosomes
-(Fisher's exact test, the table's `break_FET` column), and the build script
-converts the stack's tables with `--significant`, which drops the group of a row
-on a pair above 0.05. The row stays in the table, unlabelled.
+odp tests each pair of chromosomes for more shared orthologs than chance
+(Fisher's exact test, corrected for the number of pairs, in the `break_FET`
+column). Like the paper's figure, the stack draws an ortholog on a pair under
+0.05 at opacity 0.8 and the rest at 0.15.
 
 Each setting the session has a menu route, except the last:
 
@@ -209,13 +210,15 @@ Each setting the session has a menu route, except the last:
   `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
   group sits on one chromosome. **Rows → Re-order chromosomes** on the view menu
   runs the same sort and asks for that row.
-- `hideUnlabelled` draws only the orthologs that still have a group: **Hide
-  unlabelled rows** on the palette menu.
+- `hideUnlabelled` draws only the orthologs in a group: **Hide unlabelled rows**
+  on the palette menu.
 - `drawCurves` bundles the ribbons: **Curved lines** on the sliders button.
-- `alpha` sets the ribbon opacity: **opacity** on the sliders button.
 - `fadeThinAlignmentsMode` turns off the fade a whole-genome view applies to
   sub-pixel ribbons, since their colors are what the figure shows. It has no
   menu item.
+- `opacity` reads `break_FET` through a threshold at 0.05. **Opacity** on the
+  sliders button scales both opacities together; the mapping itself has no menu
+  item.
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -246,7 +249,12 @@ Each setting the session has a menu route, except the last:
         "diagonalizeAnchorRow": 2,
         "drawCurves": true,
         "fadeThinAlignmentsMode": "off",
-        "opacity": 0.65,
+        "opacity": {
+          "field": "break_FET",
+          "scale": "threshold",
+          "domain": [0.05],
+          "range": [0.8, 0.15]
+        },
         "levelHeights": [130, 130, 130, 130, 130],
         "collapseEmptyRows": true
       }
@@ -255,13 +263,13 @@ Each setting the session has a menu route, except the last:
 }
 ```
 
-<Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, with only the orthologs on significantly paired chromosomes drawn. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome sends bundles to several jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
+<Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, orthologs on significantly paired chromosomes solid and the rest faint. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome scatters over many jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
 
 In the second band, between _Hormiphora_ and the jellyfish, 40% of the grouped
 orthologs sit on a significant pair, against 82–95% in the other bands: each
-comb jelly chromosome mixes groups that match no jellyfish chromosome. Without
-`--significant` that band is a wash of crossing ribbons. The two comb jellies
-agree with each other in the band above.
+comb jelly chromosome mixes groups that match no jellyfish chromosome, and the
+faint ribbons are the other 60%. The two comb jellies agree with each other in
+the band above.
 
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
 running through them are expected. The cladorhizid took no part, and in the
@@ -283,9 +291,9 @@ awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
 
 Changing the file and the group in that command gives the counts behind the
 stack. In _Hormiphora_ (`HCA_RES`), the chromosome holding most of a group holds
-a minority of it, which is why most of the stack's second band drops out under
-`--significant`. In the cladorhizid (`CLAa_EMU`), which took no part in building
-the group database, most of each group still sits on one chromosome.
+a minority of it, which is why most of the stack's second band is faint. In the
+cladorhizid (`CLAa_EMU`), which took no part in building the group database,
+most of each group still sits on one chromosome.
 
 ## Reproduce it end to end
 

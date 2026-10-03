@@ -133,19 +133,18 @@ while read -r code dir; do
   [ -f "$code.chrom" ] || ln -sf "$(ls "$d"/*.chrom | awk 'NR<=1')" "$code.chrom"
 done <<<"$SPECIES"
 
-# One .blocks per pair, the gene_group and color columns carried through. The
-# .chrom files give each gene its real interval; _pos alone would be one base.
-# The stack's pairs keep a label only on significantly paired chromosomes, as
-# odp's ribbon plot does; the dotplot keeps every label.
+# One .blocks per pair, the gene_group, color and break_FET columns carried
+# through: break_FET is odp's Fisher's exact test of the row's chromosome pair,
+# which the stack's opacity reads. The .chrom files give each gene its real
+# interval; _pos alone would be one base.
 mkdir -p blocks
 while read -r a b; do
   [ -z "$a" ] && continue
   pair="${a}_${b}"
-  significant=--significant
-  [ "$pair" = RES_EMU ] && significant=
   [ -s "blocks/$pair.blocks" ] || python3 "$SCRIPT_DIR/rbh_to_blocks.py" \
     "tables/$(table_of "$a" "$b")" -o "blocks/$pair.blocks" --bed-dir "blocks/$pair" \
-    --species "$a" "$b" --chrom "$a=$a.chrom" "$b=$b.chrom" $significant
+    --species "$a" "$b" --chrom "$a=$a.chrom" "$b=$b.chrom" \
+    --attributes gene_group color break_FET
   gzip -kf "blocks/$pair.blocks"
   gzip -kf "blocks/$pair/$a.bed" "blocks/$pair/$b.bed"
 done <<<"$PAIRS"
@@ -193,9 +192,10 @@ print(json.dumps({
         'blockAssemblies': [a, b],
         'bedLocations': [{'uri': f'{pair}.{a}.bed.gz'}, {'uri': f'{pair}.{b}.bed.gz'}],
         'assemblyNames': [a, b],
-        # the label column and the color odp put beside it: what
-        # Color by -> gene_group paints
-        'attributeColumns': ['gene_group', 'color'],
+        # the label column and the color odp put beside it, what
+        # Color by -> gene_group paints, and the pair's test, what the
+        # stack's opacity reads
+        'attributeColumns': ['gene_group', 'color', 'break_FET'],
     },
 }, indent=2))
 PY
