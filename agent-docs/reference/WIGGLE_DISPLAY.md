@@ -294,9 +294,13 @@ the control was pressed by default while a colourless multi-BigWig drew every
 row one `WIGGLE_POS_COLOR_DEFAULT`. `applyRowEdits` adds it, **not** under a
 gradient, where it deals nothing to an ungrouped subtrack and collapses the pair
 the fade runs on, and **not** over one subtrack, where `perSource` makes the
-negative side take the positive colour. `rowStylingIsCustom` counts it and
-`resetRowArrangement` returns it, or a reader who turned it on is offered no way
-back — the `rowColor` half often did not change, `name` being its default.
+negative side take the positive colour; `rowPaletteDeals` is the same rule, so
+Each row is offered only where it can turn the palette on. The dialog opens on
+what is drawn: `rowColorChoice` reads Each row only while `sourcePalette`
+answers, and an untouched submit passes no colour object, so it leaves the
+switch alone. `rowStylingIsCustom` counts it and `resetRowArrangement` returns
+it, or a reader who turned it on is offered no way back — the `rowColor` half
+often did not change, `name` being its default.
 
 **A reader's colour for a row is `rowColor`, and its label is `rows.labels`.**
 `TreeSidebarMixin` arranges them over `discoveredRows` and writes the dialog's

@@ -142,3 +142,59 @@ it('a reorder writes no colour', () => {
 
   expect(isPerSourceColor(display.colorSetting)).toBe(false)
 })
+
+// The dialog opens on what is drawn: Each row only while the palette deals the
+// subtracks a colour each, and an untouched submit sends no colour object.
+describe('the choice the dialog opens on', () => {
+  it('reads None while every subtrack draws one colour, and an untouched OK leaves it', () => {
+    const display = makeDisplay()
+    expect(display.rowPaletteDeals).toBe(true)
+    expect(display.rowColorChoice).toBe('')
+
+    display.applyRowEdits(display.editableSources)
+
+    expect(isPerSourceColor(display.colorSetting)).toBe(false)
+    expect(display.rowColorChoice).toBe('')
+  })
+
+  it('reads Each row once the palette is on, and an untouched OK keeps it on', () => {
+    const display = makeDisplay()
+    eachRow(display)
+    expect(display.rowColorChoice).toBe('name')
+
+    display.applyRowEdits(display.editableSources)
+
+    expect(isPerSourceColor(display.colorSetting)).toBe(true)
+  })
+
+  it('reads Each row over the palette an overlay deals unasked', () => {
+    const display = makeDisplay({ rows: false })
+    expect(new Set(rowColors(display)).size).toBe(3)
+    expect(display.rowColorChoice).toBe('name')
+  })
+
+  it('offers no Each row where it can turn nothing on', () => {
+    expect(makeDisplay({ renderingType: 'density' }).rowPaletteDeals).toBe(
+      false,
+    )
+    const one = makeDisplay({
+      names: ['a'],
+      displayConfig: { color: { field: 'source', scale: 'categorical' } },
+    })
+    expect(one.rowPaletteDeals).toBe(false)
+    expect(one.rowColorChoice).toBe('')
+  })
+})
+
+describe("rowColor's unknown", () => {
+  it('greys the subtracks the pairs leave out, the listed one keeping its pair', () => {
+    const display = makeDisplay({
+      displayConfig: {
+        color: { field: 'source', scale: 'categorical' },
+        rowColor: { domain: ['b'], range: ['#123456'], unknown: '#cccccc' },
+      },
+    })
+
+    expect(rowColors(display)).toEqual(['#cccccc', '#123456', '#cccccc'])
+  })
+})

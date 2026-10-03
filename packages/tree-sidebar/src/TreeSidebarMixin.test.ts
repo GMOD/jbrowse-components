@@ -366,6 +366,38 @@ describe('the default row palette', () => {
   })
 })
 
+// `unknown` stands in for the palette a display deals, so a display dealing
+// none under `name` — MAF, marks, multi-sample variants — has nothing for it to
+// replace.
+it('unknown changes nothing on a display that deals no palette', () => {
+  const makeUndealt = (rowColor: Record<string, unknown>) =>
+    types
+      .compose(
+        'UndealtTreeDisplay',
+        TreeSidebarMixin(),
+        types.model({
+          type: types.literal('UndealtTreeDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .volatile(() => ({ rows: [{ name: 'a' }, { name: 'b' }] }))
+      .views(self => ({
+        get discoveredRows() {
+          return self.rows
+        },
+        rowColorDealFor() {
+          return undefined
+        },
+      }))
+      .create({ type: 'UndealtTreeDisplay', configuration: { rowColor } })
+  const pairs = { domain: ['b'], range: ['#00f'] }
+  const plain = makeUndealt(pairs)
+  const grey = makeUndealt({ ...pairs, unknown: '#ccc' })
+  expect(grey.rowColorScale).toEqual(plain.rowColorScale)
+  expect(Object.fromEntries(grey.rowColors)).toEqual({ b: '#00f' })
+  expect(grey.rowColors).toEqual(plain.rowColors)
+})
+
 // The dialog shows one `rowColor` object and submits it: a row's colour is
 // read only while the rows are coloured each their own.
 describe('a dialog submit of the row colours', () => {
@@ -494,7 +526,7 @@ describe('a dialog submit of the row colours', () => {
     expect(display.rowColors.size).toBe(0)
   })
 
-  it('leaves a field under scale: none parked on a None that colours no row', () => {
+  it('a submit with no colour object keeps a parked object', () => {
     const parked = {
       field: 'group',
       scale: 'none',
@@ -502,18 +534,24 @@ describe('a dialog submit of the row colours', () => {
       range: ['#abcdef'],
     }
     const display = makeGrouped({ rowColor: parked })
-    display.applyRowEdits(display.editableSources, {
-      field: 'name',
-      unknown: '',
+    display.applyRowEdits([...display.editableSources].reverse())
+    expect(display.rowColorSetting).toEqual(parked)
+    expect(display.rowColorChoice).toBe('')
+  })
+
+  it("a submit with no colour object keeps unknown: '#ccc'", () => {
+    const display = makeGrouped({
+      rowColor: { domain: ['b'], range: ['#00f'], unknown: '#ccc' },
     })
-    expect(display.configuration.rowColor.field).toBe('group')
-    expect(display.configuration.rowColor.scale).toBe('none')
-    display.applyRowEdits(display.editableSources, {
-      field: 'group',
-      domain: ['y'],
-      range: ['#abcdef'],
+    display.applyRowEdits(
+      display.editableSources.map(r => ({ ...r, label: r.name.toUpperCase() })),
+    )
+    expect(display.rowColorSetting.unknown).toBe('#ccc')
+    expect(Object.fromEntries(display.rowColorScale)).toEqual({
+      a: '#ccc',
+      b: '#00f',
+      c: '#ccc',
     })
-    expect(display.rowColorScale.get('b')).toBe('#abcdef')
   })
 
   it('counts None as custom, and a reset deals the palette again', () => {

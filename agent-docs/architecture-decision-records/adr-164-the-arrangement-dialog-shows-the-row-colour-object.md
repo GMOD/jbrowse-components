@@ -99,11 +99,22 @@ colour; a colour, that colour; `''`, none from this setting (Vega's
 `domainImplicit: false`). None writes `{ field: 'name', unknown: '' }` where
 the display deals a palette under `name` (`rowPaletteDeals`), else
 `{ field: 'name' }`, and its swatches edit as Each row's do; Each row is
-offered only where it differs. `scale: 'none'` keeps ADR-135's meaning, the
-variant menu's None parks an attribute there for the way back, and a None that
-colours no row leaves a parked object as written. `dialogSources` is gone: the
-pairs under `scale: 'none'` stay parked rather than open on the swatches.
-Wiggle's None takes the per-source switch off as before.
+offered only where it differs. `scale: 'none'` keeps ADR-135's meaning, and
+the variant menu's None parks an attribute there for the way back.
+`dialogSources` is gone: the pairs under `scale: 'none'` stay parked rather
+than open on the swatches. Wiggle's None takes the per-source switch off as
+before.
+
+**An untouched colour panel writes no colour.** The dialog passes a `rowColor`
+object only where the choice, a value's colour or a row's swatch differs from
+what it opened on, so a reorder or relabel leaves what the panel cannot spell —
+a grey `unknown`, a parked field — as the config wrote it; a first rule kept
+only a parked object, and only under a None that coloured no row. Wiggle's
+untouched submit therefore no longer turns its palette on, so the dialog must
+open on what is drawn: there `rowColorChoice` reads Each row only while the
+per-subtrack palette deals (`rowColorChoiceOf`, fed the display's own answer),
+and `rowPaletteDeals` offers Each row only over several subtracks with no
+gradient painting, the cases where it can turn the palette on.
 
 ## Consequences
 

@@ -157,7 +157,11 @@ export default observer(function SetColorDialog<
   onEditAsJson,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
-  const getSources = () => model.editableSources
+  const openedOn = () => ({
+    rows: model.editableSources,
+    choice: model.rowColorChoice,
+    entries: entriesOf(model.rowColorSetting),
+  })
   // Undefined until a swatch is touched, so a reset re-reads the model rather
   // than restoring a pair snapshotted before it.
   const [plotPair, setPlotPair] = useState<{
@@ -165,9 +169,10 @@ export default observer(function SetColorDialog<
     below: string
   }>()
   const [showBulkEditor, setShowBulkEditor] = useState(false)
-  const [currLayout, setCurrLayout] = useState(getSources)
-  const [choice, setChoice] = useState(model.rowColorChoice)
-  const [entries, setEntries] = useState(() => entriesOf(model.rowColorSetting))
+  const [opened, setOpened] = useState(openedOn)
+  const [currLayout, setCurrLayout] = useState(opened.rows)
+  const [choice, setChoice] = useState(opened.choice)
+  const [entries, setEntries] = useState(opened.entries)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
   const [activeField, setActiveField] = useState(
     defaultColorField ?? colorColumns[0]?.field,
@@ -225,6 +230,21 @@ export default observer(function SetColorDialog<
     }
   }
 
+  // An untouched panel writes no colour object, so the config's own stands
+  // whatever the panel can spell.
+  const colorTouched = () => {
+    const before = new Map(opened.rows.map(row => [row.name, row]))
+    return (
+      choice !== opened.choice ||
+      entries !== opened.entries ||
+      currLayout.some(row =>
+        colorColumns.some(
+          ({ field }) => row[field] !== before.get(row.name)?.[field],
+        ),
+      )
+    )
+  }
+
   const colorsRows = choice === '' || choice === 'name'
 
   const paintRows = (colorOf: (row: S) => string | undefined) => {
@@ -238,7 +258,10 @@ export default observer(function SetColorDialog<
   // The row edits go first: a plot colour can move which channel carries a
   // row's identity, and `applyRowEdits` reads a row's swatch off that channel.
   const submit = () => {
-    model.applyRowEdits(currLayout, chosenRowColor())
+    model.applyRowEdits(
+      currLayout,
+      colorTouched() ? chosenRowColor() : undefined,
+    )
     if (
       plotPair &&
       (plotPair.above !== plotColor?.above ||
@@ -260,9 +283,11 @@ export default observer(function SetColorDialog<
   // Drop custom settings and re-seed the grid from the model's persisted state.
   const resetToModel = () => {
     model.resetRowArrangement()
-    setCurrLayout(getSources())
-    setChoice(model.rowColorChoice)
-    setEntries(entriesOf(model.rowColorSetting))
+    const next = openedOn()
+    setOpened(next)
+    setCurrLayout(next.rows)
+    setChoice(next.choice)
+    setEntries(next.entries)
     setPlotPair(undefined)
   }
 

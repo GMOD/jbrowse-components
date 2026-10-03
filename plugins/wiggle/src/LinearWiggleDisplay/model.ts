@@ -49,6 +49,7 @@ import {
   treeSidebarOffset,
   treeSidebarShowMenuItems,
   fieldColorDeal,
+  rowColorChoiceOf,
   rowColorIsCustom,
 } from '@jbrowse/tree-sidebar'
 import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
@@ -436,6 +437,28 @@ export default function stateModelFactory(
               orderRowsByDomain(self.expandedRows, self.baseRowDomain),
               set1,
             )
+      },
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s getter: Each row is offered where it can turn the
+       * palette on, over several subtracks with no gradient taking the colour.
+       */
+      get rowPaletteDeals(): boolean {
+        return self.discoveredRows.length > 1 && !self.scoreGradientPaints
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s getter, reading Each row only while the palette
+       * deals each subtrack a colour, so the dialog opens on what is drawn.
+       */
+      get rowColorChoice(): string {
+        return rowColorChoiceOf(
+          self.rowColorSetting,
+          self.rowPaletteDeals &&
+            sourcePalette(self.colorEncoding) !== undefined,
+        )
       },
     }))
     .views(self => ({
@@ -935,10 +958,7 @@ export default function stateModelFactory(
             (rowColor.field ?? 'name') === 'name' &&
             rowColor.scale !== 'none' &&
             rowColor.unknown === undefined
-          const wants =
-            byName &&
-            !self.scoreGradientPaints &&
-            self.discoveredRows.length > 1
+          const wants = byName && self.rowPaletteDeals
           const has = isPerSourceColor(self.colorSetting)
           if (wants && !has) {
             self.setColor(PER_SOURCE_COLOR)

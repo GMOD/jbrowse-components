@@ -85,7 +85,12 @@ function setup(model: TreeLayoutModel<Src>) {
 
 function submitted(model: TreeLayoutModel<Src>) {
   const calls = (model.applyRowEdits as jest.Mock).mock.calls
-  return calls[calls.length - 1] as [Src[], Record<string, unknown>]
+  return calls[calls.length - 1] as [Src[], Record<string, unknown> | undefined]
+}
+
+function pickColor(swatch: Element, from: string, to: string) {
+  fireEvent.click(swatch)
+  fireEvent.change(screen.getByDisplayValue(from), { target: { value: to } })
 }
 
 test('Submit persists the layout and closes when no tree would be cleared', () => {
@@ -94,9 +99,10 @@ test('Submit persists the layout and closes when no tree would be cleared', () =
 
   fireEvent.click(screen.getByText('Submit'))
 
-  expect(model.applyRowEdits).toHaveBeenCalledWith(model.editableSources, {
-    field: 'name',
-  })
+  expect(model.applyRowEdits).toHaveBeenCalledWith(
+    model.editableSources,
+    undefined,
+  )
   expect(handleClose).toHaveBeenCalled()
   expect(screen.queryByText(/Clear cluster tree/)).toBeNull()
 })
@@ -219,15 +225,29 @@ describe('colored by an attribute', () => {
     expect(screen.queryByText('Clear row colors')).toBeNull()
   })
 
-  test('Submit writes the attribute and its colors', () => {
+  test('an untouched Submit writes no colour object', () => {
     const model = byGroup()
     setup(model)
 
     fireEvent.click(screen.getByText('Submit'))
+    expect(submitted(model)[1]).toBeUndefined()
+  })
+
+  test('a value recolour writes the attribute and its colors', () => {
+    const model = byGroup()
+    setup(model)
+
+    const values = within(screen.getByTestId('row-color-values'))
+    pickColor(
+      values.getByText('g2').previousElementSibling!.firstElementChild!,
+      '#abcdef',
+      '#00ff00',
+    )
+    fireEvent.click(screen.getByText('Submit'))
     expect(submitted(model)[1]).toEqual({
       field: 'group',
       domain: ['g2'],
-      range: ['#abcdef'],
+      range: ['rgb(0, 255, 0)'],
     })
   })
 
@@ -268,12 +288,13 @@ describe('colored by an attribute', () => {
     })
     setup(model)
 
+    fireEvent.click(screen.getByText('Reset Group colors'))
     fireEvent.click(screen.getByText('Submit'))
 
     expect(submitted(model)[1]).toEqual({
       field: 'group',
-      domain: ['g2'],
-      range: ['#abcdef'],
+      domain: [],
+      range: [],
       unknown: '',
     })
   })
@@ -301,12 +322,63 @@ test('None edits the row colors, which stay without the palette', () => {
 })
 
 test('None on a display dealing no palette writes the rows alone', () => {
-  const model = fakeModel({ rowPaletteDeals: false, rowColorChoice: '' })
+  const model = fakeModel({
+    editableSources: GROUPED,
+    rowColorFields: ['group'],
+    rowColorSetting: {
+      field: 'group',
+      scale: undefined,
+      domain: [],
+      range: [],
+    },
+    rowPaletteDeals: false,
+  })
   setup(model)
 
+  fireEvent.click(screen.getByRole('button', { name: 'None' }))
   fireEvent.click(screen.getByText('Submit'))
 
   expect(submitted(model)[1]).toEqual({ field: 'name' })
+})
+
+// A submit names a colour object only where the reader changed a colour, so a
+// reorder or relabel leaves one the panel cannot spell, a grey `unknown` or a
+// parked field, as the config wrote it.
+describe('the colour object a submit passes', () => {
+  test('none for an untouched panel', () => {
+    const model = fakeModel()
+    setup(model)
+
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toBeUndefined()
+  })
+
+  test('the choice, once the reader changes it', () => {
+    const model = fakeModel()
+    setup(model)
+
+    fireEvent.click(screen.getByRole('button', { name: 'None' }))
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '' })
+  })
+
+  test('None, once the reader colours a row under it', () => {
+    const model = fakeModel({ rowColorChoice: '' })
+    setup(model)
+
+    pickColor(
+      screen.getByTitle('Automatic — click to set a custom color'),
+      'blue',
+      '#00ff00',
+    )
+    fireEvent.click(screen.getByText('Submit'))
+
+    const [rows, rowColor] = submitted(model)
+    expect(rows[1]!.color).toBe('rgb(0, 255, 0)')
+    expect(rowColor).toEqual({ field: 'name', unknown: '' })
+  })
 })
 
 test('a display dealing no palette offers no Each row', () => {

@@ -92,6 +92,7 @@ export { useClusterRun } from './useClusterRun.ts'
 export {
   TreeSidebarMixin,
   orderOver,
+  rowColorChoiceOf,
   rowColorIsCustom,
 } from './TreeSidebarMixin.ts'
 export type {
