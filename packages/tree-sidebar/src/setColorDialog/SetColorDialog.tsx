@@ -215,7 +215,10 @@ export default observer(function SetColorDialog<
         : { field: 'name' }
     }
     if (choice === 'name') {
-      return { field: 'name' }
+      const { field, unknown } = model.rowColorSetting
+      return field === 'name' && unknown
+        ? { field: 'name', unknown }
+        : { field: 'name' }
     }
     const { domain, range, unknown } = settingFor(
       choice,

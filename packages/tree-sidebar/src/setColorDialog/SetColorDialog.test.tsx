@@ -177,6 +177,24 @@ test('Start from copies the attribute colors onto the active color column', () =
   expect(rowColor).toEqual({ field: 'name' })
 })
 
+test('a touched Each row keeps the unknown colour its config sets', () => {
+  const model = fakeModel({
+    rowColorSetting: {
+      field: 'name',
+      scale: undefined,
+      domain: ['a'],
+      range: ['#f00'],
+      unknown: '#cccccc',
+    },
+  })
+  setup(model)
+
+  fireEvent.click(screen.getByText('Clear row colors'))
+  fireEvent.click(screen.getByText('Submit'))
+
+  expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '#cccccc' })
+})
+
 test('Clear row colors unsets only the active column', () => {
   const model = fakeModel({
     editableSources: [{ name: 'a', color: '#f00', labelColor: '#0f0' }],
