@@ -25,6 +25,18 @@ const HGSVC3_SV_TRACK = {
     uri: 'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/HGSVC3/release/Variant_Calls/1.0/GRCh38/variants_GRCh38_sv_insdel_sym_HGSVC2024v1.0.vcf.gz',
   },
 }
+// The short-read callset records the 114 kb deletion but not the 22 kb one
+// nested inside it, which HGSVC3 and the clustered heatmap both show
+const KGP_SV_TRACK = {
+  type: 'VariantTrack',
+  trackId: 'kgp3202_sv_5kb',
+  name: '1000 Genomes short-read structural variants, 5 kb and longer',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz',
+  },
+}
 
 // Inside HGSV_73318, the 1.12 Mb inversion, where no other call overlaps it
 const INVERSION_SORT_POINT = '19:46,553,000'
@@ -90,7 +102,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'paper/cohort_cnv',
     url: sessionSpec(CNV_CONFIG, {
-      sessionTracks: [HGSVC3_SV_TRACK],
+      sessionTracks: [KGP_SV_TRACK, HGSVC3_SV_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -98,16 +110,23 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
           loc: NESTED_DELETION_WINDOW,
           tracks: [
             {
+              trackId: KGP_SV_TRACK.trackId,
+              type: 'LinearVariantDisplay',
+              filter: ['jexl:alleleLength(feature)>=5000'],
+              displayMode: 'compact',
+              height: 32,
+            },
+            {
               trackId: HGSVC3_SV_TRACK.trackId,
               type: 'LinearVariantDisplay',
               filter: ['jexl:alleleLength(feature)>=5000'],
               displayMode: 'compact',
-              height: 90,
+              height: 70,
             },
             {
               ...CN_HEATMAP_SETTINGS,
               trackId: 'cnv_1000g_zarr',
-              height: 370,
+              height: 320,
               runClustering: true,
               showTree: false,
               showRowLabels: false,
