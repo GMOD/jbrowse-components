@@ -15,6 +15,7 @@ import {
   NO_STATE,
   cellState,
   comparesBase,
+  opensRun,
   runKey,
   walkedTexts,
 } from './cellsStep.ts'
@@ -151,8 +152,8 @@ class SectionBins {
 
   /**
    * One row's runs as `cells` writes them, each met by its bins as the bin
-   * step cuts it and in the order the lanes hold them: a run when the next
-   * column's `runKey` differs, an insertion at the reference base after it,
+   * step cuts it and in the order the lanes hold them: a run where the next
+   * column `opensRun`, an insertion at the reference base after it,
    * ahead of the run still open. The compared bases a run holds are counted
    * in their bins as the walk passes them.
    */
@@ -198,8 +199,8 @@ class SectionBins {
         rowByte,
         col >= first && col <= last && col < rowLen,
       )
-      const key = runKey(st, refByte, rowByte)
-      if (st !== runState || key !== openKey) {
+      const key = runKey(st, refByte)
+      if (opensRun(st, key, runState, openKey)) {
         if (runOpen) {
           this.touch(runBin, pos > edge - size ? bin : bin - 1, r)
         }

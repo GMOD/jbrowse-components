@@ -50,13 +50,21 @@ export function comparesBase(state: number, refByte: number) {
   return state <= MISMATCH && !isUnknownBase(refByte)
 }
 
-// What the cells of one run share besides their state: a mismatch's base, and
-// whether they are compared, so a run's `match` is one value.
-export function runKey(state: number, refByte: number, rowByte: number) {
-  return (
-    (state === MISMATCH ? rowByte : 0) |
-    (state <= MISMATCH && isUnknownBase(refByte) ? 0x100 : 0)
-  )
+// What the cells of one run share besides their state: whether they are
+// compared, so a run's `match` is one value.
+export function runKey(state: number, refByte: number) {
+  return state <= MISMATCH && isUnknownBase(refByte) ? 1 : 0
+}
+
+// A mismatch always starts a run of its own, so each differing base is one
+// instance and a text over `base` letters every one.
+export function opensRun(
+  state: number,
+  key: number,
+  runState: number,
+  openKey: number,
+) {
+  return state !== runState || key !== openKey || state === MISMATCH
 }
 
 // The row a cell step reads against: past any table that only reordered or
@@ -444,8 +452,8 @@ class RunLanes {
         rowByte,
         col >= first && col <= last && col < rowLen,
       )
-      const key = runKey(st, refByte, rowByte)
-      if (st !== runState || key !== openKey) {
+      const key = runKey(st, refByte)
+      if (opensRun(st, key, runState, openKey)) {
         if (runStart >= 0) {
           start[n] = runStart
           end[n] = pos

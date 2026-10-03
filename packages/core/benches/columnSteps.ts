@@ -29,6 +29,7 @@ import {
   NO_STATE,
   cellState,
   comparesBase,
+  opensRun,
   runKey,
 } from '../src/util/cellsStep.ts'
 import { cssColorToABGR } from '../src/util/colorBits.ts'
@@ -463,8 +464,8 @@ export function cellsColumns(rows: Table, field = 'seq'): Table {
         rowByte,
         col >= first && col <= last && col < row.length,
       )
-      const key = runKey(state, refByte, rowByte)
-      if (state !== runState || key !== openKey) {
+      const key = runKey(state, refByte)
+      if (opensRun(state, key, runState, openKey)) {
         if (runStart >= 0) {
           outStart[n] = runStart
           outEnd[n] = pos
@@ -589,8 +590,8 @@ export function cellsColumnsBytes(rows: Table, field = 'seq'): Table {
         rowByte,
         col >= first && col <= last && col < rowLength,
       )
-      const key = runKey(state, refByte, rowByte)
-      if (state !== runState || key !== openKey) {
+      const key = runKey(state, refByte)
+      if (opensRun(state, key, runState, openKey)) {
         if (runStart >= 0) {
           outStart[n] = runStart
           outEnd[n] = pos

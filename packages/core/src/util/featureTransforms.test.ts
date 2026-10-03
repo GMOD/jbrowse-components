@@ -329,6 +329,28 @@ test('cells answers each row’s runs against the block it was fanned out of', (
   ).toEqual([])
 })
 
+test('cells answers each mismatched base on its own, a repeated base included', () => {
+  const block = feature(100, 106, {
+    seq: 'ACGTAC',
+    alignments: { near: { seq: 'ATTTGG' } },
+  })
+  const out = runTransforms(
+    [block],
+    [
+      { type: 'flatten', field: 'alignments', key: 'species' },
+      { type: 'cells' },
+    ],
+  )
+  expect(rows(out, 'start', 'end', 'state', 'base')).toEqual([
+    [100, 101, 'match', undefined],
+    [101, 102, 'mismatch', 'T'],
+    [102, 103, 'mismatch', 'T'],
+    [103, 104, 'match', undefined],
+    [104, 105, 'mismatch', 'G'],
+    [105, 106, 'mismatch', 'G'],
+  ])
+})
+
 test('flatten twice reaches a gene’s exons, and a bin then counts them', () => {
   const gene = new SimpleFeature({
     uniqueId: 'gene1',
