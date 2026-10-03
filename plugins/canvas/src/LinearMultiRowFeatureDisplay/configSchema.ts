@@ -160,9 +160,9 @@ export default function configSchemaF() {
       color: colorConfigSchema,
       /**
        * #slot rowColor
-       * A colour per row, by value, as `domain`/`range` pairs, painting the
-       * row's blocks over each feature's own colour. The arrangement dialog
-       * writes it.
+       * A colour per row, by value, as `domain`/`range` pairs: the bar beside
+       * the row's label, and the row's blocks while no `color` or itemRgb
+       * colours them. The arrangement dialog writes it.
        *
        * #example
        * ```js

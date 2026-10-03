@@ -211,11 +211,11 @@ arranged order; clustering then runs within each band.
 **Show... → Show row labels** the labels beside it, which are useful with no
 clustering run.
 
-**Show... → Color row labels by row color** tints each label with the color that
-row's blocks are painted in, so a row can be found by color. It is off by
-default: the label box is also what `rowGroups` uses, and a group's swatch wins
-over it. It does nothing on a track colored per feature (an `itemRgb` painting,
-a jexl `color` slot), where no single color represents the row.
+A row with a color of its own, from
+[`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) or its
+`rowGroups` group, draws it as a bar at the left of its label, so a row can be
+found by color. On a track colored per feature (an `itemRgb` painting, a jexl
+`color` slot) the bar is the only place a row's color shows.
 
 <Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:37.5-42 Mb, 1104 TCGA-BRCA tumors clustered by their copy-number profile over the 1.5 Mb around ERBB2, with the dendrogram beside them. Rows sort into amplified, gained, lost, and balanced bands." />
 
