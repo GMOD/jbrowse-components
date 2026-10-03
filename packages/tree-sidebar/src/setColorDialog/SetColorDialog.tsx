@@ -53,6 +53,7 @@ export interface TreeLayoutModel<S extends { name: string }> {
   rowOrderWillDropTree: (next: S[]) => boolean
   rowColorSetting: RowColorSetting
   rowColorChoice: string
+  rowPaletteDeals: boolean
   rowColorFields: readonly string[]
   rowColorsFor: (setting: RowColorSetting) => ReadonlyMap<string, string>
 }
@@ -191,9 +192,19 @@ export default observer(function SetColorDialog<
       ? model.rowColorFields
       : [...model.rowColorFields, current]
 
+  // A config colouring an attribute's listed values with no palette, which
+  // None keeps as written until another choice is picked.
+  const keepsAttribute =
+    choice === '' &&
+    model.rowColorChoice === '' &&
+    model.rowColorSetting.field !== 'name'
+
   // What the submit writes; under None and Each row the grid's row colours
   // become the pairs.
   const chosenRowColor = (): RowColorSnapshot => {
+    if (keepsAttribute) {
+      return model.rowColorSetting
+    }
     if (choice === '') {
       return { field: 'name', scale: 'none' }
     }
@@ -204,7 +215,7 @@ export default observer(function SetColorDialog<
     return { field: choice, domain, range }
   }
 
-  const colorsRows = choice === '' || choice === 'name'
+  const colorsRows = choice === 'name' || (choice === '' && !keepsAttribute)
 
   const paintRows = (colorOf: (row: S) => string | undefined) => {
     if (activeColumn) {
@@ -287,6 +298,8 @@ export default observer(function SetColorDialog<
             {showRows ? (
               <>
                 <RowColorPanel
+                  eachRow={model.rowPaletteDeals}
+                  editsRows={colorsRows}
                   fields={fields}
                   choice={choice}
                   values={

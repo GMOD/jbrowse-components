@@ -399,15 +399,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * What the rows are coloured by, as the arrangement dialog and a menu
-       * offer it: '' for none, `name` for each row its own, or an attribute.
-       */
-      get rowColorChoice(): string {
-        const { field, scale } = this.rowColorSetting
-        return scale === 'none' ? '' : field
-      },
-      /**
-       * #getter
        * The `rowColor` object this display's base declares, as written, which
        * a reset returns to and "is this the reader's" compares against.
        */
@@ -640,6 +631,31 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       rowColorsFor(setting: RowColorSetting): ReadonlyMap<string, string> {
         return dealtColors(dealUnder(setting, self.rowColorDealFor(setting)))
+      },
+      /**
+       * #getter
+       * Whether the palette deals the rows a colour each under `name`, so
+       * Each row differs from None.
+       */
+      get rowPaletteDeals(): boolean {
+        return (
+          self.rowColorDealFor({ field: 'name', domain: [], range: [] }) !==
+          undefined
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * What the rows are coloured by, as the arrangement dialog and a menu
+       * offer it: '' for no palette, `name` for a palette colour each, or an
+       * attribute.
+       */
+      get rowColorChoice(): string {
+        const { field, scale } = self.rowColorSetting
+        return scale === 'none' || (field === 'name' && !self.rowPaletteDeals)
+          ? ''
+          : field
       },
     }))
     .views(self => ({

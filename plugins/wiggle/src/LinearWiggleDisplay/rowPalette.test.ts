@@ -72,6 +72,20 @@ describe('Each row turns the palette on as well as naming the rows', () => {
 
     expect(isPerSourceColor(display.colorSetting)).toBe(false)
   })
+
+  it('plots a colour set on one subtrack under None, the rest unchanged', () => {
+    const display = makeDisplay()
+    const before = rowColors(display)
+    const [a, b, c] = display.editableSources
+
+    display.applyRowEdits([a!, { ...b!, color: '#123456' }, c!], {
+      field: 'name',
+      scale: 'none',
+    })
+
+    expect(isPerSourceColor(display.colorSetting)).toBe(false)
+    expect(rowColors(display)).toEqual([before[0], '#123456', before[2]])
+  })
 })
 
 describe('where the switch would be wrong, the row colour goes alone', () => {

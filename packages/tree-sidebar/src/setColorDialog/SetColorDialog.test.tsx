@@ -59,6 +59,7 @@ function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
     rowColorSetting,
     rowColorChoice:
       rowColorSetting.scale === 'none' ? '' : rowColorSetting.field,
+    rowPaletteDeals: true,
     rowColorFields: [],
     rowColorsFor: previewOf(editableSources),
     ...overrides,
@@ -271,6 +272,32 @@ test('None edits the row colors, which stay without the palette', () => {
   const [rows, rowColor] = submitted(model)
   expect(rows[0]!.color).toBeUndefined()
   expect(rowColor).toEqual({ field: 'name', scale: 'none' })
+})
+
+test('None keeps an attribute a config colours with no palette', () => {
+  const model = fakeModel({
+    editableSources: GROUPED,
+    rowColorFields: ['group'],
+    rowColorSetting: {
+      field: 'group',
+      scale: 'none',
+      domain: ['g2'],
+      range: ['#abcdef'],
+    },
+  })
+  setup(model)
+
+  expect(screen.queryByText('Clear row colors')).toBeNull()
+  fireEvent.click(screen.getByText('Submit'))
+
+  expect(submitted(model)[1]).toEqual(model.rowColorSetting)
+})
+
+test('a display dealing no palette offers no Each row', () => {
+  setup(fakeModel({ rowPaletteDeals: false }))
+
+  expect(screen.getByRole('button', { name: 'None' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Each row' })).toBeNull()
 })
 
 test('a color by the display does not offer still shows as chosen', () => {

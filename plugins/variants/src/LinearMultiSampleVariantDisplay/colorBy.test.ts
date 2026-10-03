@@ -107,22 +107,22 @@ describe('multi-sample variant colorBy', () => {
     expect(model.sources[0]!.labelColor).toBe(before.get('HG002'))
   })
 
-  // None and Each row are two choices over one field, `name`: None stops the
-  // palette and keeps the tints set row by row.
-  it('switches between None and each row its own tint', () => {
+  // No palette deals the rows by name here, so None is the one choice over
+  // `name`, and it shows the tints set row by row.
+  it('reads the tints set row by row as None, and returns to them', () => {
     const model = makeModel()
     model.setSources(sources)
+    expect(model.rowPaletteDeals).toBe(false)
     const [first, ...rest] = model.editableSources
     model.applyRowEdits([{ ...first!, labelColor: '#123456' }, ...rest])
-    expect(model.rowColorChoice).toBe('name')
-
-    model.setRowColorField('')
     expect(model.rowColorChoice).toBe('')
     expect(model.sources[0]!.labelColor).toBe('#123456')
     expect(model.sources[1]!.labelColor).toBeUndefined()
 
-    model.setRowColorField('name')
-    expect(model.rowColorChoice).toBe('name')
-    expect(model.sources[0]!.labelColor).toBe('#123456')
+    model.setRowColorField('population')
+    expect(model.rowColorChoice).toBe('population')
+    model.setRowColorField('')
+    expect(model.rowColorChoice).toBe('')
+    expect(model.sources[1]!.labelColor).toBeUndefined()
   })
 })

@@ -42,10 +42,13 @@ export interface ValueColor {
 }
 
 /**
- * What the rows are coloured by, above the rows: none, each row its own, or
- * an attribute, whose values are listed with their colours to edit.
+ * What the rows are coloured by, above the rows: no palette, a palette colour
+ * each where the display deals one, or an attribute, whose values are listed
+ * with their colours to edit.
  */
 export default function RowColorPanel({
+  eachRow,
+  editsRows,
   fields,
   choice,
   values,
@@ -55,6 +58,8 @@ export default function RowColorPanel({
   onStartFrom,
   onClearRows,
 }: {
+  eachRow: boolean
+  editsRows: boolean
   fields: readonly string[]
   choice: string
   values: ValueColor[]
@@ -81,7 +86,7 @@ export default function RowColorPanel({
           }}
         >
           <ToggleButton value="">None</ToggleButton>
-          <ToggleButton value="name">Each row</ToggleButton>
+          {eachRow ? <ToggleButton value="name">Each row</ToggleButton> : null}
           {fields.map(field => (
             <ToggleButton key={field} value={field}>
               {capitalizeFirst(field)}
@@ -89,7 +94,11 @@ export default function RowColorPanel({
           ))}
         </ToggleButtonGroup>
       </div>
-      {choice === '' || choice === 'name' ? (
+      {!editsRows && choice === '' ? (
+        <Typography variant="body2" color="textSecondary">
+          Rows keep the colors the track's configuration gives them.
+        </Typography>
+      ) : choice === '' || choice === 'name' ? (
         <div className={classes.line}>
           <Typography variant="body2" color="textSecondary">
             {choice === ''
