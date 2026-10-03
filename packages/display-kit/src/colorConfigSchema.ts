@@ -173,17 +173,15 @@ export function colorRangeSlot({
 
 /**
  * What a value `domain` does not list takes, as d3's `ordinal.unknown`: unset,
- * the next palette colour; a colour, that colour; `""`, no colour from this
- * setting, so the value keeps its own. `range` entries past the domain go
- * unread while it is set. It stands in for the palette the display deals, so
- * a display dealing none ignores it: under `name` the MAF, mark and
- * multi-sample variant displays.
+ * the next palette colour where the display deals one; a colour, that colour;
+ * `""`, no colour from this setting, so the value keeps its own. `range`
+ * entries past the domain go unread while it is set.
  */
 export const colorUnknownSlot = {
   unknown: {
     type: 'maybeColor',
     description:
-      'what a value domain does not list takes: unset the next palette colour, a colour that colour, "" none from this setting; it stands in for the palette the display deals, so one dealing none ignores it',
+      'what a value domain does not list takes: unset the next palette colour where the display deals one, a colour that colour, "" none from this setting',
   },
 } as const
 

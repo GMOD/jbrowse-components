@@ -23,11 +23,10 @@ import {
  * MAF display's label tint, over the adapter's `samples[].color`; the mark
  * display's label tint, over a listed source's colour. Where the rows carry
  * attributes, a samplesTsv column or a subtrack's group, `field` may name one,
- * and its values each take a palette colour. `unknown: ''` deals none, so only
- * the values `domain` lists take a colour and every other row keeps its own.
- * `unknown` stands in for the palette a display deals, so under `name` the MAF,
- * mark and multi-sample variant displays, which deal none, ignore it. A string
- * is the field.
+ * and its values each take a palette colour. Under `name` the palette deals only
+ * where the rows share one panel, a wiggle overlay; stacked rows are named by
+ * their labels. `unknown: ''` deals none, so only the values `domain` lists take
+ * a colour and every other row keeps its own. A string is the field.
  *
  * #example
  * ```js

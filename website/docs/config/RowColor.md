@@ -39,11 +39,10 @@ feature display's blocks; the multi-sample variant displays' label tint; the
 MAF display's label tint, over the adapter's `samples[].color`; the mark
 display's label tint, over a listed source's colour. Where the rows carry
 attributes, a samplesTsv column or a subtrack's group, `field` may name one,
-and its values each take a palette colour. `unknown: ''` deals none, so only
-the values `domain` lists take a colour and every other row keeps its own.
-`unknown` stands in for the palette a display deals, so under `name` the MAF,
-mark and multi-sample variant displays, which deal none, ignore it. A string
-is the field.
+and its values each take a palette colour. Under `name` the palette deals only
+where the rows share one panel, a wiggle overlay; stacked rows are named by
+their labels. `unknown: ''` deals none, so only the values `domain` lists take
+a colour and every other row keeps its own. A string is the field.
 
 ## Config slots
 
@@ -56,4 +55,4 @@ These slots go on a display entry: `"displays": [{ "type": "RowColor", ... }]`, 
 | <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical) | none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field |
 | <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | the field's values given a colour of their own, in order: under name, rows by name |
 | <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | the CSS colour each value in domain takes, in the same order |
-| <span id="slot-unknown">**unknown**</span><br>`maybeColor` | what a value domain does not list takes: unset the next palette colour, a colour that colour, "" none from this setting; it stands in for the palette the display deals, so one dealing none ignores it |
+| <span id="slot-unknown">**unknown**</span><br>`maybeColor` | what a value domain does not list takes: unset the next palette colour where the display deals one, a colour that colour, "" none from this setting |
