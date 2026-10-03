@@ -18203,6 +18203,92 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "SyntenyOpacity": {
+      "title": "SyntenyOpacity",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "type": "number"
+        },
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "$ref": "#/$defs/PlainString",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "title": "SyntenyOpacity",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "every alignment's opacity; unset is the view's default.",
+              "type": "number"
+            },
+            "field": {
+              "description": "measurement or attributeColumns column; empty is value.",
+              "$ref": "#/$defs/PlainString",
+              "default": ""
+            },
+            "scale": {
+              "description": "none, threshold, or unset to follow the field.",
+              "enum": [
+                "none",
+                "threshold"
+              ]
+            },
+            "domain": {
+              "description": "labels, or threshold cut points.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "range": {
+              "description": "opacities along the domain.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "domainMin": {
+              "description": "value at the faintest end; unset follows the field.",
+              "type": "number"
+            },
+            "domainMax": {
+              "description": "value at the most opaque end; unset follows the field.",
+              "type": "number"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "CircularViewTrackEntry": {
       "title": "CircularViewTrackEntry",
       "description": "A track to open in a CircularView: a trackId, or an object whose other keys are the display's config slots and state written inline.",
@@ -18825,14 +18911,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "hideUnlabelled": {
           "type": "boolean"
         },
-        "alpha": {
-          "type": "number"
+        "opacity": {
+          "$ref": "#/$defs/SyntenyOpacity"
         },
         "minAlignmentLength": {
           "type": "number"
-        },
-        "opacityByIdentity": {
-          "type": "boolean"
         },
         "fadeThinAlignmentsMode": {
           "enum": [
@@ -19031,8 +19114,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "hideUnlabelled": {
           "type": "boolean"
         },
-        "alpha": {
-          "type": "number"
+        "opacity": {
+          "$ref": "#/$defs/SyntenyOpacity"
         },
         "minAlignmentLength": {
           "type": "number"
@@ -19150,6 +19233,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Launch key, resolved by the DotplotView launcher on open."
         },
         "colorBy": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "alpha": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
@@ -19275,8 +19362,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "hideUnlabelled": {
           "type": "boolean"
         },
-        "alpha": {
-          "type": "number"
+        "opacity": {
+          "$ref": "#/$defs/SyntenyOpacity"
         },
         "minAlignmentLength": {
           "type": "number"
@@ -19287,9 +19374,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "fine",
             "coarse"
           ]
-        },
-        "opacityByIdentity": {
-          "type": "boolean"
         },
         "fadeThinAlignmentsMode": {
           "enum": [
@@ -19434,6 +19518,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
         },
         "colorBy": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "alpha": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }

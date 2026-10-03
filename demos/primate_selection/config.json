@@ -86,7 +86,7 @@
         ],
         "tracks": [["primate_orthologs"]],
         "color": { "field": "dnds" },
-        "alpha": 0.95,
+        "opacity": 0.95,
         "drawCurves": true
       }
     ]

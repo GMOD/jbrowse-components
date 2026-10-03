@@ -64,7 +64,7 @@
         "minAlignmentLength": 500000,
         "levelHeights": [500],
         "drawCurves": true,
-        "alpha": 0.4
+        "opacity": 0.4
       }
     ]
   },

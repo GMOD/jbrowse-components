@@ -87,7 +87,7 @@ async function capture(drawCurves: boolean, backend: 'canvas2d' | 'webgl') {
     drawCurves,
     autoDiagonalize: !args.includes('--no-diagonalize'),
     color: { field: 'query' },
-    alpha: 0.4,
+    opacity: 0.4,
     levelHeights: [350],
   }
   const browser = await launch({

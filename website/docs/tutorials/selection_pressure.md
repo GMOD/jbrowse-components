@@ -216,7 +216,7 @@ chromosome 12 from the hosted copy, coloured by dN/dS. In your own build, pick
         ],
         "tracks": [["primate_orthologs"]],
         "color": { "field": "dnds" },
-        "alpha": 0.95,
+        "opacity": 0.95,
         "drawCurves": true
       }
     ]

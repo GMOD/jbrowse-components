@@ -51,7 +51,7 @@
         ],
         "tracks": [["wheat_homoeologs"]],
         "color": { "field": "dnds" },
-        "alpha": 0.15
+        "opacity": 0.15
       }
     ]
   }

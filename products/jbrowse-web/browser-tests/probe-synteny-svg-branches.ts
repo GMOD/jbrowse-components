@@ -68,7 +68,7 @@ const view = {
   drawCurves: !args.includes('--straight'),
   autoDiagonalize: !args.includes('--no-diagonalize'),
   color: { field: 'query' },
-  alpha: 0.4,
+  opacity: 0.4,
   levelHeights: [350],
 }
 

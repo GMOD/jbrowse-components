@@ -122,7 +122,7 @@ try {
       const view = (window as any).JBrowseSession?.views[0]
       const lines = view.hoveredTooltipLines
       return lines
-        ? { lines, highlight: view.hoveredHighlight, alpha: view.alpha }
+        ? { lines, highlight: view.hoveredHighlight, alpha: view.opacityLevel }
         : undefined
     },
     { timeout: 10000 },

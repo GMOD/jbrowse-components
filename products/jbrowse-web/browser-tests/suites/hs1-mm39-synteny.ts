@@ -26,7 +26,7 @@ const suite: TestSuite = {
         drawCurves: true,
         autoDiagonalize: true,
         color: { field: 'query' },
-        alpha: 0.4,
+        opacity: 0.4,
         levelHeights: [350],
         views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
       },

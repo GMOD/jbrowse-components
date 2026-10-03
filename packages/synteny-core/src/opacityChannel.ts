@@ -76,7 +76,7 @@ function isNumericField(
   const observed = setting.field ? ranges?.[setting.field] : undefined
   return (
     setting.scale !== 'threshold' &&
-    !(observed !== undefined && isAttributeLabels(observed))
+    (observed === undefined || !isAttributeLabels(observed))
   )
 }
 

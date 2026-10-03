@@ -460,7 +460,7 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
         // Unpainted is symmetric, and "the retrocopy has nothing here" is the
         // claim anyway. It also drops the slivers the 1-6 bp indels drew.
         cigarMode: 'matches',
-        alpha: 0.45,
+        opacity: 0.45,
         // 2-D form, one entry per adjacent pair: level 0 is retro-CFA18 against
         // the parent, level 1 the parent against retro-CFA12
         tracks: [['dog10k_fgf4_retro_cfa18'], ['dog10k_fgf4_retro_cfa12']],

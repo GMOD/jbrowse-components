@@ -225,7 +225,7 @@ stack on this page, so the bands take a while to draw:
         "sameScale": true,
         "autoDiagonalize": true,
         "collapseEmptyRows": true,
-        "alpha": 0.15
+        "opacity": 0.15
       }
     ]
   }

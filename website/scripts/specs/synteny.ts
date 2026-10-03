@@ -1059,7 +1059,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // (increase height, add opacity, diagonalize; then opacity
           // bumped a little more). levelHeights (not a `levels` snapshot) is the
           // key the launch init consumes.
-          alpha: 0.8,
+          opacity: 0.8,
           levelHeights: [360],
           autoDiagonalize: true,
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
@@ -1759,7 +1759,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             color: { field: 'target' },
             autoDiagonalize: true,
             levelHeights: [300],
-            alpha: 1,
+            opacity: 1,
           },
         ],
       },
@@ -1979,7 +1979,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: [['syri_pangenome']],
           color: { field: 'syri', domain: SYRI_TYPES },
           drawCurves: true,
-          alpha: 0.9,
+          opacity: 0.9,
           fadeThinAlignmentsMode: 'off',
           collapseEmptyRows: true,
           levelHeights: [260],
@@ -2005,7 +2005,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: SYRI_ACCESSIONS.slice(1).map(() => ['syri_pangenome']),
           color: { field: 'syri', domain: SYRI_TYPES },
           drawCurves: true,
-          alpha: 0.9,
+          opacity: 0.9,
           fadeThinAlignmentsMode: 'off',
           collapseEmptyRows: true,
           levelHeights: SYRI_ACCESSIONS.slice(1).map(() => 150),
@@ -2498,7 +2498,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             ],
             tracks: [['primate_orthologs']],
             color: { field: 'dnds' },
-            alpha: 0.95,
+            opacity: 0.95,
             drawCurves: true,
           },
         ],
@@ -2695,7 +2695,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // as background — the lower bands in particular read as a grey wash
             // with a few strong diagonals on it. At 0.3 a single ortholog is
             // visible and the bundles are solid without flooding their bands.
-            alpha: 0.3,
+            opacity: 0.3,
             drawCurves: false,
           },
         ],
@@ -2766,7 +2766,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             sameScale: true,
             collapseEmptyRows: true,
             levelHeights: [180, 180, 180, 180],
-            alpha: 0.2,
+            opacity: 0.2,
             drawCurves: false,
           },
         ],
@@ -2827,7 +2827,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             sameScale: true,
             collapseEmptyRows: true,
             levelHeights: [150, 150, 150, 150, 150, 150],
-            alpha: 0.15,
+            opacity: 0.15,
             drawCurves: false,
           },
         ],
@@ -2893,7 +2893,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // background. These grass chromosomes are near one-to-one, so the
             // links arrive as tight bundles and this is as high as it can go;
             // the vertebrates figure takes twice it, for the opposite reason.
-            alpha: 0.15,
+            opacity: 0.15,
             // Straight chords, though this is the one case the drawCurves
             // docstring recommends itself for. Rendered both: the bezier version
             // is by far the prettier picture and the worse figure, because a
@@ -3053,7 +3053,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // rather than as one fan over another. At 0.65 a crossing shows both
             // ribbons through each other and a lone one is still solid color;
             // 0.35 was also rendered and washes the top band out.
-            alpha: 0.65,
+            opacity: 0.65,
             // The lower band takes most of the height, because it is the one
             // with crossings and they are unavoidable: one rice interval into
             // two maize regions drawn side by side means every blue/purple pair
@@ -3122,7 +3122,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // OrthoFinder figures are the same picture on different genomes
             collapseEmptyRows: true,
             levelHeights: [170, 170, 170, 170, 170],
-            alpha: 0.15,
+            opacity: 0.15,
             drawCurves: false,
           },
         ],
@@ -3272,7 +3272,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // this is one chromosome's worth, a twentieth as many ribbons over
             // a taller band, and at 0.15 the two translocated bundles read as
             // smoke beside the native one.
-            alpha: 0.5,
+            opacity: 0.5,
             drawCurves: false,
           },
         ],
@@ -4072,7 +4072,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           drawCurves: false,
           autoDiagonalize: true,
           color: { field: 'query' },
-          alpha: 0.4,
+          opacity: 0.4,
           levelHeights: [350],
           views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
         },
@@ -4651,7 +4651,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // alignments to stack into solid fans that hid the junction. 500kb
           // leaves the arm-level blocks that make the chr3/chr13 fusion legible.
           minAlignmentLength: 500000,
-          alpha: 0.35,
+          opacity: 0.35,
           // One level per adjacent pair: hap2 to the reference, then the
           // reference to hap1. Both are the same assembly pair, so both take
           // the same track.
@@ -5337,7 +5337,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           drawCurves: true,
           cigarMode: 'matches',
           minAlignmentLength: 100000,
-          alpha: 0.4,
+          opacity: 0.4,
           levelHeights: [220],
           collapseEmptyRows: true,
           views: [

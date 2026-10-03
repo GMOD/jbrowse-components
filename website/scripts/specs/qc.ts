@@ -677,7 +677,7 @@ export const qcSpecs: ScreenshotSpec[] = [
             minAlignmentLength: 10000,
             // three ribbons, so the 0.2 default is pure washout here -- there
             // is nothing piling up for it to protect
-            alpha: 0.5,
+            opacity: 0.5,
             levelHeights: [300],
             tracks: [['hg38_hs1_synteny']],
             views: [

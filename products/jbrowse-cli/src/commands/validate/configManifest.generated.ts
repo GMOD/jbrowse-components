@@ -7413,9 +7413,8 @@ export const configManifest: ConfigManifest = {
         "color",
         "trackColors",
         "hideUnlabelled",
-        "alpha",
+        "opacity",
         "minAlignmentLength",
-        "opacityByIdentity",
         "fadeThinAlignmentsMode",
         "type",
         "offsetRadians",
@@ -7450,7 +7449,7 @@ export const configManifest: ConfigManifest = {
         "color",
         "trackColors",
         "hideUnlabelled",
-        "alpha",
+        "opacity",
         "minAlignmentLength",
         "lodMode",
         "type",
@@ -7475,6 +7474,7 @@ export const configManifest: ConfigManifest = {
         "views"
       ],
       "passThrough": [
+        "alpha",
         "colorBy"
       ]
     },
@@ -7486,10 +7486,9 @@ export const configManifest: ConfigManifest = {
         "color",
         "trackColors",
         "hideUnlabelled",
-        "alpha",
+        "opacity",
         "minAlignmentLength",
         "lodMode",
-        "opacityByIdentity",
         "fadeThinAlignmentsMode",
         "type",
         "cigarMode",
@@ -7516,6 +7515,7 @@ export const configManifest: ConfigManifest = {
         "views"
       ],
       "passThrough": [
+        "alpha",
         "colorBy"
       ]
     },

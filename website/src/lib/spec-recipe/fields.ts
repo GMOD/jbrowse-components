@@ -1883,13 +1883,26 @@ function settingsPath(viewType: string | undefined, row: string) {
 }
 
 export const viewFields: Record<string, FieldRecipe> = {
-  alpha: (value, { viewType }) => {
-    const path = settingsPath(viewType, 'Opacity')
-    return typeof value === 'number' && path
-      ? {
-          path: `${path} → drag to ${value}`,
-          note: 'Lower values let dense overlapping ribbons show through each other.',
-        }
+  // the constant has the slider; of the fields, only identity has a toggle
+  opacity: (value, { viewType }) => {
+    const field =
+      typeof value === 'string'
+        ? value
+        : typeof value === 'object' && value !== null && 'field' in value
+          ? value.field
+          : undefined
+    if (typeof value === 'number') {
+      const path = settingsPath(viewType, 'Opacity')
+      return path
+        ? {
+            path: `${path} → drag to ${value}`,
+            note: 'Lower values let dense overlapping ribbons show through each other.',
+          }
+        : undefined
+    }
+    const path = settingsPath(viewType, 'Identity fade')
+    return field === 'identity' && path && viewType !== 'DotplotView'
+      ? { path: `${path} → tick it` }
       : undefined
   },
   cigarMode: (value, { viewType }) => {

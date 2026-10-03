@@ -197,6 +197,23 @@ With this interface the compiler checks those calls again.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/lodTier.ts)
 
+### createOpacityFunction
+
+Each feature's fade, 0 to 1, as a share of `opacityLevel`; undefined while
+`opacity` draws its constant. A feature with no value for the field draws at the
+level.
+
+`viewRanges` is the domain a number column fades across, the view's accumulated
+one as the colour ramp's is, and `fetchRanges` the fetch's own, whose label
+lists a text column's values index.
+
+```js
+// type signature
+({…}: { setting: SyntenyOpacitySnapshot; attributes: Record<…>; viewRanges: Record<…>; fetchRanges: Record<…>; }) => ((index: number) => number) | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/opacityChannel.ts)
+
 ### featureColorInputs
 
 The lanes `createComparativeColorFunction` reads, built from features a display
@@ -213,11 +230,12 @@ by the first and `target` by the second.
 
 ### identityFadeMenuItem
 
-The Identity fade toggle of a view carrying `SyntenyFadeMixin`.
+The Identity fade toggle of a view carrying `SyntenyViewMixin`: `opacity` read
+from `identity`, or back to the constant.
 
 ```js
 // type signature
-(model: { opacityByIdentity: boolean; setOpacityByIdentity: (value: boolean) => void; }) => MenuItem
+(model: { opacityField: string; setOpacityField: (field: string) => void; }) => MenuItem
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
@@ -270,7 +288,7 @@ their launch keys' `passThrough` so a validator accepts them.
 
 ```js
 // type signature
-readonly['colorBy']
+readonly[('colorBy', 'alpha')]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
@@ -279,8 +297,9 @@ readonly['colorBy']
 
 A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
 view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
-synteny display, and `colorBy` lands as `color`. Launch links the genomes portal
-handed out carry the mode string on the view itself, which lifts the same way.
+synteny display, `colorBy` lands as `color` and `alpha` as `opacity`. Launch
+links the genomes portal handed out carry the mode string on the view itself,
+which lifts the same way.
 
 ```js
 // type signature
@@ -320,14 +339,40 @@ module exists to prevent — see the header.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
 
-### opacityMenuItem
+### opacityFadeOf
 
-The Opacity row of a view carrying `SyntenyViewMixin`, reset to that view's own
-default.
+The part of `opacity` the colour pass reads: undefined for the constant, else
+the mapping with `range` as shares of its most opaque entry, so a mapping scaled
+alike at both ends answers the same.
 
 ```js
 // type signature
-(model: { alpha: number; defaultAlpha: number; setAlpha: (value: number) => void; colorSurface: () => SyntenyColorSurface; }) => MenuItem
+(setting: SyntenyOpacitySnapshot) => SyntenyOpacitySnapshot | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/opacityChannel.ts)
+
+### opacityLevel
+
+The opacity every alignment is drawn at before its own fade: the constant,
+`defaultValue` while it is unset, or under a field the most opaque value its
+range reaches.
+
+```js
+// type signature
+(setting: SyntenyOpacitySnapshot, defaultValue: number, ranges?: Record<string, AttributeRange> | undefined) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/opacityChannel.ts)
+
+### opacityMenuItem
+
+The Opacity row of a view carrying `SyntenyViewMixin`, reset to that view's own
+default. Under a field it moves the field's most opaque end.
+
+```js
+// type signature
+(model: { opacityLevel: number; defaultOpacity: number; setOpacity: (value: number) => void; colorSurface: () => SyntenyColorSurface; }) => MenuItem
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
