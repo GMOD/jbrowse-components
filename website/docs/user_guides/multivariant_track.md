@@ -98,20 +98,6 @@ phaser left alone, homozygous ones among them.
 You can switch modes from the track menu, or set `renderingMode` in the display
 configuration.
 
-## Genotype frequencies above the rows
-
-**Show... → Show genotype frequencies** adds a band above the rows that stacks,
-for each variant, the share of the drawn rows in each genotype class, in the
-cells' own colours: carriers from the bottom, no-calls from the top, the
-reference grey between. In allele-dosage mode the dark segment is the homozygous
-carriers and the pale one the heterozygous; in phased mode a row is a haplotype,
-so the alt segment is the allele frequency over the drawn haplotypes. Hovering a
-column lists its counts, and the band follows the **Color by...** setting and
-the rows you keep. Its slots are
-[`showGenotypeFrequencies`](/docs/config/linearmultisamplevariantdisplay/#slot-showgenotypefrequencies)
-and
-[`genotypeFrequenciesHeight`](/docs/config/linearmultisamplevariantdisplay/#slot-genotypefrequenciesheight).
-
 ## Coloring by consequence impact (SnpEff/VEP annotations)
 
 If the VCF's `INFO` field has SnpEff `ANN` or VEP `CSQ` annotations, each

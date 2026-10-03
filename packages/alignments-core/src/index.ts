@@ -102,11 +102,7 @@ export type {
 // end: it skipped `=SEQ` (so a long-form match run never advanced the
 // reference), skipped `~` (so it mis-scanned everything after an intron), and
 // ended a `+`/`-` operand at the next op character rather than at the last base.
-export {
-  coverageLayout,
-  interbaseBarHeightPx,
-  percentAxisTicks,
-} from './coverageBandBox.ts'
+export { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
 // The band's depth normalizer and its segment placement, generated from
 // render-core's shared coverageBand.slang. The painters below draw with them;
 // they are re-exported because the parity tests live outside this package and

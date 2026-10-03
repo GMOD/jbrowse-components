@@ -1,6 +1,5 @@
 import { f2 } from '../../shared/constants.ts'
 import { findCellIndex } from '../../shared/variantCellLookup.ts'
-import { CELL_ALT, CELL_REF } from '../../shared/variantCellStyles.ts'
 import { variantMatrixSurface } from './VariantMatrixComponent.tsx'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -43,7 +42,6 @@ function matrixCellData(): MatrixCellDataResult {
     cellRowIndices: Uint32Array.of(0, 0, 1, 1),
     cellColors: Uint32Array.of(0xffcccccc, 0xffcccccc, 0xff0000ff, 0xff0000ff),
     cellAltDosage: Uint8Array.of(0, 0, 255, 255),
-    cellCategories: Uint8Array.of(CELL_REF, CELL_REF, CELL_ALT, CELL_ALT),
     numCells: 4,
     refCellCount: 2,
     numFeatures: 2,
@@ -140,7 +138,6 @@ test('the tooltip reports an insertion on the cells the painter drew as alt', ()
   display.setCellData({
     ...data,
     cellAltDosage: Uint8Array.of(0, 0, 255, 0),
-    cellCategories: Uint8Array.of(CELL_REF, CELL_REF, CELL_ALT, CELL_REF),
     featureData: data.featureData.map(f => ({ ...f, insertedBp: 5 })),
   })
   const insertion = (x: number, y: number) =>

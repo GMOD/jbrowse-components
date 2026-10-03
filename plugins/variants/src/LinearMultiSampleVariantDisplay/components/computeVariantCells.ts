@@ -24,9 +24,6 @@ export interface VariantCellData extends CellHueValues {
   // widening a reference cell would claim every sample carries it. Above zero it
   // also shades the marker, so a het draws paler than a hom.
   cellAltDosage: Uint8Array
-  // Each cell's `CELL_*` class, which the frequency band counts by and names
-  // in its tooltip.
-  cellCategories: Uint8Array
   numCells: number
   featureGenotypeMap: Record<string, VariantFeatureInfo>
   cellFeatureIndices: Uint32Array
@@ -132,7 +129,6 @@ export function computeVariantCells({
   const colors = new Uint32Array(maxCells)
   const shapeTypes = new Uint8Array(maxCells)
   const altDosage = new Uint8Array(maxCells)
-  const categories = new Uint8Array(maxCells)
   const featureIndices = new Uint32Array(maxCells)
   const featureIdList: string[] = []
   const insertedBp = new Int32Array(filteredVariants.length)
@@ -157,7 +153,6 @@ export function computeVariantCells({
     shape: number,
     isReference: boolean,
     dosage: number,
-    category: number,
     featureIdx: number,
   ) {
     const ci = isReference ? refEnd++ : --nonRefStart
@@ -171,7 +166,6 @@ export function computeVariantCells({
     colors[ci] = colorAbgr
     shapeTypes[ci] = shape
     altDosage[ci] = dosage
-    categories[ci] = category
     featureIndices[ci] = featureIdx
   }
 
@@ -197,9 +191,6 @@ export function computeVariantCells({
     const t = altDosage[a]!
     altDosage[a] = altDosage[b]!
     altDosage[b] = t
-    const k = categories[a]!
-    categories[a] = categories[b]!
-    categories[b] = k
     const f = featureIndices[a]!
     featureIndices[a] = featureIndices[b]!
     featureIndices[b] = f
@@ -242,7 +233,6 @@ export function computeVariantCells({
           shape,
           style.isRef,
           style.altDosage,
-          style.category,
           featureIdx,
         )
       }
@@ -295,7 +285,6 @@ export function computeVariantCells({
     colors.copyWithin(refCellCount, nonRefStart, maxCells)
     shapeTypes.copyWithin(refCellCount, nonRefStart, maxCells)
     altDosage.copyWithin(refCellCount, nonRefStart, maxCells)
-    categories.copyWithin(refCellCount, nonRefStart, maxCells)
     featureIndices.copyWithin(refCellCount, nonRefStart, maxCells)
   }
 
@@ -343,7 +332,6 @@ export function computeVariantCells({
     cellColors: trim ? colors.slice(0, numCells) : colors,
     cellShapeTypes: trim ? shapeTypes.slice(0, numCells) : shapeTypes,
     cellAltDosage: trim ? altDosage.slice(0, numCells) : altDosage,
-    cellCategories: trim ? categories.slice(0, numCells) : categories,
     numCells,
     refCellCount,
     featureGenotypeMap,

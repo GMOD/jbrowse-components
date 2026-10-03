@@ -3,7 +3,6 @@ import { setConf } from '@jbrowse/core/configuration'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { CELL_ALT } from '../shared/variantCellStyles.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -51,7 +50,6 @@ function cellData(insertedBp: number): CellDataResult {
         cellColors: Uint32Array.from([0xff0000]),
         cellShapeTypes: new Uint8Array(1),
         cellAltDosage: Uint8Array.from([1]),
-        cellCategories: Uint8Array.from([CELL_ALT]),
         cellFeatureIndices: new Uint32Array(1),
         numCells: 1,
         refCellCount: 0,

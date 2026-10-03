@@ -81,15 +81,18 @@ language, and reading structure back out of jexl is the fragile half.
 
 ## Gaps against the grammar
 
-- **`stack` is declined on the mark display, and so is the min-to-max range bar
-  `y2`.** The stacked histogram was built and declined on its captures; the
-  mirror (two bars, a `formula` negating one) and the rows form draw today.
-  Don't re-propose either. A row display's share of a fixed set of rows is a
-  band, not this step
+- **`stack` is declined, and so is the min-to-max range bar `y2`.** The stacked
+  histogram was built and declined on its captures; the mirror (two bars, a
+  `formula` negating one) and the rows form draw today. Don't re-propose either.
+  A genotype share band over the multi-sample variant display's rows was built
+  and removed too
   ([ADR-206](../architecture-decision-records/adr-206-a-row-display-summarizes-its-rows-in-a-frequency-band.md)).
   A weighted depth per bin is declarable with a `bin` over `fields` and a
   weighted `aggregate`
   ([ADR-197](../architecture-decision-records/adr-197-a-bin-cuts-an-interval-at-its-edges.md)).
+- **`fold` is absent.** A frequency per population stored as one INFO field
+  per group goes through bcftools to a bigWig per group, drawn as multi-wiggle
+  rows (ADR-206).
 - **`window` and `sample` are absent.** A BigWig's summary tiers are the
   adapter's (ADR-123), and `bin` takes `step: "auto"` (ADR-117).
 - **Scale resolution across layers: y never resolves independently.** Every

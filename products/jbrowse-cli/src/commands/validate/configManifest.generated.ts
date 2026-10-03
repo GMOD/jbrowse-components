@@ -5342,14 +5342,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "variantLaneLabels",
           "type": "variantLaneLabels"
-        },
-        {
-          "name": "showGenotypeFrequencies",
-          "type": "boolean"
-        },
-        {
-          "name": "genotypeFrequenciesHeight",
-          "type": "number"
         }
       ],
       "legacyKeys": [

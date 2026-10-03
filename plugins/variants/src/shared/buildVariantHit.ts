@@ -32,16 +32,14 @@ export interface VariantTooltipFields {
 // that moves the highlight box. Typed wider than the fields so the model's own hover slot can be keyed
 // too. A variant-lane hover names no sample and carries no genotype, so its key
 // is the record's id plus the region, which is exactly the identity that lane
-// needs. `surface` tells the frequency band's hover from the lane's over the
-// same record.
+// needs.
 export function variantTooltipKey(f: {
   name: string
   genotype: string
   featureId?: unknown
   displayedRegionIndex?: unknown
-  surface?: unknown
 }) {
-  return `${f.name}:${f.genotype}:${f.featureId}:${f.displayedRegionIndex}:${f.surface}`
+  return `${f.name}:${f.genotype}:${f.featureId}:${f.displayedRegionIndex}`
 }
 
 export function buildVariantHit({

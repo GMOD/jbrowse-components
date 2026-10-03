@@ -4,6 +4,26 @@ import type {
   MafCoverageRegion,
   MafIdentityBars,
 } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
+
+/**
+ * Fixed 0–100% identity Y-axis ticks for the conservation band, inset by the
+ * same `coverageLayout` margin its bars stand in, so the end labels align with
+ * the band edges instead of being clipped at the SVG boundary.
+ */
+export function conservationTicks(conservationHeight: number): YScaleTicks {
+  const { effectiveH, bottom } = coverageLayout(conservationHeight)
+  const yTop = bottom - effectiveH
+  return {
+    yTop,
+    yBottom: bottom,
+    items: [
+      { value: 100, y: yTop, label: '100%' },
+      { value: 50, y: (yTop + bottom) / 2, label: '50%' },
+      { value: 0, y: bottom, label: '0%' },
+    ],
+  }
+}
 
 /** Where the band's value scale runs: its height, and its top inside the band. */
 export function conservationBarBand(conservationHeight: number) {

@@ -4,11 +4,9 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import SvgVariantOverlay from '../../shared/components/SvgVariantOverlay.tsx'
-import { paintMatrixFrequencyBand } from '../components/frequencyBandLayout.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
 
-import type { FrequencyColumns } from '../../shared/frequencyBand.ts'
 import type { RenderSvgBaseModel } from '../../shared/renderSvgUtils.ts'
 import type { MatrixConnectorLinesModel } from './LinesConnectingMatrixToGenomicPosition.tsx'
 import type {
@@ -25,10 +23,9 @@ interface MatrixRenderSvgModel
   placedMatrixData: VariantMatrixUploadData | undefined
   matrixRegions: ReadonlyMap<number, VariantMatrixUploadData>
   matrixBlocks: VariantMatrixRenderBlock[]
-  // the column origin the matrix is shifted to when the content doesn't reach
-  // the left viewport edge, and the pitch the frequency band's columns take
-  columnGeometry: { left: number; columnWidth: number }
-  matrixFrequencyColumns: FrequencyColumns | undefined
+  // only `left` is read here — the column origin the matrix is shifted to when
+  // the content doesn't reach the left viewport edge
+  columnGeometry: { left: number }
 }
 
 export async function renderSvg(
@@ -50,8 +47,7 @@ function VariantMatrixSvgBody({
   // content width its columns, connector lines and hit-test all key off), not
   // the outline-adjusted track width — so it is the right paint width here and
   // the shell's viewport `canvasWidth` only frames the overlay.
-  const { placedMatrixData, renderState, matrixFrequencyColumns } = model
-  const { frequencyHeight } = model.topBands
+  const { placedMatrixData, renderState } = model
   const { canvasWidth: matrixWidth, canvasHeight } = renderState
   // The same origin the live matrix body takes (VariantMatrixDisplayComponent)
   // and the same one the columns are laid out from: when the content doesn't
@@ -76,23 +72,6 @@ function VariantMatrixSvgBody({
           exportSVG
           opts={opts}
         />
-      }
-      frequencyBand={
-        frequencyHeight > 0 && matrixFrequencyColumns ? (
-          <PaintLayer
-            width={canvasWidth}
-            height={frequencyHeight}
-            opts={opts}
-            paint={ctx => {
-              paintMatrixFrequencyBand(
-                ctx,
-                matrixFrequencyColumns,
-                model.columnGeometry,
-                frequencyHeight,
-              )
-            }}
-          />
-        ) : null
       }
     >
       <g transform={`translate(${left})`}>

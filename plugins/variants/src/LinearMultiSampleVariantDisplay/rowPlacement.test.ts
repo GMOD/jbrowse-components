@@ -2,7 +2,6 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
 
 import { HIDDEN_ROW } from '../shared/constants.ts'
-import { CELL_ALT } from '../shared/variantCellStyles.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -51,7 +50,6 @@ function regularCellData(rowNames: string[]): CellDataResult {
         cellColors: Uint32Array.from(rowNames.map((_, r) => 0xff0000 + r)),
         cellShapeTypes: new Uint8Array(numCells),
         cellAltDosage: new Uint8Array(numCells).fill(1),
-        cellCategories: new Uint8Array(numCells).fill(CELL_ALT),
         cellFeatureIndices: new Uint32Array(numCells),
         numCells,
         refCellCount: 0,

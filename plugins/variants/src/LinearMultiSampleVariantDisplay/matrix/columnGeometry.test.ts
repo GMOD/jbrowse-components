@@ -35,7 +35,6 @@ function matrixCellData(starts: number[], refNames?: string[]): CellDataResult {
     cellRowIndices: new Uint32Array(0),
     cellColors: new Uint32Array(0),
     cellAltDosage: new Uint8Array(0),
-    cellCategories: new Uint8Array(0),
     numCells: 0,
     refCellCount: 0,
     numFeatures: starts.length,

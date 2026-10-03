@@ -3,9 +3,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import regularConfigFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import regularStateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
 import {
-  DEFAULT_GENOTYPE_FREQUENCIES_HEIGHT,
   DEFAULT_VARIANT_LANE_HEIGHT,
-  GENOTYPE_FREQUENCIES_BOUNDS,
   MAX_VARIANT_LANE_HEIGHT,
   MIN_VARIANT_LANE_HEIGHT,
   variantTopBandsGeometry,
@@ -33,34 +31,7 @@ function matrixDisplay() {
   })
 }
 
-const frequenciesOff = {
-  showGenotypeFrequencies: false,
-  genotypeFrequenciesHeight: 40,
-}
-
 describe('the band stack', () => {
-  // The frequency band's x is the rows' own: a column index in the matrix,
-  // which only the connector zone above it ties back to a position. Above the
-  // connector zone it would draw index-space bars over genomic-space lines.
-  test('stacks the frequency band directly on the rows', () => {
-    expect(
-      variantTopBandsGeometry({
-        showVariantLane: true,
-        variantLaneLabels: 'none',
-        variantLaneHeight: 20,
-        lineZoneHeight: 30,
-        showGenotypeFrequencies: true,
-        genotypeFrequenciesHeight: 40,
-      }),
-    ).toMatchObject({
-      laneTop: 0,
-      lineZoneTop: 20,
-      frequencyTop: 50,
-      frequencyHeight: 40,
-      bottom: 90,
-    })
-  })
-
   // The lane is the topmost band and the connector zone sits under it, because
   // the lines in that zone END at genomic positions — which is exactly where
   // the lane draws. Reversing them would point the lines at the lane's bottom
@@ -72,7 +43,6 @@ describe('the band stack', () => {
         variantLaneLabels: 'none',
         variantLaneHeight: 20,
         lineZoneHeight: 30,
-        ...frequenciesOff,
       }),
     ).toEqual({
       laneTop: 0,
@@ -80,8 +50,6 @@ describe('the band stack', () => {
       wantsName: false,
       wantsDescription: false,
       lineZoneTop: 20,
-      frequencyTop: 50,
-      frequencyHeight: 0,
       bottom: 50,
     })
   })
@@ -96,7 +64,6 @@ describe('the band stack', () => {
         variantLaneLabels: 'none',
         variantLaneHeight: 20,
         lineZoneHeight: 30,
-        ...frequenciesOff,
       }),
     ).toEqual({
       laneTop: 0,
@@ -104,8 +71,6 @@ describe('the band stack', () => {
       wantsName: false,
       wantsDescription: false,
       lineZoneTop: 0,
-      frequencyTop: 30,
-      frequencyHeight: 0,
       bottom: 30,
     })
   })
@@ -120,7 +85,6 @@ describe('the band stack', () => {
         variantLaneLabels: 'none',
         variantLaneHeight,
         lineZoneHeight: 0,
-        ...frequenciesOff,
       })
 
     expect(bands(0).laneHeight).toBe(MIN_VARIANT_LANE_HEIGHT)
@@ -189,48 +153,6 @@ describe('the lane is the genomic layout alone', () => {
     expect(m.topBands.laneHeight).toBe(0)
     // its own band is untouched, and is still the whole of its rows offset
     expect(m.rowsTopOffset).toBe(m.lineZoneHeight)
-  })
-})
-
-describe('the frequency band', () => {
-  test('both layouts reserve it, out of the rows', () => {
-    for (const d of [regularDisplay(), matrixDisplay()]) {
-      const before = d.availableHeight
-      d.setShowGenotypeFrequencies(true)
-      expect(d.topBands.frequencyHeight).toBe(
-        DEFAULT_GENOTYPE_FREQUENCIES_HEIGHT,
-      )
-      expect(d.topBands.frequencyTop + d.topBands.frequencyHeight).toBe(
-        d.rowsTopOffset,
-      )
-      expect(d.availableHeight).toBe(
-        before - DEFAULT_GENOTYPE_FREQUENCIES_HEIGHT,
-      )
-    }
-  })
-
-  test('declares its 0–100% axis at the reservation, and none while off', () => {
-    const d = regularDisplay()
-    expect(d.axes).toEqual([])
-    d.setShowGenotypeFrequencies(true)
-    d.setGenotypeFrequenciesHeight(60)
-    expect(d.axes).toEqual([
-      expect.objectContaining({
-        domain: [0, 100],
-        height: 60,
-        bandTops: [d.topBands.frequencyTop],
-      }),
-    ])
-  })
-
-  test('a drag lands on the config, clamped', () => {
-    const d = regularDisplay()
-    d.setGenotypeFrequenciesHeight(0)
-    expect(d.configuration.genotypeFrequenciesHeight).toBe(
-      GENOTYPE_FREQUENCIES_BOUNDS.min,
-    )
-    d.setGenotypeFrequenciesHeight(5000)
-    expect(d.genotypeFrequenciesHeight).toBe(GENOTYPE_FREQUENCIES_BOUNDS.max)
   })
 })
 

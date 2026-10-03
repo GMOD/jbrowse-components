@@ -14,9 +14,6 @@ import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.ts
 import VariantConfigProblems from '../../shared/components/VariantConfigProblems.tsx'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import VariantMatrixDisplayComponent from '../matrix/VariantMatrixDisplayComponent.tsx'
-import FrequencyBandOverlay, {
-  frequencyBandSurface,
-} from './FrequencyBandOverlay.tsx'
 import VariantBody, { variantRowsSurface } from './VariantComponent.tsx'
 import VariantLaneOverlay, {
   variantLaneSurface,
@@ -37,7 +34,6 @@ const GenomicPositionsDisplay = observer(
   }) {
     const { model } = props
     const { rowsTopOffset } = model
-    const { frequencyTop } = model.topBands
     const canvasId = useId()
     // the rows panel, so a wheel over the dendrogram beside the canvas is theirs
     const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
@@ -52,7 +48,7 @@ const GenomicPositionsDisplay = observer(
         // frame. Which surface the pointer is over is the same y test
         // `PointerLayer`'s `inRows` makes. The sidebar overlays only the ROWS
         // and owns its own hover there, so its x-gate applies to the rows
-        // branch alone — the bands span the full width above it, and their
+        // branch alone — the lane band spans the full width above it, and its
         // click handlers take no x-gate either.
         onPointerPosition={state => {
           if (!state) {
@@ -68,13 +64,6 @@ const GenomicPositionsDisplay = observer(
                 state.y - rowsTopOffset,
               )
             }
-          } else if (state.y >= frequencyTop) {
-            hoverVariantSurface(
-              model,
-              frequencyBandSurface(model),
-              state.x,
-              state.y - frequencyTop,
-            )
           } else {
             hoverVariantSurface(
               model,
@@ -87,9 +76,6 @@ const GenomicPositionsDisplay = observer(
       >
         {({ canvasRef, mouseTracker }) => (
           <>
-            {/* Under the lane, so the lane's resize handle, which straddles
-                the seam between them, takes the pointer there. */}
-            <FrequencyBandOverlay model={model} />
             <VariantLaneOverlay model={model} />
             {/* The rows and everything positioned against them sit below the
                 bands `topBands` reserved. Same container offset the matrix

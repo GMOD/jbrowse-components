@@ -17,10 +17,7 @@ import {
 
 import { cellColorConfigSchema } from '../shared/cellColorConfigSchema.ts'
 import { MULTI_SAMPLE_VARIANT_DISPLAY } from '../shared/constants.ts'
-import {
-  DEFAULT_GENOTYPE_FREQUENCIES_HEIGHT,
-  DEFAULT_VARIANT_LANE_HEIGHT,
-} from '../shared/variantTopBands.ts'
+import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
 
 /**
  * #config LinearMultiSampleVariantDisplay
@@ -332,30 +329,6 @@ export default function configSchemaFactory() {
         defaultValue: 'auto',
         description:
           "which label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull",
-      },
-      /**
-       * #slot
-       * Draw a band above the genotype rows stacking, per variant, the share
-       * of the drawn rows in each genotype class in the cells' own colours:
-       * carriers from the baseline, missing calls from the top edge, the
-       * reference grey between. Counts the drawn rows, and follows a
-       * recolour without a refetch. Both layouts draw it.
-       */
-      showGenotypeFrequencies: {
-        type: 'boolean',
-        defaultValue: false,
-        description:
-          'draw a band above the genotype rows showing, per variant, the share of the drawn rows in each genotype class',
-      },
-      /**
-       * #slot
-       * Height of the frequency band, spent only while
-       * `showGenotypeFrequencies` is on.
-       */
-      genotypeFrequenciesHeight: {
-        type: 'number',
-        defaultValue: DEFAULT_GENOTYPE_FREQUENCIES_HEIGHT,
-        advanced: true,
       },
     },
     {

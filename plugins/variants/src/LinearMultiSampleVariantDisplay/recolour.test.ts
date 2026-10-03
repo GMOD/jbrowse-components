@@ -1,22 +1,12 @@
-import { createElement } from 'react'
-
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
-import { renderToString } from 'react-dom/server'
 
 import { ALT_HUE, cellFill } from '../shared/cellFill.ts'
-import { CELL_ALT } from '../shared/variantCellStyles.ts'
 import { getCachedABGR } from '../shared/variantWebglUtils.ts'
-import { renderSvg } from './renderSvg.tsx'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { CellHueRead } from '../shared/cellHue.ts'
-
-jest.mock('@jbrowse/core/svg/svgReady', () => ({
-  ...jest.requireActual('@jbrowse/core/svg/svgReady'),
-  awaitSvgReady: () => Promise.resolve(),
-}))
 
 const SAMPLES = ['S0', 'S1', 'S2']
 const AF = { field: 'INFO.AF', scale: 'categorical' as const }
@@ -55,7 +45,6 @@ function cellData(colorRead: CellHueRead): CellDataResult {
         cellColors: new Uint32Array(3).fill(het(ALT_HUE)),
         cellShapeTypes: new Uint8Array(3),
         cellAltDosage: new Uint8Array(3).fill(128),
-        cellCategories: new Uint8Array(3).fill(CELL_ALT),
         cellFeatureIndices: new Uint32Array(3),
         numCells: 3,
         refCellCount: 0,
@@ -179,47 +168,4 @@ test('a constant reads nothing, and a jexl callback is read in the worker', () =
   expect(display.rpcProps()).toEqual(key)
   display.setColor({ value: "jexl:'#123456'" })
   expect(display.rpcProps().color).toBe("jexl:'#123456'")
-})
-
-test('the frequency band stacks the painted cells and follows a recolour without a refetch', () => {
-  const { display, dispose } = setup()
-  const key = display.rpcProps()
-  display.setShowGenotypeFrequencies(true)
-  const band = () => display.regionFrequencyColumns.get(0)!.columns
-  expect([...band().segmentColor]).toEqual([het('#aa0000')])
-  expect([...band().segmentCount]).toEqual([3])
-
-  display.setColor({ ...AF, domain: ['0.5'], range: ['#00aa00'] })
-  expect([...band().segmentColor]).toEqual([het('#00aa00')])
-  expect(display.rpcProps()).toEqual(key)
-  dispose()
-})
-
-test('the export paints the band the screen draws', async () => {
-  const { display, dispose } = setup()
-  const svg = async () =>
-    renderToString(createElement('svg', null, await renderSvg(display, {})))
-  // the het shade of #aa0000, which the three cells and the band's one bar
-  // paint in
-  const cellsAndBand = (markup: string) =>
-    markup.split('fill="rgb(255,33,33)"').length - 1
-  expect(cellsAndBand(await svg())).toBe(3)
-  display.setShowGenotypeFrequencies(true)
-  const markup = await svg()
-  expect(cellsAndBand(markup)).toBe(4)
-  expect(markup).toContain('>100%<')
-  dispose()
-})
-
-// A focus is a fetch input, so the payload that lands can carry a row the
-// display no longer draws; its cell is placed on HIDDEN_ROW and not counted.
-test('the frequency band counts the drawn rows alone', () => {
-  const { display, dispose } = setup()
-  display.setShowGenotypeFrequencies(true)
-  display.setRowFocus(['S0', 'S2'])
-  display.setCellData(cellData({ field: 'INFO.AF' }))
-  const { columns } = display.regionFrequencyColumns.get(0)!
-  expect(columns.drawnRows).toBe(2)
-  expect([...columns.segmentCount]).toEqual([2])
-  dispose()
 })

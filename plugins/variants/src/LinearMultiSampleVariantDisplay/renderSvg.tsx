@@ -8,14 +8,12 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
-import { paintGenomicFrequencyBand } from './components/frequencyBandLayout.ts'
 import {
   VARIANT_MARKS,
   variantInsertionParams,
 } from './components/variantMarks.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
-import type { GenomicFrequencyRegion } from './components/frequencyBandLayout.ts'
 import type {
   VariantRenderBlock,
   VariantRenderState,
@@ -40,7 +38,6 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   // The lane's labels are placed per region, so the export needs the same region
   // list the on-screen pass letters against.
   visibleRegions: VisibleRegion[]
-  regionFrequencyColumns: ReadonlyMap<number, GenomicFrequencyRegion>
 }
 
 export async function renderSvg(
@@ -112,24 +109,6 @@ function VariantSvgBody({
                   fontSize: laneFontSize,
                   palette: exportPalette,
                 },
-              )
-            }}
-          />
-        ) : null
-      }
-      frequencyBand={
-        topBands.frequencyHeight > 0 ? (
-          <PaintLayer
-            width={canvasWidth}
-            height={topBands.frequencyHeight}
-            opts={opts}
-            paint={ctx => {
-              paintGenomicFrequencyBand(
-                ctx,
-                model.regionFrequencyColumns,
-                renderBlocks,
-                canvasWidth,
-                topBands.frequencyHeight,
               )
             }}
           />

@@ -14,8 +14,8 @@ const VARIANT_FIELD_LABELS: Record<string, string> = {
 }
 
 // VariantTooltipFields entries that exist only to carry hit-test/click identity
-// (raw feature id, hover-dedup region and surface) — never user-facing.
-const INTERNAL_VARIANT_KEYS = ['featureId', 'displayedRegionIndex', 'surface']
+// (raw feature id, hover-dedup region) — never user-facing.
+const INTERNAL_VARIANT_KEYS = ['featureId', 'displayedRegionIndex']
 
 export interface TooltipRow {
   key: string

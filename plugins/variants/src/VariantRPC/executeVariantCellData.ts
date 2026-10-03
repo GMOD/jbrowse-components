@@ -264,7 +264,6 @@ export async function executeVariantCellData({
       transferables.add(data.cellColors.buffer)
       transferables.add(data.cellShapeTypes.buffer)
       transferables.add(data.cellAltDosage.buffer)
-      transferables.add(data.cellCategories.buffer)
       transferables.add(data.cellFeatureIndices.buffer)
       transferables.add(data.featureIndexData)
       transferables.add(data.featurePositions.buffer)
@@ -317,7 +316,6 @@ export async function executeVariantCellData({
       cellData.cellRowIndices.buffer,
       cellData.cellColors.buffer,
       cellData.cellAltDosage.buffer,
-      cellData.cellCategories.buffer,
       cellData.featureColorValues.buffer,
     ]
     for (const fd of cellData.featureData) {

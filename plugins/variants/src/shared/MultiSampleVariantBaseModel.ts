@@ -544,22 +544,6 @@ export default function MultiSampleVariantBaseModelF(
         get variantLaneLabels(): ShowLabelsMode {
           return getConf(self, 'variantLaneLabels')
         },
-        /**
-         * #getter
-         * Whether the frequency band, each column's share of the drawn rows by
-         * genotype class, is drawn above the rows. Both layouts paint it.
-         */
-        get showGenotypeFrequencies(): boolean {
-          return getConf(self, 'showGenotypeFrequencies')
-        },
-        /**
-         * #getter
-         * Configured height of the frequency band. Raw: what the band spends
-         * is `topBands.frequencyHeight`.
-         */
-        get genotypeFrequenciesHeight(): number {
-          return getConf(self, 'genotypeFrequenciesHeight')
-        },
 
         /**
          * #getter
@@ -1253,8 +1237,8 @@ export default function MultiSampleVariantBaseModelF(
           // agent-docs/reference/ROW_HEIGHT_AND_FIT.md.
           /**
            * #getter
-           * The bands stacked above the rows — the variant lane, the
-           * connector-line zone and the frequency band — resolved once. Both the layout below and the
+           * The bands stacked above the rows — the variant lane and the
+           * connector-line zone — resolved once. Both the layout below and the
            * painters read this, never their own sum: see `variantTopBands.ts`.
            */
           get topBands() {
@@ -1263,8 +1247,6 @@ export default function MultiSampleVariantBaseModelF(
               variantLaneHeight: self.variantLaneHeight,
               variantLaneLabels: self.variantLaneLabels,
               lineZoneHeight: self.lineZoneHeight,
-              showGenotypeFrequencies: self.showGenotypeFrequencies,
-              genotypeFrequenciesHeight: self.genotypeFrequenciesHeight,
             })
           },
           /**

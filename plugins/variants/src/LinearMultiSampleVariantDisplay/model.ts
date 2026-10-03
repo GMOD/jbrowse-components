@@ -1,4 +1,3 @@
-import { percentAxisTicks } from '@jbrowse/alignments-core'
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
@@ -31,16 +30,13 @@ import {
   MULTI_SAMPLE_VARIANT_DISPLAY,
   clampLineZoneHeight,
 } from '../shared/constants.ts'
-import { countFrequencyColumns } from '../shared/frequencyBand.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { paintCellColors, paintFeatureColors } from '../shared/paintCells.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import {
-  GENOTYPE_FREQUENCIES_BOUNDS,
   VARIANT_LANE_BOUNDS,
   VARIANT_LANE_LABEL_OPTIONS,
 } from '../shared/variantTopBands.ts'
-import { genomicColumnX } from './components/frequencyBandLayout.ts'
 import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
 import { variantCellSpanPx } from './components/variantCellSpan.ts'
 import {
@@ -54,10 +50,8 @@ import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
 
 import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
-import type { FrequencyColumns } from '../shared/frequencyBand.ts'
 import type { Placed } from '../shared/placeVariantRows.ts'
 import type { HoveredCell } from './components/VariantComponent.tsx'
-import type { GenomicFrequencyRegion } from './components/frequencyBandLayout.ts'
 import type { VariantRenderingBackend } from './components/variantRenderingBackendTypes.ts'
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type { MatrixHoveredCell } from './matrix/VariantMatrixComponent.tsx'
@@ -74,7 +68,6 @@ import type {
   HighlightStyle,
 } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { YAxis } from '@jbrowse/display-ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   FeatureDataResult,
@@ -104,12 +97,6 @@ const LANE_FEATURE_HEIGHT = 10
  * normal size.
  */
 const LANE_DISPLAY_MODE = 'compact' as const
-
-/** A frequency band column, `displayedRegionIndex` 0 in the matrix. */
-export interface FrequencyColumnHit {
-  displayedRegionIndex: number
-  column: number
-}
 
 /** No pins in a band: the feature there is the display's, not the lane's. */
 const NO_PINNED_FEATURES: ReadonlySet<string> = new Set()
@@ -165,11 +152,6 @@ export function stateModelFactory(
         hoveredMatrixCell: undefined as MatrixHoveredCell | undefined,
         /**
          * #volatile
-         * The frequency band column under the pointer.
-         */
-        hoveredFrequencyColumn: undefined as FrequencyColumnHit | undefined,
-        /**
-         * #volatile
          * Whether the attached backend draws columns, so the upload sends it
          * the payload it can draw across the swap a layout change makes.
          */
@@ -198,12 +180,6 @@ export function stateModelFactory(
           },
           /**
            * #action
-           */
-          setHoveredFrequencyColumn(hit?: FrequencyColumnHit) {
-            self.hoveredFrequencyColumn = hit
-          },
-          /**
-           * #action
            * The base clears the tooltip; the two highlight boxes go with it.
            */
           clearHoveredFeature() {
@@ -211,7 +187,6 @@ export function stateModelFactory(
             self.hoveredCell = undefined
             self.hoveredLaneMark = undefined
             self.hoveredMatrixCell = undefined
-            self.hoveredFrequencyColumn = undefined
           },
         }
       })
@@ -236,26 +211,6 @@ export function stateModelFactory(
             self,
             'variantLaneHeight',
             clampBandHeight(self.variantLaneHeight, arg, VARIANT_LANE_BOUNDS),
-          )
-        },
-        /**
-         * #action
-         */
-        setShowGenotypeFrequencies(arg: boolean) {
-          setConf(self, 'showGenotypeFrequencies', arg)
-        },
-        /**
-         * #action
-         */
-        setGenotypeFrequenciesHeight(arg: number) {
-          setConf(
-            self,
-            'genotypeFrequenciesHeight',
-            clampBandHeight(
-              self.genotypeFrequenciesHeight,
-              arg,
-              GENOTYPE_FREQUENCIES_BOUNDS,
-            ),
           )
         },
         /**
@@ -388,16 +343,6 @@ export function stateModelFactory(
                     },
                   ]
                 : []),
-              {
-                label: 'Show genotype frequencies',
-                helpText:
-                  "Draw a band above the rows stacking, per variant, the share of the drawn rows in each genotype class in the cells' own colours: carriers from the bottom, no-calls from the top, the reference grey between. Hover a column for its counts",
-                type: 'checkbox' as const,
-                checked: self.showGenotypeFrequencies,
-                onClick: () => {
-                  self.setShowGenotypeFrequencies(!self.showGenotypeFrequencies)
-                },
-              },
               // plugin-canvas's own five choices under its own names, so a
               // reader who has set this on a variant track finds the same menu
               // here
@@ -567,68 +512,6 @@ export function stateModelFactory(
             ? { ...placedMatrixRows, cellColors: matrixCellColors }
             : undefined
         },
-        /**
-         * #getter
-         * Each fetched region's frequency columns, counted over the placed
-         * rows in their painted colours, so a recolour recounts and refetches
-         * nothing. Empty while the band is off.
-         */
-        get regionFrequencyColumns() {
-          const out = new Map<number, GenomicFrequencyRegion>()
-          if (self.topBands.frequencyHeight > 0) {
-            const { placedRegionRows, regionCellColors } = self
-            const drawnRows = self.sources.length
-            for (const [k, placed] of placedRegionRows) {
-              out.set(k, {
-                columns: countFrequencyColumns(
-                  {
-                    ...placed,
-                    cellColors: regionCellColors.get(k) ?? placed.cellColors,
-                  },
-                  placed.featureIdList.length,
-                  drawnRows,
-                ),
-                featurePositions: placed.featurePositions,
-              })
-            }
-          }
-          return out
-        },
-        /**
-         * #getter
-         * The column layout's frequency columns, the counterpart of
-         * `regionFrequencyColumns`.
-         */
-        get matrixFrequencyColumns(): FrequencyColumns | undefined {
-          const { placedMatrixRows, matrixCellColors } = self
-          return self.topBands.frequencyHeight > 0 &&
-            placedMatrixRows &&
-            matrixCellColors
-            ? countFrequencyColumns(
-                { ...placedMatrixRows, cellColors: matrixCellColors },
-                placedMatrixRows.numFeatures,
-                self.sources.length,
-              )
-            : undefined
-        },
-        /**
-         * #getter
-         * The frequency band's fixed 0–100% axis, which the chrome draws.
-         */
-        get axes(): YAxis[] {
-          const { frequencyTop, frequencyHeight } = self.topBands
-          return frequencyHeight > 0
-            ? [
-                {
-                  domain: [0, 100],
-                  scaleType: 'linear',
-                  height: frequencyHeight,
-                  ticks: percentAxisTicks(frequencyHeight),
-                  bandTops: [frequencyTop],
-                },
-              ]
-            : []
-        },
       }))
       .views(self => ({
         /**
@@ -745,36 +628,7 @@ export function stateModelFactory(
             hoveredCell: cell,
             hoveredLaneMark: lane,
             hoveredMatrixCell: matrixCell,
-            hoveredFrequencyColumn: frequencyColumn,
           } = self
-          if (frequencyColumn) {
-            const { frequencyTop: top, frequencyHeight: height } = self.topBands
-            if (!self.atGenomicPositions) {
-              const { left, columnWidth } = self.columnGeometry
-              return [
-                {
-                  left: left + frequencyColumn.column * columnWidth,
-                  width: columnWidth,
-                  top,
-                  height,
-                },
-              ]
-            }
-            const { displayedRegionIndex, column } = frequencyColumn
-            const block = self.renderBlocks.find(
-              b => b.displayedRegionIndex === displayedRegionIndex,
-            )
-            const region = self.placedRegionRows.get(displayedRegionIndex)
-            if (!block || !region) {
-              return []
-            }
-            const { x, width } = genomicColumnX(
-              makeBpMapper(block),
-              region.featurePositions,
-              column,
-            )
-            return [{ left: x, width, top, height }]
-          }
           if (matrixCell) {
             const { left } = self.columnGeometry
             const top = self.rowsTopOffset

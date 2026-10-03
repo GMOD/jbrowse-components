@@ -5,8 +5,6 @@ import {
   covEffectiveHeightPx,
 } from './coverageBandLayout.generated.ts'
 
-import type { YScaleTicks } from '@jbrowse/wiggle-core'
-
 // Where the coverage bars live inside the band: the drawable height, and how
 // far the baseline sits below the band's top edge. Every coverage mark on both
 // backends measures from these two, and they are the shader's own — generated
@@ -23,26 +21,6 @@ export function coverageLayout(coverageHeight: number) {
   return {
     effectiveH: covEffectiveHeightPx(coverageHeight, YSCALEBAR_LABEL_OFFSET),
     bottom: covBottomOffsetPx(coverageHeight, YSCALEBAR_LABEL_OFFSET),
-  }
-}
-
-/**
- * Fixed 0–100% ticks for a band drawn on the coverage box whose bars are a
- * share, such as MAF's conservation band and the variant frequency band, inset
- * by the same margin the bars stand in, so the end labels sit on the band's
- * edges instead of being clipped at the SVG boundary.
- */
-export function percentAxisTicks(height: number): YScaleTicks {
-  const { effectiveH, bottom } = coverageLayout(height)
-  const yTop = bottom - effectiveH
-  return {
-    yTop,
-    yBottom: bottom,
-    items: [
-      { value: 100, y: yTop, label: '100%' },
-      { value: 50, y: (yTop + bottom) / 2, label: '50%' },
-      { value: 0, y: bottom, label: '0%' },
-    ],
   }
 }
 
