@@ -255,7 +255,7 @@ Each setting the session has a menu route, except the last:
 }
 ```
 
-<Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, with only the grouped orthologs drawn. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome fans out over several jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
+<Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, with only the orthologs on significantly paired chromosomes drawn. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome sends bundles to several jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
 
 In the second band, between _Hormiphora_ and the jellyfish, 40% of the grouped
 orthologs sit on a significant pair, against 82–95% in the other bands: each
