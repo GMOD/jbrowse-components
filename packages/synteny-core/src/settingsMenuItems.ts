@@ -14,12 +14,12 @@ import type { MenuItem } from '@jbrowse/core/ui'
 /**
  * #api
  * The Opacity row of a view carrying `SyntenyViewMixin`, reset to that view's
- * own default.
+ * own default. Under a field it moves the field's most opaque end.
  */
 export function opacityMenuItem(model: {
-  alpha: number
-  defaultAlpha: number
-  setAlpha: (value: number) => void
+  opacityLevel: number
+  defaultOpacity: number
+  setOpacity: (value: number) => void
   colorSurface: () => SyntenyColorSurface
 }): MenuItem {
   return makeSizeSubMenu({
@@ -32,30 +32,31 @@ export function opacityMenuItem(model: {
     // fine control near 0, where a small change is perceptually large
     scale: 'cubic',
     format: n => n.toFixed(3),
-    getValue: () => model.alpha,
-    isDefault: model.alpha === model.defaultAlpha,
+    getValue: () => model.opacityLevel,
+    isDefault: model.opacityLevel === model.defaultOpacity,
     onChange: value => {
-      model.setAlpha(value)
+      model.setOpacity(value)
     },
     onReset: () => {
-      model.setAlpha(model.defaultAlpha)
+      model.setOpacity(model.defaultOpacity)
     },
   })
 }
 
 /**
  * #api
- * The Identity fade toggle of a view carrying `SyntenyFadeMixin`.
+ * The Identity fade toggle of a view carrying `SyntenyViewMixin`: `opacity`
+ * read from `identity`, or back to the constant.
  */
 export function identityFadeMenuItem(model: {
-  opacityByIdentity: boolean
-  setOpacityByIdentity: (value: boolean) => void
+  opacityField: string
+  setOpacityField: (field: string) => void
 }): MenuItem {
   return toggleItem(
     'Identity fade',
-    model.opacityByIdentity,
+    model.opacityField === 'identity',
     v => {
-      model.setOpacityByIdentity(v)
+      model.setOpacityField(v ? 'identity' : '')
     },
     {
       helpText:

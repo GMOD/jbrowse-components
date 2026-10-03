@@ -1,14 +1,15 @@
 import { getContrastText } from '@jbrowse/core/ui/palette'
 import {
+  abgrAlpha,
   cssColorToABGR,
   cssColorToRgb,
   packAbgr,
+  withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
 import {
   DEFAULT_RIBBON_COLOR,
   colorSchemes,
   createComparativeColorFunction,
-  identityAlphaByte,
 } from '@jbrowse/synteny-core'
 
 import {
@@ -23,6 +24,7 @@ import type {
   ColorFunctionInputs,
   DeclaredRamp,
   RefNamePosition,
+  SyntenyOpacitySnapshot,
 } from '@jbrowse/synteny-core'
 
 // Location-marker tick: the band's contrast ink at the alpha of the legacy
@@ -77,7 +79,7 @@ export function computeSyntenyColors({
   field,
   trackColor,
   valueColor,
-  opacityByIdentity,
+  opacity,
   drawLocationMarkers,
   groundColor,
   namePosition,
@@ -94,7 +96,8 @@ export function computeSyntenyColors({
   // the view's `color.value`: what the match blocks paint under the default
   // mode in place of the red, when set
   valueColor?: string
-  opacityByIdentity?: boolean
+  // the view's `opacity`, whose field fades each ribbon and its indels
+  opacity?: SyntenyOpacitySnapshot
   // The location-marker toggle, which is a color decision rather than a fetch
   // one — the geometry always carries the ticks. Independent of the colour: markers
   // are the ruler continued through the ribbons, not data, so no scheme paints
@@ -122,6 +125,7 @@ export function computeSyntenyColors({
     attributeRanges,
     hideUnlabelled,
     ramp,
+    opacity,
     defaultColor:
       valueColor === undefined
         ? DEFAULT_RIBBON_COLOR
@@ -131,10 +135,6 @@ export function computeSyntenyColors({
   const marker = drawLocationMarkers
     ? markerColor(groundColor)
     : MARKER_COLOR_HIDDEN
-  // identity fade is a separate channel from the color mode: a track can paint
-  // by strand and still fade by identity, so this is read directly rather than
-  // through the resolved mode
-  const identities = featureData.attributes.identity
   const out = new Uint32Array(instanceCount)
 
   const indelColors: Record<number, number> = {
@@ -147,23 +147,17 @@ export function computeSyntenyColors({
     const indelColor = indelColors[kind]
     if (kind === KIND_MARKER) {
       out[i] = marker
-    } else if (indelColor !== undefined) {
-      // an indel of a hidden ribbon goes with it
-      const f = instanceFeatureIdx[i]!
-      out[i] =
-        hiddenFeatures?.has(f) || (hideUnlabelled && colorFn(f) >>> 24 === 0)
-          ? 0
-          : indelColor
     } else {
       const f = instanceFeatureIdx[i]!
       const base = hiddenFeatures?.has(f) ? 0 : colorFn(f)
-      // a ribbon the colour mode hides stays hidden under the identity fade
-      if (opacityByIdentity && base >>> 24 !== 0) {
-        out[i] =
-          (base & 0x00ffffff) | (identityAlphaByte(identities?.[f]) << 24)
-      } else {
-        out[i] = base
-      }
+      // an indel takes its ribbon's opacity: hidden with it, faded with it
+      out[i] =
+        indelColor === undefined || abgrAlpha(base) === 0
+          ? base
+          : withAbgrAlpha(
+              indelColor,
+              Math.round((abgrAlpha(indelColor) * abgrAlpha(base)) / 255),
+            )
     }
   }
   return out

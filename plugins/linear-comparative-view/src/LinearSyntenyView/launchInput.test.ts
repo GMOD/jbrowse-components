@@ -45,19 +45,17 @@ test('a launch key written on the view object reaches the launch state', async (
 test('any declared property lands natively, named nowhere in the launch path', async () => {
   const view = await open({
     views: ROWS,
-    opacityByIdentity: true,
     drawLocationMarkers: true,
     lodMode: 'coarse',
     overdrawPx: 42,
     cigarMode: 'matches',
-    alpha: 0.55,
+    opacity: { field: 'identity' },
   })
-  expect(view.opacityByIdentity).toBe(true)
   expect(view.drawLocationMarkers).toBe(true)
   expect(view.lodMode).toBe('coarse')
   expect(view.overdrawPx).toBe(42)
   expect(view.cigarMode).toBe('matches')
-  expect(view.alpha).toBe(0.55)
+  expect(view.opacityField).toBe('identity')
   expect(view.launch).toEqual({ views: ROWS })
 })
 

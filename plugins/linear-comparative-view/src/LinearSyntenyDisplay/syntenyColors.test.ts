@@ -146,10 +146,10 @@ test('a ribbon the colour mode hides stays hidden under the identity fade', () =
     field: 'group',
     trackColor: TRACK_COLOR,
     attributeRanges: { group },
-    opacityByIdentity: true,
+    opacity: { field: 'identity' },
     hideUnlabelled: true,
   })
-  expect(abgrAlpha(colors[0]!)).toBeGreaterThan(0x4c)
+  expect(abgrAlpha(colors[0]!)).toBe(Math.round((0.3 + 0.7 * 0.9) * 255))
   expect(abgrAlpha(colors[1]!)).toBe(0)
 })
 
@@ -362,7 +362,7 @@ test('a hidden feature paints its ribbon and indels invisible, and only its own'
     field: 'track',
     trackColor: TRACK_COLOR,
     attributeRanges: {},
-    opacityByIdentity: true,
+    opacity: { field: 'identity' },
     hiddenFeatures: new Set([0]),
   })
   expect(colors[0]).toBe(0)

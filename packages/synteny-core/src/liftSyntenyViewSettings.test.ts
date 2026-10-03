@@ -44,10 +44,11 @@ test('a v4.3.0 display setting lands on the view', () => {
   })
   expect(lifted).toMatchObject({
     color: { field: 'strand' },
-    alpha: 0.6,
+    opacity: 0.6,
     minAlignmentLength: 500,
   })
   expect(lifted).not.toHaveProperty('colorBy')
+  expect(lifted).not.toHaveProperty('alpha')
 })
 
 test("a dotplot's display colorBy lands, and the view's own setting wins", () => {
@@ -61,5 +62,13 @@ test("a dotplot's display colorBy lands, and the view's own setting wins", () =>
       alpha: 0.9,
       tracks: [{ displays: [{ alpha: 0.1 }] }, 'a_track_id'],
     }),
-  ).toMatchObject({ alpha: 0.9 })
+  ).toMatchObject({ opacity: 0.9 })
+})
+
+// share links and figure specs written before the opacity object say alpha
+test("a view's alpha is the opacity object's constant, which wins if written", () => {
+  expect(liftSyntenyViewSettings({ alpha: 0.3 })).toEqual({ opacity: 0.3 })
+  expect(
+    liftSyntenyViewSettings({ alpha: 0.3, opacity: { field: 'identity' } }),
+  ).toEqual({ opacity: { field: 'identity' } })
 })

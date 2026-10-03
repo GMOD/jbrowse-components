@@ -80,14 +80,3 @@ export function fadesThinAt(meanPx: number, latched: boolean) {
  * findable. The linear synteny shader's `WIDTH_FADE_FLOOR` is this number.
  */
 export const WIDTH_FADE_FLOOR = 0.15
-
-/**
- * The alpha byte the identity fade gives an alignment: its identity over the
- * byte's range, floored at 30% so a low-identity block stays perceptible, and
- * full for an alignment of unknown identity.
- */
-export function identityAlphaByte(identity: number | undefined) {
-  return identity === undefined || Number.isNaN(identity)
-    ? 0xff
-    : Math.max(0x4c, Math.round(identity * 255))
-}

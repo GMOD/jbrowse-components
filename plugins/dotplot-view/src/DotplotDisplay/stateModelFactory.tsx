@@ -166,9 +166,11 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * rpcProps/gpuProps split. A colour change recomputes this alone,
        * without re-walking a single CIGAR.
        *
-       * Opacity is NOT read here. It rides the shader's `alpha` uniform (and
-       * `drawDotplotInstances`' param) off `DotplotView.dotplotRenderState`, so
-       * the slider is a redraw, not a recolor — the same split synteny makes.
+       * The opacity level is NOT read here. It rides the shader's `alpha`
+       * uniform (and `drawDotplotInstances`' param) off
+       * `DotplotView.dotplotRenderState`, so the slider is a redraw, not a
+       * recolor — the same split synteny makes. A field's fade is
+       * (`opacityFade`).
        * Baking it in made every drag frame recompute this array, re-pack every
        * instance and re-upload the buffer.
        */
@@ -185,6 +187,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               attributeRanges: this.view.attributeRanges,
               hideUnlabelled: this.view.hideUnlabelled,
               ramp: this.view.colorRamp,
+              opacity: this.view.opacityFade,
             })
           : undefined
       },

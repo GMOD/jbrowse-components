@@ -18,6 +18,7 @@ import {
   resolveContinuousMode,
 } from './colorRamps.ts'
 import { colorSchemes } from './colorUtils.ts'
+import { createOpacityFunction, fadedColor } from './opacityChannel.ts'
 
 import type {
   AttributeRange,
@@ -25,6 +26,7 @@ import type {
   ContinuousMode,
   DeclaredRamp,
 } from './colorRamps.ts'
+import type { SyntenyOpacitySnapshot } from './syntenyOpacityConfigSchema.ts'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 
 /**
@@ -41,10 +43,11 @@ import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
  * had drifted too, in a smaller way: the dotplot rebuilt its 256-entry LUT on
  * every recolor pass where synteny cached one per colormap.
  *
- * Every color here is fully OPAQUE. Plot-wide opacity is a render parameter —
- * a shader uniform, `a * alpha` in Canvas2D — never baked into these bytes; see
- * `DotplotRenderState.alpha`. Baking it in made an opacity drag recompute the
- * whole color array and re-upload the instance buffer once a frame.
+ * The opacity LEVEL is a render parameter — a shader uniform, `a * alpha` in
+ * Canvas2D — never baked into these bytes; see `DotplotRenderState.alpha`.
+ * Baking it in made an opacity drag recompute the whole color array and
+ * re-upload the instance buffer once a frame. What these bytes do carry is a
+ * field's FADE, each feature's share of that level (`opacityChannel`).
  */
 
 // Missing data. NaN is the worker's sentinel on every numeric channel, and a
@@ -306,18 +309,26 @@ export interface ColorFunctionInputs {
  * plain black (`colorSchemes.default.pointColor`, its conventional line color).
  * Everything above it is shared. 'reference' never arrives: each display
  * resolves it to query or target first (its `paintedField`).
+ *
+ * `opacity` fades each colour's alpha byte by its share of the opacity level,
+ * so every view that paints through here fades alike.
  */
-export function createComparativeColorFunction({
-  field,
-  data,
-  trackColor,
-  defaultColor,
-  namePosition,
-  nameColor,
-  attributeRanges,
-  hideUnlabelled = false,
-  ramp,
-}: {
+export function createComparativeColorFunction(
+  args: ComparativeColorArgs & { opacity?: SyntenyOpacitySnapshot },
+): (index: number) => number {
+  const paint = paintFunction(args)
+  const fade = args.opacity
+    ? createOpacityFunction({
+        setting: args.opacity,
+        attributes: args.data.attributes,
+        viewRanges: args.attributeRanges,
+        fetchRanges: args.data.attributeRanges,
+      })
+    : undefined
+  return fade ? index => fadedColor(paint(index), fade(index)) : paint
+}
+
+interface ComparativeColorArgs {
   field: string
   data: ColorFunctionInputs
   // the display's slot in the view's track palette; only read under 'track'
@@ -344,7 +355,19 @@ export function createComparativeColorFunction({
   hideUnlabelled?: boolean
   // the ramp `color` declares over a preset's or a column's own
   ramp?: DeclaredRamp
-}): (index: number) => number {
+}
+
+function paintFunction({
+  field,
+  data,
+  trackColor,
+  defaultColor,
+  namePosition,
+  nameColor,
+  attributeRanges,
+  hideUnlabelled = false,
+  ramp,
+}: ComparativeColorArgs): (index: number) => number {
   switch (field) {
     case '':
       return () => defaultColor

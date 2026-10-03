@@ -22,7 +22,6 @@ import {
   featureAttributeRanges,
   featureColorInputs,
   getMate,
-  identityAlphaByte,
   renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
 
@@ -60,11 +59,6 @@ const DEFAULT_ABGR = cssColorToABGR('rgb(70,130,180)')
 
 function defaultAbgr(value: string | undefined) {
   return value === undefined ? DEFAULT_ABGR : cssColorToABGR(value)
-}
-
-function identityOf(feature: Feature) {
-  const identity: unknown = feature.get('identity')
-  return typeof identity === 'number' ? identity : undefined
 }
 
 function opaqueHex(abgr: number) {
@@ -222,6 +216,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           attributeRanges: view.attributeRanges,
           hideUnlabelled: view.hideUnlabelled,
           ramp: view.colorRamp,
+          opacity: view.opacityFade,
         })
         return new Map(features.map((f, i) => [f.id(), color(i)]))
       },
@@ -236,14 +231,12 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the fill opacity every resting ribbon draws at: the view's `alpha`,
-       * times the alpha of a `color.value` every ribbon paints
+       * the fill opacity every resting ribbon draws at, the view's
+       * `opacityLevel`; a ribbon's own colour alpha (a `color.value`'s, an
+       * `opacity` field's fade) rides its lane
        */
       get ribbonOpacity() {
-        const { view } = self
-        return view.colorField === ''
-          ? (view.alpha * abgrAlpha(defaultAbgr(view.colorValue))) / 255
-          : view.alpha
+        return self.view.opacityLevel
       },
       /**
        * #getter
@@ -312,13 +305,12 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the drawn alignments as the ribbon mark's lanes, each in its fill at
-       * the identity fade's alpha
+       * the drawn alignments as the ribbon mark's lanes, each in its colour
+       * at that colour's own alpha
        */
       get ribbonLanes(): RibbonLanes {
         const feet = this.ribbonFeet
         const colors = this.ribbonColors
-        const { opacityByIdentity } = self.view
         const picked: number[] = []
         for (const feature of this.drawnFeatures ?? []) {
           const i = feet.index.get(feature)
@@ -356,10 +348,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           lanes.xGaps[k] = feet.xGaps[i]!
           lanes.yGaps[k] = feet.yGaps[i]!
           lanes.strand[k] = feet.strand[i]!
-          lanes.color[k] = withAbgrAlpha(
-            colors.get(id) ?? DEFAULT_ABGR,
-            opacityByIdentity ? identityAlphaByte(identityOf(feature)) : 255,
-          )
+          lanes.color[k] = colors.get(id) ?? DEFAULT_ABGR
         })
         return lanes
       },
@@ -465,17 +454,16 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       shapeAt(i: number): RibbonShape {
         const { ribbonLanes: lanes, ribbonFill } = this
         const feature = lanes.features[i]!
-        const { opacityByIdentity, chordThinFadeFloor } = self.view
+        const { chordThinFadeFloor } = self.view
         return {
           kind: 'ribbon',
           feature,
           angles: ribbonAnglesAt(lanes, i, self.figureStage),
           fill: ribbonFill(feature),
           opacity:
-            ribbonFadeAt(lanes, i, self.figureStage, chordThinFadeFloor) *
-            (opacityByIdentity
-              ? identityAlphaByte(identityOf(feature)) / 255
-              : 1),
+            (ribbonFadeAt(lanes, i, self.figureStage, chordThinFadeFloor) *
+              abgrAlpha(lanes.color[i]!)) /
+            255,
         }
       },
       /**
@@ -519,7 +507,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       get legendColor(): string | undefined {
         const { view } = self
         return view.colorField === ''
-          ? atAlpha(defaultAbgr(view.colorValue), view.alpha)
+          ? atAlpha(defaultAbgr(view.colorValue), view.opacityLevel)
           : undefined
       },
       /**

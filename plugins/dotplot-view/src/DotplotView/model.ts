@@ -221,7 +221,7 @@ export default function stateModelFactory(pm: PluginManager) {
         RenderLifecycleMixin(),
         DiagonalizeProgressMixin(),
         ImportFormSyntenyMixin(),
-        SyntenyViewMixin({ defaultAlpha: DEFAULT_ALPHA }),
+        SyntenyViewMixin({ defaultOpacity: DEFAULT_ALPHA }),
         types.model({
           /**
            * #property
@@ -824,7 +824,7 @@ export default function stateModelFactory(pm: PluginManager) {
             bpPerPxHInv,
             bpPerPxVInv,
             lineWidth: self.lineWidth,
-            alpha: self.alpha,
+            alpha: self.opacityLevel,
             canvasWidth: this.viewWidth,
             canvasHeight: viewHeight,
           }

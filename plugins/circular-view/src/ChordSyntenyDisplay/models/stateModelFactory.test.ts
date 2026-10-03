@@ -172,7 +172,7 @@ test("the view's color paints each ribbon, at the view's alpha", async () => {
   expect(display.ribbonFill(feature)).toBe(ideogram('volvox2', 'ctgB'))
   expect(display.ribbonOpacity).toBe(0.45)
   view.setColorField('strand')
-  view.setAlpha(0.5)
+  view.setOpacity(0.5)
   expect(display.ribbonFill(feature)).toBe('#0000ff')
   expect(display.ribbonOpacity).toBe(0.5)
 }, 20000)

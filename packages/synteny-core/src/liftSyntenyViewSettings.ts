@@ -27,6 +27,18 @@ function liftColorBy(snap: Snap) {
   }
 }
 
+// `alpha` is the constant of the `opacity` object
+function liftAlpha(snap: Snap) {
+  if (!('alpha' in snap)) {
+    return snap
+  }
+  const { alpha, ...rest } = snap
+  return {
+    ...rest,
+    opacity: rest.opacity ?? (typeof alpha === 'number' ? alpha : undefined),
+  }
+}
+
 // the displays a v4.3.0 session held these settings on: each level's tracks on
 // a linear synteny view, the view's own tracks on a dotplot
 function displaySnapshots(snap: Snap) {
@@ -51,7 +63,7 @@ const DISPLAY_SETTINGS = ['colorBy', 'alpha', 'minAlignmentLength'] as const
  * The view keys `liftSyntenyViewSettings` converts, which the two views name
  * as their launch keys' `passThrough` so a validator accepts them.
  */
-export const LIFTED_VIEW_KEYS = ['colorBy'] as const
+export const LIFTED_VIEW_KEYS = ['colorBy', 'alpha'] as const
 
 /**
  * #api
@@ -78,10 +90,10 @@ function liftDisplaySettings(snap: Snap) {
  * #api
  * A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
  * view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
- * synteny display, and `colorBy` lands as `color`. Launch links the genomes
- * portal handed out carry the mode string on the view itself, which lifts the
- * same way.
+ * synteny display, `colorBy` lands as `color` and `alpha` as `opacity`.
+ * Launch links the genomes portal handed out carry the mode string on the
+ * view itself, which lifts the same way.
  */
 export function liftSyntenyViewSettings(snap: Snap | undefined) {
-  return snap ? liftColorBy(liftDisplaySettings(snap)) : snap
+  return snap ? liftAlpha(liftColorBy(liftDisplaySettings(snap))) : snap
 }

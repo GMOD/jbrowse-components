@@ -134,7 +134,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       BaseViewModel,
       DiagonalizeProgressMixin(),
       ImportFormSyntenyMixin(),
-      SyntenyViewMixin({ defaultAlpha: DEFAULT_ALPHA }),
+      SyntenyViewMixin({ defaultOpacity: DEFAULT_ALPHA }),
       SyntenyFadeMixin(),
       types.model({
         /**

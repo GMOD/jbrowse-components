@@ -10,21 +10,15 @@ export type FadeThinMode = 'auto' | 'on' | 'off'
 /**
  * #stateModel SyntenyFadeMixin
  *
- * The two fades a view drawing synteny ribbons offers, whatever the colour
- * mode: an alignment by its sequence identity, and a sub-pixel alignment by
- * its on-screen width, so a dense whole-genome picture keeps its density
- * instead of saturating. The linear synteny view and the circular view both
- * compose it; a view supplies `autoFadeWidthPx`.
+ * The fade a view drawing synteny ribbons offers whatever the colour mode: a
+ * sub-pixel alignment by its on-screen width, so a dense whole-genome picture
+ * keeps its density instead of saturating. A fade by the data is the
+ * `opacity` object's (`SyntenyColorsMixin`). The linear synteny view and the
+ * circular view both compose it; a view supplies `autoFadeWidthPx`.
  */
 export function SyntenyFadeMixin() {
   return types
     .model('SyntenyFadeMixin', {
-      /**
-       * #property
-       * Fade alignment blocks by per-feature identity (lower identity = more
-       * transparent), whatever the color mode.
-       */
-      opacityByIdentity: types.stripDefault(types.boolean, false),
       /**
        * #property
        * Fade a sub-pixel-thin ribbon's opacity by its on-screen width, so an
@@ -72,12 +66,6 @@ export function SyntenyFadeMixin() {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setOpacityByIdentity(arg: boolean) {
-        self.opacityByIdentity = arg
-      },
       /**
        * #action
        */

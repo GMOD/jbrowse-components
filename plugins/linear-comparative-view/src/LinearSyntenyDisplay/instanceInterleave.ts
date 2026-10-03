@@ -72,8 +72,8 @@ export function interleaveInstances(data: SyntenyInstanceData) {
   return buf
 }
 
-// How the renderer caches the buffer above and recolors it: a colorBy /
-// opacityByIdentity toggle produces new `colors` over unchanged geometry, so
+// How the renderer caches the buffer above and recolors it: a `color` or
+// `opacity` field change produces new `colors` over unchanged geometry, so
 // patching the single 4-byte color field per instance skips re-packing the
 // other 11 lanes. The GPU re-upload still happens (the HAL has no
 // partial-buffer update), but the dominant CPU interleave is avoided.

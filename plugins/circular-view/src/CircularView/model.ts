@@ -340,7 +340,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       DiagonalizeProgressMixin(),
       ImportFormSyntenyMixin(),
       SyntenyColorsMixin({
-        defaultAlpha: DEFAULT_RIBBON_ALPHA,
+        defaultOpacity: DEFAULT_RIBBON_ALPHA,
         defaultColorField: 'query',
       }),
       SyntenyFadeMixin(),

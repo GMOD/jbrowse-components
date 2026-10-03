@@ -156,7 +156,6 @@ export {
   WIDTH_FADE_FLOOR,
   cappedMeanWidthPx,
   fadesThinAt,
-  identityAlphaByte,
 } from './fadeThin.ts'
 export { SyntenyFadeMixin, installAutoFadeLatch } from './SyntenyFadeMixin.ts'
 export type { FadeThinMode, SyntenyFadeModel } from './SyntenyFadeMixin.ts'
@@ -177,6 +176,21 @@ export type {
   SyntenyColorScale,
   SyntenyColorSnapshot,
 } from './syntenyColorConfigSchema.ts'
+export {
+  SYNTENY_OPACITY_SCALES,
+  syntenyOpacityConfigSchema,
+} from './syntenyOpacityConfigSchema.ts'
+export type {
+  SyntenyOpacityScale,
+  SyntenyOpacitySnapshot,
+} from './syntenyOpacityConfigSchema.ts'
+export {
+  DEFAULT_NUMERIC_OPACITY_RANGE,
+  createOpacityFunction,
+  opacityFadeOf,
+  opacityLevel,
+  opacityMapsField,
+} from './opacityChannel.ts'
 export { paintedField, syntenyColorFor } from './syntenyColorBy.ts'
 // the palette button itself, not just the menu inside it — the two headers had a
 // copy each and only one of them said which mode it was in

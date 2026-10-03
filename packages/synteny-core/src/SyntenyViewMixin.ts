@@ -14,11 +14,15 @@ import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
  * the level-of-detail tier every track draws at, and a colour key the reader
  * closes per mode.
  */
-export function SyntenyViewMixin({ defaultAlpha }: { defaultAlpha: number }) {
+export function SyntenyViewMixin({
+  defaultOpacity,
+}: {
+  defaultOpacity: number
+}) {
   return types
     .compose(
       'SyntenyViewMixin',
-      SyntenyColorsMixin({ defaultAlpha }),
+      SyntenyColorsMixin({ defaultOpacity }),
       types.model({
         /**
          * #property

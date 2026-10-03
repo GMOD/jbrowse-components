@@ -47,7 +47,7 @@ test('a launch key written on the view object reaches the launch state', async (
 test('any declared property lands natively, named nowhere in the launch path', async () => {
   const view = await open({
     views: AXES,
-    alpha: 0.55,
+    opacity: 0.55,
     drawCigar: false,
     lineWidth: 3,
     lockAspectRatio: false,
@@ -55,7 +55,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
     color: { field: 'query' },
     minAlignmentLength: 1000,
   })
-  expect(view.alpha).toBe(0.55)
+  expect(view.opacityLevel).toBe(0.55)
   expect(view.drawCigar).toBe(false)
   expect(view.lineWidth).toBe(3)
   expect(view.lockAspectRatio).toBe(false)

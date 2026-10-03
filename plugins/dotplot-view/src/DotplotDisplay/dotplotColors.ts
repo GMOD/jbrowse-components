@@ -10,6 +10,7 @@ import type {
   AttributeRange,
   DeclaredRamp,
   RefNamePosition,
+  SyntenyOpacitySnapshot,
 } from '@jbrowse/synteny-core'
 
 // The color function itself is `createComparativeColorFunction` in
@@ -36,6 +37,7 @@ export function createDotplotColorFunction(
   hideUnlabelled?: boolean,
   valueColor?: string,
   ramp?: DeclaredRamp,
+  opacity?: SyntenyOpacitySnapshot,
 ) {
   return createComparativeColorFunction({
     field,
@@ -45,6 +47,7 @@ export function createDotplotColorFunction(
     attributeRanges,
     hideUnlabelled,
     ramp,
+    opacity,
     defaultColor:
       valueColor === undefined ? POINT_COLOR : cssColorToABGR(valueColor),
   })
@@ -54,8 +57,9 @@ export function createDotplotColorFunction(
 // feature map the geometry builder emitted plus the current palette. This is the
 // gpuProps half of the rpcProps/gpuProps split — a colorBy change reruns only
 // this, leaving the positions (and the CIGAR walk that produced them)
-// untouched. Opacity is deliberately NOT an input: it is a render parameter, so
-// the slider redraws without touching this array at all.
+// untouched. The opacity LEVEL is deliberately NOT an input: it is a render
+// parameter, so the slider redraws without touching this array at all. A
+// field's fade is, as the view's `opacityFade`.
 export function computeDotplotColors({
   instanceData,
   rpcData,
@@ -66,6 +70,7 @@ export function computeDotplotColors({
   attributeRanges,
   hideUnlabelled,
   ramp,
+  opacity,
 }: {
   instanceData: DotplotInstanceData
   rpcData: DotplotRpcData
@@ -84,6 +89,8 @@ export function computeDotplotColors({
   hideUnlabelled?: boolean
   // the ramp the view's `color` declares
   ramp?: DeclaredRamp
+  // the view's `opacityFade`
+  opacity?: SyntenyOpacitySnapshot
 }) {
   const { instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createDotplotColorFunction(
@@ -95,6 +102,7 @@ export function computeDotplotColors({
     hideUnlabelled,
     valueColor,
     ramp,
+    opacity,
   )
   const out = new Uint32Array(instanceCount)
   for (let i = 0; i < instanceCount; i++) {

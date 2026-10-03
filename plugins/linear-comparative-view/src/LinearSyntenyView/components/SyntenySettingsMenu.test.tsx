@@ -265,7 +265,7 @@ test('a slider row captions the value it is set to', async () => {
   fireEvent.click(screen.getByTestId('cascading-submenu-opacity'))
   expect(await screen.findByText('Opacity: 0.200')).toBeTruthy()
   act(() => {
-    view.setAlpha(0.5)
+    view.setOpacity(0.5)
   })
   expect(screen.getByText('Opacity: 0.500')).toBeTruthy()
 })

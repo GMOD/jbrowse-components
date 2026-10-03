@@ -83,11 +83,10 @@ describe('LinearSyntenyViewInit type', () => {
     const init: LinearSyntenyViewInit = {
       views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
       drawLocationMarkers: true,
-      opacityByIdentity: true,
       overdrawPx: 500,
       cigarMode: 'matches',
       lodMode: 'coarse',
-      alpha: 0.4,
+      opacity: { value: 0.4 },
     }
     expect(init.cigarMode).toBe('matches')
   })
@@ -95,8 +94,8 @@ describe('LinearSyntenyViewInit type', () => {
   test('rejects a misspelled property and a wrong value type', () => {
     // @ts-expect-error drawCurvez is not a property of the view
     const typo: LinearSyntenyViewInit = { views: [], drawCurvez: true }
-    // @ts-expect-error alpha is a number
-    const wrongType: LinearSyntenyViewInit = { views: [], alpha: 'loud' }
+    // @ts-expect-error overdrawPx is a number
+    const wrongType: LinearSyntenyViewInit = { views: [], overdrawPx: 'loud' }
     expect([typo, wrongType]).toHaveLength(2)
   })
 

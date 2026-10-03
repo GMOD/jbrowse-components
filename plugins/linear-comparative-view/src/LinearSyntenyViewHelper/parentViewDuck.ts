@@ -6,6 +6,7 @@ import type {
   ComparativeSurface,
   DeclaredRamp,
   LodMode,
+  SyntenyOpacitySnapshot,
 } from '@jbrowse/synteny-core'
 
 // The containing LinearSyntenyView, as seen from a level and from the synteny
@@ -55,9 +56,10 @@ export interface ParentViewDuck extends FollowAnchorHost {
   // rather than per display on purpose: one opacity slider, one CIGAR mode and
   // one LOD tier govern every level, so a display reads them here rather than
   // carrying its own.
-  alpha: number
+  opacityLevel: number
+  opacityFade: SyntenyOpacitySnapshot | undefined
+  opacityField: string
   fadeThinAlignments: boolean
-  opacityByIdentity: boolean
   drawCIGAR: boolean
   drawCIGARMatchesOnly: boolean
   drawCurves: boolean

@@ -361,7 +361,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           ? culledRibbonMateData(
               instanceData,
               featureData,
-              this.view.hideUnlabelled || self.hiddenFeatureIds.length > 0
+              this.view.hideUnlabelled ||
+                this.view.opacityField !== '' ||
+                self.hiddenFeatureIds.length > 0
                 ? this.computedColors
                 : undefined,
             )
@@ -595,7 +597,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        */
       get computedColors() {
         const { instanceData, featureData } = self
-        const { opacityByIdentity } = this.view
         if (!instanceData || !featureData) {
           return undefined
         }
@@ -605,7 +606,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           field: this.paintedField,
           trackColor: this.trackColor,
           valueColor: this.view.colorValue,
-          opacityByIdentity,
+          opacity: this.view.opacityFade,
           drawLocationMarkers: this.view.drawLocationMarkers,
           groundColor: this.groundColor,
           namePosition: this.paintedRefNamePosition,
@@ -899,7 +900,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         return {
           yTop: 0,
           height: this.height,
-          alpha: view.alpha,
+          alpha: view.opacityLevel,
           fadeThinAlignments: view.fadeThinAlignments,
           minAlignmentLength: view.minAlignmentLength,
           hoveredFeatureId: this.hoveredFeatureId,

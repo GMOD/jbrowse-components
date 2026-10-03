@@ -175,11 +175,13 @@ test('strand keys its two colours', async () => {
   ).toEqual(['forward', 'reverse'])
 }, 40000)
 
+// the fade runs from 0.3 of the level at identity 0 to the level at 1, so an
+// alignment at 0.5 draws at 0.65 of it
 test('the identity fade reaches the ribbon’s alpha', async () => {
   const { circle, display } = await launch({})
   expect(display.ribbonLanes.color[0]! >>> 24).toBe(255)
-  circle.setOpacityByIdentity(true)
-  expect(display.ribbonLanes.color[0]! >>> 24).toBe(Math.round(0.5 * 255))
+  circle.setOpacityField('identity')
+  expect(display.ribbonLanes.color[0]! >>> 24).toBe(Math.round(0.65 * 255))
 }, 40000)
 
 describe('a hovered band', () => {
