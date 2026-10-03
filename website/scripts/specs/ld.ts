@@ -1099,4 +1099,68 @@ export const ldSpecs: ScreenshotSpec[] = [
       },
     ],
   },
+  // Each population's allele frequency over all of its unrelated samples, from
+  // scripts/build_lct_population_af.sh, which prints the rs4988235 row the
+  // highlighted bars should match. The window is the MCM6 stretch around that
+  // variant, narrow enough that each SNV draws as its own bar.
+  {
+    mode: 'url',
+    name: 'ld/lct_population_af',
+    url: `${HG38_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [pageTrack(LD_HUMAN_DOC, 'kgp_lct_population_af')],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr2:135,844,000-135,858,000',
+          highlight: [
+            {
+              refName: 'chr2',
+              start: 135_851_075,
+              end: 135_851_076,
+              assemblyName: 'hg38',
+            },
+          ],
+          tracks: [
+            {
+              trackId: 'hg38-ncbiRefSeqCurated',
+              type: 'LinearBasicDisplay',
+              height: 60,
+              showOnlyGenes: true,
+            },
+            {
+              trackId: 'hg38-clinvarMain',
+              type: 'LinearBasicDisplay',
+              height: 56,
+              filter: [
+                "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
+              ],
+            },
+            {
+              trackId: 'kgp_lct_population_af',
+              type: 'LinearWiggleDisplay',
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    viewportHeight: 760,
+    // the highlight is one base, a pixel wide at this zoom, so the label names
+    // the column it marks
+    annotations: [
+      {
+        type: 'text',
+        text: 'rs4988235',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: 'kgp_lct_population_af',
+          locus: 'chr2:135,851,076',
+          fracY: 0.04,
+        },
+        dx: 150,
+        dy: -30,
+      },
+    ],
+  },
 ]

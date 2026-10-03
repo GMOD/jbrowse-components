@@ -16,6 +16,7 @@ view we:
 - read the edges of the block against Fst and a genetic map
 - compare the swept population's triangle against the pooled release
 - cluster a haplotype matrix into the block the triangle draws
+- draw each population's allele frequency across the block
 
 ## Prerequisites
 
@@ -53,6 +54,9 @@ called natively on GRCh38.
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz
 - the six-population slice the haplotype matrix reads:
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz
+- one bigWig of allele frequency per population, built below:
+  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_CEU.bw, and the same name
+  ending in FIN, PJL, TSI, YRI and CHB
 
 The gene, ClinVar and recombination lanes are tracks of the hosted UCSC hg38
 [hub](/docs/user_guides/hub_url).
@@ -273,6 +277,106 @@ population:
 bcftools view -S sub.samples --force-samples -Oz -o lct_1kg38_chr2_6pop.vcf.gz pooled.vcf.gz
 ```
 
+## Allele frequency per population
+
+Twenty-five people from each population are enough to sort the haplotypes and
+too few to read a frequency off. `bcftools +fill-tags` computes each
+population's allele frequency over all of its unrelated samples and writes it
+into one INFO field per population. Its `-S` table holds a sample ID and a group
+on each line, tab-separated, so the same command takes populations,
+superpopulations, or cases and controls:
+
+<!-- from: scripts/build_lct_population_af.sh -->
+
+```bash
+# -S gives fill-tags the groups, and -t AF writes AF_<group> for each
+# norm -d both keeps one record per position, so no two bedGraph intervals
+# overlap
+bcftools view -m2 -M2 -v snps -Ou pooled.vcf.gz |
+  bcftools norm -d both -Ou |
+  bcftools +fill-tags -Ou -- -S pops.txt -t AF |
+  bcftools query \
+    -f '%CHROM\t%POS0\t%END\t%AF_CEU\t%AF_FIN\t%AF_PJL\t%AF_TSI\t%AF_YRI\t%AF_CHB\n' \
+    > af.tsv
+
+# one bedGraph per population, columns 4 to 9 of af.tsv, then a bigWig each
+printf 'chr2\t242193529\n' > hg38.chrom.sizes
+column=4
+for pop in CEU FIN PJL TSI YRI CHB; do
+  cut -f 1-3,$column af.tsv > "af_$pop.bedgraph"
+  bedGraphToBigWig "af_$pop.bedgraph" hg38.chrom.sizes "lct_1kg38_chr2_af_$pop.bw"
+  column=$((column + 1))
+done
+```
+
+A [`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track) draws the
+six bigWigs as a row each, on one axis from 0 to 1:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "kgp_lct_population_af",
+  "name": "Allele frequency per population, 1000 Genomes unrelated samples",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "source": "CEU",
+        "color": "#4e79a7",
+        "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_CEU.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "source": "FIN",
+        "color": "#e15759",
+        "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_FIN.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "source": "PJL",
+        "color": "#76b7b2",
+        "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_PJL.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "source": "TSI",
+        "color": "#59a14f",
+        "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_TSI.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "source": "YRI",
+        "color": "#edc948",
+        "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_YRI.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "source": "CHB",
+        "color": "#f28e2b",
+        "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_CHB.bw"
+      }
+    ]
+  },
+  "displayDefaults": {
+    "height": 300,
+    "scales": { "y": { "domainMin": 0, "domainMax": 1 } }
+  }
+}
+```
+
+Open it over `chr2:135,844,000-135,858,000`, the stretch of _MCM6_ that holds
+`rs4988235`:
+
+<Figure src="/img/ld/lct_population_af.png" caption="RefSeq genes, ClinVar's lactase-persistence variants, and the alternate allele frequency of each biallelic SNV in six 1000 Genomes populations, a row each on one axis, across MCM6. The highlight marks rs4988235, whose bar falls from CEU to TSI and is absent in YRI and CHB."/>
+
+- At `rs4988235` the allele is common in the two northern European populations
+  and rarer in PJL and TSI, the spread
+  [Bersaglieri et al. (2004)](https://doi.org/10.1086/421051) describe.
+- The YRI and CHB rows carry common variants elsewhere in the window, at sites
+  where the other four are low.
+
 ## Reproduce it end to end
 
 [`build_lct_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_ld.sh)
@@ -319,6 +423,18 @@ the subsample.
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_haploblock.sh
 bash build_lct_haploblock.sh          # builds ./lct_haploblock_build
+```
+
+The [per-population frequencies](#allele-frequency-per-population) are a fourth
+file, from
+[`build_lct_population_af.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_population_af.sh).
+It reads the pooled slice, takes every unrelated sample of the six populations,
+and prints the frequencies at `rs4988235` so the bars can be checked against
+them.
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_population_af.sh
+bash build_lct_population_af.sh       # builds ./lct_population_af_build
 ```
 
 ## A bigger span
