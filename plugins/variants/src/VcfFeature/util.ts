@@ -52,14 +52,18 @@ export function getEnd(variant: Variant, start: number) {
       return end
     }
     if (Array.isArray(INFO.SVLEN)) {
-      // insertions don't consume reference, so their span is 1; drop any
-      // missing/non-numeric SVLEN entries (e.g. '.') rather than let NaN leak
-      const lens = INFO.SVLEN.map((len, i) =>
-        ALT[i]?.startsWith('<INS') ? 1 : parseFiniteNumber(len),
-      ).filter(v => v !== undefined)
-      const span = lens.length > 0 ? max(lens.map(Math.abs)) : 0
-      if (span > 0) {
-        return start + span
+      // the END the spec computes, |SVLEN| bases past POS, as core's
+      // spannedEnd places the mate; an insertion consumes no reference, so its
+      // END is POS. Missing ('.') and zero lengths drop out.
+      const ends = INFO.SVLEN.map((len, i) => {
+        if (ALT[i]?.startsWith('<INS')) {
+          return start + 1
+        }
+        const n = parseFiniteNumber(len)
+        return n ? start + 1 + Math.abs(n) : undefined
+      }).filter(v => v !== undefined)
+      if (ends.length > 0) {
+        return max(ends)
       }
     }
   }

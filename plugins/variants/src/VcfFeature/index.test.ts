@@ -75,8 +75,21 @@ test('DEL feature with SVLEN when END not available', () => {
   )
 
   expect(f.get('start')).toEqual(99)
-  expect(f.get('end')).toEqual(599)
+  expect(f.get('end')).toEqual(600)
   expect(f.get('description')).toEqual('<DEL> 500bp')
+})
+
+test('SVLEN alone spans what the END the spec computes from it would', () => {
+  const svlen = createFeature(
+    'chr2\t321682\t.\tT\t<DEL>\t6\tPASS\tSVTYPE=DEL;SVLEN=-205',
+  )
+  const end = createFeature(
+    'chr2\t321682\t.\tT\t<DEL>\t6\tPASS\tSVTYPE=DEL;END=321887;SVLEN=-205',
+  )
+
+  expect(svlen.get('start')).toEqual(end.get('start'))
+  expect(svlen.get('end')).toEqual(end.get('end'))
+  expect(svlen.get('end')).toEqual(321887)
 })
 
 test('DUP feature with SVLEN shows size', () => {
@@ -111,7 +124,7 @@ test('DEL with missing END falls back to SVLEN', () => {
     'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tEND=.;SVLEN=500;SVTYPE=DEL',
   )
 
-  expect(f.get('end')).toEqual(599)
+  expect(f.get('end')).toEqual(600)
 })
 
 test('symbolic END at or before POS falls through instead of inverting the span', () => {
@@ -128,7 +141,7 @@ test('bogus END still falls back to SVLEN', () => {
     'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tEND=50;SVLEN=500;SVTYPE=DEL',
   )
 
-  expect(f.get('end')).toEqual(599)
+  expect(f.get('end')).toEqual(600)
 })
 
 test('zero SVLEN falls back to REF length', () => {
