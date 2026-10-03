@@ -25,6 +25,9 @@ export const JexlFilterDialog = lazy(
 export const SetColorDialog = lazy(
   () => import('./components/SetColorDialog.tsx'),
 )
+export const CellSolidColorDialog = lazy(
+  () => import('./components/CellSolidColorDialog.tsx'),
+)
 export const CellColorFieldDialog = lazy(
   () => import('./components/CellColorFieldDialog.tsx'),
 )

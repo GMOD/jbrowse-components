@@ -271,6 +271,33 @@ describe('Color by... > Strand', () => {
   })
 })
 
+describe('Color by... > Solid color...', () => {
+  const ticked = (display: { trackMenuItems: () => MenuItem[] }) =>
+    subMenuOf(display.trackMenuItems(), 'Color by...')
+      .filter(item => 'checked' in item && item.checked)
+      .map(item => ('label' in item ? item.label : ''))
+
+  it('is the one ticked row while a constant colour paints', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    expect(ticked(display)).toEqual(['Default'])
+    display.setFeatureColor('#ff0000')
+    expect(ticked(display)).toEqual(['Solid color...'])
+    display.colorByField('strand')
+    expect(ticked(display)).toEqual(['Strand'])
+  })
+
+  it('paints the constant kept beside a field again', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setFeatureColor('#ff0000')
+    display.colorByField('strand')
+    display.pickSolidColor()
+    expect(display.colorByMode).toBe('solid')
+    expect(display.colorEncoding).toBe('#ff0000')
+  })
+})
+
 describe('the Default color rung', () => {
   it('is what an unset color slot reads as', () => {
     const { createDisplay } = createTestEnvironment()
@@ -289,6 +316,20 @@ describe('the Default color rung', () => {
     item.onClick()
     expect(display.colorByMode).toBe('default')
     expect(display.colorField).toBeUndefined()
+  })
+
+  it('drops a solid colour, so Solid color... loses the tick to Default', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setFeatureColor('#ff0000')
+    expect(display.colorByMode).toBe('solid')
+    ;(
+      find(subMenuOf(display.trackMenuItems(), 'Color by...'), 'Default') as {
+        onClick: () => void
+      }
+    ).onClick()
+    expect(display.colorByMode).toBe('default')
+    expect(display.colorSettings.value).toBeUndefined()
   })
 
   it("returns to the track's own color after a field painted over it", () => {

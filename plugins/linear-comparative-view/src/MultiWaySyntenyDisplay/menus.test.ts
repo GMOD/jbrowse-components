@@ -244,17 +244,27 @@ test('Color by heads the gene modes and the ribbon modes', () => {
   expect(calls).toEqual(['gene color cluster'])
 })
 
+// The Genes block of Color by..., between its header and the Ribbons one
+function genesOf(model: Parameters<typeof multiWayTrackMenuItems>[0]) {
+  const colorBy = subMenuOf(multiWayTrackMenuItems(model)[1])
+  return colorBy.slice(1, labelsOf(colorBy).indexOf('Ribbons'))
+}
+
 test('the gene modes name a configured field and offer the pin under it', () => {
   const { model, calls } = trackModel({ geneColorField: 'biotype' })
-  const genes = geneColorMenuItems(model)
+  const genes = genesOf(model)
   expect(labelsOf(genes)).toEqual([
     'Default',
     'Cluster',
     'Name',
     'Strand',
     'biotype',
+    '—',
     'Pin distinct colors',
   ])
+  expect(labelsOf(geneColorMenuItems(model))).toEqual(
+    labelsOf(genes).slice(0, 5),
+  )
   expect(genes.map(i => 'checked' in i && i.checked)).toEqual([
     false,
     false,
@@ -262,10 +272,11 @@ test('the gene modes name a configured field and offer the pin under it', () => 
     false,
     true,
     false,
+    false,
   ])
-  click(genes[5])
+  click(genes[6])
   expect(calls).toEqual(['pin gene colors'])
-  expect(labelsOf(geneColorMenuItems(trackModel().model))).not.toContain(
+  expect(labelsOf(genesOf(trackModel().model))).not.toContain(
     'Pin distinct colors',
   )
 })
@@ -276,9 +287,7 @@ test('a threshold gene color offers no pin', () => {
     geneColorField: 'score',
     geneColorScale: 'threshold',
   })
-  expect(labelsOf(geneColorMenuItems(model))).not.toContain(
-    'Pin distinct colors',
-  )
+  expect(labelsOf(genesOf(model))).not.toContain('Pin distinct colors')
 })
 
 test('Show offers the legend only when something is keyed, and the hidden lanes once there are some', () => {

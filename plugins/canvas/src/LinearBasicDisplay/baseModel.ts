@@ -1802,6 +1802,41 @@ export default function baseStateModelFactory(
         ]
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       * Color by's Solid color...: paints the constant kept beside a field,
+       * where there is one, and opens the picker.
+       */
+      pickSolidColor() {
+        if (
+          self.colorFieldName !== undefined &&
+          self.solidColor !== undefined
+        ) {
+          setConf(self, 'color', colorForField(self.colorSettings, ''))
+        }
+        self.openSetColorDialog()
+      },
+
+      /**
+       * #action
+       * Color by's Default: no field and no constant, so the track's own
+       * colour paints, a `jexl:` expression included.
+       */
+      pickDefaultColor() {
+        const { colorSettings } = self
+        setConf(
+          self,
+          'color',
+          colorForField(
+            self.solidColor === undefined
+              ? colorSettings
+              : { ...colorSettings, value: undefined },
+            '',
+          ),
+        )
+      },
+    }))
     .views(self => ({
       /**
        * #method

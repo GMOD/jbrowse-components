@@ -1,13 +1,8 @@
 import { lazy } from 'react'
 
-import {
-  radioItem,
-  radioItems,
-  toggleItem,
-  withSubHeader,
-} from '@jbrowse/core/ui/menuItems'
+import { radioItem, radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
-import Palette from '@mui/icons-material/Palette'
+import { colorByMenuItem } from '@jbrowse/display-kit/colorByMenu'
 
 import { BASE_COLOR_FIELDS } from '../../shared/alignmentsColor.ts'
 import {
@@ -314,21 +309,23 @@ export function getColorByMenuItem(
       ? [supplementaryItem(supplementaryColoring)]
       : []),
   ]
-  return {
-    label: 'Color by...',
-    type: 'subMenu' as const,
-    icon: Palette,
-    subMenu: [
-      ...readOptions.map(o => colorRadio(model, o)),
-      ...(includeTagOption ? [tagItem(model)] : []),
-      ...(includePairedEnd ? [pairedEndItem(model)] : []),
-      ...withSubHeader(
-        'Per-base coloring',
-        layerOptions.length > 0 || mods
-          ? baseLayerItems(model, layerOptions, mods)
-          : [],
-      ),
-      ...withSubHeader('Additional coloring', refinements),
-    ] satisfies MenuItem[],
-  }
+  return colorByMenuItem({
+    blocks: [
+      {
+        rows: [
+          ...readOptions.map(o => colorRadio(model, o)),
+          ...(includeTagOption ? [tagItem(model)] : []),
+          ...(includePairedEnd ? [pairedEndItem(model)] : []),
+        ],
+      },
+      {
+        header: 'Per-base coloring',
+        rows:
+          layerOptions.length > 0 || mods
+            ? baseLayerItems(model, layerOptions, mods)
+            : [],
+      },
+    ],
+    additional: refinements,
+  })
 }

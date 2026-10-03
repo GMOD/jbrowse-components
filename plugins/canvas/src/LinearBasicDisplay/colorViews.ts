@@ -38,17 +38,30 @@ export function colorViews(self: ColorHost) {
     // Raw slot rather than getConf: a jexl color evaluated without a feature
     // throws, and a jexl string is no CSS color anyway.
     get featureColor() {
-      const raw = self.conf.color.value
-      return raw !== undefined && !isJexl(raw) ? raw : featureDefaultColor
+      return this.solidColor ?? featureDefaultColor
     },
 
     /**
      * #getter
+     * The constant `color.value` holds, painting or kept beside a field;
+     * undefined where it holds none or a `jexl:` expression.
      */
-    get colorByMode(): 'default' | 'strand' | 'attribute' {
+    get solidColor(): string | undefined {
+      const raw = self.conf.color.value
+      return raw !== undefined && !isJexl(raw) ? raw : undefined
+    },
+
+    /**
+     * #getter
+     * The Color by radio that is ticked: a field, else a constant, else the
+     * track's own colour.
+     */
+    get colorByMode(): 'default' | 'solid' | 'strand' | 'attribute' {
       const field = self.colorFieldName
       return field === undefined
-        ? 'default'
+        ? this.solidColor === undefined
+          ? 'default'
+          : 'solid'
         : field === STRAND_FIELD
           ? 'strand'
           : 'attribute'

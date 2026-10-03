@@ -1,6 +1,5 @@
-import { SubmitDialog } from '@jbrowse/core/ui'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -18,33 +17,21 @@ const SetColorDialog = observer(function SetColorDialog({
   }
   handleClose: () => void
 }) {
-  const { value } = model.colorSettings
   const { utrColor, setUtrColor } = model
   return (
-    <SubmitDialog
-      open
-      title="Set colors"
-      submitText="Close"
-      onCancel={handleClose}
-      onSubmit={handleClose}
+    <SolidColorDialog
+      label="Feature color"
+      color={model.featureColor}
+      written={model.colorSettings.value}
+      onChange={color => {
+        model.setFeatureColor(color)
+      }}
       onReset={() => {
         model.setFeatureColor(undefined)
         setUtrColor?.(undefined)
       }}
+      handleClose={handleClose}
     >
-      <Typography>Feature color</Typography>
-      {value !== undefined && isJexl(value) ? (
-        <Typography variant="body2" color="textSecondary">
-          Picking a color replaces the track&apos;s expression{' '}
-          <code>{value}</code>
-        </Typography>
-      ) : null}
-      <ColorPicker
-        color={model.featureColor}
-        onChange={color => {
-          model.setFeatureColor(color)
-        }}
-      />
       {utrColor !== undefined && setUtrColor ? (
         <>
           <Typography>UTR color (gene/transcript UTRs)</Typography>
@@ -56,7 +43,7 @@ const SetColorDialog = observer(function SetColorDialog({
           />
         </>
       ) : null}
-    </SubmitDialog>
+    </SolidColorDialog>
   )
 })
 

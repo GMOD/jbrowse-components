@@ -4,13 +4,16 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
+  colorByMenuItem,
+  solidColorItem,
+} from '@jbrowse/display-kit/colorByMenu'
+import {
   hiddenGroupsItems,
   sectionOrderMenuItems,
 } from '@jbrowse/display-kit/groupByMenu'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import HeightIcon from '@mui/icons-material/Height'
-import PaletteIcon from '@mui/icons-material/Palette'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
@@ -64,9 +67,9 @@ interface ShowSubmenuSelf extends HiddenGroupsModel {
 
 interface ColorMenuSelf {
   colorByMode: string
-  openSetColorDialog: () => void
+  pickSolidColor: () => void
   openColorByAttributeDialog: () => void
-  setColorScale: () => void
+  pickDefaultColor: () => void
   colorByField: (field: string) => void
 }
 
@@ -162,13 +165,17 @@ export function defaultColorItem(self: ColorMenuSelf): MenuItem {
     type: 'radio' as const,
     checked: self.colorByMode === 'default',
     onClick: () => {
-      self.setColorScale()
+      self.pickDefaultColor()
     },
   }
 }
 
-// The radios pick what paints: the track's own `color.value` (Default) or a
-// field. Solid color writes that value, so it is an action, not a radio.
+export function solidColorMenuItem(self: ColorMenuSelf): MenuItem {
+  return solidColorItem(self.colorByMode === 'solid', () => {
+    self.pickSolidColor()
+  })
+}
+
 export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
   return [
     defaultColorItem(self),
@@ -189,12 +196,7 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
         self.openColorByAttributeDialog()
       },
     },
-    {
-      label: 'Solid color...',
-      onClick: () => {
-        self.openSetColorDialog()
-      },
-    },
+    solidColorMenuItem(self),
   ]
 }
 
@@ -250,20 +252,17 @@ interface ColorPinSelf {
   pinColorDomain: () => void
 }
 
-function pinColorsItems(self: ColorPinSelf): MenuItem[] {
-  const { domain } = self.colorSettings
+function pinColorsItem(self: ColorPinSelf): MenuItem | undefined {
   return self.colorField
-    ? [
-        { type: 'divider' },
-        {
-          label: 'Pin distinct colors',
-          disabled: self.pinnedColorDomain.length === domain.length,
-          onClick: () => {
-            self.pinColorDomain()
-          },
+    ? {
+        label: 'Pin distinct colors',
+        disabled:
+          self.pinnedColorDomain.length === self.colorSettings.domain.length,
+        onClick: () => {
+          self.pinColorDomain()
         },
-      ]
-    : []
+      }
+    : undefined
 }
 
 // Reads the choices back off `self`: variants overrides `colorBySubMenuItems`
@@ -272,10 +271,8 @@ export function colorMenuItems(
   self: ColorPinSelf & { colorBySubMenuItems: () => MenuItem[] },
 ): MenuItem[] {
   return [
-    {
-      label: 'Color by...',
-      icon: PaletteIcon,
-      subMenu: [...self.colorBySubMenuItems(), ...pinColorsItems(self)],
-    },
+    colorByMenuItem({
+      blocks: [{ rows: self.colorBySubMenuItems(), pin: pinColorsItem(self) }],
+    }),
   ]
 }

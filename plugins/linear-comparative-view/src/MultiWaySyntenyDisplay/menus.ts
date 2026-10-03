@@ -8,9 +8,9 @@ import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { colorByMenuItem } from '@jbrowse/display-kit/colorByMenu'
 import { sectionRowMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import { colorByMenuItems } from '@jbrowse/synteny-core'
-import PaletteIcon from '@mui/icons-material/Palette'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
@@ -273,24 +273,22 @@ export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
   const modes = GENE_COLOR_MODES.some(mode => mode.value === field)
     ? GENE_COLOR_MODES
     : [...GENE_COLOR_MODES, { value: field, label: field }]
-  return [
-    ...radioItems(modes, field, value => {
-      model.setGeneColorBy(value)
-    }),
-    ...(model.geneColorScale !== 'categorical'
-      ? []
-      : [
-          {
-            label: 'Pin distinct colors',
-            disabled:
-              model.pinnedGeneColorDomain.length ===
-              model.geneColorDomain.length,
-            onClick: () => {
-              model.pinGeneColorDomain()
-            },
-          },
-        ]),
-  ]
+  return radioItems(modes, field, value => {
+    model.setGeneColorBy(value)
+  })
+}
+
+function geneColorPinItem(model: MultiWayMenuModel): MenuItem | undefined {
+  return model.geneColorScale === 'categorical'
+    ? {
+        label: 'Pin distinct colors',
+        disabled:
+          model.pinnedGeneColorDomain.length === model.geneColorDomain.length,
+        onClick: () => {
+          model.pinGeneColorDomain()
+        },
+      }
+    : undefined
 }
 
 export function ribbonColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
@@ -361,14 +359,16 @@ export function lanesMenuItem(model: MultiWayMenuModel) {
 export function multiWayTrackMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return [
     ...makeShowSubMenu(showSubMenuItems(model)),
-    {
-      label: 'Color by...',
-      icon: PaletteIcon,
-      subMenu: [
-        ...withSubHeader('Genes', geneColorMenuItems(model)),
-        ...withSubHeader('Ribbons', ribbonColorMenuItems(model)),
+    colorByMenuItem({
+      blocks: [
+        {
+          header: 'Genes',
+          rows: geneColorMenuItems(model),
+          pin: geneColorPinItem(model),
+        },
+        { header: 'Ribbons', rows: ribbonColorMenuItems(model) },
       ],
-    },
+    }),
     lanesMenuItem(model),
   ]
 }

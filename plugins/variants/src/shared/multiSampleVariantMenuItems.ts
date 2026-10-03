@@ -5,8 +5,16 @@ import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import { colorForValue } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorByMenuItem,
+  solidColorItem,
+} from '@jbrowse/display-kit/colorByMenu'
+import {
+  colorForField,
+  colorForValue,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -19,7 +27,6 @@ import {
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import PaletteIcon from '@mui/icons-material/Palette'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
@@ -31,6 +38,7 @@ import { PHASE_SET_FIELD } from './getPhasedColor.ts'
 // every host's first paint — see ./lazyDialogs.ts
 import {
   CellColorFieldDialog,
+  CellSolidColorDialog,
   MultiSampleVariantClusterDialog as ClusterDialog,
   JexlFilterDialog,
   SetColorDialog,
@@ -79,6 +87,19 @@ function needs(label: string, what: string, present: boolean, loaded: boolean) {
         label: `${label} (${loaded ? `no ${what} in view` : `checking for ${what}...`})`,
         disabled: true,
       }
+}
+
+// Paints the constant kept beside a field, where there is one, and opens the
+// picker.
+function pickCellSolidColor(self: MultiSampleVariantBaseModel) {
+  const { value } = self.colorSetting
+  if (self.colorField && value !== undefined && !isJexl(value)) {
+    self.setColor(colorForField(self.colorSetting, ''))
+  }
+  getDialogHost(self).queueDialog(handleClose => [
+    CellSolidColorDialog,
+    { model: self, handleClose },
+  ])
 }
 
 // The rows' colour, as the arrangement dialog offers it: none, each row its
@@ -205,81 +226,96 @@ export function variantTrackMenuItems(
         },
       ],
     },
-    // One "Color by..." with the cell coloring and the (optional) sample
-    // metadata coloring as subHeader-separated radio groups: they're
-    // independent axes (cell fill vs. sidebar/sample palette) but both answer
-    // "color by what", so they read better sectioned than as two sibling menus.
-    {
-      label: 'Color by...',
-      icon: PaletteIcon,
-      subMenu: [
+    // The cell fill and the sample metadata's row colour are independent
+    // colour objects, so each is a block of its own.
+    colorByMenuItem({
+      blocks: [
         {
-          label: 'Cells',
-          type: 'subHeader',
+          header: 'Cells',
+          rows: [
+            {
+              label: 'Genotype',
+              helpText:
+                'Default coloring: allele dosage in allele-count mode, haplotype/allele color in phased mode',
+              type: 'radio',
+              checked: self.colorEncoding === undefined,
+              onClick: () => {
+                self.setColor(colorForValue(self.colorSetting, undefined))
+              },
+            },
+            {
+              ...phaseSet,
+              helpText:
+                'Color every alt-carrying cell by the phase set (FORMAT PS) its call belongs to, so one phasing block reads as a single hue along a haplotype row; ref and no-call cells keep their normal coloring',
+              type: 'radio',
+              checked: self.colorField === PHASE_SET_FIELD,
+              disabled: phaseSet.disabled || self.renderingMode !== 'phased',
+              disabledHelpText: phaseSet.disabled
+                ? undefined
+                : 'Only applies in phased mode — switch Rendering mode to phased',
+              onClick: () => {
+                self.setColorField(PHASE_SET_FIELD)
+              },
+            },
+            {
+              ...needs(
+                'Consequence impact',
+                'SnpEff/VEP annotations',
+                self.hasConsequence,
+                loaded,
+              ),
+              helpText:
+                'Color every alt-carrying cell by the variant’s most severe SnpEff (ANN) / VEP (CSQ) consequence impact tier; ref and no-call cells keep their normal coloring',
+              type: 'radio',
+              checked: self.colorField === IMPACT_FIELD,
+              onClick: () => {
+                self.setColorField(IMPACT_FIELD)
+              },
+            },
+            {
+              ...needs(
+                'SV type',
+                'structural variants',
+                self.hasSvType,
+                loaded,
+              ),
+              helpText:
+                'Color every alt-carrying cell by the variant’s structural-variant class (deletion, duplication, insertion, inversion, ...); ref and no-call cells keep their normal coloring',
+              type: 'radio',
+              checked: self.colorField === SV_TYPE_FIELD,
+              onClick: () => {
+                self.setColorField(SV_TYPE_FIELD)
+              },
+            },
+            {
+              label: recordField ? `Field (${recordField})...` : 'Field...',
+              helpText:
+                'Color every alt-carrying cell by a field of its record — an INFO field such as CLNSIG, QUAL, FILTER, or a computed value such as maf — one color per value, or per range between cut points for a number',
+              type: 'radio',
+              checked: !!recordField,
+              keepMenuOpen: false,
+              onClick: () => {
+                getDialogHost(self).queueDialog(handleClose => [
+                  CellColorFieldDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+            solidColorItem(
+              typeof self.colorEncoding === 'string' &&
+                !isJexl(self.colorEncoding),
+              () => {
+                pickCellSolidColor(self)
+              },
+            ),
+          ],
         },
         {
-          label: 'Genotype',
-          helpText:
-            'Default coloring: allele dosage in allele-count mode, haplotype/allele color in phased mode',
-          type: 'radio',
-          checked: self.colorEncoding === undefined,
-          onClick: () => {
-            self.setColor(colorForValue(self.colorSetting, undefined))
-          },
+          header: 'Samples',
+          rows: self.colorByAttributes.length ? rowColorItems(self) : [],
         },
-        {
-          ...phaseSet,
-          helpText:
-            'Color every alt-carrying cell by the phase set (FORMAT PS) its call belongs to, so one phasing block reads as a single hue along a haplotype row; ref and no-call cells keep their normal coloring',
-          type: 'radio',
-          checked: self.colorField === PHASE_SET_FIELD,
-          disabled: phaseSet.disabled || self.renderingMode !== 'phased',
-          disabledHelpText: phaseSet.disabled
-            ? undefined
-            : 'Only applies in phased mode — switch Rendering mode to phased',
-          onClick: () => {
-            self.setColorField(PHASE_SET_FIELD)
-          },
-        },
-        {
-          ...needs(
-            'Consequence impact',
-            'SnpEff/VEP annotations',
-            self.hasConsequence,
-            loaded,
-          ),
-          helpText:
-            'Color every alt-carrying cell by the variant’s most severe SnpEff (ANN) / VEP (CSQ) consequence impact tier; ref and no-call cells keep their normal coloring',
-          type: 'radio',
-          checked: self.colorField === IMPACT_FIELD,
-          onClick: () => {
-            self.setColorField(IMPACT_FIELD)
-          },
-        },
-        {
-          ...needs('SV type', 'structural variants', self.hasSvType, loaded),
-          helpText:
-            'Color every alt-carrying cell by the variant’s structural-variant class (deletion, duplication, insertion, inversion, ...); ref and no-call cells keep their normal coloring',
-          type: 'radio',
-          checked: self.colorField === SV_TYPE_FIELD,
-          onClick: () => {
-            self.setColorField(SV_TYPE_FIELD)
-          },
-        },
-        {
-          label: recordField ? `Field (${recordField})...` : 'Field...',
-          helpText:
-            'Color every alt-carrying cell by a field of its record — an INFO field such as CLNSIG, QUAL, FILTER, or a computed value such as maf — one color per value, or per range between cut points for a number',
-          type: 'radio',
-          checked: !!recordField,
-          keepMenuOpen: false,
-          onClick: () => {
-            getDialogHost(self).queueDialog(handleClose => [
-              CellColorFieldDialog,
-              { model: self, handleClose },
-            ])
-          },
-        },
+      ],
+      additional: [
         // Only in allele-count mode: a phased row is one haplotype, which either
         // carries the allele or does not, so the ramp has nothing to express.
         ...(self.renderingMode === 'phased'
@@ -296,17 +332,8 @@ export function variantTrackMenuItems(
                 },
               },
             ]),
-        ...(self.colorByAttributes.length
-          ? [
-              {
-                label: 'Samples',
-                type: 'subHeader' as const,
-              },
-              ...rowColorItems(self),
-            ]
-          : []),
       ],
-    },
+    }),
     // The banding half of the same metadata, beside the coloring half: both
     // are config slots a session can set, and only the coloring one had a way
     // in from the menu.

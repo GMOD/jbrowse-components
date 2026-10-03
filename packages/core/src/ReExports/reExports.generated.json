@@ -4012,6 +4012,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/colorByMenu": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "colorByMenuItem",
+        "solidColorItem"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/colorConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4595,6 +4603,18 @@
         "@mui/material/IconButton",
         "@mui/material/Tooltip",
         "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/SolidColorDialog": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
       ]
     },
     "@jbrowse/display-kit/stableIdentityComputed": {

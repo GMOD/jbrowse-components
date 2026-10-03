@@ -158,7 +158,7 @@ test('unticking the grouping color returns to the color picked by hand', () => {
   display.applyGroupBy('strand', true)
   expect(display.colorByMode).toBe('strand')
   display.applyGroupBy('strand', false)
-  expect(display.colorByMode).toBe('default')
+  expect(display.colorByMode).toBe('solid')
   expect(display.colorEncoding).toBe('purple')
 })
 

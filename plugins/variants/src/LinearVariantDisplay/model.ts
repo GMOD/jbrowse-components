@@ -1,6 +1,7 @@
 import { getDialogHost } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
+import { solidColorItem } from '@jbrowse/display-kit/colorByMenu'
 import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
@@ -217,7 +218,7 @@ export default function stateModelFactory(
               if (preset) {
                 self.setFeatureColor(undefined)
               } else {
-                self.setColorScale()
+                self.pickDefaultColor()
               }
             },
           },
@@ -248,12 +249,9 @@ export default function stateModelFactory(
               self.openColorByAttributeDialog()
             },
           },
-          {
-            label: 'Solid color...',
-            onClick: () => {
-              self.openSetColorDialog()
-            },
-          },
+          solidColorItem(self.colorByMode === 'solid', () => {
+            self.pickSolidColor()
+          }),
         ]
       },
     }))
