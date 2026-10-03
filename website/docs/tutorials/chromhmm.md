@@ -16,7 +16,7 @@ track with one color-coded row per cell type.
 - htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
 - `python3`, for the [127-epigenome build](#reproduce-it-end-to-end) only
-- `jq`, for the Roadmap tissue stripe only
+- `jq`, for the Roadmap tissue groups only
 
 On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib; `node`
 comes from [nodejs.org](https://nodejs.org/).
@@ -33,8 +33,7 @@ epigenomes.
 - the Roadmap segmentations, fetched either individually or as the whole
   127-epigenome tarball:
   https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/
-- the row labels and tissue groups the `rowGroups` stripe reads,
-  `EID_metadata.tab`:
+- the row labels, tissue groups and tissue colors, `EID_metadata.tab`:
   https://egg2.wustl.edu/roadmap/data/byFileType/metadata/EID_metadata.tab
 - the state colors, since the Roadmap segmentations themselves have none:
   https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/colormap_15_coreMarks.tab
@@ -298,8 +297,7 @@ Listing six epigenome names in `rows.domain` and `rows.kept` narrows the same
 track to lung fibroblasts, foreskin fibroblasts and ES cells over HOXA, which
 reproduces the chromatin domains
 [Rinn et al. 2007](https://doi.org/10.1016/j.cell.2007.05.022) mapped in
-fibroblasts from different parts of the body. An empty `rowGroups` keeps the
-tissue grouping from reordering them out of `domain`:
+fibroblasts from different parts of the body:
 
 ```json session
 {
@@ -338,7 +336,6 @@ tissue grouping from reordering them out of `domain`:
                     "H9 Cells"
                   ]
                 },
-                "rowGroups": [],
                 "height": 240
               }
             ]
@@ -357,24 +354,59 @@ of all 127 from the data at whatever locus is in view.
 
 <Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Clustering the 127-epigenome ChromHMM track over HOXA. The rows open in Roadmap's tissue order; the track menu's Cluster rows by similarity re-lays them out into blocks and draws the dendrogram beside them." />
 
-At this scale a row is a few pixels tall and has no text, so the stripe beside
-the painting marks the tissues. The
-[`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) slot
-takes one `{ match, group, color }` per Roadmap tissue group and tints each
-matching row's sidebar swatch. `match` is a regex over the row names, and the
-`GROUP` and `COLOR` columns of `EID_metadata.tab`, which the clustering does not
-use, supply the rest. One `jq` call writes every entry from the `STD_NAME`
+At this scale a row is a few pixels tall and has no text, so the 19 Roadmap
+tissue groups need another channel. Three settings provide it:
+
+- [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) tags
+  each row with a `group`, taking one `{ match, group }` per tissue, where
+  `match` is a regex over the row names
+- [`facet`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) `"group"`
+  stacks the rows in one labelled band per tissue
+- [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) with
+  `field: "group"` pairs each tissue with a color, drawn as a bar beside each
+  row's label
+
+Nineteen hues are too many to tell apart, so the band's position carries the
+tissue and its color backs it up. The file's `itemRgb` still paints the blocks
+their state colors, so the tissue color lands on the label bar alone. Two of the
+nineteen tissues look like this:
+
+```json
+{
+  "rowGroups": [
+    { "match": "^(Adipose Nuclei)$", "group": "Adipose" },
+    {
+      "match": "^(Aorta|Fetal Heart|Left Ventricle|Right Atrium|Right Ventricle)$",
+      "group": "Heart"
+    }
+  ],
+  "facet": "group",
+  "rowColor": {
+    "field": "group",
+    "domain": ["Adipose", "Heart"],
+    "range": ["#AF5B39", "#D56F80"]
+  }
+}
+```
+
+The `GROUP` and `COLOR` columns of `EID_metadata.tab`, which the clustering does
+not use, supply both lists. One `jq` call writes them from the `STD_NAME`
 column, escaping the regex metacharacters in the names:
 
 ```bash
 jq -R -s 'split("\n")[1:-1] | map(split("\t")) | group_by(.[1])
-  | map({ match: ("^(" + (map(.[4] | gsub("(?<c>[.()+*?\\[\\]^$|\\\\{}])"; "\\" + .c)) | join("|")) + ")$"),
-          group: .[0][1], color: .[0][2] })' EID_metadata.tab > rowGroups.json
+  | { rowGroups: map({ match: ("^(" + (map(.[4] | gsub("(?<c>[.()+*?\\[\\]^$|\\\\{}])"; "\\" + .c)) | join("|")) + ")$"),
+                       group: .[0][1] }),
+      rowColor: { field: "group", domain: map(.[0][1]), range: map(.[0][2]) } }' EID_metadata.tab > tissues.json
 ```
 
-Paste the array into the display as `"rowGroups"`. The build script also appends
-the mnemonic to a name that two epigenomes share, which a `STD_NAME` match
-leaves as one row.
+Merge its two keys into the display. The build script also appends the mnemonic
+to a name that two epigenomes share, which a `STD_NAME` match leaves as one row.
+
+The shipped track leaves `facet` out and orders the rows by tissue through
+`rows.domain` instead, so **Cluster rows by similarity...** clusters all 127
+together rather than within each band, and the label bars show which tissues a
+cluster spans.
 
 The list includes an ENCODE2012 group. Roadmap folded the ENCODE 2012 reference
 epigenomes (GM12878, K562, HeLa-S3, HepG2, A549, HUVEC, NHEK and the rest) into
@@ -406,7 +438,7 @@ bare BED4, so the script fills in what the ENCODE files had:
    mnemonic where two epigenomes share a name, so the two never merge into one
    row
 3. orders the rows by tissue group, so a tissue's epigenomes sit together under
-   one stripe color
+   one label-bar color
 
 The color join for one epigenome is a single `awk` call. It looks each state's
 number, the part of the name before the underscore, up in the colormap and

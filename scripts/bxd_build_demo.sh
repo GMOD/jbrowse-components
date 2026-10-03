@@ -78,8 +78,8 @@ scan() {  # <trait_id> <out_stem>
 }
 scan 11280 bxd_gwas_coatcolor
 
-# ── Coat-color scores per strain, as one rowGroups entry per score ───────────
-# Each group's colour goes in a rowColor by group, which paints its label bar.
+# ── Coat-color scores per strain, as rowGroups and a rowColor by group ───────
+# One rowGroups entry per score, and a rowColor pairing each with its color.
 # GeneNetwork's 11280 scale: black 4, grey 3, brown 2, DBA/2's dilute brown 1.
 # A strain scored between two steps matches no entry and bands on its own.
 [ -f coat_color_values.json ] || curl -fsSL https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280 -o coat_color_values.json
@@ -87,9 +87,10 @@ jq '{ "4": ["black", "rgb(30,30,30)"], "3": ["grey", "rgb(150,150,160)"],
       "2": ["brown", "rgb(130,80,40)"], "1": ["dilute brown", "rgb(210,175,130)"] } as $class
   | [ .[] | select((.sample_name | startswith("BXD")) and (.value | IN(1, 2, 3, 4))) ]
   | group_by(-.value)
-  | map($class[.[0].value | floor | tostring] as [$group, $color]
-        | { match: ("^(" + (map(.sample_name) | join("|")) + ")$"), group: $group, color: $color })' \
-  coat_color_values.json > rowGroups.json
+  | map($class[.[0].value | floor | tostring] + [map(.sample_name) | join("|")])
+  | { rowGroups: map({ match: ("^(" + .[2] + ")$"), group: .[0] }),
+      rowColor: { field: "group", domain: map(.[0]), range: map(.[1]) } }' \
+  coat_color_values.json > coatColor.json
 
 # ── config.json: mm10 from jbrowse.org, the scan + the painting local ─────────
 cat > "$APP"/config.json <<'JSON'
@@ -181,13 +182,9 @@ cat > "$APP"/config.json <<'JSON'
 JSON
 
 # band the painting's rows by coat color
-jq --slurpfile groups rowGroups.json \
+jq --slurpfile coat coatColor.json \
   '(.tracks[] | select(.trackId == "bxd_chromosome_painting_mm10") | .displays[0])
-     += { rowGroups: ($groups[0] | map(del(.color))),
-          rowColor: { field: "group",
-                      domain: ($groups[0] | map(.group)),
-                      range: ($groups[0] | map(.color)) },
-          facet: "group" }' \
+     += $coat[0] + { facet: "group" }' \
   "$APP"/config.json > config.tmp.json && mv config.tmp.json "$APP"/config.json
 
 echo

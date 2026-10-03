@@ -32,7 +32,6 @@ readConnections
 repeatKey
 repeatTrackId
 rowColor
-rowGroups
 rows
 scales
 showAlignment

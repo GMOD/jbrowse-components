@@ -113,8 +113,9 @@ Four sources of color, in precedence order:
 
 - [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) gives a
   color per row as pairs, the row values in `domain` and their colors in
-  `range`. Use it when the row identity is the signal (one color per population,
-  per treatment arm).
+  `range`, or with a `field` a color per value of a row attribute such as its
+  `rowGroups` group. Use it when the row identity is the signal (one color per
+  population, per treatment arm).
 - [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a per-
   feature fill: a CSS color, or a field whose values each take a color through a
   scale — a color per value, a color per interval between cut points, or a
@@ -201,20 +202,43 @@ the track off and on. **Reset row order** appears in the track menu once any of
 the three has run, and returns the rows, their labels and their colors to what
 the config declares.
 
+[`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) tags
+each row with a `group`, the first `{ match, group }` entry whose regex its name
+matches, and
 [`facet: "group"`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) stacks
-the rows in bands by their
-[`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) group,
-each band named in a strip beside the dendrogram and keeping its rows in their
-arranged order; clustering then runs within each band.
+the rows in bands by it, each band named in a strip beside the dendrogram and
+keeping its rows in their arranged order; clustering then runs within each band.
+A group carries no color of its own; `rowColor` colors the groups:
+
+```json
+{
+  "rowGroups": [
+    { "match": "^CLUP", "group": "Wolf" },
+    { "match": "^CLAT", "group": "Coyote" }
+  ],
+  "facet": "group",
+  "rowColor": {
+    "field": "group",
+    "domain": ["Wolf", "Coyote"],
+    "range": ["rgb(27,120,55)", "rgb(224,130,20)"]
+  }
+}
+```
+
+Bands carry a group by position, which stays readable over many groups where
+colors alone blur together, so a long list of groups reads best faceted, with
+the colors as the second cue.
 
 **Show... → Show tree** toggles the dendrogram once one has been computed, and
 **Show... → Show row labels** the labels beside it, which are useful with no
 clustering run.
 
 A row with a color of its own, from
-[`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) or its
-`rowGroups` group, draws it as a bar at the left of its label, so a row can be
-found by color. On a track colored per feature (an `itemRgb` painting, a jexl
+[`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) by its
+name or by an attribute such as its group, draws it as a bar at the left of its
+label, so a row can be found by color. A row with no value of that attribute,
+such as one no `rowGroups` entry matches, takes no color unless `domain` pairs
+`""` with one. On a track colored per feature (an `itemRgb` painting, a jexl
 `color` slot) the bar is the only place a row's color shows.
 
 <Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:37.5-42 Mb, 1104 TCGA-BRCA tumors clustered by their copy-number profile over the 1.5 Mb around ERBB2, with the dendrogram beside them. Rows sort into amplified, gained, lost, and balanced bands." />

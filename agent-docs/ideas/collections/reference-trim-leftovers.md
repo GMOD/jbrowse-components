@@ -195,8 +195,6 @@ Items the whole-unit cuts removed. Same caveat: unverified since the cut.
   fetch-cost work is parked; the all-samples synteny stack is not offered.
 - **Bundle** (EAGER_BUNDLE): a ~1% ratchet over the probe's own-graph figure;
   verify ESM workers in Firefox; a synteny renderer behind its own `import()`.
-- **Grammar** (GRAMMAR_OF_GRAPHICS): migrate `rowGroups[].color` to
-  `rowColor` (step 4 of one-row-model-for-displays-that-stack-by-a-key).
 - **ABI** (PLUGIN_ABI_STABILITY): the removal list for the session,
   `product-core` Session barrel and plugin `exports` objects; the `getReferring`
   signature trap (takes a `trackId` string, not the config object);

@@ -158,9 +158,6 @@ hook's name throws at `create`:
 - `rowBand(row)` — the row's value of the banding attribute by default;
   multi-row matches `rowGroups` on the name, since its rows are tagged after the
   arrangement.
-- `rowColorEntriesFor(setting)` — the pairs an attribute deal seats first,
-  `setting`'s own by default; multi-row adds its `rowGroups` colours under
-  `group` until step 3 of the row-colour redesign deletes them.
 - `rowColorFields` — the row attributes offered to colour by: by default every
   attribute the rows carry but their name, label and colours; variants' are its
   samplesTsv columns; MAF, the mark display and multi-row, whose groups are
@@ -179,8 +176,11 @@ d3's ordinal way over the base arrangement, so no reorder, focus or relabel
 recolours a row: listed values take their `range` colour, the rest first seen
 first from tableau10 less its grey and then re-lit laps of it (`rowPaletteColorAt`),
 and a set `unknown` stands in for the palette. A name deal skips a row carrying
-its own colour; an attribute no row carries deals nothing; `scale: 'none'`
-deals nothing. Every row carries it as `rowColor`: the sidebar always draws
+its own colour; an attribute deal skips the empty value, so a row with none
+takes a colour only from a `''` pair (ggplot's `na.value`, not a category); an
+attribute no row carries deals nothing; `scale: 'none'` deals nothing. A
+multi-row `rowGroups` entry only tags a row's `group`; the group's colour is
+`rowColor: { field: 'group' }`. Every row carries it as `rowColor`: the sidebar always draws
 it as the row's label bar, and a display paints its marks in it only where
 `rowColorPaintsMarks`. A row's own `color` stays the file's attribute.
 

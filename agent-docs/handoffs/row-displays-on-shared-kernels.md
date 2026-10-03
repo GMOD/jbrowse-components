@@ -34,9 +34,9 @@ thing — not ports onto `LinearMarkDisplay`.
 
 Landed 2026-10-03: `rowColor: { unknown: '' }` deals no palette while the
 values its `domain` lists still paint, so the dialog's None recolours one row
-and leaves the rest unpainted (ADR-164, amended); and multi-row's `group` deal
-takes each group's `rowGroups[].color`, a group colour `rowColor` lists winning
-on the blocks and the stripe alike.
+and leaves the rest unpainted (ADR-164, amended). Step 3 of the row-colour
+redesign deleted `rowGroups[].color`: a group's colour is
+`rowColor: { field: 'group' }`, and a row with no value takes no colour.
 
 - **Multi-row `facet` on any field but `group` or `name` is a corner notice**:
   a row carries no other attribute, and banding by a feature attribute would
@@ -51,14 +51,12 @@ moves (about 6 days). Its "no palette, pairs still paint" half landed with the
 two bugs above as `unknown: ''`, not by bending `scale: 'none'`; the rest retires parallel legend and colour paths and changes nothing a reader
 sees, so it waits for step 5's hook seam, which touches the same code.
 
-- **A group is a row attribute**: delete `rowGroups[].color`, so a group's
-  colour lives in `rowColor.domain/range`. Multi-row takes wiggle's dynamic
+- **A group is a row attribute** (landed: `rowGroups[].color` is gone, a
+  group's colour lives in `rowColor.domain/range`). Multi-row takes wiggle's dynamic
   `identityChannel` (`'labelColor'` while itemRgb or a `color` field paints the
   blocks, `'color'` otherwise), retiring `colorRowLabels`, `rowGroupLegend`,
   variants' `getSampleGroupEntries` and wiggle's group legend half for one mixin
-  legend scale. Today one group can show a swatch from `rowGroups` and blocks
-  from the palette at once (`rowSources.ts` `applyRowGroups`, `model.ts`
-  `dealtRowPalette`). Cost: volvox loses its red swatch beside per-row blocks.
+  legend scale.
 - **Rows carry attributes generically** (`ListedRowSource`, samplesTsv), so the
   mixin's defaults serve `rowColorFields`, `rowBand` and one "no row carries X"
   notice; with step 5's hook seam. A facet on a feature field stays a notice.

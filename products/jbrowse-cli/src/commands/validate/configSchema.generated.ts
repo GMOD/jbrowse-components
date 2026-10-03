@@ -4246,7 +4246,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": true
         },
         "rowGroups": {
-          "description": "array of {match,group,color} tagging rows by a regex on their name; color draws the label bar of a row with no colour of its own, and the blocks under rowColor: group. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "array of {match,group} tagging each row with the group of the first entry whose regex its name matches; rowColor: {field: \\"group\\"} colours the groups. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "not": {
             "$ref": "#/$defs/JexlString"
           }

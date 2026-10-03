@@ -2360,8 +2360,6 @@ export const uiSpecs: ScreenshotSpec[] = [
             domain: HOXA_FIBROBLAST_ROWS,
             kept: HOXA_FIBROBLAST_ROWS,
           },
-          // tissue grouping would reorder the rows out of `rows.domain`
-          rowGroups: [],
           height: 240,
         },
       ],
