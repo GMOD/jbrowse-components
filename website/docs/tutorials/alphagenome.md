@@ -84,7 +84,7 @@ your own, the page or app that embeds JBrowse calls `setApiRoot`, a function the
 plugin module exports, with the service's root URL; `config.json` has no slot
 for it.[^license]
 
-## Ask for a prediction
+## Asking AlphaGenome for a prediction
 
 AlphaGenome predicts from hg38 sequence, so we load that assembly, the RefSeq
 genes and the oncogenic _TAL1_ variants:
@@ -180,9 +180,9 @@ GM12878 row loaded.
 
 ## Where the chromatin is open
 
-Type `DNase` into the track list's filter and tick K562 and GM12878, then type
-`ATAC` and tick both again; ticks survive the filter change. **Add 4 selected**
-puts all four in one track on one axis.
+Type `DNase` into the prediction's track filter and tick K562 and GM12878, then
+type `ATAC` and tick both again; ticks survive the filter change. **Add 4
+selected** puts all four in one track on one axis.
 
 <Figure caption="Predicted DNase and ATAC for K562 and GM12878, four rows on one shared y-axis because accessibility is one set of units. The K562 ATAC row runs high across the whole window; the K562 DNase row below it resolves into peaks." src="/img/alphagenome/accessibility_shared_axis.png" />
 
@@ -192,27 +192,27 @@ that is not transcribed.
 
 ## Predicted TAL1 splice junctions in each cell line
 
-Splice junctions come back as arcs in a sashimi plot. Add the K562 and GM12878
-polyA junctions and zoom in to _TAL1_.[^junctions]
+Splice junctions come back as arcs joining exons, as in a sashimi plot. Add the
+K562 and GM12878 polyA junctions and zoom in to _TAL1_.[^junctions]
 
-<Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 polyA plus RNA-seq. The K562 arcs join the exons the RefSeq track draws; the GM12878 lane has none." src="/img/alphagenome/splice_junctions.png" />
+<Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 polyA plus RNA-seq. The K562 arcs join the exons the RefSeq track draws; the GM12878 track has none." src="/img/alphagenome/splice_junctions.png" />
 
-The K562 arcs land on the exon boundaries in the RefSeq track. The GM12878 lane
+The K562 arcs land on the exon boundaries in the RefSeq track. The GM12878 track
 is empty, because _TAL1_ is off there.
 
 ## The predicted GM12878 contact map over the whole window
 
-AlphaGenome predicts contact maps at 2 kb bins for about a dozen cell lines,
-GM12878 among them. Add the GM12878 contact map and zoom out to the whole
+AlphaGenome predicts Hi-C-style contact maps at 2 kb bins for about a dozen cell
+lines, GM12878 among them. Add the GM12878 contact map and zoom out to the whole
 predicted megabase; the adapter reads each range the view asks for from the
 stored arrays, so navigating starts no new prediction.
 
 <Figure caption="The predicted GM12878 contact map across the whole window, at 2 kb bins. Blocks of self-interaction sit along the diagonal with blank stretches between them, and TAL1 lies near the middle of the view." src="/img/alphagenome/contact_map.png" />
 
-The display saturates at the 95th percentile, because predicted maps are less
-skewed than sequenced ones.
+The contact map's color scale saturates at the 95th percentile, because
+predicted maps are less skewed than measured Hi-C maps.
 
-## Scoring a variant
+## Scoring a TAL1 variant against the reference
 
 In T-ALL, _TAL1_ is switched on in a lineage where it should be silent. One
 route is a small insertion upstream of the gene that creates a binding site, and
@@ -237,22 +237,22 @@ The panel warns when the variant falls outside the window. In variant mode
 AlphaGenome reports only the junctions the variant could affect, so clear the
 variant to get the whole locus back.
 
-## Reading the difference
+## Predicted effect of the Jurkat insertion on TAL1
 
-A track from a variant prediction comes as two tracks: the reference and
-alternate curves together, and a difference row where positive is a gain from
-the insertion.[^mapping] Add the CD34+ DNase, polyA plus RNA-seq and H3K27ac
-tracks, zoom to _TAL1_ and the insertion, and close the reference and alternate
-tracks to keep the three difference rows. On the DNase difference row, untick
-**Y axis... → Clip extreme outliers**, because on a row this sparse the default
-clipping flattens the gain at the insertion.
+A variant prediction returns each assay as two tracks: the reference and
+alternate curves together, and a difference row (alternate minus reference)
+where positive is a gain from the insertion.[^mapping] Add the CD34+ DNase,
+polyA plus RNA-seq and H3K27ac tracks, zoom to _TAL1_ and the insertion, and
+close the reference and alternate tracks to keep the three difference rows. On
+the DNase difference row, untick **Y axis... → Clip extreme outliers**, because
+on a row this sparse the default clipping flattens the gain at the insertion.
 
-<Figure caption="The Jurkat insertion scored in CD34+ progenitors: the alternate-minus-reference difference for DNase, polyA plus RNA-seq and H3K27ac. Accessibility rises at the insertion, while H3K27ac and TAL1 transcription rise with it." src="/img/alphagenome/variant_difference.png" />
+<Figure caption="The Jurkat insertion scored in CD34+ progenitors: the alternate-minus-reference difference for DNase, polyA plus RNA-seq and H3K27ac, positive for a predicted gain." src="/img/alphagenome/variant_difference.png" />
 
 Accessibility rises at the insertion. H3K27ac, the mark of an active enhancer,
 rises across the locus, and predicted transcription rises over the _TAL1_ exons.
 
-## Sharing a prediction
+## Sharing prediction tracks between sessions
 
 The panel adds predictions as session tracks whose adapters read the stored
 arrays through presigned URLs, and those URLs expire within the hour. A track
