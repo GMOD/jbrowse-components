@@ -1,6 +1,6 @@
-/* The figure recipe: the trigger beside a figure's live link, and the dialog it
-   opens. Markup: src/lib/spec-recipe/html.ts, emitted by remark-figure for a
-   doc figure. Behavior and the mount point:
+/* The figure recipe: the one button under a figure, and the dialog it opens.
+   Markup: src/lib/spec-recipe/html.ts, emitted by remark-figure for a doc
+   figure. Behavior and the mount point:
    components/SpecDialog.astro. The tab machinery it shares with the docs
    Config/CLI fence is in spec-tabs.css.
 
@@ -17,16 +17,17 @@
     justify-content: center;
     gap: 0.3rem;
     margin-left: 0.35rem;
-    padding: 0.2rem 0.35rem;
-    border: none;
-    border-radius: 4px;
+    padding: 0.15rem 0.7rem 0.15rem 0.5rem;
+    border: 1px solid var(--color-accent);
+    border-radius: 999px;
     background: none;
-    color: var(--color-text-muted);
+    color: var(--color-accent);
     font: inherit;
     font-size: 0.9em;
+    font-style: normal;
+    font-weight: 500;
     cursor: pointer;
     vertical-align: middle;
-    opacity: 0.75;
   }
   .spec-help svg {
     width: 1rem;
@@ -34,15 +35,11 @@
     display: block;
   }
   .spec-help:hover {
-    background: var(--color-surface);
-    color: var(--color-accent);
-    opacity: 1;
+    background: var(--color-sidebar-active-bg);
   }
   .spec-help:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 1px;
-    color: var(--color-accent);
-    opacity: 1;
   }
   /* Top-pinned rather than centred: a centred dialog moves its tab row every
      time a shorter panel is picked, out from under the cursor. */
@@ -98,6 +95,83 @@
     margin: 0 0 0.5rem;
     font-size: 1rem;
     font-weight: 600;
+  }
+  .spec-opens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    font-style: normal;
+  }
+  .spec-open-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--color-accent);
+    border-radius: 6px;
+    color: var(--color-accent);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .spec-open-btn:hover {
+    background: var(--color-sidebar-active-bg);
+  }
+  .spec-open-btn.spec-open-primary {
+    background: var(--color-accent);
+    color: #fff;
+  }
+  .spec-open-btn.spec-open-primary:hover {
+    background: var(--color-accent-dark);
+  }
+  .spec-open-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .spec-rebuild-lead {
+    margin: 1rem 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-style: normal;
+  }
+  /* Several views behind one figure: a row of chips picks the view, the same
+     radio-and-order machinery as the tabs (spec-tabs.css) one level up. */
+  .spec-frames {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    text-align: left;
+    font-style: normal;
+  }
+  .spec-frames > .spec-frame-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .spec-frames > .spec-frame-label {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .spec-frames > .spec-frame-input:checked + .spec-frame-label {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+  .spec-frames > .spec-frame-input:focus-visible + .spec-frame-label {
+    outline: 2px solid var(--color-accent);
+  }
+  .spec-frames > .spec-frame {
+    display: none;
+    order: 1;
+    flex-basis: 100%;
+    min-width: 0;
+    margin-top: 0.6rem;
+  }
+  .spec-frames > .spec-frame-input:checked + .spec-frame-label + .spec-frame {
+    display: block;
   }
   .spec-steps {
     margin: 0;

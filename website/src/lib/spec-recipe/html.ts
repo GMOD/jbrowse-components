@@ -60,7 +60,9 @@ function ownDataSteps(steps: RecipeStep[], unmapped: string[]): string {
     note('<strong>With your own data</strong>, the steps behind the figure:'),
     `<ol class="spec-steps">${steps.map(renderStep).join('')}</ol>`,
     unmapped.length
-      ? note('Some settings have no written step yet — see the <strong>Spec</strong> tab.')
+      ? note(
+          'Some settings have no written step yet — see the <strong>Spec</strong> tab.',
+        )
       : '',
   ].join('')
 }
@@ -86,16 +88,22 @@ function assembliesNote(assemblies: string[]): string {
 // doesn't apply (a notebook snippet for a synteny view) simply isn't in it —
 // tab and panel positions stay in step with each other automatically, which
 // index-per-panel markup could not guarantee.
-function panels(recipe: Recipe): Panel[] {
+function panels(recipe: Recipe, inlineOpens = false): Panel[] {
   return [
     {
       label: 'Desktop',
       kind: 'desktop',
       body: [
-        `<p class="spec-open"><a href="${escapeAttr(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`,
-        note(`Opens JBrowse Desktop (<strong>${DESKTOP_LINK_MIN_VERSION}+</strong>) at this view and saves it as a reopenable session.`),
+        inlineOpens
+          ? `<p class="spec-open"><a href="${escapeAttr(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`
+          : '',
+        note(
+          `Opening in Desktop needs <strong>${DESKTOP_LINK_MIN_VERSION}+</strong>, and saves the view as a reopenable session.`,
+        ),
         '<details class="spec-fallback"><summary>Nothing happens?</summary>',
-        note("Paste this link into Desktop's <strong>Open JBrowse Web link...</strong> (start screen, or <strong>File → Session</strong>):"),
+        note(
+          "Paste this link into Desktop's <strong>Open JBrowse Web link...</strong> (start screen, or <strong>File → Session</strong>):",
+        ),
         copyableBlock(recipe.desktopWebUrl, 'spec-json', 'spec-url'),
         '</details>',
         ownDataSteps(recipe.steps, recipe.unmapped),
@@ -105,8 +113,12 @@ function panels(recipe: Recipe): Panel[] {
       label: 'Web',
       kind: 'web',
       body: [
-        `<p class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a></p>`,
-        note('Its genome and tracks are hosted, so <strong>File → Open track...</strong> there adds your own files beside them.'),
+        inlineOpens
+          ? `<p class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a></p>`
+          : '',
+        note(
+          'Its genome and tracks are hosted, so <strong>File → Open track...</strong> there adds your own files beside them.',
+        ),
         ownDataSteps(recipe.webSteps, recipe.unmapped),
       ].join(''),
     },
@@ -116,9 +128,13 @@ function panels(recipe: Recipe): Panel[] {
             label: 'CLI',
             kind: 'cli',
             body: [
-              note('A figure adds its tracks to one session. The <a href="/docs/cli/">jbrowse CLI</a> writes the same tracks into a <code>config.json</code> instead, where every session that opens it has them: <a href="/docs/cli/#jbrowse-add-track"><code>add-track</code></a> where flags cover the whole track, <a href="/docs/cli/#jbrowse-add-track-json"><code>add-track-json</code></a> where they do not.'),
+              note(
+                'A figure adds its tracks to one session. The <a href="/docs/cli/">jbrowse CLI</a> writes the same tracks into a <code>config.json</code> instead, where every session that opens it has them: <a href="/docs/cli/#jbrowse-add-track"><code>add-track</code></a> where flags cover the whole track, <a href="/docs/cli/#jbrowse-add-track-json"><code>add-track-json</code></a> where they do not.',
+              ),
               copyableBlock(recipe.cli.commands, 'spec-json'),
-              note(`Run these where the <code>config.json</code> is, or add <code>--out &lt;dir&gt;</code>, and point each <code>uri</code> at your own file.${assembliesNote(recipe.cli.assemblies)} The location and the settings the steps carry are session state rather than track config — that half is the <strong>Spec</strong> tab, or <a href="/docs/cli/#jbrowse-set-default-session"><code>jbrowse set-default-session</code></a>.`),
+              note(
+                `Run these where the <code>config.json</code> is, or add <code>--out &lt;dir&gt;</code>, and point each <code>uri</code> at your own file.${assembliesNote(recipe.cli.assemblies)} The location and the settings the steps carry are session state rather than track config — that half is the <strong>Spec</strong> tab, or <a href="/docs/cli/#jbrowse-set-default-session"><code>jbrowse set-default-session</code></a>.`,
+              ),
             ].join(''),
           },
         ]
@@ -127,7 +143,9 @@ function panels(recipe: Recipe): Panel[] {
       label: 'Spec',
       kind: 'spec',
       body: [
-        note(`This <a href="/docs/urlparams/#session-spec">session spec</a> draws the figure from <code>${escapeAttr(recipe.config)}</code>: paste it after <code>&amp;session=spec-</code> on a JBrowse Web link that loads that config.`),
+        note(
+          `This <a href="/docs/urlparams/#session-spec">session spec</a> draws the figure from <code>${escapeAttr(recipe.config)}</code>: paste it after <code>&amp;session=spec-</code> on a JBrowse Web link that loads that config.`,
+        ),
         copyableBlock(recipe.specJson, 'spec-json'),
       ].join(''),
     },
@@ -137,7 +155,9 @@ function panels(recipe: Recipe): Panel[] {
             label: 'Notebook',
             kind: 'notebook',
             body: [
-              note('The same view with <a href="/docs/jbrowse_anywidget/">jbrowse-anywidget</a>, from the config the figure loads. Swap a track\'s <code>uri</code> for your own file.'),
+              note(
+                'The same view with <a href="/docs/jbrowse_anywidget/">jbrowse-anywidget</a>, from the config the figure loads. Swap a track\'s <code>uri</code> for your own file.',
+              ),
               copyableBlock(recipe.python, 'spec-python'),
             ].join(''),
           },
@@ -149,12 +169,18 @@ function panels(recipe: Recipe): Panel[] {
             label: 'Image',
             kind: 'img',
             body: [
-              note('<a href="/docs/jbrowse-img/">jbrowse-img</a> draws the same view as an SVG, from the command line and without a browser. Point <code>--config</code> at your own config, or swap a track for your own file with <code>--bam</code>, <code>--vcfgz</code> and the other <a href="/docs/jbrowse-img/#track-params">file flags</a>.'),
+              note(
+                '<a href="/docs/jbrowse-img/">jbrowse-img</a> draws the same view as an SVG, from the command line and without a browser. Point <code>--config</code> at your own config, or swap a track for your own file with <code>--bam</code>, <code>--vcfgz</code> and the other <a href="/docs/jbrowse-img/#track-params">file flags</a>.',
+              ),
               copyableBlock(recipe.img.command, 'spec-json'),
               recipe.img.dropped.length
-                ? note(`It has no flag for this figure's ${recipe.img.dropped.map(f => `<code>${escapeAttr(f)}</code>`).join(', ')}, so its picture can differ there.`)
+                ? note(
+                    `It has no flag for this figure's ${recipe.img.dropped.map(f => `<code>${escapeAttr(f)}</code>`).join(', ')}, so its picture can differ there.`,
+                  )
                 : '',
-              note('<code>--out figure.png</code> writes a PNG instead, through <code>rsvg-convert</code> (<code>apt install librsvg2-bin</code>, <code>brew install librsvg</code>).'),
+              note(
+                '<code>--out figure.png</code> writes a PNG instead, through <code>rsvg-convert</code> (<code>apt install librsvg2-bin</code>, <code>brew install librsvg</code>).',
+              ),
             ].join(''),
           },
         ]
@@ -170,29 +196,35 @@ function agentPanel({ frames, stack, notes }: AgentRecipe): Panel {
     label: 'Agent',
     kind: 'agent',
     body: [
-      note('Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit — swap an adapter <code>uri</code> for your own file and rerun.'),
+      note(
+        'Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit — swap an adapter <code>uri</code> for your own file and rerun.',
+      ),
       ...(frames.length > 1
-        ? [note(`The figure stacks ${frames.length} frames: one command draws each, and ImageMagick stacks them.`)]
+        ? [
+            note(
+              `The figure stacks ${frames.length} frames: one command draws each, and ImageMagick stacks them.`,
+            ),
+          ]
         : []),
       ...frames.flatMap(frame => [
-        ...(frame.label ? [note(`<strong>${escapeAttr(frame.label)}</strong>`)] : []),
+        ...(frame.label
+          ? [note(`<strong>${escapeAttr(frame.label)}</strong>`)]
+          : []),
         copyableBlock(frame.command, 'spec-json'),
         ...frame.notes.map(text => note(renderInline(text))),
       ]),
       ...(stack ? [copyableBlock(stack, 'spec-json')] : []),
       ...notes.map(text => note(renderInline(text))),
-      note('<a href="/docs/agents/">Using JBrowse with AI agents</a> covers the rest: <a href="/docs/agents_hosted_data/">hosted genomes</a> to point it at, and <a href="/docs/agents_capture/">why waiting for the render</a> is the part that goes wrong.'),
+      note(
+        '<a href="/docs/agents/">Using JBrowse with AI agents</a> covers the rest: <a href="/docs/agents_hosted_data/">hosted genomes</a> to point it at, and <a href="/docs/agents_capture/">why waiting for the render</a> is the part that goes wrong.',
+      ),
     ].join(''),
   }
 }
 
-function dialogHtml(id: string, list: Panel[]): string {
+function tabsHtml(id: string, list: Panel[]): string {
   const name = `${id}-tabs`
   return [
-    `<dialog class="spec-dialog" id="${id}">`,
-    '<form method="dialog" class="spec-dialog-close-form">',
-    '<button class="spec-dialog-close" aria-label="Close">✕</button>',
-    '</form>',
     '<div class="spec-tabs">',
     ...list.map((panel, i) =>
       [
@@ -202,18 +234,76 @@ function dialogHtml(id: string, list: Panel[]): string {
       ].join(''),
     ),
     '</div>',
+  ].join('')
+}
+
+function dialogHtml(id: string, body: string): string {
+  return [
+    `<dialog class="spec-dialog" id="${id}">`,
+    '<form method="dialog" class="spec-dialog-close-form">',
+    '<button class="spec-dialog-close" aria-label="Close">✕</button>',
+    '</form>',
+    body,
     '</dialog>',
   ].join('')
 }
 
-export function recipeDialogHtml(recipe: Recipe, id: string): string {
-  return dialogHtml(id, panels(recipe))
+// Opening the finished view comes first, since most readers want only that;
+// the tabs below are the ways to rebuild it from their own data.
+function opensHtml(recipe: Recipe, slow: boolean): string {
+  return [
+    '<div class="spec-opens">',
+    `<a class="spec-open-btn spec-open-primary" href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open in JBrowse Web ↗</a>`,
+    `<a class="spec-open-btn" href="${escapeAttr(recipe.desktopUrl)}">Open in JBrowse Desktop ↗</a>`,
+    '</div>',
+    slow
+      ? '<p class="spec-rebuild-lead">This session loads a large dataset and takes a while to open.</p>'
+      : '',
+    '<p class="spec-rebuild-lead">Or rebuild it from your own data:</p>',
+  ].join('')
+}
+
+export function recipeDialogHtml(
+  recipe: Recipe,
+  id: string,
+  slow = false,
+): string {
+  return dialogHtml(id, opensHtml(recipe, slow) + tabsHtml(id, panels(recipe)))
+}
+
+export interface RecipeFrame {
+  label: string
+  recipe: Recipe
+  slow: boolean
+}
+
+// A figure with several views behind it: one dialog, its view picked by a row
+// of chips above the Open buttons, starting on the view the figure shows.
+export function framesDialogHtml(
+  frames: RecipeFrame[],
+  id: string,
+  shown: number,
+): string {
+  return dialogHtml(
+    id,
+    [
+      '<div class="spec-frames" role="radiogroup" aria-label="Which view">',
+      ...frames.map(({ label, recipe, slow }, i) =>
+        [
+          `<input type="radio" name="${id}-frame" id="${id}-f${i}" class="spec-frame-input"${i === shown ? ' checked' : ''}/>`,
+          `<label for="${id}-f${i}" class="spec-frame-label">${escapeAttr(label)}</label>`,
+          `<div class="spec-frame">${opensHtml(recipe, slow)}${tabsHtml(`${id}-f${i}`, panels(recipe))}</div>`,
+        ].join(''),
+      ),
+      '</div>',
+    ].join(''),
+  )
 }
 
 // A composed figure none of whose frames is linked on its own: the commands,
 // and nothing that would need one session to describe
 export function agentDialogHtml(agent: AgentRecipe, id: string): string {
-  return dialogHtml(id, [agentPanel(agent)])
+  return dialogHtml(id, tabsHtml(id, [agentPanel(agent)]))
 }
 
 // The video's own panel first: what the clip does, as the words it held on
@@ -232,17 +322,22 @@ export function videoRecipeDialogHtml(
         `<a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener noreferrer">Open the session the video starts in ↗</a>, then take the steps it shows:`,
       ),
       `<ol class="spec-steps">${video.steps
-        .map(step => `<li><span class="spec-step-title">${escapeAttr(step)}</span></li>`)
+        .map(
+          step =>
+            `<li><span class="spec-step-title">${escapeAttr(step)}</span></li>`,
+        )
         .join('')}</ol>`,
       ...(video.paste
         ? [
-            note('The track the video adds through the form, as the page above prints it:'),
+            note(
+              'The track the video adds through the form, as the page above prints it:',
+            ),
             copyableBlock(video.paste, 'spec-json'),
           ]
         : []),
     ].join(''),
   }
-  return dialogHtml(id, [walkthrough, ...panels(recipe)])
+  return dialogHtml(id, tabsHtml(id, [walkthrough, ...panels(recipe, true)]))
 }
 
 // a "steps/recipe" glyph (lucide clipboard-list). The label beside it carries
@@ -253,9 +348,10 @@ const RECIPE_ICON =
 
 export function recipeButtonHtml(
   id: string,
-  label = 'Make this view yourself',
+  label = 'Open or rebuild this view',
+  title = 'Open this view in JBrowse, or rebuild it from your own data',
 ): string {
   // no aria-label: the visible text is the accessible name, and an aria-label
   // that differs from it is what voice control tries and fails to match
-  return `<button type="button" class="spec-help" data-spec-dialog="${id}" title="How to ${escapeAttr(label.toLowerCase())}">${RECIPE_ICON}<span>${escapeAttr(label)}</span></button>`
+  return `<button type="button" class="spec-help" data-spec-dialog="${id}" title="${escapeAttr(title)}">${RECIPE_ICON}<span>${escapeAttr(label)}</span></button>`
 }

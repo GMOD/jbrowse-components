@@ -10,13 +10,13 @@ import {
 import { compositeAgent } from './spec-recipe/agent.ts'
 import {
   agentDialogHtml,
+  framesDialogHtml,
   recipeButtonHtml,
   recipeDialogHtml,
 } from './spec-recipe/html.ts'
 import { buildRecipe } from './spec-recipe/recipe.ts'
 
 import type { AgentRecipe } from './spec-recipe/agent.ts'
-
 import type { Image, Paragraph, Root } from 'mdast'
 import type { Plugin } from 'unified'
 
@@ -137,26 +137,22 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
         new Map(multi.map(l => [l.name, l.label])),
       )
 
-      // the live link hands the reader the finished view; the dialog next to it
-      // shows how to build the same thing from their own data
-      const helpFor = (url: string, name?: string) => {
+      // One button per figure: its dialog opens the finished view and shows how
+      // to rebuild it from the reader's own data
+      const recipeFor = (url: string, name?: string) => {
         const recipe = buildRecipe(url, name)
-        if (!recipe) {
-          return { button: '', dialog: '' }
-        }
-        const id = `spec-dialog-${dialogCount++}`
-        return {
-          button: recipeButtonHtml(id),
-          dialog: recipeDialogHtml(
-            composite ? { ...recipe, agent: composite } : recipe,
-            id,
-          ),
-        }
+        return recipe && composite ? { ...recipe, agent: composite } : recipe
       }
+      const slow = (name: string | undefined) =>
+        name !== undefined && screenshotSlowSpecNames.has(name)
       const agentHelp = (agent: AgentRecipe) => {
         const id = `spec-dialog-${dialogCount++}`
         return {
-          button: recipeButtonHtml(id),
+          button: recipeButtonHtml(
+            id,
+            'Rebuild this figure',
+            'The commands that rebuild this figure from the command line',
+          ),
           dialog: agentDialogHtml(agent, id),
         }
       }
@@ -165,26 +161,41 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       // screenshot-spec session
       const live = liveByImg.get(rawSrc)
       const liveUrl = attrs.link ?? live?.url
+      const multiFrames = multi.flatMap(l => {
+        const recipe = recipeFor(l.url, l.name)
+        return recipe ? [{ ...l, recipe, slow: slow(l.name) }] : []
+      })
+      const singleRecipe =
+        !multi.length && liveUrl ? recipeFor(liveUrl, live?.name) : undefined
       if (multi.length) {
-        const dialogs: string[] = []
-        const linkHtml = multi
-          .map(l => {
-            const help = helpFor(l.url, l.name)
-            if (help.dialog) {
-              dialogs.push(help.dialog)
-            }
-            return `${a(l.url, `${l.label} ↗`)}${help.button}${slowNote(l.name)}`
-          })
-          .join(' · ')
-        const first = multi[0]!
-        node.value = `<figure>${zoom(img, { url: first.url, label: `${first.label} ↗` })}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption>${dialogs.join('')}</figure>`
+        const shown =
+          multi.find(l => `/img/${l.name}.png` === rawSrc) ?? multi[0]!
+        const zoomed = zoom(img, { url: shown.url, label: `${shown.label} ↗` })
+        if (file.data.feed === true || !multiFrames.length) {
+          const linkHtml = multi
+            .map(l => `${a(l.url, `${l.label} ↗`)}${slowNote(l.name)}`)
+            .join(' · ')
+          node.value = `<figure>${zoomed}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption></figure>`
+        } else {
+          const id = `spec-dialog-${dialogCount++}`
+          const shownFrame = Math.max(
+            0,
+            multiFrames.findIndex(f => f.name === shown.name),
+          )
+          node.value = `<figure>${zoomed}<figcaption>${caption} ${recipeButtonHtml(id)}</figcaption>${framesDialogHtml(multiFrames, id, shownFrame)}</figure>`
+        }
       } else if (liveUrl) {
-        const help = helpFor(liveUrl, live?.name)
         // a spec whose link opens a plain page rather than a view says so
         // itself; everything else is a session and gets the default
         const label = `${(live?.name ? figureLiveLabels[live.name] : undefined) ?? 'Open this view in JBrowse'} ↗`
-        node.value = `<figure>${zoom(img, { url: liveUrl, label })}<figcaption>${caption} ${a(liveUrl, label)}${help.button}${slowNote(live?.name)}</figcaption>${help.dialog}</figure>`
-      } else if (composite) {
+        const zoomed = zoom(img, { url: liveUrl, label })
+        if (file.data.feed === true || !singleRecipe) {
+          node.value = `<figure>${zoomed}<figcaption>${caption} ${a(liveUrl, label)}${slowNote(live?.name)}</figcaption></figure>`
+        } else {
+          const id = `spec-dialog-${dialogCount++}`
+          node.value = `<figure>${zoomed}<figcaption>${caption} ${recipeButtonHtml(id)}</figcaption>${recipeDialogHtml(singleRecipe, id, slow(live?.name))}</figure>`
+        }
+      } else if (composite && file.data.feed !== true) {
         const help = agentHelp(composite)
         node.value = `<figure>${zoom(img)}<figcaption>${caption} ${help.button}</figcaption>${help.dialog}</figure>`
       } else {

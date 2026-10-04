@@ -181,7 +181,11 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       const help =
         recipe && steps.length
           ? {
-              button: recipeButtonHtml(id, 'Make this video yourself'),
+              button: recipeButtonHtml(
+                id,
+                'Make this video yourself',
+                'How to make this video yourself',
+              ),
               dialog: videoRecipeDialogHtml(recipe, id, {
                 steps,
                 paste: videoPastes[name],
