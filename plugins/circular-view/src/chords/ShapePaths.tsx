@@ -40,9 +40,9 @@ function paintProps(
 }
 
 /**
- * The shapes as SVG paths. The export draws every one; on screen the canvas
- * holds the resting shapes and this draws only the hovered and the selected,
- * over it, so a hover never repaints the figure. Each path carries the
+ * The shapes as SVG paths. The export draws every one, resting; on screen the
+ * canvas holds the resting shapes and this draws only the hovered and the
+ * selected, over it, so a hover never repaints the figure. Each path carries the
  * shape's label as its title, which is the export's own annotation.
  */
 const ShapePaths = observer(function ShapePaths({
@@ -62,25 +62,19 @@ const ShapePaths = observer(function ShapePaths({
     hoveredFeatureId,
     highlightedFeatureIdSet,
   } = display
-  // a hover is a screen state; the export draws the selection and nothing of
-  // the pointer
-  const hovered = only === 'highlighted' ? hoveredFeatureId : undefined
+  // a hover and a selection say where the reader's pointer was, so the export
+  // draws every shape resting
+  const onScreen = only === 'highlighted'
+  const hovered = onScreen ? hoveredFeatureId : undefined
+  const selected = onScreen ? selectedFeatureId : undefined
   const stateOf = (shape: Shape) => {
     const id = shape.feature.id()
-    return id === hovered
-      ? 'hovered'
-      : id === selectedFeatureId
-        ? 'selected'
-        : 'resting'
+    return id === hovered ? 'hovered' : id === selected ? 'selected' : 'resting'
   }
   const drawn: readonly Shape[] =
     only === 'all'
       ? display.shapes
-      : [
-          ...new Set(
-            [hovered, selectedFeatureId].filter(id => id !== undefined),
-          ),
-        ]
+      : [...new Set([hovered, selected].filter(id => id !== undefined))]
           .map(id => display.shapeFor(id))
           .filter(shape => shape !== undefined)
   return (

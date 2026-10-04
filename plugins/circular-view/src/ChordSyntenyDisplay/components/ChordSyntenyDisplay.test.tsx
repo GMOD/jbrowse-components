@@ -171,9 +171,9 @@ test('on screen only the hovered and selected ribbons are paths', () => {
   expect(container.querySelector('path')!.getAttribute('d')).toMatch(/^M .* Z$/)
 })
 
-// a hover is a screen state: the export draws the selection and never the
-// pointer's grey
-test('the export leaves a hovered ribbon in its resting fill', () => {
+// a hover and a selection say where the reader's pointer was, so the export
+// draws both ribbons in their resting fill
+test('the export leaves a hovered or selected ribbon in its resting fill', () => {
   const { container } = render(
     <svg>
       <ShapePaths
@@ -190,8 +190,7 @@ test('the export leaves a hovered ribbon in its resting fill', () => {
   const fills = [...container.querySelectorAll('path')].map(p =>
     p.getAttribute('fill'),
   )
-  expect(fills[0]).toBe('#4682b4')
-  expect(fills[1]).not.toBe('#4682b4')
+  expect(fills).toEqual(['#4682b4', '#4682b4'])
 })
 
 // a capture waits for the display's frame to be visible, and with nothing
