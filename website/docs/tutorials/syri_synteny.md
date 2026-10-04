@@ -112,10 +112,11 @@ and Sha repeat it with their own name and file:
 }
 ```
 
-On the track:
+Two entries in the track config matter here:
 
-- `attributeColumns` names the tags the palette button offers: `syri` becomes a
-  color-by mode, and `color` is the color the file puts beside each type
+- `attributeColumns` names the PAF tags the palette button offers: `syri`
+  becomes a color-by mode, and `color` is the color the file puts beside each
+  type
 - the `MultiWaySyntenyDisplay` entry sets up the
   [lanes view](#every-accession-in-columbia-coordinates): `domain` names the
   lanes and `ribbonColor` colors the bands by `syri`
@@ -179,12 +180,11 @@ Open the first 6 Mb of chromosome 4 in both accessions and pick **syri** under
 The syntenic regions run straight down in grey, and one inverted region crosses
 over between them. The thin ribbons leaving the frame are duplications and
 translocations whose other end sits on another chromosome, which the label at
-the edge of the frame names. The `domain` lists the types in the order plotsr
-uses, and the key has one row per color: plotsr paints an inverted translocation
-as a translocation and an inverted duplication as a duplication, so `INVTR`
-shares a row with `TRANS` and `INVDP` with `DUP`.
+the edge of the frame names. The key has one row per color, since plotsr paints
+an inverted translocation as a translocation and an inverted duplication as a
+duplication: `INVTR` shares a row with `TRANS` and `INVDP` with `DUP`.
 
-<Figure caption="The first 6 Mb of chromosome 4 in Col-0 above and Ler below, the SyRI regions colored by type. The crossed ribbon is the inversion between the two accessions, with syntenic regions either side of it." src="/img/syri/col_ler_chr4.png" />
+<Figure caption="Chromosome 4 in Col-0 above and Ler below, SyRI regions colored by type. The crossed ribbon is the inversion between the two accessions, with syntenic regions either side." src="/img/syri/col_ler_chr4.png" />
 
 ## Stacking six accessions, one SyRI run per band
 
@@ -232,11 +232,11 @@ between the two genomes it joins:
 
 ## Every accession in Columbia coordinates
 
-The stack compares each accession with its neighbour. To compare each accession
-with Col-0 in Col-0 coordinates, `syri_to_paf.py` also writes the regions for
-each pair in reference coordinates, one BED row per region, named by its type,
-colored by `itemRgb` and holding the accession name in a `query` column. The
-rows against Col-0 concatenate into one track:
+Each band in the stack compares an accession with its neighbour. To compare
+every accession with Col-0 in Col-0 coordinates, `syri_to_paf.py` also writes
+each pair's regions in reference coordinates, one BED row per region, named by
+its type, colored by `itemRgb` and holding the accession name in a `query`
+column. The rows against Col-0 concatenate into one track:
 
 <!-- from: scripts/build_syri_synteny.sh -->
 
@@ -276,10 +276,10 @@ tabix -p bed syri_regions.bed.gz
 }
 ```
 
-Open a linear genome view on Col-0 at `Chr4:1-6,000,000` and turn the track on.
-Turn on **SyRI regions** under it and switch it to **Display types → Multi-way
-synteny display**, which takes its lanes and colors from the display entry on
-the track above:
+Open a linear genome view on Col-0 at `Chr4:1-6,000,000` and turn on **SyRI
+regions on Col-0, by accession** and **SyRI regions**. Switch **SyRI regions**
+to **Display types → Multi-way synteny display**, which takes its lanes and
+colors from the track's `MultiWaySyntenyDisplay` entry:
 
 - each accession is a lane, drawn in the coordinates of its assembly and placed
   by the SyRI run against Col-0
@@ -313,7 +313,7 @@ the track above:
 }
 ```
 
-<Figure caption="The first 6 Mb of Col-0 chromosome 4: the SyRI regions for each accession against Col-0 as a row above, and the accessions as lanes below, each drawn in the coordinates of its assembly, with each band colored by the SyRI type for the two genomes it joins. Every accession is inverted against Col-0 across the same stretch, and the bands between accessions run straight there." src="/img/syri/col0_lanes.png" />
+<Figure caption="Col-0 chromosome 4 with one row of SyRI regions per accession above, and the accessions as lanes in their own assembly coordinates below, each band colored by the SyRI type between the two genomes it joins. Every accession is inverted against Col-0 across the same stretch, and the bands between accessions run straight there." src="/img/syri/col0_lanes.png" />
 
 ## Checking the chromosome 4 inversion against syri.out
 
