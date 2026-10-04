@@ -132,8 +132,8 @@ const dock2Spec: ScreenshotSpec = {
       fontSize: 18,
       leader: true,
       anchor: { graphNode: 's110010685+' },
-      dx: 20,
-      dy: -110,
+      dx: -60,
+      dy: -30,
     },
     {
       type: 'text',
@@ -141,8 +141,8 @@ const dock2Spec: ScreenshotSpec = {
       fontSize: 18,
       leader: true,
       anchor: { graphNode: 's110050877+' },
-      dx: -230,
-      dy: 10,
+      dx: -80,
+      dy: -40,
     },
   ],
 }
