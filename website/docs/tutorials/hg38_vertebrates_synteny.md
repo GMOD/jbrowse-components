@@ -63,24 +63,23 @@ hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
 - the finished config, the eight hub entries and the composed track together:
   https://jbrowse.org/demos/hg38_vertebrates/config.json
 
-## One alignment per genome
+## LiftOver chains as one indexed alignment per genome
 
-A liftOver chain places sequence. Every base of the human window that the chain
-reaches has a position in the other genome, inside a gene or not, and the track
-draws each lane from that.
+A liftOver chain maps each stretch of one genome to a position in another,
+whether or not a gene lies there, so the track can draw each lane from the chain
+alone.
 
-UCSC's chains are one alignment per genome, each between hg38 and that one
-genome. Composed, they make a star with hg38 at the centre: hg38 against
-chimpanzee, hg38 against mouse, and no row anywhere that aligns chimpanzee to
-mouse. A lane stack anchored on hg38 matches that star: the track places each
-lane from the chain between hg38 and that genome, and composes the ribbons
-between two adjacent mate lanes through the human coordinates they share.
+Each UCSC chain aligns hg38 to one other genome, so the set forms a star with
+hg38 at the centre: hg38 against chimpanzee, hg38 against mouse, and no row that
+aligns chimpanzee to mouse. The track places each lane from the chain between
+hg38 and that genome, and draws the ribbon between two neighbouring lanes
+through the human coordinates both share.
 
 Each hosted file is a chain converted to PAF and indexed with
-`jbrowse make-pif`, which can write a coarse tier beside the per-base one for
-whole-chromosome zooms. `tabix` reads the tiers from the index without fetching
-the alignment: the header names the tiers the file lists, and the coarse-tier
-sequence names are the upper-case ones.
+`jbrowse make-pif`, which can write a coarser tier beside the per-base one for
+whole-chromosome zooms. `tabix` lists the tiers from the index without
+downloading the alignment: the header names them, and coarse-tier sequence names
+are upper-case.
 
 To index a chain of your own, convert it to PAF with `chain2paf` from
 [paftools](https://github.com/lh3/minimap2/tree/master/misc), then run
@@ -102,15 +101,14 @@ tabix -l https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | grep
 
 ## Composing the eight chains into one track
 
-One `SyntenyTrack` names hg38 and every genome it stacks, and its adapter is a
-`MultiPairwiseSyntenyAdapter` holding one child per chain. Each child is a
-`PairwiseIndexedPAFAdapter` over one chain file, naming its two assemblies as
-`query,target`, the genome the chain lifts to first. The anchor is the one
-assembly every child names. The list below is cut to three genomes for the page;
-the hosted config contains all eight. The assemblies and their gene tracks come
-from the hub configs unchanged, and a lane finds its gene models through the
-session, so the track is the one addition to the hub entries. A genome of your
-own loads from its FASTA instead:
+One `SyntenyTrack` names hg38 and every genome it stacks. Its adapter, a
+`MultiPairwiseSyntenyAdapter`, holds one `PairwiseIndexedPAFAdapter` per chain,
+each naming its two assemblies as `query,target` with the genome the chain lifts
+to first. The anchor is the one assembly every chain names. The config below is
+cut to three genomes for the page, and the hosted config has all eight. The
+assemblies and their gene tracks come from the hub configs unchanged, and each
+lane finds its gene models through the session, so this track is the only
+addition to the hub entries. A genome of your own loads from its FASTA instead:
 
 ```json addassembly
 {
@@ -157,18 +155,17 @@ own loads from its FASTA instead:
 }
 ```
 
-The track menu has **Level of detail** beside the lane controls, as a pairwise
-synteny track does. The entry picks the stored tier a zoom reads. The menu
-offers it once every child has a coarse tier; run the `tabix -l` line above on
-each file to check.
+**Level of detail** on the track menu picks which stored tier a zoom reads, as
+on a pairwise synteny track. The menu offers it once every child has a coarse
+tier; run the `tabix -l` line above on each file to check.
 
-## Stacking nine genomes at the TP53 neighbourhood
+## Stacking nine genomes at TP53 and at PMP22
 
 Opened on hg38 around _TP53_, the track draws a lane per genome under the human
 axis, each fitted to wherever its chain places the window. Each lane header
 names the chromosome and the span the lane shows, with `[rev]` where that
-chromosome runs the other way relative to hg38, and the lanes stack densest
-first, so the genomes placing the most of the window sit at the top.
+chromosome runs the other way relative to hg38. The lanes stack with the genomes
+placing the most of the window at the top.
 
 ```json session config=https://jbrowse.org/demos/hg38_vertebrates/config.json
 {
@@ -194,66 +191,64 @@ first, so the genomes placing the most of the window sit at the top.
 ```
 
 Around _TP53_ every lane but gorilla places the whole window from one chain,
-with the same genes in the same order, and the ribbons show where that chain is
-not continuous. The gorilla lane stops after _FXR2_, because gorGor6 holds the
-_TP53_ end of the window on an unplaced contig. A liftOver chain holds its
-insertions and deletions inside one record, and the track cuts each record at
-every indel of 10 kb or more. It draws a ribbon per gap-free run, so the white
-wedges between runs are the stretches one genome has and the other lacks. The
-mouse, cow and dog chains have many such gaps, and the ape chains have gaps
-under the cut and draw as near-continuous ribbons. The mouse lane shows `[rev]`,
-since its chain runs the other way against hg38 here.
+with the same genes in the same order. The gorilla lane stops after _FXR2_,
+because gorGor6 holds the _TP53_ end of the window on an unplaced contig. A
+chain records its insertions and deletions inside one alignment record, and the
+track cuts a record at every indel of 10 kb or more, drawing one ribbon per
+gap-free run. The white wedges between ribbons are stretches one genome has and
+the other lacks. The mouse, cow and dog chains have many such gaps, and the ape
+chains have gaps under the cut, so their ribbons look continuous. The mouse lane
+shows `[rev]` because its chain runs the other way against hg38 here.
 
-<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes from one composed liftOver track, each lane drawing the RefSeq gene models annotated on its chromosome. The white wedges in the ribbons are the large indels in each chain, few in the apes and many in mouse, cow and dog; the mouse lane is reversed, and the gorilla lane stops where gorGor6 moves the rest of the window onto an unplaced contig." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
+<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes, each drawing its own RefSeq gene models. White wedges in the ribbons are large indels in each chain, few in the apes and many in mouse, cow and dog. The mouse lane is reversed, and the gorilla lane stops where gorGor6 moves the rest of the window onto an unplaced contig." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
 Navigate to `chr17:15,200,000-16,400,000`, eight megabases toward the
-centromere, near _PMP22_. The region is a segmental-duplication hotspot: every
-genome places it as several blocks, and many of those blocks run the other way
-against their neighbours.
+centromere, near _PMP22_. The region is a hotspot of segmental duplications
+(long repeated copies of sequence): every genome places it as several blocks,
+and many of those blocks run the other way against their neighbours.
 
-A lane whose blocks run backwards along hg38 on balance shows `[rev]` in its
-header and draws mirrored, so its inversions come out straight; a ribbon crosses
-where one block runs against its neighbour inside a lane. The marmoset lane is
-the clearest case: its chain covers the left of the window forwards and then
-stops, and a reversed block further along the same chromosome places the rest of
-the window.
+A lane whose blocks mostly run backwards along hg38 shows `[rev]` in its header
+and draws mirrored, so its inversions come out straight. Inside a lane, a ribbon
+crosses where one block runs against its neighbour. The marmoset lane is the
+clearest case: its chain covers the left of the window forwards and then stops,
+and a reversed block further along the same chromosome places the rest of the
+window.
 
-The gorilla lane names chr17 in its header beside the chr5 frame it drew. chr17
-is the homologous chromosome, and some of this window aligns there too, so the
-chr5 frame misses part of what the alignment places. **Show chr17 in this lane**
-on the lane header menu pins the lane onto the other contig. Where the blocks in
-a lane split about evenly between the two orientations, **Flip lane** on its
-header menu turns it the other way on the same contig, and **Let the lane choose
-its orientation** hands the choice back.
+The gorilla lane header names chr17 beside chr5, the chromosome the lane drew.
+Part of the window aligns to chr17, the homologous chromosome, so the chr5 frame
+misses some of what the alignment places. **Show chr17 in this lane** on the
+lane header menu pins the lane onto chr17. Where a lane's blocks split about
+evenly between the two orientations, **Flip lane** on its header menu turns the
+lane the other way on the same contig, and **Let the lane choose its
+orientation** hands the choice back.
 
-<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and many run against their neighbours: a lane running backwards along hg38 shows a reversed marker in its header, the crossed ribbons are where a block runs against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
+<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. A lane running backwards along hg38 carries a reversed marker in its header, crossed ribbons mark a block running against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
 
 **Color by... → Strand**, under **Ribbons** on the track menu, colors each
-ribbon by strand. Between the anchor and the first lane a ribbon takes the
-strand of one alignment, and between two mate lanes it takes the strands of two
-alignments multiplied together. The track flips a lane whose alignments all run
-the other way and marks it `[rev]` in its header, so its ribbons come out
-straight on screen while the strand color still marks every one of them as an
-inversion. A single crossed ribbon into an unflipped lane is one block running
-against its neighbours.
+ribbon by strand. A ribbon between the anchor and the first lane takes the
+strand of one alignment, and a ribbon between two genome lanes takes the product
+of two alignments' strands, so two reverse alignments give forward. The track
+flips a lane whose alignments all run the other way and marks it `[rev]` in its
+header, so its ribbons come out straight on screen while the strand color still
+marks each of them as an inversion. A single crossed ribbon into an unflipped
+lane is one block running against its neighbours.
 
-<Figure caption="The same eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. In a flipped lane the ribbons run straight and still have the reversed color, so crossing and color disagree on the same block." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
+<Figure caption="The eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. In a flipped lane the ribbons run straight and still carry the reverse color." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
 
-## Reading lane spans, zoom steps and composed ribbons {#reading-the-stack}
+## Reading a lane's span, width multiple and ribbons {#reading-the-stack}
 
-Each lane uses the coordinates of the genome it shows, fitted to wherever the
-alignment places the anchor window. The number at the right edge of a lane is
-the span that lane shows, and the multiple after it is how much wider than the
-anchor window that span is, rounded to one of a few fixed steps. A lane placing
-up to a tenth more than a step stays on that step, and the extra runs off its
-edges, as sequence beside the anchor window runs off that window.
+Each lane draws in the coordinates of its own genome, fitted to wherever the
+alignment places the hg38 window. The number at a lane's right edge is the span
+the lane shows, and the multiple after it is how many times wider than the hg38
+window that span is, rounded to one of a few fixed steps. A lane that places up
+to a tenth more than a step stays on that step, and the extra runs off the
+lane's edges.
 
-Ribbons join a lane to the lane directly above it. Where a source holds no
-alignment between two mates, as in this star, the track composes the ribbon
-between them through the anchor. Hovering a ribbon lights the same alignment in
-every lane it reaches, dragging a lane label reorders the stack, and the header
-menu on a lane re-anchors the view on that genome or opens it in a separate
-view.
+A ribbon joins a lane to the lane directly above it. No chain aligns two
+neighbouring genomes in this star, so the track composes their ribbon through
+hg38, the anchor. Hovering a ribbon lights the same alignment in every lane it
+reaches, dragging a lane label reorders the stack, and a lane's header menu
+re-anchors the view on that genome or opens it in a separate view.
 
 ## Checking the marmoset lane against its chain
 
