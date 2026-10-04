@@ -625,7 +625,11 @@ function checkScaleSlots(
     const members = declaredMembers(written, slot)
     if (slot.fieldPresets) {
       for (const problem of colorProblems(
-        colorSlotsOf(name => members[name]),
+        colorSlotsOf(name =>
+          name === 'field'
+            ? (members.field ?? slot.fieldDefault)
+            : members[name],
+        ),
         slot.fieldPresets,
       )) {
         warn(`${where}.${slot.name}`, problem)

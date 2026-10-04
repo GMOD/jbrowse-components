@@ -163,6 +163,9 @@ function slotsOf(type) {
       // a colour object's defaults by field, which the validator's colour
       // rules read the object with
       fieldPresets: subOptions?.fieldPresets,
+      fieldDefault: subOptions?.fieldPresets
+        ? subMeta.definition?.field?.defaultValue || undefined
+        : undefined,
       liftsString: lifts.string || undefined,
       liftsNumbers: lifts.numbers || undefined,
       liftsUri: lifts.uri || undefined,

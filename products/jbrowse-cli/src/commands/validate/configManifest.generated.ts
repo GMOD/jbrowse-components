@@ -4124,7 +4124,8 @@ export const configManifest: ConfigManifest = {
             "*": {
               "scale": "categorical"
             }
-          }
+          },
+          "fieldDefault": "strand"
         },
         {
           "name": "baseColor",
@@ -5899,8 +5900,12 @@ export const configManifest: ConfigManifest = {
           "type": "HicColorConfigurationSchema",
           "subSlots": [
             {
+              "name": "field",
+              "type": "HicColorField"
+            },
+            {
               "name": "scale",
-              "type": "HicColorScale"
+              "type": "(HicColorScale | undefined)"
             },
             {
               "name": "scheme",
@@ -5922,7 +5927,13 @@ export const configManifest: ConfigManifest = {
               "name": "domainQuantile",
               "type": "number"
             }
-          ]
+          ],
+          "fieldPresets": {
+            "count": {
+              "scale": "linear"
+            }
+          },
+          "fieldDefault": "count"
         },
         {
           "name": "resolutionBias",

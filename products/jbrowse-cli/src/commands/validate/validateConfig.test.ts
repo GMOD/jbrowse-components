@@ -438,6 +438,16 @@ describe('validateConfig', () => {
       ).toEqual([`domain-ends ${where}.domainMax`])
     })
 
+    it("reads Hi-C's count preset, which no config writes", () => {
+      expect(
+        found({
+          type: 'HicTrack',
+          adapter: { type: 'HicAdapter', uri: 'contacts.hic' },
+          ...display('LinearHicDisplay', { domainMin: 10, domainMax: 1 }),
+        }),
+      ).toEqual([`domain-ends ${where}.domainMax`])
+    })
+
     it("reads a field's default scale where none is written", () => {
       const cuts = { domain: ['2', '1'] }
       expect(

@@ -34,6 +34,8 @@ export interface SlotEntry {
    * (the schema's `fieldPresets` option).
    */
   fieldPresets?: Readonly<Record<string, FieldPresetEntry>>
+  /** A colour object's `field` while a config leaves it unwritten (Hi-C's `count`). */
+  fieldDefault?: string
   /** A `stringArray` slot whose schema reads a bare string as a list of one. */
   liftsString?: true
   /** A `stringArray` slot whose schema carries a number written in it as a string. */
