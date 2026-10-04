@@ -15,6 +15,7 @@ import {
   colorForField,
   colorForValue,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -28,7 +29,6 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
-import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { breakendSplitViewMenuItem } from './breakendSplitViewMenuItem.ts'
 import { recordHueField } from './cellHue.ts'
@@ -48,34 +48,6 @@ import { variantFilterFields } from './variantFilterFields.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-// The sample-metadata radio group both "Color by..." and "Group by..." offer:
-// the same candidate attributes (`colorByAttributes` — every samplesTsv column
-// the sources carry), each with a None to turn the setting off.
-function sampleAttributeItems(
-  attributes: string[],
-  current: string,
-  onSelect: (attribute: string) => void,
-): MenuItem[] {
-  return [
-    {
-      label: 'None',
-      type: 'radio',
-      checked: !current,
-      onClick: () => {
-        onSelect('')
-      },
-    },
-    ...attributes.map(attr => ({
-      label: capitalizeFirst(attr),
-      type: 'radio' as const,
-      checked: current === attr,
-      onClick: () => {
-        onSelect(attr)
-      },
-    })),
-  ]
-}
 
 // A row that needs something in the fetched window, greyed with the reason
 // until it is there
@@ -334,22 +306,22 @@ export function variantTrackMenuItems(
             ]),
       ],
     }),
-    // The banding half of the same metadata, beside the coloring half: both
-    // are config slots a session can set, and only the coloring one had a way
-    // in from the menu.
-    ...(self.colorByAttributes.length
+    // The banding half of the sample metadata, beside the coloring half.
+    ...(self.rowColorFields.length
       ? [
-          {
-            label: 'Group by...',
-            icon: WorkspacesIcon,
-            subMenu: sampleAttributeItems(
-              self.colorByAttributes,
-              self.facet?.field ?? '',
-              arg => {
-                self.setFacet(arg)
-              },
-            ),
-          },
+          groupByRadioMenuItem({
+            current: self.facet?.field,
+            options: self.rowColorFields.map(attr => ({
+              type: attr,
+              label: capitalizeFirst(attr),
+            })),
+            onSelect: attr => {
+              self.setFacet(attr)
+            },
+            onNone: () => {
+              self.setFacet('')
+            },
+          }),
         ]
       : []),
     ...filterMenuItems({
