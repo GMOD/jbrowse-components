@@ -1,6 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import { colorChannelSlots } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { LDMetric } from '../VariantRPC/ldTypes.ts'
@@ -39,14 +38,6 @@ export const LD_VALUE_EXTENT = [0, 1] as const
 export const ldColorConfigSchema = ConfigurationSchema(
   'LDColor',
   {
-    ...colorChannelSlots({
-      scales: LD_COLOR_SCALES,
-      scaleName: 'LDColorScale',
-      fieldType: 'string',
-      field: 'r2 or dprime',
-      fieldDefault: 'r2',
-      scale: 'linear, the one scale; unset is linear',
-    }),
     /**
      * #slot field
      * Which of the file's columns the cells are: `r2` (R², the R2/PHASED_R2
@@ -94,6 +85,14 @@ export const ldColorConfigSchema = ConfigurationSchema(
       type: 'maybeNumber',
       description:
         'the value the top colour paints, everything above it too; unset is 1',
+    },
+    /**
+     * #slot scale
+     */
+    scale: {
+      type: 'maybeStringEnum',
+      model: types.enumeration('LDColorScale', [...LD_COLOR_SCALES]),
+      description: 'linear, the one scale; unset is linear',
     },
   },
   { closed: true, fieldPresets: LD_FIELD_PRESETS },

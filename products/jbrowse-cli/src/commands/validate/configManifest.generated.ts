@@ -5387,10 +5387,6 @@ export const configManifest: ConfigManifest = {
               "type": "LDColorField"
             },
             {
-              "name": "scale",
-              "type": "(LDColorScale | undefined)"
-            },
-            {
               "name": "scheme",
               "type": "(ColorScheme | undefined)"
             },
@@ -5405,6 +5401,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "domainMax",
               "type": "(number | undefined)"
+            },
+            {
+              "name": "scale",
+              "type": "(LDColorScale | undefined)"
             }
           ],
           "fieldPresets": {
@@ -5778,26 +5778,6 @@ export const configManifest: ConfigManifest = {
           "type": "MafColorConfigurationSchema",
           "subSlots": [
             {
-              "name": "scheme",
-              "type": "(ColorScheme | undefined)"
-            },
-            {
-              "name": "reverse",
-              "type": "boolean"
-            },
-            {
-              "name": "domainMid",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMin",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "domainMax",
-              "type": "(number | undefined)"
-            },
-            {
               "name": "field",
               "type": "MafColorField"
             },
@@ -5818,6 +5798,26 @@ export const configManifest: ConfigManifest = {
             {
               "name": "title",
               "type": "(string | undefined)"
+            },
+            {
+              "name": "scheme",
+              "type": "(ColorScheme | undefined)"
+            },
+            {
+              "name": "reverse",
+              "type": "boolean"
+            },
+            {
+              "name": "domainMin",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMax",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMid",
+              "type": "(number | undefined)"
             }
           ],
           "shorthand": {
@@ -6061,10 +6061,6 @@ export const configManifest: ConfigManifest = {
               "type": "HicColorField"
             },
             {
-              "name": "scale",
-              "type": "(HicColorScale | undefined)"
-            },
-            {
               "name": "scheme",
               "type": "ColorScheme"
             },
@@ -6077,12 +6073,16 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             },
             {
-              "name": "domainMax",
-              "type": "(number | undefined)"
-            },
-            {
               "name": "domainQuantile",
               "type": "number"
+            },
+            {
+              "name": "scale",
+              "type": "(HicColorScale | undefined)"
+            },
+            {
+              "name": "domainMax",
+              "type": "(number | undefined)"
             }
           ],
           "fieldPresets": {

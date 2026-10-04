@@ -1,10 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import {
-  colorDomainEndsSlots,
-  colorRampSlots,
-  normalizeChannel,
-} from '@jbrowse/display-kit/colorConfigSchema'
+import { normalizeChannel } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -89,8 +85,6 @@ export const MAF_FIELD_PRESETS = {
 export const mafColorConfigSchema = ConfigurationSchema(
   'MafColor',
   {
-    ...colorRampSlots,
-    ...colorDomainEndsSlots,
     /**
      * #slot field
      */
@@ -168,6 +162,14 @@ export const mafColorConfigSchema = ConfigurationSchema(
     domainMax: {
       type: 'maybeNumber',
       description: "the identity the ramp's high end paints; unset is 1",
+    },
+    /**
+     * #slot domainMid
+     */
+    domainMid: {
+      type: 'maybeNumber',
+      description:
+        "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it",
     },
   },
   {

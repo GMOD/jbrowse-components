@@ -1,9 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import {
-  colorChannelSlots,
-  colorDomainEndsSlots,
-} from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
@@ -45,15 +41,6 @@ export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
 export const hicColorConfigSchema = ConfigurationSchema(
   'HicColor',
   {
-    ...colorChannelSlots({
-      scales: HIC_COLOR_SCALES,
-      scaleName: 'HicColorScale',
-      fieldType: 'string',
-      field: "count, each bin's contact count",
-      fieldDefault: 'count',
-      scale:
-        'linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear',
-    }),
     /**
      * #slot field
      */
@@ -83,7 +70,6 @@ export const hicColorConfigSchema = ConfigurationSchema(
       description:
         "turns the scheme's ramp round; unset reverses a scheme dark at its low end",
     },
-    ...colorDomainEndsSlots,
     /**
      * #slot domainMin
      */
@@ -103,6 +89,23 @@ export const hicColorConfigSchema = ConfigurationSchema(
       defaultValue: 0.95,
       description:
         'the quantile of the loaded counts an unset domainMax follows; 1 is their maximum',
+    },
+    /**
+     * #slot scale
+     */
+    scale: {
+      type: 'maybeStringEnum',
+      model: types.enumeration('HicColorScale', [...HIC_COLOR_SCALES]),
+      description:
+        'linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear',
+    },
+    /**
+     * #slot domainMax
+     */
+    domainMax: {
+      type: 'maybeNumber',
+      description:
+        "the top of a linear or log scale's domain; unset follows the loaded values",
     },
   },
   { closed: true, fieldPresets: HIC_FIELD_PRESETS },

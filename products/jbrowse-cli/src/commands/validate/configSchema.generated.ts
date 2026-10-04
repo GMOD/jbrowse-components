@@ -7536,10 +7536,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "r2"
         },
-        "scale": {
-          "description": "linear, the one scale; unset is linear.",
-          "const": "linear"
-        },
         "scheme": {
           "description": "the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime.",
           "enum": [
@@ -7567,6 +7563,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domainMax": {
           "description": "the value the top colour paints, everything above it too; unset is 1.",
           "type": "number"
+        },
+        "scale": {
+          "description": "linear, the one scale; unset is linear.",
+          "const": "linear"
         }
       },
       "patternProperties": {
@@ -8017,39 +8017,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "scheme": {
-              "description": "the named ramp identity runs along; unset is redgreyblue, and range's colours, where it lists any, win over it.",
-              "enum": [
-                "viridis",
-                "magma",
-                "inferno",
-                "cividis",
-                "juicebox",
-                "fall",
-                "reds",
-                "blues",
-                "redblue",
-                "purpleorange",
-                "redgreyblue"
-              ]
-            },
-            "reverse": {
-              "description": "turns the identity ramp round, so its last colour paints the low end.",
-              "type": "boolean",
-              "default": false
-            },
-            "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
-              "type": "number"
-            },
-            "domainMin": {
-              "description": "the identity the ramp's low end paints, 0 to 1; unset is 0, and 0.7 spreads the ramp over close relatives.",
-              "type": "number"
-            },
-            "domainMax": {
-              "description": "the identity the ramp's high end paints; unset is 1.",
-              "type": "number"
-            },
             "field": {
               "description": "what colours a cell: mismatch, base, identity, chromosome or codon.",
               "enum": [
@@ -8107,6 +8074,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "title": {
               "description": "key title; unset is the field's own heading, \\"\\" draws none.",
               "$ref": "#/$defs/PlainString"
+            },
+            "scheme": {
+              "description": "the named ramp identity runs along; unset is redgreyblue, and range's colours, where it lists any, win over it.",
+              "enum": [
+                "viridis",
+                "magma",
+                "inferno",
+                "cividis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues",
+                "redblue",
+                "purpleorange",
+                "redgreyblue"
+              ]
+            },
+            "reverse": {
+              "description": "turns the identity ramp round, so its last colour paints the low end.",
+              "type": "boolean",
+              "default": false
+            },
+            "domainMin": {
+              "description": "the identity the ramp's low end paints, 0 to 1; unset is 0, and 0.7 spreads the ramp over close relatives.",
+              "type": "number"
+            },
+            "domainMax": {
+              "description": "the identity the ramp's high end paints; unset is 1.",
+              "type": "number"
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "type": "number"
             }
           },
           "patternProperties": {
@@ -8285,13 +8285,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "const": "count",
           "default": "count"
         },
-        "scale": {
-          "description": "linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear.",
-          "enum": [
-            "linear",
-            "log"
-          ]
-        },
         "scheme": {
           "description": "the named ramp counts run across; juicebox fades from transparent to red.",
           "enum": [
@@ -8317,14 +8310,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "the bottom of the scale; unset is 0.",
           "type": "number"
         },
-        "domainMax": {
-          "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-          "type": "number"
-        },
         "domainQuantile": {
           "description": "the quantile of the loaded counts an unset domainMax follows; 1 is their maximum.",
           "type": "number",
           "default": 0.95
+        },
+        "scale": {
+          "description": "linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear.",
+          "enum": [
+            "linear",
+            "log"
+          ]
+        },
+        "domainMax": {
+          "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+          "type": "number"
         }
       },
       "patternProperties": {
