@@ -19,17 +19,24 @@ npm install @jbrowse/react-circular-genome-view2 --legacy-peer-deps
 ```tsx
 import '@fontsource/roboto'
 
-import {
-  JBrowseCircularGenomeView,
-  createViewState,
-} from '@jbrowse/react-circular-genome-view2'
+import { CircularGenomeView } from '@jbrowse/react-circular-genome-view2'
 
 function View() {
-  const state = createViewState({
-    assembly: {/* assembly */},
-    tracks: [/* tracks */],
-  })
-  return <JBrowseCircularGenomeView viewState={state} />
+  return (
+    <CircularGenomeView
+      assembly={{
+        name: 'volvox',
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+      }}
+      tracks={[
+        {
+          trackId: 'svs',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.dup.vcf.gz',
+        },
+      ]}
+      view={{ tracks: ['svs'] }}
+    />
+  )
 }
 ```
 
@@ -38,7 +45,8 @@ available. Add
 [`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto) to pull
 it in.
 
-For working examples, see https://jbrowse.org/jb2/docs/embedded_components/
+Choosing between the embedded packages:
+https://jbrowse.org/jb2/docs/embedded_components/
 
 ## Previous package
 

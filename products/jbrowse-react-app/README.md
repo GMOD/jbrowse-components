@@ -36,11 +36,10 @@ function App() {
 }
 ```
 
-**The stylesheet is not optional**, unlike the single-view components, which
-have none. It styles the tiled panel layout, so without it the panels, tabs and
-dividers render unstyled while everything else looks correct. It is
-self-contained, so a page not running a bundler can `<link>` it from the package
-instead.
+**Import the stylesheet** even though it holds no rules today: it is where the
+package ships any CSS it comes to need, so an app importing it now keeps
+rendering correctly across that release. It is self-contained, so a page not
+running a bundler can `<link>` it from the package instead.
 
 The component uses [Roboto](https://fonts.google.com/specimen/Roboto) when
 available. Add

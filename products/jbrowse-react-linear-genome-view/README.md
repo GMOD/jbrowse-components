@@ -19,17 +19,24 @@ npm install @jbrowse/react-linear-genome-view2 --legacy-peer-deps
 ```tsx
 import '@fontsource/roboto'
 
-import {
-  JBrowseLinearGenomeView,
-  useCreateViewState,
-} from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 function View() {
-  const state = useCreateViewState({
-    assembly: {/* assembly */},
-    tracks: [/* tracks */],
-  })
-  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
+  return (
+    <LinearGenomeView
+      assembly={{
+        name: 'volvox',
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+      }}
+      tracks={[
+        {
+          trackId: 'genes',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+        },
+      ]}
+      view={{ loc: 'ctgA:1105..1221', tracks: ['genes'] }}
+    />
+  )
 }
 ```
 

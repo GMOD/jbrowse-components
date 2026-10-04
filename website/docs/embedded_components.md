@@ -31,9 +31,9 @@ The type and adapter come from the file's extension, and `assemblyNames` from
 the component's one `assembly` (see
 [the shortest track](/docs/config_guides/tracks#the-shortest-track)).
 
-**`@jbrowse/react-app2` also needs its stylesheet**:
-`import '@jbrowse/react-app2/styles.css'`. Without it the panels, tabs and
-dividers render unstyled.
+**`@jbrowse/react-app2` has a stylesheet to import**:
+`import '@jbrowse/react-app2/styles.css'`. It holds no rules today, and it is
+where the package ships any CSS it comes to need.
 
 **The props are initial values, like an input's `defaultValue`.** The engine is
 built once on first render and later prop changes are ignored. To switch
