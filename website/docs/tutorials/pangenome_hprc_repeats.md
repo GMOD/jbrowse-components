@@ -122,8 +122,8 @@ GRCh38's, with no purple, is the shortest of the nine.
 
 Walk rows give each haplotype's copy count. KIV-2's copies are near-identical,
 so the aligner's choice of which GRCh38 copy an extra one matches is arbitrary,
-and the walks cannot say which copy is which. A record that lists each
-haplotype's copies can.
+so the walks leave open which copy is which. A record that lists each
+haplotype's copies settles it.
 
 We host a record of the eight haplotypes' KIV-2 copies as a track. It holds a
 single VCF 4.5 `<CNV:TR>` record at the array: each allele lists its runs of one
