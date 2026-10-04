@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo, useRef, useState } from 'react'
+import { Suspense, useMemo, useRef, useState } from 'react'
 
 import { deleteQueryParams, useQueryParam } from '@jbrowse/app-core'
 import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 import { invokeIpc } from '../ipc.ts'
 import { useMcpRequests } from '../mcp/useMcpRequests.ts'
 import { useIpc } from '../useIpc.ts'
+import { LazyJBrowse } from './LazyJBrowse.ts'
 import { NotificationProvider } from './Notifications.tsx'
 import { useNotifyError } from './NotifyContext.ts'
 import SessionLoadingScreen from './SessionLoadingScreen.tsx'
@@ -37,13 +38,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
 prewarmGraphics()
-
-// The session UI — @jbrowse/app-core's App, and with it dockview, the drawer
-// widgets and their Material chrome — is what the start screen exists to get you
-// to, not what it is made of. Lazy so launching to the start screen doesn't
-// evaluate it first; by the time this resolves the session's plugin manager has
-// already been built, which takes considerably longer.
-const JBrowse = lazy(() => import('./JBrowse.tsx'))
 
 // Both launch params are one-shot: once the session they name is built (or has
 // failed to build) they have to leave the address bar, or the next read reopens
@@ -243,7 +237,7 @@ const LoaderContents = observer(function LoaderContents() {
       ) : null}
       {pluginManager?.rootModel?.session ? (
         <Suspense fallback={loading}>
-          <JBrowse pluginManager={pluginManager} />
+          <LazyJBrowse pluginManager={pluginManager} />
         </Suspense>
       ) : target ? (
         loading

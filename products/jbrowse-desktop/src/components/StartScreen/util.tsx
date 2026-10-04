@@ -1,5 +1,8 @@
+import { preloadComponent } from '@jbrowse/core/util/preloadComponent'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { scheduleDetachedDestroy } from '@jbrowse/product-core'
+
+import { LazyJBrowse } from '../LazyJBrowse.ts'
 
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { StartScreenPluginManager } from './pluginManagers.tsx'
@@ -35,16 +38,19 @@ export async function createStartScreenPluginManager(): Promise<StartScreenPlugi
 }
 
 export async function loadPluginManager(filePath: string) {
+  preloadComponent(LazyJBrowse)
   const { loadPluginManager } = await import('./pluginManagers.tsx')
   return loadPluginManager(filePath)
 }
 
 export async function launchSnapshot(snap: JBrowseConfigInput) {
+  preloadComponent(LazyJBrowse)
   const { launchSnapshot } = await import('./pluginManagers.tsx')
   return launchSnapshot(snap)
 }
 
 export async function openSpecLink(link: string) {
+  preloadComponent(LazyJBrowse)
   const { openSpecLink } = await import('./pluginManagers.tsx')
   return openSpecLink(link)
 }
