@@ -317,6 +317,8 @@ runs:
   rank).
 - **Deconstruct the callset**, with the `vg deconstruct` call above.
 
+The whole build takes about half an hour after the download.
+
 The script stops if the reference path does not reproduce bosTau9's chromosome
 lengths, and a
 [README.txt](https://jbrowse.org/demos/bovine_pangenome/README.txt) beside the
