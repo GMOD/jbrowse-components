@@ -67,14 +67,15 @@
   screencast off a backgrounded one delivers the same frame over and over at the
   right duration and the right size — every number the run prints is fine and
   the picture is frozen.
-- **Every annotation `anchor`s** — by locus, dotplot cell, graph node or chord,
-  never a measured pixel. Shapes belong in
-  `products/jbrowse-capture/src/annotationOverlay.ts`. Prefer an in-app
-  `highlight` to an overlay. A band under 24 CSS px carries no chip and clips
-  any `label` to nothing (`CHIP_MIN_WIDTH`, and the band is `overflow: clip`),
-  so at whole-chromosome scale the caption does the naming. Alpha it for what it
-  sits over: a wash marking a REGION can be opaque, one pointing at a feature
-  inside itself cannot.
+- **Every annotation `anchor`s** — by locus, dotplot cell, graph node or
+  element, never a measured pixel; a chord, an ideogram band and a `band` strip
+  anchor clicks only (`ActionAnchor`), since `@jbrowse/capture` cannot resolve
+  them. Shapes belong in `products/jbrowse-capture/src/annotationOverlay.ts`.
+  Prefer an in-app `highlight` to an overlay. A band under 24 CSS px carries no
+  chip and clips any `label` to nothing (`CHIP_MIN_WIDTH`, and the band is
+  `overflow: clip`), so at whole-chromosome scale the caption does the naming.
+  Alpha it for what it sits over: a wash marking a REGION can be opaque, one
+  pointing at a feature inside itself cannot.
 - **A spec edit staleness `galleryLinks.generated.ts` and
   `liveLinks.generated.ts`, and no figure check says so.** The regen writes the
   PNG and the store takes it, while the gallery card's and the doc figure's live

@@ -1,4 +1,4 @@
-import type { AnnotationAnchor } from './screenshot-specs.ts'
+import type { ActionAnchor } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
 
 // Where a circular view drew one chord, as a point a click actually lands on.
@@ -23,7 +23,7 @@ import type { Page } from 'puppeteer'
 // returning the first sampled point where the answer is this chord. A chord
 // that is completely buried resolves to nothing and fails the spec by name,
 // which is the honest answer: there was no pixel of it to click.
-export async function chordPoint(page: Page, anchor: AnnotationAnchor) {
+export async function chordPoint(page: Page, anchor: ActionAnchor) {
   const point = await page.evaluate((label: string) => {
     interface ChordView {
       id: string
@@ -113,7 +113,7 @@ export async function chordPoint(page: Page, anchor: AnnotationAnchor) {
 
 // Where a circular view drew one chromosome's ideogram band: the view's own
 // `bandCenter`, which its `bandAt` must agree is that chromosome.
-export async function ideogramPoint(page: Page, anchor: AnnotationAnchor) {
+export async function ideogramPoint(page: Page, anchor: ActionAnchor) {
   const point = await page.evaluate((name: string) => {
     interface BandView {
       id: string

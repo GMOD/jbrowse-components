@@ -1,6 +1,6 @@
 import { VIEW_SCOPE_TESTIDS } from './selectorAnchor.ts'
 
-import type { AnnotationAnchor } from './screenshot-specs.ts'
+import type { ActionAnchor } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
 
 // Where a linear genome view drew a genomic coordinate, in viewport CSS px.
@@ -31,7 +31,7 @@ import type { Page } from 'puppeteer'
 //
 // Returns undefined when the view, the track, the band or the locus doesn't
 // resolve, so the caller fails the spec by name rather than clicking (0,0).
-export async function locusPoint(page: Page, anchor: AnnotationAnchor) {
+export async function locusPoint(page: Page, anchor: ActionAnchor) {
   const path = Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0]
   const region = parseLocus(anchor.locus ?? '')
   const point = await page.evaluate(

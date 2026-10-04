@@ -10,17 +10,14 @@
 // out here would be undefined in there.
 
 // What an annotation attaches itself to, resolved at capture time so the
-// callout tracks the real thing instead of a hand-measured pixel. Four kinds,
-// in decreasing order of preference:
+// callout tracks the real thing instead of a hand-measured pixel. In
+// decreasing order of preference:
 //
 // - `track` + `locus`: MODEL anchoring. Reads the live LGV model
 //   (`window.JBrowseSession`) for the track's rendering container and the
 //   locus's pixel position, so a callout lands on a genomic coordinate. Nothing
 //   to re-measure when a track height, viewport width, or zoom changes. Use
 //   this for anything pointing at data.
-// - `chord`: a circular view chord, named by part of its `<title>`. Hit-tested
-//   along the curve, so the point it resolves to is one a click reaches rather
-//   than one that is merely on the geometry.
 // - `graphNode`: MODEL anchoring for a graph pane, a graph track's or a
 //   GraphGenomeView's. A graph is one canvas with no element per node, so a
 //   callout at a node used to be a raw viewport coordinate that only held while
@@ -28,6 +25,7 @@
 //   one of them. This reads the pane's own `nodePositions` through its
 //   `scale`/`translateX`/`translateY`, so a node is named by its GFA segment id
 //   and the layout can change underneath it.
+// - `hLocus`/`vLocus`: a dotplot's cell, read off the two axes' own layout.
 // - `selector`: the first matching element.
 // - `text`: the smallest-area element whose visible text matches — for menu
 //   items and buttons with no testid. Scans the whole document, so prefer
@@ -40,17 +38,6 @@
 export interface AnnotationAnchor {
   selector?: string
   text?: string
-  // Part of a circular view chord's own `<title>` -- the record's name and both
-  // of its loci, e.g. 'SV_20'. Resolved by the caller
-  // (`website/scripts/chordAnchor.ts`), which hit-tests along the curve rather
-  // than measuring it: a chord is a Bezier, so its bounding-box centre is not on
-  // it, and its midpoint is where every other chord bundles.
-  chord?: string
-  // A circular view chromosome's ideogram band, by refName ('chr11'), or with
-  // its assembly when two genomes share names ('mm39 chr11'). Resolved by the
-  // caller (`website/scripts/chordAnchor.ts`) at the band's middle, checked
-  // against the view's own `bandAt`.
-  ideogram?: string
   // GFA segment id in a graph track of the `view`-th view (`track` picks one
   // when it holds several), or in that view when it is a GraphGenomeView. The
   // resolved rect is the node's drawn polyline bounds in viewport px.
@@ -74,20 +61,9 @@ export interface AnnotationAnchor {
   // (no `locus`) it anchors to the whole track. With `graphNode` it names the
   // graph track the node is in.
   track?: string
-  // A selector, matched INSIDE the view, whose vertical band the point lands in
-  // — the third way of choosing the y after `track` and the default tracks
-  // area. The x still comes from the locus, which is what makes it useful: the
-  // scalebar a rubberband is drawn on spans exactly the tracks' x-range and
-  // sits above them, so `{ locus, band: '[data-testid="rubberband_controls"]' }`
-  // is a drag on the ruler with no measured pixel in it.
-  //
-  // Read by `website/scripts/locusAnchor.ts`, the same way `hLocus`/`vLocus` are
-  // read by dotplotAnchor: a callout has no use for it, since what a callout
-  // points at is a track or a feature.
-  band?: string
   // '8:127,735,434' or '8:127,700,000-127,800,000' — 1-based, commas optional,
   // aliases resolved through the assembly (so 'chr8' works on a bare-named
-  // assembly). Without `track` or `band` the view's whole tracks area is used.
+  // assembly). Without `track` the view's whole tracks area is used.
   locus?: string
   // where in the track's height to put the anchor point: 0 = top, 1 = bottom.
   // Omit to anchor to the whole track band (what a `box` wants).

@@ -8,7 +8,7 @@ import { chordPoint, ideogramPoint } from './chordAnchor.ts'
 import { locusPoint } from './locusAnchor.ts'
 import { selectorPoint } from './selectorAnchor.ts'
 
-import type { AnnotationAnchor, ScreenshotAction } from './screenshot-specs.ts'
+import type { ActionAnchor, ScreenshotAction } from './screenshot-specs.ts'
 import type { ElementHandle, Page } from 'puppeteer'
 
 // re-exported so generate-screenshots.ts keeps importing it from './actions'
@@ -371,7 +371,7 @@ function assertInViewport(
 async function anchorPoint(
   page: Page,
   action: ScreenshotAction,
-  anchor: AnnotationAnchor,
+  anchor: ActionAnchor,
 ) {
   const point = anchor.chord
     ? await chordPoint(page, anchor)
