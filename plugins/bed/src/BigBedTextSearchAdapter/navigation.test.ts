@@ -4,12 +4,6 @@ import { waitFor } from '@testing-library/react'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-// the index names the gene, EDEN at 1050..9500, while genes.bb draws only its
-// NM_0001.x transcripts, so the search highlight boxes nothing and says so
-beforeEach(() => {
-  jest.spyOn(console, 'warn').mockImplementation(() => {})
-})
-
 async function navAndLoad(view: any, query: string) {
   const moved = await view.navToLocString(query, 'volvox')
   await waitFor(() => {
@@ -46,13 +40,18 @@ async function setup() {
     },
   })
   // what a UCSC hub connection builds for a track declaring searchIndex and
-  // searchTrix: the index records name features, never the track
+  // searchTrix: the index records name features, never the track, and the
+  // transcripts gather into genes under the column the index names them by
   session.addSessionTrackConf({
     trackId: 'hub_genes',
     name: 'genes',
     assemblyNames: ['volvox'],
     type: 'FeatureTrack',
-    adapter: { type: 'BigBedAdapter', bigBedLocation: local('genes.bb') },
+    adapter: {
+      type: 'BigBedAdapter',
+      bigBedLocation: local('genes.bb'),
+      aggregateField: 'name2',
+    },
     textSearching: {
       textSearchAdapter: {
         type: 'BigBedTextSearchAdapter',
@@ -64,6 +63,16 @@ async function setup() {
   })
   await session.assemblyManager.waitForAssembly('volvox')
   return session.views[0]
+}
+
+function expectEdenBoxed(view: any) {
+  const display = view.tracks[0].displays[0]
+  expect(display.featureHighlights.map((h: object) => ({ ...h }))).toEqual([
+    { refName: 'ctgA', start: 1049, end: 9500, name: 'EDEN' },
+  ])
+  const boxed = [...display.highlightedFeatureIdSet]
+  expect(boxed).toHaveLength(1)
+  expect(boxed[0]).toMatch(/bb-745-0-parent$/)
 }
 
 test('a gene name lands on the gene and opens the hub track it came from', async () => {
@@ -83,6 +92,7 @@ test('a gene name lands on the gene and opens the hub track it came from', async
       (t: { configuration: { trackId: string } }) => t.configuration.trackId,
     ),
   ).toEqual(['hub_genes'])
+  expectEdenBoxed(view)
 })
 
 test('Enter on a word the query only prefixes lands on its gene', async () => {
@@ -97,4 +107,5 @@ test('Enter on a word the query only prefixes lands on its gene', async () => {
   expect(refName).toBe('ctgA')
   expect(start).toBeLessThanOrEqual(1050)
   expect(end).toBeGreaterThanOrEqual(9500)
+  expectEdenBoxed(view)
 })
