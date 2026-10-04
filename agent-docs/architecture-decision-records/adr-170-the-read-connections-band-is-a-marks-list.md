@@ -92,11 +92,15 @@ every other shape in the band to reach the DOM overlay to cross a seam.
 Settled while building, each against the picture the band drew before:
 
 - **Arc mode is valued**: its y is the genomic radius on a linear axis at the
-  view's px per bp, so an interchromosomal arc, whose radius is past every
-  domain, still rises to the band's far edge. Left unvalued, a translocation
-  across a seam drew as a dome as wide as the screen gap and read as a short
-  event. The axis stops half the widest stroke short of that edge, or the
-  band's clip halves a clamped apex.
+  view's px per bp. The axis stops half the widest stroke short of the band's
+  far edge, or the band's clip halves a clamped apex.
+- **An interchromosomal arc is its own unvalued link mark** (`arcCrossLink`),
+  a dome as high as its feet are apart. It first rose to the band's far edge,
+  on the argument that a dome as wide as the screen gap reads as a short
+  event; on a fusion framed with both breakpoints at the seam
+  (`cancer_sv/k562_fusion_inspector_reads`) that drew every junction as a
+  band-deep trough, which review called a silly depth. The colour already says
+  the arc crosses chromosomes.
 - **The split-read connector is a second link mark** under `strokeDash`, not a
   per-instance lane, so it paints after the solid bars.
 - **Every arc is filed under one loaded region.** The links draw unclipped, so

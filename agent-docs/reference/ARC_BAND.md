@@ -26,8 +26,8 @@ on screen. Three things ride on that, each a silently wrong picture if missed:
 - **Arc mode only.** The read cloud's Y axis is insert size, and an
   interchromosomal pair has none (TLEN 0), so `computeArcShape` falls back to the
   endpoint gap, which `arcsYDomainBp` maxes and the ruler prints as an insert
-  size. Arc mode's axis is genomic radius, where `INTERCHROM_ARC_YBP` is the band
-  ceiling.
+  size. Arc mode draws the arc unvalued (`arcCrossLink`), as high as its feet
+  are apart, since it has no genomic radius.
 - **`drawInter` and `minInterchromSupport` gate both marks** from one hoisted
   condition, so neither mark escapes the setting or the mismapping floor.
 - **The hover needs two refNames.** `formatArcTooltip` builds a range from the

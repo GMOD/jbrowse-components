@@ -52,6 +52,7 @@ function hitsOf(feed: ArcBandFeed, mark: number) {
   return [
     feed.tickHits,
     feed.linkHits,
+    feed.crossLinkHits,
     feed.dashedHits,
     feed.clippedLinkHits,
     feed.clippedDashedHits,
@@ -97,11 +98,12 @@ function oneInstance(feed: ArcBandFeed, mark: number, i: number): ArcBandFeed {
     ...feed,
     ticks: mark === 0 ? sliceLink(feed.ticks, i) : none,
     links: mark === 1 ? sliceLink(feed.links, i) : none,
-    dashed: mark === 2 ? sliceLink(feed.dashed, i) : none,
-    clippedLinks: mark === 3 ? sliceLink(feed.clippedLinks, i) : none,
-    clippedDashed: mark === 4 ? sliceLink(feed.clippedDashed, i) : none,
+    crossLinks: mark === 2 ? sliceLink(feed.crossLinks, i) : none,
+    dashed: mark === 3 ? sliceLink(feed.dashed, i) : none,
+    clippedLinks: mark === 4 ? sliceLink(feed.clippedLinks, i) : none,
+    clippedDashed: mark === 5 ? sliceLink(feed.clippedDashed, i) : none,
     markers:
-      mark === 5 ? slicePoint(feed.markers, i) : { ...feed.markers, count: 0 },
+      mark === 6 ? slicePoint(feed.markers, i) : { ...feed.markers, count: 0 },
   }
 }
 

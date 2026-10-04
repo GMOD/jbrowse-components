@@ -9,7 +9,6 @@ import {
 } from './arcChains.ts'
 import {
   DEFAULT_INTERCHROM_WINDOW_BP,
-  INTERCHROM_ARC_YBP,
   arcKey,
   clearsInterchromFloor,
   clusteredInterchromSupport,
@@ -528,9 +527,8 @@ function resolveArcs(
       // becomes a genuine `maxFlatArcSpanBp`, which `arcsYDomainBp` maxes
       // across every group, which the insert-size axis prints on the
       // ruler. One connection would rescale the whole read cloud to a 107 Mb
-      // "insert size" and label it. Arc mode's axis is genomic radius, where
-      // the band ceiling is not an invented position — see
-      // `INTERCHROM_ARC_YBP`.
+      // "insert size" and label it. Arc mode draws it with no value at all,
+      // as high as its feet are apart (`arcMarks.ts`).
       if (
         !cloud &&
         p1RegionIndex !== undefined &&
@@ -549,7 +547,7 @@ function resolveArcs(
               p2: { refName: p2Ref, bp: p2Bp },
               colorType: ARC_COLOR_INTERCHROM,
               shapeType: ARC_SHAPE_ARC,
-              yBp: INTERCHROM_ARC_YBP,
+              yBp: 0,
               // No reported quantity: the hover prints two POSITIONS for this
               // arc rather than a span, since a bp distance across a
               // translocation is a subtraction of two unrelated number lines.

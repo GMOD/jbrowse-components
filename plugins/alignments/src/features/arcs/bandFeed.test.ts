@@ -164,7 +164,7 @@ test('ticks are stems in the interchromosomal colour, a mark of their own', () =
   expect(tickHits[0]).toMatchObject({ kind: 'tick', bp: 700, support: 3 })
 })
 
-test('a cross-region arc draws from its first foot, placing the second through its own region, with feet when interchromosomal', () => {
+test('an interchromosomal cross-region arc draws from its first foot in its own unvalued lane, placing the second through its own region, with feet', () => {
   const cross: CrossRegionArc = {
     ...arc(900, 10, ARC_SHAPE_ARC, {
       p2: { refName: 'chr2', bp: 10 },
@@ -176,10 +176,17 @@ test('a cross-region arc draws from its first foot, placing the second through i
     p2Dir: -1,
   }
   const f = feeds([], [cross])
-  const { links, linkHits } = f.get(0)!
-  expect([links.x[0], links.x2[0], links.x2Region[0]]).toEqual([900, 10, 2])
-  expect(links.feet![0]).toBe(linkFeet(1, -1))
-  expect(linkHits[0]).toMatchObject({ endRefName: 'chr2', x1: 900, x2: 10 })
+  const { links, crossLinks, crossLinkHits } = f.get(0)!
+  expect(links.count).toBe(0)
+  expect([crossLinks.x[0], crossLinks.x2[0], crossLinks.x2Region[0]]).toEqual([
+    900, 10, 2,
+  ])
+  expect(crossLinks.feet![0]).toBe(linkFeet(1, -1))
+  expect(crossLinkHits[0]).toMatchObject({
+    endRefName: 'chr2',
+    x1: 900,
+    x2: 10,
+  })
 })
 
 test('a cross-region bar puts its far square in the far region', () => {

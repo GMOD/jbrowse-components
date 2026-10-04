@@ -29,9 +29,8 @@ export const ARC_DASH: readonly [number, number] = [3, 3]
 /**
  * The band's y scale. The read cloud plots |TLEN| on a log axis; arc mode
  * plots an arc's genomic radius at the view's own px per bp, so a pair inside
- * one region rises as high as it is wide, and an interchromosomal arc, whose
- * radius is past every domain, rises to the band's far edge, less half the
- * widest stroke so the band's clip leaves its apex whole. `down` hangs the
+ * one region rises as high as it is wide, up to the band's far edge less half
+ * the widest stroke so the band's clip leaves its apex whole. `down` hangs the
  * band from its top.
  */
 export function arcBandYScale(state: ArcBandState) {
@@ -100,6 +99,14 @@ export const ARC_LINK_MARKS: Mark<ArcBandFeed, ArcBandState>[] = [
     shape: withPassId(linkMark, 'arcLink'),
     channels: (f: ArcBandFeed) => f.links,
     params: (s: ArcBandState) => linkParams(s, false),
+    enabled: bandOpen,
+  }),
+  // An interchromosomal arc has no genomic radius, so it rises only as high
+  // as its two feet are apart on screen.
+  defineMark({
+    shape: withPassId(linkMark, 'arcCrossLink'),
+    channels: (f: ArcBandFeed) => f.crossLinks,
+    params: (s: ArcBandState) => ({ ...linkParams(s, false), valued: false }),
     enabled: bandOpen,
   }),
   defineMark({

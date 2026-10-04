@@ -78,23 +78,6 @@ export function arcKey(a: {
   return `${r1}\0${b1}\0${r2}\0${b2}\0${a.colorType}\0${a.shapeType}\0${a.yBp}\0${a.spanBp}`
 }
 
-// The Y an interchromosomal arc plots at: the top of the band, at every zoom.
-//
-// Arc mode's axis is GENOMIC RADIUS, and an interchromosomal connection has no
-// radius — but the ceiling is not an invented position on it either. It is
-// exactly where a maximally-far same-chromosome pair already ends up:
-// `arcYOffsetPx` clamps its offset to `availH`, and in arc mode the domain is
-// the bp span that FITS the band at the current zoom, so any pair wider than
-// that is already drawn there. The arc says "as far as this axis goes" rather
-// than claiming a distance it does not have.
-//
-// Uint32 max, because it has to exceed that zoom-dependent domain at every zoom
-// (the largest it reaches is ~availH * bpPerPx, three orders below this even on
-// a whole-genome view of a mammalian assembly) and because `arcYBp` is a
-// Uint32Array — which an interchromosomal arc never reaches, being cross-region
-// by construction, but the value should not be the thing that depends on it.
-export const INTERCHROM_ARC_YBP = 0xffffffff
-
 // Fallback clustering window when the fetch produced no insert-size band —
 // unpaired data, or too few proper pairs to characterize one. A translocation
 // found by split reads rather than by mates has its evidence at the breakpoint

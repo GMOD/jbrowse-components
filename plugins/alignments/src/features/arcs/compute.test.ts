@@ -654,11 +654,9 @@ describe('computeArcsFromPileupData', () => {
       // otherwise looks identical.
       const { crossRegion } = run(bothContigs, toChr2([2000], 5000))
       expect(crossRegion[0]!.colorType).toBe(ARC_COLOR_INTERCHROM)
-      // A curve, at the band ceiling — arc mode's axis is genomic radius, which
-      // this connection has none of, and the ceiling is where a maximally-far
-      // same-chromosome pair already clamps.
+      // A curve with no genomic radius, which the band draws unvalued.
       expect(crossRegion[0]!.shapeType).toBe(ARC_SHAPE_ARC)
-      expect(crossRegion[0]!.yBp).toBe(0xffffffff)
+      expect(crossRegion[0]!.yBp).toBe(0)
     })
 
     test('and keeps the ticks when the far chromosome is not displayed', () => {

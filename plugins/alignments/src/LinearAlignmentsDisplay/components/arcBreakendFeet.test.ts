@@ -12,6 +12,8 @@ import {
 } from '../testUtils.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 
+import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
+
 // The breakend feet an interchromosomal arc draws: a short horizontal tick at
 // each foot, lying over the ARM that foot's junction keeps.
 //
@@ -120,19 +122,23 @@ function feetIn(d: string) {
   )
 }
 
-// The feet the one arc a case produced paints, through the band's arc mark:
+// The feet the one arc a case produced paints, through the band's arc mark
+// for its lane (an interchromosomal arc's own, or the same-chromosome links):
 // each foot as the SIGN it points in, left and right by where it starts, since
 // that is the whole content of the mark.
 function paintedArc(display: ReturnType<typeof interchromDisplay>) {
   const feeds = display.sourceSections[0]!.arcFeeds
-  const owners = [...feeds].filter(([, feed]) => feed.links.count > 0)
+  const arcCount = (feed: ArcBandFeed) =>
+    feed.links.count + feed.crossLinks.count
+  const owners = [...feeds].filter(([, feed]) => arcCount(feed) > 0)
   expect(owners).toHaveLength(1)
   const [regionIdx, feed] = owners[0]!
-  expect(feed.links.count).toBe(1)
+  expect(arcCount(feed)).toBe(1)
+  const mark = ARC_LINK_MARKS[feed.crossLinks.count > 0 ? 2 : 1]!
   const { renderState } = display
   const arcBand = renderState.sections[0]!.arcBand!
   const recorder = recordPath()
-  ARC_LINK_MARKS[1]!.paintBlock(
+  mark.paintBlock(
     recorder.ctx,
     feed,
     canvasWideBlock(regionIdx, renderState.canvasWidth),
