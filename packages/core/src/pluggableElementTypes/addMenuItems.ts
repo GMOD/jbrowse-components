@@ -150,7 +150,8 @@ export function addViewMenuItems<
  * Add items to a menu on a display type belonging to another plugin, e.g. an
  * "open this read in a dotplot" entry on the alignments display's context menu.
  * See {@link addViewMenuItems}; the name is checked against
- * `DisplayTypeRegistry`.
+ * `DisplayTypeRegistry`. It matches the registered name only, so an item added
+ * to `LinearMarkDisplay` misses `LinearManhattanDisplay`, which subtypes it.
  *
  * ```ts
  * addDisplayMenuItems(pluginManager, 'LinearAlignmentsDisplay', {

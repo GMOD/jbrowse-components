@@ -124,6 +124,11 @@ const barCells = new WeakMap<
  * anything uploaded moved. The ramp's domain and a threshold's cuts ride the
  * bar layer the pass reads per block, so a settle, a landing that widens the
  * ramp and an edit to a scale's ends or cuts rebuild no cell.
+ *
+ * Every layer's bars share one pass, so two layers on different ramps swap its
+ * ramp texture within a frame, a new texture each time; the mark display's
+ * pass per mark (`withPassId`) avoids that. Accepted unmeasured while two
+ * ramp-coloured layers are rare.
  */
 export function barCellOf(
   channels: EncodedChannels,

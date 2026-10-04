@@ -32,6 +32,15 @@ typography only: `FloatingText` and `SvgHaloText` are the one emit, and placemen
 stays each display's (ADR-162). Hi-C, LD and MAF resolve colour outside
 `colorEncodingOf`.
 
+**Unity is that rule held over every surface, not fewer display types**
+(Colin, 2026-09-30). The menu builders (`colorByMenu.ts` and `groupByMenu.ts`
+in display-kit, `rowArrangementMenuItem.ts`, `scoreMenuItems.ts`), Edit plot
+(ADR-204), the validator, the legend, the axis, the agent API and SVG export
+each read the one object. A display becomes a mark-display subtype only when
+its whole picture is a plot, as Manhattan is (ADR-178); alignments, canvas,
+Hi-C, MAF (ADR-199) and the comparative displays hold fetch policy, layout
+memory and domain actions a plot does not. Their domain actions stay theirs.
+
 **3. Generality resolves before the loop.** A shape composes its scale at
 `gen:shaders` (ADR-095), a field name becomes a direct read before the walk, a
 domain rides a uniform, and a lane nobody asked for is never allocated. A
@@ -79,6 +88,8 @@ mean something; where a tree describes the rows, the domain rotates it
 Declined: filter shorthands such as `{ field, oneOf }`; jexl is the filter
 language, and reading structure back out of jexl is the fragile half.
 
+Declined on 2026-09-30: track- or view-level facets, and a free y per section.
+
 ## Gaps against the grammar
 
 - **`stack` is declined, and so is the min-to-max range bar `y2`.** The stacked
@@ -115,6 +126,19 @@ language, and reading structure back out of jexl is the fragile half.
   ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)).
   An area mark waits on `y2`; the line is a mark
   ([ADR-184](../architecture-decision-records/adr-184-a-line-is-a-mark.md)).
+- **`plotProblems` judges a draft only on the mark and canvas displays.**
+  Elsewhere `colorProblems` and `scaleEndProblems` run as live notices on the
+  displays holding those objects, and could judge a draft the same way with
+  each display's field presets.
+- **No ordinal x**, until a declared plot wants equal-width columns. LD and the
+  multi-sample matrix draw one column per variant under one `variantLayout`
+  slot;
+  [a-distribution-plot-needs-x-to-be-a-value](../ideas/waiting-on-a-call/a-distribution-plot-needs-x-to-be-a-value.md)
+  is its value-x sibling.
+- **Typed tables cover MAF and BigWig alone** (`getFeatureTable`). BAM/CRAM,
+  VCF and bigBed wait on a declared plot over one being slow on real data.
+  ADR-114's 3.11x and ADR-118's 4.23x blamed the per-row `Feature` that
+  ADR-191 removed for typed sources, so re-measure both before citing them.
 
 ## Where a proposal lands
 

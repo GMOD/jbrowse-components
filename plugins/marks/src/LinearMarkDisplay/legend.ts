@@ -147,8 +147,9 @@ const CHANNELS: {
   channel: ScaledChannel
   tableOf: (layer: StoredLayer) => ScaleTable | undefined
 }[] = [
-  // a region still holding an earlier declaration's data adds no key: its
-  // table is its own, not the mark's
+  // a region still holding an earlier declaration's data adds no colour key:
+  // its table is its own, not the mark's. Shape resolves in the worker and has
+  // no such hold, so a region not yet refetched keys its old field's shapes.
   { channel: 'color', tableOf: l => (l.heldColor ? undefined : l.scale) },
   { channel: 'shape', tableOf: l => l.shapeScale },
 ]
