@@ -68,7 +68,7 @@ test('an alpha change rebuilds neither geometry nor colors', async () => {
   const positions = display.instanceData
   const colorsBefore = Uint32Array.from(display.geometry.colors)
 
-  view.setAlpha(0.5)
+  view.setOpacity(0.5)
 
   expect(display.instanceData).toBe(positions)
   expect(display.geometry.colors).toStrictEqual(colorsBefore)
@@ -78,7 +78,7 @@ test('an alpha change rebuilds neither geometry nor colors', async () => {
   expect(view.dotplotRenderState.alpha).toBe(0.5)
 }, 45000)
 
-// alpha and minAlignmentLength are stored on the view, not per display. They
+// opacity and minAlignmentLength are stored on the view, not per display. They
 // used to be per display while every control was view-level and fanned its
 // setter out over the displays that existed at the time — so a track shown after
 // the slider moved rendered at the default while the slider said otherwise.
@@ -86,7 +86,7 @@ test('a track shown after a settings change inherits them', async () => {
   const { view } = await loadedDotplotDisplay()
   // both moved off their defaults BEFORE the second track exists, which is
   // exactly what a fan-out setter cannot reach
-  view.setAlpha(0.5)
+  view.setOpacity(0.5)
   view.setMinAlignmentLength(1e9)
 
   view.showTrack('peach_grape_small')
@@ -111,10 +111,10 @@ test('a track shown after a settings change inherits them', async () => {
   view.setMinAlignmentLength(0)
   expect(added.geometry.instanceCount).toBeGreaterThan(0)
 
-  // alpha reaches the newcomer without any per-display state to inherit: one
+  // opacity reaches the newcomer without any per-display state to inherit: one
   // uniform covers every display the frame draws, this one included. Asserting
-  // the key is present is what makes that more than a re-read of `view.alpha`.
-  expect(view.alpha).toBe(0.5)
+  // the key is present is what makes that more than a re-read of `view.opacityLevel`.
+  expect(view.opacityLevel).toBe(0.5)
   expect(view.dotplotRenderState.alpha).toBe(0.5)
   expect(
     view.dotplotBlocks.map(

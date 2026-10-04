@@ -495,7 +495,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           },
           "rowGroups": [
             {
-              "color": "#e41a1c",
               "group": "Parents",
               "match": "^(mom|dad)$",
             },

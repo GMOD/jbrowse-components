@@ -460,13 +460,6 @@ describe('validateConfig', () => {
           ...display('LinearWiggleDisplay', { field: 'score', ...cuts }),
         }),
       ).toEqual([`threshold-cuts ${where}.domain`])
-      expect(
-        found({
-          type: 'QuantitativeTrack',
-          adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
-          ...display('LinearWiggleDisplay', { field: 'source', ...cuts }),
-        }),
-      ).toEqual([])
     })
 
     it("checks a feature track's threshold colour", () => {

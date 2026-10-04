@@ -14,8 +14,10 @@ import {
 import { syntenyOpacityConfigSchema } from './syntenyOpacityConfigSchema.ts'
 
 import type { ComparativeTrackModel } from './lodTier.ts'
-import type { SyntenyOpacitySnapshot } from './syntenyOpacityConfigSchema.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  SyntenyOpacityConfigModel,
+  SyntenyOpacitySnapshot,
+} from './syntenyOpacityConfigSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -204,7 +206,9 @@ export function SyntenyColorsMixin({
     }))
 }
 
-function readOpacity(opacity: AnyConfigurationModel): SyntenyOpacitySnapshot {
+function readOpacity(
+  opacity: Instance<SyntenyOpacityConfigModel>,
+): SyntenyOpacitySnapshot {
   return {
     value: readConfObject(opacity, 'value'),
     field: readConfObject(opacity, 'field'),
