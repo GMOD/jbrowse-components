@@ -84,6 +84,12 @@
   rather than the specs because `scripts/screenshot-specs.ts` and
   `scripts/video-specs.ts` reach `@jbrowse/browser-test-utils`, whose barrel
   loads puppeteer — `scripts/astroImportGraph.test.ts` is the gate.
+- **A click that changes state belongs in the session spec.** Each figure's
+  recipe dialog hands a reader an `@jbrowse/capture` command that opens the
+  session, draws the callouts and clicks nothing (`spec-recipe/agent.ts`). A
+  click that only opens something for show names it in `clicksOpen`; a change no
+  session spec can hold yet names itself in `clicksChange`, and the dialog says
+  the command's picture differs there.
 - **A label that points at something is `leader: true` on the text**, never a
   pill plus its own `arrow`: the tail belongs at the pill's edge and only the
   page knows how wide the pill is.
