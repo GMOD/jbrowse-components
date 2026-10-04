@@ -4,3 +4,5 @@ import { prewarmWorker } from './prewarmedWorker.ts'
 
 prefetchConfig()
 prewarmWorker(makeWorkerInstance)
+
+export const loaderChunk = import('./components/Loader.tsx')
