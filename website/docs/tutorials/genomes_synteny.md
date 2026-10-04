@@ -10,8 +10,7 @@ tutorial_category: genomes.jbrowse.org
 
 genomes.jbrowse.org already has UCSC's pairwise liftOver alignments for every
 genome, so you can turn one on in a linear genome view and launch a two-panel
-linear synteny view from any chain block. JBrowse resolves the mate genome on
-demand, so the second assembly needs no setup. We compare hg38 against T2T-CHM13
+linear synteny view from any chain block. We compare hg38 against T2T-CHM13
 (hs1) at _TNNT3_, a locus the two lay out differently.
 
 ## Where the data comes from
@@ -21,7 +20,8 @@ liftOver chains to the others.
 
 - hg38: https://jbrowse.org/ucsc/hg38/config.json
 - Human (hs1, T2T-CHM13): https://jbrowse.org/ucsc/hs1/config.json
-- Chimp (panTro6), for [Trying other pairs](#trying-other-pairs):
+- Chimp (panTro6), for
+  [Launching hg38 against chimp](#launching-hg38-against-chimp-at-an-fto-intron):
   https://jbrowse.org/ucsc/panTro6/config.json
 - hg38's staging config, which adds the multi-way track for
   [Many genomes at once](#many-genomes-at-once):
@@ -83,12 +83,12 @@ The palette button in the same header sets what ribbons are colored by.
 _TNNT3_ is the locus from Fig 5C of Aganezov et al. (2022). Against GRCh38 the
 region reads as an inversion plus a deletion that ablates _LINC01150_ in every
 individual; against T2T-CHM13 that segment is intact on the other side of
-_TNNT3_ in the opposite orientation. Colored by strand, it is the one off-color
-ribbon.
+_TNNT3_ in the opposite orientation. Pick **Strand** from the palette button in
+the view header and it is the one off-color ribbon.
 
 <Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each. It sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13, and the purple ribbon joining the two shaded spans is the segment that moved." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
-## Trying other pairs
+## Launching hg38 against chimp at an FTO intron
 
 The click-path above works for any track under **Pairwise alignments** →
 **liftOver**, one per chain file UCSC publishes against the genome you are in. A
@@ -97,8 +97,9 @@ chain or PAF of your own opens the same way once it is added as a synteny track:
 [HG002 haplotypes](/docs/tutorials/hg002_haplotypes) loads a chain, and
 [Synteny (pairwise minimap2)](/docs/tutorials/synteny_visualization) a PAF.
 
-The figure below is that route on **hg38 to Chimp (panTro6) liftOver**, across
-an intron of _FTO_.
+Turn on **hg38 to Chimp (panTro6) liftOver** under **Pairwise alignments** →
+**liftOver**, type `chr16:54,036,000-54,054,000`, an intron of _FTO_, into the
+location box, and launch a synteny view from a chain block:
 
 <Figure caption="The four steps on the hg38-to-panTro6 liftOver track across an FTO intron: right-click a chain block, confirm the framing, launch, then add the chimp panel's genes and repeats." src="/img/genomes_synteny/launch_sequence.png" />
 
@@ -110,7 +111,7 @@ other repeat in the window.
 
 The chimp panel's track selector offers **NCBI RefSeq - RefSeq All** and
 **RepeatMasker**, brought in with the panTro6 hub. The rest of that hub loads
-from **File → Open connection** as a JBrowse 2 hub at
+from **File → Open connection...** as a JBrowse 2 hub at
 `https://jbrowse.org/ucsc/panTro6/config.json`.
 
 To start from a gene, the site's
@@ -144,10 +145,6 @@ hg38's orientation.
 
 <Figure src="/img/genomes_synteny/star_lanes.png" caption="The view the link opens: hg38 at TNNT3 above one lane per genome. In every lane that names them, the genes around TNNT3 read in hg38's order, SYT8 to MRPL23; the platypus lane spreads over many sequences and names none of them." />
 
-The stack shows the TNNT3 neighbourhood's gene order holding across species. The
-[rearrangement above](#the-tnnt3-rearrangement) differs between human
-assemblies, so it does not appear among the species lanes.
-
 Each lane reads the same chain file as that genome's pairwise liftOver track, so
 the one view holds what a synteny view per genome would. The ribbons between two
 lanes below hg38 pass through hg38, since each chain aligns one genome to hg38.
@@ -156,10 +153,11 @@ covers the lane labels, the ribbons and the lane menus.
 
 ## Choosing the lanes: mouse strains at Nnt
 
-A star holds every genome UCSC lifts its reference over to, so which lanes open
-is a choice. mm39's star holds the Mouse Genomes Project strains, and mm39 is
-C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al. 2006). We'll
-open the strain lanes at that gene:
+A multi-way liftOver track, a star with the reference at its centre and a chain
+to each other genome, holds every genome UCSC lifts its reference over to, so
+which lanes open is a choice. mm39's star holds the Mouse Genomes Project
+strains, and mm39 is C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman
+et al. 2006). We'll open the strain lanes at that gene:
 
 - open
   [mm39 on staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/ucsc/mm39/)
@@ -175,10 +173,12 @@ open the strain lanes at that gene:
 
 hg38's star holds both haplotypes of the H9 T2T assembly, so a stack can put one
 person's two chromosomes under the reference. At 17q21.31 the H2 haplotype is a
-900 kb inversion (Stefansson et al. 2005), and H9 has one of each. Open hg38's
-star at `chr17:45,300,000-46,800,000` and choose the two H9 haplotypes, the
-HG002 maternal assembly, the NA24631 maternal assembly and T2T-CHM13 (hs1) as
-lanes.
+900 kb inversion (Stefansson et al. 2005), and H9 has one of each. On hg38 at
+[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org), turn on
+**hg38 vs 240 genomes (liftOver, multi-way)**, type
+`chr17:45,300,000-46,800,000` into the location box, and in **Lanes → Choose
+lanes...** tick the two H9 haplotypes, the HG002 maternal assembly, the NA24631
+maternal assembly and T2T-CHM13 (hs1).
 
 <Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes. The H9 hap2 lane crosses the lane above it across the inversion and runs straight either side of it; the other four haplotypes run straight throughout." />
 

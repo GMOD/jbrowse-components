@@ -22,7 +22,7 @@ opens for comparison.
 - the 100-way phyloP conservation bigWig, read by locus over TP53:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw
 - axolotl (Mex_15411), the GenArk assembly in
-  [Trying another genome](#trying-another-genome):
+  [Searching TP53 on a GenArk genome](#searching-tp53-on-a-genark-genome-the-axolotl):
   https://jbrowse.org/hubs/genark/GCF/040/938/575/GCF_040938575.1/config.json
 
 ## Opening a genome
@@ -32,7 +32,7 @@ for every main UCSC database (hg19, hg38, hs1, mm39 and the rest) plus the UCSC
 GenArk assemblies, track hubs for tens of thousands of NCBI plants, animals,
 fungi, bacteria and viruses.
 
-<Figure src="/img/genomes_basics/site_home.png" caption="The genomes.jbrowse.org front page. The top table is the short list of main genomes; the GenArk half below it is the bulk catalog, split by clade and by project." />
+<Figure src="/img/genomes_basics/site_home.png" caption="The genomes.jbrowse.org front page. The top table is the short list of main genomes, and the GenArk catalog starts below it." />
 
 [/ucsc](https://genomes.jbrowse.org/ucsc) is the same thing without the
 shortlist: every UCSC database, with a filter box over the names, species and
@@ -51,7 +51,7 @@ Picking a result opens its JBrowse instance at a URL you can share.
 
 Open hg38. It opens with **NCBI RefSeq - RefSeq All** on and the track selector
 showing. Type `TP53` into the location box and press Enter. The hosted config
-ships a name index, so gene symbols resolve with no setup, and coordinates like
+ships a name index, so gene symbols resolve, and coordinates like
 `chr17:7,668,400-7,687,550` work too.
 
 <Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, found by the config's name index. Middle: what Enter opens, as many transcripts as the track's height holds, a link beside the TP53 label for the ones it does not, and the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
@@ -64,7 +64,7 @@ circled chip at the bottom right reads `Isoforms trimmed`. To see more:
 - Click the chip for **Auto / All transcripts / Representative transcript**. The
   last collapses every gene to one transcript, which the rest of this page uses
 
-## Finding a track
+## Finding the phyloP conservation track in the catalog
 
 The track selector is the drawer down the right; the button at the top left of
 the view header closes and reopens it. It lists the catalog under UCSC's
@@ -84,11 +84,13 @@ phyloP scores each base against the neutral rate the alignment implies. The
 score is signed: blue above the line marks a base that changes more slowly than
 neutral, and red below it one that changes faster.
 
-Zoom in until the sequence appears. The exon below is exon 7, which covers G245,
-R248 and R249, three of the codons most often mutated in human cancer.
+Type `chr17:7,674,180-7,674,290` into the location box, a stretch of exon 7
+covering G245, R248 and R249, three of the codons most often mutated in human
+cancer.
 
 - Tick **Reference sequence**, which is off by default
-- At this zoom the default draws the codon row once per transcript
+- At this zoom the gene track draws a codon row per transcript; pick
+  **Representative transcript** from the isoform control to keep one
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It has the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
 
@@ -132,8 +134,8 @@ Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 - **EPDnew Promoters - EPDnew v6**
 
 The Layered H3K4Me3 and H3K27Ac tracks each hold seven cell lines, and open with
-all seven in one plot box, UCSC's layered arrangement. **Track menu → Plot type
-→ Multi-row → XY plot** gives each cell line a row of its own. Their names
+all seven in one plot box, UCSC's layered arrangement. **Plot type → Multi-row →
+XY plot** in the track menu gives each cell line a row of its own. Their names
 include hg19 because ENCODE3 released them on it; the config points at the hg38
 files.
 
@@ -144,12 +146,12 @@ The CpG island, a promoter-class cCRE, the EPDnew call and both histone marks
 all sit there. H3K4me3 marks a promoter and H3K27ac an active one, and all seven
 cell lines have both.
 
-## Filtering a dense track
+## Filtering gnomAD's TP53 variants to predicted loss of function
 
 **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** under Variation and Repeats opens as
-several thousand records over _TP53_, one block of colour. **Track menu → Filter
-by...** takes rows of field, operator and value over the track's columns. Type
-the column name into the field box, which lists the file's columns with the
+several thousand records over _TP53_, one block of colour. **Filter by...** in
+the track menu takes rows of field, operator and value over the track's columns.
+Type the column name into the field box, which lists the file's columns with the
 description the file gives each. A record has to pass every row:
 
 - `annot` is `pLoF` keeps gnomAD's predicted loss-of-function consequence class
@@ -195,7 +197,7 @@ scores <- import(
 
 The BigBeds behind the variant and annotation tracks read the same way.
 
-## Trying another genome
+## Searching TP53 on a GenArk genome, the axolotl
 
 The GenArk configs have a smaller track set than the UCSC ones. Their name index
 is built from NCBI RefSeq annotation, so a `GCF_` accession has gene tracks and
@@ -204,7 +206,8 @@ coordinates.
 
 An assembly released both ways appears under both accessions, and gene search
 works on the RefSeq one. The axolotl `Mex_15411` is `GCF_040938575.1` and
-`GCA_040938575.1`.
+`GCA_040938575.1`. Open `GCF_040938575.1` from the site's header search for
+`axolotl`, and type `TP53` into its location box.
 
 <Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession." />
 

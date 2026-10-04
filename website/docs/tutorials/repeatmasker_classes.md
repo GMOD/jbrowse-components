@@ -21,8 +21,7 @@ hub config, has a RepeatMasker track to try it on.
 ## Prerequisites
 
 - a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
-  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
-  needs nothing hosted
+  [Desktop](/docs/quickstart_desktop))
 - htslib (`bgzip`, `tabix`, `htsfile`), for the check at the end
 - `samtools`, for
   [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)
@@ -50,28 +49,31 @@ UCSC golden-path and GenArk hubs store the repeat class differently:
   `repClass` among them. That column is a feature attribute, so `rows` is
   `"repClass"`.
 - A **GenArk** assembly ships a `bigRmskBed`, whose autoSql has no class column.
-  The name contains the class as a suffix, `L1HS#LINE/L1`, so the value has to
-  be derived, as worked in
-  [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column).
+  The name contains the class as a suffix, `L1HS#LINE/L1`, so `rows` derives it
+  with a jexl expression, `"jexl:split(split(feature.name,'#')[1],'/')[0]"`;
+  [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column)
+  works through it.
 
 In both cases JBrowse builds the lanes from the values in the loaded region, so
 a window with no satellite repeats has no satellite lane.
 
-## Switching the track over
+## Switching hg38's RepeatMasker track to one lane per class
 
-Open RepeatMasker, then **Display types → Multi-row feature display (painting)**
-in the track menu. The painting partitions on `repClass` whenever the file has
-that column; **One row per...** in the same menu lists every column the loaded
-features have, `repFamily` among them. <!-- menu-path-ok -->
+Open hg38 on [genomes.jbrowse.org](https://genomes.jbrowse.org), turn on
+**RepeatMasker**, type `chr17:45,700,000-45,750,000` into the location box, then
+pick **Display types → Multi-row feature display (painting)** in the track menu.
+The painting partitions on `repClass` whenever the file has that column; **One
+row per...** in the same menu lists every column the loaded features have,
+`repFamily` among them. <!-- menu-path-ok -->
 
-<Figure src="/img/multirow/display_types_menu.png" caption="The track menu's Display types submenu on the UCSC RepeatMasker track. Any feature track offers the multi-row display beside its default one." />
+<Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window after picking it, one lane per repeat class." />
 
 <Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed lane to a labelled lane per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column in the file." />
 
 The colored, packed form and the lane form are the same track and the same
 fetch:
 
-<Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass with the key the color derives. Every class shares one packed lane. Bottom: the same track and window partitioned on repClass instead. SINE fills the window and LINE comes in clusters, and the LTR? and Unknown lanes are values in the file the color's domain does not list, which take colors of their own." src="/img/cookbook_color_by_type_two_ways.png"/>
+<Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass with the key the color derives. Every class shares one packed lane. Bottom: the same track and window partitioned on repClass instead. SINE fills the window and LINE comes in clusters. The empty LTR? lane comes from a repeat just past the window's right edge, and LTR? and Unknown take palette colors because the color's domain does not list them." src="/img/cookbook_color_by_type_two_ways.png"/>
 
 ## Pinning the lanes in a track config
 
@@ -134,8 +136,11 @@ tabix https://jbrowse.org/ucsc/hg38/rmsk.bed.gz chr17:45,700,000-45,750,000 |
   sort -k3 -nr
 ```
 
-The classes it prints are the lanes on screen, and their bp totals are the area
-drawn in each lane. A lane in the picture with no line here, or the reverse,
+The classes it prints are the lanes with features on screen, and their bp totals
+are the area drawn in each lane. JBrowse fetches past the view's edges and
+builds lanes from everything it fetched, so an empty lane can come from a repeat
+just outside the window: the figures' empty `LTR?` lane is `MamRep605`, past the
+right edge. A class here with no lane, or a lane with features and no line here,
 means the view is showing a different file.
 
 The `Unknown` lane is the control. Neither the `rowColor` above nor the

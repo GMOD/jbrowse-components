@@ -34,13 +34,7 @@ per gene, from the services beside them.
 
 Open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org) and type `TP53`
 into the location box. The hosted config ships a name index, so gene symbols
-work with no setup.
-
-The [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/)
-builds the same three linked views from a `gene` and a `taxon` in its URL, such
-as
-[?gene=TP53&taxon=9606](https://gmod.org/JBrowseMSA/gene-explorer/?gene=TP53&taxon=9606).
-The rest of this page starts from the genome view.
+resolve.[^explorer]
 
 Right-click the gene. The menu has **Launch protein view** from protein3d and
 **Launch MSA view** from msaview, which [the next section](#launching-an-msa)
@@ -82,7 +76,8 @@ The protein view holds the AlphaFold structure, the genome-to-structure
 alignment, and per-residue tracks for pLDDT confidence, domains, helices and
 hydrophobicity. **Open side by side**, at the foot of the list the arrow beside
 the dialog's **Launch** button opens, puts the protein view beside the genome
-view.
+view. Click the nuclear export signal on the alignment panel's **Motif** row to
+select its residues and band their codons on the gene.
 
 <Figure caption="A connected session on human TP53 (UniProt P04637), NCBI RefSeq above the AlphaFold structure. A motif clicked on the protein's feature track selects its residues on the structure and bands the codons they came from on the gene." src="/img/protein/connected.png" />
 
@@ -102,9 +97,10 @@ add tracks to, so it is absent from the single-view embedded components.
 
 <Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, where everything it can build is listed, and the 1D annotation view. The view opens with none of its tracks on; DNA binding, Natural variant, AlphaFold confidence and AlphaMissense scores come on from Session tracks in the selector." />
 
-The dialog's other two tabs take a structure from elsewhere: **Foldseek search**
-finds structures similar to the protein's, and **File or URL** takes a PDB or
-mmCIF file of yours.
+The dialog's other tabs take a structure from elsewhere: **PDB search** lists
+the experimental structures PDBe maps to the protein's UniProt entry, **Foldseek
+search** finds structures similar to the protein's, and **File or URL** takes a
+PDB or mmCIF file of yours.
 
 ## Launching an MSA
 
@@ -140,11 +136,12 @@ at once.
 <Video src="/media/proteins/tiled_views.mp4" caption="TP53's gene menu launching both an alignment and a structure, then Global: tile horizontally arranging the genome, the alignment and the structure in three columns. One hover in the genome moves the highlighted column in the alignment and the highlighted residue on the structure together." />
 
 The figures below take _NLRP1_, an inflammasome sensor whose domain architecture
-varies between mammals.
+varies between mammals. Type `NLRP1` into the location box, right-click the
+gene, choose **Launch MSA view** and press **Submit**.
 
-<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds. In the panel the leftmost block comes and goes down the rows while the stack to the right of it is on every one." />
+<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds. In the panel the leftmost block comes and goes down the rows, the stack to its right runs down nearly all of them, and the whale rows have only its right-hand end." />
 
-### Reading the overlay
+### Reading NLRP1's conserved-domain overlay
 
 Each colored block is an NCBI conserved domain, drawn in alignment columns: the
 same domain lands in the same column in every row that has it, whatever the
@@ -153,7 +150,9 @@ proteins' lengths.
 Human _NLRP1_ has a pyrin (PYD) death-fold domain at its N terminus. Some rows
 have it and some do not, mouse _Nlrp1a_ among those that do not. The aligner's
 tree orders the rows, so the rows that have it sit together. The shared core is
-the control: NACHT, the winged helix, HD2, FIIND and CARD run across every row.
+the control: NACHT, the winged helix, HD2, FIIND and CARD run across nearly
+every row, and the whale rows, which have only the C-terminal end, are the
+exception.
 
 The calls come from NCBI's protein records. For a protein NCBI has no calls for,
 `react-msaview-cli interproscan` scans the alignment's sequences into a domain
@@ -173,14 +172,14 @@ Turn it on in the linear view you launched from. _NLRP1_ is transcribed right to
 left, so the pyrin block sits at the right-hand end of the gene, where its N
 terminus is, and NACHT, FIIND and CARD follow leftward. A domain drawn once in
 the alignment is drawn once per isoform here, and the ones sharing exons
-overlap. **Filter by... → Edit filters...** on the track menu narrows that to
-one record: the figure below keeps the features whose `uniProtId` is the gene's
-reviewed entry. **UniProt - Chains**, **Mutations** and **AA Modifications** are
+overlap. **Filter by...** in the track menu narrows that to one record: the
+figure below applies the row `uniProtId` is `Q9C000`, the gene's reviewed
+UniProt entry. **UniProt - Chains**, **Mutations** and **AA Modifications** are
 the same projection of the rest of the record.
 
 <Figure src="/img/genomes_msa/genomic_domains.png" caption="NLRP1 with NCBI RefSeq above UniProt - Domains, filtered to the gene's reviewed UniProt entry. Pyrin sits at the right-hand end, where the N terminus is, and NACHT, FIIND and CARD run leftward from it." />
 
-### Trying other genes
+### How far the ortholog panel reaches for other genes
 
 The click-path works on any gene whose symbol NCBI recognises, though how far
 down the tree the panel reaches varies by gene: every _NLRP1_ ortholog NCBI has
@@ -262,3 +261,9 @@ The approach is described in
 
 - Broz P, Dixit VM. Inflammasomes: mechanism of assembly, regulation and
   signalling. _Nat Rev Immunol_ 2016.
+
+[^explorer]:
+    The [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/)
+    builds a linked genome view, structure and MSA from a `gene` and a `taxon`
+    in its URL, such as
+    [?gene=TP53&taxon=9606](https://gmod.org/JBrowseMSA/gene-explorer/?gene=TP53&taxon=9606).
