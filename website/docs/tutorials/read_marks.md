@@ -42,10 +42,10 @@ GRCh38:
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz
 - UCSC's GRCh38 cytoband table, rehosted:
   https://jbrowse.org/genomes/GRCh38/cytoBand.txt
-- a hosted config with the reference, RefSeq genes and the tracks below:
-  https://jbrowse.org/demos/read_marks/config.json
+- a hosted config with the reference, RefSeq genes and every track below but the
+  reads pileup: https://jbrowse.org/demos/read_marks/config.json
 
-## The genome
+## Loading hg38
 
 The CRAM decodes against the assembly the track is added to, so the assembly
 must be the GRCh38 sequence the reads were aligned to. The cytoband table draws
@@ -93,7 +93,7 @@ callset says NA12878 has one copy of a 3.9 kb deletion. A `bar` mark over a
 
 Open the track at `chr20:32,925,000-32,955,000`.
 
-<Figure src="/img/read_marks/depth.png" caption="Thirty kilobases of an EFCAB8 intron in NA12878, the read depth as bars. Between 32,937,500 and 32,941,500 the depth runs at about half of what it is on either side." />
+<Figure src="/img/read_marks/depth.png" caption="Thirty kilobases of an EFCAB8 intron in NA12878, the read depth as bars. Over a few kilobases in the middle of the window the depth runs at about half of what it is on either side." />
 
 ## Insert size as a point per pair
 
@@ -145,7 +145,7 @@ the thousands, so the insert goes on a second track over the same file:
 
 Open it under the depth track, on the same window.
 
-<Figure src="/img/read_marks/insert_size.png" caption="The same window, the depth as bars above and each pair's insert size as a point below, each track with a separate y axis. The pairs sit in a low band, and over the left edge of the dip a second group appears well above it, in the full blue of a mapping quality of 60." />
+<Figure src="/img/read_marks/insert_size.png" caption="The same window, the depth as bars above and each pair's insert size as a point below, each track with a separate y axis. The pairs sit in a low band, and over the left edge of the dip a second group appears well above it, in full blue." />
 
 Each pair in the upper group straddles the missing 3.9 kb. On an alignments
 track `score` is the mapping quality. Hover a point for its values, or click it
@@ -198,13 +198,13 @@ and a ramp pinned at 5 kb paints a spanning pair red.
 
 Open the track at the left edge of the dip, `chr20:32,936,200-32,939,200`.
 
-<Figure src="/img/read_marks/pileup.png" caption="The left breakpoint at 3 kb, the reads stacked and coloured by their pair's insert. The red reads end together at 32,937,680, where their mates lie across the deletion to the right; the pale reads run across it, and thin out on the far side." />
+<Figure src="/img/read_marks/pileup.png" caption="The left breakpoint, the reads stacked and coloured by their pair's insert. The red reads end together at the breakpoint, where their mates lie across the deletion to the right; the pale reads run across it, and thin out on the far side." />
 
 An unpinned ramp spans the values on screen, so in a window with no spanning
 pair it would paint the longest ordinary insert red. Pinning `domainMin` and
 `domainMax` keeps red for the long inserts.
 
-## Scanning the chromosome for the same signature
+## Scanning chromosome 20 for clusters of long-insert pairs
 
 Fetching every read of a chromosome overruns the byte budget, so cut the long
 pairs out once, one row per pair, into a BED with a header naming its columns.
