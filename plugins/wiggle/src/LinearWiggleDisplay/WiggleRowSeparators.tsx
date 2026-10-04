@@ -12,16 +12,11 @@ interface SeparatorModel {
 // Inter-row separator lines, shared by the live WiggleComponent and the
 // SVG export so the two can't drift. Both callers render this inside an <svg>,
 // so it emits bare <line> fragments and takes the content width explicitly
-// (CSS-pixel track width on screen vs view width on export). The per-row
-// cross-hatches that used to ride beside these are the chrome's now, off
-// `valueScales`.
-export default observer(function WiggleRowSeparators({
-  model,
-  width,
-}: {
-  model: SeparatorModel
-  width: number
-}) {
+// (CSS-pixel track width on screen vs view width on export). A plain function
+// rather than a component: the export calls it once, since a live figure must
+// not follow the model, and the observer below calls it so its reads are
+// tracked.
+export function wiggleRowSeparators(model: SeparatorModel, width: number) {
   const {
     isOverlay,
     isDensityMode,
@@ -42,4 +37,14 @@ export default observer(function WiggleRowSeparators({
       opacity={isDensityMode ? 0.3 : 0.15}
     />
   ) : null
+}
+
+export default observer(function WiggleRowSeparators({
+  model,
+  width,
+}: {
+  model: SeparatorModel
+  width: number
+}) {
+  return wiggleRowSeparators(model, width)
 })

@@ -239,8 +239,8 @@ not draw — and that same number is the block scissor bound, so painting an
 export at it clips the rightmost 2px column of content inside a `view.width`
 frame. `LinearMultiRowFeatureDisplay` shipped exactly that bug. `MarkSvgLayer`
 replaces the state's canvas box with the `width` and `height` you pass it, so
-the sequence body above hands it `model.renderState` unchanged. A body calling
-`PaintLayer` directly has to override `canvasWidth` itself.
+the sequence body above spreads `model.renderState` without overriding
+`canvasWidth`. A body calling `PaintLayer` directly has to override it itself.
 
 The Y axis runs 0 (top) to `model.height` (bottom), same as on-screen.
 Horizontal placement comes from `renderBlocks`, which gives `{ startPx, endPx }`

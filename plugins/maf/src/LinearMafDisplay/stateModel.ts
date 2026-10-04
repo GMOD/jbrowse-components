@@ -2376,6 +2376,8 @@ export default function stateModelFactory(
         },
         /**
          * #method
+         * `rowsEncodePropsIn` in the session's palette, for the on-screen
+         * encode.
          */
         rowsEncodeProps(): MafRowsEncodeProps {
           return this.rowsEncodePropsIn(self.colorPalette)

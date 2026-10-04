@@ -5,7 +5,7 @@ import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 import { encodeWiggleRegions } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
-import WiggleRowSeparators from './WiggleRowSeparators.tsx'
+import { wiggleRowSeparators } from './WiggleRowSeparators.tsx'
 
 import type { WiggleGpuProps } from '../shared/buildSourceRenderData.ts'
 import type { WigglePlotGeometry } from '../shared/wiggleDisplayViews.ts'
@@ -41,7 +41,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
   axes: YAxis[]
   canvasWidthPx: number
 
-  // read by WiggleRowSeparators
+  // read by wiggleRowSeparators
   isOverlay: boolean
   isDensityMode: boolean
   showRowSeparators: boolean
@@ -72,7 +72,7 @@ function WiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
     >
       {overlays ? (
         <>
-          <WiggleRowSeparators model={model} width={canvasWidth} />
+          {wiggleRowSeparators(model, canvasWidth)}
           <SvgTreeSidebar sidebar={model.svgSidebar} text={opts} />
         </>
       ) : null}

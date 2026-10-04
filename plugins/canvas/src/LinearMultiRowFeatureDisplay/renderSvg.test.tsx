@@ -60,10 +60,10 @@ jest.mock('mobx', () => ({
   when: () => Promise.resolve(),
 }))
 
-function makeRegionData(): MultiRowGetFeaturesResult {
+function makeRegionData(start = 1100, end = 1200): MultiRowGetFeaturesResult {
   return {
-    featureStarts: Uint32Array.from([1100]),
-    featureEnds: Uint32Array.from([1200]),
+    featureStarts: Uint32Array.from([start]),
+    featureEnds: Uint32Array.from([end]),
     featureColors: Uint32Array.from([0xff0000ff]),
     rectColorValues: new Uint32Array(0),
     rowValues: ['a'],
@@ -111,9 +111,10 @@ type LegendModel = RenderSvgModel & {
 function makeModel(
   overrides: Partial<LegendModel> = {},
   sidebar: Partial<SvgSidebarProps> = {},
+  regionData = makeRegionData(),
 ): LegendModel {
   const sources = overrides.sources ?? [{ name: 'a' }, { name: 'b' }]
-  const drawnRegionData = new Map([[0, makeRegionData()]])
+  const drawnRegionData = new Map([[0, regionData]])
   const rowKeys = new RowKeys()
   const renderState = {
     canvasWidth: 800,
@@ -201,6 +202,24 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
     // with rowProportion 0.8 insets the 50px row to h=40 at top=(50-40)/2=5.
     expect(html).toContain('<rect x="80"')
     expect(html).toContain('width="80"')
+  })
+
+  // The on-screen box is the track's, 2px narrower than the export, and it is
+  // the block scissor: painting at it clipped the rightmost column.
+  it('paints a feature at the right edge out to the export width', async () => {
+    const model = makeModel({}, {}, makeRegionData(1990, 2000))
+    const html = renderResult(
+      await renderSvg(
+        { ...model, renderState: { ...model.renderState, canvasWidth: 798 } },
+        {},
+      ),
+    )
+    const blockClip =
+      /<clipPath id="svgcanvas-clip-\d+"><path d="M([\d.]+),0h([\d.]+)/.exec(
+        html,
+      )
+    expect(html).toContain('<rect x="792"')
+    expect(Number(blockClip![1]) + Number(blockClip![2])).toBe(800)
   })
 
   it('draws the dendrogram in the reserved sidebar when the tree is shown', async () => {
