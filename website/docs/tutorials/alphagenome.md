@@ -243,8 +243,8 @@ A track from a variant prediction comes as two tracks: the reference and
 alternate curves together, and a difference row where positive is a gain from
 the insertion.[^mapping] Add the CD34+ DNase, polyA plus RNA-seq and H3K27ac
 tracks, zoom to _TAL1_ and the insertion, and close the reference and alternate
-tracks to keep the three difference rows. Untick **Y axis... → Clip extreme
-outliers** on the DNase difference row, because on a row this sparse the default
+tracks to keep the three difference rows. On the DNase difference row, untick
+**Y axis... → Clip extreme outliers**, because on a row this sparse the default
 clipping flattens the gain at the insertion.
 
 <Figure caption="The Jurkat insertion scored in CD34+ progenitors: the alternate-minus-reference difference for DNase, polyA plus RNA-seq and H3K27ac. Accessibility rises at the insertion, while H3K27ac and TAL1 transcription rise with it." src="/img/alphagenome/variant_difference.png" />

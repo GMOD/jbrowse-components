@@ -187,8 +187,8 @@ comparable:
 
 - Turn the pileup off with **Show... → Show pileup** in the track menu, since at
   this width the coverage curve shows the difference
-- Put the three lanes on one axis from **Coverage → Autoscale with other
-  tracks...**, ticking the other two, so they compare by height
+- Put the three lanes on one axis from **Coverage axis... → Share axis with**,
+  ticking the other two, so they compare by height
 
 <Figure caption="The RHD deletion across three genotypes, coverage on one shared axis, the banded span RHD itself. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
 
