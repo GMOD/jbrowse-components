@@ -42,6 +42,8 @@ export const REFERENCE_COLOR = '#ccc'
 // their rows edge to edge, so the line needs the same weight the multi-row
 // painting gives it
 export const SEPARATOR_OPACITY = 0.4
+export const MATRIX_CONNECTOR_STROKE_PX = 0.5
+export const LD_CONNECTOR_STROKE_PX = 1
 export const NO_CALL_COLOR = 'hsl(50,50%,50%)'
 export const UNPHASED_COLOR = 'black'
 

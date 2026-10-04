@@ -3,7 +3,7 @@ import { act } from 'react'
 import { fireEvent, render } from '@testing-library/react'
 
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/matrix/testEnv.ts'
-import { ConnectorLineOverlay } from './ConnectorLines.tsx'
+import { ConnectorLineOverlay, SvgConnectorField } from './ConnectorLines.tsx'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 
@@ -130,7 +130,12 @@ test('the export emits one path per connector', () => {
   const { display } = loadedDisplay()
   const { container } = render(
     <svg>
-      <ConnectorLineOverlay model={display} strokeWidth={0.5} exportSVG />
+      <SvgConnectorField
+        coords={display.connectorLineCoords}
+        lineZoneHeight={display.lineZoneHeight}
+        width={800}
+        strokeWidth={0.5}
+      />
     </svg>,
   )
 

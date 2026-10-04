@@ -3,12 +3,13 @@ import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
+import { SvgConnectorField } from '../../shared/ConnectorLines.tsx'
 import SvgVariantOverlay from '../../shared/components/SvgVariantOverlay.tsx'
-import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
+import { MATRIX_CONNECTOR_STROKE_PX } from '../../shared/constants.ts'
 import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
 
+import type { ConnectorLinesModel } from '../../shared/ConnectorLines.tsx'
 import type { RenderSvgBaseModel } from '../../shared/renderSvgUtils.ts'
-import type { MatrixConnectorLinesModel } from './LinesConnectingMatrixToGenomicPosition.tsx'
 import type {
   MatrixRenderState,
   VariantMatrixRenderBlock,
@@ -18,7 +19,9 @@ import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
 interface MatrixRenderSvgModel
-  extends RenderSvgBaseModel, MatrixConnectorLinesModel {
+  extends
+    RenderSvgBaseModel,
+    Pick<ConnectorLinesModel, 'connectorLineCoords' | 'lineZoneHeight'> {
   renderState: MatrixRenderState
   placedMatrixData: VariantMatrixUploadData | undefined
   matrixRegions: ReadonlyMap<number, VariantMatrixUploadData>
@@ -67,9 +70,11 @@ function VariantMatrixSvgBody({
       overlays={overlays}
       text={opts}
       lineZone={
-        <LinesConnectingMatrixToGenomicPosition
-          model={model}
-          exportSVG
+        <SvgConnectorField
+          coords={model.connectorLineCoords}
+          lineZoneHeight={model.lineZoneHeight}
+          width={canvasWidth}
+          strokeWidth={MATRIX_CONNECTOR_STROKE_PX}
           opts={opts}
         />
       }

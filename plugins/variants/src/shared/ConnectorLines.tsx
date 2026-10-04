@@ -61,6 +61,20 @@ function ConnectorLine({
   )
 }
 
+function useConnectorFieldPaint(
+  coords: ConnectorCoord[],
+  lineZoneHeight: number,
+  strokeWidth: number,
+) {
+  const color = alpha(
+    usePalette().text.primary,
+    connectorFieldAlpha(coords, strokeWidth),
+  )
+  return (ctx: Ctx2D) => {
+    drawConnectorField(ctx, coords, lineZoneHeight, strokeWidth, color)
+  }
+}
+
 /**
  * The faint field of every connector line, on a canvas rather than in the SVG
  * above it: 10^4 lines want 10^4 separate composites (see `drawConnectorField`)
@@ -75,36 +89,46 @@ const ConnectorLineField = observer(function ConnectorLineField({
   lineZoneHeight,
   width,
   strokeWidth,
-  exportSVG,
-  opts,
 }: {
   lineCoords: ConnectorCoord[]
   lineZoneHeight: number
   width: number
   strokeWidth: number
-  exportSVG?: boolean
+}) {
+  const paint = useConnectorFieldPaint(lineCoords, lineZoneHeight, strokeWidth)
+  return lineZoneHeight <= 0 ? null : (
+    <OverlayCanvas width={width} height={lineZoneHeight} draw={paint} />
+  )
+})
+
+/**
+ * The field in an SVG export, with no hover line, tooltip or handle. Not an
+ * observer: a live figure is frozen, and one subscribed to the view would slide
+ * the lines across the matrix it was drawn with.
+ */
+export function SvgConnectorField({
+  coords,
+  lineZoneHeight,
+  width,
+  strokeWidth,
+  opts,
+}: {
+  coords: ConnectorCoord[]
+  lineZoneHeight: number
+  width: number
+  strokeWidth: number
   opts?: PaintLayerOpts
 }) {
-  const palette = usePalette()
-  const color = alpha(
-    palette.text.primary,
-    connectorFieldAlpha(lineCoords, strokeWidth),
-  )
-  const paint = (ctx: Ctx2D) => {
-    drawConnectorField(ctx, lineCoords, lineZoneHeight, strokeWidth, color)
-  }
-
-  return lineZoneHeight <= 0 ? null : exportSVG ? (
+  const paint = useConnectorFieldPaint(coords, lineZoneHeight, strokeWidth)
+  return coords.length === 0 || lineZoneHeight <= 0 ? null : (
     <PaintLayer
       width={width}
       height={lineZoneHeight}
       opts={opts}
       paint={paint}
     />
-  ) : (
-    <OverlayCanvas width={width} height={lineZoneHeight} draw={paint} />
   )
-})
+}
 
 // The zone's hover hit-test. A transparent rect rather than the lines
 // themselves: they are on a canvas now, and were `pointerEvents: none` before
@@ -156,25 +180,19 @@ function ConnectorHitTestRect({
   )
 }
 
-// The frame the zone's contents draw in: an absolutely positioned <svg> live,
-// nothing at all in an SVG export (the export's own <svg> is already the frame).
-// Neither shifts horizontally — the coords are viewport-relative to start with,
-// so the |offsetPx| gap when the content doesn't reach the left viewport edge is
-// carried by the coords, not by a transform the export would have to restate.
+// The frame the zone's contents draw in. It does not shift horizontally: the
+// coords are viewport-relative to start with, so the |offsetPx| gap when the
+// content doesn't reach the left viewport edge is carried by the coords.
 export function ConnectorZone({
-  exportSVG,
   width,
   height,
   children,
 }: {
-  exportSVG?: boolean
   width: number
   height: number
   children: React.ReactNode
 }) {
-  return exportSVG ? (
-    children
-  ) : (
+  return (
     <svg
       style={{
         position: 'absolute',
@@ -227,15 +245,11 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
   model,
   strokeWidth,
   highlight,
-  exportSVG,
-  opts,
   children,
 }: {
   model: ConnectorLinesModel
   strokeWidth: number
   highlight?: ConnectorCoord
-  exportSVG?: boolean
-  opts?: PaintLayerOpts
   children?: React.ReactNode
 }) {
   const { height, lineZoneHeight, connectorLineCoords: lineCoords } = model
@@ -258,21 +272,17 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
             lineZoneHeight={lineZoneHeight}
             width={width}
             strokeWidth={strokeWidth}
-            exportSVG={exportSVG}
-            opts={opts}
           />
           {/* the chrome the field cannot carry, in the SVG over it: the
               hit-test, the labels, the emphasized line */}
-          <ConnectorZone exportSVG={exportSVG} width={width} height={height}>
-            {exportSVG ? null : (
-              <ConnectorHitTestRect
-                lineCoords={lineCoords}
-                lineZoneHeight={lineZoneHeight}
-                onHover={coord => {
-                  setHovered(coord)
-                }}
-              />
-            )}
+          <ConnectorZone width={width} height={height}>
+            <ConnectorHitTestRect
+              lineCoords={lineCoords}
+              lineZoneHeight={lineZoneHeight}
+              onHover={coord => {
+                setHovered(coord)
+              }}
+            />
             {children}
             {emphasized ? (
               <ConnectorLine
@@ -288,7 +298,7 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
       {/* Not gated on there being lines: the zone still takes up
       `lineZoneHeight`, and a viewport with no variants in it is exactly when a
       user wants to drag that space back. */}
-      {exportSVG || lineZoneHeight === 0 ? null : (
+      {lineZoneHeight === 0 ? null : (
         <ConnectorZoneResizeHandle model={model} top={lineZoneHeight} />
       )}
     </>

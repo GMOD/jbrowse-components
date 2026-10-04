@@ -2,7 +2,9 @@
 import TriangleMatrixSvgLayer from '@jbrowse/display-kit/TriangleMatrixSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
-import LDColumnZone from './components/LDColumnZone.tsx'
+import { SvgConnectorField } from '../shared/ConnectorLines.tsx'
+import { LD_CONNECTOR_STROKE_PX } from '../shared/constants.ts'
+import { ConnectorLabels } from './components/VariantLabels.tsx'
 import { LD_MARKS } from './components/ldMarks.ts'
 
 import type { LDDisplayModel } from './model.ts'
@@ -16,6 +18,8 @@ export async function renderSvg(
   return renderDisplaySvg(self, opts, LdSvgBody)
 }
 
+// `LDColumnZone`'s two forms, read once: the connector field in index mode,
+// and the labels in both.
 function LdSvgBody({
   model,
   height,
@@ -23,6 +27,7 @@ function LdSvgBody({
   overlays,
   opts,
 }: LgvSvgBodyProps<LDDisplayModel>) {
+  const { connectorLineCoords: coords, lineZoneHeight, showLabels } = model
   return (
     <>
       <TriangleMatrixSvgLayer
@@ -34,7 +39,16 @@ function LdSvgBody({
         top={model.matrixTop}
         opts={opts}
       />
-      {overlays ? <LDColumnZone model={model} exportSVG opts={opts} /> : null}
+      {overlays && !model.effectiveUseGenomicPositions ? (
+        <SvgConnectorField
+          coords={coords}
+          lineZoneHeight={lineZoneHeight}
+          width={canvasWidth}
+          strokeWidth={LD_CONNECTOR_STROKE_PX}
+          opts={opts}
+        />
+      ) : null}
+      {overlays && showLabels ? <ConnectorLabels coords={coords} /> : null}
     </>
   )
 }

@@ -1,15 +1,14 @@
 import { observer } from 'mobx-react'
 
 import { ConnectorLineOverlay } from '../../shared/ConnectorLines.tsx'
+import { MATRIX_CONNECTOR_STROKE_PX } from '../../shared/constants.ts'
 
 import type {
   ConnectorCoord,
   ConnectorLinesModel,
 } from '../../shared/ConnectorLines.tsx'
-import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
-// The matrix adds the crosshair column to what the shared overlay needs, so the
-// SVG-export path can declare it too rather than restating the fields.
+// The matrix adds the crosshair column to what the shared overlay needs.
 export interface MatrixConnectorLinesModel extends ConnectorLinesModel {
   connectorLineAtScreenX: (screenX: number) => ConnectorCoord | undefined
 }
@@ -17,26 +16,20 @@ export interface MatrixConnectorLinesModel extends ConnectorLinesModel {
 const LinesConnectingMatrixToGenomicPosition = observer(
   function LinesConnectingMatrixToGenomicPosition({
     model,
-    exportSVG,
-    opts,
     crosshairX,
   }: {
     model: MatrixConnectorLinesModel
-    exportSVG?: boolean
-    opts?: PaintLayerOpts
     crosshairX?: number
   }) {
     return (
       <ConnectorLineOverlay
         model={model}
-        strokeWidth={0.5}
+        strokeWidth={MATRIX_CONNECTOR_STROKE_PX}
         highlight={
           crosshairX === undefined
             ? undefined
             : model.connectorLineAtScreenX(crosshairX)
         }
-        exportSVG={exportSVG}
-        opts={opts}
       />
     )
   },

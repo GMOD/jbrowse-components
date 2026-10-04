@@ -14,20 +14,18 @@ import type { LDDisplayModel } from '../model.ts'
 // reserves `lineZoneHeight` for them rather than measuring the rotated text.
 const LDLabelZone = observer(function LDLabelZone({
   model,
-  exportSVG,
 }: {
   model: LDDisplayModel
-  exportSVG?: boolean
 }) {
   const { height, showLabels, matrixTop } = model
   const { width } = model.host
 
   return (
     <>
-      <ConnectorZone exportSVG={exportSVG} width={width} height={height}>
+      <ConnectorZone width={width} height={height}>
         <VariantLabels model={model} />
       </ConnectorZone>
-      {exportSVG || !showLabels ? null : (
+      {!showLabels ? null : (
         <ConnectorZoneResizeHandle model={model} top={matrixTop} />
       )}
     </>
