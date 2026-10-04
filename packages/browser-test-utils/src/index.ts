@@ -47,7 +47,7 @@ export {
   checkRingsPainted,
   checkSessionUrlRoundTrip,
   checkTextContrast,
-  checkTrackIsShown,
+  checkTrackToggles,
 } from './examplesChecks.ts'
 export {
   checkExamplesSiteDocLinks,

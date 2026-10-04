@@ -26,10 +26,10 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'show-track',
-    title: 'Show a track programmatically',
-    description: 'Open a track from code rather than the view prop.',
+    title: 'Show and hide a track',
+    description: 'Toggle a track from your own button.',
     group: 'Getting started',
-    sections: [{ slug: 'show-track', title: 'Show a track programmatically' }],
+    sections: [{ slug: 'show-track', title: 'Show and hide a track' }],
   },
   {
     slug: 'session-in-url',
@@ -37,6 +37,31 @@ export const pages: ExamplePage[] = [
     description: 'encodeSession and decodeSession, for a sharable link.',
     group: 'Getting started',
     sections: [{ slug: 'session-in-url', title: 'Put the session in the URL' }],
+  },
+  {
+    slug: 'theming',
+    title: 'Dark theme',
+    description: 'A Material UI palette, through configuration.theme.',
+    group: 'Getting started',
+    sections: [{ slug: 'with-dark-theme', title: 'Dark theme' }],
+  },
+  {
+    slug: 'plugins',
+    title: 'Plugins & the web worker',
+    description: 'A plugin from your own source, and RPC off the main thread.',
+    group: 'Getting started',
+    sections: [
+      {
+        slug: 'with-inline-plugin',
+        title: 'Inline plugin',
+        description: 'A Plugin subclass that adds a view menu item.',
+      },
+      {
+        slug: 'with-web-worker',
+        title: 'Web worker RPC',
+        description: 'Move data parsing off the main thread.',
+      },
+    ],
   },
   {
     slug: 'human',

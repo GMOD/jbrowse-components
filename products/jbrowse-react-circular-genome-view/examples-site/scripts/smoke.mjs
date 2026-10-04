@@ -11,7 +11,7 @@ import {
   checkRingsPainted,
   checkSessionUrlRoundTrip,
   checkTextContrast,
-  checkTrackIsShown,
+  checkTrackToggles,
   smokeExamplesSite,
 } from '@jbrowse/browser-test-utils'
 
@@ -23,7 +23,7 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const checks = {
   'gene-density-ring': checkRingsPainted,
   'session-in-url': checkSessionUrlRoundTrip,
-  'show-track': checkTrackIsShown,
+  'show-track': checkTrackToggles,
 }
 
 const failures = await smokeExamplesSite({
@@ -31,6 +31,7 @@ const failures = await smokeExamplesSite({
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
   slugs: examples.filter(e => !e.skipSmoke).map(e => e.slug),
+  workerSlug: 'plugins',
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
     ...(await checkDemoAboveFold(page)),

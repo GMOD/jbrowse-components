@@ -89,20 +89,39 @@ export async function checkDemoHeights(page: Page): Promise<string[]> {
 }
 
 /**
- * Confirm a demo whose subject is `showTrack` actually shows one.
+ * Confirm the show-track demo's button shows the track and hides it again.
  *
- * The page loads, paints a genome and reads correctly whether or not the call
- * landed, so nothing else in the run can tell the two apart — the same gap a
- * gesture leaves. It earns a check because the call is the only thing that page
- * teaches, and because the imperative form is the fragile one: it cannot live
- * beside the engine's construction (a `useState` initializer there is the
- * StrictMode trap `useCreateViewState` exists to close), so it runs from an
- * effect, one step further from the thing it acts on.
+ * The page loads, paints a genome and reads correctly whether or not the
+ * button reaches the view, so nothing else in the run can tell the two apart.
+ * The chords are painted on a canvas, so the count their renderer group
+ * publishes is what says the track drew.
  */
-export async function checkTrackIsShown(page: Page): Promise<string[]> {
+export async function checkTrackToggles(page: Page): Promise<string[]> {
+  const chordCount = () =>
+    page.evaluate(() =>
+      Math.max(
+        0,
+        ...[
+          ...document.querySelectorAll<HTMLElement>('[data-chord-count]'),
+        ].map(g => Number(g.dataset.chordCount)),
+      ),
+    )
+  async function clickButton(label: RegExp) {
+    const buttons = await page.$$('.demo button')
+    const labels = await Promise.all(
+      buttons.map(b => b.evaluate(el => el.textContent)),
+    )
+    const button = buttons[labels.findIndex(text => label.test(text))]
+    await button?.click()
+    return !!button
+  }
+  if (await chordCount()) {
+    return ['show-track: the track is drawn before the button is pressed']
+  }
+  if (!(await clickButton(/^show/i))) {
+    return ['show-track: no Show button rendered']
+  }
   try {
-    // the chords are painted on a canvas, so the count their renderer group
-    // publishes is what says the track drew
     await page.waitForFunction(
       () =>
         [...document.querySelectorAll<HTMLElement>('[data-chord-count]')].some(
@@ -110,14 +129,21 @@ export async function checkTrackIsShown(page: Page): Promise<string[]> {
         ),
       { timeout: 20000 },
     )
-    return []
   } catch {
-    return [
-      'the demo showed no track — `showTrack` never reached the view, or its ' +
-        'renderer drew nothing. The page looks healthy either way, which is ' +
-        'why this is asserted rather than eyeballed.',
-    ]
+    return ['show-track: pressing Show drew no chords']
   }
+  if (!(await clickButton(/^hide/i))) {
+    return ['show-track: the button did not turn into Hide']
+  }
+  try {
+    await page.waitForFunction(
+      () => !document.querySelector('[data-chord-count]'),
+      { timeout: 10000 },
+    )
+  } catch {
+    return [`show-track: pressing Hide left ${await chordCount()} chords`]
+  }
+  return []
 }
 
 const RING_SELECTOR = '[data-testid="circular-ring-canvas"]'
