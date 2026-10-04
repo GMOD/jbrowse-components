@@ -1,7 +1,14 @@
-import { plotOf, readConfObject } from '@jbrowse/core/configuration'
+import {
+  liftPlot,
+  parsePlot,
+  plotKeysOf,
+  plotOf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import configSchemaFactory from './configSchema.ts'
+import { MAF_PLOT_EXAMPLES } from './plotExamples.ts'
 import { MAF_COLOR_FIELDS } from './rowRenderings.ts'
 
 function make(snap: Record<string, unknown> = {}) {
@@ -43,4 +50,15 @@ test('refuses a scale, since each field has one', () => {
   expect(() => make({ color: { field: 'base', scale: 'linear' } })).toThrow(
     /scale/,
   )
+})
+
+test('the plot reaches the bar height, so Edit plot can draw the X-Y plot', () => {
+  const conf = make({ color: 'identity', y: 'identity' })
+  expect(plotKeysOf(conf)).toContain('y')
+  expect(plotOf(conf)).toEqual({ color: 'identity', y: 'identity' })
+})
+
+test.each(MAF_PLOT_EXAMPLES)('the example $plot lifts', ({ plot }) => {
+  const conf = make()
+  expect(() => liftPlot(conf, parsePlot(plot, plotKeysOf(conf)))).not.toThrow()
 })

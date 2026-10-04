@@ -39,6 +39,7 @@ export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   ribbonColor: 'the colour of the ribbons between lanes',
   laneLayers: 'the layers drawn over each lane',
   scales: 'the axes, scales.y the value axis',
+  y: "what each row's bar height carries",
   filter: 'the jexl: expressions a feature has to pass',
   filterBy: 'the read flags and tags a read has to pass',
 }

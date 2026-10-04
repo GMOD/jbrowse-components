@@ -7,6 +7,10 @@ export const MAF_PLOT_EXAMPLES: PlotExample[] = [
     description: 'bases shaded by identity to the reference',
   },
   {
+    plot: '{ "y": "identity" }',
+    description: 'each row a bar chart of its identity to the reference',
+  },
+  {
     plot: '{ "color": null }',
     description: 'the default base colors',
   },
