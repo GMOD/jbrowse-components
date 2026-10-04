@@ -49,19 +49,17 @@ the four Shigella are:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/025/GCF_000012025.1_ASM1202v1/
 - Shigella sonnei 53G:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/283/715/GCF_000283715.1_ASM28371v1/
-- the finished table, BEDs and config, rehosted so the lanes load without
-  rerunning the pipeline: https://jbrowse.org/demos/ecoli_orthologs/config.json
+- the finished table: https://jbrowse.org/demos/ecoli_orthologs/ecoli.blocks.gz
+- the finished config: https://jbrowse.org/demos/ecoli_orthologs/config.json
 
 ## A join on the gene symbols
 
-The [all-vs-all page](/docs/tutorials/allvsall_synteny) aligns five E. coli
-strains to each other, one alignment per pair, which keeps that demo at five.
-RefSeq's prokaryotic annotation pipeline names a gene by its ortholog (_atpA_ is
-_atpA_ in every strain that has it), so matching symbols across the GFF3 files
-fills the same `.blocks` table, the route the
-[primate page](/docs/tutorials/primate_orthologs_synteny) takes for eight apes;
-what this page adds is PGAP's handling of unnamed and renamed genes. The
-download is an annotation and a sequence report per genome:
+RefSeq's Prokaryotic Genome Annotation Pipeline (PGAP) names a gene by its
+ortholog (_atpA_ is _atpA_ in every strain that has it), so matching symbols
+across the GFF3 files builds an ortholog table with no alignment step, one row
+per gene and one column per genome, in the `.blocks` format
+`MCScanBlocksAdapter` reads. Most of the work is PGAP's unnamed and renamed
+genes. The download is an annotation and a sequence report per genome:
 
 <!-- from: scripts/build_ecoli_orthologs.sh -->
 
@@ -118,7 +116,7 @@ anything is built:
 gzip -dc strain.gff.gz | awk -F'\t' '$3 == "gene" && $9 ~ /;gene=/' | wc -l
 ```
 
-## The ortholog track
+## Loading the assemblies, gene tracks and ortholog track
 
 Each strain is an assembly that needs only its chromosome's length, since the
 lanes never read sequence. The build writes `<strain>.chrom.sizes` (a name and a
@@ -148,8 +146,10 @@ and tabix-indexed GFF3 the build made above:
 One `SyntenyTrack` names all forty-four assemblies. `blockAssemblies` and
 `bedLocations` are positional against the table's columns, in the order the
 helper printed; the config below keeps the four genomes the command above
-joined. The adapter decompresses the gzipped table and BEDs itself, reading each
-file whole before the first lane draws:
+joined, and the hosted
+[config.json](https://jbrowse.org/demos/ecoli_orthologs/config.json) has the
+track with all forty-four. The adapter decompresses the gzipped table and BEDs
+itself, reading each file whole before the first lane draws:
 
 ```json addtrack
 {
@@ -180,10 +180,9 @@ file whole before the first lane draws:
 ## One operon, forty-four genomes
 
 Opened on K-12 at the _atp_ operon, the track draws a lane per genome under the
-K-12 axis, as the
-[multi-way synteny display](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-does, with its
-[lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows).
+K-12 axis, each in the coordinates of the genome it shows, with a header naming
+the strain, contig and span it shows and `[rev]` where it runs against K-12
+([lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)).
 Read the colors this way:
 
 - Every gene is colored by its ortholog group, which the table names after the
@@ -191,13 +190,13 @@ Read the colors this way:
   whole stack.
 - A gene no group claims is grey, which marks the genes specific to a strain at
   a glance.
-- The key in the top right turns a color back into a group's name, and _Show
-  legend_ on the track menu puts it away. The display leaves it out in any
-  window holding more than thirty groups.
+- The key in the top right turns a color back into a group's name, and **Show...
+  → Show legend** on the track menu puts it away. The display leaves it out in
+  any window holding more than thirty groups.
 
-Lanes stack densest first, so the reduced Shigella genomes fall toward the
-bottom. The default height scrolls the stack inside the track; the session sets
-a `height` that fits every lane:
+Lanes stack densest first, by how many of the window's genes each genome places.
+The default height scrolls the stack inside the track; the session sets a
+`height` that fits every lane:
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {
@@ -263,21 +262,27 @@ Read the lanes from the top:
   wherever a strain has them.
 
 A window anchored on K-12 draws only the rows holding a K-12 gene, so the
-serotype's own sugar pathway genes stay grey. A gene annotated under a
-placeholder name, such as the `LOC` ids RefSeq gives most copies of the
-[primate](/docs/tutorials/primate_orthologs_synteny) salivary amylase cluster,
-has no row either.
+serotype's own sugar pathway genes stay grey. A gene PGAP left under its locus
+tag, such as `ECOLC_RS24020` in the ATCC_8739 lane, has no row either.
 
-These loci need a homology call across the proteomes to fill the table: an
-[OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or the
-[all-vs-all alignment](/docs/tutorials/allvsall_synteny) that draws the same
+Loci like the O-antigen cluster need a homology call across the proteomes to
+fill the table: an [OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or
+the [all-vs-all alignment](/docs/tutorials/allvsall_synteny) that draws the same
 locus base by base for five strains.
 
 ## Reproduce it end to end
 
-The script fetches the annotations, names and screens the genomes off NCBI's
-assembly report, builds the table and writes the config; see
-[Prerequisites](#prerequisites).
+The script needs the tools under [Prerequisites](#prerequisites) and works in
+four steps:
+
+1. Download each genome's annotation, sequence report and assembly report by
+   accession.
+2. Name each lane after the report's strain field, and drop a genome the report
+   calls neither _E. coli_ nor one of the four _Shigella_ species.
+3. Keep each genome's longest sequence as its chromosome, so a lane follows one
+   contig and no plasmid, and sort and index the GFF3 for it.
+4. Join the annotations on gene symbol, treating PGAP's locus-tag names as
+   unnamed and merging the symbols PGAP renamed, and write the config.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_orthologs.sh
