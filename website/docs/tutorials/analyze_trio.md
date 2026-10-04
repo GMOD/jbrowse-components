@@ -14,7 +14,6 @@ haplotype, so a meiotic crossover reads as a color change along the row.
 
 ## Prerequisites
 
-- nothing to read along. Everything below is for building the tracks yourself
 - a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
   file by path, [Web](/docs/quickstart_web) through **Add track**
 - the `hg38` assembly set up in JBrowse
@@ -44,7 +43,7 @@ chr1 only.
 - the hg38 reference sequence the reproduce script's own JBrowse instance opens
   on, rehosted: https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz
 
-## The genome
+## Loading the hg38 assembly
 
 The trio calls are on GRCh38, and the hap-ibd blocks below use its chr1
 coordinates, so we load that assembly first.
@@ -60,7 +59,7 @@ coordinates, so we load that assembly first.
 }
 ```
 
-## The trio VCF
+## Loading the trio's phased VCF
 
 A trio is a mother, father, and child sequenced together. A phased VCF tags each
 variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow each
@@ -89,11 +88,11 @@ naming as the assembly. In JBrowse Web you can instead paste the URL into **File
 
 ## Enabling the matrix view
 
-Switch the track to the
-[multi-sample variant display](/docs/user_guides/multivariant_track), and check
-**Show... → Show as genotype matrix** in its track menu. Each sample becomes a
-row and each variant a column, with black lines tying the columns back to their
-genomic positions.
+In the track menu, choose **Display types → Multi-sample variant display** (the
+[multi-sample variant display](/docs/user_guides/multivariant_track)), then
+check **Show... → Show as genotype matrix**. Each sample becomes a row and each
+variant a column, with black lines tying the columns back to their genomic
+positions.
 
 <Figure caption="The multi-sample variant display as a genotype matrix. One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
 
@@ -106,12 +105,13 @@ Turn on **Rendering mode → Phased** from the track menu:
 - it needs phased genotypes, written `0|1`; unphased calls (`0/1`) need a
   phasing program such as SHAPEIT first
 
-<Figure caption="The phased rendering mode. Rows are child hap1/hap2, mother hap1/hap2, father hap1/hap2, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
+<Figure caption="The phased rendering mode. Rows are the two haplotypes (HP0, HP1) of child HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
-<Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then the phased rendering mode splitting each trio member into its two haplotype rows in place, on the track the figures above are of. The last move zooms out past the default display's feature-density limit to the window the rest of the page works in; the matrix keeps drawing there, because each column is one variant." />
+<Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then the phased rendering mode splitting each trio member into its two haplotype rows, zoomed out to the window the rest of the page works in." />
 
-The child's two haplotypes match the mother's in some blocks and the father's in
-others. The rest of this tutorial turns that pattern into a painted track.
+Each of the child's haplotypes comes from one parent, and it matches one of that
+parent's two copies for a stretch, then the other copy. The rest of this
+tutorial turns that pattern into a painted track.
 
 ## Running hap-ibd
 
@@ -168,7 +168,7 @@ does the cleanup. Per child haplotype it:
 - merges adjacent segments of the same parental copy into runs
 - drops short interior runs, which are switch errors
 - snaps each remaining crossover to the midpoint of the gap between runs so the
-  blocks abut; real gaps, like the centromere, stay blank
+  blocks abut; a gap too wide to bridge stays blank
 
 The script writes one BED9 line per block plus a `parenthap` label, and its
 `itemRgb` colors the father's two copies blue and the mother's red. It takes
@@ -231,16 +231,16 @@ HG02026 and red for mother HG02025:
 <Figure caption="hap-ibd inheritance blocks in the multi-row feature display. Blue rows are father HG02026's two haplotypes, red rows are mother HG02025's. Each crossover is a spot where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
 
 The blue rows together are the child's paternal chromosome. Where one of them is
-filled, it is the father's copy the child inherited there, so every step between
-the blue rows is a crossover. The red rows are the maternal chromosome in the
-same way.
+filled, it is the father's copy the child inherited there, so hap-ibd places a
+paternal crossover at each step between the blue rows. The red rows are the
+maternal chromosome in the same way.
 
 The control in the figure is that no position has both blue rows filled, or both
 red rows, which would mean hap-ibd matched one child haplotype to both of a
 parent's copies. That holds along the whole chromosome. A position with neither
-row filled, such as the first few megabases, is one where hap-ibd found no
-segment long enough to report. The blocks run straight through the centromere,
-because hap-ibd joins the markers on either side of it.
+row filled, such as the gap all four rows share around the 50M tick, is one
+where hap-ibd found no segment long enough to report. The blocks run straight
+through the centromere, because hap-ibd joins the markers on either side of it.
 
 ## Relating the painting back to the genotypes
 
@@ -249,18 +249,21 @@ genotype matrix** on the VCF track so the **phased multi-sample variant
 display** draws each genotype at its genomic position and lines up with the
 block boundaries. To show one parent's two rows only, as the figures below do,
 set the painting's `rows.kept` to those two names, for example
-`["Father hap1", "Father hap2"]`.
+`["Father hap1", "Father hap2"]`. The figures also name the VCF's rows after the
+painting's rows. To do the same, set the variant display's `rows.labels` to
+`{ "HG02024 HP0": "Child hap1", "HG02024 HP1": "Child hap2", "HG02025 HP0": "Mother hap1", "HG02025 HP1": "Mother hap2", "HG02026 HP0": "Father hap1", "HG02026 HP1": "Father hap2" }`,
+or rename the rows in **Edit colors/arrangement...** in its track menu.
 
 Zoom to a few hundred kb around one boundary, where the block-step is obvious
 and the genotype columns resolve into individual variants. Start with the
 paternal crossover near chr1:29.7 Mb:
 
-<Figure caption="Paternal crossover at chr1:29,697,418, in a 400 kb window. The painting steps from Father hap2 to Father hap1, and the tinted frames mark that switch in the raw genotypes." src="/img/trio-crossover-paternal.png"/>
+<Figure caption="A paternal crossover. The painting steps from Father hap2 to Father hap1, and the tinted frames mark that switch in the raw genotypes." src="/img/trio-crossover-paternal.png"/>
 
 Near chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
 copies:
 
-<Figure caption="Maternal crossover at chr1:55,753,613, in a 400 kb window, the same idea in a different palette: the painting steps from Mother hap2 to Mother hap1, and the frames tie Child hap2 to each in turn." src="/img/trio-crossover-maternal.png"/>
+<Figure caption="A maternal crossover. The painting steps from Mother hap2 to Mother hap1, and the frames tie Child hap2 to each in turn." src="/img/trio-crossover-maternal.png"/>
 
 The 1000 Genomes VCF is _statistically_ phased, so the genotypes underneath
 switch between the two parental copies more often than real crossovers do. The
