@@ -907,7 +907,7 @@ jb2export synteny \
   --drawCurves --width 1400 --out yeast_synteny.png
 ```
 
-![Linear synteny ribbon between YJM1447 chr I and R64 chr I](https://jbrowse.org/jb2-figures/jbrowse-img/yeast_synteny.5a3515cce6b8.png)
+![Linear synteny ribbon between YJM1447 chr I and R64 chr I](https://jbrowse.org/jb2-figures/jbrowse-img/yeast_synteny.52dfa728a819.png)
 
 Omitting `--loc`/`--loc2` shows the whole assembly on that axis (note: `dotplot`
 ignores `--loc` and always shows the whole genome). `--autoDiagonalize` and
@@ -1116,7 +1116,7 @@ jb2export --config https://jbrowse.org/demos/ecoli_pangenome/config.json \
   --out ecoli_ava_synteny.png
 ```
 
-![Five E. coli strains stacked from one all-vs-all PAF, every band served by the same track](https://jbrowse.org/jb2-figures/jbrowse-img/ecoli_ava_synteny.1086d913a17c.png)
+![Five E. coli strains stacked from one all-vs-all PAF, every band served by the same track](https://jbrowse.org/jb2-figures/jbrowse-img/ecoli_ava_synteny.fcb9464ff95a.png)
 
 The unbroken ribbons are the backbone shared by all five strains and the gaps
 are where they differ; the crossings in the bottom band are IAI39's inversions
