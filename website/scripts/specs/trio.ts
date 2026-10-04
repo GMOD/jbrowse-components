@@ -294,7 +294,7 @@ export const trioSpecs: ScreenshotSpec[] = [
           type: 'LinearMultiSampleVariantDisplay',
           variantLayout: 'columns',
           height: 250,
-          renderingMode: 'phased',
+          unit: 'haplotype',
         },
       ],
     }),
@@ -323,7 +323,7 @@ export const trioSpecs: ScreenshotSpec[] = [
           type: 'LinearMultiSampleVariantDisplay',
           variantLayout: 'columns',
           height: 250,
-          renderingMode: 'phased',
+          unit: 'haplotype',
         },
       ],
     }),
@@ -474,7 +474,7 @@ export const trioSpecs: ScreenshotSpec[] = [
           {
             trackId: TRIO_VCF_TRACK,
             type: 'LinearMultiSampleVariantDisplay',
-            renderingMode: 'phased',
+            unit: 'haplotype',
             height: TRIO_VCF_DISPLAY_H,
             // relabel sidebar rows Child/Mother/Father hapN, keyed by the
             // canonical HG020xx HPn names

@@ -1,6 +1,11 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
+import CanvasPlugin from '@jbrowse/plugin-canvas'
+import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
+import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
+import VariantsPlugin from '../index.ts'
 
 describe('the display config schema', () => {
   const configSchema = configSchemaFactory()
@@ -73,22 +78,62 @@ describe('the display config schema', () => {
     })
   })
 
-  describe('renderingMode config slot', () => {
-    it('has default value of alleleCount', () => {
+  describe('unit config slot', () => {
+    it('defaults to sample', () => {
       const config = configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-7',
       })
-      expect(readConfObject(config, 'renderingMode')).toBe('alleleCount')
+      expect(readConfObject(config, 'unit')).toBe('sample')
     })
 
-    it('can be set to phased', () => {
+    it('can be set to haplotype', () => {
       const config = configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-8',
-        renderingMode: 'phased',
+        unit: 'haplotype',
       })
-      expect(readConfObject(config, 'renderingMode')).toBe('phased')
+      expect(readConfObject(config, 'unit')).toBe('haplotype')
+    })
+
+    it.each([
+      ['phased', 'haplotype'],
+      ['alleleCount', 'sample'],
+    ])(
+      'the v4 renderingMode %s reaches the live display as unit %s',
+      (old, unit) => {
+        const { display } = createTestEnvironment({
+          displayConfig: { renderingMode: old },
+        }).createDisplay()
+        expect(display.unit).toBe(unit)
+      },
+    )
+
+    it("a v4.3 session's renderingModeSetting lands in the unit slot", () => {
+      const pluginManager = new PluginManager([
+        new LinearGenomeViewPlugin(),
+        new CanvasPlugin(),
+        new VariantsPlugin(),
+      ])
+      pluginManager.createPluggableElements()
+      pluginManager.configure()
+      const display = pluginManager.getDisplayType(
+        'LinearMultiSampleVariantDisplay',
+      )
+      expect(display.retiredState!.keys).toContain('renderingModeSetting')
+      const lifted = display.retiredState!.lift({
+        type: 'MultiLinearVariantDisplay',
+        renderingModeSetting: 'phased',
+      })
+      const conf = display.configSchema.create(
+        {
+          type: 'LinearMultiSampleVariantDisplay',
+          displayId: 'd',
+          ...lifted,
+        },
+        { pluginManager },
+      )
+      expect(readConfObject(conf, 'unit')).toBe('haplotype')
     })
   })
 

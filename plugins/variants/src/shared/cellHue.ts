@@ -129,10 +129,10 @@ export function cellHueReaderOf(
   read: CellHueRead,
   {
     jexl,
-    renderingMode,
+    unit,
   }: {
     jexl: JexlInstance
-    renderingMode: string
+    unit: string
   },
 ): CellHueReader {
   if (read === undefined) {
@@ -155,7 +155,7 @@ export function cellHueReaderOf(
     case IMPACT_FIELD:
       return { value: getVariantImpactDomain }
     case PHASE_SET_FIELD:
-      return { byPhaseSet: renderingMode === 'phased' }
+      return { byPhaseSet: unit === 'haplotype' }
   }
   const get = fieldReader(read.field, jexl)
   return { value: feature => valueText(get(feature)) }

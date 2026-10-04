@@ -124,7 +124,7 @@ export function expandSourcesToHaplotypes({
 export function buildCanonicalRows({
   samplePloidy,
   sampleFilter,
-  renderingMode,
+  unit,
 }: {
   samplePloidy: Record<string, number>
   // `undefined` is "every sample", an empty list is "no samples" — they are not
@@ -133,7 +133,7 @@ export function buildCanonicalRows({
   // nothing sends `[]` and must compute nothing, which is also what the display
   // will draw.
   sampleFilter: string[] | undefined
-  renderingMode: string
+  unit: string
 }): ProcessedSource[] {
   const keep = sampleFilter ? new Set(sampleFilter) : undefined
   const rows: ProcessedSource[] = []
@@ -142,7 +142,7 @@ export function buildCanonicalRows({
       rows.push({ name: sampleName, sampleName })
     }
   }
-  return renderingMode === 'phased'
+  return unit === 'haplotype'
     ? expandSourcesToHaplotypes({ sources: rows, samplePloidy })
     : rows
 }

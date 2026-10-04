@@ -114,7 +114,7 @@ describe('computeVariantMatrixCells phased genotypes', () => {
     const result = computeVariantMatrixCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       ...args,
     })
 
@@ -154,7 +154,7 @@ describe('computeVariantMatrixCells phased mode ploidy', () => {
         { name: 'S2 HP0', sampleName: 'S2', HP: 0 },
         { name: 'S3 HP0', sampleName: 'S3', HP: 0 },
       ],
-      renderingMode: 'phased',
+      unit: 'haplotype',
       ...genotypeArgs([feature]),
     })
     const byRow = new Map<number, number>()
@@ -184,7 +184,7 @@ describe('computeVariantMatrixCells phased mode ploidy', () => {
         { name: `${s} HP1`, sampleName: s, HP: 1 },
         { name: `${s} HP2`, sampleName: s, HP: 2 },
       ]),
-      renderingMode: 'phased',
+      unit: 'haplotype',
       ...genotypeArgs([feature]),
     })
     const rows = [...result.cellRowIndices.slice(0, result.numCells)].sort()
@@ -213,7 +213,7 @@ describe('computeVariantMatrixCells cell bucket ordering', () => {
         mostFrequentAlt: '1',
       })),
       sources,
-      renderingMode: 'alleleCount',
+      unit: 'sample',
       ...genotypeArgs(features),
     })
     // reference cells are the grey ones; everything else carries an alt or a
@@ -302,7 +302,7 @@ test('a site with no ALT alleles reports an empty alt list', () => {
   const result = computeVariantMatrixCells({
     filteredVariants: [{ feature, mostFrequentAlt: '1' }],
     sources: [{ name: 'S1', sampleName: 'S1' }],
-    renderingMode: 'alleleCount',
+    unit: 'sample',
     ...genotypeArgs([feature]),
   })
   expect(result.numCells).toBe(1)
@@ -330,7 +330,7 @@ describe('phase-set coloring', () => {
     computeVariantMatrixCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       colorByPhaseSet,
       ...genotypeArgs([feature]),
     })
@@ -377,7 +377,7 @@ describe('the painted record reports what this pass emitted', () => {
     return computeVariantMatrixCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       ...genotypeArgs([feature]),
     })
   }
@@ -430,7 +430,7 @@ describe('the painted record reports what this pass emitted', () => {
         { feature: homRef, mostFrequentAlt: '1' },
       ],
       sources: [{ name: 'S1', sampleName: 'S1' }],
-      renderingMode: 'alleleCount',
+      unit: 'sample',
       hueValue: f => (f.id() === 'carried' ? 'HIGH' : 'MODERATE'),
       ...genotypeArgs([carried, homRef]),
     })

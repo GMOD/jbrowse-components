@@ -6,7 +6,7 @@ import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The rendering-mode submenu is the only door a user has into phased mode —
-// `setPhasedMode` has no other caller — so this row decides whether a callset
+// `setUnit` has no other caller — so this row decides whether a callset
 // the painter renders correctly is reachable at all. The gate is the painter's
 // own predicate (`isPhasedOrHaploid`, i.e. no `/`) rather than a literal `|`,
 // because a pangenome callset is haploid per assembly path: `vg deconstruct`

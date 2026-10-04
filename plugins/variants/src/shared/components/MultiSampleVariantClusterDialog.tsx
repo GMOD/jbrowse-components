@@ -48,7 +48,7 @@ const MultiSampleVariantClusterDialog = observer(
             maxMissingnessFilter: model.maxMissingnessFilter,
             filters: model.filters,
             adapterConfig: model.adapterConfig,
-            renderingMode: model.renderingMode,
+            unit: model.unit,
             samplePloidy: model.samplePloidy,
             ...args,
           })

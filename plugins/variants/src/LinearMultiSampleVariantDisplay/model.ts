@@ -373,7 +373,7 @@ export function stateModelFactory(
          */
         get cellPaintOptions() {
           return {
-            phased: self.renderingMode === 'phased',
+            phased: self.unit === 'haplotype',
             shade: self.shadeByDosage,
             valuesRead: self.cellHueValuesRead,
           }

@@ -152,8 +152,8 @@ The track config uses the other columns, a breed and a lineage per code:
 - `rows.labels` writes the breed beside each row
 - `rowColor` tints each row by lineage
 - `rows.domain` lists the cattle breeds above the wild species
-- `renderingMode: "phased"` draws one row per assembly, each being one
-  haplotype, with a second alternate allele in a separate colour
+- `unit: "haplotype"` draws one row per assembly, each being one haplotype, with
+  a second alternate allele in a separate colour
 - `showVariantLane` draws each call once in a lane above the rows, across the
   reference span it replaces, labelled with its VCF ID (the graph nodes that
   bound it) and the allele change
@@ -174,7 +174,7 @@ The track config uses the other columns, a breed and a lineage per code:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "renderingMode": "phased",
+      "unit": "haplotype",
       "showVariantLane": true,
       "rows": {
         "domain": [

@@ -46,7 +46,7 @@ function entry(label: string, color?: string): CategoricalEntry {
 }
 
 export interface VariantLegendInputs {
-  renderingMode: string
+  unit: string
   // Painted, not possible: each is true only where the cell loops emitted a
   // cell of that category anywhere in the fetched cell data (see
   // `paintedLegendFlags`).
@@ -85,13 +85,13 @@ function labelOf(
 // `referenceDrawingMode: 'skip'`; the other two are gated on having been
 // painted.
 function absentDataEntries({
-  renderingMode,
+  unit,
   hasUnphased,
   hasNoCall,
 }: VariantLegendInputs): CategoricalEntry[] {
   return [
     entry(
-      renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
+      unit === 'haplotype' ? 'Reference' : 'Homozygous reference',
       REFERENCE_COLOR,
     ),
     ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
@@ -106,7 +106,7 @@ function absentDataEntries({
 // dosage, not the zygosity: the ramp is continuous, and a triploid `0/0/1`
 // paints at a third, which "Heterozygous alt" did not list.
 function altEntries(hue: string, inputs: VariantLegendInputs) {
-  if (inputs.renderingMode === 'phased' || !inputs.shadeByDosage) {
+  if (inputs.unit === 'haplotype' || !inputs.shadeByDosage) {
     return [entry('Alt allele', hue)]
   }
   return [
@@ -125,9 +125,7 @@ export function getGenotypeEntries(
 ): CategoricalEntry[] {
   const [reference, ...rest] = absentDataEntries(inputs)
   const secondary =
-    inputs.renderingMode === 'phased' &&
-    !altColorOverride &&
-    inputs.hasSecondaryAlt
+    inputs.unit === 'haplotype' && !altColorOverride && inputs.hasSecondaryAlt
   return [
     reference!,
     ...altEntries(altColorOverride || ALT_HUE, inputs),
@@ -160,7 +158,7 @@ function swatchEntries(
   color: (value: string) => string,
   label: (value: string) => string,
 ): CategoricalEntry[] {
-  if (inputs.renderingMode === 'phased' || !inputs.shadeByDosage) {
+  if (inputs.unit === 'haplotype' || !inputs.shadeByDosage) {
     return values.map(value => ({
       value,
       label: label(value),
@@ -190,7 +188,7 @@ function recordFieldScale(
   inputs: VariantLegendInputs,
 ): CategoricalScale {
   const color = (key: string) => recordKeyColor(field, key)
-  const shaded = inputs.renderingMode !== 'phased' && inputs.shadeByDosage
+  const shaded = inputs.unit !== 'haplotype' && inputs.shadeByDosage
   const absent = absentDataEntries(inputs)
   const rows = derivedColorScale(
     [inputs.paintedDomain],
@@ -310,9 +308,9 @@ export function getVariantColorScales({
   // loop never reads PS — so outside phased mode the cells are genotype-colored
   // and the legend has to say that instead of describing a scheme that isn't on
   // screen. Resolved here rather than by forbidding the combination, since
-  // renderingMode can change after the color is chosen.
+  // unit can change after the color is chosen.
   const cellScale = getCellColorScale(
-    cellHueField(color) === PHASE_SET_FIELD && inputs.renderingMode !== 'phased'
+    cellHueField(color) === PHASE_SET_FIELD && inputs.unit !== 'haplotype'
       ? undefined
       : color,
     inputs,

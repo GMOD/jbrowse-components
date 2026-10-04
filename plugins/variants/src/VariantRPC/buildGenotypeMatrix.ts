@@ -30,12 +30,12 @@ export async function buildGenotypeMatrix({
     maxMissingnessFilter: number
     filters?: SerializableFilterChain
     statusCallback?: StatusCallback
-    renderingMode?: string
+    unit?: string
     samplePloidy?: Record<string, number>
   }
 }) {
-  const { renderingMode, samplePloidy } = args
-  return renderingMode === 'phased' && samplePloidy
+  const { unit, samplePloidy } = args
+  return unit === 'haplotype' && samplePloidy
     ? getPhasedGenotypeMatrix({
         pluginManager,
         args: { ...args, samplePloidy },

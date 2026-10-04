@@ -78,6 +78,7 @@ import { variantTopBandsGeometry } from './variantTopBands.ts'
 
 import type { LinearMultiSampleVariantDisplayConfigModel } from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
+import type { VariantUnit } from './constants.ts'
 import type { ProcessedSource, Source } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
@@ -214,7 +215,7 @@ function fetchRegionsForMode(
  * #category display
  *
  * #example
- * `renderingMode`, `rowColor`, `rows` and `minorAlleleFrequencyFilter` are
+ * `unit`, `rowColor`, `rows` and `minorAlleleFrequencyFilter` are
  * config (see the display's config schema), read at runtime through `getConf`
  * and written as session edits to the track's config — they are NOT plain MST
  * properties. Set them in a track's `displays` array to change the default:
@@ -223,7 +224,7 @@ function fetchRegionsForMode(
  *   {
  *     type: 'LinearMultiSampleVariantDisplay',
  *     displayId: 'my-cohort',
- *     renderingMode: 'phased',
+ *     unit: 'haplotype',
  *     rowColor: 'population',
  *     rows: { domain: ['NA12878', 'NA12891'] },
  *   },
@@ -484,10 +485,9 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
-         * Returns the rendering mode config slot value
          */
-        get renderingMode(): string {
-          return getConf(self, 'renderingMode')
+        get unit(): VariantUnit {
+          return getConf(self, 'unit')
         },
         /**
          * #getter
@@ -685,7 +685,7 @@ export default function MultiSampleVariantBaseModelF(
             // An order none of whose names is a current row is a previous
             // dataset's: an adapter edit swapped the cohort out from under it,
             // and the tree beside it names rows that are gone. The same reset
-            // `setPhasedMode` takes when it renames the rows. Keyed on total
+            // `setUnit` takes when it renames the rows. Keyed on total
             // mismatch — a partial overlap is the same cohort with samples
             // added or removed, and the reader's order survives that.
             const names = new Set(sources.map(resolveSampleName))
@@ -746,14 +746,14 @@ export default function MultiSampleVariantBaseModelF(
           /**
            * #action
            */
-          setPhasedMode(arg: string) {
-            const renamesRows = self.renderingMode !== arg
-            setConf(self, 'renderingMode', arg)
+          setUnit(unit: VariantUnit) {
+            const renamesRows = self.unit !== unit
+            setConf(self, 'unit', unit)
             if (renamesRows) {
-              // The mode decides what a row is *called* — sample names in
-              // allele-count mode, "HG001 HP0" haplotype names in phased — so
-              // the order, the labels, the tints, the tree and the focus naming
-              // its leaves all go stale together.
+              // The unit decides what a row is *called*, a sample name or a
+              // "HG001 HP0" haplotype name, so the order, the labels, the
+              // tints, the tree and the focus naming its leaves all go stale
+              // together.
               self.resetRowArrangement()
             }
           },
@@ -931,7 +931,7 @@ export default function MultiSampleVariantBaseModelF(
          * once `samplePloidy` lands or the order names them.
          */
         expandRows(rows: ProcessedSource[]): ProcessedSource[] {
-          return self.renderingMode === 'phased'
+          return self.unit === 'haplotype'
             ? expandPhasedRows({
                 rows,
                 ploidy: self.samplePloidy,
@@ -984,7 +984,7 @@ export default function MultiSampleVariantBaseModelF(
         get clusteringReady() {
           return (
             !!self.adapterSamples &&
-            (self.renderingMode !== 'phased' || !!self.samplePloidy)
+            (self.unit !== 'haplotype' || !!self.samplePloidy)
           )
         },
         /**
@@ -1083,7 +1083,7 @@ export default function MultiSampleVariantBaseModelF(
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             maxMissingnessFilter: self.maxMissingnessFilter,
             filters: self.filters,
-            renderingMode: self.renderingMode,
+            unit: self.unit,
             color: self.cellHue.read,
           }
         },
@@ -1375,7 +1375,7 @@ export default function MultiSampleVariantBaseModelF(
               featureIds,
               genotypeCodesByFeatureId,
               anchorFeatureId: featureId,
-              phased: self.renderingMode === 'phased',
+              phased: self.unit === 'haplotype',
             })
             if (sorted) {
               self.setRowOrder(sorted)
@@ -1520,7 +1520,7 @@ export default function MultiSampleVariantBaseModelF(
         get colorScales(): ColorScale[] {
           return [
             ...getVariantColorScales({
-              renderingMode: self.renderingMode,
+              unit: self.unit,
               hasSecondaryAlt: self.hasSecondaryAlt,
               hasUnphased: self.hasUnphased,
               hasNoCall: self.hasNoCall,

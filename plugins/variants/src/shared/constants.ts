@@ -8,6 +8,10 @@ export const MULTI_SAMPLE_VARIANT_DISPLAY = 'LinearMultiSampleVariantDisplay'
 
 export const f2 = 0.3
 
+// What one row stands for: a sample, or one of its haplotypes.
+export const VARIANT_UNITS = ['sample', 'haplotype'] as const
+export type VariantUnit = (typeof VARIANT_UNITS)[number]
+
 // Feature-detail widget opened when a variant is clicked. Shared by the
 // single-track and multi-sample variant displays so the registered widget
 // name/id can't drift between them.

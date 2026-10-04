@@ -16,7 +16,10 @@ import {
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
 import { cellColorConfigSchema } from '../shared/cellColorConfigSchema.ts'
-import { MULTI_SAMPLE_VARIANT_DISPLAY } from '../shared/constants.ts'
+import {
+  MULTI_SAMPLE_VARIANT_DISPLAY,
+  VARIANT_UNITS,
+} from '../shared/constants.ts'
 import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
 
 /**
@@ -93,7 +96,7 @@ import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
  *     {
  *       type: 'LinearMultiSampleVariantDisplay',
  *       height: 400,
- *       renderingMode: 'phased',
+ *       unit: 'haplotype',
  *       rows: { domain: ['HG002'] },
  *     },
  *   ],
@@ -180,12 +183,12 @@ export default function configSchemaFactory() {
       /**
        * #slot
        */
-      renderingMode: {
+      unit: {
         type: 'stringEnum',
-        model: types.enumeration('RenderingMode', ['alleleCount', 'phased']),
-        defaultValue: 'alleleCount',
+        model: types.enumeration('VariantUnit', [...VARIANT_UNITS]),
+        defaultValue: 'sample',
         description:
-          "'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype",
+          "What one row stands for: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype",
       },
       /**
        * #slot color
@@ -337,7 +340,12 @@ export default function configSchemaFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      retired: retiredFilterSpelling,
+      retired: {
+        ...retiredFilterSpelling,
+        renderingMode: (v: unknown) => ({
+          unit: v === 'phased' ? 'haplotype' : 'sample',
+        }),
+      },
     },
   )
 }

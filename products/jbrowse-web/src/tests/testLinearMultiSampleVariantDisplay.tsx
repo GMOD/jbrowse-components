@@ -83,7 +83,7 @@ export async function testLinearMultiSampleVariantDisplay({
     fireEvent.click(await findByText('Phased', ...opts))
     const display: LinearMultiSampleVariantDisplayModel =
       view.tracks[0].displays[0]
-    expect(display.renderingMode).toBe('phased')
+    expect(display.unit).toBe('haplotype')
   }
 
   await findDisplayPainted(info.displayTestId, { timeout })

@@ -167,14 +167,14 @@ that allele. We'll add it to the graph launch's session:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "renderingMode": "phased",
+      "unit": "haplotype",
       "filter": ["jexl:alleleLength(feature)>=50"]
     }
   ]
 }
 ```
 
-- `renderingMode: "phased"` gives each haplotype its own row.
+- `unit: "haplotype"` gives each haplotype its own row.
 - `alleleLength(feature)>=50` keeps alleles of 50 bp and up, the size of the
   bubbles minigraph draws. `alleleLength` is the length of the record's longest
   allele, so it counts an insertion's inserted bases. **Filter by... → Edit

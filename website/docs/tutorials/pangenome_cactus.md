@@ -260,14 +260,14 @@ matrix display, one column per variant and one row per sample:
     {
       "type": "LinearMultiSampleVariantDisplay",
       "variantLayout": "columns",
-      "renderingMode": "phased"
+      "unit": "haplotype"
     }
   ]
 }
 ```
 
-Each strain is one haplotype, so `renderingMode: "phased"` colors each cell by
-that strain's allele. The
+Each strain is one haplotype, so `unit: "haplotype"` colors each cell by that
+strain's allele. The
 [multi-sample variant track guide](/docs/user_guides/multivariant_track) covers
 columns versus genomic positions, the genotype colors, and clustering samples by
 genotype.

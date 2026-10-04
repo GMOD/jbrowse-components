@@ -55,7 +55,7 @@ describe('recoloring does not disturb the arrangement', () => {
   // is still sample-level — re-deriving from it halved the row count.
   it('keeps the haplotype rows in phased mode', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setPhasedMode('phased')
+    display.setUnit('haplotype')
     display.setSources(SOURCES)
     const haplotypes = ['S2', 'S0', 'S1'].flatMap(sampleName => [
       { name: `${sampleName} HP0`, sampleName, HP: 0 },
@@ -133,7 +133,7 @@ describe('the facet bands over the arranged order', () => {
   // field onto each one — so the attribute the band reads is there.
   it('bands the haplotype rows a phased run produced', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setPhasedMode('phased')
+    display.setUnit('haplotype')
     display.setSources(SOURCES)
     display.setCellData({
       samplePloidy: Object.fromEntries(SOURCES.map(s => [s.name, 2])),
@@ -319,7 +319,7 @@ describe('a rendering-mode switch renames the rows', () => {
     display.setRowFocus(['S2', 'S0'])
     expect(rowNames(display)).toEqual(['S2', 'S0'])
 
-    display.setPhasedMode('phased')
+    display.setUnit('haplotype')
 
     expect(display.rowFocus).toBeUndefined()
     expect(display.rowDomain).toEqual([])
@@ -334,7 +334,7 @@ describe('a rendering-mode switch renames the rows', () => {
     display.setSources(SOURCES)
     display.setRowColorField('population')
 
-    display.setPhasedMode('phased')
+    display.setUnit('haplotype')
 
     expect(display.rowColorAttribute).toBe('population')
     expect(display.sources.every(s => s.rowColor)).toBe(true)
@@ -349,7 +349,7 @@ describe('a rendering-mode switch renames the rows', () => {
     const display = clusteredDisplay()
     display.setRowFocus(['S2', 'S0'])
 
-    display.setPhasedMode(display.renderingMode)
+    display.setUnit(display.unit)
 
     expect(display.rowFocus?.slice()).toEqual(['S2', 'S0'])
     expect(display.rowTree).toBe(CLUSTERED_TREE)
@@ -449,7 +449,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   // in the mode neither test above runs in.
   it('keeps the colorBy palette through a sort in phased mode', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setPhasedMode('phased')
+    display.setUnit('haplotype')
     display.setSources(SOURCES)
     display.setCellData({
       ...ONE_VARIANT,

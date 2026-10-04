@@ -299,7 +299,7 @@
         {
           "type": "LinearMultiSampleVariantDisplay",
           "displayId": "bovine_pangenome_vcf_regular",
-          "renderingMode": "phased",
+          "unit": "haplotype",
           "showVariantLane": true,
           "rows": {
             "domain": [

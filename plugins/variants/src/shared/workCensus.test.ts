@@ -71,7 +71,7 @@ function landCells(display: Display, regionIndex: number) {
 // arrangement regression lived on, per row inside one arranger run.
 test('what each row step recomputes, phased', async () => {
   const { display, view } = createTestEnvironment({
-    displayConfig: { renderingMode: 'phased' },
+    displayConfig: { unit: 'haplotype' },
   }).createDisplay()
   const firstEdited = (edit: Partial<ProcessedSource>) => {
     const [first, ...rest] = display.editableSources
@@ -165,7 +165,7 @@ test('what each row step recomputes, phased', async () => {
 // the per-row lookup reruns.
 test('what each row step recomputes, phased and coloured by population', async () => {
   const { display } = createTestEnvironment({
-    displayConfig: { renderingMode: 'phased', rowColor: 'population' },
+    displayConfig: { unit: 'haplotype', rowColor: 'population' },
   }).createDisplay()
   const table = await workCensus(display, [
     {
@@ -203,7 +203,7 @@ test('what each row step recomputes, phased and coloured by population', async (
 // never on a fetch that re-expands the same haplotypes.
 test('what each row step recomputes, phased and banded by population', async () => {
   const { display } = createTestEnvironment({
-    displayConfig: { renderingMode: 'phased', facet: 'population' },
+    displayConfig: { unit: 'haplotype', facet: 'population' },
   }).createDisplay()
   const table = await workCensus(display, [
     {

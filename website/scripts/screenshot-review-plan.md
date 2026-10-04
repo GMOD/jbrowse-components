@@ -515,9 +515,9 @@ tolerance ball for "did this figure move".
   look before believing an offset — the MHC pair's two landmarks are an allele
   and the reference stretch it replaces, so the force layout draws them touching
   and the pane's caption sat on top of the second ring.
-- **`renderingMode` is often auto-detected (`detectPhased`) rather than set in
-  the spec**, so a static grep for `'phased'` over the specs mislabels figures
-  like `hprc2/mhc_clustered`. The pixels are the oracle, not the spec text.
+- **`unit` is often auto-detected (`detectPhased`) rather than set in the
+  spec**, so a static grep for `'phased'` over the specs mislabels figures like
+  `hprc2/mhc_clustered`. The pixels are the oracle, not the spec text.
 - **Insertion markers take the theme's `palette.insertion` (#800080), not
   alignments-core's `INSERTION_COLOR` (#c000c0).** The latter is the
   theme-agnostic fallback in `DEFAULT_CIGAR_OP_DRAW_COLORS`, for worker code

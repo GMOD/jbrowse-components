@@ -65,7 +65,7 @@
 #   Byrska-Bishop et al. High-coverage whole-genome sequencing of the expanded
 #   1000 Genomes Project cohort including 602 trios. Cell 2022;185:3426-3440.
 #
-# THE SETTINGS THE PICTURE NEEDS are `renderingMode: 'phased'` (two-tone, one row
+# THE SETTINGS THE PICTURE NEEDS are `unit: 'haplotype'` (two-tone, one row
 # per chromosome, so a het is not averaged into one row) and `runClustering: true`
 # over this window. That pair used to draw nothing — no dendrogram, rows in
 # adapter order — because `applyClusterOrder` re-appended every sample on top of

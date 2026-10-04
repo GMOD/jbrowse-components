@@ -56,7 +56,7 @@ function loaded({
   const { display } = createTestEnvironment({
     displayConfig: {
       ...arrangementConfig(arrangement),
-      ...(phased ? { renderingMode: 'phased' } : {}),
+      ...(phased ? { unit: 'haplotype' } : {}),
     },
   }).createDisplay()
   display.setSources(SOURCES)
@@ -233,7 +233,7 @@ describe('allele count', () => {
     display.applyRowEdits([s0!, { ...s1!, label: 'One' }, s2!, s3!])
     landCells(display)
     await cluster(display, [2, 0, 3, 1], '((S2,S0),(S3,S1));')
-    display.setPhasedMode('phased')
+    display.setUnit('haplotype')
     expect(derived(display)).toMatchSnapshot()
     landCells(display)
     expect(derived(display)).toMatchSnapshot()
@@ -327,7 +327,7 @@ describe('phased', () => {
 
     test('a switch back to allele count resets', async () => {
       const display = await clustered()
-      display.setPhasedMode('alleleCount')
+      display.setUnit('sample')
       expect(derived(display)).toMatchSnapshot()
     })
   })

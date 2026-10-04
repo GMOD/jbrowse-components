@@ -176,7 +176,7 @@ describe('multi-sample variant row placement', () => {
     const { display } = createTestEnvironment().createDisplay()
     // phased first: switching mode is a real fetch input, so doing it after the
     // data lands would just clear it
-    display.setPhasedMode('phased')
+    display.setUnit('haplotype')
     display.setSources([{ name: 'S0' }, { name: 'S1' }])
     // the worker's rows, in its own order — `buildCanonicalRows` produces these
     // strings, `sources` produces the screen ones, and if the two conventions

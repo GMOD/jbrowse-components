@@ -143,7 +143,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // reads Reference / Alt allele / No call instead of a diploid
               // dosage. 170 holds that key and its Insertions section, which
               // a track container paint-clips at its own box.
-              renderingMode: 'phased',
+              unit: 'haplotype',
               height: 170,
             },
             { trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' },

@@ -91,7 +91,7 @@ default display, so preset its slots in a `displays` array; they are listed on
       "referenceDrawingMode": "draw",
       "minorAlleleFrequencyFilter": 0.05,
       "showRowLabels": true,
-      "renderingMode": "alleleCount"
+      "unit": "sample"
     }
   ]
 }
@@ -100,8 +100,8 @@ default display, so preset its slots in a `displays` array; they are listed on
 - **`referenceDrawingMode`** is `draw` to paint reference alleles too, or `skip`
   (the default) to leave the row solid gray with only ALT alleles on top, which
   keeps overlapping variants readable
-- **`renderingMode`** is `alleleCount` (dosage, darker for homozygous) or
-  `phased` (one row per haplotype)
+- **`unit`** is `sample` (one row per sample, darker for homozygous) or
+  `haplotype` (one row per haplotype)
 - **`minorAlleleFrequencyFilter`** and **`maxMissingnessFilter`** hide variants
   below an allele-frequency floor or above a no-call ceiling
 

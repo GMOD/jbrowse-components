@@ -12,21 +12,21 @@
 <!-- have -->
 <g id="node1" class="node">
 <title>have</title>
-<polygon fill="none" stroke="black" points="728,-810.5 631.09,-792.5 728,-774.5 824.91,-792.5 728,-810.5"/>
-<text xml:space="preserve" text-anchor="middle" x="728" y="-789.38" font-family="monospace" font-size="10.00">genotype present</text>
+<polygon fill="none" stroke="black" points="722,-810.5 625.09,-792.5 722,-774.5 818.91,-792.5 722,-810.5"/>
+<text xml:space="preserve" text-anchor="middle" x="722" y="-789.38" font-family="monospace" font-size="10.00">genotype present</text>
 </g>
 <!-- mode -->
 <g id="node2" class="node">
 <title>mode</title>
-<polygon fill="none" stroke="black" points="613,-727.25 531.66,-709.25 613,-691.25 694.34,-709.25 613,-727.25"/>
-<text xml:space="preserve" text-anchor="middle" x="613" y="-706.12" font-family="monospace" font-size="10.00">renderingMode</text>
+<polygon fill="none" stroke="black" points="602,-727.25 567.39,-709.25 602,-691.25 636.61,-709.25 602,-727.25"/>
+<text xml:space="preserve" text-anchor="middle" x="602" y="-706.12" font-family="monospace" font-size="10.00">unit</text>
 </g>
 <!-- have&#45;&gt;mode -->
 <g id="edge3" class="edge">
 <title>have&#45;&gt;mode</title>
-<path fill="none" stroke="black" d="M708.49,-777.72C690.01,-764.66 662.06,-744.91 641.17,-730.15"/>
-<polygon fill="black" stroke="black" points="643.26,-727.35 633.08,-724.43 639.22,-733.06 643.26,-727.35"/>
-<text xml:space="preserve" text-anchor="middle" x="687.89" y="-747.95" font-family="monospace" font-size="9.00"> yes</text>
+<path fill="none" stroke="black" d="M701.91,-777.9C680.97,-763.72 648.15,-741.5 625.89,-726.42"/>
+<polygon fill="black" stroke="black" points="627.98,-723.61 617.74,-720.9 624.05,-729.41 627.98,-723.61"/>
+<text xml:space="preserve" text-anchor="middle" x="679.68" y="-747.95" font-family="monospace" font-size="9.00"> yes</text>
 </g>
 <!-- nothing -->
 <g id="node11" class="node">
@@ -37,23 +37,23 @@
 <!-- have&#45;&gt;nothing -->
 <g id="edge2" class="edge">
 <title>have&#45;&gt;nothing</title>
-<path fill="none" stroke="black" d="M766.91,-781.24C799.94,-769.9 842,-748.04 842,-710.25 842,-710.25 842,-710.25 842,-355.5 842,-322.76 838.12,-285.32 834.96,-260.33"/>
+<path fill="none" stroke="black" d="M763.3,-781.75C798.01,-770.81 842,-749.25 842,-710.25 842,-710.25 842,-710.25 842,-355.5 842,-322.76 838.12,-285.32 834.96,-260.33"/>
 <polygon fill="black" stroke="black" points="838.46,-260.1 833.69,-250.64 831.52,-261.01 838.46,-260.1"/>
 <text xml:space="preserve" text-anchor="middle" x="849.88" y="-550.45" font-family="monospace" font-size="9.00"> no</text>
 </g>
 <!-- phased -->
 <g id="node4" class="node">
 <title>phased</title>
-<polygon fill="none" stroke="black" points="613,-644 471,-610.5 613,-577 755,-610.5 613,-644"/>
-<text xml:space="preserve" text-anchor="middle" x="613" y="-613.75" font-family="monospace" font-size="10.00">genotype carries no /</text>
-<text xml:space="preserve" text-anchor="middle" x="613" y="-601" font-family="monospace" font-size="10.00">(phased or haploid)</text>
+<polygon fill="none" stroke="black" points="602,-644 460,-610.5 602,-577 744,-610.5 602,-644"/>
+<text xml:space="preserve" text-anchor="middle" x="602" y="-613.75" font-family="monospace" font-size="10.00">genotype carries no /</text>
+<text xml:space="preserve" text-anchor="middle" x="602" y="-601" font-family="monospace" font-size="10.00">(phased or haploid)</text>
 </g>
 <!-- mode&#45;&gt;phased -->
 <g id="edge4" class="edge">
 <title>mode&#45;&gt;phased</title>
-<path fill="none" stroke="black" d="M613,-690.95C613,-681.05 613,-668.13 613,-655.6"/>
-<polygon fill="black" stroke="black" points="616.5,-655.81 613,-645.81 609.5,-655.81 616.5,-655.81"/>
-<text xml:space="preserve" text-anchor="middle" x="631.38" y="-664.7" font-family="monospace" font-size="9.00"> phased</text>
+<path fill="none" stroke="black" d="M602,-690.95C602,-681.05 602,-668.13 602,-655.6"/>
+<polygon fill="black" stroke="black" points="605.5,-655.81 602,-645.81 598.5,-655.81 605.5,-655.81"/>
+<text xml:space="preserve" text-anchor="middle" x="628.25" y="-664.7" font-family="monospace" font-size="9.00"> haplotype</text>
 </g>
 <!-- called -->
 <g id="node8" class="node">
@@ -64,9 +64,9 @@
 <!-- mode&#45;&gt;called -->
 <g id="edge5" class="edge">
 <title>mode&#45;&gt;called</title>
-<path fill="none" stroke="black" d="M568.67,-700.6C523.85,-691.59 453.59,-673.94 399,-644 331.47,-606.97 266.65,-542.21 234.68,-507.7"/>
-<polygon fill="black" stroke="black" points="237.63,-505.74 228.3,-500.73 232.47,-510.47 237.63,-505.74"/>
-<text xml:space="preserve" text-anchor="middle" x="430.5" y="-607.58" font-family="monospace" font-size="9.00"> alleleCount</text>
+<path fill="none" stroke="black" d="M578.69,-703.02C542.12,-694.21 469.69,-674.37 414.25,-644 343.46,-605.22 272.33,-541.19 236.97,-507.25"/>
+<polygon fill="black" stroke="black" points="239.47,-504.81 229.86,-500.36 234.6,-509.83 239.47,-504.81"/>
+<text xml:space="preserve" text-anchor="middle" x="432.62" y="-607.58" font-family="monospace" font-size="9.00"> sample</text>
 </g>
 <!-- ps -->
 <g id="node3" class="node">
@@ -105,9 +105,9 @@
 <!-- phased&#45;&gt;ps -->
 <g id="edge7" class="edge">
 <title>phased&#45;&gt;ps</title>
-<path fill="none" stroke="black" d="M586.49,-582.99C570.31,-566.81 549.25,-545.75 530.76,-527.26"/>
-<polygon fill="black" stroke="black" points="533.63,-525.18 524.09,-520.59 528.68,-530.13 533.63,-525.18"/>
-<text xml:space="preserve" text-anchor="middle" x="572.2" y="-550.45" font-family="monospace" font-size="9.00"> yes</text>
+<path fill="none" stroke="black" d="M577.26,-582.38C562.84,-566.56 544.31,-546.24 527.87,-528.21"/>
+<polygon fill="black" stroke="black" points="530.83,-526.27 521.5,-521.24 525.66,-530.98 530.83,-526.27"/>
+<text xml:space="preserve" text-anchor="middle" x="565.71" y="-550.45" font-family="monospace" font-size="9.00"> yes</text>
 </g>
 <!-- uncalled -->
 <g id="node12" class="node">
@@ -120,9 +120,9 @@
 <!-- phased&#45;&gt;uncalled -->
 <g id="edge6" class="edge">
 <title>phased&#45;&gt;uncalled</title>
-<path fill="none" stroke="black" d="M639.3,-582.99C659.13,-563 686.36,-535.55 707.03,-514.71"/>
-<polygon fill="black" stroke="black" points="709.26,-517.43 713.82,-507.87 704.29,-512.5 709.26,-517.43"/>
-<text xml:space="preserve" text-anchor="middle" x="679.16" y="-550.45" font-family="monospace" font-size="9.00"> no</text>
+<path fill="none" stroke="black" d="M630.3,-583.3C651.96,-563.24 681.87,-535.54 704.51,-514.58"/>
+<polygon fill="black" stroke="black" points="706.73,-517.29 711.69,-507.93 701.98,-512.16 706.73,-517.29"/>
+<text xml:space="preserve" text-anchor="middle" x="673.33" y="-550.45" font-family="monospace" font-size="9.00"> no</text>
 </g>
 <!-- override -->
 <g id="node7" class="node">
@@ -272,15 +272,15 @@
 <!-- start -->
 <g id="node10" class="node">
 <title>start</title>
-<ellipse fill="none" stroke="black" cx="728" cy="-865.5" rx="105.24" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="728" y="-862.38" font-family="monospace" font-size="10.00">genotype at (variant, row)</text>
+<ellipse fill="none" stroke="black" cx="722" cy="-865.5" rx="105.24" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="722" y="-862.38" font-family="monospace" font-size="10.00">genotype at (variant, row)</text>
 </g>
 <!-- start&#45;&gt;have -->
 <g id="edge1" class="edge">
 <title>start&#45;&gt;have</title>
-<path fill="none" stroke="black" d="M728,-847.31C728,-839.73 728,-830.6 728,-822.04"/>
-<polygon fill="black" stroke="black" points="731.5,-822.04 728,-812.04 724.5,-822.04 731.5,-822.04"/>
+<path fill="none" stroke="black" d="M722,-847.31C722,-839.73 722,-830.6 722,-822.04"/>
+<polygon fill="black" stroke="black" points="725.5,-822.04 722,-812.04 718.5,-822.04 725.5,-822.04"/>
 </g>
 </g>
-<!-- diagram-source-sha256 f21454cbf22ea924385af396aef2a3740c5e027fe27f4850e650fc2ba52044d6 -->
+<!-- diagram-source-sha256 63ae38ebceb28a4fa4959288f295a65d68c3fe55121613a9feffc277cc26a742 -->
 </svg>

@@ -126,7 +126,7 @@ describe('computeVariantCells phased genotypes', () => {
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       referenceDrawingMode: 'skip',
       ...args,
     })
@@ -169,7 +169,7 @@ describe('computeVariantCells phased no-call vs unphased', () => {
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       referenceDrawingMode: 'skip',
       ...genotypeArgs([feature]),
     })
@@ -218,7 +218,7 @@ describe('computeVariantCells haploid genotypes in phased mode', () => {
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       referenceDrawingMode: 'draw',
       ...genotypeArgs([feature]),
     })
@@ -261,7 +261,7 @@ describe('computeVariantCells mixed ploidy in phased mode', () => {
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       referenceDrawingMode: 'draw',
       ...genotypeArgs([feature]),
     })
@@ -291,7 +291,7 @@ describe('computeVariantCells insertion bounds', () => {
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'allele',
+      unit: 'sample',
       referenceDrawingMode: 'skip',
       ...genotypeArgs([feature]),
     })
@@ -314,7 +314,7 @@ describe('computeVariantCells insertion bounds', () => {
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'allele',
+      unit: 'sample',
       referenceDrawingMode: 'skip',
       ...genotypeArgs([feature]),
     })
@@ -346,7 +346,7 @@ describe('computeVariantCells per-variant hue', () => {
     computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'alleleCount',
+      unit: 'sample',
       referenceDrawingMode: 'draw',
       hueValue: () => override,
       ...genotypeArgs([feature]),
@@ -421,7 +421,7 @@ describe('insertion glyph inputs', () => {
     return computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       referenceDrawingMode: 'draw',
       ...genotypeArgs([feature]),
     })
@@ -487,7 +487,7 @@ describe('spatial index', () => {
       { feature: far, mostFrequentAlt: '1' },
     ],
     sources,
-    renderingMode: 'alleleCount',
+    unit: 'sample',
     referenceDrawingMode: 'draw',
     ...genotypeArgs([near, far]),
   })
@@ -571,7 +571,7 @@ describe('cell bucket ordering', () => {
         { feature: b, mostFrequentAlt: '1' },
       ],
       sources,
-      renderingMode: 'alleleCount',
+      unit: 'sample',
       referenceDrawingMode: 'draw',
       ...genotypeArgs([a, b]),
     })
@@ -591,7 +591,7 @@ describe('cell bucket ordering', () => {
         { feature: b, mostFrequentAlt: '1' },
       ],
       sources,
-      renderingMode: 'alleleCount',
+      unit: 'sample',
       referenceDrawingMode: 'skip',
       ...genotypeArgs([a, b]),
     })
@@ -625,7 +625,7 @@ describe('cell bucket ordering', () => {
         { feature: sparse, mostFrequentAlt: '1' },
       ],
       sources,
-      renderingMode: 'alleleCount',
+      unit: 'sample',
       referenceDrawingMode: 'draw',
       ...genotypeArgs([a, sparse]),
     })
@@ -663,7 +663,7 @@ describe('phase-set coloring is opt-in', () => {
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       referenceDrawingMode: 'skip',
       colorByPhaseSet,
       ...genotypeArgs([feature]),
@@ -695,7 +695,7 @@ describe('phase-set coloring is opt-in', () => {
           { feature: other, mostFrequentAlt: '1' },
         ],
         sources,
-        renderingMode: 'phased',
+        unit: 'haplotype',
         referenceDrawingMode: 'skip',
         colorByPhaseSet,
         ...genotypeArgs([feature, other]),
@@ -728,7 +728,7 @@ test('a site with no ALT alleles reports an empty alt list', () => {
   const result = computeVariantCells({
     filteredVariants: [{ feature, mostFrequentAlt: '1' }],
     sources: [{ name: 'S1', sampleName: 'S1' }],
-    renderingMode: 'alleleCount',
+    unit: 'sample',
     referenceDrawingMode: 'draw',
     ...genotypeArgs([feature]),
   })
@@ -759,7 +759,7 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
     computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'alleleCount',
+      unit: 'sample',
       referenceDrawingMode,
       ...args,
     })
@@ -788,7 +788,7 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources: [{ name: 'S2', sampleName: 'S2' }],
-      renderingMode: 'alleleCount',
+      unit: 'sample',
       referenceDrawingMode: 'skip',
       ...args,
     })
@@ -816,7 +816,7 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
         { name: 'S2 HP0', sampleName: 'S2', HP: 0 },
         { name: 'S2 HP1', sampleName: 'S2', HP: 1 },
       ],
-      renderingMode: 'phased',
+      unit: 'haplotype',
       referenceDrawingMode: 'skip',
       ...phasedArgs,
     })
@@ -857,15 +857,11 @@ describe('computeVariantCells cellAltDosage', () => {
     end: 101,
   })
 
-  function carriesAltByRow(
-    f: Feature,
-    srcs: ProcessedSource[],
-    renderingMode: string,
-  ) {
+  function carriesAltByRow(f: Feature, srcs: ProcessedSource[], unit: string) {
     const result = computeVariantCells({
       filteredVariants: [{ feature: f, mostFrequentAlt: '1' }],
       sources: srcs,
-      renderingMode,
+      unit,
       referenceDrawingMode: 'draw',
       ...genotypeArgs([f]),
     })
@@ -877,7 +873,7 @@ describe('computeVariantCells cellAltDosage', () => {
   }
 
   test('a no-call cell does not carry the alt (allele-count mode)', () => {
-    const byRow = carriesAltByRow(feature, sources, 'alleleCount')
+    const byRow = carriesAltByRow(feature, sources, 'sample')
     expect(byRow.get(0)).toBe(255) // S1 `1`   — haploid alt is FULL dosage
     expect(byRow.get(1)).toBe(0) // S2 `.`   — haploid no-call
     expect(byRow.get(2)).toBe(0) // S3 `./.` — diploid no-call
@@ -906,7 +902,7 @@ describe('computeVariantCells cellAltDosage', () => {
         { name: 'S4 HP0', sampleName: 'S4', HP: 0 },
         { name: 'S4 HP1', sampleName: 'S4', HP: 1 },
       ],
-      'phased',
+      'haplotype',
     )
     // Always full strength in phased mode: a row is one haplotype, so zygosity
     // is the pattern down a sample's rows rather than a shade.
@@ -934,7 +930,7 @@ describe('computeVariantCells cellAltDosage', () => {
         { name: 'S1', sampleName: 'S1', HP: 0 },
         { name: 'S2', sampleName: 'S2', HP: 0 },
       ],
-      'alleleCount',
+      'sample',
     )
     // Dosage is over CALLED alleles, so `./1` is a full dose on the one
     // haplotype that was called; how many went uncalled is missingness.
@@ -968,7 +964,7 @@ describe('phase-set coloring classifies from the allele, not the color', () => {
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       referenceDrawingMode: 'draw',
       colorByPhaseSet: true,
       ...genotypeArgs([feature]),
@@ -1012,7 +1008,7 @@ test('phase-set coloring still files reference cells in the reference bucket', (
   const result = computeVariantCells({
     filteredVariants: [{ feature, mostFrequentAlt: '1' }],
     sources,
-    renderingMode: 'phased',
+    unit: 'haplotype',
     referenceDrawingMode: 'draw',
     colorByPhaseSet: true,
     ...genotypeArgs([feature]),
@@ -1040,7 +1036,7 @@ test('phase-set coloring honors referenceDrawingMode: skip', () => {
   const result = computeVariantCells({
     filteredVariants: [{ feature, mostFrequentAlt: '1' }],
     sources,
-    renderingMode: 'phased',
+    unit: 'haplotype',
     referenceDrawingMode: 'skip',
     colorByPhaseSet: true,
     ...genotypeArgs([feature]),
@@ -1073,7 +1069,7 @@ describe('the painted record reports what this pass emitted', () => {
     return computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt }],
       sources,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       referenceDrawingMode: 'skip',
       ...genotypeArgs([feature]),
     })
@@ -1127,7 +1123,7 @@ describe('the painted record reports what this pass emitted', () => {
         { feature: homRef, mostFrequentAlt: '1' },
       ],
       sources: [{ name: 'S1', sampleName: 'S1' }],
-      renderingMode: 'alleleCount',
+      unit: 'sample',
       referenceDrawingMode: 'draw',
       hueValue: f => (f.id() === 'carried' ? 'HIGH' : 'MODERATE'),
       ...genotypeArgs([carried, homRef]),

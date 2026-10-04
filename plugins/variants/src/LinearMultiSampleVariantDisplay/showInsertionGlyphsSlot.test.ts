@@ -24,8 +24,8 @@ export function typeGuards(
   const own = getConf(model, 'showInsertionGlyphs')
   assertType<Equal<typeof own, boolean>>()
 
-  const shared = getConf(model, 'renderingMode')
-  assertType<Equal<typeof shared, 'alleleCount' | 'phased'>>()
+  const shared = getConf(model, 'unit')
+  assertType<Equal<typeof shared, 'sample' | 'haplotype'>>()
 
   // @ts-expect-error a slot name outside the schema stays a hard error
   getConf(model, 'notARealSlot')

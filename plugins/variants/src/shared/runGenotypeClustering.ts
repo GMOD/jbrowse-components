@@ -36,7 +36,7 @@ export async function runGenotypeClustering({
     maxMissingnessFilter,
     filters,
     adapterConfig,
-    renderingMode,
+    unit,
     samplePloidy,
   } = model
   if (!model.sourcesBase) {
@@ -57,7 +57,7 @@ export async function runGenotypeClustering({
         filters,
         adapterConfig,
         signal,
-        renderingMode,
+        unit,
         samplePloidy,
         partition: model.clusterPartition,
         statusCallback,
@@ -66,7 +66,7 @@ export async function runGenotypeClustering({
     // matrix. `filters` reduces to whether one was active: the expressions are
     // long and the caption is one line.
     provenance: clusterProvenanceFromRegions(regions, [
-      { name: 'mode', value: renderingMode },
+      { name: 'unit', value: unit },
       { name: 'MAF filter', value: String(minorAlleleFrequencyFilter) },
       { name: 'max missingness', value: String(maxMissingnessFilter) },
       ...(filters ? [{ name: 'track filters', value: 'active' }] : []),

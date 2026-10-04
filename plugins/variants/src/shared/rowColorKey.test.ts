@@ -39,7 +39,7 @@ test('a legend click on the population key focuses it, on the genotype key nothi
 // samples.
 test('a legend focus in phased mode shows the group as haplotype rows', () => {
   const d = display()
-  d.setPhasedMode('phased')
+  d.setUnit('haplotype')
   d.setCellData({
     samplePloidy: { S0: 2, S1: 2, S2: 2, S3: 2 },
     rowNames: [],

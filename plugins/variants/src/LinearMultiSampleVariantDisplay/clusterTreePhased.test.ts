@@ -24,7 +24,7 @@ const regions = [
 async function clusterPhased() {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SOURCES)
-  display.setPhasedMode('phased')
+  display.setUnit('haplotype')
   // samplePloidy reaches the model only through cellData, which is what
   // `clusteringReady` waits for in phased mode
   display.setCellData({
@@ -48,7 +48,7 @@ async function clusterPhased() {
 test('phased mode reports itself ready to cluster once samplePloidy lands', () => {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SOURCES)
-  display.setPhasedMode('phased')
+  display.setUnit('haplotype')
   expect(display.clusteringReady).toBe(false)
 
   display.setCellData({

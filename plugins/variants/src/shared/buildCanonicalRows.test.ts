@@ -14,7 +14,7 @@ describe('buildCanonicalRows', () => {
       buildCanonicalRows({
         samplePloidy,
         sampleFilter: undefined,
-        renderingMode: 'alleleCount',
+        unit: 'sample',
       }).map(s => s.name),
     ).toEqual(['HG001', 'HG002', 'HG003'])
   })
@@ -27,7 +27,7 @@ describe('buildCanonicalRows', () => {
       buildCanonicalRows({
         samplePloidy,
         sampleFilter: [],
-        renderingMode: 'alleleCount',
+        unit: 'sample',
       }),
     ).toEqual([])
   })
@@ -36,12 +36,12 @@ describe('buildCanonicalRows', () => {
     const forward = buildCanonicalRows({
       samplePloidy,
       sampleFilter: ['HG001', 'HG003'],
-      renderingMode: 'alleleCount',
+      unit: 'sample',
     })
     const reversed = buildCanonicalRows({
       samplePloidy,
       sampleFilter: ['HG003', 'HG001'],
-      renderingMode: 'alleleCount',
+      unit: 'sample',
     })
     // Order-independence is the whole point: the client sends a set, so two
     // spellings of the same set must produce byte-identical row assignments or
@@ -54,7 +54,7 @@ describe('buildCanonicalRows', () => {
     const rows = buildCanonicalRows({
       samplePloidy,
       sampleFilter: undefined,
-      renderingMode: 'phased',
+      unit: 'haplotype',
     })
     // haploid HG002 gets one row, not a phantom HP1 it has no allele for
     expect(rows.map(s => s.name)).toEqual([
@@ -77,7 +77,7 @@ describe('buildCanonicalRows', () => {
     const rows = buildCanonicalRows({
       samplePloidy: { HG001: 2 },
       sampleFilter: ['HG001'],
-      renderingMode: 'phased',
+      unit: 'haplotype',
     })
     expect(rows.map(s => s.name)).toEqual(['HG001 HP0', 'HG001 HP1'])
   })

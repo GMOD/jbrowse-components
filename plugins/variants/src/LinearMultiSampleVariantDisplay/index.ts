@@ -35,14 +35,21 @@ export default function LinearMultiSampleVariantDisplayF(
       ReactComponent: VariantDisplayComponent,
       // A v4 layout copied the colorBy palette into its rows, so its
       // colours stay behind and the palette keeps painting them. Its
-      // `jexlFilters` lands as the config's own retired spelling, which
-      // `retiredFilterSpelling` then renames and prefixes.
+      // `jexlFilters` and `renderingModeSetting` land as the config's own
+      // retired spellings, which the schema's `retired` then lifts.
       retiredState: {
-        keys: [...RETIRED_ROW_STATE_KEYS, 'jexlFilters'],
+        keys: [
+          ...RETIRED_ROW_STATE_KEYS,
+          'jexlFilters',
+          'renderingModeSetting',
+        ],
         lift: instance => ({
           ...liftRetiredRowState(instance, { colors: false }),
           ...(Array.isArray(instance.jexlFilters)
             ? { jexlFilters: instance.jexlFilters }
+            : {}),
+          ...(typeof instance.renderingModeSetting === 'string'
+            ? { renderingMode: instance.renderingModeSetting }
             : {}),
         }),
       },

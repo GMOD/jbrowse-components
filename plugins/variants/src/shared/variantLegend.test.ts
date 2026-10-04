@@ -26,7 +26,7 @@ function entriesOf(scale: ColorScale | undefined) {
 
 const inputs = (over: Partial<VariantLegendInputs> = {}): VariantLegendInputs =>
   ({
-    renderingMode: 'alleleCount',
+    unit: 'sample',
     hasSecondaryAlt: false,
     hasUnphased: false,
     hasNoCall: false,
@@ -36,7 +36,7 @@ const inputs = (over: Partial<VariantLegendInputs> = {}): VariantLegendInputs =>
   }) satisfies VariantLegendInputs
 
 describe('getGenotypeEntries', () => {
-  it('alleleCount mode: the ramp, and no-call only when one was painted', () => {
+  it('sample rows: the ramp, and no-call only when one was painted', () => {
     expect(getGenotypeEntries(inputs()).map(i => i.label)).toEqual([
       'Homozygous reference',
       'Alt, half dosage (het)',
@@ -52,7 +52,7 @@ describe('getGenotypeEntries', () => {
     ])
   })
 
-  it('alleleCount mode has no secondary-alt swatch: which alt is not on hue', () => {
+  it('sample rows have no secondary-alt swatch: which alt is not on hue', () => {
     expect(
       getGenotypeEntries(inputs({ hasSecondaryAlt: true })).map(i => i.label),
     ).not.toContain('Other alt allele')
@@ -75,24 +75,24 @@ describe('getGenotypeEntries', () => {
 
   it('phased mode: ref + alt, plus unphased when present', () => {
     expect(
-      getGenotypeEntries(
-        inputs({ renderingMode: 'phased', hasUnphased: true }),
-      ).map(i => i.label),
+      getGenotypeEntries(inputs({ unit: 'haplotype', hasUnphased: true })).map(
+        i => i.label,
+      ),
     ).toEqual(['Reference', 'Alt allele', 'Unphased'])
   })
 
   it('phased mode: adds no-call when present, distinct from unphased', () => {
     expect(
-      getGenotypeEntries(
-        inputs({ renderingMode: 'phased', hasNoCall: true }),
-      ).map(i => i.label),
+      getGenotypeEntries(inputs({ unit: 'haplotype', hasNoCall: true })).map(
+        i => i.label,
+      ),
     ).toEqual(['Reference', 'Alt allele', 'No call'])
   })
 
   it('phased mode names the other alt only when one was painted', () => {
     expect(
       getGenotypeEntries(
-        inputs({ renderingMode: 'phased', hasSecondaryAlt: true }),
+        inputs({ unit: 'haplotype', hasSecondaryAlt: true }),
       ).map(i => i.label),
     ).toContain('Other alt allele')
   })
@@ -349,7 +349,7 @@ describe('getVariantColorScales', () => {
 
   it('keeps one swatch per SV class in phased mode', () => {
     expect(
-      svKey({ renderingMode: 'phased', paintedDomain: ['DEL'] }).map(
+      svKey({ unit: 'haplotype', paintedDomain: ['DEL'] }).map(
         ([label]) => label,
       ),
     ).toEqual(['Deletion', 'Reference'])
@@ -358,7 +358,7 @@ describe('getVariantColorScales', () => {
   it('keeps a genotype key for a plain CSS feature color, recolored', () => {
     const sections = getVariantColorScales({
       ...inputs({
-        renderingMode: 'phased',
+        unit: 'haplotype',
         hasSecondaryAlt: true,
         hasNoCall: true,
       }),
@@ -403,7 +403,7 @@ describe('phase-set legend section', () => {
   test('replaces the alt-allele swatches with the hue rule', () => {
     const [section] = getVariantColorScales({
       ...base,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       color: PHASE_SET,
     })
     expect(section!.id).toBe('phaseSet')
@@ -425,7 +425,7 @@ describe('phase-set legend section', () => {
     // genotype-colored and the legend must describe that, not phase sets.
     const [section] = getVariantColorScales({
       ...base,
-      renderingMode: 'alleleCount',
+      unit: 'sample',
       color: PHASE_SET,
     })
     expect(section!.id).toBe('genotypes')

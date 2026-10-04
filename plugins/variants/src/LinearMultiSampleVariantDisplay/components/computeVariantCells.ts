@@ -72,7 +72,7 @@ function getShapeType(featureType: string) {
 export function computeVariantCells({
   filteredVariants,
   sources,
-  renderingMode,
+  unit,
   referenceDrawingMode,
   hueValue,
   colorByPhaseSet,
@@ -83,7 +83,7 @@ export function computeVariantCells({
 }: {
   filteredVariants: FilteredVariant[]
   sources: ProcessedSource[]
-  renderingMode: string
+  unit: string
   referenceDrawingMode: string
   // What the alt cells' hue reads off a variant, once per feature.
   hueValue?: (feature: Feature) => string | undefined
@@ -109,7 +109,7 @@ export function computeVariantCells({
     sources,
     sampleNames,
     genotypeDict,
-    renderingMode,
+    unit,
     drawRef: referenceDrawingMode === 'draw',
     colorByPhaseSet,
   })

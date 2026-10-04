@@ -252,8 +252,8 @@ in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   | bcftools sort -Oz -o /data/ecoli_pggb.vcf.gz && tabix -p vcf /data/ecoli_pggb.vcf.gz"
 ```
 
-Each strain is one haplotype, so `renderingMode: "phased"` colors each cell by
-that strain's allele:
+Each strain is one haplotype, so `unit: "haplotype"` colors each cell by that
+strain's allele:
 
 ```json addtrack
 {
@@ -266,7 +266,7 @@ that strain's allele:
     "uri": "ecoli_pggb.vcf.gz"
   },
   "displays": [
-    { "type": "LinearMultiSampleVariantDisplay", "renderingMode": "phased" }
+    { "type": "LinearMultiSampleVariantDisplay", "unit": "haplotype" }
   ]
 }
 ```

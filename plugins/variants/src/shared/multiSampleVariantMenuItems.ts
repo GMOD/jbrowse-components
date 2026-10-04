@@ -163,9 +163,9 @@ export function variantTrackMenuItems(
           helpText:
             'Draws the color darker the more times this allele exists, so homozygous variants are darker than heterozygous. Works on polyploid also',
           type: 'radio',
-          checked: self.renderingMode === 'alleleCount',
+          checked: self.unit === 'sample',
           onClick: () => {
-            self.setPhasedMode('alleleCount')
+            self.setUnit('sample')
           },
         },
         {
@@ -179,10 +179,10 @@ export function variantTrackMenuItems(
           ),
           helpText:
             'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1 HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row. A haploid sample keeps one row, labelled with its own name',
-          checked: self.renderingMode === 'phased',
+          checked: self.unit === 'haplotype',
           type: 'radio',
           onClick: () => {
-            self.setPhasedMode('phased')
+            self.setUnit('haplotype')
           },
         },
       ],
@@ -210,7 +210,7 @@ export function variantTrackMenuItems(
                 'Color every alt-carrying cell by the phase set (FORMAT PS) its call belongs to, so one phasing block reads as a single hue along a haplotype row; ref and no-call cells keep their normal coloring',
               type: 'radio',
               checked: self.colorField === PHASE_SET_FIELD,
-              disabled: phaseSet.disabled || self.renderingMode !== 'phased',
+              disabled: phaseSet.disabled || self.unit !== 'haplotype',
               disabledHelpText: phaseSet.disabled
                 ? undefined
                 : 'Only applies in phased mode — switch Rendering mode to phased',
@@ -282,7 +282,7 @@ export function variantTrackMenuItems(
       additional: [
         // Only in allele-count mode: a phased row is one haplotype, which either
         // carries the allele or does not, so the ramp has nothing to express.
-        ...(self.renderingMode === 'phased'
+        ...(self.unit === 'haplotype'
           ? []
           : [
               {

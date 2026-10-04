@@ -1,4 +1,5 @@
 import type { CellHueRead } from '../shared/cellHue.ts'
+import type { VariantUnit } from '../shared/constants.ts'
 import type { Source } from '../shared/types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
@@ -20,9 +21,9 @@ interface BaseVariantRpcArgs {
 
 export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sources: Source[]
-  // Which matrix to build: 'phased' means one row per haplotype, which needs
-  // `samplePloidy`. Anything else means one row per sample.
-  renderingMode?: string
+  // Which matrix to build: 'haplotype' means one row per haplotype, which
+  // needs `samplePloidy`. Unset means one row per sample.
+  unit?: VariantUnit
   samplePloidy?: Record<string, number>
 }
 
@@ -42,7 +43,7 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // row focus (`rows.kept`), which genuinely changes what has to be computed.
   // Mirrors maf's `subtreeFilter`.
   sampleFilter?: string[]
-  renderingMode: string
+  unit: VariantUnit
   referenceDrawingMode?: string
   // What the alt cells' hue reads off each variant (`CellHue.read`).
   color?: CellHueRead

@@ -1314,18 +1314,6 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Squashes the triangle vertically to fill the track instead of drawing square bins at its natural half-the-view-width height. Unchecked keeps square bins, which fits when the feature of interest sits nearer the diagonal than the track is tall.',
         }
       : undefined,
-  renderingMode: (value, { displayType }) =>
-    typeof value === 'string' &&
-    displayType &&
-    MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
-      ? {
-          path: `${TRACK_MENU} → Rendering mode → ${value === 'phased' ? 'Phased' : 'Allele count (dosage)'}`,
-          note:
-            value === 'phased'
-              ? 'Splits each sample into one row per haplotype. The item stays disabled until phased variants are found in the file.'
-              : undefined,
-        }
-      : undefined,
   variantLayout: (value, { displayType }) =>
     (value === 'genomic' || value === 'columns') && displayType
       ? MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
@@ -1432,7 +1420,17 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? {
           path: `${READ_CONNECTIONS_MENU} → View as pairs / link supplementary alignments (${value === 'chain' ? 'checked' : 'unchecked'})`,
         }
-      : undefined,
+      : (value === 'sample' || value === 'haplotype') &&
+          displayType &&
+          MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+        ? {
+            path: `${TRACK_MENU} → Rendering mode → ${value === 'haplotype' ? 'Phased' : 'Allele count (dosage)'}`,
+            note:
+              value === 'haplotype'
+                ? 'Splits each sample into one row per haplotype. The item stays disabled until phased variants are found in the file.'
+                : undefined,
+          }
+        : undefined,
   drawLongRange: (value, { displayType }) =>
     typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
       ? {

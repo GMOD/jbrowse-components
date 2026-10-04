@@ -33,13 +33,10 @@ function variant(info: Record<string, unknown>, id = 'v') {
 const read = (encoding: ColorEncoding | undefined, keptField?: string) =>
   cellHueOf(encoding, keptField).read
 
-function reader(
-  encoding: ColorEncoding | undefined,
-  renderingMode = 'alleleCount',
-) {
+function reader(encoding: ColorEncoding | undefined, unit = 'sample') {
   return cellHueReaderOf(read(encoding), {
     jexl: pluginManager.jexl,
-    renderingMode,
+    unit,
   })
 }
 
@@ -107,7 +104,7 @@ describe('what the worker reads', () => {
 
   test('the phaseSet preset is a flag, and only in phased mode', () => {
     const field = { field: PHASE_SET_FIELD, scale: 'categorical' as const }
-    expect(reader(field, 'phased')).toEqual({ byPhaseSet: true })
+    expect(reader(field, 'haplotype')).toEqual({ byPhaseSet: true })
     expect(reader(field)).toEqual({ byPhaseSet: false })
     expect(cellHueOf(field)).toEqual({ read: { field: PHASE_SET_FIELD } })
   })

@@ -113,7 +113,7 @@ export async function executeVariantCellData({
   const {
     mode,
     sampleFilter,
-    renderingMode,
+    unit,
     referenceDrawingMode = 'skip',
     color,
     minorAlleleFrequencyFilter,
@@ -186,7 +186,7 @@ export async function executeVariantCellData({
   // key and the cells agree.
   const hue = cellHueReaderOf(color, {
     jexl: pluginManager.jexl,
-    renderingMode,
+    unit,
   })
   const colorByPhaseSet = hue.byPhaseSet ?? false
 
@@ -198,7 +198,7 @@ export async function executeVariantCellData({
   const effectiveSources = buildCanonicalRows({
     samplePloidy,
     sampleFilter,
-    renderingMode,
+    unit,
   })
   const rowNames = effectiveSources.map(s => s.name)
 
@@ -234,7 +234,7 @@ export async function executeVariantCellData({
           result[regionNum] = computeVariantCells({
             filteredVariants: regionVariants,
             sources: effectiveSources,
-            renderingMode,
+            unit,
             referenceDrawingMode,
             hueValue: hue.value,
             colorByPhaseSet,
@@ -301,7 +301,7 @@ export async function executeVariantCellData({
         computeVariantMatrixCells({
           filteredVariants,
           sources: effectiveSources,
-          renderingMode,
+          unit,
           hueValue: hue.value,
           colorByPhaseSet,
           featureGenotypeCodes,

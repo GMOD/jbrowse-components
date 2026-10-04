@@ -51,7 +51,7 @@ export interface MatrixCellData extends CellHueValues {
 export function computeVariantMatrixCells({
   filteredVariants,
   sources,
-  renderingMode,
+  unit,
   hueValue,
   colorByPhaseSet,
   featureGenotypeCodes,
@@ -61,7 +61,7 @@ export function computeVariantMatrixCells({
 }: {
   filteredVariants: FilteredVariant[]
   sources: ProcessedSource[]
-  renderingMode: string
+  unit: string
   // See computeVariantCells.
   hueValue?: (feature: Feature) => string | undefined
   // Color phased alt cells by FORMAT PS instead of by allele (see
@@ -77,7 +77,7 @@ export function computeVariantMatrixCells({
     sources,
     sampleNames,
     genotypeDict,
-    renderingMode,
+    unit,
     // columns always draw reference cells
     drawRef: true,
     colorByPhaseSet,

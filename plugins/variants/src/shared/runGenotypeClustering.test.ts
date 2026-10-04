@@ -21,15 +21,15 @@ const regions = [
 // which site filters produced it. Asserted alongside the order and tree
 // because it has to be written in the same action as the tree — provenance left
 // over from a previous run would caption this one with the wrong region.
-const withMode = (mode: string) => [
-  { name: 'mode', value: mode },
+const withUnit = (unit: string) => [
+  { name: 'unit', value: unit },
   { name: 'MAF filter', value: '0' },
   { name: 'max missingness', value: '1' },
 ]
 
 const PROVENANCE = {
   regions: [{ refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' }],
-  settings: withMode('alleleCount'),
+  settings: withUnit('sample'),
 }
 
 const THREE = [
@@ -46,7 +46,7 @@ function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
     clusterableSources: THREE,
     editableSources: THREE,
     adapterConfig,
-    renderingMode: 'alleleCount',
+    unit: 'sample',
     rowDomain: [],
     clusteringReady: true,
     hasClusterableRows: true,
@@ -86,7 +86,7 @@ describe('runGenotypeClustering', () => {
         sources: model.clusterableSources,
         minorAlleleFrequencyFilter: 0,
         maxMissingnessFilter: 1,
-        renderingMode: 'alleleCount',
+        unit: 'sample',
       }),
     )
     expect(model.setRowOrder).toHaveBeenCalledWith(
@@ -179,7 +179,7 @@ describe('runGenotypeClustering', () => {
     const model = makeModel({
       clusterableSources: haplotypes,
       editableSources: haplotypes,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       samplePloidy: {
         sampleA: 2,
         sampleB: 2,
@@ -210,7 +210,7 @@ describe('runGenotypeClustering', () => {
         tree: '(...);',
         provenance: // the recorded mode follows the run, since a phased tree clusters
           // haplotype rows rather than sample rows
-          { ...PROVENANCE, settings: withMode('phased') },
+          { ...PROVENANCE, settings: withUnit('haplotype') },
       },
     )
   })

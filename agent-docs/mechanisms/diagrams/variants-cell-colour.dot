@@ -11,9 +11,9 @@ digraph variant_cell_colour {
   have -> mode    [label=" yes"]
   nothing [label="draw nothing"]
 
-  mode [label="renderingMode"]
-  mode -> phased [label=" phased"]
-  mode -> called [label=" alleleCount"]
+  mode [label="unit"]
+  mode -> phased [label=" haplotype"]
+  mode -> called [label=" sample"]
 
   phased [label="genotype carries no /\n(phased or haploid)"]
   phased -> uncalled [label=" no"]

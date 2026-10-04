@@ -263,7 +263,7 @@ colors the rows by the second. For your own cohort, write that table and point
     {
       "type": "LinearMultiSampleVariantDisplay",
       "variantLayout": "columns",
-      "renderingMode": "phased",
+      "unit": "haplotype",
       "rowColor": "population",
       "minorAlleleFrequencyFilter": 0.35,
       "forceLoad": true,

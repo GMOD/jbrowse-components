@@ -256,7 +256,7 @@ export function makeSiteStyler({
   sources,
   sampleNames,
   genotypeDict,
-  renderingMode,
+  unit,
   drawRef,
   colorByPhaseSet,
 }: {
@@ -265,13 +265,13 @@ export function makeSiteStyler({
   sampleNames: string[]
   // `genotypeDict[code - 1]` is a code's genotype; code 0 is "no genotype"
   genotypeDict: readonly string[]
-  renderingMode: string
+  unit: string
   drawRef: boolean
   colorByPhaseSet?: boolean
 }) {
   const sampleIndices = buildSourceSampleIndices(sources, sampleNames)
   const hps = Int32Array.from(sources, source => source.HP ?? -1)
-  const phased = renderingMode === 'phased'
+  const phased = unit === 'haplotype'
   const numHaplotypes = countHaplotypes(sources)
   const phaseSets = makePhaseSetReader(sampleNames)
   const phaseSetStyle = makePhaseSetStyler()

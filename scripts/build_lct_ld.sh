@@ -394,7 +394,7 @@ cfg['tracks'] += [
             'type': 'LinearMultiSampleVariantDisplay',
             'variantLayout': 'columns',
             'displayId': 'kgp_lct_haplotypes-LinearMultiSampleVariantDisplay',
-            'renderingMode': 'phased',
+            'unit': 'haplotype',
             'colorBy': 'population',
             # This lane still reads genotypes, so unlike the LD tracks above
             # it keeps both: the floor is a control a reader can move, and the

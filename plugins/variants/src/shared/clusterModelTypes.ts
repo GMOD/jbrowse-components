@@ -1,3 +1,4 @@
+import type { VariantUnit } from './constants.ts'
 import type { ProcessedSource } from './types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -19,7 +20,7 @@ export interface ReducedModel
   maxMissingnessFilter: number
   filters?: SerializableFilterChain
   adapterConfig: Record<string, unknown>
-  renderingMode: string
+  unit: VariantUnit
   samplePloidy?: Readonly<Record<string, number>>
   // Whether the fetched inputs clustering needs have arrived. Phased mode
   // clusters haplotypes, which needs `samplePloidy` — and that rides with
