@@ -53,24 +53,20 @@ files below.
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz
 - the allele inventory:
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz
-- the coarse tier, a prefix naming a `.segs.bed.gz` and a `.links.bed.gz`:
-  https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000
+- the coarse tier, one node per bubble:
+  https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000.segs.bed.gz
+  and
+  https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000.links.bed.gz
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) describes what
 each file holds.
-
-`minigraph` writes no path lines, so the graph records the assembly that first
-contributed each allele, and `firstSeenIn` in the allele file is that
-construction order. The graph does not list which strains have an allele.
-[](/docs/tutorials/pangenome_cattle) is a panel whose path lines do.
 
 ## Load the graph
 
 We'll load the reference, then the graph and its bubbles. The graph track names
 the file prefix `build_pangenome_graph.sh` writes, and the `uri`s below are our
 hosted copy, so swap the prefix for your own build. The segments, links and
-bubbles are tabix-indexed, and `assemblyNameToPanSN` maps the assembly's name to
-the name in its path lines.
+bubbles are tabix-indexed.
 
 ```json addassembly
 {
@@ -92,7 +88,6 @@ the name in its path lines.
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph",
-    "assemblyNameToPanSN": { "mm39": "mm39" },
     "coarse": {
       "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000",
       "aboveBpPerPx": 328
@@ -115,8 +110,7 @@ The bubbles lane reads the same build's bubble index:
   "assemblyNames": ["mm39"],
   "adapter": {
     "type": "MinigraphBubbleAdapter",
-    "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz",
-    "assemblyNameToPanSN": { "mm39": "mm39" }
+    "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz"
   }
 }
 ```
@@ -125,21 +119,20 @@ The bubbles lane reads the same build's bubble index:
 
 Click **chr13** on the **Graph** line of the
 [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse), which opens
-the chromosome as
-[the HPRC page](/docs/tutorials/pangenome_hprc#a-chromosome-and-back) describes.
-Type `chr13:119,440,000-119,600,000`, and the graph track cuts the segments
-there. Pick **Layout → Force-directed layout** from its track menu and tick
-**Mark bubbles**. Turn on the bubbles track in the track selector.
+the whole chromosome with the graph drawn one node per bubble. Type
+`chr13:119,440,000-119,600,000`, and the graph track cuts the segments there.
+Pick **Layout → Force-directed layout** from its track menu and tick **Mark
+bubbles**. Turn on the bubbles track in the track selector.
 
 C57BL/6J has a multi-exon deletion at _Nnt_ that abolishes the protein and makes
-B6J mice glucose intolerant. **GRCm39 is C57BL/6J**, so the backbone of this
-graph is the strain with the deletion. The graph shows the deletion as sequence
-that the _other_ strains have and the reference lacks, the opposite sign from
-the published descriptions.
+C57BL/6J mice glucose intolerant. **GRCm39 is C57BL/6J**, so the backbone of
+this graph is the strain with the deletion. The graph shows the deletion as
+sequence that the _other_ strains have and the reference lacks, the opposite
+sign from the published descriptions.
 
-<Figure caption="The Nnt window with the RefSeq genes and the bubbles lane above the force-directed graph track. The loop hanging off the backbone beside Nnt is haloed and labelled as an insertion, because the reference is the strain that lacks the sequence." src="/img/pangenome/graph_mouse_nnt_halos.png" />
+<Figure caption="The Nnt window with the RefSeq genes and the bubbles lane above the force-directed graph track. The node hanging off the backbone beside Nnt is haloed and labelled as an insertion, because the reference is the strain that lacks the sequence." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
-## Finding the loci
+## Ranking the graph's bubbles to find Dock2 {#finding-the-loci}
 
 The coarse tier records how many segments each bubble holds. Ranking the tier by
 that count finds where the graph varies most, and intersecting the result with
@@ -147,17 +140,21 @@ the reference annotation names the loci.
 [`generatePangenomeLoci.ts`](https://github.com/GMOD/jb2hubs/blob/main/website/generatePangenomeLoci.ts)
 in the genomes.jbrowse.org repo computes the ranking.
 
-The **Loci** table on the portal page is that ranking. It recovers the
-vomeronasal receptor and Speer families and the immunoglobulin heavy chain
-locus, and the rows above the _Dock2_ row are bubbles hundreds of kilobases to
-megabases wide. The _Dock2_ row is the densest bubble that fits in one cut,
-inside one intron at `chr11:34,516,044-34,560,497`. Click its **graph** link,
-then pick **Layout → Force-directed layout** from the graph track menu and tick
-**Mark bubbles**:
+The portal page's **Loci** table is the tier ranked by segments per bubble. It
+recovers the vomeronasal receptor and Speer families and the immunoglobulin
+heavy chain locus, and the rows above the _Dock2_ row are bubbles hundreds of
+kilobases to megabases wide. The _Dock2_ row is the densest bubble that fits in
+one cut, inside one intron at `chr11:34,516,044-34,560,497`. Click its **graph**
+link, then pick **Layout → Force-directed layout** from the graph track menu and
+tick **Mark bubbles**:
 
 <Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one cut. The bubbles lane is a single row, the allele inventory draws each alternative path at its size, and the graph has one superbubble label, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
-## Check it against the index
+`minigraph` writes no path lines, so the graph records only the assembly that
+first contributed each allele: `firstSeenIn` in the allele inventory is that
+construction order, and the graph does not list which strains have an allele.
+
+## Finding the Dock2 bubble in the hosted bubble index
 
 The _Dock2_ bubble is one row of the hosted bubble index:
 
@@ -169,7 +166,7 @@ tabix https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed
 The row gives the segment count and route span the figure's superbubble label
 prints.
 
-## Build it yourself
+## Building a minigraph graph from the strain assemblies
 
 To build a graph like this one, run `minigraph` once per chromosome over the
 sequence for that chromosome from each assembly, reference first so that it
