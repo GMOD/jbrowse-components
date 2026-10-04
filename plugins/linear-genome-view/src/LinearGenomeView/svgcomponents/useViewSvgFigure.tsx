@@ -289,7 +289,10 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
  * question about regions and is true before a track is instantiated (the first
  * figure then draws a header over nothing, and nothing else ever changes to
  * correct it); **their heights and minimized flags**, since the geometry is
- * derived from them; **the width**, since a resize can widen the canvas without
+ * derived from them; **their configs**, since a display's settings are slots on
+ * the track config and a shown track's snapshot spells that config as its id;
+ * **the legend sections a reader dismissed**, which are volatile and in no
+ * snapshot; **the width**, since a resize can widen the canvas without
  * moving the locus; **the theme**, since each display bakes colors into its own
  * bodies, so a figure from the other mode is not stale but unreadable; and **the
  * highlight bands**, which are drawn in the figure and are the one thing in it a
@@ -320,9 +323,15 @@ function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
     view.coarseVisibleLocStrings,
     view.coarseBpPerPx,
     view.width,
-    // the snapshot carries pinned, minimized and the display settings a body
-    // bakes in; the effective height is a getter, so it is read beside it
-    view.tracks.map(track => [getSnapshot(track), track.displays[0]?.height]),
+    view.tracks.map(track => {
+      const display = track.displays[0]
+      return [
+        getSnapshot(track),
+        getSnapshot(track.configuration),
+        display?.height,
+        display?.dismissedLegendSections,
+      ]
+    }),
     session.getActiveThemeOptions?.(themeName),
     session.highlightsVisible ? view.highlights : false,
     session.highlightLabelsVisible,

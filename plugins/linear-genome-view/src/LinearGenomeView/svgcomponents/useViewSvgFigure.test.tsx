@@ -2,6 +2,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import {
   ConfigurationReference,
   ConfigurationSchema,
+  getConf,
+  setConf,
 } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
@@ -13,6 +15,7 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { addExtensionElement } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor, within } from '@testing-library/react'
@@ -25,6 +28,7 @@ import { useViewSvgFigure } from './useViewSvgFigure.tsx'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { HighlightType } from '../types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 // A stub session and two display types — one that can render SVG and one that
 // cannot — which is the whole of what a figure reads. Deliberately not the
@@ -34,26 +38,47 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 const DISPLAY_HEIGHT = 40
 const VIEW_WIDTH = 800
+const DISPLAY_COLOR = 'steelblue'
+const LEGEND_SECTIONS = ['tint', 'shade']
 
 function displayModel(
   name: string,
   configSchema: AnyConfigurationSchemaType,
   canRenderSvg: boolean,
 ) {
-  const base = types.compose(
-    name,
-    types.compose(BaseDisplay, TrackHeightMixin()),
-    types.model({
-      type: types.literal(name),
-      configuration: ConfigurationReference(configSchema),
-    }),
-  )
+  const base = types
+    .compose(
+      name,
+      types.compose(BaseDisplay, TrackHeightMixin(), LegendMixin()),
+      types.model({
+        type: types.literal(name),
+        configuration: ConfigurationReference(configSchema),
+      }),
+    )
+    .views(() => ({
+      get colorScales(): ColorScale[] {
+        return LEGEND_SECTIONS.map(id => ({
+          kind: 'categorical',
+          id,
+          entries: [{ value: id, label: id, color: 'black' }],
+        }))
+      },
+    }))
   return canRenderSvg
-    ? base.actions(() => ({
+    ? base.actions(self => ({
         // the shape every real display's renderSvg has: async, resolving to a
-        // ReactNode drawn in the track body's own coordinate space
+        // ReactNode drawn in the track body's own coordinate space, baking in
+        // a display setting and the legend's sections as a real body does
         async renderSvg() {
-          return <rect data-testid="body" width={10} height={10} />
+          return (
+            <rect
+              data-testid="body"
+              width={10}
+              height={10}
+              fill={getConf(self, 'color')}
+              data-legend={self.legendSpec.sections.map(s => s.id).join(',')}
+            />
+          )
         },
       }))
     : base
@@ -92,7 +117,11 @@ function initialize() {
     stubManager.addDisplayType(() => {
       const configSchema = ConfigurationSchema(
         displayType,
-        { height: { type: 'number', defaultValue: DISPLAY_HEIGHT } },
+        {
+          height: { type: 'number', defaultValue: DISPLAY_HEIGHT },
+          color: { type: 'color', defaultValue: DISPLAY_COLOR },
+          showLegend: { type: 'boolean', defaultValue: true },
+        },
         { explicitIdentifier: 'displayId', explicitlyTyped: true },
       )
       return new DisplayType({
@@ -507,5 +536,43 @@ test('pinning a track redraws the figure in the new order', async () => {
 
   await waitFor(() => {
     expect(secondDrawnFirst()).toBe(true)
+  })
+})
+
+// A shown track holds its track config and its display config by id, so a
+// snapshot of the track spells a display setting as that id whatever it is set
+// to.
+test('changing a display setting redraws the figure', async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const { svg } = await renderFigure(view)
+  const fill = () =>
+    svg().querySelector('[data-testid="body"]')?.getAttribute('fill')
+  expect(fill()).toBe(DISPLAY_COLOR)
+
+  await act(async () => {
+    setConf(view.tracks[0]!.displays[0], 'color', 'tomato')
+    await Promise.resolve()
+  })
+
+  await waitFor(() => {
+    expect(fill()).toBe('tomato')
+  })
+})
+
+// Which legend sections a reader closed is volatile, so no snapshot holds it.
+test('dismissing a legend section redraws the figure without it', async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const { svg } = await renderFigure(view)
+  const sections = () =>
+    svg().querySelector<SVGRectElement>('[data-testid="body"]')?.dataset.legend
+  expect(sections()).toBe('tint,shade')
+
+  await act(async () => {
+    view.tracks[0]!.displays[0]!.dismissLegendSection('tint')
+    await Promise.resolve()
+  })
+
+  await waitFor(() => {
+    expect(sections()).toBe('shade')
   })
 })
