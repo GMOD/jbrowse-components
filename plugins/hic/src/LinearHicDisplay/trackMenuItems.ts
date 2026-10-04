@@ -37,7 +37,7 @@ interface HicMenuSelf {
   appliedNormalization: string
   effectiveResolution: number | undefined
   resolutionBias: number
-  setColorScale: (scale: HicColorScale) => void
+  setColorScale: (scale?: HicColorScale) => void
   setColorFollowsPercentile: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   setShowResolutionControls: (f: boolean) => void
@@ -125,7 +125,7 @@ function percentileName(quantile: number) {
 function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
     toggleItem('Log scale', self.colorScaleType === 'log', log => {
-      self.setColorScale(log ? 'log' : 'linear')
+      self.setColorScale(log ? 'log' : undefined)
     }),
     toggleItem(
       `Emphasize faint contacts (${percentileName(self.saturationQuantile)} percentile)`,

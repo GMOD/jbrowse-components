@@ -1,8 +1,10 @@
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { DEFAULT_HIC_COLOR_SCHEME } from './hicColorConfigSchema.ts'
+import { createTestEnvironment } from './testEnv.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
+import type { LinearHicDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The shape of the Hi-C track menu, as opposed to what its items do. The
@@ -157,5 +159,38 @@ describe('hic track menu shape', () => {
         labelOf,
       ),
     ).not.toContain('Normalization')
+  })
+})
+
+describe('hic colour rows on a display', () => {
+  const { createDisplay } = createTestEnvironment()
+
+  function click(display: LinearHicDisplayModel, prefix: string) {
+    const row = subMenuOf(buildHicTrackMenuItems(display), 'Color scheme').find(
+      i => labelOf(i)?.startsWith(prefix),
+    )
+    if (row && 'onClick' in row) {
+      row.onClick()
+    } else {
+      throw new Error(`no "${prefix}" row`)
+    }
+  }
+
+  it('Log scale writes color.scale, and unticking leaves no delta', () => {
+    const { display } = createDisplay()
+    click(display, 'Log scale')
+    expect(display.plot).toEqual({ color: { scale: 'log' } })
+    expect(display.colorEncoding.scale).toBe('log')
+    click(display, 'Log scale')
+    expect(display.plot).toEqual({})
+    expect(display.colorEncoding.scale).toBe('linear')
+  })
+
+  it('Emphasize faint contacts writes color.domainQuantile', () => {
+    const { display } = createDisplay()
+    click(display, 'Emphasize faint contacts')
+    expect(display.plot).toEqual({ color: { domainQuantile: 1 } })
+    click(display, 'Emphasize faint contacts')
+    expect(display.plot).toEqual({})
   })
 })

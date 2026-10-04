@@ -496,8 +496,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #action
+       * `color.scale`; undefined returns it to `count`'s linear preset.
        */
-      setColorScale(scale: HicColorScale) {
+      setColorScale(scale?: HicColorScale) {
         setConf(self, ['color', 'scale'], scale)
       },
       /**
