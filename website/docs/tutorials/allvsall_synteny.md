@@ -7,9 +7,12 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
 ---
 
-A synteny track shows which stretches of DNA correspond between genomes. We
-build a linear synteny view of five _E. coli_ strains from one all-vs-all PAF,
-the file minimap2 writes when it aligns every genome against every other:
+Strains of one bacterial species share most of their chromosome and differ by
+islands of genes one strain picked up and by stretches that flipped. We align
+five _E. coli_ strains against each other with minimap2, stack them in a linear
+synteny view, and read where they differ: Sakai's Shiga-toxin prophage, the paa
+operon three strains lack, and IAI39's inversions. The input is one all-vs-all
+PAF, the file minimap2 writes when it aligns every genome against every other:
 
 - align the five strains against each other with `minimap2 -X` to build the PAF
 - load it with `MultiGenomePAFAdapter` and stack the five assemblies as rows
@@ -18,8 +21,8 @@ the file minimap2 writes when it aligns every genome against every other:
 
 ## Prerequisites
 
-- a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
-  file by path, [Web](/docs/quickstart_web) through **Add track**
+- a JBrowse to open the files in: [Desktop](/docs/quickstart_desktop) takes a
+  local file by path, [Web](/docs/quickstart_web) through **Add track**
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
@@ -45,15 +48,20 @@ CLI.
 - IAI39:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/
 
-- the all-vs-all PAF, per-strain gene tracks and config, rehosted:
-  https://jbrowse.org/demos/ecoli_pangenome/
+- the all-vs-all PAF, rehosted:
+  https://jbrowse.org/demos/ecoli_pangenome/all_vs_all.paf.gz
+- the K-12 gene track, rehosted, with the other four beside it under their
+  strain names: https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz
+- the finished config: https://jbrowse.org/demos/ecoli_pangenome/config.json
 
 ## Producing an all-vs-all PAF
 
-The [PGGB](https://github.com/pangenome/pggb) mapping step produces one, or
-self-align [PanSN](https://github.com/pangenome/PanSN-spec)-named genomes with
-[minimap2](https://github.com/lh3/minimap2). PanSN names every sequence
-`sample#haplotype#contig`, e.g. `K12#1#chr`.
+The mapping step of [PGGB](https://github.com/pangenome/pggb), the PanGenome
+Graph Builder, writes an all-vs-all PAF, and so does
+[minimap2](https://github.com/lh3/minimap2) aligning
+[PanSN](https://github.com/pangenome/PanSN-spec)-named genomes against
+themselves. PanSN names every sequence `sample#haplotype#contig`, e.g.
+`K12#1#chr`.
 
 The [script](#reproduce-it-end-to-end) downloads five RefSeq assemblies with the
 NCBI `datasets` CLI, annotation included, and reduces each to one `chr` record
@@ -181,7 +189,7 @@ on the adapter alongside it.
 
 ## Stacking the genomes
 
-### From the UI
+### Stacking the genomes from the import form {#from-the-ui}
 
 1. **Add → Linear synteny view** opens the form in **Quick start**.
 2. Choose `ecoli_ava`. Its five assemblies each become a row.
@@ -192,7 +200,7 @@ connector button between each pair to pick its track.
 
 <Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its five assemblies in as rows, and Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
 
-### Declaratively with defaultSession
+### Stacking the genomes in a defaultSession
 
 A `defaultSession` holding a `LinearSyntenyView` opens the stack on load. Five
 rows means four bands, so `tracks` has four entries:
@@ -226,16 +234,17 @@ rows means four bands, so `tracks` has four entries:
   the shared backbone
 - `collapseEmptyRows` gives a ribbon-only row a bare scalebar
 
-The
+Row order is a free choice with an all-vs-all PAF, since the file aligns every
+pair. The
 [ortholog-tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao)
-walks through the `defaultSession` structure. Row order is a free choice here.
+walks through the rest of the `defaultSession` structure.
 
-<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with minAlignmentLength. The continuous ribbons are the backbone shared by all five; the bottom band crosses because IAI39 is inverted against the others." src="/img/multiway_synteny/ecoli_pangenome.png" />
+<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with minAlignmentLength. The continuous ribbons are the backbone shared by all five; the bottom band crosses because IAI39 has inversions against the others." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-The gaps mark where the strains differ: Sakai has its prophage Shiga-toxin genes
-there, and CFT073 its pathogenicity islands.
+The gaps between ribbons mark where the strains differ: Sakai's hold its
+prophage Shiga-toxin genes, and CFT073's hold its pathogenicity islands.
 
-## Adding gene tracks
+## Adding gene tracks to see what a gap holds
 
 The annotations show what a gap holds. Each GFF gets the same two adjustments as
 the FASTA, in the [script](#reproduce-it-end-to-end): seqid renamed to `chr`,
@@ -252,18 +261,20 @@ for strain in K12 Sakai CFT073 NCTC86 IAI39; do
 done
 ```
 
-Navigate the Sakai row to `chr:1,267,000-1,268,400` and the gap holds _stx2A_
-and _stx2B_, the Shiga-toxin subunits, with no alignment to K-12.
+Navigate the K-12 row to `chr:1,026,000-1,126,000` and the Sakai row to
+`chr:1,205,000-1,305,000`. The gap right of the ribbon holds _stx2A_ and
+_stx2B_, the Shiga-toxin subunits, with no alignment to K-12.
 
-<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The synteny ribbon runs out at the shared-backbone boundary, and everything right of it, stx2B included, has no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
+<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The synteny ribbon runs out at the shared-backbone boundary, and stx2B sits in the stretch past it with no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
 
 ## One strain against all the others
 
-With no target assembly, a plain linear genome view draws the strain you're
-viewing against every other sample in the file. Clicking a feature can launch a
-synteny view against its mate.
+Opened in a plain linear genome view, where no second row names a target
+assembly, the `ecoli_ava` track draws the strain you're viewing against every
+other sample in the file. Clicking a feature can launch a synteny view against
+its mate.
 
-Three track-menu items separate every alignment in the pileup by strain:
+Three track-menu items set the pileup up for reading strain by strain:
 
 1. **Group by... → Mate assembly** gives one lane per sample. Untick **Show... →
    Collapse groups to one row** to stack every lane, or expand one from its
@@ -273,16 +284,20 @@ Three track-menu items separate every alignment in the pileup by strain:
 3. **Show... → Show coverage** adds a histogram of how many other strains cover
    each base.
 
-The figure below adds the pangenome graph as a track under the lanes, built in
-the [E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli). The shaded
-band is the phenylacetate (paa) operon on K-12, where three strains stop at its
-left edge and NCTC86 runs through.
+The figure below adds the minigraph rGFA segments from the
+[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli) as a track above
+the lanes, and the same window as a graph in a graph view under the linear view.
+The shaded band is the phenylacetate (paa) operon on K-12, where three strains
+stop at its left edge and NCTC86 runs through.
 
 <Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph, where the short arm beside the ringed node is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
-Zoomed out to the whole chromosome, the lanes can sit on the K-12 row of the
-stack above. For a real pangenome, index first with
-[make-pif](#large-files-index-with-make-pif):
+Zoomed out to the whole chromosome, the same lanes fit on the K-12 row of the
+five-strain stack. List IAI39 second in the session's `views`, add `ecoli_ava`
+to the K-12 row from that row's track selector, and pick **Strand** from the
+palette button, so an inversion is blue in both halves. A pangenome with many
+samples needs the indexed file from [make-pif](#large-files-index-with-make-pif)
+first.
 
 <Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps are where a strain has no alignment to the K-12 backbone. IAI39 sits directly below K-12, so its blue stretches and the blue crossings under them are the same inversions." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
@@ -334,15 +349,17 @@ On the K-12 axis, a strain with no alignment to the backbone is a white gap.
 **Display types → Multi-way synteny display** redraws each lane in the
 coordinates of the strain it shows, with each PAF record as one ribbon. The
 [ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-walks through the display, and the
+has a figure of the display, and the
 [E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli) draws the same gap
 as a graph.
 
 ### Launching a stacked view at one locus
 
-Drag-select a region and pick **Launch → Linear synteny view**. JBrowse finds
-every assembly aligning to that region and opens a row for each, listed top to
-bottom. Ribbons draw between neighbouring rows only.
+Drag-select a region on the scale bar and pick **Launch → Linear synteny view**.
+A dialog lists every assembly aligning to that region as a panel, top to bottom,
+with arrows to reorder them and a checkbox to drop one; **Replace current view**
+or **Open in new view** launches the stack. Ribbons draw between neighbouring
+rows only.
 
 Right-clicking a single alignment offers three routes under **Launch**: **Linear
 synteny view with Sakai** (or whichever strain the alignment names) opens that
@@ -352,13 +369,13 @@ genome view of Sakai at that region.
 
 <Figure caption="Right-clicking one alignment in the one-vs-all lanes: the pair it describes, every strain aligning here, or a linear view of that strain, in one Launch submenu." src="/img/multiway_synteny/ecoli_alignment_menu.png" />
 
+<Figure caption="A rubberband selection over the shared backbone, the Launch → Linear synteny view entry it raises, the dialog listing a panel per strain, and the five-row stack it opens." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
+
+<Video src="/media/synteny/allvsall_launch_from_selection.mp4" caption="From the lanes to the stack for one locus: a scale-bar selection raises Launch, the dialog lists a panel per strain that aligns to the window, and its arrows move IAI39 up under K-12 before the launch replaces the lane view with the stack." />
+
 A launched view is a few kilobases wide, and the CIGAR `minimap2 -c` wrote draws
 each insertion and deletion where it falls. **CIGAR indels** in the settings
 menu switches between colored, transparent and none.
-
-<Figure caption="Rubberband-select a window of the shared backbone, then Launch → Linear synteny view." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
-
-<Video src="/media/synteny/allvsall_launch_from_selection.mp4" caption="From the lanes to the stack for one locus: a scale-bar selection raises Launch, the dialog lists a panel per strain that aligns to the window, and its arrows move IAI39 up under K-12 before the launch replaces the lane view with the stack." />
 
 ## Checking a gap against the PAF
 
@@ -390,6 +407,16 @@ K-12 counterpart.
 [`build_ecoli_pangenome_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_synteny.sh)
 runs everything on this page, download and preparation included, and needs the
 tools under [Prerequisites](#prerequisites):
+
+1. Download the five RefSeq assemblies with their annotation, and keep each
+   one's chromosome under the name `chr`, so the plasmids drop out and every
+   strain's row reads the same name.
+2. Concatenate the strains under PanSN names and align them with `minimap2 -X`,
+   so each pair is aligned once and no strain aligns to itself.
+3. Keep each GFF's chromosome features under the same `chr` name, so the genes
+   load on that strain's row.
+4. Write the config with the five assemblies, the gene tracks, the all-vs-all
+   track and the five-row session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_synteny.sh
