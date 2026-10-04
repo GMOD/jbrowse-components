@@ -7,7 +7,9 @@
  * transparent to red, as Juicebox paints contacts; `fall` runs white through
  * yellow and red to black, as HiGlass does; `reds` and `blues` are
  * ColorBrewer's, from white; `redblue` and `purpleorange` diverge through
- * white, ColorBrewer's RdBu and PuOr.
+ * white, ColorBrewer's RdBu and PuOr; `redgreyblue` diverges through a grey
+ * middle, which stays visible on a white page where a white middle would not,
+ * as the MAF display's identity ramp paints it.
  */
 export const COLOR_SCHEMES = [
   'viridis',
@@ -20,6 +22,7 @@ export const COLOR_SCHEMES = [
   'blues',
   'redblue',
   'purpleorange',
+  'redgreyblue',
 ] as const
 
 /** #api */

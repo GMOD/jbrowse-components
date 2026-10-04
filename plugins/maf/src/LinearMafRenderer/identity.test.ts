@@ -1,3 +1,5 @@
+import { colorRampStops, sampleColorRamp } from '@jbrowse/core/util/colorRamp'
+
 import {
   buildIdentityRuns,
   identityBars,
@@ -143,4 +145,13 @@ test('identityColor ramps from divergent red through grey to conserved blue', ()
   expect(identityColor(1)).toEqual([47, 102, 176])
   expect(identityColor(-1)).toEqual([199, 67, 56])
   expect(identityColor(2)).toEqual([47, 102, 176])
+})
+
+test('the redgreyblue scheme is the identity ramp, at every hundredth', () => {
+  const stops = colorRampStops({ scheme: 'redgreyblue' })
+  for (let i = 0; i <= 100; i++) {
+    expect(sampleColorRamp(stops, i / 100).slice(0, 3)).toEqual(
+      identityColor(i / 100),
+    )
+  }
 })

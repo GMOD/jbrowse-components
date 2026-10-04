@@ -115,6 +115,12 @@ const PURPLEORANGE_STOPS: readonly ColorRampStop[] = [
   [127, 59, 8, 255],
 ]
 
+const REDGREYBLUE_STOPS: readonly ColorRampStop[] = [
+  [199, 67, 56, 255],
+  [140, 140, 140, 255],
+  [47, 102, 176, 255],
+]
+
 const SCHEME_STOPS: Record<ColorSchemeName, readonly ColorRampStop[]> = {
   viridis: VIRIDIS_STOPS,
   juicebox: JUICEBOX_STOPS,
@@ -126,6 +132,7 @@ const SCHEME_STOPS: Record<ColorSchemeName, readonly ColorRampStop[]> = {
   cividis: stopsFromHex(CIVIDIS_HEX_SPEC),
   redblue: REDBLUE_STOPS,
   purpleorange: PURPLEORANGE_STOPS,
+  redgreyblue: REDGREYBLUE_STOPS,
 }
 
 function luminanceOverWhite([r, g, b, a]: ColorRampStop) {
