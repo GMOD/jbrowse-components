@@ -6,10 +6,9 @@ projections of a graph published by the Human Pangenome Reference Consortium,
 built so that JBrowse can query a locus without downloading the graph.
 
 The hprc-v2.*-mc-grch38.* files below are that set. This prefix also serves two
-other demos' files, which have their own provenance: hprc_cfhr_* is a CFH
-panel sliced from HPRC's impg PAF, of which only the eight haplotypes'
-*.genes.gff3.gz (HPRC's CAT annotation) are still read, as the gbz lanes'
-gene rows; hprc_abca7_trgt.vcf.gz is PacBio's
+other demos' files, which have their own provenance: hprc_cfhr_*.genes.gff3.gz
+is eight haplotypes' CAT annotation from HPRC, which the gbz lanes draw as
+each haplotype's gene row; hprc_abca7_trgt.vcf.gz is PacBio's
 TRGT genotypes at the ABCA7 VNTR (Zenodo 8329210) that
 build_hprc_abca7_trgt.sh writes, hprc_curated_vntrs.bed is a hand-written
 repeat track and hprc_kiv2_copies.vcf its KIV-2 array's copies (both below),
@@ -31,10 +30,8 @@ Source
   the gbz-base database carries the base-level graph's own integer node ids,
   which run to nine figures. Neither converts to the other.
 
-  The release 2.0 projections (hprc-v2.0-mc-grch38.*) built 2026-07-23 from
-  the top-level sv.gfa.gz stay hosted unchanged for anything pinned to them;
-  GRCh38 coordinates agree between the two, segment ids do not. Everything
-  JBrowse serves reads 2.1 as of 2026-09-16, the multiple alignment included.
+  Everything JBrowse serves reads 2.1 as of 2026-09-16, the multiple
+  alignment included. The release 2.0 projections were removed on 2026-10-04.
 
   HPRC data is released under CC0. See
   https://github.com/human-pangenomics/hpp_pangenome_resources for the release
@@ -117,12 +114,6 @@ Files
                                              haplotypes, all 195 contigs. This
                                              is the one the tutorial's track
                                              reads
-
-  hprc-v2.0-mc-grch38.summary.bed.gz{,.tbi}  the same tier over the v2.0 TAF,
-                                             kept for anything pinned to it.
-                                             152 of 195 contigs: the 43 absent
-                                             are chrUn_* scaffolds taffy could
-                                             not extract by region
 
   Stable names are PanSN (GRCh38#0#chr1), so a JBrowse track on an ordinary
   hg38 assembly needs assemblyNameToPanSN: { "hg38": "GRCh38" }, and one on

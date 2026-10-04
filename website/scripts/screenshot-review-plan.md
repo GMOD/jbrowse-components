@@ -804,7 +804,7 @@ scoring it beats picking a gene and hoping. The scripts below were written
 against local copies (`curl` the `.bed.gz` once; the HPRC bubbles file is 60
 MB).
 
-- **HPRC** (`jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz`): one
+- **HPRC** (`jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.bubbles.bed.gz`): one
   row per bubble, `col4` = segments, `col5` = paths, `col7`/`col8` = min/max
   allele length. Rank by max allele length **and** cap segments — the top of the
   unfiltered list is centromeric and acrocentric hairballs (chr7 61.1 Mb, chr14

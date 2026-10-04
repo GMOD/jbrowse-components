@@ -283,13 +283,13 @@
       },
       "displays": [
         {
-          "type": "LinearGraphDisplay",
-          "displayId": "hprc_v2_1_gbz_lanes-LinearGraphDisplay"
-        },
-        {
           "type": "MultiWaySyntenyDisplay",
           "displayId": "hprc_v2_1_gbz_lanes-MultiWaySyntenyDisplay",
           "height": 600
+        },
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "hprc_v2_1_gbz_lanes-LinearGraphDisplay"
         }
       ]
     },
