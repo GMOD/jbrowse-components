@@ -1,10 +1,6 @@
 ---
-import CircularExample from '../examples/CircularExample.tsx'
-import circularCode from '../examples/CircularExample.tsx?raw'
 import BreakpointSplitExample from '../examples/BreakpointSplitExample.tsx'
 import breakpointSplitCode from '../examples/BreakpointSplitExample.tsx?raw'
-import SpreadsheetExample from '../examples/SpreadsheetExample.tsx'
-import spreadsheetCode from '../examples/SpreadsheetExample.tsx?raw'
 import SvInspectorExample from '../examples/SvInspectorExample.tsx'
 import svInspectorCode from '../examples/SvInspectorExample.tsx?raw'
 import { getPage, section } from '../examples.ts'
@@ -12,21 +8,13 @@ import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
 
 const page = getPage('structural-variant-views')
-const circular = section(page, 'circular-example')
 const breakpoint = section(page, 'breakpoint-split-example')
-const spreadsheet = section(page, 'spreadsheet-example')
 const svInspector = section(page, 'sv-inspector-example')
 ---
 
 <Layout page={page}>
-  <Section {...circular} code={circularCode}>
-    <CircularExample client:only="react" />
-  </Section>
   <Section {...breakpoint} code={breakpointSplitCode}>
     <BreakpointSplitExample client:only="react" />
-  </Section>
-  <Section {...spreadsheet} code={spreadsheetCode}>
-    <SpreadsheetExample client:only="react" />
   </Section>
   <Section {...svInspector} code={svInspectorCode}>
     <SvInspectorExample client:only="react" />

@@ -1,61 +1,51 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
-import { getEnv } from '@jbrowse/core/util'
-import { JBrowseApp, useCreateViewState } from '@jbrowse/react-app2'
+import { JBrowse } from '@jbrowse/react-app2'
 
-const config = {
-  assemblies: [
-    {
-      name: 'GRCh38',
-      aliases: ['hg38'],
-      uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-      refNameAliases: {
-        uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-      },
-      geneticCodes: { chrM: 2 },
+import type { ViewModel } from '@jbrowse/react-app2'
+
+const assemblies = [
+  {
+    name: 'GRCh38',
+    aliases: ['hg38'],
+    uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+    refNameAliases: {
+      uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
     },
-  ],
-  tracks: [
-    {
-      trackId: 'hg38.100way.phyloP100way',
-      name: 'hg38.100way.phyloP100way',
-      uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
-      category: ['Conservation'],
-      assemblyNames: ['hg38'],
-    },
-  ],
-}
+    geneticCodes: { chrM: 2 },
+  },
+]
+
+const tracks = [
+  {
+    trackId: 'hg38.100way.phyloP100way',
+    name: 'hg38.100way.phyloP100way',
+    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+    category: ['Conservation'],
+    assemblyNames: ['hg38'],
+  },
+]
 
 export default function WithLaunchLinearGenomeView() {
-  const viewState = useCreateViewState({ config })
-  const launched = useRef(false)
-  const [error, setError] = useState<unknown>()
+  const ref = useRef<ViewModel>(null)
 
-  useEffect(() => {
-    if (viewState && !launched.current) {
-      launched.current = true
-      getEnv(viewState)
-        .pluginManager.evaluateAsyncExtensionPointStrict(
-          'LaunchView-LinearGenomeView',
-          {
-            tracks: ['hg38.100way.phyloP100way'],
-            loc: 'chr10:1-100000',
-            assembly: 'hg38',
-            session: viewState.session,
-          },
-        )
-        .catch((e: unknown) => {
-          console.error(e)
-          setError(e)
-        })
-    }
-  }, [viewState])
+  function openView() {
+    const session = ref.current?.session
+    session
+      ?.launchView('LinearGenomeView', {
+        assembly: 'hg38',
+        loc: 'chr10:1-100000',
+        tracks: ['hg38.100way.phyloP100way'],
+      })
+      .catch((e: unknown) => {
+        session.notifyError(`${e}`, e)
+      })
+  }
 
-  return viewState ? (
-    <>
-      {error ? <ErrorMessage error={error} /> : null}
-      <JBrowseApp viewState={viewState} />
-    </>
-  ) : null
+  return (
+    <div>
+      <button onClick={openView}>Open a linear genome view</button>
+      <JBrowse ref={ref} assemblies={assemblies} tracks={tracks} />
+    </div>
+  )
 }

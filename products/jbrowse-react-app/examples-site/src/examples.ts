@@ -94,7 +94,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-launch-linear-genome-view',
         title: 'Launch a view imperatively',
-        description: 'The LaunchView extension point, after mount.',
+        description: 'session.launchView, from your own button.',
       },
     ],
   },
@@ -148,24 +148,13 @@ export const pages: ExamplePage[] = [
   {
     slug: 'structural-variant-views',
     title: 'Structural variant views',
-    description:
-      'Circular, breakpoint split, spreadsheet and SV inspector views.',
+    description: 'Breakpoint split and SV inspector views.',
     group: 'View types',
     sections: [
-      {
-        slug: 'circular-example',
-        title: 'Circular view',
-        description: 'Structural variants around the genome.',
-      },
       {
         slug: 'breakpoint-split-example',
         title: 'Breakpoint split view',
         description: 'One structural variant across two regions.',
-      },
-      {
-        slug: 'spreadsheet-example',
-        title: 'Spreadsheet view',
-        description: 'A VCF as a sortable, filterable table.',
       },
       {
         slug: 'sv-inspector-example',
