@@ -59,8 +59,8 @@ graph, and OMIA supplies the curated causal variants:
 - OMIA's database dump, the source of the curated variant track:
   https://omia.org/static/omia.sql.gz
 
-[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) describes what
-each of the graph files holds and how a graph produces them.
+[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) describes each
+file and how to produce it.
 
 ## Load the genome and the graph
 
@@ -147,8 +147,7 @@ ANG	Angus	taurine
 BIS	Bison	bison
 ```
 
-The other columns give each code a breed and a lineage, which the track config
-uses:
+The track config uses the other columns, a breed and a lineage per code:
 
 - `rows.labels` writes the breed beside each row
 - `rowColor` tints each row by lineage
