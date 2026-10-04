@@ -214,9 +214,10 @@ export default function stateModelFactory(
        */
       get colorSetting(): ColorSetting {
         const { color } = self.configuration
+        const setting = colorSettingOf(color)
         return {
-          ...colorSettingOf(color),
-          field: readConfObject(color, 'field') ?? '',
+          ...setting,
+          field: setting.field ?? '',
           labels: readConfObject(color, 'labels'),
           title: readConfObject(color, 'title'),
         }

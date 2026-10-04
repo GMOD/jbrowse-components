@@ -53,7 +53,9 @@ const NO_EXTENT: [number, number] = [Infinity, -Infinity]
 // Enough to read the ramp's shape without the bar becoming a table of stops.
 const RAMP_KEY_STOPS = 8
 
-function colorSettingsOf({ conf: { color } }: FeatureColorHost): ColorSetting {
+function featureColorSettingOf({
+  conf: { color },
+}: FeatureColorHost): ColorSetting {
   return {
     ...colorSettingOf(color),
     labels: readConfObject(color, 'labels'),
@@ -85,7 +87,7 @@ export function featureColorViews(self: FeatureColorHost) {
   // key-only edit such as a title, hands the encode the same scale and
   // re-encodes nothing.
   const encoding = stableIdentityComputed(() =>
-    featureColorEncoding(colorSettingsOf(self)),
+    featureColorEncoding(featureColorSettingOf(self)),
   )
   const loaded = stableIdentityComputed(() => {
     const current = encoding.get()
@@ -133,7 +135,7 @@ export function featureColorViews(self: FeatureColorHost) {
      * may be a `jexl:` expression over a feature, which has none here.
      */
     get colorSettings(): ColorSetting {
-      return colorSettingsOf(self)
+      return featureColorSettingOf(self)
     },
 
     /**
