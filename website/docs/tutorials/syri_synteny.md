@@ -186,7 +186,7 @@ shares a row with `TRANS` and `INVDP` with `DUP`.
 
 <Figure caption="The first 6 Mb of chromosome 4 in Col-0 above and Ler below, the SyRI regions colored by type. The crossed ribbon is the inversion between the two accessions, with syntenic regions either side of it." src="/img/syri/col_ler_chr4.png" />
 
-## Six accessions
+## Stacking six accessions, one SyRI run per band
 
 The `syri_pangenome` track stacks all six, each band drawing the SyRI run
 between the two genomes it joins:
@@ -315,7 +315,7 @@ the track above:
 
 <Figure caption="The first 6 Mb of Col-0 chromosome 4: the SyRI regions for each accession against Col-0 as a row above, and the accessions as lanes below, each drawn in the coordinates of its assembly, with each band colored by the SyRI type for the two genomes it joins. Every accession is inverted against Col-0 across the same stretch, and the bands between accessions run straight there." src="/img/syri/col0_lanes.png" />
 
-## Check it against syri.out
+## Checking the chromosome 4 inversion against syri.out
 
 The largest inverted region of the Col-0 and Ler run, straight from the SyRI
 table:
@@ -329,9 +329,16 @@ the crossed ribbon spans and the orange block on the Ler row.
 
 ## Reproduce it end to end
 
-The script fetches the six assemblies, runs SyRI on each accession against Col-0
-and against the one above it, converts each table and writes the config; see
-[Prerequisites](#prerequisites).
+The script needs the tools under [Prerequisites](#prerequisites) and works in
+four steps:
+
+1. Fetch the six assemblies and keep the five nuclear chromosomes, named `Chr1`
+   to `Chr5`, since SyRI pairs chromosomes by name.
+2. Align each accession to Col-0 and to the accession above it, and run SyRI on
+   each alignment.
+3. Convert each SyRI table to PAF records and reference-coordinate BED rows.
+4. Write the config with the six assemblies, the stacked track and the Col-0
+   regions track.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_syri_synteny.sh
