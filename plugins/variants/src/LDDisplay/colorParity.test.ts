@@ -56,7 +56,7 @@ const BEFORE = {
 
 function displayDrawing(metric: LDMetric) {
   const { display } = createTestEnvironment().createDisplay()
-  setConf(display, 'ldMetric', metric)
+  setConf(display, ['color', 'field'], metric)
   display.setShowLegend(true)
   return display
 }
@@ -77,14 +77,21 @@ function boundRamp(metric: LDMetric) {
   backend.renderBlocks(
     canvasWideBlocks([0], 800),
     new Map([[0, data]]),
-    display.triangleFrame,
+    display.renderState,
   )
-  return hal.getTexture('main')!
+  return hal.getTexture('main') as Uint8Array
 }
 
 describe.each(['r2', 'dprime'] as const)('a default %s track', metric => {
   test('binds the ramp it bound before, byte for byte', () => {
     expect(fnv1a(boundRamp(metric))).toBe(BEFORE[metric].lutHash)
+  })
+
+  test('samples it at the raw value, the domain being 0 to 1', () => {
+    expect(displayDrawing(metric).renderState).toMatchObject({
+      domainMin: 0,
+      domainMax: 1,
+    })
   })
 
   test('keys the ramp it keyed before', () => {

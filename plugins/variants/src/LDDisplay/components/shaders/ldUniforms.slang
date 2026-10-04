@@ -8,6 +8,10 @@ module ldUniforms;
 
 import colorRampLut;
 import diagonalGrid;
+import scoreScale;
+
+// `SCALE_TYPE_LINEAR` in scoreScale.ts: the one scale LD's colour takes.
+static const int LD_COLOR_SCALE_LINEAR = 0;
 
 public struct Uniforms {
   public float2 canvasSize;
@@ -19,6 +23,8 @@ public struct Uniforms {
   // decodeBanded. The render path needs it for the same reason the layout does —
   // it is what turns a flat index back into (i, j).
   public uint   band;
+  public float  domainMin;
+  public float  domainMax;
 };
 
 // Genome-space cell corner -> clip space. Both variants lay cells out as
@@ -43,16 +49,19 @@ public bool ldValueComputed(float v) {
   return v > -1.5;
 }
 
-// Sample the color ramp by `ldValue`, via the shared ramp module (render-core
-// colorRampLut.slang) — the sentinel gate stays LD's own scale. Returns
-// premultiplied-alpha color. A cell nothing reported is transparent, which
+// Sample the color ramp at `ldValue`'s place in the `color` domain, via the
+// shared ramp module (render-core colorRampLut.slang) — the sentinel gate stays
+// LD's own. Returns premultiplied-alpha color. A cell nothing reported is transparent, which
 // under premultiplied blending leaves the background exactly as an out-of-band
 // cell — never emitted — leaves it.
 public float4 ldRampColor(float ldValue, Uniforms u, Sampler2D<float4> ramp) {
   if (!ldValueComputed(ldValue)) {
     return float4(0.0, 0.0, 0.0, 0.0);
   }
-  return rampColorPremultiplied(ramp, ldValue);
+  return rampColorPremultiplied(
+    ramp,
+    normalizeScore(
+      ldValue, u.domainMin, u.domainMax, LD_COLOR_SCALE_LINEAR, 1.0));
 }
 
 // Decode flat lower-triangular instance index `idx` into (i, j) with i > j,

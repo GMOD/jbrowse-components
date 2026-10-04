@@ -3,6 +3,8 @@ import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleM
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { ldColorConfigSchema } from './ldColorConfigSchema.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -28,6 +30,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     {
  *       type: 'LDTrackDisplay',
  *       displayId: 'ld-LDTrackDisplay',
+ *       color: { field: 'dprime' },
  *       showLegend: true,
  *     },
  *   ],
@@ -55,17 +58,11 @@ export default function ldTrackDisplayConfigSchema() {
         advanced: true,
       },
       /**
-       * #slot
-       * Which of the file's columns to draw: 'r2' (R², the R2/PHASED_R2 column)
-       * or 'dprime' (D', the DP/ABS_DPRIME one). A file that carries only one of
-       * the two serves that one whichever is asked for, and reports which
-       * through the legend.
+       * #slot color
+       * Which statistic the cells are, `field` `r2` or `dprime`, and the
+       * linear ramp it paints through over the statistic's 0 to 1.
        */
-      ldMetric: {
-        type: 'stringEnum',
-        model: types.enumeration('LDMetric', ['r2', 'dprime']),
-        defaultValue: 'r2',
-      },
+      color: ldColorConfigSchema,
       /**
        * #slot
        * Maximum separation, in variants, between the two SNPs of a drawn pair.
@@ -126,6 +123,9 @@ export default function ldTrackDisplayConfigSchema() {
        * #identifier
        */
       explicitIdentifier: 'displayId',
+      retired: {
+        ldMetric: field => ({ color: { field } }),
+      },
     },
   )
 }

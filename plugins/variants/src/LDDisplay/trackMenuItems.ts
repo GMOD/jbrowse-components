@@ -2,13 +2,16 @@ import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
+import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
 
 import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface LDMenuSelf extends IStateTreeNode {
   effectiveLdMetric: LDMetric
+  colorScheme: ColorSchemeName
   r2Available: boolean
   dprimeAvailable: boolean
   focalSnpIndex: number
@@ -19,6 +22,7 @@ export interface LDMenuSelf extends IStateTreeNode {
   variantLayout: 'genomic' | 'columns'
   setFocalSnp: (snp: LDSnp | undefined) => void
   setLDMetric: (metric: LDMetric) => void
+  setColorScheme: (scheme: ColorSchemeName) => void
   setShowLegend: (arg: boolean) => void
   setShowLabels: (arg: boolean) => void
   setShowVerticalGuides: (arg: boolean) => void
@@ -26,8 +30,9 @@ export interface LDMenuSelf extends IStateTreeNode {
   setVariantLayout: (arg: 'genomic' | 'columns') => void
 }
 
-// The radios pick which of the file's columns to draw, and a file that lacks
-// one says so on the disabled row rather than serving zeros under its name.
+// The radios write `color.field`, which of the file's columns to draw, and a
+// file that lacks one says so on the disabled row rather than serving zeros
+// under its name.
 function metricMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
     {
@@ -97,6 +102,7 @@ export function buildLDTrackMenuItems(self: LDMenuSelf): MenuItem[] {
       label: 'LD metric',
       subMenu: metricMenuItems(self),
     },
+    colorSchemeMenuItem(self),
     ...makeShowSubMenu(showMenuItems(self)),
   ]
 }

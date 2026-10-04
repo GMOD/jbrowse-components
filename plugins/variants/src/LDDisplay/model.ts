@@ -5,12 +5,22 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
-import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
+import {
+  rampDomain,
+  rampLutOf,
+  stopsFromRampLut,
+} from '@jbrowse/core/util/colorRamp'
+import { colorNotices } from '@jbrowse/core/util/colorScale'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
+import {
+  colorSettingOf,
+  matrixColorEncodingOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
 import { ldValueComputed } from '@jbrowse/ld-core'
@@ -21,16 +31,22 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 import { bandPairIndex } from '../VariantRPC/ldBand.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
-import { generateLDColorRamp, ldMetricLabel } from './components/ldColorRamp.ts'
+import { ldMetricLabel } from './components/ldValueLabel.ts'
+import { LD_FIELD_PRESETS, LD_VALUE_EXTENT } from './ldColorConfigSchema.ts'
 import { buildLDTrackMenuItems } from './trackMenuItems.ts'
 
 import type { RenderLDDataArgs } from '../RenderLDDataRPC/RenderLDData.ts'
 import type { LDCellHit, LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
-import type { LDRenderingBackend } from './components/ldRenderingBackendTypes.ts'
+import type {
+  LDRenderState,
+  LDRenderingBackend,
+} from './components/ldRenderingBackendTypes.ts'
 import type { LDDisplayConfigSchema } from './configSchemaLDTrack.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+import type { ContinuousRef } from '@jbrowse/core/util/markEncoding'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
@@ -109,9 +125,18 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #action
+       * `color.field`, the statistic the cells are, which refetches.
        */
       setLDMetric(metric: LDMetric) {
-        setConf(self, 'ldMetric', metric)
+        setConf(self, ['color', 'field'], metric)
+      },
+      /**
+       * #action
+       * The scheme, with `reverse` back to unset so it follows the scheme.
+       */
+      setColorScheme(scheme: ColorSchemeName) {
+        setConf(self, ['color', 'scheme'], scheme)
+        setConf(self, ['color', 'reverse'], undefined)
       },
       /**
        * #action
@@ -150,9 +175,10 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
+       * `color.field`, the statistic the fetch asks the file for.
        */
-      get ldMetric(): LDMetric {
-        return getConf(self, 'ldMetric')
+      get colorField(): LDMetric {
+        return getConf(self, ['color', 'field'])
       },
       /**
        * #getter
@@ -212,7 +238,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * whichever is asked for.
        */
       get effectiveLdMetric(): LDMetric {
-        return self.rpcData?.metric ?? getConf(self, 'ldMetric')
+        return self.rpcData?.metric ?? this.colorField
       },
       /**
        * #getter
@@ -263,19 +289,100 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
     .views(self => ({
       /**
        * #getter
-       * The metric's ramp, out of the LUT the cells are painted through.
+       * The `color` object as it paints, under the preset of the metric the
+       * loaded values are, so a file serving the other column, and a stale
+       * triangle during a metric switch's refetch, keep the hue they have.
+       */
+      get colorEncoding(): ContinuousRef {
+        return matrixColorEncodingOf(
+          {
+            ...colorSettingOf(self.configuration.color),
+            field: self.effectiveLdMetric,
+          },
+          LD_FIELD_PRESETS,
+        )
+      },
+      /**
+       * #getter
+       * What the `color` object says that cannot paint as written, as the
+       * corner indicator lists it: the same lines `plotProblems` and
+       * `jbrowse validate` report.
+       */
+      get notices(): string[] {
+        return colorNotices(
+          colorSettingOf(self.configuration.color),
+          LD_FIELD_PRESETS,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get colorScheme(): ColorSchemeName {
+        return self.colorEncoding.scheme ?? LD_FIELD_PRESETS.r2.scheme
+      },
+      /**
+       * #getter
+       * `color.reverse`, or where unset whether the scheme runs dark at its
+       * low end.
+       */
+      get colorReverse(): boolean {
+        return !!self.colorEncoding.reverse
+      },
+      /**
+       * #getter
+       * The domain the statistic is coloured over: each pinned end holds, and
+       * an open one is the statistic's own 0 or 1.
+       */
+      get colorDomain(): [number, number] {
+        const { domainMin, domainMax } = self.colorEncoding
+        return rampDomain(domainMin, domainMax, LD_VALUE_EXTENT)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the
+       * legend read this one table. It reads `colorScheme` and `colorReverse`
+       * rather than the encoding, so a domain edit re-uploads no texture.
+       */
+      get colorRamp(): Uint8Array {
+        return rampLutOf({
+          scheme: self.colorScheme,
+          reverse: self.colorReverse,
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The ramp the cells paint through, titled by the loaded metric. An end
+       * pinned inside the statistic's 0 to 1 reads `≤` or `≥`.
        */
       get colorScales(): ColorScale[] {
-        const metric = self.effectiveLdMetric
         return [
           {
             kind: 'ramp',
             id: 'ld',
-            title: ldMetricLabel(metric),
-            domain: [0, 1],
-            stops: stopsFromRampLut(generateLDColorRamp(metric), 11),
+            title: ldMetricLabel(self.effectiveLdMetric),
+            domain: self.colorDomain,
+            stops: stopsFromRampLut(self.colorRamp, 11),
+            extent: LD_VALUE_EXTENT,
           },
         ]
+      },
+      /**
+       * #getter
+       */
+      get renderState(): LDRenderState {
+        const [domainMin, domainMax] = self.colorDomain
+        return {
+          ...self.triangleFrame,
+          domainMin,
+          domainMax,
+          colorRamp: self.colorRamp,
+        }
       },
       /**
        * #getter
@@ -293,7 +400,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       rpcProps(): LDRpcProps {
         return {
-          ldMetric: self.ldMetric,
+          ldMetric: self.colorField,
           maxVariantSeparation: self.maxVariantSeparation,
           useGenomicPositions: self.variantLayout === 'genomic',
         }
@@ -371,7 +478,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
             b.renderBlocks(
               self.matrixBlocks,
               self.matrixRegions,
-              self.triangleFrame,
+              self.renderState,
             ),
         })
       },
@@ -383,7 +490,11 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
          * #method
          */
         trackMenuItems() {
-          return [...superTrackMenuItems(), ...buildLDTrackMenuItems(self)]
+          return [
+            ...superTrackMenuItems(),
+            ...buildLDTrackMenuItems(self),
+            ...editPlotMenuItems(self),
+          ]
         },
         /**
          * #method

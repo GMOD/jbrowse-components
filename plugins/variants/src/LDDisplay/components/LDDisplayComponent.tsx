@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
+import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
+import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { autorun } from 'mobx'
@@ -12,9 +14,10 @@ import FocalSnpHighlight from './FocalSnpHighlight.tsx'
 import LDColumnZone from './LDColumnZone.tsx'
 import { LDRenderer } from './LDRenderer.ts'
 import LDStatusBar from './LDStatusBar.tsx'
-import { ldMetricLabel, ldValueText } from './ldColorRamp.ts'
+import { ldMetricLabel, ldValueText } from './ldValueLabel.ts'
 
 import type { LDCellHit } from '../../RenderLDDataRPC/types.ts'
+import type { LDMetric } from '../../VariantRPC/ldTypes.ts'
 import type { LDDisplayModel } from '../model.ts'
 import type {
   MouseState,
@@ -40,7 +43,7 @@ function LDTooltip({
   item: LDCellHit
   x: number
   y: number
-  ldMetric: string
+  ldMetric: LDMetric
 }) {
   return (
     <BaseTooltip clientPoint={{ x, y }}>
@@ -143,6 +146,9 @@ const LDBody = observer(function LDBody({
         {mouseState => <LDPointer model={model} mouseState={mouseState} />}
       </PointerLayer>
       <LDStatusBar model={model} />
+      <BottomRightIndicators>
+        <ConfigProblemsIndicator notices={model.notices} />
+      </BottomRightIndicators>
       <LDColumnZone model={model} />
     </>
   )

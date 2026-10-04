@@ -6,13 +6,16 @@ import stateModelFactory from './model.ts'
 
 import type { LDDisplayModel } from './model.ts'
 
-export function createTestEnvironment() {
+export function createTestEnvironment({
+  displayConfig,
+}: { displayConfig?: Record<string, unknown> } = {}) {
   const configSchema = ldDisplayConfigSchema()
   return createDisplayTestEnvironment<LDDisplayModel>({
     trackType: 'LDTrack',
     displayName: 'LDTrackDisplay',
     configSchema,
     stateModel: stateModelFactory(configSchema),
+    displayConfig,
   })
 }
 

@@ -1,0 +1,103 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import { colorChannelSlots } from '@jbrowse/display-kit/colorConfigSchema'
+import { types } from '@jbrowse/mobx-state-tree'
+
+import type { LDMetric } from '../VariantRPC/ldTypes.ts'
+import type { FieldPresets } from '@jbrowse/display-kit/colorConfigSchema'
+
+export const LD_COLOR_FIELDS = [
+  'r2',
+  'dprime',
+] as const satisfies readonly LDMetric[]
+
+/** Each metric's ramp and key title while the config leaves them unwritten. */
+export const LD_FIELD_PRESETS = {
+  r2: { scale: 'linear', scheme: 'reds', title: 'R²' },
+  dprime: { scale: 'linear', scheme: 'blues', title: "D'" },
+} as const satisfies FieldPresets<'linear'>
+
+/** The domain every LD statistic spans, and an unset end of `color`'s. */
+export const LD_VALUE_EXTENT = [0, 1] as const
+
+/**
+ * #config LDColor
+ * #category display
+ * The LD display's `color`: which statistic the cells are, `r2` or `dprime`,
+ * through a linear scale onto a named `scheme`. An unset `scheme` is the
+ * metric's own, reds for r² and blues for D'. The domain is the statistic's
+ * 0 to 1 rather than the loaded values', so one r² paints one colour on every
+ * track; `domainMin` and `domainMax` narrow it. The slots are the shared
+ * colour object's, so `jbrowse validate` and "Edit plot..." judge them as they
+ * judge any other display's.
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'LDTrackDisplay',
+ *   color: { field: 'dprime', scheme: 'viridis', domainMin: 0.2 },
+ * }
+ * ```
+ */
+export const ldColorConfigSchema = ConfigurationSchema(
+  'LDColor',
+  {
+    ...colorChannelSlots({
+      scales: ['linear'],
+      scaleName: 'LDColorScale',
+      fieldType: 'string',
+      field: 'r2 or dprime',
+      fieldDefault: 'r2',
+      scale: 'linear, the one scale; unset is linear',
+    }),
+    /**
+     * #slot field
+     * Which of the file's columns the cells are: `r2` (R², the R2/PHASED_R2
+     * column) or `dprime` (D', the DP/ABS_DPRIME one). A file that carries
+     * only one of the two serves that one whichever is asked for, and the
+     * legend and the menu say which.
+     */
+    field: {
+      type: 'stringEnum',
+      model: types.enumeration('LDColorField', [...LD_COLOR_FIELDS]),
+      defaultValue: 'r2',
+      description: 'the statistic the cells are, r2 or dprime',
+    },
+    /**
+     * #slot scheme
+     */
+    scheme: {
+      type: 'maybeStringEnum',
+      model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
+      description:
+        "the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime",
+    },
+    /**
+     * #slot reverse
+     * Unset turns round a scheme dark at its low end, since an unpainted cell
+     * is the page behind the matrix.
+     */
+    reverse: {
+      type: 'maybeBoolean',
+      description:
+        "turns the scheme's ramp round; unset reverses a scheme dark at its low end",
+    },
+    /**
+     * #slot domainMin
+     */
+    domainMin: {
+      type: 'maybeNumber',
+      description:
+        'the value the bottom colour paints, everything below it too; unset is 0',
+    },
+    /**
+     * #slot domainMax
+     */
+    domainMax: {
+      type: 'maybeNumber',
+      description:
+        'the value the top colour paints, everything above it too; unset is 1',
+    },
+  },
+  { closed: true, fieldPresets: LD_FIELD_PRESETS },
+)

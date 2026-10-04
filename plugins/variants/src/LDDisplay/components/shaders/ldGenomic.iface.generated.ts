@@ -13,7 +13,7 @@ export const VERTS_PER_INSTANCE = 6
 
 export const BLEND_STATE: BlendState = { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' }
 
-export const UNIFORMS_SIZE_BYTES = 32
+export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -22,6 +22,8 @@ export const UNIFORM_OFFSET_F32 = {
   viewScale: 3,
   viewOffsetX: 4,
   uniformW: 5,
+  domainMin: 7,
+  domainMax: 8,
 } as const
 
 // Word indices into a Uint32Array view over the uniform buffer.
@@ -37,6 +39,8 @@ export interface Uniforms {
   viewOffsetX: number
   uniformW: number
   band: number
+  domainMin: number
+  domainMax: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -49,6 +53,8 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[4] = uniforms.viewOffsetX
   f32[5] = uniforms.uniformW
   u32[6] = uniforms.band
+  f32[7] = uniforms.domainMin
+  f32[8] = uniforms.domainMax
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

@@ -33,7 +33,7 @@ function LdSvgBody({
       <TriangleMatrixSvgLayer
         marks={LD_MARKS}
         regions={model.matrixRegions}
-        state={model.triangleFrame}
+        state={model.renderState}
         width={canvasWidth}
         height={height}
         top={model.matrixTop}

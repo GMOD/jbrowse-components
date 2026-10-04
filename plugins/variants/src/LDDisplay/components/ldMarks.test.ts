@@ -1,4 +1,5 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
@@ -7,7 +8,6 @@ import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { bandCellCount, bandPairIndex } from '../../VariantRPC/ldBand.ts'
 import { drawLDBlocks } from './drawLDBlocks.ts'
-import { generateLDColorRamp } from './ldColorRamp.ts'
 import { LD_MARKS, interleaveLDInstances } from './ldMarks.ts'
 import {
   UNIFORM_OFFSET_F32 as U,
@@ -15,8 +15,7 @@ import {
 } from './shaders/ldGenomic.iface.generated.ts'
 import { INSTANCE_STRIDE_BYTES as UNIFORM_STRIDE } from './shaders/ldUniform.iface.generated.ts'
 
-import type { LDUploadData } from './ldRenderingBackendTypes.ts'
-import type { TriangleFrame } from '@jbrowse/display-kit/TriangleMatrixMixin'
+import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
@@ -35,13 +34,19 @@ function makeColorRamp() {
   return ramp
 }
 
-function makeRenderState(overrides?: Partial<TriangleFrame>): TriangleFrame {
+const REDS = rampLutOf({ scheme: 'reds' })
+const BLUES = rampLutOf({ scheme: 'blues' })
+
+function makeRenderState(overrides?: Partial<LDRenderState>): LDRenderState {
   return {
     canvasWidth: 800,
     canvasHeight: 600,
     yScalar: 1,
     viewScale: 1,
     viewOffsetX: 0,
+    domainMin: 0,
+    domainMax: 1,
+    colorRamp: REDS,
     ...overrides,
   }
 }
@@ -150,7 +155,13 @@ describe('the LD mark list', () => {
   it('writes the uniform block both shaders share', () => {
     const { hal } = render(
       makeOneCell({ band: 7, uniformW: 10 }),
-      makeRenderState({ viewScale: 2, viewOffsetX: 30, yScalar: 0.5 }),
+      makeRenderState({
+        viewScale: 2,
+        viewOffsetX: 30,
+        yScalar: 0.5,
+        domainMin: 0.2,
+        domainMax: 0.8,
+      }),
     )
 
     const f32 = hal.getLastUniformsF32()!
@@ -162,13 +173,15 @@ describe('the LD mark list', () => {
     expect(f32[U.viewOffsetX]).toBe(30)
     expect(f32[U.uniformW]).toBe(10)
     expect(u32[UU.band]).toBe(7)
+    expect(f32[U.domainMin]).toBeCloseTo(0.2)
+    expect(f32[U.domainMax]).toBeCloseTo(0.8)
   })
 
-  // The ramp is the marks' `textures`, not a second upload cell: the pass
-  // that draws the cell samples it, and the backend re-uploads only when the
-  // metric's table moves. The genomic pass draws nothing here, so binds
-  // nothing.
-  it('binds the metric ramp to the pass that draws, once per identity', () => {
+  // The ramp is the marks' `textures`, read off the render state rather than
+  // the payload: the pass that draws the cell samples it, and the backend
+  // re-uploads only when the state's table moves. The genomic pass draws
+  // nothing here, so binds nothing.
+  it('binds the state ramp to the pass that draws, once per identity', () => {
     const hal = new MockHal(PASSES)
     const backend = new GpuMarkBackend(hal, LD_MARKS)
     const data = makeOneCell()
@@ -183,12 +196,14 @@ describe('the LD mark list', () => {
     expect(texCalls.map(c => c.args[0])).toEqual(['main'])
     expect(texCalls[0]!.args[2]).toBe(256)
     expect(texCalls[0]!.args[3]).toBe(1)
-    expect(hal.getTexture('main')).toEqual(generateLDColorRamp('r2'))
+    expect(hal.getTexture('main')).toEqual(REDS)
 
-    const dprime = new Map([[0, makeOneCell({ metric: 'dprime' })]])
-    backend.renderBlocks(blocks, dprime, makeRenderState())
+    backend.renderBlocks(blocks, regions, makeRenderState({ domainMax: 0.5 }))
+    expect(hal.callsOf('uploadTexture').length).toBe(1)
+
+    backend.renderBlocks(blocks, regions, makeRenderState({ colorRamp: BLUES }))
     expect(hal.callsOf('uploadTexture').length).toBe(2)
-    expect(hal.getTexture('main')).toEqual(generateLDColorRamp('dprime'))
+    expect(hal.getTexture('main')).toEqual(BLUES)
   })
 })
 
@@ -266,7 +281,7 @@ function paint(data: LDUploadData | undefined, state = makeRenderState()) {
 function shaderCorner(
   x: number,
   y: number,
-  state: TriangleFrame = makeRenderState(),
+  state: LDRenderState = makeRenderState(),
 ) {
   const rx = (x + y) * COS45
   const ry = (-x + y) * COS45
@@ -286,7 +301,7 @@ function rampFill(ramp: Uint8Array, t: number) {
 // rect as its local size under the whole affine.
 function exportedCorners(data: LDUploadData, state = makeRenderState()) {
   const ctx = new SvgCanvas()
-  drawLDBlocks(ctx, data, makeColorRamp(), state, 10_000)
+  drawLDBlocks(ctx, data, state, 10_000)
   const svg = ctx.getSerializedSvg()
   const [w, h] = /<rect width="(\S+)" height="(\S+)"/
     .exec(svg)!
@@ -325,19 +340,30 @@ describe('the LD painter', () => {
     expect(paint(makeGenomicCell()).rects).toHaveLength(1)
   })
 
-  it('reads ldValue as the ramp position directly, and clamps at both ends', () => {
-    const ramp = generateLDColorRamp('r2')
-
-    expect(paint(makeOneCell()).ctx.fillStyle).toBe(rampFill(ramp, 0.5))
+  it('reads ldValue as the ramp position over the default domain, and clamps at both ends', () => {
+    expect(paint(makeOneCell()).ctx.fillStyle).toBe(rampFill(REDS, 0.5))
     expect(
       paint(makeOneCell({ ldValues: new Float32Array([1]) })).ctx.fillStyle,
-    ).toBe(rampFill(ramp, 1))
+    ).toBe(rampFill(REDS, 1))
   })
 
-  // No alpha gate in the painter: both reachable ramps are opaque, and the
+  it('places ldValue within a pinned domain, as the shader does', () => {
+    const pinned = makeRenderState({ domainMin: 0.25, domainMax: 0.75 })
+    const at = (v: number) =>
+      paint(makeOneCell({ ldValues: new Float32Array([v]) }), pinned).ctx
+        .fillStyle
+    expect(at(0.5)).toBe(rampFill(REDS, 0.5))
+    expect(at(0.625)).toBe(rampFill(REDS, 0.75))
+    expect(at(0.1)).toBe(rampFill(REDS, 0))
+    expect(at(0.9)).toBe(rampFill(REDS, 1))
+  })
+
+  // No alpha gate in the painter: both preset ramps are opaque, and the
   // shaders gate on `ldValueComputed` alone.
-  it.each(['r2', 'dprime'])('every %s ramp entry is opaque', metric => {
-    const ramp = generateLDColorRamp(metric)
+  it.each([
+    ['reds', REDS],
+    ['blues', BLUES],
+  ])('every %s ramp entry is opaque', (_scheme, ramp) => {
     for (let i = 0; i < 256; i++) {
       expect(ramp[i * 4 + 3]).toBe(255)
     }
@@ -409,8 +435,12 @@ describe('drawLDBlocks over a real band', () => {
         uniformW: CELL,
         metric: 'r2',
       },
-      makeColorRamp(),
-      makeRenderState({ viewScale: 1, yScalar: 1, viewOffsetX: 0 }),
+      makeRenderState({
+        viewScale: 1,
+        yScalar: 1,
+        viewOffsetX: 0,
+        colorRamp: makeColorRamp(),
+      }),
       10_000,
     )
 
@@ -451,7 +481,7 @@ describe('drawLDBlocks over a real band', () => {
 // A cell holding `LD_NOT_COMPUTED` has no value to show, so it is left as
 // background — the same thing an out-of-band cell already looks like, since the
 // walk never reaches one. Painting it instead maps the sentinel through
-// `mapLDValue`'s clamp to t = 0, which for r² is the ramp's white end at alpha
+// the normalizer's clamp to t = 0, which for r² is the ramp's white end at alpha
 // 255: an opaque diamond claiming linkage equilibrium for a pair nothing
 // measured.
 describe('drawLDBlocks over a cell nothing computed', () => {
@@ -476,8 +506,12 @@ describe('drawLDBlocks over a cell nothing computed', () => {
         uniformW: CELL,
         metric: 'r2',
       },
-      makeColorRamp(),
-      makeRenderState({ viewScale: 1, yScalar: 1, viewOffsetX: 0 }),
+      makeRenderState({
+        viewScale: 1,
+        yScalar: 1,
+        viewOffsetX: 0,
+        colorRamp: makeColorRamp(),
+      }),
       10_000,
     )
 

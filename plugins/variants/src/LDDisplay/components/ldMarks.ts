@@ -2,12 +2,10 @@ import { defineMark } from '@jbrowse/render-core/marks'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { drawLDBlocks } from './drawLDBlocks.ts'
-import { generateLDColorRamp } from './ldColorRamp.ts'
 import * as ldGenomicShader from './shaders/ldGenomic.generated.ts'
 import * as ldUniformShader from './shaders/ldUniform.generated.ts'
 
-import type { LDUploadData } from './ldRenderingBackendTypes.ts'
-import type { TriangleFrame } from '@jbrowse/display-kit/TriangleMatrixMixin'
+import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
 import type { MarkShape } from '@jbrowse/render-core/marks'
 
@@ -27,11 +25,10 @@ export function interleaveLDInstances(data: {
   )
 }
 
-interface LDCellParams extends TriangleFrame {
+interface LDCellParams extends LDRenderState {
   uniformW: number
   band: number
   genomic: boolean
-  colorRamp: Uint8Array
 }
 
 const EMPTY = new Float32Array(0)
@@ -64,10 +61,12 @@ function ldShape(
         viewOffsetX: p.viewOffsetX,
         uniformW: p.uniformW,
         band: p.band,
+        domainMin: p.domainMin,
+        domainMax: p.domainMax,
       })
     },
     paintBlock(ctx, data, _block, frame, p) {
-      drawLDBlocks(ctx, data, p.colorRamp, p, frame.canvasWidth)
+      drawLDBlocks(ctx, data, p, frame.canvasWidth)
     },
   }
 }
@@ -90,22 +89,18 @@ const genomicShape = ldShape(
   genomic => genomic,
 )
 
-function ldParams(state: TriangleFrame, data: LDUploadData): LDCellParams {
+function ldParams(state: LDRenderState, data: LDUploadData): LDCellParams {
   return {
     ...state,
     uniformW: data.uniformW,
     band: data.band,
     genomic: isGenomic(data),
-    // the payload's metric, which a file with one column downgrades
-    colorRamp: generateLDColorRamp(data.metric),
   }
 }
 
 const channels = (data: LDUploadData) => data
 
-const textures = (_state: TriangleFrame, data: LDUploadData) => ({
-  colorRamp: generateLDColorRamp(data.metric),
-})
+const textures = (state: LDRenderState) => ({ colorRamp: state.colorRamp })
 
 export const LD_MARKS = [
   defineMark({ shape: uniformShape, channels, params: ldParams, textures }),

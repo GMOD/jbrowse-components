@@ -1,12 +1,14 @@
 import { enterTriangleCellSpace } from '@jbrowse/display-kit/triangleTransform'
 import { ldValueComputed } from '@jbrowse/ld-core'
 import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  makeScoreNormalizer,
+  SCALE_TYPE_LINEAR,
+} from '@jbrowse/render-core/scoreScale'
 
 import { bandRowFirstColumn } from '../../VariantRPC/ldBand.ts'
-import { mapLDValue } from './ldColorRamp.ts'
 
-import type { LDUploadData } from './ldRenderingBackendTypes.ts'
-import type { TriangleFrame } from '@jbrowse/display-kit/TriangleMatrixMixin'
+import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 /**
@@ -18,15 +20,20 @@ import type { MarkContext2D } from '@jbrowse/render-core/marks'
 export function drawLDBlocks(
   ctx: MarkContext2D,
   data: LDUploadData,
-  colorRamp: Uint8Array,
-  state: TriangleFrame,
+  state: LDRenderState,
   width: number,
 ) {
   const { ldValues, boundaries, numCells, band } = data
   if (numCells === 0) {
     return
   }
-  const { viewScale } = state
+  const { viewScale, domainMin, domainMax, colorRamp } = state
+  const normalize = makeScoreNormalizer(
+    domainMin,
+    domainMax,
+    SCALE_TYPE_LINEAR,
+    1,
+  )
   const fillStyleLut = makeRampFillStyleLut(colorRamp)
   const { minSum, maxSum } = enterTriangleCellSpace(ctx, state, width)
   const n = boundaries.length - 1
@@ -42,7 +49,7 @@ export function drawLDBlocks(
       if (!ldValueComputed(ldVal) || sum > maxSum || sum + cw + ch < minSum) {
         continue
       }
-      ctx.fillStyle = fillStyleLut(mapLDValue(ldVal))
+      ctx.fillStyle = fillStyleLut(normalize(ldVal))
       ctx.fillRect(
         px * viewScale,
         py * viewScale,

@@ -15,7 +15,14 @@ export type LDUploadData = Pick<
   | 'cellSizes'
 >
 
+/** The frame plus the `color` object's ramp and domain. */
+export interface LDRenderState extends TriangleFrame {
+  domainMin: number
+  domainMax: number
+  colorRamp: Uint8Array
+}
+
 export type LDRenderingBackend = PerRegionRenderingBackend<
   LDUploadData,
-  TriangleFrame
+  LDRenderState
 >

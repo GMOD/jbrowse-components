@@ -1,5 +1,8 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 
+import { createTestEnvironment } from './testEnv.ts'
 import { buildLDTrackMenuItems } from './trackMenuItems.ts'
 
 import type { LDMenuSelf } from './trackMenuItems.ts'
@@ -10,6 +13,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
   const stub = {
     effectiveLdMetric: 'r2' as const,
+    colorScheme: 'reds' as const,
     r2Available: true,
     dprimeAvailable: true,
     focalSnpIndex: -1,
@@ -20,6 +24,7 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     useGenomicPositions: false,
     setFocalSnp: jest.fn(),
     setLDMetric: jest.fn(),
+    setColorScheme: jest.fn(),
     setShowLegend: jest.fn(),
     setShowLabels: jest.fn(),
     setShowVerticalGuides: jest.fn(),
@@ -46,10 +51,10 @@ function subMenuOf(items: MenuItem[], label: string) {
 // No filter rows: the values come out of a file already thinned by whatever
 // wrote it, and there are no genotypes here to filter. The rows that were here
 // (MAF / HWE / call rate / jexl) went with the genotype path.
-test('the menu is metric + show', () => {
+test('the menu is metric, scheme and show', () => {
   const items = buildLDTrackMenuItems(makeSelf())
 
-  expect(labels(items)).toEqual(['LD metric', 'Show...'])
+  expect(labels(items)).toEqual(['LD metric', 'Color scheme', 'Show...'])
   expect(labels(subMenuOf(items, 'LD metric')!)).toEqual([
     'R² (squared correlation)',
     "D' (normalized D)",
@@ -127,4 +132,52 @@ test('the Show menu carries every visibility and layout toggle', () => {
     'Fit to display height',
     'Size cells by genomic distance',
   ])
+})
+
+test('the scheme submenu offers every named scheme, the painted one ticked', () => {
+  const setColorScheme = jest.fn()
+  const schemes = subMenuOf(
+    buildLDTrackMenuItems(makeSelf({ colorScheme: 'blues', setColorScheme })),
+    'Color scheme',
+  )!
+  expect(schemes).toHaveLength(COLOR_SCHEMES.length)
+  expect(schemes.filter(i => 'checked' in i && i.checked).map(labelOf)).toEqual(
+    ['Blues'],
+  )
+  const viridis = schemes.find(i => labelOf(i) === 'Viridis')!
+  if ('onClick' in viridis) {
+    viridis.onClick()
+  }
+  expect(setColorScheme).toHaveBeenCalledWith('viridis')
+})
+
+describe('on a display', () => {
+  test('a metric radio writes color.field, and plot reads it back', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    const dprime = subMenuOf(display.trackMenuItems(), 'LD metric')!.find(
+      i => labelOf(i) === "D' (normalized D)",
+    )!
+    if ('onClick' in dprime) {
+      dprime.onClick()
+    }
+    expect(readConfObject(display.configuration, ['color', 'field'])).toBe(
+      'dprime',
+    )
+    expect(display.plot).toEqual({ color: { field: 'dprime' } })
+    expect(display.rpcProps().ldMetric).toBe('dprime')
+  })
+
+  test('a scheme pick leaves reverse to follow it', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setColorScheme('viridis')
+    expect(display.plot).toEqual({ color: { scheme: 'viridis' } })
+    expect(display.colorReverse).toBe(true)
+  })
+
+  test('offers Edit plot', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    expect(
+      labels(subMenuOf(display.trackMenuItems(), 'Advanced') ?? []),
+    ).toContain('Edit plot...')
+  })
 })
