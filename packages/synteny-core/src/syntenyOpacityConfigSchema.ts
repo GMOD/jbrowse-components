@@ -1,6 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { normalizeChannel } from '@jbrowse/display-kit/colorConfigSchema'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  colorChannelSlots,
+  colorDomainSlot,
+  normalizeChannel,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
  * `scale` on a synteny opacity object: `none` draws `value` and keeps the
@@ -69,13 +72,7 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
      * What fades an alignment: a measurement (`identity`, `mapq`, `dnds`) or
      * a column the tracks declare in `attributeColumns`. Empty draws every
      * alignment at `value`. Writing `opacity: "identity"` lands here.
-     */
-    field: {
-      type: 'string',
-      defaultValue: '',
-      description: 'measurement or attributeColumns column; empty is value',
-    },
-    /**
+     *
      * #slot scale
      * `none` draws `value` and keeps the field for a switch back;
      * `threshold` reads `domain` as cut points, a value on a cut taking the
@@ -83,23 +80,19 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
      * `domainMin` to `domainMax` and a text column takes one opacity per
      * label.
      */
-    scale: {
-      type: 'maybeStringEnum',
-      model: types.enumeration('SyntenyOpacityScale', [
-        ...SYNTENY_OPACITY_SCALES,
-      ]),
-      description: 'none, threshold, or unset to follow the field',
-    },
+    ...colorChannelSlots({
+      scales: SYNTENY_OPACITY_SCALES,
+      scaleName: 'SyntenyOpacityScale',
+      fieldType: 'string',
+      field: 'measurement or attributeColumns column; empty is value',
+      scale: 'none, threshold, or unset to follow the field',
+    }),
     /**
      * #slot domain
      * A text column's labels, which take `range` in order; under
      * `threshold`, the cut points.
      */
-    domain: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'labels, or threshold cut points',
-    },
+    ...colorDomainSlot({ domain: 'labels, or threshold cut points' }),
     /**
      * #slot range
      * The opacities, 0 to 1: a number column's at `domainMin` and
