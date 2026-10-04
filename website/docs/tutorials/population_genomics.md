@@ -17,7 +17,6 @@ then read the inversion.
 
 ## Prerequisites
 
-- nothing to read along. Everything below is for building the tracks yourself
 - a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
   file by path, [Web](/docs/quickstart_web) through **Add track**
 - `curl`
@@ -46,11 +45,21 @@ The Drosophila Genetic Reference Panel, 205 inbred lines
   https://resources.aertslab.org/DGRP2/NCSU/final/dm6/DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
 - the `In(2L)t` inversion karyotype for each line, from DGRPool's phenotype
   record: https://dgrpool.epfl.ch/phenotypes/1520/download
-- the finished Fst scan, rehosted so the tracks on this page load without
-  rebuilding: https://jbrowse.org/demos/popgen/fst_In2Lt.bw
+- the finished Fst scan, rehosted: https://jbrowse.org/demos/popgen/fst_In2Lt.bw
 - π inside the inverted and standard karyotypes:
   https://jbrowse.org/demos/popgen/pi_INV.bw and
   https://jbrowse.org/demos/popgen/pi_STD.bw
+- the π ratio between the two:
+  https://jbrowse.org/demos/popgen/pi_ratio_In2Lt.bw
+- Tajima's D over the whole panel:
+  https://jbrowse.org/demos/popgen/tajimad_all.bw
+- π over the whole panel: https://jbrowse.org/demos/popgen/pi_all.bw
+- the called-variant count per window:
+  https://jbrowse.org/demos/popgen/sites_all.bw
+- the `In(2L)t` inversion genotyped per line:
+  https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz
+- the karyotype table that genotype track bands its rows by:
+  https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv
 
 The dm6 assembly and gene track are the hosted UCSC
 [hub](/docs/user_guides/hub_url)'s own entries.
@@ -312,7 +321,7 @@ symmetric axis:
 }
 ```
 
-## Reading the signals
+## Reading the Cyp6g1 sweep in Tajima's D and π
 
 Search `Cyp6g1` (on `2R`) in the location box. Add three more tracks, each a
 `QuantitativeTrack` shaped like the Fst one above: Tajima's D over the whole
@@ -406,6 +415,30 @@ and colors rows by:
       "rowColor": "karyotype"
     }
   ]
+}
+```
+
+The lane above Fst in the figure marks the published extent with one inline
+feature:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "in2lt_inversion",
+  "name": "In(2L)t inversion",
+  "assemblyNames": ["dm6"],
+  "adapter": {
+    "type": "FromConfigAdapter",
+    "features": [
+      {
+        "uniqueId": "in2lt",
+        "refName": "chr2L",
+        "start": 2225744,
+        "end": 13154180,
+        "name": "In(2L)t"
+      }
+    ]
+  }
 }
 ```
 
