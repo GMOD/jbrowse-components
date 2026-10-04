@@ -398,7 +398,7 @@ FillEdges fillEdges(float4 c, float s, float sd, float dydt) {
 // The cap is a cap on the BOOST, not on the alpha: `max(a, ...)` is what keeps
 // hover from running backwards. Without it, the ×5/0.35 pair reduces the alpha of
 // anything already above 0.35 — so with the opacity slider anywhere past that
-// (it reaches 1.0; the default is 0.2), hovering made a ribbon the FAINTEST thing
+// (it reaches 1.0; the default is 0.25), hovering made a ribbon the FAINTEST thing
 // on screen instead of the most findable, and hoverDarken's 0.7 on the rgb could
 // not make up for it. Below 0.35 the max is inert, so the low display alphas a
 // whole-genome view actually uses are untouched.

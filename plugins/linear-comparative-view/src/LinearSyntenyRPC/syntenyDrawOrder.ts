@@ -32,7 +32,7 @@ export interface DrawOrderKey {
 // over the big blocks bury them, and nothing down there is pickable anyway.
 //
 // Largest-first above it is what keeps a small inversion inside a large match
-// reachable. At the view's default alpha of 0.2 the match only tints the
+// reachable. At the view's default alpha of 0.25 the match only tints the
 // inversion rather than hiding it, so sorting the match on top left a shape that
 // was visible but answered no hover across its whole span.
 //
