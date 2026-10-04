@@ -1,5 +1,9 @@
 import { hydrateTrackConfig, readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import {
+  isSessionModelWithConnectionEditing,
+  isSessionWithPublishTrackConf,
+} from '@jbrowse/core/util'
 import { getEnv, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import createViewState from './createViewState.ts'
@@ -427,6 +431,22 @@ test('the File menu is opt-in, and carries what an embed can honour', () => {
       disableAddTracks: true,
     }).menus(),
   ).toEqual([])
+})
+
+// The track selector's + button and hamburger menu read these two guards, so a
+// guard that ignores the flag leaves an Add-connection button in a locked embed
+test('disableAddTracks refuses both the track and the connection guard', () => {
+  const open = createViewState({ assembly, tracks }).session
+  expect(isSessionWithPublishTrackConf(open)).toBe(true)
+  expect(isSessionModelWithConnectionEditing(open)).toBe(true)
+
+  const locked = createViewState({
+    assembly,
+    tracks,
+    disableAddTracks: true,
+  }).session
+  expect(isSessionWithPublishTrackConf(locked)).toBe(false)
+  expect(isSessionModelWithConnectionEditing(locked)).toBe(false)
 })
 
 test("a search index written as just a uri is found for the embed's assembly", () => {

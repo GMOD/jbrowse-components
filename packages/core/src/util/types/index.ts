@@ -633,7 +633,11 @@ export interface SessionWithConnectionEditing extends SessionWithConnections {
 export function isSessionModelWithConnectionEditing(
   thing: unknown,
 ): thing is SessionWithConnectionEditing {
-  return isSessionModel(thing) && 'addConnectionConf' in thing
+  return (
+    isSessionModel(thing) &&
+    'addConnectionConf' in thing &&
+    !('disableAddTracks' in thing && thing.disableAddTracks)
+  )
 }
 
 export interface SessionWithSessionPlugins extends AbstractSessionModel {

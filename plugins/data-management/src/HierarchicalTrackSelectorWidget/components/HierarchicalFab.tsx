@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   getSession,
-  isSessionModelWithConnections,
+  isSessionModelWithConnectionEditing,
   isSessionWithPublishTrackConf,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -40,7 +40,7 @@ const HierarchicalFab = observer(function HierarchicalFab({
   const { classes } = useStyles()
   const session = getSession(model)
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
-  const hasConnections = isSessionModelWithConnections(session)
+  const hasConnections = isSessionModelWithConnectionEditing(session)
   const hasAddTrack = isSessionWithPublishTrackConf(session)
   return hasAddTrack || hasConnections ? (
     <>
