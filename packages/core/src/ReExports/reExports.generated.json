@@ -2799,11 +2799,13 @@
         "UNIVERSAL_FIELD_PRESETS",
         "colorNotices",
         "colorProblems",
+        "colorSlotsOf",
         "fieldScaleOf",
         "noticeLines",
         "paintedScale",
         "presetOf",
         "scaleEndProblems",
+        "scaleEndsOf",
         "universalPresetOf",
         "withPreset"
       ],
