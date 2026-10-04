@@ -55,20 +55,16 @@ the ones the rest of the ecosystem quotes.
   https://jbrowse.org/ucsc/hg38/config.json for human, and for chimpanzee
   https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json,
   the other ape and macaque hubs at the same path under their accessions
-- the finished table, BEDs and config, rehosted so the lanes load without
-  rerunning the pipeline:
+- the finished table, BEDs and config:
   https://jbrowse.org/demos/primate_orthologs/config.json
 
 ## An ortholog table joined on gene names
 
-The [grape, peach and cacao](/docs/tutorials/multiway_synteny_grape_peach_cacao)
-page builds its ortholog table by aligning coding sequence, and the
-[OrthoFinder](/docs/tutorials/orthofinder_synteny) page by clustering proteins.
-Both produce the same `.blocks` shape: one row per orthologous group, one column
-per genome, a gene id in each cell. Genomes annotated by one pipeline fill that
-table a third way. NCBI's eukaryotic annotation pipeline names a gene after its
-ortholog, so human _TP53_ is chimpanzee _TP53_ and gorilla _TP53_, and the table
-is a join on the `Name` attribute of each GFF3.
+An ortholog table in the `.blocks` shape has one row per orthologous group, one
+column per genome and a gene id in each cell. NCBI's eukaryotic annotation
+pipeline names a gene after its ortholog, so human _TP53_ is chimpanzee _TP53_
+and gorilla _TP53_, and for genomes it annotated the table is a join on the
+`Name` attribute of each GFF3.
 
 The join needs only the annotations, so the download is a GFF3 and a sequence
 report per genome:
@@ -101,8 +97,7 @@ The helper joins on the symbol and handles these cases:
 - It compares symbols case-folded, so a mouse `Atp5f1a` would meet the human
   `ATP5F1A`.
 - A gene whose name is an NCBI `LOC` placeholder joins nothing, as with the
-  salivary amylase copies RefSeq names that way in the other primates
-  ([where the join stops](/docs/tutorials/ecoli_orthologs_synteny#where-the-join-stops)).
+  salivary amylase copies RefSeq names that way in the other primates.
 - A symbol several genes in one genome have gets a row per copy, since a link
   joins one gene to one gene. RefSeq gives a duplicated primate gene a distinct
   lettered symbol (_AMY1A_ against _AMY1B_) or a placeholder, so the exception
@@ -192,7 +187,7 @@ tabix-indexed ([prep](/docs/quickstart_web)) and uses the assembly's refNames:
 }
 ```
 
-## The ortholog track
+## Loading the eight-genome ortholog track
 
 One `SyntenyTrack` names all eight assemblies. `blockAssemblies` and
 `bedLocations` are positional against the table columns, in the order the helper
@@ -200,7 +195,8 @@ printed. `{ "field": "cluster" }` colors a gene by its ortholog group, which the
 table names by its gene symbol, so a conserved gene is one color down the whole
 stack, a lane missing it breaks the column, and a gene no group claims is grey.
 A key naming the groups appears in the top right once the window holds few
-enough to list, and stays out of the way at the windows below:
+enough to list; at the windows below the ribbon-strand key takes that corner,
+and **Show... → Show legend** on the track menu puts either away:
 
 ```json addtrack
 {
@@ -250,15 +246,12 @@ enough to list, and stays out of the way at the windows below:
 }
 ```
 
-## One locus, eight genomes
+## Reading the TP53 neighbourhood across eight primates
 
 Opened in a linear genome view on human, the track draws a lane per genome under
-the human axis, as the
-[multi-way synteny display](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-does for any ortholog table, with its
-[lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)
-and
-[lane order](/docs/tutorials/multiway_synteny_grape_peach_cacao#ordering-the-lanes).
+the human axis, each in the coordinates of the genome it shows, with a header
+naming the chromosome and span it shows and `[rev]` where it runs against human
+([lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)).
 **Color by... → Strand**, under **Ribbons** on the track menu, colors each
 ribbon by the strand of the pair it joins, the orientations of the two lanes
 against the human axis multiplied together. The session below opens the TP53
@@ -294,12 +287,14 @@ color separates forward blocks from reversed ones.
 
 <Figure caption="Four megabases of human chr17 over the seven primate lanes, ribbons colored by strand. Blue is a block read backwards from the lane above: one runs down the middle of the frame between same-orientation flanks, and the two bottom lanes cross where a block flips between them." src="/img/multiway_synteny/primate_chr17_inversions.png" />
 
-## A chromosome fusion
+## Human chromosome 2 as two fused ape chromosomes
 
-Human chromosome 2 is two ape chromosomes joined end to end. The same track in a
-linear synteny view shows it, with human chr2 on one row and the two chimpanzee
-chromosomes that hold its halves on the other. **Target** in the palette button
-menu paints each ribbon by the chimpanzee chromosome it lands on.
+Human chromosome 2 is two ape chromosomes joined end to end. Open human over
+chimpanzee from **Add → Linear synteny view** with `primate_orthologs` between
+them, navigate the human row to `chr2` and the chimpanzee row to `chr12` and
+`chr13`, the two chromosomes that hold its halves, and pick **Target** in the
+palette button menu, which paints each ribbon by the chimpanzee chromosome it
+lands on.
 
 <Figure caption="Human chr2 over chimpanzee chr12 and chr13, the hsa2a and hsa2b chromosomes, from the gene-symbol ortholog track, ribbons colored by the chimpanzee chromosome. The orthologs of one chimpanzee chromosome fill human chr2 up to 2q13 and those of the other fill it past there." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
@@ -310,10 +305,15 @@ one holding more genes in the window and names the other in its header, and
 
 ## Reproduce it end to end
 
-The script fetches the eight annotations and keeps the genes on assembled
-chromosomes, which each sequence report names, so no lane lands on an unplaced
-scaffold. It then builds the table and writes the config; see
-[Prerequisites](#prerequisites).
+The script needs the tools under [Prerequisites](#prerequisites) and works in
+three steps:
+
+1. Download the eight annotations and sequence reports, and keep the genes on
+   the assembled chromosomes each report names, so no lane lands on an unplaced
+   scaffold.
+2. Join the annotations on gene symbol into one table anchored on human.
+3. Write the config from each genome's hub entry and gene track, plus the
+   ortholog track.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_primate_orthologs.sh
