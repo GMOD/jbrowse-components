@@ -8,10 +8,10 @@ tutorial_category: Population genomics
 ---
 
 The BXD mice are inbred strains bred down from two parents, B6 and DBA/2, so
-each strain has a mosaic of blocks from one or the other. We paint each strain
-by which parent gave it each block and stack that under a GeneNetwork QTL scan
-of coat color, then band the strains by their coat color to see which blocks
-under each peak set it.
+each strain is a mosaic of blocks from one or the other. We paint each strain by
+which parent gave it each block and stack that under a GeneNetwork QTL scan of
+coat color (a QTL is a region linked to variation in a trait). Banding the
+strains by coat color then shows which blocks under each peak set it.
 
 ## Prerequisites
 
@@ -39,12 +39,12 @@ BXD consensus genotypes and QTL scans from GeneNetwork
 - the chromosome painting, rehosted for the track config:
   https://jbrowse.org/demos/bxd/bxd_painting.bed.gz
 
-## The BXD panel
+## The BXD strains and the two tracks built from them
 
-The [BXD family](https://genenetwork.org) is a panel of ~200 mouse
+The [BXD family](https://genenetwork.org) is a set of ~200 mouse
 recombinant-inbred (RI) strains bred from a cross of C57BL/6J (the "B" parent)
 and DBA/2J (the "D" parent), and GeneNetwork has phenotyped the same strains for
-thousands of traits. We build two tracks from the panel on mm10:
+thousands of traits. We build two tracks from the strains on mm10:
 
 - a chromosome-painting track (the
   [multi-row feature display](/docs/user_guides/multirow_feature_track)) showing
@@ -68,15 +68,15 @@ Chr  Locus         cM    Mb        BXD1  BXD2  BXD5  ...
 1    rs6269442     0.21  3.492195  B     B     D     ...
 ```
 
-The painting skips the F1 columns, since an F1 is heterozygous at every marker
-and GeneNetwork computes the scan over the strains.
+The painting skips the F1 columns, since an F1 (a B by D hybrid) is heterozygous
+at every marker and GeneNetwork computes the scan over the strains.
 
 ## Painting each strain's B and D blocks
 
 The painting draws one row per strain, each block colored by genotype.
 [`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
-walks the markers of each strain along every chromosome and writes one BED
-interval per run of consecutive same-genotype markers (run-length encoding),
+reads the markers of each strain in order along every chromosome and writes one
+BED interval per run of consecutive same-genotype markers (run-length encoding),
 coloring `B`/`D`/`H` and writing the strain name into an extra `sample` column:
 
 ```text
@@ -116,10 +116,10 @@ marker positions follow:
 }
 ```
 
-The painting track is a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`
-that splits rows on the `sample` column and colors each block from the `itemRgb`
-field. For your own panel, swap `uri` for the bgzipped, tabix-indexed BED your
-conversion wrote.
+The painting track is a `FeatureTrack` whose multi-row display
+(`LinearMultiRowFeatureDisplay`) splits rows on the `sample` column and colors
+each block from the `itemRgb` field. For your own panel, swap `uri` for the
+bgzipped, tabix-indexed BED your conversion wrote.
 
 ```json addtrack
 {
@@ -159,12 +159,13 @@ conversion wrote.
 
 ## Loading the coat-color QTL scan as a Manhattan track
 
-GeneNetwork maps these traits itself, and its API serves the whole per-marker
-result of a GEMMA run, the mixed model that accounts for how closely the BXD
-strains are related.
+GeneNetwork maps these traits itself. Its API serves the per-marker result of a
+GEMMA run, a mixed model that accounts for how closely related the BXD strains
+are.
 
 Fetch the scan for one trait by its GeneNetwork id and reshape it with `jq`.
-Each record has a marker, its mm10 position in Mb, a LOD score and a p-value:
+Each record has a marker, its mm10 position in Mb, a LOD score (log odds of
+linkage) and a p-value:
 
 <!-- from: scripts/bxd_build_demo.sh -->
 
@@ -220,12 +221,12 @@ natural-log p-value column would need it. See the
 }
 ```
 
-## Reading the coat-color peak
+## Coat-color peaks on chr4 and chr9
 
 The scan puts a plateau of tied markers on chr4, whose interval contains
-_Tyrp1_, the brown locus. A second, lower peak sits on chr9. Stacked over the
-painting, a peak marks a column, and the question is whether the strains' coat
-colors line up with their genotype there.
+_Tyrp1_, the brown coat-color gene. A second, lower peak sits on chr9. Over the
+painting, each peak marks a column of genotypes, and the question is whether the
+strains' coat colors line up with their genotype there.
 
 ## Grouping the strains by coat color
 
@@ -234,11 +235,11 @@ and DBA/2's dilute brown 1. We'll fetch each strain's score and turn the four
 values into four bands of painting rows, so the phenotype orders the rows and
 the genotype stays free to agree with it or not.
 
-The scores come from GeneNetwork's sample-data API, and `jq` writes one
+The scores come from GeneNetwork's sample-data API. `jq` turns them into one
 [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) entry
 per score, a regex matching that score's strains, and a
-[`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) pairing
-each score with its coat color:
+[`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) that
+pairs each score with its coat color:
 
 <!-- from: scripts/bxd_build_demo.sh -->
 
@@ -318,15 +319,14 @@ sets coat color.
 
 ## Myo5a, the dilute locus, under the chr9 peak
 
-The chr9 peak falls on _Myo5a_, the dilute locus. The same grouped painting,
-with the gene track filtered to _Myo5a_, splits the bands the other way:
+The chr9 peak falls on _Myo5a_, the dilute locus (its mutation lightens coat
+color). The same grouped painting, with the gene track filtered to _Myo5a_,
+splits the bands the other way:
 
 <Figure src="/img/qtl/bxd_myo5a_locus.png" caption="The whole of chr9, same bands. Under the peak at Myo5a the black and brown bands are B and the grey and dilute brown bands D, while the rest of chr9 is mixed."/>
 
 The two loci split the four-step scale between them: _Tyrp1_ sets black against
 brown, _Myo5a_ sets full color against dilute, and grey is a black coat diluted.
-The scale puts the brown step at twice the dilute step, and the chr4 peak stands
-higher than the chr9 one.
 
 ## Reproduce it end to end
 
