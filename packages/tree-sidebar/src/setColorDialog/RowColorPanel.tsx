@@ -24,6 +24,11 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
     gap: theme.spacing(1),
   },
+  cell: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+  },
   values: {
     display: 'grid',
     gridTemplateColumns: 'auto auto 1fr',
@@ -38,17 +43,18 @@ const useStyles = makeStyles()(theme => ({
 export interface ValueColor {
   value: string
   count: number
+  /** As dealt: a pair's where `paired`, else the Other colour or the palette's. */
   color: string | undefined
+  paired: boolean
 }
 
 /**
  * The `unknown` swatch: the one colour every row or value no swatch of its own
- * names takes, or automatic, which is the palette where it deals and the row's
- * own colour otherwise. `count` is the rows it paints, where that is known.
+ * names takes; `''` for none from this setting; or undefined for automatic,
+ * the palette where it deals and the row's own colour otherwise.
  */
 export interface OtherColor {
   color: string | undefined
-  count?: number
   onChange: (color: string) => void
   onClear: () => void
 }
@@ -87,19 +93,25 @@ export default function RowColorPanel({
   onClearRows: () => void
 }) {
   const { classes } = useStyles()
+  // `''` draws as an empty swatch with a solid border: a colour, none, rather
+  // than the dashed automatic.
   const otherSwatch = other ? (
     <PopoverPicker
-      color={other.color || 'auto'}
-      unset={!other.color}
+      color={other.color ?? 'auto'}
+      unset={other.color === undefined}
       onChange={other.onChange}
     />
   ) : null
   // The way back to automatic, which the picker itself has no entry for.
-  const otherAuto = other?.color ? (
-    <Button size="small" onClick={other.onClear}>
-      Auto
-    </Button>
-  ) : null
+  const otherAuto =
+    other && other.color !== undefined ? (
+      <Button size="small" onClick={other.onClear}>
+        Auto
+      </Button>
+    ) : null
+  const otherCount = values
+    .filter(({ value, paired }) => value !== '' && !paired)
+    .reduce((sum, { count }) => sum + count, 0)
   return (
     <div className={classes.panel}>
       <div className={classes.line}>
@@ -129,7 +141,9 @@ export default function RowColorPanel({
           <Typography variant="body2" color="textSecondary">
             {choice === ''
               ? 'Rows show the colors their data gives them. Click a swatch in the list to color one row.'
-              : 'Each row takes a palette color. Click a swatch in the list to change one.'}
+              : other?.color
+                ? 'Each row takes the Other color. Click a swatch in the list to change one.'
+                : 'Each row takes a palette color. Click a swatch in the list to change one.'}
           </Typography>
           {otherSwatch ? (
             <>
@@ -164,11 +178,11 @@ export default function RowColorPanel({
       ) : (
         <>
           <div className={classes.values} data-testid="row-color-values">
-            {values.map(({ value, count, color }) => (
+            {values.map(({ value, count, color, paired }) => (
               <Fragment key={value}>
                 <PopoverPicker
                   color={color ?? 'auto'}
-                  unset={!color}
+                  unset={!paired}
                   onChange={next => {
                     onValueColor(value, next)
                   }}
@@ -183,10 +197,12 @@ export default function RowColorPanel({
               <>
                 {otherSwatch}
                 <Typography variant="body2">Other values</Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {other.count === undefined ? '' : rowCount(other.count)}
+                <div className={classes.cell}>
+                  <Typography variant="body2" color="textSecondary">
+                    {rowCount(otherCount)}
+                  </Typography>
                   {otherAuto}
-                </Typography>
+                </div>
               </>
             ) : null}
           </div>

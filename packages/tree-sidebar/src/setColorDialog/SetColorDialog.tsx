@@ -94,12 +94,14 @@ function entriesOf(setting: RowColorSetting): Entries {
     : { [setting.field]: Object.fromEntries(pairedColorsOf(setting)) }
 }
 
-// Each value of `field` over the rows with its colour and row count, in the
-// order the key lists them: the coloured values as dealt, then the rest.
+// Each value of `field` over the rows with its colour, whether a pair of its
+// own sets it, and its row count, in the order the key lists them: the
+// coloured values as dealt, then the rest.
 function valueColors(
   rows: readonly object[],
   field: string,
   colors: ReadonlyMap<string, string>,
+  pairs: Readonly<Record<string, string>>,
 ): ValueColor[] {
   const counts = new Map<string, number>()
   for (const row of rows) {
@@ -112,6 +114,7 @@ function valueColors(
     value,
     count: counts.get(value)!,
     color: colors.get(value),
+    paired: Object.hasOwn(pairs, value),
   }))
 }
 
@@ -148,6 +151,9 @@ export default observer(function SetColorDialog<
   const [others, setOthers] = useState(opened.others)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
 
+  // A field the reader touched holds its colour, or undefined once Auto was
+  // pressed; one the reader left alone is not in the map and reads the
+  // config's.
   const otherOf = (forChoice: string) => {
     const field = forChoice || 'name'
     return Object.hasOwn(others, field)
@@ -288,7 +294,12 @@ export default observer(function SetColorDialog<
                   choice={choice}
                   values={
                     byField && fieldColors
-                      ? valueColors(currLayout, byField, fieldColors)
+                      ? valueColors(
+                          currLayout,
+                          byField,
+                          fieldColors,
+                          entries[byField] ?? {},
+                        )
                       : []
                   }
                   other={
@@ -296,15 +307,6 @@ export default observer(function SetColorDialog<
                       ? undefined
                       : {
                           color: otherOf(choice),
-                          count: byField
-                            ? currLayout.filter(row => {
-                                const value = rowFieldValue(row, byField)
-                                return (
-                                  value !== '' &&
-                                  !Object.hasOwn(entries[byField] ?? {}, value)
-                                )
-                              }).length
-                            : undefined,
                           onChange: color => {
                             setOthers({ ...others, [choice || 'name']: color })
                           },

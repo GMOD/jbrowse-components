@@ -525,6 +525,8 @@ describe('the Other rows swatch on a stacked display', () => {
     expect((other.firstElementChild as HTMLElement).style.backgroundColor).toBe(
       'rgb(204, 204, 204)',
     )
+    // Row b's swatch: the one automatic colour here, since a is red and the
+    // Other rows swatch is grey.
     pickColor(
       screen.getByTitle('Automatic — click to set a custom color'),
       'blue',
@@ -617,4 +619,90 @@ test('the value table lists the values in the order the key does', () => {
   expect(
     values.getAllByText(/^g\d$|^\(no value\)$/).map(e => e.textContent),
   ).toEqual(['g2', 'g1', '(no value)'])
+})
+
+describe('the Other values swatch', () => {
+  // A stacked display, whose None writes no unknown of its own.
+  const byGroupPair = () =>
+    fakeModel({
+      editableSources: GROUPED,
+      rowColorFields: ['group'],
+      rowColorSetting: {
+        field: 'group',
+        scale: undefined,
+        domain: ['g2'],
+        range: ['#abcdef'],
+      },
+      rowPaletteDeals: false,
+    })
+  const otherValues = () =>
+    within(screen.getByTestId('row-color-values')).getByText('Other values')
+  const otherCount = () => otherValues().nextElementSibling!.textContent
+
+  test('is held per field, so None after group writes none of it', () => {
+    const model = byGroupPair()
+    setup(model)
+
+    pickColor(
+      otherValues().previousElementSibling!.firstElementChild!,
+      'blue',
+      '#999999',
+    )
+    fireEvent.click(screen.getByText('None'))
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({ field: 'name' })
+  })
+
+  test('counts fewer rows once a value takes a pair of its own', () => {
+    setup(byGroupPair())
+    expect(otherCount()).toBe('2 rows')
+
+    const values = within(screen.getByTestId('row-color-values'))
+    pickColor(
+      values.getByText('g1').previousElementSibling!.firstElementChild!,
+      '#111111',
+      '#00ff00',
+    )
+
+    expect(otherCount()).toBe('0 rows')
+  })
+
+  test('Clear custom settings drops a colour set on it', () => {
+    const model = byGroupPair()
+    setup(model)
+
+    pickColor(
+      otherValues().previousElementSibling!.firstElementChild!,
+      'blue',
+      '#999999',
+    )
+    fireEvent.click(screen.getByText('Clear custom settings'))
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(model.resetRowArrangement).toHaveBeenCalled()
+    expect(submitted(model)[1]).toBeUndefined()
+  })
+
+  test("a config's '' shows as none with Auto, and Auto deals the palette", () => {
+    const model = fakeModel({
+      editableSources: GROUPED,
+      rowColorFields: ['group'],
+      rowColorSetting: {
+        field: 'group',
+        scale: undefined,
+        domain: [],
+        range: [],
+        unknown: '',
+      },
+    })
+    setup(model)
+
+    const swatch = otherValues().previousElementSibling!.firstElementChild!
+    expect(swatch.getAttribute('title')).toBeNull()
+    fireEvent.click(screen.getByText('Auto'))
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({ field: 'group' })
+  })
 })
