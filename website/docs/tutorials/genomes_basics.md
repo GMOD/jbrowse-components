@@ -34,9 +34,8 @@ fungi, bacteria and viruses.
 
 <Figure src="/img/genomes_basics/site_home.png" caption="The genomes.jbrowse.org front page. The top table is the short list of main genomes, and the GenArk catalog starts below it." />
 
-[/ucsc](https://genomes.jbrowse.org/ucsc) is the same thing without the
-shortlist: every UCSC database, with a filter box over the names, species and
-descriptions.
+The [/ucsc](https://genomes.jbrowse.org/ucsc) page lists every UCSC database,
+with a filter box over the names, species and descriptions.
 
 <Figure src="/img/genomes_basics/site_ucsc_list.png" caption="The full UCSC database listing. Each row opens the same kind of JBrowse instance the front page links to." />
 
@@ -47,11 +46,11 @@ an accession, and covers both catalogs at once.
 
 Picking a result opens its JBrowse instance at a URL you can share.
 
-## Searching for a gene
+## Searching for TP53 and trimming its isoforms
 
-Open hg38. It opens with **NCBI RefSeq - RefSeq All** on and the track selector
-showing. Type `TP53` into the location box and press Enter. The hosted config
-ships a name index, so gene symbols resolve, and coordinates like
+Open hg38. The page starts with **NCBI RefSeq - RefSeq All** on and the track
+selector showing. Type `TP53` into the location box and press Enter. The hosted
+config ships a name index, so gene symbols resolve, and coordinates like
 `chr17:7,668,400-7,687,550` work too.
 
 <Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, found by the config's name index. Middle: what Enter opens, as many transcripts as the track's height holds, a link beside the TP53 label for the ones it does not, and the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
@@ -85,39 +84,39 @@ score is signed: blue above the line marks a base that changes more slowly than
 neutral, and red below it one that changes faster.
 
 Type `chr17:7,674,180-7,674,290` into the location box, a stretch of exon 7
-covering G245, R248 and R249, three of the codons most often mutated in human
-cancer.
+covering G245, R248 and R249, three of _TP53_'s most often mutated codons in
+human cancer.
 
 - Tick **Reference sequence**, which is off by default
 - At this zoom the gene track draws a codon row per transcript; pick
   **Representative transcript** from the isoform control to keep one
 
-<Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It has the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
+<Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. The popover offers the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
 
-The score is now one bar per base, and within a codon the third base is the
-short one: most third-position changes leave the amino acid alone. Hovering a
-bar reads back its score.
+At this zoom phyloP draws one bar per base, and within a codon the third base's
+bar is the short one, since most third-position changes leave the amino acid
+alone. Hover a bar to read its score.
 
-## The alignment the score came from
+## The multiple alignment behind the phyloP score
 
-The multiple alignment phyloP was computed from is a checkbox too. UCSC
-publishes no bigMaf for the 100-way, so this section switches to the 470-way
-pair. Tick both, under Comparative Genomics:
+The multiple alignment behind a phyloP track is a checkbox too. UCSC publishes
+no bigMaf (indexed alignment file) for the 100-way, so this section switches to
+the 470-way pair. Tick both, under Comparative Genomics:
 
 - **Multiz Alignments - 470-way Mammal Alignment (Hiller lab)**
 - **Basewise Conservation (phyloP) - 470 phyloP**
 
 <Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from. A base is drawn only where it differs from human." />
 
-Most columns are blank, since every species matches human at those bases, and
-conserved columns give a positive score. phyloP counts substitution events on
-the tree:
+In the alignment track, most columns are blank because every species matches
+human at those bases, and conserved columns give a positive score. phyloP counts
+substitution events on the tree:
 
-- under S240, nearly every species differs from human, but all have the _same_
-  base, which is one substitution on the human branch, so the score stays above
-  the line
-- under T256 and G244, fewer rows differ and those that do disagree with each
-  other, and the score goes red
+- under S240 (serine 240), nearly every species differs from human, but all have
+  the _same_ base, which is one substitution on the human branch, so the score
+  stays above the line
+- under T256 and G244 (threonine 256, glycine 244), fewer rows differ and those
+  that do disagree with each other, and the score goes red
 
 A MAF block has a row per species, so at gene-wide zoom the alignment track asks
 you to confirm before fetching. Further out it draws a precomputed summary with
@@ -148,11 +147,12 @@ cell lines have both.
 
 ## Filtering gnomAD's TP53 variants to predicted loss of function
 
-**gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** under Variation and Repeats opens as
-several thousand records over _TP53_, one block of colour. **Filter by...** in
-the track menu takes rows of field, operator and value over the track's columns.
-Type the column name into the field box, which lists the file's columns with the
-description the file gives each. A record has to pass every row:
+The **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** track, under Variation and Repeats,
+opens as several thousand variant records over _TP53_, one block of colour.
+**Filter by...** in the track menu takes rows of field, operator and value over
+the track's columns. Type a column name into the field box, which lists the
+file's columns with the description the file gives each. A record has to pass
+every row:
 
 - `annot` is `pLoF` keeps gnomAD's predicted loss-of-function consequence class
   (the others are missense, synonymous and other)
@@ -165,8 +165,8 @@ filter leaves a track drawn in one colour.
 
 <Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1.1 Exomes over TP53 and the filter dialog its track menu opens. One consequence-class row redraws the lane with the predicted loss-of-function records alone, in the one colour the file gives that class." />
 
-Once a filter is in effect the same menu row opens a submenu with **Edit
-filters...** and **Clear all filters**.
+Once a filter is in effect, the track menu's filter row opens a submenu with
+**Edit filters...** and **Clear all filters**.
 
 The filter works on any column a BigBed has. ClinVar's clinical classification
 is the column `clinSign`, so the row `clinSign` is `Pathogenic` filters that
@@ -199,10 +199,10 @@ The BigBeds behind the variant and annotation tracks read the same way.
 
 ## Searching TP53 on a GenArk genome, the axolotl
 
-The GenArk configs have a smaller track set than the UCSC ones. Their name index
-is built from NCBI RefSeq annotation, so a `GCF_` accession has gene tracks and
-resolves gene symbols, while a `GCA_` one generally has neither and takes
-coordinates.
+The GenArk configs have a smaller track set than the UCSC database configs.
+Their name index is built from NCBI RefSeq annotation, so a `GCF_` accession has
+gene tracks and resolves gene symbols, while a `GCA_` one generally has neither
+and takes coordinates.
 
 An assembly released both ways appears under both accessions, and gene search
 works on the RefSeq one. The axolotl `Mex_15411` is `GCF_040938575.1` and
