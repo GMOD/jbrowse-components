@@ -62,6 +62,31 @@ test('an insertion reports the bases beyond its reference span', () => {
   ).toBe(63)
 })
 
+// Dog10K's Graphtyper RNASE1 SINE: REF G, a 225-character ALT, SVLEN=223. The
+// record's own length wins over the string arithmetic, which read 224.
+test('a sequence insertion takes the length its SVLEN states', () => {
+  const f = feature({
+    start: 18164071,
+    end: 18164072,
+    REF: 'G',
+    ALT: [`G${'A'.repeat(224)}`],
+    INFO: { SVLEN: [223] },
+  })
+  expect(getInsertedBp(f)).toBe(223)
+  expect(getAlleleLength(f)).toBe(224)
+})
+
+test('a multiallelic insertion pairs each ALT with its own SVLEN', () => {
+  const f = feature({
+    start: 100,
+    end: 101,
+    REF: 'G',
+    ALT: [`G${'A'.repeat(50)}`, `G${'A'.repeat(80)}`],
+    INFO: { SVLEN: [40, '.'] },
+  })
+  expect(getInsertedBp(f)).toBe(80)
+})
+
 test('a deletion inserts nothing', () => {
   expect(getInsertedBp(feature({ start: 100, end: 180, ALT: ['A'] }))).toBe(0)
 })
