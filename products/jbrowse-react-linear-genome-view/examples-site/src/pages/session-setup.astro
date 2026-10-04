@@ -1,8 +1,6 @@
 ---
 import WithInitAdvanced from '../examples/WithInitAdvanced.tsx'
 import WithInitAdvancedCode from '../examples/WithInitAdvanced.tsx?raw'
-import WithSessionHighlights from '../examples/WithSessionHighlights.tsx'
-import WithSessionHighlightsCode from '../examples/WithSessionHighlights.tsx?raw'
 import WithSessionPersistence from '../examples/WithSessionPersistence.tsx'
 import WithSessionPersistenceCode from '../examples/WithSessionPersistence.tsx?raw'
 import SessionInUrl from '../examples/SessionInUrl.tsx'
@@ -13,22 +11,18 @@ import Section from '../layouts/ExampleSection.astro'
 
 const page = getPage('session-setup')
 const sec0 = section(page, 'with-init-advanced')
-const sec1 = section(page, 'with-session-highlights')
-const sec2 = section(page, 'with-session-persistence')
-const sec3 = section(page, 'session-in-url')
+const sec1 = section(page, 'with-session-persistence')
+const sec2 = section(page, 'session-in-url')
 ---
 
 <Layout page={page}>
   <Section {...sec0} code={WithInitAdvancedCode}>
     <WithInitAdvanced client:only="react" />
   </Section>
-  <Section {...sec1} code={WithSessionHighlightsCode}>
-    <WithSessionHighlights client:only="react" />
-  </Section>
-  <Section {...sec2} code={WithSessionPersistenceCode}>
+  <Section {...sec1} code={WithSessionPersistenceCode}>
     <WithSessionPersistence client:only="react" />
   </Section>
-  <Section {...sec3} code={SessionInUrlCode}>
+  <Section {...sec2} code={SessionInUrlCode}>
     <SessionInUrl client:only="react" />
   </Section>
 </Layout>

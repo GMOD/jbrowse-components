@@ -14,7 +14,12 @@ export default function DisableAddTrack() {
           uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
         },
       ]}
-      view={{ loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] }}
+      height="400px"
+      view={{
+        loc: 'ctgA:1105..1221',
+        tracks: ['volvox_gff3'],
+        tracklist: true,
+      }}
       disableAddTracks
     />
   )

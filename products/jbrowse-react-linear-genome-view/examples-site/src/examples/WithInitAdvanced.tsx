@@ -18,6 +18,7 @@ export default function WithInitAdvanced() {
           uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
         },
       ]}
+      height="400px"
       view={{
         loc: 'chr1:11,106,077-11,261,675',
         tracklist: true,
@@ -25,7 +26,16 @@ export default function WithInitAdvanced() {
         tracks: [
           { trackId: 'ncbi-refseq-genes', displaySnapshot: { height: 200 } },
         ],
-        highlight: ['chr1:11,170,000-11,190,000'],
+        highlight: [
+          'chr1:11,130,000-11,145,000',
+          {
+            refName: 'chr1',
+            start: 11_200_000,
+            end: 11_220_000,
+            color: 'rgba(0, 128, 255, 0.25)',
+            label: 'Region of interest',
+          },
+        ],
       }}
     />
   )

@@ -57,7 +57,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'default-session',
         title: 'Open on a default session',
-        description: 'The full snapshot form, for when view is not enough.',
+        description: 'A session carries what view cannot: a track of its own.',
       },
       {
         slug: 'disable-add-track',
@@ -144,11 +144,6 @@ export const pages: ExamplePage[] = [
     description: 'Color, label, size and highlight a feature track.',
     group: 'Tracks & styling',
     sections: [
-      {
-        slug: 'with-track-color-shorthand',
-        title: 'Track color shorthand',
-        description: 'displayDefaults routes a setting to the right display.',
-      },
       {
         slug: 'with-jexl-feature-colors-and-labels',
         title: 'Jexl feature colors and labels',
@@ -251,12 +246,8 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-init-advanced',
         title: 'A view spelled out',
-        description: 'displaySnapshot, tracklist, nav and highlight.',
-      },
-      {
-        slug: 'with-session-highlights',
-        title: 'Session highlights',
-        description: 'Painted regions that carry a color and a label.',
+        description:
+          'displaySnapshot, tracklist, nav, and highlights with a color and a label.',
       },
       {
         slug: 'with-session-persistence',
@@ -357,18 +348,6 @@ export const pages: ExamplePage[] = [
     ],
   },
 
-  {
-    slug: 'human-exome-example',
-    title: 'Human exome',
-    description: 'A human exome sequencing dataset on hg38.',
-    group: 'Real-world demos',
-    sections: [
-      {
-        slug: 'human-exome-example',
-        title: 'Human exome example',
-      },
-    ],
-  },
   {
     slug: 'nextstrain-pathogens',
     title: 'Nextstrain pathogens',

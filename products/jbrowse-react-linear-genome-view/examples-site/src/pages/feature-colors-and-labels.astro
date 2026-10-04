@@ -3,8 +3,6 @@ import WithFeatureHighlights from '../examples/WithFeatureHighlights.tsx'
 import WithFeatureHighlightsCode from '../examples/WithFeatureHighlights.tsx?raw'
 import WithJexlFeatureColorsAndLabels from '../examples/WithJexlFeatureColorsAndLabels.tsx'
 import WithJexlFeatureColorsAndLabelsCode from '../examples/WithJexlFeatureColorsAndLabels.tsx?raw'
-import WithTrackColorShorthand from '../examples/WithTrackColorShorthand.tsx'
-import WithTrackColorShorthandCode from '../examples/WithTrackColorShorthand.tsx?raw'
 import WithTrackSizing from '../examples/WithTrackSizing.tsx'
 import WithTrackSizingCode from '../examples/WithTrackSizing.tsx?raw'
 import { getPage, section } from '../examples.ts'
@@ -12,23 +10,19 @@ import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
 
 const page = getPage('feature-colors-and-labels')
-const sec0 = section(page, 'with-track-color-shorthand')
-const sec1 = section(page, 'with-jexl-feature-colors-and-labels')
-const sec2 = section(page, 'track-sizing')
-const sec3 = section(page, 'with-feature-highlights')
+const sec0 = section(page, 'with-jexl-feature-colors-and-labels')
+const sec1 = section(page, 'track-sizing')
+const sec2 = section(page, 'with-feature-highlights')
 ---
 
 <Layout page={page}>
-  <Section {...sec0} code={WithTrackColorShorthandCode}>
-    <WithTrackColorShorthand client:only="react" />
-  </Section>
-  <Section {...sec1} code={WithJexlFeatureColorsAndLabelsCode}>
+  <Section {...sec0} code={WithJexlFeatureColorsAndLabelsCode}>
     <WithJexlFeatureColorsAndLabels client:only="react" />
   </Section>
-  <Section {...sec2} code={WithTrackSizingCode}>
+  <Section {...sec1} code={WithTrackSizingCode}>
     <WithTrackSizing client:only="react" />
   </Section>
-  <Section {...sec3} code={WithFeatureHighlightsCode}>
+  <Section {...sec2} code={WithFeatureHighlightsCode}>
     <WithFeatureHighlights client:only="react" />
   </Section>
 </Layout>

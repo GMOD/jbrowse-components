@@ -15,19 +15,22 @@ export default function DefaultSession() {
         name: 'Volvox genes',
         uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
       },
-      {
-        trackId: 'volvox-long-reads-sv-bam',
-        name: 'volvox-long reads with SV',
-        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-long-reads-sv.bam',
-      },
     ],
     defaultSession: {
-      name: 'My session',
+      name: 'A session with a track of its own',
+      sessionTracks: [
+        {
+          trackId: 'my-long-reads',
+          name: 'Long reads I opened',
+          assemblyNames: ['volvox'],
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-long-reads-sv.bam',
+        },
+      ],
       view: {
         type: 'LinearGenomeView',
         loc: 'ctgA:1105..1221',
         assembly: 'volvox',
-        tracks: ['volvox-long-reads-sv-bam'],
+        tracks: ['volvox_gff3', 'my-long-reads'],
       },
     },
   })
