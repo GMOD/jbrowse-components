@@ -1,17 +1,77 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import {
+  colorDomainEndsSlots,
+  colorLabelsSlot,
+  colorRampSlots,
+  normalizeChannel,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import {
+  SOURCE_CHROM_PALETTE,
+  SOURCE_CHROM_RANK_LABELS,
+} from './components/drawSourceChrom.ts'
 import { MAF_COLOR_FIELDS } from './rowRenderings.ts'
+
+import type { MafColorField } from './rowRenderings.ts'
+import type { FieldPresets } from '@jbrowse/display-kit/colorConfigSchema'
+
+const BASE_KEYS = ['A', 'C', 'G', 'T', 'N', 'gap'] as const
+
+/**
+ * Each field's one scale and what it reads while the config leaves a member
+ * unwritten. The bases and the codons list no `range`, so they paint the
+ * theme's colours.
+ */
+export const MAF_FIELD_PRESETS = {
+  mismatch: {
+    scale: 'categorical',
+    domain: [...BASE_KEYS, 'match'],
+    title: 'Mismatch to reference',
+  },
+  base: {
+    scale: 'categorical',
+    domain: BASE_KEYS,
+    title: 'Base',
+  },
+  identity: {
+    scale: 'linear',
+    domainMin: 0,
+    domainMax: 1,
+    scheme: 'redgreyblue',
+    title: 'Per-base identity to reference',
+  },
+  chromosome: {
+    scale: 'categorical',
+    domain: SOURCE_CHROM_PALETTE.map((_, rank) => String(rank)),
+    range: SOURCE_CHROM_PALETTE,
+    labels: SOURCE_CHROM_RANK_LABELS,
+    title: 'Source chromosome',
+  },
+  codon: {
+    scale: 'categorical',
+    domain: ['nonsyn', 'syn', 'stop'],
+    labels: ['Nonsynonymous', 'Synonymous', 'Stop gained'],
+    title: 'Codon change',
+  },
+} as const satisfies FieldPresets<'categorical' | 'linear'> &
+  Record<MafColorField, unknown>
 
 /**
  * #config MafColor
  * #category display
  * The MAF display's `color`: what colours each species row's aligned cells.
  * `mismatch` paints a base only where it differs from the reference,
- * `base` every base, `identity` the mean identity to the reference on a
- * red-to-blue ramp, `chromosome` each block by the rank of its source
- * chromosome within the row, and `codon` each codon by its amino-acid change,
- * given an `annotationAdapter`. A string is the field.
+ * `base` every base, `identity` the mean identity to the reference along a
+ * ramp, `chromosome` each block by the rank of its source chromosome within
+ * the row, and `codon` each codon by its amino-acid change, given an
+ * `annotationAdapter`. A string is the field. Each field has one scale:
+ * `identity` runs from `domainMin` 0 to `domainMax` 1 along the
+ * `redgreyblue` scheme, and the others are categorical. The bases and the
+ * codons paint the theme's colours. The slots are the shared colour object's,
+ * so `jbrowse validate` and "Edit plot..." judge them as they judge any other
+ * display's.
  *
  * #example
  * ```js
@@ -20,10 +80,18 @@ import { MAF_COLOR_FIELDS } from './rowRenderings.ts'
  * ```js
  * { type: 'LinearMafDisplay', color: 'identity', y: 'identity' }
  * ```
+ * ```js
+ * {
+ *   type: 'LinearMafDisplay',
+ *   color: { field: 'identity', domainMin: 0.7, scheme: 'viridis' },
+ * }
+ * ```
  */
 export const mafColorConfigSchema = ConfigurationSchema(
   'MafColor',
   {
+    ...colorRampSlots,
+    ...colorDomainEndsSlots,
     /**
      * #slot field
      */
@@ -34,6 +102,63 @@ export const mafColorConfigSchema = ConfigurationSchema(
       description:
         'what colours a cell: mismatch, base, identity, chromosome or codon',
     },
+    /**
+     * #slot domain
+     */
+    domain: {
+      type: 'stringArray',
+      defaultValue: [],
+      description:
+        'the values the key lists, in order: under chromosome each rank from 0, the main source chromosome; under codon nonsyn, syn and stop',
+    },
+    /**
+     * #slot range
+     */
+    range: {
+      type: 'colorArray',
+      defaultValue: [],
+      description:
+        "CSS colours: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colours",
+    },
+    ...colorLabelsSlot,
+    /**
+     * #slot title
+     */
+    title: {
+      type: 'maybeString',
+      description:
+        'key title; unset is the field\'s own heading, "" draws none',
+    },
+    /**
+     * #slot scheme
+     */
+    scheme: {
+      type: 'maybeStringEnum',
+      model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
+      description:
+        "the named ramp identity runs along; unset is redgreyblue, and range's colours, where it lists any, win over it",
+    },
+    /**
+     * #slot domainMin
+     */
+    domainMin: {
+      type: 'maybeNumber',
+      description:
+        "the identity the ramp's low end paints, 0 to 1; unset is 0, and 0.7 spreads the ramp over close relatives",
+    },
+    /**
+     * #slot domainMax
+     */
+    domainMax: {
+      type: 'maybeNumber',
+      description: "the identity the ramp's high end paints; unset is 1",
+    },
   },
-  { shorthand: 'field', closed: true },
+  {
+    shorthand: 'field',
+    closed: true,
+    fieldPresets: MAF_FIELD_PRESETS,
+    preProcessSnapshot: (snap: Record<string, unknown> | undefined) =>
+      normalizeChannel(snap, 'color'),
+  },
 )

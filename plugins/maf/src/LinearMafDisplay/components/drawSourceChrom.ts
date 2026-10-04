@@ -29,7 +29,7 @@ export function sourceChromRankColor(rank: number): string {
 
 // Descriptive legend labels paired with the palette (index = rank). Tail ranks
 // reuse the last "other" label, matching the clamped color.
-const RANK_LABELS = [
+export const SOURCE_CHROM_RANK_LABELS = [
   'Main chromosome',
   '2nd source',
   '3rd source',
@@ -38,7 +38,9 @@ const RANK_LABELS = [
 ]
 
 export function sourceChromRankLabel(rank: number): string {
-  return RANK_LABELS[Math.min(rank, RANK_LABELS.length - 1)]!
+  return SOURCE_CHROM_RANK_LABELS[
+    Math.min(rank, SOURCE_CHROM_RANK_LABELS.length - 1)
+  ]!
 }
 
 /**
