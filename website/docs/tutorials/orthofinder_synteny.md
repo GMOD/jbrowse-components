@@ -432,7 +432,7 @@ you supply.
 - [](/docs/config_guides/synteny_track)
 - [](/docs/config/mcscanblocksadapter)
 
-## References
+## Citations
 
 - Emms and Kelly (2019).
   [OrthoFinder: phylogenetic orthology inference for comparative genomics](https://doi.org/10.1186/s13059-019-1832-y)

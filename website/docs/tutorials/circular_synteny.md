@@ -425,7 +425,7 @@ bash build_circular_synteny.sh
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/gene_density)
 
-## References
+## Citations
 
 - Kent WJ, Baertsch R, Hinrichs A, Miller W, Haussler D. Evolution's cauldron:
   duplication, deletion, and rearrangement in the mouse and human genomes. Proc

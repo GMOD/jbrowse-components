@@ -415,11 +415,8 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig, 10kb base and f
 - [](/docs/tutorials/dog10k_svs)
 - [](/docs/user_guides/clustering)
 
-## References
+## External links
 
-- Shen & Kidd (2020).
-  [Rapid, Paralog-Sensitive CNV Analysis of 2457 Human Genomes Using QuicK-mer2](https://doi.org/10.3390/genes11020141),
-  the citation for the copy-number data used throughout this page
 - [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG), the Kidd lab track
   hub these files come from, and
   [KiddLab/QuicK-mer2](https://github.com/KiddLab/QuicK-mer2), the caller that
@@ -427,8 +424,14 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig, 10kb base and f
 - [The QuicK-mer2 tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md),
   one sample from CRAM to copy number, with the lab's own output to check
   against
+- [Zarr v3 specification](https://zarr-specs.readthedocs.io/en/latest/v3/core/index.html)
+
+## Citations
+
+- Shen & Kidd (2020).
+  [Rapid, Paralog-Sensitive CNV Analysis of 2457 Human Genomes Using QuicK-mer2](https://doi.org/10.3390/genes11020141),
+  the citation for the copy-number data used throughout this page
 - [1000 Genomes phase 3 integrated SV map](https://doi.org/10.1038/nature15394)
 - Logsdon et al. (2025).
   [Complex genetic variation in nearly complete human genomes](https://doi.org/10.1038/s41586-025-09140-6),
   the HGSVC3 structural variant calls in the nested deletion figure
-- [Zarr v3 specification](https://zarr-specs.readthedocs.io/en/latest/v3/core/index.html)

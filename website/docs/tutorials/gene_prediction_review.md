@@ -218,7 +218,7 @@ at _PI4KA_ returns two genes on opposite strands.
 - [](/docs/config_guides/file_types)
 - [](/docs/tutorials/rnaseq)
 
-## References
+## Citations
 
 - Gabriel L, Becker F, Hoff KJ, Stanke M. Tiberius: end-to-end deep learning
   with an HMM for gene prediction. _Bioinformatics_ 40(12) (2024).

@@ -197,10 +197,13 @@ top row to where it maps on the bottom.
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/dotplot_view)
 
-## References
+## External links
 
 - The Q100 / T2T-HG002 assembly releases, including v1.2 and the chains between
   the haplotypes. https://github.com/marbl/HG002
+
+## Citations
+
 - Hansen, N. F. _et al._ A complete diploid human genome benchmark for
   personalized genomics. _Cell_ (2026).
   https://doi.org/10.1016/j.cell.2026.06.016

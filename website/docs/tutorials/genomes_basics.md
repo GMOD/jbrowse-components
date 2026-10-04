@@ -222,7 +222,11 @@ sequenced.
 - [](/docs/user_guides/hub_url)
 - [](/docs/agents_hosted_data)
 
-## References
+## External links
+
+- [UCSC hg38 conservation downloads](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/)
+
+## Citations
 
 - [Pollard KS et al. Detection of nonneutral substitution rates on mammalian phylogenies. _Genome Res_ 2010](https://pmc.ncbi.nlm.nih.gov/articles/PMC2798823/),
   the phyloP method
@@ -232,4 +236,3 @@ sequenced.
   which hotspot residues contact the DNA and which hold the structure
 - [Liao WW et al. A draft human pangenome reference. _Nature_ 2023](https://pubmed.ncbi.nlm.nih.gov/37165242/),
   the HPRC assemblies the pangenome callset is built from
-- [UCSC hg38 conservation downloads](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/)

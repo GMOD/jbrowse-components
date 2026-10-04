@@ -327,11 +327,14 @@ bash build_primate_orthologs.sh
 - [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/allvsall_synteny)
 
-## References
+## External links
+
+- NCBI Datasets: https://www.ncbi.nlm.nih.gov/datasets/
+
+## Citations
 
 - Yoo D, Rhie A, et al. Complete sequencing of ape genomes. Nature (2025).
   https://doi.org/10.1038/s41586-025-08816-3
 - O'Leary NA, et al. Reference sequence (RefSeq) database at NCBI: current
   status, taxonomic expansion, and functional annotation. Nucleic Acids Res
   (2016). https://doi.org/10.1093/nar/gkv1189
-- NCBI Datasets: https://www.ncbi.nlm.nih.gov/datasets/

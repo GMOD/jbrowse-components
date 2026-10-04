@@ -291,7 +291,7 @@ npx --yes serve cancer_sv_build/jbrowse2
 - [](/docs/user_guides/sv_visualization)
 - [](/docs/tutorials/sv_visualization_cgiab)
 
-## References
+## Citations
 
 - Nattestad M, et al. Complex rearrangements and oncogene amplifications
   revealed by long-read DNA and RNA sequencing of a breast cancer cell line.

@@ -359,7 +359,7 @@ bash build_syri_synteny.sh my_syri rows.txt
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/alu_age)
 
-## References
+## Citations
 
 - Goel M, Sun H, Jiao WB, Schneeberger K. SyRI: finding genomic rearrangements
   and local sequence differences from whole-genome assemblies. Genome Biol

@@ -557,7 +557,7 @@ skips.
 <Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane, the MAF's strain rows, and the graph track, which cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 has and the other four skip, their MAF rows breaking across it." src="/img/pangenome/pggb_bubble_tier.png" />
 
 Right-click the IS5 node in the graph track and take **Open in K12**, the route
-[the HPRC page](/docs/tutorials/pangenome_hprc#check-it-on-the-haplotype)
+[the HPRC page](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
 describes for a haplotype. A segment K12 never walks sits on its strain's own
 coordinates: type `chr:1,004,500-1,004,961`, right-click the 75 bp CFT073
 segment and pick **Open in CFT073**.
@@ -634,5 +634,8 @@ time grows with the square of the genome count.
 - [](/docs/user_guides/maf_track)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/developer_guides/pif_format)
+
+## External links
+
 - [pggb](https://github.com/pangenome/pggb)
 - [odgi](https://odgi.readthedocs.io/)

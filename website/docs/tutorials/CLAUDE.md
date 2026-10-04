@@ -224,8 +224,17 @@ flat alphabetical list, so the first word is the only thing grouping it:
 the page's real name; a page needs a `sidebar_label` only when the title does
 not already sort where it belongs.
 
-A page closes with `## See also`, then `## References`. Nothing below them.
-`## Reproduce it end to end` goes after the data preparation it wraps up.
+A page closes with `## See also`, `## External links`, then `## Citations`, each
+only when it has entries, and nothing below them but footnotes.
+`check-page-endings` holds the order. `## Reproduce it end to end` goes after
+the data preparation it wraps up.
+
+- **See also** links pages on jbrowse.org, ours: other tutorials, guides, the
+  storybook.
+- **External links** are everything off-site: a tool's repo or manual, a data
+  portal, a format spec, a plugin's GitHub page.
+- **Citations** are papers and the citations a resource asks for
+  (RepeatMasker's), one per bullet with its DOI.
 
 **A `See also` entry is a bare link and nothing else**, one per bullet, text =
 page title. Relaxing this to allow a short qualifier has been tried, and the

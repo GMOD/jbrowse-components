@@ -241,7 +241,7 @@ two `batch` runs, each with the `--loc` list `batch` builds for that row.
 - [](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/sv_visualization)
 
-## References
+## Citations
 
 - Valle-Inclán JE, et al. A multi-platform reference for somatic structural
   variation detection. _Cell Genomics_ (2022).

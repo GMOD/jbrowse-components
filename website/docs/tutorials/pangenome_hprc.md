@@ -2,7 +2,7 @@
 title:
   "Pangenome (HPRC) part 1: the graph's alleles and the haplotypes that have
   them"
-sidebar_label: Pangenome (HPRC 1, graph alleles and haplotypes)
+sidebar_label: Pangenome (HPRC pt 1, graph alleles and haplotypes)
 description:
   Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of
   the linear view, trace an allele to the assembly it came from, list every
@@ -108,7 +108,7 @@ The graph has four kinds of object:
 The dashed arc in the labelled bubble is the route of a haplotype with one fewer
 C4 copy than GRCh38.
 
-## From an allele to its haplotype
+## The stretch of GRCh38 an allele replaces
 
 Type `chr6:32,500,000-32,560,000`, the MHC class II window. The charcoal node
 beside _HLA-DRB5_ is an allele much shorter than the stretch of backbone it
@@ -117,14 +117,15 @@ span of GRCh38 it replaces, which covers most of _HLA-DRB5_.
 
 <Figure caption="MHC class II with the graph track in the force-directed layout, colored by reference position. The ringed charcoal node is the allele beside HLA-DRB5, with its right-click menu open on Highlight in hg38." src="/img/pangenome/hprc_mhc_layout_force.png" />
 
-## Check it on the haplotype
+## Opening the haplotype an allele came from
 
-Left-click the allele. Its details give `contributingHaplotype`, `NA20809#2`:
-the graph's `SN` tag names the assembly minigraph first took the allele from.
-**Open in** appears when the session holds an assembly named or aliased
-`sample#haplotype`. The launch's config declares every release 2 haplotype that
-way; to declare one yourself, load its contig sizes, or its FASTA, under a name
-the browser shows and an alias that is the graph's name:
+Left-click the charcoal allele beside _HLA-DRB5_. Its details give
+`contributingHaplotype`, `NA20809#2`: the graph's `SN` tag names the assembly
+minigraph first took the allele from. **Open in** appears when the session holds
+an assembly named or aliased `sample#haplotype`. The launch's config declares
+every release 2 haplotype that way; to declare one yourself, load its contig
+sizes, or its FASTA, under a name the browser shows and an alias that is the
+graph's name:
 
 ```json addassembly
 {
@@ -263,11 +264,8 @@ walks through it.
 - [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cattle)
 
-## References
+## External links
 
-- [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the release this
-  page opens: the Minigraph-Cactus graph, the multiple alignment and the VCFs
-  `vg deconstruct` writes from the graph.
 - Li H.
   [The rGFA format](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md) and
   [gfatools](https://github.com/lh3/gfatools), which define the `SN`/`SO`/`SR`
@@ -275,3 +273,9 @@ walks through it.
   bubbles it reads.
 - [taffy](https://github.com/ComparativeGenomicsToolkit/taffy), which writes the
   `.tai` index that makes the alignment addressable by locus.
+
+## Citations
+
+- [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the release this
+  page opens: the Minigraph-Cactus graph, the multiple alignment and the VCFs
+  `vg deconstruct` writes from the graph.

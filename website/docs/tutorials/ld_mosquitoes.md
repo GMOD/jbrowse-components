@@ -278,7 +278,7 @@ npx --yes serve ag1000g_ld_build/jbrowse2
 - [](/docs/config_guides/variant_track)
 - [](/docs/config_guides/grouping_and_ordering)
 
-## References
+## Citations
 
 - Anopheles gambiae 1000 Genomes Consortium (2020).
   [Genome variation and population structure among 1142 mosquitoes of the African malaria vector species Anopheles gambiae and Anopheles coluzzii](https://doi.org/10.1101/gr.262790.120)

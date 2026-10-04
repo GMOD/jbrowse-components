@@ -363,7 +363,7 @@ bash build_dog10k_igf1.sh       # writes ./dog10k_igf1_build/
 - [](/docs/user_guides/gwas_track)
 - [](/docs/config_guides/variant_track)
 
-## References
+## Citations
 
 - Bhatia et al. (2013).
   [Estimating and interpreting FST: the impact of rare variants](https://doi.org/10.1101/gr.154831.113)

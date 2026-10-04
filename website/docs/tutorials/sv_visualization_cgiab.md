@@ -860,7 +860,7 @@ take hours.
 - [](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/quantitative_track)
 
-## References
+## Citations
 
 - Bailey et al. (2016).
   [Genomic analyses identify molecular subtypes of pancreatic cancer](https://doi.org/10.1038/nature16965)

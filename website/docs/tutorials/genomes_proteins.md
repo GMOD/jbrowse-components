@@ -245,17 +245,20 @@ The approach is described in
 - [](/docs/tutorials/genomes_basics)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/tp53_structures)
+
+## External links
+
 - [JBrowseMSA user guide](https://github.com/GMOD/JBrowseMSA/blob/main/docs/user_guide.md)
 - [jbrowse-plugin-protein3d](https://github.com/GMOD/jbrowse-plugin-protein3d)
 - [jbrowse-plugin-msaview](https://github.com/GMOD/jbrowse-plugin-msaview)
 - [g2p_mapper](https://github.com/cmdcolin/g2p_mapper)
-
-## References
-
 - [AlphaFold DB](https://alphafold.ebi.ac.uk/)
 - [UniProt](https://www.uniprot.org/)
 - [NCBI Datasets gene orthologs](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/)
 - [NCBI Conserved Domain Database](https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml)
 - [Proteins in the Genome Browser](https://github.com/GMOD/proteinbrowser)
+
+## Citations
+
 - Broz P, Dixit VM. Inflammasomes: mechanism of assembly, regulation and
   signalling. _Nat Rev Immunol_ 2016.

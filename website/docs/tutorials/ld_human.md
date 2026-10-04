@@ -452,7 +452,7 @@ correlates them.
 - [](/docs/user_guides/gwas_track)
 - [Variant track configuration](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display)
 
-## References
+## Citations
 
 - 1000 Genomes Project Consortium (2015).
   [A global reference for human genetic variation](https://doi.org/10.1038/nature15393)

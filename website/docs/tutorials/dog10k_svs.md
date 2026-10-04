@@ -545,7 +545,7 @@ bash build_dog10k_fgf4_synteny.sh
 - [](/docs/user_guides/sv_visualization)
 - [](/docs/user_guides/linear_synteny_view)
 
-## References
+## Citations
 
 - Axelsson et al. (2013).
   [The genomic signature of dog domestication reveals adaptation to a starch-rich diet](https://doi.org/10.1038/nature11837)

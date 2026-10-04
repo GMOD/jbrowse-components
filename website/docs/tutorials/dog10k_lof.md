@@ -358,7 +358,7 @@ bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)
 
-## References
+## Citations
 
 - Meadows et al. (2023).
   [Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7)

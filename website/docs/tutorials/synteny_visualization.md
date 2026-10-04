@@ -280,7 +280,7 @@ the tools under [Prerequisites](#prerequisites).
 - [](/docs/tutorials/circular_synteny)
 - [](/docs/config_guides/maf_track)
 
-## References
+## Citations
 
 - Diesh et al. (2024).
   [Setting Up the JBrowse 2 Genome Browser](https://doi.org/10.1002/cpz1.1120)

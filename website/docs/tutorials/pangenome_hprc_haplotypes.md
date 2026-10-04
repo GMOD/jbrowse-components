@@ -1,6 +1,6 @@
 ---
 title: 'Pangenome (HPRC) part 2: haplotypes against each other'
-sidebar_label: Pangenome (HPRC 2, haplotypes against each other)
+sidebar_label: Pangenome (HPRC pt 2, haplotypes against each other)
 description:
   Draw HPRC haplotypes as lanes in assembly coordinates, aligned to each other
   by the release's pangenome graph, at a CFH deletion, a C4 duplication, the
@@ -345,7 +345,14 @@ builds the gbz-base database for a graph of your own.
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/config_guides/grouping_and_ordering)
 
-## References
+## External links
+
+- Li H. [gfatools](https://github.com/lh3/gfatools), whose `bubble` subcommand
+  flags the inversion.
+- [gbz-base](https://github.com/jltsiren/gbz-base), which stores a GBZ as the
+  SQLite database a window is range-requested out of.
+
+## Citations
 
 - [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the release
   whose graph, assemblies and CAT annotations this page reads.
@@ -357,7 +364,3 @@ builds the gbz-base database for a graph of your own.
   https://doi.org/10.1126/science.adn0609
 - Li H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics
   (2018). https://doi.org/10.1093/bioinformatics/bty191
-- Li H. [gfatools](https://github.com/lh3/gfatools), whose `bubble` subcommand
-  flags the inversion.
-- [gbz-base](https://github.com/jltsiren/gbz-base), which stores a GBZ as the
-  SQLite database a window is range-requested out of.

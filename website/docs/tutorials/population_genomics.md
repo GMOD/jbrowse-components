@@ -452,7 +452,7 @@ JBrowse Desktop.
 - [](/docs/config_guides/grouping_and_ordering)
 - [](/docs/jbrowse_anywidget)
 
-## References
+## Citations
 
 - Bhatia et al. (2013).
   [Estimating and interpreting FST: the impact of rare variants](https://doi.org/10.1101/gr.154831.113)

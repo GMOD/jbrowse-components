@@ -290,7 +290,11 @@ bash build_ecoli_orthologs.sh
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/pangenome_ecoli)
 
-## References
+## External links
+
+- NCBI Datasets: https://www.ncbi.nlm.nih.gov/datasets/
+
+## Citations
 
 - Li W, et al. RefSeq: expanding the Prokaryotic Genome Annotation Pipeline
   reach with protein family model curation. Nucleic Acids Res (2021).
@@ -298,4 +302,3 @@ bash build_ecoli_orthologs.sh
 - Touchon M, et al. Organised genome dynamics in the Escherichia coli species
   results in highly diverse adaptive paths. PLoS Genet (2009).
   https://doi.org/10.1371/journal.pgen.1000344
-- NCBI Datasets: https://www.ncbi.nlm.nih.gov/datasets/

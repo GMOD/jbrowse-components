@@ -351,7 +351,7 @@ step, and the minimum empirical FDR beside the regular-FDR count.
 - [](/docs/config_guides/jexl)
 - [](/docs/tutorials/rnaseq)
 
-## References
+## Citations
 
 - Gilis J, Vitting-Seerup K, Van den Berge K, Clement L.
   [satuRn: Scalable analysis of differential transcript usage for bulk and single-cell RNA-sequencing applications](https://doi.org/10.12688/f1000research.51749.1).

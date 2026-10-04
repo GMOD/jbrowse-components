@@ -179,7 +179,7 @@ graph back with **Display types → Graph**.
 A node's right-click menu offers **Open in** the haplotype named in its rGFA id,
 such as `NA20809#2#CM094351.1`, when the session holds an assembly named or
 aliased `sample#haplotype`, here `NA20809#2`.
-[The HPRC tutorial](/docs/tutorials/pangenome_hprc#check-it-on-the-haplotype)
+[The HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
 takes that route.
 
 ## Checking the index against the graph
@@ -392,16 +392,19 @@ bash build_hprc_gbz_index.sh out
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/user_guides/graph_genome_view)
 
-## References
+## External links
 
 - Li H.
   [The rGFA format](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md) and
   [gfatools](https://github.com/lh3/gfatools): the `SN`/`SO`/`SR` tags and the
   bubble calls.
-- [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the worked
-  example here.
 - [gbz-base](https://github.com/jltsiren/gbz-base): a GBZ as a SQLite database,
   range-requested per window.
+
+## Citations
+
+- [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the worked
+  example here.
 
 [^awk]:
     BSD awk, the macOS default, takes hours on a large table where GNU awk takes

@@ -278,9 +278,7 @@ since an unnormalized group's height tracks its cell count.
 - [](/docs/user_guides/clustering)
 - [](/docs/tutorials/chromhmm)
 
-## References
-
-Pseudobulk / coverage tools:
+## External links
 
 - [SnapATAC2 `export_coverage`](https://scverse.org/SnapATAC2/version/dev/api/_autosummary/snapatac2.ex.export_coverage.html)
 - [ArchR: exporting pseudobulk BigWigs (`getGroupBW`)](https://www.archrproject.com/bookdown/exporting-pseudo-bulked-data-to-a-bigwig-file.html)
@@ -288,12 +286,12 @@ Pseudobulk / coverage tools:
   and its
   [normalization methods](https://github.com/deeptools/deepTools/wiki/Normalizations)
 - [sinto `filterbarcodes` (split BAM by barcode/label)](https://timoast.github.io/sinto/basic_usage.html)
-
-Reference datasets:
-
 - [SnapATAC2's 5k PBMC scATAC dataset](https://scverse.org/SnapATAC2/api/_autosummary/snapatac2.datasets.pbmc5k.html),
   the 10x Genomics experiment this page pseudobulks, in its clustered and
   cell-type-annotated form
+
+## Citations
+
 - [CATlas: a single-cell atlas of chromatin accessibility in the human genome (Zhang et al., Cell 2021)](https://www.sciencedirect.com/science/article/pii/S0092867421012794)
   · [resource portal](https://www.catlas.org/), the published atlas a track
   reads without building anything

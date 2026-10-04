@@ -80,11 +80,11 @@ The palette button in the same header sets what ribbons are colored by.
 
 ## The TNNT3 rearrangement
 
-_TNNT3_ is the locus from Fig 5C of the T2T human variation paper. Against
-GRCh38 the region reads as an inversion plus a deletion that ablates _LINC01150_
-in every individual; against T2T-CHM13 that segment is intact on the other side
-of _TNNT3_ in the opposite orientation. Colored by strand, it is the one
-off-color ribbon.
+_TNNT3_ is the locus from Fig 5C of Aganezov et al. (2022). Against GRCh38 the
+region reads as an inversion plus a deletion that ablates _LINC01150_ in every
+individual; against T2T-CHM13 that segment is intact on the other side of
+_TNNT3_ in the opposite orientation. Colored by strand, it is the one off-color
+ribbon.
 
 <Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each. It sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13, and the purple ribbon joining the two shaded spans is the segment that moved." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
@@ -192,10 +192,11 @@ lanes.
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/dotplot_view)
-- [The T2T human variation paper](https://www.science.org/doi/10.1126/science.abl3533)
 
-## References
+## Citations
 
+- Aganezov S, et al. A complete reference genome improves analysis of human
+  genetic variation. Science (2022). https://doi.org/10.1126/science.abl3533
 - Freeman HC, Hugill A, Dear NT, Ashcroft FM, Cox RD. Deletion of nicotinamide
   nucleotide transhydrogenase: a new quantitive trait locus accounting for
   glucose intolerance in C57BL/6J mice. Diabetes (2006).

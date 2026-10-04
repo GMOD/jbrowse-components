@@ -369,7 +369,7 @@ tracks over NA12878. Given your own reads,
 - [](/docs/tutorials/sv_multisamples)
 - [](/docs/quickstart_web)
 
-## References
+## Citations
 
 - Byrska-Bishop M, et al.
   [High-coverage whole-genome sequencing of the expanded 1000 Genomes Project cohort including 602 trios](https://doi.org/10.1016/j.cell.2022.08.004).

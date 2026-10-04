@@ -369,7 +369,7 @@ shared with the [mutation cohort](/docs/tutorials/tcga_cohort_mutations).
 - [](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/config_guides/jexl)
 
-## References
+## External links
 
 - [GDC Data Portal](https://portal.gdc.cancer.gov/)
 - [GDC API documentation](https://docs.gdc.cancer.gov/API/Users_Guide/Getting_Started/)

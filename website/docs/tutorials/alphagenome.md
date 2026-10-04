@@ -265,15 +265,14 @@ returns the same stored arrays with fresh URLs.
 - [](/docs/tutorials/tp53_structures)
 - [](/docs/config_guides/plugins)
 
-## References
+## Citations
 
-Avsec Ž, et al. AlphaGenome: advancing regulatory variant effect prediction with
-a unified DNA sequence model. bioRxiv (2025).
-https://doi.org/10.1101/2025.06.25.661532
-
-Mansour MR, et al. An oncogenic super-enhancer formed through somatic mutation
-of a noncoding intergenic element. Science 346:1373-1377 (2014).
-https://doi.org/10.1126/science.1259037
+- Avsec Ž, et al. AlphaGenome: advancing regulatory variant effect prediction
+  with a unified DNA sequence model. bioRxiv (2025).
+  https://doi.org/10.1101/2025.06.25.661532
+- Mansour MR, et al. An oncogenic super-enhancer formed through somatic mutation
+  of a noncoding intergenic element. Science 346:1373-1377 (2014).
+  https://doi.org/10.1126/science.1259037
 
 [^license]:
     The plugin is Apache-2.0. AlphaGenome's API is

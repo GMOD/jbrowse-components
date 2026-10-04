@@ -561,4 +561,7 @@ container runtime off `PATH`, docker first; force one with
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/maf_track)
+
+## External links
+
 - [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)

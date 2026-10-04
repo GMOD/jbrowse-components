@@ -243,7 +243,7 @@ The script downloads both genomes, runs the alignment, indexes it, and writes
 - [](/docs/agents_live_model)
 - [](/docs/tutorials/synteny_visualization)
 
-## References
+## Citations
 
 - Chakraborty M, et al. Evolution of genome structure in the _Drosophila
   simulans_ species complex. _Genome Research_ 31:380-396 (2021).

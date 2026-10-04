@@ -1,6 +1,6 @@
 ---
 title: 'Pangenome (HPRC) part 3: repeat lengths across haplotypes'
-sidebar_label: Pangenome (HPRC 3, repeat lengths)
+sidebar_label: Pangenome (HPRC pt 3, repeat lengths)
 description:
   Count kringle copies in LPA and tell their two repeat types apart, measure the
   ABCA7 VNTR in HPRC haplotypes straight from the graph's walks, then set TRGT's
@@ -394,7 +394,7 @@ duckdb -json -c "
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 
-## References
+## Citations
 
 - Schmidt K, Noureen A, Kronenberg F, Utermann G. Structure, function, and
   genetics of lipoprotein(a). J Lipid Res. 2016;57(8):1339-1359.

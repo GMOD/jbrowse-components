@@ -319,7 +319,11 @@ the tables it writes under
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/user_guides/linear_synteny_view)
 
-## References
+## External links
+
+- odp, the oxford dot plot toolkit: https://github.com/conchoecia/odp
+
+## Citations
 
 - Schultz DT, Haddock SHD, Bredeson JV, Green RE, Simakov O, Rokhsar DS. Ancient
   gene linkages support ctenophores as sister to other animals. Nature (2023).
@@ -327,4 +331,3 @@ the tables it writes under
 - Simakov O, Bredeson J, Berkoff K, et al. Deeply conserved synteny and the
   evolution of metazoan chromosomes. Sci Adv (2022).
   https://doi.org/10.1126/sciadv.abi5884
-- odp, the oxford dot plot toolkit: https://github.com/conchoecia/odp

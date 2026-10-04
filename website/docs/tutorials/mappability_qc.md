@@ -322,7 +322,7 @@ locus added to its `LOCI` list the same way.
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/read_marks)
 
-## References
+## Citations
 
 - Li H, Handsaker B, Wysoker A, et al.
   [The Sequence Alignment/Map format and SAMtools](https://doi.org/10.1093/bioinformatics/btp352).

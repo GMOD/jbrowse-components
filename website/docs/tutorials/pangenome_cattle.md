@@ -108,10 +108,12 @@ opens the chromosome as
 
 <Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
 
-BoLA, the densest stretch of chr23, came out of the same ranking the
-[mouse page](/docs/tutorials/pangenome_mouse#finding-the-loci) describes, which
-ranks the coarse tier by segments per bubble and names each entry off the
-reference annotation.
+The curve peaks over BoLA, the bovine major histocompatibility complex, and the
+heat shock gene _HSPA1A_ in the next section lies inside it. The portal's
+**Loci** table lists stretches like this one across the genome, ranked by
+segments per bubble; the
+[mouse page](/docs/tutorials/pangenome_mouse#finding-the-loci) explains the
+ranking.
 
 ## HSPA1A in the graph and the callset
 
@@ -324,7 +326,7 @@ bash build_omia_cattle_variants.sh
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_prepare_graph)
 
-## References
+## Citations
 
 - Leonard AS, Crysnanto D, Fang ZH, Heaton MP, Vander Ley BL, Herrera C,
   Bollwein H, Bickhart DM, Kuhn KL, Smith TPL, Rosen BD, Pausch H. Structural

@@ -258,7 +258,7 @@ The script needs the tools under [Prerequisites](#prerequisites) on PATH.
 - [](/docs/tutorials/orthofinder_synteny)
 - [](/docs/tutorials/hg002_haplotypes)
 
-## References
+## Citations
 
 - Peng, Y. _et al._ Reference genome assemblies reveal the origin and evolution
   of allohexaploid oat. _Nature Genetics_ 54, 1248-1258 (2022).

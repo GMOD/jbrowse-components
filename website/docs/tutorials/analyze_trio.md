@@ -300,7 +300,7 @@ opens `khv_trio_build/jbrowse2/config.json` directly.
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)
 
-## References
+## Citations
 
 - 1000 Genomes Project Consortium (2015).
   [A global reference for human genetic variation](https://doi.org/10.1038/nature15393)

@@ -258,7 +258,7 @@ the ones under [Prerequisites](#prerequisites).
 - [](/docs/cli)
 - [](/docs/quickstart_web)
 
-## References
+## Citations
 
 - Lander et al. (2001).
   [Initial sequencing and analysis of the human genome](https://doi.org/10.1038/35057062)

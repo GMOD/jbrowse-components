@@ -368,7 +368,7 @@ project.
 - [](/docs/tutorials/dog10k_selection)
 - [](/docs/config_guides/jexl)
 
-## References
+## External links
 
 - [GDC Data Portal](https://portal.gdc.cancer.gov/)
 - [GDC MAF format](https://docs.gdc.cancer.gov/Data/File_Formats/MAF_Format/)

@@ -328,7 +328,7 @@ Phytozome annotation of the same genomes.
 - [](/docs/config/mcscananchorsadapter)
 - [](/docs/config/mcscansimpleanchorsadapter)
 
-## References
+## Citations
 
 - Tang et al. (2008).
   [Unraveling ancient hexaploidy through multiply-aligned angiosperm gene maps](https://doi.org/10.1101/gr.080978.108),

@@ -285,4 +285,7 @@ which coerce, rather than `==`.
 - [](/docs/tutorials/cancer_sv)
 - [](/docs/tutorials/k562_fusions)
 - [](/docs/user_guides/sv_visualization)
+
+## External links
+
 - [HiGlass](https://higlass.io/)

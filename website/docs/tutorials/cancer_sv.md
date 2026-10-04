@@ -322,7 +322,7 @@ npx --yes serve cancer_sv_build/jbrowse2
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/tutorials/sv_visualization_cgiab)
 
-## References
+## Citations
 
 - Valle-Inclán JE, et al. A multi-platform reference for somatic structural
   variation detection. _Cell Genomics_ (2022).

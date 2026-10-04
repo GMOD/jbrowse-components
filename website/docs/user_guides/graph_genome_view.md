@@ -297,7 +297,7 @@ Anchored and Sample rows both need a backbone, from rGFA tags or from a
 reference path. A graph with neither greys them out. Force-directed is then the
 only layout available, and it draws the classic Bandage picture with alternate
 alleles as bubbles. The
-[MHC figure](/docs/tutorials/pangenome_hprc#from-an-allele-to-its-haplotype)
+[MHC figure](/docs/tutorials/pangenome_hprc#the-stretch-of-grch38-an-allele-replaces)
 shows it under the lanes of the same window.
 
 **Rank** is minigraph's `SR` tag, and it counts build order. Rank 0 is the first
@@ -532,7 +532,7 @@ matching region**, so either view opens a strain the same way.
 On HPRC's graph the contributors are its 464 haplotypes, and the config the HPRC
 page on genomes.jbrowse.org opens declares every one as an assembly under its
 PanSN name, so a node there offers the haplotype that contributed it.
-[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#check-it-on-the-haplotype)
+[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
 opens one this way.
 
 <Figure caption="Top: the graph view's Launch menu over a 50 kb K12 window. Each strain's entry names the locus it contributes, in that strain's coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, here with curved ribbons, transparent indels and Follow switched on so each row tracks the K12 window above it." src="/img/pangenome/rgfa_launch_out_menu.png" />

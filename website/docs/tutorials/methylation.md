@@ -212,4 +212,7 @@ samtools index haplotagged.bam
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/rnaseq)
 - [](/docs/user_guides/quantitative_track)
+
+## External links
+
 - [modkit documentation](https://nanoporetech.github.io/modkit/)

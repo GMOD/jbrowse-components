@@ -29,7 +29,7 @@ const PLUMBING =
   /\*\*File\s*→|Global plugins|Add custom plugin|Open JBrowse Web link/
 const TAG = /<(Figure|Video)\b/
 const HEADING = /^#{2,3}\s/
-const TAIL = /^##\s+(See also|References)/
+const TAIL = /^##\s+(See also|External links|Citations)/
 
 export interface UnshownSetting {
   line: number

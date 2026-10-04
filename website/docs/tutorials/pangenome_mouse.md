@@ -202,7 +202,7 @@ own build.
 - [](/docs/tutorials/pangenome_cattle)
 - [](/docs/tutorials/pangenome_prepare_graph)
 
-## References
+## Citations
 
 - Li H, Feng X, Chu C. The design and construction of reference pangenome graphs
   with minigraph. Genome Biology. 2020;21:265.

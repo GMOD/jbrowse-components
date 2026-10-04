@@ -313,7 +313,7 @@ lineage.
 - [](/docs/tutorials/read_marks)
 - [](/docs/quickstart_web)
 
-## References
+## Citations
 
 - Batzer MA, Deininger PL.
   [Alu repeats and human genomic diversity](https://doi.org/10.1038/nrg798).

@@ -267,7 +267,7 @@ The script needs the tools under [Prerequisites](#prerequisites) on PATH.
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/mcscan_synteny_grape_peach)
 
-## References
+## Citations
 
 - Nei, M. & Gojobori, T. Simple methods for estimating the numbers of synonymous
   and nonsynonymous nucleotide substitutions. _Molecular Biology and Evolution_

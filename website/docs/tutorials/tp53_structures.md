@@ -171,14 +171,17 @@ translation.
 
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/urlparams)
+
+## External links
+
 - [jbrowse-plugin-protein3d](https://github.com/GMOD/jbrowse-plugin-protein3d)
-
-## References
-
 - [AlphaFold DB](https://alphafold.ebi.ac.uk/)
 - [RCSB PDB](https://www.rcsb.org/)
 - [UniProt](https://www.uniprot.org/)
 - [SIFTS](https://www.ebi.ac.uk/pdbe/docs/sifts/)
+
+## Citations
+
 - Cho Y, Gorina S, Jeffrey PD, Pavletich NP. Crystal structure of a p53 tumor
   suppressor-DNA complex: understanding tumorigenic mutations. _Science_ 1994.
 - Kussie PH, Gorina S, Marechal V, et al. Structure of the MDM2 oncoprotein
