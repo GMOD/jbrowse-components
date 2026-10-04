@@ -17,5 +17,4 @@ tutorials/local_ancestry.md 2
 tutorials/mcscan_synteny_grape_peach.md 1
 tutorials/orthofinder_synteny.md 6
 tutorials/primate_orthologs_synteny.md 1
-tutorials/sv_visualization_cgiab.md 2
 tutorials/synteny_visualization.md 1
