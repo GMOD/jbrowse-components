@@ -109,6 +109,12 @@ describe('the display config schema', () => {
       },
     )
 
+    it('is part of the plot', () => {
+      const { display } = createTestEnvironment().createDisplay()
+      display.applyPlot({ unit: 'haplotype' })
+      expect(display.plot.unit).toBe('haplotype')
+    })
+
     it("a v4.3 session's renderingModeSetting lands in the unit slot", () => {
       const pluginManager = new PluginManager([
         new LinearGenomeViewPlugin(),

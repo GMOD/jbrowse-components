@@ -522,6 +522,12 @@ describe('alignments unit (view as pairs)', () => {
     expect(display.unit).toBe('read')
   })
 
+  it('is part of the plot, so applyPlot and "Edit plot..." reach it', () => {
+    const { display } = createDisplay()
+    display.applyPlot({ unit: 'chain' })
+    expect(display.plot.unit).toBe('chain')
+  })
+
   it.each([
     ['normal', 'chain'],
     ['off', 'read'],

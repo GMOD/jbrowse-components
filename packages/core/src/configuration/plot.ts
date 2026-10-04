@@ -29,6 +29,7 @@ import type { AnyConfigurationModel } from './types.ts'
 export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   marks: 'the marks drawn in order, each a mark and an encoding',
   transform: 'the steps run over the features before any mark',
+  unit: 'what one row stands for: a read or a chain, a sample or a haplotype',
   facet: 'one section per value of a field',
   rows: 'the rows: their field or order, labels, focus and tree',
   rowColor: 'the colour of each row, by a row attribute',
