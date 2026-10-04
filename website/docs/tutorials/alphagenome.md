@@ -31,13 +31,12 @@ We ran two predictions over the _TAL1_ locus against
 [AlphaGenome](https://www.alphagenomedocs.com/) and stored them under stable
 tokens, following the AlphaGenome team's
 [worked example](https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html).
-Reading the stored predictions needs no AlphaGenome API key and spends no quota.
 
 - the reference prediction over chr1:46,700,048..47,748,623, all eleven output
   types, K562 and GM12878:
   https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-interval
-- the variant prediction, the same window scored for the Jurkat MuTE insertion
-  in CD34+ common myeloid progenitors:
+- the variant prediction, the same window scored for the Jurkat insertion
+  upstream of _TAL1_ in CD34+ common myeloid progenitors:
   https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-variant-cd34
 - the oncogenic _TAL1_ variants: https://jbrowse.org/demos/alphagenome_test.bed
 - hg38's NCBI RefSeq annotation:
@@ -80,8 +79,10 @@ screen at **Global plugins... → Add custom plugin**, with that URL as the plug
 URL and the name `AlphaGenome`.
 
 The plugin sends requests to a small service that holds the API key, runs the
-prediction and stores the arrays. The public instance is the default, and
-`setApiRoot` points the plugin at your own.[^license]
+prediction and stores the arrays. The public instance is the default. To use
+your own, the page or app that embeds JBrowse calls `setApiRoot`, a function the
+plugin module exports, with the service's root URL; `config.json` has no slot
+for it.[^license]
 
 ## Ask for a prediction
 
@@ -128,8 +129,8 @@ For your own variants, swap `uri` for a VCF or a BED with the same columns:
 }
 ```
 
-The session below puts the locus in view with those tracks and no predictions
-yet. It also loads the hosted config that holds them.
+The session below loads the hosted config that holds the plugin and these
+tracks, and opens the locus with no predictions yet.
 
 ```json session config=https://jbrowse.org/demos/alphagenome/config.json
 {
@@ -162,12 +163,12 @@ A wide request takes minutes, and the browser polls until it finishes. The
 service keys requests by content, so repeating a request this page already made
 returns at once.[^rounding]
 
-## Two cell lines on one axis
+## Predicted TAL1 expression in two cell lines on one axis
 
-A finished prediction lists its tracks, often thousands. Filter the list to
-`polyA plus`, tick K562 and GM12878, and **Add selected** puts both in one
-multi-wiggle track on a shared y-axis. The panel stacks tracks in the same units
-this way: several biosamples of one assay, DNase beside ATAC, CAGE beside
+A finished prediction lists its tracks, often thousands. Type `polyA plus` into
+the list's filter, tick K562 and GM12878, and **Add 2 selected** puts both in
+one multi-wiggle track on a shared y-axis. The panel stacks tracks in the same
+units this way: several biosamples of one assay, DNase beside ATAC, CAGE beside
 PRO-cap, histone ChIP beside TF ChIP. Untick **Stack on a shared scale** for one
 track per pick.
 
@@ -179,8 +180,9 @@ GM12878 row loaded.
 
 ## Where the chromatin is open
 
-Add the DNase and ATAC tracks for both biosamples the same way. All four land in
-one track on one axis.
+Type `DNase` into the track list's filter and tick K562 and GM12878, then type
+`ATAC` and tick both again; ticks survive the filter change. **Add 4 selected**
+puts all four in one track on one axis.
 
 <Figure caption="Predicted DNase and ATAC for K562 and GM12878, four rows on one shared y-axis because accessibility is one set of units. The K562 ATAC row runs high across the whole window; the K562 DNase row below it resolves into peaks." src="/img/alphagenome/accessibility_shared_axis.png" />
 
@@ -188,7 +190,7 @@ Predicted ATAC in K562 sits above every other row across the window, and K562
 DNase resolves into peaks. The GM12878 rows have peaks too, at open chromatin
 that is not transcribed.
 
-## Splice junctions
+## Predicted TAL1 splice junctions in each cell line
 
 Splice junctions come back as arcs in a sashimi plot. Add the K562 and GM12878
 polyA junctions and zoom in to _TAL1_.[^junctions]
@@ -198,14 +200,14 @@ polyA junctions and zoom in to _TAL1_.[^junctions]
 The K562 arcs land on the exon boundaries in the RefSeq track. The GM12878 lane
 is empty, because _TAL1_ is off there.
 
-## Contact map
+## The predicted GM12878 contact map over the whole window
 
 AlphaGenome predicts contact maps at 2 kb bins for about a dozen cell lines,
 GM12878 among them. Add the GM12878 contact map and zoom out to the whole
 predicted megabase; the adapter reads each range the view asks for from the
 stored arrays, so navigating starts no new prediction.
 
-<Figure caption="The predicted GM12878 contact map across the whole 1 Mb window, at 2 kb bins. Blocks of self-interaction meet along the diagonal, with TAL1 near the middle of the view." src="/img/alphagenome/contact_map.png" />
+<Figure caption="The predicted GM12878 contact map across the whole window, at 2 kb bins. Blocks of self-interaction sit along the diagonal with blank stretches between them, and TAL1 lies near the middle of the view." src="/img/alphagenome/contact_map.png" />
 
 The display saturates at the 95th percentile, because predicted maps are less
 skewed than sequenced ones.
@@ -214,12 +216,13 @@ skewed than sequenced ones.
 
 In T-ALL, _TAL1_ is switched on in a lineage where it should be silent. One
 route is a small insertion upstream of the gene that creates a binding site, and
-the variant track on screen holds one.
+the variant track holds the insertions reported in T-ALL patients and cell
+lines, all at one site.
 
-Right-click the insertion and choose **Predict variant effect with
-AlphaGenome**, the last row of the menu. The query panel opens with the position
-and the two alleles loaded. Running it predicts the window twice, once for the
-reference and once with the insertion.
+Right-click any variant and choose **Predict variant effect with AlphaGenome**,
+the last row of the menu. The query panel opens with the position and the two
+alleles loaded. Running it predicts the window twice, once for the reference and
+once with the variant.
 
 <Figure caption="Right-clicking a variant in the oncogenic TAL1 variants track. The last row of the menu is the plugin's, and it opens the query panel with the variant under the cursor already loaded." src="/img/alphagenome/predict_variant_menu.png" />
 
