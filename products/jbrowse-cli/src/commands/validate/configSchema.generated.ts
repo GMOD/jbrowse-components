@@ -4125,13 +4125,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/PlainString",
               "default": "name"
             },
-            "scale": {
-              "description": "none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field.",
-              "enum": [
-                "none",
-                "categorical"
-              ]
-            },
             "domain": {
               "description": "the field's values given a colour of their own, in order: under name, rows by name.",
               "anyOf": [

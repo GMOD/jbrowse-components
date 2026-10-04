@@ -22,7 +22,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ```js
 {
   type: 'LinearMultiRowFeatureDisplay',
-  rowColor: { domain: ['mom'], range: ['#b2182b'], unknown: '' },
+  rowColor: { domain: ['mom'], range: ['#b2182b'], unknown: '#cccccc' },
 }
 ```
 
@@ -52,7 +52,6 @@ These slots go on a display entry: `"displays": [{ "type": "RowColor", ... }]`, 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'name'</code> | the row attribute whose values take the colours: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical) | none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field |
 | <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | the field's values given a colour of their own, in order: under name, rows by name |
 | <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | the CSS colour each value in domain takes, in the same order |
 | <span id="slot-unknown">**unknown**</span><br>`maybeColor` | what a value domain does not list takes: unset the next palette colour where the display deals one, a colour that colour, "" none from this setting |

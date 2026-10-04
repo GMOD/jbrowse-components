@@ -3286,10 +3286,6 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "scale",
-              "type": "(RowColorScale | undefined)"
-            },
-            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -5280,10 +5276,6 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "scale",
-              "type": "(RowColorScale | undefined)"
-            },
-            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -5473,10 +5465,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(RowColorScale | undefined)"
             },
             {
               "name": "domain",
@@ -5811,10 +5799,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(RowColorScale | undefined)"
             },
             {
               "name": "domain",
@@ -6314,10 +6298,6 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             },
             {
-              "name": "scale",
-              "type": "(RowColorScale | undefined)"
-            },
-            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -6803,10 +6783,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "(RowColorScale | undefined)"
             },
             {
               "name": "domain",

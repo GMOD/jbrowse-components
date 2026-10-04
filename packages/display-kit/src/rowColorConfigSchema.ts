@@ -46,6 +46,9 @@ import {
 export const rowColorConfigSchema = ConfigurationSchema(
   'RowColor',
   {
+    /**
+     * #slot
+     */
     field: {
       type: 'string',
       defaultValue: 'name',
