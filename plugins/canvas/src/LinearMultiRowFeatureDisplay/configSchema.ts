@@ -249,13 +249,7 @@ export default function configSchemaF() {
        * The byte axis is the only gate this display has: it paints into fixed
        * lanes, so it composes no density axis to fall through to.
        */
-      fetchSizeLimit: {
-        type: 'number',
-        defaultValue: 5_000_000,
-        description:
-          'maximum data to attempt to download for a given feature track',
-        advanced: true,
-      },
+      fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
     },
     {
       /**

@@ -54,13 +54,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        * is block-granular (a small region still pulls whole BGZF blocks), so
        * a single gene can trip a tighter gate.
        */
-      fetchSizeLimit: {
-        type: 'number',
-        defaultValue: 5_000_000,
-        description:
-          'maximum data to attempt to download for a given feature track',
-        advanced: true,
-      },
+      fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
       /**
        * #slot
        * Draw only gene-like top-level features, dropping everything else the

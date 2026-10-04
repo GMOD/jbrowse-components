@@ -77,13 +77,7 @@ export default function configSchemaF() {
        * deep data, and comparable in size to the ultradeep BAM the tier was
        * sized against.
        */
-      fetchSizeLimit: {
-        type: 'number',
-        description:
-          'size in bytes over which to display a warning to the user that too much data will be fetched',
-        defaultValue: 5_000_000,
-        advanced: true,
-      },
+      fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
       /**
        * #slot
        * Override the base `height` slot as a `maybeNumber`: unset means fit rows
