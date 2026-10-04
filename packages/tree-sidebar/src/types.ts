@@ -59,11 +59,11 @@ export interface TreeSidebarModel extends IStateTreeNode {
   rowTreeProvenance?: ClusterProvenance
   treeAreaWidth: number
   height: number
-  // Px the display reserves above its rows, so the sidebar starts where the
-  // rows do. It is a *total*, not any one band: the multi-sample variant
-  // displays stack a variant lane and a connector-line zone and hand over the
-  // sum (`rowsTopOffset`), which is why this is not named for either of them.
-  rowsTopOffset?: number
+  // Px above the rows, so the sidebar starts where the rows do: the mixin's
+  // sum of the display's own bands and the focus chip's line.
+  rowsTopOffset: number
+  // The focus chip's line, the part of `rowsTopOffset` the chip sits in.
+  rowFocusLineHeight: number
   scrollTop?: number
   showTree: boolean
   sources: TreeSource[]

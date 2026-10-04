@@ -23,7 +23,9 @@ import type { TreeSidebarModel } from './types.ts'
  *
  * Click-to-dismiss because it does overlap the first row's label. Dismissal is
  * local to the chip — it comes back on remount, since the condition genuinely
- * still holds.
+ * still holds. That is also why it takes no line above the rows the way the
+ * focus chip does: one click puts the label back and changes nothing else, and
+ * a line held for a chip the reader dismissed would be a gap with no owner.
  */
 export const StaleTreeHint = observer(function StaleTreeHint({
   model,

@@ -51,6 +51,7 @@ export interface MarkDisplayModel
   effectiveRowHeight: number
   nrow: number
   rowsTopOffset: number
+  plotBox: { yTop: number; plotHeight: number }
   scrollTop: number
   scrollableHeight: number
   scrollViewportHeight: number

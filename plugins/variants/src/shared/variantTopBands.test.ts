@@ -1,4 +1,5 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
 
 import regularConfigFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import regularStateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
@@ -138,6 +139,21 @@ describe('the band comes out of the rows, not out of the track', () => {
       availableHeight: d.availableHeight,
       effectiveRowHeight: d.effectiveRowHeight,
     }).toEqual(before)
+  })
+})
+
+describe('a kept subset puts the focus chip in a line above the rows', () => {
+  test('the rows start a chip line under the bands, and take it from the rows', () => {
+    const d = regularDisplay()
+    d.setShowVariantLane(true)
+    const height = d.availableHeight
+
+    d.setRowFocus(['a'])
+
+    expect(d.rowsTopOffset).toBe(
+      DEFAULT_VARIANT_LANE_HEIGHT + SIDEBAR_HINT_LINE_PX,
+    )
+    expect(d.availableHeight).toBe(height - SIDEBAR_HINT_LINE_PX)
   })
 })
 

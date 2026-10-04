@@ -233,8 +233,9 @@ and was reverted on 2026-09-30.
 `variantTopBands.ts` resolves both bands, and **the layout reserving a strip and
 the painter filling it read that one function**.
 
-- `rowsTopOffset` is the total and is where rows begin; `lineZoneHeight` is the
-  connector zone alone, not an offset.
+- `rowsHeaderHeight` is the bands' total; `rowsTopOffset` adds the focus
+  chip's line and is where rows begin; `lineZoneHeight` is the connector zone
+  alone, not an offset.
 - **A band comes out of `availableHeight`, never `height`.**
 - **Off spends 0 px, not a clamped minimum**, or every committed figure moves.
 - **A band a layout cannot paint answers 0 there** (`lineZoneHeight` at genomic

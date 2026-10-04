@@ -140,8 +140,10 @@ const WiggleBody = observer(function WiggleBody({
           width: totalWidth,
         }}
       >
-        <WiggleRowLabels model={model} labelOffset={labelOffset} />
-        <WiggleRowSeparators model={model} width={totalWidth} />
+        <g transform={`translate(0,${model.rowsTopOffset})`}>
+          <WiggleRowLabels model={model} labelOffset={labelOffset} />
+          <WiggleRowSeparators model={model} width={totalWidth} />
+        </g>
       </svg>
 
       <TreeSidebar model={model} />

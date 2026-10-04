@@ -294,6 +294,13 @@ Matched without a tree, so a reorder or re-cluster leaves it valid and
 `setRowOrder` keeps it. `resetRowArrangement` clears it; "Clear subtree filter"
 is gated on the filter alone.
 
+**A focus takes its own line above the rows.** The mixin's `rowsTopOffset` is
+the display's `rowsHeaderHeight` hook (bands, an axis inset) plus
+`rowFocusLineHeight`, the `SIDEBAR_HINT_LINE_PX` the "Showing N rows" chip sits
+in while `rows.kept` narrows the rows. A display overrides `rowsHeaderHeight`,
+never `rowsTopOffset` — MST shadows a redefined getter silently — and places
+every row painter, hit test, label and export from `rowsTopOffset`.
+
 ## Newick
 
 - **Two `length` encodings**: an absolute merge height in hclust's `(A,B)1.5`,

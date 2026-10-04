@@ -47,6 +47,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
   showRowSeparators: boolean
   effectiveRowHeight: number
   numRows: number
+  rowsTopOffset: number
 }
 
 export async function renderSvg(
@@ -71,10 +72,10 @@ function WiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
       renderState={model.renderState}
     >
       {overlays ? (
-        <>
+        <g transform={`translate(0,${model.rowsTopOffset})`}>
           {wiggleRowSeparators(model, canvasWidth)}
           <SvgTreeSidebar sidebar={model.svgSidebar} text={opts} />
-        </>
+        </g>
       ) : null}
     </ScorePlotSvgFrame>
   )

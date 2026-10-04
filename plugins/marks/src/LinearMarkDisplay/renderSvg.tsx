@@ -2,7 +2,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgHaloText, axisPlotBox } from '@jbrowse/display-ui'
+import { SvgHaloText } from '@jbrowse/display-ui'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
@@ -69,8 +69,8 @@ export async function renderSvg(
 }
 
 function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, canvasWidth, height, overlays, opts, renderBlocks } = props
-  const plotGeometry = axisPlotBox(height)
+  const { model, canvasWidth, overlays, opts, renderBlocks } = props
+  const plotGeometry = model.plotBox
   const { yTop, plotHeight } = plotGeometry
   const { sections, rows } = model.facetLayout
   const rowHeight = model.effectiveRowHeight

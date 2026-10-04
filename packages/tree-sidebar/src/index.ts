@@ -7,6 +7,7 @@ export type { TreeSpatialIndex } from './spatialIndex.ts'
 export { default as TreeSidebar } from './TreeSidebar.tsx'
 export { DisplayCrosshairs } from './DisplayCrosshairs.tsx'
 export {
+  SIDEBAR_HINT_LINE_PX,
   treeIsShowing,
   treeSidebarOffset,
   treeSidebarRightEdge,

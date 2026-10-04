@@ -1231,12 +1231,10 @@ export default function MultiSampleVariantBaseModelF(
           },
           /**
            * #getter
-           * Px reserved above the rows, and so where the rows begin. This is the
-           * name `TreeSidebar`'s model contract reads (it positions the sidebar
-           * against the rows, not against any one band), and what every component
-           * offsetting itself past the bands takes.
+           * `TreeSidebarMixin`'s hook: the variant lane and the connector-line
+           * zone, which `rowsTopOffset` stacks the focus chip's line under.
            */
-          get rowsTopOffset() {
+          get rowsHeaderHeight() {
             return this.topBands.bottom
           },
           /**
@@ -1250,7 +1248,7 @@ export default function MultiSampleVariantBaseModelF(
            * negative.
            */
           get availableHeight() {
-            return Math.max(0, self.height - this.rowsTopOffset)
+            return Math.max(0, self.height - self.rowsTopOffset)
           },
           /**
            * #getter

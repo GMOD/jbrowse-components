@@ -127,7 +127,7 @@ const TreeSidebar = observer(function TreeSidebar({
 
   const {
     treeAreaWidth,
-    rowsTopOffset = 0,
+    rowsTopOffset,
     scrollTop = 0,
     sources,
     spatialIndex,
@@ -218,7 +218,7 @@ const TreeSidebar = observer(function TreeSidebar({
       <TrackOverlayPortal>
         <GutterLayer top={top}>
           <StaleTreeHint model={model} top={innerTop} />
-          <SubtreeFilterHint model={model} top={innerTop} />
+          <SubtreeFilterHint model={model} rowsTop={innerTop} />
         </GutterLayer>
       </TrackOverlayPortal>
     )
@@ -247,7 +247,7 @@ const TreeSidebar = observer(function TreeSidebar({
             }}
           />
           <StaleTreeHint model={model} top={innerTop} />
-          <SubtreeFilterHint model={model} top={innerTop} />
+          <SubtreeFilterHint model={model} rowsTop={innerTop} />
           {/* the ref callbacks are the model's own actions, which are stable per
               instance — wrapping them in useCallback([model]) bought nothing */}
           <canvas

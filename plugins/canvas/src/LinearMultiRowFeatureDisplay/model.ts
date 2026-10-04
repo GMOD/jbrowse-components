@@ -34,6 +34,7 @@ import {
   RowKeys,
   buildRowTable,
   inkOfInstances,
+  shiftInk,
 } from '@jbrowse/render-core/marks'
 import {
   ContextMenuMixin,
@@ -590,13 +591,15 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The display height split evenly across rows. Deliberately not floored
-       * at a pixel — `rowBand` widens a sub-pixel row for drawing without
-       * changing how many rows fit, where a floor here would grow the track to
-       * thousands of pixels instead.
+       * The display height under `rowsTopOffset` split evenly across rows.
+       * Deliberately not floored at a pixel — `rowBand` widens a sub-pixel row
+       * for drawing without changing how many rows fit, where a floor here
+       * would grow the track to thousands of pixels instead.
        */
       get autoRowHeight(): number {
-        return self.fitTargetHeight / self.nrow
+        return (
+          Math.max(0, self.fitTargetHeight - self.rowsTopOffset) / self.nrow
+        )
       },
       /**
        * #getter
@@ -676,8 +679,18 @@ export default function stateModelFactory(
           MIN_DISPLAY_HEIGHT,
           self.sources.length === 0
             ? self.fitTargetHeight
-            : self.nrow * self.effectiveRowHeight,
+            : self.rowsTopOffset + self.nrow * self.effectiveRowHeight,
         )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The box the rows paint in, under `rowsTopOffset`: the canvas, its
+       * overlays and the labels.
+       */
+      get rowsHeight(): number {
+        return Math.max(0, self.height - self.rowsTopOffset)
       },
     }))
     .views(self => ({
@@ -799,7 +812,7 @@ export default function stateModelFactory(
       get renderState(): MultiRowRenderState {
         return {
           canvasWidth: self.canvasWidthPx,
-          canvasHeight: self.height,
+          canvasHeight: self.rowsHeight,
           rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
           rowTable: self.rowTable,
@@ -904,7 +917,7 @@ export default function stateModelFactory(
        * The feature under a display-relative pixel.
        */
       featureAt(mouseX: number, mouseY: number): MultiRowHit | undefined {
-        return featureAtPixel(self, mouseX, mouseY)
+        return featureAtPixel(self, mouseX, mouseY - self.rowsTopOffset)
       },
     }))
     .views(self => ({
@@ -913,7 +926,7 @@ export default function stateModelFactory(
        * What a right-click at this display-relative pixel resolves to.
        */
       contextTargetAt(mouseX: number, mouseY: number) {
-        return contextTargetAtPixel(self, mouseX, mouseY)
+        return contextTargetAtPixel(self, mouseX, mouseY - self.rowsTopOffset)
       },
 
       /**
@@ -941,7 +954,7 @@ export default function stateModelFactory(
                 ? [instance]
                 : [instance, { mark: 1, index: marker }]
               : undefined,
-        )
+        ).map(r => shiftInk(r, 0, self.rowsTopOffset))
       },
       /**
        * #getter
@@ -1084,8 +1097,8 @@ export default function stateModelFactory(
         /**
          * #action
          * Set the track height: auto-fit restretches the rows to it, fixed mode
-         * redistributes it across the current rows as a row height, and with no
-         * rows it is the `height` slot either way.
+         * redistributes what `rowsTopOffset` leaves across the current rows as
+         * a row height, and with no rows it is the `height` slot either way.
          */
         // Both branches floor the track at MIN_DISPLAY_HEIGHT, never the row: a
         // sub-pixel row is legitimate here, and flooring the row instead stalls
@@ -1096,7 +1109,11 @@ export default function stateModelFactory(
           if (self.rowHeight === 0 || self.sources.length === 0) {
             setConf(self, 'height', clamped)
           } else {
-            setConf(self, 'rowHeight', clamped / self.nrow)
+            setConf(
+              self,
+              'rowHeight',
+              (clamped - self.rowsTopOffset) / self.nrow,
+            )
           }
           return self.height
         },

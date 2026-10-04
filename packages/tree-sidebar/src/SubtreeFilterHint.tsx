@@ -12,26 +12,29 @@ import type { TreeSidebarModel } from './types.ts'
  * "Clustering" and the tree's own node popover — which is gone with the tree
  * once a reorder has invalidated it, though the filter itself survives.
  * Rendered by `TreeSidebar`, with or without a tree, so every way of focusing
- * rows (a node click, a legend click, a session's `subtreeFilter`) gets the
- * same way out.
+ * rows (a node click, a legend click, a session's `rows.kept`) gets the same
+ * way out.
+ *
+ * It sits in the line `rowFocusLineHeight` reserves directly above the first
+ * row, so it covers no row's label: clicking it clears the focus, so it has no
+ * dismissal that would leave the subset showing.
  */
 export const SubtreeFilterHint = observer(function SubtreeFilterHint({
   model,
-  top = 0,
+  rowsTop = 0,
 }: {
   model: TreeSidebarModel
-  top?: number
+  rowsTop?: number
 }) {
-  const count = model.rowFocus ? model.sources.length : undefined
   return (
     <SidebarHintChip
-      top={top}
+      top={rowsTop - model.rowFocusLineHeight}
       testId="subtree_filter_hint"
       hint={
-        count
+        model.rowFocus
           ? {
               title: 'Click to show every row again',
-              text: `Showing ${count} rows`,
+              text: `Showing ${model.sources.length} rows`,
             }
           : undefined
       }

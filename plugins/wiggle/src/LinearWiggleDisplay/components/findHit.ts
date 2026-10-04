@@ -56,7 +56,8 @@ export function findOverlayHit(
 //
 // `getRowHeight` is `canvasHeight / numRows` with no floor, so a cohort-sized
 // track really does go sub-pixel (400 px over 1000 sources is 0.4 px a row).
-// These rows are sized to fit the display, so there is no scroll offset.
+// These rows are sized to fit the display, so there is no scroll offset, and
+// `offsetY` is measured from the top of the rows.
 export function findRowHit(
   data: WiggleDataResult,
   visibleSources: VisibleSource[],
@@ -81,6 +82,7 @@ export function findRowHit(
 // than taking the full model so the hit logic stays unit-testable without MST.
 export interface WiggleHitModel {
   effectiveRowHeight: number
+  rowsTopOffset: number
   // each visible source and the colour its marks paint in
   markSources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
@@ -112,6 +114,7 @@ export function findWiggleHit(
 ): WiggleHoveredFeature | undefined {
   const {
     effectiveRowHeight,
+    rowsTopOffset,
     markSources: sources,
     rpcDataMap,
     effectiveSummaryScoreMode,
@@ -137,7 +140,7 @@ export function findWiggleHit(
         data,
         sources,
         bp,
-        offsetY,
+        offsetY - rowsTopOffset,
         effectiveRowHeight,
         region.refName,
         effectiveSummaryScoreMode,

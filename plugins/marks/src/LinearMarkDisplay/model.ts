@@ -1068,7 +1068,7 @@ export function stateModelFactory(
           // the multi-wiggle display's does; the whole plot box otherwise.
           const { rowCount } = this
           const rowHeight = self.effectiveRowHeight
-          const rowsTop = this.rowsTopOffset - self.scrollTop
+          const rowsTop = self.rowsTopOffset - self.scrollTop
           const band =
             rowCount > 1 || (self.drawsKeyedRows && self.rowHeight > 0)
               ? {
@@ -1079,10 +1079,16 @@ export function stateModelFactory(
                     (_, row) => rowsTop + row * rowHeight,
                   ),
                 }
-              : {
-                  height,
-                  offset: YSCALEBAR_LABEL_OFFSET + pointInset,
-                }
+              : self.rowFocusLineHeight
+                ? {
+                    height: height - self.rowFocusLineHeight,
+                    offset: YSCALEBAR_LABEL_OFFSET + pointInset,
+                    bandTops: [self.rowFocusLineHeight],
+                  }
+                : {
+                    height,
+                    offset: YSCALEBAR_LABEL_OFFSET + pointInset,
+                  }
           return [
             {
               domain: self.domain,
@@ -1164,17 +1170,28 @@ export function stateModelFactory(
          * `RowHeightMixin`'s hook: the plot split between the rows.
          */
         get autoRowHeight(): number {
-          return markRowHeightPx(
-            axisPlotBox(self.height).plotHeight,
-            this.rowCount,
-          )
+          return markRowHeightPx(this.plotBox.plotHeight, this.rowCount)
         },
         /**
          * #getter
-         * Where the rows start, below the plot's top inset.
+         * `TreeSidebarMixin`'s hook: the plot's top inset.
          */
-        get rowsTopOffset(): number {
+        get rowsHeaderHeight(): number {
           return axisPlotBox(self.height).yTop
+        },
+        /**
+         * #getter
+         * The plot canvas's box: the axis inset, less the focus chip's line
+         * at its top, so the canvas starts where the rows do.
+         */
+        get plotBox(): { yTop: number; plotHeight: number } {
+          return {
+            yTop: self.rowsTopOffset,
+            plotHeight: Math.max(
+              0,
+              axisPlotBox(self.height).plotHeight - self.rowFocusLineHeight,
+            ),
+          }
         },
         /**
          * #getter
@@ -1246,7 +1263,7 @@ export function stateModelFactory(
          */
         get renderState(): MarkRenderState {
           const canvasWidth = self.canvasWidthPx
-          const canvasHeight = axisPlotBox(self.height).plotHeight
+          const canvasHeight = this.plotBox.plotHeight
           const { scaleType } = self
           const scaleTypeY =
             scaleType === 'log' || scaleType === 'symlog' ? scaleType : 'linear'
@@ -1307,7 +1324,7 @@ export function stateModelFactory(
           if (!hit) {
             return []
           }
-          const top = this.rowsTopOffset
+          const top = self.rowsTopOffset
           const mark = self.markList.findIndex(
             m => m.markIndex === hit.markIndex,
           )
@@ -1547,7 +1564,7 @@ export function stateModelFactory(
          * `TrackHeightMixin`'s hook: the plot the rows scroll behind.
          */
         get scrollViewportHeight(): number {
-          return axisPlotBox(self.height).plotHeight
+          return self.plotBox.plotHeight
         },
       }))
       .actions(self => ({

@@ -12,6 +12,7 @@ import { autorun } from 'mobx'
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { getLeafNames } from './clusterUtils.ts'
 import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
+import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
@@ -166,6 +167,33 @@ describe('a display supplying the hooks', () => {
         .volatile(() => ({ discoveredRows: [] }))
         .create({ configuration: {} }),
     ).toThrow(/computed value/)
+  })
+})
+
+describe('the rows start under the display s bands and the focus chip s line', () => {
+  function makeBanded() {
+    return types
+      .compose(
+        'BandedTreeDisplay',
+        TreeSidebarMixin(),
+        types.model({ configuration: configSchema }),
+      )
+      .views(() => ({
+        get rowsHeaderHeight() {
+          return 40
+        },
+      }))
+      .create({ configuration: {} })
+  }
+
+  it('reserves the line while a subset is kept, and gives it back on clearing', () => {
+    const display = makeBanded()
+    expect(display.rowsTopOffset).toBe(40)
+    display.setRowFocus(['a'])
+    expect(display.rowFocusLineHeight).toBe(SIDEBAR_HINT_LINE_PX)
+    expect(display.rowsTopOffset).toBe(40 + SIDEBAR_HINT_LINE_PX)
+    display.setRowFocus(undefined)
+    expect(display.rowsTopOffset).toBe(40)
   })
 })
 

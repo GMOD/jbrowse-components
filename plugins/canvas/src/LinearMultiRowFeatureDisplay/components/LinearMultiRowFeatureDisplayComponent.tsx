@@ -38,7 +38,8 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
   // sits in the box the painting was actually mapped into.
   const {
     canvasWidthPx,
-    height,
+    rowsTopOffset,
+    rowsHeight,
     sources,
     rowBands,
     effectiveRowHeight,
@@ -48,42 +49,50 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
   } = model
   return (
     <>
-      <canvas
-        data-testid="multirow_canvas"
-        ref={canvasRef}
+      <div
         style={{
-          width: canvasWidthPx,
-          height,
           position: 'absolute',
           left: 0,
-          // the pointer handlers measure the chrome container, so the canvas
-          // has to share its origin
-          top: 0,
+          top: rowsTopOffset,
+          width: canvasWidthPx,
+          height: rowsHeight,
         }}
-      />
-      <DensityBandOverlay model={model} />
-      <MultiRowIndelGlyphOverlay model={model} />
-      {/* inline rather than portaled: the tree sidebar is a later sibling with
-          an opaque panel, so the lines stop at the dendrogram */}
-      {showRowSeparators ? (
-        <svg
+      >
+        <canvas
+          data-testid="multirow_canvas"
+          ref={canvasRef}
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
             width: canvasWidthPx,
-            height,
-            pointerEvents: 'none',
+            height: rowsHeight,
+            position: 'absolute',
+            left: 0,
+            top: 0,
           }}
-        >
-          <RowSeparatorLines
-            numRows={sources.length}
-            rowHeight={effectiveRowHeight}
-            width={canvasWidthPx}
-            opacity={SEPARATOR_OPACITY}
-          />
-        </svg>
-      ) : null}
+        />
+        <MultiRowIndelGlyphOverlay model={model} />
+        {/* inline rather than portaled: the tree sidebar is a later sibling
+            with an opaque panel, so the lines stop at the dendrogram */}
+        {showRowSeparators ? (
+          <svg
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: canvasWidthPx,
+              height: rowsHeight,
+              pointerEvents: 'none',
+            }}
+          >
+            <RowSeparatorLines
+              numRows={sources.length}
+              rowHeight={effectiveRowHeight}
+              width={canvasWidthPx}
+              opacity={SEPARATOR_OPACITY}
+            />
+          </svg>
+        ) : null}
+      </div>
+      <DensityBandOverlay model={model} />
       {/* Capture gates read this subtree as the doneness signal: `sources`
           derives from fetched features, so it cannot exist before the data has
           loaded and been binned into rows. */}
@@ -93,7 +102,8 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         rowHeight={effectiveRowHeight}
         labelOffset={sidebarOffset}
         width={canvasWidthPx}
-        height={height}
+        height={rowsHeight}
+        top={rowsTopOffset}
         showLabels={showRowLabels}
         bands={rowBands}
       />

@@ -2,11 +2,15 @@ import { useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
+import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
+
 const useStyles = makeStyles()(theme => ({
   chip: {
     position: 'absolute',
     left: 0,
     zIndex: 100,
+    boxSizing: 'border-box',
+    height: SIDEBAR_HINT_LINE_PX,
     padding: '1px 6px',
     borderBottomRightRadius: 4,
     color: theme.palette.text.secondary,
@@ -47,7 +51,7 @@ const useStyles = makeStyles()(theme => ({
 
 /**
  * The chip `StaleTreeHint` and `SubtreeFilterHint` both draw: a line of text
- * tucked into the top-left of the tree gutter, over the first row's label.
+ * tucked into the top-left of the tree gutter, `SIDEBAR_HINT_LINE_PX` tall.
  *
  * One component rather than two copies because the two share a gutter — a
  * padding or a z-index that drifts between them is visible as a step in the
@@ -55,10 +59,9 @@ const useStyles = makeStyles()(theme => ({
  * notification, both describe a condition that still holds, so clicking hides
  * this mount and nothing more.
  *
- * Getting rid of it is the one thing this has to be good at, since it sits over
- * a row's own label: the whole chip is the button, it carries a ✕ so that reads
- * as true before you hover it, and it is in the tab order for anyone not
- * reaching for a mouse.
+ * Getting rid of it is the one thing this has to be good at: the whole chip is
+ * the button, it carries a ✕ so that reads as true before you hover it, and it
+ * is in the tab order for anyone not reaching for a mouse.
  *
  * `hint` undefined is the nothing-to-say state, and the chip stays mounted
  * through it, so a dismissal survives the condition going away and coming back.

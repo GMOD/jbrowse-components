@@ -1090,12 +1090,11 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Top offset of the per-sample rows area = where the band stack ends.
-         * The single source of truth for "where the rows start" — every rows
-         * hit-test / draw / export offset routes through this so adding a band
-         * can't desync them.
+         * `TreeSidebarMixin`'s hook: where the band stack ends. Every rows
+         * hit-test, draw and export offset reads the mixin's `rowsTopOffset`
+         * over it, so adding a band or the focus chip's line can't desync them.
          */
-        get rowsTopOffset() {
+        get rowsHeaderHeight() {
           return self.topBands.bottom
         },
       }))

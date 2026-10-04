@@ -3,6 +3,7 @@ import {
   contentYAt,
   rowsUnderPointer,
 } from '@jbrowse/core/util/rowStackGeometry'
+import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
 
 import { collectLegendCandidates } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import { MULTI_ROW_MARK } from './rendering/multiRowMarks.ts'
@@ -432,6 +433,47 @@ describe('featureAt', () => {
 
     expect(display.featureAt(edge - 1, 10)).toBeUndefined()
     expect(display.featureAt(edge, 10)?.id).toBe('wide')
+  })
+})
+
+// The "Showing N rows" chip takes a line above the first row, so the rows,
+// their hit test and their highlight all start that much lower.
+describe('while rows.kept narrows the rows', () => {
+  function focusedDisplay() {
+    const { display } = twoRowDisplay(
+      region([
+        { row: 'a', start: 100, end: 200, id: 'top' },
+        { row: 'b', start: 300, end: 400, id: 'bottom' },
+      ]),
+    )
+    display.setRowFocus(['a', 'b'])
+    return display
+  }
+
+  it('places the first row under the chip line', () => {
+    const display = focusedDisplay()
+    expect(display.rowsTopOffset).toBe(SIDEBAR_HINT_LINE_PX)
+    expect(display.featureAt(150, SIDEBAR_HINT_LINE_PX - 1)).toBeUndefined()
+    expect(display.featureAt(150, SIDEBAR_HINT_LINE_PX)?.id).toBe('top')
+    display.setHoveredFeature(display.featureAt(150, SIDEBAR_HINT_LINE_PX))
+    expect(display.hoverInk[0]!.top).toBe(SIDEBAR_HINT_LINE_PX)
+  })
+
+  it('fits every row under the line in auto-fit mode', () => {
+    const display = focusedDisplay()
+    expect(display.height).toBe(100)
+    expect(
+      display.rowsTopOffset + display.nrow * display.effectiveRowHeight,
+    ).toBe(display.height)
+  })
+
+  it('grows a fixed-row track by the line', () => {
+    const display = focusedDisplay()
+    display.setRowHeight(50)
+    expect(display.height).toBe(100 + SIDEBAR_HINT_LINE_PX)
+    expect(display.renderState.canvasHeight).toBe(100)
+    display.setRowFocus(undefined)
+    expect(display.height).toBe(100)
   })
 })
 

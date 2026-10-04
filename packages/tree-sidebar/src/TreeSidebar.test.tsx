@@ -3,6 +3,7 @@ import { render } from '@testing-library/react'
 
 import TreeSidebar from './TreeSidebar.tsx'
 import { buildTree } from './clusterUtils.ts'
+import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarModel } from './types.ts'
 
@@ -25,6 +26,8 @@ function model(props: Partial<TreeSidebarModel> = {}): TreeSidebarModel {
     root: buildTree('(a,b);'),
     treeAreaWidth: 80,
     height: 200,
+    rowsTopOffset: 0,
+    rowFocusLineHeight: 0,
     setTreeCanvasRef: () => {},
     setMouseoverCanvasRef: () => {},
     setHoveredTreeNode: () => {},
@@ -94,5 +97,23 @@ describe('TreeSidebar', () => {
       85,
     )
     expect(renderedTop(getByTestId('stale_tree_hint'))).toBe(85)
+  })
+
+  // The focus chip sits in its own line, so the first row's label stays
+  // readable under a chip whose only click clears the focus.
+  it('puts the focus chip in the line above the rows, and the tree under it', () => {
+    const { getByTestId } = draw(
+      {
+        rowFocus: ['a', 'b'],
+        rowsTopOffset: 85 + SIDEBAR_HINT_LINE_PX,
+        rowFocusLineHeight: SIDEBAR_HINT_LINE_PX,
+      },
+      85,
+    )
+    const chip = getByTestId('subtree_filter_hint')
+    expect(renderedTop(chip)).toBe(85)
+    expect(renderedTop(chip) + SIDEBAR_HINT_LINE_PX).toBe(
+      renderedTop(getByTestId('tree_sidebar_dendrogram')),
+    )
   })
 })

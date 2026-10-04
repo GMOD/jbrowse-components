@@ -132,6 +132,8 @@ function makeModel(
   return {
     id: 'test',
     height: 100,
+    rowsTopOffset: 0,
+    rowsHeight: 100,
     error: undefined,
     regionTooLarge: false,
     drawsWhenTooLarge: false,

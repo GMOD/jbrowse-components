@@ -4,6 +4,7 @@ import { axisPlotBox } from '@jbrowse/display-ui'
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
 import * as spanShader from '@jbrowse/render-core/shaders/spanMarkIface'
+import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
 import { act, render, screen } from '@testing-library/react'
 
 import MarkRows from './components/MarkRows.tsx'
@@ -170,6 +171,22 @@ test('a hit and its hover ink under a scroll name the row drawn there', () => {
   display.setScrollTop(80)
   expect(rowAt(display, 20)?.name).toBe('c')
   expect(rowAt(display, 60)?.name).toBe('d')
+})
+
+test('a kept subset starts the plot a chip line lower, and its rows fill what is left', () => {
+  const display = loaded(PINNED)
+  const { yTop, plotHeight } = axisPlotBox(display.height)
+  display.setRowFocus(['a', 'b', 'c'])
+  expect(display.plotBox).toEqual({
+    yTop: yTop + SIDEBAR_HINT_LINE_PX,
+    plotHeight: plotHeight - SIDEBAR_HINT_LINE_PX,
+  })
+  expect(display.renderState.canvasHeight).toBe(display.plotBox.plotHeight)
+  expect(display.scrollViewportHeight).toBe(display.plotBox.plotHeight)
+  const { name, hit } = rowAt(display, 0)!
+  expect(name).toBe('a')
+  display.setHoveredFeature(hit)
+  expect(display.hoverInk[0]!.top).toBe(yTop + SIDEBAR_HINT_LINE_PX)
 })
 
 // Row b's bar stands on the lower half of its band, 2 on [0, 4].

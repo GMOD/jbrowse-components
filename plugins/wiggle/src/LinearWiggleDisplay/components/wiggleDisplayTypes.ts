@@ -39,6 +39,8 @@ export interface WiggleDisplayModel
   numSources: number
   numRows: number
   effectiveRowHeight: number
+  rowsTopOffset: number
+  rowFocusLineHeight: number
   axes: YAxis[]
   scoreRampApplies: boolean
   hierarchy?: ClusterHierarchyNode

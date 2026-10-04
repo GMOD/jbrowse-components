@@ -24,6 +24,7 @@ const LinearMarkDisplayComponent = observer(
         model={model}
         marks={model.markList}
         testid="mark-display"
+        plotGeometry={model.plotBox}
         findHit={(x, y) =>
           findMarkHit(
             x,

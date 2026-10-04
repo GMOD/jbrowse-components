@@ -30,6 +30,9 @@ export function clampTreeAreaWidth(width: number, viewWidth: number) {
   )
 }
 
+/** The height of a `SidebarHintChip`, and of the line a focus reserves for it. */
+export const SIDEBAR_HINT_LINE_PX = 18
+
 // Drawable content zone height: sidebar height minus whatever the display
 // stacks above its rows. The tree canvas, hover canvas, and sidebar layout must
 // agree on this, so they all derive it here rather than recomputing

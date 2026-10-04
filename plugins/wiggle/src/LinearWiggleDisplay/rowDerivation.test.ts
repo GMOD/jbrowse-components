@@ -1,4 +1,5 @@
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
+import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
 import { waitFor } from '@testing-library/react'
 
 import { createTestEnvironment, makeSource } from './testEnv.ts'
@@ -126,6 +127,19 @@ test('rows colored by an attribute take its values colors over their own', async
     Grain3: rowPaletteColorAt(1),
     Grain4: undefined,
   })
+})
+
+test('rows: a focus starts the rows under the focus chip s line', async () => {
+  const display = await loaded(GROUPED, rowsPerSource())
+  const firstRowTop = () => display.valueScales[0]!.bandTops![0]
+  expect(display.plotGeometry.yTop).toBe(0)
+  expect(firstRowTop()).toBe(0)
+  display.setRowFocus(['Grain2', 'Grain4'])
+  const { yTop, plotHeight } = display.plotGeometry
+  expect(yTop).toBe(SIDEBAR_HINT_LINE_PX)
+  expect(firstRowTop()).toBe(SIDEBAR_HINT_LINE_PX)
+  expect(yTop + plotHeight).toBe(display.height)
+  expect(display.effectiveRowHeight * 2).toBe(plotHeight)
 })
 
 test('rows: the declared order leads and the rest keep adapter order', async () => {

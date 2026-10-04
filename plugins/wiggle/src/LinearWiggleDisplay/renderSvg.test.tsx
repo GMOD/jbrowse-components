@@ -180,6 +180,7 @@ function makeModel(
     isOverlay: false,
     isDensityMode: false,
     effectiveRowHeight: 50,
+    rowsTopOffset: 0,
     numRows: 2,
     axes: axes(),
     canvasWidthPx: 800,

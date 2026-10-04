@@ -275,6 +275,7 @@ describe('findWiggleHit', () => {
   function makeModel(over: Partial<WiggleHitModel> = {}) {
     return {
       effectiveRowHeight: 20,
+      rowsTopOffset: 0,
       markSources: [{ name: 's1' }],
       rpcDataMap: new Map([
         [
@@ -293,6 +294,12 @@ describe('findWiggleHit', () => {
   test('finds the feature under the cursor', () => {
     const hit = findWiggleHit(makeModel(), regions, 50, 5)
     expect(hit?.rows[0]?.score).toBe(5)
+  })
+
+  test('measures the row from the top of the rows', () => {
+    const model = makeModel({ rowsTopOffset: 18 })
+    expect(findWiggleHit(model, regions, 50, 5)).toBeUndefined()
+    expect(findWiggleHit(model, regions, 50, 23)?.rows[0]?.score).toBe(5)
   })
 
   test('returns undefined with no sources', () => {

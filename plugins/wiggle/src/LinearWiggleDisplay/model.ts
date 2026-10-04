@@ -467,8 +467,16 @@ export default function stateModelFactory(
        */
       get effectiveRowHeight() {
         return self.isOverlay
-          ? self.height
-          : getRowHeight(self.height, self.numSources)
+          ? this.rowsHeight
+          : getRowHeight(this.rowsHeight, self.numSources)
+      },
+
+      /**
+       * #getter
+       * The height under `rowsTopOffset` the rows, or the one plot, fill.
+       */
+      get rowsHeight() {
+        return Math.max(0, self.height - self.rowsTopOffset)
       },
 
       /**
@@ -492,13 +500,19 @@ export default function stateModelFactory(
        * a tick stays on the data it labels.
        */
       get plotGeometry() {
+        const { rowsTopOffset, rowsHeight } = self
         if (self.numRows === 1) {
-          const { yTop, plotHeight } = axisPlotBox(self.height)
-          return { yTop, plotHeight, numRows: 1, tickHeight: self.height }
+          const { yTop, plotHeight } = axisPlotBox(rowsHeight)
+          return {
+            yTop: rowsTopOffset + yTop,
+            plotHeight,
+            numRows: 1,
+            tickHeight: rowsHeight,
+          }
         }
         return {
-          yTop: 0,
-          plotHeight: self.height,
+          yTop: rowsTopOffset,
+          plotHeight: rowsHeight,
           numRows: self.numRows,
           tickHeight: self.effectiveRowHeight,
         }
@@ -550,13 +564,16 @@ export default function stateModelFactory(
             domain: self.domain,
             scaleType: self.scaleType,
             height: tickHeight,
-            offset: yTop,
+            offset: yTop - self.rowsTopOffset,
             minimalTicks: self.minimalTicks,
             symlogConstant: self.symlogConstant,
             bandTops: self.isDensityMode
               ? []
-              : Array.from({ length: numRows }, (_, row) =>
-                  getRowTop(row, self.effectiveRowHeight),
+              : Array.from(
+                  { length: numRows },
+                  (_, row) =>
+                    self.rowsTopOffset +
+                    getRowTop(row, self.effectiveRowHeight),
                 ),
             left: treeSidebarOffset(self),
             caption: self.scaleTitle,

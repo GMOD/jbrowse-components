@@ -35,6 +35,7 @@ import {
 import { rowEdits } from './rowEdits.ts'
 import { IDENTITY_FIELDS, extraColumns } from './sourcesGridUtils.ts'
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
+import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
 import type {
   RowAlias,
@@ -400,8 +401,35 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get svgSidebar(): SvgSidebarProps | undefined {
         return undefined
       },
+      /**
+       * #getter
+       * Overridable hook: the px of bands, an axis inset or anything else the
+       * display stacks above its rows, 0 by default.
+       */
+      get rowsHeaderHeight(): number {
+        return 0
+      },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The line the "Showing N rows" chip takes above the first row while
+       * `rows.kept` narrows the rows, 0 while every row shows.
+       */
+      get rowFocusLineHeight(): number {
+        return self.rowFocus ? SIDEBAR_HINT_LINE_PX : 0
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Where the rows start in the display's box: under the display's own
+       * `rowsHeaderHeight` and the focus chip's line. Every row painter, hit
+       * test, label, tree and export places the rows from here.
+       */
+      get rowsTopOffset(): number {
+        return self.rowsHeaderHeight + self.rowFocusLineHeight
+      },
       /**
        * #method
        * Px the SVG export reserves left of the track for `svgSidebar`, measured

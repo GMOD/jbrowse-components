@@ -1,3 +1,5 @@
+import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
+
 import { createMafTestEnvironment } from './testEnv.ts'
 
 // The band stack is stated once, in `topBands`, and everything that reserves,
@@ -74,5 +76,18 @@ describe('a band stated taller than the track it sits on', () => {
     const display = overStated()
     const { top, reserved } = display.topBands
     expect(top.conservation + reserved.conservation).toBe(display.rowsTopOffset)
+  })
+})
+
+describe('a kept subset puts the focus chip in a line above the rows', () => {
+  it('starts the rows a chip line under the bands and grows the track by it', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    const bands = display.topBands.bottom
+    const height = display.height
+
+    display.setRowFocus(['a'])
+
+    expect(display.renderState.rowsTop).toBe(bands + SIDEBAR_HINT_LINE_PX)
+    expect(display.height).toBe(height + SIDEBAR_HINT_LINE_PX)
   })
 })
