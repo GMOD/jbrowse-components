@@ -2014,7 +2014,7 @@ export const svSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'DRAGEN: no focal call, 50 kb minimum segment',
+        text: 'DRAGEN: no focal call',
         fontSize: 18,
         maxWidth: 480,
         leader: true,
@@ -2027,7 +2027,7 @@ export const svSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Wakhan: 50 kb bins, the arm alone',
+        text: 'Wakhan: arm-level segments only',
         fontSize: 18,
         anchor: {
           track: 'hg008t_wakhan_hifi_hic',

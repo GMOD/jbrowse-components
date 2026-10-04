@@ -1802,7 +1802,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'ABL1 intron 1 — coverage, no annotated exon',
+        text: 'ABL1 intron 1: coverage, no annotated exon',
         fontSize: 18,
         maxWidth: 560,
         anchor: {
