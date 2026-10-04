@@ -1,5 +1,5 @@
 import { act, render } from '@testing-library/react'
-import { observable } from 'mobx'
+import { observable, runInAction } from 'mobx'
 
 import PaddingBlocks from './PaddingBlocks.tsx'
 
@@ -91,7 +91,9 @@ test('a zoom repositions the same divs rather than rebuilding them', () => {
     x: s.x * 1.15,
   }))
   act(() => {
-    model.paddingSpans = zoomed
+    runInAction(() => {
+      model.paddingSpans = zoomed
+    })
   })
   const after = spanDivs(container)
 

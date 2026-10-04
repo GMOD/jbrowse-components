@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { fetchHub } from '@jbrowse/core/util/fetchHub'
+import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 
 import createViewState, { createViewStateAsync } from './createViewState.ts'
 import { destroyViewState } from './destroyViewState.ts'
@@ -68,6 +69,16 @@ test("jbrowseHub brings the hub's assembly, catalog and search index, and the ho
         (a: AnyConfigurationModel) => readConfObject(a, 'ixFilePath').uri,
       ),
     ).toEqual(['https://example.com/volvox.ix'])
+    // the fetch mock answers the 2bit with an empty body, so the launch's
+    // assembly load fails; settling it keeps it from reading a destroyed tree
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+    await whenViewSettled(session.view)
+    expect(error).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringMatching(/Offset is outside the bounds/),
+      }),
+    )
+    error.mockRestore()
   } finally {
     destroyViewState(state)
   }

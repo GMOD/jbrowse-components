@@ -2,6 +2,35 @@ import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
+// The tiered adapter points at a file that does not exist, which the fetch mock
+// answers with an empty body, so its header read fails; these specs read the
+// model, not the data.
+const provoked = 'Offset is outside the bounds'
+function takeProvoked(method: 'error' | 'warn') {
+  const print = method === 'error' ? console.error : console.warn
+  return jest
+    .spyOn(console, method)
+    .mockImplementation((...args: unknown[]) => {
+      if (
+        !args
+          .map(a => `${a}`)
+          .join(' ')
+          .includes(provoked)
+      ) {
+        print(...args)
+      }
+    })
+}
+let spies: jest.SpyInstance[] = []
+beforeAll(() => {
+  spies = [takeProvoked('error'), takeProvoked('warn')]
+})
+afterAll(() => {
+  for (const spy of spies) {
+    spy.mockRestore()
+  }
+})
+
 // LGVSyntenyDisplay overrides the alignments display's `rpcProps` to add the
 // detail tier. These specs drive the real composed model rather than the pure
 // `resolveDisplayLodMode` helper, because the helper was never the fragile part

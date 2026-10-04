@@ -89,15 +89,18 @@ describe('an LD join asked for through the fetch options', () => {
   })
 
   it('joins only the index where the LD file is asked under another name', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const features = await sle({
       ld: { index: { start: SLE_INDEX_START }, refName: 'chr2' },
     })
     expect(features.filter(f => f.get('ld') !== undefined)).toEqual([
       named(features, 'rs4274624'),
     ])
+    warn.mockRestore()
   })
 
   it('notes a region holding the index SNP that no partner joined to, and only that', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const noticesOf = async (ld: LdJoin) => {
       const notices: string[] = []
       await sle({ ld, notices })
@@ -112,5 +115,6 @@ describe('an LD join asked for through the fetch options', () => {
     expect(
       await noticesOf({ index: { name: 'rsNOPE' }, refName: '2' }),
     ).toEqual([])
+    warn.mockRestore()
   })
 })

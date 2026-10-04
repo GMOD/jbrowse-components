@@ -8,13 +8,7 @@
       {
         "id": "rtg57cPzQ",
         "type": "DotplotView",
-        "headerHeight": 0,
         "height": 600,
-        "borderSize": 20,
-        "tickSize": 5,
-        "vtextRotation": 0,
-        "htextRotation": -90,
-        "fontSize": 15,
         "assemblyNames": ["grape", "peach"],
         "drawCigar": true,
         "hview": {
@@ -1603,7 +1597,6 @@
           "interRegionPaddingWidth": 0,
           "minimumBlockWidth": 0
         },
-        "cursorMode": "crosshair",
         "tracks": [
           {
             "id": "Num7dqx3Y",

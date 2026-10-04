@@ -30,27 +30,33 @@ afterEach(() => {
   opened.length = 0
 })
 
-// Both shapes this suite provokes go through `console.error`: the adapter
-// failure above, and the `no session model found!` a fetch still in flight
-// raises once `afterEach` has taken its view out — `removeView` detaches rather
-// than destroys (ADR-069), so the fetch's `isCurrent` guard still reads the
-// display as alive and reports. Taken here; anything else still prints, so the
-// contract gate keeps working.
+// The shapes this suite provokes: the adapter failure above, through
+// `console.error` and, from the tier-info header read, `console.warn`; and the
+// `no session model found!` a fetch still in flight raises once `afterEach` has
+// taken its view out — `removeView` detaches rather than destroys (ADR-069), so
+// the fetch's `isCurrent` guard still reads the display as alive and reports.
+// Taken here; anything else still prints, so the contract gate keeps working.
 const provoked = /Offset is outside the bounds|no session model found/
-let reported: jest.SpyInstance
-beforeAll(() => {
-  const print = console.error
-  reported = jest
-    .spyOn(console, 'error')
+function takeProvoked(method: 'error' | 'warn') {
+  const print = method === 'error' ? console.error : console.warn
+  return jest
+    .spyOn(console, method)
     .mockImplementation((...args: unknown[]) => {
       if (!provoked.test(args.map(a => `${a}`).join(' '))) {
         print(...args)
       }
     })
+}
+let reported: jest.SpyInstance
+let warned: jest.SpyInstance
+beforeAll(() => {
+  reported = takeProvoked('error')
+  warned = takeProvoked('warn')
 })
 afterAll(() => {
   expect(reported).toHaveBeenCalled()
   reported.mockRestore()
+  warned.mockRestore()
 })
 
 const assembly = (name: string) => ({

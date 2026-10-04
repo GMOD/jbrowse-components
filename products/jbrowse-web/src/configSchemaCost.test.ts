@@ -1,6 +1,6 @@
 // What building every config schema a session uses costs, and the invariant
 // that keeps it a per-track-*type* cost: creating track config nodes builds no
-// further types. The numbers this prints are the record behind
+// further types. CONFIG_SCHEMA_COST=1 prints the numbers behind
 // `agent-docs/measurements/config-schema-construction.json`.
 interface Phase {
   types: number
@@ -118,20 +118,22 @@ test('config schema construction, by phase', async () => {
   const { phases, slotKeys } = counter()
   const sum = (k: keyof Phase) =>
     Object.values(phases).reduce((a, p) => a + p[k], 0)
-  console.error(
-    `config schema construction: ${JSON.stringify(
-      {
-        phases,
-        registrationMs: +ms.toFixed(1),
-        createMs: +createMs.toFixed(1),
-        totalTypes: sum('types'),
-        totalSlots: sum('slots'),
-        distinctSlotTypes: slotKeys.size,
-      },
-      null,
-      2,
-    )}`,
-  )
+  if (process.env.CONFIG_SCHEMA_COST) {
+    console.error(
+      `config schema construction: ${JSON.stringify(
+        {
+          phases,
+          registrationMs: +ms.toFixed(1),
+          createMs: +createMs.toFixed(1),
+          totalTypes: sum('types'),
+          totalSlots: sum('slots'),
+          distinctSlotTypes: slotKeys.size,
+        },
+        null,
+        2,
+      )}`,
+    )
+  }
 
   // The slot types a session builds are mostly repeats of one another — the
   // headroom any interning of `ConfigSlot` would have, and it is not worth

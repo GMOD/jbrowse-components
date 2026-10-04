@@ -199,6 +199,7 @@ describe('a mark display the rule list finds a problem in', () => {
   )
 
   test('puts an error ahead of the render failure it causes', async () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {})
     await expect(
       exportTrack(
         marks({
@@ -208,9 +209,11 @@ describe('a mark display the rule list finds a problem in', () => {
         }),
       ),
     ).rejects.toThrow(/track "genes" mark 0 transform\.0\.expr: /)
+    error.mockRestore()
   }, 60000)
 
   test("names the display's own step under no mark", async () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {})
     await expect(
       exportTrack(
         configWith({
@@ -220,6 +223,7 @@ describe('a mark display the rule list finds a problem in', () => {
         }),
       ),
     ).rejects.toThrow(/track "genes" transform\.0\.expr: /)
+    error.mockRestore()
   }, 60000)
 
   test('says a warning and draws', async () => {

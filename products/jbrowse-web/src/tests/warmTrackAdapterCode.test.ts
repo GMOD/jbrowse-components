@@ -82,8 +82,9 @@ test('a pending track loads its adapter code and reads its index under the id it
 
 // A star of 241 liftOver files answers the anchor's refNames from every child's
 // index unless told which lanes, and only its display knows; the warm-up
-// still loads its code
+// still loads its code. The PAFs do not exist, so the display's own fetch fails.
 test('a pending track whose source declares its lanes loads its code and reads no index', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
   const call = jest.spyOn(RpcManager.prototype, 'call')
   call.mockClear()
   await createTestSessionAsync({
@@ -113,7 +114,7 @@ test('a pending track whose source declares its lanes loads its code and reads n
         {
           type: 'SyntenyTrack',
           trackId: 'star',
-          assemblyNames: ['volvox', 'volvox_random'],
+          assemblyNames: ['volvox', 'volvox_random', 'volvox_del'],
           adapter: {
             type: 'MultiPairwiseSyntenyAdapter',
             adapters: [
@@ -121,6 +122,11 @@ test('a pending track whose source declares its lanes loads its code and reads n
                 type: 'PAFAdapter',
                 pafLocation: { localPath: '/nonexistent/a.paf' },
                 assemblyNames: ['volvox_random', 'volvox'],
+              },
+              {
+                type: 'PAFAdapter',
+                pafLocation: { localPath: '/nonexistent/b.paf' },
+                assemblyNames: ['volvox_del', 'volvox'],
               },
             ],
           },

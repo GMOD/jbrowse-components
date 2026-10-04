@@ -45,7 +45,11 @@ test('open a circular view', async () => {
       ),
     ).toBeGreaterThan(0)
   }, delay)
+  // closing a track destroys its display in place, and the reactions still
+  // observing it read it once more before React unmounts them (ADR-069)
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   fireEvent.click(await findByTestId(hts('volvox_sv_test'), {}, delay))
+  warn.mockRestore()
   await waitFor(() => {
     expect(
       queryByTestId('structuralVariantChordRenderer'),

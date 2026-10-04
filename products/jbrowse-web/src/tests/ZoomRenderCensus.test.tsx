@@ -100,10 +100,8 @@ async function census({
       `${per(c.total())} renders/frame, ${per(mutations.length)} DOM ` +
       `mutations/frame (${per(structural)} structural)`
 
-    // The tables are the instrument and the one-liner is the CI signal, because
-    // this file runs in every full suite and four ranked dumps there are noise.
-    // Anyone reading the summary and wanting to know WHICH component moved
-    // needs the flag named in it.
+    // ZOOM_CENSUS=1 prints the census: this file runs in every full suite,
+    // where the assertions are the signal and any report is noise
     if (process.env.ZOOM_CENSUS) {
       const churn = [...tally]
         .sort((a, b) => b[1] - a[1])
@@ -114,9 +112,6 @@ async function census({
       console.log(
         `\n=== ${head} ===\n\n${c.report(25)}\n\nwhere the DOM churn lands:\n${churn}`,
       )
-    } else {
-      // eslint-disable-next-line no-console
-      console.log(`${head}  [ZOOM_CENSUS=1 for the per-component tables]`)
     }
     return {
       counts: c.components(),

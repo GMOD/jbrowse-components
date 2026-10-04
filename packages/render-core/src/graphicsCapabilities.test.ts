@@ -329,6 +329,7 @@ test('effectiveRenderer reports the rung createGpuHal built once one exists', as
 })
 
 function installGpuWithoutAdapter() {
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
   const requestAdapter = jest.fn(() => Promise.resolve(null))
   Object.defineProperty(navigator, 'gpu', {
     configurable: true,

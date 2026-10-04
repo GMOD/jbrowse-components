@@ -70,7 +70,6 @@ console.warn = (...args) => {
     r.includes('[GPU] WebGL2 unavailable, falling back to Canvas2D') ||
     r.includes('[GPU] WebGPU not supported in this browser') ||
     r.includes('] init (live=') ||
-    r.includes('LD coloring: index SNP') ||
     // add-track.test.ts: 'adds bam track with all the custom fields' passes an
     // unregistered --assemblyNames value on purpose to exercise custom-field handling
     r.includes('assembly name(s) not found in config') ||

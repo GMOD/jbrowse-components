@@ -26,13 +26,16 @@ function run(pluginManager: PluginManager, code: string, extra = {}) {
 describe('captureConsole', () => {
   it('records what the code prints and still forwards to the real console', () => {
     const logs: string[] = []
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {})
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const c = captureConsole(logs)
     c.log('a', { b: 1 })
     c.warn('careful')
     expect(logs).toEqual(['a {"b":1}', '[warn] careful'])
-    expect(spy).toHaveBeenCalledWith('careful')
-    spy.mockRestore()
+    expect(log).toHaveBeenCalledWith('a', { b: 1 })
+    expect(warn).toHaveBeenCalledWith('careful')
+    log.mockRestore()
+    warn.mockRestore()
   })
 
   it('keeps the methods it does not shadow', () => {

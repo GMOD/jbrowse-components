@@ -875,6 +875,13 @@ export async function renderRegionReport(
     throwOnRenderError(model.session)
     return typeof result === 'string' ? { svg: result } : result
   } finally {
+    // a fast-failing render leaves assembly loads in flight, whose adapters
+    // read the assembly config after it dies unless they finish first
+    await Promise.allSettled(
+      model.session.assemblyManager.assemblies.flatMap(a =>
+        a.loadingP ? [a.loadingP] : [],
+      ),
+    )
     destroy(model)
   }
 }

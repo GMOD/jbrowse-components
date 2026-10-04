@@ -63,7 +63,11 @@ test('jb.setSession rewrites the live session as a document', async () => {
     views: { tracks: unknown[] }[]
   }
   again.views[0]!.tracks = []
+  // dropping a track destroys its display in place, and the reactions still
+  // observing it read it once more before React unmounts them (ADR-069)
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   await jb.setSession(again, 5000)
+  warn.mockRestore()
   expect(session.views[0]).toBe(view)
   expect(view.tracks).toHaveLength(0)
 }, 90000)

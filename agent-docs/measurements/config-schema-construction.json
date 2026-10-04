@@ -4,7 +4,7 @@
   "published": false,
   "source": {
     "kind": "bench",
-    "repro": "npx jest products/jbrowse-web/src/configSchemaCost.test.ts --selectProjects jbrowse-web --reporters=default",
+    "repro": "CONFIG_SCHEMA_COST=1 npx jest products/jbrowse-web/src/configSchemaCost.test.ts --selectProjects jbrowse-web --reporters=default",
     "notes": "Counts every MST type jbrowse-web's 31 core plugins build, through a proxy over `types` in the suite itself; a config slot type is a `stripDefault(union(...))` pair, and two slots are the same distinct type when the union's arguments and the default match. node/jsdom under jest rather than a browser, and the proxy adds a few ms of its own. Each ms is the minimum of five runs. Module eval has no ms because under jest that clock is the babel transform's, not the app's."
   },
   "columns": [

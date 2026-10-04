@@ -1,3 +1,4 @@
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { fireEvent, waitFor, within } from '@testing-library/react'
 
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json' with { type: 'json' }
@@ -14,6 +15,22 @@ setup()
 beforeEach(() => {
   doBeforeEach()
 })
+
+// A search landing on a feature opens its track, and that track's fetch
+// outlives a test asserting only on the view; one still in flight when the
+// file ends resolves its dynamic import into a torn-down environment
+const rpcCall = jest.spyOn(RpcManager.prototype, 'call')
+
+async function settleRpc() {
+  const issued = rpcCall.mock.calls.length
+  await Promise.allSettled(rpcCall.mock.results.map(r => r.value))
+  await new Promise(resolve => setTimeout(resolve, 50))
+  if (rpcCall.mock.calls.length !== issued) {
+    await settleRpc()
+  }
+}
+
+afterEach(settleRpc, 70_000)
 
 const config = volvoxConfigWithTracks([
   // exactly the tracks `trix/volvox_meta.json` indexes, so every search here can

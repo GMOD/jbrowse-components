@@ -28,11 +28,6 @@ test('export svg of dotplot', async () => {
           minimized: false,
           type: 'DotplotView',
           height: 600,
-          borderSize: 20,
-          tickSize: 5,
-          vtextRotation: 0,
-          htextRotation: -90,
-          fontSize: 15,
           assemblyNames: ['volvox_random_inv', 'volvox'],
           drawCigar: true,
           hview: {
@@ -74,7 +69,6 @@ test('export svg of dotplot', async () => {
             interRegionPaddingWidth: 0,
             minimumBlockWidth: 0,
           },
-          cursorMode: 'crosshair',
           tracks: [
             {
               id: 'TCFk0NeAVI',
