@@ -13,6 +13,7 @@ import {
   isWebsiteDoc,
   walkFiles,
 } from '../check-utils.ts'
+import { slotSpreadPairs, slotSpreadPart } from './enumConstants.ts'
 import { readDoc, writeDoc } from './format.ts'
 
 const exec2 = promisify(exec)
@@ -254,7 +255,9 @@ export function extractWithComment(
       tags.length > 0 &&
       tags.every(isMemberTag) &&
       claimed.has(memberKey(node))
-    if (tags.length && !delegatedAway) {
+    if (ts.isSpreadAssignment(node) && tags.includes('slot')) {
+      emitSpreadSlots(node, comment, cb)
+    } else if (tags.length && !delegatedAway) {
       if (!isStateModel && tags.some(isMemberTag)) {
         memberTagged.set(
           memberKey(node),
@@ -303,6 +306,75 @@ export function extractWithComment(
       visit(n, isStateModel, isConfig)
     })
   }
+}
+
+// A JSDoc above a spread documents the slots it brings in, one `#slot <name>`
+// section each, so they render at the spread's position with that prose.
+// Each section's source is the slot the spread produces, read the way the
+// config generator reads an undocumented spread (`slotSpreadPart`).
+function emitSpreadSlots(
+  node: ts.SpreadAssignment,
+  comment: string,
+  cb: (obj: ExtractedNode) => void,
+) {
+  const sf = node.getSourceFile()
+  const where = `${repoRelative(sf.fileName)}: the JSDoc on \`...${node.expression.getText(sf)}\``
+  const part = slotSpreadPart(node.expression, sf)
+  const prefix = subSchemaPrefix(node)
+  const produced = new Map(
+    ((part && slotSpreadPairs(part)) ?? []).map(([name, value]) => [
+      `${prefix}${name}`,
+      `${name}: ${value}`,
+    ]),
+  )
+  const [lead, ...sections] = slotSections(comment)
+  if (lead!.trim()) {
+    throw new Error(
+      `${where} has prose before its first \`#slot\`, which documents no slot. Move it under the \`#slot\` it describes.`,
+    )
+  }
+  for (const section of sections) {
+    const name = /#slot[ \t]+(\S+)/.exec(section)?.[1]
+    const code = name && produced.get(name)
+    if (!code) {
+      throw new Error(
+        `${where} documents \`#slot ${name ?? ''}\`, which the spread does not bring in. It brings in: ${[...produced.keys()].join(', ') || 'nothing the generator can read'}.`,
+      )
+    }
+    cb({
+      type: 'slot',
+      name,
+      comment: section,
+      signature: '',
+      node: code,
+      filename: sf.fileName,
+    })
+  }
+}
+
+function slotSections(comment: string) {
+  const sections = ['']
+  for (const line of comment.split('\n')) {
+    if (startsWithTag(line, 'slot')) {
+      sections.push(line)
+    } else {
+      sections[sections.length - 1] += `\n${line}`
+    }
+  }
+  return sections
+}
+
+// The dotted path a slot in a nested sub-schema is documented under
+// (`index.indexType`), matching what a hand-written `#slot` tag names there.
+function subSchemaPrefix(slot: ts.Node): string {
+  const schema = slot.parent.parent
+  const prop = schema.parent
+  return isConfigurationSchemaCall(schema) &&
+    ts.isPropertyAssignment(prop) &&
+    ts.isIdentifier(prop.name) &&
+    isConfigurationSchemaCall(prop.parent.parent)
+    ? `${subSchemaPrefix(prop)}${prop.name.text}.`
+    : ''
 }
 
 // A documented member whose only prose sits after a JSDoc `@tag`, where the

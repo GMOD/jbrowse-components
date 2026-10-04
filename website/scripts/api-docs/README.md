@@ -160,6 +160,30 @@ the quoted name) all link. Each config page then renders an "Inherited config
 slots" section reproducing every base slot in full, so the page is
 self-contained; an unresolved base is listed in `coverage-gaps.txt`.
 
+## Slots a spread brings in
+
+A schema can compose shared slots by spreading a slot table or a slot-table
+factory call (`...colorDomainSlot({ domain: '…' })`). Undocumented, those slots
+render after the schema's literal ones, with the table's `description` string as
+their prose. A JSDoc above the spread can document them in place instead, one
+`#slot <name>` section per slot, each rendering at the spread's position with
+its own prose and `#example`s:
+
+```js
+/**
+ * #slot field
+ * What fades an alignment.
+ *
+ * #slot scale
+ * How `field` becomes an opacity.
+ */
+...colorChannelSlots({ … }),
+```
+
+A slot no section names follows the literal slots as before. Naming a slot the
+spread does not bring in, or writing prose above the first `#slot`, fails the
+run with the file named.
+
 ## Adding examples with `#example`
 
 Any `#config`, `#stateModel`, `#slot`, `#getter`, `#action`, `#method`, or

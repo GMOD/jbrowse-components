@@ -116,6 +116,10 @@ interface ConfigIndex {
 // node's own source: every spread of a name the slot-table index knows (see
 // enumConstants.ts) contributes its properties, in declaration order.
 //
+// A spread whose own JSDoc carries `#slot <name>` sections documents those
+// slots in place instead (`emitSpreadSlots` in util.ts), and the declared
+// name then wins below.
+//
 // **A spread inside a nested sub-schema keeps its parent's key**, so
 // `index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields })` documents
 // `index.indexType` rather than a top-level `indexType`. That is the same
@@ -174,7 +178,7 @@ function spreadSlots(configNode: string): Item[] {
 // Fold each config's spread-in slots into its slot list, after accumulation so a
 // `#slot` the schema declares itself always wins over the shared table's version
 // of the same name. Idempotent, so both writers below can call it.
-function mergeSpreadSlots(byFile: Record<string, Config>) {
+export function mergeSpreadSlots(byFile: Record<string, Config>) {
   for (const config of Object.values(byFile)) {
     const declared = new Set(config.slots.map(s => s.name))
     config.slots = [

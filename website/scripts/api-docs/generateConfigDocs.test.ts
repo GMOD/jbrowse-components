@@ -1,11 +1,23 @@
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+
+import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
+  accumulateConfig,
   exampleObjects,
   looseTrackExample,
+  mergeSpreadSlots,
   missingSlotNames,
   unknownExampleKeys,
 } from './generateConfigDocs.ts'
+import { createDocProgram, extractWithComment } from './util.ts'
 
-import type { ManifestSlot, TypedManifestEntry } from './generateConfigDocs.ts'
+import type {
+  Config,
+  ManifestSlot,
+  TypedManifestEntry,
+} from './generateConfigDocs.ts'
 
 // The rule assertManifestSlotsAreDocumented applies to one runtime slot. Each
 // exemption here is a shape that is absent from a page by design; getting one
@@ -236,5 +248,118 @@ describe('the loose { trackId, uri } form of an example', () => {
     expect(
       looseTrackExample(fence(bam.replace("  assemblyNames: ['hg38'],\n", ''))),
     ).toBe('')
+  })
+})
+
+// A schema composing a kit's slots keeps its page: a `#slot` section in the
+// spread's JSDoc documents that slot at the spread's position.
+describe('slots a spread brings in', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb-spread-slots-'))
+  })
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+
+  const KIT = `
+export function spreadKitPairT1({ alpha = 'kit alpha' }: { alpha?: string }) {
+  return {
+    alpha: { type: 'string', defaultValue: '', description: alpha },
+    beta: { type: 'number', defaultValue: 1, description: 'kit beta' },
+  } as const
+}
+export function spreadKitTailT1({ gamma = 'kit gamma' }: { gamma?: string }) {
+  return {
+    gamma: { type: 'boolean', defaultValue: false, description: gamma },
+  } as const
+}
+`
+
+  const schema = (spreadDoc: string[]) => `
+/**
+ * #config SpreadFixture
+ */
+export const spreadFixture = ConfigurationSchema('SpreadFixture', {
+  /**
+   * #slot first
+   * Written in place.
+   */
+  first: { type: 'string', defaultValue: '' },
+  /**
+${spreadDoc.map(line => `   * ${line}`).join('\n')}
+   */
+  ...spreadKitPairT1({ alpha: 'passed alpha' }),
+  /**
+   * #slot last
+   * Also written in place.
+   */
+  last: { type: 'string', defaultValue: '' },
+  ...spreadKitTailT1({}),
+})
+`
+
+  function slotsOf(spreadDoc: string[]) {
+    const files = ['kit.ts', 'schema.ts'].map(name => path.join(dir, name))
+    fs.writeFileSync(files[0]!, KIT)
+    fs.writeFileSync(files[1]!, schema(spreadDoc))
+    const program = createDocProgram(files)
+    buildEnumConstantIndex(program.sources)
+    const byFile: Record<string, Config> = {}
+    extractWithComment(
+      program,
+      obj => {
+        accumulateConfig(byFile, obj)
+      },
+      () => {},
+    )
+    mergeSpreadSlots(byFile)
+    return Object.values(byFile).flatMap(c => c.slots)
+  }
+
+  test('render where the spread sits, with their section prose', () => {
+    const slots = slotsOf([
+      '#slot alpha',
+      "Alpha's page prose.",
+      '',
+      '#slot beta',
+      "Beta's page prose.",
+    ])
+    expect(slots.map(s => s.name)).toEqual([
+      'first',
+      'alpha',
+      'beta',
+      'last',
+      'gamma',
+    ])
+    const [, alpha, beta, , gamma] = slots
+    expect(alpha!.docs.trim()).toBe("Alpha's page prose.")
+    expect(alpha!.code).toContain("description: 'passed alpha'")
+    expect(beta!.docs.trim()).toBe("Beta's page prose.")
+    expect(gamma!.docs).toBe('')
+  })
+
+  test('a slot the JSDoc leaves out follows the literal ones', () => {
+    expect(slotsOf(['#slot alpha', 'Alpha only.']).map(s => s.name)).toEqual([
+      'first',
+      'alpha',
+      'last',
+      'beta',
+      'gamma',
+    ])
+  })
+
+  test('a section naming a slot the spread does not bring in fails', () => {
+    expect(() => slotsOf(['#slot delta', 'No such slot.'])).toThrow(
+      /schema\.ts: the JSDoc on `\.\.\.spreadKitPairT1.*#slot delta.*alpha, beta/,
+    )
+  })
+
+  test('prose before the first section fails', () => {
+    expect(() => slotsOf(['Whose?', '#slot alpha', 'Alpha.'])).toThrow(
+      /schema\.ts: .*prose before its first `#slot`/,
+    )
   })
 })
