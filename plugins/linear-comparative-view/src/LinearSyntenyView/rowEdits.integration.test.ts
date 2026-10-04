@@ -21,7 +21,7 @@ afterEach(() => {
 
 // no fixture file stands behind these adapters, so each shown track logs one
 // fetch failure, and a fetch still in flight at teardown logs the other
-const provoked = /Offset is outside the bounds|no session model found/
+const provoked = /HTTP 404 fetching|no session model found/
 let reported: jest.SpyInstance
 beforeAll(() => {
   const print = console.error

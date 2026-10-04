@@ -62,7 +62,15 @@ test('a returned Response passes through untouched', async () => {
 test('mockResponseOnce applies to one call, then the default', async () => {
   fetchMock.mockResponseOnce('first')
   expect(await (await fetch('http://example.com/x')).text()).toBe('first')
-  expect(await (await fetch('http://example.com/x')).text()).toBe('')
+  expect((await fetch('http://example.com/x')).status).toBe(404)
+})
+
+test('an unmocked url is a 404 naming the url', async () => {
+  const res = await fetch('http://example.com/missing.2bit')
+  expect(res.status).toBe(404)
+  expect(await res.text()).toBe(
+    'no fetch mock for http://example.com/missing.2bit',
+  )
 })
 
 test('mockResponses serves its entries in order', async () => {
@@ -102,7 +110,7 @@ test('resetMocks clears calls, queue and implementation', async () => {
   fetchMock.resetMocks()
 
   expect(fetchMock.mock.calls).toHaveLength(0)
-  expect(await (await fetch('http://example.com/x')).text()).toBe('')
+  expect((await fetch('http://example.com/x')).status).toBe(404)
 })
 
 test('dontMock stops answering, doMock resumes', async () => {

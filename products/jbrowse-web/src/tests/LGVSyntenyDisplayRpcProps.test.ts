@@ -3,9 +3,8 @@ import { createTestSessionAsync } from '../rootModel/test_util.ts'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 // The tiered adapter points at a file that does not exist, which the fetch mock
-// answers with an empty body, so its header read fails; these specs read the
-// model, not the data.
-const provoked = 'Offset is outside the bounds'
+// answers with a 404; these specs read the model, not the data.
+const provoked = 'HTTP 404 fetching'
 function takeProvoked(method: 'error' | 'warn') {
   const print = method === 'error' ? console.error : console.warn
   return jest

@@ -19,9 +19,8 @@ const assembly = {
   uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
 }
 
-// Building a view starts its assembly load, and the fetch mock answers the
-// 2bit with an empty body, which the reader reports; none of these tests need
-// the assembly loaded.
+// Building a view starts its assembly load, and the 2bit it names has no
+// fixture, so the load reports a 404; none of these tests need the assembly.
 let reported: jest.SpyInstance
 beforeAll(() => {
   const print = console.error
@@ -32,7 +31,7 @@ beforeAll(() => {
         !args
           .map(a => `${a}`)
           .join(' ')
-          .includes('Offset is outside the bounds')
+          .includes('HTTP 404 fetching')
       ) {
         print(...args)
       }

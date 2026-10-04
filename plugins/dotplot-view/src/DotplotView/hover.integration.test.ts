@@ -10,6 +10,11 @@ import type { DotplotViewModel } from './model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+// the PAF tracks read as empty files; each test commits the features it needs
+beforeEach(() => {
+  fetchMock.mockResponse('')
+})
+
 // One feature per track, committed directly rather than fetched — the same way
 // the SVG export tests set up a display holding data. What is under test is the
 // pick and the hover state the view derives from it, not the fetch.

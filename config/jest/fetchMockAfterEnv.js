@@ -107,7 +107,16 @@ if (!isNodeEnvironment) {
       ? respondWith(bodyOrFunction, init, toRequest(input, reqInit))
       : realFetch(input, withoutSignal(reqInit))
 
-  const defaultImplementation = implement('', undefined)
+  // What a server says for a file it does not have, so a test missing its
+  // fixture fails naming the url instead of parsing an empty body
+  const defaultImplementation = implement(
+    request => ({
+      status: 404,
+      statusText: 'Not Found',
+      body: `no fetch mock for ${request.url}`,
+    }),
+    undefined,
+  )
 
   const fetchMock = jest.fn(defaultImplementation)
 

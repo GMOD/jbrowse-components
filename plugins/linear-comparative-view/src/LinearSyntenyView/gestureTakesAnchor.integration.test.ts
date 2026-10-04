@@ -16,6 +16,11 @@ type WebSession = ReturnType<typeof createTestSession>
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+// none.paf reads as an empty file: the gestures need the track, not its rows
+beforeEach(() => {
+  fetchMock.mockResponse('')
+})
+
 let openViews: { session: WebSession; view: LinearSyntenyViewModel }[] = []
 
 afterEach(() => {

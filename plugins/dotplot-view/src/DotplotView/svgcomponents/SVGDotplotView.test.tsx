@@ -13,6 +13,11 @@ import type { DotplotViewModel } from '../model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+// the PAF tracks read as empty files; each test commits the features it needs
+beforeEach(() => {
+  fetchMock.mockResponse('')
+})
+
 // the session comes back alongside the view: `getSession(view)` types as
 // AbstractSessionModel, which has no addTrackConf
 async function setup() {

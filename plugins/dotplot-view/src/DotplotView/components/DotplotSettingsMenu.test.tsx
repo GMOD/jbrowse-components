@@ -32,7 +32,7 @@ afterEach(() => {
 // taken its view out — `removeView` detaches rather than destroys (ADR-069), so
 // the fetch's `isCurrent` guard still reads the display as alive and reports.
 // Taken here; anything else still prints, so the contract gate keeps working.
-const provoked = /Offset is outside the bounds|no session model found/
+const provoked = /HTTP 404 fetching|no session model found/
 function takeProvoked(method: 'error' | 'warn') {
   const print = method === 'error' ? console.error : console.warn
   return jest
