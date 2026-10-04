@@ -48,7 +48,7 @@ track and a Trix text index.
   https://jbrowse.org/demos/fly_agent_synteny/sim_vs_mau.pif.gz beside the
   merged config at https://jbrowse.org/demos/fly_agent_synteny/config.json
 
-## What the agent is driving
+## The four tools the agent gets in JBrowse Desktop
 
 Connected to JBrowse Desktop, the agent gets four tools: `run_javascript`,
 `open`, `screenshot` and `docs`. The requests below go through `run_javascript`,
@@ -69,7 +69,7 @@ and open both genomes side by side, with their gene tracks and the alignment
 between them.
 ```
 
-The aligner it runs:
+The agent runs this aligner command:
 
 <!-- from: scripts/build_fly_agent_synteny.sh -->
 
@@ -94,9 +94,9 @@ jbrowse make-pif sim_vs_mau.paf
 The config the agent writes merges the two hosted ones, keeping each gene track
 and adding the alignment as a synteny track.
 
-Check the order of `assemblyNames` on the synteny track the agent wrote. Your
-own pair takes the same track with its `uri` swapped for your `.pif.gz`, which
-needs its `.tbi` beside it, and both assembly names loaded:
+Check the order of `assemblyNames` on the track the agent wrote. For your own
+pair, swap `uri` for your `.pif.gz`, which needs its `.tbi` beside it, and load
+both assemblies:
 
 ```json addtrack
 {
@@ -112,19 +112,19 @@ needs its `.tbi` beside it, and both assembly names loaded:
 }
 ```
 
-The query (`sim.fa.gz`, the second `minimap2` argument) comes first and the
-target second, the order of the PAF columns. In the other order no chromosome
-name resolves and the synteny band draws empty.
+In `assemblyNames`, the query (`sim.fa.gz`, the second `minimap2` argument)
+comes first and the target second, the order of the PAF columns. In the other
+order no chromosome name resolves and the synteny band draws empty.
 
-<Figure caption="Thirty kilobases of chr3R on both genomes: NCBI RefSeq on each row, the minimap2 alignment between them, colored red where the two run in the same direction. One block spans the window, and each gene meets its counterpart exon for exon." src="/img/agent_synteny/comparison_built.png" />
+<Figure caption="chr3R on both genomes with NCBI RefSeq genes on each row and the minimap2 alignment between them, colored red where the two run in the same direction. One block spans the window, and each gene meets its counterpart exon for exon." src="/img/agent_synteny/comparison_built.png" />
 
-## Ask for the dotplot
+## Ask for a dotplot restricted to the chromosome arms
 
 ```text
 Add a dotplot of the same two assemblies underneath.
 ```
 
-_D. simulans_ and _D. mauritiana_ each have a few hundred unplaced scaffolds,
+Each genome has a few hundred unplaced scaffolds (not assigned to a chromosome),
 which interleave the axes if drawn. Naming the arms gives one diagonal:
 
 ```text
@@ -137,7 +137,7 @@ one in red.
 
 <Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, with short reverse segments in blue where chr2R begins and partway along chrX." src="/img/agent_synteny/dotplot_arms.png" />
 
-## Ask where they disagree
+## Ask where the two genomes run in opposite directions
 
 ```text
 Where do the two genomes run in opposite directions? Answer from the
@@ -146,7 +146,7 @@ alignment file, not from the dotplot, and show me the numbers.
 
 A reverse-strand block a few hundred kilobases wide is a few pixels at
 whole-genome zoom. The same information is in the PAF as numbers: aligned bases
-per arm, split by strand, at MAPQ 30 or better:
+per arm, split by strand, at mapping quality (MAPQ) 30 or better:
 
 ```bash
 awk -F'\t' '
@@ -209,9 +209,9 @@ Then ask for the first of the two X regions, `chrX:8,100,000-8,950,000` over
 
 <Figure caption="The X region, the alignment alone between the two rows. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
 
-## What the requests had to tell the agent
+## Instructions that keep the agent from failing silently
 
-Three sentences, and each prevents a failure with no error message:
+Three instructions each prevent a failure that raises no error:
 
 - **Start long work in the background, and let it finish before opening
   anything.** Otherwise a tool call times out and the agent reports a failure
@@ -225,7 +225,7 @@ Two more come up unprompted: screenshot what it builds, since a wrong track id
 or empty region still renders as a plausible browser, and say the numbers before
 it navigates, so what you see is a claim you can check.
 
-## The same pipeline as a script
+## Running the whole pipeline as a script
 
 ```bash
 curl -O https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_fly_agent_synteny.sh
