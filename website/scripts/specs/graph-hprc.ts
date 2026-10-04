@@ -809,16 +809,17 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     annotations: [
       // s329770+ is the 14.3 kb CYP21A2 backbone node on the blue end of the
       // ramp, with open pane to its right. The 52 kb node is painted red by the
-      // ramp and a red leader into it read as one arrow. The leader takes the
-      // node's upper-right end, since the CYP21A2 label sits on its midpoint.
+      // ramp and a red leader into it read as one arrow. The leader drops onto
+      // the node from above, since the CYP21A2 label hangs just right of and
+      // below its midpoint.
       {
         type: 'text',
         text: 'backbone',
         leader: true,
         fontSize: 20,
-        anchor: { graphNode: 's329770+', alignX: 'right', alignY: 'top' },
-        dx: 60,
-        dy: 50,
+        anchor: { graphNode: 's329770+' },
+        dx: -10,
+        dy: -80,
       },
       // s352179+ is NA18948's 21 kb allele, the largest off-reference node in
       // the window. It loops to the lower left of C4A, so the pill hangs off it
@@ -1119,18 +1120,18 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     annotations: [
       // s343607+ is HG02391#2's 68 kb segment inside the array bubble, the
       // longest node in the cut and the widest loop in the drawing. Its
-      // midpoint tops the loop under the array's chip, so the leader enters
-      // the loop's left side from the open pane above the backbone's chips.
+      // midpoint tops the loop just under the array's chip, so the leader comes
+      // in level from the left, under that chip and over the backbone's.
       {
         type: 'text',
         text: 'kringle copies on one haplotype, absent from GRCh38',
-        fontSize: 20,
+        fontSize: 18,
         maxWidth: 340,
         leader: true,
-        anchor: { graphNode: 's343607+', alignX: 'left' },
+        anchor: { graphNode: 's343607+' },
         textAlign: 'end',
-        dx: -90,
-        dy: -54,
+        dx: -137,
+        dy: -6,
       },
       // WHERE it is: the widest bar in the bubbles lane, whose record is
       // `chr6:160,616,002-160,646,753` in release 2.1. The UniProt lane above
