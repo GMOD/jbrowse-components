@@ -4,7 +4,7 @@
 // page on jbrowse.org. website/docs/tutorials/CLAUDE.md says what goes in each.
 
 const ENDINGS = ['See also', 'External links', 'Citations']
-const RETIRED = ['References']
+const RETIRED = new Set(['References'])
 const OURS = /\]\((\/|https:\/\/jbrowse\.org\/)/
 
 export function pageEndingProblems(text: string) {
@@ -14,7 +14,7 @@ export function pageEndingProblems(text: string) {
     index: m.index,
   }))
   for (const h of headings) {
-    if (RETIRED.includes(h.name)) {
+    if (RETIRED.has(h.name)) {
       problems.push(
         `## ${h.name}: split it into ## External links and ## Citations`,
       )
@@ -31,7 +31,10 @@ export function pageEndingProblems(text: string) {
     const sorted = [...order].sort(
       (a, b) => ENDINGS.indexOf(a) - ENDINGS.indexOf(b),
     )
-    if (order.join() !== sorted.join() || new Set(order).size < order.length) {
+    if (
+      order.join(',') !== sorted.join(',') ||
+      new Set(order).size < order.length
+    ) {
       problems.push(`closing sections out of order: ${order.join(', ')}`)
     }
   }
