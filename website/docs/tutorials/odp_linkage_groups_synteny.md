@@ -92,9 +92,9 @@ python3 rbh_to_blocks.py EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plot
   --attributes gene_group color break_FET
 ```
 
-The helper prints how many of each genome's gene ids its `.chrom` placed. About
-half the orthologs have a group, and one from outside the BCnS families gets
-`.`, which the browser draws in grey.
+The helper prints how many of each genome's gene ids its `.chrom` placed. An
+ortholog from outside the BCnS families gets `.` in the group column, which the
+browser draws in grey.
 
 A `.blocks` row is the gene ids across the two genomes, then the attribute
 columns:
@@ -127,7 +127,7 @@ each.
 }
 ```
 
-## Loading it as a synteny track
+## Loading the RES-EMU table as a synteny track
 
 `attributeColumns` makes the last three columns reachable. Each name in it
 becomes a color-by mode named after the column, so `gene_group` becomes a mode;
@@ -204,7 +204,8 @@ odp tests each pair of chromosomes for more shared orthologs than chance
 column). Like the paper's figure, the stack draws an ortholog on a pair under
 0.05 at opacity 0.8 and the rest at 0.15.
 
-Each setting the session has a menu route, except the last:
+Each setting in the session has a menu route except `fadeThinAlignmentsMode` and
+the `opacity` mapping:
 
 - `autoDiagonalize` sorts each row against its neighbour, working outward from
   `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
@@ -265,17 +266,16 @@ Each setting the session has a menu route, except the last:
 
 <Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, orthologs on significantly paired chromosomes solid and the rest faint. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome scatters over many jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
 
-In the second band, between _Hormiphora_ and the jellyfish, 40% of the grouped
-orthologs sit on a significant pair, against 82–95% in the other bands: each
-comb jelly chromosome mixes groups that match no jellyfish chromosome, and the
-faint ribbons are the other 60%. The two comb jellies agree with each other in
-the band above.
+In the second band, between _Hormiphora_ and the jellyfish, far fewer grouped
+orthologs sit on a significant pair than in the other bands. Each comb jelly
+chromosome mixes groups that match no jellyfish chromosome, and those orthologs
+draw faint. The two comb jellies agree with each other in the band above.
 
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
 running through them are expected. The cladorhizid took no part, and in the
 bottom band the groups still reach it as bundles.
 
-## Checking it against the table
+## Checking the linkage-group counts against the odp tables
 
 The counts behind the pictures come straight from the tables. For one group,
 tally the chromosomes its orthologs sit on in the genome a table's file name
@@ -290,18 +290,25 @@ awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
 ```
 
 Changing the file and the group in that command gives the counts behind the
-stack. In _Hormiphora_ (`HCA_RES`), the chromosome holding most of a group holds
-a minority of it, which is why most of the stack's second band is faint. In the
-cladorhizid (`CLAa_EMU`), which took no part in building the group database,
-most of each group still sits on one chromosome.
+stack. In _Hormiphora_ (`HCA_RES`), even the chromosome holding the largest
+share of a group holds less than half of it, which is why most of the stack's
+second band is faint. In the cladorhizid (`CLAa_EMU`), which took no part in
+building the group database, most of each group still sits on one chromosome.
 
 ## Reproduce it end to end
 
 Download `genomes.tar.gz` and `supplementary_information.tar.gz` from
 [the Dryad page](https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47) into
-`~/Downloads` first, since Dryad has no direct download URL. The script fetches
-everything else, converts the six tables, and writes a config with the six
-assemblies and a default session; see [Prerequisites](#prerequisites).
+`~/Downloads` first, since Dryad has no direct download URL. The script needs
+the tools under [Prerequisites](#prerequisites) and works in three steps:
+
+1. Unpack the genomes and pair tables the page uses from the two tarballs, and
+   fetch the _Ephydatia_ assembly, which the deposit does not redistribute, from
+   its original host.
+2. Convert each pair's odp table into a `.blocks` table and two BEDs, taking
+   each gene's extent from the `.chrom` files and keeping the group, color and
+   `break_FET` columns.
+3. Write the six assemblies, one track per pair, and the dotplot session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_odp_linkage_groups_synteny.sh
