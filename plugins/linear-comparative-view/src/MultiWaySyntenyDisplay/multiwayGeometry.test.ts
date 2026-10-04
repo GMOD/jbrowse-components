@@ -13,6 +13,7 @@ import {
   cssColorToABGR,
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
+import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 
 import {
   KIND_BASE,
@@ -616,8 +617,9 @@ describe('the ribbons', () => {
     })
     const data = ribbonData(cells, 'ribbons:0')
     const alpha = Math.round(0.4 * 255)
-    expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR('#f00'), alpha))
-    expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR('#00f'), alpha))
+    const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.range
+    expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR(forward), alpha))
+    expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR(reverse), alpha))
   })
 
   // g2 is an inversion drawn uncrossed; g1 runs forward, drawn crossed
@@ -643,8 +645,9 @@ describe('the ribbons', () => {
       Math.sign(data.bp3[i]! - data.bp4[i]!)
     expect([crossed(0), crossed(1)]).toEqual([true, false])
     const alpha = Math.round(0.4 * 255)
-    expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR('#f00'), alpha))
-    expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR('#00f'), alpha))
+    const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.range
+    expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR(forward), alpha))
+    expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR(reverse), alpha))
   })
 
   test('color by identity ramps the pair’s attribute and leaves a pair without one at the slot color', () => {

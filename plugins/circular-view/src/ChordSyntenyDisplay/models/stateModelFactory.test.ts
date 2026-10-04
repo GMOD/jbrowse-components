@@ -1,3 +1,4 @@
+import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 import { colord } from '@jbrowse/core/util/colord'
 import { applySnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
@@ -173,7 +174,9 @@ test("the view's color paints each ribbon, at the view's alpha", async () => {
   expect(display.ribbonOpacity).toBe(0.45)
   view.setColorField('strand')
   view.setOpacity(0.5)
-  expect(display.ribbonFill(feature)).toBe('#0000ff')
+  expect(display.ribbonFill(feature)).toBe(
+    colord(UNIVERSAL_FIELD_PRESETS.strand.range[1]).toHex(),
+  )
   expect(display.ribbonOpacity).toBe(0.5)
 }, 20000)
 

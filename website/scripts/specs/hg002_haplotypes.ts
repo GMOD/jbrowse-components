@@ -169,11 +169,10 @@ const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
 // over the ribbons.
 //
 // It replaced a hand-rolled `strand==1?'#1f77b4':'#d62728'` -- the cookbook's
-// blue-forward pair, which is the INVERSE of both the built-in and the synteny
-// ribbons' own strand scheme (colorSchemes.strand, posColor '#f00' / negColor
-// '#00f'). Blue therefore meant "forward" in the gene lanes and "inverted" in
-// the ribbons of the same frame, three inches apart. Now one vocabulary paints
-// the whole figure: red forward, blue reverse.
+// blue-forward pair, the INVERSE of the strand scheme the gene lanes and the
+// synteny ribbons share. Blue therefore meant "forward" in the gene lanes and
+// "inverted" in the ribbons of the same frame, three inches apart. Now one
+// vocabulary paints the whole figure: red forward, blue reverse.
 const STRAND_COLOR = { field: 'strand' }
 
 function landmarkLane(hap: 'MAT' | 'PAT') {

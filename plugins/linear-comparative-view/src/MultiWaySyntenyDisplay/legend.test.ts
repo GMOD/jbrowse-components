@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 
 import {
   laneColorKey,
@@ -124,12 +125,18 @@ test("color's title and labels head and name the field's key", () => {
   ).toEqual(['RuBisCO', 'psbA'])
 })
 
-test('the ribbon key is the strand pair, in two colors', () => {
-  expect(ribbonColorKey('strand').map(i => i.label)).toEqual([
-    'Same orientation as lane above',
-    'Inverted vs lane above',
+test('the ribbon key is the strand pair, in the genes’ strand colors', () => {
+  const [forward, reverse] = UNIVERSAL_FIELD_PRESETS.strand.range
+  expect(ribbonColorKey('strand')).toEqual([
+    expect.objectContaining({
+      label: 'Same orientation as lane above',
+      color: forward,
+    }),
+    expect.objectContaining({
+      label: 'Inverted vs lane above',
+      color: reverse,
+    }),
   ])
-  expect(new Set(ribbonColorKey('strand').map(i => i.color)).size).toBe(2)
 })
 
 test('the other two ribbon modes key no rows', () => {

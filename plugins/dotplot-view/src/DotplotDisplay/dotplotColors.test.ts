@@ -1,3 +1,4 @@
+import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 import { colorSchemes } from '@jbrowse/synteny-core'
 
 import {
@@ -32,13 +33,9 @@ function unpack(packed: number) {
   }
 }
 
-function rgbOfHex(hex: string) {
-  const h = hex.length === 4 ? hex.replaceAll(/([\da-f])/gi, '$1$1') : hex
-  return {
-    r: Number.parseInt(h.slice(1, 3), 16),
-    g: Number.parseInt(h.slice(3, 5), 16),
-    b: Number.parseInt(h.slice(5, 7), 16),
-  }
+function rgbOf(color: string) {
+  const [r, g, b] = cssColorToRgb(color)
+  return { r, g, b }
 }
 
 // Arbitrary; only the 'track' mode reads it, and that mode's whole contract is
@@ -58,17 +55,15 @@ describe('createDotplotColorFunction', () => {
   test('strand colors come from the shared colorSchemes', () => {
     const data = fakeRpcData({ strands: new Int8Array([1, -1]) })
     const fn = createDotplotColorFunction('strand', data, TRACK_COLOR, {})
-    expect(unpack(fn(0))).toMatchObject(rgbOfHex(colorSchemes.strand.posColor))
-    expect(unpack(fn(1))).toMatchObject(rgbOfHex(colorSchemes.strand.negColor))
+    expect(unpack(fn(0))).toMatchObject(rgbOf(colorSchemes.strand.posColor))
+    expect(unpack(fn(1))).toMatchObject(rgbOf(colorSchemes.strand.negColor))
   })
 
   test('default returns the shared point color (black)', () => {
     const data = fakeRpcData()
     const fn = createDotplotColorFunction('', data, TRACK_COLOR, {})
     expect(unpack(fn(0))).toEqual({ r: 0, g: 0, b: 0, a: 255 })
-    expect(unpack(fn(0))).toMatchObject(
-      rgbOfHex(colorSchemes.default.pointColor),
-    )
+    expect(unpack(fn(0))).toMatchObject(rgbOf(colorSchemes.default.pointColor))
   })
 
   // Identity uses the perceptually-uniform viridis ramp: dark purple at low
@@ -104,7 +99,7 @@ describe('createDotplotColorFunction', () => {
     // flat: strand, identity and refName all ignored
     expect(fn(0)).toBe(fn(1))
     expect(unpack(fn(0))).toEqual({
-      ...rgbOfHex(TRACK_COLOR),
+      ...rgbOf(TRACK_COLOR),
       a: 255,
     })
   })

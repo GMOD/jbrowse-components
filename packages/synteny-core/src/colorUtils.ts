@@ -1,4 +1,5 @@
 import { abgrAlpha, cssColorToRgb } from '@jbrowse/core/util/colorBits'
+import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 
 /**
  * #api
@@ -43,6 +44,9 @@ export const strandCigarColors = {
   D: '#a020f0',
 }
 
+const [forwardStrandColor, reverseStrandColor] =
+  UNIVERSAL_FIELD_PRESETS.strand.range
+
 export const colorSchemes = {
   default: {
     cigarColors: defaultCigarColors,
@@ -52,8 +56,8 @@ export const colorSchemes = {
     pointColor: '#000',
   },
   strand: {
-    posColor: '#f00',
-    negColor: '#00f',
+    posColor: forwardStrandColor,
+    negColor: reverseStrandColor,
     cigarColors: strandCigarColors,
   },
 }
