@@ -185,7 +185,7 @@ panel lists each as a feature attribute. **Color by value → dN/dS** in the
 palette button menu reads `dn` and `ds`, on a ramp with 1 at the middle and 2 at
 the top.
 
-Two view settings matter for a view this sparse. `opacity` defaults to 0.2 for
+Two view settings matter for a view this sparse. `opacity` defaults to 0.25 for
 whole-genome views where ribbons overlap, and 0.95 shows the colour as it is:
 **Opacity** on the sliders button in the view header. `drawCurves` separates
 stacked neighbours: **Curved lines** on the same menu.
