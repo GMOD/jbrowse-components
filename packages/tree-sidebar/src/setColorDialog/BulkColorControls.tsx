@@ -2,31 +2,22 @@ import { useState } from 'react'
 
 import { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
 import { Button } from '@mui/material'
-import { observer } from 'mobx-react'
-
-import { updateRows } from '../sourcesGridUtils.ts'
 
 import type { GridRowId } from '@mui/x-data-grid'
 
-// Bulk header button + its popover for the rows' colour. The popover portals
-// via MUI Popover, so rendering it as a sibling of the button is fine.
-export default observer(function BulkColorControls<
-  S extends { name: string; rowColor?: string },
->({
-  editsColor,
-  rows,
+// Bulk header button + its popover for the selected rows' colour. The popover
+// portals via MUI Popover, so rendering it as a sibling of the button is fine.
+export default function BulkColorControls({
   selected,
-  onChange,
+  onPick,
 }: {
-  editsColor: boolean
-  rows: S[]
   selected: GridRowId[]
-  onChange: (arg: S[]) => void
+  onPick: (picked: ReadonlyMap<string, string>) => void
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [widgetColor, setWidgetColor] = useState('blue')
 
-  return editsColor ? (
+  return (
     <>
       <Button
         variant="contained"
@@ -42,14 +33,12 @@ export default observer(function BulkColorControls<
         color={widgetColor}
         onChange={value => {
           setWidgetColor(value)
-          onChange(
-            updateRows(rows, selected, { rowColor: value } as Partial<S>),
-          )
+          onPick(new Map(selected.map(id => [String(id), value])))
         }}
         onClose={() => {
           setAnchorEl(null)
         }}
       />
     </>
-  ) : null
-})
+  )
+}

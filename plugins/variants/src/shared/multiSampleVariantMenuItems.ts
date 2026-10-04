@@ -20,6 +20,7 @@ import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
+  rowColorChoiceLabel,
   rowHeightMenuItem,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
@@ -73,32 +74,23 @@ function pickCellSolidColor(self: MultiSampleVariantBaseModel) {
   ])
 }
 
-// The rows' colour, as the arrangement dialog offers it: none, or an
-// attribute's values, the config's own among them where the samples lack it.
-// No palette deals the rows by name here, so there is no Each row.
+// The rows' colour, as the arrangement dialog offers it: None and the
+// attributes, and Each row while it is the choice, since its colours are
+// picked in the dialog.
 function rowColorItems(self: MultiSampleVariantBaseModel): MenuItem[] {
   const current = self.rowColorChoice
-  const pick = (field: string) => () => {
-    self.setRowColorField(field)
-  }
-  const attributes =
-    current === '' || self.colorByAttributes.includes(current)
-      ? self.colorByAttributes
-      : [...self.colorByAttributes, current]
   return [
-    {
-      label: 'None',
-      type: 'radio',
-      checked: current === '',
-      onClick: pick(''),
+    '',
+    ...(current === 'name' ? ['name'] : []),
+    ...self.rowColorAttributesOffered,
+  ].map(choice => ({
+    label: rowColorChoiceLabel(choice),
+    type: 'radio' as const,
+    checked: current === choice,
+    onClick: () => {
+      self.setRowColorField(choice)
     },
-    ...attributes.map(attr => ({
-      label: capitalizeFirst(attr),
-      type: 'radio' as const,
-      checked: current === attr,
-      onClick: pick(attr),
-    })),
-  ]
+  }))
 }
 
 // Items for the "Show..." submenu. The display extends them via super-capture
@@ -282,7 +274,7 @@ export function variantTrackMenuItems(
         {
           header: 'Samples',
           rows:
-            self.colorByAttributes.length || self.rowColorChoice
+            self.rowColorAttributesOffered.length || self.rowColorChoice
               ? rowColorItems(self)
               : [],
         },

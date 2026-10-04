@@ -365,17 +365,14 @@ describe('rowColor tints a row over the adapter colour', () => {
     expect(display.rowArrangementIsCustom).toBe(false)
   })
 
-  // The dialog shows the adapter colour and edits over it, so a row left at
-  // that colour writes nothing and a row set back to it drops its entry.
-  it('writes only what differs from the adapter, and a reset returns', () => {
+  it('writes the colours submitted over the declared ones, and a reset returns', () => {
     const display = tinted({ domain: ['hg38'], range: ['#00ff00'] })
-    const [hg38, mm10] = display.editableSources
-    display.applyRowEdits([
-      { ...hg38!, rowColor: 'red' },
-      { ...mm10!, rowColor: '#0000ff' },
-    ])
-    expect(getConf(display, ['rowColor', 'domain'])).toEqual(['mm10'])
-    expect(getConf(display, ['rowColor', 'range'])).toEqual(['#0000ff'])
+    display.applyRowEdits(display.editableSources, {
+      domain: ['hg38', 'mm10'],
+      range: ['red', '#0000ff'],
+    })
+    expect(getConf(display, ['rowColor', 'domain'])).toEqual(['hg38', 'mm10'])
+    expect(getConf(display, ['rowColor', 'range'])).toEqual(['red', '#0000ff'])
     expect(tints(display)).toEqual(['red', '#0000ff'])
     expect(display.rowArrangementIsCustom).toBe(true)
 

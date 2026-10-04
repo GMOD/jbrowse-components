@@ -181,11 +181,10 @@ test('hiding the reference row prunes it from the rows and the tree', () => {
 test('a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolour, and a reset returns', () => {
   const display = loaded({ tree: true })
   const [hg38, panTro4, mm10] = display.editableSources
-  display.applyRowEdits([
-    { ...mm10!, label: 'House mouse' },
-    hg38!,
-    { ...panTro4!, rowColor: '#123456' },
-  ])
+  display.applyRowEdits([{ ...mm10!, label: 'House mouse' }, hg38!, panTro4!], {
+    domain: ['panTro4'],
+    range: ['#123456'],
+  })
   expect(derived(display)).toMatchSnapshot()
   display.resetRowArrangement()
   expect(derived(display)).toMatchSnapshot()
@@ -193,8 +192,10 @@ test('a dialog reorder to a rotation keeps the supplied tree beside a relabel an
 
 test('a dialog recolour over an adapter colour, in place', () => {
   const display = loaded()
-  const [hg38, ...rest] = display.editableSources
-  display.applyRowEdits([{ ...hg38!, rowColor: '#00ff00' }, ...rest])
+  display.applyRowEdits(display.editableSources, {
+    domain: ['hg38'],
+    range: ['#00ff00'],
+  })
   expect(derived(display)).toMatchSnapshot()
 })
 

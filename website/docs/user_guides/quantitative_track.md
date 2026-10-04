@@ -88,7 +88,8 @@ A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 **Edit colors/arrangement...** opens the plot's two colours on one line: one
 above the baseline, one below, and both the same for a flat plot. Setting them
 is the whole colour story for a single signal, and a track with subtracks gets
-the list beneath them, where **Color rows by → Each row** hands every subtrack a
+the list beneath them, where **Color rows by → Each row** picks a subtrack's
+colour in the list, and on overlapping plots hands every other subtrack a
 palette entry of its own.
 
 **Edit plot...**, in that dialog, is the escape for what the line does not

@@ -390,7 +390,10 @@ describe('featureAt', () => {
           { usedItemRgb: true },
         ),
       )
-      display.applyRowEdits([{ name: 'a', rowColor: 'green' }, { name: 'b' }])
+      display.applyRowEdits([{ name: 'a' }, { name: 'b' }], {
+        domain: ['a'],
+        range: ['green'],
+      })
       display.toggleCategory(['cat1'])
 
       expect(display.featureAt(150, 10)).toBeUndefined()

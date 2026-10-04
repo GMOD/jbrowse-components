@@ -8,6 +8,12 @@ import type { RowCountByField } from './rowsFields.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { RowColorSetting, RowSource } from '@jbrowse/tree-sidebar'
 
+const EMPTY_ROW_COLOR: RowColorSetting = {
+  field: 'name',
+  domain: [],
+  range: [],
+}
+
 // The builder only reads state, so a plain object stands in for the display —
 // structural, like `MultiRowMenuSelf`, so a drifted field fails here.
 function makeSelf(
@@ -41,7 +47,6 @@ function makeSelf(
     rowDomain: [],
     rowArrangementIsCustom: false,
     editableSources: rows,
-    dialogSources: rows,
     clusterableSources: rows,
     adapterConfig: {},
     effectiveClusterField: 'name',
@@ -58,17 +63,14 @@ function makeSelf(
     applyRowEdits: () => {},
     resetRowArrangement: () => {},
     rowOrderWillDropTree: () => false,
-    rowColorSetting: {
-      field: 'name',
-      scale: undefined,
-      domain: [],
-      range: [],
-    } as RowColorSetting,
+    rowColorFor: () => EMPTY_ROW_COLOR,
+    rowColorAttributesOffered: [],
+    rowColorFields: [],
+    rowAlias: undefined,
     rowColorChoice: 'name',
     rowPaletteDeals: true,
     internalRowFields: [],
-    rowColorFields: [],
-    rowColorsFor: () => new Map(),
+    dealtRowColorsFor: () => new Map(),
     setRowHeight: () => {},
     setFitToHeight: () => {},
     ...overrides,

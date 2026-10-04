@@ -1,3 +1,4 @@
+import { capitalizeFirst } from '@jbrowse/core/util'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { compareStructural } from 'mobx'
 
@@ -34,8 +35,12 @@ export function rowColorMembers(setting: RowColorSetting): RowColorSnapshot {
   )
 }
 
-function pairsOf(setting: RowColorSetting): Record<string, string> {
-  return Object.fromEntries(pairedColorsOf(setting))
+/** Whether `a` and `b` pair the same values with the same colours. */
+export function samePairs(a: RowColorSetting, b: RowColorSetting) {
+  return compareStructural(
+    Object.fromEntries(pairedColorsOf(a)),
+    Object.fromEntries(pairedColorsOf(b)),
+  )
 }
 
 export function sameRowColor(a: RowColorSetting, b: RowColorSetting) {
@@ -47,91 +52,79 @@ export function sameRowColor(a: RowColorSetting, b: RowColorSetting) {
   )
 }
 
+/** `setting` with `value` paired to `color`, in place or appended. */
+export function withPair(
+  setting: RowColorSetting,
+  value: string,
+  color: string,
+): RowColorSetting {
+  const pairs = new Map(pairedColorsOf(setting)).set(value, color)
+  return { ...setting, domain: [...pairs.keys()], range: [...pairs.values()] }
+}
+
 /**
- * What the dialog and a menu show `setting` as: '' for None, where nothing
- * deals the rows a colour each, under `name` with no palette dealing
- * (`paletteDeals`) or an `unknown: ''` holding it off; else its field, `name`
- * for Each row.
+ * What the dialog and a menu show `setting` as: its field, `name` for Each
+ * row, or '' for None where it colours no row: `name` with no pair and an
+ * `unknown` of '', or unset where no palette deals (`paletteDeals`).
  */
 export function rowColorChoiceOf(
-  { field, unknown }: RowColorSetting,
+  setting: RowColorSetting,
   paletteDeals: boolean,
 ): string {
-  return field === 'name' && (!paletteDeals || unknown === '') ? '' : field
+  const { field, unknown } = setting
+  return field === 'name' &&
+    pairedColorsOf(setting).size === 0 &&
+    (unknown === '' || (unknown === undefined && !paletteDeals))
+    ? ''
+    : field
+}
+
+/** What a menu and the dialog call `choice`. */
+export function rowColorChoiceLabel(choice: string) {
+  return choice === ''
+    ? 'None'
+    : choice === 'name'
+      ? 'Each row'
+      : capitalizeFirst(choice)
 }
 
 /**
- * The `unknown` a dialog choice carries over from `current`: the one the
- * config sets on the same field, so None on stacked rows keeps the grey the
- * unlisted rows wear, except a `''` under Each row, which is None.
+ * The `rowColor` object a choice starts from: None's, which colours no row;
+ * else the first of `from` showing that choice, the current object then the
+ * config's, so a reader's colours stand and a config's return; else the
+ * field with no colour of its own.
  */
-export function keptUnknown(
-  current: RowColorSetting,
+export function startingRowColor(
   choice: string,
-): string | undefined {
-  return current.field === (choice || 'name') &&
-    !(choice === 'name' && current.unknown === '')
-    ? current.unknown
-    : undefined
-}
-
-/**
- * The `rowColor` object a dialog choice writes: None and Each row paint by
- * `name`, an attribute by itself with `pairs` on its values, and `unknown` on
- * the rest, the dialog's Other swatch, which opens on `keptUnknown`. None
- * where the palette deals (`paletteDeals`) is `unknown: ''`, whatever the
- * swatch.
- */
-export function rowColorChoiceSetting(
+  from: readonly RowColorSetting[],
   paletteDeals: boolean,
-  choice: string,
-  pairs: Record<string, string>,
-  unknown: string | undefined,
-): RowColorSnapshot {
-  const written = choice === '' && paletteDeals ? '' : unknown
-  const domain = Object.keys(pairs)
-  return {
-    field: choice || 'name',
-    ...(domain.length ? { domain, range: Object.values(pairs) } : {}),
-    ...(written === undefined ? {} : { unknown: written }),
-  }
-}
-
-/**
- * The `rowColor` object a menu's pick of `choice` writes over `current`: the
- * dialog's object for that choice opened and submitted untouched, so the
- * field already named keeps its pairs and `unknown`, and any other starts
- * with none.
- */
-export function rowColorForChoice(
-  current: RowColorSetting,
-  choice: string,
-  paletteDeals: boolean,
-): RowColorSnapshot {
-  return rowColorChoiceSetting(
-    paletteDeals,
-    choice,
-    current.field === (choice || 'name') ? pairsOf(current) : {},
-    keptUnknown(current, choice),
-  )
+): RowColorSetting {
+  return choice === ''
+    ? liftRowColor({ field: 'name', unknown: paletteDeals ? '' : undefined })
+    : (from.find(
+        setting => rowColorChoiceOf(setting, paletteDeals) === choice,
+      ) ?? liftRowColor({ field: choice }))
 }
 
 /**
  * What "Reset row order" returns the `rowColor` object to, or undefined while
- * `live` already shows it: `live`'s field with the colours `base` gives that
- * field, none where `base` colours by another. A reset recolours and never
- * changes what the rows are coloured by, as no other Color by is undone by
- * a reset, and the target is never itself custom, so one reset is the whole
- * way back.
+ * `live` already shows it: the object `live`'s choice starts from in `base`,
+ * and nothing under None, which has no colour to return. A reset recolours
+ * and never changes the choice, as no other Color by is undone by a reset,
+ * and the target is never itself custom, so one reset is the whole way back.
+ * Pairs compare as a set.
  */
 export function rowColorResetTarget(
   live: RowColorSetting,
   base: RowColorSetting,
+  paletteDeals: boolean,
 ): RowColorSetting | undefined {
-  const target =
-    base.field === live.field ? base : liftRowColor({ field: live.field })
-  return live.unknown === target.unknown &&
-    compareStructural(pairsOf(live), pairsOf(target))
+  const choice = rowColorChoiceOf(live, paletteDeals)
+  if (choice === '') {
+    return undefined
+  }
+  const target = startingRowColor(choice, [base], paletteDeals)
+  return live.unknown === target.unknown && samePairs(live, target)
     ? undefined
     : target
 }

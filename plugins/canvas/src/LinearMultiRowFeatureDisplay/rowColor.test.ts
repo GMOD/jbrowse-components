@@ -1,4 +1,5 @@
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
+import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { createTestEnvironment, ctgA } from './testEnv.ts'
 
@@ -55,25 +56,20 @@ test('a reorder writes the declared pairs back in their own order', () => {
 
 test('a recolour is custom until a reset returns the declared colours', () => {
   const display = loaded(DECLARED)
-  const [a, b, ...rest] = display.editableSources
-  display.applyRowEdits([a!, { ...b!, rowColor: '#f00' }, ...rest])
-  expect(display.rowColorPairs.get('b')).toBe('#f00')
+  display.applyRowEdits(display.editableSources, {
+    domain: ['c', 'a', 'b'],
+    range: ['#0f0', '#00f', '#f00'],
+  })
+  expect(pairedColorsOf(display.rowColorSetting).get('b')).toBe('#f00')
   expect(display.rowStylingIsCustom).toBe(true)
   expect(display.rowArrangementIsCustom).toBe(true)
 
   display.resetRowArrangement()
-  expect(Object.fromEntries(display.rowColorPairs)).toEqual({
+  expect(Object.fromEntries(pairedColorsOf(display.rowColorSetting))).toEqual({
     c: '#0f0',
     a: '#00f',
   })
   expect(display.rowArrangementIsCustom).toBe(false)
-})
-
-test('a colour the painters cannot parse is left out', () => {
-  const display = loaded({})
-  const [a, ...rest] = display.editableSources
-  display.applyRowEdits([{ ...a!, rowColor: 'reddish' }, ...rest])
-  expect(display.rowColorPairs.size).toBe(0)
 })
 
 test('the unanswered row stores a label only once it is renamed', () => {
@@ -97,9 +93,12 @@ test('a submit over a window holding a fraction of the rows leaves the rest stan
   }).createDisplay()
   display.setRpcData(0, rows(['a', 'b']), ctgA)
   const [a, b] = display.editableSources
-  display.applyRowEdits([b!, { ...a!, rowColor: '#f00' }])
+  display.applyRowEdits([b!, a!], {
+    domain: ['c', 'a'],
+    range: ['#0f0', '#f00'],
+  })
   expect(display.configuration.rowColor.domain).toEqual(['c', 'a'])
-  expect(Object.fromEntries(display.rowColorPairs)).toEqual({
+  expect(Object.fromEntries(pairedColorsOf(display.rowColorSetting))).toEqual({
     c: '#0f0',
     a: '#f00',
   })
@@ -147,16 +146,27 @@ test("unknown: '' deals no palette, and the pairs still paint", () => {
   ])
 })
 
-test('a recolour under None paints that row and deals the rest nothing', () => {
+test('a recolour from None reads as Each row, and None clears it', () => {
   const display = loaded({ rowColor: { unknown: '' } })
-  const [a, b, ...rest] = display.editableSources
-  display.applyRowEdits([a!, { ...b!, rowColor: '#123456' }, ...rest], {
-    field: 'name',
+  expect(display.rowColorChoice).toBe('')
+  display.applyRowEdits(display.editableSources, {
+    domain: ['b'],
+    range: ['#123456'],
     unknown: '',
   })
+  expect(display.rowColorChoice).toBe('name')
   expect(display.rowColorStringsByIndex).toEqual([
     undefined,
     '#123456',
+    undefined,
+    undefined,
+  ])
+
+  display.setRowColorChoice('')
+  expect(display.rowColorChoice).toBe('')
+  expect(display.rowColorStringsByIndex).toEqual([
+    undefined,
+    undefined,
     undefined,
     undefined,
   ])

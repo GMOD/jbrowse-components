@@ -479,11 +479,10 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   it('keeps a hand-set label and rowColor through a sort', () => {
     const display = sortableDisplay()
     const [s0, s1, s2] = display.editableSources
-    display.applyRowEdits([
-      { ...s0!, label: 'first', rowColor: 'red' },
-      s1!,
-      s2!,
-    ])
+    display.applyRowEdits([{ ...s0!, label: 'first' }, s1!, s2!], {
+      domain: ['S0'],
+      range: ['red'],
+    })
 
     display.sortByGenotype('v1')
 

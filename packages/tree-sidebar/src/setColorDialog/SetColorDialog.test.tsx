@@ -4,7 +4,11 @@ import React from 'react'
 
 import { fireEvent, render, screen, within } from '@testing-library/react'
 
-import { liftRowColor, rowColorChoiceOf } from '../rowColorChoice.ts'
+import {
+  liftRowColor,
+  rowColorChoiceOf,
+  startingRowColor,
+} from '../rowColorChoice.ts'
 import SetColorDialog from './SetColorDialog.tsx'
 
 import type { RowColorSnapshot } from '../rowColorChoice.ts'
@@ -19,51 +23,77 @@ interface Src {
 }
 
 const PALETTE = ['#111111', '#222222', '#333333']
+const AUTO = 'Automatic — click to set a custom color'
 
-// A deal of each value of the setting's field, its listed values taking their
-// range colour, the rest the palette in first-seen order.
-function previewOf(rows: Src[]) {
+// A deal of each value of the setting's field: its listed values take their
+// range colour, the rest `unknown`, or the palette in first-seen order where
+// it deals, as `dealtValueColors` does.
+function previewOf(rows: Src[], paletteDeals: boolean) {
   return (snapshot: RowColorSnapshot) => {
     const setting = liftRowColor(snapshot)
     const colors = new Map<string, string>()
     setting.domain.forEach((value, i) => colors.set(value, setting.range[i]!))
+    const deals =
+      setting.unknown !== '' &&
+      (setting.field !== 'name' ||
+        paletteDeals ||
+        setting.unknown !== undefined)
     let next = 0
     for (const row of rows) {
       const value =
         setting.field === 'name'
           ? row.name
           : String((row as unknown as Record<string, unknown>)[setting.field])
-      if (!colors.has(value)) {
-        colors.set(value, PALETTE[next++ % PALETTE.length]!)
+      if (deals && !colors.has(value)) {
+        colors.set(value, setting.unknown ?? PALETTE[next++ % PALETTE.length]!)
       }
     }
     return colors
   }
 }
 
-function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
+const EMPTY: RowColorSetting = { field: 'name', domain: [], range: [] }
+
+interface FakeOptions extends Partial<TreeLayoutModel<Src>> {
+  rowColorSetting?: RowColorSetting
+  baseRowColor?: RowColorSetting
+  rowColorFields?: string[]
+}
+
+// The model members the dialog reads, derived from a config's `rowColor`, its
+// base and the attributes on offer as the mixin derives them.
+function fakeModel({
+  rowColorSetting = EMPTY,
+  baseRowColor = EMPTY,
+  rowColorFields = [],
+  ...overrides
+}: FakeOptions = {}): TreeLayoutModel<Src> {
   const editableSources = overrides.editableSources ?? [
     { name: 'a', rowColor: '#f00' },
     { name: 'b' },
   ]
-  const rowColorSetting: RowColorSetting = overrides.rowColorSetting ?? {
-    field: 'name',
-    domain: [],
-    range: [],
-  }
   const rowPaletteDeals = overrides.rowPaletteDeals ?? true
+  const current = rowColorChoiceOf(rowColorSetting, rowPaletteDeals)
   return {
     editableSources,
-    dialogSources: editableSources,
     applyRowEdits: jest.fn(),
     resetRowArrangement: jest.fn(),
     rowOrderWillDropTree: jest.fn(() => false),
-    rowColorSetting,
-    rowColorChoice: rowColorChoiceOf(rowColorSetting, rowPaletteDeals),
+    rowColorChoice: current,
+    rowColorAttributesOffered:
+      current === '' || current === 'name' || rowColorFields.includes(current)
+        ? rowColorFields
+        : [...rowColorFields, current],
+    rowColorFor: choice =>
+      startingRowColor(
+        choice,
+        [rowColorSetting, baseRowColor],
+        rowPaletteDeals,
+      ),
     rowPaletteDeals,
+    rowAlias: undefined,
     internalRowFields: [],
-    rowColorFields: [],
-    rowColorsFor: previewOf(editableSources),
+    dealtRowColorsFor: previewOf(editableSources, rowPaletteDeals),
     ...overrides,
   }
 }
@@ -85,9 +115,32 @@ function submitted(model: TreeLayoutModel<Src>) {
   return calls[calls.length - 1] as [Src[], Record<string, unknown> | undefined]
 }
 
+// Picks `to` in the swatch's popover and closes it, as a reader does.
 function pickColor(swatch: Element, from: string, to: string) {
   fireEvent.click(swatch)
-  fireEvent.change(screen.getByDisplayValue(from), { target: { value: to } })
+  const input = screen.getByDisplayValue(from)
+  fireEvent.change(input, { target: { value: to } })
+  fireEvent.keyDown(input, { key: 'Escape' })
+}
+
+function gridRow(name: string) {
+  return within(
+    screen.getAllByRole('gridcell', { name }).at(-1)!.closest('[role="row"]')!,
+  )
+}
+
+function choices() {
+  return within(screen.getByRole('group', { name: 'Color rows by' }))
+}
+
+function choose(label: string) {
+  fireEvent.click(choices().getByRole('button', { name: label }))
+}
+
+function pressed(label: string) {
+  return choices()
+    .getByRole('button', { name: label })
+    .getAttribute('aria-pressed')
 }
 
 test('Submit persists the layout and closes when no tree would be cleared', () => {
@@ -120,62 +173,124 @@ test('Submit warns first when it would invalidate a loaded cluster tree', () => 
   expect(handleClose).toHaveBeenCalled()
 })
 
-test("the grid edits one colour column, the rows' rowColor", () => {
+test('the grid shows one colour column', () => {
   setup(fakeModel())
   expect(
     screen.getByRole('columnheader', { name: 'Color' }),
   ).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Label color' })).toBeNull()
 })
 
-// "Start from" is how a reader colours by an attribute and then changes one
-// row: a one-off copy onto the rows' colours.
-test('Start from copies the attribute colors onto the rows', () => {
-  const model = fakeModel({
-    editableSources: GROUPED,
-    rowColorFields: ['group'],
-  })
-  setup(model)
+describe('Each row', () => {
+  test("picks a row's colour in the row list", () => {
+    const model = fakeModel()
+    setup(model)
+    expect(pressed('Each row')).toBe('true')
 
-  fireEvent.mouseDown(screen.getByLabelText('Start from'))
-  fireEvent.click(screen.getByRole('option', { name: 'Group colors' }))
-  fireEvent.click(screen.getByText('Submit'))
+    pickColor(gridRow('b').getByTitle(AUTO), '#222222', '#00ff00')
+    fireEvent.click(screen.getByText('Submit'))
 
-  const [rows, rowColor] = submitted(model)
-  expect(rows.map(s => s.rowColor)).toEqual(['#111111', '#222222', '#111111'])
-  expect(rows.every(s => s.color === undefined)).toBe(true)
-  expect(rowColor).toEqual({ field: 'name' })
-})
-
-test('a touched Each row keeps the unknown colour its config sets', () => {
-  const model = fakeModel({
-    rowColorSetting: {
+    expect(submitted(model)[1]).toEqual({
       field: 'name',
-      domain: ['a'],
-      range: ['#f00'],
-      unknown: '#cccccc',
-    },
+      domain: ['b'],
+      range: ['rgb(0, 255, 0)'],
+    })
   })
-  setup(model)
 
-  fireEvent.click(screen.getByText('Clear row colors'))
-  fireEvent.click(screen.getByText('Submit'))
+  test('Clear row colors drops the picks and keeps the Other colour', () => {
+    const model = fakeModel({
+      rowColorSetting: {
+        field: 'name',
+        domain: ['a'],
+        range: ['#f00'],
+        unknown: '#cccccc',
+      },
+    })
+    setup(model)
 
-  expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '#cccccc' })
+    fireEvent.click(screen.getByText('Clear row colors'))
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '#cccccc' })
+  })
+
+  test('Other none leaves the rows no pick names uncoloured', () => {
+    const model = fakeModel()
+    setup(model)
+
+    pickColor(gridRow('b').getByTitle(AUTO), '#222222', '#00ff00')
+    fireEvent.click(screen.getByRole('button', { name: 'Other rows: none' }))
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({
+      field: 'name',
+      domain: ['b'],
+      range: ['rgb(0, 255, 0)'],
+      unknown: '',
+    })
+  })
+
+  // Stacked rows take no palette colour by name, so Auto already colours no
+  // other row and the swatch offers no None beside it.
+  test('a stacked display offers it, and a pick colours that row alone', () => {
+    const model = fakeModel({ rowPaletteDeals: false })
+    setup(model)
+    expect(pressed('None')).toBe('true')
+
+    choose('Each row')
+    expect(
+      screen.queryByRole('button', { name: 'Other rows: none' }),
+    ).toBeNull()
+    pickColor(gridRow('b').getByTitle(AUTO), 'blue', '#00ff00')
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({
+      field: 'name',
+      domain: ['b'],
+      range: ['rgb(0, 255, 0)'],
+    })
+  })
+
+  test('a pasted colour column lands as picks', () => {
+    const model = fakeModel({ rowPaletteDeals: false })
+    setup(model)
+
+    fireEvent.click(screen.getByText('Bulk row editor'))
+    fireEvent.change(screen.getByPlaceholderText(/^name,rowColor/), {
+      target: { value: 'name,rowColor\nb,#00ff00\na,reddish' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
+    expect(pressed('Each row')).toBe('true')
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({
+      field: 'name',
+      domain: ['b'],
+      range: ['#00ff00'],
+    })
+  })
 })
 
-test("Clear row colors unsets each row's colour and leaves its own", () => {
+// The pasted colour column is Each row's whole pick set, so a blanked cell
+// drops that pick.
+test('a pasted colour column replaces the picks', () => {
   const model = fakeModel({
-    editableSources: [{ name: 'a', color: '#f00', rowColor: '#0f0' }],
+    rowColorSetting: { field: 'name', domain: ['a'], range: ['#f00'] },
+    rowPaletteDeals: false,
   })
   setup(model)
 
-  fireEvent.click(screen.getByText('Clear row colors'))
+  fireEvent.click(screen.getByText('Bulk row editor'))
+  fireEvent.change(screen.getByPlaceholderText(/^name,rowColor/), {
+    target: { value: 'name,rowColor\na,\nb,#00ff00' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
   fireEvent.click(screen.getByText('Submit'))
 
-  const [rows] = submitted(model)
-  expect(rows[0]!.rowColor).toBeUndefined()
-  expect(rows[0]!.color).toBe('#f00')
+  expect(submitted(model)[1]).toEqual({
+    field: 'name',
+    domain: ['b'],
+    range: ['#00ff00'],
+  })
 })
 
 describe('colored by an attribute', () => {
@@ -199,9 +314,6 @@ describe('colored by an attribute', () => {
       '2 rows',
     )
     expect(values.getByText('g2').nextElementSibling!.textContent).toBe('1 row')
-    expect(
-      values.getByText('Other values').nextElementSibling!.textContent,
-    ).toBe('2 rows')
     expect(
       screen.getAllByTestId('row-color-swatch').map(s => s.style.background),
     ).toEqual(['rgb(17, 17, 17)', 'rgb(171, 205, 239)', 'rgb(17, 17, 17)'])
@@ -234,26 +346,26 @@ describe('colored by an attribute', () => {
     })
   })
 
-  test('Reset returns every value to the palette', () => {
+  test('Clear returns every value to the palette', () => {
     const model = byGroup()
     setup(model)
 
-    fireEvent.click(screen.getByText('Reset Group colors'))
+    fireEvent.click(screen.getByText('Clear Group colors'))
     fireEvent.click(screen.getByText('Submit'))
     expect(submitted(model)[1]).toEqual({ field: 'group' })
   })
 
-  test('None writes the rows with no palette, the attribute gone', () => {
+  test('None colours nothing', () => {
     const model = byGroup()
     setup(model)
 
-    fireEvent.click(screen.getByRole('button', { name: 'None' }))
+    choose('None')
     fireEvent.click(screen.getByText('Submit'))
 
     expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '' })
   })
 
-  test('an attribute keeps the unknown its config sets', () => {
+  test('Clear keeps the Other colour the config sets', () => {
     const model = fakeModel({
       editableSources: GROUPED,
       rowColorFields: ['group'],
@@ -266,96 +378,102 @@ describe('colored by an attribute', () => {
     })
     setup(model)
 
-    fireEvent.click(screen.getByText('Reset Group colors'))
+    fireEvent.click(screen.getByText('Clear Group colors'))
     fireEvent.click(screen.getByText('Submit'))
 
     expect(submitted(model)[1]).toEqual({ field: 'group', unknown: '' })
   })
 })
 
-test('None edits the row colors, which stay without the palette', () => {
-  const model = fakeModel({
-    rowColorSetting: {
-      field: 'name',
-      domain: ['a'],
-      range: ['#f00'],
-      unknown: '',
-    },
-    rowColorChoice: '',
+describe('None', () => {
+  test('offers no Other swatch, and the rows show their own colours', () => {
+    setup(
+      fakeModel({
+        editableSources: [{ name: 'a', color: '#00ff00' }, { name: 'b' }],
+        rowColorSetting: { ...EMPTY, unknown: '' },
+      }),
+    )
+    expect(pressed('None')).toBe('true')
+    expect(screen.queryByText('Other rows')).toBeNull()
+    expect(
+      screen.getAllByTestId('row-color-swatch').map(s => s.style.background),
+    ).toEqual(['rgb(0, 255, 0)'])
   })
-  setup(model)
 
-  fireEvent.click(screen.getByText('Clear row colors'))
-  fireEvent.click(screen.getByText('Submit'))
+  test('on a display dealing no palette writes no unknown', () => {
+    const model = fakeModel({
+      editableSources: GROUPED,
+      rowColorFields: ['group'],
+      rowColorSetting: { ...EMPTY, field: 'group' },
+      rowPaletteDeals: false,
+    })
+    setup(model)
 
-  const [rows, rowColor] = submitted(model)
-  expect(rows[0]!.rowColor).toBeUndefined()
-  expect(rowColor).toEqual({ field: 'name', unknown: '' })
+    choose('None')
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({ field: 'name' })
+  })
 })
 
-test('None on a display dealing no palette writes the rows alone', () => {
-  const model = fakeModel({
-    editableSources: GROUPED,
-    rowColorFields: ['group'],
-    rowColorSetting: {
+// A choice starts from the colours it has now, else the config's, so picking
+// the config's attribute back after None is the config again.
+describe('the colours a choice starts from', () => {
+  const overBase = () =>
+    fakeModel({
+      editableSources: GROUPED,
+      rowColorFields: ['group'],
+      rowColorSetting: { ...EMPTY, unknown: '' },
+      baseRowColor: {
+        field: 'group',
+        domain: ['g2'],
+        range: ['#abcdef'],
+        unknown: '#cccccc',
+      },
+    })
+
+  test("are the config's for the attribute it colours by", () => {
+    const model = overBase()
+    setup(model)
+
+    choose('Group')
+    expect(
+      within(screen.getByTestId('row-color-values'))
+        .getByText('g2')
+        .previousElementSibling!.firstElementChild!.getAttribute('title'),
+    ).toBeNull()
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({
       field: 'group',
-      domain: [],
-      range: [],
-    },
-    rowPaletteDeals: false,
-  })
-  setup(model)
-
-  fireEvent.click(screen.getByRole('button', { name: 'None' }))
-  fireEvent.click(screen.getByText('Submit'))
-
-  expect(submitted(model)[1]).toEqual({ field: 'name' })
-})
-
-// A submit names a colour object only where the reader changed a colour, so a
-// reorder or relabel leaves the config's as it wrote it.
-describe('the colour object a submit passes', () => {
-  test('none for an untouched panel', () => {
-    const model = fakeModel()
-    setup(model)
-
-    fireEvent.click(screen.getByText('Submit'))
-
-    expect(submitted(model)[1]).toBeUndefined()
+      domain: ['g2'],
+      range: ['#abcdef'],
+      unknown: '#cccccc',
+    })
   })
 
-  test('the choice, once the reader changes it', () => {
-    const model = fakeModel()
+  test('are the picks left on a choice earlier in the sitting', () => {
+    const model = overBase()
     setup(model)
 
-    fireEvent.click(screen.getByRole('button', { name: 'None' }))
-    fireEvent.click(screen.getByText('Submit'))
-
-    expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '' })
-  })
-
-  test('None, once the reader colours a row under it', () => {
-    const model = fakeModel({ rowColorChoice: '' })
-    setup(model)
-
+    choose('Group')
     pickColor(
-      screen.getByTitle('Automatic — click to set a custom color'),
-      'blue',
+      within(screen.getByTestId('row-color-values')).getByText('g1')
+        .previousElementSibling!.firstElementChild!,
+      '#cccccc',
       '#00ff00',
     )
+    choose('None')
+    choose('Group')
     fireEvent.click(screen.getByText('Submit'))
 
-    const [rows, rowColor] = submitted(model)
-    expect(rows[1]!.rowColor).toBe('rgb(0, 255, 0)')
-    expect(rowColor).toEqual({ field: 'name', unknown: '' })
+    expect(submitted(model)[1]).toEqual({
+      field: 'group',
+      domain: ['g2', 'g1'],
+      range: ['#abcdef', 'rgb(0, 255, 0)'],
+      unknown: '#cccccc',
+    })
   })
-})
-
-test('a display dealing no palette offers no Each row', () => {
-  setup(fakeModel({ rowPaletteDeals: false }))
-
-  expect(screen.getByRole('button', { name: 'None' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Each row' })).toBeNull()
 })
 
 test('a color by the display does not offer still shows as chosen', () => {
@@ -363,17 +481,10 @@ test('a color by the display does not offer still shows as chosen', () => {
     fakeModel({
       editableSources: GROUPED,
       rowColorFields: ['group'],
-      rowColorSetting: {
-        field: 'tissue',
-        domain: [],
-        range: [],
-      },
+      rowColorSetting: { ...EMPTY, field: 'tissue' },
     }),
   )
-  expect(screen.getByRole('button', { name: 'Tissue' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
+  expect(pressed('Tissue')).toBe('true')
 })
 
 // Regression: the warning must consult the model live, not a snapshot taken at
@@ -395,9 +506,8 @@ test('no spurious warning after Clear custom settings drops the tree', () => {
   expect(model.applyRowEdits).toHaveBeenCalled()
 })
 
-// The display's own colour, on one line above the rows. It is held here and
-// written in submit(), which is what the dead `displayControls` prop promised
-// not to do.
+// The display's own colour, on one line above the rows, held here and written
+// in submit().
 describe('the plot color line', () => {
   const PLOT = {
     above: '#b2182b',
@@ -489,9 +599,8 @@ test('showRows false drops the row choice, the grid and the bulk editor', () => 
 })
 
 // A stacked display's config can paint the listed rows and grey the rest
-// (`unknown: '#ccc'`); the dialog shows that as None, since no palette deals,
-// with the grey on the Other rows swatch, which a recolour of one row keeps
-// and Clear row colors takes with the rest.
+// (`unknown: '#ccc'`), which is Each row with the grey on the Other rows
+// swatch.
 describe('the Other rows swatch on a stacked display', () => {
   const grey = () =>
     fakeModel({
@@ -504,34 +613,27 @@ describe('the Other rows swatch on a stacked display', () => {
       rowPaletteDeals: false,
     })
 
-  test("shows the config's grey under None, kept past a row recolour", () => {
+  test("shows the config's grey under Each row, kept past a row pick", () => {
     const model = grey()
     setup(model)
 
-    expect(screen.getByRole('button', { name: 'None' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    expect(pressed('Each row')).toBe('true')
     const other = screen.getByText('Other rows').previousElementSibling!
     expect((other.firstElementChild as HTMLElement).style.backgroundColor).toBe(
       'rgb(204, 204, 204)',
     )
-    // Row b's swatch: the one automatic colour here, since a is red and the
-    // Other rows swatch is grey.
-    pickColor(
-      screen.getByTitle('Automatic — click to set a custom color'),
-      'blue',
-      '#00ff00',
-    )
+    pickColor(gridRow('b').getByTitle(AUTO), '#cccccc', '#00ff00')
     fireEvent.click(screen.getByText('Submit'))
 
     expect(submitted(model)[1]).toEqual({
       field: 'name',
+      domain: ['a', 'b'],
+      range: ['#f00', 'rgb(0, 255, 0)'],
       unknown: '#cccccc',
     })
   })
 
-  test('recolours the grey, and Clear row colors drops it', () => {
+  test('recolours the grey', () => {
     const model = grey()
     setup(model)
 
@@ -540,25 +642,25 @@ describe('the Other rows swatch on a stacked display', () => {
     fireEvent.click(screen.getByText('Submit'))
     expect(submitted(model)[1]).toEqual({
       field: 'name',
+      domain: ['a'],
+      range: ['#f00'],
       unknown: 'rgb(0, 0, 255)',
     })
   })
 
-  test('Auto returns the other rows to their own colours; Clear row colors leaves them', () => {
+  test('Auto returns the other rows to their own colours', () => {
     const model = grey()
     setup(model)
 
-    fireEvent.click(screen.getByText('Clear row colors'))
-    fireEvent.click(screen.getByText('Auto'))
+    fireEvent.click(screen.getByRole('button', { name: 'Other rows: auto' }))
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({ field: 'name' })
+    expect(submitted(model)[1]).toEqual({
+      field: 'name',
+      domain: ['a'],
+      range: ['#f00'],
+    })
   })
-})
-
-test('None with a palette dealing offers no Other rows swatch', () => {
-  setup(fakeModel({ rowColorChoice: '' }))
-  expect(screen.queryByText('Other rows')).toBeNull()
 })
 
 test('an attribute lists Other values with the rows no pair names, and colours them', () => {
@@ -575,8 +677,8 @@ test('an attribute lists Other values with the rows no pair names, and colours t
 
   const values = within(screen.getByTestId('row-color-values'))
   const other = values.getByText('Other values')
-  expect(other.nextElementSibling!.textContent).toBe('2 rows')
   pickColor(other.previousElementSibling!.firstElementChild!, 'blue', '#999999')
+  expect(values.getByTestId('other-count').textContent).toBe('2 rows')
   fireEvent.click(screen.getByText('Submit'))
 
   expect(submitted(model)[1]).toEqual({
@@ -625,9 +727,9 @@ describe('the Other values swatch', () => {
     })
   const otherValues = () =>
     within(screen.getByTestId('row-color-values')).getByText('Other values')
-  const otherCount = () => otherValues().nextElementSibling!.textContent
+  const otherCount = () => screen.getByTestId('other-count').textContent
 
-  test('is held per field, so None after group writes none of it', () => {
+  test('is held per choice, so None after group writes none of it', () => {
     const model = byGroupPair()
     setup(model)
 
@@ -636,20 +738,24 @@ describe('the Other values swatch', () => {
       'blue',
       '#999999',
     )
-    fireEvent.click(screen.getByText('None'))
+    choose('None')
     fireEvent.click(screen.getByText('Submit'))
 
     expect(submitted(model)[1]).toEqual({ field: 'name' })
   })
 
-  test('counts fewer rows once a value takes a pair of its own', () => {
+  // Under Auto each unpaired value lists its own palette colour, so only a set
+  // Other colour has rows to count.
+  test('counts its rows only while it holds a colour or None', () => {
     setup(byGroupPair())
+    expect(screen.queryByTestId('other-count')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Other values: none' }))
     expect(otherCount()).toBe('2 rows')
 
     const values = within(screen.getByTestId('row-color-values'))
     pickColor(
       values.getByText('g1').previousElementSibling!.firstElementChild!,
-      '#111111',
+      'blue',
       '#00ff00',
     )
 
@@ -672,7 +778,22 @@ describe('the Other values swatch', () => {
     expect(submitted(model)[1]).toBeUndefined()
   })
 
-  test("a config's '' shows as none with Auto, and Auto deals the palette", () => {
+  test('None leaves the values no pair names uncoloured', () => {
+    const model = byGroupPair()
+    setup(model)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Other values: none' }))
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({
+      field: 'group',
+      domain: ['g2'],
+      range: ['#abcdef'],
+      unknown: '',
+    })
+  })
+
+  test("a config's '' shows None pressed, and Auto deals the palette", () => {
     const model = fakeModel({
       editableSources: GROUPED,
       rowColorFields: ['group'],
@@ -685,9 +806,12 @@ describe('the Other values swatch', () => {
     })
     setup(model)
 
-    const swatch = otherValues().previousElementSibling!.firstElementChild!
-    expect(swatch.getAttribute('title')).toBeNull()
-    fireEvent.click(screen.getByText('Auto'))
+    expect(
+      screen
+        .getByRole('button', { name: 'Other values: none' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: 'Other values: auto' }))
     fireEvent.click(screen.getByText('Submit'))
 
     expect(submitted(model)[1]).toEqual({ field: 'group' })

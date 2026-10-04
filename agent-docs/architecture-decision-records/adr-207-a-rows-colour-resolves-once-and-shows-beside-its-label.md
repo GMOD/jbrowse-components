@@ -86,61 +86,21 @@ grammar rather than from what shipped.
   arrangement, which no other Color by is, and a mode switch, which resets the
   arrangement, would drop the reader's Color by.
 
-## Amended 2026-10-04: one rule for custom and reset, and None keeps a grey
+## Amended 2026-10-04: one rule for custom and reset, and no `scale`
 
 An audit of the landing found the "is this the reader's" and "what does a
-reset write" rules spelled twice and drifted: over a base
-`rowColor: { field: 'group', unknown: '#ccc' }`, a value recolour and a reset
-dropped the `unknown`, painted every group a palette colour and still offered
-Reset. `rowColorResetTarget` (`rowColorChoice.ts`) is now both: the snapshot a
-reset writes, or undefined while nothing is custom, and the target is never
-itself custom. `resetRowStyling`, a public action with no consumer that also
-skipped the persist, is gone; `resetRowArrangement` is the one reset. The
-variant menu's None writes the dialog's `{ field: 'name' }` rather than
-parking. The reset rule itself is amended again below.
+reset write" rules spelled twice and drifted, so `rowColorResetTarget`
+(`rowColorChoice.ts`) became both, and `resetRowStyling`, a public action
+with no consumer, went; `resetRowArrangement` is the one reset. The `unknown`
+became the dialog's Other swatch, the key over a shared panel is titled by a
+new hook, `rowNoun` ("Subtrack" on wiggle), and variants' `rowColorField`
+became the mixin's `rowColorAttribute`.
 
-The same module holds what the dialog's choice writes
-(`rowColorChoiceSetting`, from the display's `rowPaletteDeals`), so one rule
-decides what None means: `unknown: ''` where the palette deals, and on stacked
-rows by `name` with a colour `unknown` kept, since a config painting the listed
-rows and greying the rest reads as None there rather than as an Each row the
-dialog does not offer. The `unknown` itself is a swatch: "Other rows" under
-None and Each row, "Other values" with its row count under an attribute,
-opening on the config's (`keptUnknown`) and returning to automatic by its own
-Auto button, so the grey the key shows as "Other" is a reader's setting like
-every other colour; a value with no pair of its own shows the colour it
-inherits as a dashed swatch. The variant menu's None is checked over such a
-config and a pick is a no-op, as it already was over `name` pairs alone. The
-dialog's value table lists an attribute's values in the key's order. The key
-over a shared panel is titled by a new hook, `rowNoun` ("Subtrack" on wiggle),
-not "Name". Variants' `rowColorField` became the mixin's `rowColorAttribute`.
-
-## Amended 2026-10-04: `rowColor` has no `scale`, and a reset keeps the field
-
-A scope review found two leftovers of parking. Once the variant menu wrote the
-dialog's object, nothing a reader did wrote `scale: 'none'` on `rowColor`, and
+A scope review then cut `scale` from `RowColor`. Once the variant menu wrote
+the dialog's object, nothing a reader did wrote `scale: 'none'`, and
 `rowColor` has no `value` for a parked field to stand behind (ADR-135's reason
-to park), so a hand-written `none` was only a second spelling of None. The
-`scale` slot is gone from `RowColor`, and with it every `scale !== 'none'`
-branch in the rules, the dealer and the key. A config naming it is refused,
-as any closed schema refuses an unknown member.
+to park), so a hand-written `none` was only a second spelling of None. A
+config naming it is refused, as any closed schema refuses an unknown member.
 
-The reset rule had grown a clause per case and still disagreed with itself:
-over a base `{ field: 'population', unknown: '#ccc' }`, picking another
-attribute offered Reset, since the menu drops an `unknown` on a field change,
-while over a base with no grey the same pick did not; and a reset over another
-attribute wrote the base's grey onto it, which turns every unpaired value grey.
-`rowColorResetTarget` is now one rule: the target is the live field with the
-colours the base gives that field, none where the base colours by another. A
-reset recolours and never changes what the rows are coloured by, as no other
-Color by in the app is undone by "Reset row order", and a field switch is
-never custom. None over a configured Color by therefore offers no Reset; the
-reader picks the attribute back from the same radio group, and a reset then
-returns any colours the config gives it. Where the display deals a palette
-under `name`, None is `unknown: ''` on the base's own field, so it is custom
-there and a reset deals the palette again. Pairs compare as a set, so a
-dialog listing them in another order is not custom.
-
-The variant menu's Samples group ticks a configured attribute the samples
-lack, as the dialog shows it chosen, rather than ticking nothing.
-
+What None means, what a choice starts from and what a reset writes are
+[ADR-209](adr-209-each-row-is-a-choice-like-an-attribute.md)'s.

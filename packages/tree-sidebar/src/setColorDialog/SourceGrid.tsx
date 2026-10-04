@@ -11,6 +11,7 @@ import SelectionMoveButtons from './SelectionMoveButtons.tsx'
 import { buildSourceColumns } from './buildSourceColumns.tsx'
 import { useSourceSort } from './useSourceSort.ts'
 
+import type { EachRowPicks } from './buildSourceColumns.tsx'
 import type { GridRowId, GridSortModel } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
@@ -25,22 +26,19 @@ const useStyles = makeStyles()({
 // onSortModelChange (see useSourceSort), so MUI's own model stays unset.
 const EMPTY_SORT_MODEL: GridSortModel = []
 
-export default observer(function SourceGrid<
-  S extends { name: string; rowColor?: string },
->({
+export default observer(function SourceGrid<S extends { name: string }>({
   rows,
   onChange,
-  editsColor,
-  swatchOf,
+  colors,
+  eachRow,
   reserved,
 }: {
   rows: S[]
   onChange: (arg: S[]) => void
-  // Whether each row's `rowColor` shows as an editable swatch, while the
-  // rows are coloured each their own.
-  editsColor: boolean
-  // The color each row takes from an attribute, shown and not edited.
-  swatchOf?: (row: S) => string | undefined
+  // The colour each row shows, by name.
+  colors: ReadonlyMap<string, string>
+  // Under Each row, where a row's swatch is its pick.
+  eachRow?: EachRowPicks
   // Fields that drive their own dedicated column or are plumbing, so they must
   // not appear in the auto-derived extras.
   reserved: ReadonlySet<string>
@@ -52,12 +50,9 @@ export default observer(function SourceGrid<
 
   return (
     <div>
-      <BulkColorControls
-        editsColor={editsColor}
-        rows={rows}
-        selected={selected}
-        onChange={onChange}
-      />
+      {eachRow ? (
+        <BulkColorControls selected={selected} onPick={eachRow.onPick} />
+      ) : null}
       <SelectionMoveButtons
         rows={rows}
         selected={selected}
@@ -80,11 +75,10 @@ export default observer(function SourceGrid<
           rowHeight={25}
           columnHeaderHeight={33}
           columns={buildSourceColumns({
-            editsColor,
-            swatchOf,
+            colors,
+            eachRow,
             extras,
             rows,
-            onChange,
             cellClassName: classes.cell,
           })}
           sortModel={EMPTY_SORT_MODEL}

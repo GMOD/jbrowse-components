@@ -1,79 +1,49 @@
-import { isCssColor } from '@jbrowse/core/util/cssColorParse'
-
 import type { RowAlias } from './arrangeRows.ts'
 import type { RowSource } from './types.ts'
 
 /**
- * What the arrangement dialog's submit writes to `rows.labels` and the
- * `rowColor` pairs: the config's entries, with each row the reader changed
- * written over them. A row's value is its label, and its `rowColor`.
+ * What the arrangement dialog's submit writes to `rows.labels`: the config's
+ * entries, with each row the reader relabelled written over them.
  *
  * An entry the config holds stands unless the reader changed that row's
- * value, so a submit that changes nothing writes the config back as it was,
- * even where an entry repeats the adapter's value. A changed value is stored,
+ * label, so a submit that changes nothing writes the config back as it was,
+ * even where an entry repeats the adapter's label. A changed label is stored,
  * or, where it is what the row shows with no entry of its own (its alias's
- * entry, else the adapter's label or the row's own `color`), its entry is
- * removed. A row the dialog never showed keeps its entry, a dialog row the
- * current rows no longer hold writes nothing, and a colour the painters cannot
- * parse is not stored. The pairs keep the config.json's order first.
+ * entry, else the adapter's label), its entry is removed. A row the dialog
+ * never showed keeps its entry, and a dialog row the current rows no longer
+ * hold writes nothing.
  */
-export function rowEdits<S extends RowSource>({
+export function labelEdits<S extends RowSource>({
   rows,
   shown,
   adapter,
   labels,
-  colors,
-  baseOrder,
   rowAlias,
 }: {
   rows: readonly S[]
   shown: readonly S[]
   adapter: readonly S[]
   labels: Readonly<Record<string, string>>
-  colors: ReadonlyMap<string, string>
-  baseOrder: readonly string[]
   rowAlias: RowAlias | undefined
-}): {
-  labels: Record<string, string>
-  rowColor: { domain: string[]; range: string[] }
-} {
+}): Record<string, string> {
   const before = new Map(shown.map(row => [row.name, row]))
   const fromAdapter = new Map(adapter.map(row => [row.name, row]))
-  const nextLabels = new Map(Object.entries(labels))
-  const nextColors = new Map(colors)
+  const next = new Map(Object.entries(labels))
   for (const row of rows) {
     const seed = before.get(row.name)
-    if (!seed) {
+    if (!seed || row.label === seed.label) {
       continue
     }
-    const own = fromAdapter.get(row.name)
     const alias = rowAlias?.(row.name)
     const other = alias === row.name ? undefined : alias
-    if (row.label !== seed.label) {
-      const fallback =
-        other !== undefined && Object.hasOwn(labels, other)
-          ? labels[other]
-          : own?.label
-      nextLabels.delete(row.name)
-      if (row.label !== undefined && row.label !== fallback) {
-        nextLabels.set(row.name, row.label)
-      }
-    }
-    const color = row.rowColor
-    if (color !== seed.rowColor) {
-      const fallback =
-        (other === undefined ? undefined : colors.get(other)) ?? own?.color
-      nextColors.delete(row.name)
-      if (color !== undefined && color !== fallback && isCssColor(color)) {
-        nextColors.set(row.name, color)
-      }
+    const fallback =
+      other !== undefined && Object.hasOwn(labels, other)
+        ? labels[other]
+        : fromAdapter.get(row.name)?.label
+    next.delete(row.name)
+    if (row.label !== undefined && row.label !== fallback) {
+      next.set(row.name, row.label)
     }
   }
-  const domain = [
-    ...new Set([...baseOrder, ...colors.keys(), ...nextColors.keys()]),
-  ].filter(name => nextColors.has(name))
-  return {
-    labels: Object.fromEntries(nextLabels),
-    rowColor: { domain, range: domain.map(name => nextColors.get(name)!) },
-  }
+  return Object.fromEntries(next)
 }

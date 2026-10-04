@@ -51,7 +51,6 @@ import {
   computeClusterHierarchy,
   keptRows,
   loadedRegionIndexAt,
-  rowColorForChoice,
 } from '@jbrowse/tree-sidebar'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
@@ -704,24 +703,12 @@ export default function MultiSampleVariantBaseModelF(
           /**
            * #action
            * Recolor sample rows by a metadata attribute (e.g. 'population'), or
-           * pass '' for None. Writes what the arrangement dialog writes for
-           * the same choice (`rowColorForChoice`), so a new attribute starts
-           * with no entries: those a reader set row by row belong to `name`.
-           * The tint is resolved on every read of `sources`, so a recolor
-           * moves no rows and drops no cluster tree.
+           * pass '' for None, through the mixin's `setRowColorChoice`. The
+           * tint is resolved on every read of `sources`, so a recolor moves no
+           * rows and drops no cluster tree.
            */
           setRowColorField(field: string) {
-            if (field !== self.rowColorChoice) {
-              setConf(
-                self,
-                'rowColor',
-                rowColorForChoice(
-                  self.rowColorSetting,
-                  field,
-                  self.rowPaletteDeals,
-                ),
-              )
-            }
+            self.setRowColorChoice(field)
             warnUnknownArrangementAttributes(self, self.adapterSamples ?? [])
           },
           /**

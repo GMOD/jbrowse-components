@@ -1,55 +1,41 @@
-import { rowEdits } from './rowEdits.ts'
+import { labelEdits } from './rowEdits.ts'
 
 import type { RowSource } from './types.ts'
 
-// The adapter says `a` is "Ay"; the config relabels `c` and colours `c` and
-// `a`, so the dialog shows `a` in blue and `c` as "Sea" in green.
+// The adapter says `a` is "Ay"; the config relabels `c` "Sea".
 const adapter: RowSource[] = [
   { name: 'a', label: 'Ay' },
   { name: 'b' },
   { name: 'c' },
 ]
 const shown: RowSource[] = [
-  { name: 'a', label: 'Ay', rowColor: '#00f' },
+  { name: 'a', label: 'Ay' },
   { name: 'b' },
-  { name: 'c', label: 'Sea', rowColor: '#0f0' },
+  { name: 'c', label: 'Sea' },
 ]
 const live = {
   shown,
   adapter,
   labels: { c: 'Sea' },
-  colors: new Map([
-    ['c', '#0f0'],
-    ['a', '#00f'],
-  ]),
-  baseOrder: ['c', 'a'],
   rowAlias: undefined,
 }
 
 test('an unchanged submit writes the config back as it was', () => {
-  const { labels, rowColor } = rowEdits({ ...live, rows: shown })
-  expect(labels).toEqual({ c: 'Sea' })
-  expect(rowColor).toEqual({ domain: ['c', 'a'], range: ['#0f0', '#00f'] })
+  expect(labelEdits({ ...live, rows: shown })).toEqual({ c: 'Sea' })
 })
 
-// A config entry that repeats the adapter's value is the config's, so a
+// A config entry that repeats the adapter's label is the config's, so a
 // submit that leaves the row alone keeps it.
-test('an entry equal to the adapter value stands while the row is unchanged', () => {
-  const { labels } = rowEdits({
-    ...live,
-    labels: { a: 'Ay' },
-    rows: shown,
+test('an entry equal to the adapter label stands while the row is unchanged', () => {
+  expect(labelEdits({ ...live, labels: { a: 'Ay' }, rows: shown })).toEqual({
+    a: 'Ay',
   })
-  expect(labels).toEqual({ a: 'Ay' })
 })
 
-test('a row the dialog never showed keeps its label and colour', () => {
-  const { labels, rowColor } = rowEdits({
-    ...live,
-    rows: [shown[0]!, shown[1]!],
+test('a row the dialog never showed keeps its label', () => {
+  expect(labelEdits({ ...live, rows: [shown[0]!, shown[1]!] })).toEqual({
+    c: 'Sea',
   })
-  expect(labels).toEqual({ c: 'Sea' })
-  expect(rowColor).toEqual({ domain: ['c', 'a'], range: ['#0f0', '#00f'] })
 })
 
 // A variant dialog opened before the first genotypes land shows sample rows.
@@ -57,76 +43,46 @@ test('a dialog row the current rows no longer hold writes nothing', () => {
   const haplotypes: RowSource[] = ['S0 HP0', 'S0 HP1'].map(name => ({
     name,
     label: 'Sample zero',
-    rowColor: '#a00',
   }))
-  const { labels, rowColor } = rowEdits({
-    rows: [{ name: 'S0', label: 'Sample zero', rowColor: '#a00' }],
-    shown: haplotypes,
-    adapter: haplotypes,
-    labels: {},
-    colors: new Map(),
-    baseOrder: [],
-    rowAlias: name => name.replace(/ HP\d+$/, ''),
-  })
-  expect(labels).toEqual({})
-  expect(rowColor).toEqual({ domain: [], range: [] })
+  expect(
+    labelEdits({
+      rows: [{ name: 'S0', label: 'Something else' }],
+      shown: haplotypes,
+      adapter: haplotypes,
+      labels: {},
+      rowAlias: name => name.replace(/ HP\d+$/, ''),
+    }),
+  ).toEqual({})
 })
 
 test('a changed row is written as the reader left it', () => {
-  const { labels, rowColor } = rowEdits({
-    ...live,
-    rows: [shown[0]!, { name: 'b', label: 'Bee', rowColor: '#f00' }, shown[2]!],
-  })
-  expect(labels).toEqual({ c: 'Sea', b: 'Bee' })
-  expect(rowColor).toEqual({
-    domain: ['c', 'a', 'b'],
-    range: ['#0f0', '#00f', '#f00'],
-  })
+  expect(
+    labelEdits({
+      ...live,
+      rows: [shown[0]!, { name: 'b', label: 'Bee' }, shown[2]!],
+    }),
+  ).toEqual({ c: 'Sea', b: 'Bee' })
 })
 
-test('a value changed back to the adapter one removes the entry', () => {
-  const { labels, rowColor } = rowEdits({
-    ...live,
-    rows: [
-      { name: 'a', label: 'Ay' },
-      shown[1]!,
-      { name: 'c', rowColor: '#0f0' },
-    ],
-  })
-  expect(labels).toEqual({})
-  expect(rowColor).toEqual({ domain: ['c'], range: ['#0f0'] })
-})
-
-test('a colour the painters cannot parse is left out', () => {
-  const { rowColor } = rowEdits({
-    ...live,
-    rows: [{ ...shown[0]!, rowColor: 'reddish' }],
-  })
-  expect(rowColor).toEqual({ domain: ['c'], range: ['#0f0'] })
-})
-
-// A row whose own colour shows with no entry takes none for that colour.
-test("a colour changed back to the row's own colour removes the entry", () => {
-  const { rowColor } = rowEdits({
-    ...live,
-    adapter: [{ name: 'a', color: '#abc' }, adapter[1]!, adapter[2]!],
-    rows: [{ ...shown[0]!, rowColor: '#abc' }],
-  })
-  expect(rowColor).toEqual({ domain: ['c'], range: ['#0f0'] })
+test('a label changed back to the adapter one removes the entry', () => {
+  expect(
+    labelEdits({
+      ...live,
+      rows: [{ name: 'a', label: 'Ay' }, shown[1]!, { name: 'c' }],
+    }),
+  ).toEqual({})
 })
 
 // A haplotype row shows its sample's entry until it has one of its own, so a
-// value changed back to the sample's removes the row's own entry.
+// label changed back to the sample's removes the row's own entry.
 test('a row answering to an alias falls back to the alias entry', () => {
-  const { labels } = rowEdits({
-    ...live,
-    shown: [{ name: 'S1 HP0', label: 'Own' }],
-    adapter: [{ name: 'S1 HP0' }],
-    labels: { S1: 'Sample', 'S1 HP0': 'Own' },
-    colors: new Map(),
-    baseOrder: [],
-    rowAlias: name => name.replace(/ HP\d+$/, ''),
-    rows: [{ name: 'S1 HP0', label: 'Sample' }],
-  })
-  expect(labels).toEqual({ S1: 'Sample' })
+  expect(
+    labelEdits({
+      shown: [{ name: 'S1 HP0', label: 'Own' }],
+      adapter: [{ name: 'S1 HP0' }],
+      labels: { S1: 'Sample', 'S1 HP0': 'Own' },
+      rowAlias: name => name.replace(/ HP\d+$/, ''),
+      rows: [{ name: 'S1 HP0', label: 'Sample' }],
+    }),
+  ).toEqual({ S1: 'Sample' })
 })

@@ -183,9 +183,9 @@ any attribute you supply. Two slots wire it up:
   the sample name (matching the VCF header) and whose every remaining column is
   a metadata attribute.
 - `rowColor` on the display names one of those columns, and the per-sample rows
-  are tinted by that attribute for as long as it is set — over any color the TSV
-  or the arrangement editor gave a row. Clear it to restore each row's
-  individual color.
+  are tinted by that attribute for as long as it is set, over any color the TSV
+  gives a row. Set it back to None to restore the TSV's colors; the arrangement
+  editor's **Each row** picks a color per sample instead.
 - `facet` bands the rows so each value of a column is contiguous: the column's
   name, or `{ "field": …, "domain": [...] }` with the band order. Each band's
   name runs up a strip beside the dendrogram where the band is tall enough to

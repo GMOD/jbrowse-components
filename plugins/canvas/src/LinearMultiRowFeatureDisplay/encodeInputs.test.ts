@@ -87,10 +87,10 @@ describe('encodeInputs', () => {
     [
       'a recolor',
       (d: ReturnType<typeof makeDisplay>) => {
-        d.applyRowEdits([
-          { name: 'sampleA', rowColor: 'red' },
-          { name: 'sampleB' },
-        ])
+        d.applyRowEdits([{ name: 'sampleA' }, { name: 'sampleB' }], {
+          domain: ['sampleA'],
+          range: ['red'],
+        })
       },
     ],
   ])('holds still on %s, which moves the table instead', (_label, mutate) => {
@@ -146,24 +146,27 @@ describe('encodeInputs', () => {
       { ...packed, legendCandidates: collectLegendCandidates(packed) },
       ctgA,
     )
-    const rows = (colors: Record<string, string>) =>
-      names.map(name => ({
-        name,
-        ...(colors[name] ? { color: colors[name] } : {}),
-      }))
+    const rows = names.map(name => ({ name }))
+    const recolor = (colors: Record<string, string>) => {
+      display.applyRowEdits(rows, {
+        domain: Object.keys(colors),
+        range: Object.values(colors),
+      })
+    }
     const encode = countRecomputes(() => display.encodeInputs)
 
-    display.applyRowEdits(rows({ sampleA: 'red' }))
+    recolor({ sampleA: 'red' })
     expect(encode.count()).toBe(1)
 
     display.setHiddenCategories(['segB'])
     expect(encode.count()).toBe(2)
 
-    display.applyRowEdits(rows({ sampleA: 'blue' }))
+    recolor({ sampleA: 'blue' })
     expect(encode.count()).toBe(2)
 
-    display.applyRowEdits(rows({ sampleA: 'blue', sampleD: 'red' }))
+    recolor({ sampleA: 'blue', sampleD: 'red' })
     expect(encode.count()).toBe(2)
+    expect(display.resolvedRowColors.get('sampleD')).toBe('red')
     encode.dispose()
   })
 

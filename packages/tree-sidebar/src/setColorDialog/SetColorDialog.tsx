@@ -1,13 +1,14 @@
 import { useState } from 'react'
 
 import DraggableDialog from '@jbrowse/core/ui/DraggableDialog'
+import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { keptUnknown, rowColorChoiceSetting } from '../rowColorChoice.ts'
-import { rowFieldValue } from '../rowColorScale.ts'
+import { rowColorMembers, samePairs, withPair } from '../rowColorChoice.ts'
+import { resolveRowColors, rowFieldValue } from '../rowColorScale.ts'
 import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
@@ -15,8 +16,10 @@ import PlotColorRow from './PlotColorRow.tsx'
 import RowColorPanel from './RowColorPanel.tsx'
 import SourceGrid from './SourceGrid.tsx'
 
+import type { RowAlias } from '../arrangeRows.ts'
 import type { RowColorSnapshot } from '../rowColorChoice.ts'
 import type { RowColorSetting } from '../rowColorScale.ts'
+import type { RowSource } from '../types.ts'
 import type { ValueColor } from './RowColorPanel.tsx'
 
 const useStyles = makeStyles()({
@@ -33,37 +36,32 @@ const useStyles = makeStyles()({
   },
 })
 
-// The slice of a TreeSidebarMixin display the dialog drives. Consumers pass the
-// model itself (not four separate callbacks) so every plugin shares one
-// contract. `editableSources` is the dialog-editable list (no palette
-// synthesis, no subtree filter). The dialog snapshots it into local state on
-// open and re-reads it after "Clear custom settings", so edits stay uncommitted
-// until Submit.
-export interface TreeLayoutModel<S extends { name: string }> {
+// The slice of a TreeSidebarMixin display the dialog drives, which every plugin
+// passes as the model itself. The dialog snapshots `editableSources` on open
+// and holds every edit until Submit.
+export interface TreeLayoutModel<S extends RowSource> {
   editableSources: S[]
   applyRowEdits: (s: S[], rowColor?: RowColorSnapshot) => void
   resetRowArrangement: () => void
   // Whether submitting `next` would invalidate a loaded cluster tree; when true
   // the ClearTreeWarning is shown before Submit.
   rowOrderWillDropTree: (next: S[]) => boolean
-  rowColorSetting: RowColorSetting
   rowColorChoice: string
+  rowColorAttributesOffered: readonly string[]
+  rowColorFor: (choice: string) => RowColorSetting
   rowPaletteDeals: boolean
-  rowColorFields: readonly string[]
+  rowAlias: RowAlias | undefined
   internalRowFields: readonly string[]
-  rowColorsFor: (setting: RowColorSnapshot) => ReadonlyMap<string, string>
+  dealtRowColorsFor: (setting: RowColorSnapshot) => ReadonlyMap<string, string>
 }
 
-export interface SetColorDialogProps<
-  S extends { name: string; rowColor?: string },
-> {
+export interface SetColorDialogProps<S extends RowSource> {
   model: TreeLayoutModel<S>
   handleClose: () => void
   title?: string
   // The display's own colour rather than a row's, on one line above the rows.
-  // Held here and written in `submit()` AFTER the row edits, so Cancel reverts
-  // it like everything else and the write cannot recolour the rows
-  // `applyRowEdits` compares the grid's against.
+  // Held here and written in `submit()` after the row colour, so Cancel
+  // reverts it like everything else.
   plotColor?: PlotColorControl
   // False where the display has nothing to arrange — one row, or none arrived
   // yet. The row color choice, the grid and the bulk editor go with it.
@@ -84,16 +82,6 @@ export interface PlotColorControl {
   onSubmit: (next: { above: string; below: string }) => void
 }
 
-type Entries = Readonly<Record<string, Readonly<Record<string, string>>>>
-
-// The colours a `rowColor` object sets on its field's values, by field, which
-// the dialog edits before it writes one object back.
-function entriesOf(setting: RowColorSetting): Entries {
-  return setting.field === 'name'
-    ? {}
-    : { [setting.field]: Object.fromEntries(pairedColorsOf(setting)) }
-}
-
 // Each value of `field` over the rows with its colour, whether a pair of its
 // own sets it, and its row count, in the order the key lists them: the
 // coloured values as dealt, then the rest.
@@ -101,7 +89,7 @@ function valueColors(
   rows: readonly object[],
   field: string,
   colors: ReadonlyMap<string, string>,
-  pairs: Readonly<Record<string, string>>,
+  pairs: ReadonlyMap<string, string>,
 ): ValueColor[] {
   const counts = new Map<string, number>()
   for (const row of rows) {
@@ -114,13 +102,11 @@ function valueColors(
     value,
     count: counts.get(value)!,
     color: colors.get(value),
-    paired: Object.hasOwn(pairs, value),
+    paired: pairs.has(value),
   }))
 }
 
-export default observer(function SetColorDialog<
-  S extends { name: string; rowColor?: string },
->({
+export default observer(function SetColorDialog<S extends RowSource>({
   model,
   handleClose,
   title = 'Color/arrangement editor',
@@ -132,10 +118,6 @@ export default observer(function SetColorDialog<
   const openedOn = () => ({
     rows: model.editableSources,
     choice: model.rowColorChoice,
-    entries: entriesOf(model.rowColorSetting),
-    // The Other swatch's colour by field, where the reader set one; the
-    // config's `keptUnknown` stands for a field not here.
-    others: {} as Readonly<Record<string, string | undefined>>,
   })
   // Undefined until a swatch is touched, so a reset re-reads the model rather
   // than restoring a pair snapshotted before it.
@@ -147,26 +129,42 @@ export default observer(function SetColorDialog<
   const [opened, setOpened] = useState(openedOn)
   const [currLayout, setCurrLayout] = useState(opened.rows)
   const [choice, setChoice] = useState(opened.choice)
-  const [entries, setEntries] = useState(opened.entries)
-  const [others, setOthers] = useState(opened.others)
+  // The `rowColor` object each choice the reader edited in this sitting
+  // writes; an unedited one writes what it starts from.
+  const [drafts, setDrafts] = useState<
+    Readonly<Record<string, RowColorSetting>>
+  >({})
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
 
-  // A field the reader touched holds its colour, or undefined once Auto was
-  // pressed; one the reader left alone is not in the map and reads the
-  // config's.
-  const otherOf = (forChoice: string) => {
-    const field = forChoice || 'name'
-    return Object.hasOwn(others, field)
-      ? others[field]
-      : keptUnknown(model.rowColorSetting, forChoice)
+  const settingOf = (forChoice: string) =>
+    drafts[forChoice] ?? model.rowColorFor(forChoice)
+  const setting = settingOf(choice)
+  const eachRow = settingOf('name')
+  const editDraft = (next: (current: RowColorSetting) => RowColorSetting) => {
+    setDrafts({ ...drafts, [choice]: next(setting) })
   }
-  const choiceSetting = (forChoice: string) =>
-    rowColorChoiceSetting(
-      model.rowPaletteDeals,
-      forChoice,
-      entries[forChoice] ?? {},
-      otherOf(forChoice),
-    )
+  const pairs = pairedColorsOf(setting)
+  const dealt = model.dealtRowColorsFor(setting)
+  const colors = resolveRowColors(
+    currLayout,
+    setting.field,
+    dealt,
+    model.rowAlias,
+  )
+
+  // Each row's picks are set from the row list's swatches, the bulk colour
+  // button and a pasted colour column, and choose Each row.
+  const setEachRow = (next: RowColorSetting) => {
+    setDrafts({ ...drafts, name: next })
+    setChoice('name')
+  }
+  const pickEachRow = (picked: ReadonlyMap<string, string>) => {
+    let next = eachRow
+    for (const [name, color] of picked) {
+      next = withPair(next, name, color)
+    }
+    setEachRow(next)
+  }
 
   // A row's own `color` and its resolved `rowColor` never show as raw hex.
   const reserved = new Set<string>([
@@ -177,45 +175,17 @@ export default observer(function SetColorDialog<
   ])
 
   const byField = choice !== '' && choice !== 'name' ? choice : undefined
-  const fieldColors = byField
-    ? model.rowColorsFor(choiceSetting(byField))
-    : undefined
-
-  // A color by the config names that the display does not offer, a column
-  // the samples lack, still shows as chosen.
-  const current = model.rowColorChoice
-  const fields =
-    current === '' ||
-    current === 'name' ||
-    model.rowColorFields.includes(current)
-      ? model.rowColorFields
-      : [...model.rowColorFields, current]
 
   // An untouched panel writes no colour object, so the config's own stands
   // whatever the panel can spell.
-  const colorTouched = () => {
-    const before = new Map(opened.rows.map(row => [row.name, row]))
-    return (
-      choice !== opened.choice ||
-      entries !== opened.entries ||
-      others !== opened.others ||
-      currLayout.some(row => row.rowColor !== before.get(row.name)?.rowColor)
-    )
-  }
+  const colorTouched = choice !== opened.choice || Object.hasOwn(drafts, choice)
 
-  const colorsRows = choice === '' || choice === 'name'
-
-  const paintRows = (colorOf: (row: S) => string | undefined) => {
-    setCurrLayout(currLayout.map(row => ({ ...row, rowColor: colorOf(row) })))
-  }
-
-  // The row edits go first: a plot colour can change which rows the palette
-  // deals, and `applyRowEdits` compares each row against its colour now. Under
-  // None and Each row the grid's row colours become the object's pairs.
+  // The row colour goes first: a plot colour can change whether the palette
+  // deals, which the written object was chosen under.
   const submit = () => {
     model.applyRowEdits(
       currLayout,
-      colorTouched() ? choiceSetting(choice) : undefined,
+      colorTouched ? rowColorMembers(setting) : undefined,
     )
     if (
       plotPair &&
@@ -242,8 +212,7 @@ export default observer(function SetColorDialog<
     setOpened(next)
     setCurrLayout(next.rows)
     setChoice(next.choice)
-    setEntries(next.entries)
-    setOthers(next.others)
+    setDrafts({})
     setPlotPair(undefined)
   }
 
@@ -251,9 +220,25 @@ export default observer(function SetColorDialog<
     <DraggableDialog open onClose={handleClose} maxWidth="xl" title={title}>
       {showBulkEditor ? (
         <BulkEditPanel
-          currLayout={currLayout}
+          currLayout={currLayout.map(row => ({
+            ...row,
+            rowColor: pairedColorsOf(eachRow).get(row.name),
+          }))}
           onClose={next => {
             if (next) {
+              const pasted = next.flatMap(({ name, rowColor }) =>
+                rowColor && isCssColor(rowColor)
+                  ? [[name, rowColor] as const]
+                  : [],
+              )
+              const picked = {
+                ...eachRow,
+                domain: pasted.map(([name]) => name),
+                range: pasted.map(([, color]) => color),
+              }
+              if (!samePairs(picked, eachRow)) {
+                setEachRow(picked)
+              }
               setCurrLayout(next)
             }
             setShowBulkEditor(false)
@@ -289,65 +274,40 @@ export default observer(function SetColorDialog<
             {showRows ? (
               <>
                 <RowColorPanel
-                  eachRow={model.rowPaletteDeals}
-                  fields={fields}
+                  fields={model.rowColorAttributesOffered}
                   choice={choice}
                   values={
-                    byField && fieldColors
-                      ? valueColors(
-                          currLayout,
-                          byField,
-                          fieldColors,
-                          entries[byField] ?? {},
-                        )
+                    byField
+                      ? valueColors(currLayout, byField, dealt, pairs)
                       : []
                   }
                   other={
-                    choice === '' && model.rowPaletteDeals
+                    choice === ''
                       ? undefined
                       : {
-                          color: otherOf(choice),
-                          onChange: color => {
-                            setOthers({ ...others, [choice || 'name']: color })
-                          },
-                          onClear: () => {
-                            setOthers({
-                              ...others,
-                              [choice || 'name']: undefined,
-                            })
+                          color: setting.unknown,
+                          onChange: unknown => {
+                            editDraft(s => ({ ...s, unknown }))
                           },
                         }
                   }
+                  dealsByRow={model.rowPaletteDeals}
                   onChoice={setChoice}
                   onValueColor={(value, color) => {
-                    if (byField) {
-                      setEntries({
-                        ...entries,
-                        [byField]: { ...entries[byField], [value]: color },
-                      })
-                    }
+                    editDraft(s => withPair(s, value, color))
                   }}
-                  onResetValues={() => {
-                    if (byField) {
-                      setEntries({ ...entries, [byField]: {} })
-                    }
-                  }}
-                  onStartFrom={field => {
-                    const colors = model.rowColorsFor(choiceSetting(field))
-                    paintRows(row => colors.get(rowFieldValue(row, field)))
-                  }}
-                  onClearRows={() => {
-                    paintRows(() => undefined)
+                  onClear={() => {
+                    editDraft(s => ({ ...s, domain: [], range: [] }))
                   }}
                 />
 
                 <SourceGrid
                   rows={currLayout}
                   onChange={setCurrLayout}
-                  editsColor={colorsRows}
-                  swatchOf={
-                    fieldColors && byField
-                      ? row => fieldColors.get(rowFieldValue(row, byField))
+                  colors={colors}
+                  eachRow={
+                    choice === 'name'
+                      ? { picks: pairs, onPick: pickEachRow }
                       : undefined
                   }
                   reserved={reserved}

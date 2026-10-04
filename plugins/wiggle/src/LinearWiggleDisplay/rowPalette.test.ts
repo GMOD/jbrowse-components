@@ -120,12 +120,12 @@ describe('a row per subtrack deals no palette', () => {
 
   it('plots a colour set on one subtrack, the rest unchanged', () => {
     const display = makeDisplay()
-    const [a, b, c] = display.editableSources
-    display.applyRowEdits([a!, { ...b!, rowColor: '#123456' }, c!], {
-      field: 'name',
-      unknown: '',
+    display.applyRowEdits(display.editableSources, {
+      domain: ['b'],
+      range: ['#123456'],
     })
     expect(rowColors(display)).toEqual([undefined, '#123456', undefined])
+    expect(display.rowColorChoice).toBe('name')
   })
 })
 

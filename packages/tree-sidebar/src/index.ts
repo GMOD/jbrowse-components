@@ -63,7 +63,7 @@ export {
 export { orderRowsByDomain } from './arrangeRows.ts'
 export { ROW_COLOR_SCALE_ID, rowFieldValue } from './rowColorScale.ts'
 export type { RowColorKeyInputs, RowColorSetting } from './rowColorScale.ts'
-export { rowColorForChoice } from './rowColorChoice.ts'
+export { rowColorChoiceLabel } from './rowColorChoice.ts'
 export type { RowColorSnapshot } from './rowColorChoice.ts'
 export type {
   RowAlias,

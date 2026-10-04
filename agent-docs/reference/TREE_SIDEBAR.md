@@ -170,7 +170,7 @@ species a focus applies as given, as the worker's does.
 `name` pair, or the colour its attribute value is dealt), else its own `color`,
 else the palette's by name where `rowPaletteDeals` — `sharesPanel &&
 rowColorPaintsMarks`. `dealtRowColors` is the value-to-colour map behind it and
-`rowColorsFor` the dialog's preview of another setting. `dealRowColors` deals
+`dealtRowColorsFor` the dialog's preview of another setting. `dealRowColors` deals
 d3's ordinal way over the base arrangement, so no reorder, focus or relabel
 recolours a row: listed values take their `range` colour, the rest first seen
 first from tableau10 less its grey and then re-lit laps of it (`rowPaletteColorAt`),
@@ -214,49 +214,37 @@ What else the mixin owns:
   out, since the focus has a clear of its own; a reset still clears it.
   `rowColorResetTarget` (`rowColorChoice.ts`) is the one rule for both: what
   a reset writes to `rowColor`, or nothing while the live object is not
-  custom: the live field with the colours the base gives that field, its
-  pairs and `unknown`, or none where the base colours by another. A reset
-  recolours and never changes what the rows are coloured by, so a Color by
-  survives a reset and a mode switch; None survives too, except where the
-  display deals a palette under `name`, where None is an `unknown: ''` the
-  reset undoes. Its target is never itself custom, so one reset is the whole
-  way back (ADR-207).
+  custom: the object the live choice starts from in the base
+  (`startingRowColor`), and nothing under None. A reset recolours and never
+  changes the choice, so a Color by and None survive a reset and a mode
+  switch. Its target is never itself custom, so one reset is the whole way
+  back (ADR-209).
 - **The dialog shows the `rowColor` object and submits it**
-  (`applyRowEdits(rows, rowColor)`, ADR-164): "Color rows by" None
-  (`unknown: ''`), Each row where the display deals a palette under `name`
-  (`rowPaletteDeals`), or an attribute; under an attribute a table of its
-  values, each with its colour and row count, and read-only row swatches; under
-  None and Each row editable swatches, with "Start from" copying an attribute's
-  colours onto them once. The swatch column edits each row's `rowColor`, and
-  is read only under `name`, where `rowEdits` is the rule: an entry the config
-  holds stands unless the reader changed that row, so an entry repeating the
-  adapter's value survives an unchanged submit; a value changed back to what the
-  row shows with no entry of its own (its alias's entry, else its own `color`)
-  removes the entry; a row the dialog never showed keeps its entry. Any other object is written as the dialog shows it, so
-  a colour set on one row never stands for its value, and nothing is
-  materialised. An order that moves no row is not written, and a submit whose
-  colour panel the reader left alone passes no `rowColor` object, so the
-  config's own stands as written, its pairs in the order it lists them.
+  (`applyRowEdits(rows, rowColor)`, ADR-209): "Color rows by" None, Each row
+  or an attribute, on every row display. Each row and an attribute hold their
+  picks and an Other swatch, the `unknown`: Auto, None, or a colour, with None
+  hidden where it equals Auto. An attribute's picks are its value table, each
+  value with its colour and row count in the key's order; Each row's are the
+  row list's swatches, which show every row's colour under any choice and edit
+  only there, as the bulk colour button does; the bulk editor's `rowColor`
+  column is Each row's whole pick set. None colours no row. A choice opens on
+  the mixin's `rowColorFor` (`startingRowColor` over the live object and the
+  config's), and the dialog keeps a draft per choice for the sitting. The rows carry order and labels only, written by `labelEdits`: an
+  entry the config holds stands unless the reader relabelled that row, a label
+  changed back to what the row shows with no entry of its own removes the
+  entry, and a row the dialog never showed keeps its entry. An order that
+  moves no row is not written, and a submit that leaves the colour panel alone
+  passes no `rowColor` object, so the config's own stands as written.
 - **A display's own colour rides above the rows, and is written on Submit.**
   `plotColor` is the quantitative display's two plot colours on one line
   (`PlotColorRow`): held in the dialog's local state and written in `submit()`
-  **after** `applyRowEdits`, because a plot colour can change which rows the
-  palette deals, and so the colours the row edits compare against.
+  **after** `applyRowEdits`, because a plot colour can change whether the
+  palette deals, which the written row colour was chosen under.
   `showRows` drops the row choice, the grid and the bulk editor where the
   display has nothing to arrange, and `onEditAsJson` is the channel-spec escape
   as a button rather than a track-menu row. This replaced `displayControls`, a
   `ReactNode` that promised live writes Cancel would not revert and had no
   consumer; a node cannot be held for a Submit.
-- **One rule for what a choice writes** (`rowColorChoiceSetting`, from the
-  display's `rowPaletteDeals`), since None means two things: `unknown: ''`
-  where the palette deals, and by `name` with the `unknown` the config sets on
-  stacked rows, where a grey on the unlisted rows is what None shows
-  (`rowColorChoiceOf`). The `unknown` is the panel's Other swatch, "Other rows"
-  or "Other values", opening on `keptUnknown`, cleared to automatic by its Auto
-  button and left alone by the clear buttons, which take the per-row and
-  per-value swatches only. The dialog holds the choice, each attribute's
-  entries and each field's Other colour for the sitting. Its value table lists
-  the values in the key's order, the coloured ones as dealt and then the rest.
 - **A reorder keeps the names it did not show.** `setRowOrder` writes the rows
   it was handed ahead of every name the current order carries beyond them, so on
   the multi-row display, whose rows are discovered per region, a declared order

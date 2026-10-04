@@ -1,16 +1,15 @@
 import { Fragment } from 'react'
 
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
-import { capitalizeFirst } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
-  MenuItem,
-  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
+
+import { rowColorChoiceLabel } from '../rowColorChoice.ts'
 
 const useStyles = makeStyles()(theme => ({
   panel: {
@@ -49,66 +48,111 @@ export interface ValueColor {
 }
 
 /**
- * The `unknown` swatch: the one colour every row or value no swatch of its own
- * names takes; `''` for none from this setting; or undefined for automatic,
- * the palette where it deals and the row's own colour otherwise.
+ * The `unknown` swatch: the colour every row or value with no pair of its own
+ * takes; `''` for none from this setting; or undefined for automatic, the
+ * palette where it deals and the row's own colour otherwise.
  */
 export interface OtherColor {
   color: string | undefined
-  onChange: (color: string) => void
-  onClear: () => void
+  onChange: (color: string | undefined) => void
 }
 
 function rowCount(count: number) {
   return `${count.toLocaleString()} ${count === 1 ? 'row' : 'rows'}`
 }
 
+// The swatch picks a colour; Auto and None are the two states it cannot show,
+// pressed while they hold. None is offered only where it differs from Auto.
+function OtherControls({
+  other,
+  offersNone,
+  label,
+  count,
+}: {
+  other: OtherColor
+  offersNone: boolean
+  label: string
+  count?: string
+}) {
+  const { classes } = useStyles()
+  return (
+    <>
+      <PopoverPicker
+        color={other.color || 'auto'}
+        unset={!other.color}
+        onChange={other.onChange}
+      />
+      <Typography variant="body2">{label}</Typography>
+      <div className={classes.cell}>
+        {count ? (
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            data-testid="other-count"
+          >
+            {count}
+          </Typography>
+        ) : null}
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          aria-label={label}
+          sx={{ '& .MuiToggleButton-root': { textTransform: 'none', py: 0 } }}
+          value={
+            other.color === undefined
+              ? 'auto'
+              : other.color === ''
+                ? 'none'
+                : null
+          }
+          onChange={(_event, value: string | null) => {
+            if (value !== null) {
+              other.onChange(value === 'auto' ? undefined : '')
+            }
+          }}
+        >
+          <ToggleButton value="auto" aria-label={`${label}: auto`}>
+            Auto
+          </ToggleButton>
+          {offersNone ? (
+            <ToggleButton value="none" aria-label={`${label}: none`}>
+              None
+            </ToggleButton>
+          ) : null}
+        </ToggleButtonGroup>
+      </div>
+    </>
+  )
+}
+
 /**
- * What the rows are coloured by, above the rows: no palette, a palette colour
- * each where the display deals one, or an attribute, whose values are listed
- * with their colours to edit.
+ * What the rows are coloured by, above the rows: nothing, each row its own
+ * colour, picked in the row list, or an attribute, whose values are listed
+ * with their colours to pick. Either way the rest take the Other colour.
  */
 export default function RowColorPanel({
-  eachRow,
   fields,
   choice,
   values,
   other,
+  dealsByRow,
   onChoice,
   onValueColor,
-  onResetValues,
-  onStartFrom,
-  onClearRows,
+  onClear,
 }: {
-  eachRow: boolean
   fields: readonly string[]
   choice: string
   values: ValueColor[]
-  // Undefined where the choice fixes `unknown`: None with a palette dealing.
+  // Undefined under None, which colours nothing.
   other?: OtherColor
+  // Whether Each row deals a palette colour to the rows with none picked, so
+  // its Other None differs from Auto.
+  dealsByRow: boolean
   onChoice: (choice: string) => void
   onValueColor: (value: string, color: string) => void
-  onResetValues: () => void
-  onStartFrom: (field: string) => void
-  onClearRows: () => void
+  onClear: () => void
 }) {
   const { classes } = useStyles()
-  // `''` draws as an empty swatch with a solid border: a colour, none, rather
-  // than the dashed automatic.
-  const otherSwatch = other ? (
-    <PopoverPicker
-      color={other.color ?? 'auto'}
-      unset={other.color === undefined}
-      onChange={other.onChange}
-    />
-  ) : null
-  // The way back to automatic, which the picker itself has no entry for.
-  const otherAuto =
-    other && other.color !== undefined ? (
-      <Button size="small" onClick={other.onClear}>
-        Auto
-      </Button>
-    ) : null
   const otherCount = values
     .filter(({ value, paired }) => value !== '' && !paired)
     .reduce((sum, { count }) => sum + count, 0)
@@ -119,6 +163,7 @@ export default function RowColorPanel({
         <ToggleButtonGroup
           exclusive
           size="small"
+          aria-label="Color rows by"
           sx={{ '& .MuiToggleButton-root': { textTransform: 'none' } }}
           value={choice}
           onChange={(_event, value: string | null) => {
@@ -127,54 +172,35 @@ export default function RowColorPanel({
             }
           }}
         >
-          <ToggleButton value="">None</ToggleButton>
-          {eachRow ? <ToggleButton value="name">Each row</ToggleButton> : null}
-          {fields.map(field => (
-            <ToggleButton key={field} value={field}>
-              {capitalizeFirst(field)}
+          {['', 'name', ...fields].map(value => (
+            <ToggleButton key={value} value={value}>
+              {rowColorChoiceLabel(value)}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
       </div>
-      {choice === '' || choice === 'name' ? (
-        <div className={classes.line}>
+      {!other ? (
+        <Typography variant="body2" color="textSecondary">
+          Rows show the colors their data gives them.
+        </Typography>
+      ) : choice === 'name' ? (
+        <>
           <Typography variant="body2" color="textSecondary">
-            {choice === ''
-              ? 'Rows show the colors their data gives them. Click a swatch in the list to color one row.'
-              : other?.color
-                ? 'Each row takes the Other color. Click a swatch in the list to change one.'
-                : 'Each row takes a palette color. Click a swatch in the list to change one.'}
+            {dealsByRow && other.color === undefined
+              ? 'Each row takes a palette color. Click a swatch in the list to change one.'
+              : 'Click a swatch in the list to color a row.'}
           </Typography>
-          {otherSwatch ? (
-            <>
-              {otherSwatch}
-              <Typography variant="body2">Other rows</Typography>
-              {otherAuto}
-            </>
-          ) : null}
-          {fields.length ? (
-            <TextField
-              select
-              size="small"
-              variant="outlined"
-              label="Start from"
-              value=""
-              sx={{ minWidth: 200 }}
-              onChange={event => {
-                onStartFrom(event.target.value)
-              }}
-            >
-              {fields.map(field => (
-                <MenuItem key={field} value={field}>
-                  {capitalizeFirst(field)} colors
-                </MenuItem>
-              ))}
-            </TextField>
-          ) : null}
-          <Button size="small" onClick={onClearRows}>
-            Clear row colors
-          </Button>
-        </div>
+          <div className={classes.line}>
+            <OtherControls
+              other={other}
+              offersNone={dealsByRow}
+              label="Other rows"
+            />
+            <Button size="small" onClick={onClear}>
+              Clear row colors
+            </Button>
+          </div>
+        </>
       ) : (
         <>
           <div className={classes.values} data-testid="row-color-values">
@@ -193,22 +219,18 @@ export default function RowColorPanel({
                 </Typography>
               </Fragment>
             ))}
-            {other ? (
-              <>
-                {otherSwatch}
-                <Typography variant="body2">Other values</Typography>
-                <div className={classes.cell}>
-                  <Typography variant="body2" color="textSecondary">
-                    {rowCount(otherCount)}
-                  </Typography>
-                  {otherAuto}
-                </div>
-              </>
-            ) : null}
+            <OtherControls
+              other={other}
+              offersNone
+              label="Other values"
+              count={
+                other.color === undefined ? undefined : rowCount(otherCount)
+              }
+            />
           </div>
           <div>
-            <Button size="small" onClick={onResetValues}>
-              Reset {capitalizeFirst(choice)} colors
+            <Button size="small" onClick={onClear}>
+              Clear {rowColorChoiceLabel(choice)} colors
             </Button>
           </div>
         </>

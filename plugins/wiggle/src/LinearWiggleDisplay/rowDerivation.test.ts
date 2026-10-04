@@ -1,4 +1,5 @@
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
+import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
 import { waitFor } from '@testing-library/react'
 
@@ -179,12 +180,10 @@ test('rows, line: dialog edits reorder, recolour the plot and relabel', async ()
     defaultRendering: 'line',
   })
   const [g1, g2, g3, g4] = display.editableSources
-  display.applyRowEdits([
-    { ...g3!, label: 'Liver 3' },
-    { ...g2!, rowColor: '#00f' },
-    g4!,
-    g1!,
-  ])
+  display.applyRowEdits([{ ...g3!, label: 'Liver 3' }, g2!, g4!, g1!], {
+    domain: [g2!.name],
+    range: ['#00f'],
+  })
   expect(derived(display)).toMatchSnapshot()
   display.resetRowArrangement()
   expect(derived(display)).toMatchSnapshot()
@@ -195,8 +194,11 @@ test('rows, density: a dialog edit tints the label', async () => {
     ...rowsPerSource(),
     defaultRendering: 'density',
   })
-  const [g1, g2, ...rest] = display.editableSources
-  display.applyRowEdits([g1!, { ...g2!, rowColor: '#00f' }, ...rest])
+  const [, g2] = display.editableSources
+  display.applyRowEdits(display.editableSources, {
+    domain: [g2!.name],
+    range: ['#00f'],
+  })
   expect(derived(display)).toMatchSnapshot()
 })
 
@@ -227,10 +229,12 @@ test('rows: a run lands its tree, a reorder drops it, a reset returns to the see
 // goes to the plot whatever the gradient, as it did before the port.
 test('overlay, density: a dialog edit paints the plot', async () => {
   const display = await loaded(GROUPED, { defaultRendering: 'density' })
-  const [g1, ...rest] = display.editableSources
-  display.applyRowEdits([{ ...g1!, rowColor: '#00f' }, ...rest])
+  display.applyRowEdits(display.editableSources, {
+    domain: ['Grain1'],
+    range: ['#00f'],
+  })
   expect(display.markSources[0]).toEqual({ name: 'Grain1', color: '#00f' })
-  expect(display.rowColorPairs.get('Grain1')).toBe('#00f')
+  expect(pairedColorsOf(display.rowColorSetting).get('Grain1')).toBe('#00f')
 })
 
 // The Edit plot box writes rows whole: an order typed over what it shows keeps
@@ -282,7 +286,4 @@ test('rows: a reorder keeps the declared rowColor as it was', async () => {
   display.applyRowEdits([g1!, g3!, g2!, g4!])
   expect(display.configuration.rowColor.domain).toEqual(['Grain3', 'Grain1'])
   expect(display.rowStylingIsCustom).toBe(false)
-
-  display.applyRowEdits([{ ...g2!, rowColor: 'reddish' }, g1!, g3!, g4!])
-  expect(display.rowColorPairs.has('Grain2')).toBe(false)
 })

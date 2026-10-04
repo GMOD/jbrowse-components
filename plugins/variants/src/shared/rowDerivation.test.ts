@@ -162,12 +162,10 @@ describe('allele count', () => {
   test('dialog edits relabel, recolour and reorder, and a reset returns', () => {
     const display = loaded()
     const [s0, s1, s2, s3] = display.editableSources
-    display.applyRowEdits([
-      { ...s2!, label: 'Two' },
-      s0!,
-      { ...s3!, rowColor: '#123456' },
-      { ...s1!, rowColor: '#654321' },
-    ])
+    display.applyRowEdits([{ ...s2!, label: 'Two' }, s0!, s3!, s1!], {
+      domain: [s3!.name, s1!.name],
+      range: ['#123456', '#654321'],
+    })
     expect(derived(display)).toMatchSnapshot()
     display.resetRowArrangement()
     expect(derived(display)).toMatchSnapshot()
@@ -273,15 +271,10 @@ describe('phased', () => {
     const display = loaded({ phased: true })
     landCells(display)
     const [h0, h1, h2, h3, h4, h5, h6] = display.editableSources
-    display.applyRowEdits([
-      h6!,
-      { ...h1!, label: 'Zero, second' },
-      h0!,
-      { ...h4!, rowColor: '#123456' },
-      h2!,
-      h3!,
-      h5!,
-    ])
+    display.applyRowEdits(
+      [h6!, { ...h1!, label: 'Zero, second' }, h0!, h4!, h2!, h3!, h5!],
+      { domain: [h4!.name], range: ['#123456'] },
+    )
     expect(derived(display)).toMatchSnapshot()
     display.resetRowArrangement()
     expect(derived(display)).toMatchSnapshot()

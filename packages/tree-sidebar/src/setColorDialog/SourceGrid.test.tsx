@@ -24,7 +24,8 @@ function renderGrid(rows: Src[]) {
     <SourceGrid
       rows={rows}
       onChange={onChange}
-      editsColor
+      colors={new Map()}
+      eachRow={{ picks: new Map(), onPick: () => {} }}
       reserved={RESERVED}
     />,
   )

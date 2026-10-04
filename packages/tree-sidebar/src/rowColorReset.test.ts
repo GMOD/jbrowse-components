@@ -81,8 +81,10 @@ test("a row recoloured under name resets to the base's pairs", () => {
   const display = makeDisplay({
     rowColor: { domain: ['a'], range: ['#f00'] },
   })
-  const [a, b, c] = display.editableSources
-  display.applyRowEdits([a!, { ...b!, rowColor: '#00f' }, c!])
+  display.applyRowEdits(display.editableSources, {
+    domain: ['a', 'b'],
+    range: ['#f00', '#00f'],
+  })
   expect(display.rowStylingIsCustom).toBe(true)
 
   display.resetRowArrangement()

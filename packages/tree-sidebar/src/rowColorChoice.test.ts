@@ -1,11 +1,10 @@
 import {
   liftRowColor,
-  keptUnknown,
   rowColorChoiceOf,
-  rowColorChoiceSetting,
-  rowColorForChoice,
   rowColorMembers,
   rowColorResetTarget,
+  startingRowColor,
+  withPair,
 } from './rowColorChoice.ts'
 
 const lift = liftRowColor
@@ -38,15 +37,24 @@ describe('liftRowColor', () => {
 })
 
 describe('rowColorChoiceOf', () => {
-  it('is Each row only where the palette deals and nothing holds it off', () => {
-    expect(rowColorChoiceOf(lift({}), true)).toBe('name')
+  it('is None for a name setting that colours no row', () => {
+    expect(rowColorChoiceOf(lift({}), false)).toBe('')
+    expect(rowColorChoiceOf(lift({ unknown: '' }), false)).toBe('')
     expect(rowColorChoiceOf(lift({ unknown: '' }), true)).toBe('')
-    expect(rowColorChoiceOf(lift({ unknown: '#ccc' }), true)).toBe('name')
   })
 
-  it('is None on stacked rows whatever unknown says, since no palette deals', () => {
-    expect(rowColorChoiceOf(lift({}), false)).toBe('')
-    expect(rowColorChoiceOf(lift({ unknown: '#ccc' }), false)).toBe('')
+  it('is Each row where a pick, an Other colour or the palette colours a row', () => {
+    expect(rowColorChoiceOf(lift({}), true)).toBe('name')
+    expect(rowColorChoiceOf(lift({ unknown: '#ccc' }), false)).toBe('name')
+    expect(
+      rowColorChoiceOf(lift({ domain: ['a'], range: ['#f00'] }), false),
+    ).toBe('name')
+    expect(
+      rowColorChoiceOf(
+        lift({ domain: ['a'], range: ['#f00'], unknown: '' }),
+        true,
+      ),
+    ).toBe('name')
   })
 
   it('is the attribute', () => {
@@ -57,138 +65,96 @@ describe('rowColorChoiceOf', () => {
   })
 })
 
-describe('keptUnknown', () => {
-  const grey = lift({ domain: ['a'], range: ['#f00'], unknown: '#ccc' })
-
-  it("is the config's unknown on the same field, under None or Each row", () => {
-    expect(keptUnknown(grey, '')).toBe('#ccc')
-    expect(keptUnknown(grey, 'name')).toBe('#ccc')
-    expect(keptUnknown(lift({ field: 'group', unknown: '' }), 'group')).toBe('')
-  })
-
-  it("is unset on another field, and drops Each row's '', which is None", () => {
-    expect(keptUnknown(grey, 'group')).toBeUndefined()
-    expect(keptUnknown(lift({ unknown: '' }), 'name')).toBeUndefined()
-    expect(keptUnknown(lift({ unknown: '' }), '')).toBe('')
-  })
-})
-
-describe('rowColorChoiceSetting', () => {
-  it("None where the palette deals is unknown: '', whatever the swatch", () => {
-    expect(rowColorChoiceSetting(true, '', {}, '#ccc')).toEqual({
-      field: 'name',
-      unknown: '',
+describe('withPair', () => {
+  it('replaces a pair in place and appends a new one', () => {
+    const two = lift({ domain: ['a', 'b'], range: ['#f00', '#0f0'] })
+    expect(withPair(two, 'a', '#00f')).toMatchObject({
+      domain: ['a', 'b'],
+      range: ['#00f', '#0f0'],
     })
-    expect(rowColorChoiceSetting(true, '', {}, undefined)).toEqual({
-      field: 'name',
-      unknown: '',
-    })
-  })
-
-  it('None on stacked rows and Each row write the swatch, or nothing', () => {
-    expect(rowColorChoiceSetting(false, '', {}, '#ccc')).toEqual({
-      field: 'name',
-      unknown: '#ccc',
-    })
-    expect(rowColorChoiceSetting(false, '', {}, undefined)).toEqual({
-      field: 'name',
-    })
-    expect(rowColorChoiceSetting(true, 'name', {}, '#ccc')).toEqual({
-      field: 'name',
-      unknown: '#ccc',
-    })
-  })
-
-  it('an attribute takes its pairs and the swatch', () => {
-    expect(rowColorChoiceSetting(false, 'group', { y: '#abcdef' }, '')).toEqual(
-      {
-        field: 'group',
-        domain: ['y'],
-        range: ['#abcdef'],
-        unknown: '',
-      },
-    )
-    expect(rowColorChoiceSetting(false, 'group', {}, undefined)).toEqual({
-      field: 'group',
+    expect(withPair(two, 'c', '#00f')).toMatchObject({
+      domain: ['a', 'b', 'c'],
+      range: ['#f00', '#0f0', '#00f'],
     })
   })
 })
 
-describe('rowColorForChoice', () => {
-  const pairs = { field: 'group', domain: ['y'], range: ['#abc'] }
+describe('startingRowColor', () => {
+  const grey = lift({
+    field: 'group',
+    domain: ['y'],
+    range: ['#abc'],
+    unknown: '#ccc',
+  })
+  const tissue = lift({ field: 'tissue', domain: ['t'], range: ['#f00'] })
 
-  it('None leaves an attribute and its pairs behind', () => {
-    expect(rowColorForChoice(lift(pairs), '', false)).toEqual({ field: 'name' })
-    expect(rowColorForChoice(lift(pairs), '', true)).toEqual({
+  it('None colours no row', () => {
+    expect(rowColorMembers(startingRowColor('', [grey], false))).toEqual({
+      field: 'name',
+    })
+    expect(rowColorMembers(startingRowColor('', [grey], true))).toEqual({
       field: 'name',
       unknown: '',
     })
   })
 
-  it('the field already named keeps its pairs and unknown', () => {
-    const grey = { ...pairs, unknown: '#ccc' }
-    expect(rowColorForChoice(lift(grey), 'group', false)).toEqual({
-      field: 'group',
-      domain: ['y'],
-      range: ['#abc'],
-      unknown: '#ccc',
-    })
+  it('takes the first setting showing the choice, the current then the config', () => {
+    expect(startingRowColor('group', [grey, tissue], false)).toBe(grey)
+    expect(startingRowColor('tissue', [grey, tissue], false)).toBe(tissue)
   })
 
-  it('another field starts with none', () => {
-    expect(rowColorForChoice(lift(pairs), 'pop', false)).toEqual({
+  it('starts any other choice with no colour of its own', () => {
+    expect(rowColorMembers(startingRowColor('pop', [grey], false))).toEqual({
       field: 'pop',
     })
   })
 
-  it('None over name pairs keeps them', () => {
-    const named = { domain: ['a'], range: ['#f00'] }
-    expect(rowColorForChoice(lift(named), '', true)).toEqual({
-      field: 'name',
-      ...named,
-      unknown: '',
-    })
+  // An overlay's None is a name setting too, so Each row starts from nothing
+  // rather than from the None.
+  it("does not start Each row from a None's unknown: ''", () => {
+    expect(
+      rowColorMembers(startingRowColor('name', [lift({ unknown: '' })], true)),
+    ).toEqual({ field: 'name' })
   })
 })
 
 // Whatever the reset writes is itself no custom arrangement, so one reset is
 // the whole way back.
 describe('rowColorResetTarget', () => {
-  function settled(live: unknown, base: unknown) {
-    const target = rowColorResetTarget(lift(live), lift(base))
+  function settled(live: unknown, base: unknown, paletteDeals = false) {
+    const target = rowColorResetTarget(lift(live), lift(base), paletteDeals)
     if (target) {
-      expect(rowColorResetTarget(target, lift(base))).toBeUndefined()
+      expect(
+        rowColorResetTarget(target, lift(base), paletteDeals),
+      ).toBeUndefined()
     }
     return target && rowColorMembers(target)
   }
 
-  it('writes nothing over a colour by picked over a config setting none', () => {
+  it('never changes the choice', () => {
     expect(settled('group', {})).toBeUndefined()
-    expect(settled({}, {})).toBeUndefined()
-  })
-
-  it('never changes what the rows are coloured by', () => {
     expect(settled({}, 'group')).toBeUndefined()
     expect(settled('tissue', 'group')).toBeUndefined()
     expect(settled('group', { domain: ['a'], range: ['#f00'] })).toBeUndefined()
+    expect(settled({ unknown: '' }, {}, true)).toBeUndefined()
   })
 
-  it("returns the field's pairs and unknown to the base's", () => {
+  it("returns the choice's pairs and unknown to the base's", () => {
     const base = { field: 'name', domain: ['a'], range: ['#f00'] }
     expect(settled({ domain: ['b'], range: ['#00f'] }, base)).toEqual(base)
-    expect(settled({ ...base, unknown: '' }, base)).toEqual(base)
+    expect(settled({ ...base, unknown: '#ccc' }, base)).toEqual(base)
     const grouped = { field: 'group', domain: ['x'], range: ['#0f0'] }
     expect(
       settled({ field: 'group', domain: ['y'], range: ['#abcdef'] }, grouped),
     ).toEqual(grouped)
   })
 
-  it('clears the colours on a field the base does not colour by', () => {
+  it('clears the colours of a choice the base does not make', () => {
     const base = { field: 'group', unknown: '#ccc' }
     expect(
       settled({ field: 'tissue', domain: ['t'], range: ['#abc'] }, base),
     ).toEqual({ field: 'tissue' })
-    expect(settled({ domain: ['a'], range: ['#f00'] }, base)).toEqual({
+    expect(settled({ domain: ['a'], range: ['#f00'] }, {}, true)).toEqual({
       field: 'name',
     })
   })

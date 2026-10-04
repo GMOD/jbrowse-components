@@ -251,13 +251,10 @@ test('dialog edits reorder, relabel and recolour, and a reset returns to the see
     regionData([...FAMILY, UNANSWERED]),
   )
   const [s10, dad, mom, s2, unanswered] = display.editableSources
-  display.applyRowEdits([
-    { ...mom!, label: 'Mother' },
-    unanswered!,
-    { ...s2!, rowColor: '#0000ff' },
-    dad!,
-    s10!,
-  ])
+  display.applyRowEdits(
+    [{ ...mom!, label: 'Mother' }, unanswered!, s2!, dad!, s10!],
+    { domain: ['s2'], range: ['#0000ff'] },
+  )
   expect(derived(display)).toMatchSnapshot()
   expect(display.editableSources.find(s => s.name === 's2')?.rowColor).toBe(
     '#0000ff',
@@ -287,11 +284,10 @@ test('a repartition keeps the arrangement, idle under rows it does not name', as
   const display = loaded({ domain: ['s10'] })
   await clusterRun(display, '((dad,s2),(mom,s10));')
   const [a, b, ...rest] = display.editableSources
-  display.applyRowEdits([
-    b!,
-    { ...a!, label: 'First', rowColor: '#0000ff' },
-    ...rest,
-  ])
+  display.applyRowEdits([b!, { ...a!, label: 'First' }, ...rest], {
+    domain: [a!.name],
+    range: ['#0000ff'],
+  })
   display.setRowFocus(['dad', 'mom'])
   display.setHiddenCategories(['x'])
 

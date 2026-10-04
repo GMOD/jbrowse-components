@@ -104,15 +104,16 @@ describe('multi-sample variant colorBy', () => {
     expect(model.sources[0]!.rowColor).toBe(before.get('HG002'))
   })
 
-  // No palette deals the rows by name here, so None is the one choice over
-  // `name`, and it shows the tints set row by row.
-  it('reads the tints set row by row as None, and returns to them', () => {
+  it('reads the tints set row by row as Each row, and None clears them', () => {
     const model = makeModel()
     model.setSources(sources)
     expect(model.rowPaletteDeals).toBe(false)
-    const [first, ...rest] = model.editableSources
-    model.applyRowEdits([{ ...first!, rowColor: '#123456' }, ...rest])
     expect(model.rowColorChoice).toBe('')
+    model.applyRowEdits(model.editableSources, {
+      domain: ['HG001'],
+      range: ['#123456'],
+    })
+    expect(model.rowColorChoice).toBe('name')
     expect(model.sources[0]!.rowColor).toBe('#123456')
     expect(model.sources[1]!.rowColor).toBeUndefined()
 
@@ -120,7 +121,7 @@ describe('multi-sample variant colorBy', () => {
     expect(model.rowColorChoice).toBe('population')
     model.setRowColorField('')
     expect(model.rowColorChoice).toBe('')
-    expect(model.sources[1]!.rowColor).toBeUndefined()
+    expect(model.sources.some(s => s.rowColor)).toBe(false)
   })
 })
 
@@ -137,4 +138,19 @@ test('the Samples menu ticks a configured attribute the samples lack', () => {
   const items = colorBy && 'subMenu' in colorBy ? resolveSubMenu(colorBy) : []
   const tissue = items.find(i => 'label' in i && i.label === 'Tissue')
   expect(tissue && 'checked' in tissue && tissue.checked).toBe(true)
+})
+
+test('the Samples menu ticks Each row where the dialog picked sample colours', () => {
+  const { display } = createTestEnvironment({
+    displayConfig: { rowColor: { domain: ['HG001'], range: ['#f00'] } },
+  }).createDisplay()
+  display.setSources([{ name: 'HG001', population: 'EUR' }])
+  const colorBy = display
+    .trackMenuItems()
+    .find(i => 'label' in i && i.label === 'Color by...')
+  const items = colorBy && 'subMenu' in colorBy ? resolveSubMenu(colorBy) : []
+  const ticked = items.flatMap(i =>
+    'checked' in i && i.checked && 'label' in i ? [i.label] : [],
+  )
+  expect(ticked).toContain('Each row')
 })

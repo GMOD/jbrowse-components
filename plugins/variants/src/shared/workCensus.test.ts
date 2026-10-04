@@ -119,7 +119,11 @@ test('what each row step recomputes, phased', async () => {
     {
       name: 'recolour',
       run: () => {
-        display.applyRowEdits(firstEdited({ rowColor: '#123456' }))
+        const [first] = display.editableSources
+        display.applyRowEdits(display.editableSources, {
+          domain: [first!.name],
+          range: ['#123456'],
+        })
       },
     },
     {
