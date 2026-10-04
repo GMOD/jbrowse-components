@@ -2,7 +2,7 @@
 // re-derive for itself. Node-only, and now free of `import.meta` (see the walk
 // below), which is what made it safe to import from the bundled `src/` side as
 // well as from scripts/.
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve, sep } from 'node:path'
 
 // The workspace root, found by walking up from the process's working directory
@@ -110,16 +110,19 @@ export function pluginCheckout(name: string) {
   return join(primaryRepoRoot, '..', 'jb2plugins', `jbrowse-plugin-${name}`)
 }
 
-// A plugin's `src/` plus each workspace package's, since a plugin that splits
-// into `packages/*` renders labels from both: graphgenomeviewer's layout and
-// colour names moved into `packages/core`.
+// The libraries a plugin's labels come from besides its own `src/`, each
+// checked out beside this repo: graphgenomeviewer's layout and colour names
+// live in bandage-core.
+const PLUGIN_LIBRARIES: Record<string, string[]> = {
+  graphgenomeviewer: ['bandage-core'],
+}
+
+// A plugin's `src/` plus the `src/` of each library it renders labels from.
 export function pluginSourceDirs(name: string): [string, ...string[]] {
-  const checkout = pluginCheckout(name)
-  const packages = join(checkout, 'packages')
   return [
-    join(checkout, 'src'),
-    ...(existsSync(packages) ? readdirSync(packages).toSorted() : [])
-      .map(pkg => join(packages, pkg, 'src'))
+    join(pluginCheckout(name), 'src'),
+    ...(PLUGIN_LIBRARIES[name] ?? [])
+      .map(library => join(libraryCheckout(library), 'src'))
       .filter(dir => existsSync(dir)),
   ]
 }
