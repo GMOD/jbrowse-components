@@ -147,11 +147,12 @@ in [Zooming out](#zooming-out).
 Open it on `chr1:151,000,000-151,030,000`, 30 kb of 1q21. Hover a bar for its
 values; click it to open the row.
 
-<Figure src="/img/alu_age/locus.png" caption="Alu copies over a window of 1q21, one bar per copy with its divergence from its consensus as the height and its lineage as the colour. The AluY bars are the shortest in the window and the AluJ bars the tallest, with AluS between; the fossil monomers are as tall as AluJ." />
+<Figure src="/img/alu_age/locus.png" caption="Alu copies over a window of 1q21, one bar per copy with its divergence from its consensus as the height and its lineage as the colour. The AluY bars are among the shortest in the window and the AluJ bars the tallest, with AluS between; FLAM, the older free left Alu monomer, is as tall as AluJ." />
 
-## Zooming out
+## Counting Alu copies per bin when zoomed out {#zooming-out}
 
-From `minBpPerPx` the other two marks take over. Each snaps copies to bins with
+Past their `minBpPerPx`, the track's second and third marks take over from the
+per-copy bars. Each snaps copies to bins with
 `{ "type": "bin", "step": "auto" }`, counts them with an `aggregate`, and draws
 the count as a bar: one over every copy in grey, one over the AluY copies a
 `filter` admits in red.
@@ -164,9 +165,9 @@ draws the bins of a density sidecar, a bigWig of feature starts per kilobase:
 
 ```bash
 # writes Alu.bed.density.bw beside the input, in 1 kb bins
-# --assembly reads the reference lengths off the FASTA's .fai;
-#   --chrom-sizes takes a two-column name and length table instead
-jbrowse make-density Alu.bed.gz --assembly hg38.fa
+# --chrom-sizes takes a two-column name and length table;
+#   --assembly genome.fa reads the lengths off the FASTA's .fai instead
+jbrowse make-density Alu.bed.gz --chrom-sizes hg38.chrom.sizes
 ```
 
 The track menu's **Density band** entry holds or forces the swap.
@@ -285,9 +286,8 @@ tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:191,000,001-192,000
 | 191 to 192 Mb  |        161 |   55 |
 | 203 to 204 Mb  |        690 |   47 |
 
-The AluY count barely moves between the two megabases. The difference is the
-older copies, which pile up in the dense one, so the young share is lower there
-and its bar is blue: the share tracks where old Alu has accumulated.
+The AluY count barely moves between the two megabases, and the older copies pile
+up in the dense one, so the young share is lower there and its bar is blue.
 
 ## Reproduce it end to end
 
