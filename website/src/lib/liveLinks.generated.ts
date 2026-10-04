@@ -258,7 +258,7 @@ export const figureLiveRefs: Record<string, string> = {
   "sv_cgiab/translocation_sv_inspector_view": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22SvInspectorView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2FGRCh38%2Fcgiab%2FGRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz%22%2C%22height%22%3A1000%7D%5D%7D&sessionName=Screenshot",
   "sv_cgiab/translocation_breakpoint_split": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22BreakpointSplitView%22%2C%22views%22%3A%5B%7B%22loc%22%3A%22chr3%3A139%2C971%2C414-139%2C981%2C414%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg008t_benchmark_sv%22%2C%22type%22%3A%22LinearVariantDisplay%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22featureHeight%22%3A1%2C%22height%22%3A250%2C%22forceLoad%22%3Atrue%2C%22drawLongRange%22%3Afalse%7D%5D%7D%2C%7B%22loc%22%3A%22chr13%3A114%2C348%2C244-114%2C358%2C244%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg008t_benchmark_sv%22%2C%22type%22%3A%22LinearVariantDisplay%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22featureHeight%22%3A1%2C%22height%22%3A250%2C%22forceLoad%22%3Atrue%2C%22drawLongRange%22%3Afalse%7D%5D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv_cgiab/sv_callset_comparison": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22QuantitativeTrack%22%2C%22trackId%22%3A%22hg008_depth%22%2C%22name%22%3A%22HG008-T%20HiFiCNV%20depth%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BigWigAdapter%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-T.hificnv.depth.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%7D%2C%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22hg008t_severus_sv%22%2C%22name%22%3A%22HG008-T%20Severus%20somatic%20SVs%20(HiFi)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fftp-trace.ncbi.nlm.nih.gov%2FReferenceSamples%2Fgiab%2Fdata_somatic%2FHG008%2FLiss_lab%2Fanalysis%2FNIH_HiFi_Severus-SV_20240308%2Fsomatic_SVs%2Fseverus_somatic.vcf.gz%22%7D%7D%2C%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22hg008t_minda_sv%22%2C%22name%22%3A%22HG008-T%20minda%20ensemble%20SVs%20(HiFi%2C%20ONT%2C%20Illumina)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fftp-trace.ncbi.nlm.nih.gov%2FReferenceSamples%2Fgiab%2Fdata_somatic%2FHG008%2FLiss_lab%2Fanalysis%2FNIH-NCI_minda-ensemble_20240710%2FHG008_minda_ensemble.vcf%22%7D%7D%2C%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22hg008t_dragen_sv%22%2C%22name%22%3A%22HG008-T%20DRAGEN%20somatic%20SVs%20(Illumina)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fftp-trace.ncbi.nlm.nih.gov%2FReferenceSamples%2Fgiab%2Fdata_somatic%2FHG008%2FLiss_lab%2Fanalysis%2FDRAGEN-v4.2.4_ILMN-WGS_20240312%2Fstandard%2Fdragen_4.2.4_HG008-mosaic_tumor.sv.vcf.gz%22%7D%7D%2C%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22hg008t_nygc_sv%22%2C%22name%22%3A%22HG008-T%20NYGC%20somatic%20SVs%20(Manta%2C%20GRIDSS)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedpeAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fftp-trace.ncbi.nlm.nih.gov%2FReferenceSamples%2Fgiab%2Fdata_somatic%2FHG008%2FLiss_lab%2Fanalysis%2FNYGC-somatic-pipeline_20240412%2FGRCh38-GIABv3%2FHG008-T--HG008-N.sv.annotated.v7.somatic.high_confidence.final.bedpe%22%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearMarkDisplay%22%2C%22marks%22%3A%5B%7B%22mark%22%3A%22link%22%2C%22encoding%22%3A%7B%22size%22%3A2%7D%2C%22transform%22%3A%5B%7B%22type%22%3A%22mate%22%7D%5D%7D%5D%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr3%3A139%2C970%2C000-140%2C005%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg008t_benchmark_sv%22%2C%22type%22%3A%22LinearVariantDisplay%22%2C%22height%22%3A55%7D%2C%7B%22trackId%22%3A%22hg008t_severus_sv%22%2C%22type%22%3A%22LinearVariantDisplay%22%2C%22showLabels%22%3A%22none%22%2C%22height%22%3A45%7D%2C%7B%22trackId%22%3A%22hg008t_minda_sv%22%2C%22type%22%3A%22LinearVariantDisplay%22%2C%22showLabels%22%3A%22none%22%2C%22height%22%3A45%7D%2C%7B%22trackId%22%3A%22hg008t_dragen_sv%22%2C%22type%22%3A%22LinearVariantDisplay%22%2C%22showLabels%22%3A%22none%22%2C%22height%22%3A45%7D%2C%7B%22trackId%22%3A%22hg008t_nygc_sv%22%2C%22type%22%3A%22LinearMarkDisplay%22%2C%22height%22%3A45%7D%2C%7B%22trackId%22%3A%22hg008_depth%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22mark%22%3A%22bar%22%2C%22color%22%3A%22%230068d1%22%2C%22summaryScoreMode%22%3A%22avg%22%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A140%2C%22grid%22%3Atrue%7D%7D%2C%22height%22%3A180%7D%2C%7B%22trackId%22%3A%22hg008t_somatic_cnv%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22color%22%3A%7B%22field%22%3A%22total_copy_number%22%2C%22scale%22%3A%22threshold%22%2C%22domain%22%3A%5B%221%22%2C%222%22%2C%223%22%2C%224%22%5D%2C%22range%22%3A%5B%22%232166ac%22%2C%22%2392c5de%22%2C%22%23e0e0e0%22%2C%22%23f4a582%22%2C%22%23b2182b%22%5D%2C%22labels%22%3A%5B%22CN%200%22%2C%22CN%201%22%2C%22CN%202%22%2C%22CN%203%22%2C%22CN%204%2B%22%5D%2C%22title%22%3A%22Copy%20number%22%7D%2C%22height%22%3A120%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "sv_cgiab/deletion_sv_inspector_search": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22hg38_clinvar_cnv_ucsc%22%2C%22name%22%3A%22ClinVar%20CNVs%20(UCSC)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BigBedAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fhgdownload.soe.ucsc.edu%2Fgbdb%2Fhg38%2Fbbi%2Fclinvar%2FclinvarCnv.bb%22%7D%2C%22displayDefaults%22%3A%7B%22displayMode%22%3A%22compact%22%2C%22filter%22%3A%5B%22jexl%3Afeature._varLen%20%3C%2050000%22%5D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22SvInspectorView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22height%22%3A420%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2FGRCh38%2Fcgiab%2FGRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz%22%7D%2C%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr10%3A122%2C823%2C828-122%2C852%2C611%22%2C%22tracks%22%3A%5B%22hg38_ncbiRefSeq_ucsc%22%2C%7B%22trackId%22%3A%22hg38_clinvar_cnv_ucsc%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22heightMode%22%3A%22grow%22%7D%2C%7B%22trackId%22%3A%22hg008t_benchmark_sv%22%2C%22type%22%3A%22LinearVariantDisplay%22%2C%22featureHighlights%22%3A%5B%7B%22refName%22%3A%22chr10%22%2C%22name%22%3A%22SV_85%22%7D%5D%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "sv_cgiab/deletion_sv_inspector_search": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22hg38_clinvar_cnv_ucsc%22%2C%22name%22%3A%22ClinVar%20CNVs%20(UCSC)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BigBedAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fhgdownload.soe.ucsc.edu%2Fgbdb%2Fhg38%2Fbbi%2Fclinvar%2FclinvarCnv.bb%22%7D%2C%22displayDefaults%22%3A%7B%22displayMode%22%3A%22compact%22%2C%22filter%22%3A%5B%22jexl%3Afeature._varLen%20%3C%2050000%22%5D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22SvInspectorView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22height%22%3A420%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2FGRCh38%2Fcgiab%2FGRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz%22%2C%22filterText%22%3A%22SV_85%22%7D%2C%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr10%3A122%2C823%2C828-122%2C852%2C611%22%2C%22tracks%22%3A%5B%22hg38_ncbiRefSeq_ucsc%22%2C%7B%22trackId%22%3A%22hg38_clinvar_cnv_ucsc%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22heightMode%22%3A%22grow%22%7D%2C%7B%22trackId%22%3A%22hg008t_benchmark_sv%22%2C%22type%22%3A%22LinearVariantDisplay%22%2C%22featureHighlights%22%3A%5B%7B%22refName%22%3A%22chr10%22%2C%22name%22%3A%22SV_85%22%7D%5D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv_cgiab/deletion_linear_view": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22hg008t_pacbio_chr10_deletion_slice%22%2C%22name%22%3A%22HG008-T%20PacBio%20HiFi%20(116x%2C%20chr10%20slice)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BamAdapter%22%2C%22bamLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-T_chr10_CUZD1_deletion.bam%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-T_chr10_CUZD1_deletion.bam.bai%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22indexType%22%3A%22BAI%22%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr10%3A122%2C822%2C042-122%2C850%2C825%22%2C%22showCenterLine%22%3Atrue%2C%22tracks%22%3A%5B%22hg38_ncbiRefSeq_ucsc%22%2C%22hg008t_benchmark_sv%22%2C%7B%22trackId%22%3A%22hg008t_pacbio_chr10_deletion_slice%22%2C%22height%22%3A300%2C%22featureHeight%22%3A3%2C%22sortedBy%22%3A%7B%22type%22%3A%22basePair%22%2C%22pos%22%3A122836434%2C%22refName%22%3A%22chr10%22%2C%22assemblyName%22%3A%22GRCh38_GIABv3%22%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv_cgiab/vntr_tumor_normal": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22hg008t_pacbio_full%22%2C%22name%22%3A%22HG008-T%20PacBio%20HiFi%20(116x%2C%20published%20BAM)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BamAdapter%22%2C%22bamLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fftp-trace.ncbi.nlm.nih.gov%2FReferenceSamples%2Fgiab%2Fdata_somatic%2FHG008%2FLiss_lab%2FPacBio_Revio_20240125%2FHG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fftp-trace.ncbi.nlm.nih.gov%2FReferenceSamples%2Fgiab%2Fdata_somatic%2FHG008%2FLiss_lab%2FPacBio_Revio_20240125%2FHG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam.bai%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22indexType%22%3A%22BAI%22%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr5%3A165%2C755%2C030-165%2C755%2C270%22%2C%22tracks%22%3A%5B%22GRCh38_GIABv3-ReferenceSequenceTrack%22%2C%7B%22trackId%22%3A%22hg008t_benchmark_sv%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hg008t_pacbio_full%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22height%22%3A260%2C%22featureHeight%22%3A5%2C%22forceLoad%22%3Atrue%2C%22sortedBy%22%3A%7B%22type%22%3A%22basePair%22%2C%22pos%22%3A165755150%2C%22refName%22%3A%22chr5%22%2C%22assemblyName%22%3A%22GRCh38_GIABv3%22%7D%7D%2C%7B%22trackId%22%3A%22HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22height%22%3A260%2C%22featureHeight%22%3A5%2C%22forceLoad%22%3Atrue%2C%22sortedBy%22%3A%7B%22type%22%3A%22basePair%22%2C%22pos%22%3A165755150%2C%22refName%22%3A%22chr5%22%2C%22assemblyName%22%3A%22GRCh38_GIABv3%22%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv_cgiab/cnv_with_bed_track": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22QuantitativeTrack%22%2C%22trackId%22%3A%22hg008t_bicseq2%22%2C%22name%22%3A%22HG008-T%20copy%20ratio%2C%20segmented%20(NYGC%20BIC-seq2%2C%20log2%20T%2FN)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedGraphAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-T_bicseq2_log2ratio.bedgraph%22%7D%2C%22displayDefaults%22%3A%7B%22mark%22%3A%22bar%22%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainMin%22%3A-2%2C%22domainMax%22%3A2%2C%22grid%22%3Atrue%2C%22title%22%3A%22log2%20tumor%2Fnormal%22%7D%7D%7D%7D%2C%7B%22type%22%3A%22QuantitativeTrack%22%2C%22trackId%22%3A%22hg008_baf%22%2C%22name%22%3A%22HG008-T%20B-allele%20frequency%20(BAF)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BigWigAdapter%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-T_baf.bcftools.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22resolutionMultiplier%22%3A0.001%7D%7D%2C%7B%22type%22%3A%22MultiQuantitativeTrack%22%2C%22trackId%22%3A%22hg008_cnv_indexcov%22%2C%22name%22%3A%22HG008%20normal%20vs%20tumor%20coverage%20(indexcov)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22MultiWiggleAdapter%22%2C%22subadapters%22%3A%5B%7B%22name%22%3A%22HG008-N%20(normal)%22%2C%22type%22%3A%22BigWigAdapter%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-N_indexcov.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%7B%22name%22%3A%22HG008-T%20(tumor)%22%2C%22type%22%3A%22BigWigAdapter%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-T_indexcov.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%5D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr5%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg008t_bicseq2%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22height%22%3A130%7D%2C%7B%22trackId%22%3A%22hg008_cnv_indexcov%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22mark%22%3A%22point%22%2C%22rows%22%3A%22%22%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A3%2C%22grid%22%3Atrue%7D%7D%2C%22resolution%22%3A8%2C%22height%22%3A200%7D%2C%7B%22trackId%22%3A%22hg008_baf%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22mark%22%3A%22point%22%2C%22size%22%3A1%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A1%7D%7D%2C%22height%22%3A140%7D%2C%7B%22trackId%22%3A%22hg008t_somatic_cnv%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22color%22%3A%7B%22field%22%3A%22total_copy_number%22%2C%22scale%22%3A%22threshold%22%2C%22domain%22%3A%5B%221%22%2C%222%22%2C%223%22%2C%224%22%5D%2C%22range%22%3A%5B%22%232166ac%22%2C%22%2392c5de%22%2C%22%23e0e0e0%22%2C%22%23f4a582%22%2C%22%23b2182b%22%5D%2C%22labels%22%3A%5B%22CN%200%22%2C%22CN%201%22%2C%22CN%202%22%2C%22CN%203%22%2C%22CN%204%2B%22%5D%2C%22title%22%3A%22Copy%20number%22%7D%2C%22height%22%3A120%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -6764,28 +6764,42 @@ export const figureClicks: Record<
   string,
   { open?: string; change?: string; stages?: number }
 > = {
-  "multiway_synteny/lgv_track_clicked": {},
-  "multiway_synteny/primate_tp53_lanes": {},
+  "multiway_synteny/lgv_track_clicked": {
+    "change": "select a ribbon, outlining its ortholog group and opening the pair's details"
+  },
+  "multiway_synteny/primate_tp53_lanes": {
+    "change": "close the legend's gene cluster section"
+  },
   "multiway_synteny/ecoli_launch_selection": {},
   "multiway_synteny/ecoli_launch_dialog": {},
   "multiway_synteny/ecoli_launch_result": {},
-  "multiway_synteny/ecoli_import_form": {},
+  "multiway_synteny/ecoli_import_form": {
+    "change": "open a Linear synteny view's import form from the Add menu"
+  },
   "genomes_synteny/ribbons_default": {},
   "genomes_synteny/launch_sequence": {
     "stages": 4
   },
   "genomes_synteny/star_link": {},
-  "sv_synteny/dotplot_import": {},
+  "sv_synteny/dotplot_import": {
+    "change": "switch the import form to Manual"
+  },
   "sv_synteny/color_by_attribute": {},
-  "sv_synteny/assembly_order_warning": {},
+  "sv_synteny/assembly_order_warning": {
+    "open": "the synteny warnings dialog"
+  },
   "dotplot_add": {
     "stages": 2
   },
   "synteny_from_dotplot_view": {
     "stages": 2
   },
-  "multiway_synteny/ecoli_alignment_menu": {},
-  "multiway_synteny/lane_header_menu": {},
+  "multiway_synteny/ecoli_alignment_menu": {
+    "open": "an alignment's context menu at its Launch submenu"
+  },
+  "multiway_synteny/lane_header_menu": {
+    "open": "a lane's context menu"
+  },
   "maf_row_menu": {},
   "sequence_track": {},
   "alignments_soft_clipped_menu": {
@@ -6832,7 +6846,9 @@ export const figureClicks: Record<
   "genomes_basics/search_tp53": {
     "stages": 3
   },
-  "genomes_basics/isoform_control": {},
+  "genomes_basics/isoform_control": {
+    "open": "the gene track's isoform control"
+  },
   "genomes_basics/promoter_regulation": {
     "stages": 2
   },
@@ -6853,10 +6869,18 @@ export const figureClicks: Record<
   "feature_detail_protein": {},
   "customized_feature_details": {},
   "upstream_downstream_details": {},
-  "protein/connected": {},
-  "protein/annotation_1d": {},
-  "protein/tp53_mapped_chain": {},
-  "protein/tp53_nmr_ensemble": {},
+  "protein/connected": {
+    "change": "select the nuclear export signal, banding its codons on the gene and its residues on the structure"
+  },
+  "protein/annotation_1d": {
+    "change": "launch the 1D protein annotation view and turn on four of its tracks"
+  },
+  "protein/tp53_mapped_chain": {
+    "open": "a structure's chain list"
+  },
+  "protein/tp53_nmr_ensemble": {
+    "change": "reset the structure's camera to fit the whole ensemble"
+  },
   "top_level_menus": {},
   "no_build_final": {},
   "searching_lgv": {},
@@ -6864,7 +6888,9 @@ export const figureClicks: Record<
   "rubberband": {},
   "multisv": {},
   "multisv_svtype": {},
-  "multisv_rhd": {},
+  "multisv_rhd": {
+    "change": "sort the matrix's rows by genotype at HGSV_1821"
+  },
   "link_to_split_view": {},
   "read_vs_ref_insertion": {},
   "add_track_form": {},
@@ -6901,24 +6927,39 @@ export const figureClicks: Record<
   "default_session_form": {
     "stages": 2
   },
-  "chromhmm": {},
+  "chromhmm": {
+    "change": "expand the legend to its full list"
+  },
   "multirow/display_types_pick": {},
   "methylation/hg002_snrpn_ungrouped": {},
   "sv_inspector_importform_filtered": {},
   "inverted_duplication": {},
   "sv_cgiab/translocation_sv_inspector_start": {},
-  "sv_cgiab/translocation_sv_inspector_view": {},
-  "sv_cgiab/deletion_sv_inspector_search": {},
+  "sv_cgiab/translocation_sv_inspector_view": {
+    "change": "scroll the table to SV_20"
+  },
   "sv_inspector_importform_after": {},
   "cancer_sv/split_view_from_breakend": {
     "stages": 3
   },
-  "circular_synteny/band_hover": {},
-  "circular_synteny/ribbon_hover": {},
-  "linkage_groups/alg_dotplot_res_emu": {},
-  "linkage_groups/alg_stack": {},
-  "tcga/mutations_cdh1_histology": {},
-  "tcga/mutations_pik3ca_grouped": {},
+  "circular_synteny/band_hover": {
+    "open": "a chromosome band's tooltip"
+  },
+  "circular_synteny/ribbon_hover": {
+    "open": "a ribbon's tooltip"
+  },
+  "linkage_groups/alg_dotplot_res_emu": {
+    "change": "close the legend"
+  },
+  "linkage_groups/alg_stack": {
+    "change": "close the legend"
+  },
+  "tcga/mutations_cdh1_histology": {
+    "change": "collapse CDH1's introns"
+  },
+  "tcga/mutations_pik3ca_grouped": {
+    "change": "collapse PIK3CA's introns"
+  },
   "hg002_haplotypes_import_form": {
     "stages": 1
   },
@@ -6926,7 +6967,9 @@ export const figureClicks: Record<
     "stages": 2
   },
   "hg002_haplotypes_location_markers": {},
-  "trio-matrix": {},
+  "trio-matrix": {
+    "open": "the track menu at its Show... submenu"
+  },
   "trio-matrix-phased": {},
   "maf_codon_tooltip": {},
   "mark_display/multiscale": {
@@ -6947,13 +6990,22 @@ export const figureClicks: Record<
   "pangenome/rgfa_strain_launch": {
     "stages": 2
   },
-  "pangenome/hprc_mhc_layout_force": {},
+  "pangenome/hprc_mhc_layout_force": {
+    "open": "the node's context menu",
+    "change": "highlight the node's span in hg38"
+  },
   "pangenome/hprc_haplotype_launch": {
     "stages": 2
   },
-  "pangenome/hprc_kiv2_copies_by_unit": {},
-  "pangenome/hprc_abca7_tandem_repeat_alleles": {},
-  "pangenome/graph_kiv2_walks": {}
+  "pangenome/hprc_kiv2_copies_by_unit": {
+    "change": "open the record's repeat copies view"
+  },
+  "pangenome/hprc_abca7_tandem_repeat_alleles": {
+    "change": "open the record's repeat copies view"
+  },
+  "pangenome/graph_kiv2_walks": {
+    "change": "lift HG00133's walk out of the graph"
+  }
 }
 
 // Each composed figure's parts and layout, for one capture command per frame.

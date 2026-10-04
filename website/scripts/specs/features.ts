@@ -710,6 +710,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 90000,
+    clicksChange:
+      'select the nuclear export signal, banding its codons on the gene and its residues on the structure',
     // The TP53 nuclear export signal (UniProt Motif 339-350): short, and alone
     // on its row, so the clicked bar and its band read cleanly. `scroll` centres
     // it in the alignment panel's scroller first.
@@ -778,6 +780,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     // the UCSC hub config is ~570 tracks and pulls four remote plugins
     readyTimeout: 120000,
+    clicksChange:
+      'launch the 1D protein annotation view and turn on four of its tracks',
     actions: [
       ...OPEN_PROTEIN_LAUNCH_MENU,
       { type: 'click', text: 'Launch 1D protein annotation view' },

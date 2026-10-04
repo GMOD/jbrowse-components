@@ -456,6 +456,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     viewportWidth: 900,
     viewportHeight: 340,
     diffThreshold: 0.02,
+    clicksOpen: "the gene track's isoform control",
     actions: [
       // read the chip, leaving the quiet icon this figure is about
       ...readIsoformNotice(),

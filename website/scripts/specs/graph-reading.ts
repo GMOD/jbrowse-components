@@ -131,6 +131,7 @@ const kiv2WalksSpec: ScreenshotSpec = {
   viewportWidth: 1400,
   viewportHeight: 910,
   hideTooltip: true,
+  clicksChange: "lift HG00133's walk out of the graph",
   actions: [
     trackMenuIcon(GBZ_TRACK),
     { type: 'hover', selector: '[data-testid="cascading-submenu-walk"]' },

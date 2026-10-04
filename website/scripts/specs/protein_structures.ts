@@ -116,6 +116,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     ...READY,
     viewportWidth: 2000,
     viewportHeight: 880,
+    clicksOpen: "a structure's chain list",
     actions: [
       {
         type: 'click',
@@ -166,6 +167,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     readyTimeout: 240000,
     viewportWidth: 2000,
     viewportHeight: 912,
+    clicksChange: "reset the structure's camera to fit the whole ensemble",
     // the seed frames the camera on the helices; Reset Zoom fits the whole
     // ensemble, frayed ends included, once that focus has finished moving
     actions: [

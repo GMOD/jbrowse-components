@@ -273,6 +273,8 @@ const MHC_LANDMARK_NODES = [HPRC_ALLELE]
 const mhcLayoutForceSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/hprc_mhc_layout_force',
+  clicksChange: "highlight the node's span in hg38",
+  clicksOpen: "the node's context menu",
   // `Highlight in hg38` writes the node's reference interval into the linear
   // view's own highlight list, where it stays, so one frame carries both the
   // menu and its result: click the item, then right-click the same node again.
@@ -1376,6 +1378,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1400,
     viewportHeight: 640,
     hideTooltip: true,
+    clicksChange: "open the record's repeat copies view",
     actions: [
       { type: 'waitForAppSettled', timeout: 120000 },
       {
@@ -1431,6 +1434,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1400,
     viewportHeight: 1010,
     hideTooltip: true,
+    clicksChange: "open the record's repeat copies view",
     actions: [
       { type: 'waitForAppSettled', timeout: 120000 },
       {

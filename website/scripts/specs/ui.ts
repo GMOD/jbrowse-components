@@ -899,6 +899,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     // selector here; it is gone with the jexl that produced it.
     viewportHeight: 1230,
     hideTooltip: true,
+    clicksChange: "sort the matrix's rows by genotype at HGSV_1821",
     actions: [
       // the clustering RPC over 2504 rows finishes well after first paint, and
       // a capture taken before it lands shows the store in panel order under a
@@ -2302,6 +2303,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
+    clicksChange: 'expand the legend to its full list',
     actions: [
       { type: 'waitForText', text: 'Show 3 more…', timeout: 120000 },
       { type: 'click', text: 'Show 3 more…' },

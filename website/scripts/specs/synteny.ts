@@ -1439,6 +1439,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportHeight: 680,
     hideTooltip: true,
+    clicksChange:
+      "select a ribbon, outlining its ortholog group and opening the pair's details",
     actions: [
       {
         type: 'click',
@@ -1686,6 +1688,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     viewportHeight: 820,
     hideTooltip: true,
+    clicksChange: "close the legend's gene cluster section",
     actions: [
       { type: 'click', selector: '[aria-label="Hide Gene cluster"]' },
       {
@@ -3819,6 +3822,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // Quick start is a short form (a select, the rows it implies, Launch), so
     // this is sized to the form rather than the taller manual row stack
     viewportHeight: 356,
+    clicksChange: "open a Linear synteny view's import form from the Add menu",
     actions: [
       { type: 'click', text: 'Add' },
       { type: 'waitForText', text: 'Linear synteny view' },
@@ -4815,6 +4819,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // Manual rather than capture a mode the surrounding prose doesn't describe
     readyText: 'Quick start',
     readyTimeout: 60000,
+    clicksChange: 'switch the import form to Manual',
     actions: [
       { type: 'click', text: 'Manual' },
       { type: 'waitForText', text: 'Select assemblies for dotplot view' },
@@ -5007,6 +5012,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // allow a view with nothing drawn in it
     allowUnsettled: true,
     viewportHeight: 425,
+    clicksOpen: 'the synteny warnings dialog',
     actions: [
       { type: 'click', selector: '[aria-label*="synteny warning"]' },
       { type: 'waitForText', text: 'Synteny warnings' },
@@ -5629,6 +5635,7 @@ function launchMenuStills(): ScreenshotSpec[] {
       readyTimeout: 120000,
       viewportHeight: 440,
       hideTooltip: true,
+      clicksOpen: "an alignment's context menu at its Launch submenu",
       actions: [
         // 8px into the first lane's row at featureHeight 14; the lanes are
         // canvas-drawn, so a locus and a depth is the only handle
@@ -5681,6 +5688,7 @@ function launchMenuStills(): ScreenshotSpec[] {
       readyTimeout: 120000,
       viewportHeight: 520,
       hideTooltip: true,
+      clicksOpen: "a lane's context menu",
       actions: [
         {
           type: 'rightclick',

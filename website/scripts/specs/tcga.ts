@@ -654,6 +654,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,
+    clicksChange: "collapse CDH1's introns",
     actions: collapseIntrons('CDH1'),
     // collapsing introns raises an "Introns collapsed / UNDO" toast, which is
     // real UI for a real click and has no business in the published frame
@@ -746,6 +747,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,
+    clicksChange: "collapse PIK3CA's introns",
     actions: collapseIntrons('PIK3CA'),
     hideSelectors: ['.MuiSnackbar-root'],
     viewportWidth: 1500,

@@ -41,6 +41,7 @@ export const linkageGroupsSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 900,
     viewportHeight: 1030,
+    clicksChange: 'close the legend',
     actions: [HIDE_LEGEND],
     annotations: [
       { type: 'box', anchor: A1A_BLOCK },
@@ -104,6 +105,7 @@ export const linkageGroupsSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1400,
     viewportHeight: 944,
+    clicksChange: 'close the legend',
     actions: [HIDE_LEGEND],
   },
 ]

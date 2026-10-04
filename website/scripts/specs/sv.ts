@@ -1124,6 +1124,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // 1065: 1160 held the whole view but left 95 css px of page under it,
     // which the run reports as blank below the last content.
     viewportHeight: 1065,
+    clicksChange: 'scroll the table to SV_20',
     // The SV_20 row (chr3:139,976,414 -> chr13:114,353,244, the same
     // translocation junction translocation_breakpoint_split drills into below)
     // is mounted in the DataGrid's virtualization buffer but scrolled below
@@ -1417,11 +1418,12 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportHeight: 984,
   },
 
-  // The SV inspector after searching for SV_85: the spreadsheet quick-filter is
-  // typed with "SV_85" so the table narrows to that one benchmark deletion call,
-  // and a linear genome view below is already navigated to the SV_85 locus
-  // (chr10, in the CUZD1 gene) showing the same VCF track — the end state of
-  // clicking the filtered row. Replaces a hand-curated capture.
+  // The SV inspector after searching for SV_85: the session's `filterText`
+  // narrows the table to that one benchmark deletion call, and a linear genome
+  // view below is already navigated to the SV_85 locus (chr10, in the CUZD1
+  // gene) showing the same VCF track — the end state of clicking the filtered
+  // row. Both are session state, so the recipe's capture command lands on this
+  // frame.
   {
     mode: 'url',
     name: 'sv_cgiab/deletion_sv_inspector_search',
@@ -1437,6 +1439,7 @@ export const svSpecs: ScreenshotSpec[] = [
           // tall)
           height: 420,
           uri: 'https://jbrowse.org/genomes/GRCh38/cgiab/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz',
+          filterText: 'SV_85',
         },
         {
           type: 'LinearGenomeView',
@@ -1522,15 +1525,6 @@ export const svSpecs: ScreenshotSpec[] = [
     // the inspector's own VCF is remote too, and 60 started timing out on the
     // ready gate once they were added
     readyTimeout: 120000,
-    actions: [
-      {
-        type: 'type',
-        selector: 'input[placeholder^="Search"]',
-        value: 'SV_85',
-        clear: true,
-      },
-      { type: 'delay', ms: 4000 },
-    ],
     // Pared down to the single core narrative (too many annotations):
     // search SV_85 -> one DEL row -> clicking its location link opens the region
     // below, where SVTYPE=DEL is drawn as the <DEL> ALT allele on the variant.
