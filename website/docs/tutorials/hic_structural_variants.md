@@ -45,7 +45,7 @@ and compartment calls over the same two matrices.
 - K562 compartment eigenvector:
   https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig
 
-## Hi-C contact maps
+## Reading a Hi-C contact map: the triangle, domains and loops
 
 Hi-C counts how often two stretches of the genome touch in the nucleus. JBrowse
 draws the result as a triangle: the diagonal runs along the top edge, and depth
@@ -62,8 +62,8 @@ ENCODE publishes both as annotation files derived from the matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-JBrowse picks the largest binsize no coarser than twice the current
-bp-per-pixel, which over a wide window can render the triangle as red speckle.
+JBrowse picks the largest bin size no coarser than twice the current
+bp-per-pixel; over a wide window this can render the triangle as red speckle.
 [`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) steps to
 coarser bins; if a Hi-C track looks like noise, change it first. See
 [adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution).
@@ -84,7 +84,7 @@ adding any track.
 }
 ```
 
-## Configuring the Hi-C tracks
+## Adding the Hi-C and contact-domain tracks
 
 The `.hic` files are 20 GB and 55 GB, and JBrowse requests only the bins on
 screen.
@@ -133,7 +133,7 @@ The domain BEDPE needs one extra slot, `"type": "FeatureTrack"`:
 }
 ```
 
-Arrowhead writes each domain with both BEDPE mates set to the same interval, so
+Arrowhead writes each domain with both BEDPE ends set to the same interval, so
 as a `FeatureTrack` the file gives one box per domain, nested domains stacking
 into rows. Loops, whose mates differ, are the paired-arc case in the
 [Hi-C track config guide](/docs/config_guides/hic_track#loops-and-interactions-as-arcs);
@@ -152,7 +152,7 @@ along: HiCCUPS' is `observed`, Arrowhead's a second column called `score`.
 Values past the tenth column arrive as strings, so compare with `>` and `<`,
 which coerce, rather than `==`.
 
-## Two chromosomes in one view
+## Opening chr9 and chr22 in one view to look for the translocation
 
 The matrix is fetched for every pair of displayed regions. Open a second region
 and JBrowse also fetches the contacts _between_ the two, drawn in the wedge
@@ -161,9 +161,8 @@ a space: `chr9:129,730,000-131,730,000 chr22:22,285,000-24,285,000`.
 
 <Video src="/media/hic/two_regions.mp4" caption="A chr22 window entered into the location box beside a chr9 one, GM12878 above and K562 below: the wedge between the two triangles appears with the second region." />
 
-Contact frequency decays with distance along whatever molecule two loci sit on,
-so two regions on separate chromosomes only touch at background rate. If they
-are fused, they contact each other constantly.
+Two regions on separate chromosomes touch at background rate. If they are fused,
+they contact each other constantly.
 
 K562 has the Philadelphia chromosome, t(9;22)(q34;q11)
 ([Rowley 1973](https://doi.org/10.1038/243290a0)), joining _BCR_ on chr22 to
@@ -175,20 +174,20 @@ the same ENCODE lab and pipeline.
 The domain boundaries inside each window line up between the two lines, so chr9
 and chr22 each fold normally in K562.
 
-## Depth and normalization in the translocation scan
+## Choosing the control and normalization for the translocation scan
 
-**Depth.** The scan script below compares a case `.hic` with a control, and
-ships with ENCODE's deep GM12878 in situ file, `ENCSR410MDC`, as the control. It
-has the much shallower GM12878 "supernatant" fraction, `ENCSR730CER`, commented
-out, because a wedge empty for want of reads looks the same as one empty for
-want of a translocation. With the deep file, the scan finds GM12878 with more
-contact than K562 across the whole chr9-chr22 block except the junction bin,
-where the order inverts.
+**Control depth.** The scan script below compares a case `.hic` with a control,
+and ships with ENCODE's deep GM12878 in situ file, `ENCSR410MDC`, as the
+control. The much shallower GM12878 "supernatant" fraction, `ENCSR730CER`, is
+commented out in the script, because a wedge empty for want of reads looks the
+same as one empty for want of a translocation. With the deep file, the scan
+finds GM12878 with more contact than K562 across the whole chr9-chr22 block
+except the junction bin, where the order inverts.
 
 **Normalization.** Matrix balancing divides out per-bin coverage differences,
-and an amplified fusion is one. Re-run the scan with `NORM=INTER_SCALE` and
-*ABL1*×*BCR* drops off the top of the table. Balanced matrices suit domains and
-loops and raw counts suit rearrangements, so both Hi-C tracks here set
+and an amplified fusion looks like one. Re-run the scan with `NORM=INTER_SCALE`
+and *ABL1*×*BCR* drops off the top of the table. Balanced matrices suit domains
+and loops and raw counts suit rearrangements, so both Hi-C tracks here set
 [`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)
 to `NONE`.
 
@@ -211,10 +210,10 @@ java -Xmx4g -jar juicer_tools.jar dump observed NONE \
   case.hic chr9 chr22 BP 250000 case.txt
 ```
 
-An empty output file means the `.hic` stores no data at that resolution, or no
-vector for the normalization you asked for, which files store only at coarser
-bins. The file has three columns: bin1 start, bin2 start and contact count. Rank
-the bins by count:
+An empty output file means the `.hic` stores nothing at that resolution, or has
+no vector for the normalization you asked for (a file may store those only at
+coarser bins). The file has three columns: bin1 start, bin2 start and contact
+count. Rank the bins by count:
 
 <!-- from: scripts/scan_hic_translocation.sh -->
 
@@ -238,8 +237,8 @@ The top row pairs _ABL1_ intron 1 with the 5' end of _BCR_. Drop `RES` to
 `10000` and it lands on the junction itself, _ABL1_ intron 1 against the _BCR_
 major breakpoint cluster region.
 [The K562 fusions tutorial](/docs/tutorials/k562_fusions) places the DNA break
-of the same fusion in that _ABL1_ intron 1. Further down, a second chr9 partner
-elsewhere on chr22 sits well clear of the control; the ranking is a list of
+of the same fusion in that intron. Further down, a second chr9 partner elsewhere
+on chr22 sits well clear of the control, so treat the ranking as a list of
 candidates to open.
 
 Purpose-built callers scan the whole genome:
@@ -252,15 +251,15 @@ next to the matrix it was called from.
 
 ## A and B compartments at EBF1 in GM12878 and K562
 
-Above domains and loops, the matrix separates into two interleaved sets of
-regions that each contact regions of the same kind: the gene-rich, active A
-compartment and the inactive B compartment. ENCODE publishes that call for every
+Beyond domains and loops, the genome sorts into two interleaved sets of regions,
+the gene-rich, active A compartment and the inactive B compartment, and regions
+contact others in the same set most. ENCODE publishes that call for every
 experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments).
 
-We'll load each line's eigenvector as a bigWig, both pinned to one symmetric
-scale so that the two lanes compare and 0, where the compartment flips, sits in
-the middle of each:
+We load each line's eigenvector, a score per bin whose sign marks the
+compartment, as a bigWig. Both tracks pin to one symmetric scale, so they
+compare directly and 0, where the compartment flips, sits in the middle of each:
 
 ```json addtrack
 {
