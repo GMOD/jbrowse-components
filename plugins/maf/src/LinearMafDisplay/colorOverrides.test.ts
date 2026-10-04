@@ -1,11 +1,12 @@
 import { setConf } from '@jbrowse/core/configuration'
-import { packAbgr } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import { colorRampStops } from '@jbrowse/core/util/colorRamp'
 import { autorun } from 'mobx'
 
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
 import { identityLut } from '../LinearMafRenderer/identity.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { sourceChromRankColors } from './components/drawSourceChrom.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
@@ -131,5 +132,45 @@ describe('identity', () => {
     expect(display.rowsEncodePropsIn(display.colorPalette).identityColors).toBe(
       display.identityColors,
     )
+  })
+})
+
+describe('chromosome', () => {
+  function chromosomeDisplay(color: Record<string, unknown> = {}) {
+    const display = displayWith({ field: 'chromosome', ...color })
+    stageTwoIdentities(display)
+    return display
+  }
+
+  test('unwritten, the ranks paint the palette the pins hold', () => {
+    expect(chromosomeDisplay().sourceChromColors).toBe(sourceChromRankColors())
+  })
+
+  test('a written range paints the ranks and keys them, stopping at its last', () => {
+    const display = chromosomeDisplay({ range: ['red', 'blue'] })
+    expect([
+      ...(display.encodedUpload.get(0)!.sourceChrom!.color as Uint32Array),
+    ]).toEqual([cssColorToABGR('red'), cssColorToABGR('blue')])
+    expect(display.colorScales[0]).toMatchObject({
+      id: 'sourceChrom',
+      entries: [
+        { label: 'Main chromosome', color: 'red' },
+        { label: '2nd source', color: 'blue' },
+      ],
+    })
+    expect(chromosomeDisplay({ range: ['red'] }).colorScales[0]).toMatchObject({
+      entries: [{ color: 'red' }],
+    })
+  })
+
+  test('renaming the key keeps the rank colours', () => {
+    const display = chromosomeDisplay({ range: ['red', 'blue'] })
+    const before = display.sourceChromColors
+    setConf(display, 'color', {
+      field: 'chromosome',
+      range: ['red', 'blue'],
+      title: 'Scaffold',
+    })
+    expect(display.sourceChromColors).toBe(before)
   })
 })

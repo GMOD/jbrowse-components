@@ -74,6 +74,8 @@ export interface MafRowsEncodeProps {
   gpu: MafGpuProps
   /** The rows' source-chromosome ranks, while the rows are colored by them. */
   sourceChromRanks: ReadonlyMap<number, ReadonlyMap<string, number>> | undefined
+  /** each rank's packed colour (`sourceChromRankColors`) */
+  sourceChromColors: readonly number[]
   rowIndexBySrc: ReadonlyMap<string, number>
   /**
    * The codons to locate, while the codon view or the band's codon mode
@@ -123,6 +125,7 @@ export function encodeMafRows(
     identityColors,
     gpu,
     sourceChromRanks,
+    sourceChromColors,
     rowIndexBySrc,
     codons: codonProps,
     conservation,
@@ -157,7 +160,11 @@ export function encodeMafRows(
     sourceChrom:
       sourceChromRanks &&
       detail &&
-      encodeSourceChromSpans(detail.blocks, sourceChromRanks),
+      encodeSourceChromSpans(
+        detail.blocks,
+        sourceChromRanks,
+        sourceChromColors,
+      ),
     summary:
       summary &&
       encodeSummarySpans(summary, rowIndexBySrc, gpu.palette.matchColor),

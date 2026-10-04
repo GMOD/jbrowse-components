@@ -58,20 +58,26 @@ export function sourceChromRankLabel(rank: number): string {
  * past the fifth entry, and on a tall alignment it grew over the rows.
  *
  * A lone "Main chromosome" entry is the meaningful minimum: it says nothing in
- * view is rearranged. A rank `color.labels` names takes that name.
+ * view is rearranged. A rank `color.labels` names takes that name, and a
+ * written `color.range` its colours, the key stopping at its last.
  */
 export function sourceChromLegendItems(
   maxRank: number,
   {
     domain = [],
     labels = [],
-  }: { domain?: readonly (string | number)[]; labels?: readonly string[] } = {},
+    range = SOURCE_CHROM_PALETTE,
+  }: {
+    domain?: readonly (string | number)[]
+    labels?: readonly string[]
+    range?: readonly string[]
+  } = {},
 ): LegendItem[] {
   const names = keyNames(domain, labels)
-  const shown = Math.min(maxRank, SOURCE_CHROM_PALETTE.length - 1) + 1
+  const shown = Math.min(maxRank, range.length - 1) + 1
   return Array.from({ length: shown }, (_, rank) => ({
     label: names.get(String(rank)) ?? sourceChromRankLabel(rank),
-    color: sourceChromRankColor(rank),
+    color: range[rank]!,
   }))
 }
 
@@ -118,6 +124,33 @@ export function perRowChromRanks(regions: Iterable<MafRegionData>): {
 
 const RANK_ABGR = SOURCE_CHROM_PALETTE.map(cssColorToABGR)
 
+const DEFAULT_RANK_KEY = SOURCE_CHROM_PALETTE.join('\n')
+const MAX_RANK_TABLES = 16
+const rankTables = new Map<string, readonly number[]>()
+
+/**
+ * Each rank's packed colour, the last painting every rank past it: `range`'s
+ * colours where it lists any, else `SOURCE_CHROM_PALETTE`. The same array for
+ * the same range, so a colour edit that leaves it alone re-encodes nothing.
+ */
+export function sourceChromRankColors(
+  range: readonly string[] = SOURCE_CHROM_PALETTE,
+) {
+  const key = range.join('\n')
+  if (range.length === 0 || key === DEFAULT_RANK_KEY) {
+    return RANK_ABGR
+  }
+  let colors = rankTables.get(key)
+  if (!colors) {
+    if (rankTables.size >= MAX_RANK_TABLES) {
+      rankTables.delete(rankTables.keys().next().value!)
+    }
+    colors = range.map(cssColorToABGR)
+    rankTables.set(key, colors)
+  }
+  return colors
+}
+
 /**
  * The color-by-source-chromosome rows as `span` channels: one instance per
  * aligned row per block, across the block's reference extent, colored by the
@@ -127,6 +160,7 @@ const RANK_ABGR = SOURCE_CHROM_PALETTE.map(cssColorToABGR)
 export function encodeSourceChromSpans(
   blocks: readonly MafBlock[],
   ranks: ReadonlyMap<number, ReadonlyMap<string, number>>,
+  rankColors: readonly number[] = RANK_ABGR,
 ): SpanChannels {
   let count = 0
   for (const { rows } of blocks) {
@@ -140,7 +174,7 @@ export function encodeSourceChromSpans(
   const x2 = new Uint32Array(count)
   const row = new Uint32Array(count)
   const color = new Uint32Array(count)
-  const last = RANK_ABGR.length - 1
+  const last = rankColors.length - 1
   const chrOfRow: (string | undefined)[] = []
   const colorOfRow: number[] = []
   let i = 0
@@ -150,7 +184,7 @@ export function encodeSourceChromSpans(
         if (chrOfRow[rowIndex] !== chr) {
           const rank = ranks.get(rowIndex)?.get(chr) ?? 0
           chrOfRow[rowIndex] = chr
-          colorOfRow[rowIndex] = RANK_ABGR[Math.min(rank, last)]!
+          colorOfRow[rowIndex] = rankColors[Math.min(rank, last)]!
         }
         x[i] = startBp
         x2[i] = endBp

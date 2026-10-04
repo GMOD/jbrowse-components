@@ -90,6 +90,7 @@ import { conservationTicks } from './components/conservationBand.ts'
 import {
   perRowChromRanks,
   sourceChromLegendItems,
+  sourceChromRankColors,
 } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { findRowSpans } from './components/findRowSpan.ts'
@@ -485,6 +486,19 @@ export default function stateModelFactory(
           return identityLut(
             color.field === 'identity' && color.scale === 'linear'
               ? color
+              : undefined,
+          )
+        },
+        /**
+         * #getter
+         * Each source chromosome rank's packed colour, `color.range`'s while
+         * `color` is chromosome. One array per range, as `identityColors`.
+         */
+        get sourceChromColors(): readonly number[] {
+          const color = this.colorEncoding
+          return sourceChromRankColors(
+            color.field === 'chromosome' && color.scale === 'categorical'
+              ? color.range
               : undefined,
           )
         },
@@ -2456,6 +2470,7 @@ export default function stateModelFactory(
               self.activeRowRendering === 'chromosome'
                 ? self.sourceChromRanks.ranks
                 : undefined,
+            sourceChromColors: self.sourceChromColors,
             rowIndexBySrc: self.rowIndexBySrc,
             codons:
               (self.codonCellsActive || self.codonConservationActive) &&
