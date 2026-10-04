@@ -519,7 +519,7 @@ describe('ordering controls in chain mode', () => {
   // mode they are the silent no-op — two checkboxes, one ticked by default,
   // that change nothing.
   //
-  // colorBy.test.tsx covers the menu builder given an `isChainMode`; this covers
+  // colorBy.test.tsx covers the menu builder given a `unit`; this covers
   // the half that bug actually lived in, which is whether the model hands it the
   // right one. Driven through the real display, so it asserts nothing about how
   // the flag is spelled.
@@ -575,7 +575,7 @@ describe('ordering controls in chain mode', () => {
     expect(display.rpcProps().sortTag).toBeUndefined()
   })
 
-  // Chain mode degrades a per-read grouping to none (`facetForMode`), so it
+  // Chain mode degrades a per-read grouping to none (`facetForUnit`), so it
   // has to leave the key too. The menu won't offer one in chain mode, but a
   // session or the settings editor can hold one — and then clearing or
   // changing it dropped every fetched region to re-read byte-identical data.
@@ -1687,7 +1687,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(display.facet).toEqual({ field: 'tags.HP', domain: [] })
   })
 
-  // Chain mode degrades a per-read dimension to ungrouped (`facetForMode`)
+  // Chain mode degrades a per-read dimension to ungrouped (`facetForUnit`)
   // with the slot untouched, so the fetch comes back as one '' lane while the
   // menu still reads "Group by MAPQ".
   test('entering chain mode drops the state of a grouping it degrades', () => {

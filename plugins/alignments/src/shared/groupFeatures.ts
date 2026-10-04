@@ -36,6 +36,7 @@ import {
   getStrand,
 } from './util.ts'
 
+import type { AlignmentsUnit } from '../LinearAlignmentsDisplay/constants.ts'
 import type { Facet, ReadDimension, WorkerFacet } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
@@ -439,8 +440,8 @@ export function isChainFacetable(field: string | undefined) {
 // old session with strand + chain, say) degrades to ungrouped rather than
 // splitting chains across sections and breaking their connecting lines.
 // See ../RenderAlignmentDataRPC/CLAUDE.md.
-export function facetForMode(facet: Facet | undefined, isChainMode: boolean) {
-  return isChainMode && !isChainFacetable(facet?.field) ? undefined : facet
+export function facetForUnit(facet: Facet | undefined, unit: AlignmentsUnit) {
+  return unit === 'chain' && !isChainFacetable(facet?.field) ? undefined : facet
 }
 
 // Dimensions as menu radio options, in the given order: the one join between the
@@ -460,11 +461,11 @@ export function pickFacetOptions(...fields: ReadDimension[]) {
  */
 export function workerFacet(
   facet: Facet | undefined,
-  isChainMode: boolean,
+  unit: AlignmentsUnit,
 ): WorkerFacet | undefined {
   return facet === undefined
     ? undefined
-    : isChainMode
-      ? { field: facet.field, unit: 'chain' }
+    : unit === 'chain'
+      ? { field: facet.field, unit }
       : { field: facet.field }
 }

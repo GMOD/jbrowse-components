@@ -209,7 +209,7 @@ test('orderedGroups stacks the domain first across regions', () => {
 test('hasNamedGroups is false for an ungrouped or degraded fetch', () => {
   // ungrouped: the worker's singleSection, keyed '' with no label
   expect(hasNamedGroups([{ key: '', label: '' }])).toBe(false)
-  // chain mode + a per-read dimension: facet stays set, but facetForMode
+  // chain mode + a per-read dimension: facet stays set, but facetForUnit
   // degrades the partition to that same unnamed single section
   expect(hasNamedGroups([])).toBe(false)
 })

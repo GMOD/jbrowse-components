@@ -8,6 +8,7 @@ import { cleanup, fireEvent, render } from '@testing-library/react'
 
 import { getReadsMenuItems } from './reads.ts'
 
+import type { AlignmentsUnit } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 afterEach(cleanup)
@@ -17,7 +18,7 @@ function makeModel(
   overrides?: Partial<{
     canCollapseGroupRows: boolean
     showCoverage: boolean
-    isChainMode: boolean
+    unit: AlignmentsUnit
   }>,
 ) {
   return {
@@ -31,7 +32,7 @@ function makeModel(
     setShowMismatches: jest.fn(),
     showSoftClipping: false,
     setShowSoftClipping: jest.fn(),
-    isChainMode: false,
+    unit: 'read' as AlignmentsUnit,
     showInterbaseIndicators: true,
     setShowInterbaseIndicators: jest.fn(),
     mismatchAlpha: false,
@@ -139,8 +140,8 @@ test('the interbase toggle follows the coverage band', () => {
   expect(interbaseRow(true)).toMatchObject({ disabled: false })
 })
 
-function softClipRow(isChainMode: boolean) {
-  return subMenuOf(makeModel({ isChainMode })).find(
+function softClipRow(unit: AlignmentsUnit) {
+  return subMenuOf(makeModel({ unit })).find(
     r => 'label' in r && r.label === 'Show soft clipping',
   )
 }
@@ -149,9 +150,9 @@ function softClipRow(isChainMode: boolean) {
 // (`executeRenderAlignmentData`), so the row says so instead of taking a click
 // that draws nothing.
 test('the soft clipping toggle greys out in chain mode', () => {
-  expect(softClipRow(true)).toMatchObject({
+  expect(softClipRow('chain')).toMatchObject({
     disabled: true,
     disabledHelpText: expect.stringContaining('Chain layout'),
   })
-  expect(softClipRow(false)).not.toHaveProperty('disabled')
+  expect(softClipRow('read')).not.toHaveProperty('disabled')
 })

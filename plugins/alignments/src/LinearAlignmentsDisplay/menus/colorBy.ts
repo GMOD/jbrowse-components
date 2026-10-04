@@ -24,6 +24,7 @@ import type {
   ReadColorBy,
   TagColorScale,
 } from '../../shared/types.ts'
+import type { AlignmentsUnit } from '../constants.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -81,11 +82,11 @@ interface ColorByMenuOptions {
   // Supplementary/split-read coloring modifiers. These color how chained
   // supplementary alignments are drawn, so they belong with the color scheme
   // rather than in the "Show..." visibility menu. Both are read only by
-  // `readColorCategory`'s chain branches, hence `isChainMode`: without a chain
+  // `readColorCategory`'s chain branches, hence `unit`: without a chain
   // there is nothing chained to recolor and each row would be a live tickbox
   // that does nothing.
   supplementaryColoring?: {
-    isChainMode: boolean
+    unit: AlignmentsUnit
     flipStrandLongReadChains: boolean
     setFlipStrandLongReadChains: (flag: boolean) => void
     colorSupplementaryChains: boolean
@@ -254,7 +255,7 @@ function supplementaryItem(
 ): MenuItem {
   return {
     label: 'Supplementary / split reads',
-    disabled: !supp.isChainMode,
+    disabled: supp.unit !== 'chain',
     disabledHelpText:
       'Enable "Read connections ▸ View as pairs / link supplementary alignments" first',
     subMenu: [

@@ -2,12 +2,13 @@ import { staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { getGroupByMenuItem } from './sortGroup.ts'
 
+import type { AlignmentsUnit } from '../constants.ts'
 import type { GroupByMenuModel } from './sortGroup.ts'
 
-function makeModel(opts?: { field?: string; isChainMode?: boolean }) {
+function makeModel(opts?: { field?: string; unit?: AlignmentsUnit }) {
   const setFacet = jest.fn()
   const model = {
-    isChainMode: opts?.isChainMode ?? false,
+    unit: opts?.unit ?? 'read',
     facet: opts?.field ? { field: opts.field, domain: [] } : undefined,
     setFacet,
   }
@@ -33,9 +34,7 @@ test('offers None, the per-read dimensions, then Tag... last', () => {
 })
 
 test('chain mode offers only the fragment-level dimensions', () => {
-  expect(
-    radios(makeModel({ isChainMode: true }).model).map(i => i.label),
-  ).toEqual([
+  expect(radios(makeModel({ unit: 'chain' }).model).map(i => i.label)).toEqual([
     'None',
     'First-of-pair strand',
     'Pair orientation',
@@ -77,7 +76,7 @@ test('picking a per-read dimension sets it; picking None ungroups', () => {
 // ungrouped in the worker, so the menu should show None checked rather than a
 // blank radio group.
 test('a stored dimension not offered in chain mode falls back to None', () => {
-  const items = radios(makeModel({ field: 'strand', isChainMode: true }).model)
+  const items = radios(makeModel({ field: 'strand', unit: 'chain' }).model)
   expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['None'])
 })
 

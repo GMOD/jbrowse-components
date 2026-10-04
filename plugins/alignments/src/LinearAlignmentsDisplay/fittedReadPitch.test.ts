@@ -20,7 +20,7 @@ function context(groups: { key: string; rows: number }[]): GroupLayoutContext {
   return {
     order: groups.map(g => ({ key: g.key, label: g.key })),
     rawByGroup: new Map(groups.map(g => [g.key, stackedReads(g.rows)])),
-    isChainMode: false,
+    unit: 'read',
     sortedBy: undefined,
     showSoftClipping: false,
     layoutOrder: 'position' as const,

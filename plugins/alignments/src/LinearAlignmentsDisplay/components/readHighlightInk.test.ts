@@ -150,7 +150,7 @@ describe('readsToLight', () => {
   test('a chain lights strong in chain mode', () => {
     expect(
       readsToLight({
-        isChainMode: true,
+        unit: 'chain',
         chainReadIds: ['a', 'b', 'c'],
         readId: undefined,
       }),
@@ -162,7 +162,7 @@ describe('readsToLight', () => {
   test('a connector outside chain mode lights its ends plain', () => {
     expect(
       readsToLight({
-        isChainMode: false,
+        unit: 'read',
         chainReadIds: ['a', 'b'],
         readId: undefined,
       }),
@@ -171,10 +171,10 @@ describe('readsToLight', () => {
 
   test('a lone read lights plain', () => {
     expect(
-      readsToLight({ isChainMode: true, chainReadIds: [], readId: 'a' }),
+      readsToLight({ unit: 'chain', chainReadIds: [], readId: 'a' }),
     ).toEqual({ ids: ['a'], strong: false })
     expect(
-      readsToLight({ isChainMode: false, chainReadIds: [], readId: undefined }),
+      readsToLight({ unit: 'read', chainReadIds: [], readId: undefined }),
     ).toEqual({ ids: [], strong: false })
   })
 })

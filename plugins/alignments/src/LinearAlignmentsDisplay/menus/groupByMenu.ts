@@ -4,24 +4,25 @@ import { groupByRadioMenuItem as sharedGroupByRadioMenuItem } from '@jbrowse/dis
 import { isChainFacetable } from '../../shared/groupFeatures.ts'
 
 import type { ReadDimension } from '../../shared/types.ts'
+import type { AlignmentsUnit } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The shared builder, with chain mode as the `offered` rule: chain layout can
 // only honor a dimension a chain resolves to one key under, and the worker
-// degrades any other to ungrouped (`facetForMode`), so a menu offering one
+// degrades any other to ungrouped (`facetForUnit`), so a menu offering one
 // anyway ticks a radio that changes nothing.
 export function groupByRadioMenuItem({
-  isChainMode = false,
+  unit = 'read',
   ...rest
 }: Omit<
   Parameters<typeof sharedGroupByRadioMenuItem<ReadDimension, string>>[0],
   'offered'
 > & {
-  isChainMode?: boolean
+  unit?: AlignmentsUnit
 }) {
   return sharedGroupByRadioMenuItem<ReadDimension, string>({
     ...rest,
-    offered: field => !isChainMode || isChainFacetable(field),
+    offered: field => unit !== 'chain' || isChainFacetable(field),
   })
 }
 

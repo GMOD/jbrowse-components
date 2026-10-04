@@ -120,7 +120,7 @@ export type { GroupId } from '@jbrowse/core/util/groupKeys'
 // Whether the fetch produced NAMED sections, and so whether to draw the section
 // labels + dividers. Reads the data rather than the `facet` setting: chain mode
 // degrades a per-read dimension to one unnamed section while `facet` stays set
-// (`facetForMode`), so the setting labels that degraded section "ungrouped".
+// (`facetForUnit`), so the setting labels that degraded section "ungrouped".
 // Every real dimension names even its catch-all bucket ('HP: none', 'No
 // orientation'), which makes a non-empty label the reliable signal.
 //

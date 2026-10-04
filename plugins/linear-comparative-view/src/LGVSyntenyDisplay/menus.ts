@@ -10,6 +10,7 @@ import {
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
+  AlignmentsUnit,
   CollapseGroupRowsModel,
   Facet,
   HiddenGroupsModel,
@@ -22,7 +23,7 @@ interface GroupByModel {
   // reachable here from a config or session even though this menu offers no way
   // in. `groupByRadioMenuItem` needs it to drop the per-read dimensions the
   // worker would degrade to ungrouped.
-  isChainMode: boolean
+  unit: AlignmentsUnit
   hideSelfAlignments: boolean
   setHideSelfAlignments: (flag: boolean) => void
 }
@@ -39,7 +40,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   const item = groupByRadioMenuItem({
     current: model.facet?.field,
     options: GROUP_OPTIONS,
-    isChainMode: model.isChainMode,
+    unit: model.unit,
     onSelect: field => {
       model.setFacet({ field })
     },

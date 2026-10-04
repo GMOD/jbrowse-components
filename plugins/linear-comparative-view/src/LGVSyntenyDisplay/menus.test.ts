@@ -3,17 +3,17 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
 import type { CheckboxMenuItem, RadioMenuItem } from '@jbrowse/core/ui'
-import type { ReadDimension } from '@jbrowse/plugin-alignments'
+import type { AlignmentsUnit, ReadDimension } from '@jbrowse/plugin-alignments'
 
 function makeModel(
   field?: ReadDimension,
   hideSelfAlignments = false,
-  isChainMode = false,
+  unit: AlignmentsUnit = 'read',
 ) {
   return {
     facet: field ? { field } : undefined,
     setFacet: jest.fn(),
-    isChainMode,
+    unit,
     hideSelfAlignments,
     setHideSelfAlignments: jest.fn(),
   }
@@ -46,13 +46,13 @@ test('offers None plus the synteny-applicable dimensions, then the self lane', (
 // ticked while changing nothing; the shared builder applies the rule now.
 test('chain mode drops the dimensions the worker would degrade', () => {
   expect(
-    items(makeModel('mateAssembly', false, true)).map(i => i.label),
+    items(makeModel('mateAssembly', false, 'chain')).map(i => i.label),
   ).toEqual(['None', 'Mate assembly', 'Hide self-alignment lane'])
 })
 
 test('a stored per-read dimension falls back to None in chain mode', () => {
   expect(
-    items(makeModel('mapq', false, true))
+    items(makeModel('mapq', false, 'chain'))
       .filter(i => i.checked)
       .map(i => i.label),
   ).toEqual(['None'])

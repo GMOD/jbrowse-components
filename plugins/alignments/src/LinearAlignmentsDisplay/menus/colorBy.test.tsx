@@ -6,6 +6,7 @@ import { pickColorOptions } from '../../shared/colorSchemes.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
 import type { BaseLayer, ReadColorBy } from '../../shared/types.ts'
+import type { AlignmentsUnit } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Minimal model: enough for schemeRadios + the Paired end submenu (modModel is
@@ -351,8 +352,8 @@ describe('color by modifications menu', () => {
 // chain mode they are settings that change nothing. Greyed out rather than
 // hidden, matching the read-connection band options.
 describe('supplementary / split read coloring', () => {
-  const supp = (isChainMode: boolean) => ({
-    isChainMode,
+  const supp = (unit: AlignmentsUnit) => ({
+    unit,
     flipStrandLongReadChains: true,
     setFlipStrandLongReadChains: () => {},
     colorSupplementaryChains: false,
@@ -361,7 +362,7 @@ describe('supplementary / split read coloring', () => {
 
   test('greys out with chain mode off, naming the switch that enables it', () => {
     const item = byLabel(makeModel(), 'Supplementary / split reads', {
-      supplementaryColoring: supp(false),
+      supplementaryColoring: supp('read'),
     })
     expect(item && 'disabled' in item && item.disabled).toBe(true)
     expect(
@@ -372,7 +373,7 @@ describe('supplementary / split read coloring', () => {
   test('live in chain mode, and both rows say which reads they reach', () => {
     const model = makeModel()
     const item = byLabel(model, 'Supplementary / split reads', {
-      supplementaryColoring: supp(true),
+      supplementaryColoring: supp('chain'),
     })
     expect(item && 'disabled' in item && item.disabled).toBe(false)
     const rows = subMenuOf(item)

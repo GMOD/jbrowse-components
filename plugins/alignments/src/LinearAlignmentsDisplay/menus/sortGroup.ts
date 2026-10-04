@@ -14,6 +14,7 @@ import { isInterbaseType } from '../../shared/types.ts'
 import { groupByRadioMenuItem } from './groupByMenu.ts'
 
 import type { Facet, LayoutOrder, SortedBy } from '../../shared/types.ts'
+import type { AlignmentsUnit } from '../constants.ts'
 import type { GroupByDialogModel } from '../dialogs/GroupByDialog.tsx'
 import type { RadioMenuItem } from '@jbrowse/core/ui'
 
@@ -161,7 +162,7 @@ const GROUP_OPTIONS = pickFacetOptions(
 // The dialog's surface plus what the radios themselves need. The same node is
 // passed on to GroupByDialog, so it has to be a superset.
 export interface GroupByMenuModel extends GroupByDialogModel {
-  isChainMode: boolean
+  unit: AlignmentsUnit
 }
 
 export interface SectionOrderMenuModel {
@@ -223,7 +224,7 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
   return groupByRadioMenuItem({
     current: tag === undefined ? field : TAG_FIELD_PREFIX,
     options: GROUP_OPTIONS,
-    isChainMode: model.isChainMode,
+    unit: model.unit,
     onSelect: field => {
       model.setFacet({ field })
     },

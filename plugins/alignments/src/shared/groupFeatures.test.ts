@@ -6,7 +6,7 @@ import {
   FACET_DIMENSIONS,
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
-  facetForMode,
+  facetForUnit,
   isChainFacetable,
   partitionFeatures,
   workerFacet,
@@ -489,30 +489,30 @@ test('the worker partitions in natural order and caps off the key set alone', ()
 })
 
 test('the worker is sent the field, never the domain', () => {
-  expect(workerFacet({ field: 'tags.HP', domain: ['2'] }, false)).toEqual({
+  expect(workerFacet({ field: 'tags.HP', domain: ['2'] }, 'read')).toEqual({
     field: 'tags.HP',
   })
-  expect(workerFacet({ field: 'strand', domain: ['-1'] }, false)).toEqual({
+  expect(workerFacet({ field: 'strand', domain: ['-1'] }, 'read')).toEqual({
     field: 'strand',
   })
-  expect(workerFacet(undefined, false)).toBeUndefined()
+  expect(workerFacet(undefined, 'read')).toBeUndefined()
 })
 
 test('chain mode sends the chain as the unit only when there is a facet', () => {
-  expect(workerFacet({ field: 'tags.HP', domain: ['2'] }, true)).toEqual({
+  expect(workerFacet({ field: 'tags.HP', domain: ['2'] }, 'chain')).toEqual({
     field: 'tags.HP',
     unit: 'chain',
   })
-  expect(workerFacet(undefined, true)).toBeUndefined()
+  expect(workerFacet(undefined, 'chain')).toBeUndefined()
 })
 
-test('facetForMode degrades a per-read dimension in chain mode only', () => {
+test('facetForUnit degrades a per-read dimension in chain mode only', () => {
   const perRead = { field: 'strand' as const }
   const chainSafe = { field: 'tags.HP' }
-  expect(facetForMode(perRead, false)).toBe(perRead)
-  expect(facetForMode(perRead, true)).toBeUndefined()
-  expect(facetForMode(chainSafe, true)).toBe(chainSafe)
-  expect(facetForMode(undefined, true)).toBeUndefined()
+  expect(facetForUnit(perRead, 'read')).toBe(perRead)
+  expect(facetForUnit(perRead, 'chain')).toBeUndefined()
+  expect(facetForUnit(chainSafe, 'chain')).toBe(chainSafe)
+  expect(facetForUnit(undefined, 'chain')).toBeUndefined()
 })
 
 // The collision the display's per-group volatiles are keyed against: '' is the

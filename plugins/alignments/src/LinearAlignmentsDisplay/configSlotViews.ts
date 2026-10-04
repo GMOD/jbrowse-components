@@ -50,7 +50,7 @@ import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
  * **A getter that reads any OTHER model member does not belong here** — it
  * belongs in the chain, where `self` is the model so far. That is the line
  * between this file and model.ts, and it is why `collapseGroupRows` (which reads
- * `canCollapseGroupRows`) and `showOutline` (which reads `isChainMode`) stayed
+ * `canCollapseGroupRows`) and `showOutline` (which reads `unit`) stayed
  * behind despite also being slot reads.
  */
 export interface ConfigSlotSelf extends IStateTreeNode {

@@ -7,6 +7,7 @@ import { bandScreenTop, sectionBandBottom } from './sectionScreen.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ReadSlot } from '../../shared/readSlot.ts'
+import type { AlignmentsUnit } from '../constants.ts'
 import type { RenderState } from '../renderers/rendererTypes.ts'
 import type { ScrollModel } from './sectionScreen.ts'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
@@ -59,16 +60,16 @@ function mergeRow(rects: HighlightRect[]) {
  * shade a read hover takes; only a chain takes the strong one.
  */
 export function readsToLight({
-  isChainMode,
+  unit,
   chainReadIds,
   readId,
 }: {
-  isChainMode: boolean
+  unit: AlignmentsUnit
   chainReadIds: readonly string[]
   readId: string | undefined
 }): { ids: readonly string[]; strong: boolean } {
   return chainReadIds.length > 0
-    ? { ids: chainReadIds, strong: isChainMode }
+    ? { ids: chainReadIds, strong: unit === 'chain' }
     : { ids: readId ? [readId] : [], strong: false }
 }
 

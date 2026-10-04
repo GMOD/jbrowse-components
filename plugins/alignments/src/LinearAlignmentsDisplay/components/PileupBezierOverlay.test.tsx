@@ -75,7 +75,7 @@ function renderOverlay(
     bezierArcScope: 'all',
     scrollTop: 0,
     height: 200,
-    isChainMode: false,
+    unit: 'read',
     selectedFeatureId: undefined,
     selectedChainReadIds: [],
     getFeatureInfoById: () => undefined,
@@ -164,7 +164,7 @@ test('hovering a curve boxes both of its reads outside chain mode', () => {
 // a junction.
 test('hovering a curve in chain mode boxes the whole chain', () => {
   const { model, target } = renderOverlay({
-    isChainMode: true,
+    unit: 'chain',
     readIdsSharingChainWith: jest.fn(() => CHAIN),
   })
 

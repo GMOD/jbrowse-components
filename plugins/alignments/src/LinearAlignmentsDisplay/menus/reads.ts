@@ -4,6 +4,7 @@ import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 
 import { collapseGroupRowsItems, hiddenGroupsItems } from './groupByMenu.ts'
 
+import type { AlignmentsUnit } from '../constants.ts'
 import type {
   CollapseGroupRowsModel,
   HiddenGroupsModel,
@@ -21,7 +22,7 @@ interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
   setShowSoftClipping: (show: boolean) => void
-  isChainMode: boolean
+  unit: AlignmentsUnit
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
@@ -49,7 +50,7 @@ function softClippingItem(model: ReadsModel) {
   const onToggle = () => {
     model.setShowSoftClipping(!model.showSoftClipping)
   }
-  return model.isChainMode
+  return model.unit === 'chain'
     ? toggleItem(label, model.showSoftClipping, onToggle, {
         disabled: true,
         disabledHelpText:

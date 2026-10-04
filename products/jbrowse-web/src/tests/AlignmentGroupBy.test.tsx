@@ -235,7 +235,7 @@ test('chain mode groups whole chains by HP tag into sections', async () => {
 
   await waitFor(
     () => {
-      expect(display.isChainMode).toBe(true)
+      expect(display.unit).toBe('chain')
       expect(display.isGrouped).toBe(true)
       expect(display.groupOrder.length).toBeGreaterThanOrEqual(2)
       // the worker kept each chain whole: within a region, no chain name is
@@ -287,7 +287,7 @@ test('chain mode ignores a per-read group dimension (single section)', async () 
 
   await waitFor(
     () => {
-      expect(display.isChainMode).toBe(true)
+      expect(display.unit).toBe('chain')
       // strand is not chain-consistent, so the worker degrades to one section.
       expect(display.isGrouped).toBe(false)
       for (const grouped of display.rpcDataMap.values()) {

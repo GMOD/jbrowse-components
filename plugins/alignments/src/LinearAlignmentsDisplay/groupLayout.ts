@@ -30,6 +30,7 @@ import type {
 } from '../shared/types.ts'
 import type { BakedColorScale } from './bakedColorScale.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
+import type { AlignmentsUnit } from './constants.ts'
 import type { GroupId } from './groupedDataMaps.ts'
 
 // Per group key: region index → laid-out data (Y arrays filled), colors not yet
@@ -141,7 +142,7 @@ export interface GroupLayoutContext {
   // Group key → region idx → fetched data, with chain identity attached in
   // chain mode (the model's `chainedByGroup`).
   rawByGroup: ReadonlyMap<string, ReadonlyMap<number, ChainedPileupData>>
-  isChainMode: boolean
+  unit: AlignmentsUnit
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean
   layoutOrder: LayoutOrder
@@ -190,7 +191,7 @@ function layoutOneGroup(
   if (collapse) {
     return buildCollapsedPileupMap(dataMap)
   }
-  return ctx.isChainMode
+  return ctx.unit === 'chain'
     ? buildLaidOutChainMap({ dataMap, regions: ctx.regions, rowCap: cap })
     : buildLaidOutPileupMap({
         dataMap,
@@ -385,7 +386,7 @@ function collapsesRows(
   key: string,
   capOverrides: ReadonlyMap<string, RowCap>,
 ) {
-  return ctx.collapseGroupRows && !ctx.isChainMode && !capOverrides.has(key)
+  return ctx.collapseGroupRows && ctx.unit !== 'chain' && !capOverrides.has(key)
 }
 
 // Whether a group's reads are stacked in rows: not drawn as its coverage band
@@ -421,7 +422,7 @@ export function layoutGroupRowCounts(
       // exists.
       collapsesRows(ctx, key, NO_OVERRIDES)
         ? collapsedLayoutMaxY(dataMap)
-        : ctx.isChainMode
+        : ctx.unit === 'chain'
           ? chainLayoutMaxY({ dataMap, regions: ctx.regions, maxRows })
           : pileupLayoutMaxY({
               dataMap,

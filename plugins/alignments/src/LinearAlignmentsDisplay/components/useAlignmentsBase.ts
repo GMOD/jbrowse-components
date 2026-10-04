@@ -272,7 +272,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     featureHit: FeatureHit | undefined,
     resolved: ResolvedBlock,
   ) {
-    return model.isChainMode && featureHit
+    return model.unit === 'chain' && featureHit
       ? model.readIdsSharingChain(resolved.rpcData, featureHit.index)
       : []
   }

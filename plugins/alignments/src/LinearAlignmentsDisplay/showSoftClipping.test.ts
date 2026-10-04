@@ -534,7 +534,6 @@ describe('alignments unit (view as pairs)', () => {
   ])('the beta spelling linkedReads: %s reads as unit %s', (old, unit) => {
     const { display } = createDisplay({ linkedReads: old })
     expect(display.unit).toBe(unit)
-    expect(display.isChainMode).toBe(unit === 'chain')
   })
 })
 

@@ -36,7 +36,7 @@ function overlappingReadsContext(): GroupLayoutContext {
         ]),
       ],
     ]),
-    isChainMode: false,
+    unit: 'read',
     sortedBy: undefined,
     showSoftClipping: false,
     layoutOrder: 'position' as const,

@@ -87,7 +87,7 @@ import {
   workerColorBy,
 } from '../shared/colorSchemes.ts'
 import {
-  facetForMode,
+  facetForUnit,
   sectionOrder,
   workerFacet,
 } from '../shared/groupFeatures.ts'
@@ -521,13 +521,6 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         */
-        get isChainMode() {
-          return self.unit === 'chain'
-        },
-
-        /**
-         * #getter
          * Whether to draw the straight-line pass connecting normal read-pairs
          * in pileup layout. Only meaningful when bezier connections are on AND
          * we are in pileup mode — chain layout has its own connecting-line pass
@@ -536,7 +529,7 @@ export default function stateModelFactory(
          * `bezierArcScope`'s `crossRegion`.
          */
         get showLinkedReadLines() {
-          return self.showBezierConnections && !this.isChainMode
+          return self.showBezierConnections && self.unit !== 'chain'
         },
 
         /**
@@ -555,7 +548,7 @@ export default function stateModelFactory(
         get bezierArcScope(): BezierArcScope {
           return self.showBezierConnections
             ? 'all'
-            : this.isChainMode
+            : self.unit === 'chain'
               ? 'crossRegion'
               : 'none'
         },
@@ -777,7 +770,7 @@ export default function stateModelFactory(
            * does not determine which sections come back.
            */
           get effectiveFacet() {
-            return facetForMode(self.facet, self.isChainMode)
+            return facetForUnit(self.facet, self.unit)
           },
 
           /**
@@ -796,7 +789,7 @@ export default function stateModelFactory(
            * stacked group sections aren't hidden behind an overlapping label.
            *
            * Asks whether the grouping will be HONORED, not merely whether it is set:
-           * chain mode drops a per-read dimension (`facetForMode`), and reserving
+           * chain mode drops a per-read dimension (`facetForUnit`), and reserving
            * label room for sections that then never get drawn leaves dead space above
            * the plot. Unlike `showsGroupLabels` this can't read the fetched sections —
            * the track label is positioned before any data arrives, and flipping once
@@ -836,7 +829,7 @@ export default function stateModelFactory(
            * would write a slot no getter reads.
            */
           get canCollapseGroupRows() {
-            return this.prefersOffset && !self.isChainMode
+            return this.prefersOffset && self.unit !== 'chain'
           },
 
           /**
@@ -855,7 +848,7 @@ export default function stateModelFactory(
            * `rpcProps`) that nothing reads.
            */
           get sortReadsBlockedReason(): string | undefined {
-            return self.isChainMode
+            return self.unit === 'chain'
               ? 'Chain rows are ordered by chain — turn off "View as pairs / link supplementary alignments" to sort reads'
               : self.showPileup
                 ? undefined
@@ -1253,7 +1246,7 @@ export default function stateModelFactory(
           get overlapLegendKind(): 'chain' | 'collapsed' | undefined {
             if (
               !shouldDrawOverlaps({
-                chainMode: self.isChainMode,
+                chainMode: self.unit === 'chain',
                 collapseGroupRows: this.collapseGroupRows,
                 featureHeight: this.featureHeight,
               })
@@ -1264,7 +1257,7 @@ export default function stateModelFactory(
               this.laidOutByGroup,
               d => d.overlapPositions.length > 0,
             )
-              ? self.isChainMode
+              ? self.unit === 'chain'
                 ? 'chain'
                 : 'collapsed'
               : undefined
@@ -1583,7 +1576,7 @@ export default function stateModelFactory(
             return framesUnpairedChainStrand(
               self.baseLayer?.type ?? self.colorBy.type,
               {
-                chainMode: self.isChainMode,
+                chainMode: self.unit === 'chain',
                 flipStrandLongReadChains: self.flipStrandLongReadChains,
                 colorSupplementaryChains: self.colorSupplementaryChains,
               },
@@ -1599,7 +1592,7 @@ export default function stateModelFactory(
           get laidOutByGroupFramed() {
             return applyChainStrandFrames(
               this.laidOutByGroupUncolored,
-              self.isChainMode,
+              self.unit === 'chain',
               this.framesChainStrand,
             )
           },
@@ -1678,7 +1671,7 @@ export default function stateModelFactory(
             return {
               order: this.groupOrder,
               rawByGroup: this.chainedByGroup,
-              isChainMode: self.isChainMode,
+              unit: self.unit,
               sortedBy: this.sortedBy,
               showSoftClipping: self.showSoftClipping,
               layoutOrder: self.layoutOrder,
@@ -1811,7 +1804,7 @@ export default function stateModelFactory(
            */
           get readColorOpts() {
             return {
-              chainMode: self.isChainMode,
+              chainMode: self.unit === 'chain',
               colorSupplementaryChains: self.colorSupplementaryChains,
               framesChainStrand: this.framesChainStrand,
             }
@@ -1882,7 +1875,7 @@ export default function stateModelFactory(
            * chains, so toggling the mode is this getter changing, not a fetch.
            */
           get chainAttachment() {
-            return self.isChainMode
+            return self.unit === 'chain'
               ? attachChainFields(this.rawDataByGroup)
               : undefined
           },
@@ -2534,7 +2527,7 @@ export default function stateModelFactory(
          * #getter
          */
         get showOutline() {
-          return getConf(self, 'showOutline') ?? self.isChainMode
+          return getConf(self, 'showOutline') ?? self.unit === 'chain'
         },
 
         /**
@@ -2591,9 +2584,10 @@ export default function stateModelFactory(
          * mode and for an id no fetched region holds.
          */
         readIdsSharingChainWith(featureId: string) {
-          const hit = self.isChainMode
-            ? self.findFeatureInRpcData(featureId)
-            : undefined
+          const hit =
+            self.unit === 'chain'
+              ? self.findFeatureInRpcData(featureId)
+              : undefined
           return hit ? this.readIdsSharingChain(hit.rpcData, hit.idx) : []
         },
 
@@ -2946,7 +2940,7 @@ export default function stateModelFactory(
             canvasWidth: self.canvasWidthPx,
             canvasHeight: self.height,
             colors: palette,
-            chainMode: self.isChainMode,
+            chainMode: self.unit === 'chain',
             showLinkedReadLines: self.showLinkedReadLines,
             collapseGroupRows: self.collapseGroupRows,
             readConnectionsLineWidth: self.readConnectionsLineWidth,
@@ -2982,7 +2976,7 @@ export default function stateModelFactory(
             )
           }
           const { ids, strong } = readsToLight({
-            isChainMode: self.isChainMode,
+            unit: self.unit,
             chainReadIds: self.highlightedChainReadIds,
             readId: self.featureIdUnderMouse,
           })
@@ -2998,7 +2992,7 @@ export default function stateModelFactory(
          */
         get selectionInk(): HighlightRect[] {
           const { ids, strong } = readsToLight({
-            isChainMode: self.isChainMode,
+            unit: self.unit,
             chainReadIds: self.selectedChainReadIds,
             readId: self.selectedFeatureId,
           })
@@ -3156,9 +3150,10 @@ export default function stateModelFactory(
             // was entered would otherwise refetch for data nothing reads. The
             // facet keeps a chain whole only when there is a facet, so the
             // mode toggle over ungrouped data leaves these props equal.
-            sortTag: self.isChainMode ? undefined : self.sortTag,
-            facet: workerFacet(self.effectiveFacet, self.isChainMode),
-            showSoftClipping: self.isChainMode ? false : self.showSoftClipping,
+            sortTag: self.unit === 'chain' ? undefined : self.sortTag,
+            facet: workerFacet(self.effectiveFacet, self.unit),
+            showSoftClipping:
+              self.unit === 'chain' ? false : self.showSoftClipping,
             // showCoverage is here (not just renderState) because the worker
             // skips the entire coverage-band pipeline — including the per-bp GPU
             // depth buffer that overflows the device limit at whole-chromosome
@@ -4234,7 +4229,7 @@ export default function stateModelFactory(
                       },
                     },
               supplementaryColoring: {
-                isChainMode: self.isChainMode,
+                unit: self.unit,
                 flipStrandLongReadChains: self.flipStrandLongReadChains,
                 setFlipStrandLongReadChains: (flag: boolean) => {
                   self.setFlipStrandLongReadChains(flag)
