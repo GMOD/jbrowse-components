@@ -243,7 +243,7 @@ export default function EmbeddedPlugin() {
 `createViewState({ config, plugins: [MyPlugin] })` takes the same array. To
 fetch a published plugin at runtime instead, `loadPlugins` returns records to
 pass through unchanged — see
-[With external plugin](https://jbrowse.org/storybook/app/with-external-plugin/).
+[With external plugin](https://jbrowse.org/storybook/app/plugins/#with-external-plugin).
 
 ## See also
 

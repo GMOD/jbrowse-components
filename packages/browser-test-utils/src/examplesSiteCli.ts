@@ -1,8 +1,8 @@
-import { writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { runExamplesSiteChecks } from './docLinks.ts'
+import { listFilesRecursive, runExamplesSiteChecks } from './docLinks.ts'
 import { measureDemoHeights } from './examplesDemoHeights.ts'
 
 // The whole of two examples-site maintenance scripts. Each site's
@@ -46,24 +46,37 @@ async function loadAstroConfig(site: string): Promise<{ base: string }> {
 
 /**
  * Validate + suggest links in an examples-site. Fails (returns 1) on a link to a
- * generated doc page that no longer exists, on a site-internal
- * `../<page>/#<section>` cross-link whose page or section is gone (these break
- * silently on a rename), on a section with no `src/docs/<slug>.md` (which
- * renders as a demo with no explanation, equally silent), and on prose past its
- * cap. Advisory output: reference links still worth adding, and prose getting
- * long.
+ * generated doc page that no longer exists, on a `../<page>/#<section>`
+ * cross-link or a website/README link into the site whose page or section is
+ * gone (these break silently on a rename), on a doc no section renders, on a
+ * page file whose sections differ from examples.ts, and on prose past its cap.
+ * Advisory output: reference links still worth adding, and prose getting long.
  */
 export async function checkExamplesSiteDocLinks(
   scriptUrl: string,
   log: (message: string) => void = console.log,
 ) {
   const root = siteRoot(scriptUrl)
+  const repo = path.join(root, '..', '..', '..')
   const { pages } = await loadExamples(root)
+  const { base } = await loadAstroConfig(root)
+  const products = path.join(repo, 'products')
+  const readmes = readdirSync(products)
+    .map(p => path.join(products, p, 'README.md'))
+    .filter(f => existsSync(f))
   return runExamplesSiteChecks({
     root,
     pages,
     // the checked-out website docs tree the generated pages are built from
-    referenceDir: path.join(root, '..', '..', '..', 'website', 'docs'),
+    referenceDir: path.join(repo, 'website', 'docs'),
+    base,
+    inboundFiles: [
+      ...listFilesRecursive(path.join(repo, 'website', 'docs'), [
+        '.md',
+        '.mdx',
+      ]),
+      ...readmes,
+    ],
     log,
   })
     ? 1

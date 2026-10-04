@@ -85,7 +85,7 @@ export function buildDocIndex(referenceDir: string): DocPage[] {
   return pages
 }
 
-function listFilesRecursive(dir: string, exts: string[]): string[] {
+export function listFilesRecursive(dir: string, exts: string[]): string[] {
   const out: string[] = []
   const walk = (d: string) => {
     for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
@@ -182,6 +182,91 @@ export function findBrokenCrossLinks({
       if (!pageSlugs.has(page)) {
         broken.push({ file, url, reason: `no page "${page}"` })
       } else if (anchor && !sectionsByPage.get(page)?.has(anchor)) {
+        broken.push({
+          file,
+          url,
+          reason: `page "${page}" has no section "${anchor}"`,
+        })
+      }
+    }
+  }
+  return broken
+}
+
+export function sectionsRenderedBy(pageSource: string): string[] {
+  const vars = new Map(
+    [...pageSource.matchAll(/const (\w+) = section\(page, '([^']+)'\)/g)].map(
+      m => [m[1], m[2]],
+    ),
+  )
+  return [
+    ...pageSource.matchAll(/<Section\s+(?:\{\.\.\.(\w+)\}|slug="([^"]+)")/g),
+  ].map(m => m[2] ?? vars.get(m[1]) ?? `{...${m[1]}}`)
+}
+
+// examples.ts lists each page's sections for the sidebar and the page TOC, and
+// the page file renders them; the two are written by hand side by side
+export function findPageDrift({
+  pagesDir,
+  pages,
+}: {
+  pagesDir: string
+  pages: { slug: string; sections: { slug: string }[] }[]
+}): { what: string; reason: string }[] {
+  const drift: { what: string; reason: string }[] = []
+  for (const p of pages) {
+    const file = path.join(pagesDir, `${p.slug}.astro`)
+    if (!fs.existsSync(file)) {
+      drift.push({ what: p.slug, reason: 'no page file' })
+      continue
+    }
+    const rendered = sectionsRenderedBy(fs.readFileSync(file, 'utf8'))
+    const listed = p.sections.map(s => s.slug)
+    if (rendered.join(',') !== listed.join(',')) {
+      drift.push({
+        what: p.slug,
+        reason: `examples.ts lists [${listed.join(', ')}], the page renders [${rendered.join(', ')}]`,
+      })
+    }
+  }
+  const slugs = new Set(pages.map(p => p.slug))
+  for (const f of fs.readdirSync(pagesDir)) {
+    const slug = f.replace(/\.astro$/, '')
+    if (f.endsWith('.astro') && slug !== 'index' && !slugs.has(slug)) {
+      drift.push({ what: slug, reason: 'page file not in examples.ts' })
+    }
+  }
+  return drift
+}
+
+// Links from the website docs and package READMEs into this site, by its
+// published base (`https://jbrowse.org/storybook/lgv/<page>/#<section>`), which
+// no crawl of either side follows
+export function findBrokenInboundLinks({
+  files,
+  base,
+  pages,
+}: {
+  files: string[]
+  base: string
+  pages: { slug: string; sections: { slug: string }[] }[]
+}): BrokenCrossLink[] {
+  const sectionsByPage = new Map(
+    pages.map(p => [p.slug, new Set(p.sections.map(s => s.slug))]),
+  )
+  const escaped = base.replaceAll(/[.*+?^${}()|[\]\\/]/g, '\\$&')
+  const linkRe = new RegExp(
+    `https://jbrowse\\.org${escaped}/([A-Za-z0-9-]+)/?(?:#([A-Za-z0-9-]+))?`,
+    'g',
+  )
+  const broken: BrokenCrossLink[] = []
+  for (const file of files) {
+    for (const m of fs.readFileSync(file, 'utf8').matchAll(linkRe)) {
+      const [url, page, anchor] = m
+      const sections = sectionsByPage.get(page!)
+      if (!sections) {
+        broken.push({ file, url, reason: `no page "${page}"` })
+      } else if (anchor && !sections.has(anchor)) {
         broken.push({
           file,
           url,
@@ -448,6 +533,8 @@ export function runExamplesSiteChecks({
   root,
   pages,
   referenceDir,
+  base,
+  inboundFiles,
   log = console.log,
 }: {
   // the examples-site directory, i.e. the one holding src/ and scripts/
@@ -458,21 +545,33 @@ export function runExamplesSiteChecks({
     sections: { slug: string; description?: string }[]
   }[]
   referenceDir: string
+  // the site's astro `base`, and the files outside it that link in by it
+  base: string
+  inboundFiles: string[]
   log?: (message: string) => void
 }): number {
   const src = path.join(root, 'src')
   const docsDir = path.join(src, 'docs')
+  const pagesDir = path.join(src, 'pages')
   const rel = (f: string) => path.relative(root, f)
-  const contentDirs = [docsDir, path.join(src, 'pages')]
+  const contentDirs = [docsDir, pagesDir]
 
   const broken = findBrokenDocLinks({ contentDirs, referenceDir })
   for (const b of broken) {
     log(`BROKEN ${b.url}\n       in ${rel(b.file)}`)
   }
 
-  const brokenCross = findBrokenCrossLinks({ contentDirs, pages })
+  const brokenCross = [
+    ...findBrokenCrossLinks({ contentDirs, pages }),
+    ...findBrokenInboundLinks({ files: inboundFiles, base, pages }),
+  ]
   for (const b of brokenCross) {
     log(`BROKEN ${b.url}  (${b.reason})\n       in ${rel(b.file)}`)
+  }
+
+  const drift = findPageDrift({ pagesDir, pages })
+  for (const d of drift) {
+    log(`PAGE DRIFT ${d.what}  (${d.reason})`)
   }
 
   const orphans = findOrphanDocs({ docsDir, pages })
@@ -548,7 +647,7 @@ export function runExamplesSiteChecks({
   const tooLong = longDocs.length + longPages.length + longDescriptions.length
   log(
     `\n${broken.length + brokenCross.length} broken link(s), ` +
-      `${orphans.length} orphan(s), ` +
+      `${orphans.length} orphan(s), ${drift.length} drifted page(s), ` +
       `${tooLong} over-long prose, ${crowded.length} crowded page(s), ` +
       `${engines.length} engine(s) in an initializer, ` +
       `${suggestions.length} suggestion(s)`,
@@ -557,6 +656,7 @@ export function runExamplesSiteChecks({
     broken.length +
     brokenCross.length +
     orphans.length +
+    drift.length +
     tooLong +
     crowded.length +
     engines.length
