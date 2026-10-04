@@ -1120,6 +1120,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
             ],
             color: { field: 'reference' },
             autoDiagonalize: true,
+            // the rows hold no track, so uncollapsed each draws a "No tracks
+            // active" placeholder over its chromosome ticks
+            collapseEmptyRows: true,
           },
         ],
       },

@@ -19,8 +19,8 @@ and then read one grape locus across all seven plant genomes. With that view we:
 
 ## Prerequisites
 
-- a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
-  file by path, [Web](/docs/quickstart_web) through **Add track**
+- a JBrowse to open the files in: [Desktop](/docs/quickstart_desktop) takes a
+  local file by path, [Web](/docs/quickstart_web) through **Add track**
 - [jcvi](https://github.com/tanghaibao/jcvi) with the
   [LAST](https://gitlab.com/mcfrith/last) aligner
 - Or any other ortholog table, converted as in
@@ -76,10 +76,10 @@ NCBI); the table has no coordinates, so one `.bed` per genome places each id.
 A table is **reference-anchored** when every row starts from a gene in one
 genome, and **all against all** when a row is an orthogroup inferred across all
 genomes at once; the adapter loads either shape. jcvi MCScan anchors its tables
-on column 0. [Direct vs transitive pairs](#direct-vs-transitive-pairs) measures
+on column 0. [Direct vs transitive pairs](#direct-vs-transitive-pairs) covers
 what that costs.
 
-### A duplicated gene
+### How a .blocks table holds a duplicated gene
 
 A cell holds one gene id; two conventions place a second copy.
 
@@ -105,10 +105,10 @@ grape02	peach02b	cacao02
 grape03	.	.
 ```
 
-`orthogroups_to_blocks.py` writes this shape by default; the MCScanX converter
-keeps the best-scoring copy.
+OrthoFinder's converter, `orthogroups_to_blocks.py`, writes this shape by
+default; the MCScanX converter keeps the best-scoring copy.
 
-## Producing the data
+## Producing grape.blocks and the BEDs with jcvi {#producing-the-data}
 
 `grape.blocks` and the BEDs come from [jcvi](https://github.com/tanghaibao/jcvi)
 and the [LAST](https://gitlab.com/mcfrith/last) aligner over the seven
@@ -150,6 +150,11 @@ python -m jcvi.formats.base join grape.peach.i1.blocks grape.cacao.i1.blocks \
 Each per-pair table lists grape then the mate, so the join emits the grape
 column twice; `cut -f1,2,4` keeps it once, in the order `blockAssemblies` and
 `bedLocations` list.
+
+The commands above run the two mates the stack uses. The build script runs the
+same steps for arabidopsis, poplar, tomato and citrus as well, joins all six
+tables and keeps column 1 and every even column after it, which writes the
+seven-column `grape.blocks` the lanes further down read.
 
 The adapter reads `.blocks` and BED files plain or gzipped. A table from another
 tool loads the same way, and
@@ -223,6 +228,13 @@ no `assemblyNames` unless you mean to narrow it to fewer genomes:
 }
 ```
 
+The track above names the three columns the stack uses. The hosted
+[config.json](https://jbrowse.org/demos/grape_peach_cacao/config.json) names all
+seven, with arabidopsis, poplar, tomato and citrus and their BEDs after cacao,
+under the name **Grape vs peach, cacao, arabidopsis, poplar, tomato, citrus
+(MCScan blocks)**. Its `assemblyNames` stays the three genomes the config
+declares, since a lane is drawn from the table and that genome's BED.
+
 ## Stacking the three genomes
 
 **Add → Linear synteny view** and pick `grape_peach_cacao_blocks`; the
@@ -244,7 +256,8 @@ dialog. The declarative equivalent, stacking peach-cacao-grape:
         ],
         "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
         "color": { "field": "reference" },
-        "autoDiagonalize": true
+        "autoDiagonalize": true,
+        "collapseEmptyRows": true
       }
     ]
   }
@@ -252,27 +265,29 @@ dialog. The declarative equivalent, stacking peach-cacao-grape:
 ```
 
 `tracks` is one entry per band. `autoDiagonalize` reorders and flips the
-chromosomes in each row so the ribbons run along the diagonal, and
-`color: { "field": "reference" }` anchors every band on the middle row.
+chromosomes in each row so the ribbons run along the diagonal,
+`color: { "field": "reference" }` anchors every band on the middle row, and
+`collapseEmptyRows` gives each trackless row a bare scale bar.
 
 <Figure caption="Three genomes stacked peach-cacao-grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped the chromosomes in each row so the ribbons run along the diagonal, and Color by → Reference anchors both bands on the shared middle row." src="/img/multiway_synteny/grape_peach_cacao.png" />
 
 ## Direct vs transitive pairs
 
-Pairs that include grape are direct, and a peach-cacao link passes through a
-shared grape gene. Put the reference in the middle (peach-grape-cacao) for every
-band to be direct; the demo above stacks grape at the bottom.
-
-The [script](#reproduce-it-end-to-end) counts, per column pair, the rows where
-both cells resolve: a grape pair draws every row its mate fills, and peach-cacao
-falls short by whatever grape lost.
+Pairs that include grape come straight from the table, and a peach-cacao ribbon
+passes through a grape gene both share, so its rows are the ones where grape has
+a member. The stack above puts grape at the bottom, so its peach-cacao band is
+the transitive one; stacking peach, grape, cacao makes both bands direct. The
+[script](#reproduce-it-end-to-end) prints, per column pair, the rows where both
+cells resolve.
 
 ## Zooming to a conserved block
 
-Zoom to one block with grape in the middle, and turn on the gene track for each
-genome with **Show only genes**.
+Stack peach over grape over cacao, navigate the rows to
+`chrG7:18,555,000-18,690,000`, `chr11:778,000-905,000` and
+`chr9:3,890,000-3,995,000`, and turn on each genome's **NCBI RefSeq - RefSeq
+All** track with **Show only genes**.
 
-<Figure caption="Gene-level view of the same block, peach over grape over cacao with the gene track for each genome on. The orthologs step across all three in the same order until the ribbons fan, where three grape copies meet one peach and one cacao ortholog." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
+<Figure caption="Gene-level view of one conserved block, peach chrG7 over grape chr11 over cacao chr9, with the gene track for each genome on. The orthologs step across all three in the same order until the ribbons fan, where three grape copies meet one peach and one cacao ortholog." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 
 ## One locus against all seven genomes
 
@@ -286,7 +301,7 @@ mate at once in a plain linear genome view on grape:
   blocks)**, an `LGVSyntenyDisplay` drawing every mate in one pileup.
 - Pick **Group by... → Mate assembly** for a lane per genome.
 
-<Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, so the lanes read as presence and absence down a column: peach, cacao, poplar and citrus keep most of the block, while arabidopsis and tomato, the one asterid, keep a scattered few." src="/img/multiway_synteny/blocks_one_vs_all.png" />
+<Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, so the lanes read as presence and absence down a column: peach, cacao, poplar and citrus keep most of the block, while arabidopsis and tomato (the one asterid) keep a scattered few." src="/img/multiway_synteny/blocks_one_vs_all.png" />
 
 ## Lanes in per-genome coordinates {#each-genome-in-its-own-coordinates}
 
@@ -416,8 +431,19 @@ track.
 
 [`build_grape_peach_cacao_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_grape_peach_cacao_synteny.sh)
 runs everything above and writes a `config.json` with the hub assemblies, gene
-tracks, synteny track and default session. `BLOCKS_ONLY_SPECIES` lists the extra
-lanes; a genome added there needs only CDS and GFF3.
+tracks, synteny track and default session:
+
+1. Download the seven RefSeq genomes and annotations, and write a BED and a CDS
+   file per genome keyed on the mRNA's GFF3 `ID`, so the two join.
+2. Catalog orthologs against grape and MCScan each pair with `--iter=1`, one
+   block per grape gene.
+3. Join the six per-pair tables on the grape column into one seven-column
+   `grape.blocks`.
+4. Print, per column pair, the rows where both cells resolve, and write the
+   config from the grape, peach and cacao hubs.
+
+`BLOCKS_ONLY_SPECIES` lists the extra lanes; a genome added there needs only CDS
+and GFF3.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_cacao_synteny.sh
