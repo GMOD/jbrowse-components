@@ -76,7 +76,7 @@ On [JBrowse Desktop](/docs/quickstart_desktop) v5.0.0-beta.1 or later, install
 it once at **Global plugins... → Add custom plugin**: open **Advanced options**,
 paste that `esmUrl` into **ESM build URL** and leave the rest empty.
 
-## One command {#what-your-graph-can-produce}
+## Indexing a graph with build_pangenome_graph.sh {#what-your-graph-can-produce}
 
 Fetch the script:
 
