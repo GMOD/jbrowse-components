@@ -18,7 +18,7 @@ session JSON, and use those names in a shareable link, a saved session file and
   [JBrowse Desktop](/docs/quickstart_desktop). The steps follow JBrowse Web, and
   a collapsed **In JBrowse Desktop** note covers each step that differs.
 
-## Open the reads track
+## Open the volvox structural-variant CRAM track
 
 Volvox is the small demo dataset the JBrowse test builds ship, and
 `volvox-sv (cram)` is its structural-variant CRAM. Open
@@ -36,7 +36,7 @@ a config you open unchanged and saves your edits to a separate session file.
 
 </details>
 
-## Change three settings
+## Change height, color and read pairing from the track menu
 
 Open the track's menu from the track label, and set:
 
@@ -46,12 +46,12 @@ Open the track's menu from the track label, and set:
 - **Read connections → View as pairs / link supplementary alignments**, which
   puts each read on the same row as its mate.
 
-Then drag the bottom edge of the track down to about 250px, so the deeper stack
-of paired rows fits.
+Drag the bottom edge of the track down to about 250px, so the deeper stack of
+paired rows fits.
 
 <Figure caption="The volvox-sv (cram) track at ctgA:1-10,000 as a 250px-tall pileup, reads viewed as pairs and colored by insert size and orientation. The colored cluster at the left flags a structural variant." src="/img/display_settings_url_snapshot.png" />
 
-## Read the setting names back
+## Read the setting names back out of the session JSON
 
 Click **Share** and tick the **Show readable JSON** box below the link.
 
@@ -95,7 +95,7 @@ and the values each accepts. The same read-back finds the key for any other
 setting on any track: change it in the menu, share, and read the new key in the
 JSON.
 
-## Put the settings in displayDefaults
+## Put the three settings in a track's displayDefaults
 
 Settings saved in a session apply when that session opens. The same keys in a
 track's `displayDefaults` apply every time the track loads, and in a served
@@ -115,11 +115,12 @@ track's `displayDefaults` apply every time the track loads, and in a served
 }
 ```
 
-The track then opens paired and colored. To select a non-default display type
-(`LinearMultiSampleVariantDisplay`, `LDTrackDisplay`), write a `displays` array;
-[configuring tracks](/docs/config_guides/tracks) covers both forms.
+With this config the track opens paired and colored. To select a non-default
+display type (`LinearMultiSampleVariantDisplay`, `LDTrackDisplay`), write a
+`displays` array; [configuring tracks](/docs/config_guides/tracks) covers both
+forms.
 
-## When config and session disagree
+## When a session and the track config set the same setting
 
 A session value overrides a track's `displayDefaults` one key at a time. The
 volvox config ships a gene track, `gff3tabix_genes_shorthand_jexl`, whose
@@ -147,10 +148,11 @@ type in brackets. This session sets `color` on that track and nothing else:
 
 The session's `color` replaces the config's, so the features draw grey, and
 their labels still read `seg04 [match]` from `displayDefaults`.[^snapshot] The
-alignments track above follows the same rule: a session that sets `height: 100`
-on it draws the track 100px tall and keeps the paired coloring from its config.
+CRAM track from the first sections follows the same rule, so a session that sets
+`height: 100` on it draws the track 100px tall and keeps the paired coloring
+from its config.
 
-## Where each route keeps the value
+## Where each route keeps a setting (link, session file or config)
 
 | Route                              | Kept in             | Applies to              |
 | ---------------------------------- | ------------------- | ----------------------- |
@@ -170,7 +172,7 @@ with the settings encoded in it.
 
 </details>
 
-## In an embedded component
+## Pass the same settings to an embedded component
 
 The embedded React components take the same keys through the `view` prop:
 
