@@ -121,10 +121,6 @@ const ALLOWED = new Map([
     'the aligner jcvi drives through --align_soft; nothing calls it directly',
   ],
   [
-    'pangenome_cactus.md#bedGraphToBigWig',
-    'the whole-build script only, which the prerequisite itself says',
-  ],
-  [
     'scatac_pseudobulk.md#bedGraphToBigWig',
     'one of four upstream routes, each named with its own flags under "If your data lives somewhere else"',
   ],

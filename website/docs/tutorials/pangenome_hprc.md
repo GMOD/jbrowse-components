@@ -246,17 +246,11 @@ its name; the track as configured above draws every haplotype.
 ## Reproduce it end to end
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
-projections and the bubbles lane in one command that runs on any rGFA, and
-[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside the files we host
-records their provenance:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
-bash build_pangenome_graph.sh hprc-v2.1-mc-grch38.sv.gfa.gz hprc --assembly hg38
-```
-
-For a graph of your own, minigraph lists each assembly's route through every
-bubble, and
+projections and the bubbles lane in one command that runs on any rGFA; pointed
+at `hprc-v2.1-mc-grch38.sv.gfa.gz`, it writes the files we host, and
+[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them records
+their provenance. For a graph of your own, minigraph lists each assembly's route
+through every bubble, and
 [hosting your own graph](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment)
 walks through it.
 
