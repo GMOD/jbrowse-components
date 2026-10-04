@@ -31,7 +31,7 @@ jbrowse --version
 To avoid a global install, replace `jbrowse` with `npx @jbrowse/cli` in any
 command below.
 
-## Prepare your files first
+## Prepare indexed, compressed data files
 
 The CLI copies or references your data files as they are, and JBrowse reads
 indexed, compressed files, so prepare each input first: a bgzipped and
@@ -40,7 +40,7 @@ VCF, GFF3, or BED. The [web quickstart](/docs/quickstart_web#adding-tracks) has
 the [samtools](http://www.htslib.org/) / htslib recipe per format, and the
 commands below assume you have already run them.
 
-## Build the config directory
+## Build a config directory with add-assembly and add-track
 
 Point every command at the same output directory with `--out`, which the CLI
 creates if needed. The first `add-assembly` writes `myproject/config.json`, and
@@ -67,7 +67,8 @@ jbrowse add-track variants.vcf.gz --load copy --out myproject --name "My variant
 | `inPlace` | Reference a file already staged in the directory, no file ops.     |
 | _(omit)_  | For a remote `https://…` URL, referenced directly, nothing copied. |
 
-Now `myproject/` is self-contained, with the config next to every file it needs:
+After these commands `myproject/` is self-contained, with the config next to
+every file it needs:
 
 ```text
 myproject/
@@ -90,14 +91,14 @@ Inside `config.json`, the CLI referenced each file by its bare relative name:
 }
 ```
 
-## Open on a view by default
+## Open the folder on a default view with a session
 
-A config with tracks but no session opens on the view chooser: the assembly and
-tracks are loaded, but nothing is displayed until you launch a view and tick
-them in the track selector. To have the folder open ready to read, write the
-session you want and hand it to the CLI. `assembly` is the `--name` you gave
-`add-assembly`, and `tracks` takes the `trackId`s the CLI derived from your
-filenames. `jq '.tracks[].trackId' myproject/config.json` prints them:
+A config with tracks but no session loads the assembly and tracks but displays
+nothing until you launch a view and tick tracks in the selector. To open the
+folder ready to read, write a session and hand it to the CLI. In the session,
+`assembly` is the `--name` you gave `add-assembly`, and `tracks` takes the
+`trackId`s the CLI derived from your filenames;
+`jq '.tracks[].trackId' myproject/config.json` prints them:
 
 ```json
 {
@@ -120,7 +121,7 @@ jbrowse set-default-session --session session.json --out myproject
 `session.json` itself stays outside the folder; the CLI copies its contents into
 `config.json`.
 
-## Open the folder in JBrowse Desktop
+## Open the CLI-built folder in JBrowse Desktop
 
 In JBrowse Desktop, choose **File → Session → Open config.json or .jbrowse
 file...** (or the **Open file or link** button on the start screen) and pick
@@ -143,7 +144,7 @@ and autosaves your work to a separate session file, so `config.json` keeps its
 relative paths and the folder still serves on the web. A `.jbrowse` file, which
 Desktop itself writes, saves in place.
 
-## Serve the same folder on the web
+## Serve the config folder on the web
 
 On the web, the relative paths in `myproject/config.json` resolve against the
 served config's URL. JBrowse Web is a separate app, so a served `myproject/`
@@ -164,8 +165,8 @@ The project above has no gene track yet, so add one first:
 jbrowse add-track genes.gff3.gz --load copy --out myproject
 ```
 
-`text-index` then indexes its names into the same directory, and the location
-box finds a gene by name:
+`jbrowse text-index` then indexes the gene names into the same directory, and
+the location box finds a gene by name:
 
 ```bash
 jbrowse text-index --out myproject
