@@ -12,9 +12,7 @@ export {
   drawAnnotations,
   encodeSessionSpec,
   findChromeExecutable,
-  graphNodePoint,
   isBrowserConsoleNoise,
-  locateGraphPane,
   sessionSpecQuery,
   trackIdsFromSession,
   waitForAppSettled,
@@ -23,6 +21,12 @@ export {
   waitForSelectorAttributed,
   waitForSession,
 } from '@jbrowse/capture'
+export {
+  ANNOTATION_OVERLAY_ID,
+  drawAnnotationOverlay,
+  parseAnnotationLocus,
+} from '@jbrowse/capture/annotationOverlay'
+export { graphNodePoint, locateGraphPane } from '@jbrowse/capture/graphAnchor'
 
 export {
   delay,
@@ -80,6 +84,12 @@ export {
   serveReviewBundle,
 } from './reviewBundle.ts'
 
+export type {
+  Annotation,
+  AnnotationAnchor,
+  PayloadAnnotation,
+  ResolvedAnnotationAnchor,
+} from '@jbrowse/capture/annotationOverlay'
 export type { TestServerOptions } from './server.ts'
 export type { SmokeOptions } from './examplesSmoke.ts'
 export type { DemoHeightOptions } from './examplesDemoHeights.ts'

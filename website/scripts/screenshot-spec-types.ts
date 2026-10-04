@@ -1,18 +1,35 @@
 import type { KeyInput } from 'puppeteer'
 
-// The callout vocabulary is shared with the desktop selenium harness (which
-// draws the same SVG overlay over the packaged Electron app), so it is defined
-// once next to the drawing code rather than here. Deep import: the package
-// barrel pulls in puppeteer, and live link generation imports this module.
-export type {
-  Annotation,
-  AnnotationAnchor,
-} from '@jbrowse/browser-test-utils/annotationOverlay'
+// The callout vocabulary is @jbrowse/capture's, shared with the desktop
+// selenium harness and with a reader's own `jb2capture --annotations`, so it is
+// defined once next to the drawing code rather than here. Type-only, so live
+// link generation importing this module loads no puppeteer.
+export type { Annotation, AnnotationAnchor } from '@jbrowse/browser-test-utils'
 
-import type {
-  Annotation,
-  AnnotationAnchor,
-} from '@jbrowse/browser-test-utils/annotationOverlay'
+import type { Annotation, AnnotationAnchor } from '@jbrowse/browser-test-utils'
+
+// An action's anchor: everything a callout's resolves, plus the kinds only a
+// click or a drag needs. The generator resolves these itself (chordAnchor.ts,
+// locusAnchor.ts), and @jbrowse/capture, which draws callouts and clicks
+// nothing, does not.
+export interface ActionAnchor extends AnnotationAnchor {
+  // Part of a circular view chord's own `<title>` -- the record's name and both
+  // of its loci, e.g. 'SV_20'. Hit-tested along the curve rather than measured:
+  // a chord is a Bezier, so its bounding-box centre is not on it, and its
+  // midpoint is where every other chord bundles.
+  chord?: string
+  // A circular view chromosome's ideogram band, by refName ('chr11'), or with
+  // its assembly when two genomes share names ('mm39 chr11'), placed at the
+  // band's middle and checked against the view's own `bandAt`.
+  ideogram?: string
+  // A selector, matched INSIDE the view, whose vertical band the point lands in
+  // — the third way of choosing the y after `track` and the default tracks
+  // area. The x still comes from the locus, which is what makes it useful: the
+  // scalebar a rubberband is drawn on spans exactly the tracks' x-range and
+  // sits above them, so `{ locus, band: '[data-testid="rubberband_controls"]' }`
+  // is a drag on the ruler with no measured pixel in it.
+  band?: string
+}
 
 export interface ScreenshotAction {
   type:
@@ -86,8 +103,8 @@ export interface ScreenshotAction {
   //   toAnchor:   { locus: 'ctgA:9000', band: RUBBERBAND }
   //
   // Each takes precedence over the matching `from`/`to`.
-  fromAnchor?: AnnotationAnchor
-  toAnchor?: AnnotationAnchor
+  fromAnchor?: ActionAnchor
+  toAnchor?: ActionAnchor
   // for 'click'/'rightclick'/'hover': resolve the point to act on from the live
   // model instead of writing it down — the case `from` existed for (a canvas
   // with no element per feature) where the app can still say where it drew
@@ -108,7 +125,7 @@ export interface ScreenshotAction {
   // Prefer either over `from`. A hand-measured coordinate is correct only for
   // the width, locus and layout it was measured against, and nothing tells you
   // when one of those changes — see locusAnchor.ts for what that cost.
-  anchor?: AnnotationAnchor
+  anchor?: ActionAnchor
 }
 
 // Park the mouse somewhere that cannot react to it, so no overview-ruler
