@@ -5,11 +5,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import {
-  darkAtLowEnd,
-  rampDomain,
-  rampLutOf,
-} from '@jbrowse/core/util/colorRamp'
+import { rampDomain, rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { colorNotices } from '@jbrowse/core/util/colorScale'
 import {
   installPrerequisiteFetch,
@@ -21,8 +17,8 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
 import {
-  colorEncodingOf,
   colorSettingOf,
+  matrixColorEncodingOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
@@ -165,17 +161,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * follows whether the scheme runs dark at its low end.
        */
       get colorEncoding(): ContinuousRef {
-        const setting = colorSettingOf(self.configuration.color)
-        return colorEncodingOf(
-          {
-            ...setting,
-            value: undefined,
-            domain: [],
-            range: [],
-            reverse: setting.reverse ?? darkAtLowEnd(setting.scheme),
-          },
+        return matrixColorEncodingOf(
+          colorSettingOf(self.configuration.color),
           HIC_FIELD_PRESETS,
-        ) as ContinuousRef
+        )
       },
       /**
        * #getter

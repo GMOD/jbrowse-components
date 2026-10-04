@@ -1,25 +1,16 @@
-import {
-  makeRadioSubMenu,
-  radioItems,
-  toggleItem,
-} from '@jbrowse/core/ui/menuItems'
+import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { capitalizeFirst, getBpDisplayStr } from '@jbrowse/core/util'
-import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
+import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
 import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core/chrome'
 import GridOnIcon from '@mui/icons-material/GridOn'
-import PaletteIcon from '@mui/icons-material/Palette'
 import TuneIcon from '@mui/icons-material/Tune'
 
 import type { HicColorScale } from './hicColorConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
-
-const COLOR_SCHEME_OPTIONS = COLOR_SCHEMES.map(
-  scheme => [scheme, capitalizeFirst(scheme)] as const,
-)
 
 interface HicMenuSelf {
   colorScaleType: HicColorScale
@@ -173,16 +164,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
     ...resolutionMenuItems(self),
     ...makeShowSubMenu(showMenuItems(self)),
-    makeRadioSubMenu({
-      label: 'Color scheme',
-      icon: PaletteIcon,
-      value: self.colorScheme,
-      onChange: scheme => {
-        self.setColorScheme(scheme)
-      },
-      options: COLOR_SCHEME_OPTIONS,
-      extraItems: colorScaleMenuItems(self),
-    }),
+    colorSchemeMenuItem(self, colorScaleMenuItems(self)),
     ...normalizationMenuItems(self),
   ]
 }

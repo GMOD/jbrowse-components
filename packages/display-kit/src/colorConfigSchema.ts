@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { paletteFromSpec, rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { categoricalField, keyNames } from '@jbrowse/core/util/categoricalField'
+import { darkAtLowEnd } from '@jbrowse/core/util/colorRamp'
 import {
   CATEGORICAL_FIELD_PRESETS,
   FEATURE_FIELD_PRESETS,
@@ -30,7 +31,10 @@ import type {
   FieldPresets,
 } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
-import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
+import type {
+  ColorEncoding,
+  ContinuousRef,
+} from '@jbrowse/core/util/markEncoding'
 
 export {
   CATEGORICAL_FIELD_PRESETS,
@@ -463,6 +467,25 @@ export function colorEncodingOf<V extends string | undefined>(
         domainQuantile: color.domainQuantile,
       }
   }
+}
+
+/**
+ * A matrix display's colour object as it paints: its field through the
+ * preset's ramp, with an unset `reverse` turning round a scheme dark at its
+ * low end, since an unpainted cell is the page behind the matrix.
+ */
+export function matrixColorEncodingOf(
+  written: Omit<ColorSetting, 'value' | 'domain' | 'range'>,
+  presets: FieldPresets,
+): ContinuousRef {
+  const encoding = colorEncodingOf(
+    { ...written, value: undefined, domain: [], range: [] },
+    presets,
+  ) as ContinuousRef
+  const { scheme } = encoding
+  return written.reverse === undefined && scheme !== undefined
+    ? { ...encoding, reverse: darkAtLowEnd(scheme) }
+    : encoding
 }
 
 /**
