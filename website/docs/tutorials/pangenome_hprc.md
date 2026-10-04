@@ -65,7 +65,7 @@ projections of its graph that we host.
 - the multiple alignment of every haplotype against GRCh38:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz
 
-## The HPRC page
+## Launching tracks from the HPRC page
 
 Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc). Each
 row of its **Loci** table ends in launches: **graph**, **variants**,
@@ -73,7 +73,7 @@ row of its **Loci** table ends in launches: **graph**, **variants**,
 
 <Figure caption="The HPRC page: the whole-chromosome links, then the head of the Loci table, where each row ends in its launches. The RHD / RHCE and SMN1 / SMN2 rows have no graph launch. The boxed link is the HLA / MHC graph launch." src="/img/pangenome/genomes_hprc_loci.png" />
 
-## A whole chromosome {#a-chromosome-and-back}
+## Reading chr1 at one node per bubble {#a-chromosome-and-back}
 
 Press **chr1** among the **Whole chromosome** links above the Loci table. Past a
 zoom named in the graph adapter's `coarse` slot, JBrowse draws one node per
@@ -87,8 +87,8 @@ tier and writes the `coarse` slot.
 
 ## The C4 locus as a graph
 
-Back on the HPRC page, press **graph** on the HLA / MHC row. The launch opens
-the genes, the bubbles lane, the allele inventory and the graph track; hide the
+On the HPRC page, press **graph** on the HLA / MHC row. The launch opens the
+genes, the bubbles lane, the allele inventory and the graph track; hide the
 bubbles lane and the allele inventory from the track selector to leave the genes
 over the graph track. Type `C4A` in the location box, pick the chr6 hit, and
 zoom out twice to take in _C4B_. Open the graph track's menu and pick **Layout →
@@ -144,7 +144,7 @@ allele with its CAT gene annotation. Zoom out a few steps.
 The haplotype's CAT annotation has _HLA-DRB9_ and _HLA-DRB6_ either side of the
 allele and no _HLA-DRB5_, the gene its band covered on hg38.
 
-## Every haplotype with the allele
+## Listing every haplotype with the HLA-DRB5 allele {#every-haplotype-with-the-allele}
 
 The graph names one source assembly per allele. HPRC's phased VCF lists every
 haplotype's allele at every bubble: a record is one allele written against
@@ -166,7 +166,7 @@ that allele. We'll add it to the graph launch's session:
     {
       "type": "LinearMultiSampleVariantDisplay",
       "renderingMode": "phased",
-      "jexlFilters": ["jexl:alleleLength(feature)>=50"]
+      "filter": ["jexl:alleleLength(feature)>=50"]
     }
   ]
 }
@@ -177,9 +177,10 @@ that allele. We'll add it to the graph launch's session:
   bubbles minigraph draws. `alleleLength` is the length of the record's longest
   allele, so it counts an insertion's inserted bases. **Filter by... → Edit
   filters...** in the track menu shows the filter and changes it.
-- `fetchSizeLimit` raises the download cap from 5 MB to 20 MB. The VCF spells
-  out each inserted allele, which puts more than 5 MB in the 90 kb MHC class II
-  window and about three times that at LPA's kringle repeat.
+- `fetchSizeLimit` raises the download cap past
+  [its default](/docs/config/vcftabixadapter/#slot-fetchsizelimit). The VCF
+  spells out each inserted allele, which puts both the MHC class II window and
+  LPA's kringle repeat over the default.
 
 Open the track menu again and take **Clustering → Cluster rows by genotype...**,
 then **Run clustering**: the rows reorder so haplotypes with the same alleles
@@ -197,7 +198,7 @@ sequences, which differ by a base or two. The blue block under the band is the
 haplotypes with any of the four, plus a smaller block with an 86 kb deletion
 that removes the whole stretch.
 
-## The same alleles as aligned bases
+## Reading C4's alleles as aligned bases {#the-same-alleles-as-aligned-bases}
 
 minigraph builds the SV-level graph this page draws. Cactus then aligns every
 assembly against it base by base, and HPRC exports that alignment twice: as the
@@ -239,17 +240,23 @@ The VCF's widest blue block is one record, a deletion of a whole C4-CYP21-TNX
 module, which is the dashed arc in the C4 graph. Every alignment row in the
 white block has that deletion in the VCF. The narrower blocks are the 6.4 kb
 HERV-K insertion in a C4 gene's intron, the difference between a long and a
-short C4. The figure keeps thirty-two alignment rows so each has room for its
-name; the track as configured above draws every haplotype.
+short C4. The figure keeps a subset of the alignment rows so each has room for
+its name; the track as configured above draws every haplotype.
 
 ## Reproduce it end to end
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
-projections and the bubbles lane in one command that runs on any rGFA; pointed
-at `hprc-v2.1-mc-grch38.sv.gfa.gz`, it writes the files we host, and
-[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them records
-their provenance. For a graph of your own, minigraph lists each assembly's route
-through every bubble, and
+projections and the bubbles lane in one command that runs on any rGFA, and
+[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside the files we host
+records their provenance:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
+bash build_pangenome_graph.sh hprc-v2.1-mc-grch38.sv.gfa.gz hprc --assembly hg38
+```
+
+For a graph of your own, minigraph lists each assembly's route through every
+bubble, and
 [hosting your own graph](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment)
 walks through it.
 
