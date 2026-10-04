@@ -7,4 +7,3 @@
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
 tutorials/mcscan_synteny_grape_peach.md /img/mcscan_anchors.png
-tutorials/repeatmasker_classes.md /img/cookbook_color_by_type_two_ways.png
