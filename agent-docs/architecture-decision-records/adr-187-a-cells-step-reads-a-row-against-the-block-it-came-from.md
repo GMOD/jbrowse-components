@@ -7,8 +7,8 @@ summary: "A `cells` transform step replaces each aligned row with its runs of co
 
 ## Status
 
-Accepted (2026-09-28). The second item of
-[maf-onto-marks](../handoffs/maf-onto-marks.md), behind
+Accepted (2026-09-28). The second step putting a MafTrack on the mark display
+([what is left](../ideas/collections/maf-on-the-mark-display.md)), behind
 [ADR-186](adr-186-flatten-fans-out-a-record-keyed-by-name.md)'s species rows.
 
 ## Context

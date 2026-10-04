@@ -8,7 +8,8 @@ summary: "The MAF display's rows stay off the mark display's `Feature` steps. Ov
 ## Status
 
 Rejected (2026-09-28). Measured by `plugins/maf/benches/mafOnMarks.bench.ts`
-after the first four items of [maf-onto-marks](../handoffs/maf-onto-marks.md)
+after the first four steps putting a MafTrack on the mark display
+([what is left](../ideas/collections/maf-on-the-mark-display.md))
 landed, none of which had been timed against the display it would replace.
 
 ## Context
@@ -108,7 +109,7 @@ bases, is exact at
 0.81-2.00x<!--m:maf-on-marks-identity.columnsIdentityVsMaf.range-->.
 [ADR-191](adr-191-the-mark-pipeline-runs-over-tables.md) to
 [ADR-193](adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)
-built it, and [maf-onto-marks](../handoffs/maf-onto-marks.md) holds what the
+built it, and [maf-on-the-mark-display](../ideas/collections/maf-on-the-mark-display.md) holds what the
 spike left open.
 
 ## Revisit if

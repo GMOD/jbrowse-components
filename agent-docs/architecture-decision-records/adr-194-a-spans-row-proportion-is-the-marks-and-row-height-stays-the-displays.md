@@ -79,7 +79,7 @@ author can write by that one spelling.
 
 **MAF and the multi-row feature display keep a display-level `rowProportion`.**
 Each draws one glyph family into the band, so the display is its one mark. A
-MAF config on the mark display (handoff `maf-onto-marks.md`) puts the
+MAF config on the mark display ([maf-on-the-mark-display](../ideas/collections/maf-on-the-mark-display.md)) puts the
 proportion on its span, the word unchanged.
 
 ## Consequences

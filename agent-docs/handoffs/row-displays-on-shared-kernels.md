@@ -51,7 +51,7 @@ one resolution, a label bar, groups as attributes, one key and one dialog.
    (`paintInsertionLabels`), and multi-row's for its deletion lines too. Left:
    multi-row's hit test (`hitTesting.ts`) answers the block, not a marker
    wider than it, though `hoverInk` draws both; the mark display's `cells`
-   insertions need an `insertion` mark type (maf-onto-marks item 8); MAF walks
+   insertions need an `insertion` mark type ([maf-on-the-mark-display](../ideas/collections/maf-on-the-mark-display.md) item 6); MAF walks
    a region's insertions eagerly on the main thread per fetch, about a fifth
    of what `buildMafChannels` already costs over the same blocks, so both
    encodes moving to the worker is the fix, not a lazy index; and no test runs
@@ -69,11 +69,9 @@ one resolution, a label bar, groups as attributes, one key and one dialog.
    against feature-table texts), return different shapes (hundredths over the
    counted bases against bin-edged groups with ids and hover JSON), and core
    makes groups for gap-only runs where MAF emits nothing.
-4. **Per-mark `minWidthPx`/`seamPx` on the mark display**: `markList.ts`
-   hands every span the display's one `minWidthPx` and a seam of 0 (bar now
-   takes `CANVAS_SEAM_PX`), so it cannot reproduce MAF cells
-   (`minWidthPx: 0`, `seamPx: GAP_STROKE_OFFSET`). The row offset has two
-   spellings, `scrollTop` on span and `rowOffsetPx` on the rest.
+4. **Per-mark `minWidthPx`/`seamPx` on the mark display**:
+   [maf-on-the-mark-display](../ideas/collections/maf-on-the-mark-display.md)
+   item 2.
 
 ## Simplifications
 

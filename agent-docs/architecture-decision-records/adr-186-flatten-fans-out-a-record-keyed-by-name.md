@@ -7,8 +7,8 @@ summary: "The `flatten` step fans out a record keyed by name as it fans out an a
 
 ## Status
 
-Accepted (2026-09-28). The first item of
-[maf-onto-marks](../handoffs/maf-onto-marks.md): a way onto a MafTrack with
+Accepted (2026-09-28). The first step putting a MafTrack on the mark display
+([what is left](../ideas/collections/maf-on-the-mark-display.md)): a way onto a MafTrack with
 one feature per species per block.
 
 ## Context

@@ -7,8 +7,8 @@ summary: "An adapter lists its rows through one method, `listRowSources`: the fe
 
 ## Status
 
-Accepted (2026-09-28). The fourth item of
-[maf-onto-marks](../handoffs/maf-onto-marks.md), behind ADR-186's species
+Accepted (2026-09-28). The fourth step putting a MafTrack on the mark display
+([what is left](../ideas/collections/maf-on-the-mark-display.md)), behind ADR-186's species
 rows and ADR-187's cells.
 
 ## Context
