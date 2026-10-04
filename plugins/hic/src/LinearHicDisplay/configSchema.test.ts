@@ -1,12 +1,17 @@
 import {
   getConfigurationSchemaDefinition,
+  plotOf,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { fieldScaleOf } from '@jbrowse/core/util/colorScale'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import configSchemaFactory from './configSchema.ts'
-import { DEFAULT_HIC_COLOR_SCHEME } from './hicColorConfigSchema.ts'
+import {
+  DEFAULT_HIC_COLOR_SCHEME,
+  HIC_FIELD_PRESETS,
+} from './hicColorConfigSchema.ts'
 
 function make(snap: Record<string, unknown> = {}) {
   return configSchemaFactory().create({
@@ -22,7 +27,23 @@ describe('color', () => {
     expect(readConfObject(conf, ['color', 'scheme'])).toBe(
       DEFAULT_HIC_COLOR_SCHEME,
     )
-    expect(readConfObject(conf, ['color', 'scale'])).toBe('linear')
+    expect(readConfObject(conf, ['color', 'field'])).toBe('count')
+    expect(readConfObject(conf, ['color', 'scale'])).toBeUndefined()
+    expect(fieldScaleOf(HIC_FIELD_PRESETS, 'count')).toBe('linear')
+  })
+
+  test.each([
+    { scale: 'log' },
+    { scale: 'linear' },
+    { scheme: 'viridis', domainMax: 50 },
+    { scheme: 'magma', reverse: false, domainMin: 2 },
+    { domainQuantile: 1 },
+  ])('a config written today reads back unchanged: %j', color => {
+    expect(plotOf(make({ color }))).toEqual({ color })
+  })
+
+  test('a default colour reads back as no plot', () => {
+    expect(plotOf(make())).toEqual({})
   })
 
   test.each(COLOR_SCHEMES)('takes the shared %s scheme', scheme => {
@@ -46,7 +67,11 @@ describe('color', () => {
   })
 
   test('refuses a member it does not declare', () => {
-    expect(() => make({ color: { field: 'count' } })).toThrow(/field/)
+    expect(() => make({ color: { value: 'red' } })).toThrow(/value/)
+  })
+
+  test('maps count and nothing else', () => {
+    expect(() => make({ color: { field: 'score' } })).toThrow()
   })
 })
 

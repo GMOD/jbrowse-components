@@ -1,13 +1,26 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import { colorDomainEndsSlots } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorChannelSlots,
+  colorDomainEndsSlots,
+  colorDomainQuantileSlot,
+  colorRampSlots,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+import type { FieldPresets } from '@jbrowse/display-kit/colorConfigSchema'
 
 export const HIC_COLOR_SCALES = ['linear', 'log'] as const
 
 export type HicColorScale = (typeof HIC_COLOR_SCALES)[number]
+
+/** A bin's contact count, the one thing Hi-C's colour maps. */
+export const HIC_COLOR_FIELD = 'count'
+
+/** `count` runs along a linear ramp while `scale` is unset. */
+export const HIC_FIELD_PRESETS = {
+  [HIC_COLOR_FIELD]: { scale: 'linear' },
+} as const satisfies FieldPresets<HicColorScale>
 
 export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
 
@@ -32,21 +45,31 @@ export const hicColorConfigSchema = ConfigurationSchema(
   'HicColor',
   {
     /**
+     * #slot field
+     */
+    field: {
+      type: 'stringEnum',
+      model: types.enumeration('HicColorField', [HIC_COLOR_FIELD]),
+      defaultValue: HIC_COLOR_FIELD,
+      description: "count, each bin's contact count",
+    },
+    /**
      * #slot scale
      */
-    scale: {
-      type: 'stringEnum',
-      model: types.enumeration('HicColorScale', [...HIC_COLOR_SCALES]),
-      defaultValue: 'linear',
-      description:
-        'linear, or log2 of the count, which lifts sparse long-range bins off the floor',
-    },
+    scale: colorChannelSlots({
+      scales: HIC_COLOR_SCALES,
+      scaleName: 'HicColorScale',
+      fieldType: 'string',
+      field: HIC_COLOR_FIELD,
+      scale:
+        'linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear',
+    }).scale,
     /**
      * #slot scheme
      */
     scheme: {
+      ...colorRampSlots.scheme,
       type: 'stringEnum',
-      model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
       defaultValue: DEFAULT_HIC_COLOR_SCHEME,
       description:
         'the named ramp counts run across; juicebox fades from transparent to red',
@@ -61,7 +84,14 @@ export const hicColorConfigSchema = ConfigurationSchema(
       description:
         "turns the scheme's ramp round; unset reverses a scheme dark at its low end",
     },
-    ...colorDomainEndsSlots,
+    /**
+     * #slot domainMin
+     */
+    domainMin: {
+      ...colorDomainEndsSlots.domainMin,
+      description: 'the bottom of the scale; unset is 0',
+    },
+    domainMax: colorDomainEndsSlots.domainMax,
     /**
      * #slot domainQuantile
      * What an unset `domainMax` follows: the loaded counts' quantile, `0.95`
@@ -70,11 +100,12 @@ export const hicColorConfigSchema = ConfigurationSchema(
      * ramp and `scales.y` take.
      */
     domainQuantile: {
-      type: 'number',
+      ...colorDomainQuantileSlot.domainQuantile,
       defaultValue: 0.95,
+      advanced: false,
       description:
         'the quantile of the loaded counts an unset domainMax follows; 1 is their maximum',
     },
   },
-  { closed: true },
+  { closed: true, fieldPresets: HIC_FIELD_PRESETS },
 )

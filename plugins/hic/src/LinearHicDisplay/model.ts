@@ -148,7 +148,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        */
       get colorScaleType(): HicColorScale {
-        return getConf(self, ['color', 'scale'])
+        return getConf(self, ['color', 'scale']) ?? 'linear'
       },
       /**
        * #getter
