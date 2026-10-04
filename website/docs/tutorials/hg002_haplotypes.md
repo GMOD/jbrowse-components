@@ -10,17 +10,21 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
 ---
 
-T2T-HG002 v1.2 ships both haplotypes as contigs of one FASTA, named
-`chr1_MATERNAL` and `chr1_PATERNAL`, so JBrowse loads it as a single assembly
-and maternal against paternal is a self-alignment. The Q100 project publishes
-the chain between them, which we load as a synteny track to find the 8p23.1
-inversion that HG002 has on one haplotype.
+A person has two copies of each chromosome, one from each parent, and a complete
+diploid assembly lets us lay them against each other. We plot the mother's copy
+of every chromosome against the father's in T2T-HG002 v1.2, the Q100 project's
+telomere-to-telomere assembly of the HG002 reference individual, and find the
+8p23.1 inversion HG002 has on one haplotype. The assembly ships both haplotypes
+as contigs of one FASTA, named `chr1_MATERNAL` and `chr1_PATERNAL`, so JBrowse
+loads it as a single assembly and maternal against paternal is a self-alignment.
+The Q100 project publishes the chain between them, which we load as a synteny
+track.
 
 ## Prerequisites
 
 - a JBrowse instance to load the config into (the
   [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop)); every file here is a URL
+  [desktop quickstart](/docs/quickstart_desktop))
 
 ## Where the data comes from
 
@@ -72,12 +76,15 @@ one:
 ```
 
 For two haplotypes of your own, put both in one FASTA with contig names that
-tell them apart (`_MATERNAL` and `_PATERNAL`, as above). Align them with
-`minimap2 -cx asm5 --eqx -X hap.fa.gz hap.fa.gz`, which writes a PAF without the
-self-alignments, and give the track a `PAFAdapter` with `assemblyNames` naming
-that one assembly twice.
+tell them apart (`_MATERNAL` and `_PATERNAL`, as above), and align the file
+against itself; `-X` leaves out the self-alignments. Give the track a
+`PAFAdapter` with `assemblyNames` naming that one assembly twice:
 
-## The whole genome first
+```bash
+minimap2 -cx asm5 --eqx -X hap.fa.gz hap.fa.gz > hap.paf
+```
+
+## Plotting maternal against paternal genome-wide
 
 A dotplot shows whether anything moved between chromosomes. Open **Add → Dotplot
 view**. Both axes read `T2T-HG002 v1.2 (diploid)`, and an axis set to it has
@@ -99,7 +106,7 @@ haplotype to chain to, and their column and row stay empty.
 
 <Figure caption="The Q100 maternal-to-paternal chain as a dotplot, maternal contigs on x against paternal on y, colored by strand. Each chromosome pairs with the same chromosome on the other haplotype; the empty lane and column are chrX and chrY." src="/img/hg002_haplotypes_wholegenome.png" />
 
-## The 8p23.1 inversion
+## Opening the 8p23.1 inversion in a linear synteny view
 
 Every chromosome in the plot is a red diagonal against the same chromosome on
 the other haplotype, and a few have small blue marks where a stretch runs
@@ -153,23 +160,26 @@ beside the assembly, one per haplotype, on matching contig names:
 
 Then, on each gene lane:
 
-- `geneGlyphMode` keeps the longest coding transcript, so the lane is one row
-  deep
+- `geneGlyphMode` draws one representative transcript per gene, the RefSeq or
+  MANE Select one where the file tags it and the longest coding one otherwise,
+  so the lane is one row deep
 - **Color by... → Strand** paints forward red and reverse blue, matching the
   ribbons
-- at this zoom the labels come from a second track over the same GFF, filtered
-  to a few genes with **Filter by...**
+- at this zoom the labels come from a second track over the same GFF under its
+  own `trackId`, with **Filter by...** set to
+  `jexl:feature.gene_name == 'MFHAS1' || feature.gene_name == 'ERI1' || feature.gene_name == 'TNKS' || feature.gene_name == 'MSRA' || feature.gene_name == 'PINX1' || feature.gene_name == 'XKR6' || feature.gene_name == 'BLK' || feature.gene_name == 'GATA4'`,
+  the longest protein-coding genes in the inverted block
 
 <Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar in both panels, and the labeled lane beside the ribbons shows the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
-## The follow button
+## Keeping the two haplotypes in register with the follow button
 
-At 9 Mb across, the two haplotypes sit some tens of kilobases out of register,
-which is a few pixels, so the same window typed into both panels would have
-looked lined up. Zoomed in, the offset fills the whole screen, because every
-upstream indel shifts one haplotype against the other. With follow on, the view
-maps the top panel's window through the chain's CIGAR and moves the panel below
-there on every pan, so the ribbons stay near-vertical however far you go.
+At 9 Mb across, the offset between the two haplotypes is a few pixels, so the
+same window typed into both panels would have looked lined up. Zoomed in, the
+offset fills the whole screen, because every upstream indel shifts one haplotype
+against the other. With follow on, the view maps the top panel's window through
+the chain's CIGAR and moves the panel below there on every pan, so the ribbons
+stay near-vertical however far you go.
 
 The figure below is 70 kb typed into both panels with follow off. The maternal
 panel has a chain block and the paternal panel's lane is empty, because those
@@ -187,6 +197,20 @@ header's settings menu, draw lines through each ribbon joining a point on the
 top row to where it maps on the bottom.
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="Maternal over paternal at chr8:13-15 Mb with the gene lanes and location markers on. The follow button places the paternal panel from the maternal one through the chain, so the same genes line up under each other and the markers are vertical, and the panel below follows as the top one is dragged along." />
+
+## Checking the inversion against the chain
+
+The chain file lists each inverted block as a chain on the `-` strand. The
+longest on the maternal chr8 is the 8p23.1 inversion, the stretch the blue bar
+spans in both panels:
+
+```bash
+# the longest inverted chains on maternal chr8: start, end and length
+curl -s https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/changes/hg002v1.2_to_other_haplotype.chain.gz \
+  | gzip -dc \
+  | awk '$1 == "chain" && $3 == "chr8_MATERNAL" && $10 == "-" {print $6, $7, $7 - $6}' \
+  | sort -k3,3nr | head -3
+```
 
 ## See also
 
