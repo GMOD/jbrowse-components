@@ -130,7 +130,8 @@ fi
 
 # ------------------------------------------------------------- K562 (DepMap 24Q4)
 # Figshare file ids are per-release and stable; K562 is model ACH-000551, whose
-# WGS copy-number profile is PR-aheaZL.
+# WGS copy-number profile is PR-aheaZL. The segments stay a bigWig: drawing
+# them as marks was declined on 2026-09-27, since the wiggle already draws them.
 [ -f OmicsFusionFiltered.csv ] ||
   fetch "https://ndownloader.figshare.com/files/51065693" OmicsFusionFiltered.csv -fL
 [ -f OmicsCNSegmentsProfile.csv ] ||

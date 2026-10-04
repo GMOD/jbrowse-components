@@ -460,6 +460,7 @@ function hostedStarSession(db: string, loc: string, lanes: string[]) {
 // with nothing to compare it against; seven blocks separated by gaps are seven
 // ribbons, which is what "one ribbon per block" means. Straight ribbons, not
 // curved: within a collinear block a curve only bows a flat correspondence.
+// No strand key: the ribbons already show orientation.
 //
 // Neither panel carries a track: the subject is the ribbon band, so
 // collapseEmptyRows drops each row to its scalebar rather than a "No tracks

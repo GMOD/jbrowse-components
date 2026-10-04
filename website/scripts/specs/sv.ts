@@ -92,7 +92,9 @@ export const HG008_DEPTH_TRACK = {
 // each one lands where the benchmark says — chr3 p to q is -0.53 to +0.42
 // (CN 1 to CN 2, log2(2/1) = 1.0 apart), chr18 flips the same distance over
 // SMAD4, and KRAS's tandem duplication is +1.07 against the +0.45 beside it,
-// which is log2(3/2).
+// which is log2(3/2). Neither this lane nor the BAF lane draws a reference
+// line at the balanced level: the copy-number key already names it (declined
+// 2026-09-27).
 const HG008_BICSEQ2_TRACK = cgiabPageTrack('hg008t_bicseq2')
 
 export const HG008_BAF_TRACK = {

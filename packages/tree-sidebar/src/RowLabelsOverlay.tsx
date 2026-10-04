@@ -14,6 +14,10 @@ import type { RowLabelSource } from './types.ts'
  * onto its own canvas) — together those two are the sidebar, and each display
  * used to wire up the labels half itself.
  *
+ * The labels cover the first region's data. A display cannot shift its own
+ * plot, so the fix is a view-level left gutter, which Colin parked on
+ * 2026-09-27 for the width it takes from every track.
+ *
  * Portaled above the LGV's inter-region masks (`TrackOverlayPortal`). The labels
  * are text floating over the plot, so at whole-genome or multi-region scale a
  * region-separator bar landed on them at every boundary — the masks paint over

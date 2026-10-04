@@ -237,6 +237,8 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   // own max, so pggb's plateau would draw at half height against its 0-10 axis
   // and Cactus's at full height against its 0-5, and the figure would say the
   // opposite of the truth. One track on one fixed axis is the only honest shape.
+  // No line at the strain count: the Cactus flank sits near 4, so a line at 5
+  // raises a question the page does not answer.
   //
   // THE LOCUS IS READ OFF THE DATA, not chosen. bigWigToBedGraph on both
   // published bigWigs, then the windows where pggb exceeds the strain count:

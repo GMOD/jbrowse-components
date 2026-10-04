@@ -2395,6 +2395,8 @@ export const uiSpecs: ScreenshotSpec[] = [
   // opens on: each cell type opens the stretch of the cluster matching its
   // position along the body axis, blood keeps the whole cluster repressed, and
   // H1-hESC holds it poised.
+  // The Broad track keeps its derived key: the page teaches the identity
+  // scale against that key's merged entries.
   {
     mode: 'url',
     name: 'chromhmm_encode_hoxa',

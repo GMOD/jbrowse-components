@@ -60,7 +60,8 @@ const LADDER_TRACK = pageTrack('tutorials/population_cnv.md', 'pur_cnv_ladder')
 // amplifications the figure is about, and autoscaling re-scales on every navigation
 // so a block means a different number in each window. Pinned, the color means a
 // copy number: white is two copies, red a gain, blue a loss, the same in every
-// window.
+// window. No reference line at two copies: the key and the diverging scale
+// already name the diploid level (declined 2026-09-27).
 //
 // 0..4 and not 0..6, which looks like it would show more: the density ramp
 // divides both sides by the LONGER one, so with the origin at 2 a 0..6 domain

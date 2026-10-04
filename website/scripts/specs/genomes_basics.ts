@@ -24,6 +24,10 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // The BigWig itself is served by hgdownload with byte-range + CORS, so only the
 // viewed region downloads despite the file's size. hgdownload is also the
 // slowest host any of these figures touch, hence the raised ready timeouts.
+//
+// The cCRE, gnomAD and phyloP tracks carry no colour key. A key belongs in the
+// jb2hubs output, not a spec's override, and that output has to keep loading
+// in older releases.
 
 // The transcript body alone, for the figure that reads the signal against the
 // exons. Collapsed to one transcript, TP53's drawn 5' end is whichever of the

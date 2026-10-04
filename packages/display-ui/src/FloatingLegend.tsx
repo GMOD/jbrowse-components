@@ -351,6 +351,10 @@ const LegendItemList = observer(function LegendItemList({
 // `onItemClick` makes the rows of a section declaring `focusesRows` act —
 // clicking an entry focuses the rows it names. A section coloring features or
 // cells stays inert text beside it.
+//
+// The key covers data at the lane's top right, an overlap Colin accepted on
+// 2026-09-30. A lane shorter than the key scrolls it rather than clipping it,
+// which a still cannot show, so a figure gives that lane more height.
 const FloatingLegend = observer(function FloatingLegend({
   sections,
   title,

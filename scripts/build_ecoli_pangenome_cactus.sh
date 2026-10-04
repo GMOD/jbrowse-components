@@ -190,7 +190,10 @@ tabix -f -p bed ecoli_cactus.maf.bed.gz
 # windows, rename the PanSN path to the assembly refName, and convert to bigWig.
 # Steps, not strains: a repeat the graph collapsed would read above the strain
 # count, as it does in the pggb build. Minigraph-Cactus keeps the rRNA copies
-# apart, so this curve tops out at the strain count instead.
+# apart, so this curve tops out at the strain count instead. Drawing the
+# bedGraphs as marks, with no bigWig, was declined on 2026-09-27: two build
+# scripts, two demo configs and five figures for pictures the multi-wiggle
+# already draws.
 awk -v p="$REFPATH" -v len="$REFLEN" -v w=500 \
   'BEGIN { for (s = 0; s < len; s += w) { e = s + w; if (e > len) e = len; print p "\t" s "\t" e } }' \
   > depth_windows.bed

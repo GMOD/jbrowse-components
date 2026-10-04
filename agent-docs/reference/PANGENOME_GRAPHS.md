@@ -123,6 +123,15 @@ first, never who else carries it. Two workarounds: `minigraph -cxasm --call` per
 assembly (`scripts/build_minigraph_paths.sh`), or a path GFA, where every path
 visiting a segment is stated (the `SM:Z:` tag above).
 
+**`rank` colours a segment on the linear lane only.** A segments track opened
+as `LinearBasicDisplay` paints rank 0 against the rest through a threshold
+scale keyed "reference" / "other assemblies" (`demos/hprc`,
+`demos/arabidopsis_pangenome`, the `test_data/graphgenomeview` fixtures,
+`specs/graph-ecoli.ts`). `LinearGraphDisplay` colours through its own
+`colorScheme`, and graph panes keep the reference-position rainbow (Colin,
+2026-09-27). The portal configs under `jb2hubs/website/pangenome-config` keep
+the `jexl:` ternary, since they load in older releases.
+
 ## Verified facts
 
 - **Tabix over the hosted bytes is not the reader's path.** Demo configs declare

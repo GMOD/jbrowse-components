@@ -344,7 +344,8 @@ python3 "$SCRIPT_DIR/odgi_similarity_to_newick.py" \
 # stretch is REF-private (accessory). odgi ships in the pggb image, so reuse it.
 # Tile REF into 500 bp windows, ask odgi for each window's mean depth, rename the
 # PanSN path to the assembly refName, and convert to bigWig for a wiggle track.
-# (Repeats can push a window's depth above the strain count.)
+# (Repeats can push a window's depth above the strain count.) Marks over the
+# bedGraph were declined; build_ecoli_pangenome_cactus.sh says why.
 REFLEN=$(awk -v p="${REF}#1#chr" '$1 == p {print $2}' all.fa.gz.fai)
 awk -v p="${REF}#1#chr" -v len="$REFLEN" -v w=500 \
   'BEGIN { for (s = 0; s < len; s += w) { e = s + w; if (e > len) e = len; print p "\t" s "\t" e } }' \

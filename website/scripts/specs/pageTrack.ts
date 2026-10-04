@@ -73,7 +73,8 @@ export function pageFenceText(doc: string, trackId: string, section?: string) {
  * The track config `doc` prints for `trackId`, for a figure to load exactly
  * what the page tells a reader to paste. A page that names its files by bare
  * filename (the reader's own copy) gets them resolved against `base`, where the
- * hosted copies live.
+ * hosted copies live. A figure opening a hosted demo config draws that config's
+ * track instead, and nothing compares it with the page's fence.
  */
 export function pageTrack(
   doc: string,
