@@ -35,8 +35,20 @@ const MiniControls = observer(function MiniControls({
   const { classes } = useStyles()
   const { id, scalebarOnly } = model
   const { focusedViewId } = getSession(model)
+  // A ruler-only row is shorter than these controls, so they rise from the
+  // ruler's bottom edge rather than hang from its top: a nested row always has
+  // chrome above it, while the last row of a stack has only the view's frame
+  // below.
   return (
-    <Paper className={classes.background}>
+    <Paper
+      data-testid="lgv-mini-controls"
+      className={classes.background}
+      style={
+        scalebarOnly
+          ? { top: model.scalebarHeight, transform: 'translateY(-100%)' }
+          : undefined
+      }
+    >
       <Paper
         className={focusedViewId === id ? classes.focusedBackground : undefined}
       >

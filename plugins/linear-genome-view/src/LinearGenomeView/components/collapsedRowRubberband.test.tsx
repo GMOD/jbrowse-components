@@ -29,12 +29,13 @@ const assemblyConf = {
   },
 }
 
-async function renderView(scalebarOnly: boolean) {
+async function renderView(scalebarOnly: boolean, hideHeader = false) {
   const session = createTestSession()
   session.addAssemblyConf(assemblyConf)
   session.addView('LinearGenomeView', {
     id: `lgv-${scalebarOnly}`,
     scalebarOnly,
+    hideHeader,
     displayedRegions: [
       { refName: 'ctgA', start: 0, end: 10_000, assemblyName: 'volMyt1' },
     ],
@@ -100,4 +101,28 @@ test('the view carries its own id in the DOM', async () => {
   )
 
   expect(box?.dataset.testid).toBe(`linear-genome-view-${model.id}`)
+})
+
+// A ruler-only row is shorter than its own floating controls. Hung from the
+// row's top they overran its bottom, and on the last row of a synteny stack the
+// view's frame cut them in half; risen from the ruler's bottom edge they overlap
+// the chrome above instead, which every nested row has.
+test("a collapsed row's controls end at the ruler's bottom edge", async () => {
+  const { model, container } = await renderView(true, true)
+  const controls = container.querySelector<HTMLElement>(
+    '[data-testid="lgv-mini-controls"]',
+  )
+
+  expect(controls?.style.top).toBe(`${model.scalebarHeight}px`)
+  expect(controls?.style.transform).toBe('translateY(-100%)')
+})
+
+test("an expanded row's controls keep to its top", async () => {
+  const { container } = await renderView(false, true)
+  const controls = container.querySelector<HTMLElement>(
+    '[data-testid="lgv-mini-controls"]',
+  )
+
+  expect(controls).not.toBeNull()
+  expect(controls?.style.top).toBe('')
 })
