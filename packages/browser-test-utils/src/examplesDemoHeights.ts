@@ -5,7 +5,7 @@ import puppeteer from 'puppeteer'
 import handler from 'serve-handler'
 
 import { BASE_CHROME_ARGS } from './chromeArgs.ts'
-import { DESKTOP_VIEWPORT } from './examplesSmoke.ts'
+import { DESKTOP_VIEWPORT, waitForDemosDrawn } from './examplesSmoke.ts'
 
 // Measure the height every demo on an examples-site settles at, so those figures
 // can be generated rather than typed.
@@ -34,7 +34,7 @@ export interface DemoHeightOptions {
   base: string
   // example slugs to load; each page's demos are keyed by their section id
   slugs: string[]
-  // ms to settle after networkidle before measuring (lets islands mount/draw)
+  // ms to settle on a page that publishes no `[data-app-phase]`
   settleMs?: number
   // progress sink; defaults to a no-op so the library stays console-free
   log?: (message: string) => void
@@ -67,7 +67,7 @@ export async function measureDemoHeights({
   distDir,
   base,
   slugs,
-  settleMs = 6000,
+  settleMs = 4000,
   log = () => {},
 }: DemoHeightOptions): Promise<Record<string, number>> {
   const server = http.createServer((req, res) => {
@@ -102,11 +102,14 @@ export async function measureDemoHeights({
           timeout: 45000,
         })
       } catch {
-        // a background fetch that never quiesced; the settle below still gives
-        // the island time to mount, and a demo that genuinely failed to render
-        // shows up as an implausible height rather than being silently believed
+        // a background fetch that never quiesced; the wait below still holds
+        // out for the demos to draw, and one that genuinely failed shows up as
+        // an implausible height rather than being silently believed
       }
-      await new Promise(r => setTimeout(r, settleMs))
+      const unsettled = await waitForDemosDrawn(page, settleMs)
+      for (const u of unsettled) {
+        log(`  (unsettled) ${slug}: ${u}`)
+      }
       const measured = await page.evaluate(MEASURE)
       for (const [key, height] of Object.entries(measured)) {
         tallest[key] = Math.max(tallest[key] ?? 0, height)

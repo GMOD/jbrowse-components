@@ -1,8 +1,16 @@
 ---
+import Example from '../examples/Human.tsx'
 import { examples } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
-import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
+import {
+  componentLabel,
+  demoHeights,
+  landingDemo,
+  mainMaxWidth,
+} from '../siteMeta.ts'
+
+const reserved = demoHeights[landingDemo]
 ---
 
 <Shell
@@ -13,6 +21,13 @@ import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
 >
   <h1>JBrowse Circular Genome View</h1>
   <p class="lead">A whole-genome circular view as a React component.</p>
+
+  <div
+    class:list={['demo', { reserved: !!reserved }]}
+    style={reserved ? `min-height:${reserved}px` : undefined}
+  >
+    <Example client:only="react" />
+  </div>
 
   <Gallery examples={examples} />
 </Shell>

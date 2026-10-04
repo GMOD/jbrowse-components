@@ -5,7 +5,10 @@
   "human": 408,
   "oat-homoeologs": 708,
   "session-in-url": 445,
-  "show-track": 408,
+  "show-track": 433,
   "volvox": 408,
-  "with-track-shorthand": 408
+  "with-dark-theme": 408,
+  "with-inline-plugin": 408,
+  "with-track-shorthand": 408,
+  "with-web-worker": 408
 }

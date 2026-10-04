@@ -46,6 +46,36 @@ export const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
 const MOUNT_TIMEOUT_MS = 15000
 const FRAME_TIMEOUT_MS = 60000
 
+/**
+ * Wait until every demo on the page has filled and drawn. Mounting is not
+ * drawing: a page whose engines publish `[data-app-phase]` is held to the
+ * contract @jbrowse/capture waits on, and one publishing none gets `settleMs`.
+ * Returns what the readiness report still lists as unsettled.
+ */
+export async function waitForDemosDrawn(page: Page, settleMs: number) {
+  await page
+    .waitForFunction(
+      () =>
+        [...document.querySelectorAll('.demo')].every(
+          el => el.innerHTML.length >= 50,
+        ),
+      { timeout: MOUNT_TIMEOUT_MS },
+    )
+    .catch(() => {})
+  const hasMarker = await page
+    .evaluate(() => document.querySelector('[data-app-phase]') !== null)
+    .catch(() => false)
+  if (hasMarker) {
+    const { unsettled } = await waitForFrame(page, {
+      timeout: FRAME_TIMEOUT_MS,
+      allowUnsettled: true,
+    })
+    return unsettled
+  }
+  await new Promise(r => setTimeout(r, settleMs))
+  return []
+}
+
 export interface SmokeOptions {
   // absolute path to the built Astro `dist/` directory
   distDir: string
@@ -237,35 +267,12 @@ export async function smokeExamplesSite({
         { timeout: MOUNT_TIMEOUT_MS },
       )
       .catch(() => {})
-    // Mounting is not drawing. A page whose engines publish `[data-app-phase]`
-    // is held to the contract @jbrowse/capture waits on, so a demo a capture
-    // would photograph half-drawn fails here; one publishing none gets the
-    // settle.
-    await page
-      .waitForFunction(
-        () =>
-          [...document.querySelectorAll('.demo')].every(
-            el => el.innerHTML.length >= 50,
-          ),
-        { timeout: MOUNT_TIMEOUT_MS },
-      )
-      .catch(() => {})
-    const hasMarker = await page
-      .evaluate(() => document.querySelector('[data-app-phase]') !== null)
-      .catch(() => false)
-    if (hasMarker) {
-      const { unsettled } = await waitForFrame(page, {
-        timeout: FRAME_TIMEOUT_MS,
-        allowUnsettled: true,
-      })
-      errors.push(
-        ...unsettled
-          .filter(u => !allowedUnsettled(u, slug))
-          .map(u => `not ready for capture: ${u}`),
-      )
-    } else {
-      await new Promise(r => setTimeout(r, settleMs))
-    }
+    const unsettled = await waitForDemosDrawn(page, settleMs)
+    errors.push(
+      ...unsettled
+        .filter(u => !allowedUnsettled(u, slug))
+        .map(u => `not ready for capture: ${u}`),
+    )
     const mountedAt = await page
       .evaluate(
         () =>

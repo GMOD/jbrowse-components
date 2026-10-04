@@ -30,7 +30,7 @@ const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
-  slugs: examples.filter(e => !e.skipSmoke).map(e => e.slug),
+  slugs: ['', ...examples.filter(e => !e.skipSmoke).map(e => e.slug)],
   workerSlug: 'plugins',
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
