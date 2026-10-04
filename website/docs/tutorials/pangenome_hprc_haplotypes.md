@@ -113,7 +113,7 @@ Press **haplotypes** on the AMY1 row and choose `HG01361.1`, `HG00133.2`,
 its contig in the same width, and its label gives that span as a multiple of the
 window.
 
-<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, each from a different span class, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes, and the span in each lane's label gives the copy count; each band draws the extra copies of the longer lane as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
+<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, each from a different span class, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes; a lane longer than the window gives its span as a multiple in its label, and each band draws the extra copies of the longer lane as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
 
 To read the lengths, take **Display types → Graph**, enter the five names in
 **Settings → Haplotypes**, then pick **Layout → Walk rows** and **Color →
@@ -121,14 +121,14 @@ Uniform**.
 
 <Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, each boxed with its own CAT genes so its AMY1 copies can be counted on the bar. Blue is on GRCh38's path through the graph and purple off it. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
 
-Purple here is not a count of extra copies. HG00133.1 has GRCh38's three _AMY1_
-copies and its length and still shows a long purple stretch, because the graph
-routes copies of a duplication through nodes off GRCh38's path.
+HG00133.1 has GRCh38's three _AMY1_ copies and its length, and its bar still
+shows a long purple stretch: the graph routes copies of a duplication through
+nodes off GRCh38's path.
 
 Right-click a bar to open that haplotype's span in a linear view on its own
 assembly, with its CAT genes.
 
-## Check it against the published classes
+## Matching the amylase haplotypes to Yilmaz et al.'s structures
 
 Yilmaz et al. (2024) name each structure by its _AMY1_ count. Our five
 haplotypes land on H1a, H2A0, H3r, H5 and H7:
@@ -141,11 +141,11 @@ haplotypes land on H1a, H2A0, H3r, H5 and H7:
 | 94 kb longer          | 5             | H5        |
 | 188 kb longer         | 7             | H7        |
 
-Span alone can mislead. HG00097.2 is 78 kb longer than GRCh38, nearer the 94 kb
-of five copies, yet has four _AMY1_ copies. Count the _AMY1_ boxes on each bar
-rather than reading the copy number off its length.
+HG00097.2's span sits nearer H5's than any other row of the table, yet its walk
+carries four _AMY1_ copies, so count the _AMY1_ boxes on each bar to read its
+copy number.
 
-## Inversions
+## Telling the 1q21.1 inversion from an inverted paralog {#inversions}
 
 A deletion or an extra copy changes how long a lane is. An inversion keeps the
 same sequence and walks it backwards, and `gfatools bubble` flags one as an
@@ -219,7 +219,7 @@ Align two haplotypes to draw them as synteny:
 minimap2 -c --eqx -x asm20 --secondary=no HG00232.1.fa NA18608.2.fa > adjacent.paf
 ```
 
-The whole build, for the five haplotypes in the figures above:
+The whole build, for four of the amylase haplotypes above and hg38:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_amylase_haplotypes.sh
@@ -227,8 +227,8 @@ bash build_amylase_haplotypes.sh
 ```
 
 The build script writes the `config.json` that this session opens, with the five
-haplotypes' assemblies, their gene tracks and the `amylase_adjacent` alignments.
-The session below opens that config; point `config=` at your copy:
+assemblies, their gene tracks and the `amylase_adjacent` alignments. The session
+below opens that config; point `config=` at your copy:
 
 ```json session config=test_data/amylase/config.json
 {
@@ -279,7 +279,7 @@ The session below opens that config; point `config=` at your copy:
 }
 ```
 
-<Figure caption="One haplotype of each common amylase structure, one AMY1 copy at the top to seven at the bottom, each aligned to the row under it by minimap2 and colored by strand. Each step up in copies opens a wedge over the genes only the longer row has." src="/img/multiway_synteny/hprc_amylase_stack.png" />
+<Figure caption="HG01361.1, hg38, HG00133.1, NA18608.2 and HG00232.1, one AMY1 copy at the top to seven at the bottom, each aligned to the row under it by minimap2 and colored by strand. Each step up in copies opens a wedge over the genes only the longer row has." src="/img/multiway_synteny/hprc_amylase_stack.png" />
 
 A separate script builds the [inversion figure](#inversions) from release 2's
 published all-vs-GRCh38 PAF. A reversed alignment alone proves nothing, because
