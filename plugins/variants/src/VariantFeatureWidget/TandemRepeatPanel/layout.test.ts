@@ -4,6 +4,7 @@ import {
   formatBp,
   mergeNarrowCopies,
   readout,
+  rowLayout,
 } from './layout.ts'
 
 const units = [{ length: 5548, copies: 7 }]
@@ -134,4 +135,15 @@ test('bp reads in bp, kb or Mb', () => {
   expect(formatBp(30751)).toBe('31 kb')
   expect(formatBp(1_500_000)).toBe('1.5 Mb')
   expect(formatBp(147_000_000)).toBe('147 Mb')
+})
+
+test('rows past 30 squash into their height, unlabelled below 11 px', () => {
+  expect(rowLayout(30)).toEqual({ rowPx: 22, barPx: 12, labelled: true })
+  expect(rowLayout(1)).toEqual(rowLayout(30))
+  const cohort = rowLayout(464)
+  expect(cohort.rowPx * 464).toBeCloseTo(22 * 30)
+  expect(cohort.rowPx).toBeLessThan(2)
+  expect(cohort).toMatchObject({ barPx: cohort.rowPx, labelled: false })
+  expect(rowLayout(60)).toEqual({ rowPx: 11, barPx: 6, labelled: true })
+  expect(rowLayout(61).labelled).toBe(false)
 })

@@ -64,7 +64,7 @@ test("a <CNV:TR> record's alleles take their runs off RN, RUS, RUC, RB and RUB",
   ])
 })
 
-test('a cohort keeps its first 30 haplotypes and counts the rest; one row per allele stands for all of them', () => {
+test('a cohort keeps every haplotype; one row per allele stands for all of them', () => {
   const samples = Object.fromEntries(
     Array.from({ length: 1000 }, (_, i) => [
       `S${i}`,
@@ -72,8 +72,7 @@ test('a cohort keeps its first 30 haplotypes and counts the rest; one row per al
     ]),
   )
   const repeat = tandemRepeatOf({ ...tandem, samples })!
-  expect(repeat.alleles).toHaveLength(30)
-  expect(repeat.haplotypeCount).toBe(2000)
+  expect(repeat.alleles).toHaveLength(2000)
   expect(repeat.byAllele?.map(a => [a.label, a.count])).toEqual([
     ['REF · 90%', 1800],
     ['ALT 1 · 10%', 200],

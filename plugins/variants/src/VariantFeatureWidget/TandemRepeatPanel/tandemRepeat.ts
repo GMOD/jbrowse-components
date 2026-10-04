@@ -50,9 +50,6 @@ export interface TandemRepeat {
   units: RepeatUnit[]
   // one per called haplotype, or one per ALT allele of a record with no samples
   alleles: RepeatAllele[]
-  // called haplotypes with a drawable allele, of which `alleles` holds the first
-  // MAX_ROWS
-  haplotypeCount: number
   // one per allele the samples carry, most frequent first; undefined without
   // called samples
   byAllele?: RepeatAllele[]
@@ -63,8 +60,6 @@ export interface TandemRepeat {
 function info(f: VCFFeatureSerialized, name: string): unknown {
   return f.INFO?.[name]
 }
-
-export const MAX_ROWS = 30
 
 function unitsOf(alleles: (ParsedRun[] | undefined)[]) {
   const units = new Map<string, RepeatUnit & { key: string }>()
@@ -115,7 +110,6 @@ function sampleAlleles(
   const out: DrawnAllele[] = []
   const counts = new Map<number, number>()
   let calledAlleles = 0
-  let haplotypeCount = 0
   for (const [sample, fields] of Object.entries(f.samples ?? {})) {
     const gt = strings(fields.GT)[0] ?? ''
     const phased = gt.includes('|')
@@ -137,16 +131,10 @@ function sampleAlleles(
       ]
     })
     for (const { k, ...allele } of called) {
-      haplotypeCount++
-      if (out.length < MAX_ROWS) {
-        out.push({
-          label: labelOf(sample, k, called.length, phased),
-          ...allele,
-        })
-      }
+      out.push({ label: labelOf(sample, k, called.length, phased), ...allele })
     }
   }
-  return { haplotypes: out, haplotypeCount, counts, calledAlleles }
+  return { haplotypes: out, counts, calledAlleles }
 }
 
 export function formatPercent(count: number, total: number) {
@@ -203,7 +191,7 @@ export function tandemRepeatOf(
   const start = f.start + 1
   const svlen = numbers(info(f, 'SVLEN'))[f.ALT.indexOf(TANDEM_REPEAT)]
   const end = svlen === undefined ? f.end : start + Math.abs(svlen)
-  const { haplotypes, haplotypeCount, counts, calledAlleles } = sampleAlleles(
+  const { haplotypes, counts, calledAlleles } = sampleAlleles(
     f,
     alleles,
     end - start,
@@ -247,7 +235,6 @@ export function tandemRepeatOf(
     unitLength: unitLengthOf(f),
     units: units.map(({ key: _key, ...unit }) => unit),
     alleles: drawn.map(withUnits),
-    haplotypeCount: haplotypes.length > 0 ? haplotypeCount : drawn.length,
     ...(calledAlleles > 0
       ? {
           byAllele: byAlleleOf(alleles, counts, calledAlleles, end - start).map(

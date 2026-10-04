@@ -303,6 +303,20 @@ test('clicking an allele row narrows the Samples card to its carriers', async ()
   expect(getByText('Samples (40)')).toBeTruthy()
 })
 
+test('a cohort by haplotype draws every row, squashed and unlabelled', async () => {
+  const { findByText, getAllByTestId, getByText, queryByText } =
+    renderWidget(cohortRecord)
+  fireEvent.click(await findByText('By haplotype'))
+  expect(getAllByTestId('tandem-repeat-row')).toHaveLength(80)
+  expect(
+    getByText(/80 haplotypes, longest first, too many to label/),
+  ).toBeTruthy()
+  expect(queryByText('S0#1')).toBeNull()
+  expect(
+    getAllByTestId('tandem-repeat-row')[0]!.querySelector('title')?.textContent,
+  ).toMatch(/^S0#1: /)
+})
+
 test('a record with no ID does not repeat its locus in the panel header', async () => {
   const { findByTestId, getByText } = renderWidget({
     ...cohortRecord,
