@@ -20,8 +20,7 @@ draws the features once they fit.
 ## Prerequisites
 
 - a JBrowse to open the figures' sessions in ([Web](/docs/quickstart_web) or
-  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so nothing
-  needs hosting
+  [Desktop](/docs/quickstart_desktop))
 - [Node.js](https://nodejs.org/), which the JBrowse CLI runs on
 - the [JBrowse CLI](/docs/cli), for `jbrowse make-density` and the track it
   attaches to
@@ -52,7 +51,7 @@ density sidecar beside each file.
 - the simple repeats, the control:
   https://jbrowse.org/demos/gene_density/Simple_repeat.bed.gz
 
-## The genome
+## Loading hg38
 
 We'll load hg38, the assembly the UCSC tables were cut from. Every track below
 names it in `assemblyNames`.
@@ -67,21 +66,6 @@ names it in `assemblyNames`.
   "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
 }
 ```
-
-## A chromosome of genes
-
-Add the four tracks from [the sidecar section](#building-the-density-sidecar),
-then open chromosome 1 with all four. At this width no track fetches its
-features. A track that would have to pull tens of thousands of records to draw a
-screen stops at the estimate and, since each of these has a density sidecar,
-draws the sidecar instead. Each band is the features per kilobase in that track
-along the chromosome, scaled to the track's peak.
-
-<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes, the Alu and L1 copies from RepeatMasker, and the simple repeats. Each band is that track's features per kilobase, scaled to its own peak. Genes cluster at the 1p36 tip and across 1q21 to 1q23, and Alu rises and falls with them. L1 and the simple repeats run close to level throughout." />
-
-The gene band and the Alu band peak together. The simple-repeat band, the
-control, follows neither, and at this scale neither does L1, which runs about as
-level. The gap in every band is the centromere.
 
 ## Building the density sidecar
 
@@ -144,7 +128,7 @@ with its sidecar beside it. The Alu track:
 {
   "type": "FeatureTrack",
   "trackId": "hg38_Alu",
-  "name": "Alu",
+  "name": "RepeatMasker Alu",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
@@ -163,7 +147,7 @@ The L1 track and the simple-repeat control follow, with the file names swapped:
 {
   "type": "FeatureTrack",
   "trackId": "hg38_L1",
-  "name": "L1",
+  "name": "RepeatMasker L1",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
@@ -180,7 +164,7 @@ The L1 track and the simple-repeat control follow, with the file names swapped:
 {
   "type": "FeatureTrack",
   "trackId": "hg38_Simple_repeat",
-  "name": "Simple repeats",
+  "name": "RepeatMasker simple repeats",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
@@ -198,17 +182,33 @@ wrote. The BED needs bgzip and tabix (`.tbi` beside it), the same refNames as
 the assembly, and the `.density.bw` beside it unless `densityAdapter` points
 elsewhere.
 
+## A chromosome of genes
+
+Add the four tracks above, then open chromosome 1 with all four. At this width
+no track fetches its features. A track that would have to pull tens of thousands
+of records to draw a screen stops at the estimate and, since each of these has a
+density sidecar, draws the sidecar instead. Each band is the features per
+kilobase in that track along the chromosome, scaled to the track's peak.
+
+<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes, the Alu and L1 copies from RepeatMasker, and the simple repeats. Each band is that track's features per kilobase, scaled to its own peak. Genes cluster at the 1p36 tip and across 1q21 to 1q23, and Alu rises and falls with them. L1 and the simple repeats run close to level throughout." />
+
+The gene band and the Alu band peak together. The simple-repeat band, the
+control, follows neither, and at this scale neither does L1, which runs about as
+level. The gap in every band is the centromere and the 1q12 heterochromatin
+beside it.
+
 ## Zooming in gives the features back
 
-Zoom to 10 Mb over 1q21 to 1q23. The gene track's fetch now fits, so its band is
-gone and the genes are drawn. The Alu and L1 tracks would still each pull
-thousands of records for this window, so they keep their bands.
+Type `chr1:150,000,000-160,000,000`, 10 Mb over 1q21 to 1q23. The gene track's
+fetch now fits, so its band is gone and the genes are drawn. The Alu and L1
+tracks would still each pull thousands of records for this window, so they keep
+their bands.
 
 <Figure src="/img/gene_density_1q21.png" caption="10 Mb of chromosome 1 from 150 to 160 Mb. The RefSeq genes are back as features; the Alu and L1 tracks, still over budget at this width, keep their bands. The Alu band peaks under the densest runs of genes, and the L1 band runs more evenly across them." />
 
-A track draws its features once their fetch fits the budget. The gene track and
-the Alu track show the same window here, and only the Alu track is over budget.
-A track with a sidecar also has a **Density band** entry in its track menu, with
+A track draws its features once their fetch fits the budget. The three tracks
+show the same window here, and only the two repeat tracks are over budget. A
+track with a sidecar also has a **Density band** entry in its track menu, with
 **Automatic**, **Features only** and **Density only** to keep or drop the band
 by hand, and **Load features anyway** to force the fetch the band replaced.
 
@@ -224,6 +224,7 @@ exons have `Parent=`, so the gene line drops them and counts each gene once:
 tabix genes.gff.gz chr1:155,000,000-156,000,000 | grep -vc 'Parent='
 tabix Alu.bed.gz chr1:155,000,000-156,000,000 | wc -l
 tabix L1.bed.gz chr1:155,000,000-156,000,000 | wc -l
+tabix Simple_repeat.bed.gz chr1:155,000,000-156,000,000 | wc -l
 ```
 
 | window, chr1  | genes | Alu  | L1  | simple repeats |
