@@ -308,7 +308,7 @@ Convert the walks you want:
 <!-- from: scripts/build_hprc_multiway_synteny.sh -->
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/gfa_to_pairwise_paf.py
+curl -fO https://raw.githubusercontent.com/cmdcolin/gfa-to-pairwise-paf/v1.0.0/gfa_to_pairwise_paf.py
 # --contig-lengths: each assembly's .fai, since walks omit contig lengths
 gzip -dc graph.gfa.gz | python3 gfa_to_pairwise_paf.py --reference GRCh38#0 \
   --queries HG01109#1,HG00099#1 --contig-lengths contigs.fai > graph.paf

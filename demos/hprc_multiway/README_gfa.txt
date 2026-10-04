@@ -7,8 +7,9 @@ alignments to GRCh38 unpacked from the minigraph-cactus graph itself,
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
 
 in which every haplotype is a walk through the graph's nodes and two walks
-through one node carry identical sequence. scripts/gfa_to_pairwise_paf.py
-(jbrowse-components) streams the GFA once, keeps the GRCh38 walks and those of
+through one node carry identical sequence. gfa_to_pairwise_paf.py v1.0.0
+(github.com/cmdcolin/gfa-to-pairwise-paf) streams the GFA once, keeps the
+GRCh38 walks and those of
 
   HG01109#1 HG01123#1 HG01960#1 HG02055#1 HG00097#1 HG00099#1 HG00128#1 HG00133#1
 

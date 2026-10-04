@@ -7,7 +7,8 @@
 # The alignment is unpacked from the minigraph-cactus GFA. Every haplotype is a
 # walk through the graph's nodes, and two walks through one node carry identical
 # sequence, so a haplotype's pairwise alignment to GRCh38 is the nodes the two
-# walks share, chained in reference order. scripts/gfa_to_pairwise_paf.py streams
+# walks share, chained in reference order. gfa_to_pairwise_paf.py
+# (github.com/cmdcolin/gfa-to-pairwise-paf, fetched at a pinned tag) streams
 # the GFA once (pigz -dc ahead of it), keeps only the reference walks and the
 # eight haplotypes', and writes PAF records with =/X/I/D CIGARs: each shared node
 # is `=`, the private bp between two shared nodes pair as X with the remainder I
@@ -55,14 +56,10 @@ set -euo pipefail
 OUTDIR="${1:-hprc_multiway_build}"
 CAT_JOBS="${CAT_JOBS:-4}"
 MAX_GAP="${MAX_GAP:-10000}"
-SCRIPTS=$(cd "$(dirname "$0")" && pwd)
-HELPERS=(gfa_to_pairwise_paf.py)
-for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPTS/$h" ] || curl -fsSL -o "$SCRIPTS/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
-done
+GFA_TO_PAF_VERSION=v1.0.0
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
+GFA_TO_PAF=gfa-to-pairwise-paf-$GFA_TO_PAF_VERSION/gfa_to_pairwise_paf.py
 export TMPDIR="${TMPDIR:-$PWD/tmp}"
 mkdir -p "$TMPDIR" parts
 
@@ -100,6 +97,8 @@ fetch() {
 
 echo "== graph"
 fetch "$GFA_URL" "$GFA"
+mkdir -p "$(dirname "$GFA_TO_PAF")"
+fetch "https://raw.githubusercontent.com/cmdcolin/gfa-to-pairwise-paf/$GFA_TO_PAF_VERSION/gfa_to_pairwise_paf.py" "$GFA_TO_PAF"
 
 # The whole graph in one stream, one chromosome's S, L and W lines after
 # another's; only GRCh38's walks and the eight requested haplotypes' are
@@ -121,7 +120,7 @@ fetch_contig_lengths() {
 unpack_gfa() {
   [ -f contig_lengths.fai ] || fetch_contig_lengths
   gunzip_stream "$GFA" \
-    | python3 "$SCRIPTS/gfa_to_pairwise_paf.py" --reference "$REFERENCE#0" \
+    | python3 "$GFA_TO_PAF" --reference "$REFERENCE#0" \
         --queries "$(echo "$HAPLOTYPES" | tr ' ' ,)" --max-gap "$MAX_GAP" \
         --contig-lengths contig_lengths.fai \
         --chrom-sizes-dir parts/gfa.sizes > "$PAF.part" 2>parts/gfa.log
@@ -303,8 +302,9 @@ HOW="the minigraph-cactus graph itself,
   $GFA_URL
 
 in which every haplotype is a walk through the graph's nodes and two walks
-through one node carry identical sequence. scripts/gfa_to_pairwise_paf.py
-(jbrowse-components) streams the GFA once, keeps the GRCh38 walks and those of
+through one node carry identical sequence. gfa_to_pairwise_paf.py $GFA_TO_PAF_VERSION
+(github.com/cmdcolin/gfa-to-pairwise-paf) streams the GFA once, keeps the
+GRCh38 walks and those of
 
   $HAPLOTYPES
 

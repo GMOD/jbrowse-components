@@ -187,7 +187,7 @@ Items the whole-unit cuts removed. Same caveat: unverified since the cut.
   keyboard path to features; the `LGVSyntenyDisplay` gate is inert; no BigWig
   size estimate; the density-axis extrapolation is non-monotone.
 - **Pangenome reader** (HPRC_RELEASE2, MULTIWAY_SYNTENY_DISPLAY): the reader's
-  `align()` and `gfa_to_pairwise_paf.py` emit different CIGARs and nothing
+  `align()` and [`gfa_to_pairwise_paf.py`](https://github.com/cmdcolin/gfa-to-pairwise-paf) emit different CIGARs and nothing
   measures it; `launchFromGraph` never builds a MultiWay display (send
   `GraphNode.samples` to `setSelectedLanes`); the `SyntenyFollow` and
   `RowFrame` shapes do not unify.

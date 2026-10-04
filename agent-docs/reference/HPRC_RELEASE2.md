@@ -68,7 +68,7 @@ flag, exited 0 and wrote nothing.
 `--haplotype-index` and `--stack` fetches one window and prints each row against
 the next as PAF (`scripts/build_graph_haplotype_stack.sh`). Do not use the
 reader's `--cigar` (sizes the stretch between shared nodes as one `M`) or
-`gfa_to_pairwise_paf.py` on a `--format gfa` window (pairs it as `X`) for a
+[`gfa_to_pairwise_paf.py`](https://github.com/cmdcolin/gfa-to-pairwise-paf) on a `--format gfa` window (pairs it as `X`) for a
 haplotype pair: neither compares bases.
 
 **The tier is a separate config, not switched on for `hprc_maf.json`.** The
