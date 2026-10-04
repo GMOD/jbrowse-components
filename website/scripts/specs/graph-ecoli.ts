@@ -1071,7 +1071,14 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           assembly: 'K12',
           loc: PGGB_LOCUS_WINDOW,
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: 'K12_genes',
+              type: 'LinearBasicDisplay',
+              height: 70,
+              // the IS5's nameless mobile_genetic_element record drew labelled
+              // by its raw RefSeq ID; insH21 names the element
+              filter: ["jexl:feature.type=='gene'"],
+            },
             {
               trackId: PGGB_DEPTH_TRACK,
               type: 'LinearWiggleDisplay',

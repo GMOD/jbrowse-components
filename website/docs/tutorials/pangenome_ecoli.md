@@ -153,9 +153,9 @@ jbrowse make-pif ecoli_pggb_ava.paf
 }
 ```
 
-Stack the five strains in a linear synteny view as the
-[all-vs-all tutorial](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
-describes.
+Stack the five strains with **Add → Linear synteny view**, whose Quick start
+fills in a row per assembly the track lists, K12 at the top and IAI39 at the
+bottom.
 
 <Figure caption="The wfmash alignment pggb induced the graph from: five strains stacked K12 to IAI39, a ribbon between each adjacent pair. The crossings in the bottom band are IAI39's inversions." src="/img/pangenome/pggb_synteny.png" />
 
@@ -450,7 +450,7 @@ column is a stretch that strain lacks:
 
 <Figure caption="The aggregate depth curve over all of K12, with odgi pav on the same windows below it, one row per non-K12 strain. Under the shaded span a single row goes white; the deepest troughs in the curve above are where all four do." src="/img/pangenome/pav.png" />
 
-### Check it against reads
+### Testing the CPZ-55 depth trough with nanopore reads
 
 Nanopore reads from _E. coli_ E146, an isolate outside the graph, test one depth
 trough without the graph. Download them:
@@ -478,7 +478,7 @@ samtools index ecoli_e146_ont.bam
 Type `chr:2,554,000-2,570,000`. Reads long enough to cross the trough show it as
 a single labelled deletion.
 
-<Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the graph's depth curve and its MAF below. All four lanes break at the edges of the cryptic prophage CPZ-55." src="/img/pangenome/long_reads.png" />
+<Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the graph's depth curve and its MAF below. The reads, the depth curve and the MAF rows all break at the edges of the cryptic prophage CPZ-55." src="/img/pangenome/long_reads.png" />
 
 ## The graph as a track {#opening-the-graph-in-the-graph-genome-view}
 
@@ -601,7 +601,7 @@ same files colors each segment by that count:
 
 Type `chr:1,299,499-1,300,693`, the IS5 element.
 
-<Figure caption="The IS5 element in K12 as a strains-per-segment lane, colored by how many strains walk each segment, so the red box is a segment K12 alone walks." src="/img/pangenome/pggb_carriage_lane.png" />
+<Figure caption="The IS5 element in K12: the windowed depth curve, and under it the strains-per-segment lane, colored by how many strains walk each segment, so the red box is a segment K12 alone walks." src="/img/pangenome/pggb_carriage_lane.png" />
 
 The [graph genome view guide](/docs/user_guides/graph_genome_view) covers the
 layouts and the node menu.
