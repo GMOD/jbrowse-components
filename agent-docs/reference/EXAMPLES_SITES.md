@@ -51,5 +51,6 @@ Don't retry without solving the resolver disagreement first.
   reserved as a `min-height`. Write it with `pnpm build && pnpm
   measure-demo-heights && pnpm build`, never by hand. The figure is the tallest
   the demo gets, so a fit-height demo can't be pinned this way.
-- Each site is in `push.yml` twice, the deploy loop and the `examples_site_smoke`
-  matrix, both by name, so a new site is invisible to CI until added to both.
+- Each site is one leg of the `examples_site_smoke` matrix in `push.yml`, which
+  builds, smoke-tests and, on main and release tags, deploys it. A new site is
+  invisible to CI until it has a leg.
