@@ -5,10 +5,13 @@
  *   launch → goto → wait-for-ready → (annotate) → screenshot → optimize →
  *   content-stable commit (only rewrites the PNG when it actually changed)
  *
- * No JBrowse coupling: it imports only ./image-pipeline.ts and the callout
- * overlay `@jbrowse/capture` publishes, so this file could move into its own
- * package as-is. Point it at any URL. `generate-screenshots.ts` is the heavier JBrowse-doc pipeline
- * built on the same two primitives; this is the small reusable core of it.
+ * Point it at any URL. Beyond ./image-pipeline.ts it reaches into this repo
+ * twice: the callout overlay (`drawAnnotations`, @jbrowse/capture's, through
+ * @jbrowse/browser-test-utils), whose selector and text anchors work on any
+ * page and whose locus and graph anchors need a JBrowse one, and
+ * `pinRenderer`, which adds JBrowse's `renderer=webgl` to the URL.
+ * `generate-screenshots.ts` is the heavier JBrowse-doc pipeline; this is the
+ * small reusable core of it.
  *
  * Needs the `compare`/`identify` (ImageMagick) binaries on PATH for the diff
  * gate; `pngquant` is optional (image optimization is skipped without it).

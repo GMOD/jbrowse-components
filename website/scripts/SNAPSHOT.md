@@ -6,10 +6,11 @@ PNG: it only rewrites the output file when the rendered page actually changed
 committed images.
 
 It's the reusable core of the larger JBrowse doc pipeline in
-`generate-screenshots.ts`, with none of the JBrowse coupling — point it at any
-URL. It imports only `image-pipeline.ts` (the diff gate + pngquant optimize) and
-`@jbrowse/capture`'s `drawAnnotations` (the SVG callout overlay), both
-self-contained, so this file can move into its own package unchanged.
+`generate-screenshots.ts`, and works on any URL. Beyond `image-pipeline.ts` (the
+diff gate + pngquant optimize) it reaches into this repo twice: the SVG callout
+overlay, `@jbrowse/capture`'s `drawAnnotations` through
+`@jbrowse/browser-test-utils`, and the generator's `pinRenderer`. Selector and
+text callouts work on any page; locus and graph-node ones need a JBrowse page.
 
 ## Requirements
 
@@ -67,8 +68,8 @@ await snapshotAll(
 )
 ```
 
-Annotations (red arrows / boxes / text pills, optionally DOM-anchored) come from
-`@jbrowse/capture`'s `annotations.ts`:
+Annotations (red arrows / boxes / text pills, optionally DOM-anchored) are
+`drawAnnotations`, from `products/jbrowse-capture/src/annotations.ts`:
 
 ```ts
 await snapshot({
