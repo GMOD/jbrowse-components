@@ -22,9 +22,8 @@ per file, and check the rows at T-cell and B-cell marker genes.
   [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) for the
   fragments-file route (ArchR and Signac install from R)
 - a JBrowse instance to load the finished BigWigs into (see the
-  [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop), which opens local `.bw` files
-  with nothing hosted)
+  [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop))
 
 ## Where the data comes from
 
@@ -42,13 +41,11 @@ clustered and cell-type-labeled by the SnapATAC2 pipeline.
 One ATAC cell contributes only a few thousand fragments, so a single cell's
 coverage track is almost entirely zero. Pseudobulking pools every fragment
 belonging to a label into one profile, a dense track resembling a bulk ATAC
-experiment on that cell type. JBrowse stacks the files as rows of one track.
+experiment on that cell type. JBrowse stacks the files as rows of one
+track.[^inline]
 
 PBMC marker genes are the control. At a T-cell marker the T-cell rows have
 signal and the B-cell rows stay flat, and at a B-cell marker the reverse.
-
-The BigWigs can also be viewed inline from the clustering environment through
-the [Python anywidget interface](/docs/jbrowse_anywidget) or [](/docs/jbrowser).
 
 ## Generating per-group BigWigs
 
@@ -91,10 +88,10 @@ and the writer fails partway through the groups when memory runs out. `groupby`
 picks the rows: the cluster column (`"leiden"`) for one per cluster, or the
 annotated column (`"cell_type"`) for one per cell type.
 
-### Other starting points
+### Pseudobulk BigWigs from ArchR, a barcoded BAM or a fragments file
 
 Every route ends at one `.bw` per cell type. The tools are linked under
-[References](#references):
+[External links](#external-links):
 
 - **An `ArchRProject`**: `getGroupBW(groupBy = "CellType", tileSize = 25)`
   writes one BigWig per group. `normMethod = "ReadsInTSS"` normalizes by
@@ -108,7 +105,7 @@ Every route ends at one `.bw` per cell type. The tools are linked under
   unnormalized, so scale each group yourself (1e6 / total fragments for CPM)
   before the conversion
 
-## The genome
+## Loading GRCh38 with chr-style names
 
 The fragments are aligned to GRCh38, so the BigWigs use its `chr1`-style
 chromosome names, and the assembly has to spell them the same way. A BigWig
@@ -131,7 +128,11 @@ draws empty unless the assembly has a name-alias table.
 All the per-cell-type BigWigs go into one `MultiQuantitativeTrack` whose
 `MultiWiggleAdapter` holds one `BigWigAdapter` per file, each with a `name`, an
 optional `color`, and an optional `group`. Swap each `uri` for the BigWig your
-pooling step wrote. Three cell types:
+pooling step wrote. The fence lists three of the twelve cell types the figure
+draws; the [build script](#reproduce-it-end-to-end) writes the whole list, and
+the hosted demo config,
+https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has it as
+`pbmc5k_scatac_pseudobulk_hg38`:
 
 ```json addtrack
 {
@@ -197,12 +198,12 @@ array of URLs and labels each row from its filename:
 }
 ```
 
-A published atlas loads the same way. [CATlas](https://www.catlas.org/) serves
-hg38 coverage from
+[CATlas](https://www.catlas.org/), a published single-cell atlas, serves hg38
+per-cell-type coverage from
 `https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`, one file
-per cell type. Percent-encode the `+` in a cell-type name
-(`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and the row loads
-with no data.
+per cell type, and its URLs go into the `subadapters` list like the PBMC files.
+Percent-encode the `+` in a cell-type name (`T_lymphocyte_2_CD4%2B.bw`); left
+unencoded, the URL breaks and the row loads with no data.
 
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) lists every drawing mode,
 and the track menu switches between them. `bar` (the default, and the figures
@@ -295,3 +296,8 @@ since an unnormalized group's height tracks its cell count.
 - [CATlas: a single-cell atlas of chromatin accessibility in the human genome (Zhang et al., Cell 2021)](https://www.sciencedirect.com/science/article/pii/S0092867421012794)
   · [resource portal](https://www.catlas.org/), the published atlas a track
   reads without building anything
+
+[^inline]:
+    The BigWigs can also be viewed inline from the clustering environment
+    through the [Python anywidget interface](/docs/jbrowse_anywidget) or
+    [](/docs/jbrowser).

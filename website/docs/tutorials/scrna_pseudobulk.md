@@ -38,7 +38,7 @@ writing the BAM to disk.
 - the filtered feature-barcode matrix the clustering runs on:
   https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_filtered_feature_bc_matrix.h5
 
-## The genome
+## Loading GRCh38
 
 The BAM was aligned to GRCh38, and the BigWigs inherit its chromosome names, so
 the tracks go on an hg38 assembly that spells them the same way.
@@ -152,8 +152,11 @@ bedGraphToBigWig CD8_T.all.bg hg38.chrom.sizes bw/CD8_T.bw
 ## Loading the BigWigs
 
 One `MultiQuantitativeTrack` holds the set, one `BigWigAdapter` subadapter per
-cell type with its `name`, `color`, and `group`. The first three of the nine
-rows in the figure below:
+cell type with its `name`, `color`, and `group`. The fence lists the first three
+of the nine rows in the figure below; the build script writes all nine, and the
+hosted config,
+https://jbrowse.org/code/jb2/main/test_data/scrna_pbmc5k/config.json, has them
+as `pbmc5k_scrna_pseudobulk_hg38`:
 
 ```json addtrack
 {
@@ -215,8 +218,11 @@ chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,93
 Each marker's expression shows as the height of its 3' spike from row to row.
 The axis is logarithmic because all nine rows share it.
 
-The `--multiwig` CLI form and the add-track UI build the same track without
-hand-writing it; both are covered on [](/docs/tutorials/scatac_pseudobulk).
+`jbrowse add-track --multiwig` takes a comma-separated list of the BigWigs and
+builds the same track, labeling each row from its filename, and the **Add
+multi-row track** workflow under **Add track** takes the same URLs one per line.
+[](/docs/tutorials/scatac_pseudobulk) shows both with per-row names, colors and
+groups.
 
 ## One row per cell
 
@@ -241,8 +247,10 @@ from `config.json` first:
 }
 ```
 
-With the plugin loaded, the store is one track. For your own cells, `uri` points
-at a store with the same layout, built by the reproduce script below:
+With the plugin loaded, the store is one track. The figure reads the hosted
+store, https://jbrowse.org/demos/scrna_pbmc5k/percell.zarr, a directory of
+chunks that 404s at its root but loads as a `uri`. For your own cells, `uri`
+points at a store with the same layout, built by the reproduce script below:
 
 ```json addtrack
 {
@@ -266,9 +274,13 @@ at a store with the same layout, built by the reproduce script below:
 A relative `uri` resolves against the config that holds it, so the store is
 served as static files beside `config.json`.
 
-The bin axis of the store lays each window end to end keyed by refName, one
-window per chromosome. Per-cell coverage is informative only where the cells
-have reads, so the store covers marker windows and stays under a megabyte.
+The store covers one marker window per chromosome, laid end to end and looked up
+by chromosome name, so two markers on one chromosome would collide and the build
+script picks one per chromosome. Per-cell coverage is informative only where the
+cells have reads, so covering marker windows keeps the store under a megabyte.
+
+Type `chr12:69,353,000-69,354,500` into the location box, the 3' end of _LYZ_,
+where the 3' kit's reads land:
 
 <Figure caption="The nine pseudobulk rows at LYZ above the individual cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
 
