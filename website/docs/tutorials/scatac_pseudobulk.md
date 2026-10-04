@@ -6,10 +6,11 @@ tutorial_category: Epigenomics & single cell
 ---
 
 Single-cell ATAC-seq measures chromatin accessibility one cell at a time, and
-pooling the cells of each cluster gives one accessibility profile per cell type.
-We pool a clustered 10x PBMC dataset into one coverage BigWig per cell type
-outside JBrowse, load the set as a single multi-wiggle track that draws one row
-per file, and check the rows at T-cell and B-cell marker genes.
+pooling the cells of each cluster, called pseudobulking, gives one accessibility
+profile per cell type. We pool a clustered 10x peripheral blood (PBMC) dataset
+into one coverage BigWig per cell type outside JBrowse, load the set as one
+multi-wiggle track with a row per file, and check the rows at T-cell and B-cell
+marker genes.
 
 ## Prerequisites
 
@@ -36,7 +37,7 @@ clustered and cell-type-labeled by the SnapATAC2 pipeline.
 - CATlas' published hg38 per-cell-type accessibility BigWigs from:
   https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/
 
-## Pooling cells into rows
+## Pooling cells into one coverage track per cell type
 
 One ATAC cell contributes only a few thousand fragments, so a single cell's
 coverage track is almost entirely zero. Pseudobulking pools every fragment
@@ -47,7 +48,7 @@ track.[^inline]
 PBMC marker genes are the control. At a T-cell marker the T-cell rows have
 signal and the B-cell rows stay flat, and at a B-cell marker the reverse.
 
-## Generating per-group BigWigs
+## Generating one pseudobulk BigWig per cell type
 
 Clustering and cell-type labeling happen upstream, in Cell Ranger ATAC, ArchR,
 Signac, or SnapATAC2. Whichever tool writes the files, two settings decide
@@ -83,15 +84,13 @@ snap.ex.export_coverage(
 # writes bw/<cell_type>.bw, one per group, keyed by group in the returned dict
 ```
 
-`n_jobs` controls memory use: each worker holds a genome-wide coverage vector,
-and the writer fails partway through the groups when memory runs out. `groupby`
-picks the rows: the cluster column (`"leiden"`) for one per cluster, or the
-annotated column (`"cell_type"`) for one per cell type.
+Too many `n_jobs` workers exhaust memory and fail the writer partway through the
+groups. `groupby` picks the rows: the cluster column (`"leiden"`) gives one per
+cluster, the annotated column (`"cell_type"`) one per cell type.
 
 ### Pseudobulk BigWigs from ArchR, a barcoded BAM or a fragments file
 
-Every route ends at one `.bw` per cell type. The tools are linked under
-[External links](#external-links):
+Every route ends at one `.bw` per cell type:
 
 - **An `ArchRProject`**: `getGroupBW(groupBy = "CellType", tileSize = 25)`
   writes one BigWig per group. `normMethod = "ReadsInTSS"` normalizes by
@@ -170,7 +169,7 @@ https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has it as
 }
 ```
 
-Set three things in that list by hand:
+The `subadapters` list has three things only you can set:
 
 - the order: subadapters draw in the order given, so group them by lineage
 - `color`: copy the cluster color from your analysis, so a cell type matches its
@@ -210,16 +209,17 @@ and the track menu switches between them. `bar` (the default, and the figures
 here) compares peak shape; `heatmap` maps score to color and fits more rows.
 [](/docs/user_guides/quantitative_track) covers the rest of the menu.
 
-To check the rows against marker genes, paste two loci into the location box as
-one discontinuous view, a T-cell marker (_CD8A_) and a B-cell marker (_MS4A1_):
+To check the rows against marker genes, paste two loci into the location box to
+open them side by side in one view, a T-cell marker (_CD8A_) and a B-cell marker
+(_MS4A1_):
 
 ```text
 chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
 ```
 
-<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. The CD8, MAIT and NK rows have signal at CD8A, and only the two B rows have it at MS4A1." src="/img/scatac/pbmc5k_marker_swap.png" />
+<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 side by side in one view. The CD8, MAIT and NK rows have signal at CD8A, and only the two B rows have it at MS4A1." src="/img/scatac/pbmc5k_marker_swap.png" />
 
-### Building the subadapter list from files
+### Building the track from a folder of BigWigs
 
 Two workflows write the list from a set of files.
 
