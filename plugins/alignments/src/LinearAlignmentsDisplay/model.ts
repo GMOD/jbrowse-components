@@ -241,7 +241,7 @@ import type {
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { AlignmentFill, JBrowsePalette } from '@jbrowse/core/ui/palette'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
@@ -2793,9 +2793,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The junction strands drawn, which the key has a row for each of:
-           * read off the merged junctions rather than the projected arcs so a
-           * pan does not rebuild the legend.
+           * The junction strands drawn, one key row each. Read off the merged
+           * junctions rather than the projected arcs, so a pan does not rebuild
+           * the legend.
            */
           get sashimiLegendStrands(): ReadonlySet<number> {
             const strands = new Set<number>()
@@ -2837,10 +2837,7 @@ export default function stateModelFactory(
            * since the category scans are.
            */
           get colorScales(): ColorScale[] {
-            return this.colorScalesWith(
-              self.colorPalette,
-              getPaletteHost(self).palette.alignmentFill,
-            )
+            return this.colorScalesIn(getPaletteHost(self).palette)
           },
 
           /**
@@ -2849,19 +2846,7 @@ export default function stateModelFactory(
            * not be the session's.
            */
           colorScalesIn(theme: JBrowsePalette): ColorScale[] {
-            return this.colorScalesWith(
-              self.colorPaletteIn(theme),
-              theme.alignmentFill,
-            )
-          },
-
-          /**
-           * #method
-           */
-          colorScalesWith(
-            palette: ColorPalette,
-            alignmentFill: AlignmentFill,
-          ): ColorScale[] {
+            const palette = self.colorPaletteIn(theme)
             return getAlignmentsColorScales({
               ramps: colorRampScales({
                 colorBy: self.colorBy,
@@ -2878,7 +2863,7 @@ export default function stateModelFactory(
               connectionLegendItems: () => self.connectionLegendItems(palette),
               sashimiLegendItems: sashimiLegendItems(
                 this.sashimiLegendStrands,
-                alignmentFill,
+                theme.alignmentFill,
               ),
             })
           },
