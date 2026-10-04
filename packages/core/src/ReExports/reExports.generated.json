@@ -4033,6 +4033,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "colorByMenuItem",
+        "colorSchemeMenuItem",
         "solidColorItem"
       ],
       "worker": "real"
@@ -4068,6 +4069,7 @@
         "dealRowColors",
         "featureColorEncoding",
         "identityKeyEntries",
+        "matrixColorEncodingOf",
         "normalizeChannel",
         "paintedColorEncoding",
         "paintedScale",

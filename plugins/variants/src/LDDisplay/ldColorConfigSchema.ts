@@ -4,18 +4,15 @@ import { colorChannelSlots } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { LDMetric } from '../VariantRPC/ldTypes.ts'
-import type { FieldPresets } from '@jbrowse/display-kit/colorConfigSchema'
+import type { FieldPreset } from '@jbrowse/display-kit/colorConfigSchema'
 
-export const LD_COLOR_FIELDS = [
-  'r2',
-  'dprime',
-] as const satisfies readonly LDMetric[]
+export const LD_COLOR_SCALES = ['linear'] as const
 
 /** Each metric's ramp and key title while the config leaves them unwritten. */
 export const LD_FIELD_PRESETS = {
   r2: { scale: 'linear', scheme: 'reds', title: 'R²' },
   dprime: { scale: 'linear', scheme: 'blues', title: "D'" },
-} as const satisfies FieldPresets<'linear'>
+} as const satisfies Record<LDMetric, FieldPreset<'linear'>>
 
 /** The domain every LD statistic spans, and an unset end of `color`'s. */
 export const LD_VALUE_EXTENT = [0, 1] as const
@@ -43,7 +40,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
   'LDColor',
   {
     ...colorChannelSlots({
-      scales: ['linear'],
+      scales: LD_COLOR_SCALES,
       scaleName: 'LDColorScale',
       fieldType: 'string',
       field: 'r2 or dprime',
@@ -59,7 +56,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
      */
     field: {
       type: 'stringEnum',
-      model: types.enumeration('LDColorField', [...LD_COLOR_FIELDS]),
+      model: types.enumeration('LDColorField', ['r2', 'dprime']),
       defaultValue: 'r2',
       description: 'the statistic the cells are, r2 or dprime',
     },

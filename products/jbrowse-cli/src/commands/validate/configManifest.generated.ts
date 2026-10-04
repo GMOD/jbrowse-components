@@ -5376,8 +5376,47 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "ldMetric",
-          "type": "LDMetric"
+          "name": "color",
+          "type": "LDColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "LDColorField"
+            },
+            {
+              "name": "scale",
+              "type": "(LDColorScale | undefined)"
+            },
+            {
+              "name": "scheme",
+              "type": "(ColorScheme | undefined)"
+            },
+            {
+              "name": "reverse",
+              "type": "(boolean | undefined)"
+            },
+            {
+              "name": "domainMin",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMax",
+              "type": "(number | undefined)"
+            }
+          ],
+          "fieldPresets": {
+            "r2": {
+              "scale": "linear",
+              "scheme": "reds",
+              "title": "R²"
+            },
+            "dprime": {
+              "scale": "linear",
+              "scheme": "blues",
+              "title": "D'"
+            }
+          },
+          "fieldDefault": "r2"
         },
         {
           "name": "maxVariantSeparation",
@@ -5399,6 +5438,9 @@ export const configManifest: ConfigManifest = {
           "name": "variantLayout",
           "type": "VariantLayout"
         }
+      ],
+      "legacyKeys": [
+        "ldMetric"
       ],
       "stateModelProps": [
         "id",

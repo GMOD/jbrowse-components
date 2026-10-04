@@ -7118,6 +7118,53 @@
       },
       "unevaluatedProperties": false
     },
+    "LDColor": {
+      "title": "LDColor",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "field": {
+          "description": "the statistic the cells are, r2 or dprime.",
+          "enum": ["r2", "dprime"],
+          "default": "r2"
+        },
+        "scale": {
+          "description": "linear, the one scale; unset is linear.",
+          "const": "linear"
+        },
+        "scheme": {
+          "description": "the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime.",
+          "enum": [
+            "viridis",
+            "magma",
+            "inferno",
+            "cividis",
+            "juicebox",
+            "fall",
+            "reds",
+            "blues",
+            "redblue",
+            "purpleorange"
+          ]
+        },
+        "reverse": {
+          "description": "turns the scheme's ramp round; unset reverses a scheme dark at its low end.",
+          "type": "boolean"
+        },
+        "domainMin": {
+          "description": "the value the bottom colour paints, everything below it too; unset is 0.",
+          "type": "number"
+        },
+        "domainMax": {
+          "description": "the value the top colour paints, everything above it too; unset is 1.",
+          "type": "number"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LDTrackDisplaySlots": {
       "type": "object",
       "properties": {
@@ -7141,9 +7188,8 @@
           "type": "number",
           "default": 100
         },
-        "ldMetric": {
-          "enum": ["r2", "dprime"],
-          "default": "r2"
+        "color": {
+          "$ref": "#/$defs/LDColor"
         },
         "maxVariantSeparation": {
           "type": "number",
@@ -7167,6 +7213,10 @@
         "variantLayout": {
           "enum": ["genomic", "columns"],
           "default": "columns"
+        },
+        "ldMetric": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -10039,8 +10089,8 @@
             "lineZoneHeight": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/lineZoneHeight"
             },
-            "ldMetric": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/ldMetric"
+            "color": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/color"
             },
             "maxVariantSeparation": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxVariantSeparation"
@@ -10056,6 +10106,9 @@
             },
             "variantLayout": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/variantLayout"
+            },
+            "ldMetric": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/ldMetric"
             }
           },
           "patternProperties": {

@@ -361,7 +361,6 @@ exports[`every registered schema slot default 1`] = `
   "display: DotplotDisplay": {},
   "display: LDTrackDisplay": {
     "height": "number = 400",
-    "ldMetric": "stringEnum = "r2" of ["r2","dprime"]",
     "lineZoneHeight": "number = 100",
     "maxVariantSeparation": "number = 0",
     "showLabels": "boolean = false",

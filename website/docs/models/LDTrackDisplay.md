@@ -60,7 +60,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;{ id: IOptionalIType&lt;…&gt;;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;{ id: IOptionalIType&lt;…&gt;; displayName: IMaybe&lt;…&gt;; minimized: IOptionalIType&lt;…&gt;; }, { ...; }&gt;&gt; &amp; ... 27 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> |  | LDTrackDisplay |
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> |  | LDTrackDisplay |
 | <span id="getter-linezoneheight">**lineZoneHeight**</span><br><code>number</code> |  | LDTrackDisplay |
-| <span id="getter-ldmetric">**ldMetric**</span><br><code>LDMetric</code> |  | LDTrackDisplay |
+| <span id="getter-colorfield">**colorField**</span><br><code>LDMetric</code> | `color.field`, the statistic the fetch asks the file for. | LDTrackDisplay |
 | <span id="getter-maxvariantseparation">**maxVariantSeparation**</span><br><code>number</code> |  | LDTrackDisplay |
 | <span id="getter-showverticalguides">**showVerticalGuides**</span><br><code>boolean</code> |  | LDTrackDisplay |
 | <span id="getter-showlabels">**showLabels**</span><br><code>boolean</code> |  | LDTrackDisplay |
@@ -75,7 +75,14 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-dprimeavailable">**dprimeAvailable**</span><br><code>boolean</code> |  | LDTrackDisplay |
 | <span id="getter-loadedldwindow">**loadedLDWindow**</span><br><code>number &#124; undefined</code> | The pair window the loaded matrix was computed at, or undefined for the whole triangle. The status bar names it: a pair past it is not drawn, which reads the same as no linkage on a light background. | LDTrackDisplay |
 | <span id="getter-focalsnpindex">**focalSnpIndex**</span><br><code>number</code> | Index of the focal SNP in `snps`, or -1. | LDTrackDisplay |
-| <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The metric's ramp, out of the LUT the cells are painted through. | LDTrackDisplay |
+| <span id="getter-colorencoding">**colorEncoding**</span><br><code>ContinuousRef</code> | The `color` object as it paints, under the preset of the metric the loaded values are, so a file serving the other column, and a stale triangle during a metric switch's refetch, keep the hue they have. | LDTrackDisplay |
+| <span id="getter-notices">**notices**</span><br><code>string[]</code> | What the `color` object says that cannot paint as written, as the corner indicator lists it: the same lines `plotProblems` and `jbrowse validate` report. | LDTrackDisplay |
+| <span id="getter-colorscheme">**colorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>"blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>"blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "reds" &#124; "viridis"</code></pre></dialog></span> |  | LDTrackDisplay |
+| <span id="getter-colorreverse">**colorReverse**</span><br><code>boolean</code> | `color.reverse`, or where unset whether the scheme runs dark at its low end. | LDTrackDisplay |
+| <span id="getter-colordomain">**colorDomain**</span><br><code>[number, number]</code> | The domain the statistic is coloured over: each pinned end holds, and an open one is the statistic's own 0 or 1. | LDTrackDisplay |
+| <span id="getter-colorramp">**colorRamp**</span><br><code>Uint8Array&lt;ArrayBufferLike&gt;</code> | The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the legend read this one table. It reads `colorScheme` and `colorReverse` rather than the encoding, so a domain edit re-uploads no texture. | LDTrackDisplay |
+| <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The ramp the cells paint through, titled by the loaded metric. An end pinned inside the statistic's 0 to 1 reads `≤` or `≥`. | LDTrackDisplay |
+| <span id="getter-renderstate">**renderState**</span><br><code>LDRenderState</code> |  | LDTrackDisplay |
 | <span id="getter-matrixtop">**matrixTop**</span><br><code>number</code> | The band above the matrix: the connector lines in columns, the labels at genomic positions when they are on, else nothing. | LDTrackDisplay |
 | <span id="getter-connectorlinecoords">**connectorLineCoords**</span><br><code>ConnectorCoord[]</code> | Each column tied to its SNP's genomic x, for the connector lines. | LDTrackDisplay |
 | <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |
@@ -181,7 +188,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="action-setfocalsnp">**setFocalSnp**</span><br><code>(snp: LDSnp &#124; undefined) =&gt; void</code> |  | LDTrackDisplay |
 | <span id="action-setlinezoneheight">**setLineZoneHeight**</span><br><code>(n: number) =&gt; void</code> |  | LDTrackDisplay |
-| <span id="action-setldmetric">**setLDMetric**</span><br><code>(metric: LDMetric) =&gt; void</code> |  | LDTrackDisplay |
+| <span id="action-setldmetric">**setLDMetric**</span><br><code>(metric: LDMetric) =&gt; void</code> | `color.field`, the statistic the cells are, which refetches. | LDTrackDisplay |
+| <span id="action-setcolorscheme">**setColorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "reds" &#124; "viridis") =&gt; void</code></pre></dialog></span> | The scheme, with `reverse` back to unset so it follows the scheme. | LDTrackDisplay |
 | <span id="action-setshowverticalguides">**setShowVerticalGuides**</span><br><code>(show: boolean) =&gt; void</code> |  | LDTrackDisplay |
 | <span id="action-setshowlabels">**setShowLabels**</span><br><code>(show: boolean) =&gt; void</code> |  | LDTrackDisplay |
 | <span id="action-setvariantlayout">**setVariantLayout**</span><br><code>(value: "columns" &#124; "genomic") =&gt; void</code> |  | LDTrackDisplay |
