@@ -66,7 +66,8 @@ The dotplot uses two genomes and the stack at the end adds four:
 odp's group database was built from five genomes, three of them on this page:
 the jellyfish, _Ephydatia_ and amphioxus. The comb jellies and the cladorhizid
 took no part in it. odp compares genomes two at a time, so the deposit holds one
-table per pair, each of them every reciprocal best protein hit between the two.
+table per pair, each listing every reciprocal best protein hit between its two
+genomes.
 
 A table's row is the gene pair, the group, where each gene sits, and the color:
 
@@ -92,9 +93,9 @@ python3 rbh_to_blocks.py EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plot
   --attributes gene_group color break_FET
 ```
 
-The helper prints how many of each genome's gene ids its `.chrom` placed. An
-ortholog from outside the BCnS families gets `.` in the group column, which the
-browser draws in grey.
+`rbh_to_blocks.py` prints how many of each genome's gene ids its `.chrom`
+placed. An ortholog from outside the BCnS families gets `.` in the group column,
+which the browser draws in grey.
 
 A `.blocks` row is the gene ids across the two genomes, then the attribute
 columns:
@@ -104,7 +105,7 @@ mRNA.RE04286  Em0019g38a  A1a  #C23D51  0.0000
 mRNA.RE14076  Em0019g57a  .    #000000  1.8213
 ```
 
-## Loading the genomes
+## Loading the jellyfish and sponge assemblies
 
 We'll load the two genomes of the dotplot. The genome FASTA needs a `.fai`
 beside it (`samtools faidx`), and its sequence names must match the table's
@@ -127,13 +128,12 @@ each.
 }
 ```
 
-## Loading the RES-EMU table as a synteny track
+## Loading the jellyfish-sponge table as a synteny track
 
-`attributeColumns` makes the last three columns reachable. Each name in it
-becomes a color-by mode named after the column, so `gene_group` becomes a mode;
-`color` is the palette the file puts beside each label, and the menu leaves it
-out of the modes. `break_FET` is odp's test of the row's chromosome pair, which
-the stack below reads as opacity.
+`attributeColumns` exposes the last three columns of the `.blocks` file.
+`gene_group` becomes a color-by mode named after it. `color` holds the palette
+odp chose for each group, so the menu leaves it out of the modes. `break_FET` is
+odp's test of the row's chromosome pair, which the stack below reads as opacity.
 
 ```json addtrack
 {
@@ -154,13 +154,13 @@ the stack below reads as opacity.
 The build script adds one such track per pair: this one for the dotplot, then
 one for each neighbouring pair of the six-genome stack.
 
-## One block per linkage group
+## Dotplot of jellyfish against sponge, colored by linkage group
 
 Open the jellyfish-against-sponge table as a dotplot and pick **gene_group**
 under **Color by value** on the palette button in the view header; the legend
 comes up with it. Then **Re-order chromosomes** on the view menu sorts the
 vertical genome's chromosomes by where their orthologs land along the horizontal
-one, turning one block per group into a diagonal. The same view as a session,
+one, turning one block per group into a diagonal. As a session, the same dotplot
 with the sponge's unplaced scaffolds left off its axis:
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
@@ -186,23 +186,23 @@ with the sponge's unplaced scaffolds left off its axis:
 }
 ```
 
-<Figure caption="Rhopilema against Ephydatia, every ortholog colored by the BCnS linkage group odp assigned it and the sponge chromosomes sorted against the jellyfish. Each group is one block where a jellyfish chromosome meets a sponge chromosome, and the blocks run along the diagonal. The grey points are the orthologs in no group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
+<Figure caption="Rhopilema (jellyfish) against Ephydatia (sponge), each ortholog colored by the BCnS linkage group odp assigned it, sponge chromosomes sorted against the jellyfish. Each group is one block where a jellyfish and a sponge chromosome meet, and the blocks run along the diagonal. Grey points are orthologs in no group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
 
-Inside a block the points fill the square: the order of genes along each
-chromosome has been shuffled, and which chromosome each gene sits on has not.
+Inside a block the points fill the square, because gene order along each
+chromosome has shuffled. Each gene stays on its chromosome.
 
-## Six genomes stacked
+## Stacking six genomes, ribbons colored by linkage group
 
-Figure 1d of the paper stacks the same tables: one row per genome, the ribbons
-between neighbours colored by group. The linear synteny view does that with one
-pair's track per band. The build script loads the pairs in the paper's order,
-two comb jellies over the jellyfish, amphioxus and two sponges, and the session
-below sets what the figure needs.
+Figure 1d of Schultz et al. 2023 stacks the same tables, one row per genome,
+with ribbons between neighbours colored by group. A linear synteny view does
+that with one pair's track per band. The build script loads the pairs in the
+paper's order, two comb jellies over the jellyfish, amphioxus and two sponges,
+and the session below sets what the figure needs.
 
 odp tests each pair of chromosomes for more shared orthologs than chance
 (Fisher's exact test, corrected for the number of pairs, in the `break_FET`
-column). Like the paper's figure, the stack draws an ortholog on a pair under
-0.05 at opacity 0.8 and the rest at 0.15.
+column). Like the paper's figure, the stack draws orthologs on a chromosome pair
+under 0.05 at opacity 0.8 and the rest at 0.15.
 
 Each setting in the session has a menu route except `fadeThinAlignmentsMode` and
 the `opacity` mapping:
@@ -264,7 +264,7 @@ the `opacity` mapping:
 }
 ```
 
-<Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, orthologs on significantly paired chromosomes solid and the rest faint. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome scatters over many jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
+<Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, solid on significantly paired chromosomes and faint elsewhere. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome scatters over many jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
 
 In the second band, between _Hormiphora_ and the jellyfish, far fewer grouped
 orthologs sit on a significant pair than in the other bands. Each comb jelly
@@ -272,8 +272,8 @@ chromosome mixes groups that match no jellyfish chromosome, and those orthologs
 draw faint. The two comb jellies agree with each other in the band above.
 
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
-running through them are expected. The cladorhizid took no part, and in the
-bottom band the groups still reach it as bundles.
+running through them are expected. The cladorhizid sponge took no part, and in
+the bottom band the groups still reach it as bundles.
 
 ## Checking the linkage-group counts against the odp tables
 
@@ -289,11 +289,11 @@ awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
   | sort | uniq -c | sort -rn
 ```
 
-Changing the file and the group in that command gives the counts behind the
-stack. In _Hormiphora_ (`HCA_RES`), even the chromosome holding the largest
-share of a group holds less than half of it, which is why most of the stack's
-second band is faint. In the cladorhizid (`CLAa_EMU`), which took no part in
-building the group database, most of each group still sits on one chromosome.
+Swapping in another table and group gives the counts behind the stack. In
+_Hormiphora_ (`HCA_RES`), even the chromosome holding the largest share of a
+group holds less than half of it, which is why most of the stack's second band
+is faint. In the cladorhizid (`CLAa_EMU`), which took no part in building the
+group database, most of each group still sits on one chromosome.
 
 ## Reproduce it end to end
 
