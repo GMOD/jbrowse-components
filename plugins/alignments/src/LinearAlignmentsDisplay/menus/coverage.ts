@@ -1,14 +1,17 @@
 import { radioItems } from '@jbrowse/core/ui/menuItems'
-import { makeCrossHatchItem, makeScoreSubMenu } from '@jbrowse/wiggle-core'
+import {
+  COVERAGE_AXIS_LABEL,
+  makeScoreAxisMenuItem,
+} from '@jbrowse/wiggle-core'
 
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 
 interface CoverageModel extends ScoreScaleModel {
+  id: string
   showCoverage: boolean
   coverageSnpMinFrequency: number
   setCoverageSnpMinFrequency: (fraction: number) => void
-  grid: boolean
-  setGrid: (grid: boolean) => void
 }
 
 // Fractions rather than a free-entry dialog: the useful settings are an order
@@ -36,41 +39,37 @@ function nearestSnpFrequencyOption(fraction: number) {
   ).value
 }
 
-// Single "Coverage" submenu: scale type, autoscale, min/max range dialog, and
-// the band's allele-fraction floor. The coverage band exposes the canonical
-// ScoreScaleModel shape, so this is the shared wiggle-core Score submenu
-// relabelled "Coverage". The on/off toggle lives in the "Show..." menu (see
-// reads.ts) rather than being duplicated here.
+// Two rows for the band: its axis, in the shared drawer widget, and its
+// allele-fraction floor, which is about what the bars are coloured with
+// rather than the scale. The on/off toggle lives in the "Show..." menu (see
+// reads.ts).
 //
-// Which is why the whole submenu greys out with the band hidden. Every setting
-// in it feeds the band's draw and its hit test and nothing else, so with
-// `showCoverage` off this is four live controls over a band that isn't there —
-// and unlike the sashimi and read-connection menus, which lead with their own
-// visibility toggle, there is nothing in here that could turn it back on. The
-// gate names that switch instead.
-export function getCoverageMenuItem(model: CoverageModel) {
-  return makeScoreSubMenu(model, {
-    label: 'Coverage',
-    disabled: !model.showCoverage,
-    disabledHelpText:
-      'These settings scale the coverage band — turn on "Show coverage" first',
-    // After the range controls, not before: this is about what the bars are
-    // coloured with, and reads as a footnote to the scale rather than a peer of
-    // it. At depth 500 every sequencing error paints a sliver, so without a
-    // floor the band carries a permanent rainbow — the pileup fades those
-    // through `featureFrequencyThreshold` and the band applied nothing.
-    trailingItems: [
-      makeCrossHatchItem(model),
-      {
-        label: 'Color SNPs above...',
-        subMenu: radioItems(
-          SNP_FREQUENCY_OPTIONS,
-          nearestSnpFrequencyOption(model.coverageSnpMinFrequency),
-          v => {
-            model.setCoverageSnpMinFrequency(Number(v))
-          },
-        ),
-      },
-    ],
-  })
+// Both grey out with the band hidden: every setting here feeds the band's
+// draw and its hit test and nothing else, and neither row could turn it back
+// on, so each names that switch instead. At depth 500 every sequencing error
+// paints a sliver, so without a floor the band carries a permanent rainbow.
+const BAND_HIDDEN_HELP =
+  'These settings scale the coverage band — turn on "Show coverage" first'
+
+export function getCoverageMenuItems(model: CoverageModel): MenuItem[] {
+  const disabled = !model.showCoverage
+  return [
+    makeScoreAxisMenuItem(model, {
+      label: COVERAGE_AXIS_LABEL,
+      disabled,
+      disabledHelpText: BAND_HIDDEN_HELP,
+    }),
+    {
+      label: 'Color SNPs above...',
+      disabled,
+      disabledHelpText: BAND_HIDDEN_HELP,
+      subMenu: radioItems(
+        SNP_FREQUENCY_OPTIONS,
+        nearestSnpFrequencyOption(model.coverageSnpMinFrequency),
+        v => {
+          model.setCoverageSnpMinFrequency(Number(v))
+        },
+      ),
+    },
+  ]
 }

@@ -26,7 +26,8 @@
     "./chrome": "./src/chrome.ts",
     "./constants": "./src/constants.ts",
     "./normalize": "./src/normalize.ts",
-    "./renderingBackendTypes": "./src/renderingBackendTypes.ts"
+    "./renderingBackendTypes": "./src/renderingBackendTypes.ts",
+    "./scoreAxisWidget": "./src/ScoreAxisWidget/index.ts"
   },
   "files": [
     "esm"
@@ -65,7 +66,8 @@
       "./chrome": "./esm/chrome.js",
       "./constants": "./esm/constants.js",
       "./normalize": "./esm/normalize.js",
-      "./renderingBackendTypes": "./esm/renderingBackendTypes.js"
+      "./renderingBackendTypes": "./esm/renderingBackendTypes.js",
+      "./scoreAxisWidget": "./esm/ScoreAxisWidget/index.js"
     }
   },
   "sideEffects": false

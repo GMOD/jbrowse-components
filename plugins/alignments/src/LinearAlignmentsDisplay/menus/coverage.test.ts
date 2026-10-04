@@ -1,21 +1,18 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
-import { getCoverageMenuItem } from './coverage.ts'
+import { getCoverageMenuItems } from './coverage.ts'
 
-// Every setting in this submenu scales the coverage band's draw and its hit
-// test and reaches nothing else, and — unlike the sashimi and read-connection
-// menus — it carries no visibility toggle of its own, so with the band hidden
-// it is a submenu of controls with no way back. It greys out and names the
-// switch instead.
+// Both rows scale or colour the coverage band and reach nothing else, and
+// neither carries the band's visibility toggle, so with the band hidden they
+// grey out and name the switch instead.
 function menu(showCoverage: boolean, coverageSnpMinFrequency = 0) {
-  return getCoverageMenuItem({
+  return getCoverageMenuItems({
+    id: 'd1',
     showCoverage,
     autoscaleRange: undefined,
     autoscaledDomain: undefined,
     coverageSnpMinFrequency,
     setCoverageSnpMinFrequency: () => {},
-    grid: false,
-    setGrid: () => {},
     scaleType: 'linear',
     scaleZero: true,
     domainQuantile: 1,
@@ -33,15 +30,23 @@ function menu(showCoverage: boolean, coverageSnpMinFrequency = 0) {
   })
 }
 
-test('the coverage submenu greys out with the band hidden', () => {
-  expect(menu(false)).toMatchObject({
-    disabled: true,
-    disabledHelpText: expect.stringContaining('Show coverage'),
-  })
+test('the coverage rows grey out with the band hidden', () => {
+  for (const row of menu(false)) {
+    expect(row).toMatchObject({
+      disabled: true,
+      disabledHelpText: expect.stringContaining('Show coverage'),
+    })
+  }
 })
 
-test('the coverage submenu is live with the band shown', () => {
-  expect(menu(true)).toMatchObject({ disabled: false })
+test('the coverage rows are live with the band shown', () => {
+  expect(menu(true).map(row => 'label' in row && row.label)).toEqual([
+    'Coverage axis...',
+    'Color SNPs above...',
+  ])
+  for (const row of menu(true)) {
+    expect(row).toMatchObject({ disabled: false })
+  }
 })
 
 // The floor is a plain number a config can declare, so it need not be one of the
@@ -49,9 +54,7 @@ test('the coverage submenu is live with the band shown', () => {
 // track configured at 0.15 renders five unticked rows over a floor that is in
 // effect. Ties go to the lower row.
 function tickedSnpFrequencyLabels(coverageSnpMinFrequency: number) {
-  const item = menu(true, coverageSnpMinFrequency)
-  const rows = 'subMenu' in item ? resolveSubMenu(item) : []
-  const group = rows.find(
+  const group = menu(true, coverageSnpMinFrequency).find(
     row => 'label' in row && row.label === 'Color SNPs above...',
   )
   const options = group && 'subMenu' in group ? resolveSubMenu(group) : []

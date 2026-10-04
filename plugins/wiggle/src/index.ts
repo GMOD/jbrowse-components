@@ -1,4 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
+import { registerScoreAxisWidget } from '@jbrowse/wiggle-core/scoreAxisWidget'
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension/index.ts'
@@ -29,6 +30,7 @@ export default class WigglePlugin extends Plugin {
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
     RenderMultiWiggleDataRPCF(pm)
+    registerScoreAxisWidget(pm)
 
     pm.addRpcMethod(() => new MultiWiggleGetScoreMatrix(pm))
     pm.addRpcMethod(() => new MultiWiggleClusterScoreMatrix(pm))

@@ -5,7 +5,6 @@ import {
   findMenuItem,
   makeEmptyAlignmentsResult,
   makeEmptyPileupData,
-  menuSubItems,
 } from './testUtils.ts'
 
 function coverageDisplay(depth: number, pileUp = depth) {
@@ -96,15 +95,14 @@ test('minimalTicks labels only the ends of the coverage axis', () => {
   ])
 })
 
-test('the Coverage menu toggles the grid', () => {
+// The Coverage axis widget's Grid lines box writes this setter.
+test('the grid setter reaches the coverage axis, and the menu offers the widget', () => {
   const display = coverageDisplay(100)
-  const coverage = menuSubItems(display.trackMenuItems(), 'Coverage')
-  const hatches = findMenuItem(coverage, 'Show cross hatches')
-  expect(hatches).toBeDefined()
+  expect(
+    findMenuItem(display.trackMenuItems(), 'Coverage axis...'),
+  ).toBeDefined()
   expect(coverageAxis(display).grid).toBe(false)
-  if (hatches && 'onClick' in hatches) {
-    hatches.onClick()
-  }
+  display.setGrid(true)
   expect(coverageAxis(display).grid).toBe(true)
 })
 

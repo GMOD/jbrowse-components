@@ -117,7 +117,7 @@ test('the track menu carries the GC parameters beside the plot', async () => {
     i => i.label,
   )
   expect(labels).toEqual(
-    expect.arrayContaining(['GC parameters', 'GC skew', 'Score']),
+    expect.arrayContaining(['GC parameters', 'GC skew', 'Y axis...']),
   )
 })
 

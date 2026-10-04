@@ -82,7 +82,6 @@ describe('the wiggle display Clustering submenu', () => {
       'Tree branch lengths',
       'Show row separators',
       'Show row labels',
-      'Show cross hatches',
     ])
   })
 
@@ -207,7 +206,7 @@ describe('the wiggle display track menu', () => {
     const { display } = makeDisplay({ renderingType: 'density' })
     display.configuration.setSlot('summaryScoreMode', 'whiskers')
     const modes = subMenuOf(
-      subMenuOf(display.trackMenuItems(), 'Score'),
+      subMenuOf(display.trackMenuItems(), 'Resolution'),
       'Summary score mode',
     )
 
@@ -224,10 +223,13 @@ describe('the wiggle display track menu', () => {
   // One source needs no key, and a faceted track names its sources beside
   // their rows
   it('offers the legend toggle only where a color key means anything', () => {
-    const offered = (display: { trackMenuItems: () => MenuItem[] }) =>
-      labels(subMenuOf(display.trackMenuItems(), 'Show...')).includes(
-        'Show legend',
+    const offered = (display: { trackMenuItems: () => MenuItem[] }) => {
+      const items = display.trackMenuItems()
+      return (
+        labels(items).includes('Show...') &&
+        labels(subMenuOf(items, 'Show...')).includes('Show legend')
       )
+    }
 
     expect(offered(makeDisplay({ faceted: false }).display)).toBe(true)
     expect(

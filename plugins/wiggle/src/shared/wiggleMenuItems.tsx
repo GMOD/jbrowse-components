@@ -1,7 +1,6 @@
 import { getSlotDefinition } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
-import { makeScoreSubMenu } from '@jbrowse/wiggle-core'
 import {
   makePointSizeSubMenu,
   makeResolutionSubMenuItem,
@@ -19,7 +18,6 @@ import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 
 const LAYOUTS = [
   ['rows', 'Multi-row'],
@@ -181,6 +179,7 @@ export function makeResolutionSubMenu(self: WithResolution): MenuItem[] {
           onReset: () => {
             self.setResolution(1)
           },
+          trailingItems: [makeSummaryScoreModeItem(self)],
         }),
       ]
     : []
@@ -193,36 +192,24 @@ const SUMMARY_SCORE_MODES = [
   { value: 'whiskers', label: 'Whiskers' },
 ]
 
-function makeSummaryScoreModeSubMenu(self: WithResolution): MenuItem[] {
-  return self.hasResolution
-    ? [
-        {
-          label: 'Summary score mode',
-          subMenu: radioItems(
-            // density maps score to color rather than height, so it has no
-            // whiskers presentation at all — offering it would check a mode
-            // that neither the plot nor the score domain uses. The radio
-            // instead follows `effectiveSummaryScoreMode`, which is the
-            // average a whiskers-configured density track really draws.
-            self.isDensityMode
-              ? SUMMARY_SCORE_MODES.filter(m => m.value !== 'whiskers')
-              : SUMMARY_SCORE_MODES,
-            self.effectiveSummaryScoreMode,
-            v => {
-              self.setSummaryScoreMode(v)
-            },
-          ),
-        },
-      ]
-    : []
-}
-
-// The one Score submenu both wiggle displays build: summary score mode leads
-// it, then the shared scale-type / autoscale / min-max rows.
-export function makeWiggleScoreSubMenu(
-  self: WithResolution & ScoreScaleModel,
-): MenuItem {
-  return makeScoreSubMenu(self, {
-    leadingItems: makeSummaryScoreModeSubMenu(self),
-  })
+// In the Resolution submenu: both say how the fetched bins are read, and both
+// exist only where the adapter serves bins.
+function makeSummaryScoreModeItem(self: WithResolution): MenuItem {
+  return {
+    label: 'Summary score mode',
+    subMenu: radioItems(
+      // density maps score to color rather than height, so it has no
+      // whiskers presentation at all — offering it would check a mode
+      // that neither the plot nor the score domain uses. The radio
+      // instead follows `effectiveSummaryScoreMode`, which is the
+      // average a whiskers-configured density track really draws.
+      self.isDensityMode
+        ? SUMMARY_SCORE_MODES.filter(m => m.value !== 'whiskers')
+        : SUMMARY_SCORE_MODES,
+      self.effectiveSummaryScoreMode,
+      v => {
+        self.setSummaryScoreMode(v)
+      },
+    ),
+  }
 }

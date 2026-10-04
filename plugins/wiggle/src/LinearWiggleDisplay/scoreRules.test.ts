@@ -1,5 +1,4 @@
 import { setConf } from '@jbrowse/core/configuration'
-import { resolveSubMenu } from '@jbrowse/core/ui'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -116,25 +115,23 @@ it('stops drawing rules in density mode', () => {
   expect(ruleMarksOf(display)).toEqual([])
 })
 
-function scoreMenuLabels(display: { trackMenuItems: () => MenuItem[] }) {
-  const score = display
+function menuLabels(display: { trackMenuItems: () => MenuItem[] }) {
+  return display
     .trackMenuItems()
-    .find(item => 'label' in item && item.label === 'Score')
-  return score && 'subMenu' in score
-    ? resolveSubMenu(score).flatMap(item =>
-        'label' in item ? [item.label] : [],
-      )
-    : []
+    .flatMap(item => ('label' in item ? [item.label] : []))
 }
 
 // Density maps the score to colour under one ramp, and to a row's own
-// colour where the source brings one: neither has a band for a rule to cross.
+// colour where the source brings one: neither has a band for a rule to cross,
+// so the axis widget offers no reference lines, and the row names a range.
 it('offers the reference lines only where the rules draw', () => {
   const display = makeDisplay()
-  expect(scoreMenuLabels(display)).toContain('Reference lines (2)...')
+  expect(display.scoreRulesDrawn).toBe(true)
+  expect(menuLabels(display)).toContain('Y axis...')
   display.setRenderingType('density')
   expect(display.valueScales).toEqual([])
-  expect(scoreMenuLabels(display)).not.toContain('Reference lines (2)...')
+  expect(display.scoreRulesDrawn).toBe(false)
+  expect(menuLabels(display)).toContain('Score range...')
 
   const coloured = makeDisplay(
     TWO_RULES,
@@ -145,7 +142,7 @@ it('offers the reference lines only where the rules draw', () => {
   )
   coloured.setRenderingType('density')
   expect(coloured.valueScales[0]!.bandTops).toEqual([])
-  expect(scoreMenuLabels(coloured)).not.toContain('Reference lines (2)...')
+  expect(coloured.scoreRulesDrawn).toBe(false)
 })
 
 // Density spends the domain on its color ramp instead of on height, so lifting

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 
-import { SubmitDialog } from '@jbrowse/core/ui'
 import { isCssColor } from '@jbrowse/core/util/colorBits'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Button, IconButton, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { writeThrough } from './writeThrough.ts'
+
+import type { ScoreAxisDisplay } from './types.ts'
 import type { ValueScaleRule } from '@jbrowse/display-ui'
 
 interface Row {
@@ -26,58 +28,57 @@ function colorOk({ color }: Row) {
   return color.trim() === '' || isCssColor(color)
 }
 
-/**
- * The score menu's editor for `scales.y.rules`: one row per reference line,
- * its value on the plot's own scale, its label and its colour. An empty colour
- * is the display's default, and removing every row removes every line.
- */
-export default observer(function SetScoreRulesDialog({
-  model,
-  handleClose,
-}: {
-  model: {
-    scoreRules: ValueScaleRule[]
-    setScoreRules: (rules: ValueScaleRule[]) => void
+function ruleOf(row: Row): ValueScaleRule {
+  return {
+    value: Number(row.value),
+    ...(row.label ? { label: row.label } : {}),
+    ...(row.color.trim() ? { color: row.color.trim() } : {}),
   }
-  handleClose: () => void
+}
+
+/**
+ * `scales.y.rules`, one row per line: its value on the plot's own scale, its
+ * label and its colour, an empty colour taking the display's. The lines
+ * redraw as soon as every row reads; a half-typed row waits.
+ */
+export default observer(function ReferenceLines({
+  display,
+}: {
+  display: ScoreAxisDisplay
 }) {
-  const [rows, setRows] = useState(() => model.scoreRules.map(rowOf))
+  const [rows, setRows] = useState(() => (display.scoreRules ?? []).map(rowOf))
+  const commit = (next: Row[]) => {
+    setRows(next)
+    if (next.every(row => valueOk(row) && colorOk(row))) {
+      writeThrough(display, () => {
+        display.setScoreRules?.(next.map(ruleOf))
+      })
+    }
+  }
   const setRow = (index: number, patch: Partial<Row>) => {
-    setRows(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)))
+    commit(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)))
   }
   return (
-    <SubmitDialog
-      open
-      title="Reference lines"
-      submitDisabled={!rows.every(row => valueOk(row) && colorOk(row))}
-      onCancel={handleClose}
-      onSubmit={() => {
-        model.setScoreRules(
-          rows.map(row => ({
-            value: Number(row.value),
-            ...(row.label ? { label: row.label } : {}),
-            ...(row.color.trim() ? { color: row.color.trim() } : {}),
-          })),
-        )
-        handleClose()
-      }}
-    >
-      <Typography>
-        A horizontal line at each value, on the same scale as the plot
-      </Typography>
+    <div>
+      <Typography variant="body2">Reference lines</Typography>
       {rows.map((row, index) => (
         // eslint-disable-next-line @eslint-react/no-array-index-key -- rows have no identity but their position
-        <div key={index} style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+        <div key={index} style={{ display: 'flex', gap: 8, marginTop: 4 }}>
           <TextField
             label="Value"
+            size="small"
+            variant="standard"
             value={row.value}
             error={!valueOk(row)}
+            slotProps={{ htmlInput: { inputMode: 'decimal' } }}
             onChange={event => {
               setRow(index, { value: event.target.value })
             }}
           />
           <TextField
             label="Label"
+            size="small"
+            variant="standard"
             value={row.label}
             onChange={event => {
               setRow(index, { label: event.target.value })
@@ -85,6 +86,8 @@ export default observer(function SetScoreRulesDialog({
           />
           <TextField
             label="Color"
+            size="small"
+            variant="standard"
             value={row.color}
             error={!colorOk(row)}
             onChange={event => {
@@ -92,22 +95,24 @@ export default observer(function SetScoreRulesDialog({
             }}
           />
           <IconButton
-            aria-label="remove line"
+            aria-label="Remove line"
+            size="small"
             onClick={() => {
-              setRows(rows.filter((_, i) => i !== index))
+              commit(rows.filter((_, i) => i !== index))
             }}
           >
-            <DeleteIcon />
+            <DeleteIcon fontSize="small" />
           </IconButton>
         </div>
       ))}
       <Button
+        size="small"
         onClick={() => {
           setRows([...rows, { value: '', label: '', color: '' }])
         }}
       >
         Add line
       </Button>
-    </SubmitDialog>
+    </div>
   )
 })

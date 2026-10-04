@@ -1,37 +1,23 @@
-import { lazy } from 'react'
-
-import {
-  checkboxItem,
-  radioItems,
-  toggleItem,
-} from '@jbrowse/core/ui/menuItems'
-import { getDialogHost } from '@jbrowse/core/util'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 
-import { autoscaleGroupMembers, autoscalePeers } from './autoscaleGroup.ts'
-import { VALUE_SCALE_TYPES } from './valueScaleConfigSchema.ts'
+import { SCORE_AXIS_WIDGET } from './ScoreAxisWidget/constants.ts'
 
-import type { AutoscalePeer } from './autoscaleGroup.ts'
-import type { CheckboxMenuItem, MenuItem } from '@jbrowse/core/ui'
+import type { NormalMenuItem } from '@jbrowse/core/ui'
 import type { ValueScaleRule } from '@jbrowse/display-ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-const AutoscaleGroupDialog = lazy(() => import('./AutoscaleGroupDialog.tsx'))
-const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
-const SetScoreRulesDialog = lazy(() => import('./SetScoreRulesDialog.tsx'))
-
 // Canonical "thing that has a value scale" — every display with one (wiggle,
 // multi-wiggle, manhattan, alignments coverage, the mark display) exposes this
-// exact shape so the shared Score menu, scale submenu, and SetMinMaxDialog
-// consume it without per-display adapters. Two pairs, and which one a consumer
-// wants is which question it is asking: manualMinScore/manualMaxScore is what
-// the config really pins (undefined = nothing pinned), which is what the dialog
-// round-trips and what the menu captions itself with;
-// minScoreBound/maxScoreBound is where each end of the axis resolved to
-// (undefined = autoscale this end), which is what a domain computes from.
-// hasManualScoreBounds is the third question, and the only one of the three that
-// survives a `defaultScoreDomain` override. All of them come from
-// `ScoreAxisMixin`.
+// exact shape, so the Y axis row and its drawer widget consume it without
+// per-display adapters. Two pairs, and which one a consumer wants is which
+// question it is asking: manualMinScore/manualMaxScore is what the config
+// really pins (undefined = nothing pinned), which is what the widget's fields
+// show and what the row captions itself with; minScoreBound/maxScoreBound is
+// where each end of the axis resolved to (undefined = autoscale this end),
+// which is what a domain computes from. hasManualScoreBounds is the third
+// question, and the only one of the three that survives a `defaultScoreDomain`
+// override. All of them come from `ScoreAxisMixin`.
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
   scaleZero: boolean
@@ -59,198 +45,57 @@ export interface ScoreRulesModel {
   setScoreRules: (rules: ValueScaleRule[]) => void
 }
 
-const SCALE_TYPE_LABELS: Record<(typeof VALUE_SCALE_TYPES)[number], string> = {
-  linear: 'Linear scale',
-  log: 'Log scale',
-  symlog: 'Symlog scale (allows zero)',
-}
+// Quoted by the docs' click paths, so literal strings.
+export const Y_AXIS_LABEL = 'Y axis'
+export const COVERAGE_AXIS_LABEL = 'Coverage axis'
+export const SCORE_RANGE_LABEL = 'Score range'
 
-export function makeScaleTypeSubMenu(self: {
-  scaleType: string
-  setScaleType: (v: string) => void
-}): MenuItem {
-  return {
-    label: 'Scale type',
-    subMenu: radioItems(
-      VALUE_SCALE_TYPES.map(value => ({
-        value,
-        label: SCALE_TYPE_LABELS[value],
-      })),
-      self.scaleType,
-      v => {
-        self.setScaleType(v)
-      },
-    ),
-  }
-}
-
-// Quoted by the docs' click paths, so one literal string.
-export const CLIP_OUTLIERS_LABEL = 'Clip outliers'
-
-// One checkbox rather than a radio over modes: what a reader decides is whether
-// a spike may take the axis, and the quantile it fences at is the config's.
-export function makeClipOutliersItem(self: {
-  domainQuantile: number
-  clipQuantile: number
-  setDomainQuantile: (quantile: number) => void
-}): CheckboxMenuItem {
-  const clipsAt =
-    self.domainQuantile < 1 ? self.domainQuantile : self.clipQuantile
-  const percent = Math.round(clipsAt * 100)
-  return toggleItem(
-    CLIP_OUTLIERS_LABEL,
-    self.domainQuantile < 1,
-    on => {
-      self.setDomainQuantile(on ? self.clipQuantile : 1)
-    },
-    {
-      helpText: `A value that would stretch the axis to over twice the height the other ${percent}% of values need is cut at the edge and marked in red, so one spike no longer flattens the rest.`,
-    },
-  )
-}
-
-// The label shows the PINNED pair, `auto` for an end nobody pinned: the
-// resolved pair captioned every GC content track "(0 – 1)" off its default
-// domain. An axis let off 0 says so too, since the dialog is where that is
-// set.
-export function makeSetMinMaxScoreItem(
-  self: ScoreScaleModel & Partial<ScoreRulesModel>,
-): MenuItem {
-  const { manualMinScore, manualMaxScore } = self
-  const offerZero = rulesABand(self)
-  const captions = [
-    ...(self.hasManualScoreBounds
-      ? [`${manualMinScore ?? 'auto'} – ${manualMaxScore ?? 'auto'}`]
-      : []),
-    ...(offerZero && !self.scaleZero ? ['spans data'] : []),
-  ]
-  return {
-    label: captions.length
-      ? `Set min/max score (${captions.join(', ')})...`
-      : 'Set min/max score...',
-    onClick: () => {
-      getDialogHost(self).queueDialog(handleClose => [
-        SetMinMaxDialog,
-        { model: self, offerZero, handleClose },
-      ])
-    },
-  }
-}
-
-export function makeCrossHatchItem(self: {
-  grid: boolean
-  setGrid: (grid: boolean) => void
-}): MenuItem {
-  return checkboxItem('Show cross hatches', self.grid, () => {
-    self.setGrid(!self.grid)
-  })
-}
-
-// The single Score submenu every quantitative display builds. Composition is
-// capability-driven: `leadingItems` lets wiggle prepend its Resolution/Summary
-// submenus, `trailingItems` appends what belongs after the range controls rather
-// than before them (the alignments band's allele-fraction floor).
-export interface ScoreSubMenuOptions {
+export interface ScoreAxisMenuItemOptions {
   label?: string
-  leadingItems?: MenuItem[]
-  trailingItems?: MenuItem[]
-  // Greys the whole submenu out — for a display whose band can be hidden, where
-  // every setting in here scales something that isn't drawn (the alignments
-  // coverage band). Taken as a pair so a caller cannot grey the menu out
-  // without saying which switch brings it back.
+  // Greys the row out — for a display whose band can be hidden, where the
+  // axis scales something that isn't drawn (the alignments coverage band).
+  // Taken as a pair so a caller cannot grey the row out without saying which
+  // switch brings it back.
   disabled?: boolean
   disabledHelpText?: string
 }
 
-// The count of the other tracks in the group is in the label, as the min/max
-// row carries its bounds: an axis that moves when another track pans is
-// something the reader has to be able to find the cause of.
-export function makeAutoscaleGroupItem(
-  self: IStateTreeNode & AutoscalePeer,
-): MenuItem {
-  const { autoscaleGroup } = self
-  const others =
-    autoscaleGroup === undefined
-      ? 0
-      : autoscaleGroupMembers(self, autoscaleGroup).length - 1
+// The caption carries only what the plot cannot show: a pinned end, `auto`
+// for the other, and a scale that isn't linear. The resolved pair would
+// caption every GC content track "(0 – 1)" off its default domain.
+function caption(self: ScoreScaleModel) {
+  const parts = [
+    ...(self.hasManualScoreBounds
+      ? [`${self.manualMinScore ?? 'auto'} – ${self.manualMaxScore ?? 'auto'}`]
+      : []),
+    ...(self.scaleType === 'linear' ? [] : [self.scaleType]),
+  ]
+  return parts.length ? ` (${parts.join(', ')})` : ''
+}
+
+/**
+ * The one track-menu row for a value scale. It opens the drawer widget that
+ * edits `scales.y` live — scale type, range, 0, outlier clipping, the axis a
+ * group shares, grid and reference lines — so the track redraws beside it.
+ */
+export function makeScoreAxisMenuItem(
+  self: ScoreScaleModel & { id: string },
+  opts: ScoreAxisMenuItemOptions = {},
+): NormalMenuItem {
+  const { label = Y_AXIS_LABEL, disabled, disabledHelpText } = opts
   return {
-    label:
-      others > 0
-        ? `Autoscale with other tracks (${others})...`
-        : 'Autoscale with other tracks...',
-    onClick: () => {
-      getDialogHost(self).queueDialog(handleClose => [
-        AutoscaleGroupDialog,
-        { model: self, handleClose },
-      ])
-    },
-  }
-}
-
-// Offered once the view holds another track with a value axis to share.
-function autoscalesInGroups<T extends IStateTreeNode>(
-  self: T & Partial<AutoscalePeer>,
-): self is T & AutoscalePeer {
-  return self.setAutoscaleGroup !== undefined && autoscalePeers(self).length > 0
-}
-
-function drawsScoreRules<T extends IStateTreeNode>(
-  self: T & Partial<ScoreRulesModel>,
-): self is T & ScoreRulesModel {
-  return (
-    self.scoreRulesDrawn === true &&
-    self.scoreRules !== undefined &&
-    self.setScoreRules !== undefined
-  )
-}
-
-// A density plot maps its score to colour and rules no band, so its domain
-// spans the values whatever `zero` says; the dialog offers it with the axis.
-function rulesABand(self: Partial<ScoreRulesModel>) {
-  return self.scoreRulesDrawn === true
-}
-
-// The count is in the label, as the min/max row carries its bounds: a dashed
-// line across a plot means nothing until the reader knows it was put there.
-export function makeSetScoreRulesItem(
-  self: IStateTreeNode & ScoreRulesModel,
-): MenuItem {
-  const count = self.scoreRules.length
-  return {
-    label: count > 0 ? `Reference lines (${count})...` : 'Reference lines...',
-    onClick: () => {
-      getDialogHost(self).queueDialog(handleClose => [
-        SetScoreRulesDialog,
-        { model: self, handleClose },
-      ])
-    },
-  }
-}
-
-export function makeScoreSubMenu(
-  self: ScoreScaleModel & Partial<ScoreRulesModel> & Partial<AutoscalePeer>,
-  opts: ScoreSubMenuOptions = {},
-): MenuItem {
-  const {
-    label = 'Score',
-    leadingItems = [],
-    trailingItems = [],
-    disabled,
-    disabledHelpText,
-  } = opts
-  return {
-    label,
+    label: `${label}${caption(self)}...`,
     icon: EqualizerIcon,
     disabled,
     disabledHelpText,
-    subMenu: [
-      ...leadingItems,
-      makeScaleTypeSubMenu(self),
-      makeClipOutliersItem(self),
-      makeSetMinMaxScoreItem(self),
-      ...(autoscalesInGroups(self) ? [makeAutoscaleGroupItem(self)] : []),
-      ...(drawsScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),
-      ...trailingItems,
-    ],
+    onClick: () => {
+      const session = getSession(self)
+      if (isSessionModelWithWidgets(session)) {
+        session.openWidget(SCORE_AXIS_WIDGET, 'scoreAxis', {
+          display: self.id,
+          label,
+        })
+      }
+    },
   }
 }

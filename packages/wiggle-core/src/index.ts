@@ -82,13 +82,16 @@ export {
 } from './pointMarker.ts'
 
 export {
-  makeClipOutliersItem,
-  makeCrossHatchItem,
-  makeScaleTypeSubMenu,
-  makeScoreSubMenu,
-  makeSetMinMaxScoreItem,
+  COVERAGE_AXIS_LABEL,
+  SCORE_RANGE_LABEL,
+  Y_AXIS_LABEL,
+  makeScoreAxisMenuItem,
 } from './scoreMenuItems.ts'
-export type { ScoreScaleModel, ScoreSubMenuOptions } from './scoreMenuItems.ts'
+export type {
+  ScoreAxisMenuItemOptions,
+  ScoreRulesModel,
+  ScoreScaleModel,
+} from './scoreMenuItems.ts'
 export { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 export type { ScoreScaleHost } from './ScoreScaleMixin.ts'

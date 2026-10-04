@@ -2,7 +2,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 import { autoscaleWith } from './autoscaleGroup.ts'
-import { makeAutoscaleGroupItem } from './scoreMenuItems.ts'
 
 const Display = types
   .compose(
@@ -142,18 +141,4 @@ test("a track joins a ticked track's group where it has none", () => {
     'depth',
     'depth',
   ])
-})
-
-test("the menu row counts the other tracks in this track's group", () => {
-  const [a, , c] = view(
-    { own: [0, 10], group: 'depth' },
-    { own: [5, 40], group: 'depth' },
-    { own: [0, 100] },
-  )
-  expect(makeAutoscaleGroupItem(a!)).toMatchObject({
-    label: 'Autoscale with other tracks (1)...',
-  })
-  expect(makeAutoscaleGroupItem(c!)).toMatchObject({
-    label: 'Autoscale with other tracks...',
-  })
 })

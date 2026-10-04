@@ -18,8 +18,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 import {
   DEFAULT_POINT_DIAMETER_PX,
-  makeCrossHatchItem,
-  makeScoreSubMenu,
+  makeScoreAxisMenuItem,
 } from '@jbrowse/wiggle-core'
 import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -85,7 +84,7 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
         self.openMarkPlotDialog()
       },
     },
-    makeScoreSubMenu(self),
+    makeScoreAxisMenuItem(self),
     ...makePointSizeSubMenu({
       label: 'Point size',
       applies: self.hasPointMark,
@@ -121,7 +120,6 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
       ...(self.drawsRows
         ? [...treeSidebarShowMenuItems(self), showRowLabelsMenuItem(self)]
         : []),
-      makeCrossHatchItem(self),
       legendCheckboxItem(self),
     ]),
   ]

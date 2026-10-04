@@ -475,22 +475,16 @@ test('the domain quantile scales.y names is the one the domain takes', () => {
   expect(clipped.domain![1]).toBeLessThan(10)
 })
 
-// The scale-type radio derives from `scales.y`'s three declared types, and
-// Clip outliers is on every value scale.
-test('the score menu offers the scale-type radio and Clip outliers', () => {
+// Every value scale opens the one Y axis widget, which holds the scale type
+// and Clip outliers among the rest.
+test('the track menu offers the Y axis row', () => {
   const { createDisplay } = createTestEnvironment([
     { mark: 'bar', encoding: { y: 'score' } },
   ])
   const { display } = createDisplay()
-  const score = display
-    .trackMenuItems()
-    .find(item => 'subMenu' in item && item.label === 'Score')!
-  const rows =
-    'subMenu' in score
-      ? resolveSubMenu(score).map(i => ('label' in i ? i.label : ''))
-      : []
-  expect(rows).toContain('Scale type')
-  expect(rows).toContain('Clip outliers')
+  expect(
+    display.trackMenuItems().map(item => ('label' in item ? item.label : '')),
+  ).toContain('Y axis...')
 })
 
 test('one end of the declared domain pins and the other autoscales', () => {

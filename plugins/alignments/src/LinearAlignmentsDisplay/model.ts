@@ -161,7 +161,7 @@ import {
   featureSpacingForHeight,
   getColorByMenuItem,
   getContextMenuItems,
-  getCoverageMenuItem,
+  getCoverageMenuItems,
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getGroupByMenuItem,
@@ -4243,7 +4243,7 @@ export default function stateModelFactory(
               disabled: !self.showPileup,
               disabledHelpText: 'Turn on "Show pileup" to change read height',
             }),
-            getCoverageMenuItem(self),
+            ...getCoverageMenuItems(self),
             ...densityTierMenuItems(self, {
               disabled: !self.showCoverage,
               disabledHelpText:

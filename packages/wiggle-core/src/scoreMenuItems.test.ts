@@ -1,200 +1,89 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
-import { makeClipOutliersItem, makeScoreSubMenu } from './scoreMenuItems.ts'
+import { makeScoreAxisMenuItem } from './scoreMenuItems.ts'
 import { scalesSchema, valueScaleSchema } from './valueScaleConfigSchema.ts'
 
-import type { ScoreScaleModel } from './scoreMenuItems.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { ValueScale } from '@jbrowse/display-ui'
 
-// A minimal ScoreScaleModel. `getSession` is only reached from an onClick, and
-// nothing here clicks, so the node-ness the interface asks for never gets used.
-// `hasManualScoreBounds` is derived rather than overridable so the double cannot
-// claim a manual bound the pinned pair does not hold — which is the state the
-// real mixin never produces and the state this file used to test against.
-function makeSelf(over: Partial<ScoreScaleModel> = {}) {
-  const self = {
-    scaleType: 'linear',
-    scaleZero: true,
-    domainQuantile: 1,
-    clipQuantile: 0.99,
-    manualMinScore: undefined,
-    manualMaxScore: undefined,
-    minScoreBound: undefined,
-    maxScoreBound: undefined,
-    autoscaledDomain: undefined,
-    setScaleType: () => {},
-    setScaleZero: () => {},
-    setDomainQuantile: () => {},
-    setMinScore: () => {},
-    setMaxScore: () => {},
-    ...over,
-  }
-  return {
-    ...self,
-    hasManualScoreBounds:
-      self.manualMinScore !== undefined || self.manualMaxScore !== undefined,
-  } as unknown as ScoreScaleModel
-}
-
-function labels(item: MenuItem) {
-  const sub = 'subMenu' in item ? resolveSubMenu(item) : []
-  return sub.map(i => ('label' in i ? i.label : ''))
-}
-
-describe('makeScoreSubMenu', () => {
-  it('offers the scale type, Clip outliers and the range', () => {
-    expect(labels(makeScoreSubMenu(makeSelf()))).toEqual([
-      'Scale type',
-      'Clip outliers',
-      'Set min/max score...',
-    ])
-  })
-
-  it('still captions itself with the pinned pair', () => {
-    expect(
-      labels(
-        makeScoreSubMenu(
-          makeSelf({
-            manualMinScore: 2,
-            minScoreBound: 2,
-          }),
-        ),
-      ),
-    ).toEqual([
-      'Scale type',
-      'Clip outliers',
-      'Set min/max score (2 – auto)...',
-    ])
-  })
-
-  // A density plot rules no band and its domain ignores `zero`, so the
-  // caption, like the dialog's checkbox, comes and goes with the axis.
-  it('captions an axis let off 0 where the scale rules a band', () => {
-    const withAxis = (scaleZero: boolean) => ({
-      ...makeSelf({ scaleZero }),
-      scoreRulesDrawn: true,
-      scoreRules: [],
-      setScoreRules: () => {},
-    })
-    expect(labels(makeScoreSubMenu(withAxis(true)))).toEqual([
-      'Scale type',
-      'Clip outliers',
-      'Set min/max score...',
-      'Reference lines...',
-    ])
-    expect(labels(makeScoreSubMenu(withAxis(false)))).toEqual([
-      'Scale type',
-      'Clip outliers',
-      'Set min/max score (spans data)...',
-      'Reference lines...',
-    ])
-    expect(labels(makeScoreSubMenu(makeSelf({ scaleZero: false })))).toEqual([
-      'Scale type',
-      'Clip outliers',
-      'Set min/max score...',
-    ])
-  })
-
-  it('names the percentile Clip outliers fences at, the one in force first', () => {
-    const helpOf = (over: Partial<ScoreScaleModel>) => {
-      const item = makeClipOutliersItem(makeSelf(over))
-      return 'helpText' in item ? item.helpText : undefined
-    }
-    expect(helpOf({ domainQuantile: 0.95 })).toContain('other 95%')
-    expect(helpOf({ domainQuantile: 1, clipQuantile: 0.99 })).toContain(
-      'other 99%',
-    )
-  })
-})
-
-// The above drives a plain object; this drives the real mixin, because the bug
-// this pins was invisible to a hand-written double. A display whose
-// `defaultScoreDomain` pins an end (GC content's [0,1]) resolves
-// `minScoreBound`/`maxScoreBound` to real numbers with both bounds still unset,
-// so a menu asking the resolved bounds "is a manual bound in force?" answers yes
-// on a freshly opened track — and captions the row with a pair nobody pinned.
 const testConfigSchema = ConfigurationSchema('TestScoreDisplay', {
-  scales: scalesSchema(
-    valueScaleSchema({
-      domainQuantile: 0.99,
-    }),
-  ),
+  scales: scalesSchema(valueScaleSchema({ domainQuantile: 0.99 })),
 })
 
-function makePinnedDomainDisplay() {
+function makeDisplay(defaultScoreDomain?: [number, number]) {
   return types
     .compose(
       'TestScoreDisplay',
       ScoreScaleMixin(),
-      types.model({ configuration: testConfigSchema }),
+      types.model({ id: 'd1', configuration: testConfigSchema }),
     )
     .views(() => ({
       get defaultScoreDomain(): [number | undefined, number | undefined] {
-        return [0, 1]
+        return defaultScoreDomain ?? [undefined, undefined]
       },
     }))
     .create({ configuration: {} })
 }
 
+const label = (display: ReturnType<typeof makeDisplay>, opts = {}) =>
+  makeScoreAxisMenuItem(display, opts).label
+
+describe('the Y axis row', () => {
+  it('names nothing while the axis follows the data on a linear scale', () => {
+    expect(label(makeDisplay())).toBe('Y axis...')
+  })
+
+  it('names a pinned end, auto for the other, and a non-linear scale', () => {
+    const display = makeDisplay()
+    display.setMinScore(190)
+    expect(label(display)).toBe('Y axis (190 – auto)...')
+    display.setScaleType('log')
+    expect(label(display)).toBe('Y axis (190 – auto, log)...')
+    display.setMinScore(undefined)
+    expect(label(display)).toBe('Y axis (log)...')
+  })
+
+  it('takes the label it is given', () => {
+    expect(label(makeDisplay(), { label: 'Coverage axis' })).toBe(
+      'Coverage axis...',
+    )
+  })
+
+  // A display whose `defaultScoreDomain` pins an end (GC content's [0, 1])
+  // resolves `minScoreBound`/`maxScoreBound` to real numbers with both bounds
+  // unset, so a row asking the resolved bounds would caption a fresh track
+  // with a pair nobody pinned.
+  it('captions nothing off a default domain, and only what is really set', () => {
+    const display = makeDisplay([0, 1])
+    expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 1])
+    expect(label(display)).toBe('Y axis...')
+    display.setMaxScore(0.75)
+    expect(label(display)).toBe('Y axis (auto – 0.75)...')
+    display.setMaxScore(undefined)
+    expect(display.maxScoreBound).toBe(1)
+    expect(label(display)).toBe('Y axis...')
+  })
+})
+
 test('Clip outliers re-ticks at the quantile its untick wrote over, not the default', () => {
-  const display = makePinnedDomainDisplay()
+  const display = makeDisplay()
   display.setDomainQuantile(0.95)
-  const clip = () => makeClipOutliersItem(display)
-  clip().onClick()
-  expect(display.domainQuantile).toBe(1)
-  expect(clip().helpText).toContain('other 95%')
-  clip().onClick()
+  display.setDomainQuantile(1)
+  expect(display.clipQuantile).toBe(0.95)
+  display.setDomainQuantile(display.clipQuantile)
   expect(display.domainQuantile).toBe(0.95)
 })
 
-describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
-  it('captions nothing while neither bound is set', () => {
-    const display = makePinnedDomainDisplay()
-    expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 1])
-    expect(labels(makeScoreSubMenu(display))).toEqual([
-      'Scale type',
-      'Clip outliers',
-      'Set min/max score...',
-    ])
-  })
-
-  it('captions once a bound is really set, and clearing takes it away', () => {
-    const display = makePinnedDomainDisplay()
-    display.setMaxScore(0.75)
-    expect(labels(makeScoreSubMenu(display))).toEqual([
-      'Scale type',
-      'Clip outliers',
-      'Set min/max score (auto – 0.75)...',
-    ])
-
-    display.setMinScore(undefined)
-    display.setMaxScore(undefined)
-    expect(display.maxScoreBound).toBe(1)
-    expect(labels(makeScoreSubMenu(display))).toEqual([
-      'Scale type',
-      'Clip outliers',
-      'Set min/max score...',
-    ])
-  })
-})
-
-// The reference lines are a member of the scale, so the one menu that writes
-// the scale offers them, and only where a scale it draws rules a band for them
-// to cross.
-describe('the reference lines row', () => {
-  const ruledSchema = ConfigurationSchema('TestRuledDisplay', {
-    scales: scalesSchema(valueScaleSchema()),
-  })
+// The reference lines are a member of the scale, offered where a scale the
+// display draws rules a band for them to cross.
+describe('scoreRulesDrawn', () => {
   const ruled = (bandTops?: number[]) =>
     types
       .compose(
         'TestRuledDisplay',
         ScoreScaleMixin(),
-        types.model({ configuration: ruledSchema }),
+        types.model({ configuration: testConfigSchema }),
       )
       .views(() => ({
         get valueScales(): ValueScale[] {
@@ -205,29 +94,22 @@ describe('the reference lines row', () => {
       }))
       .create({ configuration: {} })
 
-  it('is absent where the one scale is mapped to colour', () => {
-    expect(labels(makeScoreSubMenu(ruled([])))).not.toContain(
-      'Reference lines...',
-    )
+  it('is false where the one scale is mapped to colour', () => {
+    expect(ruled([]).scoreRulesDrawn).toBe(false)
   })
 
-  it('is absent where the display draws no scale', () => {
-    expect(labels(makeScoreSubMenu(makePinnedDomainDisplay()))).not.toContain(
-      'Reference lines...',
-    )
+  it('is false where the display draws no scale', () => {
+    expect(makeDisplay().scoreRulesDrawn).toBe(false)
   })
 
-  it('counts the lines it holds, and the writer takes the config forms', () => {
+  it('is true over a band, and the writer takes the config forms', () => {
     const display = ruled()
-    expect(labels(makeScoreSubMenu(display))).toContain('Reference lines...')
+    expect(display.scoreRulesDrawn).toBe(true)
     display.setScoreRules([7.3, { value: 5, label: 'suggestive' }])
     expect(display.scoreRules).toEqual([
       { value: 7.3 },
       { value: 5, label: 'suggestive' },
     ])
-    expect(labels(makeScoreSubMenu(display))).toContain(
-      'Reference lines (2)...',
-    )
     display.setScoreRules([])
     expect(display.scoreRules).toEqual([])
   })

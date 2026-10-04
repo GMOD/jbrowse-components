@@ -44,7 +44,11 @@ import {
   treeSidebarOffset,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
-import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
+import {
+  SCORE_RANGE_LABEL,
+  axisPlotBox,
+  makeScoreAxisMenuItem,
+} from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
@@ -67,7 +71,6 @@ import {
   makePointSizeMenuItems,
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
-  makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { WIGGLE_RENDERINGS } from '../util.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
@@ -867,8 +870,6 @@ export default function stateModelFactory(
                 showRowLabelsMenuItem(self),
               ]),
           ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
-          // density maps score to color, so it rules no band for hatches
-          ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
         ]
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
@@ -899,7 +900,10 @@ export default function stateModelFactory(
               ]
             : []),
           ...makeResolutionSubMenu(self),
-          makeWiggleScoreSubMenu(self),
+          makeScoreAxisMenuItem(
+            self,
+            self.isDensityMode ? { label: SCORE_RANGE_LABEL } : {},
+          ),
           ...makeShowSubMenu(showItems),
           // point size / line width are top-level submenus, each present only in
           // its respective scatter / line rendering

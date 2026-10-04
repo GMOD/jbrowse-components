@@ -4,7 +4,7 @@ export {
   copyFeatureInfo,
   withContextMenuFeature,
 } from './contextMenuFeature.ts'
-export { getCoverageMenuItem } from './coverage.ts'
+export { getCoverageMenuItems } from './coverage.ts'
 export {
   COMPACTNESS_PRESETS,
   NORMAL_PITCH,

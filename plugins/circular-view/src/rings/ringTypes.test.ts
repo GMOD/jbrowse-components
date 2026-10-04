@@ -343,7 +343,7 @@ test("a ring's track menu is under the view menu's Tracks item", async () => {
     subMenuOf(ring ? [ring] : [], 'ring').map(item =>
       'label' in item ? item.label : undefined,
     ),
-  ).toEqual(expect.arrayContaining(['Score']))
+  ).toEqual(expect.arrayContaining(['Y axis...']))
 }, 30000)
 
 // the ring canvas's first paint is the one an off-screen circle keeps
