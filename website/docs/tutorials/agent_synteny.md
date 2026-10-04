@@ -58,7 +58,7 @@ Set up the client as in [](/docs/agents), then run the four requests below.
 
 <Video src="/media/mcp/agent_synteny_take1.mp4" caption="A Claude Code session driving JBrowse Desktop: the agent aligns the two genomes, builds the comparison and dotplot, and navigates to what it found." />
 
-## Ask for the comparison
+## Ask the agent to align and open the two genomes
 
 The first request, in one sentence:
 
@@ -79,9 +79,8 @@ The aligner it runs:
 minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 ```
 
-At `-t 16` the whole-genome alignment takes about seven minutes, longer than the
-two-minute timeout on `run_javascript`, so the request above runs it in the
-background.
+The whole-genome alignment takes several minutes, longer than the two-minute
+timeout on `run_javascript`, so the request above runs it in the background.
 
 Indexing the PAF lets the browser read one region of it without parsing the
 whole file:
@@ -92,12 +91,12 @@ whole file:
 jbrowse make-pif sim_vs_mau.paf
 ```
 
-The config merges the two hosted ones, keeping each gene track and adding the
-alignment as a synteny track.
+The config the agent writes merges the two hosted ones, keeping each gene track
+and adding the alignment as a synteny track.
 
-Check the order of `assemblyNames` on the track it wrote. Your own pair takes
-the same track with its `uri` swapped for your `.pif.gz`, which needs its `.tbi`
-beside it, and both assembly names loaded:
+Check the order of `assemblyNames` on the synteny track the agent wrote. Your
+own pair takes the same track with its `uri` swapped for your `.pif.gz`, which
+needs its `.tbi` beside it, and both assembly names loaded:
 
 ```json addtrack
 {
@@ -132,10 +131,11 @@ which interleave the axes if drawn. Naming the arms gives one diagonal:
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
-Ask it to quantify what restricting the axes drops. Set the coloring to strand,
-so a reversed block draws in blue and a forward one in red.
+Ask the agent to quantify what restricting the axes drops. Add one more request,
+to color the dotplot by strand, so a reversed block draws in blue and a forward
+one in red.
 
-<Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, and a short reverse segment in blue where chr2R begins." src="/img/agent_synteny/dotplot_arms.png" />
+<Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, with short reverse segments in blue where chr2R begins and partway along chrX." src="/img/agent_synteny/dotplot_arms.png" />
 
 ## Ask where they disagree
 
@@ -192,7 +192,7 @@ X   sim 21,441,285 - 22,026,996 <->  mau 21,459,277 - 22,872,816 (0.59 Mb, 12 bl
 The 2R region is the largest and the least tidy; the two X regions are smaller
 and cleaner.
 
-## Ask to be taken there
+## Ask the agent to open the 2R and X regions
 
 ```text
 Close the gene tracks and take the synteny view to the 2R region.
@@ -209,7 +209,7 @@ Then ask for the first of the two X regions, `chrX:8,100,000-8,950,000` over
 
 <Figure caption="The X region, the alignment alone between the two rows. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
 
-## What you had to tell it
+## What the requests had to tell the agent
 
 Three sentences, and each prevents a failure with no error message:
 
