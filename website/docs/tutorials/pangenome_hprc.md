@@ -21,7 +21,7 @@ which allele. We open the graph and the VCF from the HPRC page on
 genomes.jbrowse.org as tracks of a linear view of GRCh38, and:
 
 - read a whole chromosome, one node per bubble
-- at C4, read the graph's backbone, bubbles and alleles
+- at C4 (complement genes), read the graph's backbone, bubbles and alleles
 - at MHC class II, trace an allele beside _HLA-DRB5_ to the assembly it came
   from
 - list every haplotype with that allele from the VCF
@@ -50,12 +50,12 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 ## Where the data comes from
 
-[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), with tabix
-projections of its graph that we host.
+[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), with tabix index
+files cut from its graph that we host.
 
-- the SV-level graph (`sv.gfa`) the projections are cut from:
+- the structural-variant graph (`sv.gfa`) the index files are cut from:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
-- the projections, with the exact build recorded beside them:
+- the index files, with the exact build recorded beside them:
   https://jbrowse.org/demos/hprc/README.txt
 - the config every launch on the HPRC page opens, which declares every release 2
   haplotype as an assembly with its CAT gene annotation:
@@ -75,24 +75,25 @@ haplotypes out of the graph and draws them in
 
 <Figure caption="The HPRC page: the whole-chromosome links, then the head of the Loci table, where each row ends in its launches. The RHD / RHCE and SMN1 / SMN2 rows have no graph launch. The boxed link is the HLA / MHC graph launch." src="/img/pangenome/genomes_hprc_loci.png" />
 
-## Reading chr1 at one node per bubble {#a-chromosome-and-back}
+## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 
-Press **chr1** among the **Whole chromosome** links above the Loci table. Past a
-zoom named in the graph adapter's `coarse` slot, JBrowse draws one node per
-bubble, so the whole chromosome fits. A curve of segments per bubble shows how
-much the haplotypes disagree at each locus.
+Press **chr1** among the **Whole chromosome** links above the Loci table. Zoomed
+out past the graph adapter's `coarse` level, JBrowse draws one node per bubble,
+so the whole chromosome fits. A curve of segments per bubble (how many pieces of
+sequence each bubble holds) shows how much the haplotypes disagree at each
+locus.
 
-<Figure caption="GRCh38 chr1 with the cytogenetic bands, three chr1 loci the HPRC pages open, and two lanes from one file. The blue curve is segments per bubble; the tier lane draws the same bubbles, one gold block per bubble. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="GRCh38 chr1 with the cytogenetic bands, three loci the HPRC pages open, and two tracks from one file. The blue curve is segments per bubble; the second track draws the bubbles as gold blocks. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
 
-[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
-tier and writes the `coarse` slot.
+[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds this
+overview and writes the `coarse` slot.
 
 ## The C4 locus as a graph
 
-On the HPRC page, press **graph** on the HLA / MHC row. The launch opens the
-genes, the bubbles lane, the allele inventory and the graph track; hide the
-bubbles lane and the allele inventory from the track selector to leave the genes
-over the graph track. Type `C4A` in the location box, pick the chr6 hit, and
+On the HPRC page, press **graph** on the HLA / MHC row. The launch opens four
+tracks: genes, bubbles, the allele inventory (one row per allele) and the graph.
+Hide the bubbles and the allele inventory in the track selector to leave the
+genes over the graph. Type `C4A` in the location box, pick the chr6 hit, and
 zoom out twice to take in _C4B_. Open the graph track's menu and pick **Layout →
 Force-directed layout**, which draws the graph by its shape.
 
@@ -107,27 +108,25 @@ The graph has four kinds of object:
   charcoal because it has no reference position
 - an **edge** that skips sequence is a deletion, drawn as a dashed arc
 
-The dashed arc in the labelled bubble is the route of a haplotype with one fewer
-C4 copy than GRCh38.
+## Highlighting the GRCh38 stretch an MHC class II allele replaces {#the-stretch-of-grch38-an-allele-replaces}
 
-## The stretch of GRCh38 an allele replaces
-
-Type `chr6:32,500,000-32,560,000`, the MHC class II window. The charcoal node
-beside _HLA-DRB5_ is an allele much shorter than the stretch of backbone it
-hangs across. Right-click it and take **Highlight in hg38**: a band marks the
-span of GRCh38 it replaces, which covers most of _HLA-DRB5_.
+Type `chr6:32,500,000-32,560,000`, a window in MHC class II, a cluster of
+immune-system HLA genes. Beside _HLA-DRB5_, a charcoal node is an allele much
+shorter than the backbone stretch it hangs across. Right-click it and take
+**Highlight in hg38**: a band marks the span of GRCh38 it replaces, which covers
+most of _HLA-DRB5_.
 
 <Figure caption="MHC class II with the graph track in the force-directed layout, colored by reference position. The ringed charcoal node is the allele beside HLA-DRB5, with its right-click menu open on Highlight in hg38." src="/img/pangenome/hprc_mhc_layout_force.png" />
 
-## Opening the haplotype an allele came from
+## Opening the haplotype the HLA-DRB5 allele came from {#opening-the-haplotype-an-allele-came-from}
 
 Left-click the charcoal allele beside _HLA-DRB5_. Its details give
-`contributingHaplotype`, `NA20809#2`: the graph's `SN` tag names the assembly
-minigraph first took the allele from. **Open in** appears when the session holds
-an assembly named or aliased `sample#haplotype`. The launch's config declares
-every release 2 haplotype that way; to declare one yourself, load its contig
-sizes, or its FASTA, under a name the browser shows and an alias that is the
-graph's name:
+`contributingHaplotype`, `NA20809#2`: the graph's `SN` tag records which
+assembly minigraph first took the allele from. **Open in** appears when the
+session has an assembly named or aliased `sample#haplotype`, the graph's name
+for it. The launch's config declares every release 2 haplotype that way. To
+declare one, load its contig sizes (or FASTA) under a display name, with the
+graph's name as an alias:
 
 ```json addassembly
 {
@@ -139,9 +138,10 @@ graph's name:
 
 Right-click the allele again and take **Open in NA20809.2**. A second linear
 view opens below the first, on that haplotype's chromosome 6, framed on the
-allele with its CAT gene annotation. Zoom out a few steps.
+allele with its CAT (Comparative Annotation Toolkit) gene annotation. Zoom out a
+few steps.
 
-<Figure caption="The same launch in two frames. First, the MHC class II cut in the force-directed layout, with the NA20809.2 allele ringed and its right-click menu open on Open in NA20809.2. Second, the view that entry opens: NA20809 haplotype 2's chromosome 6 with its CAT genes." src="/img/pangenome/hprc_haplotype_launch.png" />
+<Figure caption="First, MHC class II in the force-directed layout, the NA20809.2 allele ringed with its right-click menu open on Open in NA20809.2. Second, the view that entry opens, NA20809 haplotype 2's chromosome 6 with its CAT genes." src="/img/pangenome/hprc_haplotype_launch.png" />
 
 The haplotype's CAT annotation has _HLA-DRB9_ and _HLA-DRB6_ either side of the
 allele and no _HLA-DRB5_, the gene its band covered on hg38.
@@ -202,11 +202,12 @@ that removes the whole stretch.
 
 ## Reading C4's alleles as aligned bases {#the-same-alleles-as-aligned-bases}
 
-minigraph builds the SV-level graph this page draws. Cactus then aligns every
-assembly against it base by base, and HPRC exports that alignment twice: as the
-base-level graph that `vg deconstruct` writes the VCF from, and as
-`hprc-v2.1-mc-grch38.full.maf.gz`, one row of bases per haplotype. Beside the 53
-GB MAF sits a `.tai` index that makes a locus one ranged read:
+minigraph builds the structural-variant graph this page draws. Cactus then
+aligns every assembly against it base by base, and HPRC exports that alignment
+twice: as the base-level graph that `vg deconstruct` writes the VCF from, and as
+`hprc-v2.1-mc-grch38.full.maf.gz`, a multiple alignment with one row of bases
+per haplotype. Beside the 53 GB MAF sits a `.tai` index that makes a locus one
+ranged read:
 
 ```json addtrack
 {
@@ -241,20 +242,19 @@ no guide tree. **Reset row order** restores the order in the file.
 The VCF's widest blue block is one record, a deletion of a whole C4-CYP21-TNX
 module, which is the dashed arc in the C4 graph. Every alignment row in the
 white block has that deletion in the VCF. The narrower blocks are the 6.4 kb
-HERV-K insertion in a C4 gene's intron, the difference between a long and a
-short C4. The figure keeps a subset of the alignment rows so each has room for
-its name; the track as configured above draws every haplotype.
+HERV-K (endogenous retrovirus) insertion in a C4 gene's intron, the difference
+between a long and a short C4. The figure keeps a subset of the alignment rows
+so each has room for its name; the configured track draws all.
 
 ## Reproduce it end to end
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
-projections and the bubbles lane in one command that runs on any rGFA; pointed
-at `hprc-v2.1-mc-grch38.sv.gfa.gz`, it writes the files we host, and
+index files and the bubbles track in one command that runs on any rGFA. Run on
+`hprc-v2.1-mc-grch38.sv.gfa.gz`, it writes the files we host, and
 [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them records
-their provenance. For a graph of your own, minigraph lists each assembly's route
-through every bubble, and
-[hosting your own graph](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment)
-walks through it.
+their provenance. For a graph of your own, minigraph can list each assembly's
+route through every bubble; see
+[Which haplotypes pass through each segment](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment).
 
 ## See also
 
