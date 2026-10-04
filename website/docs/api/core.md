@@ -936,6 +936,11 @@ where the ends meet rather than cross. `scales.y.domainQuantile` and a
 colour's `domainQuantile` both name it. `[Infinity, -Infinity]` where
 nothing is finite.
 
+Nearest rank keeps ties: where one value holds the rank, as on a segmented
+copy-number track, a ramp clipped below 1 paints nearly every value one
+colour. A value axis fences instead (fenceOutliers); a ramp takes
+the same fence once a colour default below 1 meets tied data.
+
 ```js
 // type signature
 (values: ArrayLike<number>, count: number, quantile?: number) => [number, number]
