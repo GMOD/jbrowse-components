@@ -216,9 +216,9 @@ What else the mixin owns:
   a reset writes to `rowColor`, or nothing while the live object is not
   custom. It writes the base's whole object where a `name` pair or the
   `unknown` differs, or where the base paints an attribute and the live object
-  none, and otherwise returns an attribute's value colours to the
-  base's, keeping the attribute, so over a config setting no row colour a Color
-  by alone survives a reset and a mode switch. Its target is never itself
+  none, and otherwise returns an attribute's value colours to the base's,
+  keeping the attribute, so a Color by alone survives a reset and a mode
+  switch, and None over a configured one does not. Its target is never itself
   custom, so one reset is the whole way back; two rules once drifted, and a
   reset over a base `unknown` dropped the grey and stayed custom.
 - **The dialog shows the `rowColor` object and submits it**

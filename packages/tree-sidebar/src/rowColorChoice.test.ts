@@ -143,6 +143,16 @@ describe('rowColorForChoice', () => {
     })
   })
 
+  it('None and Each row leave parked name pairs parked', () => {
+    const parked = { domain: ['a'], range: ['#f00'], scale: 'none' }
+    expect(rowColorForChoice(lift(parked), '', false)).toEqual({
+      field: 'name',
+    })
+    expect(rowColorForChoice(lift(parked), 'name', true)).toEqual({
+      field: 'name',
+    })
+  })
+
   it('None over name pairs keeps them', () => {
     const named = { domain: ['a'], range: ['#f00'] }
     expect(rowColorForChoice(lift(named), '', true)).toEqual({

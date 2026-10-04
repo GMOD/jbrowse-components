@@ -28,7 +28,8 @@ way back on a reset.
 
 - **The dialog shows the object and submits it.** A "Color rows by" choice
   above the rows reads `rowColorChoice`: None (`scale: 'none'`, keeping the
-  field last chosen in the sitting and its entries for the way back), Each row (`name`), or one of the
+  field last chosen in the sitting and its entries for the way back; amended
+  below to `name`), Each row (`name`), or one of the
   display's `rowColorFields`, and a field the config names that the display
   does not offer shows as chosen too. Under an attribute the dialog lists its values,
   each with its colour, previewed through `rowColorsFor`, and how many rows
@@ -100,9 +101,10 @@ colour; a colour, that colour; `''`, none from this setting (Vega's
 the display deals a palette under `name` (`rowPaletteDeals`), else
 `{ field: 'name' }`, and its swatches edit as Each row's do; Each row is
 offered only where it differs. `scale: 'none'` keeps ADR-135's meaning, and
-on `rowColor` only a config writes it: the variant menu's pick writes what the
-dialog would for that choice (`rowColorForChoice`), so None is one object
-from either surface, and a reader's value colours go with the attribute left.
+on `rowColor` it now comes only from a config: the variant menu's pick writes
+what the dialog would for that choice (`rowColorForChoice`), so None is one
+object from either surface, and a reader's value colours leave with the
+attribute.
 `dialogSources` is gone: the pairs under `scale: 'none'` stay parked rather
 than open on the swatches. Wiggle's None takes the per-source switch off as
 before.

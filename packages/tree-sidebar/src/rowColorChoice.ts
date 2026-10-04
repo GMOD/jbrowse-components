@@ -49,7 +49,8 @@ function pairsOn(
     : {}
 }
 
-function paintsAttribute({ field, scale }: RowColorSetting) {
+/** Whether `setting` paints by an attribute rather than by `name`. */
+export function paintsAttribute({ field, scale }: RowColorSetting) {
   return field !== 'name' && scale !== 'none'
 }
 
@@ -123,9 +124,10 @@ export function rowColorChoiceSetting(
 
 /**
  * The `rowColor` object a menu's pick of `choice` writes over `current`: the
- * dialog's object for that choice opened and submitted untouched, so the
- * field already named keeps its pairs and `unknown`, parked or not, and any
- * other starts with none.
+ * dialog's object for that choice opened and submitted untouched. None and
+ * Each row keep the `name` pairs that paint, an attribute already named keeps
+ * its pairs, parked or not, the field already named keeps its `unknown`, and
+ * any other field starts with none.
  */
 export function rowColorForChoice(
   current: RowColorSetting,
@@ -135,9 +137,11 @@ export function rowColorForChoice(
   return rowColorChoiceSetting(
     paletteDeals,
     choice,
-    current.field === (choice || 'name')
-      ? Object.fromEntries(pairedColorsOf(current))
-      : {},
+    choice === '' || choice === 'name'
+      ? pairsOn(current, 'name')
+      : current.field === choice
+        ? Object.fromEntries(pairedColorsOf(current))
+        : {},
     keptUnknown(current, choice),
   )
 }
@@ -147,11 +151,10 @@ export function rowColorForChoice(
  * `live` sets nothing `base` does not. The base's object where a `name` pair
  * or the `unknown` differs, where one of the two parks under `scale: 'none'`
  * and the other paints, or where the base paints an attribute and `live`
- * none; where only an attribute's value
- * colours differ, the attribute with the base's colours for it, so a Color by
- * picked over a config setting none is no custom arrangement and survives a
- * reset. The target itself is never custom, so one reset is the whole way
- * back.
+ * none; where only an attribute's value colours differ, the attribute with
+ * the base's colours for it, so a Color by picked over a config setting none,
+ * or over another, is no custom arrangement and survives a reset. The target
+ * itself is never custom, so one reset is the whole way back.
  */
 export function rowColorResetTarget(
   live: RowColorSetting,

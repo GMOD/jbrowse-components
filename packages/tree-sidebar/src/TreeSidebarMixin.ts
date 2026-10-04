@@ -18,6 +18,7 @@ import { focusRows } from './focusRows.ts'
 import { maxNodeHeight } from './hierarchy.ts'
 import {
   liftRowColor,
+  paintsAttribute,
   paintsNamePairs,
   rowColorChoiceOf,
   rowColorMembers,
@@ -615,8 +616,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * `scale: 'none'`.
        */
       get rowColorAttribute(): string {
-        const { field, scale } = self.rowColorSetting
-        return field === 'name' || scale === 'none' ? '' : field
+        const setting = self.rowColorSetting
+        return paintsAttribute(setting) ? setting.field : ''
       },
       /**
        * #getter
