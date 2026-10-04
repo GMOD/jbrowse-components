@@ -261,10 +261,10 @@ and 4AL/7BS translocation pair (Devos et al. 1995; Dvorak et al. 2018).
 
 The other four sets build with `bash build_orthofinder_synteny.sh <set>`
 ([Reproduce it end to end](#reproduce-it-end-to-end)), and each has a hosted
-config at `https://jbrowse.org/demos/orthofinder_<set>/config.json`. In the
-`vertebrates` config, stack human over chicken, frog, spotted gar and zebrafish
-as for [wheat](#stacking-the-wheat-genomes), with `vertebrates_orthogroups` in
-each band, and pick **Reference** in the palette button menu.
+config at `https://jbrowse.org/demos/orthofinder_<set>/config.json`. Open the
+`vertebrates` config and stack human over chicken, frog, gar and zebrafish as
+for [wheat](#stacking-the-wheat-genomes), with `vertebrates_orthogroups` in each
+band, and pick **Reference** in the palette button menu.
 
 <Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish, all four bands off one vertebrates_orthogroups track. Gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
 
@@ -303,16 +303,16 @@ which draws a lane per fly. Every fly keeps this window's melanogaster genes.
 ## Nightshades: the same genes over genomes of very different sizes {#nightshades}
 
 The `solanaceae` set is tomato, potato, pepper and _Nicotiana attenuata_ (the
-row labelled tobacco), with coffee as the outgroup. In the `solanaceae` config,
-stack them as for [wheat](#stacking-the-wheat-genomes) with **Show all regions -
-same bp per pixel**, so row length matches genome size.
+row labelled tobacco), with coffee as the outgroup. Open the `solanaceae` config
+and stack them as for [wheat](#stacking-the-wheat-genomes) with **Show all
+regions - same bp per pixel**, so row length matches genome size.
 
 <Figure caption="Tomato, potato, pepper and Nicotiana attenuata (nightshades) over coffee, the outgroup, stacked on OrthoFinder orthogroups at one bp per pixel. Pepper's row is by far the longest yet matches potato's genes band for band, and coffee's is the shortest." src="/img/orthofinder_synteny/solanaceae.png" />
 
 ## Grasses: the maize whole-genome duplication {#grasses}
 
-The `grasses` set is rice, sorghum, maize, brachypodium and foxtail millet. In
-the `grasses` config, stack them as for [wheat](#stacking-the-wheat-genomes),
+The `grasses` set is rice, sorghum, maize, brachypodium and foxtail millet. Open
+the `grasses` config and stack them as for [wheat](#stacking-the-wheat-genomes),
 with `grasses_orthogroups` in each band.
 
 <Figure caption="Five grass genomes stacked on OrthoFinder orthogroups: rice, sorghum, maize, brachypodium, foxtail millet. The maize whole-genome duplication shows as more ribbons per gene in the two maize bands than in the other pairs." src="/img/orthofinder_synteny/grasses.png" />
