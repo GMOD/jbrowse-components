@@ -8,10 +8,10 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-Take one whole-gene deletion out of the 1000 Genomes ensemble SV callset, sort
-the cohort's genotypes at it, then open three of those samples' reads and watch
-the coverage go to zero, halve, and stay flat. The page ends on a call from the
-same cohort whose coverage does none of that.
+Take the deletion of _RHD_ out of the 1000 Genomes ensemble SV callset, sort the
+cohort's genotypes at it, then open three of those samples' reads and watch the
+coverage go to zero, halve, and stay flat. The page ends on a complex call from
+the same cohort whose coverage does none of that.
 
 ## Prerequisites
 
@@ -38,12 +38,14 @@ whole cohort.
   https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240114/HG00096.final.cram
 - HG00097 (homozygous reference) high-coverage CRAM:
   https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240115/HG00097.final.cram
+- HG02768 high-coverage CRAM, for the complex call:
+  https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/1000G_2504_high_coverage/data/ERR3242423/HG02768.final.cram
 - QuicK-mer2 copy number for the cohort, the store the
   [copy-number tutorial](/docs/tutorials/population_cnv) also reads. A directory
   of chunks that 404s at its root, and the adapter takes it as its `uri`:
   https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
 
-## The 1000 Genomes SV callset
+## The RHD deletion in the 1000 Genomes SV callset
 
 The [1000 Genomes Project](https://www.internationalgenome.org/) sequenced 2,504
 individuals across 26 populations. The 2022 high-coverage re-analysis
@@ -57,7 +59,7 @@ the RhD-negative blood type. The call is `PASS` and common enough to fill all
 three genotype classes, and read depth shows whether a gene is present twice,
 once, or not at all.
 
-## Load the data
+## Loading the callset, the reads and the copy-number store
 
 The CRAMs decode against the assembly's sequence, so the assembly must be the
 GRCh38 sequence the reads were aligned to, with the chromosome names the VCF
@@ -101,10 +103,12 @@ differ only in the file:
 }
 ```
 
-The copy-number lane reads the Zarr store through a plugin that is not yet in
-the plugin store. The
-[copy-number tutorial](/docs/tutorials/population_cnv#a-zarr-store-for-the-whole-panel)
-shows how to load the plugin and build a store from your own BigWigs:
+The copy-number lane reads the Zarr store through `jbrowse-plugin-zarr`, which
+is not yet in the plugin store. Load its hosted bundle with a `plugins` entry,
+`{ "name": "Zarr", "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js" }`;
+the
+[copy-number tutorial](/docs/tutorials/population_cnv#building-a-zarr-store-from-per-sample-bigwigs)
+builds a store from your own BigWigs:
 
 ```json addtrack
 {
@@ -130,14 +134,16 @@ shows how to load the plugin and build a store from your own BigWigs:
 }
 ```
 
-Navigate to `chr1:25,200,000-25,400,000`, the window the figures below use.
+Navigate to `chr1:25,200,000-25,400,000`, the window of the genotype figure
+below.
 
 ## Genotypes across the cohort
 
-Switch the track to the **Multi-sample variant display** from the track menu.
-Each sample becomes a row drawn at the variant's genomic span, so the deletion
-is a wide block. Clicking it opens the feature details panel, whose **SAMPLES**
-section lists every sample's genotype, read depth and other per-sample fields.
+Switch the track to **Display types → Multi-sample variant display** from the
+track menu. Each sample becomes a row drawn at the variant's genomic span, so
+the deletion is a wide block. Clicking it opens the feature details panel, whose
+**SAMPLES** section lists every sample's genotype, read depth and other
+per-sample fields.
 
 Rows start in the callset's order. Right-click the deletion and pick **Sort by
 genotype** to order rows by genotype at that call, then by how far each keeps
@@ -157,11 +163,11 @@ The figure has three lanes over NCBI RefSeq genes:
 
 - the callset as a genotype matrix, one row per sample, sorted by genotype at
   the _RHD_ deletion
-- the same records in the ordinary variant display, colored by SV class, so each
-  band in the matrix lines up with a named record
 - QuicK-mer2 copy number for 2504 individuals, one row each and clustered on
   this window, where blue is a copy lost against the diploid white and red a
   copy gained
+- the same records in the ordinary variant display, each labelled with its id,
+  so each band in the matrix lines up with a named record
 
 <Figure caption="The 1KGP ensemble SV callset over the RHD locus on chr1, with the panel's copy-number calls under it. The deletion draws as a wide block, splitting the cohort into three bands in the matrix and three levels of copy number." src="/img/multisv_rhd.png" />
 
@@ -179,8 +185,8 @@ Open three samples' alignments, one per genotype: HG00113 homozygous alt,
 HG00096 heterozygous, HG00097 homozygous reference. Two settings make them
 comparable:
 
-- Turn the pileup off from the track menu's **Show...** submenu, since at this
-  width the coverage curve shows the difference
+- Turn the pileup off with **Show... → Show pileup** in the track menu, since at
+  this width the coverage curve shows the difference
 - Put the three lanes on one axis from **Coverage → Autoscale with other
   tracks...**, ticking the other two, so they compare by height
 
@@ -193,13 +199,14 @@ uncertainty in their mapping quality.
 
 ## A complex call read off the pair orientations
 
-Most structural variants leave the coverage unchanged. The demo has a complex
-call on chromosome 1 in HG02768 whose coverage matches the rest of the arm.
+Balanced rearrangements such as inversions leave the coverage unchanged. The
+callset has a complex call on chromosome 1 in HG02768 whose coverage matches the
+rest of the arm.
 
-Put `1:39,658,200-39,661,800` in the location box and open HG02768's alignments.
-Turn on **Track menu → Read connections → SV channels (pairs by orientation)**:
-the reads split into one band per orientation class, each with a separate
-coverage curve and arcs.
+Put `1:39,658,200-39,661,800` in the location box and add HG02768's CRAM as a
+track the same way as HG00113's. Turn on **Read connections → SV channels (pairs
+by orientation)** from the track menu: the reads split into one band per
+orientation class, each with a separate coverage curve and arcs.
 
 - The normal band holds the flat profile
 - The two same-strand bands each draw a bundle of arcs on one pair of

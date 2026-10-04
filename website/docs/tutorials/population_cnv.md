@@ -18,10 +18,12 @@ time, so the second half of the page packs the values into one Zarr store.
 - a JBrowse instance to paste a track into (see the
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
-- `node` 24 or newer, to [build a Zarr store](#build-the-store); the converter
-  is one downloadable file that pulls two npm packages
+- `node` 24 or newer, to
+  [build a Zarr store](#building-a-zarr-store-from-per-sample-bigwigs); the
+  converter is one downloadable file that pulls two npm packages
 - QuicK-mer2 and a 30x alignment, to add
   [samples of your own](#your-own-samples)
+- `samtools` and `bedGraphToBigWig`, to turn QuicK-mer2's output into a bigWig
 
 ## Where the data comes from
 
@@ -68,7 +70,10 @@ assembly:
 ## Load the panel as one track
 
 The whole panel goes in as one track on hg38, so the display, clustering and
-color settings are declared once:
+color settings are declared once. The fence lists two of the panel's 104 PUR
+bigWigs; the full list is the `pur_copynumber_1000g` track in
+https://jbrowse.org/code/jb2/main/test_data/config_demo.json, and every file
+follows the `kidd_lab_cnv/<population>/<sample>.qm2.CN.1k.bw` pattern above:
 
 ```json addtrack
 {
@@ -119,7 +124,7 @@ The PUR track is also in `config_demo`, so
 [the panel opens on a copy-number-polymorphic window of chr3](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A162%2C275%2C163-163%2C360%2C944%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22height%22%3A420%2C%22defaultRendering%22%3A%22density%22%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainQuantile%22%3A1%7D%7D%2C%22showTree%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot)
 with these settings already applied.
 
-## Six individuals as profiles
+## Six individuals' copy-number profiles at CCL3L1
 
 Navigate to `chr17:36,080,000-36,270,000`, around _CCL3L1_, and load six
 individuals spanning the range of copy number as a second track. The track draws
@@ -175,13 +180,14 @@ step lines on one pinned axis, so each plateau lines up with a copy count:
 }
 ```
 
-<Figure caption="The CCL3L1 window as six stacked profiles on a shared 0-10 axis, from the individual with the most copies down to one with none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
+<Figure caption="The CCL3L1 window as six stacked profiles on one shared axis, from the individual with the most copies down to one with none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
-Two paralogous blocks hold the variation. The right-hand one spans CCL3L1 and
-CCL4L1, chemokine genes that exist in a variable number of tandem copies. The
-left-hand one is a TBC1D3 repeat.
+Two paralogous blocks hold the variation. The right-hand one spans the chemokine
+genes _CCL3L1_ and _CCL4L1_, which exist in a variable number of tandem copies;
+the hg38 gene lane labels the reference copies _CCL3L3_ and _CCL4L2_. The
+left-hand one is a _TBC1D3_ repeat.
 
-## A simple deletion in the 1000 Genomes SV map
+## UGT2B17, a simple deletion, against the 1000 Genomes SV map
 
 The 1000 Genomes phase 3 integrated SV map records each variant as one interval
 with fixed breakpoints and a few symbolic alleles, and gives genotypes where
@@ -207,10 +213,10 @@ same assembly:
 
 The PUR panel track holds 104 individuals.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
-measures the requests, bytes and time needed to fill this window from all 2504
-BigWigs and from a Zarr store holding the same samples, using the readers the
-browser uses. It takes the same `name`/`group`/`url` TSV as the converter, which
-the [build script](#reproduce-it-end-to-end) writes:
+measures the requests, bytes and time needed to fill the _CCL3L1_ window from
+all 2504 BigWigs and from a Zarr store holding the same samples, using the
+readers the browser uses. It takes the same `name`/`group`/`url` TSV as the
+converter, which the [build script](#reproduce-it-end-to-end) writes:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/measure_signal_latency.ts
@@ -291,7 +297,7 @@ config that holds it, so a store beside your `config.json` takes
 Past the two metadata reads, each request is a chunk containing every sample
 across a range of bins, so the cost of a view follows the width of its window.
 
-## A nested deletion
+## A nested deletion on chr3, sorted by clustering
 
 The store also covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
 114 kb one. Navigate the Zarr track to `chr3:162,650,000-163,050,000` and run
@@ -318,9 +324,9 @@ this from **Filter by... → Edit filters...** in the track menu:
 jexl:alleleLength(feature)>=5000
 ```
 
-<Figure caption="All 2504 individuals over chr3:162.65-163.05 Mb, clustered, under HGSVC3 structural variants of 5 kb and longer. Each block of rows has neither deletion, one or two copies of one of them, or one copy of each." src="/img/paper/cohort_cnv.png" />
+<Figure caption="All 2504 individuals over the nested deletion, clustered, under HGSVC3 structural variants of 5 kb and longer. Each block of rows has neither deletion, one or two copies of one of them, or one copy of each." src="/img/paper/cohort_cnv.png" />
 
-## Build the store
+## Building a Zarr store from per-sample BigWigs
 
 [`build_signal_zarr.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_signal_zarr.ts)
 turns a list of BigWigs into one store. It takes a TSV of `name` and `url`, with
@@ -342,7 +348,7 @@ node build_signal_zarr.ts \
 ```
 
 The command above built the hosted store from all 2504 samples, over the windows
-in the figures, and the result is 2.4 MB.
+in the figures.
 
 `--levels` sets the resolution pyramid. Each entry is one samples-by-bins array,
 with coarser ones averaged from the finest. The adapter reads the coarsest level
