@@ -27,7 +27,7 @@ Save as `index.html`:
     <meta charset="UTF-8" />
     <title>JBrowse Linear Genome View</title>
     <script
-      src="https://unpkg.com/@jbrowse/react-linear-genome-view2/dist/react-linear-genome-view.umd.production.min.js"
+      src="https://unpkg.com/@jbrowse/react-linear-genome-view2@next/dist/react-linear-genome-view.umd.production.min.js"
       crossorigin
     ></script>
   </head>
@@ -80,10 +80,11 @@ npx serve -S .
 
 Open the URL it prints.
 
-<Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
+<Figure caption="The More complete example below embedded in a web page, with genes, exome reads, conservation and 1000 Genomes calls at the tutorial's chr10 locus." src="/img/embed_linear_genome_view/final.png"/>
 
-The unversioned unpkg URL fetches the latest release, so pin a version for
-production (`@jbrowse/react-linear-genome-view2@4.3.0/dist/...`).
+The `@next` tag fetches the newest v5 prerelease, which the `assembly` and
+`tracks` shorthand above needs, so pin a version for production
+(`@jbrowse/react-linear-genome-view2@5.0.0-beta.11/dist/...`).
 
 For other view types, a different bundler, or working demo repos, see
 [](/docs/embedded_components).
@@ -210,7 +211,6 @@ the smaller `assembly`/`tracks`/`view`.
 - JBrowse looks for the index next to the data file; add `index` or `type`
   beside `uri` to override the guess.
 - `textSearching` on `ncbi_genes` adds name search; build your own index with
-
   [`jbrowse text-index`](/docs/quickstart_web#indexing-feature-names-for-searching).
 
 </details>
