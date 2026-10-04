@@ -73,14 +73,9 @@ export default function ExternalNavigate() {
         assembly={assembly}
         tracks={[
           {
-            type: 'FeatureTrack',
             trackId: 'volvox_gff3',
             name: 'Volvox genes',
-            assemblyNames: ['volvox'],
-            adapter: {
-              type: 'Gff3TabixAdapter',
-              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-            },
+            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
           },
         ]}
         view={{ loc: 'ctgA:1,000..5,000' }}

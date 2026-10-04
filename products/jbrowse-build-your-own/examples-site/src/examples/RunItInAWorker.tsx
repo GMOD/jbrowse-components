@@ -31,7 +31,7 @@ const RunItInAWorker = observer(function RunItInAWorker() {
       {
         trackId: 'na12878_exome',
         name: 'NA12878 exome reads',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
+        uri: 'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
         displayDefaults: { height: 150 },
       },
     ],

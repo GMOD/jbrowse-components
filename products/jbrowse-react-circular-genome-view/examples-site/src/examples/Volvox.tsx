@@ -22,15 +22,10 @@ const assembly = {
 
 const tracks = [
   {
-    type: 'VariantTrack',
     trackId: 'volvox_sv_test',
     name: 'volvox structural variant test',
+    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.dup.vcf.gz',
     category: ['VCF'],
-    assemblyNames: ['volvox'],
-    adapter: {
-      type: 'VcfTabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.dup.vcf.gz',
-    },
   },
 ]
 

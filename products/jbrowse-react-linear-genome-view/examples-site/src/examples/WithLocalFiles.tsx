@@ -14,11 +14,9 @@ const assembly = {
 
 const tracks = [
   {
-    type: 'AlignmentsTrack',
     trackId: 'local_bam',
     name: 'volvox-sorted.bam (in memory)',
-    assemblyNames: ['volvox'],
-    adapter: { type: 'BamAdapter', uri: 'volvox-sorted.bam' },
+    uri: 'volvox-sorted.bam',
   },
 ]
 

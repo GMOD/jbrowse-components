@@ -5,7 +5,7 @@ const assembly = {
   aliases: ['GRCh37'],
   uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
   refNameAliases: {
-    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+    uri: 'https://jbrowse.org/genomes/hg19/hg19_aliases.txt',
   },
 }
 

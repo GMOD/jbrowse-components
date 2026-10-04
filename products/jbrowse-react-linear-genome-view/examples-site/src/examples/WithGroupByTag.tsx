@@ -9,14 +9,9 @@ export default function WithGroupByTag() {
       }}
       tracks={[
         {
-          type: 'AlignmentsTrack',
           trackId: 'volvox_bam',
           name: 'volvox-sorted.bam',
-          assemblyNames: ['volvox'],
-          adapter: {
-            type: 'BamAdapter',
-            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
-          },
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
         },
       ]}
       view={{

@@ -9,14 +9,9 @@ const assemblies = [
 
 const tracks = [
   {
-    type: 'AlignmentsTrack',
     trackId: 'volvox_cram',
     name: 'volvox-sorted.cram',
-    assemblyNames: ['volvox'],
-    adapter: {
-      type: 'CramAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.cram',
-    },
+    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.cram',
   },
 ]
 

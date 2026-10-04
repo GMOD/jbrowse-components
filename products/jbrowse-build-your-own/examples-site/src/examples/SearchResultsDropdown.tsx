@@ -108,7 +108,7 @@ const SearchResultsDropdown = observer(function SearchResultsDropdown() {
       {
         trackId: 'genes',
         name: 'NCBI RefSeq genes',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+        uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
         displayDefaults: { height: 140 },
       },
     ],

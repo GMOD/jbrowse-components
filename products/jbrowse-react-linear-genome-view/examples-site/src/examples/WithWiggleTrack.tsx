@@ -9,14 +9,9 @@ export default function WithWiggleTrack() {
       }}
       tracks={[
         {
-          type: 'QuantitativeTrack',
           trackId: 'volvox_microarray',
           name: 'Microarray (BigWig)',
-          assemblyNames: ['volvox'],
-          adapter: {
-            type: 'BigWigAdapter',
-            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
-          },
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
           displayDefaults: {
             mark: 'bar',
             height: 150,

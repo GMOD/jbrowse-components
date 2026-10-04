@@ -16,15 +16,10 @@ export default function WithInit() {
       }}
       tracks={[
         {
-          type: 'FeatureTrack',
           trackId: 'hg38-ncbi-refseq-curated',
           name: 'NCBI RefSeq Curated',
-          assemblyNames: ['hg38'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
-            csi: true,
-          },
+          uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+          index: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi',
         },
       ]}
       view={{

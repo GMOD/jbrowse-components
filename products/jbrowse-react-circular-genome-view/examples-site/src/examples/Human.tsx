@@ -5,21 +5,16 @@ const assembly = {
   aliases: ['GRCh37'],
   uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
   refNameAliases: {
-    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+    uri: 'https://jbrowse.org/genomes/hg19/hg19_aliases.txt',
   },
 }
 
 const tracks = [
   {
-    type: 'VariantTrack',
     trackId: 'pacbio_sv_vcf',
     name: 'HG002 Pacbio SV (VCF)',
-    assemblyNames: ['hg19'],
+    uri: 'https://jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz',
     category: ['GIAB'],
-    adapter: {
-      type: 'VcfTabixAdapter',
-      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz',
-    },
   },
 ]
 

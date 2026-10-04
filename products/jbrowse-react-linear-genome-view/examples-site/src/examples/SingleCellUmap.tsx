@@ -200,9 +200,9 @@ const dataPromise = Promise.all([
 const assembly = {
   name: 'GRCh38',
   aliases: ['hg38'],
-  uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
   refNameAliases: {
-    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
   },
   geneticCodes: { MT: 2 },
 }

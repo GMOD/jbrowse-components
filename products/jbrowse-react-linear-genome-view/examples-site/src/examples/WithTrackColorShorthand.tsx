@@ -9,14 +9,9 @@ export default function WithTrackColorShorthand() {
       }}
       tracks={[
         {
-          type: 'FeatureTrack',
           trackId: 'volvox_genes_green',
           name: 'Volvox genes (green via shorthand)',
-          assemblyNames: ['volvox'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-          },
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
           displayDefaults: { color: 'green' },
         },
       ]}

@@ -23,14 +23,11 @@ const assembly = [
 
 const tracks = [
   {
-    type: 'QuantitativeTrack',
     trackId: 'hg38ToMm39_gene_density_marks',
     name: 'Genes per 100 kb',
+    uri: 'https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw',
+    type: 'QuantitativeTrack',
     assemblyNames: ['hg38', 'mm39'],
-    adapter: {
-      type: 'BigWigAdapter',
-      uri: 'https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw',
-    },
     displays: [
       {
         type: 'LinearMarkDisplay',

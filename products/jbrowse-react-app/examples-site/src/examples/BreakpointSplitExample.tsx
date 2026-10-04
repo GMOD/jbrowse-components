@@ -2,16 +2,16 @@ import { JBrowse } from '@jbrowse/react-app2'
 
 const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
 
-const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
+const assemblies = [
+  { name: 'volvox', uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+]
 
 const tracks = [
   {
-    type: 'AlignmentsTrack',
     trackId: 'volvox_sv_cram',
     name: 'volvox-sv (cram)',
-    assemblyNames: ['volvox'],
+    uri: `${base}/volvox-sv.cram`,
     category: ['Alignments'],
-    adapter: { type: 'CramAdapter', uri: `${base}/volvox-sv.cram` },
   },
 ]
 

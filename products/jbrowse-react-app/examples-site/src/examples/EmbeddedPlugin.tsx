@@ -6,15 +6,15 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
 
-const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
+const assemblies = [
+  { name: 'volvox', uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+]
 
 const tracks = [
   {
-    type: 'AlignmentsTrack',
     trackId: 'volvox_cram',
     name: 'volvox-sorted.cram',
-    assemblyNames: ['volvox'],
-    adapter: { type: 'CramAdapter', uri: `${base}/volvox-sorted.cram` },
+    uri: `${base}/volvox-sorted.cram`,
   },
 ]
 

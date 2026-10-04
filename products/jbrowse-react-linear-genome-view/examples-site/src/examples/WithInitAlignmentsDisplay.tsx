@@ -4,14 +4,9 @@ const cramTrackId = 'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome'
 
 const tracks = [
   {
-    type: 'AlignmentsTrack',
     trackId: cramTrackId,
     name: 'NA12878 Exome',
-    assemblyNames: ['GRCh38'],
-    adapter: {
-      type: 'CramAdapter',
-      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-    },
+    uri: 'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
   },
 ]
 
@@ -21,9 +16,9 @@ export default function WithInitAlignmentsDisplay() {
       assembly={{
         name: 'GRCh38',
         aliases: ['hg38'],
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
         refNameAliases: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+          uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
         },
         geneticCodes: { MT: 2 },
       }}

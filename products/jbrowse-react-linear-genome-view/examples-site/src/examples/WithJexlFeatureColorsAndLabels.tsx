@@ -9,14 +9,9 @@ export default function WithJexlFeatureColorsAndLabels() {
       }}
       tracks={[
         {
-          type: 'FeatureTrack',
           trackId: 'volvox_genes_jexl',
           name: 'Volvox genes (jexl color + label)',
-          assemblyNames: ['volvox'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-          },
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
           displayDefaults: {
             color: "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
             labels: {

@@ -11,22 +11,18 @@ const config = {
       aliases: ['hg38'],
       uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
       refNameAliases: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+        uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
       geneticCodes: { chrM: 2 },
     },
   ],
   tracks: [
     {
-      type: 'QuantitativeTrack',
       trackId: 'hg38.100way.phyloP100way',
       name: 'hg38.100way.phyloP100way',
+      uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
       category: ['Conservation'],
       assemblyNames: ['hg38'],
-      adapter: {
-        type: 'BigWigAdapter',
-        uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
-      },
     },
   ],
 }

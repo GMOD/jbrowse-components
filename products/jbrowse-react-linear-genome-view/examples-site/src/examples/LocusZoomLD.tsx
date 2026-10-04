@@ -8,7 +8,7 @@ const assembly = {
   aliases: ['GRCh37'],
   uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
   refNameAliases: {
-    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+    uri: 'https://jbrowse.org/genomes/hg19/hg19_aliases.txt',
   },
 }
 
@@ -33,15 +33,10 @@ const GIANT_BMI_TRACK = {
 }
 
 const NCBI_REFSEQ_TRACK = {
-  type: 'FeatureTrack',
   trackId: 'ncbi_refseq_hg19',
   name: 'NCBI RefSeq genes',
-  assemblyNames: ['hg19'],
-  adapter: {
-    type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz',
-    csi: true,
-  },
+  uri: 'https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz',
+  index: 'https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz.csi',
   displayDefaults: {
     height: 150,
     labels: {

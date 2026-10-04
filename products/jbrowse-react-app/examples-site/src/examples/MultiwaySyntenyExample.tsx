@@ -12,11 +12,7 @@ const strains = [
 const assemblies = strains.map(({ name, displayName }) => ({
   name,
   displayName,
-  sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: `${name}-ref`,
-    adapter: { type: 'BgzipFastaAdapter', uri: `${base}/${name}.fa.gz` },
-  },
+  uri: `${base}/${name}.fa.gz`,
 }))
 
 const tracks = [

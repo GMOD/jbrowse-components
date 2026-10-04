@@ -6,14 +6,15 @@ import type { ViewModel } from '@jbrowse/react-app2'
 
 const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
 
-const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
+const assemblies = [
+  { name: 'volvox', uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+]
 
 const genesTrackConf = {
-  type: 'FeatureTrack',
   trackId: 'volvox_genes',
   name: 'Volvox genes',
+  uri: `${base}/volvox.sort.gff3.gz`,
   assemblyNames: ['volvox'],
-  adapter: { type: 'Gff3TabixAdapter', uri: `${base}/volvox.sort.gff3.gz` },
 }
 
 export default function AddTracksProgrammatically() {
