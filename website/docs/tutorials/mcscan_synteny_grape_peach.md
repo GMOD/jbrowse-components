@@ -60,10 +60,6 @@ divergent for [minimap2](/docs/tutorials/synteny_visualization) to line up base
 by base. An anchor is a gene pair with no CIGAR, so the finest ribbon spans one
 gene.
 
-For three or more genomes from one MCScan run, see
-[ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao), which
-loads a `.blocks` table with one track backing every band.
-
 ## What `.anchors` and `.anchors.simple` hold
 
 `.anchors` is the gene-pair level. Each line is one orthologous pair and its
@@ -88,8 +84,6 @@ VIT_201s0011g02300.1	VIT_201s0011g02530.1	Prupe.1G299800.1	Prupe.1G303200.1	39	+
 `.anchors.simple` draws one ribbon per block where `.anchors` draws one per gene
 pair. The BED files supply the coordinates for both.
 
-<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="A run of MCScan blocks on grape chr9 against peach Pp03. Top: .anchors alone, one ribbon per orthologous gene pair. Bottom: both files on the same band, so each block is the bundle of pairs it was reduced from." />
-
 ### BED files
 
 One BED per genome, prepared from its GFF3 before the ortholog run. The adapters
@@ -103,13 +97,14 @@ chr1	33170	35791	VIT_201s0011g00030.1	0	+
 
 Column 1 must use the same reference sequence names as the JBrowse assembly.
 
-Some mismatches raise an error and others load without one; the
+A gene id in the anchors file that no BED names breaks the join, and some such
+mismatches load with no error; the
 [synteny track guide](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
-says which. The one that causes trouble here is jcvi stripping isoform suffixes
-unless run with `--no_strip_names`, which the [script](#reproduce-it-end-to-end)
+lists which. The one that bites here is jcvi stripping isoform suffixes from the
+ids unless run with `--no_strip_names`, which the command in the next section
 passes.
 
-## Producing the data
+## Producing the BEDs and anchor files with jcvi {#producing-the-data}
 
 The BEDs come from each GFF3, and one jcvi command then writes both anchor
 files:
@@ -130,7 +125,7 @@ python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
 That leaves `grape.peach.anchors` and `grape.peach.anchors.simple` in the
 working directory. The adapters read anchors and BED files plain or gzipped.
 
-## The genomes
+## Loading the grape and peach assemblies and gene tracks
 
 We'll load the two genomes the BEDs describe. `samtools faidx` writes each
 `.fai` the assembly needs beside its FASTA, and column 1 of each BED must name
@@ -163,7 +158,7 @@ genes**. Add the same track with `peach.sorted.gff3.gz` under `peach`. Swap the
 }
 ```
 
-## Loading both tracks
+## Loading the .anchors and .anchors.simple tracks {#loading-both-tracks}
 
 Each adapter takes the anchor file plus the two BEDs, and `assemblyNames` lists
 the genomes in the order the anchor columns are in (column 1's genome first):
@@ -207,11 +202,13 @@ swapped:
 order. Both adapters read the whole file into memory, which MCScan output is
 small enough for.
 
-## Both tracks in one synteny view
+## Viewing gene pairs and blocks in one synteny view
 
-**Add → Linear synteny view**, pick peach and grape, and turn on both tracks.
+**Add → Linear synteny view**, pick peach and grape, and turn on both MCScan
+tracks in the band between them. Then turn on the simple-anchors track in each
+panel's own track selector, where it draws as a row of bars.
 
-<Figure caption="Peach and grape with both MCScan tracks loaded. The ribbons between the panels are the per-gene .anchors pairs; the strand-colored bars inside each panel are the .anchors.simple blocks. The marks along the top of the band are anchors whose grape gene is on a chromosome this panel is not showing. Most of this peach chromosome has counterparts elsewhere in grape." src="/img/mcscan_anchors.png" />
+<Figure caption="Peach and grape with both MCScan tracks loaded. The band draws both tracks, the .anchors.simple blocks as wide ribbons with the per-gene .anchors pairs over them; the strand-colored bars inside each panel are the .anchors.simple blocks again. The marks along the top of the band are anchors whose grape gene is on a chromosome this panel is not showing. Most of this peach chromosome has counterparts elsewhere in grape." src="/img/mcscan_anchors.png" />
 
 The block track is drawn here as an `LGVSyntenyDisplay`, a synteny track drawn
 as features in an ordinary linear genome view row. Naming a display type takes
@@ -242,6 +239,8 @@ the full `displays` array:
 A bar marks that a block is there and which way round it runs; the ribbons mark
 whether the genes inside hold their order.
 
+<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="A run of MCScan blocks on grape chr9 against peach Pp03. Top: .anchors alone, one ribbon per orthologous gene pair. Bottom: both files on the same band, so each block is the bundle of pairs it was reduced from." />
+
 ## What an anchor looks like up close
 
 Zoom to one block with both gene tracks on and set to **Show only genes**.
@@ -256,7 +255,8 @@ genes and the file holds no finer alignment.
 
 Either track also loads in a dotplot (**Add → Dotplot view**), where a gene pair
 is one point and a block a run of them. The axes start in index order;
-**Re-order chromosomes** sorts the vertical axis to follow the horizontal one.
+**Re-order chromosomes**, in the overflow menu of the dotplot header, sorts the
+vertical axis to follow the horizontal one.
 
 <Video src="/media/synteny/dotplot_reorder.mp4" caption="The axes as they open, in each assembly's index order, and then re-sorted. The reorder is a dialog off the dotplot header's overflow menu; it reports how many grape chromosomes it moved and how many it flipped." />
 
@@ -308,7 +308,16 @@ on both axes.
 
 [`build_grape_peach_anchors.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_grape_peach_anchors.sh)
 runs everything above and writes a `config.json` with both assemblies, gene
-tracks, both MCScan tracks and a default session opening them together.
+tracks, both MCScan tracks and a default session opening them together:
+
+1. Download the grape and peach genomes, annotations and CDS from Ensembl
+   Plants.
+2. Write a BED and a CDS file per genome keyed on transcript ids, and run jcvi
+   with `--no_strip_names` so the anchor ids match the BEDs.
+3. Count anchors per peach-grape chromosome pair off `.anchors.simple`, the
+   pairing the reordered dotplot shows.
+4. Write the config with both assemblies, gene tracks, both MCScan tracks and a
+   session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_anchors.sh
