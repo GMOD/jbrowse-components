@@ -324,7 +324,7 @@ cat > tracks.json <<'JSON'
     "blockAssemblies": ["human", "rhesus"],
     "bedLocations": [{ "uri": "human.bed.gz" }, { "uri": "rhesus.bed.gz" }],
     "assemblyNames": ["human", "rhesus"],
-    "attributeColumns": ["dn", "ds"]
+    "attributeColumns": ["dn", "ds", "syn_subs", "fisher_p"]
   }
 }
 JSON

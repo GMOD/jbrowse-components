@@ -17,8 +17,8 @@ by the ratio. We then read the lysozyme neighbourhood on human chromosome 12.
 
 ## Prerequisites
 
-- a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
-  file by path, [Web](/docs/quickstart_web) through **Add track**
+- a JBrowse to open the files in: [Desktop](/docs/quickstart_desktop) takes a
+  local file by path, [Web](/docs/quickstart_web) through **Add track**
 - [jcvi](https://github.com/tanghaibao/jcvi)
 - [DIAMOND](https://github.com/bbuchfink/diamond)
 - python3 with [biopython](https://biopython.org/)
@@ -47,8 +47,8 @@ release 116.
   https://ftp.ensembl.org/pub/release-116/gff3/macaca_mulatta/Macaca_mulatta.Mmul_10.116.gff3.gz
 - rhesus macaque coding sequence:
   https://ftp.ensembl.org/pub/release-116/fasta/macaca_mulatta/cds/Macaca_mulatta.Mmul_10.cds.all.fa.gz
-- the finished blocks table, BEDs and config, rehosted so the ribbons load
-  without running jcvi: https://jbrowse.org/demos/primate_selection/config.json
+- the finished blocks table, BEDs and config:
+  https://jbrowse.org/demos/primate_selection/config.json
 
 ## What dN/dS says
 
@@ -58,13 +58,13 @@ approximates the mutation rate. Selection acts on non-synonymous changes, so
 their rate dN reflects it. A ratio below 1 indicates purifying selection, where
 most genes sit, and a ratio above 1 needs positive selection to explain.
 
-## Producing the data
+## Producing the human-rhesus ortholog table and its rates
 
 dS has to be large enough to estimate and small enough not to saturate. Rhesus
 macaque sits in that window against human; chimpanzee leaves a denominator near
 zero on most genes.
 
-### Orthologs
+### Calling human-rhesus orthologs with jcvi
 
 The [end-to-end script](#reproduce-it-end-to-end) turns each GFF3 into the BED
 the adapter reads, translates each CDS to a proteome keyed the same way, and
@@ -89,7 +89,7 @@ Two input mistakes leave jcvi with no orthologs:
   (`ENST00000641515.7` against `ENST00000641515`), so nothing matches. The
   script strips the version, and `kaks_from_pairs.py` takes `--strip-version`
 
-### dN and dS
+### Measuring dN and dS on each pair {#dn-and-ds}
 
 `pairs.tsv` is the two gene columns of `human.rhesus.anchors`. The script skips
 `human.rhesus.lifted.anchors`: liftover recruits extra pairs near an established
@@ -104,7 +104,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 
 ```bash
 python3 kaks_from_pairs.py pairs.tsv both.cds.fa.gz \
-  --key record --strip-version -o kaks.tsv
+  --key record --strip-version -o primate.blocks
+gzip -kf primate.blocks human.bed rhesus.bed
 ```
 
 [`kaks_from_pairs.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/kaks_from_pairs.py)
@@ -159,8 +160,8 @@ Add the rhesus track the same way, with `rhesus_genes` under `rhesus`.
 
 ## Loading the blocks table in JBrowse
 
-The output is a pair table with the two rates after the two gene columns, which
-is the `.blocks` shape
+The output is a pair table, the two gene ids followed by dN, dS, the synonymous
+substitution count and the Fisher p, which is the `.blocks` shape
 [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track) reads:
 
 ```json addtrack
@@ -184,12 +185,12 @@ panel lists each as a feature attribute. **Color by value → dN/dS** in the
 palette button menu reads `dn` and `ds`, on a ramp with 1 at the middle and 2 at
 the top.
 
-Two `LinearSyntenyView` properties matter for a view this sparse. `alpha`
+Two `LinearSyntenyView` properties matter for a view this sparse. `opacity`
 defaults to 0.2 for whole-genome views where ribbons overlap, and 0.95 shows the
-colour as it is: **opacity** on the sliders button in the view header.
+colour as it is: **Opacity** on the sliders button in the view header.
 `drawCurves` separates stacked neighbours: **Curved lines** on the same menu.
 
-## Reading the plot
+## Reading LYZ against its neighbours by dN/dS
 
 The session below opens the collinear neighbourhood around _LYZ_ on human
 chromosome 12 from the hosted copy, coloured by dN/dS. In your own build, pick
@@ -205,12 +206,12 @@ chromosome 12 from the hosted copy, coloured by dN/dS. In your own build, pick
         "views": [
           {
             "assembly": "human",
-            "loc": "12:68,790,000-69,880,000",
+            "loc": "12:67,835,000-70,835,000",
             "tracks": ["human_genes"]
           },
           {
             "assembly": "rhesus",
-            "loc": "11:68,330,000-69,390,000",
+            "loc": "11:67,401,000-70,319,000",
             "tracks": ["rhesus_genes"]
           }
         ],
@@ -230,28 +231,36 @@ The neighbourhood is collinear, so colour is the only thing that varies. Messier
 and Stewart reported adaptive evolution of primate lysozyme in 1997.
 Foregut-fermenting primates use the enzyme as a digestive protein.
 
-Clicking the orange link shows a handful of synonymous differences and a Fisher
-p nowhere near significant. One pairwise comparison has little power; the
-published result rests on codon models across many primate lineages. Blue is the
-low end of the ramp, where the Fisher test does reach significance: a conserved
-gene accumulates measurable synonymous change while holding non-synonymous
-change near zero.
+Clicking the orange link shows its synonymous count and Fisher p in the detail
+panel; the published result rests on codon models across many primate lineages.
+Blue is the low end of the ramp, where the Fisher test does reach significance:
+a conserved gene accumulates measurable synonymous change while holding
+non-synonymous change near zero.
 
-## Checking the rates against the raw data
+## YEATS4 as the control beside LYZ
 
 _YEATS4_ begins just past where _LYZ_ ends, so the two share a locus and a
 divergence time and land at opposite ends of the ramp. It is conserved and
 compact, so its dS is low while its synonymous count clears the floor.
 
-The [script](#reproduce-it-end-to-end) prints two genome-wide counts: pairs
-exceeding 1, and those surviving the Fisher test. The second count is about what
-chance gives at that many tests.
+The [script](#reproduce-it-end-to-end) ends by printing how many pairs
+genome-wide exceed 1, and dN/dS and dS for every pair around _LYZ_ on chromosome
+12, _LYZ_ and _YEATS4_ among them.
 
 ## Reproduce it end to end
 
 [`build_primate_selection.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_primate_selection.sh)
 runs everything above and writes a `config.json` with both assemblies, both gene
-tracks, the ortholog track and a session opening the locus.
+tracks, the ortholog track and a session opening the locus:
+
+1. Turn each GFF3 into a BED and each CDS into a proteome keyed the same way,
+   stripping Ensembl's transcript versions so the ids match.
+2. Align human against rhesus with DIAMOND and chain the hits with jcvi, keeping
+   the chained anchors and not the lifted ones.
+3. Measure dN and dS on each pair, dropping pairs with too few synonymous
+   differences or a dS far above the cluster.
+4. Print the genome-wide ratios and the pairs around _LYZ_, and write the
+   config.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_primate_selection.sh
