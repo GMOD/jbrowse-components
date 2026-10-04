@@ -5,6 +5,7 @@ import { checkboxItem, radioItems, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -26,6 +27,7 @@ import type { RowCountByField } from './rowsFields.ts'
 import type { MultiRowClusterDialogModel } from './runMultiRowClustering.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
+import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { RowSource, TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
@@ -54,6 +56,9 @@ interface MultiRowMenuSelf
   rowsFieldCandidates: string[]
   rowCountsByField: ReadonlyMap<string, RowCountByField>
   setRowsField: (field: string) => void
+  facet?: FacetSetting
+  rowColorFields: readonly string[]
+  setFacet: (facet?: { field: string }) => void
   showBranchLength: boolean
   treeHasBranchLengths: boolean
   rowFocus?: readonly string[]
@@ -152,6 +157,30 @@ function rowsFieldMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   ]
 }
 
+// The facet's own field stays a radio while no row carries it, so a config's
+// `facet: 'group'` reads checked before the rows load.
+function groupByMenuItems(self: MultiRowMenuSelf): MenuItem[] {
+  const current = self.facet?.field
+  const fields =
+    current === undefined || self.rowColorFields.includes(current)
+      ? self.rowColorFields
+      : [...self.rowColorFields, current]
+  return fields.length
+    ? [
+        groupByRadioMenuItem({
+          current,
+          options: fields.map(field => ({ type: field, label: field })),
+          onSelect: field => {
+            self.setFacet({ field })
+          },
+          onNone: () => {
+            self.setFacet(undefined)
+          },
+        }),
+      ]
+    : []
+}
+
 export function buildMultiRowTrackMenuItems(
   self: MultiRowMenuSelf,
 ): MenuItem[] {
@@ -159,6 +188,7 @@ export function buildMultiRowTrackMenuItems(
     ...makeShowSubMenu(showMenuItems(self)),
     rowHeightMenuItem(self, ROW_HEIGHT_PRESETS),
     ...rowsFieldMenuItems(self),
+    ...groupByMenuItems(self),
     ...categoriesMenuItems(self),
     rowArrangementMenuItem(self, { ready: !!self.editableSources.length }),
     // Top-level, since clustering is only one of the three things writing

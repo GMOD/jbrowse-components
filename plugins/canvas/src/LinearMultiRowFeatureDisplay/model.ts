@@ -11,6 +11,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -1026,6 +1027,14 @@ export default function stateModelFactory(
          */
         setClusterField(field: string) {
           setConf(self, 'clusterField', field)
+        },
+        /**
+         * #action
+         * Writes the `facet` object; undefined draws no bands. Naming the
+         * field already banding, with no domain, keeps its band order.
+         */
+        setFacet(facet?: { field: string; domain?: readonly string[] }) {
+          setConf(self, 'facet', carryGroupDomain(facet, self.facet) ?? {})
         },
         /**
          * #action

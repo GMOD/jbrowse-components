@@ -1,7 +1,9 @@
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
+import { createTestEnvironment, ctgA } from './testEnv.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
+import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { RowCountByField } from './rowsFields.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { RowColorSetting, RowSource } from '@jbrowse/tree-sidebar'
@@ -33,6 +35,7 @@ function makeSelf(
     clusterCandidates: [] as string[],
     rowCountsByField: new Map<string, RowCountByField>(),
     setRowsField: () => {},
+    setFacet: () => {},
     showBranchLength: true,
     treeHasBranchLengths: false,
     rowDomain: [],
@@ -374,6 +377,104 @@ describe('multi-row track menu', () => {
         disabled: true,
       })
       expect(items.filter(i => 'checked' in i && i.checked)).toHaveLength(0)
+    })
+  })
+
+  describe('group by', () => {
+    function rowData(names: string[]): MultiRowRegionData {
+      return {
+        featureStarts: new Uint32Array(0),
+        featureEnds: new Uint32Array(0),
+        featureColors: new Uint32Array(0),
+        rectColorValues: new Uint32Array(0),
+        featureDeltas: new Int32Array(0),
+        rowValues: names,
+        featureRowValueIndex: new Uint32Array(0),
+        featureNames: [],
+        featureIds: [],
+        usedItemRgb: false,
+        rowsFieldCandidates: [],
+        rowsFieldCandidateValues: [],
+        legendCandidates: [],
+        resolvedRowsField: 'name',
+      }
+    }
+
+    function grouped(facet?: unknown) {
+      const { display } = createTestEnvironment({
+        displayConfig: {
+          rowGroups: [
+            { match: '^CLUP', group: 'Wolf' },
+            { match: '^VILL', group: 'Village dog' },
+          ],
+          ...(facet === undefined ? {} : { facet }),
+        },
+      }).createDisplay()
+      display.setRpcData(0, rowData(['CLUP1', 'VILL1', 'COLL1']), ctgA)
+      return display
+    }
+
+    function groupBy(display: { trackMenuItems: () => MenuItem[] }) {
+      return subMenuOf(display.trackMenuItems(), 'Group by...')
+    }
+
+    function click(items: MenuItem[], label: string) {
+      const item = items.find(i => 'label' in i && i.label === label)
+      ;(item as { onClick: () => void }).onClick()
+    }
+
+    it('offers nothing while no row carries an attribute', () => {
+      expect(labels(buildMultiRowTrackMenuItems(makeSelf()))).not.toContain(
+        'Group by...',
+      )
+    })
+
+    it('radios None then each row attribute, after One row per...', () => {
+      const items = buildMultiRowTrackMenuItems(
+        makeSelf({
+          rowsFieldCandidates: ['name'],
+          rowColorFields: ['group'],
+          facet: { field: 'group', domain: [] },
+        }),
+      )
+      expect(labels(items).slice(2, 4)).toEqual([
+        'One row per...',
+        'Group by...',
+      ])
+      expect(subMenuOf(items, 'Group by...')).toMatchObject([
+        { label: 'None', type: 'radio', checked: false },
+        { label: 'group', type: 'radio', checked: true },
+      ])
+    })
+
+    it('keeps a configured field checked before any row carries it', () => {
+      const items = buildMultiRowTrackMenuItems(
+        makeSelf({ facet: { field: 'group', domain: [] } }),
+      )
+      expect(checkedLabel(subMenuOf(items, 'Group by...'))).toEqual(['group'])
+    })
+
+    it('writes facet group from the menu, and None clears it', () => {
+      const display = grouped()
+      expect(checkedLabel(groupBy(display))).toEqual(['None'])
+
+      click(groupBy(display), 'group')
+      expect(display.facet).toEqual({ field: 'group', domain: [] })
+      expect(display.rowBands.map(b => b.label)).toEqual([
+        'Wolf',
+        'Village dog',
+        '(no group)',
+      ])
+
+      click(groupBy(display), 'None')
+      expect(display.facet).toBeUndefined()
+      expect(display.rowBands).toEqual([])
+    })
+
+    it('a re-pick of the banding field keeps its band order', () => {
+      const display = grouped({ field: 'group', domain: ['Village dog'] })
+      click(groupBy(display), 'group')
+      expect(display.facet).toEqual({ field: 'group', domain: ['Village dog'] })
     })
   })
 })
