@@ -38,9 +38,7 @@ const { createDisplay } = createTestEnvironment()
 
 function loaded(color: Record<string, unknown>) {
   const { display } = createDisplay()
-  for (const [slot, value] of Object.entries(color)) {
-    setConf(display, ['color', slot], value)
-  }
+  display.applyPlot({ color })
   display.setRpcData(DATA)
   return display
 }

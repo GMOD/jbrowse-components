@@ -167,7 +167,7 @@ describe('hic colour rows on a display', () => {
 
   function click(display: LinearHicDisplayModel, prefix: string) {
     const row = subMenuOf(buildHicTrackMenuItems(display), 'Color scheme').find(
-      i => labelOf(i)?.startsWith(prefix),
+      i => String(labelOf(i)).startsWith(prefix),
     )
     if (row && 'onClick' in row) {
       row.onClick()
