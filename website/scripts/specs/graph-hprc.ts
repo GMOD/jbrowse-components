@@ -1402,6 +1402,57 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
     ],
   },
+  // The same record over every haplotype: the view squeezes 464 rows into the
+  // height of 30, longest first
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_kiv2_copies_all_by_unit',
+    url: sessionSpec(HOSTED_HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:160,596,000-160,666,000',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              showOnlyGenes: true,
+              displayMode: 'compact',
+              height: 40,
+            },
+            {
+              trackId: 'hprc_kiv2_copies_all',
+              type: 'LinearVariantDisplay',
+              height: 40,
+            },
+          ],
+        },
+      ],
+    }),
+    viewportWidth: 1400,
+    viewportHeight: 1000,
+    hideTooltip: true,
+    clicksChange: "open the record's repeat copies view",
+    actions: [
+      { type: 'waitForAppSettled', timeout: 120000 },
+      {
+        type: 'rightclick',
+        anchor: {
+          locus: 'chr6:160,631,000',
+          track: 'hprc_kiv2_copies_all',
+          fracY: 0.2,
+        },
+      },
+      { type: 'waitForText', text: 'Show repeat copies' },
+      { type: 'click', text: 'Show repeat copies' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="tandem-repeat-view"]',
+      },
+      { type: 'delay', ms: 500 },
+    ],
+  },
   // TRGT's ABCA7 alleles rewritten as <CNV:TR> records by the TandemRepeat
   // plugin's trgt-to-cnv-tr.mjs, opened by clicking the record
   {
@@ -1483,7 +1534,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             // and assemblies part, and two carrying a walk the view leaves
             // unscored: HG02559's second allele has no spanning read,
             // HG04199's second walk does not span the array
-            subgraphHaplotypes: ABCA7_SAMPLES,
             walkRowSamples: ABCA7_SAMPLES,
             paneHeight: 360,
           },

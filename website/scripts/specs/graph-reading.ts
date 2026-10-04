@@ -180,6 +180,7 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
           kiv2WalksGraphTrack({
             layoutMode: 'walkrows',
             colorScheme: 'uniform',
+            subgraphHaplotypes: [],
             // GRCh38's bar is the graph's own backbone nodes, the other rows
             // are flat bars; at depth width its nodes swelled and thinned by
             // carriage

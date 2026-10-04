@@ -94,10 +94,13 @@ one per haplotype as a gbz-base database. Type the array's window,
 `chr6:160,616,002-160,646,753`, put the rGFA graph track back to a row of
 segments with **Display types → Feature display**, and turn the gbz-base track
 on from the track selector. **Display types → Graph** in its track menu draws
-that same track as a graph of the walks. Enter the eight lanes it drew in the
-**Haplotypes** field of **Settings**,
-`HG00097.1, HG00099.1, HG00128.1, HG00133.1, HG01109.1, HG01123.1, HG01960.1, HG02055.1`,
-and pick **Layout → Force-directed layout**.
+that same track as a graph of the walks, and **Layout → Force-directed layout**
+lays it out.
+
+**Haplotypes → The track's 8 assemblies** is checked in the same menu: the
+track cuts for the eight HPRC assemblies the hosted config loads. Every
+haplotype's walks through the array hold more nodes than a force-directed
+drawing takes, so this step keeps the eight, and walk rows below draw them all.
 
 A node draws thicker the more walks visit it (as in Bandage), so the shared
 backbone is the thick line and copies on one haplotype are thin loops. Pick
@@ -106,17 +109,32 @@ a readout gives its length against the reference walk.
 
 <Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Walk. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
-Pick **Layout → Walk rows** and **Color → Uniform**: each walk becomes a bar,
-longest first, blue on GRCh38's path through the graph and purple off it. At
-KIV-2 each copy a haplotype adds is a run of new nodes, so the added copies read
-as its purple stretch.
+## Every haplotype's KIV-2 array as a bar {#every-haplotypes-copies}
 
-<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, under LPA with the KIV-2 bubble boxed in the bubbles track. The purple stretch of each bar is kringle copies off GRCh38's path, and each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
+Walk rows draw each walk as a bar, so every haplotype in the release fits in
+the track. In the gbz-base track's menu:
+
+- **Layout → Walk rows** and **Color → Uniform** turn each walk into a bar,
+  longest first, blue on GRCh38's path through the graph and purple off it
+- **Haplotypes → Every haplotype in the graph** cuts the window again for the
+  whole release
+
+At KIV-2 each copy a haplotype adds is a run of new nodes, so its added copies
+read as the purple stretch of its bar. The rows pack to fit the track, too
+thin to letter, so hover a bar for its haplotype, length and excess over
+GRCh38.
+
+<Figure caption="Every HPRC haplotype's walk across the KIV-2 array in walk rows, longest first under GRCh38's, beneath LPA with the KIV-2 bubble boxed in the bubbles track. The purple stretch of each bar is kringle copies off GRCh38's path, and the bar ends step down one copy at a time." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 
 Click the KIV-2 bubble boxed in the bubbles track. Its details give
 `shortestAlleleLength` and `longestAlleleLength`, the shortest and longest
-routes the rGFA holds there. Every bar in walk rows falls between them, and
-GRCh38's, with no purple, is the shortest of the nine.
+routes the rGFA holds there, and the bars run from about the one to about the
+other. GRCh38's short blue bar sits near the bottom of that range, with a
+haplotype carrying fewer copies below it.
+
+To read one sample at full size, right-click its bar and pick **Show only**
+with its name, or pick names under **Samples → Choose samples...**, and
+**Samples → Every sample** brings the cohort back.
 
 ## Telling KIV-2's two repeat units apart {#which-copy-is-which}
 
@@ -148,9 +166,31 @@ copy coloured by its unit.
 <Figure caption="The KIV-2 record under LPA, and the view its right-click item opens: one bar per haplotype, each copy coloured by its unit. GRCh38's short array has one copy of unit 2, and HG00133's runs far past the dashed line that marks GRCh38's length, all of unit 1." src="/img/pangenome/hprc_kiv2_copies_by_unit.png" />
 
 The copies across the nine arrays form two units, and copies of one unit differ
-from each other less than the two units do. Unit 2 opens most of the HPRC arrays
-and sits fourth in GRCh38's. The copy counts agree with the walk lengths in walk
-rows.
+from each other less than the two units do. Unit 2 opens five of the eight HPRC
+arrays and sits fourth in GRCh38's. The copy counts agree with the walk lengths
+in walk rows.
+
+A second hosted track holds the same record over every haplotype whose walk
+reaches both flanks of the array, 464 arrays counting GRCh38's:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "hprc_kiv2_copies_all",
+  "name": "LPA KIV-2 copies by unit, all HPRC haplotypes",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz"
+}
+```
+
+**Show repeat copies** on its record squeezes the 464 bars into the height of
+30, longest first and too thin to label, so hover a copy for its haplotype.
+
+<Figure caption="The KIV-2 record over all 464 HPRC arrays, longest first, each copy coloured by its unit. Unit 2's copies gather at the start of the arrays that hold any, and the arrays end in a staircase one copy apart." src="/img/pangenome/hprc_kiv2_copies_all_by_unit.png" />
+
+Across the cohort, unit 2 opens just over half the arrays, 245 of 464. Every
+array that holds unit 2 opens with it except GRCh38's, whose only unit 2 copy
+sits fourth.
 
 We wrote the KIV-2 record from the walks above. To write one for your own array,
 we'll first cut the walks over it out of the gbz-base database as a GFA
@@ -187,8 +227,8 @@ Alzheimer's disease risk (De Roeck et al. 2018). Each haplotype's walk length
 comes from its assembly, and PacBio measured the same repeat from HiFi reads in
 100 HPRC samples. The session below opens the genes, the catalogue's VNTR row,
 the TRGT genotypes and the gbz-base graph track in **Walk rows** layout with
-**Uniform** color, with every haplotype included (an empty
-`subgraphHaplotypes`):
+**Uniform** color, cut for **Haplotypes → Every haplotype in the graph** (an
+empty `subgraphHaplotypes`):
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -294,10 +334,10 @@ motif-length units, each walk gets a black tick at the allele TRGT called for it
 
 Each walk's bar carries a tick at the allele length TRGT called from reads, so a
 tick at the bar's end means reads and assembly agree. To compare seven samples,
-edit the graph display in the ABCA7 session. List HG00099, HG03688, HG00741,
-HG02647, HG01943, HG02559 and HG04199 in `subgraphHaplotypes`, list the same
-names in `walkRowSamples` to show their walks in pairs in that order, and set
-`repeatKey` to `chr19:1049406-1050096`. The samples fall into three groups:
+keep the _ABCA7_ record picked under **Repeat**, choose **Samples → Choose
+samples...** in the graph track's menu, and pick HG00099, HG03688, HG00741,
+HG02647, HG01943, HG02559 and HG04199 in that order. Their walks show in pairs,
+in the order picked, and fall into three groups:
 
 - HG00099, HG03688 and HG00741 tick at each bar's end: reads and assemblies
   agree.
@@ -308,6 +348,9 @@ names in `walkRowSamples` to show their walks in pairs in that order, and set
   does not span the repeat, so its readout marks that walk partial.
 
 <Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar marked with the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
+
+**Samples → Where walk and call disagree** shows every sample with a walk far
+from its call, and **Samples → Every sample** brings the cohort back.
 
 ## Reading TRGT's allele lengths and spanning reads
 
