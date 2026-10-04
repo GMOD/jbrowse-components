@@ -15,8 +15,7 @@ puts them on tracks. We run it on HPRC release 2, and:
 - load the plugin and run the command
 - open the track as a graph and as a lane of segments
 - check the index against the graph
-- add two optional layers: the haplotypes on each segment, and the walk of each
-  haplotype
+- add two optional layers: haplotypes per segment, and haplotype routes
 
 :::caution Experimental
 
@@ -92,10 +91,11 @@ bash build_pangenome_graph.sh graph.rgfa.gz out --assembly hg38
 ```
 
 A **plain GFA**, from pggb, odgi, vg or base-level Minigraph-Cactus, also needs
-the backbone sample and its bubbles. `vg deconstruct` writes the snarl VCF the
-bubbles come from, one record per top-level snarl against the reference path
-(`pggb -V` writes the same file). The VCF's CHROM must be the assembly's
-refName, so rename the PanSN path as the
+the backbone sample and its bubbles. The bubbles come from a snarl VCF (vg's
+word for a bubble is snarl): `vg deconstruct` writes one record per top-level
+snarl against the reference path, and `pggb -V` writes the same file. The VCF's
+CHROM must be the assembly's refName, so rename the PanSN path
+(`sample#haplotype#contig`) as the
 [pggb tutorial](/docs/tutorials/pangenome_ecoli#opening-the-graph-in-the-graph-genome-view)
 does:
 
@@ -127,15 +127,15 @@ The command writes these files beside the prefix:
 | `.alleles.bed.gz`        | one row per allele, with a CIGAR that states its size                               |
 | `.config.json`           | the tracks below, with the plugin entry                                             |
 
-### The bubble tier {#a-whole-chromosome-the-bubble-tier}
+### The bubble tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
 
-The tier draws each bubble as one node on the reference backbone, and folds
-bubbles under its threshold into the backbone. A bubble's size for that test is
-the larger of its reference span and its longest allele. The threshold is in the
-file name, 10,000 bp by default; `--tier` sets it, and a pggb graph defaults to
-50, since most of its bubbles are single bases.
+The bubble tier is a coarse copy of the graph. It draws each bubble as one node
+on the reference backbone and folds bubbles under its threshold into it. A
+bubble's size for that test is the larger of its reference span and its longest
+allele. The threshold is in the file name, 10,000 bp by default; `--tier` sets
+it, and a pggb graph defaults to 50, since most of its bubbles are single bases.
 
-## The graph track {#the-two-indexes-a-graph-track-reads}
+## Configuring the graph track {#the-two-indexes-a-graph-track-reads}
 
 The config's first track is the graph. `uri` is the prefix, and `coarse` names
 the tier the track draws past `aboveBpPerPx` bp per pixel. `assemblyNameToPanSN`
@@ -163,18 +163,18 @@ only when the two differ.
 ```
 
 Turned on, the track draws as a graph. **Display types → Feature display** in
-its track menu draws the same segments as a lane.
+its track menu draws the same segments as a row.
 
 <Figure caption="The HPRC graph's segment index drawn over the C4 region on hg38. The segments tile the window end to end and break where the graph branches. The slivers fall among the C4 and CYP21 copies, with long unbroken segments either side." src="/img/pangenome/prepare_graph_segments.png" />
 
 The command writes `out.config.json`. Merge its `plugins` and `tracks` entries
 into your own config.
 
-The other three tracks in the config draw the bubbles as a lane and as a curve,
-and the allele inventory as an alignments track. Turn them on and switch the
-graph back with **Display types → Graph**.
+The other three tracks in the config draw the bubbles as a row and as a curve,
+and the allele inventory, one row per alternative path, as an alignments track.
+Turn them on and switch the graph back with **Display types → Graph**.
 
-<Figure caption="The four tracks the command writes, over the C4 region on hg38: the bubbles as a lane and as a curve, the allele inventory, and the graph track at the bottom." src="/img/pangenome/host_your_own.png" />
+<Figure caption="The four tracks the command writes, over the C4 region on hg38: the bubbles as a row and as a curve, the allele inventory, and the graph track at the bottom." src="/img/pangenome/host_your_own.png" />
 
 A node's right-click menu offers **Open in** the haplotype named in its rGFA id,
 such as `NA20809#2#CM094351.1`, when the session holds an assembly named or
@@ -192,7 +192,7 @@ tabix hprc.segs.bed.gz 'GRCh38#0#chr1:103,690,000-103,700,000' | head -3
 ```
 
 Columns one to three are the contig and span, four is the segment id, and five
-is its rank. Ask the graph about one of those segments:
+is its rank (build order). Ask the graph about one of those segments:
 
 ```bash
 gfatools view -l s12829 -r 0 hprc-v2.1-mc-grch38.sv.gfa.gz
@@ -206,11 +206,11 @@ matches the fifth.
 - **Backbone rows with no alleles** mark a place where the graph collapsed,
   which minigraph does to near-identical segmental duplications.
 
-## Which haplotypes walk each segment
+## Recording which haplotypes pass through each segment {#which-haplotypes-walk-each-segment}
 
 The rank in an rGFA is build order, so it names the first assembly a segment
-came from. The haplotypes whose paths walk each segment come from one of two
-sources.
+came from. The full list of haplotypes whose paths pass through each segment
+comes from one of two sources.
 
 With the **assemblies**, map each one back through the graph, reference first,
 and read the path it takes:
@@ -227,10 +227,10 @@ minigraph -cxasm --call -t 8 graph.rgfa.gz sample.fa > sample.call.bed
 
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
 runs that per assembly and joins the output into one tabix-indexed row per
-bubble per sample, drawn as one lane per haplotype.
+bubble per sample, drawn as one row per haplotype.
 
 With a **plain GFA**, the command records the haplotypes whose paths visit each
-segment as an `SM:Z:` tag while it walks the paths. The node panel lists them as
+segment as an `SM:Z:` tag while it reads the paths. The node panel lists them as
 `samples`, and a track reads them as `feature.samples` and their count as
 `feature.sampleCount`. **Color by... → Attribute...** with `sampleCount` gives
 each count a separate colour. Past a handful of haplotypes a ramp reads better;
@@ -267,11 +267,11 @@ separately.
 [The HPRC tutorial](/docs/tutorials/pangenome_hprc#every-haplotype-with-the-allele)
 reads HPRC's phased VCF, which lists every haplotype's allele at every bubble.
 
-## Haplotype walks: a gbz-base database
+## Building a gbz-base database of haplotype walks {#haplotype-walks-a-gbz-base-database}
 
-A `.gbz` is vg's indexed form of a graph, with one walk per haplotype. The
-browser reads it as a **gbz-base database**, the graph in SQLite, which three
-commands build.
+A `.gbz` is vg's indexed form of a graph, with one walk per haplotype (its route
+through the graph). The browser reads it as a **gbz-base database**, the graph
+in SQLite, which three commands build.
 
 Build the distance-index chains. vg 1.69.0 or newer reads them out of a distance
 index, and a top-level one (`vg index --no-nested-distance`) is enough:
@@ -297,7 +297,7 @@ It reads the database beside the GBZ to check that the two match:
 # --interval: bp between recorded GBWT positions per path; denser is bigger
 #   and faster
 # --anchor-spacing: bp between anchor nodes on the reference path, so a window
-#   walks only the chosen lanes
+#   reads the chosen haplotypes' paths
 gbz-haplotype-index --interval 16384 --anchor-spacing 131072 \
   graph.gbz graph.gbz.db graph.haplotype-index.db
 ```
@@ -348,15 +348,15 @@ the lanes this track produces.
 The one command builds the graph track, the bubbles, the tier and the allele
 inventory, with the tools under [Prerequisites](#prerequisites). It:
 
-1. places every segment on a genome. An rGFA states each segment's sequence and
-   offset in its own tags. For a plain GFA the command walks the backbone's
-   paths first, so every segment they visit lands on the reference, and places
-   each remaining segment on the first other haplotype that walks it
+1. places every segment on a genome. An rGFA states each segment's position in
+   its own tags. For a plain GFA the command follows the backbone's paths first,
+   so every segment on them lands on the reference, and places each remaining
+   segment on the first other haplotype whose path visits it
 2. finds the bubbles, with `gfatools bubble` on an rGFA or from the snarl VCF on
    a plain GFA, and builds the tier from them
 3. reads each allele out of the links, following it from where it leaves the
    backbone to where it rejoins. The reference between those two points and the
-   sequence the allele walks give the CIGAR its size
+   sequence the allele passes through give the CIGAR its size
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
