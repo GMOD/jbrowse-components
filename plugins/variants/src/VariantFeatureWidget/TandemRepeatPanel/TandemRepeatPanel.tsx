@@ -152,6 +152,9 @@ function Row({
   const unit = repeat.unitLength
   const ticked =
     !allele.runs && unit !== undefined && unit * scale >= MIN_COPY_PX
+  const named = labelled
+    ? allele.label
+    : `${allele.label}, ${readout(allele, referenceBp, unit)}`
   return (
     <g
       data-testid="tandem-repeat-row"
@@ -194,7 +197,7 @@ function Row({
               fill={unitColor(run.unit)}
             >
               <title>
-                {`${allele.label}: ${which} of ${copies.length}, unit ${run.unit + 1}, ${run.bp.toLocaleString()} bp`}
+                {`${named}: ${which} of ${copies.length}, unit ${run.unit + 1}, ${run.bp.toLocaleString()} bp`}
               </title>
             </rect>
           )
@@ -207,7 +210,11 @@ function Row({
           height={barPx}
           fill={NO_RUNS}
         >
-          <title>{`${allele.label}: ${allele.bp.toLocaleString()} bp`}</title>
+          <title>
+            {labelled
+              ? `${allele.label}: ${allele.bp.toLocaleString()} bp`
+              : named}
+          </title>
         </rect>
       )}
       {ticked

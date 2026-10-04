@@ -314,7 +314,7 @@ test('a cohort by haplotype draws every row, squashed and unlabelled', async () 
   expect(queryByText('S0#1')).toBeNull()
   expect(
     getAllByTestId('tandem-repeat-row')[0]!.querySelector('title')?.textContent,
-  ).toMatch(/^S0#1: /)
+  ).toMatch(/^S0#1, [\d.]+ (bp|kb)\b.*: /)
 })
 
 test('a record with no ID does not repeat its locus in the panel header', async () => {

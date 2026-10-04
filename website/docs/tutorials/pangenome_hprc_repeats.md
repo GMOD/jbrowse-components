@@ -97,10 +97,10 @@ on from the track selector. **Display types → Graph** in its track menu draws
 that same track as a graph of the walks, and **Layout → Force-directed layout**
 lays it out.
 
-**Haplotypes → The track's 8 assemblies** is checked in the same menu: the
-track cuts for the eight HPRC assemblies the hosted config loads. Every
-haplotype's walks through the array hold more nodes than a force-directed
-drawing takes, so this step keeps the eight, and walk rows below draw them all.
+**Haplotypes → The track's 8 assemblies** is checked in the same menu: the track
+cuts for the eight HPRC assemblies the hosted config loads. Every haplotype's
+walks through the array hold more nodes than a force-directed drawing takes, so
+this step keeps the eight, and walk rows below draw them all.
 
 A node draws thicker the more walks visit it (as in Bandage), so the shared
 backbone is the thick line and copies on one haplotype are thin loops. Pick
@@ -111,8 +111,8 @@ a readout gives its length against the reference walk.
 
 ## Every haplotype's KIV-2 array as a bar {#every-haplotypes-copies}
 
-Walk rows draw each walk as a bar, so every haplotype in the release fits in
-the track. In the gbz-base track's menu:
+Walk rows draw each walk as a bar, so every haplotype in the release fits in the
+track. In the gbz-base track's menu:
 
 - **Layout → Walk rows** and **Color → Uniform** turn each walk into a bar,
   longest first, blue on GRCh38's path through the graph and purple off it
@@ -120,9 +120,8 @@ the track. In the gbz-base track's menu:
   whole release
 
 At KIV-2 each copy a haplotype adds is a run of new nodes, so its added copies
-read as the purple stretch of its bar. The rows pack to fit the track, too
-thin to letter, so hover a bar for its haplotype, length and excess over
-GRCh38.
+read as the purple stretch of its bar. The rows pack to fit the track, too thin
+to letter, so hover a bar for its haplotype, length and excess over GRCh38.
 
 <Figure caption="Every HPRC haplotype's walk across the KIV-2 array in walk rows, longest first under GRCh38's, beneath LPA with the KIV-2 bubble boxed in the bubbles track. The purple stretch of each bar is kringle copies off GRCh38's path, and the bar ends step down one copy at a time." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 
@@ -132,9 +131,9 @@ routes the rGFA holds there, and the bars run from about the one to about the
 other. GRCh38's short blue bar sits near the bottom of that range, with a
 haplotype carrying fewer copies below it.
 
-To read one sample at full size, right-click its bar and pick **Show only**
-with its name, or pick names under **Samples → Choose samples...**, and
-**Samples → Every sample** brings the cohort back.
+To read one sample at full size, right-click its bar and pick **Show only** with
+its name, or pick names under **Samples → Choose samples...**, and **Samples →
+Every sample** brings the cohort back.
 
 ## Telling KIV-2's two repeat units apart {#which-copy-is-which}
 
@@ -390,10 +389,10 @@ track:
 Open `chr19:1,049,000-1,050,500` and click the record. A **Tandem repeat** card
 opens above the details. With 94 samples the card starts on **By allele**: one
 bar for each of the 167 alleles, squeezed into the card's height longest first.
-They are too many to label, so hovering a copy names its allele and that
-allele's share of the 188 called alleles.
+They are too many to label, so hovering a copy names its allele, that allele's
+share of the 188 called alleles and its length.
 
-<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each bar is one of TRGT's alleles as copies of the 51 bp motif, most common first, with its share of the called alleles at left and its length and copy count at right." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
+<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each of the 167 bars is one of TRGT's alleles as copies of the 51 bp motif, longest first, squeezed into the card's height; hovering a copy gives its allele, share and length." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
 Almost every allele is called once, and no sample has GRCh38's allele. Click a
 bar: the other bars fade and the **Samples** card narrows to the samples with
@@ -402,9 +401,9 @@ hovering a copy names its sample.
 
 ## Checking HG00099's allele lengths against TRGT's AL field
 
-HG00099's genotype in the sample table is `1/2` with `AL` `387,3161`. The card's
-ALT 1 bar reads 387 bp and its ALT 2 bar reads 3.2 kb, so the alleles' lengths
-match what TRGT measured.
+HG00099's genotype in the sample table is `1/2` with `AL` `387,3161`. Hovering a
+copy in the card names its allele with that allele's length: ALT 1's bar gives
+387 bp and ALT 2's 3.2 kb, so the alleles' lengths match what TRGT measured.
 
 ## Reproduce it end to end
 
