@@ -7,11 +7,12 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-Pooling the reads of each single-cell cluster and placing them on the genome
-shows which cell types express a marker gene, and where in the gene their reads
-land. We pool the 10x 5k PBMC dataset into one coverage BigWig per cell type
-outside JBrowse and load the set as one multi-wiggle track with a row per cell
-type. Then we add a row per cell underneath.
+Pooling the reads of each single-cell cluster, called pseudobulking, and placing
+them on the genome shows which cell types express a marker gene, and where in
+the gene their reads land. We pool the 10x 5k peripheral blood (PBMC) dataset
+into one coverage BigWig per cell type outside JBrowse and load the set as one
+multi-wiggle track with a row per cell type. Then we add one row per cell under
+the pooled rows.
 
 ## Prerequisites
 
@@ -61,10 +62,10 @@ the annotation. The build here starts from a barcode-to-label table and the BAM.
 
 Two decisions determine whether the rows can be compared:
 
-- **Duplicates.** Cell Ranger flags PCR duplicates of the same UMI with `0x400`;
-  filter them out so a row's height tracks expression. Restricting to uniquely
-  mapped reads (`MAPQ` 255, what STAR emits inside Cell Ranger) keeps
-  multimappers off paralogs
+- **Duplicates.** Cell Ranger flags PCR duplicates of the same UMI (unique
+  molecular identifier) with `0x400`; filter them out so a row's height tracks
+  expression. Restricting to uniquely mapped reads (`MAPQ` 255, what STAR emits
+  inside Cell Ranger) keeps multimappers off paralogs
 - **Normalization.** Cell types differ in cell count and depth, so each pooled
   track needs scaling (CPM is usual) before one row's height means anything next
   to another's
@@ -149,7 +150,7 @@ The script writes each row as a bedGraph, scales it by
 bedGraphToBigWig CD8_T.all.bg hg38.chrom.sizes bw/CD8_T.bw
 ```
 
-## Loading the BigWigs
+## Loading the per-cell-type BigWigs as one track
 
 One `MultiQuantitativeTrack` holds the set, one `BigWigAdapter` subadapter per
 cell type with its `name`, `color`, and `group`. The fence lists the first three
@@ -207,7 +208,7 @@ would light up their own rows by construction. To test the labels, open nine
 markers the panels leave out, one per cell type: _CD40LG_, _LINC02446_, _SPON2_,
 _CD22_, _S100A12_, _HES4_, _ENHO_, _LRRC26_ and _GNG11_. 10x 3' kits sequence
 the 3' end of each transcript, so coverage is a spike near the polyadenylation
-site; paste each gene's 3' end into the location box as one discontinuous view:
+site; paste each gene's 3' end into the location box to open them side by side:
 
 ```text
 chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,931 chr19:35,345,361-35,349,361 chr1:153,371,710-153,375,710 chr1:996,963-1,000,963 chr9:34,519,042-34,523,042 chr9:137,166,757-137,170,757 chr7:93,926,610-93,930,610
@@ -224,10 +225,10 @@ multi-row track** workflow under **Add track** takes the same URLs one per line.
 [](/docs/tutorials/scatac_pseudobulk) shows both with per-row names, colors and
 groups.
 
-## One row per cell
+## Per-cell coverage rows from a Zarr store
 
-A pseudobulk row is a sum over thousands of cells. A cells-by-bins Zarr matrix
-puts the cells under it, one row each.
+A pseudobulk row sums thousands of cells. A Zarr store holding a cells-by-bins
+coverage matrix adds the cells themselves, one row each, under the pooled rows.
 
 The `MultiWiggleZarrAdapter` from
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) reads
@@ -274,10 +275,9 @@ points at a store with the same layout, built by the reproduce script below:
 A relative `uri` resolves against the config that holds it, so the store is
 served as static files beside `config.json`.
 
-The store covers one marker window per chromosome, laid end to end and looked up
-by chromosome name, so two markers on one chromosome would collide and the build
-script picks one per chromosome. Per-cell coverage is informative only where the
-cells have reads, so covering marker windows keeps the store under a megabyte.
+The store holds one marker window per chromosome, looked up by chromosome name,
+so the build script picks one marker per chromosome. Covering only marker
+windows, where the cells have reads, keeps the store small.
 
 Type `chr12:69,353,000-69,354,500` into the location box, the 3' end of _LYZ_,
 where the 3' kit's reads land:
@@ -285,8 +285,8 @@ where the 3' kit's reads land:
 <Figure caption="The nine pseudobulk rows at LYZ above the individual cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
 
 Summed, the lymphocyte rows are a low flat line beside the monocyte peak. Per
-cell, many of those cells have a single UMI of a monocyte gene: ambient RNA in
-the droplet.
+cell, many lymphocytes have a single UMI of a monocyte gene, ambient RNA that
+was free in the droplet.
 
 Two settings in the config above decide whether the speckle is visible:
 
