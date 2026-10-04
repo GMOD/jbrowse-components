@@ -136,7 +136,7 @@ jbrowse-desktop myproject/config.json
 (On macOS: `open -a "JBrowse 2" myproject/config.json`. See
 [launching from the command line](/docs/quickstart_desktop#launching-from-the-command-line).)
 
-<Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path, with no start screen and no Add track form. The session name, the assembly and the track labels all come from the commands above."/>
+<Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path, with no start screen and no Add track form. The session name and the track labels come from the commands above, run on the volvox test genome."/>
 
 Desktop resolves the relative `uri`s into absolute local paths for the renderer
 and autosaves your work to a separate session file, so `config.json` keeps its
@@ -158,8 +158,14 @@ needs a JBrowse Web instance alongside it, set up either way:
 
 ## Index gene names for search
 
-To make the location box search by gene name, index the text of your gene
-tracks. `text-index` writes the index into the same directory:
+The project above has no gene track yet, so add one first:
+
+```bash
+jbrowse add-track genes.gff3.gz --load copy --out myproject
+```
+
+`text-index` then indexes its names into the same directory, and the location
+box finds a gene by name:
 
 ```bash
 jbrowse text-index --out myproject

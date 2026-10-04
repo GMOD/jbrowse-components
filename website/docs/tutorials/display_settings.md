@@ -176,13 +176,14 @@ The embedded React components take the same keys through the `view` prop:
 
 ```js
 view: {
-  loc: 'ctgA:1105..3000',
+  loc: 'ctgA:1-10000',
   tracks: [
     {
-      trackId: 'volvox_microarray',
-      type: 'LinearWiggleDisplay',
-      mark: 'line',
-      height: 150,
+      trackId: 'volvox_sv_cram',
+      type: 'LinearAlignmentsDisplay',
+      height: 250,
+      linkedReads: 'normal',
+      color: { field: 'insertSizeAndOrientation' },
     },
   ],
 }
