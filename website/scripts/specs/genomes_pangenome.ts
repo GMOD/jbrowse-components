@@ -115,7 +115,7 @@ export const genomesPangenomeSpecs: ScreenshotSpec[] = [
     url: HPRC_PAGE,
     readyText: 'Whole chromosome',
     viewportWidth: 1100,
-    viewportHeight: 975,
+    viewportHeight: 996,
     liveLabel: 'Open the HPRC page',
     diffThreshold: 0.02,
     annotations: [
