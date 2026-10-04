@@ -306,8 +306,9 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
  * A plugin's own overlay, through `LinearGenomeView-HighlightSVGComponent`, is
  * state this cannot see, so a change to it shows up at the figure's next
  * redraw rather than at once. So does a track's vertical scroll, which moves
- * every wheel frame and has no settled copy to key on. Subscribing from inside the figure is the thing
- * that must not happen — see the note at the top of the file.
+ * every wheel frame and has no settled copy to key on. Subscribing from inside
+ * the figure is the thing that must not happen — see the note at the top of
+ * the file.
  */
 function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
   // A closed view is not an error, it is a host doing an ordinary thing in an
