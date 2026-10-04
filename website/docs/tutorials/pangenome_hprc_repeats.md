@@ -389,15 +389,16 @@ track:
 
 Open `chr19:1,049,000-1,050,500` and click the record. A **Tandem repeat** card
 opens above the details. With 94 samples the card starts on **By allele**: one
-bar per allele, each labelled with its share of the 188 called alleles, most
-common first.
+bar for each of the 167 alleles, squeezed into the card's height longest first.
+They are too many to label, so hovering a copy names its allele and that
+allele's share of the 188 called alleles.
 
 <Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each bar is one of TRGT's alleles as copies of the 51 bp motif, most common first, with its share of the called alleles at left and its length and copy count at right." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
-Almost every allele is called once, and no sample has GRCh38's allele. Click the
-ALT 1 bar: the other bars fade and the **Samples** card narrows to the samples
-with it. **By haplotype** swaps the bars for the first 30 called alleles, each
-labelled with its sample.
+Almost every allele is called once, and no sample has GRCh38's allele. Click a
+bar: the other bars fade and the **Samples** card narrows to the samples with
+that allele. **By haplotype** swaps in one bar per called allele, all 188, and
+hovering a copy names its sample.
 
 ## Checking HG00099's allele lengths against TRGT's AL field
 
