@@ -86,7 +86,7 @@ naming as the assembly. In JBrowse Web you can instead paste the URL into **File
 
 <Figure caption="The VCF on initial load, in the default display: one orange box per variant." src="/img/trio-basic.png"/>
 
-## Enabling the matrix view
+## Showing the trio VCF as a genotype matrix
 
 In the track menu, choose **Display types → Multi-sample variant display** (the
 [multi-sample variant display](/docs/user_guides/multivariant_track)), then
@@ -96,31 +96,29 @@ positions.
 
 <Figure caption="The multi-sample variant display as a genotype matrix. One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
 
-## Enabling the phased mode
+## Splitting each sample into two haplotype rows
 
 Turn on **Rendering mode → Phased** from the track menu:
 
-- it splits each sample into its two haplotypes, so the three trio members
-  become six rows
-- it needs phased genotypes, written `0|1`; unphased calls (`0/1`) need a
+- each sample splits into its two haplotypes, so the three trio members become
+  six rows
+- the mode needs phased genotypes, written `0|1`; unphased calls (`0/1`) need a
   phasing program such as SHAPEIT first
 
 <Figure caption="The phased rendering mode. Rows are the two haplotypes (HP0, HP1) of child HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
-<Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then the phased rendering mode splitting each trio member into its two haplotype rows, zoomed out to the window the rest of the page works in." />
+<Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then the phased rendering mode splitting each trio member into its two haplotype rows." />
 
-Each of the child's haplotypes comes from one parent, and it matches one of that
-parent's two copies for a stretch, then the other copy. The rest of this
-tutorial turns that pattern into a painted track.
+Each of the child's two haplotypes comes from one parent: along it, the matching
+parental copy is one of that parent's two copies for a stretch, then the other.
+The rest of the page paints that pattern as a track.
 
-## Running hap-ibd
+## Running hap-ibd to find segments shared with each parent
 
 [hap-ibd](https://github.com/browning-lab/hap-ibd) computes the matching
-stretches as "identical by descent" (IBD) segments. hap-ibd is built for
+stretches as "identical by descent" (IBD) segments. It is built for
 population-scale cohorts and also runs on a single trio. It takes a phased VCF
-and a genetic map in PLINK format; hap-ibd's README links the GRCh38 maps, and
-`hap-ibd.jar` is on its
-[releases page](https://github.com/browning-lab/hap-ibd/releases).
+and a genetic map in PLINK format.
 
 The trio VCF calls its chromosome `1`, with no `chr` prefix, so the run uses the
 `no_chr_in_chrom_field` variant of the GRCh38 PLINK map:
@@ -128,9 +126,9 @@ The trio VCF calls its chromosome `1`, with no `chr` prefix, so the run uses the
 <!-- from: scripts/build_khv_trio_hapibd.sh -->
 
 ```bash
-# min-seed is the shortest shared stretch (in cM) hap-ibd starts a segment
-# from, and min-output the shortest segment it writes; both default to 2.0,
-# so 1.0 also reports segments between 1 and 2 cM
+# min-seed: shortest shared stretch (cM) hap-ibd starts a segment from
+# min-output: shortest segment (cM) it writes
+# both default to 2.0, so 1.0 also reports segments between 1 and 2 cM
 java -jar hap-ibd.jar \
   gt=HG02024_VN049_KHVTrio.chr1.vcf.gz \
   map=plink.chr1.GRCh38.map \
@@ -150,17 +148,16 @@ them:
 The 1000 Genomes pedigree line `VN049 HG02024 HG02026 HG02025` gives the roles:
 father HG02026, mother HG02025. Within one child haplotype, the matching
 _parental_ copy flips between the parent's copy 1 and copy 2 at each crossover.
-The track below paints those flips.
 
 hap-ibd's output has gaps, plus short spurious segments from the statistical
-phasing, so the next step merges it into clean blocks before painting.
+phasing, so the next step merges its segments into clean blocks before painting.
 
 ## Converting hap-ibd data into painted inheritance blocks
 
 The painted track has one row per parental haplotype (father copy 1, father copy
-2, mother copy 1, mother copy 2), with the child's inherited chromosome tiled
-across each parent's pair of rows. A crossover shows up as a block stepping from
-one row to its partner.
+2, mother copy 1, mother copy 2), with the child's inherited chromosome split
+between each parent's pair of rows. A crossover shows up as a block stepping
+from one row to its partner.
 
 [`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
 does the cleanup. Per child haplotype it:
@@ -186,16 +183,15 @@ tabix -p bed trio.hapibd.bed.gz
 
 [`sort-bed`](/docs/cli#jbrowse-sort-bed) keeps the `#`-header line on top and
 sorts the rest under `LC_ALL=C`, so the adapter reads the column names from the
-header and the order is the same in every locale.
+header, needs no `columnNames`, and sees the same order in every locale.
 
-Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
+Load `trio.hapibd.bed.gz` as a `FeatureTrack` with a
+`LinearMultiRowFeatureDisplay`:
 
 - `rows` draws one row per distinct value of its `field`, so `parenthap` gives
   the four parental-haplotype rows
-- its `domain` sets their top-to-bottom order
+- `rows.domain` sets their top-to-bottom order
 - the display paints each block with its BED `itemRgb`
-- the adapter reads the column names, `parenthap` among them, from the BED's
-  `#`-header line, so it needs no `columnNames`
 - [`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
   off, because the row labels already name the four categories
 
@@ -223,7 +219,7 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
 }
 ```
 
-## Reading the painted crossovers
+## Reading crossovers off the painted blocks
 
 The four rows of the painted track are each parent's two copies, blue for father
 HG02026 and red for mother HG02025:
@@ -242,17 +238,21 @@ row filled, such as the gap all four rows share around the 50M tick, is one
 where hap-ibd found no segment long enough to report. The blocks run straight
 through the centromere, because hap-ibd joins the markers on either side of it.
 
-## Relating the painting back to the genotypes
+## Comparing the painted blocks with the raw genotypes
 
-Drag the painting's track label above the VCF's, and uncheck **Show... → Show as
-genotype matrix** on the VCF track so the **phased multi-sample variant
-display** draws each genotype at its genomic position and lines up with the
-block boundaries. To show one parent's two rows only, as the figures below do,
-set the painting's `rows.kept` to those two names, for example
-`["Father hap1", "Father hap2"]`. The figures also name the VCF's rows after the
-painting's rows. To do the same, set the variant display's `rows.labels` to
-`{ "HG02024 HP0": "Child hap1", "HG02024 HP1": "Child hap2", "HG02025 HP0": "Mother hap1", "HG02025 HP1": "Mother hap2", "HG02026 HP0": "Father hap1", "HG02026 HP1": "Father hap2" }`,
-or rename the rows in **Edit colors/arrangement...** in its track menu.
+To line the painted blocks up with the genotypes underneath:
+
+- Drag the painting's track label above the VCF's.
+- Uncheck **Show... → Show as genotype matrix** on the VCF track, so the
+  **phased multi-sample variant display** draws each genotype at its genomic
+  position.
+- To show one parent's two rows only, as the figures below do, set the
+  painting's `rows.kept` to those names, for example
+  `["Father hap1", "Father hap2"]`.
+- To name the VCF's rows after the painting's rows, set the variant display's
+  `rows.labels` to
+  `{ "HG02024 HP0": "Child hap1", "HG02024 HP1": "Child hap2", "HG02025 HP0": "Mother hap1", "HG02025 HP1": "Mother hap2", "HG02026 HP0": "Father hap1", "HG02026 HP1": "Father hap2" }`,
+  or rename the rows in **Edit colors/arrangement...** in its track menu.
 
 Zoom to a few hundred kb around one boundary, where the block-step is obvious
 and the genotype columns resolve into individual variants. Start with the
