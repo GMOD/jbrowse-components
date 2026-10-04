@@ -1608,6 +1608,31 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       /**
+       * #method
+       * each track's own menu, which on a linear view hangs off its label and
+       * on the circle has nowhere else to go
+       */
+      tracksMenuItem(): MenuItem {
+        const session = getSession(self)
+        return {
+          label: 'Tracks',
+          type: 'subMenu',
+          subMenu: self.tracks.map(track => ({
+            label: coarseStripHTML(getTrackName(track.configuration, session)),
+            type: 'subMenu' as const,
+            subMenu: [
+              ...(session.getTrackActionMenuItems?.({
+                config: track.configuration,
+                view: self,
+              }) ?? []),
+              ...track.trackMenuItems(),
+            ].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)),
+          })),
+        }
+      },
+    }))
+    .views(self => ({
+      /**
        * #getter
        * one row per track: its name beside the color or ramp it paints with
        */
@@ -1698,33 +1723,10 @@ function stateModelFactory(pluginManager: PluginManager) {
                 showLegendCheckboxItem(self.showLegend, () => {
                   self.setShowLegend(!self.showLegend)
                 }),
-                this.tracksMenuItem(),
+                self.tracksMenuItem(),
               ]
             : []),
         ]
-      },
-      /**
-       * #method
-       * each track's own menu, which on a linear view hangs off its label and
-       * on the circle has nowhere else to go
-       */
-      tracksMenuItem(): MenuItem {
-        const session = getSession(self)
-        return {
-          label: 'Tracks',
-          type: 'subMenu',
-          subMenu: self.tracks.map(track => ({
-            label: coarseStripHTML(getTrackName(track.configuration, session)),
-            type: 'subMenu' as const,
-            subMenu: [
-              ...(session.getTrackActionMenuItems?.({
-                config: track.configuration,
-                view: self,
-              }) ?? []),
-              ...track.trackMenuItems(),
-            ].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)),
-          })),
-        }
       },
     }))
 

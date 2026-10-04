@@ -1,8 +1,12 @@
+import Plugin from '@jbrowse/core/Plugin'
+import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import { createCircularGenomeView } from './index.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 // Every assembly below is a config, so nothing here resolves a hub — this keeps
@@ -168,6 +172,41 @@ test('a full-config track seeds the catalog, not sessionTracks (no shadow copy)'
 
   expect(shownIds(state.session.view)).toEqual(['t1'])
   expect(state.session.sessionTracks).toHaveLength(0)
+  controller.destroy()
+})
+
+// The documented way to extend a view menu calls the captured method unbound,
+// so a menuItems that reaches a sibling through `this` throws once a track is
+// open and the menu never opens
+test('a plugin can extend the view menu while a track is open', async () => {
+  class MenuPlugin extends Plugin {
+    name = 'MenuPlugin'
+    install(pluginManager: PluginManager) {
+      extendViewType(pluginManager, 'CircularView', stateModel =>
+        stateModel.extend(self => {
+          const superMenuItems = self.menuItems
+          return {
+            views: {
+              menuItems() {
+                return [...superMenuItems(), { label: 'Extra', onClick() {} }]
+              },
+            },
+          }
+        }),
+      )
+    }
+    configure() {}
+  }
+  const controller = createCircularGenomeView(document.createElement('div'), {
+    assembly,
+    plugins: [MenuPlugin],
+    tracks: [variantTrack('t1')],
+  })
+  const state = await controller.whenReady()
+
+  const labels = state.session.view.menuItems().map(m => m.label)
+  expect(labels).toContain('Tracks')
+  expect(labels.at(-1)).toBe('Extra')
   controller.destroy()
 })
 
