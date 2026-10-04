@@ -1,14 +1,12 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs'
-
 import { parseArgs } from './args.ts'
 import { captureJBrowse } from './capture.ts'
 import { resolveAgainstConfig } from './catalog.ts'
 import { listHubAssemblies, listHubTracks, trackName } from './hub.ts'
+import { readAnnotations, readJson, readSpec } from './jsonArgs.ts'
 import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
 import { version } from './version.ts'
 
-import type { Annotation } from './annotationOverlay.ts'
 import type { ParsedArgs } from './args.ts'
 
 const HELP = `jb2capture — screenshot a live JBrowse 2 view, once it has finished drawing
@@ -69,40 +67,6 @@ EXAMPLES
   jb2capture --config https://example.org/config.json --assembly mydata \\
     --loc "chr3:25,325,000-25,361,000 chr10:58,716,500-58,718,500" -o two.png
 `
-
-// inline JSON, `-` for stdin, or a path: the forms `jb2export --spec` reads
-function parseJson(value: string): unknown {
-  const inline = /^\s*[[{]/.test(value)
-  return JSON.parse(
-    value === '-'
-      ? readFileSync(0, 'utf8')
-      : inline
-        ? value
-        : readFileSync(value, 'utf8'),
-  )
-}
-
-function readJson(flag: string, value: string): object {
-  const parsed = parseJson(value)
-  if (typeof parsed !== 'object' || parsed === null) {
-    throw new Error(`--${flag} must be a JSON object`)
-  }
-  return parsed
-}
-
-function readAnnotations(value: string): Annotation[] {
-  const parsed = parseJson(value)
-  if (!Array.isArray(parsed)) {
-    throw new Error('--annotations must be a JSON array of callouts')
-  }
-  return parsed as Annotation[]
-}
-
-// a bare view object is the one-view spec it would be wrapped in
-function readSpec(value: string): object {
-  const spec = readJson('spec', value)
-  return 'type' in spec && !('views' in spec) ? { views: [spec] } : spec
-}
 
 function urlOptions(args: ParsedArgs) {
   return {
