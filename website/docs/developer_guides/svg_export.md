@@ -258,7 +258,9 @@ The export dialog picks its own theme and font, which need not be the ones the
 session shows. A body reads colours from `usePalette()`, never from the session.
 When a model input is built from the theme, give it a twin that takes the
 palette and call that from the body; the sequence display's `colorPaletteIn`
-above is one, beside the `colorPalette` getter the screen reads.
+above is one, beside the `colorPalette` getter the screen reads. The legend
+works the same way: a display whose key takes colours from the theme overrides
+`LegendMixin`'s `colorScalesIn(palette)`, and the exported key is drawn from it.
 
 The dialog sets `font-family` on the root `<svg>`, so a `<text>` should leave
 the attribute off and inherit it. Measure labels in `opts.fontFamily`.

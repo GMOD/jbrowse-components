@@ -1,4 +1,5 @@
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -11,6 +12,8 @@ export interface LegendHost extends IStateTreeNode {
   id: string
   showLegend: boolean
   legendSpec: LegendSpec
+  /** `legendSpec` in the export's theme, for a key whose colors follow it. */
+  legendSpecIn?(palette: JBrowsePalette): LegendSpec
   setShowLegend(arg: boolean): void
   dismissLegendSection(id: string): void
   /**

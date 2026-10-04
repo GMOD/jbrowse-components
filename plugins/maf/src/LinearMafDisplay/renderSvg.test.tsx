@@ -4,6 +4,7 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
+import { getCodonColors } from '../LinearMafRenderer/util.ts'
 import { renderSvg } from './renderSvg.tsx'
 import { createMafTestEnvironment } from './testEnv.ts'
 
@@ -164,4 +165,32 @@ test('the rows paint in the export palette, not the session one', async () => {
   const dark = await fills('dark')
   expect(light.size).toBeGreaterThan(0)
   expect([...dark].some(f => light.has(f))).toBe(false)
+})
+
+// The codon key's swatches are the theme's, so the exported key follows the
+// export's theme, as the cells it keys do.
+test('the exported key is in the export palette', async () => {
+  const { display, view } = createMafTestEnvironment({
+    annotationAdapter: { type: 'BigBedAdapter' },
+  }).createDisplay()
+  view.zoomTo(0.5)
+  view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+  display.setRowRendering('codon')
+  display.setShowLegend(true)
+  expect(display.activeRowRendering).toBe('codon')
+  const legend = async (mode: 'light' | 'dark') => {
+    const palette = resolvePalette({ mode })
+    const svg = renderToString(
+      <PaletteProvider palette={palette}>
+        <svg>{(await renderSvg(display, {})) as React.ReactElement}</svg>
+      </PaletteProvider>,
+    )
+    return { svg, stop: getCodonColors(palette).fill.stop }
+  }
+  const light = await legend('light')
+  const dark = await legend('dark')
+  expect(light.stop).not.toBe(dark.stop)
+  expect(dark.svg).toContain('Codon change')
+  expect(dark.svg).toContain(dark.stop)
+  expect(dark.svg).not.toContain(light.stop)
 })

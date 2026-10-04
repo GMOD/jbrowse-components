@@ -37,7 +37,10 @@ same framed state.
 the export dialog picks a theme the session need not be showing. A model input
 built from the theme gets a twin taking the palette (`renderStateIn`,
 `colorPaletteIn`, `rowsEncodePropsIn`), and the body calls that. Patching a
-palette into the getter's output re-copies model logic into the export.
+palette into the getter's output re-copies model logic into the export. The
+shell's legend draws `legendSpecIn(palette)`, so a display whose key takes
+colours from the theme overrides `LegendMixin`'s `colorScalesIn` (alignments,
+MAF); the default is `colorScales`.
 
 **Text inherits the export's font.** The dialog puts `font-family` on the root,
 so a `<text>` that writes the theme's family overrides it; measure in

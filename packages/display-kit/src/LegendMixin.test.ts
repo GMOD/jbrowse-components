@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import LegendMixin from './LegendMixin.ts'
@@ -7,6 +8,7 @@ import LegendMixin from './LegendMixin.ts'
 import type { LegendConfHost } from './LegendMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // The six displays composing this had, between them, tests that would notice a
 // wrong `showLegend` on two — alignments and the multi-sample variants. Hi-C,
@@ -21,10 +23,12 @@ function makeSession({
   defaultValue,
   configuration = {},
   colorScales = [],
+  colorScalesIn,
 }: {
   defaultValue: boolean
   configuration?: Record<string, unknown>
   colorScales?: ColorScale[]
+  colorScalesIn?: (palette: JBrowsePalette) => ColorScale[]
 }) {
   const configSchema = ConfigurationSchema('TestLegendDisplay', {
     showLegend: {
@@ -33,7 +37,7 @@ function makeSession({
       defaultValue,
     },
   })
-  const Display = types
+  const Base = types
     .compose(
       'TestLegendDisplay',
       LegendMixin(),
@@ -47,6 +51,13 @@ function makeSession({
         return colorScales
       },
     }))
+  const Display = colorScalesIn
+    ? Base.views(() => ({
+        colorScalesIn(palette: JBrowsePalette): ColorScale[] {
+          return colorScalesIn(palette)
+        },
+      }))
+    : Base
   const Session = types
     .model('TestSession', {
       rpcManager: types.frozen({}),
@@ -160,6 +171,39 @@ describe('the key derives from the scales', () => {
       'genotypes',
       'group',
     ])
+  })
+})
+
+// The export's theme need not be the session's, so a key built from the theme
+// is rebuilt in the export's; one built from config or data is the screen's.
+describe('the key in another theme', () => {
+  const dark = resolvePalette({ mode: 'dark' })
+
+  it('is the screen key for a display not answering colorScalesIn', () => {
+    const { display } = makeSession({
+      defaultValue: true,
+      colorScales: [genotypes, groups],
+    })
+    expect(display.legendSpecIn(dark)).toEqual(display.legendSpec)
+  })
+
+  it('comes from colorScalesIn, less the dismissed sections', () => {
+    const { display } = makeSession({
+      defaultValue: true,
+      colorScales: [genotypes, groups],
+      colorScalesIn: palette => [
+        {
+          ...genotypes,
+          entries: [{ ...genotypes.entries[0]!, color: palette.text.primary }],
+        },
+        groups,
+      ],
+    })
+    display.dismissLegendSection('group')
+    const [section, ...rest] = display.legendSpecIn(dark).sections
+    expect(rest).toEqual([])
+    expect(section!.id).toBe('genotypes')
+    expect(JSON.stringify(section)).toContain(dark.text.primary)
   })
 })
 

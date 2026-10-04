@@ -7,6 +7,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
  * The slot this mixin reads, restated rather than moved into a shared field
@@ -32,6 +33,10 @@ export type LegendConfHost = { configuration: LegendConfigModel }
 // is a BaseDisplay, so it is really there. Same idiom, and the same reason, as
 // `HeightModeMixin`'s `confNode`.
 const confNode = (self: object) => self as LegendConfHost
+
+function shownLegendSpec(scales: ColorScale[], dismissed: string[]) {
+  return legendSpecOf(scales.filter(scale => !dismissed.includes(scale.id)))
+}
 
 /**
  * #stateModel LegendMixin
@@ -109,16 +114,33 @@ export default function LegendMixin() {
     }))
     .views(self => ({
       /**
+       * #method
+       * Overridable hook (default `colorScales`): the scales in another theme,
+       * the SVG export's, which need not be the session's. Only a display
+       * whose key takes colors from the theme answers it.
+       */
+      colorScalesIn(_palette: JBrowsePalette): ColorScale[] {
+        return self.colorScales
+      },
+    }))
+    .views(self => ({
+      /**
        * #getter
        * The key, derived from `colorScales` less the sections the reader
        * dismissed. `DisplayChrome` renders it on screen and `renderDisplaySvg`
        * flattens it for the export, so the two describe one set of colors.
        */
       get legendSpec(): LegendSpec {
-        return legendSpecOf(
-          self.colorScales.filter(
-            scale => !self.dismissedLegendSections.includes(scale.id),
-          ),
+        return shownLegendSpec(self.colorScales, self.dismissedLegendSections)
+      },
+      /**
+       * #method
+       * `legendSpec` in the SVG export's theme.
+       */
+      legendSpecIn(palette: JBrowsePalette): LegendSpec {
+        return shownLegendSpec(
+          self.colorScalesIn(palette),
+          self.dismissedLegendSections,
         )
       },
       /**

@@ -239,9 +239,9 @@ import type {
   SectionsLayout,
 } from './sectionLayout.ts'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
+import type { AlignmentFill, JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
@@ -1285,13 +1285,13 @@ export default function stateModelFactory(
           /**
            * #method
            */
-          legendItems() {
+          legendItems(palette: ColorPalette) {
             return getReadDisplayLegendItems({
               overlaps: this.overlapLegendKind,
               colorBy: self.colorBy,
               baseLayer: self.baseLayer,
               presentCategories: this.colorLegendCategories,
-              palette: this.colorPalette,
+              palette,
               detectedModifications: this.detectedModifications,
               presentTagValues: this.presentTagValues,
               presentModifications: this.presentModifications,
@@ -1310,10 +1310,10 @@ export default function stateModelFactory(
            * is drawn. `getAlignmentsColorScales` folds the rows the reads already
            * key.
            */
-          arcLegendItems() {
+          arcLegendItems(palette: ColorPalette) {
             return getArcLegendItems(
               this.arcLegendCategories,
-              this.colorPalette,
+              palette,
               this.arcsResult.interchromFromMatePair,
               this.declaredReadLabels.categories,
             )
@@ -2401,10 +2401,10 @@ export default function stateModelFactory(
          * #method
          * Legend swatches for the read connectors.
          */
-        connectionLegendItems() {
+        connectionLegendItems(palette: ColorPalette) {
           return bezierConnectionLegendItems(
             this.connectionColorTypes,
-            self.colorPalette,
+            palette,
             self.declaredReadLabels.categories,
           )
         },
@@ -2793,24 +2793,20 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Key rows for the junction strands drawn, read off the merged
-           * junctions rather than the projected arcs so a pan does not rebuild
-           * the legend.
+           * The junction strands drawn, which the key has a row for each of:
+           * read off the merged junctions rather than the projected arcs so a
+           * pan does not rebuild the legend.
            */
-          get sashimiLegendItems(): LegendItem[] {
-            if (!self.showLegend) {
-              return []
-            }
+          get sashimiLegendStrands(): ReadonlySet<number> {
             const strands = new Set<number>()
-            for (const sec of this.sashimiJunctionSections) {
-              for (const j of sec.junctions) {
-                strands.add(j.strand)
+            if (self.showLegend) {
+              for (const sec of this.sashimiJunctionSections) {
+                for (const j of sec.junctions) {
+                  strands.add(j.strand)
+                }
               }
             }
-            return sashimiLegendItems(
-              strands,
-              getPaletteHost(self).palette.alignmentFill,
-            )
+            return strands
           },
 
           /**
@@ -2841,6 +2837,31 @@ export default function stateModelFactory(
            * since the category scans are.
            */
           get colorScales(): ColorScale[] {
+            return this.colorScalesWith(
+              self.colorPalette,
+              getPaletteHost(self).palette.alignmentFill,
+            )
+          },
+
+          /**
+           * #method
+           * `colorScales` in another theme: the SVG export's, whose theme need
+           * not be the session's.
+           */
+          colorScalesIn(theme: JBrowsePalette): ColorScale[] {
+            return this.colorScalesWith(
+              self.colorPaletteIn(theme),
+              theme.alignmentFill,
+            )
+          },
+
+          /**
+           * #method
+           */
+          colorScalesWith(
+            palette: ColorPalette,
+            alignmentFill: AlignmentFill,
+          ): ColorScale[] {
             return getAlignmentsColorScales({
               ramps: colorRampScales({
                 colorBy: self.colorBy,
@@ -2851,11 +2872,14 @@ export default function stateModelFactory(
                 baseQualityExtent: self.baseQualitySpan.extent,
               }),
               colorTitle: self.colorTitle,
-              legendItems: () => self.legendItems(),
+              legendItems: () => self.legendItems(palette),
               arcLegendTitle: self.arcLegendTitle,
-              arcLegendItems: () => self.arcLegendItems(),
-              connectionLegendItems: () => self.connectionLegendItems(),
-              sashimiLegendItems: this.sashimiLegendItems,
+              arcLegendItems: () => self.arcLegendItems(palette),
+              connectionLegendItems: () => self.connectionLegendItems(palette),
+              sashimiLegendItems: sashimiLegendItems(
+                this.sashimiLegendStrands,
+                alignmentFill,
+              ),
             })
           },
         }

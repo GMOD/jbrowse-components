@@ -40,6 +40,8 @@ this mixin supplies the accessors over the slot and never the slot.
 | Member | Description |
 | --- | --- |
 | <span id="method-svglegendwidth">**svgLegendWidth**</span><br><code>() =&gt; number</code> | Overridable hook (default 0): the width the LGV export reserves beside the plot for this legend. A display whose plot fills its band — the contact matrix, the LD triangle — answers `svgLegendGutterWidth(self)` so the key does not cover it. |
+| <span id="method-colorscalesin">**colorScalesIn**</span><br><code>(_palette: JBrowsePalette) =&gt; ColorScale[]</code> | Overridable hook (default `colorScales`): the scales in another theme, the SVG export's, which need not be the session's. Only a display whose key takes colors from the theme answers it. |
+| <span id="method-legendspecin">**legendSpecIn**</span><br><code>(palette: JBrowsePalette) =&gt; LegendSpec</code> | `legendSpec` in the SVG export's theme. |
 
 ## Actions
 

@@ -137,6 +137,7 @@ export function SvgLegend({
   height: number
   opts: ExportSvgDisplayOptions | undefined
 }) {
+  const palette = usePalette()
   const gutter =
     svgLegendAreaReserved(opts) && (model.svgLegendWidth?.() ?? 0) > 0
   const top = !gutter && isAxisHost(model) ? axisCaptionsReservedPx(model) : 0
@@ -145,7 +146,7 @@ export function SvgLegend({
   }
   const key = (
     <SvgColorLegend
-      entries={legendEntries(model.legendSpec)}
+      entries={legendEntries(model.legendSpecIn?.(palette) ?? model.legendSpec)}
       canvasWidth={width}
       x={gutter ? width + GUTTER_INSET : undefined}
       maxHeight={height - top}

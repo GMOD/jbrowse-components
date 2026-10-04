@@ -139,6 +139,7 @@ import type { MafHover } from './util.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
@@ -2242,11 +2243,18 @@ export default function stateModelFactory(
          * palette stops changing.
          */
         get colorScales(): ColorScale[] {
+          return this.colorScalesIn(getPaletteHost(self).palette)
+        },
+        /**
+         * #method
+         * `colorScales` in another theme: the SVG export's, whose codon and
+         * CDS-frame swatches follow it.
+         */
+        colorScalesIn(palette: JBrowsePalette): ColorScale[] {
           const view = self.host
           if (!view.initialized) {
             return []
           }
-          const { palette } = getSession(self)
           const rendering = self.activeRowRendering
           const rendered =
             rendering === 'codon'
