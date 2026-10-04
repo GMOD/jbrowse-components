@@ -295,6 +295,86 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG01109_1",
+      "name": "HG01109.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG01109.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG01109.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG01123_1",
+      "name": "HG01123.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG01123.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG01123.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG01960_1",
+      "name": "HG01960.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG01960.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG01960.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG02055_1",
+      "name": "HG02055.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG02055.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG02055.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG00097_1",
+      "name": "HG00097.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00097.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG00097.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG00099_1",
+      "name": "HG00099.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00099.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG00099.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG00128_1",
+      "name": "HG00128.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00128.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG00128.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG00133_1",
+      "name": "HG00133.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00133.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG00133.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "hprc_curated_vntrs",
       "name": "Curated VNTRs (LPA KIV-2)",
       "assemblyNames": ["hg38"],
