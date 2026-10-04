@@ -11,8 +11,9 @@ is eight haplotypes' CAT annotation from HPRC, which the gbz lanes draw as
 each haplotype's gene row; hprc_abca7_trgt.vcf.gz is PacBio's
 TRGT genotypes at the ABCA7 VNTR (Zenodo 8329210) that
 build_hprc_abca7_trgt.sh writes, hprc_curated_vntrs.bed is a hand-written
-repeat track and hprc_kiv2_copies.vcf its KIV-2 array's copies (both below),
-and hprc2_pclai_chr1.bed.gz is a chr1 slice nothing in the repo reads any more.
+repeat track, hprc_kiv2_copies.vcf and hprc_kiv2_copies_all.vcf.gz its KIV-2
+array's copies (all below), and hprc2_pclai_chr1.bed.gz is a chr1 slice
+nothing in the repo reads any more.
 
 Source
 ------
@@ -238,3 +239,20 @@ Curated VNTRs
   At its 1% divergence the 138 copies form two units about 2.3% apart. The
   config loads jbrowse-plugin-tandem-repeat, whose Show repeat copies item on
   the record draws each copy in its unit's colour.
+
+  hprc_kiv2_copies_all.vcf.gz{,.tbi} is the same record over every haplotype,
+  from a cut of all 465 walks through the array (21,721 nodes):
+
+    node node_modules/@gmod/gbz-base/bin/query.js \
+      https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db \
+      --haplotype-index https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db \
+      --sample GRCh38 --contig chr6 --interval 160616002..160646753 \
+      --context 1000 --snarls --haplotypes all --limit 100000 --resolve \
+      --format gfa > kiv2_all.gfa
+    node scripts/tandem-repeat-vcf.mjs kiv2_all.gfa \
+      --bed hprc_curated_vntrs.bed --name KIV-2 > hprc_kiv2_copies_all.vcf
+    bgzip hprc_kiv2_copies_all.vcf && tabix -p vcf hprc_kiv2_copies_all.vcf.gz
+
+  The script leaves out NA18983#1, whose walk reaches one flank, so 464 arrays
+  remain, holding 8,943 copies in two units. Seven copies of 11-17 kb span two
+  or three units where the array start mutated and count as one.

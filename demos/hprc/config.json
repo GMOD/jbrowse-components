@@ -396,6 +396,16 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "hprc_kiv2_copies_all",
+      "name": "LPA KIV-2 copies by unit, all HPRC haplotypes",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "hprc_abca7_trgt",
       "name": "TRGT repeat genotypes at ABCA7, 94 HPRC samples",
       "assemblyNames": ["hg38"],
