@@ -8,10 +8,10 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-Take the deletion of _RHD_ out of the 1000 Genomes ensemble SV callset, sort the
-cohort's genotypes at it, then open three of those samples' reads and watch the
-coverage go to zero, halve, and stay flat. The page ends on a complex call from
-the same cohort whose coverage does none of that.
+Take the deletion of _RHD_, the RhD blood group gene, out of the 1000 Genomes
+ensemble SV callset, sort the cohort's genotypes at it, then open three of those
+samples' reads and watch the coverage go to zero, halve, and stay flat. The page
+ends on a complex call from the same cohort whose coverage does none of that.
 
 ## Prerequisites
 
@@ -24,10 +24,10 @@ the same cohort whose coverage does none of that.
 
 ## Where the data comes from
 
-The 1000 Genomes 2022 high-coverage ensemble SV callset
-([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004)), read
-against three of the cohort's samples' CRAMs and QuicK-mer2 copy number for the
-whole cohort.
+The page reads the 1000 Genomes 2022 high-coverage ensemble SV callset
+([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004))
+against CRAMs from three of the cohort's samples and QuicK-mer2 copy number for
+the whole cohort.
 
 - the ensemble SV callset, 3202 samples. EBI publishes it with no mirror, so the
   demo reads a byte-for-byte copy on jbrowse.org[^ebi]:
@@ -56,8 +56,8 @@ genotypes across all 3,202 individuals.
 `HGSV_1821` is a deletion on chr1 spanning the whole of _RHD_, so samples called
 homozygous have no copy of that gene. Deleting _RHD_ is the most common cause of
 the RhD-negative blood type. The call is `PASS` and common enough to fill all
-three genotype classes, and read depth shows whether a gene is present twice,
-once, or not at all.
+three genotype classes, which read depth separates into two copies of the gene,
+one, or none.
 
 ## Loading the callset, the reads and the copy-number store
 
@@ -103,7 +103,7 @@ differ only in the file:
 }
 ```
 
-The copy-number lane reads the Zarr store through `jbrowse-plugin-zarr`, which
+The copy-number track reads the Zarr store through `jbrowse-plugin-zarr`, which
 is not yet in the plugin store. Load its hosted bundle with a `plugins` entry,
 `{ "name": "Zarr", "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js" }`;
 the
@@ -137,21 +137,22 @@ builds a store from your own BigWigs:
 Navigate to `chr1:25,200,000-25,400,000`, the window of the genotype figure
 below.
 
-## Genotypes across the cohort
+## Sorting the cohort by genotype at the RHD deletion
 
-Switch the track to **Display types → Multi-sample variant display** from the
-track menu. Each sample becomes a row drawn at the variant's genomic span, so
-the deletion is a wide block. Clicking it opens the feature details panel, whose
-**SAMPLES** section lists every sample's genotype, read depth and other
-per-sample fields.
+Switch the callset track to **Display types → Multi-sample variant display**
+from the track menu. Each sample becomes a row drawn at the variant's genomic
+span, so the deletion is a wide block. Clicking it opens the feature details
+panel, whose **SAMPLES** section lists every sample's genotype, read depth and
+other per-sample fields.
 
 Rows start in the callset's order. Right-click the deletion and pick **Sort by
 genotype** to order rows by genotype at that call, then by how far each keeps
 matching its neighbours. **Clustering → Cluster rows by genotype...** in the
-track menu keys every row on the whole window and draws the dendrogram.
+track menu clusters rows by genotypes across the whole window, with a
+dendrogram.
 
-Dark blue is no copy of _RHD_, light blue one, grey two, and the olive stripe is
-a separate nested call.
+In the matrix, dark blue is no copy of _RHD_, light blue one, grey two, and the
+olive stripe is a separate nested call.
 
 A matrix cell marks that a sample has some call at that column. To see which
 call, load the same VCF again in the ordinary variant display, which draws each
@@ -159,27 +160,25 @@ record on a separate row with its id, class and size. Colouring cells by **SV
 type** also tells the calls apart, as the
 [multi-variant track guide](/docs/user_guides/multivariant_track) shows.
 
-The figure has three lanes over NCBI RefSeq genes:
+The figure below has three tracks over NCBI RefSeq genes:
 
 - the callset as a genotype matrix, one row per sample, sorted by genotype at
   the _RHD_ deletion
 - QuicK-mer2 copy number for 2504 individuals, one row each and clustered on
   this window, where blue is a copy lost against the diploid white and red a
   copy gained
-- the same records in the ordinary variant display, each labelled with its id,
-  so each band in the matrix lines up with a named record
+- the same records in the ordinary variant display, each labelled with its id
 
 <Figure caption="The 1KGP ensemble SV callset over the RHD locus on chr1, with the panel's copy-number calls under it. The deletion draws as a wide block, splitting the cohort into three bands in the matrix and three levels of copy number." src="/img/multisv_rhd.png" />
 
-<Video src="/media/sv/multisample_sort.mp4" caption="On the callset shown in the figure above, a right-click on the deletion sorts the cohort by genotype there, resolving the callset order into three bands: both copies of RHD deleted, one, then neither." />
+<Video src="/media/sv/multisample_sort.mp4" caption="A right-click on the deletion sorts the cohort by genotype there, resolving the callset order into three bands: both copies of RHD deleted, one, then neither." />
 
-The olive stripe is `HGSV_1823`, a small copy-number record inside the deletion
-that the callset leaves as a no-call in most of the cohort. QuicK-mer2 measures
-copy number per bin from the reads, so the column that is an olive no-call in
-the matrix is a red gain in the copy-number lane. The
-[copy-number tutorial](/docs/tutorials/population_cnv) reads the same store.
+The olive stripe is `HGSV_1823`, a small copy-number record inside the deletion.
+The callset gives most of the cohort a no-call there (no genotype reported), but
+QuicK-mer2 measures copy number per bin from the reads, so the column that is an
+olive no-call in the matrix is a red gain in the copy-number track.
 
-## Reading the genotypes off the reads
+## Checking the RHD genotypes against read coverage in three samples
 
 Open three samples' alignments, one per genotype: HG00113 homozygous alt,
 HG00096 heterozygous, HG00097 homozygous reference. Two settings make them
@@ -187,39 +186,40 @@ comparable:
 
 - Turn the pileup off with **Show... → Show pileup** in the track menu, since at
   this width the coverage curve shows the difference
-- Put the three lanes on one axis from **Coverage axis... → Share axis with**,
+- Put the three tracks on one axis from **Coverage axis... → Share axis with**,
   ticking the other two, so they compare by height
 
-<Figure caption="The RHD deletion across three genotypes, coverage on one shared axis, the banded span RHD itself. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
+<Figure caption="Coverage over the RHD deletion in three samples on one shared axis, with the RHD span banded. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
 
-Coverage over the deleted span in the top row sits just above zero. _RHCE_ sits
-just to the right of _RHD_ and is nearly identical, so with no _RHD_ to come
-from, some _RHCE_ reads land in the empty footprint, and the aligner records its
+Coverage over the deleted span in the top row sits just above zero. The
+neighbouring gene _RHCE_, just right of _RHD_, is nearly identical, so some
+_RHCE_ reads land in the empty _RHD_ footprint, and the aligner records its
 uncertainty in their mapping quality.
 
-## A complex call read off the pair orientations
+## Reading a complex call in HG02768 from read-pair orientation
 
-Balanced rearrangements such as inversions leave the coverage unchanged. The
-callset has a complex call on chromosome 1 in HG02768 whose coverage matches the
-rest of the arm.
+Balanced rearrangements such as inversions leave coverage unchanged but change
+read-pair orientation, meaning which strand each mate maps to. HG02768 has a
+complex call, an inversion with a duplicated copy, with coverage like the rest
+of its arm.
 
 Put `1:39,658,200-39,661,800` in the location box and add HG02768's CRAM as a
 track the same way as HG00113's. Turn on **Read connections → SV channels (pairs
 by orientation)** from the track menu: the reads split into one band per
 orientation class, each with a separate coverage curve and arcs.
 
-- The normal band holds the flat profile
-- The two same-strand bands each draw a bundle of arcs on one pair of
-  breakpoints, the inversion signature
-- The outward-pointing band, where a tandem duplication would go, stays near
-  empty
+- The normal-orientation band holds the flat coverage profile
+- The two same-strand bands (both mates on one strand) each draw a bundle of
+  arcs on one pair of breakpoints, the inversion signature
+- The outward-pointing band (mates facing away from each other), where a tandem
+  duplication would go, stays near empty
 
 <Figure caption="HG02768's reads at the complex call, split into one band per pair orientation. The two same-strand bands hold arc bundles ending on one pair of breakpoints, the normal band shows the ordinary coverage, and the outward-pointing band is near empty. The last band holds reads whose mate is unmapped or on another chromosome, drawn as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 The call also lists a duplicated copy in `INFO.CPX_INTERVALS`, which no band
-shows. A copy inserted beside its origin leaves pair orientation unchanged, so
-that half of the call rests on coverage. At this size the coverage noise makes
-bumps as wide as the duplication, so its step cannot be picked out from them.
+shows: a copy inserted beside its origin leaves pair orientation unchanged, so
+that half of the call rests on coverage. At this size coverage noise makes bumps
+as wide as the duplication, so its step cannot be picked out.
 
 ## See also
 
