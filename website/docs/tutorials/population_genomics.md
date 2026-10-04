@@ -11,9 +11,11 @@ tutorial_category: Population genomics
 In _Drosophila melanogaster_, a selective sweep at the insecticide-resistance
 gene _Cyp6g1_ and the `In(2L)t` inversion on chromosome 2L each leave a mark in
 population-genetic statistics. From a multi-sample VCF of 205 inbred lines we
-compute Fst, nucleotide diversity (π) and Tajima's D per window, load each as a
-bigWig track on the dm6 assembly, read the _Cyp6g1_ sweep against the genes, and
-then read the inversion.
+compute three statistics per window: Fst (how far apart two groups' allele
+frequencies sit), nucleotide diversity (π, how much sequences differ within a
+group) and Tajima's D (below zero where rare variants are in excess, as after a
+sweep). We load each as a bigWig track on dm6, read the _Cyp6g1_ sweep against
+the genes, then read the inversion.
 
 ## Prerequisites
 
@@ -66,8 +68,8 @@ The dm6 assembly and gene track are the hosted UCSC
 
 ## Windowed statistics as tracks
 
-A population-genetic scan reports one statistic per window along the genome: Fst
-between two groups, nucleotide diversity (π) within one, dxy between them. Any
+A population-genetic scan reports one statistic per window along the genome,
+such as Fst, π, or dxy (the average sequence difference between two groups). Any
 per-window output loads as a
 [quantitative track](/docs/user_guides/quantitative_track), and haplotype
 statistics (iHS, XP-EHH, e.g. from
@@ -79,18 +81,19 @@ look at two signals:
 
 - π dips at loci under selection, such as the insecticide-resistance gene
   _Cyp6g1_ ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
-- Fst across the `In(2L)t` inversion. The inversion suppresses recombination
-  between the two arrangements in a heterozygote
+- Fst across the `In(2L)t` inversion, a stretch of chromosome 2L flipped end to
+  end. It suppresses recombination between the inverted and standard
+  arrangements in a heterozygote
   ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)),
   so Fst tracks the arrangement boundary.
 
-## Building the scans
+## Building Fst, π and Tajima's D bigWigs with vcftools
 
-The inversion karyotypes
-([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)) harmonize the
-`In(2L)t` typing of [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554):
-`0` for standard homozygotes, `2` for inverted, `1` for heterozygotes, which the
-script drops.
+DGRPool's inversion karyotypes, each line's `In(2L)t` arrangement
+([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)), harmonize the
+typing of [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554): `0` for
+standard homozygotes, `2` for inverted, `1` for heterozygotes, which the script
+drops.
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
 derives the two sample lists, one name per line as
 [vcftools](https://vcftools.github.io/) takes for `--weir-fst-pop` and `--keep`,
@@ -183,7 +186,7 @@ filtering shows low diversity. [pixy](https://pixy.readthedocs.io/)
 allSites VCF and reports π, dxy and Fst per window without that bias, and its
 output packs into a bigWig the same way. Filtering also shifts the whole
 baseline of Tajima's D, so read D at a locus against the genome-wide background
-of the panel.
+of the 205 lines.
 
 ## Loading the scans in JBrowse
 
@@ -221,7 +224,7 @@ The gene track is UCSC's RefSeq annotation of dm6:
 }
 ```
 
-Each scan is then a [quantitative track](/docs/user_guides/quantitative_track)
+Each scan loads as a [quantitative track](/docs/user_guides/quantitative_track)
 over its bigWig. To load your own, swap `uri` for the bigWig your build wrote;
 its contig names must match the assembly or its aliases.
 
@@ -238,10 +241,10 @@ its contig names must match the assembly or its aliases.
 }
 ```
 
-Fst and π sit on very different scales, so load them as separate tracks, each
-with a separate y-axis. A [multi-wiggle](/docs/config_guides/quantitative_track)
-shares one axis across rows, which suits the same statistic across groups, so
-the per-group π bigWigs load as one track:
+Fst and π sit on very different scales, so each loads as its own track with its
+own y-axis. A [multi-wiggle](/docs/config_guides/quantitative_track) shares one
+axis across rows, which suits the same statistic across groups, so the per-group
+π bigWigs load as one track:
 
 ```json addtrack
 {
@@ -268,11 +271,10 @@ the per-group π bigWigs load as one track:
 ```
 
 In 2 kb windows each arrangement's π swings several fold from one window to the
-next, far more than the inversion moves one against the other, so two rows of it
-look alike. Pooling the windows into 250 kb bins and taking log2 of inverted
-over standard gives one lane that sits at zero wherever the two arrangements
-have equal diversity. The build script's `awk` step writes it from the two π
-bedGraphs:
+next, far more than the two arrangements differ, so two rows of it look alike.
+Pooling the windows into 250 kb bins and taking log2 of inverted over standard
+gives one track that sits at zero wherever the arrangements have equal
+diversity. The build script's `awk` step writes it from the two π bedGraphs:
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
 
@@ -292,8 +294,7 @@ awk -F'\t' -v OFS='\t' -v B=250000 '
 bedGraphToBigWig pi_ratio_In2Lt.bedgraph dm6.chrom.sizes pi_ratio_In2Lt.bw
 ```
 
-The track colors each bin by which side of zero it falls on, on a pinned
-symmetric axis:
+The π ratio track colors bins by their side of zero on a pinned symmetric axis:
 
 ```json addtrack
 {
@@ -323,10 +324,10 @@ symmetric axis:
 
 ## Reading the Cyp6g1 sweep in Tajima's D and π
 
-Search `Cyp6g1` (on `2R`) in the location box. Add three more tracks, each a
-`QuantitativeTrack` shaped like the Fst one above: Tajima's D over the whole
-panel, π over the whole panel, and the called-variant count per window, column 4
-of the table π comes from.
+Search `Cyp6g1`, an insecticide-resistance gene on `2R`, in the location box.
+Add three `QuantitativeTrack`s shaped like the Fst track above: Tajima's D, π,
+and the called-variant count per window (column 4 of the table π comes from),
+each over all 205 lines.
 
 ```json addtrack
 {
@@ -372,16 +373,15 @@ scalebar and pick **Highlight region**.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip together over the highlighted window against their background either side, and the count of called variants under them falls with them."/>
 
-Tajima's D and π dip together over the swept window. A duplication of _Cyp6g1_
+Called variants fall under the sweep because a duplication of _Cyp6g1_
 segregates alongside the resistance allele
 ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and the
 duplicated sequence lowers the number of sites called in the window.
 
-## The inversion, genome-wide and within each arrangement
+## The In(2L)t inversion, genome-wide and within each arrangement {#the-inversion-genome-wide-and-within-each-arrangement}
 
-Open the assembly with no location to lay the six arms out side by side. The
-`In(2L)t` Fst track rises over the inverted region of 2L against low background
-everywhere else.
+Open the assembly with no location to lay the six arms out side by side, with
+the `In(2L)t` Fst track across all of them.
 
 The inversion itself is one `<INV>` record spanning the published breakpoints,
 genotyped `1/1` in the inverted lines and `0/0` in the standard ones. The `END`
@@ -392,8 +392,8 @@ field holds the far breakpoint:
 2L      2225744  In2Lt  N    <INV>  .     PASS    SVTYPE=INV;END=13154180  GT      1/1       0/0
 ```
 
-The samples TSV pairs each line with its `karyotype`, which the display bands
-and colors rows by:
+The samples TSV pairs each line with its `karyotype` (standard or inverted),
+which the display bands and colors rows by:
 
 ```json addtrack
 {
@@ -418,7 +418,7 @@ and colors rows by:
 }
 ```
 
-The lane above Fst in the figure marks the published extent with one inline
+The track above Fst in the figure marks the published extent with one inline
 feature:
 
 ```json addtrack
@@ -442,9 +442,9 @@ feature:
 }
 ```
 
-Then open `chr2L` alone, with the π ratio track under Fst:
+Open `chr2L` alone, with the π ratio track under Fst:
 
-<Figure src="/img/popgen/in2lt_pi_ratio.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, chr2L alone with π in the inverted lines over π in the standard ones, log2 in 250 kb bins. Inside the inversion the bins fall below zero, furthest at the two breakpoints, and toward the centromere past the inversion they sit at zero." links="Six arms=popgen/fst_in2lt_2L"/>
+<Figure src="/img/popgen/in2lt_pi_ratio.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, chr2L alone with π in the inverted lines over π in the standard ones, log2 in 250 kb bins." links="Six arms=popgen/fst_in2lt_2L"/>
 
 The inverted lines have less diversity than the standard ones across the
 inverted region, most near the breakpoints, where the suppressed recombination
@@ -453,7 +453,7 @@ recombine freely, the ratio sits at zero.
 
 Differentiation decays gradually outside the breakpoints
 ([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)); the
-extent at the top of the frame marks the published breakpoints.
+inversion track at the top of the frame marks the published breakpoints.
 
 ## Reproduce it end to end
 
