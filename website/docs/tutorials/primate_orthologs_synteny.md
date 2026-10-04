@@ -103,9 +103,8 @@ python3 symbols_to_blocks.py --anchor human -o primates.blocks \
   distinct lettered symbols (_AMY1A_, _AMY1B_) or placeholders, so the main case
   is the pseudoautosomal genes, annotated on both X and Y, where each Y copy
   gets its own row.
-- RefSeq names open reading frame genes differently from their human ortholog:
-  human _C1orf35_ becomes chimp _C1H1orf35_, and the helper reads that spelling
-  back.
+- RefSeq spells open reading frame genes differently in the apes: human
+  _C1orf35_ becomes chimp _C1H1orf35_, and the helper reads that back.
 - The helper prints how much of each column it filled, nearly full for these
   eight because the annotations share one naming pipeline. It also writes a row
   for each symbol human lacks, which a window anchored on human does not draw.
@@ -298,11 +297,11 @@ Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
 
 <Figure caption="Human chr2 over chimpanzee chr12 and chr13, the hsa2a and hsa2b chromosomes, ribbons colored by the chimpanzee chromosome. The orthologs of one chimpanzee chromosome fill human chr2 up to 2q13 and those of the other fill it past there." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
-In the multi-lane view, a window across human chr2's fusion point has orthologs
-on both chimpanzee chromosomes, but a lane follows one contig at a time. Each
-ape lane picks the contig holding more genes in the window and names the other
-in its header, and **Show ⟨contig⟩ in this lane** on the header menu swaps the
-lane onto it.
+In the multi-lane view, a window across the fusion point has orthologs on both
+chimpanzee chromosomes, but a lane follows one contig at a time. Each ape lane
+picks the contig with more genes in the window and names the other in its
+header; **Show ⟨contig⟩ in this lane** on the header menu swaps the lane onto
+it.
 
 ## Reproduce it end to end
 
