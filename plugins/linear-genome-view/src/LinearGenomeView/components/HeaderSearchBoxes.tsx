@@ -16,8 +16,12 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(0.5),
+    minWidth: 0,
   },
 }))
+
+const MIN_BOX_WIDTH = 100
+const boxStyle = { margin: 0, minWidth: MIN_BOX_WIDTH }
 
 // One row's locate control in a header that stacks several linear genome views:
 // the compact search box, then the assembly name and the span on screen. The
@@ -37,8 +41,8 @@ const HeaderSearchBoxes = observer(function HeaderSearchBoxes({
         model={view}
         showHelp={false}
         maxWidth={250}
-        minWidth={100}
-        style={{ margin: 0 }}
+        minWidth={MIN_BOX_WIDTH}
+        style={boxStyle}
       />
       <Typography variant="body2" color="text.secondary" className={classes.bp}>
         {assemblyDisplayNames.join(',')} {getBpDisplayStr(coarseTotalBp)}
