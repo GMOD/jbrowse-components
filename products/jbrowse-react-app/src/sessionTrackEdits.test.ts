@@ -130,7 +130,7 @@ test('a row display on a session track resets to the arrangement it was added wi
       .displays.find(d => d.displayId === displayId),
   ).toMatchObject(added)
   expect(getConf(display, ['rows', 'field'])).toBe('source')
-  expect(display.baseRowColor).toEqual(added.rowColor)
+  expect(display.baseRowColor).toEqual({ ...added.rowColor, field: 'name' })
   expect(display.rowArrangementIsCustom).toBe(false)
 
   display.setRowOrder([{ name: 'b' }, { name: 'a' }, { name: 'c' }])
