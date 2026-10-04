@@ -16,11 +16,6 @@ import { measureDemoHeights } from './examplesDemoHeights.ts'
 // construction — where examples.ts lives, where dist/ lives, where the heights
 // file is written — which is why the copies were byte-identical with nothing
 // holding them that way.
-//
-// EXAMPLES_SITES.md's "Why `ExampleSection.astro` is four copies" rules out
-// sharing `ExampleLayout.astro`/`ExampleSection.astro` the same way; it does not
-// apply to these, which node runs directly and which reach the site only through
-// the anchor.
 
 interface ExamplesModule {
   pages: Parameters<typeof runExamplesSiteChecks>[0]['pages']
