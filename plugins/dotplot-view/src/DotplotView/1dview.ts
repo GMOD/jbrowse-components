@@ -6,6 +6,7 @@ import { regionSignature } from '@jbrowse/synteny-core'
 import {
   axisBorderPx,
   getBlockLabelKeysToHide,
+  labelRoomPx,
   makeTicks,
   regionBoundaryLines,
   thinTickPositions,
@@ -128,6 +129,8 @@ const Dotplot1DView = Base1DView.extend(self => {
       get blockLabelKeysToHide() {
         return getBlockLabelKeysToHide(
           this.dynamicBlocks.contentBlocks,
+          this.refNameLabels,
+          labelRoomPx(self.displayedRegions, self.bpPerPx, this.refNameLabels),
           self.width,
           self.offsetPx,
         )

@@ -91,40 +91,38 @@ export function locstr(px: number, view: Dotplot1DViewModel) {
 // never drift from what's actually drawn.
 export const AXIS_LABEL_FONT = 10
 
-// Cap the *displayed* refName so one long scaffold name can't blow up the axis
-// margin. Only refNames are capped (tick coordinates stay exact); the full name
-// is still shown on hover. Middle-elided to keep both a numbered scaffold's
-// prefix and its distinguishing suffix (scaffold_123456 -> scaffo…123456).
-//
-// 6 rather than 4: at 4, names as ordinary as `scaffold_1234` and
-// `chr1_MATERNAL` were elided down to 9 chars, which is shorter than the
-// tick coordinates printed beside them ("1,234,567" is 44px, `scaf…1234`
-// 46px) — so the elide bought almost no margin and cost the name. At 6 those
-// print in full for ~16px more border, and the elide only fires on names
-// longer than a tick label.
-const LABEL_SIDE_CHARS = 6
-export function truncateRefName(refName: string) {
-  return refName.length > LABEL_SIDE_CHARS * 2 + 1
-    ? `${refName.slice(0, LABEL_SIDE_CHARS)}…${refName.slice(-LABEL_SIDE_CHARS)}`
-    : refName
+// Middle-elide `text` to about `maxPx`, keeping both ends: a numbered
+// scaffold's prefix and its distinguishing suffix. At least MIN_SIDE_CHARS
+// stay on each side, so no room at all still leaves a nameable stub.
+const MIN_SIDE_CHARS = 6
+function elideToFit(text: string, maxPx: number, fontSize: number) {
+  const fullPx = measureText(text, fontSize)
+  if (fullPx <= maxPx) {
+    return text
+  }
+  const keep = Math.max(
+    Math.floor((text.length * maxPx) / fullPx) - 1,
+    MIN_SIDE_CHARS * 2,
+  )
+  return `${text.slice(0, Math.ceil(keep / 2))}…${text.slice(-Math.floor(keep / 2))}`
 }
 
-// The middle elide above is only worth anything while it stays INJECTIVE over
-// the names sharing an axis, and on names with long shared boilerplate it is
-// not: `chromosome1_MATERNAL` and `chromosome10..19_MATERNAL` all come out as
-// `chromo…TERNAL`, because both ends it preserves are the boilerplate and the
-// part that names the chromosome is what it cuts. Such an axis labels eleven of
-// its 23 rows identically — it cannot say which contig a row is, which is most
-// of what an axis is for.
-//
-// So the decision is made for the axis as a SET, not per name: elide only while
-// no two names collide, and otherwise keep every name in full. Whole-axis rather
-// than per-name because a mix of elided and full labels reads as arbitrary, and
-// the margin is sized off the widest label either way.
-//
-// It costs axis margin exactly when it buys distinguishability, and nothing at
-// all on the scaffold sets the elide was written for, where `scaffo…123456`
-// stays unique and stays short.
+// The widest a refName prints before it is elided, so one long scaffold name
+// can't blow up the axis margin; the full name is still shown on hover.
+// Measured rather than counted, so a haplotype-suffixed chromosome
+// (`chr10_MATERNAL`, 85px) or an hg38 alt contig prints whole, suffix and all.
+const MAX_REF_NAME_PX = 90
+export function truncateRefName(refName: string) {
+  return elideToFit(refName, MAX_REF_NAME_PX, AXIS_LABEL_FONT)
+}
+
+// The middle elide is only worth anything while it stays INJECTIVE over the
+// names sharing an axis: `chromosome1_MATERNAL` and `chromosome10_MATERNAL`
+// both come out as `chromos…TERNAL`, keeping the boilerplate and cutting the
+// number that names the row. So the axis decides as a SET: elide only while no
+// two names collide, and otherwise keep every name in full, since a mix of
+// elided and full labels reads as arbitrary and the margin is sized off the
+// widest label either way.
 export function truncateRefNames(refNames: string[]) {
   const unique = [...new Set(refNames)]
   const elided = unique.map(truncateRefName)
@@ -141,16 +139,7 @@ export const AXIS_TITLE_FONT = 11
 // dotplot's synthetic `<readname>_assembly_<timestamp>` axis loses the read name
 // itself, the only part worth reading. The full string stays on hover.
 export function fitAxisTitle(title: string, availablePx: number) {
-  const fullPx = measureText(title, AXIS_TITLE_FONT)
-  if (fullPx <= availablePx) {
-    return title
-  }
-  // Proportional estimate off the measured full width rather than a per-char
-  // constant, so a wide-glyph name is not over-trusted.
-  const maxChars = Math.floor((title.length * availablePx) / fullPx)
-  return maxChars <= LABEL_SIDE_CHARS * 2 + 1
-    ? truncateRefName(title)
-    : `${title.slice(0, Math.ceil((maxChars - 1) / 2))}…${title.slice(-Math.floor((maxChars - 1) / 2))}`
+  return elideToFit(title, availablePx, AXIS_TITLE_FONT)
 }
 
 // Fixed px an axis needs beyond its widest label: the 7px tick-label inset
@@ -161,16 +150,47 @@ const BORDER_CHROME = 25
 export const MIN_BORDER = 50
 
 // Approximate px footprint of a block label along its axis. Two labels closer
-// than this collide, so a region spanning fewer than this many px can't own an
-// uncrowded label slot — the greedy hider (getBlockLabelKeysToHide) drops it.
+// than this collide, and a region shorter than this on screen (an unplaced
+// *_random contig at whole-genome zoom) does not size the margin.
 const LABEL_PX = 12
 
-// Axis margin px, sized to the widest label — the longer of each region's
-// (truncated) refName or, with tick labels drawn, its exact end-coordinate
-// tick. Only regions at least LABEL_PX tall on screen count: smaller ones
-// (unplaced *_random contigs at whole-genome zoom) are collision-hidden and
-// must not inflate the margin. A contig you zoom into grows past LABEL_PX and
-// reclaims its space.
+interface AxisRegion {
+  refName: string
+  start: number
+  end: number
+}
+
+function sizesMargin(region: AxisRegion, bpPerPx: number) {
+  return (region.end - region.start) / bpPerPx >= LABEL_PX
+}
+
+// The least px a refName label has beside the plot (tick labels can only widen
+// it): the widest label among the regions that size the margin, or what the
+// minimum border leaves. A thinner region's label draws only where it fits in
+// this (`getBlockLabelKeysToHide`), so it never runs past the frame.
+//
+// `labels` is the very map the axis component draws from (the axis'
+// `refNameLabels`): a margin sized off a different string than the one drawn
+// is a clipped label. The elide decision is taken over EVERY displayed region,
+// because a zoom that drops a small contig from the margin must not re-elide
+// the labels that stay.
+export function labelRoomPx(
+  regions: readonly AxisRegion[],
+  bpPerPx: number,
+  labels: Map<string, string>,
+) {
+  return max(
+    regions.flatMap(r =>
+      sizesMargin(r, bpPerPx)
+        ? [measureText(labels.get(r.refName)!, AXIS_LABEL_FONT)]
+        : [],
+    ),
+    MIN_BORDER - BORDER_CHROME,
+  )
+}
+
+// Axis margin px: the label room, widened to the exact end-coordinate tick of
+// each region that sizes it when tick labels are drawn.
 //
 // Reads regions + zoom and never viewport width, which makes the SAME-AXIS edge
 // acyclic (viewWidth = width - borderX). It does not make the margin acyclic:
@@ -182,38 +202,25 @@ const LABEL_PX = 12
 // observes a border or either viewWidth/viewHeight. So the fit converges and
 // stops rather than oscillating; for grape-vs-peach it converges after the first
 // pass, with the nearest LABEL_PX crossing 1.43x away in zoom.
-//
-// `labels` is the very map the axis component draws from
-// (the axis' `refNameLabels`), passed in rather than rebuilt here: a margin sized
-// off a different string than the one drawn is a clipped label, and the elide
-// decision is taken over EVERY displayed region — not just the ones wide enough
-// to be measured below — because it is a property of the axis, so a zoom that
-// hides a small contig must not silently re-elide the labels that stay.
 export function axisBorderPx(
-  regions: { refName: string; start: number; end: number }[],
+  regions: readonly AxisRegion[],
   bpPerPx: number,
   labels: Map<string, string>,
   tickLabels: boolean,
 ) {
-  const labelWidth = max(
-    regions.flatMap(r =>
-      (r.end - r.start) / bpPerPx >= LABEL_PX
-        ? [
-            measureText(labels.get(r.refName)!, AXIS_LABEL_FONT),
-            ...(tickLabels
-              ? [
-                  measureText(
-                    getTickDisplayStr(r.end, bpPerPx),
-                    AXIS_LABEL_FONT,
-                  ),
-                ]
-              : []),
-          ]
-        : [],
-    ),
-    0,
+  const tickWidth = tickLabels
+    ? max(
+        regions.flatMap(r =>
+          sizesMargin(r, bpPerPx)
+            ? [measureText(getTickDisplayStr(r.end, bpPerPx), AXIS_LABEL_FONT)]
+            : [],
+        ),
+        0,
+      )
+    : 0
+  return (
+    Math.max(labelRoomPx(regions, bpPerPx, labels), tickWidth) + BORDER_CHROME
   )
-  return Math.max(labelWidth + BORDER_CHROME, MIN_BORDER)
 }
 
 // Minimum on-screen spacing between two kept tick marks, and between two kept
@@ -388,8 +395,9 @@ function intervalsOverlap(a: Interval, b: Interval) {
 }
 
 // Greedily decide which block labels to drop so the kept ones don't overlap.
-// Largest blocks win their slot first; each kept label reserves the LABEL_PX
-// interval ending at its on-axis position, and any later label whose interval
+// A label wider than `roomPx` (`labelRoomPx`) is dropped outright. Largest
+// blocks win their slot first; each kept label reserves the LABEL_PX interval
+// ending at its on-axis position, and any later label whose interval
 // intersects a reserved one is hidden.
 //
 // `length - offsetPx + viewOffsetPx` is the vertical axis's own label position
@@ -404,6 +412,8 @@ function intervalsOverlap(a: Interval, b: Interval) {
 // symmetric: that hides labels which currently render fine at the opposite edge.
 export function getBlockLabelKeysToHide(
   blocks: ContentBlock[],
+  labels: Map<string, string>,
+  roomPx: number,
   length: number,
   viewOffsetPx: number,
 ) {
@@ -412,10 +422,14 @@ export function getBlockLabelKeysToHide(
   const byLengthDesc = [...blocks].sort(
     (a, b) => b.end - b.start - (a.end - a.start),
   )
-  for (const { key, offsetPx } of byLengthDesc) {
+  for (const { key, refName, offsetPx } of byLengthDesc) {
     const end = Math.round(length - offsetPx + viewOffsetPx)
     const label = { start: Math.max(end - LABEL_PX, 0), end }
-    if (end === 0 || reserved.some(r => intervalsOverlap(label, r))) {
+    if (
+      measureText(labels.get(refName) ?? refName, AXIS_LABEL_FONT) > roomPx ||
+      end === 0 ||
+      reserved.some(r => intervalsOverlap(label, r))
+    ) {
       hide.add(key)
     } else {
       reserved.push(label)

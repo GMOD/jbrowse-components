@@ -6,6 +6,7 @@ import {
   axisBorderPx,
   fitAxisTitle,
   getBlockLabelKeysToHide,
+  labelRoomPx,
   locstr,
   makeTicks,
   regionBoundaryLines,
@@ -81,43 +82,55 @@ describe('truncateRefName', () => {
     expect(truncateRefName('scaffold9')).toBe('scaffold9')
   })
 
-  // a name no wider than the tick coordinates beside it is not worth eliding
-  test('an ordinary-length name is not elided', () => {
-    expect(truncateRefName('scaffold_1234')).toBe('scaffold_1234')
-    expect(truncateRefName('chr1_MATERNAL')).toBe('chr1_MATERNAL')
+  test('a name within the label budget is not elided', () => {
+    expect(truncateRefName('scaffold_123456')).toBe('scaffold_123456')
+    expect(truncateRefName('chr10_MATERNAL')).toBe('chr10_MATERNAL')
+    expect(truncateRefName('chrUn_KI270302v1')).toBe('chrUn_KI270302v1')
   })
 
-  test('long names are middle-elided, keeping prefix and suffix', () => {
-    expect(truncateRefName('scaffold_123456')).toBe('scaffo…123456')
+  test('a name past it is middle-elided, keeping prefix and suffix', () => {
+    expect(truncateRefName('HG00438#1#JAHBCB010000001.1')).toBe(
+      'HG00438…00001.1',
+    )
   })
 })
 
 describe('truncateRefNames', () => {
+  // HG002's two haplotypes sit one per axis, so no name collides with another
+  // on its own axis, and the suffix is what tells the axes apart
+  test('a haplotype-suffixed chromosome name prints whole', () => {
+    for (const hap of ['MATERNAL', 'PATERNAL']) {
+      const labels = truncateRefNames(
+        ['1', '9', '10', '20', 'X'].map(c => `chr${c}_${hap}`),
+      )
+      for (const [name, label] of labels) {
+        expect(label).toBe(name)
+      }
+    }
+  })
+
   test('elides while the short forms stay distinct', () => {
     const labels = truncateRefNames([
-      'scaffold_123456',
-      'scaffold_567890',
+      'HG00438#1#JAHBCB010000001.1',
+      'HG00438#1#JAHBCB010000002.1',
       'chr1',
     ])
-    expect(labels.get('scaffold_123456')).toBe('scaffo…123456')
-    expect(labels.get('scaffold_567890')).toBe('scaffo…567890')
+    expect(labels.get('HG00438#1#JAHBCB010000001.1')).toBe('HG00438…00001.1')
+    expect(labels.get('HG00438#1#JAHBCB010000002.1')).toBe('HG00438…00002.1')
     expect(labels.get('chr1')).toBe('chr1')
   })
 
   test('keeps full names when the elide would collide', () => {
-    // The haplotype-resolved case: the elide preserves `chromo` and `TERNAL`,
-    // which is the boilerplate, and cuts the chromosome number, which is the
-    // name. chromosome1 and chromosome10..19 all land on `chromo…TERNAL`.
+    // The elide preserves `chromos` and `TERNAL`, which is the boilerplate, and
+    // cuts the chromosome number, which is the name.
     const names = [
       'chromosome1_MATERNAL',
       'chromosome10_MATERNAL',
       'chromosome2_MATERNAL',
     ]
-    expect(names.map(truncateRefName)).toEqual([
-      'chromo…TERNAL',
-      'chromo…TERNAL',
-      'chromo…TERNAL',
-    ])
+    expect(new Set(names.map(truncateRefName))).toEqual(
+      new Set(['chromos…TERNAL']),
+    )
     const labels = truncateRefNames(names)
     for (const n of names) {
       expect(labels.get(n)).toBe(n)
@@ -130,17 +143,22 @@ describe('truncateRefNames', () => {
     const labels = truncateRefNames([
       'chromosome1_MATERNAL',
       'chromosome10_MATERNAL',
-      'scaffold_123456',
+      'HG00438#1#JAHBCB010000001.1',
     ])
-    expect(labels.get('scaffold_123456')).toBe('scaffold_123456')
+    expect(labels.get('HG00438#1#JAHBCB010000001.1')).toBe(
+      'HG00438#1#JAHBCB010000001.1',
+    )
   })
 
   test('a repeated refName is not a collision', () => {
     // gatherOverlaps can put one refName on the axis twice (a read aligned
     // twice to one chromosome); that is the same name, not two names sharing a
     // label, and must not cost the axis its elide.
-    const labels = truncateRefNames(['scaffold_123456', 'scaffold_123456'])
-    expect(labels.get('scaffold_123456')).toBe('scaffo…123456')
+    const labels = truncateRefNames([
+      'HG00438#1#JAHBCB010000001.1',
+      'HG00438#1#JAHBCB010000001.1',
+    ])
+    expect(labels.get('HG00438#1#JAHBCB010000001.1')).toBe('HG00438…00001.1')
   })
 })
 
@@ -220,9 +238,9 @@ describe('axisBorderPx', () => {
   })
 
   test('a truncated long name does not grow the border without bound', () => {
-    // both names truncate to the same 13-char display, so the border matches
-    expect(border([region('scaffold_1234_extra', 1_000)], 1)).toBe(
-      border([region('scaffold_9999_extra', 1_000)], 1),
+    // both names elide to the same width, so the border matches
+    expect(border([region('scaffold_1234_extra_long_suffix', 1_000)], 1)).toBe(
+      border([region('scaffold_9999_extra_long_suffix', 1_000)], 1),
     )
   })
 
@@ -649,55 +667,89 @@ describe('tickLines', () => {
 })
 
 describe('getBlockLabelKeysToHide', () => {
+  // each block labelled with its own refName
+  function hidden(
+    blocks: ContentBlock[],
+    length: number,
+    viewOffsetPx = 0,
+    roomPx = Number.POSITIVE_INFINITY,
+  ) {
+    const labels = new Map(blocks.map(b => [b.refName, b.refName]))
+    return [
+      ...getBlockLabelKeysToHide(blocks, labels, roomPx, length, viewOffsetPx),
+    ]
+  }
+
   test('well-separated labels are all kept', () => {
-    const hide = getBlockLabelKeysToHide(
-      [posBlock('a', 0, 200), posBlock('b', 400, 100)],
-      600,
-      0,
-    )
-    expect([...hide]).toEqual([])
+    expect(
+      hidden([posBlock('a', 0, 200), posBlock('b', 400, 100)], 600),
+    ).toEqual([])
   })
 
   test('a label overlapping a higher-priority (larger) one is hidden', () => {
     // a (len 200) at offsetPx 0 → pos 600, occupies [588,600)
     // b (len 100) at offsetPx 8 → pos 592, occupies [580,592), overlaps a
-    const hide = getBlockLabelKeysToHide(
-      [posBlock('a', 0, 200), posBlock('b', 8, 100)],
-      600,
-      0,
+    expect(hidden([posBlock('a', 0, 200), posBlock('b', 8, 100)], 600)).toEqual(
+      ['b'],
     )
-    expect([...hide]).toEqual(['b'])
   })
 
   test('priority is by block length, independent of input order', () => {
     // smaller block listed first, but the larger one wins the slot
-    const hide = getBlockLabelKeysToHide(
-      [posBlock('small', 8, 100), posBlock('big', 0, 200)],
-      600,
-      0,
+    expect(
+      hidden([posBlock('small', 8, 100), posBlock('big', 0, 200)], 600),
+    ).toEqual(['small'])
+  })
+
+  // grape's chr16_random: under 1px at whole-genome zoom, so it does not size
+  // the margin, and alone at the top of its axis, so no collision hid it; its
+  // label ran past the frame edge
+  test('a label wider than the margin leaves for it is hidden, even alone', () => {
+    const regions = [
+      region('chr7', 21_000_000),
+      region('chr16_random', 740_000),
+    ]
+    const room = labelRoomPx(
+      regions,
+      700_000,
+      truncateRefNames(regions.map(r => r.refName)),
     )
-    expect([...hide]).toEqual(['small'])
+    expect(
+      hidden(
+        [posBlock('chr7', 0, 200), posBlock('chr16_random', 400, 5)],
+        600,
+        0,
+        room,
+      ),
+    ).toEqual(['chr16_random'])
+  })
+
+  test('a thin region whose label fits the margin keeps it', () => {
+    const regions = [region('Pp01', 47_000_000), region('u12', 167_000)]
+    const room = labelRoomPx(
+      regions,
+      126_000,
+      truncateRefNames(regions.map(r => r.refName)),
+    )
+    expect(
+      hidden([posBlock('Pp01', 0, 200), posBlock('u12', 400, 5)], 600, 0, room),
+    ).toEqual([])
   })
 
   test('a label exactly at position 0 is hidden', () => {
-    const hide = getBlockLabelKeysToHide([posBlock('a', 600, 100)], 600, 0)
-    expect([...hide]).toEqual(['a'])
+    expect(hidden([posBlock('a', 600, 100)], 600)).toEqual(['a'])
   })
 
   test('a label scrolled to a negative position is kept and blocks nothing', () => {
     // a is off-axis (pos -100) so it is kept and does not occupy any slot,
     // leaving b free to render
-    const hide = getBlockLabelKeysToHide(
-      [posBlock('a', 700, 200), posBlock('b', 0, 100)],
-      600,
-      0,
-    )
-    expect([...hide]).toEqual([])
+    expect(
+      hidden([posBlock('a', 700, 200), posBlock('b', 0, 100)], 600),
+    ).toEqual([])
   })
 
   test('viewOffsetPx shifts label positions', () => {
     // with viewOffsetPx=100, a at offsetPx 700 → pos 0 → hidden
-    const hide = getBlockLabelKeysToHide([posBlock('a', 700, 100)], 600, 100)
-    expect([...hide]).toEqual(['a'])
+    expect(hidden([posBlock('a', 700, 100)], 600, 100)).toEqual(['a'])
   })
 })
