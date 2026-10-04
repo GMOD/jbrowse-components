@@ -124,8 +124,8 @@ A spliced aligner like [STAR](https://github.com/alexdobin/STAR) split-maps a
 read that crosses an intron and encodes the skip in its CIGAR string, the
 SAM/BAM field describing how a read aligns to the reference.
 
-A spliced read from the _ACTB_ pileup above (reads here are 51 bp) has a CIGAR
-like this, spaced out for readability:
+A spliced read in the _ACTB_ pileup (reads here are 51 bp) has a CIGAR like
+this, spaced out for readability:
 
 ```text
 18M 95N 33M
@@ -148,17 +148,16 @@ strand reads as CT-AC on the reverse. A junction whose reads disagree, or whose
 motif is none of GT-AG, GC-AG and AT-AC, draws in the neutral color. Hovering an
 arc shows the motif beside the read count.
 
-## Reading a deep pileup
+## Picking out spliced reads in a deep pileup
 
 In a deep pileup, reads with a skip sit among many more that have none, so the
-splicing evidence is hard to pick out. Three settings in the track menu separate
-it.
+splicing evidence is hard to see. Three track-menu settings pull it out.
 
 **Sort by... → Spliced reads first** gives every read whose CIGAR has a skip the
 lowest rows, so the junction-spanning reads sit together at the top of the
 pileup.
 
-<Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. The same reads in both. The teal lines are the reads whose CIGAR has a skip. File order scatters them down the stack, and the sort gathers them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
+<Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. Teal lines mark reads whose CIGAR has a skip. File order scatters them down the stack, and the sort gathers them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
 
 **Filter by... → Spliced reads → Only spliced reads** keeps just those reads,
 and the coverage histogram follows, so what is left is a histogram of the
@@ -171,38 +170,38 @@ thin arcs are mostly these alignment artefacts. Raising **Sashimi arcs → Min
 read support** removes them too, but only by also removing a real junction
 supported by few reads.
 
-<Figure caption="Every junction the reads have above, and only the canonical ones below. The same pileup in both, with the gene model above it. The motif filter drops the two salmon arcs around the leftmost intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
+<Figure caption="Every junction the reads have above, and only the canonical ones below. The motif filter drops the two salmon arcs around the leftmost intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 
 ## Strand-specific RNA-seq
 
-Arc colors give the strand of spliced reads. A _strand-specific_ library records
-the transcript strand in which mate of the pair a read is, so every read has it,
-which separates genes sitting close together or overlapping on opposite strands.
+Splice-arc colors give the strand of spliced reads. A _strand-specific_ library
+records the transcript strand in which mate of the pair a read is, so every read
+has it, which separates genes close together or overlapping on opposite strands.
 
-The surfeit locus packs genes tightly and alternates their strands (_RPL7A_,
-_SURF1_, _SURF2_, _SURF4_), so the coloring, which comes from the reads alone,
-has an annotation to agree with. Type `chr9:136,214,000-136,229,000` into the
-location box, open the track menu and pick **Color by... → Paired end →
-First-of-pair strand**:
+The surfeit locus is a tight cluster of genes on alternating strands (_RPL7A_,
+_SURF1_, _SURF2_, _SURF4_), so the read colors can be checked against the gene
+models. Type `chr9:136,214,000-136,229,000` into the location box, open the
+track menu and pick **Color by... → Paired end → First-of-pair strand**:
 
 <Figure caption="The surfeit locus colored by first-of-pair strand. The pileup splits into two colors, and the switch falls where the genes change strand: RPL7A forward, SURF1 reverse, SURF2 forward." src="/img/rnaseq/strand_specific.png" />
 
-Coloring shows the strand of each read, and grouped coverage shows it over a
-whole gene. Pick **Group by... → First-of-pair strand**. The display draws one
-band per group, each with a coverage histogram computed from only that group's
-reads, forward and reverse on one autoscaled axis. Turning off **Show... → Show
-pileup** leaves the two histograms alone.
+Grouping the reads by first-of-pair strand shows transcript strand over a whole
+gene. Pick **Group by... → First-of-pair strand** to draw one band per group,
+each with a coverage histogram from only that group's reads, forward and reverse
+on one autoscaled axis. Turning off **Show... → Show pileup** leaves the two
+histograms alone.
 
-In the gene-dense MHC class III region, _NELFE_ and _SKIV2L_ sit back to back on
-opposite strands. Type `chr6:31,920,500-31,933,000` into the location box:
+In the gene-dense class III region of the major histocompatibility complex (MHC)
+on chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
+`chr6:31,920,500-31,933,000` into the location box:
 
 <Figure caption="NELFE and SKIV2L, adjacent and on opposite strands, grouped by first-of-pair strand: each band shows signal over exactly one of the two genes." src="/img/rnaseq/strand_split_coverage.png" />
 
-Grouping by **Strand** instead uses the strand each read aligned to. In a
-paired-end library that sends the two mates of every pair to opposite bands, so
-neither band follows the transcript strand.
+Grouping by **Strand** uses the strand each read aligned to. In a paired-end
+library the two mates of every pair land in opposite bands, so neither band
+follows the transcript strand.
 
-## Short reads and long reads
+## Long-read splicing: IsoSeq over ACTB
 
 Short-read RNA-seq (usually Illumina, ~150 bp per read) fragments each
 transcript, so a transcript is reassembled from many overlapping reads. A long
@@ -222,10 +221,10 @@ assembly:
 
 <Figure caption="IsoSeq high-quality isoforms over ACTB. A long read often spans all of a transcript's exons, so one spliced alignment covers the whole transcript." src="/img/rnaseq/longread_isoseq.png" />
 
-## Junction files from the pipeline
+## Loading STAR, regtools and portcullis junction tables
 
-JBrowse computes the arcs above from the reads in view. A pipeline's junction
-table adds values computed over the whole library: read counts, an
+JBrowse computes splice arcs from the reads in view. A junction table from an
+RNA-seq pipeline adds values computed over the whole library: read counts, an
 annotated-or-novel flag, or portcullis's filtering verdict. One `awk` line
 converts each such table to BED, and a BED file of introns draws as arcs on a
 feature track.
@@ -286,10 +285,10 @@ awk -F'\t' -v OFS='\t' '
 ' 3-filt/portcullis_filtered.pass.junctions.tab > junctions.bed
 ```
 
-The junctions load as a feature track drawn by the mark display, with
-`columnNames` naming the extra columns so the colour encoding can read them.
-This config loads the regtools file built from this page's BAM, coloured by the
-known-junction flag against RefSeq:
+This config loads the regtools file built from this page's BAM as a feature
+track with one mark per junction, coloured by the known-junction flag against
+RefSeq. `columnNames` names the extra columns so the colour encoding can read
+them:
 
 ```json addtrack
 {
@@ -344,14 +343,13 @@ known-junction flag against RefSeq:
 }
 ```
 
-Each junction is a `link` from its start to its end, stroked by its score
-through a log scale, with a `text` mark printing the score over it. The `filter`
-step is the same read-support floor the sashimi menu offers, applied to the
-whole-library counts in the file, and it keeps the canonical motifs, which drops
-the copies of each junction that reads from the wrong strand put on the other
-one. The colour's `labels` name each value of `known_junction` in the key, and
-`domain` lists the values as strings because the adapter reads extra columns as
-text.
+Each junction is a `link` from its start to its end, stroked by its score on a
+log scale, with a `text` mark printing the score over it. The `filter` applies
+the sashimi menu's read-support floor to the whole-library counts in the file
+and keeps the canonical motifs, which drops the duplicate that wrong-strand
+reads give a junction on the opposite strand. The colour's `domain` lists the
+`known_junction` values as strings because the adapter reads extra columns as
+text, and `labels` names each one in the key.
 
 Type `chr11:49,220,500-49,231,500` into the location box, the 5' end of _FOLH1_,
 where the file separates what RefSeq annotates from what this library also
