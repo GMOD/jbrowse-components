@@ -118,16 +118,16 @@ link's width.
 
 Each mark's `encoding` maps feature fields to the channels its type reads:
 
-| Channel | Read by                                | Value                                                                                                                                                                                                        |
-| ------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `x`     | every mark                             | a field holding the left edge in bp; `start` by default                                                                                                                                                      |
-| `x2`    | every mark                             | the right edge; `end` by default                                                                                                                                                                             |
-| `y`     | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand in the middle of its band |
-| `row`   | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                         |
-| `color` | every mark                             | a field through a scale (below), or a constant `{ "value": … }` holding a CSS colour or a jexl callback returning one; a bare string is a field                                                              |
-| `shape` | `point`                                | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                        |
-| `size`  | `point`, `rule`, `line`, `link`        | a number of px, a point's diameter, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a range of px (below)                              |
-| `text`  | `text`                                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                            |
+| Channel | Read by                                | Value                                                                                                                                                                                                                                                       |
+| ------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `x`     | every mark                             | a field holding the left edge in bp; `start` by default                                                                                                                                                                                                     |
+| `x2`    | every mark                             | the right edge; `end` by default                                                                                                                                                                                                                            |
+| `y`     | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand at the apex of a link between its two ends, or in the middle of its band |
+| `row`   | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                                                                        |
+| `color` | every mark                             | a field through a scale (below), or a constant `{ "value": … }` holding a CSS colour or a jexl callback returning one; a bare string is a field                                                                                                             |
+| `shape` | `point`                                | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                                                                       |
+| `size`  | `point`, `rule`, `line`, `link`        | a number of px, a point's diameter, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a range of px (below)                                                                             |
+| `text`  | `text`                                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                                                                           |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -430,8 +430,9 @@ at `0.8` and one thin at `0.3`.
 ## Labels
 
 A `text` mark prints a field at each feature: over the middle of its `x` to
-`x2`, just above its `y` where the mark names one, and in the middle of its row
-band where it does not. Bars with each feature's name over them:
+`x2`, just above its `y` where the mark names one, at the apex of the curve a
+`link` mark draws between the same two ends (see [Links](#links)), and in the
+middle of its row band otherwise. Bars with each feature's name over them:
 
 ```json addtrack
 {
@@ -555,6 +556,11 @@ baseline or at the `y` value. A pair wider than three screens straightens into a
 leg rising from each end, and a mate the view does not show draws a short stem
 at the end it does. A link answers a hover and a click along its stroke, and the
 SVG export writes it as a path.
+
+A `text` mark naming no `y` labels the link on its two ends: each label sits
+just inside its own curve's apex, or just over it where the curve is too small
+to hold it. A pair wide enough to straighten into legs has no apex on the band
+and prints no label.
 
 ## Facets
 

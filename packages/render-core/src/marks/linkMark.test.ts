@@ -13,6 +13,7 @@ import { recordingContext as mockCtx } from './drawAgainstHit.ts'
 import {
   LINK_FOOT_FORWARD,
   LINK_FOOT_REVERSE,
+  linkApex,
   linkFeet,
   linkMark,
 } from './linkMark.ts'
@@ -397,6 +398,32 @@ test('a reversed scale hangs the curve from the top of a band placed by its offs
   linkMark.paintBlock(ctx, c, block, frame, down)
   expect(Math.min(...calls.map(r => r.y))).toBeCloseTo(19)
   expect(Math.max(...calls.map(r => r.y + r.h))).toBeCloseTo(71)
+})
+
+test('the apex is where the painted curve peaks, on either side of its band, and a far pair has none', () => {
+  const c = channels([
+    { x: 100, x2: 200 },
+    { x: 500, x2: 42, region: LINK_NO_REGION },
+    { x: 100, x2: 900, region: 1 },
+  ])
+  const down: LinkParams = { ...params, reverse: true, rowOffsetPx: 20 }
+  for (const p of [params, down]) {
+    const ink = linkMark.ink!(c, block, frame, p, 0)!
+    const apex = linkApex(c, block, frame, p, 0)!
+    expect(apex).toMatchObject({ x: 150, rise: 50, halfWidth: 50 })
+    expect(apex.inward).toBe(p.reverse ? -1 : 1)
+    expect(apex.y - apex.inward * (apex.strokePx / 2)).toBeCloseTo(
+      p.reverse ? ink.top + ink.height : ink.top,
+    )
+  }
+  expect(linkApex(c, block, frame, params, 1)).toMatchObject({
+    x: 500,
+    y: 100 - LINK_STEM_PX,
+    halfWidth: 0,
+  })
+  expect(linkApex(c, block, { ...frame, canvasWidth: 300 }, params, 2)).toBe(
+    undefined,
+  )
 })
 
 test('a stem rises as far as the mark says, and a dash strokes only straight ink', () => {

@@ -1,9 +1,15 @@
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { measureText } from '@jbrowse/core/util/measureText'
+import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 import { pointInsetPx } from '@jbrowse/render-core/marks'
 import { pointYPx } from '@jbrowse/render-core/shaders/pointMark'
 
-import { TEXT_MARK_FONT_PX, placeTextMarks } from './textMarks.ts'
+import { buildMarkList } from './markList.ts'
+import {
+  TEXT_MARK_FONT_PX,
+  labelTopAtApex,
+  placeTextMarks,
+} from './textMarks.ts'
 
 import type {
   MarkRegionData,
@@ -313,4 +319,137 @@ test('the point inset moves a label with the points it labels', () => {
   expect(plain!.baseline).toBe(valuePx(100) + 2 + FONT.size)
   expect(inset8!.baseline).toBe(valuePx(100, inset) + 2 + FONT.size)
   expect(inset8!.baseline).toBeGreaterThan(plain!.baseline)
+})
+
+describe('a count beside a link mark stands at the apex of the arc on its feet', () => {
+  const STROKE = 2
+  const linkState: MarkRenderState = {
+    ...STATE,
+    markSizes: [STROKE, 4],
+    linkRegions: [{ anchorPx: 0, anchorBp: 0, signedPxPerBp: 1 }],
+  }
+  const linkEntry = entry('link', { valued: false })
+  const countEntry = entry('text', { valued: false })
+
+  function linkLayer(
+    spans: [number, number][],
+    extra: Partial<StoredLayer> = {},
+  ): StoredLayer {
+    return {
+      ...textLayer(spans, []),
+      text: undefined,
+      x2Region: new Uint32Array(spans.length),
+      ...extra,
+    }
+  }
+
+  // The top of the box the display's link mark strokes the arc in: the
+  // stroke's outer edge at the apex.
+  function drawnTop(layer: StoredLayer, i: number, linkMarkEntry = linkEntry) {
+    const [mark] = buildMarkList([linkMarkEntry])
+    return mark!.ink!({ layers: [layer] }, BLOCK, linkState, i)!.top
+  }
+
+  const glyphTop = (label: { baseline: number }) =>
+    label.baseline - FONT.size * TEXT_BASELINE_RATIO
+
+  test('each count sits just inside its own arc, not at a height two arcs share', () => {
+    // a wide dome capped at the band's top, and a narrower one under it
+    const spans: [number, number][] = [
+      [100, 500],
+      [200, 360],
+    ]
+    const arcs = linkLayer(spans)
+    const labels = place(
+      [linkEntry, countEntry],
+      [arcs, textLayer(spans, ['13', '21'])],
+      linkState,
+    )
+    expect(labels.map(l => [l.instance, l.text, l.x])).toEqual([
+      [1, '21', 280],
+      [0, '13', 300],
+    ])
+    for (const label of labels) {
+      expect(glyphTop(label)).toBeCloseTo(
+        drawnTop(arcs, label.instance) + STROKE + 2,
+      )
+    }
+    expect(glyphTop(labels[0]!)).toBeGreaterThan(
+      glyphTop(labels[1]!) + FONT.size,
+    )
+  })
+
+  test('an arc too low to hold its count puts it just above the apex', () => {
+    const arcs = linkLayer([[500, 520]])
+    const [label] = place(
+      [linkEntry, countEntry],
+      [arcs, textLayer([[500, 520]], ['8'])],
+      linkState,
+    )
+    expect(glyphTop(label!) + FONT.size).toBeCloseTo(drawnTop(arcs, 0) - 2)
+  })
+
+  test('a valued arc holds its count under the value its apex stands at', () => {
+    const valued = { ...linkEntry, valued: true }
+    const arcs = linkLayer([[100, 500]], { y: Float32Array.from([50]) })
+    const [label] = place(
+      [valued, countEntry],
+      [arcs, textLayer([[100, 500]], ['5'])],
+      linkState,
+    )
+    expect(drawnTop(arcs, 0, valued)).toBeCloseTo(valuePx(50) - STROKE / 2)
+    expect(glyphTop(label!)).toBeCloseTo(valuePx(50) + STROKE / 2 + 2)
+  })
+
+  test('a far pair, whose band shows only its legs, carries no count', () => {
+    // feet 7000 px apart, either side of the canvas, the middle on it
+    const spans: [number, number][] = [[100, 7100]]
+    const counts = textLayer(spans, ['3'])
+    const state = {
+      ...linkState,
+      linkRegions: [{ anchorPx: -3000, anchorBp: 0, signedPxPerBp: 1 }],
+    }
+    const blocks = [
+      { ...BLOCK, end: 10000, screenStartPx: -3000, screenEndPx: 7000 },
+    ]
+    expect(
+      place([linkEntry, countEntry], [linkLayer(spans), counts], state, blocks),
+    ).toEqual([])
+    expect(place([countEntry], [counts], state, blocks)).toEqual([
+      expect.objectContaining({ x: 600 }),
+    ])
+  })
+
+  test('a count no arc draws on keeps the middle of its band, and one with its own y keeps its value', () => {
+    const labels = place(
+      [linkEntry, countEntry, entry('text')],
+      [
+        linkLayer([[100, 500]]),
+        textLayer([[600, 700]], ['lone']),
+        textLayer([[100, 500]], ['valued'], { y: Float32Array.from([50]) }),
+      ],
+      linkState,
+    )
+    expect(labels.map(l => [l.text, l.baseline])).toEqual([
+      ['valued', valuePx(50) - 2],
+      ['lone', 50 + FONT.size * (TEXT_BASELINE_RATIO - 0.5)],
+    ])
+  })
+
+  test('a curve hanging from its band s top holds its count above the apex, toward the baseline', () => {
+    const apex = {
+      x: 300,
+      y: 60,
+      rise: 60,
+      halfWidth: 200,
+      strokePx: STROKE,
+      inward: -1,
+    } as const
+    expect(labelTopAtApex(apex, 10, FONT.size)).toBe(
+      60 - STROKE / 2 - 2 - FONT.size,
+    )
+    expect(labelTopAtApex({ ...apex, rise: 8, y: 8 }, 10, FONT.size)).toBe(
+      8 + STROKE / 2 + 2,
+    )
+  })
 })

@@ -417,6 +417,47 @@ function placeCurve(c: LinkChannels, g: LinkFrame, i: number) {
   }
 }
 
+/**
+ * Where an instance's curve peaks as the painter and the shader draw it: the
+ * centreline's apex in canvas px and how far it stands off its baseline.
+ */
+export interface LinkApex {
+  x: number
+  y: number
+  rise: number
+  /** The curve's half-span at its baseline; 0 for a line or a stem, which enclose nothing. */
+  halfWidth: number
+  strokePx: number
+  /** Canvas y per px toward the baseline: 1 standing on the band's foot, -1 hanging from its top. */
+  inward: 1 | -1
+}
+
+/**
+ * Instance `i`'s apex, undefined where it draws none on the band: no curve
+ * at all, or a far pair's circle, which the band clips to its legs.
+ */
+export function linkApex(
+  c: LinkChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: LinkParams,
+  i: number,
+): LinkApex | undefined {
+  const g = linkFrame(block, frame, params)
+  placeCurve(c, g, i)
+  if (g.kind === KIND_NONE || g.kind === KIND_CIRCLE) {
+    return undefined
+  }
+  return {
+    x: (g.xPx + g.x2Px) / 2,
+    y: yAt(g, g.ry),
+    rise: g.ry,
+    halfWidth: g.kind === KIND_ELLIPSE ? g.rx : 0,
+    strokePx: g.strokePx,
+    inward: g.reverse ? -1 : 1,
+  }
+}
+
 function sizeLane(c: LinkChannels) {
   const lane = new Float32Array(c.count)
   for (let i = 0; i < c.count; i++) {

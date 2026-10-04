@@ -9,6 +9,7 @@ export { ruleMark } from './ruleMark.ts'
 export { spanMark } from './spanMark.ts'
 export { lineCenterMark, lineMarkOf, lineStepMark } from './lineMark.ts'
 export {
+  linkApex,
   linkFeet,
   linkMark,
   LINK_ELSEWHERE,
@@ -70,6 +71,7 @@ export type { RuleChannels, RuleParams } from './ruleMark.ts'
 export type { SpanChannels, SpanParams } from './spanMark.ts'
 export type { LineChannels, LineInterpolate, LineParams } from './lineMark.ts'
 export type {
+  LinkApex,
   LinkChannels,
   LinkParams,
   LinkRegion,

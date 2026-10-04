@@ -191,8 +191,9 @@ const markEncodingSchema = ConfigurationSchema(
      * stat names what its geom plots: a `coverage` step's depth, or the one
      * summary an `aggregate` with one op writes. A bar or point with neither
      * draws nothing, and the track's corner notice says so, while a text with
-     * neither stands in the middle of its band. The scale it is read through
-     * is the display's `scales.y`.
+     * neither stands at the apex of a link drawn between its two ends, or in
+     * the middle of its band where none is. The scale it is read through is
+     * the display's `scales.y`.
      */
     y: {
       type: 'featureField',
@@ -288,8 +289,9 @@ const markSchema = ConfigurationSchema(
      * values, held across each span or run centre to centre as `interpolate`
      * says, dropping to `origin` across a gap; `span` is a band across the whole plot from `x` to
      * `x2`; `text` prints a field
-     * over the middle of `x` to `x2`, just above `y` where it names one and in
-     * the middle of its band otherwise, and a label that would overlap one
+     * over the middle of `x` to `x2`, just above `y` where it names one, at
+     * the apex of a link drawn between the same two ends, and in the middle of
+     * its band otherwise, and a label that would overlap one
      * already placed to its left is left out; `link` is a curve from `x` up
      * and over to `x2`, which may lie on another sequence, its apex at `y`
      * where it names one.

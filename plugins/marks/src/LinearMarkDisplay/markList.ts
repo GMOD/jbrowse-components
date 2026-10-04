@@ -28,6 +28,7 @@ import type {
   LaneName,
 } from '@jbrowse/core/util/markEncoding'
 import type {
+  LinkParams,
   LinkRegion,
   LinkSizeScale,
   Mark,
@@ -267,6 +268,35 @@ export function regionColorScale(
   return layerColorScale(d.layers[i], s.colorScales[i])
 }
 
+/** Mark `i`'s link channels in one region, as its pass and the text layer read them. */
+export function linkChannelsOf(d: MarkRegionData, i: number) {
+  return withLanes(d.layers[i], MARK_VALUE_LANES.link)
+}
+
+/** What mark `i`'s link draws under, as its pass and the text layer read it. */
+export function linkParamsOf(
+  entry: MarkEntry,
+  i: number,
+  s: MarkRenderState,
+  d: MarkRegionData,
+): LinkParams {
+  return {
+    domain: s.domainY,
+    scaleType: s.scaleTypeY,
+    symlogConstant: s.symlogConstantY,
+    colorScale: regionColorScale(s, d, i),
+    regions: s.linkRegions,
+    linkShape: entry.linkShape,
+    valued: entry.valued,
+    sizePx: s.markSizes[i]!,
+    sizeScale: s.sizeScales[i],
+    insetPx: s.valueInsetPx,
+    rowHeight: s.rowHeight,
+    rowOffsetPx: -s.scrollTop,
+    rowTable: s.rowTable,
+  }
+}
+
 function withMarkIndex(
   mark: Mark<MarkRegionData, MarkRenderState>,
   markIndex: number,
@@ -410,23 +440,9 @@ function shapeMark(entry: MarkEntry, i: number) {
     case 'link': {
       return defineMark({
         shape: withPassId(linkMark, id),
-        channels: (d: MarkRegionData) =>
-          withLanes(d.layers[i], MARK_VALUE_LANES.link),
-        params: (s: MarkRenderState, d: MarkRegionData) => ({
-          domain: s.domainY,
-          scaleType: s.scaleTypeY,
-          symlogConstant: s.symlogConstantY,
-          colorScale: regionColorScale(s, d, i),
-          regions: s.linkRegions,
-          linkShape: entry.linkShape,
-          valued: entry.valued,
-          sizePx: s.markSizes[i]!,
-          sizeScale: s.sizeScales[i],
-          insetPx: s.valueInsetPx,
-          rowHeight: s.rowHeight,
-          rowOffsetPx: -s.scrollTop,
-          rowTable: s.rowTable,
-        }),
+        channels: (d: MarkRegionData) => linkChannelsOf(d, i),
+        params: (s: MarkRenderState, d: MarkRegionData) =>
+          linkParamsOf(entry, i, s, d),
         textures: (s: MarkRenderState, d: MarkRegionData) => ({
           colorRamp: rampLut(regionColorScale(s, d, i)),
         }),
