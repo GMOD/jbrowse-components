@@ -198,6 +198,29 @@ test('localFiles reach the built config, index sibling and all', () => {
   })
 })
 
+test('localFiles reach a loose { trackId, uri } track, index sibling and all', () => {
+  const state = createViewState({
+    assembly,
+    localFiles: {
+      'volvox-sorted.bam': new Uint8Array([1]),
+      'volvox-sorted.bam.bai': new Uint8Array([2]),
+    },
+    tracks: [{ trackId: 'local_bam', uri: 'volvox-sorted.bam' }],
+  })
+
+  const { adapter } = hydratedSnapshot(state, state.config.tracks[0]!) as {
+    adapter: {
+      bamLocation: { locationType: string }
+      index: { location: { locationType: string; name: string } }
+    }
+  }
+  expect(adapter.bamLocation.locationType).toBe('BlobLocation')
+  expect(adapter.index.location).toMatchObject({
+    locationType: 'BlobLocation',
+    name: 'volvox-sorted.bam.bai',
+  })
+})
+
 // The case a host with no server most likely has: the genome itself is a file
 // on disk. The assembly's sequence adapter is the same shape as a track's, so
 // it gets the same substitution — without it, `localFiles` can only decorate a

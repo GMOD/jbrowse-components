@@ -118,3 +118,25 @@ test('says nothing when every named plugin was loaded', () => {
 
   warn.mockRestore()
 })
+
+test('localFiles reach a loose { trackId, uri } track, index sibling and all', () => {
+  const state = createViewState({
+    config: {
+      assemblies,
+      tracks: [{ trackId: 'local_bam', uri: 'volvox-sorted.bam' }],
+    },
+    localFiles: {
+      'volvox-sorted.bam': new Uint8Array([1]),
+      'volvox-sorted.bam.bai': new Uint8Array([2]),
+    },
+  })
+
+  const { adapter } = state.jbrowse.tracks[0] as {
+    adapter: {
+      bamLocation: { locationType: string }
+      index: { location: { locationType: string } }
+    }
+  }
+  expect(adapter.bamLocation.locationType).toBe('BlobLocation')
+  expect(adapter.index.location.locationType).toBe('BlobLocation')
+})

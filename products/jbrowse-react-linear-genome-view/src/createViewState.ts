@@ -1,5 +1,5 @@
 import { expandAssemblyShorthand } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import { assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString, expandLooseTrackConfig } from '@jbrowse/core/util'
 import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import {
   destroyViewState,
@@ -274,7 +274,10 @@ function finishCreateViewState(
         // `uri` here is on the assembly itself — which is not a location node
         // and must not be rewritten as one.
         assemblies: [local(expandAssemblyShorthand(assembly, pluginManager))],
-        tracks: tracks?.map(local),
+        // a loose `{ trackId, uri }` has no location node until it is guessed
+        tracks: tracks?.map(t =>
+          local(expandLooseTrackConfig(t, pluginManager, assembly.name)),
+        ),
         internetAccounts,
         aggregateTextSearchAdapters: withPageBaseUri(
           aggregateTextSearchAdapters,

@@ -1,4 +1,5 @@
 import { expandAssemblyShorthand } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import {
   destroyViewState,
   normalizeAdapterSnapshots,
@@ -225,7 +226,9 @@ export default async function createViewState(
         assemblies: assemblies.map(a =>
           local(expandAssemblyShorthand(a, pluginManager)),
         ),
-        tracks: tracks?.map(local),
+        tracks: tracks?.map(t =>
+          local(expandLooseTrackConfig(t, pluginManager, assemblyNames[0])),
+        ),
         internetAccounts,
         aggregateTextSearchAdapters,
       },

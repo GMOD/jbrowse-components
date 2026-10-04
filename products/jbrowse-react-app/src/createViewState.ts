@@ -6,6 +6,7 @@ import {
   pluginsNotIn,
 } from '@jbrowse/core/pluginDefinitions'
 import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
+import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import {
   normalizeAdapterSnapshots,
   registerLocalFiles,
@@ -96,6 +97,8 @@ function finishCreateViewState(
   // session — `session` is a types.maybe, so passing undefined means "no
   // session", not "the default one"
   const { defaultSession = { name: 'New Session' } } = config
+  const onlyAssembly =
+    config.assemblies.length === 1 ? config.assemblies[0]!.name : undefined
   // what the plugin manager actually installed at runtime, i.e. the subset of
   // `plugins` that carried a definition (a bare plugin class carries none)
   const loaded = pluginManager.runtimePluginDefinitions
@@ -122,7 +125,9 @@ function finishCreateViewState(
     {
       jbrowse: {
         ...config,
-        tracks: config.tracks?.map(local),
+        tracks: config.tracks?.map(t =>
+          local(expandLooseTrackConfig(t, pluginManager, onlyAssembly)),
+        ),
         connections: withPageBaseUri(config.connections),
         aggregateTextSearchAdapters: withPageBaseUri(
           config.aggregateTextSearchAdapters,
