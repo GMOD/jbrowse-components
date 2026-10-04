@@ -1,6 +1,6 @@
 ---
 name: grammar-unity
-description: "The grammar thread's live plan, approved by Colin on 2026-09-30: unity of grammar objects across every display and every surface, not fewer display types. The order of work comes first, starting with a colour-menu builder, then the scorecard and menu census it rests on, and the open calls and quantile leftover carried over from the retired grammar-next-steps."
+description: "The grammar thread's live plan, approved by Colin on 2026-09-30: unity of grammar objects across every display and every surface, not fewer display types. Nothing is queued: the colour-menu builder landed and wiggle onto marks is not now. Left are the scorecard and menu census, and four open calls for Colin carried over from the retired grammar-next-steps."
 ---
 
 # Grammar unity: one vocabulary, every display, every surface
@@ -107,15 +107,13 @@ menus, so 252 of 359 controls write settings.
 | LD | 7 | 1 | 1 |
 | Reference sequence | 4 | 1 | 1 |
 
-Three of the four object builders exist and are shared: `groupByMenu.ts` for
-`facet` (`packages/display-kit/src`), `rowArrangementMenuItem.ts` for `rows`
-(`packages/tree-sidebar/src`) and `scoreMenuItems.ts` for `scales.y`
-(`packages/wiggle-core/src`, through `ScoreScaleMixin`). Colour has none
-across displays: `packages/synteny-core/src/colorByMenuItems.tsx` serves
-multi-way and the circular view alone. Step 1 is that builder, plus the
-displays not yet on the other three moved onto them. Domain actions stay each
-display's own, since they are where its meaning lives. The rest of the
-duplication the census found is cleanup alongside:
+All four object builders exist and are shared: `groupByMenu.ts` for `facet`
+and `colorByMenu.ts` for colour (`packages/display-kit/src`),
+`rowArrangementMenuItem.ts` for `rows` (`packages/tree-sidebar/src`) and
+`scoreMenuItems.ts` for `scales.y` (`packages/wiggle-core/src`, through
+`ScoreScaleMixin`). Domain actions stay each display's own, since they are
+where its meaning lives. The rest of the duplication the census found is
+cleanup alongside:
 
 - "Open feature details" is seven literals
   (`plugins/marks/src/LinearMarkDisplay/markMenus.ts:146` among them), "Copy
@@ -159,20 +157,12 @@ duplication the census found is cleanup alongside:
   is where what it already reads would travel. The mark display's `rows`
   beside a `facet`, which `rows-beside-facet` warns about, is the same
   capability.
-- **Wiggle.** Step 2. Wiggle still holds its own Slang for every picture
-  render-core draws (`plugins/wiggle/src/shared/wiggleMarks.ts:14-18`). On
-  2026-09-27 Colin asked why wiggle should not move onto `bar` and `point` and
-  said to aim for the ideal implementation
-  ([ADR-184](../architecture-decision-records/adr-184-a-line-is-a-mark.md)).
+- **Wiggle.** Wiggle still holds its own Slang for every picture render-core
+  draws (`plugins/wiggle/src/shared/wiggleMarks.ts`); moving it onto `bar`
+  and `point` is "not now" (§"Next").
 
 ## Where it grows, each on its trigger
 
-- **An insertion mark.** Alignments, MAF, the multi-sample display and
-  multi-row each place alignments-core's insertion marker through an overlay
-  of their own (`plugins/maf/src/LinearMafRenderer/rendering/insertions.ts`
-  and three more), clearing
-  [ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md)'s
-  two-consumer bar twice over.
 - **An ordinal x**, once a declared plot wants equal-width columns. LD and the
   multi-sample display both draw one column per variant with connector lines,
   under one `variantLayout` slot;

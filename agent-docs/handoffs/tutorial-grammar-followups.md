@@ -56,17 +56,6 @@ in git; what follows is what is left.
   scrolls the key rather than clipping it, which a still cannot show; the two
   cattle figures whose key lost yak that way took 40 px more lane.
 
-## Fixed on 2026-09-27, after the third round
-
-- `sv_cgiab/synteny_view` captures again. The synteny rows caption each
-  scalebar with a bare assembly-name chip now, so the row callouts anchor to
-  `refLabel-prefix` scoped by `view`, which a selector or text anchor honours
-  as of this round (`annotationOverlayScope.test.ts`).
-- The In(2L)t fade was the inversion glyph: a triangle whose point spanned the
-  whole cell, so an 11 Mb inversion in 2 px rows was a 900 px sliver whose
-  antialiased edges read as a gradient. The point is now one cell height long
-  (`inversionTipPx`), and the rest of a wide cell draws solid.
-
 ## Not built, with the reason
 
 - **E. coli depth/presence and k562 DepMap segments as marks over BED**, which

@@ -1,6 +1,6 @@
 ---
 name: hprc-v2-1-cleanup
-description: Follow-ups from moving the HPRC tree to release 2.1 and retiring the PAF-sliced CFH panel. The redeployed demos/hprc config is unshot, one graph-hprc.ts comment may describe the v2.0 graph, the impg locus idea has an untried first move, and v2.0-era files stay hosted with no reader.
+description: Follow-ups from moving the HPRC tree to release 2.1 and retiring the PAF-sliced CFH panel. The redeployed demos/hprc config is unshot, the impg locus idea has an untried first move, and v2.0-era files stay hosted with no reader.
 ---
 
 # HPRC release 2.1 cleanup: what is left
@@ -19,14 +19,10 @@ file when the list is empty.**
    Nothing has rendered it since the deploy. The paper figures read it:
    `jb-shoot paper/hprc_lanes_graph_stacked_force paper/hprc_lanes_graph_stacked paper/hprc_lanes_graph_anchored --get`
    and compare against the stored PNGs.
-2. **`website/scripts/specs/graph-hprc.ts`, the comment above `HPRC_ALLELE`.**
-   It calls the reference beside the allele "the green 12 kb node", while the
-   comment above it says 2.1 cuts that stretch into eleven segments. Check the
-   wording against `pangenome/hprc_mhc_layout_force` and its caption.
-3. **The impg locus tutorial's first move**:
+2. **The impg locus tutorial's first move**:
    [ideas/ready/impg-locus-pangenome-tutorial.md](../ideas/ready/impg-locus-pangenome-tutorial.md).
    One `impg query -x -o maf` at CFH, on ada, says whether the page exists.
-4. **Hosted files nothing reads**, all on `s3://jbrowse.org/demos/`, each named
+3. **Hosted files nothing reads**, all on `s3://jbrowse.org/demos/`, each named
    in its demo's README: the `hprc/hprc-v2.0-mc-grch38.*` projections and
    summary, `hprc/hprc_cfhr_*`, and `hprc_multiway/` files `README_graph.txt`
    lists. The bucket has no versioning, so deleting them is Colin's call; leaving

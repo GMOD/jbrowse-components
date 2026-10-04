@@ -149,7 +149,9 @@ the frame as it stands.
 ```
 
 `allowUnsettled` (`--allowUnsettled`) takes the frame as it stands instead, and
-still tells you what did not settle.
+still tells you what did not settle. It does not cover the session gate: a
+trackId or assembly that never opens throws either way, since that frame lacks
+the thing you asked to capture.
 
 ## Reading the result
 

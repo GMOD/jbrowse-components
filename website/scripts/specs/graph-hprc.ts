@@ -49,10 +49,10 @@ const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 // Which is why the caption has to say it (review: "it looks like this is
 // highlighting a 'black' node, instead of the green one, which is, afaict, the
 // reference path"). Under the reference-position ramp black means "no reference
-// position", i.e. this IS the allele the figure is about, and the green 12 kb
-// node beside it is the reference segment the highlight lands on. Nothing in the
-// frame joins the two, so a ring on a black node over a band 12 kb wide reads as
-// the wrong node being ringed unless the words are there.
+// position", i.e. this IS the allele the figure is about, and the green
+// reference segments beside it, the eleven above, are what the highlight lands
+// on. Nothing in the frame joins the two, so a ring on a black node over a band
+// 12 kb wide reads as the wrong node being ringed unless the words are there.
 const HPRC_ALLELE = 's348700+'
 
 // The inversion figure, at 1q21.1. `hprc-v2.1-mc-grch38.bubbles.bed.gz` flags

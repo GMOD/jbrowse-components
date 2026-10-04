@@ -157,8 +157,3 @@ track needs it rather than to retire the MAF display.
 4. The identity-yields-at-base-level switch as a `minBpPerPx`/`maxBpPerPx`
    pair, once item 2 above exists.
 
-## Stale comments met on the way
-
-`components/mafHitTest.ts` names `maf.slang` and `drawMafBlocks`, neither of
-which exists; `trackMenuItems.ts` says both write `layout`, which `rows`
-replaced.
