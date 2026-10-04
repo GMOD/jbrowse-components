@@ -6,9 +6,8 @@ import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { colorLongreadInv } from '@jbrowse/core/ui/palette'
-import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
@@ -51,7 +50,6 @@ function MafSvgBody({
   overlays,
   opts,
 }: LgvSvgBodyProps<LinearMafDisplayModel>) {
-  const state = model.renderState
   const palette = usePalette()
   const {
     effectiveRowHeight,
@@ -63,30 +61,23 @@ function MafSvgBody({
     conservationDisplayHeight,
     scrollTop,
   } = model
-  // The export draws each band into its own `PaintLayer`, translated to that
-  // band's own origin — so the rows painter gets a rows-sized canvas at offset
-  // 0, not the display's stacked one.
+  const colorPalette = getMafColorPalette(palette)
+  // Each band paints into its own layer translated to that band's origin, so
+  // the rows painter sees its band at offset 0, not the display's stack.
   const svgState = {
-    ...state,
-    canvasWidth: width,
-    canvasHeight: rowsHeight,
+    ...model.renderState,
     rowsTop: 0,
     rowsHeight,
-    palette: getMafColorPalette(palette),
+    palette: colorPalette,
   }
   const contrast = getContrastBaseMap(palette)
-  // Re-encoded here rather than read off `encodedUpload`: the export theme is a
-  // different palette, so the screen's channels carry the wrong colours.
-  const encodeProps = model.rowsEncodeProps()
+  const encodeProps = model.rowsEncodePropsIn(colorPalette)
   const shownRows = visibleRowRange(effectiveRowHeight, scrollTop, rowsHeight)
   const svgRows = new Map(
     [...model.rowsSources].map(([idx, source]) => [
       idx,
       cullMafRows(
-        encodeMafRows(source, {
-          ...encodeProps,
-          gpu: { ...encodeProps.gpu, palette: svgState.palette },
-        }),
+        encodeMafRows(source, encodeProps),
         renderBlocks.filter(b => b.displayedRegionIndex === idx),
         width,
         shownRows,
@@ -96,50 +87,36 @@ function MafSvgBody({
   return (
     <>
       {coverageBandActive ? (
-        <PaintLayer
+        <MarkSvgLayer
+          marks={MAF_COVERAGE_MARKS}
+          regions={model.rpcDataMap}
+          blocks={renderBlocks}
+          state={{
+            ...svgState,
+            coverage: {
+              ...model.coverageBandState,
+              height: topBands.reserved.coverage,
+              colors: mafCoverageBandColors(palette),
+            },
+          }}
           width={width}
           height={topBands.reserved.coverage}
           opts={opts}
-          paint={ctx => {
-            paintMarkBlocks(
-              ctx,
-              MAF_COVERAGE_MARKS,
-              model.rpcDataMap,
-              renderBlocks,
-              {
-                ...svgState,
-                canvasHeight: topBands.reserved.coverage,
-                coverage: {
-                  ...model.coverageBandState,
-                  height: topBands.reserved.coverage,
-                  // The export-chosen palette, not the live one — the band's
-                  // colours follow the same theme as the cells under them.
-                  colors: mafCoverageBandColors(palette),
-                },
-              },
-            )
-          }}
         />
       ) : null}
       {conservationBandActive ? (
         <g transform={`translate(0, ${topBands.top.conservation})`}>
-          <PaintLayer
+          <MarkSvgLayer
+            marks={[MAF_CONSERVATION_MARK]}
+            regions={svgRows}
+            blocks={renderBlocks}
+            state={{
+              ...svgState,
+              conservation: { top: 0, height: conservationDisplayHeight },
+            }}
             width={width}
             height={conservationDisplayHeight}
             opts={opts}
-            paint={ctx => {
-              paintMarkBlocks(
-                ctx,
-                [MAF_CONSERVATION_MARK],
-                svgRows,
-                renderBlocks,
-                {
-                  ...svgState,
-                  canvasHeight: conservationDisplayHeight,
-                  conservation: { top: 0, height: conservationDisplayHeight },
-                },
-              )
-            }}
           />
         </g>
       ) : null}
@@ -152,23 +129,20 @@ function MafSvgBody({
           width={width}
           height={rowsHeight}
         >
-          <PaintLayer
+          <MarkSvgLayer
+            marks={MAF_ROWS_MARKS}
+            regions={svgRows}
+            blocks={renderBlocks}
+            state={svgState}
             width={width}
             height={rowsHeight}
             opts={opts}
-            paint={ctx => {
-              paintMarkBlocks(
-                ctx,
-                MAF_ROWS_MARKS,
-                svgRows,
-                renderBlocks,
-                svgState,
-              )
+            paint={(ctx, framed) => {
               // the overlay canvases the screen stacks over the rows canvas
               if (!overlays) {
                 return
               }
-              drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
+              drawMafEmptyLines(ctx, model.visibleEmptyLines, colorPalette)
               drawMafAnnotations(
                 ctx,
                 model.visibleFrames,
@@ -178,14 +152,10 @@ function MafSvgBody({
                 ctx,
                 renderBlocks,
                 block => svgRows.get(block.displayedRegionIndex)?.insertions,
-                svgState,
-                mafInsertionParams(svgState),
+                framed,
+                mafInsertionParams(framed),
               )
-              drawMafDeletionLabels(
-                ctx,
-                model.visibleDeletions,
-                svgState.palette,
-              )
+              drawMafDeletionLabels(ctx, model.visibleDeletions, colorPalette)
               drawMafLabels(
                 ctx,
                 model.visibleLabels,

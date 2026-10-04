@@ -2341,16 +2341,17 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * What a region's rows encode reads beyond the region. A mode flip is
+         * What a region's rows encode reads beyond the region, in a given
+         * palette: the SVG export's theme need not be the session's. A mode flip is
          * here rather than read inside the encode, since flipping modes has to
          * re-encode every region and only a declared input does that.
          */
-        rowsEncodeProps(): MafRowsEncodeProps {
+        rowsEncodePropsIn(colorPalette: MafColorPalette): MafRowsEncodeProps {
           return {
             basesActive: self.basesRenderingActive,
             identity: self.identityEncoding,
             gpu: {
-              palette: self.colorPalette,
+              palette: colorPalette,
               colorMatches: self.rowsColor === 'base',
               binBp: self.encodeBinBp,
             },
@@ -2372,6 +2373,12 @@ export default function stateModelFactory(
             conservation:
               self.conservationBandActive && !self.codonConservationActive,
           }
+        },
+        /**
+         * #method
+         */
+        rowsEncodeProps(): MafRowsEncodeProps {
+          return this.rowsEncodePropsIn(self.colorPalette)
         },
       }))
       .views(self => {

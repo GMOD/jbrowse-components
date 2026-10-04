@@ -1,4 +1,6 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
@@ -138,4 +140,28 @@ test('an export draws the summary bars on screen, plot-only or not', async () =>
       SUMMARY_FILL_OPACITY,
     ),
   ).toBe(2)
+})
+
+// The export's theme need not be the session's, so the rows re-encode in the
+// palette the export draws with rather than reading the screen's channels.
+test('the rows paint in the export palette, not the session one', async () => {
+  const display = summaryTierDisplay()
+  const fills = async (mode: 'light' | 'dark') =>
+    new Set(
+      renderToString(
+        <PaletteProvider palette={resolvePalette({ mode })}>
+          <svg>
+            {
+              (await renderSvg(display, {
+                plotOnly: true,
+              })) as React.ReactElement
+            }
+          </svg>
+        </PaletteProvider>,
+      ).match(/fill="[^"]+" fill-opacity="[^"]+"/g),
+    )
+  const light = await fills('light')
+  const dark = await fills('dark')
+  expect(light.size).toBeGreaterThan(0)
+  expect([...dark].some(f => light.has(f))).toBe(false)
 })
