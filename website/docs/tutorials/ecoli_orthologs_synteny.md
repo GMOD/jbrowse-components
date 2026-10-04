@@ -54,12 +54,12 @@ the four Shigella are:
 
 ## A join on the gene symbols
 
-RefSeq's Prokaryotic Genome Annotation Pipeline (PGAP) names a gene by its
-ortholog (_atpA_ is _atpA_ in every strain that has it), so matching symbols
-across the GFF3 files builds an ortholog table with no alignment step, one row
-per gene and one column per genome, in the `.blocks` format
-`MCScanBlocksAdapter` reads. Most of the work is PGAP's unnamed and renamed
-genes. The download is an annotation and a sequence report per genome:
+RefSeq's Prokaryotic Genome Annotation Pipeline (PGAP) gives a gene the symbol
+of its ortholog (_atpA_ is _atpA_ in every strain that has it), so matching
+symbols across the GFF3 files builds an ortholog table with no alignment step:
+one row per gene, one column per genome, in the `.blocks` format that
+`MCScanBlocksAdapter` reads. Most of the effort goes to PGAP's unnamed and
+renamed genes. The download is an annotation and a sequence report per genome:
 
 <!-- from: scripts/build_ecoli_orthologs.sh -->
 
@@ -70,9 +70,9 @@ datasets download genome accession --inputfile accessions.txt \
 unzip genomes.zip
 ```
 
-The build takes the longest sequence in each report as the chromosome and drops
-the plasmids, since a lane follows one contig at a time. It filters the GFF3 to
-that sequence, then sorts, bgzips and tabix-indexes it as in the
+The build script takes the longest sequence in each report as the chromosome and
+drops the plasmids, since a lane follows one contig at a time. It filters the
+GFF3 to that sequence, then sorts, bgzips and tabix-indexes it as in the
 [web quickstart](/docs/quickstart_web) to make the gene track for that genome.
 
 Each lane takes its name from the strain field of the assembly report (MG1655
@@ -96,19 +96,17 @@ python3 symbols_to_blocks.py --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]
 ```
 
 PGAP also renames genes between releases, so most strains here call K-12's _gnd_
-_gndA_. PGAP records on each CDS the protein it annotated the gene from
+_gndA_. Each CDS records the protein PGAP annotated the gene from
 (`similar to AA sequence:RefSeq:NP_416533.1`, the K-12 _gnd_ protein), and
 `--merge-cited` joins the two symbols when that protein is in the table under
-the other name. Two symbols that one genome has side by side, such as K-12's
-_narH_ and its paralog _narY_, stay apart. After the rows for K-12's genes, the
-table adds a row for each symbol K-12 lacks that two other genomes share, with a
-dot in K-12's column.
+the other name. Two symbols one genome has side by side, such as K-12's _narH_
+and its paralog _narY_, stay apart. The table then adds a row for each symbol
+K-12 lacks that two other genomes share, with a dot in K-12's column.
 
-The helper reports how much of each column it filled, and that number is the
-screen a strain has to pass. Older PGAP runs gave genes a locus tag and no
-symbol, so a genome can be complete, current and join nothing. Counting the
-named genes in an annotation shows which genomes will fail the join before
-anything is built:
+`symbols_to_blocks.py` reports how much of each column it filled, which tells
+whether a strain joins. Older PGAP runs gave genes a locus tag and no symbol, so
+a genome can be complete, current and join nothing. Counting the named genes in
+an annotation shows which genomes will fail before anything is built:
 
 <!-- from: scripts/build_ecoli_orthologs.sh -->
 
@@ -144,12 +142,11 @@ and tabix-indexed GFF3 the build made above:
 ```
 
 One `SyntenyTrack` names all forty-four assemblies. `blockAssemblies` and
-`bedLocations` are positional against the table's columns, in the order the
-helper printed; the config below keeps the four genomes the command above
-joined, and the hosted
-[config.json](https://jbrowse.org/demos/ecoli_orthologs/config.json) has the
-track with all forty-four. The adapter decompresses the gzipped table and BEDs
-itself, reading each file whole before the first lane draws:
+`bedLocations` hold one entry per table column, in the order the helper printed.
+The config below keeps the four genomes the command above joined, and the hosted
+[config.json](https://jbrowse.org/demos/ecoli_orthologs/config.json) has all
+forty-four. The adapter decompresses the table and BEDs itself and reads each
+file whole before the first lane draws:
 
 ```json addtrack
 {
@@ -177,13 +174,14 @@ itself, reading each file whole before the first lane draws:
 }
 ```
 
-## One operon, forty-four genomes
+## Reading the atp operon across forty-four genomes
 
-Opened on K-12 at the _atp_ operon, the track draws a lane per genome under the
-K-12 axis, each in the coordinates of the genome it shows, with a header naming
-the strain, contig and span it shows and `[rev]` where it runs against K-12
+At the _atp_ operon (the ATP synthase genes) on K-12, the track draws a lane per
+genome under the K-12 axis. Each lane uses its own genome's coordinates, and its
+header names the strain, contig and span shown, with `[rev]` where the lane runs
+against K-12
 ([lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)).
-Read the colors this way:
+The colors read as follows:
 
 - Every gene is colored by its ortholog group, which the table names after the
   K-12 gene anchoring it, so a conserved gene is one color running down the
@@ -191,11 +189,11 @@ Read the colors this way:
 - A gene no group claims is grey, which marks the genes specific to a strain at
   a glance.
 - The key in the top right turns a color back into a group's name, and **Show...
-  → Show legend** on the track menu puts it away. The display leaves it out in
-  any window holding more than thirty groups.
+  → Show legend** on the track menu hides it. The display leaves it out in any
+  window holding more than thirty groups.
 
-Lanes stack densest first, by how many of the window's genes each genome places.
-The default height scrolls the stack inside the track; the session sets a
+Lanes stack with the genome placing the most of the window's genes first. The
+default height scrolls the stack inside the track, so the session sets a
 `height` that fits every lane:
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
@@ -220,13 +218,13 @@ The default height scrolls the stack inside the track; the session sets a
 }
 ```
 
-<Figure caption="The atp operon on K-12 over forty-three E. coli and Shigella lanes from one gene-symbol ortholog track, each lane drawing the RefSeq gene models annotated in that genome. Every gene's color runs the full stack; the lanes marked [rev] are the ones running this window's genes in the opposite order to K-12, which the display then mirrors so their ribbons draw straight." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
+<Figure caption="The atp operon on K-12 over forty-three E. coli and Shigella lanes, each drawing its own RefSeq gene models. A gene's color runs the full stack. Lanes marked [rev] hold this window's genes in the opposite order to K-12 and are mirrored, so their ribbons draw straight." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
 
-## Where the join stops
+## The O-antigen cluster, where the gene-symbol join stops
 
-The O-antigen cluster between _galF_ and _gnd_ is the locus that differs most
-between strains, because each serotype has a different set of sugar pathway
-genes. Open the cluster:
+The O-antigen cluster between _galF_ and _gnd_ holds the genes that build a
+strain's surface sugar chain. Each serotype has a different set, so the locus
+differs most between strains. Open the cluster:
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {
@@ -250,7 +248,7 @@ genes. Open the cluster:
 }
 ```
 
-<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, gnd, ugd and wzzB chains run through, the rfb genes, wzx and wzy join where a strain has them, and the serotype-specific genes between them are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. K-12 derivatives at the top match the cluster gene for gene. In every lane below, the flanking galF, gnd, ugd and wzzB ribbons run through, the rfb genes, wzx and wzy join where a strain has them, and the serotype-specific genes between them are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
 Read the lanes from the top:
 
