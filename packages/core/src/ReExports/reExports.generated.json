@@ -1225,6 +1225,7 @@
       "names": [
         "adapterByteLimit",
         "isRegionRefused",
+        "isRegionTooLargeError",
         "largestRegionBytes",
         "measureRegionBytes",
         "measuredBytes",
