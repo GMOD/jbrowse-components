@@ -1,4 +1,7 @@
 import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
+import { keyNames } from '@jbrowse/core/util/categoricalField'
+
+import { MAF_FIELD_PRESETS } from '../LinearMafDisplay/mafColorConfigSchema.ts'
 
 import type { CodonChange } from '../LinearMafDisplay/codons.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
@@ -139,24 +142,34 @@ export function getCodonColors(palette: JBrowsePalette) {
 }
 
 /**
- * The color key for the codon view, built from the very fills `getCodonColors`
- * hands the painter.
+ * The color key for the codon view: each change `domain` lists, in order and
+ * named by `labels`, in the very fill `getCodonColors` hands the painter.
  *
- * It has to be, because those fills are alpha-composited: the legend used to
- * name the raw theme colors, so the faint synonymous fill (alpha 0.18 in light
- * mode) showed in the key as a saturated blue no cell on screen is — the
- * reader's decoder was several shades off the thing it decoded.
+ * It has to be the fill, because the fills are alpha-composited: the legend
+ * used to name the raw theme colors, so the faint synonymous fill (alpha 0.18
+ * in light mode) showed in the key as a saturated blue no cell on screen is.
  *
- * `same` is deliberately absent: a conserved codon takes no fill, so it has no
- * swatch to show.
+ * `same` takes no fill, so a conserved codon has no swatch to show.
  */
-export function getCodonLegendItems(palette: JBrowsePalette): LegendItem[] {
+export function getCodonLegendItems(
+  palette: JBrowsePalette,
+  {
+    domain = [],
+    labels = [],
+  }: {
+    domain?: readonly (string | number)[]
+    labels?: readonly string[]
+  } = MAF_FIELD_PRESETS.codon,
+): LegendItem[] {
   const { fill } = getCodonColors(palette)
-  return [
-    { label: 'Nonsynonymous', color: fill.nonsyn },
-    { label: 'Synonymous', color: fill.syn },
-    { label: 'Stop gained', color: fill.stop },
-  ]
+  const names = keyNames(domain, labels)
+  return domain.flatMap(key => {
+    const value = String(key)
+    const color = Object.hasOwn(fill, value)
+      ? fill[value as CodonChange]
+      : undefined
+    return color ? [{ label: names.get(value) ?? value, color }] : []
+  })
 }
 
 export function getContrastBaseMap(palette: JBrowsePalette) {

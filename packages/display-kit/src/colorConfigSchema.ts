@@ -554,10 +554,10 @@ export function colorForField(current: ColorSlots, field: string) {
     return current.field ? { ...kept, scale: 'none' } : kept
   }
   if (field === current.field) {
-    return {
+    return definedMembers({
       ...kept,
       scale: current.scale === 'none' ? undefined : current.scale,
-    }
+    })
   }
   return definedMembers({ value: current.value, field })
 }

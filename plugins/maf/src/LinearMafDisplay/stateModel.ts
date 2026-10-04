@@ -8,6 +8,7 @@ import {
 import {
   ConfigurationReference,
   getConf,
+  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -19,6 +20,7 @@ import {
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { stackBands } from '@jbrowse/core/util/bandLayout'
+import { colorNotices, withPreset } from '@jbrowse/core/util/colorScale'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
@@ -26,6 +28,11 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import {
+  colorEncodingOf,
+  colorForField,
+  colorSettingOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -94,6 +101,7 @@ import {
 } from './encodeMafRows.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
+import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
@@ -147,6 +155,10 @@ import type {
   CoarseTierRead,
   CoarseTierResult,
 } from '@jbrowse/display-kit/coarseTier'
+import type {
+  ColorSetting,
+  FieldColorEncoding,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -434,6 +446,35 @@ export default function stateModelFactory(
         },
         /**
          * #getter
+         * The `color` object as written, with the key's labels and title.
+         */
+        get colorSetting(): ColorSetting & { value: undefined } {
+          const { color } = self.configuration
+          return {
+            ...colorSettingOf(color),
+            value: undefined,
+            scale: undefined,
+            labels: readConfObject(color, 'labels'),
+            title: readConfObject(color, 'title'),
+          }
+        },
+        /**
+         * #getter
+         * The `color` object as it paints, through its field's preset: one
+         * scale per field, so `scale` is never written.
+         */
+        get colorEncoding(): FieldColorEncoding {
+          return colorEncodingOf(this.colorSetting, MAF_FIELD_PRESETS)!
+        },
+        /**
+         * #getter
+         * The key's heading: the written `title`, else the field's own.
+         */
+        get colorKeyTitle(): string {
+          return withPreset(this.colorSetting, MAF_FIELD_PRESETS).title ?? ''
+        },
+        /**
+         * #getter
          */
         get yField(): MafYField | undefined {
           return getConf(self, 'y')
@@ -564,7 +605,7 @@ export default function stateModelFactory(
          * #action
          */
         setColorField(field: MafColorField) {
-          setConf(self, ['color', 'field'], field)
+          setConf(self, 'color', colorForField(self.colorSetting, field))
         },
         /**
          * #action
@@ -1911,6 +1952,31 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * What the `color` object says that cannot paint as written, as the
+         * corner indicator lists it: the lines `plotProblems` and
+         * `jbrowse validate` report, then the ones only this display can tell.
+         */
+        get notices(): string[] {
+          const { colorField, colorSetting } = self
+          return [
+            ...colorNotices(colorSetting, MAF_FIELD_PRESETS),
+            ...(colorField === 'codon' && !self.annotationAdapterConfig
+              ? [
+                  'color.field: codon needs an annotationAdapter on the MAF adapter to define reading frames, so the rows paint the mismatches',
+                ]
+              : []),
+            ...(colorSetting.range.length > 0 &&
+            (colorField === 'base' ||
+              colorField === 'mismatch' ||
+              colorField === 'codon')
+              ? [
+                  `color.range: ${colorField} paints the theme's colours and reads no range`,
+                ]
+              : []),
+          ]
+        },
+        /**
+         * #getter
          * The Row coloring radio's tick: the X-Y plot where `y` is identity,
          * else the colour field, codon falling back to the bases where no
          * frames file can define a reading frame. Zoom-independent, so the
@@ -2255,35 +2321,34 @@ export default function stateModelFactory(
             return []
           }
           const rendering = self.activeRowRendering
+          const { colorEncoding, colorKeyTitle } = self
+          const named =
+            colorEncoding.scale === 'categorical' ? colorEncoding : {}
+          const oneBaseCells = self.encodeBinBp === 1
           const rendered =
             rendering === 'codon'
               ? [
                   categoricalScale(
                     'codon',
-                    'Codon change',
-                    getCodonLegendItems(palette),
+                    colorKeyTitle,
+                    getCodonLegendItems(palette, named),
                   ),
                 ]
               : rendering === 'chromosome'
                 ? [
-                    // Colored by each row's per-row chromosome RANK, not by
-                    // chromosome name, so the key is this short fixed scheme
-                    // rather than a per-scaffold rainbow.
                     categoricalScale(
                       'sourceChrom',
-                      'Source chromosome',
-                      sourceChromLegendItems(self.sourceChromRanks.maxRank),
+                      colorKeyTitle,
+                      sourceChromLegendItems(
+                        self.sourceChromRanks.maxRank,
+                        named,
+                      ),
                     ),
                   ]
-                : rendering === 'identity'
-                  ? [identityColorScale('heatmap', self.encodeBinBp === 1)]
+                : rendering === 'identity' || self.rowsColor === 'identity'
+                  ? [identityColorScale('heatmap', oneBaseCells, colorKeyTitle)]
                   : rendering === 'xyplot'
-                    ? [
-                        identityColorScale(
-                          self.rowsColor === 'identity' ? 'heatmap' : 'xyplot',
-                          self.encodeBinBp === 1,
-                        ),
-                      ]
+                    ? [identityColorScale('xyplot', oneBaseCells)]
                     : []
           // The CDS strip draws *over* whichever rendering won, so it is its
           // own section rather than a branch of the dispatch, and last, in

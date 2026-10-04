@@ -56,8 +56,8 @@ const XYPLOT_BAR_ABGR = IDENTITY_ABGR[STEPS]!
 export function identityColorScale(
   mode: IdentityPlot,
   oneBaseCells = false,
+  title = 'Per-base identity to reference',
 ): ColorScale {
-  const title = 'Per-base identity to reference'
   if (mode === 'heatmap' && oneBaseCells) {
     return {
       kind: 'categorical',

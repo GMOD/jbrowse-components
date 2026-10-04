@@ -3,6 +3,8 @@ import { useId, useRef, useState } from 'react'
 import { ScrollChrome, useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { useRowVirtualScroll } from '@jbrowse/core/util/useRowVirtualScroll'
+import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
+import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
@@ -314,6 +316,9 @@ const MafBody = observer(function MafBody({
         setContextCoord={setContextCoord}
       />
       <DisplayContextMenu model={model} />
+      <BottomRightIndicators>
+        <ConfigProblemsIndicator notices={model.notices} />
+      </BottomRightIndicators>
     </>
   )
 })

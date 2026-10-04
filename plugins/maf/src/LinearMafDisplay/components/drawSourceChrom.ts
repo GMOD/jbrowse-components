@@ -1,3 +1,4 @@
+import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import type {
@@ -57,12 +58,19 @@ export function sourceChromRankLabel(rank: number): string {
  * past the fifth entry, and on a tall alignment it grew over the rows.
  *
  * A lone "Main chromosome" entry is the meaningful minimum: it says nothing in
- * view is rearranged.
+ * view is rearranged. A rank `color.labels` names takes that name.
  */
-export function sourceChromLegendItems(maxRank: number): LegendItem[] {
+export function sourceChromLegendItems(
+  maxRank: number,
+  {
+    domain = [],
+    labels = [],
+  }: { domain?: readonly (string | number)[]; labels?: readonly string[] } = {},
+): LegendItem[] {
+  const names = keyNames(domain, labels)
   const shown = Math.min(maxRank, SOURCE_CHROM_PALETTE.length - 1) + 1
   return Array.from({ length: shown }, (_, rank) => ({
-    label: sourceChromRankLabel(rank),
+    label: names.get(String(rank)) ?? sourceChromRankLabel(rank),
     color: sourceChromRankColor(rank),
   }))
 }
