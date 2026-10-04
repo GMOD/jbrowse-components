@@ -58,10 +58,10 @@ CLI.
 - nanopore reads from an unrelated isolate, _E. coli_ E146:
   https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR193/DRR193901/DRR193901_1.fastq.gz
 
-## The linear projections
+## Linear projections: flattening the graph onto one genome
 
 A pangenome graph stores sequence the genomes share once, as a path every genome
-walks, and branches where they differ. A **linear projection** flattens the
+follows, and branches where they differ. A **linear projection** flattens the
 graph onto one genome's coordinates, so it loads as an ordinary track. Every
 graph builder emits these:
 
@@ -127,9 +127,9 @@ bgzip-compressed, indexed FASTA:
 Sakai, CFT073, NCTC86 and IAI39 load the same way, one assembly per strain,
 named as in the `assemblyNames` of the tracks below.
 
-## Synteny projection
+## Synteny between the strains (wfmash) {#synteny-projection}
 
-pggb's first step is a wfmash all-vs-all alignment, which JBrowse reads as a
+pggb's first step is an all-vs-all alignment by wfmash, which JBrowse reads as a
 synteny track once `jbrowse make-pif` indexes it:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
@@ -157,7 +157,7 @@ Stack the five strains with **Add → Linear synteny view**, whose Quick start
 fills in a row per assembly the track lists, K12 at the top and IAI39 at the
 bottom.
 
-<Figure caption="The wfmash alignment pggb induced the graph from: five strains stacked K12 to IAI39, a ribbon between each adjacent pair. The crossings in the bottom band are IAI39's inversions." src="/img/pangenome/pggb_synteny.png" />
+<Figure caption="The wfmash alignment pggb built the graph from: five strains stacked K12 to IAI39, a ribbon between each adjacent pair. The crossings in the bottom band are IAI39's inversions." src="/img/pangenome/pggb_synteny.png" />
 
 Select a span on K12's ruler and pick **Launch → Linear synteny view** to stack
 the strains over that span alone. The same selection on another strain's row,
@@ -165,12 +165,12 @@ with **Replace current view**, re-anchors the stack on that strain:
 
 <Video src="/media/synteny/ecoli_roundtrip.mp4" caption="One selection, a synteny stack: the Launch menu over a K12 window, the stack anchored on K12, where Sakai's row has a prophage K12 lacks, and a drag across it on the Sakai row re-anchoring the stack on Sakai." />
 
-### The projection from odgi untangle {#the-same-picture-read-out-of-the-graph}
+### Synteny read out of the graph with odgi untangle {#the-same-picture-read-out-of-the-graph}
 
 [`odgi untangle`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_untangle.html)
-walks each strain's path and reports which stretch of the K12 path it traverses,
-so this synteny comes out of the graph itself. `-p` writes it as a PAF, which
-`make-pif` indexes the same way:
+follows each strain's path and reports which stretch of the K12 path it
+traverses, so this synteny comes from the graph itself. `-p` writes it as a PAF,
+which `make-pif` indexes the same way:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -237,9 +237,9 @@ tabix -p bed ecoli_pggb_untangle_rows.bed.gz
 }
 ```
 
-<Figure caption="The untangle projection read two ways, with each of IAI39's inverted arms boxed in a distinct color in both. Above, one row per strain over the whole K12 chromosome, red where the strain runs backwards and white where it has no segment. Below, K12 against IAI39 as a dotplot, where every descending segment is an inversion." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
+<Figure caption="The odgi untangle synteny read two ways, with each of IAI39's inverted arms boxed in a distinct color in both. Above, one row per strain over the whole K12 chromosome, red where the strain runs backwards and white where it has no segment. Below, K12 against IAI39 as a dotplot, where every descending segment is an inversion." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
 
-## Pangenome variants projection
+## Variants against K12 (pggb -V) {#pangenome-variants-projection}
 
 `pggb -V` wrote a VCF of every variant the graph decomposes against the K12
 path, genotyped in the other four strains. Its `CHROM` is the PanSN path,
@@ -274,11 +274,12 @@ that strain's allele:
 With a length after the path name, as in `-V K12:10000`, pggb runs
 [`vcfbub`](https://github.com/pangenome/vcfbub) and
 [`vcfwave`](https://github.com/vcflib/vcflib) over the VCF to decompose large
-sites into smaller variants, which is the `*.decomposed.vcf`. The undecomposed
-`*.smooth.final.K12.vcf` keeps one record per bubble, and the
-[graph track](#opening-the-graph-in-the-graph-genome-view) reads it.
+sites into smaller variants, giving `*.decomposed.vcf`. The undecomposed
+`*.smooth.final.K12.vcf` keeps one record per bubble (where paths split and
+rejoin) for the [graph track](#opening-the-graph-in-the-graph-genome-view) to
+read.
 
-## Whole-genome alignment (MAF) projection
+## Whole-genome alignment onto K12 (MAF) {#whole-genome-alignment-maf-projection}
 
 `pggb -M` wrote the multiple alignment as a MAF. Re-root every block on K12 and
 rename the rows to `sample.chr`, then convert the MAF to the tabix-indexed BED
@@ -340,7 +341,7 @@ selection covers under two submenus:
 
 <Video src="/media/synteny/maf_row_synteny.mp4" caption="From the pggb alignment's rows to a two-strain synteny view: a drag across the rows, the menu listing the strains it covers, and the synteny view the IAI39 entry opens, with no ribbon under ybhH and ybhI, the two K12 genes IAI39 lacks." />
 
-## Pangenome depth projection (core vs accessory)
+## Pangenome depth: core versus accessory sequence {#pangenome-depth-projection-core-vs-accessory}
 
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
 counts how many paths cross each K12 window: about five over core sequence and
@@ -389,8 +390,8 @@ The config draws reference lines at the strain count and at 1:
 ```
 
 Zoomed out, the curve sits on the strain-count line over the core genome, rises
-past it over the rRNA operons that the graph collapses into one copy, and drops
-to 1 over sequence only K12 has.
+past it over the rRNA operons (repeated ribosomal RNA genes) that the graph
+collapses into one copy, and drops to 1 over sequence only K12 has.
 
 ### Per-strain presence
 
@@ -452,8 +453,8 @@ column is a stretch that strain lacks:
 
 ### Testing the CPZ-55 depth trough with nanopore reads
 
-Nanopore reads from _E. coli_ E146, an isolate outside the graph, test one depth
-trough without the graph. Download them:
+Nanopore reads from _E. coli_ E146, an isolate outside the graph, check the
+depth trough at CPZ-55, a cryptic prophage found in K12 alone. Download them:
 
 ```bash
 curl -fO https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR193/DRR193901/DRR193901_1.fastq.gz
@@ -485,7 +486,7 @@ a single labelled deletion.
 The [graph genome view plugin](/docs/user_guides/graph_genome_view) draws the
 graph itself as a track of the linear view.
 [`build_pangenome_graph.sh`](/docs/tutorials/pangenome_prepare_graph) indexes it
-by walking the K12 path, and takes the bubbles from pggb's undecomposed VCF,
+by following the K12 path, and takes the bubbles from pggb's undecomposed VCF,
 renamed like the decomposed one:
 
 ```bash
@@ -527,10 +528,10 @@ session:
 
 <Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a graph track: the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the track drawing the graph on K12's coordinates." />
 
-Type `chr:1,250,000-1,350,000`. Past one bp per pixel the track draws from the
-coarse tier, one node per bubble, with the reference as backbone and charcoal
-where the strains differ. The tier also loads as a separate track, and its
-**Display types → Feature display** draws the bubbles as a lane at any zoom:
+Type `chr:1,250,000-1,350,000`. Zoomed out past one bp per pixel, the track
+draws the coarse tier (one node per bubble), with the reference as backbone and
+charcoal where the strains differ. The tier also loads as a separate track whose
+**Display types → Feature display** draws the bubbles as a row at any zoom:
 
 ```json addtrack
 {
@@ -551,23 +552,23 @@ where the strains differ. The tier also loads as a separate track, and its
 
 The tier marks where the strains differ, and the
 [MAF track](#whole-genome-alignment-maf-projection) says which: show it between
-the tier lane and the graph, and a strain's row breaks across each bubble it
+the tier track and the graph, and a strain's row breaks across each bubble it
 skips.
 
-<Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane, the MAF's strain rows, and the graph track, which cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 has and the other four skip, their MAF rows breaking across it." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="100 kb of K12 around an IS5 element (an insertion sequence), one node per bubble: the tier, the MAF's strain rows, and the graph track, which draws from the tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 has and the other four skip, their MAF rows breaking across it." src="/img/pangenome/pggb_bubble_tier.png" />
 
 Right-click the IS5 node in the graph track and take **Open in K12**, the route
 [the HPRC page](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
-describes for a haplotype. A segment K12 never walks sits on its strain's own
+describes for a haplotype. A segment K12 lacks sits on its own strain's
 coordinates: type `chr:1,004,500-1,004,961`, right-click the 75 bp CFT073
 segment and pick **Open in CFT073**.
 
 <Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's menu opened on the CFT073 allele, under the K12 genes it bypasses, and the view its Open in entry adds: CFT073 in CFT073 coordinates, where ssuE runs straight into pyrD." />
 
-### Strains per segment as a lane
+### Coloring each segment by how many strains have it {#strains-per-segment-as-a-lane}
 
-The index records which strains walk each segment, and a feature track over the
-same files colors each segment by that count:
+The index records which strains pass through each segment, and a feature track
+over the same files colors each segment by that count:
 
 ```json addtrack
 {
@@ -601,7 +602,7 @@ same files colors each segment by that count:
 
 Type `chr:1,299,499-1,300,693`, the IS5 element.
 
-<Figure caption="The IS5 element in K12: the windowed depth curve, and under it the strains-per-segment lane, colored by how many strains walk each segment, so the red box is a segment K12 alone walks." src="/img/pangenome/pggb_carriage_lane.png" />
+<Figure caption="The IS5 element in K12: the windowed depth curve, and under it the strains-per-segment track, colored by how many strains have each segment, so the red box is a segment K12 alone has." src="/img/pangenome/pggb_carriage_lane.png" />
 
 The [graph genome view guide](/docs/user_guides/graph_genome_view) covers the
 layouts and the node menu.
