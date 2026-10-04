@@ -722,7 +722,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // an uncollapsed window fills the matrix with private intronic MODIFIER
   // columns, which is precisely what the frequency filter would then be shown
   // removing.
-  // PIK3CA banded by receptor subtype, which the "Group by receptor subtype"
+  // PIK3CA banded by receptor subtype, which the "Group rows by receptor subtype"
   // section described and had no picture for: its sentence ended on a colon
   // with nothing under it. Introns collapsed for the same reason CDH1's are --
   // the gene is 92 kb and an uncollapsed window fills the matrix with private

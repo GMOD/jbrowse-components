@@ -1092,7 +1092,7 @@ export const syntenyVideos: VideoSpec[] = [
     tailMs: 4500,
   },
 
-  // THE ROUND TRIP, which pangenome_ecoli.md's "Synteny projection" states in
+  // THE ROUND TRIP, which pangenome_ecoli.md's "Synteny between the strains" states in
   // one sentence: a rubberband on K-12 launches the synteny
   // stack, and a drag on any other row's ruler raises the same launch anchored
   // on that strain, whose Replace current view re-anchors the stack in place.
