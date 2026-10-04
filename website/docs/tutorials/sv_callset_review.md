@@ -40,14 +40,14 @@ rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv).
 - the matched normal the config's `COLO829BL_normal_ont` track streams:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam
 
-## COLO829 and its matched normal
+## COLO829, a tumor callset with a matched normal
 
 **COLO829** is a melanoma cell line with a matched normal, COLO829BL, and a
 community reference for somatic structural-variant calling. The
 [multi-hop tutorial](/docs/tutorials/cancer_sv) follows one event in this
 callset in detail; here we render every junction.
 
-## The contact sheet
+## Rendering every tumor junction with jb2export batch
 
 A breakpoint split view shows the two loci a junction joins as two panels.
 `jb2export batch` renders one such view per record:
@@ -120,10 +120,11 @@ retries that row. Deep long reads can put even a `--flank` window over a track's
 size limit, where the app would ask you to press **Force load**; `batch` loads
 every panel as if you had.
 
-A dashed connector marks a read with a segment at a locus outside the frame. The
-der(3) reads at chr3 also visit chr10, so the figure renders that event with
-`jb2export breakpoint` and one `--loc` per panel. The matched normal gets the
-same `--loc` list and `--width`, and sits beside it as the control:
+A dashed connector marks a read with a segment at a locus outside the frame.
+COLO829's der(3), a derivative chromosome 3 joined from pieces of chr3, chr10
+and chr12, has reads that visit all three loci, so the figure renders that event
+with `jb2export breakpoint` and one `--loc` per panel. The matched normal gets
+the same `--loc` list and `--width`, and sits beside it as the control:
 
 ```bash
 jb2export breakpoint \
@@ -135,10 +136,10 @@ jb2export breakpoint \
   --width 1000 --out der3_tumor.png
 ```
 
-<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumor nanopore reads have a solid curve at every breakend and the matched normal has none. On the right, the same three loci as one reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
+<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumor nanopore reads have a solid curve at every breakend and the matched normal has none at them. On the right, the same three loci as one reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
 
-`featureHeight:super-compact` in that command draws each read 1 px tall, which
-fits six pileups on one screen.
+`featureHeight:super-compact` in the `jb2export breakpoint` command draws each
+read 1 px tall, which fits six pileups on one screen.
 
 A curve shows that two loci are joined, and the reconstructed contig on the
 right shows the order and orientation of the pieces. The
@@ -146,7 +147,7 @@ right shows the order and orientation of the pieces. The
 reads, and rendering it is another `jb2export` run with the contig as
 `--assembly`.
 
-## The same export over the normal
+## Rendering the matched normal as the control
 
 Render the matched normal into a second directory:
 
@@ -165,7 +166,7 @@ in both directories puts each call beside its control:
 The caller filed the chr1 to chr19 junction as somatic, and the normal's curves
 say it is germline.
 
-## Reading the sheet
+## Reading the tumor and normal images side by side
 
 - A fan of curves at both breakends is the junction as the reads describe it.
 - With no curve between the panels, the reads give no support for the caller's
@@ -176,12 +177,13 @@ say it is germline.
   the connectors from the aligner's output, so a read mismapped into a repeat
   adds a confident-looking curve.
 
-The manifest's `links` column counts those curves: the split reads with pieces
-in more than one panel of that image. Sorting `tumor/manifest.tsv` on it puts
-the calls no split read joins at the top, and the same column of
-`normal/manifest.tsv` says which calls the normal has too. A deletion short
-enough for one alignment to hold draws a gap through both panels and no curve,
-so it counts zero links although the reads support it.
+Add `--manifest` to both `batch` runs and each directory gets a `manifest.tsv`,
+whose `links` column counts the curves in each image: the split reads with
+pieces in more than one panel. Sorting `tumor/manifest.tsv` on it puts the calls
+no split read joins at the top, and the same column of `normal/manifest.tsv`
+says which calls the normal has too. A deletion short enough for one alignment
+to hold draws a gap through both panels and no curve, so it counts zero links
+although the reads support it.
 
 ## Opening a call in the browser
 
@@ -195,7 +197,7 @@ junctions across three chromosomes, and
 [the cancer SV tutorial](/docs/tutorials/cancer_sv#following-the-chain-across-panels)
 follows it from the record the rest of the way.
 
-## Other callers
+## Rendering calls from other SV callers
 
 Anything that writes breakends or symbolic SVs to a VCF goes through the same
 two commands:
@@ -203,8 +205,9 @@ two commands:
 - cuteSV, Sniffles, pbsv, Delly, Manta and GRIDSS write a VCF that `--vcf` reads
   directly.
 - LINX writes clusters and chained links as TSVs. Convert the junction columns
-  to the six BEDPE columns with `awk`; one `--outDir` per cluster renders a
-  chromothripsis event as one directory.
+  to the six BEDPE columns with `awk` and pass the file as `--bedpe` in place of
+  `--vcf`; one `--outDir` per cluster renders a chromothripsis event as one
+  directory.
 - PURPLE writes copy-number segments. Convert the segment TSV to a bedGraph, run
   `bedGraphToBigWig` on it, and add it as a `--bigwig` to draw the copy number
   under the reads in every image.
