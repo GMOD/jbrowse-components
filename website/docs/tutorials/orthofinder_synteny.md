@@ -9,11 +9,14 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
 ---
 
-We build synteny tracks from OrthoFinder orthogroups, protein-homology clusters
-with no positional information, converted into the `.blocks` table
-`MCScanBlocksAdapter` reads. The page builds the `wheat` set step by step, from
-`orthofinder` through the table to a stacked view, then opens four more sets:
-vertebrates, drosophila, nightshades (`solanaceae`) and grasses.
+Genomes too far apart to align base by base still keep their genes in order
+along the chromosomes. We stack related genomes on OrthoFinder orthogroups,
+clusters of genes descended from one ancestral gene found by protein similarity
+alone, and read where gene order holds and where a duplication doubles it.
+JBrowse reads the orthogroups once they are converted to a `.blocks` table. The
+page builds the `wheat` set step by step, from `orthofinder` through the table
+to a stacked view, then opens four more sets: vertebrates, drosophila,
+nightshades (`solanaceae`) and grasses.
 
 ## Prerequisites
 
@@ -98,8 +101,12 @@ cell have no single synteny link. `--pick` chooses among three treatments:
 
 A cell over `--max-copies` counts as a family and contributes no row.
 
-Sorghum sits over rice as a control, since it shares the ancestry and lacks the
-duplication. The `grasses` set shows both:
+Open the `grasses` set's hosted config
+(https://jbrowse.org/demos/orthofinder_grasses/config.json) as sorghum over rice
+over maize, with each genome's gene track on, and navigate the rows to
+`1:5,934,000-6,126,000[rev]`, `3:31,590,000-31,775,000` and
+`1:286,676,000-287,665,000 5:6,261,000-6,790,000[rev]`. Sorghum is the control:
+it shares the ancestry and lacks the duplication.
 
 <Figure caption="One rice locus between sorghum and maize, off the grasses set's orthogroups track, with a gene track under each row. Sorghum has one ortholog per rice gene and maize has two, one into each of the two maize regions, and the genes that kept only one maize copy sit among them." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
 
@@ -239,9 +246,10 @@ orthogroups track once per band in `tracks`.
 
 ### Reading one chromosome out of the stack
 
-Any pair opens as a two-row view; this one puts Aegilops tauschii's seven
-chromosomes over bread wheat 4A, colored by **Query** in the palette button
-menu, painting each link by its tauschii chromosome.
+Any pair opens as a two-row view. Open tauschii over wheat from **Add → Linear
+synteny view** with `wheat_orthogroups` between them, navigate the wheat row to
+`4A`, and pick **Query** in the palette button menu, which paints each link by
+its tauschii chromosome.
 
 <Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track. Color by → Query gives each chromosome a distinct color, and 4A resolves into three blocks in order along it: 4D, then 5D, then 7D." src="/img/orthofinder_synteny/wheat_4a.png" />
 
@@ -251,8 +259,11 @@ menu, painting each link by its tauschii chromosome.
 ## Vertebrates: blocks that survive out to zebrafish {#vertebrates}
 
 The other four sets build with `bash build_orthofinder_synteny.sh <set>`
-([Reproduce it end to end](#reproduce-it-end-to-end)) and stack as wheat did.
-The `vertebrates` set is human, chicken, frog, spotted gar and zebrafish.
+([Reproduce it end to end](#reproduce-it-end-to-end)), and each has a hosted
+config at `https://jbrowse.org/demos/orthofinder_<set>/config.json`. Open the
+`vertebrates` config and stack it as wheat was stacked, human over chicken,
+frog, spotted gar and zebrafish with `vertebrates_orthogroups` in each band, and
+pick **Reference** in the palette button menu.
 
 <Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish, all four bands off one vertebrates_orthogroups track. Gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
 
@@ -273,9 +284,10 @@ yakuba_, and the distant _D. pseudoobscura_ and _D. virilis_. Across these flies
 the chromosome arms (Muller elements) keep their gene content, while inversions
 reorder the genes inside each arm.
 
-The stack repeats melanogaster between the other four flies, so every band sets
-one fly against melanogaster, and **Reference** in the palette button menu
-paints each ribbon by the melanogaster arm it leaves.
+Open the `drosophila` config and stack the flies as simulans, melanogaster,
+yakuba, melanogaster, pseudoobscura, melanogaster, virilis, so every band sets
+one fly against melanogaster, and pick **Reference** in the palette button menu,
+which paints each ribbon by the melanogaster arm it leaves.
 
 <Figure caption="simulans, yakuba, pseudoobscura and virilis stacked on OrthoFinder orthogroups with melanogaster between each pair, on one bp/px. Each ribbon takes the colour of its melanogaster arm in every band, so one colour follows one arm down the stack; the bundle from each arm stays together in every fly, and inside a bundle the ribbons cross where inversions have reordered the genes." src="/img/orthofinder_synteny/drosophila.png" />
 
@@ -288,16 +300,20 @@ keeps the melanogaster genes in this window.
 
 <Figure caption="A window on melanogaster 3L over four Drosophila lanes from one orthogroups track. simulans and yakuba draw the same genes in the same order on their 3L; pseudoobscura and virilis draw them reversed, and the pseudoobscura lane names the X." src="/img/multiway_synteny/drosophila_lanes.png" />
 
-## Nightshades: the same genes over four times the DNA {#nightshades}
+## Nightshades: the same genes over genomes of very different sizes {#nightshades}
 
-The `solanaceae` set is tomato, potato, pepper, _Nicotiana attenuata_ and
-coffee. On one bp/px, row length matches genome size.
+The `solanaceae` set is tomato, potato, pepper and _Nicotiana attenuata_ (the
+row labelled tobacco), with coffee as the outgroup. Open the `solanaceae` config
+and stack them as wheat was stacked, with **Show all regions - same bp per
+pixel**, and row length matches genome size.
 
-<Figure caption="Five nightshade-family genomes stacked on OrthoFinder orthogroups: tomato, potato, pepper, Nicotiana attenuata, coffee, all on one bp per pixel. Pepper's row is by far the longest while matching tomato gene for gene, and coffee's is the shortest." src="/img/orthofinder_synteny/solanaceae.png" />
+<Figure caption="Tomato, potato, pepper and Nicotiana attenuata, four nightshade-family genomes, over coffee as the outgroup, stacked on OrthoFinder orthogroups at one bp per pixel. Pepper's row is by far the longest while matching potato's genes band for band, and coffee's is the shortest." src="/img/orthofinder_synteny/solanaceae.png" />
 
 ## Grasses: the maize whole-genome duplication {#grasses}
 
-The `grasses` set is rice, sorghum, maize, brachypodium and foxtail millet.
+The `grasses` set is rice, sorghum, maize, brachypodium and foxtail millet. Open
+the `grasses` config and stack them as wheat was stacked, with
+`grasses_orthogroups` in each band.
 
 <Figure caption="Five grass genomes stacked on OrthoFinder orthogroups: rice, sorghum, maize, brachypodium, foxtail millet. The maize whole-genome duplication shows as more ribbons per gene in the two maize bands than in the other pairs." src="/img/orthofinder_synteny/grasses.png" />
 
@@ -352,7 +368,16 @@ The stacked view shows both maize copies at once. **Launch → Linear synteny vi
 
 [`build_orthofinder_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_orthofinder_synteny.sh)
 runs everything above and writes a `config.json` with the assemblies, gene
-tracks, the synteny track and a stacked default session.
+tracks, the synteny track and a stacked default session:
+
+1. Download each genome's proteome and GFF3, keeping each gene's longest protein
+   under its gene id so the table and the BEDs agree, and write a gene BED and
+   chrom.sizes per genome.
+2. Run OrthoFinder to the orthogroups only.
+3. Convert the orthogroups to a `.blocks` table, dropping cells over `MAXCOPIES`
+   as gene families, and print how one-to-one each adjacent pair of genomes is.
+4. Write the assemblies, gene tracks, the orthogroups track and a stacked
+   session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_orthofinder_synteny.sh
