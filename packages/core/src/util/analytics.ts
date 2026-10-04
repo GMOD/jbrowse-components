@@ -213,8 +213,8 @@ export function doAnalytics(
 // `[data-app-phase="ready"]`, or a timeout for a page that never shows one
 // (Desktop's start screen)
 function afterAppReady(callback: () => void, maxWaitMs = 10_000) {
-  const isReady = () =>
-    document.querySelector('[data-app-phase="ready"]') !== null
+  const doc = document
+  const isReady = () => doc.querySelector('[data-app-phase="ready"]') !== null
   if (isReady()) {
     callback()
     return
@@ -234,7 +234,7 @@ function afterAppReady(callback: () => void, maxWaitMs = 10_000) {
     }
   })
   const timer = setTimeout(finish, maxWaitMs)
-  observer.observe(document.body, {
+  observer.observe(doc.body, {
     subtree: true,
     childList: true,
     attributeFilter: ['data-app-phase'],

@@ -36,7 +36,18 @@ async function setup() {
     name: 'genes',
     assemblyNames: ['volvox'],
     type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: [
+        {
+          uniqueId: 'eden',
+          refName: 'ctgA',
+          start: 99,
+          end: 200,
+          name: 'EDEN',
+        },
+      ],
+    },
   })
   // a picker is only ever raised by a search, which waited for this
   await session.assemblyManager.waitForAssembly('volvox')

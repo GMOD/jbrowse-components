@@ -1,7 +1,22 @@
 import { parseLocString } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
+import { waitFor } from '@testing-library/react'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+// the index names the gene, EDEN at 1050..9500, while genes.bb draws only its
+// NM_0001.x transcripts, so the search highlight boxes nothing and says so
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
+})
+
+async function navAndLoad(view: any, query: string) {
+  const moved = await view.navToLocString(query, 'volvox')
+  await waitFor(() => {
+    expect(view.tracks[0].displays[0].rpcDataMap.size).toBe(1)
+  })
+  return moved
+}
 
 function local(file: string) {
   return {
@@ -54,7 +69,7 @@ async function setup() {
 test('a gene name lands on the gene and opens the hub track it came from', async () => {
   const view = await setup()
 
-  expect(await view.navToLocString('eden', 'volvox')).toBe(true)
+  expect(await navAndLoad(view, 'eden')).toBe(true)
 
   const { refName, start, end } = parseLocString(
     view.visibleLocStrings,
@@ -73,7 +88,7 @@ test('a gene name lands on the gene and opens the hub track it came from', async
 test('Enter on a word the query only prefixes lands on its gene', async () => {
   const view = await setup()
 
-  expect(await view.navToLocString('ed', 'volvox')).toBe(true)
+  expect(await navAndLoad(view, 'ed')).toBe(true)
 
   const { refName, start, end } = parseLocString(
     view.visibleLocStrings,
