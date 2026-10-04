@@ -1,3 +1,4 @@
+import { getConfigurationSchemaMetadata } from '@jbrowse/core/configuration'
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
@@ -175,4 +176,10 @@ test('a ramp takes its transform from the y scale, so log is refused', () => {
   expect(
     wiggleColorSchema.create({ field: 'score', scale: 'linear' }).scale,
   ).toBe('linear')
+})
+
+test("field is a one-value enum, not the builder's free string", () => {
+  expect(
+    getConfigurationSchemaMetadata(wiggleColorSchema)?.definition.field,
+  ).toMatchObject({ type: 'maybeStringEnum' })
 })

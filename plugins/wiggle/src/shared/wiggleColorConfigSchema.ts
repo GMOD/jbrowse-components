@@ -67,14 +67,6 @@ export const wiggleColorSchema = ConfigurationSchema(
       type: 'maybeColor',
       description: 'CSS colour painting every bar',
     },
-    ...colorChannelSlots({
-      scales: WIGGLE_COLOR_SCALES,
-      scaleName: 'WiggleColorScale',
-      fieldType: 'string',
-      field: 'score',
-      scale:
-        'how score becomes a colour: threshold paints each band between two of its cuts; linear runs range, else scheme, else viridis across the y domain through scales.y.type, with domainMid at the middle stop, colouring each bar, point and density cell by its score, and a one-colour range runs from white to that colour; a line still parts in the two end colours; none paints value, keeping the field for a switch back; unset beside the field, it is threshold',
-    }),
     /**
      * #slot field
      * `score`, the value each bar carries. Unset, the colour paints
@@ -85,6 +77,14 @@ export const wiggleColorSchema = ConfigurationSchema(
       model: types.enumeration('WiggleColorField', [...WIGGLE_COLOR_FIELDS]),
       description: 'score, the value each bar carries',
     },
+    scale: colorChannelSlots({
+      scales: WIGGLE_COLOR_SCALES,
+      scaleName: 'WiggleColorScale',
+      fieldType: 'string',
+      field: 'score',
+      scale:
+        'how score becomes a colour: threshold paints each band between two of its cuts; linear runs range, else scheme, else viridis across the y domain through scales.y.type, with domainMid at the middle stop, colouring each bar, point and density cell by its score, and a one-colour range runs from white to that colour; a line still parts in the two end colours; none paints value, keeping the field for a switch back; unset beside the field, it is threshold',
+    }).scale,
     ...colorDomainSlot({
       domain:
         'for a threshold scale, up to eight cut points, sorted, empty meaning one at the origin',
