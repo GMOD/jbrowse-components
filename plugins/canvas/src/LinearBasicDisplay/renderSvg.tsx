@@ -2,8 +2,8 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
+import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { drawDensityBand } from '../shared/densityBand.ts'
@@ -15,26 +15,23 @@ import {
 } from './components/labelPositioning.ts'
 import { paintLabels } from './components/paintLabels.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
-import {
-  resolveMapColors,
-  resolveOutlineColor,
-} from './components/resolveRegionColors.ts'
+import { resolveMapColors } from './components/resolveRegionColors.ts'
 import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
 
 import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { DensityBandLayer } from '../shared/densityBand.ts'
+import type { RenderState } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type { FeatureGroupSection } from './facet.ts'
-import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
-import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type {
+  LgvSvgBodyProps,
+  LgvSvgExportable,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
-export interface RenderSvgModel extends SvgExportable {
-  id: string
-  height: number
-  scrollTop: number
-  regionTooLarge: boolean
+export interface RenderSvgModel extends LgvSvgExportable {
   // The density band draws in the too-large state, so the too-large note must
   // not replace this body.
   drawsWhenTooLarge: boolean
@@ -43,8 +40,7 @@ export interface RenderSvgModel extends SvgExportable {
   densityPeakReadout: string
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   fieldPalette: FieldPalette | undefined
-  outlineColorSlot: string
-  displayDirectionalChevrons: boolean
+  renderStateIn: (palette: JBrowsePalette) => RenderState
   // Drawn by the shell, over this body — not here. Declared so the export's
   // model still names every guide the figure carries.
   pinnedInk: HighlightRect[]
@@ -60,8 +56,6 @@ export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  // `awaitSvgReady` waits for every visible region, so a multi-region export
-  // is not partially drawn.
   return renderDisplaySvg(model, opts, CanvasFeaturesSvgBody)
 }
 
@@ -80,17 +74,10 @@ function CanvasFeaturesSvgBody({
   // before the genome start.
   const contentLeft = Math.max(-view.offsetPx, 0)
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
-
-  // The export honours `scrollTop`, so a scrolled track exports what is on
-  // screen.
-  const scrollY = model.scrollTop
-  const renderState = {
-    scrollY,
-    canvasWidth,
-    canvasHeight: height,
-    outlineColor: resolveOutlineColor(model.outlineColorSlot, palette),
-    hideChevrons: !model.displayDirectionalChevrons,
-  }
+  // The screen's render state, scroll included, so a scrolled track exports
+  // what is on screen.
+  const renderState = model.renderStateIn(palette)
+  const { scrollY } = renderState
   const fontSize = model.renderedLabelFontSize
   const labelContext = {
     showLabels: model.renderedShowLabels,
@@ -99,8 +86,6 @@ function CanvasFeaturesSvgBody({
     fontSize,
     colors: labelColors(palette),
   }
-  // Resolved against the export theme's palette, not the session's, which is
-  // why the colors ride as classes.
   const dataMap = resolveMapColors(
     model.laidOutDataMap,
     palette,
@@ -128,19 +113,14 @@ function CanvasFeaturesSvgBody({
           }}
         />
       ) : null}
-      <PaintLayer
+      <MarkSvgLayer
+        marks={CANVAS_FEATURE_MARKS}
+        regions={dataMap}
+        blocks={renderBlocks}
+        state={renderState}
         width={canvasWidth}
         height={height}
         opts={opts}
-        paint={ctx => {
-          paintMarkBlocks(
-            ctx,
-            CANVAS_FEATURE_MARKS,
-            dataMap,
-            renderBlocks,
-            renderState,
-          )
-        }}
       />
       {/* The two overlays the app canvas never paints — the floating labels (a
         DOM layer on screen) and the peptide letters (their own canvas) — baked

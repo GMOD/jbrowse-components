@@ -107,6 +107,7 @@ import type { RowGroup } from './rowSources.ts'
 import type { RowCountByField } from './rowsFields.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Region } from '@jbrowse/core/util'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type {
@@ -840,17 +841,22 @@ export default function stateModelFactory(
         () => self.encodeInputs,
         buildMultiRowChannels,
       )
+      const withInsertions = (
+        channels: MultiRowEncoded,
+        insertionAbgr: number,
+        key: number,
+      ): MultiRowUploadData => ({
+        ...channels,
+        insertions: multiRowInsertionChannels(
+          channels,
+          self.drawnRegionData.get(key),
+          insertionAbgr,
+        ),
+      })
       const uploaded = createEncodeMemo(
         () => encoded(),
         () => cssColorToABGR(getPaletteHost(self).palette.insertion),
-        (channels: MultiRowEncoded, insertionAbgr, key) => ({
-          ...channels,
-          insertions: multiRowInsertionChannels(
-            channels,
-            self.drawnRegionData.get(key),
-            insertionAbgr,
-          ),
-        }),
+        withInsertions,
       )
       return {
         /**
@@ -873,6 +879,22 @@ export default function stateModelFactory(
          */
         get uploadedChannels(): ReadonlyMap<number, MultiRowUploadData> {
           return uploaded()
+        },
+        /**
+         * #method
+         * `uploadedChannels` in another palette: the SVG export's, whose
+         * theme need not be the session's.
+         */
+        uploadedChannelsIn(
+          palette: JBrowsePalette,
+        ): ReadonlyMap<number, MultiRowUploadData> {
+          const insertionAbgr = cssColorToABGR(palette.insertion)
+          return new Map(
+            [...encoded()].map(([key, channels]) => [
+              key,
+              withInsertions(channels, insertionAbgr, key),
+            ]),
+          )
         },
       }
     })

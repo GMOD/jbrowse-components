@@ -44,6 +44,7 @@ import type {
 } from './components/sequenceGeometry.ts'
 import type { SequenceHover } from './components/sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -165,14 +166,19 @@ export function modelFactory(
         return getConf(referenceSeqTrack(self), 'sequenceType')
       },
       /**
+       * #method
+       * `colorPalette` in another palette: the SVG export's, whose theme need
+       * not be the session's.
+       */
+      colorPaletteIn(palette: JBrowsePalette): ColorPalette {
+        return buildColorPalette(palette, self.view.colorByCDS)
+      },
+      /**
        * #getter
        * Theme-derived fill and text colour for every cell this display paints
        */
       get colorPalette(): ColorPalette {
-        return buildColorPalette(
-          getPaletteHost(self).palette,
-          self.view.colorByCDS,
-        )
+        return this.colorPaletteIn(getPaletteHost(self).palette)
       },
       /**
        * #getter

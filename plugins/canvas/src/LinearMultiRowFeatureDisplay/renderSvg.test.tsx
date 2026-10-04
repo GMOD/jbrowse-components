@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { createJBrowseTheme, legendSpecOf } from '@jbrowse/core/ui'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { RowKeys, buildRowTable } from '@jbrowse/render-core/marks'
 import { clusterLayout } from '@jbrowse/tree-sidebar'
 import { ThemeProvider } from '@mui/material'
@@ -8,6 +9,7 @@ import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
+import { multiRowInsertionChannels } from './rendering/multiRowInsertions.ts'
 
 import type { MultiRowGetFeaturesResult } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { RenderSvgModel } from './renderSvg.tsx'
@@ -137,13 +139,23 @@ function makeModel(
     densityPeakReadout: '',
     svgReady: true,
     indelGlyphRegions: undefined,
-    encodedChannels: new Map(
-      [...drawnRegionData].map(([k, d]) => [
-        k,
-        buildMultiRowChannels(d, encodeInputs),
-      ]),
-    ),
-    drawnRegionData,
+    uploadedChannelsIn: palette =>
+      new Map(
+        [...drawnRegionData].map(([k, d]) => {
+          const channels = buildMultiRowChannels(d, encodeInputs)
+          return [
+            k,
+            {
+              ...channels,
+              insertions: multiRowInsertionChannels(
+                channels,
+                d,
+                cssColorToABGR(palette.insertion),
+              ),
+            },
+          ]
+        }),
+      ),
     renderState,
     sources,
     svgSidebar: {

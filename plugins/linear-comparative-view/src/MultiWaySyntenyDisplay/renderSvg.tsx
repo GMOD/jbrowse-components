@@ -1,9 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgHaloText, TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 import { bandGroundColor, bandInk } from '@jbrowse/synteny-core'
 
@@ -32,6 +31,7 @@ function MultiWaySvgBody({
 }: LgvSvgBodyProps<MultiWaySyntenyDisplayModel>) {
   const palette = usePalette()
   const fontFamily = opts?.fontFamily || undefined
+  // canvasWidth here too: the lane blocks span it
   const state = {
     ...model.renderState,
     canvasWidth,
@@ -40,6 +40,8 @@ function MultiWaySvgBody({
     laneMaps: new Map(),
   }
   const { dragOffsetPx } = state
+  const ink = bandInk().text
+  const halo = bandGroundColor()
   // the bands on the export theme's page, which need not be the session's
   const cells = new Map(model.renderCells)
   cells.set(
@@ -48,19 +50,14 @@ function MultiWaySvgBody({
   )
   return (
     <>
-      <PaintLayer
+      <MarkSvgLayer
+        marks={MULTIWAY_MARKS}
+        regions={cells}
+        blocks={multiwayBlocks(state)}
+        state={state}
         width={canvasWidth}
         height={height}
         opts={opts}
-        paint={ctx => {
-          paintMarkBlocks(
-            ctx,
-            MULTIWAY_MARKS,
-            cells,
-            multiwayBlocks(state),
-            state,
-          )
-        }}
       />
       <g transform={`translate(0 ${-model.scrollTop})`}>
         <SvgLaneHeaders rows={model.laneHeaderRows} width={canvasWidth} />
@@ -70,8 +67,8 @@ function MultiWaySvgBody({
             x={label.left + dragOffsetPx}
             y={label.top + GENE_LABEL_FONT_PX * TEXT_BASELINE_RATIO}
             fontSize={GENE_LABEL_FONT_PX}
-            fill={bandInk().text}
-            halo={bandGroundColor()}
+            fill={ink}
+            halo={halo}
             haloWidth={GENE_LABEL_HALO_PX * 2}
           >
             {label.text}
@@ -83,8 +80,8 @@ function MultiWaySvgBody({
             x={4}
             y={title.top + GENE_LABEL_FONT_PX * TEXT_BASELINE_RATIO}
             fontSize={GENE_LABEL_FONT_PX}
-            fill={bandInk().text}
-            halo={bandGroundColor()}
+            fill={ink}
+            halo={halo}
             haloWidth={GENE_LABEL_HALO_PX * 2}
           >
             {title.text}

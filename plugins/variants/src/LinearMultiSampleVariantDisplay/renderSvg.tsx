@@ -1,10 +1,10 @@
-import { paintInsertionLabels } from '@jbrowse/alignments-core'
 /* eslint-disable react-refresh/only-export-components */
+import { paintInsertionLabels } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintFeatureBand } from '@jbrowse/plugin-canvas'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
@@ -21,7 +21,7 @@ import type {
 } from './components/variantRenderingBackendTypes.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { FeatureDataResult, VisibleRegion } from '@jbrowse/plugin-canvas'
+import type { FeatureDataResult } from '@jbrowse/plugin-canvas'
 
 interface RenderSvgModel extends RenderSvgBaseModel {
   referenceDrawingMode: string
@@ -35,9 +35,6 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   laneLaidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   laneRenderedLabels: { showLabels: boolean; showDescriptions: boolean }
   laneFontSize: number
-  // The lane's labels are placed per region, so the export needs the same region
-  // list the on-screen pass letters against.
-  visibleRegions: VisibleRegion[]
 }
 
 export async function renderSvg(
@@ -49,12 +46,13 @@ export async function renderSvg(
 
 function VariantSvgBody({
   model,
+  view,
   overlays,
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
-  // reuse the model's own getters so the export draws the exact block set and
-  // region map the live canvas does — no divergent rebuild here.
+  // the model's own block set and region map, so the export draws what the
+  // live canvas does
   const {
     referenceDrawingMode,
     renderBlocks,
@@ -66,10 +64,6 @@ function VariantSvgBody({
     laneFontSize,
     topBands,
   } = model
-  // canvasWidth is the block scissor bound and the cell pixel-snapping origin,
-  // so it has to be the width this layer is actually painted at — see
-  // LgvSvgBodyProps.canvasWidth.
-  const exportState = { ...renderState, canvasWidth }
   const { canvasHeight } = renderState
   const palette = usePalette()
   return (
@@ -95,7 +89,7 @@ function VariantSvgBody({
                 ctx,
                 laneLaidOutDataMap,
                 renderBlocks,
-                model.visibleRegions,
+                view.visibleRegions,
                 {
                   canvasWidth,
                   bandHeight: topBands.laneHeight,
@@ -109,22 +103,23 @@ function VariantSvgBody({
         ) : null
       }
     >
-      <PaintLayer
+      {/* the screen's canvas background, under the cells */}
+      {referenceDrawingMode === 'skip' ? (
+        <rect
+          width={canvasWidth}
+          height={canvasHeight}
+          fill={REFERENCE_COLOR}
+        />
+      ) : null}
+      <MarkSvgLayer
+        marks={VARIANT_MARKS}
+        regions={perRegionCellMap}
+        blocks={renderBlocks}
+        state={renderState}
         width={canvasWidth}
         height={canvasHeight}
         opts={opts}
-        paint={ctx => {
-          if (referenceDrawingMode === 'skip') {
-            ctx.fillStyle = REFERENCE_COLOR
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight)
-          }
-          paintMarkBlocks(
-            ctx,
-            VARIANT_MARKS,
-            perRegionCellMap,
-            renderBlocks,
-            exportState,
-          )
+        paint={(ctx, state) => {
           if (overlays && insertionGlyphRegions) {
             paintInsertionLabels(
               ctx,
@@ -132,8 +127,8 @@ function VariantSvgBody({
               block =>
                 insertionGlyphRegions.get(block.displayedRegionIndex)
                   ?.insertions,
-              exportState,
-              variantInsertionParams(exportState),
+              state,
+              variantInsertionParams(state),
             )
           }
         }}

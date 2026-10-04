@@ -1,36 +1,30 @@
 /* eslint-disable react-refresh/only-export-components */
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { drawDensityBand } from '../shared/densityBand.ts'
 import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
-import { multiRowInsertionChannels } from './rendering/multiRowInsertions.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from './rendering/rowBand.ts'
 
 import type { DensityBandLayer } from '../shared/densityBand.ts'
-import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
   MultiRowUploadData,
 } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
-import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
-import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type {
-  ClusterProvenance,
-  RowSource,
-  SvgSidebarProps,
-} from '@jbrowse/tree-sidebar'
+  LgvSvgBodyProps,
+  LgvSvgExportable,
+} from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
+import type { RowSource, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 
-export interface RenderSvgModel extends SvgExportable {
-  id: string
-  height: number
+export interface RenderSvgModel extends LgvSvgExportable {
   // The band is drawn in the too-large terminal, so the note that would replace
   // this whole body must not.
   drawsWhenTooLarge: boolean
@@ -38,16 +32,13 @@ export interface RenderSvgModel extends SvgExportable {
   densityBandLayer: DensityBandLayer
   densityPeakReadout: string
   indelGlyphRegions: ReadonlyMap<number, MultiRowRegionData> | undefined
-  // the screen's own channels, so what the upload holds is what the export
-  // paints
-  encodedChannels: ReadonlyMap<number, MultiRowEncoded>
-  drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
+  uploadedChannelsIn: (
+    palette: JBrowsePalette,
+  ) => ReadonlyMap<number, MultiRowUploadData>
   renderState: MultiRowRenderState
   sources: RowSource[]
   svgSidebar: SvgSidebarProps
   effectiveRowHeight: number
-  // Records the color scheme, which is the clustering matrix here.
-  rowTreeProvenance?: ClusterProvenance
   showRowSeparators: boolean
 }
 
@@ -66,44 +57,35 @@ function MultiRowSvgBody({
   overlays,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
-  const state = {
-    ...self.renderState,
-    // canvasWidth is the block scissor bound, so it has to be the width this
-    // layer is actually painted at.
-    canvasWidth,
-    canvasHeight: height,
-  }
-  const exportPalette = usePalette()
-  const insertionAbgr = cssColorToABGR(exportPalette.insertion)
-  const uploaded = new Map<number, MultiRowUploadData>()
-  for (const [key, channels] of self.encodedChannels) {
-    uploaded.set(key, {
-      ...channels,
-      insertions: multiRowInsertionChannels(
-        channels,
-        self.drawnRegionData.get(key),
-        insertionAbgr,
-      ),
-    })
-  }
+  const palette = usePalette()
+  const uploaded = self.uploadedChannelsIn(palette)
   return (
     <>
-      <PaintLayer
-        width={canvasWidth}
-        height={height}
-        opts={opts}
-        paint={ctx => {
-          if (self.coarseTierStandsIn) {
+      {self.coarseTierStandsIn ? (
+        <PaintLayer
+          width={canvasWidth}
+          height={height}
+          opts={opts}
+          paint={ctx => {
             drawDensityBand(ctx, renderBlocks, self.densityBandLayer, {
               canvasWidth,
               bandHeight: height,
               readout: self.densityPeakReadout,
-              palette: exportPalette,
+              palette,
             })
-          }
-          paintMarkBlocks(ctx, MULTI_ROW_MARKS, uploaded, renderBlocks, state)
-          // Same layer, after the blocks, so the export stacks them the way
-          // the on-screen overlay composites over the canvas.
+          }}
+        />
+      ) : null}
+      <MarkSvgLayer
+        marks={MULTI_ROW_MARKS}
+        regions={uploaded}
+        blocks={renderBlocks}
+        state={self.renderState}
+        width={canvasWidth}
+        height={height}
+        opts={opts}
+        paint={(ctx, state) => {
+          // the overlay the screen composites over the canvas
           if (overlays && self.indelGlyphRegions) {
             drawMultiRowIndelGlyphs(
               ctx,

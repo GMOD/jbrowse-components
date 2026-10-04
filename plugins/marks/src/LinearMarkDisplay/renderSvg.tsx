@@ -9,13 +9,15 @@ import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 import { TEXT_HALO_PX, TEXT_MARK_FONT_PX, placeTextMarks } from './textMarks.ts'
 
 import type { MarkDisplayModel } from './components/markDisplayTypes.ts'
-import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type {
+  LgvSvgBodyProps,
+  LgvSvgExportable,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { ScorePlotSvgModel } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 import type React from 'react'
 
-type RenderSvgModel = MarkDisplayModel & ScorePlotSvgModel
+type RenderSvgModel = MarkDisplayModel & LgvSvgExportable
 
 // The text marks' labels as `<text>`, at the placements the screen draws,
 // measured in the export's font and inheriting it. Not an observer, since a
@@ -68,50 +70,50 @@ export async function renderSvg(
 
 function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
   const { model, canvasWidth, height, overlays, opts, renderBlocks } = props
-  const { yTop, plotHeight } = axisPlotBox(height)
+  const plotGeometry = axisPlotBox(height)
+  const { yTop, plotHeight } = plotGeometry
   const { sections, rows } = model.facetLayout
   const rowHeight = model.effectiveRowHeight
   return (
     <ScorePlotSvgFrame
       {...props}
+      plotGeometry={plotGeometry}
       marks={model.markList}
       regions={model.rpcDataMap}
       renderState={model.renderState}
     >
-      {overlays && model.markTypes.includes('text') ? (
+      {overlays ? (
         <g transform={`translate(0,${yTop})`}>
-          <MarkTextSvg
-            model={model}
-            blocks={renderBlocks}
-            canvasWidth={canvasWidth}
-            plotHeight={plotHeight}
-            fontFamily={opts?.fontFamily || undefined}
-          />
-        </g>
-      ) : null}
-      {overlays && !rows && sections.length > 0 ? (
-        <g transform={`translate(0,${yTop})`}>
-          <GroupLabelBoxes
-            sections={sections.map(section => ({
-              key: section.key,
-              label: section.label,
-              top: section.firstRow * rowHeight,
-              height: section.rowCount * rowHeight,
-            }))}
-            left={0}
-            width={canvasWidth}
-            canvasHeight={plotHeight}
-          />
-        </g>
-      ) : null}
-      {overlays && model.svgSidebar ? (
-        <g transform={`translate(0,${yTop})`}>
-          <SvgTreeSidebar
-            sidebar={model.svgSidebar}
-            text={opts}
-            scrollTop={model.scrollTop}
-            availableHeight={plotHeight}
-          />
+          {model.markTypes.includes('text') ? (
+            <MarkTextSvg
+              model={model}
+              blocks={renderBlocks}
+              canvasWidth={canvasWidth}
+              plotHeight={plotHeight}
+              fontFamily={opts?.fontFamily || undefined}
+            />
+          ) : null}
+          {!rows && sections.length > 0 ? (
+            <GroupLabelBoxes
+              sections={sections.map(section => ({
+                key: section.key,
+                label: section.label,
+                top: section.firstRow * rowHeight,
+                height: section.rowCount * rowHeight,
+              }))}
+              left={0}
+              width={canvasWidth}
+              canvasHeight={plotHeight}
+            />
+          ) : null}
+          {model.svgSidebar ? (
+            <SvgTreeSidebar
+              sidebar={model.svgSidebar}
+              text={opts}
+              scrollTop={model.scrollTop}
+              availableHeight={plotHeight}
+            />
+          ) : null}
         </g>
       ) : null}
     </ScorePlotSvgFrame>

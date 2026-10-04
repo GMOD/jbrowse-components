@@ -30,7 +30,6 @@ import type React from 'react'
  * also carries the canvas refs and hover setters an export has no use for.
  */
 export interface RenderSvgModel extends LgvSvgExportable {
-  id: string
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   renderState: WiggleGPURenderState
   gpuProps: () => WiggleGpuProps

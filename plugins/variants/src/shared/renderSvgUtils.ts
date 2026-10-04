@@ -1,8 +1,7 @@
-import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { VariantRowsModel } from './components/types.ts'
 import type { VariantTopBands } from './variantTopBands.ts'
 import type { LgvSvgExportable } from '@jbrowse/display-kit/renderDisplaySvg'
-import type { ClusterProvenance, SvgSidebarProps } from '@jbrowse/tree-sidebar'
+import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
 
 // Extends VariantRowsModel because the export draws its rows' labels and
 // separators off the same geometry the on-screen overlay does — see
@@ -10,16 +9,9 @@ import type { ClusterProvenance, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 // export shell frames with; the rows' own viewport is the `availableHeight`
 // below `rowsTopOffset`.
 export interface RenderSvgBaseModel extends LgvSvgExportable, VariantRowsModel {
-  // for svgNodeId, so the export's clip id is stable across session loads
-  id: string
-  configuration?: { displayId?: string }
-  cellData: CellDataResult | undefined
   // Px the rows sit below: the variant lane plus the columns layout's
   // connector-line zone. See shared/variantTopBands.ts.
   rowsTopOffset: number
   topBands: VariantTopBands
-  // Captioned above the exported tree: which locus and settings produced it.
-  // Undefined when no clustering has been run.
-  rowTreeProvenance?: ClusterProvenance
   svgSidebar: SvgSidebarProps
 }

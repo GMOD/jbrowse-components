@@ -1,6 +1,6 @@
-import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
+
+import MarkSvgLayer from './MarkSvgLayer.tsx'
 
 import type { TriangleFrame } from './TriangleMatrixMixin.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
@@ -8,7 +8,7 @@ import type { Mark } from '@jbrowse/render-core/marks'
 
 /**
  * A triangle display's matrix in the SVG export: the display's own marks and
- * render state, painted into a layer of the export's width below `top`.
+ * render state, in one canvas-wide block below `top`.
  */
 export default function TriangleMatrixSvgLayer<D, S extends TriangleFrame>({
   marks,
@@ -29,16 +29,14 @@ export default function TriangleMatrixSvgLayer<D, S extends TriangleFrame>({
 }) {
   return (
     <g transform={`translate(0 ${top})`}>
-      <PaintLayer
+      <MarkSvgLayer
+        marks={marks}
+        regions={regions}
+        blocks={canvasWideBlocks([0], width)}
+        state={state}
         width={width}
         height={height - top}
         opts={opts}
-        paint={ctx => {
-          paintMarkBlocks(ctx, marks, regions, canvasWideBlocks([0], width), {
-            ...state,
-            canvasWidth: width,
-          })
-        }}
       />
     </g>
   )

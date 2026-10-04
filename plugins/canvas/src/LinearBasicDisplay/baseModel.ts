@@ -143,6 +143,7 @@ import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type {
   Feature,
   ParentFeatureSummary,
@@ -470,19 +471,24 @@ export default function baseStateModelFactory(
     }))
     .views(self => ({
       /**
-       * #getter
+       * #method
+       * `renderState` in another palette: the SVG export's, whose theme need
+       * not be the session's.
        */
-      get renderState() {
+      renderStateIn(palette: JBrowsePalette) {
         return {
           scrollY: self.scrollTop,
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
-          outlineColor: resolveOutlineColor(
-            self.outlineColorSlot,
-            getPaletteHost(self).palette,
-          ),
+          outlineColor: resolveOutlineColor(self.outlineColorSlot, palette),
           hideChevrons: !this.displayDirectionalChevrons,
         }
+      },
+      /**
+       * #getter
+       */
+      get renderState() {
+        return this.renderStateIn(getPaletteHost(self).palette)
       },
 
       /**

@@ -15,6 +15,7 @@ import {
   makeFlatbushItem,
   packFixtureRects,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { resolveOutlineColor } from './components/resolveRegionColors.ts'
 import { renderSvg } from './renderSvg.tsx'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -90,10 +91,11 @@ function makeData(
 }
 
 // The shell draws the legend off `LegendMixin`'s members, so the fake carries
-// the two it detects the mixin by.
+// the two it detects the mixin by. `scrollTop` feeds its render state.
 type LegendModel = RenderSvgModel & {
   showLegend: boolean
   legendSpec: LegendSpec
+  scrollTop: number
 }
 
 function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
@@ -101,9 +103,16 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     id: 'test',
     height: 100,
     scrollTop: 0,
-    outlineColorSlot: '',
+    renderStateIn(palette) {
+      return {
+        scrollY: this.scrollTop,
+        canvasWidth: 798,
+        canvasHeight: this.height,
+        outlineColor: resolveOutlineColor('', palette),
+        hideChevrons: false,
+      }
+    },
     fieldPalette: undefined,
-    displayDirectionalChevrons: true,
     error: undefined,
     regionTooLarge: false,
     drawsWhenTooLarge: false,

@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { SvgConnectorField } from '../../shared/ConnectorLines.tsx'
 import SvgVariantOverlay from '../../shared/components/SvgVariantOverlay.tsx'
@@ -23,7 +22,6 @@ interface MatrixRenderSvgModel
     RenderSvgBaseModel,
     Pick<ConnectorLinesModel, 'connectorLineCoords' | 'lineZoneHeight'> {
   renderState: MatrixRenderState
-  placedMatrixData: VariantMatrixUploadData | undefined
   matrixRegions: ReadonlyMap<number, VariantMatrixUploadData>
   matrixBlocks: VariantMatrixRenderBlock[]
   // only `left` is read here — the column origin the matrix is shifted to when
@@ -44,26 +42,15 @@ function VariantMatrixSvgBody({
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<MatrixRenderSvgModel>) {
-  // reuse the model's own render state so the export lays columns out on the
-  // exact geometry the live canvas does. Unlike the other canvas displays, the
-  // matrix's renderState.canvasWidth is view.totalWidthPxWithoutBorders (the
-  // content width its columns, connector lines and hit-test all key off), not
-  // the outline-adjusted track width — so it is the right paint width here and
-  // the shell's viewport `canvasWidth` only frames the overlay.
-  const { placedMatrixData, renderState } = model
-  const { canvasWidth: matrixWidth, canvasHeight } = renderState
-  // The same origin the live matrix body takes (VariantMatrixDisplayComponent)
-  // and the same one the columns are laid out from: when the content doesn't
-  // reach the left viewport edge the matrix moves right with the ruler. The
-  // connector lines need no transform — their coords are already
-  // viewport-relative, off this same origin.
+  // The matrix paints at its own renderState width, the content width its
+  // columns, connector lines and hit test key off, from the column origin the
+  // live matrix body takes: when the content doesn't reach the left viewport
+  // edge, the matrix moves right with the ruler. The shell's viewport
+  // `canvasWidth` only frames the overlay. The connector lines need no
+  // transform: their coords are viewport-relative already.
+  const { renderState } = model
   const { left } = model.columnGeometry
-
-  // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
-  // this narrows the single nullable fetch blob for TS only — unreachable at
-  // runtime. An empty (numCells === 0) matrix still paints nothing. Placed, not
-  // raw: the export draws the rows the screen draws.
-  return placedMatrixData ? (
+  return (
     <SvgVariantOverlay
       model={model}
       width={canvasWidth}
@@ -80,21 +67,16 @@ function VariantMatrixSvgBody({
       }
     >
       <g transform={`translate(${left})`}>
-        <PaintLayer
-          width={matrixWidth}
-          height={canvasHeight}
+        <MarkSvgLayer
+          marks={VARIANT_MATRIX_MARKS}
+          regions={model.matrixRegions}
+          blocks={model.matrixBlocks}
+          state={renderState}
+          width={renderState.canvasWidth}
+          height={renderState.canvasHeight}
           opts={opts}
-          paint={ctx => {
-            paintMarkBlocks(
-              ctx,
-              VARIANT_MATRIX_MARKS,
-              model.matrixRegions,
-              model.matrixBlocks,
-              renderState,
-            )
-          }}
         />
       </g>
     </SvgVariantOverlay>
-  ) : null
+  )
 }
