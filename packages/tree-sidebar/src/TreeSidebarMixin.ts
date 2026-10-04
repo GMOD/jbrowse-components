@@ -20,7 +20,6 @@ import {
   liftRowColor,
   paintsNamePairs,
   rowColorChoiceOf,
-  rowColorChoiceSetting,
   rowColorMembers,
   rowColorResetTarget,
   sameRowColor,
@@ -597,23 +596,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           liftRowColor(setting),
           () => self.rowColorDealRows,
           self.rowPaletteDeals,
-        )
-      },
-      /**
-       * #method
-       * The `rowColor` object the arrangement dialog's "Color rows by" choice
-       * writes over the current one (`rowColorChoiceSetting`): None, Each row,
-       * or an attribute with `pairs` on its values.
-       */
-      rowColorChoiceSetting(
-        choice: string,
-        pairs?: Record<string, string>,
-      ): RowColorSnapshot {
-        return rowColorChoiceSetting(
-          self.rowColorSetting,
-          self.rowPaletteDeals,
-          choice,
-          pairs,
         )
       },
     }))

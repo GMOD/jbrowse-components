@@ -95,14 +95,16 @@ reverse, which the old rule missed: the variant menu's None over a configured
 Color by now offers Reset as its way back.
 
 The same module holds what the dialog's choice writes
-(`rowColorChoiceSetting`), so the mixin, which knows `rowPaletteDeals`, decides
-what None means: `unknown: ''` where the palette deals, and on stacked rows by
-`name` with a colour `unknown` kept, since a config painting the listed rows and
-greying the rest reads as None there rather than as an Each row the dialog does
-not offer. The grey is the config's: the dialog cannot remove it, as it cannot
-remove a config's `name` pairs, and its None caption says so; the variant
-menu's None is checked over such a config and a pick is a no-op, as it already
-was over `name` pairs alone. The dialog's value table lists an attribute's
+(`rowColorChoiceSetting`, from the display's `rowPaletteDeals`), so one rule
+decides what None means: `unknown: ''` where the palette deals, and on stacked
+rows by `name` with a colour `unknown` kept, since a config painting the listed
+rows and greying the rest reads as None there rather than as an Each row the
+dialog does not offer. The `unknown` itself is a swatch: "Other rows" under
+None and Each row, "Other values" with its row count under an attribute,
+opening on the config's (`keptUnknown`) and returning to automatic by its own
+Auto button, so the grey the key shows as "Other" is a reader's setting like
+every other colour. The variant menu's None is checked over such a config and a
+pick is a no-op, as it already was over `name` pairs alone. The dialog's value table lists an attribute's
 values in the key's order. The key over a shared panel is titled by a new hook, `rowNoun`
 ("Subtrack" on wiggle), not "Name". Variants' `rowColorField` became the
 mixin's `rowColorAttribute`.

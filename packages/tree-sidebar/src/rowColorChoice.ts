@@ -81,31 +81,39 @@ export function rowColorChoiceOf(
 }
 
 /**
- * The `rowColor` object a dialog choice writes over `current`: None and Each
- * row paint by `name`, an attribute by itself with `pairs` on its values. An
- * `unknown` the config sets on the same field stays, so None on stacked rows
- * keeps the grey the unlisted rows wear, except that None where the palette
- * deals is `unknown: ''`, and Each row drops a `''`, which is None.
+ * The `unknown` a dialog choice carries over from `current`: the one the
+ * config sets on the same field, so None on stacked rows keeps the grey the
+ * unlisted rows wear, except a `''` under Each row, which is None.
+ */
+export function keptUnknown(
+  current: RowColorSetting,
+  choice: string,
+): string | undefined {
+  return current.field === (choice || 'name') &&
+    !(choice === 'name' && current.unknown === '')
+    ? current.unknown
+    : undefined
+}
+
+/**
+ * The `rowColor` object a dialog choice writes: None and Each row paint by
+ * `name`, an attribute by itself with `pairs` on its values, and `unknown` on
+ * the rest, the dialog's Other swatch, which opens on `keptUnknown`. None
+ * where the palette deals (`paletteDeals`) is `unknown: ''`, whatever the
+ * swatch.
  */
 export function rowColorChoiceSetting(
-  current: RowColorSetting,
   paletteDeals: boolean,
   choice: string,
-  pairs: Record<string, string> = {},
+  pairs: Record<string, string>,
+  unknown: string | undefined,
 ): RowColorSnapshot {
-  const field = choice || 'name'
-  const unknown =
-    choice === '' && paletteDeals
-      ? ''
-      : current.field === field &&
-          !(choice === 'name' && current.unknown === '')
-        ? current.unknown
-        : undefined
+  const written = choice === '' && paletteDeals ? '' : unknown
   const domain = Object.keys(pairs)
   return {
-    field,
+    field: choice || 'name',
     ...(domain.length ? { domain, range: Object.values(pairs) } : {}),
-    ...(unknown === undefined ? {} : { unknown }),
+    ...(written === undefined ? {} : { unknown: written }),
   }
 }
 

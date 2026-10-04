@@ -246,13 +246,16 @@ What else the mixin owns:
   as a button rather than a track-menu row. This replaced `displayControls`, a
   `ReactNode` that promised live writes Cancel would not revert and had no
   consumer; a node cannot be held for a Submit.
-- **The mixin decides what a choice writes** (`rowColorChoiceSetting`), since
-  None means two things: `unknown: ''` where the palette deals, and by `name`
-  with the config's `unknown` kept on stacked rows, where a grey the config sets
-  on the unlisted rows is what None shows (`rowColorChoiceOf`). The dialog only
-  holds the choice and each attribute's entries for the sitting. Its value
-  table lists the values in the key's order, the coloured ones as dealt and
-  then the rest.
+- **One rule for what a choice writes** (`rowColorChoiceSetting`, from the
+  display's `rowPaletteDeals`), since None means two things: `unknown: ''`
+  where the palette deals, and by `name` with the `unknown` the config sets on
+  stacked rows, where a grey on the unlisted rows is what None shows
+  (`rowColorChoiceOf`). The `unknown` is the panel's Other swatch, "Other rows"
+  or "Other values", opening on `keptUnknown`, cleared to automatic by its Auto
+  button and left alone by the clear buttons, which take the per-row and
+  per-value swatches only. The dialog holds the choice, each attribute's
+  entries and each field's Other colour for the sitting. Its value table lists
+  the values in the key's order, the coloured ones as dealt and then the rest.
 - **A reorder keeps the names it did not show.** `setRowOrder` writes the rows
   it was handed ahead of every name the current order carries beyond them, so on
   the multi-row display, whose rows are discovered per region, a declared order

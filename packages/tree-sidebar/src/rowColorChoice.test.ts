@@ -1,5 +1,6 @@
 import {
   liftRowColor,
+  keptUnknown,
   rowColorChoiceOf,
   rowColorChoiceSetting,
   rowColorMembers,
@@ -57,50 +58,58 @@ describe('rowColorChoiceOf', () => {
   })
 })
 
-describe('rowColorChoiceSetting', () => {
+describe('keptUnknown', () => {
   const grey = lift({ domain: ['a'], range: ['#f00'], unknown: '#ccc' })
 
-  it("None where the palette deals is unknown: ''", () => {
-    expect(rowColorChoiceSetting(grey, true, '')).toEqual({
+  it("is the config's unknown on the same field, under None or Each row", () => {
+    expect(keptUnknown(grey, '')).toBe('#ccc')
+    expect(keptUnknown(grey, 'name')).toBe('#ccc')
+    expect(keptUnknown(lift({ field: 'group', unknown: '' }), 'group')).toBe('')
+  })
+
+  it("is unset on another field, and drops Each row's '', which is None", () => {
+    expect(keptUnknown(grey, 'group')).toBeUndefined()
+    expect(keptUnknown(lift({ unknown: '' }), 'name')).toBeUndefined()
+    expect(keptUnknown(lift({ unknown: '' }), '')).toBe('')
+  })
+})
+
+describe('rowColorChoiceSetting', () => {
+  it("None where the palette deals is unknown: '', whatever the swatch", () => {
+    expect(rowColorChoiceSetting(true, '', {}, '#ccc')).toEqual({
+      field: 'name',
+      unknown: '',
+    })
+    expect(rowColorChoiceSetting(true, '', {}, undefined)).toEqual({
       field: 'name',
       unknown: '',
     })
   })
 
-  it('None on stacked rows keeps the grey the unlisted rows wear', () => {
-    expect(rowColorChoiceSetting(grey, false, '')).toEqual({
+  it('None on stacked rows and Each row write the swatch, or nothing', () => {
+    expect(rowColorChoiceSetting(false, '', {}, '#ccc')).toEqual({
+      field: 'name',
+      unknown: '#ccc',
+    })
+    expect(rowColorChoiceSetting(false, '', {}, undefined)).toEqual({
+      field: 'name',
+    })
+    expect(rowColorChoiceSetting(true, 'name', {}, '#ccc')).toEqual({
       field: 'name',
       unknown: '#ccc',
     })
   })
 
-  it("Each row keeps a colour unknown and drops '', which is None", () => {
-    expect(rowColorChoiceSetting(grey, true, 'name')).toEqual({
-      field: 'name',
-      unknown: '#ccc',
-    })
-    expect(rowColorChoiceSetting(lift({ unknown: '' }), true, 'name')).toEqual({
-      field: 'name',
-    })
-  })
-
-  it('an attribute takes its pairs, and the unknown set on that same field', () => {
-    expect(
-      rowColorChoiceSetting(
-        lift({ field: 'group', unknown: '' }),
-        false,
-        'group',
-        {
-          y: '#abcdef',
-        },
-      ),
-    ).toEqual({
-      field: 'group',
-      domain: ['y'],
-      range: ['#abcdef'],
-      unknown: '',
-    })
-    expect(rowColorChoiceSetting(grey, false, 'group')).toEqual({
+  it('an attribute takes its pairs and the swatch', () => {
+    expect(rowColorChoiceSetting(false, 'group', { y: '#abcdef' }, '')).toEqual(
+      {
+        field: 'group',
+        domain: ['y'],
+        range: ['#abcdef'],
+        unknown: '',
+      },
+    )
+    expect(rowColorChoiceSetting(false, 'group', {}, undefined)).toEqual({
       field: 'group',
     })
   })

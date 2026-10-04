@@ -6,6 +6,7 @@ import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { keptUnknown, rowColorChoiceSetting } from '../rowColorChoice.ts'
 import { rowFieldValue } from '../rowColorScale.ts'
 import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
@@ -51,10 +52,6 @@ export interface TreeLayoutModel<S extends { name: string }> {
   rowColorFields: readonly string[]
   internalRowFields: readonly string[]
   rowColorsFor: (setting: RowColorSnapshot) => ReadonlyMap<string, string>
-  rowColorChoiceSetting: (
-    choice: string,
-    pairs?: Record<string, string>,
-  ) => RowColorSnapshot
 }
 
 export interface SetColorDialogProps<
@@ -133,6 +130,9 @@ export default observer(function SetColorDialog<
     rows: model.editableSources,
     choice: model.rowColorChoice,
     entries: entriesOf(model.rowColorSetting),
+    // The Other swatch's colour by field, where the reader set one; the
+    // config's `keptUnknown` stands for a field not here.
+    others: {} as Readonly<Record<string, string | undefined>>,
   })
   // Undefined until a swatch is touched, so a reset re-reads the model rather
   // than restoring a pair snapshotted before it.
@@ -145,7 +145,22 @@ export default observer(function SetColorDialog<
   const [currLayout, setCurrLayout] = useState(opened.rows)
   const [choice, setChoice] = useState(opened.choice)
   const [entries, setEntries] = useState(opened.entries)
+  const [others, setOthers] = useState(opened.others)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
+
+  const otherOf = (forChoice: string) => {
+    const field = forChoice || 'name'
+    return Object.hasOwn(others, field)
+      ? others[field]
+      : keptUnknown(model.rowColorSetting, forChoice)
+  }
+  const choiceSetting = (forChoice: string) =>
+    rowColorChoiceSetting(
+      model.rowPaletteDeals,
+      forChoice,
+      entries[forChoice] ?? {},
+      otherOf(forChoice),
+    )
 
   // A row's own `color` and its resolved `rowColor` never show as raw hex.
   const reserved = new Set<string>([
@@ -157,7 +172,7 @@ export default observer(function SetColorDialog<
 
   const byField = choice !== '' && choice !== 'name' ? choice : undefined
   const fieldColors = byField
-    ? model.rowColorsFor(model.rowColorChoiceSetting(byField, entries[byField]))
+    ? model.rowColorsFor(choiceSetting(byField))
     : undefined
 
   // A color by the config names that the display does not offer, a column
@@ -177,6 +192,7 @@ export default observer(function SetColorDialog<
     return (
       choice !== opened.choice ||
       entries !== opened.entries ||
+      others !== opened.others ||
       currLayout.some(row => row.rowColor !== before.get(row.name)?.rowColor)
     )
   }
@@ -193,9 +209,7 @@ export default observer(function SetColorDialog<
   const submit = () => {
     model.applyRowEdits(
       currLayout,
-      colorTouched()
-        ? model.rowColorChoiceSetting(choice, entries[choice])
-        : undefined,
+      colorTouched() ? choiceSetting(choice) : undefined,
     )
     if (
       plotPair &&
@@ -223,6 +237,7 @@ export default observer(function SetColorDialog<
     setCurrLayout(next.rows)
     setChoice(next.choice)
     setEntries(next.entries)
+    setOthers(next.others)
     setPlotPair(undefined)
   }
 
@@ -269,18 +284,37 @@ export default observer(function SetColorDialog<
               <>
                 <RowColorPanel
                   eachRow={model.rowPaletteDeals}
-                  keptUnknown={
-                    model.rowPaletteDeals ||
-                    model.rowColorSetting.field !== 'name'
-                      ? undefined
-                      : model.rowColorSetting.unknown || undefined
-                  }
                   fields={fields}
                   choice={choice}
                   values={
                     byField && fieldColors
                       ? valueColors(currLayout, byField, fieldColors)
                       : []
+                  }
+                  other={
+                    choice === '' && model.rowPaletteDeals
+                      ? undefined
+                      : {
+                          color: otherOf(choice),
+                          count: byField
+                            ? currLayout.filter(row => {
+                                const value = rowFieldValue(row, byField)
+                                return (
+                                  value !== '' &&
+                                  !Object.hasOwn(entries[byField] ?? {}, value)
+                                )
+                              }).length
+                            : undefined,
+                          onChange: color => {
+                            setOthers({ ...others, [choice || 'name']: color })
+                          },
+                          onClear: () => {
+                            setOthers({
+                              ...others,
+                              [choice || 'name']: undefined,
+                            })
+                          },
+                        }
                   }
                   onChoice={setChoice}
                   onValueColor={(value, color) => {
@@ -297,9 +331,7 @@ export default observer(function SetColorDialog<
                     }
                   }}
                   onStartFrom={field => {
-                    const colors = model.rowColorsFor(
-                      model.rowColorChoiceSetting(field, entries[field]),
-                    )
+                    const colors = model.rowColorsFor(choiceSetting(field))
                     paintRows(row => colors.get(rowFieldValue(row, field)))
                   }}
                   onClearRows={() => {

@@ -66,7 +66,6 @@ function makeSelf(
     internalRowFields: [],
     rowColorFields: [],
     rowColorsFor: () => new Map(),
-    rowColorChoiceSetting: () => ({ field: 'name' }),
     setRowHeight: () => {},
     setFitToHeight: () => {},
     ...overrides,

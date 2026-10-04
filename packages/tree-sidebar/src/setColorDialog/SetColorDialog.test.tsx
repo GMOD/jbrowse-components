@@ -4,11 +4,7 @@ import React from 'react'
 
 import { fireEvent, render, screen, within } from '@testing-library/react'
 
-import {
-  liftRowColor,
-  rowColorChoiceOf,
-  rowColorChoiceSetting,
-} from '../rowColorChoice.ts'
+import { liftRowColor, rowColorChoiceOf } from '../rowColorChoice.ts'
 import SetColorDialog from './SetColorDialog.tsx'
 
 import type { RowColorSnapshot } from '../rowColorChoice.ts'
@@ -69,8 +65,6 @@ function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
     internalRowFields: [],
     rowColorFields: [],
     rowColorsFor: previewOf(editableSources),
-    rowColorChoiceSetting: (choice: string, pairs?: Record<string, string>) =>
-      rowColorChoiceSetting(rowColorSetting, rowPaletteDeals, choice, pairs),
     ...overrides,
   }
 }
@@ -204,9 +198,13 @@ describe('colored by an attribute', () => {
     setup(model)
 
     const values = within(screen.getByTestId('row-color-values'))
-    expect(values.getByText('g1')).toBeInTheDocument()
-    expect(values.getByText('2 rows')).toBeInTheDocument()
-    expect(values.getByText('1 row')).toBeInTheDocument()
+    expect(values.getByText('g1').nextElementSibling!.textContent).toBe(
+      '2 rows',
+    )
+    expect(values.getByText('g2').nextElementSibling!.textContent).toBe('1 row')
+    expect(
+      values.getByText('Other values').nextElementSibling!.textContent,
+    ).toBe('2 rows')
     expect(
       screen.getAllByTestId('row-color-swatch').map(s => s.style.background),
     ).toEqual(['rgb(17, 17, 17)', 'rgb(171, 205, 239)', 'rgb(17, 17, 17)'])
@@ -500,28 +498,101 @@ test('showRows false drops the row choice, the grid and the bulk editor', () => 
 
 // A stacked display's config can paint the listed rows and grey the rest
 // (`unknown: '#ccc'`); the dialog shows that as None, since no palette deals,
-// and a touched None keeps the grey.
-test('None on a stacked display keeps the grey its config sets', () => {
-  const model = fakeModel({
-    rowColorSetting: {
+// with the grey on the Other rows swatch, which a recolour of one row keeps
+// and Clear row colors takes with the rest.
+describe('the Other rows swatch on a stacked display', () => {
+  const grey = () =>
+    fakeModel({
+      rowColorSetting: {
+        field: 'name',
+        scale: undefined,
+        domain: ['a'],
+        range: ['#f00'],
+        unknown: '#cccccc',
+      },
+      rowPaletteDeals: false,
+    })
+
+  test("shows the config's grey under None, kept past a row recolour", () => {
+    const model = grey()
+    setup(model)
+
+    expect(screen.getByRole('button', { name: 'None' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    const other = screen.getByText('Other rows').previousElementSibling!
+    expect((other.firstElementChild as HTMLElement).style.backgroundColor).toBe(
+      'rgb(204, 204, 204)',
+    )
+    pickColor(
+      screen.getByTitle('Automatic — click to set a custom color'),
+      'blue',
+      '#00ff00',
+    )
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({
       field: 'name',
-      scale: undefined,
-      domain: ['a'],
-      range: ['#f00'],
       unknown: '#cccccc',
+    })
+  })
+
+  test('recolours the grey, and Clear row colors drops it', () => {
+    const model = grey()
+    setup(model)
+
+    const other = screen.getByText('Other rows').previousElementSibling!
+    pickColor(other.firstElementChild!, '#cccccc', '#0000ff')
+    fireEvent.click(screen.getByText('Submit'))
+    expect(submitted(model)[1]).toEqual({
+      field: 'name',
+      unknown: 'rgb(0, 0, 255)',
+    })
+  })
+
+  test('Auto returns the other rows to their own colours; Clear row colors leaves them', () => {
+    const model = grey()
+    setup(model)
+
+    fireEvent.click(screen.getByText('Clear row colors'))
+    fireEvent.click(screen.getByText('Auto'))
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({ field: 'name' })
+  })
+})
+
+test('None with a palette dealing offers no Other rows swatch', () => {
+  setup(fakeModel({ rowColorChoice: '' }))
+  expect(screen.queryByText('Other rows')).toBeNull()
+})
+
+test('an attribute lists Other values with the rows no pair names, and colours them', () => {
+  const model = fakeModel({
+    editableSources: GROUPED,
+    rowColorFields: ['group'],
+    rowColorSetting: {
+      field: 'group',
+      scale: undefined,
+      domain: ['g2'],
+      range: ['#abcdef'],
     },
-    rowPaletteDeals: false,
   })
   setup(model)
 
-  expect(screen.getByRole('button', { name: 'None' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
-  fireEvent.click(screen.getByText('Clear row colors'))
+  const values = within(screen.getByTestId('row-color-values'))
+  const other = values.getByText('Other values')
+  expect(other.nextElementSibling!.textContent).toBe('2 rows')
+  pickColor(other.previousElementSibling!.firstElementChild!, 'blue', '#999999')
   fireEvent.click(screen.getByText('Submit'))
 
-  expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '#cccccc' })
+  expect(submitted(model)[1]).toEqual({
+    field: 'group',
+    domain: ['g2'],
+    range: ['#abcdef'],
+    unknown: 'rgb(153, 153, 153)',
+  })
 })
 
 test('the value table lists the values in the order the key does', () => {
