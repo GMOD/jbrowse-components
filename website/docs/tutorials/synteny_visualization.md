@@ -147,7 +147,7 @@ the other row.
 ## Reading the whole genome in a dotplot
 
 **Add → Dotplot view** opens the import form in **Quick start**: pick the track
-just added and click **Launch**. **Swap?** transposes the axes. **Manual** picks
+just added and click **Launch**. **Swap** transposes the axes. **Manual** picks
 each axis and a synteny file by hand.
 
 <Figure caption="The dotplot import form in Manual mode, where you pick the X-axis and Y-axis assembly by hand, then optionally add a synteny file in any of the formats it accepts." src="/img/sv_synteny/dotplot_import.png" />
@@ -254,7 +254,15 @@ jbrowse add-track alignment.pif.gz -a query,target --load copy
 ## Reproduce it end to end
 
 One script builds everything above,
-[`build_hpylori_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hpylori_synteny.sh):
+[`build_hpylori_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hpylori_synteny.sh),
+in three steps:
+
+1. Download each strain's sequence and config from its genome hub, so the
+   alignments and the assemblies come from the same files.
+2. Align 26695 to CHC155, CHC155 to J99 and 26695 to J99 with
+   `minimap2 -x asm20 --eqx`.
+3. Write the config with the three hub assemblies and gene tracks, the three
+   pairwise synteny tracks, and a default session stacking all three strains.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hpylori_synteny.sh
@@ -262,10 +270,7 @@ bash build_hpylori_synteny.sh          # builds ./hpylori_synteny_build/jbrowse2
 npx --yes serve hpylori_synteny_build/jbrowse2 # then open the printed URL
 ```
 
-The script downloads each strain's hub sequence and config, aligns the strain
-pairs, and writes a `config.json` with the three hub assemblies and gene tracks,
-the pairwise synteny tracks, and a default session stacking all three. It needs
-the tools under [Prerequisites](#prerequisites).
+The script needs the tools under [Prerequisites](#prerequisites).
 
 ## See also
 
