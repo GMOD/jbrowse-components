@@ -8,10 +8,10 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-We look at linkage disequilibrium around the lactase gene, where selection for
-lactase persistence left one long block of correlated variants. PLINK correlates
-the phased genotypes and JBrowse draws the triangle from its output. With that
-view we:
+We look at linkage disequilibrium (LD) around the lactase gene, where selection
+for lactase persistence left one long block of correlated variants. PLINK
+correlates the phased genotypes and JBrowse draws the triangle from its output.
+With that view we:
 
 - read the edges of the block against Fst and a genetic map
 - compare the swept population's triangle against the pooled release
@@ -28,9 +28,9 @@ view we:
 - `python3`
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/), for the Fst
-  lane
+  track
 - [PLINK 1.9](https://www.cog-genomics.org/plink/) for the r² tables and
-  [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) for the Fst lane and the
+  [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) for the Fst track and the
   frequency filter[^plink19]
 
 ## Where the data comes from
@@ -54,18 +54,18 @@ called natively on GRCh38.
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz
 - the six-population slice the haplotype matrix reads:
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz
-- the per-variant Fst lane, built below:
+- the per-variant Fst track, built below:
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest.bw
 - one bigWig of allele frequency per population, built below:
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_CEU.bw, and the same name
   ending in FIN, PJL, TSI, YRI and CHB
 
-The gene, ClinVar and recombination lanes are tracks of the hosted UCSC hg38
+The gene, ClinVar and recombination tracks come from the hosted UCSC hg38
 [hub](/docs/user_guides/hub_url).
 
 ## Loading the hg38 assembly
 
-The tables, the Fst lane and the haplotypes all use GRCh38 coordinates on chr2,
+The tables, the Fst track and the haplotypes all use GRCh38 coordinates on chr2,
 so the tracks below go on that assembly.
 
 ```json addassembly
@@ -79,15 +79,15 @@ so the tracks below go on that assembly.
 }
 ```
 
-## Reading the triangle
+## Drawing the LCT LD triangle from a PLINK table
 
-Red means two variants are inherited together, white means independent. The
-triangle is a matrix turned on its corner, so the vertical axis is the distance
-between the two variants.
+In the triangle, red means two variants are inherited together and white means
+independent. The triangle is a matrix turned on its corner, so the vertical axis
+is the distance between the two variants.
 
-Point an [`LDTrack`](/docs/config/ldtrack) at the r² table
-[PLINK wrote below](#correlating-the-lct-variants-with-plink), in an hg38
-session:
+Point an [`LDTrack`](/docs/config/ldtrack) at the r² table (squared correlation
+per variant pair) [PLINK wrote below](#correlating-the-lct-variants-with-plink),
+in an hg38 session:
 
 ```json addtrack
 {
@@ -109,20 +109,17 @@ session:
 
 [`variantLayout`](/docs/config/ldtrackdisplay/#slot-variantlayout) sizes each
 cell by genomic distance, and
-[`ldMetric`](/docs/config/ldtrackdisplay/#slot-ldmetric) picks r² or D', both of
-which this table has.
+[`ldMetric`](/docs/config/ldtrackdisplay/#slot-ldmetric) picks r² or D' (a
+second LD measure), both of which this table has.
 
 The block is a selective sweep. The allele that keeps lactase switched on into
 adulthood, `rs4988235`, rose in frequency, and its neighbouring variants rose
-with it ([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)). The
-[dbSNP report](https://www.ncbi.nlm.nih.gov/snp/rs4988235) for `rs4988235` lists
-the ClinVar entry and frequency table.
+with it ([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)).
 
 ## Cutting the LCT region out of the 1000 Genomes VCF
 
-Cut the region twice: once over the whole release, once over the European panel
-the sweep happened in. `unrelated.samples` and `panel.samples` list one sample
-ID per line, as `-S` reads them.
+Cut the region twice: over the whole release, and over its European samples (the
+panel, where the sweep happened). `*.samples` files list one ID per line.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -151,9 +148,10 @@ bcftools view -m2 -M2 -v snps panel.vcf.gz | bcftools norm -d both |
   bcftools annotate -x ID -Oz -o panel.snvs.vcf.gz
 ```
 
-Then pick the common variants per cohort and correlate every pair; the MAF floor
-keeps the table small enough for a browser to draw. The same reduction on
-`pooled.vcf.gz` gives `pooled.snvs.vcf.gz` for the pooled table.
+Then pick common variants per cohort and correlate every pair; the minor allele
+frequency (MAF) floor keeps the table small enough for a browser to draw. The
+same reduction on `pooled.vcf.gz` gives `pooled.snvs.vcf.gz` for the pooled
+table.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -178,10 +176,11 @@ awk 'NR==1{$1=$1; print "#" $0; next} {$1=$1; print}' OFS='\t' \
 tabix -s 1 -b 2 -e 2 -f lct_1kg38_chr2_eur.ld.gz
 ```
 
-## Compute Fst per variant
+## Computing Fst per variant with plink2
 
-The Fst lane is `plink2 --fst` over `panel.samples` and `rest.samples`, written
-as a bigWig for a [quantitative track](/docs/user_guides/quantitative_track):
+Fst, how far apart two groups' allele frequencies sit, comes from `plink2 --fst`
+over `panel.samples` and `rest.samples`, as a bigWig for a
+[quantitative track](/docs/user_guides/quantitative_track):
 
 <!-- from: scripts/build_lct_fst_scan.sh -->
 
@@ -204,9 +203,9 @@ printf 'chr2\t242193529\n' > hg38.chrom.sizes
 bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
 ```
 
-The track over it lowers the adapter's `resolutionMultiplier`. Zoomed out, a
-bigWig serves summary bins, and a bin's average sinks the few differentiated
-variants into the many around them:
+The Fst track lowers the adapter's `resolutionMultiplier`. Zoomed out, a bigWig
+serves summary bins, and a bin's average sinks the few differentiated variants
+into the many around them:
 
 ```json addtrack
 {
@@ -228,24 +227,25 @@ Open the region the slice covers with that Fst track, the hub's **Recomb Rate -
 Recomb. deCODE Avg** track, and two copies of the `LDTrack` above, the second
 pointed at `https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz`:
 
-<Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, RefSeq genes and Weir and Cockerham Fst per variant across a wide span of chr2. Under the wedge, the same locus and allele-frequency floor twice, differing only in which samples went in, over that Fst lane at a separate scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
+<Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top: RefSeq genes and Weir and Cockerham Fst per variant across a wide span of chr2. Bottom: two LD triangles at one locus and allele-frequency floor, differing only in which samples went in, over the same Fst track and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
-- In the Fst lane at the top, the most differentiated sites in the window sit
+- In the Fst track at the top, the most differentiated sites in the window sit
   inside the block.
 - The block fills the flat span of the
   [deCODE map](https://doi.org/10.1126/science.aau1043). The map counts
   crossovers in sequenced families, so it checks the triangle independently of
   LD.
-- Pooling the swept panel with populations the sweep never reached lightens the
-  upper triangle.
+- Pooling the swept European samples with populations the sweep never reached
+  lightens the pooled triangle.
 
-## The haplotypes behind the triangle
+## Clustering LCT haplotypes into the block the triangle draws
 
-A track over the six-population VCF, one lane below the triangle, draws the
-haplotypes in equal-width columns, one row per chromosome. The samples TSV maps
-each sample ID to its population, a `name` column and a `population` column, and
-`rowColor` colors the rows by the second. For your own cohort, write that table
-and point `samplesTsvLocation` at it:
+The triangle summarises haplotypes, the variants each chromosome carries along
+the block. A track over the six-population VCF draws them below it in
+equal-width columns, one row per chromosome. The samples TSV maps each sample ID
+to its population, a `name` column and a `population` column, and `rowColor`
+colors the rows by the second. For your own cohort, write that table and point
+`samplesTsvLocation` at it:
 
 ```json addtrack
 {
@@ -274,7 +274,7 @@ and point `samplesTsvLocation` at it:
 }
 ```
 
-Run the clustering two ways:
+Cluster the rows by genotype two ways:
 
 - from the track menu, **Clustering** → **Cluster rows by genotype...**
 - baked into a session with the
@@ -285,16 +285,16 @@ Run the clustering two ways:
 
 - In file order the matrix is a plaid. Clustering puts near-identical
   chromosomes together, so a swept haplotype forms one slab.
-- The ClinVar lane marks `rs4988235`, which falls below the frequency floor of
-  the matrix. The lane is the hub's ClinVar track filtered with
+- The ClinVar track marks `rs4988235`, which falls below the frequency floor of
+  the matrix. It is the hub's ClinVar track filtered with
   `jexl:feature.phenotypeList=='LACTASE PERSISTENCE'`.
 
 ### Subsampling six populations for the haplotype matrix {#rows-have-to-be-worth-a-pixel}
 
 Over the whole release each haplotype row falls below a pixel and blurs flat.
-This figure reads a subsample of six populations, built by the third script
-under [Reproduce it end to end](#reproduce-it-end-to-end). Its core is one
-`bcftools` call over a list of 150 sample IDs, one per line, 25 from each
+The haplotype figure reads a subsample of six populations, built by the third
+script under [Reproduce it end to end](#reproduce-it-end-to-end). Its core is
+one `bcftools` call over a list of 150 sample IDs, one per line, 25 from each
 population:
 
 <!-- from: scripts/build_lct_haploblock.sh -->
@@ -303,14 +303,14 @@ population:
 bcftools view -S sub.samples --force-samples -Oz -o lct_1kg38_chr2_6pop.vcf.gz pooled.vcf.gz
 ```
 
-## Allele frequency per population
+## Allele frequency per population across the LCT block {#allele-frequency-per-population}
 
-The haplotype matrix's subsample, twenty-five people from each population, is
-enough to sort the haplotypes and too few to read a frequency off.
-`bcftools +fill-tags` computes each population's allele frequency over all of
-its unrelated samples and writes it into one INFO field per population. Its `-S`
-table holds a sample ID and a group on each line, tab-separated, so the same
-command takes populations, superpopulations, or cases and controls:
+Twenty-five people from each of the six populations are enough to sort
+haplotypes and too few to read a frequency off. So `bcftools +fill-tags`
+computes each population's allele frequency over all of its unrelated samples
+and writes it into one INFO field per population. Its `-S` table holds a sample
+ID and a group on each line, tab-separated, so the same command takes any
+grouping:
 
 <!-- from: scripts/build_lct_population_af.sh -->
 
@@ -398,15 +398,15 @@ Open it over `chr2:135,844,000-135,858,000`, the stretch of _MCM6_ that holds
 <Figure src="/img/ld/lct_population_af.png" caption="RefSeq genes, ClinVar's lactase-persistence variants, and the alternate allele frequency of each biallelic SNV in six 1000 Genomes populations, a row each on one axis, across MCM6. The highlight marks rs4988235, whose bar falls from CEU to TSI and is absent in YRI and CHB."/>
 
 - At `rs4988235` the allele is common in the two northern European populations
-  and rarer in PJL and TSI, the spread
+  (CEU, FIN) and rarer in PJL (Punjabi) and TSI (Tuscan), the spread
   [Bersaglieri et al. (2004)](https://doi.org/10.1086/421051) describe.
-- The YRI and CHB rows carry common variants elsewhere in the window, at sites
-  where the other four are low.
+- The YRI (Yoruba) and CHB (Han Chinese) rows carry common variants elsewhere in
+  the window, at sites where the other four are low.
 
 ## Reproduce it end to end
 
 [`build_lct_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_ld.sh)
-builds the triangles and the narrow Fst lane, and writes a ready-to-serve
+builds the triangles and the narrow Fst track, and writes a ready-to-serve
 config. It:
 
 1. keeps the release's unrelated samples, since relatives share long haplotypes
@@ -425,7 +425,7 @@ bash build_lct_ld.sh                  # builds ./lct_ld_build/jbrowse2
 npx --yes serve lct_ld_build/jbrowse2 # then open the printed URL
 ```
 
-The wide Fst lane is a second file, from
+The wide Fst track is a second file, from
 [`build_lct_fst_scan.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh).
 It scores the same panels with the same estimator over 40 Mb of chr2 with _LCT_
 at its middle, one value per variant, because a window averages a sweep's few
@@ -465,9 +465,9 @@ bash build_lct_population_af.sh       # builds ./lct_population_af_build
 
 ## LD across a whole chromosome arm
 
-PLINK's table holds one row per pair of variants, so a span many megabases wide
-needs fewer of them. [](/docs/tutorials/ld_mosquitoes) draws a 22 Mb inversion
-by thinning the variants to a grid before PLINK correlates them.
+A span many megabases wide needs fewer variants, because PLINK's table holds one
+row per pair. [](/docs/tutorials/ld_mosquitoes) draws a 22 Mb inversion by
+thinning the variants to a grid before PLINK correlates them.
 
 ## See also
 
