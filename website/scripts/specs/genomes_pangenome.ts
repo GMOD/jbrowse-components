@@ -107,7 +107,7 @@ export function portalHaplotypeLanes(locus: { loc: string; lanes: string[] }) {
 
 export const genomesPangenomeSpecs: ScreenshotSpec[] = [
   // Ends on the SMN1/SMN2 row, so the two rows with no graph launch are in
-  // frame under the ones that have all four.
+  // frame under the ones that have all five.
   {
     mode: 'url',
     name: 'pangenome/genomes_hprc_loci',

@@ -117,7 +117,7 @@ The bubbles lane reads the same build's bubble index:
 
 ## Nnt: a deletion that appears as an insertion
 
-Click **chr13** on the **Graph** line of the
+Click **chr13** on the **Whole chromosome** line of the
 [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse), which opens
 the whole chromosome with the graph drawn one node per bubble. Type
 `chr13:119,440,000-119,600,000`, and the graph track cuts the segments there.

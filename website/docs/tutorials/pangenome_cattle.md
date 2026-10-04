@@ -102,7 +102,7 @@ writes the tabix-indexed segments and links and the tier.
 
 ## Reading chr23 at one node per bubble
 
-Click **chr23** on the **Graph** line of the
+Click **chr23** on the **Whole chromosome** line of the
 [portal page](https://staging.genomes.jbrowse.org/pangenomes/bovine), which
 opens the whole chromosome with the graph drawn one node per bubble.
 

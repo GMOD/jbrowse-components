@@ -69,7 +69,9 @@ projections of its graph that we host.
 
 Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc). Each
 row of its **Loci** table ends in launches: **graph**, **variants**,
-**haplotypes** and **gene hub**.
+**haplotypes**, **BandageJS** and **gene hub**. **BandageJS** cuts the row's
+haplotypes out of the graph and draws them in
+[BandageJS](https://jbrowse.org/demos/bandagejs/), laid out by force.
 
 <Figure caption="The HPRC page: the whole-chromosome links, then the head of the Loci table, where each row ends in its launches. The RHD / RHCE and SMN1 / SMN2 rows have no graph launch. The boxed link is the HLA / MHC graph launch." src="/img/pangenome/genomes_hprc_loci.png" />
 
