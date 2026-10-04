@@ -26,7 +26,7 @@ retrogene leaves at its parent gene.
 - htslib (`tabix`)
 - `minimap2`, for the [FGF4 alignments](#aligning-the-retrocopies-to-fgf4)
 - `samtools`, for the [FGF4 alignments](#aligning-the-retrocopies-to-fgf4)
-- the UCSC `liftOver` binary for the OMIA lane, which the build script fetches
+- the UCSC `liftOver` binary for the OMIA track, which the build script fetches
   itself
 
 On Debian/Ubuntu, `apt install bcftools samtools minimap2 tabix curl python3`
@@ -46,7 +46,7 @@ supporting UCSC and OMIA tracks and two sequenced retrocopies from GenBank.
 - the Michigan Manta aggregate callset, 1.08 GB, with the _AMY2B_ duplication
   and the _FGF4_ intron records:
   https://kiddlabshare.med.umich.edu/dog10K/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz
-- the sample table, breed and category per animal, behind every panel on this
+- the sample table, breed and category per animal, behind every figure on this
   page:
   https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
 - OMIA's own dump, curating the Collie eye anomaly record independently of
@@ -91,16 +91,17 @@ GenBank accessions:
 ## A 7.8 kb deletion in NHEJ1
 
 Schall and Kidd genotyped long-read-discovered structural variants across the
-Dog10K collection and flagged those whose allele frequencies track breed clades.
-One is a 7.8 kb deletion in an intron of _NHEJ1_, the variant
-[Parker et al. (2007)](https://doi.org/10.1101/gr.6772807) tied to Collie eye
-anomaly. It should be common in Collies and their relatives and absent from
-unrelated breeds and wolves. The anomaly is recessive, so the darker cells below
-are affected animals and the lighter ones carriers.
+Dog10K collection and flagged those whose allele frequencies track breed clades
+(groups of related breeds). One is a 7.8 kb deletion in an intron of _NHEJ1_,
+the variant [Parker et al. (2007)](https://doi.org/10.1101/gr.6772807) tied to
+Collie eye anomaly. It should be common in Collies and their relatives and
+absent from unrelated breeds and wolves. The anomaly is recessive, so the darker
+cells below are affected animals and the lighter ones carriers.
 
 ## Slicing the NHEJ1 locus out of the Paragraph callset
 
-The genotype VCF is 5.9 GB across 1,879 dogs and wolves, published on
+The Paragraph callset (structural variants genotyped with Paragraph) is a 5.9 GB
+VCF across 1,879 dogs and wolves, published on
 [Zenodo](https://doi.org/10.5281/zenodo.14968873) with a tabix index, and
 `bcftools` fetches only the locus. Zenodo serves the data and index from
 separate URLs, so the index is named explicitly:
@@ -183,22 +184,19 @@ menu writes the same two settings as you rename and recolour rows by hand.
 }
 ```
 
-## Reading the NHEJ1 deletion
+## NHEJ1 deletion genotypes across breeds
 
 Open the session above and add the assembly's gene annotation over the variants
 to see where the deletion falls in _NHEJ1_.
 
-<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every animal with the deletion is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The lane between the genes and the genotypes is OMIA's curated record of the same variant." src="/img/dog10k-nhej1-cea-deletion.png" />
+<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every animal with the deletion is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The track between the genes and the genotypes is OMIA's curated record of the same variant." src="/img/dog10k-nhej1-cea-deletion.png" />
 
-The deletion lies inside an intron, away from the exons, which is how a variant
-this large can be common in a breed.
+### Checking the NHEJ1 deletion against OMIA's curated record
 
-### Checking the call against a curated source
-
-The middle lane is [OMIA](https://omia.org), which curates the published causal
-variants of Mendelian traits in animals. Its Collie eye anomaly record (OMIA
-000218-9615) is this deletion. OMIA gives the span on CanFam3.1, and the build
-script lifts it to canFam4 with the UCSC chain:
+The middle track is [OMIA](https://omia.org), Online Mendelian Inheritance in
+Animals, which curates the published causal variants of Mendelian traits. Its
+Collie eye anomaly record (OMIA 000218-9615) is this deletion. OMIA gives the
+span on CanFam3.1, and the build script lifts it to canFam4 with the UCSC chain:
 
 <!-- from: scripts/build_omia_dog_variants.sh -->
 
@@ -207,8 +205,6 @@ curl -fO https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/liftOver/canFam3ToCa
 ./liftOver omia_canFam3.bed canFam3ToCanFam4.over.chain.gz lifted.bed unmapped.bed
 wc -l < unmapped.bed   # records the chain could not place
 ```
-
-An interval lifts as a unit, so a plain `liftOver` is enough for OMIA's records.
 
 ```json addtrack
 {
@@ -226,9 +222,9 @@ The label under the bar gives the mode of inheritance. Click the bar for the
 rest of the record, including whether the build lifted it from CanFam3.1. A
 lifted record can place the locus correctly and still be off by a few bases.
 
-### Filtering to one record
+### Filtering the NHEJ1 window to the deletion record
 
-The figure filters the window's SV records to this one:
+The figure filters the window's SV records to the 7.8 kb deletion:
 
 ```json addtrack
 {
@@ -247,10 +243,9 @@ The figure filters the window's SV records to this one:
 ```
 
 Without the filter, a second deletion nested inside the 7.8 kb one draws yellow
-no-calls over the dark blue rows, and the two records look like one striped
-block. The no-calls at the nested deletion are the dogs homozygous for the
-larger one, because a dog with no copy of the surrounding sequence has no reads
-to genotype it from:
+no-calls over the dark blue rows, so the two records look like one striped
+block. The no-calls are the dogs homozygous for the larger deletion, because a
+dog with no copy of the surrounding sequence has no reads to genotype it from:
 
 ```bash
 # -r also returns records that span the region, so -i keeps the one starting here
@@ -267,20 +262,22 @@ deletion is in the breed.
 
 ## AMY2B duplication and RNASE1 insertion
 
-A 14.9 kb `DUP` at chr6:47,375,677 in the Michigan Manta callset spans the
-pancreatic amylase gene end to end. Extra copies help dogs digest starch, a
-change [Axelsson et al. (2013)](https://doi.org/10.1038/nature11837) tied to
+A 14.9 kb duplication (`DUP`) at chr6:47,375,677 in the Michigan Manta callset
+spans the pancreatic amylase gene _AMY2B_ end to end. Extra copies help dogs
+digest starch, a change
+[Axelsson et al. (2013)](https://doi.org/10.1038/nature11837) tied to
 domestication. Across the whole collection, the record separates dogs from
 wolves almost completely: nearly every dog is homozygous for it and nearly every
 wolf lacks it.
 
-A 223 bp SINE insertion in pancreatic ribonuclease, chr15:18,164,072 in the
-Zenodo Paragraph set, is the reverse, found in wolves and almost no dogs.
+A 223 bp SINE (short interspersed nuclear element) insertion in pancreatic
+ribonuclease (_RNASE1_), at chr15:18,164,072 in the Zenodo Paragraph set, occurs
+in wolves and almost no dogs.
 [`build_dog10k_amy2b_sv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_amy2b_sv.sh)
 prints both records' genotypes tallied by population.
 
 The build script slices the same animals from both callsets in the same order,
-so the two lanes line up row for row: two ordinary breeds, the three Arctic
+so the two tracks line up row for row: two ordinary breeds, the three Arctic
 breeds, the English Springer Spaniels and Czechoslovakian Wolfdogs, the Alaskan
 village dogs, and every gray wolf, labelled by country.
 
@@ -367,10 +364,10 @@ bcftools view -r chr18:48865000-48876000 -S fgf4.samples --force-samples \
 tabix -p vcf dog10k_fgf4_svs.vcf.gz
 ```
 
-`fgf4.samples` is whole breeds again: three breeds whose short legs are the
-trait Parker et al. mapped, two spaniel breeds, two standard-proportioned
-breeds, and the Greek gray wolves, labelled through a samples TSV with
-`rowColor` on the breed group.
+`fgf4.samples` holds whole breeds: three breeds whose short legs are the trait
+Parker et al. mapped, two spaniel breeds, two standard-proportioned breeds, and
+the Greek gray wolves, labelled through a samples TSV with `rowColor` on the
+breed group.
 
 ```json addtrack
 {
@@ -475,22 +472,24 @@ Each alignment is a `SyntenyTrack` between its retrocopy and the dog assembly:
 
 `assemblyNames` is ordered `[query, target]`, the reverse of minimap2's argument
 order. The build script then turns each `FGF4retro-*.paf` into the file the
-track loads, `dog10k_fgf4_retro_cfa12.paf` and its CFA18 twin. It renames the
-target from the cut-out window to `chr18`, shifts its coordinates by the
-window's start, and rewrites the `N` operations in each CIGAR to `D`, since
-those bases are absent from the retrocopy. It also writes each GenBank record's
-feature table out as GFF3 for the retrocopy's gene model, and checks that the
-CDS is a single interval (the parent's has three).
+track loads, `dog10k_fgf4_retro_cfa12.paf` and its CFA18 twin. For each file it:
+
+- renames the target to `chr18` and shifts its coordinates by the window's start
+- rewrites each CIGAR `N` to `D`, since those bases are absent from the
+  retrocopy
+- writes each GenBank feature table as GFF3 for the gene model, and checks that
+  the CDS is a single interval (the parent's has three)
 
 To put the parent gene between the two retrocopies, choose **Add → Linear
 synteny view**, switch to **Manual**, and set the rows to `FGF4retro-CFA18`,
 `UU_Cfam_GSD_1.0` and `FGF4retro-CFA12`, top to bottom. Give the upper pair the
 CFA18 alignment and the lower pair the CFA12 one, then click **Launch**. Open
 the view's sliders menu and set **CIGAR indels → Transparent indels**. Colored
-indels label each CIGAR operation from the side it is read, so one gap would be
-a deletion above the parent row and an insertion below it. Both retrocopies
-align to the same three exons, so each intron is a gap in both ribbons. The
-window ends where the CFA18 alignment does, and the CFA12 ribbon runs past it.
+indels would show one gap as a deletion above the parent row and an insertion
+below it, because each ribbon reads the CIGAR from its own side. Both
+retrocopies align to the same three exons, so each intron is a gap in both
+ribbons. The window ends where the CFA18 alignment does, and the CFA12 ribbon
+runs past it.
 
 <Figure caption="Two independent FGF4 retrocopies aligned to the parent gene between them, with the Manta calls in reference coordinates and then across Dog10K genomes. Every ribbon gap falls on a parent intron and the blue blocks sit in those same two places." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
@@ -498,7 +497,7 @@ The two GenBank records agree across the coding sequence and differ in how much
 UTR they include. Both deposited sequences end at the poly(A) tail, so neither
 records where its copy inserted.
 
-## Slicing more of Schall and Kidd's clade-associated SVs
+## Slicing more clade-associated SVs from Schall and Kidd
 
 Schall and Kidd list the clade-associated SVs they found, and any of them can be
 sliced and loaded the same way. Another retrogene shows up as a gene whose
