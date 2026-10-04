@@ -58,6 +58,11 @@ included: `**Color by... → Modifications**`. Neither `check-menu-paths.ts` nor
 `check-menu-labels.ts` sees the ellipsis. In a **caption** the same path stays
 bare, because a caption describes the frame rather than telling anyone to click.
 
+**A bold menu path stays on one source line.** oxfmt wraps prose at 80 columns,
+and a path split across two lines is invisible to the menu-path, figure-action
+and unshown-setting checks, which then report a drop. Open the sentence or a
+bullet with the path so the wrap falls after it.
+
 **Two labels really do differ by an ellipsis.** The FAB menu renders a bare
 `Add track`; the track-menu hamburger renders `Add track...`. Both are correct,
 so a report that a page is missing the ellipsis there is a report about which
