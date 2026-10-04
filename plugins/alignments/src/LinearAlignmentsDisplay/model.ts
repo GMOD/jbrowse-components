@@ -381,7 +381,7 @@ export default function stateModelFactory(
         // `densityCoverageRegions`.
         DensityTierMixin(),
         // The coverage band's score axis, shared with the wiggle family so the
-        // wiggle-core score menu / SetMinMaxDialog consume this model directly.
+        // Coverage axis row and its drawer widget consume this model directly.
         ScoreScaleMixin(),
         LegendMixin(),
         ContextMenuMixin<AlignmentsContextMenuInfo>(),
@@ -562,7 +562,7 @@ export default function stateModelFactory(
       }))
       // The coverage band's value scale (`scales.y` and its setters) is
       // `ScoreScaleMixin`, composed above — the same one the wiggle family
-      // composes, so the shared score menu and SetMinMaxDialog take this model
+      // composes, so the Coverage axis row and its widget take this model
       // with no adapter shim and the two can't drift.
       .views(self => {
         let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined

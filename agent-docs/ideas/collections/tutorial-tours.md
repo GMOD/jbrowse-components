@@ -128,7 +128,7 @@ reorderable just films the confusion.
   in a figure within fifty lines of it, and `tutorial-corpus-audit.md` §5
   names the page as the reorderable case in its own opening words.
 - **`mappability_qc.md`** — it HAS the shape: three numbered steps at `:168-179`
-  with no figure near them, and a `Score → Summary score mode` flip whose losing
+  with no figure near them, and a `Resolution → Summary score mode` flip whose losing
   half is in no picture. Both sit on a 30x remote CRAM that needs `forceLoad` to
   draw at all and whose still costs a 600s ready gate. Revisit with `--headed`
   if that pileup is ever cheap enough.

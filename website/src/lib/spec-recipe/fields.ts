@@ -723,19 +723,22 @@ const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
   LinearWiggleDisplay: 'Edit colors/arrangement...',
 }
 
-// wiggle-core's makeScoreSubMenu, which the alignments coverage band reuses
-// under its own label — same rows inside, different name to look for. Its module
-// pulls in the menu helpers, so these are hand-verified: 'Score' is the default
-// in scoreMenuItems.ts, 'Coverage' the one alignments passes in coverage.ts.
+// The row that opens the Y axis drawer widget, under the label each display
+// passes to makeScoreAxisMenuItem: Y_AXIS_LABEL by default, COVERAGE_AXIS_LABEL
+// in alignments' coverage.ts. Hand-verified, since the module pulls in menu
+// helpers.
 const SCORE_MENUS: Record<string, string> = {
-  LinearWiggleDisplay: 'Score',
-  LinearAlignmentsDisplay: 'Coverage',
+  LinearWiggleDisplay: 'Y axis...',
+  LinearAlignmentsDisplay: 'Coverage axis...',
 }
 
 const SCALE_TYPES: Record<string, string> = {
-  linear: 'Linear scale',
-  log: 'Log scale',
+  linear: 'Linear',
+  log: 'Log',
+  symlog: 'Symlog',
 }
+
+const checked = (on: boolean) => (on ? 'checked' : 'unchecked')
 
 
 function ruleValues(rules: unknown[]) {
@@ -747,51 +750,52 @@ function ruleValues(rules: unknown[]) {
     : `Horizontal lines at ${values.map(String).join(' and ')}`
 }
 
-// `scales.y` is one spec key over five controls that live in different places,
-// so it answers with a step per member the figure names.
+// `scales.y` is one spec key edited in one drawer widget, so it answers with a
+// step per member the figure names, each a control in that widget.
 const scalesStep: FieldRecipe = (value, { displayType }) => {
   const y = asRecord(asRecord(value)?.y)
   if (!y) {
     return undefined
   }
-  const menu = (displayType && SCORE_MENUS[displayType]) ?? 'Score'
+  const axis = `${TRACK_MENU} → ${(displayType && SCORE_MENUS[displayType]) ?? 'Y axis...'}`
   const scaleType = asString(y.type)
   const ends = [
-    typeof y.domainMin === 'number' && `minimum ${y.domainMin}`,
-    typeof y.domainMax === 'number' && `maximum ${y.domainMax}`,
+    typeof y.domainMin === 'number' && `Min ${y.domainMin}`,
+    typeof y.domainMax === 'number' && `Max ${y.domainMax}`,
   ].filter(Boolean)
   const steps = [
     scaleType && SCALE_TYPES[scaleType]
-      ? {
-          path: `${TRACK_MENU} → ${menu} → Scale type → ${SCALE_TYPES[scaleType]}`,
-        }
+      ? { path: `${axis} → Scale → ${SCALE_TYPES[scaleType]}` }
       : undefined,
     ends.length
       ? {
-          path: `${TRACK_MENU} → ${menu} → Set min/max score...`,
-          note: `Pins the score axis: ${ends.join(' and ')}. An end left blank autoscales.`,
+          path: `${axis} → Range`,
+          note: `Pins the axis: ${ends.join(' and ')}. A field left empty follows the data in view.`,
+        }
+      : undefined,
+    typeof y.zero === 'boolean'
+      ? { path: `${axis} → Include 0 (${checked(y.zero)})` }
+      : undefined,
+    typeof y.domainQuantile === 'number'
+      ? {
+          path: `${axis} → Clip extreme outliers (${checked(y.domainQuantile < 1)})`,
         }
       : undefined,
     typeof y.autoscaleGroup === 'string'
       ? {
-          path: `${TRACK_MENU} → ${menu} → Autoscale with other tracks...`,
+          path: `${axis} → Share axis with`,
           note: `Tick the tracks that share this axis, here every one in group "${y.autoscaleGroup}".`,
         }
       : undefined,
-    typeof y.domainQuantile === 'number' && displayType === 'LinearWiggleDisplay'
+    typeof y.grid === 'boolean'
       ? {
-          path: `${TRACK_MENU} → Score → Clip outliers (${y.domainQuantile < 1 ? 'checked' : 'unchecked'})`,
-        }
-      : undefined,
-    typeof y.grid === 'boolean' && displayType === 'LinearWiggleDisplay'
-      ? {
-          path: `${TRACK_MENU} → Show... → Show cross hatches (${y.grid ? 'checked' : 'unchecked'})`,
-          note: 'Absent in the density plot types, where score maps to color rather than height and a hatch would mark nothing.',
+          path: `${axis} → Grid lines (${checked(y.grid)})`,
+          note: 'Absent in the density plot types, where score maps to color rather than height and a line would mark nothing.',
         }
       : undefined,
     Array.isArray(y.rules) && y.rules.length
       ? {
-          path: `${TRACK_MENU} → ${menu} → Reference lines...`,
+          path: `${axis} → Reference lines`,
           note: `${ruleValues(y.rules)}, on the same scale as the plot. Each row takes a value, a label and a colour; removing every row removes every line.`,
         }
       : undefined,
@@ -1678,7 +1682,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       typeof value === 'number' ? SNP_FREQUENCY_ROWS[String(value)] : undefined
     return row
       ? {
-          path: `${TRACK_MENU} → Coverage → Color SNPs above... → ${row}`,
+          path: `${TRACK_MENU} → Color SNPs above... → ${row}`,
           note: 'At high depth every sequencing error paints a sliver on the coverage band, so a figure about the band\'s height wants a floor under what gets colored.',
         }
       : undefined
@@ -1751,7 +1755,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   mark: markStep,
   interpolate: interpolateStep,
   summaryScoreMode: fromTable(
-    'Score → Summary score mode',
+    'Resolution → Summary score mode',
     SUMMARY_SCORE_MODES,
   ),
   // `showDescriptions` has no entry on purpose. There is no "Show descriptions"

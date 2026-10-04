@@ -11,8 +11,8 @@ Accepted (2026-09-27). Colin, offered ggplot2's rule: "i am not sure i like
 the 'everything else spans its data' i think we just need to expose this
 'option' more clearly somehow, but still keep our 0 rule".
 
-Amended by [ADR-208](adr-208-clip-outliers-fences-a-spike-and-0-joins-min-max.md):
-Start axis at 0 is now Always include 0 in the Set min/max score dialog.
+Amended by [ADR-208](adr-208-clip-outliers-fences-a-spike-and-one-y-axis-drawer-holds-the-scale.md):
+Start axis at 0 is now Include 0 in the Y axis drawer widget.
 
 ## Context
 

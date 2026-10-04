@@ -10,7 +10,7 @@ summary: "A bar whose value the y domain excludes is clamped to the axis edge, a
 Accepted (2026-09-27). Colin: "the red clip is fine with me", from a
 three-way capture of the coverage band over a collapsed-repeat pile-up.
 
-Amended by [ADR-208](adr-208-clip-outliers-fences-a-spike-and-0-joins-min-max.md):
+Amended by [ADR-208](adr-208-clip-outliers-fences-a-spike-and-one-y-axis-drawer-holds-the-scale.md):
 a default wiggle plot strips only the bars past the outlier fence.
 
 ## Context

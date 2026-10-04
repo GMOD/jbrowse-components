@@ -330,7 +330,7 @@ The track menu's **Sashimi arcs** submenu controls them:
 
 Turn the arcs off from the same submenu. See the
 [RNA-seq tutorial](/docs/tutorials/rnaseq). When one junction peak dominates the
-coverage histogram, **Coverage → Scale type → Log scale** keeps the shallower
+coverage histogram, **Coverage axis... → Scale → Log** keeps the shallower
 junctions visible.
 
 <Figure caption="Sashimi arcs over B2M RNA-seq alignments with per-junction read-support labels enabled and the coverage histogram on a log scale, so the deep junction peak doesn't flatten the rest." src="/img/alignments_track_arcs.png" />

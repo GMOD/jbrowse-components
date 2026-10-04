@@ -207,7 +207,7 @@ export function getNiceDomain({
   }
 
   // Rounding is for an autoscaled end, whose only meaning is "roughly the
-  // data's extent". A bound the user typed into Set min/max score means itself,
+  // data's extent". A bound the user typed into the Y axis panel means itself,
   // and the menu row goes on displaying it, so it is taken as given.
   //
   // `min`/`max` rather than `minScore`/`maxScore`: the log guards above may

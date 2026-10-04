@@ -142,7 +142,7 @@ duplication the census found is cleanup alongside:
 - **The holdouts the grammar doc names.** Hi-C keeps `HicColor`, and its "Log
   scale" and "Emphasize faint contacts" toggles
   (`plugins/hic/src/LinearHicDisplay/trackMenuItems.ts:127-137`) re-implement
-  the Score menu's Scale type and Clip outliers on `color`. LD has no colour
+  the Y axis panel's Scale and Clip extreme outliers on `color`. LD has no colour
   object (R² through reds, D′ through blues). MAF keeps `MafColor`, and the
   coverage band alignments-core draws for both displays reads `scales.y` only
   under alignments.

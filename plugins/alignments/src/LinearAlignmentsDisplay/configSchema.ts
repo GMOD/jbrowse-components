@@ -228,9 +228,10 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * `arcBandYScale`. `symlogConstant` starts at 1 rather than the wiggle
        * family's 0, which makes symlog exactly `log(depth+1)`: the knee sits at
        * one read, the smallest depth there is. `domainQuantile` stays at 1, the
-       * deepest base in view: 0.99, which Clip outliers writes, cuts the
-       * tallest stretch of even flat coverage in every view, and misses a
-       * collapsed-repeat pile-up once it covers more than 1% of the view.
+       * deepest base in view; the Coverage axis panel's Clip extreme outliers
+       * writes 0.99, which stops the axis at twice the 99th percentile of the
+       * covered bins' peaks, and misses a collapsed-repeat pile-up once it
+       * covers more than 1% of the view.
        */
       scales: scalesSchema(
         valueScaleSchema({

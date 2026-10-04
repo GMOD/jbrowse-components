@@ -125,7 +125,7 @@ slots.
 
 Opening the assembly with no location shows all of its regions at once, so the
 display lays the autosomes out side by side. The red line is a reference line on
-the axis; **Score → Reference lines...** adds one to a track already open.
+the axis; **Y axis... → Reference lines** adds one to a track already open.
 
 Rerunning the same script over one region rebins it, which is the lower half of
 the figure below: the same panel and the same estimator at 20 kb over two

@@ -28,41 +28,52 @@ offers these styles:
 
 **Plot type** and **Resolution** are top-level track menu items. Resolution
 steps how many points per pixel a BigWig is read at, finer or coarser than one
-per pixel. The rest of the settings below are grouped under **Score**.
+per pixel, and holds **Summary score mode** beneath the stepper.
 
-### Clip outliers
+### The Y axis panel
 
-The Y-axis range follows the region in view, and this checkbox (the display's
-[`scales.y.domainQuantile`](/docs/config/valuescale/#slot-scalesydomainquantile)
-slot) decides whether one anomalous position may take the whole axis. Ticked,
-the default, the axis still runs to the min and max in view unless a value would
-stretch it past twice the height the other 99% of values need; that end stops
-there instead. Unticked, the axis always runs to the plain min and max. A config
-takes any quantile, `0.95` for a tighter fence. A bar past the fence wears a 2
-px red strip across the edge that cut it, on this plot, the alignments coverage
-band and a bar plot alike, so a collapsed repeat's pile-up does not read as one
-more bar touching the top, and a plot with no spike shows no strip.
+**Y axis...** opens the track's axis settings in the side drawer, beside the
+view. Every change redraws the track as you make it, and **Reset to defaults**
+returns to what the track's configuration says. The row's label names a pinned
+end and a non-linear scale, such as **Y axis (190 – auto, log)...**, so the
+setting shows without opening it. On an alignments track the row is **Coverage
+axis...**, and on a density plot, which maps score to colour, **Score
+range...**.
 
-### Set min/max score
+- **Scale** - linear, log or symlog; symlog admits zero and negative scores.
+- **Min** and **Max** pin either end of the axis
+  ([`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin)); a
+  field left empty follows the data in view, and the values in view are shown
+  beneath them. A bar past a pinned end is cut at the edge with a red strip, so
+  typing a min above a dip zooms onto the rest.
+- **Include 0** ([`scales.y.zero`](/docs/config/valuescale/#slot-scalesyzero)),
+  ticked by default, extends an empty end to 0, so a bar always shows its whole
+  height. Unticked, the axis spans the lowest to highest value in view, so a GC
+  track whose region holds 30 to 60% draws 30 to 60. Values that already reach
+  or cross 0 draw the same either way.
+- **Clip extreme outliers**
+  ([`scales.y.domainQuantile`](/docs/config/valuescale/#slot-scalesydomainquantile)),
+  ticked by default, keeps one spike from flattening the rest. The axis runs to
+  the lowest and highest value in view unless one would stretch it past twice
+  the height the other 99% of values need; that end stops there, and the bars
+  past it wear a 2 px red strip. A plot with no spike shows no strip. A config
+  takes any quantile, `0.95` for a tighter fence.
+- **Share axis with** ticks the other tracks in the view that share this one's
+  axis, which then autoscales over all of their data as you pan and zoom
+  ([`scales.y.autoscaleGroup`](/docs/config/valuescale/#slot-scalesyautoscalegroup)).
+  A coverage band, a mark display and a Manhattan plot take the same group.
+- **Grid lines** rule the plot at every tick, and **Reference lines** draw a
+  dashed line at each value you add, each with an optional label and colour.
 
-**Set min/max score** pins either end of the Y axis; a field left empty follows
-the data in view. The dialog shows the values in view and the axis drawn from
-them, which together say what the settings below can still move.
-
-**Always include 0** (the display's
-[`scales.y.zero`](/docs/config/valuescale/#slot-scalesyzero) slot), ticked by
-default, extends an empty end to 0, so a bar always shows its whole height and a
-GC track reads from 0 where the region holds 30 to 60%. Unticked, the axis spans
-the values in view, and the menu row reads **Set min/max score (spans data)**.
-Values that already reach or cross 0 look the same either way. The box greys out
-when both ends are pinned or the scale is log, which has no 0, and Density mode,
-which maps score to colour, does not offer it.
+Include 0 and Clip extreme outliers move only an end left empty, so both grey
+out once Min and Max are both set; Include 0 also greys out on a log axis, which
+has no 0. Density mode offers neither Include 0 nor the guides.
 
 ### Summary score mode
 
-Zoomed out, a BigWig serves precomputed summary bins, and **Summary score mode**
-picks which statistic a pixel draws: **Minimum**, **Maximum**, **Average**, or
-**Whiskers**
+Zoomed out, a BigWig serves precomputed summary bins, and **Resolution → Summary
+score mode** picks which statistic a pixel draws: **Minimum**, **Maximum**,
+**Average**, or **Whiskers**
 ([`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode)).
 Whiskers shows all three. An XY plot nests a darker average bar inside the
 lighter min-to-max range. A line plot fills min to max as a translucent band
@@ -71,19 +82,6 @@ draws the average, since it maps score to color.
 
 A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 **Maximum** keeps it visible.
-
-### Other score options
-
-- Scale type - linear, log or symlog Y axis; symlog admits zero and negative
-  scores
-- Set min/max score - pins the Y axis, for comparison across samples
-- Autoscale with other tracks - ticks the other tracks in the view that share
-  this one's Y axis, which then autoscales over all of their data as you pan and
-  zoom
-  ([`scales.y.autoscaleGroup`](/docs/config/valuescale/#slot-scalesyautoscalegroup)).
-  A coverage band, a mark display and a Manhattan plot take the same group
-- Reference lines - a dashed line across the plot at each value you name, each
-  with an optional label and colour
 
 ### Colors
 
@@ -115,9 +113,9 @@ Each row keeps the colour its subtrack was configured with. Sources sharing one
 plot box take a palette entry each instead, so the overlaid plots can be told
 apart.
 
-An outlier on one signal can blow out the shared Y axis. **Clip outliers** stops
-the axis short of a spike that would flatten the other rows, or pin the min and
-max from the track menu.
+An outlier on one signal can blow out the shared Y axis. **Clip extreme
+outliers** in the **Y axis...** panel stops the axis short of a spike that would
+flatten the other rows, or pin the min and max there.
 
 <Figure caption="Twelve per-cell-type BigWigs from a 5k PBMC scATAC dataset as one multi-quantitative track, over CD8A and MS4A1 in one discontinuous view. The CD8, MAIT and NK rows have signal at CD8A and the two B rows at MS4A1, on one shared scale." src="/img/scatac/pbmc5k_marker_swap.png" />
 
@@ -187,8 +185,8 @@ For a chromosome-scale view of copy-number changes:
 
 - Open the BigWig track
 - Show all regions in the assembly
-- Leave **Clip outliers** ticked in the **Score** menu, so the repeat spikes
-  stay off the axis
+- Leave **Clip extreme outliers** ticked in the **Y axis...** panel, so the
+  repeat spikes stay off the axis
 - Increase the **Resolution** until the profile looks smooth
 - Drag the bottom edge of the track down to make it taller
 

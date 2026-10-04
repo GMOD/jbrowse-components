@@ -78,11 +78,10 @@ mappability and problematic-region lanes for hg38 only:
 - **Multi-read mappability - Umap M100**, the fraction of overlapping 100-mers
   at each position that are unique in the genome, computed from the reference
   alone. The file omits positions with no unique 100-mer, so the lane goes blank
-  there. Set **Score → Summary score mode → Minimum**, which draws the worst
-  position in each bin, and pin the axis at 0 to 1 with **Score → Set min/max
-  score...**. In the 2.5 Mb frame, at about a kilobase per pixel, even
-  **Minimum** sits on the floor everywhere, so read this lane in the narrower
-  read view.
+  there. Set **Resolution → Summary score mode → Minimum**, which draws the
+  worst position in each bin, and pin the axis at 0 to 1 with **Y axis... →
+  Range**. In the 2.5 Mb frame, at about a kilobase per pixel, even **Minimum**
+  sits on the floor everywhere, so read this lane in the narrower read view.
 - **gnomAD v3 Genome Coverage - Mean Coverage**, averaged over tens of thousands
   of genomes. gnomAD drops reads that do not place uniquely before averaging, so
   this lane falls wherever the Umap lane is blank.

@@ -6,15 +6,15 @@ sidebar_label: Mixin -> ScoreScaleMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts).
 
-#crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+#crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the Y axis row and its drawer widget consume
 
 The value scale of every quantitative display: wiggle, the alignments
 coverage band and the mark display, Manhattan among them, each declare
 `scales.y` through valueScaleSchema and compose this. It backs
 ScoreAxisMixin's three overridable members off that object and adds
 the setters that write it, so composing this is how a display satisfies
-ScoreScaleModel in `scoreMenuItems.ts` — the interface the shared
-Score menu, the scale and autoscale submenus and `SetMinMaxDialog` consume.
+ScoreScaleModel in `scoreMenuItems.ts` — the interface the Y axis
+row and its drawer widget consume.
 
 Deliberately just the scale and the guides it owns. Colors, `resolution`
 and the autoscale *computation* stay in `WiggleScoreConfigMixin` /
@@ -38,7 +38,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | ScoreScaleMixin |
 | <span id="getter-scalezero">**scaleZero**</span><br><code>boolean</code> | `scales.y.zero`: whether an autoscaled linear or symlog axis reaches 0. | ScoreScaleMixin |
 | <span id="getter-domainquantile">**domainQuantile**</span><br><code>number</code> | `scales.y.domainQuantile`: what an unpinned end follows, 1 the extremes and below it that quantile of each sign. | ScoreScaleMixin |
-| <span id="getter-clipquantile">**clipQuantile**</span><br><code>number</code> | The quantile "Clip outliers" clips at: the one an untick this session wrote over, else the scale's own default where that is below 1, else 0.99. | ScoreScaleMixin |
+| <span id="getter-clipquantile">**clipQuantile**</span><br><code>number</code> | The quantile "Clip extreme outliers" fences at: the one an untick this session wrote over, else the scale's own default where that is below 1, else 0.99. | ScoreScaleMixin |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known. | ScoreScaleMixin |
 | <span id="getter-manualminscore">**manualMinScore**</span><br><code>number &#124; undefined</code> | The lower bound the config pins, `undefined` where it pins none. | ScoreScaleMixin |
 | <span id="getter-manualmaxscore">**manualMaxScore**</span><br><code>number &#124; undefined</code> | The upper bound the config pins, `undefined` where it pins none. | ScoreScaleMixin |
@@ -47,7 +47,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-scaletitle">**scaleTitle**</span><br><code>string</code> | `scales.y.title`, `''` while unset | ScoreScaleMixin |
 | <span id="getter-grid">**grid**</span><br><code>boolean</code> | `scales.y.grid` | ScoreScaleMixin |
 | <span id="getter-minimalticks">**minimalTicks**</span><br><code>boolean</code> | `scales.y.minimalTicks` | ScoreScaleMixin |
-| <span id="getter-scorerulesdrawn">**scoreRulesDrawn**</span><br><code>boolean</code> | Whether this display draws `scales.y.rules`, which is whether the score menu offers the reference lines: a scale it places y through rules a band for them to cross, which a density plot's colour-mapped rows and a colour ramp do not. | ScoreScaleMixin |
+| <span id="getter-scorerulesdrawn">**scoreRulesDrawn**</span><br><code>boolean</code> | Whether this display draws `scales.y.rules`, which is whether the Y axis panel offers Include 0 and the reference lines: a scale it places y through rules a band for them to cross, which a density plot's colour-mapped rows and a colour ramp do not. | ScoreScaleMixin |
 | <span id="getter-scorerules">**scoreRules**</span><br><code>ValueScaleRule[]</code> | `scales.y.rules`, read off the live nodes: a snapshot strips a slot at its default, and a rule at 0 is one. | ScoreScaleMixin |
 | <span id="getter-defaultscoredomain">**defaultScoreDomain**</span><br><code>[number &#124; undefined, number &#124; undefined]</code> | <span data-pagefind-ignore>Overridable hook: what each end of the domain falls back to where the config leaves its bound unset. `[undefined, undefined]` — the default — means autoscale both ends, which is right for a track whose scores have no absolute meaning (a bigwig's units are its own).<br><br>A display whose scores are bounded *by construction* overrides it, so the axis stops being a function of what happens to be on screen: GC content is a fraction, so 0 and 1 are its real limits and mean the same thing at every locus. Autoscaled, the same GC value drew at different heights depending on where the user had panned, and the track could not be read across loci.<br><br>A hook rather than a config default because the answer can depend on the data — the wiggle display reads the bounds its adapter declares, a GC content track's [0, 1] — and rather than each display re-resolving the sentinels, which is the one thing that must not be duplicated: config bounds still win, precisely because they are checked before this is consulted.</span> | [ScoreAxisMixin](../scoreaxismixin#getter-defaultscoredomain) |
 | <span id="getter-valuescales">**valueScales**</span><br><code>ValueScale[]</code> | <span data-pagefind-ignore>Overridable hook (default none): the scales this display draws its y through. A display that answers it gets an axis per band of each, with its cross-hatches, placed by `DisplayChrome` and `renderDisplaySvg`, and the ticks derived below.</span> | [ScoreAxisMixin](../scoreaxismixin#getter-valuescales) |

@@ -159,8 +159,8 @@ export function valueScaleSchema({
       /**
        * #slot scales.y.domainMin
        * The bottom of the axis, pinning what would otherwise autoscale to the
-       * loaded regions. Unset autoscales that end. The score menu's "Set
-       * min/max" writes here.
+       * loaded regions. Unset autoscales that end. The Y axis panel's Min
+       * field writes here.
        */
       domainMin: {
         type: 'maybeNumber',
@@ -182,8 +182,7 @@ export function valueScaleSchema({
        * Off, the axis spans the values alone. A pinned end is unmoved either
        * way, a log axis has no 0, and a density plot, which maps score to
        * colour and has no axis, spans its values whatever this says.
-       * "Always include 0" in the score menu's "Set min/max score" dialog
-       * toggles it.
+       * The Y axis panel's "Include 0" toggles it.
        */
       zero: {
         type: 'boolean',
@@ -196,8 +195,8 @@ export function valueScaleSchema({
        * A name shared by the tracks whose axes autoscale together: each
        * unpinned end spans the data of every track in the view naming the
        * same group, so three coverage lanes stay comparable as the view
-       * moves. A pinned end stays this track's own. The score menu's
-       * "Autoscale with other tracks" writes it.
+       * moves. A pinned end stays this track's own. The Y axis panel's
+       * "Share axis with" writes it.
        */
       autoscaleGroup: {
         type: 'maybeString',
@@ -228,7 +227,7 @@ export function valueScaleSchema({
        * of 0, so a sparse minority tail stays visible, and the span includes 0
        * where `zero` reaches it. A colour ramp's `domainQuantile` clips at the
        * quantile itself, since a saturated colour hides nothing its key does
-       * not say. The score menu's "Clip outliers" toggles it.
+       * not say. The Y axis panel's "Clip extreme outliers" toggles it.
        */
       domainQuantile: {
         type: 'number',
@@ -239,8 +238,8 @@ export function valueScaleSchema({
       /**
        * #slot scales.y.grid
        * Rule the plot across at every tick, ggplot2's panel grid and
-       * Vega-Lite's `axis.grid`. The score menu's "Show cross hatches"
-       * toggles it.
+       * Vega-Lite's `axis.grid`. The Y axis panel's "Grid lines" toggles
+       * it.
        */
       grid: {
         type: 'boolean',

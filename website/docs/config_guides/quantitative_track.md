@@ -66,8 +66,8 @@ or `domainMax` that excludes a rule drops it. A label is free text: JBrowse
 assumes no ploidy, so "2 copies" is the author's claim. The `density` rendering
 draws no rules, having no axis to rule.
 
-A reader adds the same lines without a config file: the track menu's score
-submenu opens **Reference lines**, which writes this list.
+A reader adds the same lines without a config file: **Reference lines** in the
+track menu's **Y axis...** panel writes this list.
 
 ## Colors
 

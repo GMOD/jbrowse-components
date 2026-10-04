@@ -276,8 +276,8 @@ the middle of each:
 
 The K562 track uses
 `https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig`.
-On an eigenvector track already open, **Score → Set min/max score...** writes
-the same two ends. Open both eigenvector tracks over _EBF1_ on chr5:
+On an eigenvector track already open, **Y axis... → Range** writes the same two
+ends. Open both eigenvector tracks over _EBF1_ on chr5:
 
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1 is in opposite compartments in the two lines while the frame edges agree." links="Open this view=hic/compartment_switch" />
 

@@ -22,13 +22,13 @@ test('a row height is the shared Row height menu, with each display its presets'
   )
 })
 
-test('an autoscale group is the score menu of the display it is on', () => {
+test('an autoscale group is the axis widget of the display it is on', () => {
   expect(
     scalePaths({ y: { autoscaleGroup: 'depth' } }, 'LinearAlignmentsDisplay'),
-  ).toEqual(['Track menu → Coverage → Autoscale with other tracks...'])
+  ).toEqual(['Track menu → Coverage axis... → Share axis with'])
   expect(
     scalePaths({ y: { autoscaleGroup: 'depth' } }, 'LinearWiggleDisplay'),
-  ).toEqual(['Track menu → Score → Autoscale with other tracks...'])
+  ).toEqual(['Track menu → Y axis... → Share axis with'])
 })
 
 test('clustering over a narrower window names that window in its step', () => {

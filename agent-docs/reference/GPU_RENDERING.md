@@ -80,7 +80,7 @@ walks this checklist; keep it in step with any change here.
   via the render-prop child `({ canvasRef }) => <canvas ref={canvasRef} />`.
 - **Wiggle-style displays** — compose `stateModelFactory` from the
   `LinearWiggleDisplay/stateModel` subpath, or only `WiggleScoreConfigMixin` +
-  `makeScoreSubMenu` and `ScorePlotChrome`. A zoom-independent display needs no
+  `makeScoreAxisMenuItem` and `ScorePlotChrome`. A zoom-independent display needs no
   cache override: the adapter's `zoomRange` is the zoom rule (ADR-125).
 - **Tests** — unit (`MockHal`); browser (Puppeteer,
   `--backend=webgl|webgpu|canvas2d`).

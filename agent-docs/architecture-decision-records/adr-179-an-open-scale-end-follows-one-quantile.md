@@ -11,7 +11,7 @@ Accepted (2026-09-26). Colin: "numStdDev is kind of a funky historical
 thing. if there is more standard approach from ggplot2 or other grammars we
 should use that", after asking for a holistic pass over the grammar.
 
-Amended by [ADR-208](adr-208-clip-outliers-fences-a-spike-and-0-joins-min-max.md):
+Amended by [ADR-208](adr-208-clip-outliers-fences-a-spike-and-one-y-axis-drawer-holds-the-scale.md):
 below 1, `scales.y`'s quantile fences the extremes rather than replacing them.
 
 ## Context

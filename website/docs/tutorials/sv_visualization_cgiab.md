@@ -520,9 +520,9 @@ drawn as points, the **Scatter** plot type:
 ```
 
 The callset comparisons draw the same track with **Plot type → XY plot** and a
-fixed axis from **Score → Set min/max score...**, so a halving reads as a level.
-Open `chr9:21,850,000-23,050,000`, around _CDKN2A_, with the depth above the
-four published CNV callsets:
+fixed axis from **Y axis... → Range**, so a halving reads as a level. Open
+`chr9:21,850,000-23,050,000`, around _CDKN2A_, with the depth above the four
+published CNV callsets:
 
 <Figure caption="Four published CNV callsets over chr9p21.3, with the HiFiCNV depth above them. Depth drops out over CDKN2A, where the benchmark and NYGC both have a focal call and the two coarser segmentations run straight through." src="/img/sv_cgiab/cnv_callset_comparison.png" />
 
@@ -723,9 +723,8 @@ each `uri` for your sample's bigWig:
 ```
 
 **Plot type → Overlapping → Scatter** in its track menu draws the two samples as
-points in one band, tumor red and normal blue, and **Score → Set min/max
-score...** with 0 and 3 stops indexcov's centromere spikes from flattening every
-plateau.
+points in one band, tumor red and normal blue, and **Y axis... → Range** with 0
+and 3 stops indexcov's centromere spikes from flattening every plateau.
 
 Zoom to a region and open the benchmark CNV BED. Coverage shows where the copy
 number steps, and the BAF track shows the allelic balance across each step.

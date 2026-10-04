@@ -153,6 +153,19 @@ unless `nice: false` says it is already the one being drawn with.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
 
+## registerScoreAxisWidget
+
+Registers the drawer widget the quantitative tracks' "Y axis..." row opens.
+The wiggle plugin calls it once; alignments and the mark display open it by
+name.
+
+```js
+// type signature
+(pluginManager: PluginManager) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreAxisWidget/index.ts)
+
 ## resolveSymlogConstant
 
 The symlog constant actually used for a domain. `0` (the config default)

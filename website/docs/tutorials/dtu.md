@@ -269,10 +269,10 @@ Add the four coverage lanes below and open them with the transcript track at
 strand, so the two plus-strand lanes carry its reads. satuRn used no genomic
 coordinates, so the coverage lanes are an independent check on the color.
 
-Each coverage lane scales to its peak until the lanes share an axis. **Score →
-Autoscale with other tracks...** on one lane, with the other ticked, gives both
-one axis that follows the view, so the two tissues compare by height. In a
-config, each track names the same group:
+Each coverage lane scales to its peak until the lanes share an axis. **Y axis...
+→ Share axis with** on one lane, with the other ticked, gives both one axis that
+follows the view, so the two tissues compare by height. In a config, each track
+names the same group:
 
 ```json addtrack
 {

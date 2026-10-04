@@ -38,15 +38,15 @@ const confNode = (self: object) => self as ScoreScaleHost
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+ * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the Y axis row and its drawer widget consume
  *
  * The value scale of every quantitative display: wiggle, the alignments
  * coverage band and the mark display, Manhattan among them, each declare
  * `scales.y` through {@link valueScaleSchema} and compose this. It backs
  * {@link ScoreAxisMixin}'s three overridable members off that object and adds
  * the setters that write it, so composing this is how a display satisfies
- * {@link ScoreScaleModel} in `scoreMenuItems.ts` — the interface the shared
- * Score menu, the scale and autoscale submenus and `SetMinMaxDialog` consume.
+ * {@link ScoreScaleModel} in `scoreMenuItems.ts` — the interface the Y axis
+ * row and its drawer widget consume.
  *
  * Deliberately just the scale and the guides it owns. Colors, `resolution`
  * and the autoscale *computation* stay in `WiggleScoreConfigMixin` /
@@ -83,7 +83,7 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
-       * The quantile "Clip outliers" clips at: the one an untick this session
+       * The quantile "Clip extreme outliers" fences at: the one an untick this session
        * wrote over, else the scale's own default where that is below 1, else
        * 0.99.
        */
@@ -170,7 +170,7 @@ export function ScoreScaleMixin() {
       /**
        * #getter
        * Whether this display draws `scales.y.rules`, which is whether the
-       * score menu offers the reference lines: a scale it places y through
+       * Y axis panel offers Include 0 and the reference lines: a scale it places y through
        * rules a band for them to cross, which a density plot's colour-mapped
        * rows and a colour ramp do not.
        */

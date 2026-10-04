@@ -33,7 +33,6 @@ repeatKey
 repeatTrackId
 rowColor
 rows
-scales
 showAlignment
 showBranchLength
 showGridlines

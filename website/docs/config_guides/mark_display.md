@@ -159,8 +159,8 @@ which declares it once as `scales.y`:
 from zero and stays linear through it, so values reaching or crossing 0 keep
 their place; `symlogConstant` sets how wide that linear region is. An end left
 unset autoscales over the loaded regions, and `autoscale` chooses how it is
-taken. The axis, its ticks, its cross-hatches and the bars read this one
-declaration, and so does **Set min/max score...**.
+taken. The axis, its ticks, its grid lines and the bars read this one
+declaration, and so does the **Y axis...** panel.
 
 Every mark drawing at the current zoom folds into that one domain, the way a
 grammar of graphics gives one scale per aesthetic. With a multiscale pair
@@ -169,7 +169,7 @@ grammar of graphics gives one scale per aesthetic. With a multiscale pair
 `autoscaleGroup` shares the axis across tracks: every track in the view naming
 the same group autoscales over all of their data, so a plot and a wiggle or
 coverage track stay comparable as the view moves. An end one track pins stays
-its own. The score menu's **Autoscale with other tracks...** writes it.
+its own. **Share axis with** in the **Y axis...** panel writes it.
 
 ### Reference lines and the axis title
 
@@ -1032,13 +1032,13 @@ can; Apply refuses only what a config file is refused for.
 With no `marks` at all a display plots `score` as bars, links a record to the
 other end it names, or opens the dialog where the fields say neither.
 
-The score submenu writes `scales.y` through **Set min/max score...**, whose
-dialog also fills both fields from the range on screen or empties them back to
-autoscale. Beside it, **Point size**, **Show cross hatches**, the legend toggle,
-and **Filter by...**, whose jexl runs in the worker before the encoding, so a
-filtered feature is neither drawn nor in the axis. Hovering a mark shows its
-location, value and colour class; clicking opens the feature, and clicking a
-binned or coverage bar opens the bin remade over the features under it.
+The **Y axis...** row opens the panel that writes `scales.y` as you change it:
+scale type, min and max, Include 0, outlier clipping, grid lines and reference
+lines. Beside it, **Point size**, the legend toggle, and **Filter by...**, whose
+jexl runs in the worker before the encoding, so a filtered feature is neither
+drawn nor in the axis. Hovering a mark shows its location, value and colour
+class; clicking opens the feature, and clicking a binned or coverage bar opens
+the bin remade over the features under it.
 
 The full slot list is the
 [LinearMarkDisplay config reference](/docs/config/linearmarkdisplay); how the
