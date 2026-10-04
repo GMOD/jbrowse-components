@@ -159,12 +159,15 @@ function getOrderedGenotypeCodes(cellData: CellDataResult) {
 // Warn about both arrangement attributes at once, from the three actions that
 // can newly pair one with a source list: the load, and each setter.
 function warnUnknownArrangementAttributes(
-  self: { rowColorField: string; facet: FacetSetting | undefined },
+  self: { rowColorAttribute: string; facet: FacetSetting | undefined },
   sources: Source[],
 ) {
-  const { rowColorField } = self
-  if (rowColorField && !sources.some(source => rowColorField in source)) {
-    warnMissingAttribute('rowColor', rowColorField, sources)
+  const { rowColorAttribute } = self
+  if (
+    rowColorAttribute &&
+    !sources.some(source => rowColorAttribute in source)
+  ) {
+    warnMissingAttribute('rowColor', rowColorAttribute, sources)
   }
   const field = self.facet?.field
   if (field && !sources.some(source => field in source)) {
@@ -561,17 +564,6 @@ export default function MultiSampleVariantBaseModelF(
           return getConf(self, 'showTooltips')
         },
 
-        /**
-         * #getter
-         * The sample-metadata attribute the rows are tinted by: `rowColor.field`
-         * while it paints and names one, '' while it names `name`, the rows
-         * themselves, or sits under `scale: 'none'`. Drives the sidebar row
-         * coloring and the legend's group section.
-         */
-        get rowColorField(): string {
-          const { field, scale } = self.rowColorSetting
-          return field === 'name' || scale === 'none' ? '' : field
-        },
         /**
          * #getter
          * The `facet` object as written: the sample-metadata attribute whose

@@ -193,8 +193,9 @@ since the cells paint by genotype. `setRowColorField` writes the object through
 keeping the attribute, and `name` is each row its own. The menu's Samples group
 and the arrangement dialog offer the same choices (`rowColorChoice`), and under
 an attribute the dialog edits each value's colour, never a row's (ADR-164). A
-reset returns `rowColor` only where its `name` pairs differ from the config's,
-so over a config setting no row colour a Color by survives it and a mode switch.
+reset returns `rowColor` by tree-sidebar's `rowColorResetTarget`, so over a
+config setting no row colour a Color by survives it and a mode switch. The
+missing-attribute warning reads the mixin's `rowColorAttribute`.
 The flip ADR-160 names puts the row's own colour ahead of the palette here too.
 
 **The `facet` bands win over a cluster tree** (tree-sidebar's "A tree per

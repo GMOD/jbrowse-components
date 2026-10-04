@@ -286,6 +286,14 @@ export default function stateModelFactory(
       get sharesPanel(): boolean {
         return self.isOverlay && self.discoveredRows.length > 1
       },
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s hook: the row colour key over a shared panel
+       * lists subtracks.
+       */
+      get rowNoun(): string {
+        return 'Subtrack'
+      },
     }))
     .views(self => ({
       /**

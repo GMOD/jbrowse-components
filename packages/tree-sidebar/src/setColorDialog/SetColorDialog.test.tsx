@@ -4,9 +4,15 @@ import React from 'react'
 
 import { fireEvent, render, screen, within } from '@testing-library/react'
 
+import {
+  liftRowColor,
+  rowColorChoiceOf,
+  rowColorChoiceSetting,
+} from '../rowColorChoice.ts'
 import SetColorDialog from './SetColorDialog.tsx'
 
-import type { RowColorSetting } from '../TreeSidebarMixin.ts'
+import type { RowColorSnapshot } from '../rowColorChoice.ts'
+import type { RowColorSetting } from '../rowColorScale.ts'
 import type { TreeLayoutModel } from './SetColorDialog.tsx'
 
 interface Src {
@@ -21,7 +27,8 @@ const PALETTE = ['#111111', '#222222', '#333333']
 // A deal of each value of the setting's field, its listed values taking their
 // range colour, the rest the palette in first-seen order.
 function previewOf(rows: Src[]) {
-  return (setting: RowColorSetting) => {
+  return (snapshot: RowColorSnapshot) => {
+    const setting = liftRowColor(snapshot)
     const colors = new Map<string, string>()
     setting.domain.forEach((value, i) => colors.set(value, setting.range[i]!))
     let next = 0
@@ -49,6 +56,7 @@ function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
     domain: [],
     range: [],
   }
+  const rowPaletteDeals = overrides.rowPaletteDeals ?? true
   return {
     editableSources,
     dialogSources: editableSources,
@@ -56,12 +64,13 @@ function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
     resetRowArrangement: jest.fn(),
     rowOrderWillDropTree: jest.fn(() => false),
     rowColorSetting,
-    rowColorChoice:
-      rowColorSetting.scale === 'none' ? '' : rowColorSetting.field,
-    rowPaletteDeals: true,
+    rowColorChoice: rowColorChoiceOf(rowColorSetting, rowPaletteDeals),
+    rowPaletteDeals,
     internalRowFields: [],
     rowColorFields: [],
     rowColorsFor: previewOf(editableSources),
+    rowColorChoiceSetting: (choice: string, pairs?: Record<string, string>) =>
+      rowColorChoiceSetting(rowColorSetting, rowPaletteDeals, choice, pairs),
     ...overrides,
   }
 }
@@ -236,11 +245,7 @@ describe('colored by an attribute', () => {
 
     fireEvent.click(screen.getByText('Reset Group colors'))
     fireEvent.click(screen.getByText('Submit'))
-    expect(submitted(model)[1]).toEqual({
-      field: 'group',
-      domain: [],
-      range: [],
-    })
+    expect(submitted(model)[1]).toEqual({ field: 'group' })
   })
 
   test('None writes the rows with no palette, the attribute gone', () => {
@@ -270,12 +275,7 @@ describe('colored by an attribute', () => {
     fireEvent.click(screen.getByText('Reset Group colors'))
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({
-      field: 'group',
-      domain: [],
-      range: [],
-      unknown: '',
-    })
+    expect(submitted(model)[1]).toEqual({ field: 'group', unknown: '' })
   })
 })
 
@@ -496,4 +496,54 @@ test('showRows false drops the row choice, the grid and the bulk editor', () => 
   expect(screen.queryByText('Color rows by')).toBeNull()
   expect(screen.queryByText('Bulk row editor')).toBeNull()
   expect(screen.queryByRole('grid')).toBeNull()
+})
+
+// A stacked display's config can paint the listed rows and grey the rest
+// (`unknown: '#ccc'`); the dialog shows that as None, since no palette deals,
+// and a touched None keeps the grey.
+test('None on a stacked display keeps the grey its config sets', () => {
+  const model = fakeModel({
+    rowColorSetting: {
+      field: 'name',
+      scale: undefined,
+      domain: ['a'],
+      range: ['#f00'],
+      unknown: '#cccccc',
+    },
+    rowPaletteDeals: false,
+  })
+  setup(model)
+
+  expect(screen.getByRole('button', { name: 'None' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  fireEvent.click(screen.getByText('Clear row colors'))
+  fireEvent.click(screen.getByText('Submit'))
+
+  expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '#cccccc' })
+})
+
+test('the value table lists the values in the order the key does', () => {
+  const model = fakeModel({
+    editableSources: [
+      { name: 'a', group: 'g1' },
+      { name: 'b', group: 'g2' },
+      { name: 'c', group: 'g2' },
+      { name: 'd' },
+    ],
+    rowColorFields: ['group'],
+    rowColorSetting: {
+      field: 'group',
+      scale: undefined,
+      domain: ['g2'],
+      range: ['#abcdef'],
+    },
+  })
+  setup(model)
+
+  const values = within(screen.getByTestId('row-color-values'))
+  expect(
+    values.getAllByText(/^g\d$|^\(no value\)$/).map(e => e.textContent),
+  ).toEqual(['g2', 'g1', '(no value)'])
 })

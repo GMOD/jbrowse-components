@@ -29,7 +29,7 @@ describe('multi-sample variant colorBy', () => {
     model.setSources(sources)
     model.setRowColorField('population')
 
-    expect(model.rowColorField).toBe('population')
+    expect(model.rowColorAttribute).toBe('population')
     expect(readConfObject(model.configuration, ['rowColor', 'field'])).toBe(
       'population',
     )
@@ -62,7 +62,7 @@ describe('multi-sample variant colorBy', () => {
     model.setRowColorField('population')
     model.setRowColorField('')
 
-    expect(model.rowColorField).toBe('')
+    expect(model.rowColorAttribute).toBe('')
     expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
     expect(model.sources.some(s => s.rowColor)).toBe(false)
   })

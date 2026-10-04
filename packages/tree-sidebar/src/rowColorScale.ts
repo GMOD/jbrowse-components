@@ -7,12 +7,16 @@ import type { RowAlias } from './arrangeRows.ts'
 import type { RowSource } from './types.ts'
 import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
 
-/** What `dealtValueColors` reads of a `rowColor` object. */
-export interface RowColorDealSetting {
+/**
+ * The `rowColor` object as read: the row attribute whose values take the
+ * colours, `name` for the rows themselves, the scale, the values paired with
+ * a colour, and what an unpaired value takes.
+ */
+export interface RowColorSetting {
   field: string
+  scale: 'none' | 'categorical' | undefined
   domain: readonly string[]
   range: readonly string[]
-  scale?: string
   unknown?: string
 }
 
@@ -30,7 +34,7 @@ const NONE: ReadonlyMap<string, string> = new Map()
  * the pairs paint, so a reorder deals nothing again.
  */
 export function dealtValueColors(
-  setting: RowColorDealSetting,
+  setting: RowColorSetting,
   rowsOf: () => readonly RowSource[],
   namesDeal: boolean,
 ): ReadonlyMap<string, string> {
@@ -40,7 +44,7 @@ export function dealtValueColors(
   }
   if (field === 'name') {
     return dealRowColors(
-      namesDeal || unknown !== undefined
+      namesDeal || (unknown !== undefined && unknown !== '')
         ? rowsOf()
             .filter(row => row.color === undefined)
             .map(row => row.name)
@@ -127,7 +131,7 @@ const OTHER_VALUE = '\u0000other'
 
 /** What the row colour key reads: the setting and the colours it resolved. */
 export interface RowColorKeyInputs {
-  setting: RowColorDealSetting
+  setting: RowColorSetting
   pairs: ReadonlyMap<string, string>
   dealt: ReadonlyMap<string, string>
   resolved: ReadonlyMap<string, string>

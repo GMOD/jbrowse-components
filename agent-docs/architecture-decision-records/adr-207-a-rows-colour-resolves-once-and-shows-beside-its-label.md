@@ -79,3 +79,24 @@ grammar rather than from what shipped.
   would write every species' colour as a pair.
 - **No palette under `name` spelled as `scale: 'none'`**: `none` parks the pairs
   on every colour object (ADR-135), so hand-set row colours would stop painting.
+
+## Amended 2026-10-04: one rule for custom and reset, and None keeps a grey
+
+An audit of the landing found the "is this the reader's" and "what does a
+reset write" rules spelled twice and drifted: over a base
+`rowColor: { field: 'group', unknown: '#ccc' }`, a value recolour and a reset
+dropped the `unknown`, painted every group a palette colour and still offered
+Reset. `rowColorResetTarget` (`rowColorChoice.ts`) is now both: the snapshot a
+reset writes, or undefined while nothing is custom, and the target is never
+itself custom. `resetRowStyling`, a public action with no consumer that also
+skipped the persist, is gone; `resetRowArrangement` is the one reset.
+
+The same module holds what the dialog's choice writes
+(`rowColorChoiceSetting`), so the mixin, which knows `rowPaletteDeals`, decides
+what None means: `unknown: ''` where the palette deals, and on stacked rows by
+`name` with a colour `unknown` kept, since a config painting the listed rows and
+greying the rest reads as None there rather than as an Each row the dialog does
+not offer. The dialog's value table lists an attribute's values in the key's
+order. The key over a shared panel is titled by a new hook, `rowNoun`
+("Subtrack" on wiggle), not "Name". Variants' `rowColorField` became the
+mixin's `rowColorAttribute`.

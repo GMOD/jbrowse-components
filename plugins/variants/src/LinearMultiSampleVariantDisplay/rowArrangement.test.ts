@@ -336,7 +336,7 @@ describe('a rendering-mode switch renames the rows', () => {
 
     display.setPhasedMode('phased')
 
-    expect(display.rowColorField).toBe('population')
+    expect(display.rowColorAttribute).toBe('population')
     expect(display.sources.every(s => s.rowColor)).toBe(true)
     const byName = Object.fromEntries(
       display.sources.map(s => [s.name, s.rowColor]),

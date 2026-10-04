@@ -61,7 +61,8 @@ export {
 } from './clusterUtils.ts'
 export { orderRowsByDomain } from './arrangeRows.ts'
 export { ROW_COLOR_SCALE_ID, rowFieldValue } from './rowColorScale.ts'
-export type { RowColorKeyInputs } from './rowColorScale.ts'
+export type { RowColorKeyInputs, RowColorSetting } from './rowColorScale.ts'
+export type { RowColorSnapshot } from './rowColorChoice.ts'
 export type {
   RowAlias,
   RowBand,
@@ -84,11 +85,7 @@ export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { default as ClusterProgress } from './ClusterProgress.tsx'
 export { useClusterRun } from './useClusterRun.ts'
 export { TreeSidebarMixin, orderOver } from './TreeSidebarMixin.ts'
-export type {
-  ClusterRun,
-  RowColorSetting,
-  RowColorSnapshot,
-} from './TreeSidebarMixin.ts'
+export type { ClusterRun } from './TreeSidebarMixin.ts'
 // Moved to display-kit on 2026-08-27 — right-click state is a display concern
 // every plugin has, not a tree one. Re-exported so nothing importing the old
 // name breaks; new code names the display-kit subpath.

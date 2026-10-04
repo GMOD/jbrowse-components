@@ -14,7 +14,8 @@ import PlotColorRow from './PlotColorRow.tsx'
 import RowColorPanel from './RowColorPanel.tsx'
 import SourceGrid from './SourceGrid.tsx'
 
-import type { RowColorSetting, RowColorSnapshot } from '../TreeSidebarMixin.ts'
+import type { RowColorSnapshot } from '../rowColorChoice.ts'
+import type { RowColorSetting } from '../rowColorScale.ts'
 import type { ValueColor } from './RowColorPanel.tsx'
 
 const useStyles = makeStyles()({
@@ -49,7 +50,11 @@ export interface TreeLayoutModel<S extends { name: string }> {
   rowPaletteDeals: boolean
   rowColorFields: readonly string[]
   internalRowFields: readonly string[]
-  rowColorsFor: (setting: RowColorSetting) => ReadonlyMap<string, string>
+  rowColorsFor: (setting: RowColorSnapshot) => ReadonlyMap<string, string>
+  rowColorChoiceSetting: (
+    choice: string,
+    pairs?: Record<string, string>,
+  ) => RowColorSnapshot
 }
 
 export interface SetColorDialogProps<
@@ -92,26 +97,8 @@ function entriesOf(setting: RowColorSetting): Entries {
     : { [setting.field]: Object.fromEntries(pairedColorsOf(setting)) }
 }
 
-// The setting an attribute choice writes: its entries, and the `unknown` the
-// config sets on that same field.
-function settingFor(
-  field: string,
-  entries: Entries,
-  current: RowColorSetting,
-): RowColorSetting {
-  const own = entries[field] ?? {}
-  return {
-    field,
-    scale: undefined,
-    domain: Object.keys(own),
-    range: Object.values(own),
-    ...(current.field === field && current.unknown !== undefined
-      ? { unknown: current.unknown }
-      : {}),
-  }
-}
-
-// Each value of `field` over the rows, most rows first, with its colour.
+// Each value of `field` over the rows with its colour and row count, in the
+// order the key lists them: the coloured values as dealt, then the rest.
 function valueColors(
   rows: readonly object[],
   field: string,
@@ -122,9 +109,13 @@ function valueColors(
     const value = rowFieldValue(row, field)
     counts.set(value, (counts.get(value) ?? 0) + 1)
   }
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([value, count]) => ({ value, count, color: colors.get(value) }))
+  const listed = [...colors.keys()].filter(value => counts.has(value))
+  const rest = [...counts.keys()].filter(value => !colors.has(value))
+  return [...listed, ...rest].map(value => ({
+    value,
+    count: counts.get(value)!,
+    color: colors.get(value),
+  }))
 }
 
 export default observer(function SetColorDialog<
@@ -166,7 +157,7 @@ export default observer(function SetColorDialog<
 
   const byField = choice !== '' && choice !== 'name' ? choice : undefined
   const fieldColors = byField
-    ? model.rowColorsFor(settingFor(byField, entries, model.rowColorSetting))
+    ? model.rowColorsFor(model.rowColorChoiceSetting(byField, entries[byField]))
     : undefined
 
   // A color by the config names that the display does not offer, a column
@@ -178,33 +169,6 @@ export default observer(function SetColorDialog<
     model.rowColorFields.includes(current)
       ? model.rowColorFields
       : [...model.rowColorFields, current]
-
-  // What the submit writes; under None and Each row the grid's row colours
-  // become the pairs, and None deals no palette where the display has one.
-  const chosenRowColor = (): RowColorSnapshot => {
-    if (choice === '') {
-      return model.rowPaletteDeals
-        ? { field: 'name', unknown: '' }
-        : { field: 'name' }
-    }
-    if (choice === 'name') {
-      const { field, unknown } = model.rowColorSetting
-      return field === 'name' && unknown
-        ? { field: 'name', unknown }
-        : { field: 'name' }
-    }
-    const { domain, range, unknown } = settingFor(
-      choice,
-      entries,
-      model.rowColorSetting,
-    )
-    return {
-      field: choice,
-      domain,
-      range,
-      ...(unknown === undefined ? {} : { unknown }),
-    }
-  }
 
   // An untouched panel writes no colour object, so the config's own stands
   // whatever the panel can spell.
@@ -224,11 +188,14 @@ export default observer(function SetColorDialog<
   }
 
   // The row edits go first: a plot colour can change which rows the palette
-  // deals, and `applyRowEdits` compares each row against its colour now.
+  // deals, and `applyRowEdits` compares each row against its colour now. Under
+  // None and Each row the grid's row colours become the object's pairs.
   const submit = () => {
     model.applyRowEdits(
       currLayout,
-      colorTouched() ? chosenRowColor() : undefined,
+      colorTouched()
+        ? model.rowColorChoiceSetting(choice, entries[choice])
+        : undefined,
     )
     if (
       plotPair &&
@@ -325,7 +292,7 @@ export default observer(function SetColorDialog<
                   }}
                   onStartFrom={field => {
                     const colors = model.rowColorsFor(
-                      settingFor(field, entries, model.rowColorSetting),
+                      model.rowColorChoiceSetting(field, entries[field]),
                     )
                     paintRows(row => colors.get(rowFieldValue(row, field)))
                   }}

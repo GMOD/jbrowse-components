@@ -210,12 +210,16 @@ What else the mixin owns:
   to what a track the session owns was added with, and never touches
   `rows.field`. A reset to empty would write a delta erasing an admin's declared
   order for that reader. `rowArrangementIsCustom` compares against the same
-  base, with `rowStylingIsCustom` for the `name` pairs, and leaves `rows.kept`
+  base, with `rowStylingIsCustom` for the colours, and leaves `rows.kept`
   out, since the focus has a clear of its own; a reset still clears it.
-  `resetRowStyling` writes the base's whole `rowColor` back where the `name`
-  pairs differ, and otherwise returns an attribute's value colours to the
+  `rowColorResetTarget` (`rowColorChoice.ts`) is the one rule for both: what
+  a reset writes to `rowColor`, or nothing while the live object is not
+  custom. It writes the base's whole object where a `name` pair or the
+  `unknown` differs, and otherwise returns an attribute's value colours to the
   base's, keeping the attribute, so over a config setting no row colour a Color
-  by alone survives a reset and a mode switch.
+  by alone survives a reset and a mode switch. Its target is never itself
+  custom, so one reset is the whole way back; two rules once drifted, and a
+  reset over a base `unknown` dropped the grey and stayed custom.
 - **The dialog shows the `rowColor` object and submits it**
   (`applyRowEdits(rows, rowColor)`, ADR-164): "Color rows by" None
   (`unknown: ''`), Each row where the display deals a palette under `name`
@@ -242,10 +246,13 @@ What else the mixin owns:
   as a button rather than a track-menu row. This replaced `displayControls`, a
   `ReactNode` that promised live writes Cancel would not revert and had no
   consumer; a node cannot be held for a Submit.
-- **`rowColorIsCustom` is exported** because a display whose reader reaches a
-  second colour setting from this dialog has to ask the same question about both
-  — the quantitative display's `color`, which its own `rowStylingIsCustom` ORs
-  in so a reset is offered for a colour the `rowColor` half did not record.
+- **The mixin decides what a choice writes** (`rowColorChoiceSetting`), since
+  None means two things: `unknown: ''` where the palette deals, and by `name`
+  with the config's `unknown` kept on stacked rows, where a grey the config sets
+  on the unlisted rows is what None shows (`rowColorChoiceOf`). The dialog only
+  holds the choice and each attribute's entries for the sitting. Its value
+  table lists the values in the key's order, the coloured ones as dealt and
+  then the rest.
 - **A reorder keeps the names it did not show.** `setRowOrder` writes the rows
   it was handed ahead of every name the current order carries beyond them, so on
   the multi-row display, whose rows are discovered per region, a declared order

@@ -30,7 +30,7 @@ const rowColorKey = (display: ReturnType<typeof makeDisplay>) =>
 
 it('keys each overlaid subtrack under its label in its palette colour', () => {
   const display = makeDisplay(GROUPED)
-  expect(display.legendSpec.title).toBe('Name')
+  expect(display.legendSpec.title).toBe('Subtrack')
   expect(rowColorKey(display)).toEqual([
     { value: 'a', label: 'a', color: rowPaletteColorAt(0) },
     { value: 'b', label: 'b', color: rowPaletteColorAt(1) },
