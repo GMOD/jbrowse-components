@@ -119,6 +119,15 @@ describe('computeOverlayY', () => {
     )
   })
 
+  test('`at` picks a point down the rectangle, 0 its top and 1 its bottom', () => {
+    expect(computeOverlayY({ ...base, layout: [0, 50, 0, 90], at: 0 })).toBe(
+      1000 + 90,
+    )
+    expect(computeOverlayY({ ...base, layout: [0, 50, 0, 90], at: 1 })).toBe(
+      1000 + 130,
+    )
+  })
+
   test('vertical scroll shifts the endpoint up', () => {
     expect(
       computeOverlayY({ ...base, scrollTop: 30, layout: [0, 50, 0, 90] }),

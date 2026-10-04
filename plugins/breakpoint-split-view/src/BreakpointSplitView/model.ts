@@ -513,8 +513,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           viewTop += view.height + VIEW_DIVIDER_HEIGHT
         }
 
-        function getY(level: number, layout: LayoutRecord) {
-          return computeOverlayY({ ...levels[level]!, layout })
+        function getY(level: number, layout: LayoutRecord, at?: number) {
+          return computeOverlayY({ ...levels[level]!, layout, at })
         }
 
         function getX(level: number, refName: string, coord: number) {

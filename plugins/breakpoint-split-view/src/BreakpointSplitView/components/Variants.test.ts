@@ -54,3 +54,44 @@ test('a tick takes the orientation of the region its end is placed in', () => {
   expect(forward.startsWith('M 79 20')).toBe(true)
   expect(reversed.startsWith('M 119 20')).toBe(true)
 })
+
+// Two rows, the deletion's start on one and its END on the other, with a layout
+// box spanning the glyph (top 10) and the labels under it (to 40). Rows sit
+// 100px apart, and the stub reads a box's `at` the way computeOverlayY does.
+function twoRowContext(nearLevel: number) {
+  const ctx = context()
+  return {
+    ...ctx,
+    match: {
+      kind: 'variant',
+      layoutMatches: [
+        [{ feature: deletion, level: nearLevel, layout: [99, 10, 100, 40] }],
+      ],
+    },
+    views: [0, 1].map(level => ({
+      bpToPx: ({ coord }: { coord: number }) =>
+        (coord < 300 ? nearLevel : 1 - nearLevel) === level,
+    })),
+    tracks: [{ minimized: false }, { minimized: false }],
+    layouts: [{ width: 1000 }, { width: 1000 }],
+    getY: (level: number, [, top, , bottom]: readonly number[], at = 0.5) =>
+      level * 100 + top! + (bottom! - top!) * at,
+    assemblies: [undefined, undefined],
+  } as unknown as OverlayContext
+}
+
+function pathYs(path: string) {
+  return [...path.matchAll(/[ML] [\d.]+ ([\d.]+)/g)].map(m => Number(m[1]))
+}
+
+// The labels hang under the glyph, so a connector meeting the box's middle ran
+// through them: the line leaves a breakend at the box edge facing its mate.
+test('a connector to a row below leaves from under the labels', () => {
+  const [path] = variantPaths(twoRowContext(0), true)
+  expect(pathYs(path!.path).slice(0, 2)).toEqual([40, 40])
+})
+
+test('a connector to a row above leaves from the glyph top', () => {
+  const [path] = variantPaths(twoRowContext(1), true)
+  expect(pathYs(path!.path).slice(0, 2)).toEqual([110, 110])
+})

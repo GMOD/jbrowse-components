@@ -64,11 +64,7 @@ export function variantPaths(
       return undefined
     }
     const x = computeOverlayX(placed.x, layouts[level]!.width, layout)
-    return {
-      x,
-      y: getY(level, layout),
-      tick: breakendTickPx(x, end.keeps, placed.reversed),
-    }
+    return { x, tick: breakendTickPx(x, end.keeps, placed.reversed) }
   }
   return match.layoutMatches.flatMap<PathSpec>(([near, far]) => {
     const ends = near && junctionEnds(near.feature)
@@ -88,15 +84,23 @@ export function variantPaths(
     ) {
       return []
     }
+    const farLayout = far?.layout ?? NO_LAYOUT
     const p1 = place(ends.own, near.level, near.layout)
-    const p2 = place(mateEnd, farLevel, far?.layout ?? NO_LAYOUT)
+    const p2 = place(mateEnd, farLevel, farLayout)
     if (!p1 || !p2) {
       return []
     }
+    // Each end meets its feature on the side facing the other end, so the
+    // connector stays clear of the labels a feature draws under its glyph; a
+    // pair at one height arcs over the top of both.
+    const mid1 = getY(near.level, near.layout)
+    const mid2 = getY(farLevel, farLayout)
+    const y1 = getY(near.level, near.layout, mid1 < mid2 ? 1 : 0)
+    const y2 = getY(farLevel, farLayout, mid2 < mid1 ? 1 : 0)
     return [
       {
         id: near.feature.id(),
-        path: buildBreakpointPath(p1.x, p1.y, p2.x, p2.y, p1.tick, p2.tick),
+        path: buildBreakpointPath(p1.x, y1, p2.x, y2, p1.tick, p2.tick),
         tooltip: () =>
           buildPairTooltip(
             near.feature,

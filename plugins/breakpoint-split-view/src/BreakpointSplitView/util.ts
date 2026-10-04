@@ -144,8 +144,9 @@ export function placeOnRow(layout: ViewLayout, refName: string, coord: number) {
 // Vertical screen position (relative to the overlay SVG) of an overlay endpoint
 // for a feature laid out at `layout` in a track of the given `height`.
 //   - Off-display features (see makeOffscreenLayout) snap to the bottom edge.
-//   - Otherwise it's the layout rectangle's vertical midpoint, shifted by the
-//     track's vertical scroll and its coverage-subtrack offset.
+//   - Otherwise it's the point `at` of the way down the layout rectangle (its
+//     midpoint by default), shifted by the track's vertical scroll and its
+//     coverage-subtrack offset.
 // The result is always clamped into [yOffset + coverageOffset, yOffset + height]
 // so the endpoint lands inside the visible pileup. AlignmentConnections relies
 // on the `<= yOffset + height` half of that invariant.
@@ -155,22 +156,22 @@ export function computeOverlayY({
   coverageOffset,
   scrollTop,
   layout,
+  at = 0.5,
 }: {
   yOffset: number
   height: number
   coverageOffset: number
   scrollTop: number
   layout: LayoutRecord
+  at?: number
 }) {
   if (isOffscreenLayout(layout)) {
     return yOffset + height
   }
   const top = layout[1]
   const bot = layout[3]
-  const mid = top - scrollTop + (bot - top) / 2 + coverageOffset
-  return (
-    yOffset + (mid < coverageOffset ? coverageOffset : Math.min(mid, height))
-  )
+  const y = top - scrollTop + (bot - top) * at + coverageOffset
+  return yOffset + (y < coverageOffset ? coverageOffset : Math.min(y, height))
 }
 
 // Find which row (level) of the breakpoint split view a feature "belongs to"
