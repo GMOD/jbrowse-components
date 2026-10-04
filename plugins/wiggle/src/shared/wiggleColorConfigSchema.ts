@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   colorChannelOptions,
-  colorChannelSlots,
   colorDomainSlot,
   colorLabelsSlot,
   colorRampSlots,
@@ -87,12 +86,12 @@ export const wiggleColorSchema = ConfigurationSchema(
      * in the two end colours. `none` paints `value`, keeping the field for a
      * switch back. Unset beside the field, it is `threshold`.
      */
-    scale: colorChannelSlots({
-      scales: WIGGLE_COLOR_SCALES,
-      scaleName: 'WiggleColorScale',
-      fieldType: 'string',
-      field: 'score',
-    }).scale,
+    scale: {
+      type: 'maybeStringEnum',
+      model: types.enumeration('WiggleColorScale', [...WIGGLE_COLOR_SCALES]),
+      description:
+        'how score becomes a colour: threshold paints each band between two of its cuts; linear runs range, else scheme, else viridis across the y domain through scales.y.type, with domainMid at the middle stop, colouring each bar, point and density cell by its score, and a one-colour range runs from white to that colour; a line still parts in the two end colours; none paints value, keeping the field for a switch back; unset beside the field, it is threshold',
+    },
     ...colorDomainSlot({
       domain:
         'for a threshold scale, up to eight cut points, sorted, empty meaning one at the origin',
