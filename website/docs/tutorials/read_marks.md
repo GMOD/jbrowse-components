@@ -8,15 +8,15 @@ guide_category: Tutorials
 tutorial_category: Grammar of graphics
 ---
 
-A read pair that straddles a deletion maps with a long insert, and a
-heterozygous deletion halves the read depth. We plot those two fields straight
-from NA12878's reads to find a deletion on chromosome 20 without a variant
-caller, scan the whole chromosome for the same signature, and check the hits
-against the 1000 Genomes callset. The plots come from JBrowse's mark display, a
-grammar of graphics over a track: each entry in `marks` names a mark type, a
-`transform` list and an `encoding` from feature fields to channels, as in the
-[Alu tutorial](/docs/tutorials/alu_age). The mark display is experimental, and
-its config shape may change.
+A read pair that straddles a deletion maps with a long insert (the distance
+between its reads), and a heterozygous deletion halves the read depth. We plot
+those two fields straight from NA12878's reads to find a deletion on chromosome
+20 without a variant caller, scan the whole chromosome for the same signature,
+and check the hits against the 1000 Genomes callset. We draw the plots with
+JBrowse's mark display, a grammar of graphics over a track: each entry in
+`marks` names a mark type, a `transform` list and an `encoding` that maps
+feature fields to channels, as in the [Alu tutorial](/docs/tutorials/alu_age).
+The mark display is experimental, and its config shape may change.
 
 ## Prerequisites
 
@@ -62,7 +62,7 @@ each chromosome's banding in the view's overview.
 }
 ```
 
-## Depth as a coverage step
+## Plotting read depth as bars over the EFCAB8 deletion
 
 The window covers 30 kb of an _EFCAB8_ intron on chromosome 20, where the
 callset says NA12878 has one copy of a 3.9 kb deletion. A `bar` mark over a
@@ -95,7 +95,7 @@ Open the track at `chr20:32,925,000-32,955,000`.
 
 <Figure src="/img/read_marks/depth.png" caption="Thirty kilobases of an EFCAB8 intron in NA12878, the read depth as bars. Over a few kilobases in the middle of the window the depth runs at about half of what it is on either side." />
 
-## Insert size as a point per pair
+## Plotting insert size as one point per read pair
 
 A mark display draws one y axis. Depth runs in the tens and an insert size in
 the thousands, so the insert goes on a second track over the same file:
@@ -148,14 +148,13 @@ Open it under the depth track, on the same window.
 <Figure src="/img/read_marks/insert_size.png" caption="The same window, the depth as bars above and each pair's insert size as a point below, each track with a separate y axis. The pairs sit in a low band, and over the left edge of the dip a second group appears well above it, in full blue." />
 
 Each pair in the upper group straddles the missing 3.9 kb. On an alignments
-track `score` is the mapping quality. Hover a point for its values, or click it
-to open the read.
+track `score` is the mapping quality; click a point to open its read.
 
-## Which reads have the long inserts
+## Stacking reads colored by insert size at the deletion breakpoint
 
 A `span` mark over a `pileup` transform stacks the reads. A `formula` step
-writes the unsigned insert as `insert`, so both mates of a pair take one colour,
-and a ramp pinned at 5 kb paints a spanning pair red.
+writes the absolute insert as `insert`, so both mates of a pair take one colour,
+and a ramp pinned at 5 kb paints a pair spanning the deletion red.
 
 ```json addtrack
 {
@@ -196,7 +195,7 @@ and a ramp pinned at 5 kb paints a spanning pair red.
 }
 ```
 
-Open the track at the left edge of the dip, `chr20:32,936,200-32,939,200`.
+Open the track at the left edge of the depth dip, `chr20:32,936,200-32,939,200`.
 
 <Figure src="/img/read_marks/pileup.png" caption="The left breakpoint, the reads stacked and coloured by their pair's insert. The red reads end together at the breakpoint, where their mates lie across the deletion to the right; the pale reads run across it, and thin out on the far side." />
 
@@ -206,8 +205,9 @@ pair it would paint the longest ordinary insert red. Pinning `domainMin` and
 
 ## Scanning chromosome 20 for clusters of long-insert pairs
 
-Fetching every read of a chromosome overruns the byte budget, so cut the long
-pairs out once, one row per pair, into a BED with a header naming its columns.
+Fetching every read of a chromosome overruns the track's size limit, so cut the
+long pairs out once, one row per pair, into a BED with a header naming its
+columns.
 
 <!-- from: scripts/build_read_marks.sh -->
 
@@ -308,9 +308,9 @@ Open both tracks on the whole of `chr20`.
 <Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20 end to end. Every pair with an insert under 20 kb is a point at its insert size, and the red bars on the track under it count the pairs between 2 and 10 kb per bin. The centromere, pinched in the banding above the ruler, and the repeats flanking it saturate both; outside them the bars rise in a handful of places, each under a short stack of dark points." />
 
 The bar at 34.2 Mb is a homozygous deletion, and the one at 32.9 Mb is the
-_EFCAB8_ intron above.
+_EFCAB8_ deletion from the sections above.
 
-## Checking the bars against the callset
+## Checking the chr20 bars against the 1000 Genomes SV callset
 
 `bcftools` lists every deletion over 2 kb that the callset gives NA12878 on the
 chromosome:
@@ -325,9 +325,9 @@ bcftools view -s NA12878 1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz 
     -f '%CHROM\t%POS\t%END\t%INFO/SVLEN\t[%GT]\t%INFO/AF\t%INFO/EVIDENCE\n'
 ```
 
-Every deletion in that listing between 2 and 10 kb is a bar on the track, and
-the two homozygous ones are tallest. Other windows hold ten or more such pairs
-with no call: the chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb.
+Every deletion in that listing between 2 and 10 kb is a bar in the pair-count
+track, and the two homozygous ones are tallest. Other windows hold ten or more
+such pairs with no call: the chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb.
 
 To check the _EFCAB8_ deletion against the reads, compare the depth inside the
 call with the depth beside it, and count the long pairs around it:
