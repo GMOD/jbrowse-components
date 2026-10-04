@@ -111,11 +111,6 @@ describe('when the row colour key shows', () => {
       { value: 'c', label: 'c', color: '#0c0c0c' },
     ])
   })
-
-  it("shows nothing under scale: 'none'", () => {
-    const display = makeDisplay({ rowColor: { field: 'group', scale: 'none' } })
-    expect(display.rowColorScales).toEqual([])
-  })
 })
 
 describe('the entries', () => {

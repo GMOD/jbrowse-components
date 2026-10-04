@@ -74,16 +74,18 @@ test('None after a color-by is the config it started from', () => {
   expect(getSnapshot(display.configuration).rowColor).toBeUndefined()
 })
 
-test('None over a configured color-by offers the reset back to it', () => {
+// What the rows are coloured by is the reader's view, as every Color by is:
+// None over a configured one offers no reset, and picking it again is the
+// config's own object.
+test('None over a configured color-by is no custom arrangement', () => {
   const { display } = createTestEnvironment({
     displayConfig: { rowColor: 'population' },
   }).createDisplay()
   display.setSources(SOURCES)
   display.setRowColorField('')
-  expect(display.rowArrangementIsCustom).toBe(true)
-
-  display.resetRowArrangement()
-
-  expect(display.rowColorAttribute).toBe('population')
+  expect(display.rowColorAttribute).toBe('')
   expect(display.rowArrangementIsCustom).toBe(false)
+
+  display.setRowColorField('population')
+  expect(display.rowColorSetting).toEqual(display.baseRowColor)
 })

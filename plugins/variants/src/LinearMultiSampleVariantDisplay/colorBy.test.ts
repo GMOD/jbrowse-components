@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -121,4 +122,19 @@ describe('multi-sample variant colorBy', () => {
     expect(model.rowColorChoice).toBe('')
     expect(model.sources[1]!.rowColor).toBeUndefined()
   })
+})
+
+// The dialog shows a configured attribute the samples lack as chosen, so the
+// menu does too, rather than ticking nothing.
+test('the Samples menu ticks a configured attribute the samples lack', () => {
+  const { display } = createTestEnvironment({
+    displayConfig: { rowColor: 'tissue' },
+  }).createDisplay()
+  display.setSources([{ name: 'HG001', population: 'EUR' }])
+  const colorBy = display
+    .trackMenuItems()
+    .find(i => 'label' in i && i.label === 'Color by...')
+  const items = colorBy && 'subMenu' in colorBy ? resolveSubMenu(colorBy) : []
+  const tissue = items.find(i => 'label' in i && i.label === 'Tissue')
+  expect(tissue && 'checked' in tissue && tissue.checked).toBe(true)
 })

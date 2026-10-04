@@ -18,8 +18,6 @@ import { focusRows } from './focusRows.ts'
 import { maxNodeHeight } from './hierarchy.ts'
 import {
   liftRowColor,
-  paintsAttribute,
-  paintsNamePairs,
   rowColorChoiceOf,
   rowColorMembers,
   rowColorResetTarget,
@@ -307,13 +305,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * The `rowColor` object: the row attribute whose values take colours,
-       * `name` where it names none, the scale, and the values given a colour
-       * of their own.
+       * `name` where it names none, and the values given a colour of their
+       * own.
        */
       get rowColorSetting(): RowColorSetting {
         return liftRowColor({
           field: getConf(confNode(self), ['rowColor', 'field']),
-          scale: getConf(confNode(self), ['rowColor', 'scale']),
           domain: getConf(confNode(self), ['rowColor', 'domain']),
           range: getConf(confNode(self), ['rowColor', 'range']),
           unknown: getConf(confNode(self), ['rowColor', 'unknown']),
@@ -477,15 +474,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get rowColorPairs(): ReadonlyMap<string, string> {
         const setting = self.rowColorSetting
-        return paintsNamePairs(setting) ? pairedColorsOf(setting) : new Map()
+        return setting.field === 'name' ? pairedColorsOf(setting) : new Map()
       },
       /**
        * #getter
-       * Whether `rowColor` sets a row, or a value of the attribute it paints
-       * by, a colour the config does not, so "Reset row order" is offered for
-       * a recolour too: whether `rowColorResetTarget` has anything to write.
-       * Picking a colour by attribute sets no colour, so over a config setting
-       * none it is not a custom arrangement.
+       * Whether `rowColor` gives its field's values colours the config does
+       * not, so "Reset row order" is offered for a recolour too: whether
+       * `rowColorResetTarget` has anything to write. What the rows are
+       * coloured by is no arrangement, so picking it is never custom.
        */
       get rowStylingIsCustom(): boolean {
         return (
@@ -612,12 +608,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The attribute the rows are coloured by, or '' by `name` or under
-       * `scale: 'none'`.
+       * The attribute the rows are coloured by, or '' by `name`.
        */
       get rowColorAttribute(): string {
-        const setting = self.rowColorSetting
-        return paintsAttribute(setting) ? setting.field : ''
+        const { field } = self.rowColorSetting
+        return field === 'name' ? '' : field
       },
       /**
        * #getter
@@ -986,9 +981,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             baseOrder: self.baseRowColor.domain,
             rowAlias: self.rowAlias,
           })
-          const written = paintsNamePairs(next)
-            ? { ...next, ...edits.rowColor }
-            : next
+          const written =
+            next.field === 'name' ? { ...next, ...edits.rowColor } : next
           if (!sameRowColor(written, current)) {
             writeRowColor(written)
           }
@@ -1002,9 +996,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          * #action
          * Return every arrangement member — order, labels, tree, provenance
          * and focus — to what the config declares, leaving `rows.field`, and
-         * the `rowColor` object to `rowColorResetTarget`: the config's where
-         * it sets a row a colour the config does not, so a colour by
-         * attribute stays and one a recolour turned into pairs comes back.
+         * the `rowColor` colours to `rowColorResetTarget`: the config's for
+         * the field the rows are coloured by, which stays.
          */
         resetRowArrangement() {
           const base = baseArrangement(self)

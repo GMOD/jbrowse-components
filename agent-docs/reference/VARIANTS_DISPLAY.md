@@ -194,8 +194,8 @@ attribute starts with no entries, and '' is None, `{ field: 'name' }`, leaving
 the attribute behind. The menu's Samples group and the arrangement dialog offer
 the same choices (`rowColorChoice`), and under an attribute the dialog edits
 each value's colour, never a row's (ADR-164). A
-reset returns `rowColor` by tree-sidebar's `rowColorResetTarget`, so over a
-config setting no row colour a Color by survives it and a mode switch. The
+reset returns `rowColor` by tree-sidebar's `rowColorResetTarget`, which keeps
+the field, so a Color by survives it and a mode switch. The
 missing-attribute warning reads the mixin's `rowColorAttribute`.
 The flip ADR-160 names puts the row's own colour ahead of the palette here too.
 

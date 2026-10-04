@@ -102,13 +102,17 @@ function pickCellSolidColor(self: MultiSampleVariantBaseModel) {
 }
 
 // The rows' colour, as the arrangement dialog offers it: none, or an
-// attribute's values. No palette deals the rows by name here, so there is no
-// Each row.
+// attribute's values, the config's own among them where the samples lack it.
+// No palette deals the rows by name here, so there is no Each row.
 function rowColorItems(self: MultiSampleVariantBaseModel): MenuItem[] {
   const current = self.rowColorChoice
   const pick = (field: string) => () => {
     self.setRowColorField(field)
   }
+  const attributes =
+    current === '' || self.colorByAttributes.includes(current)
+      ? self.colorByAttributes
+      : [...self.colorByAttributes, current]
   return [
     {
       label: 'None',
@@ -116,7 +120,7 @@ function rowColorItems(self: MultiSampleVariantBaseModel): MenuItem[] {
       checked: current === '',
       onClick: pick(''),
     },
-    ...self.colorByAttributes.map(attr => ({
+    ...attributes.map(attr => ({
       label: capitalizeFirst(attr),
       type: 'radio' as const,
       checked: current === attr,
@@ -305,7 +309,10 @@ export function variantTrackMenuItems(
         },
         {
           header: 'Samples',
-          rows: self.colorByAttributes.length ? rowColorItems(self) : [],
+          rows:
+            self.colorByAttributes.length || self.rowColorChoice
+              ? rowColorItems(self)
+              : [],
         },
       ],
       additional: [

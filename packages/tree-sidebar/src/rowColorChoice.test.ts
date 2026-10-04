@@ -16,7 +16,6 @@ describe('liftRowColor', () => {
     expect(lift({ field: '' }).field).toBe('name')
     expect(lift(undefined)).toEqual({
       field: 'name',
-      scale: undefined,
       domain: [],
       range: [],
     })
@@ -25,7 +24,6 @@ describe('liftRowColor', () => {
   it('reads a numeric domain as strings, and a null unknown as unset', () => {
     expect(lift({ domain: [1, 2], unknown: null })).toEqual({
       field: 'name',
-      scale: undefined,
       domain: ['1', '2'],
       range: [],
     })
@@ -51,11 +49,11 @@ describe('rowColorChoiceOf', () => {
     expect(rowColorChoiceOf(lift({ unknown: '#ccc' }), false)).toBe('')
   })
 
-  it("is the attribute, or None under scale: 'none'", () => {
+  it('is the attribute', () => {
     expect(rowColorChoiceOf(lift('group'), false)).toBe('group')
-    expect(
-      rowColorChoiceOf(lift({ field: 'group', scale: 'none' }), true),
-    ).toBe('')
+    expect(rowColorChoiceOf(lift({ field: 'group', unknown: '' }), true)).toBe(
+      'group',
+    )
   })
 })
 
@@ -127,9 +125,9 @@ describe('rowColorForChoice', () => {
     })
   })
 
-  it('the field already named keeps its pairs and unknown, parked or not', () => {
-    const parked = { ...pairs, scale: 'none', unknown: '#ccc' }
-    expect(rowColorForChoice(lift(parked), 'group', false)).toEqual({
+  it('the field already named keeps its pairs and unknown', () => {
+    const grey = { ...pairs, unknown: '#ccc' }
+    expect(rowColorForChoice(lift(grey), 'group', false)).toEqual({
       field: 'group',
       domain: ['y'],
       range: ['#abc'],
@@ -140,16 +138,6 @@ describe('rowColorForChoice', () => {
   it('another field starts with none', () => {
     expect(rowColorForChoice(lift(pairs), 'pop', false)).toEqual({
       field: 'pop',
-    })
-  })
-
-  it('None and Each row leave parked name pairs parked', () => {
-    const parked = { domain: ['a'], range: ['#f00'], scale: 'none' }
-    expect(rowColorForChoice(lift(parked), '', false)).toEqual({
-      field: 'name',
-    })
-    expect(rowColorForChoice(lift(parked), 'name', true)).toEqual({
-      field: 'name',
     })
   })
 
@@ -179,53 +167,44 @@ describe('rowColorResetTarget', () => {
     expect(settled({}, {})).toBeUndefined()
   })
 
-  it('returns a name pair, an unknown, or a parked field to the base', () => {
+  it('never changes what the rows are coloured by', () => {
+    expect(settled({}, 'group')).toBeUndefined()
+    expect(settled('tissue', 'group')).toBeUndefined()
+    expect(settled('group', { domain: ['a'], range: ['#f00'] })).toBeUndefined()
+  })
+
+  it("returns the field's pairs and unknown to the base's", () => {
     const base = { field: 'name', domain: ['a'], range: ['#f00'] }
     expect(settled({ domain: ['b'], range: ['#00f'] }, base)).toEqual(base)
     expect(settled({ ...base, unknown: '' }, base)).toEqual(base)
-    expect(settled('group', base)).toEqual(base)
-    expect(settled({ ...base, scale: 'none' }, base)).toEqual(base)
-  })
-
-  it('returns a parked field, or one parked by the base, to the base', () => {
-    expect(settled({ field: 'group', scale: 'none' }, 'group')).toEqual({
-      field: 'group',
-    })
-    expect(settled({ scale: 'none' }, {})).toEqual({ field: 'name' })
-    expect(settled('group', { field: 'group', scale: 'none' })).toEqual({
-      field: 'group',
-      scale: 'none',
-    })
-  })
-
-  it("returns None over the base's colour by to it", () => {
-    expect(settled({}, 'group')).toEqual({ field: 'group' })
-    expect(settled({ unknown: '' }, 'group')).toEqual({ field: 'group' })
-  })
-
-  it("returns a value recolour to the base's colours and keeps the attribute", () => {
+    const grouped = { field: 'group', domain: ['x'], range: ['#0f0'] }
     expect(
-      settled({ field: 'group', domain: ['y'], range: ['#abcdef'] }, {}),
-    ).toEqual({ field: 'group' })
-    const base = { field: 'group', domain: ['x'], range: ['#0f0'] }
-    expect(
-      settled({ field: 'group', domain: ['y'], range: ['#abcdef'] }, base),
-    ).toEqual(base)
+      settled({ field: 'group', domain: ['y'], range: ['#abcdef'] }, grouped),
+    ).toEqual(grouped)
   })
 
-  it("keeps the base's unknown with the attribute, in one reset", () => {
+  it('clears the colours on a field the base does not colour by', () => {
     const base = { field: 'group', unknown: '#ccc' }
     expect(
-      settled(
-        { field: 'group', domain: ['y'], range: ['#abcdef'], unknown: '#ccc' },
-        base,
-      ),
-    ).toEqual(base)
+      settled({ field: 'tissue', domain: ['t'], range: ['#abc'] }, base),
+    ).toEqual({ field: 'tissue' })
+    expect(settled({ domain: ['a'], range: ['#f00'] }, base)).toEqual({
+      field: 'name',
+    })
+  })
+
+  // A config's grey for the values it lists none for is no reason to call
+  // another attribute picked over it custom.
+  it("is not custom where the base's unknown sits on another field", () => {
+    expect(settled('superpop', { field: 'population', unknown: '#ccc' })).toBe(
+      undefined,
+    )
+  })
+
+  it('reads pairs listed in another order as the same', () => {
+    const base = { domain: ['a', 'b'], range: ['#f00', '#00f'] }
     expect(
-      settled(
-        { field: 'tissue', domain: ['t'], range: ['#abcdef'], unknown: '#ccc' },
-        base,
-      ),
-    ).toEqual({ field: 'tissue', unknown: '#ccc' })
+      settled({ domain: ['b', 'a'], range: ['#00f', '#f00'] }, base),
+    ).toBeUndefined()
   })
 })

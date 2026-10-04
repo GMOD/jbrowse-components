@@ -100,11 +100,10 @@ colour; a colour, that colour; `''`, none from this setting (Vega's
 `domainImplicit: false`). None writes `{ field: 'name', unknown: '' }` where
 the display deals a palette under `name` (`rowPaletteDeals`), else
 `{ field: 'name' }`, and its swatches edit as Each row's do; Each row is
-offered only where it differs. `scale: 'none'` keeps ADR-135's meaning, and
-on `rowColor` it now comes only from a config: the variant menu's pick writes
-what the dialog would for that choice (`rowColorForChoice`), so None is one
-object from either surface, and a reader's value colours leave with the
-attribute.
+offered only where it differs. The variant menu's pick writes what the
+dialog would for that choice (`rowColorForChoice`), so None is one object from
+either surface, and a reader's value colours leave with the attribute;
+`rowColor` has no `scale` since ADR-207's second 2026-10-04 amendment.
 `dialogSources` is gone: the pairs under `scale: 'none'` stay parked rather
 than open on the swatches. Wiggle's None takes the per-source switch off as
 before.

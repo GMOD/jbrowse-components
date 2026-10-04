@@ -9,12 +9,11 @@ import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
 
 /**
  * The `rowColor` object as read: the row attribute whose values take the
- * colours, `name` for the rows themselves, the scale, the values paired with
- * a colour, and what an unpaired value takes.
+ * colours, `name` for the rows themselves, the values paired with a colour,
+ * and what an unpaired value takes.
  */
 export interface RowColorSetting {
   field: string
-  scale: 'none' | 'categorical' | undefined
   domain: readonly string[]
   range: readonly string[]
   unknown?: string
@@ -29,19 +28,16 @@ const NONE: ReadonlyMap<string, string> = new Map()
  * first, except the empty value, which takes a colour only from a pair: a row
  * with no value is missing, not a category, as ggplot's `na.value`. A row name
  * deals only while `namesDeal` or an `unknown` stands in for the palette, and
- * a row with its own colour takes no turn. None under
- * `scale: 'none'`, or for an attribute no row carries. Reads no row where only
- * the pairs paint, so a reorder deals nothing again.
+ * a row with its own colour takes no turn. None for an attribute no row
+ * carries. Reads no row where only the pairs paint, so a reorder deals nothing
+ * again.
  */
 export function dealtValueColors(
   setting: RowColorSetting,
   rowsOf: () => readonly RowSource[],
   namesDeal: boolean,
 ): ReadonlyMap<string, string> {
-  const { field, scale, unknown } = setting
-  if (scale === 'none') {
-    return NONE
-  }
+  const { field, unknown } = setting
   if (field === 'name') {
     return dealRowColors(
       unknown !== '' && (namesDeal || unknown !== undefined)
@@ -149,10 +145,10 @@ function keyColor(row: RowSource, value: string, key: RowColorKeyInputs) {
  * no value or no colour.
  */
 export function rowColorKeyValue(row: RowSource, key: RowColorKeyInputs) {
-  const { field, scale, unknown } = key.setting
+  const { field, unknown } = key.setting
   const value = field === 'name' ? row.name : rowFieldValue(row, field)
   const color = keyColor(row, value, key)
-  if (scale === 'none' || value === '' || color === undefined) {
+  if (value === '' || color === undefined) {
     return undefined
   }
   return color === unknown && !key.pairs.has(value) ? OTHER_VALUE : value

@@ -1,8 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import {
-  CATEGORICAL_COLOR_SCALES,
-  colorChannelSlots,
   colorDomainSlot,
   colorRangeSlot,
   colorUnknownSlot,
@@ -41,23 +39,19 @@ import {
  * ```js
  * {
  *   type: 'LinearMultiRowFeatureDisplay',
- *   rowColor: { domain: ['mom'], range: ['#b2182b'], unknown: '' },
+ *   rowColor: { domain: ['mom'], range: ['#b2182b'], unknown: '#cccccc' },
  * }
  * ```
  */
 export const rowColorConfigSchema = ConfigurationSchema(
   'RowColor',
   {
-    ...colorChannelSlots({
-      scales: CATEGORICAL_COLOR_SCALES,
-      scaleName: 'RowColorScale',
-      fieldType: 'string',
-      fieldDefault: 'name',
-      field:
+    field: {
+      type: 'string',
+      defaultValue: 'name',
+      description:
         "the row attribute whose values take the colours: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group",
-      scale:
-        'none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field',
-    }),
+    },
     ...colorDomainSlot({
       domain:
         "the field's values given a colour of their own, in order: under name, rows by name",

@@ -446,14 +446,6 @@ describe('resolvedRowColors', () => {
     })
   })
 
-  it("leaves the own colour under scale: 'none'", () => {
-    const display = makeRowDisplay(
-      { rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] } },
-      { rows: OWN, shared: true },
-    )
-    expect(colorsOf(display)).toEqual({ b: '#0b0b0b', d: '#0d0d0d' })
-  })
-
   it('deals nothing by an attribute no row carries', () => {
     expect(makeRowDisplay({ rowColor: 'tissue' }).resolvedRowColors.size).toBe(
       0,
@@ -505,11 +497,6 @@ describe('the row palette', () => {
   it('deals by another row attribute, first seen first', () => {
     const display = makeRowDisplay({ rowColor: 'group' })
     expect(colorsOf(display)).toEqual({ a: p(0), b: p(1), c: p(0) })
-  })
-
-  it('deals none under scale none', () => {
-    const display = makePalette({ rowColor: { field: 'group', scale: 'none' } })
-    expect(display.resolvedRowColors.size).toBe(0)
   })
 
   // Observed, as a display's paint path observes it: an unobserved computed
@@ -577,15 +564,6 @@ describe('a dialog submit of the row colours', () => {
     expect(Object.fromEntries(display.rowColorPairs)).toEqual({ b: '#123456' })
   })
 
-  it("paints nothing under scale: 'none', its pairs kept for the way back", () => {
-    const display = makeGrouped({
-      rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] },
-    })
-    expect(display.rowColorChoice).toBe('')
-    expect(display.rowColorPairs.size).toBe(0)
-    expect(display.resolvedRowColors.size).toBe(0)
-  })
-
   it("paints only the values an unknown: '' lists", () => {
     const display = makeGrouped({
       rowColor: {
@@ -608,7 +586,7 @@ describe('a dialog submit of the row colours', () => {
   })
 
   it('recolours one row under None and leaves the rest unpainted', () => {
-    const display = makeGrouped({ rowColor: { scale: 'none' } })
+    const display = makeGrouped({ rowColor: { unknown: '' } })
     display.applyRowEdits(recoloured(display), { field: 'name', unknown: '' })
     expect(display.rowColorChoice).toBe('')
     expect(Object.fromEntries(display.rowColorPairs)).toEqual({ b: '#123456' })
@@ -643,17 +621,17 @@ describe('a dialog submit of the row colours', () => {
     expect(display.rowColorPairs.size).toBe(0)
   })
 
-  it('a submit with no colour object keeps a parked object', () => {
-    const parked = {
+  it("a submit with no colour object keeps an attribute's unknown: ''", () => {
+    const listed = {
       field: 'group',
-      scale: 'none',
       domain: ['y'],
       range: ['#abcdef'],
+      unknown: '',
     }
-    const display = makeGrouped({ rowColor: parked })
+    const display = makeGrouped({ rowColor: listed })
     display.applyRowEdits([...display.editableSources].reverse())
-    expect(display.rowColorSetting).toEqual(parked)
-    expect(display.rowColorChoice).toBe('')
+    expect(display.rowColorSetting).toEqual(listed)
+    expect(display.rowColorChoice).toBe('group')
   })
 
   it("a submit with no colour object keeps unknown: '#ccc'", () => {
