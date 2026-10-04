@@ -4,6 +4,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "noUncheckedIndexedAccess": true,
+    "paths": { "~site/*": ["./src/*"] },
     "resolveJsonModule": true
   }
 }

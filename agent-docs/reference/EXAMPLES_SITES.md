@@ -33,15 +33,15 @@ display node is the usual case: MST drops it and the demo renders wrong with no
 error (ARCHITECTURE.md "Where a display's state lives"). A generated fixture's
 generator validates before writing (`gen-nextstrain-demos.mjs`).
 
-## The demo comes first on the page
-### Why `ExampleSection.astro` is four copies
+## Shared layouts reach their site through `~site`
 
-`Shell.astro`, `Gallery.astro` and `exampleModel.ts` live in
-`examples-site-shared/` and are symlinked in. `ExampleLayout.astro` and
-`ExampleSection.astro` cannot follow, because a symlinked file may have no
-relative imports: `astro check` resolves one from the symlink's directory and vite
-from the file's real path. `ExampleSection` reads the per-site `../siteMeta.ts`.
-Don't retry without solving the resolver disagreement first.
+The layouts, `exampleModel.ts` and the gallery live in `examples-site-shared/`
+and are symlinked into each site. A shared file imports its site's own modules
+as `~site/...` (`siteMeta.ts`, `examples.ts`, `docs/*.md`), never by a relative
+path: `astro check` resolves a relative import from the symlink's directory and
+vite from the file's real path, so only an alias, declared in both
+`astro.config.mjs` and `tsconfig.json`, means the same file to both. Every site's
+`siteMeta.ts` exports the same names, including `demoHeights`.
 
 ## Generated artifacts and CI
 

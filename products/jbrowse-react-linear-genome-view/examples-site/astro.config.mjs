@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url'
+
 import react from '@astrojs/react'
 import { defineConfig } from 'astro/config'
 
@@ -21,6 +23,9 @@ export default defineConfig({
   // Remove once plugin-react makes its refresh runtime worker-safe
   // (window -> globalThis).
   vite: {
+    resolve: {
+      alias: { '~site': fileURLToPath(new URL('./src', import.meta.url)) },
+    },
     worker: { format: 'es' },
     server: { hmr: false },
   },
