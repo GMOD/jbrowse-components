@@ -91,7 +91,7 @@ contain it; hovering the intron beside the exon highlights nothing.
 
 1YCR holds the N-terminal domain of MDM2, a p53 regulator, and a fifteen-residue
 peptide from the p53 transactivation region, and the transcript encodes the
-peptide. In the 1YCR panel the **Mapped chain** picker lists both chains, and
+peptide. Open the 1YCR panel: its **Mapped chain** picker lists both chains, and
 the plugin picked the peptide, a short exact match near the start of the
 transcript row.
 
