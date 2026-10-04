@@ -2,18 +2,18 @@
 title: Complex rearrangements and derivative alleles
 sidebar_label: SVs (complex rearrangements)
 description:
-  Follow a rearrangement that takes several junctions to make across a
-  breakpoint split view, and show the derivative allele an assembly built
-  against the reference
+  Follow a three-chromosome rearrangement across a breakpoint split view, then
+  align the derivative allele assembled from its reads to the reference
 guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
 Cancer genomes have rearrangements that join several distant pieces of the
-genome into one molecule through a chain of junctions. We follow one such chain
-in the COLO829 melanoma cell line across the three chromosomes it visits, in a
-breakpoint split view, then align the derivative allele assembled from the reads
-that span it to the reference, in a synteny view.
+genome into one molecule through a chain of junctions, each joining two distant
+stretches. We follow one such chain in the COLO829 melanoma cell line across the
+three chromosomes it visits, in a breakpoint split view, then align the
+derivative allele assembled from the reads that span it to the reference, in a
+synteny view.
 
 ## Prerequisites
 
@@ -47,7 +47,8 @@ All but the last file come from the ONT COLO829 open-data release and its
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_tumor.regions.bed.gz
 - mosdepth coverage regions, normal:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_normal.regions.bed.gz
-- the GRCh38 build the CRAM decodes against, and the der(3) contig aligns to:
+- the GRCh38 build the CRAM decodes against, and the der(3) (derivative
+  chromosome 3) contig aligns to:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta
 - the COLO829 somatic SV truth set, lifted to GRCh38:
   https://zenodo.org/api/records/4716169/files/truthset_somaticSVs_COLO829_hg38lifted.vcf/content
@@ -70,11 +71,12 @@ gzip -dc COLO829_tumor.regions.bed.gz | sort -k1,1 -k2,2n |
 bedGraphToBigWig cov.bg hg38.chrom.sizes COLO829_tumor.coverage.bw
 ```
 
-## The der(3) chain across chr3, chr10 and chr12
+## The rearrangement chain across chr3, chr10 and chr12
 
-A series of junctions can bring two genes together, as in the KLHDC2-SNTB1
-fusion SplitThreader found in SK-BR-3, which needed three variants across three
-chromosomes ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)).
+A series of junctions can bring two genes together: in the SK-BR-3 breast cancer
+line, SplitThreader found a KLHDC2-SNTB1 fusion made of three variants across
+three chromosomes
+([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)).
 
 COLO829's der(3), a derivative chromosome 3 assembled from pieces of three
 chromosomes, is the chain the rest of this page follows. Three junctions close a
@@ -87,15 +89,14 @@ chr10:58,717,662 <-> chr12:72,273,294
 ```
 
 The pieces between the junctions are short, under a kilobase in all, spread
-across three chromosomes. The genes involved are _RARB_ on chr3, a tumor
-suppressor, _BICC1_ on chr10, and _TRHDE_ on chr12.
+across three chromosomes. The genes involved are _RARB_ (a tumor suppressor) on
+chr3, _BICC1_ on chr10, and _TRHDE_ on chr12.
 
 ## Tumor and normal reads at the chr3 breakpoints
 
-The ONT reads were aligned to GRCh38, and the CRAM decodes against it, so we
-load that assembly and the two read tracks. Each read file needs its index
-beside it, a `.crai` for the CRAM and a `.bai` for the BAM; for your own sample,
-swap the `uri`:
+The ONT reads are aligned to GRCh38, so we load that assembly and the two read
+tracks. Each read file needs its index beside it, a `.crai` for the CRAM and a
+`.bai` for the BAM; for your own sample, swap the `uri`:
 
 ```json addassembly
 {
@@ -139,34 +140,35 @@ beside them:
 ```
 
 Open the SV calls and the tumor and normal read tracks at
-`chr3:25,357,600-25,361,000`. At the chr3 breakpoints the tumor pileup becomes
-soft-clipped bases, because every read crossing the junction has its remainder
-aligned elsewhere. The matched normal at the same locus is clean. Soft clipping
-is off by default; turn it on from the track menu with **Show... → Show soft
-clipping**. These pileups are deep enough that the track asks before downloading
-the window, and **Force load** approves it for the rest of the session.
+`chr3:25,357,600-25,361,000`. At the chr3 breakpoints the tumor reads end in
+soft clipping, the part of a read the aligner placed elsewhere, because every
+read crossing the junction continues on another chromosome. The matched normal
+at the same locus is clean. Soft clipping is off by default; turn it on from the
+track menu with **Show... → Show soft clipping**. These pileups are deep enough
+that the track asks before downloading the window, and **Force load** approves
+it for the rest of the session.
 
 <Figure caption="Left: COLO829 tumor above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumor reads clip where normal reads read through. Right: the same event as a breakpoint split view over every locus the chain visits." src="/img/cancer_sv/multihop_reads.png" />
 
-## Following the chain across panels
+## Following the chain across breakpoint split view panels {#following-the-chain-across-panels}
 
-A breakpoint split view, the right half of the figure above, stacks the loci the
-chain visits and draws the reads that leave one panel and arrive in another.
-**Add → Breakpoint split view** builds a view whose loci you already know, one
-row per panel. A variant record already names its loci, so the view can also
-open from one: right-click the record in the variant track and choose **Open
-breakpoint split view**. The dialog asks for the layout, two stacked panels or
-one row spanning both breakends, and the window each panel opens at.
+A breakpoint split view stacks the loci a rearrangement visits, one panel per
+locus, and draws the reads that leave one panel and arrive in another. **Add →
+Breakpoint split view** builds a view whose loci you already know, one row per
+panel. A variant record already names its loci, so the view can also open from
+one: right-click the record in the variant track and choose **Open breakpoint
+split view**. The dialog asks for the layout, two stacked panels or one row
+spanning both breakends, and the window each panel opens at.
 
 A breakend (BND) record names one partner, so on its own it opens two panels.
-With **Follow further breakends at each end** checked, the dialog searches the
-callset at each end of the chain for another junction leaving from the same
-place, and adds it when there is exactly one. The search stops at a locus with
-two candidates, or at one leading back into the chain. On the chr3 record the
-chain starts from, it finds three panels, because the chr10 breakend has a
-second junction a couple of hundred bases away whose far end is on chr12. The
-search assumes that two junctions leaving one locus belong to one molecule, and
-the reads crossing both are the evidence for that.
+Check **Follow further breakends at each end** and the dialog searches the
+callset at each end for another junction leaving from the same place, adding it
+when exactly one exists. The search stops at a locus with two candidates, or at
+one leading back into the chain. From the chr3 record this chain starts at, it
+finds three panels: the chr10 breakend has a second junction a couple of hundred
+bases away, and that junction's far end is on chr12. The search assumes two
+junctions leaving one locus belong to one molecule, and reads crossing both are
+the evidence.
 
 <Figure caption="Opening the split view from the record itself: right-click the breakend, set the shape and window in the dialog, and get three panels because the chain runs chr3 to chr10 to chr12." src="/img/cancer_sv/split_view_from_breakend.png" />
 
@@ -176,15 +178,12 @@ every locus it touches along the top, the layout Ribbon
 ([Nattestad et al. 2021](https://doi.org/10.1093/bioinformatics/btaa1080))
 introduced.
 
-The split view shows the event in reference coordinates. The next section
-assembles the derivative allele, which shows the order and orientation of the
-pieces.
-
-## The derivative allele
+## Assembling the der(3) derivative allele and aligning it to GRCh38 {#the-derivative-allele}
 
 The cancer SV demo config, https://jbrowse.org/demos/cancer_sv/config.json,
-includes a der(3) contig assembled from the tumor reads that span all three
-loci, so every base in it comes from those reads.
+includes a der(3) contig (derivative chromosome 3, the rearranged copy)
+assembled from the tumor reads that span all three loci, so every base in it
+comes from those reads.
 
 To build one from your own data, pull the reads crossing the loci with
 `samtools view`, assemble them with
@@ -210,9 +209,9 @@ The published contig aligns to the reference in four blocks:
 
 The contig has four segments: a chr3 arm, short pieces of chr10 and chr12, and
 part of the same chr3 stretch again, inverted. The chr10 and chr12 pieces are
-templated insertions, stretches of other chromosomes copied in at a repair
-junction. The repeated chr3 stretch makes the allele an inverted duplication, or
-fold-back, the first step of a breakage-fusion-bridge cycle.
+templated insertions: stretches of other chromosomes copied in where the break
+was repaired. The repeated, inverted chr3 stretch makes the allele an inverted
+duplication (fold-back), the first step of a breakage-fusion-bridge cycle.
 
 Index the contigs, then load the contig as an assembly and the PAF as a synteny
 track between it and GRCh38:
@@ -247,7 +246,7 @@ empty and reports no error:
 }
 ```
 
-Then add the truth set, called on five platforms before this ONT run existed, so
+Add the truth set, called on five platforms before this ONT run existed, so
 every junction has an independent call to check against:
 
 ```json addtrack config=https://jbrowse.org/demos/cancer_sv/config.json loc=chr3:25,320,000-25,365,000
@@ -263,13 +262,14 @@ every junction has an independent call to check against:
 }
 ```
 
-The segment labels, the projected gene annotation and the realigned reads below
-come with the demo's config. The assembly, the synteny track and the truth set
-above reproduce the ribbons and arcs on your own contig.
+The demo's config also supplies the segment labels, the gene annotation
+projected onto the contig and the realigned reads shown below. The assembly,
+synteny track and truth set above reproduce the ribbons and arcs on your own
+contig.
 
 Open **Add → Linear synteny view** with hg38 on the top row and
 `der3_RARB_BICC1_TRHDE` below, and pick **der3 contig vs hg38** as the synteny
-track. The figure shows:
+track. The view shows:
 
 - ribbons coloured by the reference chromosome each segment came from
 - a BED track on the derivative labelling each segment with its reference
@@ -286,7 +286,7 @@ track. The figure shows:
 
 <Figure caption="The reconstructed derivative against its three source loci: RefSeq genes, the truth set and the tumor's split reads above, with each junction drawn once as an arc; the same annotation projected onto the allele below, each segment labelled with the interval it came from." src="/img/cancer_sv/derivative_synteny.png" />
 
-## Checking the reconstruction
+## Checking the der(3) contig against the reads and the truth set
 
 Zoom the synteny view to the kilobase holding the junctions; at that zoom each
 of the two inserts has a ribbon of its own. Against hg38 every split read stops
@@ -297,9 +297,9 @@ shows that they agree with each other; the truth set, called from other
 platforms, is the independent check.
 
 Each hg38 window extends past the segment the allele includes, so the reference
-on either side of the reads is absent from the allele. The read lane shows split
-alignments only, so its coverage band counts the reads with a junction and steps
-down as each arm ends.
+on either side of the reads is absent from the allele. The read track shows
+split alignments only, so its coverage counts reads that cross a junction and
+steps down as each arm ends.
 
 <Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the truth set's validated calls over the same molecules against hg38, split alignments only, each row stopping at a call with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them." src="/img/cancer_sv/derivative_inserts.png" />
 
