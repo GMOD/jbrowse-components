@@ -4060,6 +4060,7 @@
         "colorRampSlots",
         "colorRangeSlot",
         "colorReverseSlot",
+        "colorSettingOf",
         "colorTitleSlot",
         "colorUnknownSlot",
         "dealRowColors",

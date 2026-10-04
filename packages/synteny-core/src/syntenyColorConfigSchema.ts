@@ -35,7 +35,7 @@ export const SYNTENY_VIEW_FIELDS = [
 ] as const
 
 /** A synteny colour object as its snapshot holds it. */
-export type SyntenyColorSnapshot = Partial<ColorSetting>
+export interface SyntenyColorSnapshot extends Partial<ColorSetting> {}
 
 /**
  * #config SyntenyColor
