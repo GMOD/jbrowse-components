@@ -44,8 +44,11 @@ export const strandCigarColors = {
   D: '#a020f0',
 }
 
-const [forwardStrandColor, reverseStrandColor] =
-  UNIVERSAL_FIELD_PRESETS.strand.range
+const [forwardStrandColor, reverseStrandColor]: readonly [
+  string,
+  string,
+  ...string[],
+] = UNIVERSAL_FIELD_PRESETS.strand.range
 
 export const colorSchemes = {
   default: {
