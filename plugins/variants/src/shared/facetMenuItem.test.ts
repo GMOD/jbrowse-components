@@ -1,3 +1,5 @@
+import { setConf } from '@jbrowse/core/configuration'
+import { staysOpenOnClick } from '@jbrowse/core/ui'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
@@ -65,4 +67,31 @@ test('None turns the facet off', () => {
     none.onClick()
   }
   expect(d.facet).toBeUndefined()
+})
+
+test('each radio writes its own facet, a re-pick keeping the band order', () => {
+  const writes = facetSubMenu(display(SOURCES)).map((_, i) => {
+    const d = display(SOURCES)
+    d.setFacet('population')
+    setConf(d, ['facet', 'domain'], ['EUR'])
+    const item = facetSubMenu(d)[i]!
+    expect(staysOpenOnClick(item)).toBe(true)
+    if ('onClick' in item) {
+      item.onClick()
+    }
+    return ['label' in item && item.label, d.facet]
+  })
+  expect(writes).toEqual([
+    ['None', undefined],
+    ['Population', { field: 'population', domain: ['EUR'] }],
+    ['Sex', { field: 'sex', domain: [] }],
+  ])
+})
+
+test('ticks the attribute banding now, and only that one', () => {
+  const d = display(SOURCES)
+  d.setFacet('sex')
+  expect(
+    facetSubMenu(d).map(i => 'checked' in i && i.checked && i.label),
+  ).toEqual([false, false, 'Sex'])
 })
