@@ -149,6 +149,19 @@ export function displayCensusInPage() {
   return { pending, tooLarge }
 }
 
+/**
+ * The error surfaces no display carries: the toast `notifyError` raises, as a
+ * track whose config fails to load does, and the box `ErrorMessage` renders.
+ * A track that never opened leaves nothing in {@link displayCensusInPage}.
+ */
+export function errorsShownInPage() {
+  return [
+    ...document.querySelectorAll<HTMLElement>(
+      '[data-testid="snackbar-error"], [data-testid="error-message-box"]',
+    ),
+  ].map(el => (el.innerText || el.textContent || '').trim().slice(0, 300))
+}
+
 /** Displays as one clause for a message. */
 export function describeDisplays(displays: DisplayState[]) {
   return displays

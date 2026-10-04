@@ -2,6 +2,7 @@ import { DEFAULT_TIMEOUT } from './poll.ts'
 import {
   describeDisplays,
   displayCensusInPage,
+  errorsShownInPage,
   waitForSession,
 } from './sessionGate.ts'
 import { appSettledBlocker } from './waits.ts'
@@ -30,7 +31,7 @@ export interface ReadyReport {
 
 /**
  * Wait until the session holds the assembly and tracks asked for, the app has
- * held itself ready, and every display has painted.
+ * held itself ready, every display has painted, and no error is on screen.
  */
 export async function waitForJBrowseReady(
   page: Page,
@@ -78,6 +79,10 @@ export async function waitForFrame(
     unsettled.push(
       `display(s) canceled, which lasts until Retry: ${describeDisplays(canceled)}`,
     )
+  }
+  const errors = await page.evaluate(errorsShownInPage)
+  if (errors.length > 0) {
+    unsettled.push(`error(s) on screen: ${errors.join('; ')}`)
   }
   if (!allowUnsettled && unsettled.length > 0) {
     const stillLoading = pending.some(

@@ -212,3 +212,31 @@ test('a views floor of 0 reaches the gate through the whole chain', async () => 
   })
   expect(report.unsettled).toEqual([])
 }, 20000)
+
+// A track whose config fails to load never becomes a display, so the census is
+// empty and the app reads ready; only the toast says the frame lacks a track.
+// Two jbrowse-anywidget figures published without theirs that way.
+test.each([
+  ['an error toast', 'snackbar-error'],
+  ['an error box', 'error-message-box'],
+])(
+  '%s fails a frame with nothing pending',
+  async (_name, testid) => {
+    app(
+      'ready',
+      `<div data-testid="${testid}">Track "fst" has an invalid configuration</div>`,
+    )
+    await expect(
+      waitForJBrowseReady(fakePage(), { timeout: 10000 }),
+    ).rejects.toThrow(
+      /^error\(s\) on screen: Track "fst" has an invalid configuration\. No timeout/,
+    )
+  },
+  20000,
+)
+
+test('a warning toast is not an error', async () => {
+  app('ready', `<div data-testid="snackbar-warning">Slow fetch</div>`)
+  const report = await waitForJBrowseReady(fakePage(), { timeout: 10000 })
+  expect(report.unsettled).toEqual([])
+}, 20000)

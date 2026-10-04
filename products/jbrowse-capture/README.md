@@ -57,7 +57,9 @@ decides the answer:
 Then one check on what the frame shows, which the marker does not answer. The
 marker is about WORK, so it reads `ready` over a display whose fetch failed or
 that the user canceled. Capture names every display that is unpainted, canceled
-or showing an error banner, and fails.
+or showing an error banner, and fails. It fails too on an error toast or error
+box, which no display carries: a track whose config fails to load never becomes
+a display, so the frame lacks it while every display present has painted.
 
 **The instance has to be JBrowse v5 or later**, the first release to publish the
 marker. Capture reads the instance's `version.txt` before launching a browser
