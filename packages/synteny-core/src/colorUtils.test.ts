@@ -5,8 +5,8 @@ import {
 } from './colorUtils.ts'
 
 // The chip is a key, not a pixel sample. Matching the composited ribbon exactly
-// stops working at the linear-synteny default alpha of 0.2, where every hue
-// washes to near-white and the key identifies nothing.
+// stops working at the linear synteny view's default alpha of 0.25, where every
+// hue washes to near-white and the key identifies nothing.
 const WHITE = '#fff'
 
 describe('legendChipColor', () => {
@@ -30,9 +30,9 @@ describe('legendChipColor', () => {
     expect(Math.min(r, g, b)).toBeGreaterThan(210)
   })
 
-  test('two distinct track colors stay distinguishable at the default alpha', () => {
-    const a = legendChipColor('#4e79a7', 0.2, WHITE)
-    const b = legendChipColor('#f28e2c', 0.2, WHITE)
+  test("two distinct track colors stay distinguishable at the linear synteny view's default alpha", () => {
+    const a = legendChipColor('#4e79a7', 0.25, WHITE)
+    const b = legendChipColor('#f28e2c', 0.25, WHITE)
     expect(a).not.toBe(b)
   })
 
