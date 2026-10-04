@@ -93,8 +93,8 @@ Two input mistakes leave jcvi with no orthologs:
 
 `pairs.tsv` is the two gene columns of `human.rhesus.anchors`. The script skips
 `human.rhesus.lifted.anchors`: liftover recruits extra pairs near an established
-block, and their median dS is several times that of the chained ones, which
-marks them as paralogs.
+syntenic block, and their median dS is several times that of the chained ones,
+which marks them as paralogs.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/kaks_from_pairs.py
@@ -124,10 +124,10 @@ floor on that count.
 
 Every row also has that count and a two-sided Fisher exact p, the test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
-prescribes for small substitution counts. Both are `attributeColumns`, so
-clicking a link shows the evidence under its colour.
+prescribes for small substitution counts. The track config below exposes both as
+`attributeColumns`, so clicking a link shows the evidence under its colour.
 
-## Loading the genomes and genes
+## Loading the human and rhesus genomes and genes
 
 A gene-level synteny view reads no sequence, so each assembly is a
 `.chrom.sizes` file (a name and a length per line) that the script writes from
@@ -158,10 +158,10 @@ refNames as the assembly:
 
 Add the rhesus track the same way, with `rhesus_genes` under `rhesus`.
 
-## Loading the blocks table in JBrowse
+## Loading the ortholog table as a synteny track
 
-The output is a pair table, the two gene ids followed by dN, dS, the synonymous
-substitution count and the Fisher p, which is the `.blocks` shape
+`primate.blocks` lists each pair's two gene ids, then dN, dS, the synonymous
+substitution count and the Fisher p. That is the `.blocks` shape
 [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track) reads:
 
 ```json addtrack
@@ -185,16 +185,16 @@ panel lists each as a feature attribute. **Color by value → dN/dS** in the
 palette button menu reads `dn` and `ds`, on a ramp with 1 at the middle and 2 at
 the top.
 
-Two `LinearSyntenyView` properties matter for a view this sparse. `opacity`
-defaults to 0.2 for whole-genome views where ribbons overlap, and 0.95 shows the
-colour as it is: **Opacity** on the sliders button in the view header.
-`drawCurves` separates stacked neighbours: **Curved lines** on the same menu.
+Two view settings matter for a view this sparse. `opacity` defaults to 0.2 for
+whole-genome views where ribbons overlap, and 0.95 shows the colour as it is:
+**Opacity** on the sliders button in the view header. `drawCurves` separates
+stacked neighbours: **Curved lines** on the same menu.
 
-## Reading LYZ against its neighbours by dN/dS
+## Reading lysozyme (LYZ) against its neighbours by dN/dS
 
-The session below opens the collinear neighbourhood around _LYZ_ on human
-chromosome 12 from the hosted copy, coloured by dN/dS. In your own build, pick
-**Color by value → dN/dS**.
+The session below opens, from the hosted copy, the stretch around lysozyme
+(_LYZ_) on human chromosome 12 where gene order matches rhesus, coloured by
+dN/dS. In your own build, pick **Color by value → dN/dS**.
 
 ```json session config=https://jbrowse.org/demos/primate_selection/config.json
 {
@@ -225,11 +225,11 @@ chromosome 12 from the hosted copy, coloured by dN/dS. In your own build, pick
 }
 ```
 
-<Figure caption="Human against rhesus macaque across a collinear neighbourhood on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
+<Figure caption="Human against rhesus macaque across a stretch of conserved gene order on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
 
-The neighbourhood is collinear, so colour is the only thing that varies. Messier
-and Stewart reported adaptive evolution of primate lysozyme in 1997.
-Foregut-fermenting primates use the enzyme as a digestive protein.
+Gene order is the same in both genomes here, so colour is the only thing that
+varies. Messier and Stewart reported adaptive evolution of primate lysozyme
+in 1997. Foregut-fermenting primates use the enzyme as a digestive protein.
 
 Clicking the orange link shows its synonymous count and Fisher p in the detail
 panel; the published result rests on codon models across many primate lineages.
@@ -237,7 +237,7 @@ Blue is the low end of the ramp, where the Fisher test does reach significance:
 a conserved gene accumulates measurable synonymous change while holding
 non-synonymous change near zero.
 
-## YEATS4 as the control beside LYZ
+## YEATS4, a conserved neighbour, as the control for LYZ
 
 _YEATS4_ begins just past where _LYZ_ ends, so the two share a locus and a
 divergence time and land at opposite ends of the ramp. It is conserved and
