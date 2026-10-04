@@ -16,9 +16,9 @@ no build step. The `<LinearGenomeView>` component takes three objects,
   `npx serve -S` in the folder works (`-S` resolves symlinks, so a data file you
   symlink in still loads)
 
-## Quick start
+## Embed a linear genome view with one script tag {#quick-start}
 
-Save as `index.html`:
+Save this page as `index.html`:
 
 ```html title="index.html"
 <!doctype html>
@@ -78,9 +78,9 @@ from the file's extension, `assemblyNames` from the one `assembly` above (see
 npx serve -S .
 ```
 
-Open the URL it prints.
+Open the URL `serve` prints.
 
-<Figure caption="The More complete example below embedded in a web page, with genes, exome reads, conservation and 1000 Genomes calls at the tutorial's chr10 locus." src="/img/embed_linear_genome_view/final.png"/>
+<Figure caption="The complete example below embedded in a web page, with genes, exome reads, conservation and 1000 Genomes calls at the tutorial's chr10 locus." src="/img/embed_linear_genome_view/final.png"/>
 
 The `@next` tag fetches the newest v5 prerelease, which the `assembly` and
 `tracks` shorthand above needs, so pin a version for production
@@ -89,9 +89,10 @@ The `@next` tag fetches the newest v5 prerelease, which the `assembly` and
 For other view types, a different bundler, or working demo repos, see
 [](/docs/embedded_components).
 
-## Using your own files
+## Using your own data files in the embedded view
 
-The browser fetches each file itself, so the files have to satisfy it:
+The browser fetches each file itself, so each file has to be reachable and
+indexed:
 
 - A relative `uri` such as `uri: 'sample.bam'` resolves against the page, so
   with `npx serve -S .` a file beside `index.html` loads. Use a full URL for a
@@ -111,7 +112,7 @@ more track types, or name search, see the
 
 ## Using the component in a React app
 
-Pass the same `assembly`, `tracks`, and `view` as props:
+In a React app, pass the same `assembly`, `tracks`, and `view` as props:
 
 ```jsx
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
@@ -121,11 +122,10 @@ function GenomeBrowser() {
 }
 ```
 
-The component reads its props once, on mount. To reach the view engine
-imperatively (navigate, show a track), take a `ref` or use `useCreateViewState`,
-which builds the same view state as a hook. The hook returns `undefined` for the
-first frame, while the view and display types the options name load, so render
-nothing until then:
+The component reads its props once, on mount. To navigate or show a track from
+code afterwards, take a `ref` or use `useCreateViewState`, which builds the same
+view state as a hook. The hook returns `undefined` for the first frame while the
+view and display types load, so render nothing until then:
 
 ```js
 import {
