@@ -4477,6 +4477,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/MarkSvgLayer": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/MultiRegionDisplayMixin": {
       "package": "@jbrowse/display-kit",
       "names": [

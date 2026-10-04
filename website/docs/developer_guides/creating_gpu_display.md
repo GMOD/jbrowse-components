@@ -845,10 +845,8 @@ export async function renderSvg(
   return renderDisplaySvg(model, opts, ScoreSvgBody)
 }
 
-// The same painter the Canvas2D backend runs, handed an SVG context. The
-// export's width is the shell's, not the on-screen renderState's, which
-// subtracts the track outline the export does not draw. The shell clips the
-// body to its box.
+// The same painter the Canvas2D backend runs, handed an SVG context, at the
+// export's size. The shell clips the body to its box.
 function ScoreSvgBody({
   model,
   height,
@@ -856,15 +854,15 @@ function ScoreSvgBody({
   renderBlocks,
   opts,
 }: LgvSvgBodyProps<ScoreSvgModel>) {
-  const state = { ...model.renderState, canvasWidth, canvasHeight: height }
   return (
-    <PaintLayer
+    <MarkSvgLayer
+      marks={SCORE_MARKS}
+      regions={model.rpcDataMap}
+      blocks={renderBlocks}
+      state={model.renderState}
       width={canvasWidth}
       height={height}
       opts={opts}
-      paint={ctx => {
-        paintMarkBlocks(ctx, SCORE_MARKS, model.rpcDataMap, renderBlocks, state)
-      }}
     />
   )
 }
