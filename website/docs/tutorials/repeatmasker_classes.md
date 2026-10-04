@@ -41,7 +41,7 @@ jbrowse.org.
   [Reproduce it end to end](#reproduce-it-end-to-end) checks a home-built
   conversion against: https://jbrowse.org/ucsc/dm6/rmsk.bed.gz
 
-## Where the class is stored in the file
+## Where UCSC and GenArk hubs store the repeat class
 
 UCSC golden-path and GenArk hubs store the repeat class differently:
 
@@ -62,20 +62,20 @@ a window with no satellite repeats has no satellite lane.
 Open hg38 on [genomes.jbrowse.org](https://genomes.jbrowse.org), turn on
 **RepeatMasker**, type `chr17:45,700,000-45,750,000` into the location box, then
 pick **Display types → Multi-row feature display (painting)** in the track menu.
-The painting partitions on `repClass` whenever the file has that column; **One
-row per...** in the same menu lists every column the loaded features have,
-`repFamily` among them. <!-- menu-path-ok -->
+The multi-row display partitions on `repClass` whenever the file has that
+column; **One row per...** in the same menu lists every column the loaded
+features have, `repFamily` among them. <!-- menu-path-ok -->
 
 <Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window after picking it, one lane per repeat class." />
 
 <Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed lane to a labelled lane per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column in the file." />
 
-The colored, packed form and the lane form are the same track and the same
-fetch:
+The packed form and the lane form are the same track and the same fetch, shown
+here over one window:
 
-<Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass with the key the color derives. Every class shares one packed lane. Bottom: the same track and window partitioned on repClass instead. SINE fills the window and LINE comes in clusters. The empty LTR? lane comes from a repeat just past the window's right edge, and LTR? and Unknown take palette colors because the color's domain does not list them." src="/img/cookbook_color_by_type_two_ways.png"/>
+<Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass, every class in one packed lane. Bottom: the same track and window with one lane per repClass. SINE fills the window and LINE comes in clusters. The empty LTR? lane comes from a repeat just past the window's right edge, and LTR? and Unknown take palette colors because the color's domain does not list them." src="/img/cookbook_color_by_type_two_ways.png"/>
 
-## Pinning the lanes in a track config
+## Pinning lane order and colors in a track config
 
 A track config can open the track in the partitioned view. Two more settings
 keep the lanes stable as the window's class list changes: `rowColor` pairs a
@@ -119,12 +119,11 @@ class with a color, and `rows.domain` fixes the lane order.
 A lane not named in `rowColor` takes a color from the categorical palette by its
 position in the stack, so its color moves as the window's class list changes.
 
-The multi-row display needs a `displays` entry because the track opens with the
-display listed **first**. Putting a bare `{ "type": "LinearBasicDisplay" }`
-ahead of the multi-row entry keeps the packed form as the default and leaves the
-lanes one menu click away.
+The track opens with the display listed **first**, so the multi-row entry makes
+lanes the default. Putting a bare `{ "type": "LinearBasicDisplay" }` ahead of it
+keeps the packed form as the default and leaves the lanes one menu click away.
 
-## Checking the lanes against the file
+## Checking the lanes against the RepeatMasker file {#checking-the-lanes-against-the-file}
 
 To check the lane heights, count the classes in the file over the window in the
 figures:
@@ -136,18 +135,19 @@ tabix https://jbrowse.org/ucsc/hg38/rmsk.bed.gz chr17:45,700,000-45,750,000 |
   sort -k3 -nr
 ```
 
-The classes it prints are the lanes with features on screen, and their bp totals
+The printed classes are the lanes with features on screen, and their bp totals
 are the area drawn in each lane. JBrowse fetches past the view's edges and
 builds lanes from everything it fetched, so an empty lane can come from a repeat
 just outside the window: the figures' empty `LTR?` lane is `MamRep605`, past the
-right edge. A class here with no lane, or a lane with features and no line here,
-means the view is showing a different file.
+right edge. A printed class with no lane, or a lane with features and no printed
+line, means the view is showing a different file.
 
 The `Unknown` lane is the control. Neither the `rowColor` above nor the
-cookbook's lookup table names it, and it appears because the lanes come from the
-file. Pan to a window whose output has no `Unknown` line and the lane goes away.
+[cookbook's color lookup](/docs/cookbook#colors) names it, and it appears
+because the lanes come from the file. Pan to a window whose output has no
+`Unknown` line and the lane goes away.
 
-The tabix command with `$6` instead of `$7` counts `repFamily`, which is the
+The same command with `$6` instead of `$7` counts `repFamily`, which is the
 finer partition (`L1`, `Alu`, `MIR`) if the classes turn out to be too coarse
 for what you are reading.
 
@@ -199,8 +199,8 @@ npx --yes serve repeatmasker_build/jbrowse2               # then open the printe
 
 `genome.fa` is the FASTA RepeatMasker was run against and `repeats.out` is its
 `.out`; either may be gzipped. Tools are under [Prerequisites](#prerequisites).
-It runs the conversion above, `samtools faidx` over the FASTA for the assembly,
-and `jbrowse add-track` with the display already set.
+The script runs the conversion above, `samtools faidx` over the FASTA for the
+assembly, and `jbrowse add-track` with the display already set.
 
 On a genome UCSC also masks, compare the output with the UCSC conversion:
 
