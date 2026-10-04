@@ -7,16 +7,19 @@ import type {
   LegendSection,
   LegendSpec,
 } from '@jbrowse/core/ui/legendSpec'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * What a display on the circle offers the key: a ring composing `LegendMixin`
  * or a variant chord track painting a field answers `legendSpec` (a density
  * ramp, or the colors a field paints), and any other ring, chord track or
- * ribbon track answers the one color it paints with.
+ * ribbon track answers the one color it paints with. A ring whose key takes
+ * colors from the theme answers `legendSpecIn` too, for the SVG export's theme.
  */
 export interface CircularLegendSource {
   legendSpec?: LegendSpec
+  legendSpecIn?: (palette: JBrowsePalette) => LegendSpec
   legendColor?: string
 }
 
@@ -41,8 +44,11 @@ function keyFor(
   display: CircularLegendSource,
   name: string,
   id: string,
+  palette: JBrowsePalette | undefined,
 ): { row?: LegendItem; sections: LegendSection[] } {
-  const sections = display.legendSpec?.sections ?? []
+  const spec =
+    (palette && display.legendSpecIn?.(palette)) ?? display.legendSpec
+  const sections = spec?.sections ?? []
   const ramp = sections.flatMap(s => s.items).find(item => item.gradient)
   if (ramp) {
     return { row: { ...ramp, label: name }, sections: [] }
@@ -68,13 +74,17 @@ function keyFor(
 /**
  * The circle's key, since a ring or a chord carries no label of its own: a row
  * per single-color or ramp track, then a section per track coloring by a field.
+ * Given a palette, the key is the SVG export's, in that theme.
  */
-export function circularLegendSpec(view: CircularLegendHost): LegendSpec {
+export function circularLegendSpec(
+  view: CircularLegendHost,
+  palette?: JBrowsePalette,
+): LegendSpec {
   const session = getSession(view)
   const keys = view.tracks.flatMap((track, idx) => {
     const display = track.displays[0]
     const name = coarseStripHTML(getTrackName(track.configuration, session))
-    return display ? [keyFor(display, name, `track${idx}`)] : []
+    return display ? [keyFor(display, name, `track${idx}`, palette)] : []
   })
   const rows = keys.flatMap(k => (k.row ? [k.row] : []))
   return {

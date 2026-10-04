@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/svg/svgReady'
 import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
 import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { getSession, radToDeg } from '@jbrowse/core/util'
@@ -20,6 +21,25 @@ import { Rulers } from '../components/Ruler.tsx'
 import { figureGutterPx } from '../rulerLabels.ts'
 
 import type { CircularViewModel, ExportSvgOptions } from '../model.ts'
+
+export function SvgCircularLegend({
+  model,
+  size,
+}: {
+  model: CircularViewModel
+  size: number
+}) {
+  const palette = usePalette()
+  return (
+    <SvgColorLegend
+      entries={legendEntries(model.legendSpecIn(palette))}
+      canvasWidth={size}
+      maxHeight={size}
+      testid="color-legend"
+      idPrefix={`legend-${model.id}`}
+    />
+  )
+}
 
 export async function renderToSvg(
   model: CircularViewModel,
@@ -127,13 +147,7 @@ export async function renderToSvg(
           ))}
         </g>
         {model.showLegend ? (
-          <SvgColorLegend
-            entries={legendEntries(model.legendSpec)}
-            canvasWidth={figureSize}
-            maxHeight={figureSize}
-            testid="color-legend"
-            idPrefix={`legend-${model.id}`}
-          />
+          <SvgCircularLegend model={model} size={figureSize} />
         ) : null}
       </>
     ),

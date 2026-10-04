@@ -40,7 +40,9 @@ built from the theme gets a twin taking the palette (`renderStateIn`,
 palette into the getter's output re-copies model logic into the export. The
 shell's legend draws `legendSpecIn(palette)`, so a display whose key takes
 colours from the theme overrides `LegendMixin`'s `colorScalesIn` (alignments,
-MAF); the default is `colorScales`.
+MAF); the default is `colorScales`. A ring's exports run `plotOnly`, so the
+circular view's own key (`CircularView.legendSpecIn`) reads each ring's
+`legendSpecIn` instead.
 
 **Text inherits the export's font.** The dialog puts `font-family` on the root,
 so a `<text>` that writes the theme's family overrides it; measure in

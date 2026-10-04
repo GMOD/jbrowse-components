@@ -101,6 +101,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 import type { AssemblyNameResolver, TrackInit } from '@jbrowse/core/util/tracks'
 import type { Region } from '@jbrowse/core/util/types'
@@ -1637,7 +1638,16 @@ function stateModelFactory(pluginManager: PluginManager) {
        * one row per track: its name beside the color or ramp it paints with
        */
       get legendSpec(): LegendSpec {
-        const { sections } = circularLegendSpec(self)
+        return this.legendSpecIn()
+      },
+      /**
+       * #method
+       * `legendSpec` in another theme, the SVG export's, which keys a ring
+       * whose colors follow the theme (alignments, MAF) in that theme. The
+       * ribbon key takes no colors from the theme.
+       */
+      legendSpecIn(palette?: JBrowsePalette): LegendSpec {
+        const { sections } = circularLegendSpec(self, palette)
         return {
           sections:
             self.chordSyntenyDisplays.length > 0 && self.hasLegendKey

@@ -1,3 +1,4 @@
+import { defaultStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { circularLegendSpec } from './circularLegend.ts'
@@ -96,4 +97,32 @@ test('a ring coloring by a field keys its colors under the track name', () => {
 test('a track with no single color, such as a jexl stroke, is left out', () => {
   const spec = circularLegendSpec(viewWith([{ name: 'svs', display: {} }]))
   expect(spec.sections).toEqual([])
+})
+
+test('given a palette, a ring keys the colors it paints in that theme', () => {
+  const swatches = (color: string) => ({
+    sections: [
+      {
+        id: 'color',
+        items: [
+          { label: 'forward', color },
+          { label: 'reverse', color: '#999' },
+        ],
+      },
+    ],
+  })
+  const view = viewWith([
+    {
+      name: 'reads',
+      display: {
+        legendSpec: swatches('#123456'),
+        legendSpecIn: palette => swatches(palette.text.primary),
+      },
+    },
+  ])
+  const { palette } = defaultStyleTheme
+  expect(circularLegendSpec(view).sections[0]?.items[0]?.color).toBe('#123456')
+  expect(circularLegendSpec(view, palette).sections[0]?.items[0]?.color).toBe(
+    palette.text.primary,
+  )
 })
