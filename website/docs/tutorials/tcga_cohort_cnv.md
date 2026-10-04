@@ -36,10 +36,12 @@ needed.
 - the clinical table the stack is grouped by:
   https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
 
-The hg38 reference and gene track beside them are the hosted UCSC
-[hub](/docs/user_guides/hub_url)'s own entries.
+The build script copies the hg38 reference and the MANE gene track from the
+hosted UCSC hub config, https://jbrowse.org/ucsc/hg38/config.json, so it
+downloads no reference; the assembly fence below loads GRCh38 from jbrowse.org
+instead.
 
-## Segment file
+## The segment BED, one call per line
 
 [Reproduce it end to end](#reproduce-it-end-to-end) below builds these files
 from the GDC for any project id. The BED is one segment call per line, with a
@@ -139,7 +141,7 @@ of their own.
 
 Every figure below is in the sorted state.
 
-<Figure caption="chr17:37.5-42 Mb, with ERBB2 highlighted and the 1104 rows clustered on chr17:39.0-40.5 Mb, the window the track opens at. The rows sort into amplified, gained, lost and balanced bands, and the flanks show the amplified tumors' gain thinning out on either side of the gene. The same locus is one vertical stripe in the genome-wide figure below." src="/img/tcga/cohort_cnv_erbb2.png" />
+<Figure caption="The ERBB2 window, with ERBB2 highlighted and the tumors clustered on the window the track opens at. The rows sort into amplified, gained, lost and balanced bands, and the flanks show the amplified tumors' gain thinning out on either side of the gene. The same locus is one vertical stripe in the genome-wide figure below." src="/img/tcga/cohort_cnv_erbb2.png" />
 
 With each row under a pixel tall, the saturated colours crowd out the neutral
 ones. The stack shows where the events are, and the recurrence track below

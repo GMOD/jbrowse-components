@@ -15,9 +15,9 @@ subtype shares line up.
 ## Prerequisites
 
 - A JBrowse 2 instance to add tracks to (see the
-  [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop), which loads these tracks by
-  URL with nothing to host) and the [JBrowse CLI](/docs/cli)
+  [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop)) and the
+  [JBrowse CLI](/docs/cli)
 
 ## Where the data comes from
 
@@ -35,10 +35,11 @@ TCGA-BRCA open-access somatic mutation calls from the GDC
 - the clinical table with per-tumor histology, receptor status and stage:
   https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
 
-The hg38 reference and gene track come from the hosted UCSC
-[hub](/docs/user_guides/hub_url).
+The build script copies the hg38 reference and the MANE gene track from the
+hosted UCSC hub config, https://jbrowse.org/ucsc/hg38/config.json; that MANE
+track is the gene lane the collapse-introns step below right-clicks.
 
-## Input files {#what-the-two-files-hold}
+## The cohort VCF and the clinical table {#what-the-two-files-hold}
 
 The VCF is the GDC's per-tumor **Masked Somatic Mutation** calls merged into one
 multi-sample file, one column per tumor:
@@ -174,18 +175,20 @@ by...** and **Color by... → Samples**.
 }
 ```
 
+Open the matrix over _CDH1_'s exons: right-click _CDH1_ in the gene lane, choose
+**Collapse introns**, and **Replace current view** (see
+[](/docs/user_guides/gene_track)):
+
+<Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's context menu, and the 979-tumor matrix redrawn over the coding sequence." />
+
 With both slots at `histology`, the rows band by how the tumor was called under
 the microscope:
 
 <Figure caption="CDH1's exons with rows grouped and colored by histology and the gene's introns collapsed. The truncating (HIGH impact) cells crowd into the lobular band and the much larger ductal band above it is nearly empty." src="/img/tcga/mutations_cdh1_histology.png" />
 
-E-cadherin loss is the defining lesion of lobular breast cancer
+Loss of E-cadherin, the protein _CDH1_ encodes, is the defining lesion of
+lobular breast cancer
 ([Ciriello et al. 2015](https://doi.org/10.1016/j.cell.2015.09.033)).
-
-To get that window, right-click _CDH1_ in the gene lane, choose **Collapse
-introns**, and **Replace current view** (see [](/docs/user_guides/gene_track)):
-
-<Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's context menu, and the 979-tumor matrix redrawn over the coding sequence." />
 
 The GDC's open mutation calls are exome only, so these figures are all
 gene-scale.
@@ -232,9 +235,9 @@ The bottom band is the tumors whose receptor calls do not resolve a subtype.
 Hovering a column names its mutation and consequence; clicking opens the variant
 popup with per-tumor read counts.
 
-_PIK3CA_ at the same zoom piles its calls on three columns, H1047R in the kinase
-domain and E542K and E545K side by side in the helical one. All three run
-through every band, densest in HR+/HER2-.
+_PIK3CA_, with its introns collapsed the same way, piles its calls on three
+columns, H1047R in the kinase domain and E542K and E545K side by side in the
+helical one. All three run through every band, densest in HR+/HER2-.
 
 <Figure caption="PIK3CA's exons with the rows banded and colored by receptor subtype and the gene's introns collapsed. Three columns, two in the helical domain and one in the kinase domain, hold most of the cohort's calls, against the private columns spread around them." src="/img/tcga/mutations_pik3ca_grouped.png" />
 
@@ -289,9 +292,10 @@ pin every row to one axis. Open it above the matrix to read each band's rate
 over it. The two lines of output above already show the contrast: _TP53_ climbs
 toward the triple-negative group where _PIK3CA_ falls.
 
-`--impact` sets what counts as a hit, defaulting to the HIGH and MODERATE tiers,
-the ones `impactColor` paints. The rate has no background model, and gene length
-enters directly: _TTN_ ranks near the top on passenger mutations alone.
+`--impact` sets what counts as a hit, defaulting to the HIGH and MODERATE tiers
+of the consequence impact that colours the matrix. The rate has no background
+model, and gene length enters directly: _TTN_ ranks near the top on passenger
+mutations alone.
 
 On the matrix itself, **Clustering → Cluster rows by genotype...** gathers every
 mutated sample into one block (see [](/docs/user_guides/clustering)), and
@@ -309,12 +313,11 @@ grouping, any TSV whose first column matches the VCF's sample names works.
 
 ## Copy number on the same tumors
 
-The mutation rates above lean toward a group: _TP53_ climbs toward the
-triple-negative group where _PIK3CA_ falls, and every band has both. Copy number
-on the same tumors sorts them by amplification instead. In the
-[copy-number cohort's recurrence by subtype](/docs/tutorials/tcga_cohort_cnv#split-the-recurrence-by-clinical-group),
-17q gain is confined to the HER2+ row, and 5q loss and 10p gain to the
-triple-negative row. Both pages group by the same clinical TSV.
+The
+[copy-number cohort](/docs/tutorials/tcga_cohort_cnv#split-the-recurrence-by-clinical-group)
+splits its recurrence by the same clinical TSV, so its subtype rows line up with
+the bands here: 17q gain is confined to the HER2+ row, and 5q loss and 10p gain
+to the triple-negative row.
 
 ## Reproduce it end to end
 
