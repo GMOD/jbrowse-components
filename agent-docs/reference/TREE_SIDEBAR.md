@@ -177,8 +177,8 @@ first from tableau10 less its grey and then re-lit laps of it (`rowPaletteColorA
 and a set `unknown` stands in for the palette. A name deal skips a row carrying
 its own colour; an attribute deal skips the empty value, so a row with none
 takes a colour only from a `''` pair (ggplot's `na.value`, not a category); an
-attribute no row carries deals nothing. A
-multi-row `rowGroups` entry only tags a row's `group`; the group's colour is
+attribute no row carries deals nothing. A multi-row `rowGroups` entry only
+tags a row's `group`; the group's colour is
 `rowColor: { field: 'group' }`. Every row carries it as `rowColor`: the sidebar always draws
 it as the row's label bar, and a display paints its marks in it only where
 `rowColorPaintsMarks`. A row's own `color` stays the file's attribute.
@@ -216,9 +216,11 @@ What else the mixin owns:
   a reset writes to `rowColor`, or nothing while the live object is not
   custom: the live field with the colours the base gives that field, its
   pairs and `unknown`, or none where the base colours by another. A reset
-  recolours and never changes what the rows are coloured by, so a Color by,
-  None included, survives a reset and a mode switch. Its target is never
-  itself custom, so one reset is the whole way back (ADR-207).
+  recolours and never changes what the rows are coloured by, so a Color by
+  survives a reset and a mode switch; None survives too, except where the
+  display deals a palette under `name`, where None is an `unknown: ''` the
+  reset undoes. Its target is never itself custom, so one reset is the whole
+  way back (ADR-207).
 - **The dialog shows the `rowColor` object and submits it**
   (`applyRowEdits(rows, rowColor)`, ADR-164): "Color rows by" None
   (`unknown: ''`), Each row where the display deals a palette under `name`

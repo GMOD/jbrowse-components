@@ -104,9 +104,8 @@ offered only where it differs. The variant menu's pick writes what the
 dialog would for that choice (`rowColorForChoice`), so None is one object from
 either surface, and a reader's value colours leave with the attribute;
 `rowColor` has no `scale` since ADR-207's second 2026-10-04 amendment.
-`dialogSources` is gone: the pairs under `scale: 'none'` stay parked rather
-than open on the swatches. Wiggle's None takes the per-source switch off as
-before.
+`dialogSources`, which opened parked pairs on the swatches, is gone. Wiggle's
+None takes the per-source switch off as before.
 
 **An untouched colour panel writes no colour.** The dialog passes a `rowColor`
 object only where the choice, a value's colour or a row's swatch differs from

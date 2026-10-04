@@ -133,11 +133,13 @@ attribute wrote the base's grey onto it, which turns every unpaired value grey.
 `rowColorResetTarget` is now one rule: the target is the live field with the
 colours the base gives that field, none where the base colours by another. A
 reset recolours and never changes what the rows are coloured by, as no other
-Color by in the app is undone by "Reset row order", and a field switch,
-None included, is never custom. None over a configured Color by therefore
-offers no Reset; the reader picks the attribute back from the same radio
-group. Pairs compare as a set, so a dialog listing them in another order is
-not custom.
+Color by in the app is undone by "Reset row order", and a field switch is
+never custom. None over a configured Color by therefore offers no Reset; the
+reader picks the attribute back from the same radio group, and a reset then
+returns any colours the config gives it. Where the display deals a palette
+under `name`, None is `unknown: ''` on the base's own field, so it is custom
+there and a reset deals the palette again. Pairs compare as a set, so a
+dialog listing them in another order is not custom.
 
 The variant menu's Samples group ticks a configured attribute the samples
 lack, as the dialog shows it chosen, rather than ticking nothing.
