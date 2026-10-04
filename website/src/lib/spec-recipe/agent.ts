@@ -205,12 +205,12 @@ export function compositeAgent(
   const build = (part: string, top: boolean): string | undefined => {
     const layout = figureComposites[part]
     if (layout) {
-      const inputs = layout.parts.map(p => build(p, false))
-      if (inputs.some(input => input === undefined)) {
+      const inputs = layout.parts.flatMap(p => build(p, false) ?? [])
+      if (inputs.length < layout.parts.length) {
         return undefined
       }
       const out = top ? 'figure.png' : `stack-${++stacks}.png`
-      stack.push(stackLine(inputs as string[], layout, out))
+      stack.push(stackLine(inputs, layout, out))
       if (layout.callouts && notes.length === 0) {
         notes.push(
           "The figure's callouts across its frames are drawn over the stacked image, which these commands leave out.",
