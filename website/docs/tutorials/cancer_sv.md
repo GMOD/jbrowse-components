@@ -141,7 +141,7 @@ beside them:
 
 Open the SV calls and the tumor and normal read tracks at
 `chr3:25,357,600-25,361,000`. At the chr3 breakpoints the tumor reads end in
-soft clipping, the part of a read the aligner placed elsewhere, because every
+soft clipping, an end the aligner left unaligned at this locus, because every
 read crossing the junction continues on another chromosome. The matched normal
 at the same locus is clean. Soft clipping is off by default; turn it on from the
 track menu with **Show... → Show soft clipping**. These pileups are deep enough
