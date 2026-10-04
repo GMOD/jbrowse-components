@@ -7,8 +7,8 @@ export const MULTI_ROW_PLOT_EXAMPLES: PlotExample[] = [
     description: 'forward strand red, reverse blue',
   },
   {
-    plot: '{ "facet": "strand" }',
-    description: 'one section per strand',
+    plot: '{ "facet": "group" }',
+    description: 'one band per row group',
   },
   {
     plot: '{ "color": "#1f77b4" }',
