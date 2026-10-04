@@ -55,8 +55,8 @@ const CATEGORICAL_PRESET: FieldPreset<'categorical'> = { scale: 'categorical' }
 
 /**
  * The fields whose values have names, an order and colours of their own on
- * every display, beneath each display's own presets. Red forward and blue
- * reverse is what the synteny ribbons paint too. The SV classes are
+ * every display, beneath each display's own presets. The synteny ribbons
+ * paint strand from this range too. The SV classes are
  * `svClassOf`'s, deletion red and duplication blue as dbVar and gnomAD-SV
  * paint them, insertion the pileup's purple, and the rest kept apart under
  * deuteranopia and protanopia. A record with no class files under `''`, so
