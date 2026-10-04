@@ -3735,7 +3735,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given feature track.",
+          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
           "type": "number",
           "default": 5000000
         },
@@ -4166,7 +4166,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given feature track.",
+          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
           "type": "number",
           "default": 5000000
         },
@@ -7971,7 +7971,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fetchSizeLimit": {
-          "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
+          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
           "type": "number",
           "default": 5000000
         },
