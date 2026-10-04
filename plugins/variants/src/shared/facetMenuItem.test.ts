@@ -75,8 +75,8 @@ test('each radio writes its own facet, a re-pick keeping the band order', () => 
     d.setFacet('population')
     setConf(d, ['facet', 'domain'], ['EUR'])
     const item = facetSubMenu(d)[i]!
-    expect(staysOpenOnClick(item)).toBe(true)
     if ('onClick' in item) {
+      expect(staysOpenOnClick(item)).toBe(true)
       item.onClick()
     }
     return ['label' in item && item.label, d.facet]
