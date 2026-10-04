@@ -159,8 +159,8 @@ right-click inside the box and choose **Linear synteny view**.
 
 ## Stacking the three strains
 
-A band is drawn between adjacent rows only, so a 26695 / CHC155 / J99 stack
-needs the two adjacent alignments:
+A synteny band joins matching regions of two adjacent rows only, so a 26695 /
+CHC155 / J99 stack needs the two adjacent alignments:
 
 <!-- from: scripts/build_hpylori_synteny.sh -->
 
@@ -195,10 +195,10 @@ NZ_CP011330v1:305,000-415,000[rev]
 
 <Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, a zoom in on each row, and each strain's gene track from the track selector for that row." />
 
-<Figure caption="Three H. pylori strains stacked with a gene track on each genome, across the stretch inverted in CHC155. The ribbons into the middle row cross from both sides, since the same stretch runs one way in 26695 and J99 and the other way in CHC155." src="/img/sv_synteny/linear_synteny_genes.png" />
+<Figure caption="Three H. pylori strains stacked with a gene track on each genome, across the stretch inverted in CHC155. The bands into the middle row cross from both sides, since the same stretch runs one way in 26695 and J99 and the other way in CHC155." src="/img/sv_synteny/linear_synteny_genes.png" />
 
 Each panel is a full linear genome view with a separate search box, zoom and
-track selector. See [](/docs/user_guides/linear_synteny_view) for ribbon options
+track selector. See [](/docs/user_guides/linear_synteny_view) for band options
 and [URL parameters → linear synteny view](/docs/urlparams#linear-synteny-view)
 for building one from a URL.
 
@@ -240,10 +240,10 @@ the hub's gene track:
 }
 ```
 
-## Using PIF for large genomes
+## Indexing large alignments as PIF
 
 A bacterial PAF is small enough to load whole. For a large whole-genome
-alignment, convert it to [](/docs/developer_guides/pif_format) so JBrowse
+alignment, convert the PAF to [](/docs/developer_guides/pif_format) so JBrowse
 fetches only the alignments in the current viewport:
 
 ```bash
