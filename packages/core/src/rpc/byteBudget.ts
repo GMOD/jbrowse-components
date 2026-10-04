@@ -48,6 +48,19 @@ export function isRegionRefused(
   )
 }
 
+/**
+ * The thrown form of the same refusal, for an adapter whose limit only a fetch
+ * can find, such as a graph's node count. Marked by an own `regionTooLarge`
+ * property, which crosses the worker boundary, so an adapter's own error class
+ * opts in without importing anything.
+ */
+export function isRegionTooLargeError(error: unknown): error is Error {
+  return (
+    error instanceof Error &&
+    (error as { regionTooLarge?: unknown }).regionTooLarge === true
+  )
+}
+
 /** Undefined, never 0, when no region could be measured. */
 export function largestRegionBytes(perRegion: (number | undefined)[]) {
   let largest: number | undefined

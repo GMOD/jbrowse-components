@@ -1,3 +1,4 @@
+import { isRegionTooLargeError } from '@jbrowse/core/rpc/byteBudget'
 // the subpath, not the `@jbrowse/core/ui` barrel: this file is the MUI-free
 // chrome, and gpuFallback.ts is React-free for exactly that reason
 import {
@@ -234,12 +235,20 @@ const PlainErrorBar = observer(function PlainErrorBar({
   model: DisplayErrorBarModel
   visible: boolean
 }) {
-  return visible && model.error ? (
+  const { error } = model
+  if (!visible || !error) {
+    return null
+  }
+  return isRegionTooLargeError(error) ? (
+    <div style={overlayBox} role="status">
+      <div style={chip}>
+        <span style={{ wordBreak: 'break-word' }}>{error.message}</span>
+      </div>
+    </div>
+  ) : (
     <div style={overlayBox} role="alert">
       <div style={chip}>
-        <span style={{ wordBreak: 'break-word' }}>
-          {errorText(model.error)}
-        </span>
+        <span style={{ wordBreak: 'break-word' }}>{errorText(error)}</span>
         <button
           type="button"
           style={button}
@@ -252,7 +261,7 @@ const PlainErrorBar = observer(function PlainErrorBar({
         </button>
       </div>
     </div>
-  ) : null
+  )
 })
 
 // No anti-flash delay here, unlike the MUI set: that timing is a product

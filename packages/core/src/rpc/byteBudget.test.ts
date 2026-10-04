@@ -1,10 +1,12 @@
 import {
   isRegionRefused,
+  isRegionTooLargeError,
   largestRegionBytes,
   measureRegionBytes,
   measuredBytes,
   overByteBudget,
 } from './byteBudget.ts'
+import { deserializeError, serializeError } from './serializeError/index.ts'
 
 describe('largestRegionBytes', () => {
   it('keeps the biggest region, not the total', () => {
@@ -177,5 +179,26 @@ describe('measureRegionBytes over a region set', () => {
         byteLimit: 1000,
       }),
     ).toEqual({ bytes: undefined })
+  })
+})
+
+describe('isRegionTooLargeError', () => {
+  class NodeLimitError extends Error {
+    override name = 'NodeLimitError'
+    regionTooLarge = true
+  }
+
+  test('recognizes an error class marked with regionTooLarge', () => {
+    expect(isRegionTooLargeError(new NodeLimitError('zoom in'))).toBe(true)
+    expect(isRegionTooLargeError(new Error('boom'))).toBe(false)
+    expect(isRegionTooLargeError({ regionTooLarge: true })).toBe(false)
+  })
+
+  test('still recognizes it after the worker boundary', () => {
+    const crossed = deserializeError(
+      serializeError(new NodeLimitError('zoom in')),
+    )
+    expect(isRegionTooLargeError(crossed)).toBe(true)
+    expect(crossed.message).toBe('zoom in')
   })
 })

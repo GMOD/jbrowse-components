@@ -11,7 +11,7 @@ import plainChromeOverlays from './plainChromeOverlays.tsx'
 // the components themselves promise, since that is what an embedder consumes and
 // what this package can break on its own.
 
-const { Loading, BackgroundProgress } = plainChromeOverlays
+const { Loading, BackgroundProgress, ErrorBar } = plainChromeOverlays
 
 test('the percentage is formatted by progressLabel, not by hand', () => {
   // The `X%` suffix is single-sourced in `@jbrowse/core/util/progress` so the
@@ -90,4 +90,14 @@ test('a hidden state renders nothing at all', () => {
     <Loading model={{ statusMessage: 'Downloading' }} visible={false} />,
   )
   expect(container.innerHTML).toBe('')
+})
+
+test('a region-too-large error is a status with no Retry', () => {
+  const error = Object.assign(new Error('Zoom in to see lanes'), {
+    regionTooLarge: true,
+  })
+  render(<ErrorBar model={{ error, reload: () => {} }} visible />)
+  expect(screen.getByRole('status').textContent).toBe('Zoom in to see lanes')
+  expect(screen.queryByTestId('reload_button')).toBeNull()
+  expect(screen.queryByRole('alert')).toBeNull()
 })

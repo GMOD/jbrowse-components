@@ -114,6 +114,17 @@ test('error phase overlays DisplayErrorBar while keeping the canvas mounted', as
   await findByText(/boom-error-bar/)
 })
 
+test('a region-too-large error shows as a notice with no Retry', async () => {
+  const model = TestChromeModel.create({})
+  model.setError(
+    Object.assign(new Error('Zoom in to see lanes'), { regionTooLarge: true }),
+  )
+  const { findByText, queryByTestId } = renderChrome(model)
+
+  await findByText('Zoom in to see lanes')
+  expect(queryByTestId('reload_button')).toBeNull()
+})
+
 test('loading phase overlays the loading scrim while keeping the canvas mounted', async () => {
   const model = TestChromeModel.create({})
   model.setLoadingCondition(true)
