@@ -57,8 +57,13 @@ The lanes come from one track that reads the release's gbz-base database
 directly. The HPRC page's **haplotypes** launch adds it, and this config is the
 one to adapt for your own graph, whose database and haplotype index
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-a-gbz-base-database)
-builds. List an assembly per haplotype in `assemblyNames`, and map each to its
-PanSN `sample#haplotype` name in `assemblyNameToPanSN`:
+builds. List an assembly per haplotype in `assemblyNames`. The track finds each
+one's walk in the graph through the assembly's `sample#haplotype` alias. The
+HPRC config declares one for every release 2 haplotype (`HG00097.1` is aliased
+`HG00097#1`), and
+[one assembly entry](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
+does the same for a haplotype of your own. GRCh38 has no such alias, so
+`assemblyNameToPanSN` names its walk:
 
 ```json addtrack
 {
@@ -73,11 +78,7 @@ PanSN `sample#haplotype` name in `assemblyNameToPanSN`:
       "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db"
     },
     "assemblyNames": ["hg38"],
-    "assemblyNameToPanSN": {
-      "hg38": "GRCh38#0",
-      "HG00097.1": "HG00097#1",
-      "HG00099.1": "HG00099#1"
-    },
+    "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
     "context": 1000,
     "nodeLimit": 50000
   },

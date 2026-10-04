@@ -308,7 +308,11 @@ tools. The browser reads only the format 3 companion that `gbz-haplotype-index`
 0.3.0 and later writes.[^gbz-cost]
 
 Serve the database and the companion from URLs that answer range requests, and
-point the track's `uri` and `haplotypeIndexLocation` at them:
+point the track's `uri` and `haplotypeIndexLocation` at them. Each haplotype in
+`assemblyNames` is an assembly whose aliases include its `sample#haplotype`
+name, as
+[the HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
+declares one; `assemblyNameToPanSN` covers the reference, which has none:
 
 ```json addtrack
 {
@@ -323,11 +327,7 @@ point the track's `uri` and `haplotypeIndexLocation` at them:
       "uri": "https://example.com/graphs/my_graph.haplotype-index.db"
     },
     "assemblyNames": ["hg38"],
-    "assemblyNameToPanSN": {
-      "hg38": "GRCh38#0",
-      "HG00097.1": "HG00097#1",
-      "HG00099.1": "HG00099#1"
-    },
+    "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
     "context": 1000,
     "nodeLimit": 50000
   },
