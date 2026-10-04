@@ -100,11 +100,11 @@ cells below are affected animals and the lighter ones carriers.
 
 ## Slicing the NHEJ1 locus out of the Paragraph callset
 
-The Paragraph callset (structural variants genotyped with Paragraph) is a 5.9 GB
-VCF across 1,879 dogs and wolves, published on
-[Zenodo](https://doi.org/10.5281/zenodo.14968873) with a tabix index, and
-`bcftools` fetches only the locus. Zenodo serves the data and index from
-separate URLs, so the index is named explicitly:
+The Paragraph callset (Manta's structural variant calls, genotyped in every
+sample with Illumina's Paragraph) is a 5.9 GB VCF across 1,879 dogs and wolves,
+published on [Zenodo](https://doi.org/10.5281/zenodo.14968873) with a tabix
+index, and `bcftools` fetches only the locus. Zenodo serves the data and index
+from separate URLs, so the index is named explicitly:
 
 <!-- from: scripts/build_dog10k_nhej1_sv.sh -->
 

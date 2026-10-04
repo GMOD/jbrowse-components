@@ -217,7 +217,8 @@ chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,93
 <Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci the cluster labelling did not use, in the same order as the rows they mark. The signal runs down the diagonal." src="/img/scrna/marker_panel.png" />
 
 Each marker's expression shows as the height of its 3' spike from row to row.
-The axis is logarithmic because all nine rows share it.
+All nine rows share one axis, and its log scale keeps the weaker markers' spikes
+readable beside the strongest.
 
 `jbrowse add-track --multiwig` takes a comma-separated list of the BigWigs and
 builds the same track, labeling each row from its filename, and the **Add

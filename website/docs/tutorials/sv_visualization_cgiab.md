@@ -403,7 +403,8 @@ awk 'NR>1 {printf "%s\t%d\t%d\t%.4f\n", $1, $2-1, $3, $9}' \
 
 We'll plot it as bars from zero on a fixed axis, so a step means the same thing
 from one window to the next. A homozygous deletion has no reads and so no finite
-ratio, and the balanced baseline sits above zero.
+ratio. BIC-seq2 normalizes on total read counts and HG008-T is hypodiploid, so a
+balanced region sits above zero.
 
 ```json addtrack
 {

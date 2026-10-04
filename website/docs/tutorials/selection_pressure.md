@@ -231,11 +231,11 @@ Gene order is the same in both genomes here, so colour is the only thing that
 varies. Messier and Stewart reported adaptive evolution of primate lysozyme
 in 1997. Foregut-fermenting primates use the enzyme as a digestive protein.
 
-Clicking the orange link shows its synonymous count and Fisher p in the detail
-panel; the published result rests on codon models across many primate lineages.
-Blue is the low end of the ramp, where the Fisher test does reach significance:
-a conserved gene accumulates measurable synonymous change while holding
-non-synonymous change near zero.
+Clicking the orange _LYZ_ ribbon shows its synonymous count and Fisher p in the
+detail panel; the published result rests on codon models across many primate
+lineages. Blue is the low end of the ramp, where the Fisher test does reach
+significance: a conserved gene accumulates measurable synonymous change while
+holding non-synonymous change near zero.
 
 ## YEATS4, a conserved neighbour, as the control for LYZ
 

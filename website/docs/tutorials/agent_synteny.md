@@ -221,9 +221,12 @@ Three instructions each prevent a failure that raises no error:
 - **Answer counted from the alignment file.** Otherwise the agent describes the
   dotplot.
 
-Two more come up unprompted: screenshot what it builds, since a wrong track id
-or empty region still renders as a plausible browser, and say the numbers before
-it navigates, so what you see is a claim you can check.
+Two more are worth asking for:
+
+- **Screenshot what you build and read the image back.** A wrong track id or an
+  empty region still renders as a plausible browser.
+- **Say the numbers before navigating.** What you then see is a claim you can
+  check.
 
 ## Running the whole pipeline as a script
 

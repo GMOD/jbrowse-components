@@ -190,10 +190,11 @@ TMSK000001      0.033   0.967     Tamaskan
 GRSD000002      0       1         German Shepherd Dog
 ```
 
-Nearly all swept breeds come in at a trace of wolf, and all but one of the
-wolfdogs sit far above them. That one, Czechoslovakian 2, lands inside the range
-of the sweep with no long block anywhere; the Saarloos and Czechoslovakian
-Wolfdog breeds have both been bred back to dogs for decades.
+The table lists one animal from each group. Nearly all swept breeds come in at a
+trace of wolf, and seven of the eight wolfdogs (four Saarloos, four
+Czechoslovakian) sit far above them. The eighth, Czechoslovakian 2
+(`CZEC000002`), lands inside the range of the sweep with no long block anywhere;
+both wolfdog breeds have been bred back to dogs for decades.
 
 ### Collapsing FLARE's calls into BED blocks
 

@@ -328,7 +328,8 @@ region, so you can substitute any trait the sample table records. Edit the
 new peaks. Then change `REGIONS` to a peak, slice that window with the
 `bcftools` command above, and add a column to the samples TSV to color by. The
 Dog10K paper's selection scan (its Fig. 8) lists peaks for five ancestry
-components, and the structural-variant paper lists more.
+components, and Schall and Kidd (2025) list structural variants associated with
+breed clades.
 
 ## Reproduce it end to end
 
@@ -372,6 +373,8 @@ bash build_dog10k_igf1.sh       # writes ./dog10k_igf1_build/
   [Estimation of levels of gene flow from DNA sequence data](https://doi.org/10.1093/genetics/132.2.583)
 - Rimbault et al. (2013).
   [Derived variants at six genes explain nearly half of size reduction in dog breeds](https://doi.org/10.1101/gr.157339.113)
+- Schall & Kidd (2025).
+  [Integrative genotyping and analysis of canine structural variation using long-read and short-read data](https://doi.org/10.1093/gbe/evaf173)
 - Sutter et al. (2007).
   [A single IGF1 allele is a major determinant of small size in dogs](https://doi.org/10.1126/science.1137045)
 - Meadows et al. (2023).

@@ -183,10 +183,10 @@ Only the `adapter` block differs from the un-indexed version:
 ```
 
 `make-pif` also writes a coarse copy of the alignments for zoomed-out views.
-`--coarse` tunes it and `--csi` swaps the TBI index for sequences over ~512 Mb;
-raise
+`--coarse` sets how many bp a coarse row may stray from the real alignment; with
+a larger value, raise
 [`coarseBpPerPxThreshold`](/docs/config/multigenomeindexedpafadapter#slot-coarsebpperpxthreshold)
-on the adapter alongside it.
+on the adapter too. `--csi` swaps the TBI index for sequences over ~512 Mb.
 
 ## Stacking the five strains {#stacking-the-genomes}
 
