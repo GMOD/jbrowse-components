@@ -14,11 +14,11 @@ A person has two copies of each chromosome, one from each parent, and a complete
 diploid assembly lets us lay them against each other. We plot the mother's copy
 of every chromosome against the father's in T2T-HG002 v1.2, the Q100 project's
 telomere-to-telomere assembly of the HG002 reference individual, and find the
-8p23.1 inversion HG002 has on one haplotype. The assembly ships both haplotypes
-as contigs of one FASTA, named `chr1_MATERNAL` and `chr1_PATERNAL`, so JBrowse
-loads it as a single assembly and maternal against paternal is a self-alignment.
-The Q100 project publishes the chain between them, which we load as a synteny
-track.
+8p23.1 inversion (short arm of chromosome 8) HG002 has on one haplotype. The
+assembly ships both haplotypes as contigs of one FASTA, named `chr1_MATERNAL`
+and `chr1_PATERNAL`, so JBrowse loads it as a single assembly and maternal
+against paternal is a self-alignment. The Q100 project publishes the chain
+between them, which we load as a synteny track.
 
 ## Prerequisites
 
@@ -108,10 +108,10 @@ haplotype to chain to, and their column and row stay empty.
 
 ## Opening the 8p23.1 inversion in a linear synteny view
 
-Every chromosome in the plot is a red diagonal against the same chromosome on
-the other haplotype, and a few have small blue marks where a stretch runs
-inverted. At whole-genome scale those marks look alike, so the literature picks
-which to open: HG002 is heterozygous for the 8p23.1 inversion polymorphism
+In the whole-genome plot, every chromosome is a red diagonal against the same
+chromosome on the other haplotype, and a few have small blue marks where a
+stretch runs inverted. At genome scale those marks look alike, so the literature
+picks which to open: HG002 is heterozygous for the 8p23.1 inversion polymorphism
 (Bosch _et al._ 2009), so the maternal and paternal copies of that arm run in
 opposite directions, and the Q100 chain records it as its largest inverted
 block, close to 4 Mb. A linear synteny view reads the two copies against each
@@ -135,8 +135,8 @@ paternal panel to the matching stretch of `chr8_PATERNAL`. Then:
 The gene annotation shows the inversion too. The JHU Liftoff GFFs are published
 beside the assembly, one per haplotype, on matching contig names:
 
-- they annotate v1.1, and on chromosome 8 the lanes still land where the v1.2
-  ribbons do
+- the files annotate v1.1, and on chromosome 8 the lanes still land where the
+  v1.2 ribbons do
 - the gene symbol is in `gene_name` with no `Name`, so the label points there
 - the paternal panel takes the same config with `PAT` in the name and URL, under
   a different `trackId`
@@ -158,7 +158,7 @@ beside the assembly, one per haplotype, on matching contig names:
 }
 ```
 
-Then, on each gene lane:
+Set these on each gene lane:
 
 - `geneGlyphMode` draws one representative transcript per gene, the RefSeq or
   MANE Select one where the file tags it and the longest coding one otherwise,
@@ -174,31 +174,31 @@ Then, on each gene lane:
 
 ## Keeping the two haplotypes in register with the follow button
 
-At 9 Mb across, the offset between the two haplotypes is a few pixels, so the
-same window typed into both panels would have looked lined up. Zoomed in, the
-offset fills the whole screen, because every upstream indel shifts one haplotype
-against the other. With follow on, the view maps the top panel's window through
-the chain's CIGAR and moves the panel below there on every pan, so the ribbons
-stay near-vertical however far you go.
+At 9 Mb across, the offset between the two haplotypes is a few pixels, so one
+window typed into both panels looks lined up. Zoomed in, the offset fills the
+screen, because every upstream indel shifts one haplotype against the other.
+With follow on, the view maps the top panel's window through the chain's CIGAR
+(its alignment string) and moves the panel below to match on every pan, so the
+ribbons stay near-vertical.
 
-The figure below is 70 kb typed into both panels with follow off. The maternal
-panel has a chain block and the paternal panel's lane is empty, because those
-coordinates land in the gap past that block's end on the other haplotype. The
-follow button fills the lane and closes the ribbon. Turn it off to pan the
-paternal panel by hand, and right-click a chain block for **Move other panel to
-the matching region**, the same walk done once.
+The figure below types the same 70 kb into both panels with follow off. The
+maternal panel shows a chain block and the paternal panel's lane is empty,
+because those coordinates land in the gap past the block's end on the other
+haplotype. The follow button fills the lane and closes the ribbon. With follow
+off, pan the paternal panel by hand, or right-click a chain block for **Move
+other panel to the matching region**, which does the follow move once.
 
 <Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks in each haplotype's coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
 
-The clip below opens 2 Mb into the collinear chain past the inversion, both
-panels typed to the same coordinates, where the Liftoff lanes name the same
+The clip below starts 2 Mb into the collinear chain past the inversion, with
+both panels typed to the same coordinates, so the Liftoff lanes name the same
 genes a few hundred kilobases out of register. **Location markers**, in the
-header's settings menu, draw lines through each ribbon joining a point on the
-top row to where it maps on the bottom.
+header's settings menu, draw a line through each ribbon from a point on the top
+row to where it maps on the bottom.
 
-<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Maternal over paternal at chr8:13-15 Mb with the gene lanes and location markers on. The follow button places the paternal panel from the maternal one through the chain, so the same genes line up under each other and the markers are vertical, and the panel below follows as the top one is dragged along." />
+<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Maternal over paternal at chr8:13-15 Mb with gene lanes and location markers on. The follow button places the paternal panel from the maternal one through the chain, so the same genes line up and the markers stay vertical as the top panel is dragged." />
 
-## Checking the inversion against the chain
+## Checking the 8p23.1 inversion against the chain
 
 The chain file lists each inverted block as a chain on the `-` strand. The
 longest on the maternal chr8 is the 8p23.1 inversion, the stretch the blue bar
