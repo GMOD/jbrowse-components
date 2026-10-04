@@ -198,8 +198,9 @@ else
   cp "$tmp/scope-all" "$tmp/scope"
 fi
 scope_existing=$(mktemp "$tmp/scope.XXXXXX")
+# a symlink is formatted at its target; both formatters refuse one by name
 while IFS= read -r f; do
-  if [ -f "$f" ]; then
+  if [ -f "$f" ] && [ ! -L "$f" ]; then
     printf '%s\n' "$f"
   fi
 done <"$tmp/scope" >"$scope_existing"
