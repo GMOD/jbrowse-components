@@ -27,7 +27,7 @@
 // question — what the change broke rather than whether it is well-formed.
 
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, lstatSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -83,7 +83,11 @@ const GATES: Gate[] = [
   {
     name: 'format (astro)',
     argv: scoped([], files => {
-      const astro = files.filter(f => f.endsWith('.astro'))
+      // prettier refuses a symlink named on its command line, and the shared
+      // layouts symlinked into each examples-site are checked at their target
+      const astro = files.filter(
+        f => f.endsWith('.astro') && !lstatSync(join(root, f)).isSymbolicLink(),
+      )
       return astro.length > 0
         ? [bin('prettier'), '--check', ...astro]
         : undefined

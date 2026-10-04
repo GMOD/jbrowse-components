@@ -204,7 +204,9 @@ test('a plugin can extend the view menu while a track is open', async () => {
   })
   const state = await controller.whenReady()
 
-  const labels = state.session.view.menuItems().map(m => m.label)
+  const labels = state.session.view
+    .menuItems()
+    .map(m => ('label' in m ? m.label : undefined))
   expect(labels).toContain('Tracks')
   expect(labels.at(-1)).toBe('Extra')
   controller.destroy()
