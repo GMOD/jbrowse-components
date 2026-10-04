@@ -7,7 +7,7 @@
 //
 //   node browser-tests/measure-load-latency.ts [--latency=100] [--runs=3]
 //     [--only=hub] [--base=https://jbrowse.org/code/jb2/main/] [--waterfall]
-//     [--http1]
+//     [--http1] [--nothrottle]
 //
 // Run after a build. The server speaks HTTP/2 and sends the deploy's
 // Cache-Control for static/; --http1 serves HTTP/1.1, whose six connections a
@@ -35,10 +35,16 @@ const only = flag('only')
 const base = flag('base')
 const waterfall = process.argv.includes('--waterfall')
 const http1 = process.argv.includes('--http1')
+// collapses React 19's 300ms Suspense reveal throttle; see probe-coldload-phases.ts
+const noThrottle = process.argv.includes('--nothrottle')
 
 const scenarios = {
   'volvox, 4 tracks':
     'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1000-6000&tracks=volvox_filtered_vcf,volvox_microarray,volvox_cram_alignments_ctga,gff3tabix_genes',
+  'volvox, one BAM track':
+    'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-20000&tracks=volvox_bam&renderer=canvas2d',
+  'volvox, one CRAM track':
+    'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-20000&tracks=volvox_cram&renderer=canvas2d',
   'hg38 hub, its default session':
     'config=https://jbrowse.org/ucsc/hg38/config.json',
 }
@@ -112,6 +118,23 @@ async function measure(root: string, query: string, chromeArgs: string[]) {
   try {
     const page = await browser.newPage()
     const requests = await collectTimedRequests(page, latency)
+    if (noThrottle) {
+      await page.evaluateOnNewDocument(() => {
+        const orig = window.setTimeout
+        ;(window as any).setTimeout = (fn: any, ms?: number, ...rest: any[]) =>
+          orig(
+            fn,
+            typeof fn === 'function' &&
+              fn.name.startsWith('bound ') &&
+              ms !== undefined &&
+              ms > 10 &&
+              ms <= 300
+              ? 0
+              : ms,
+            ...rest,
+          )
+      })
+    }
     await page.evaluateOnNewDocument(() => {
       new MutationObserver((_, observer) => {
         if (document.querySelector('[data-app-phase="ready"]')) {
