@@ -187,7 +187,7 @@ const COHORT_TRACK_ID = 'tcga_brca_cnv'
 // so a figure names the section whose config it draws.
 const MUTATIONS_DOC = 'tutorials/tcga_cohort_mutations.md'
 const HISTOLOGY_SECTION = 'Group the rows by clinical annotation'
-const SUBTYPE_SECTION = 'Group by receptor subtype'
+const SUBTYPE_SECTION = 'Group rows by receptor subtype'
 
 // The matrix canvas only mounts once the cell-data RPC has landed, so this gates
 // each capture on real completion rather than on a duration guess.

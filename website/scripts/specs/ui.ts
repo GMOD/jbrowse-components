@@ -618,7 +618,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     annotations: [{ type: 'box', anchor: { text: 'Zoom to region' } }],
   },
 
-  // display_settings.md: the state its "Change three settings" step leaves the
+  // display_settings.md: the state its "Change height, color and read pairing" step leaves the
   // track in. The live link opens that end state, so the settings live in the
   // session rather than in click actions, shared with config/settings_to_json.
   {
