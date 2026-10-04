@@ -10,7 +10,7 @@ import {
   colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
  * `scale` on a synteny colour object is the set/map switch alone: a field's
@@ -35,20 +35,7 @@ export const SYNTENY_VIEW_FIELDS = [
 ] as const
 
 /** A synteny colour object as its snapshot holds it. */
-export interface SyntenyColorSnapshot {
-  value?: string
-  field?: string
-  scale?: SyntenyColorScale
-  domain?: readonly string[]
-  range?: readonly string[]
-  scheme?: ColorSchemeName
-  reverse?: boolean
-  domainMin?: number
-  domainMax?: number
-  domainMid?: number
-  labels?: readonly string[]
-  title?: string
-}
+export type SyntenyColorSnapshot = Partial<ColorSetting>
 
 /**
  * #config SyntenyColor

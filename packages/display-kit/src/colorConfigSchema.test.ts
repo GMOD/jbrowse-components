@@ -14,6 +14,8 @@ import {
   colorForValue,
   colorRampSlots,
   colorRangeSlot,
+  colorConfigSchema,
+  colorSettingOf,
   dealRowColors,
   paintedColorEncoding,
 } from './colorConfigSchema.ts'
@@ -120,6 +122,46 @@ test('the scale is never read off which output member is written', () => {
   expect(scaleOf({ range: ['white', 'red'] })).toBe('categorical')
   expect(scaleOf({ range: [] })).toBe('categorical')
   expect(scaleOf({ scheme: 'viridis' })).toBe('categorical')
+})
+
+describe('colorSettingOf', () => {
+  it('reads a callback value as written and leaves the key to the display', () => {
+    const color = colorConfigSchema.create(
+      {
+        value: 'jexl:get(feature,"rgb")',
+        field: 'score',
+        domainQuantile: 0.9,
+        labels: ['low'],
+        title: 'Score',
+      },
+      { pluginManager },
+    )
+    expect(colorSettingOf(color)).toStrictEqual({
+      value: 'jexl:get(feature,"rgb")',
+      field: 'score',
+      scale: undefined,
+      domain: [],
+      range: [],
+      scheme: undefined,
+      reverse: false,
+      domainMin: undefined,
+      domainMax: undefined,
+      domainMid: undefined,
+      domainQuantile: 0.9,
+    })
+  })
+
+  it('reads only the members the schema declares', () => {
+    const setting = colorSettingOf(
+      TestColor.create({ field: 'score', ...WRITTEN }, { pluginManager }),
+    )
+    expect(setting).toStrictEqual({
+      value: 'red',
+      field: 'score',
+      scale: undefined,
+      ...WRITTEN,
+    })
+  })
 })
 
 describe('colorForField', () => {

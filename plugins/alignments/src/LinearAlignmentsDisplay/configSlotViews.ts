@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
@@ -57,25 +58,11 @@ export interface ConfigSlotSelf extends IStateTreeNode {
   configuration: Instance<LinearAlignmentsDisplayConfigSchema>
 }
 
-function colorSettingOf(self: ConfigSlotSelf): AlignmentsColorSetting {
-  return {
-    value: getConf(self, ['color', 'value']),
-    field: getConf(self, ['color', 'field']),
-    scale: getConf(self, ['color', 'scale']),
-    domain: getConf(self, ['color', 'domain']),
-    range: getConf(self, ['color', 'range']),
-    scheme: getConf(self, ['color', 'scheme']),
-    reverse: getConf(self, ['color', 'reverse']),
-    domainMin: getConf(self, ['color', 'domainMin']),
-    domainMax: getConf(self, ['color', 'domainMax']),
-    domainMid: getConf(self, ['color', 'domainMid']),
-    domainQuantile: getConf(self, ['color', 'domainQuantile']),
-  }
-}
-
 export function configSlotViews(self: ConfigSlotSelf) {
   const insertSizeBand = stableIdentityComputed(() =>
-    pinnedInsertSizeBand(alignmentsColorEncoding(colorSettingOf(self))),
+    pinnedInsertSizeBand(
+      alignmentsColorEncoding(colorSettingOf(self.configuration.color)),
+    ),
   )
   return {
     /** #getter */
@@ -185,7 +172,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get colorSetting(): AlignmentsColorSetting {
-      return colorSettingOf(self)
+      return colorSettingOf(self.configuration.color)
     },
     /**
      * #getter

@@ -40,6 +40,7 @@ import {
   colorEncodingOf,
   colorFieldOf,
   colorForField,
+  colorSettingOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
@@ -359,19 +360,11 @@ export function stateModelFactory(
     }))
     .actions(self => {
       function ribbonColorSetting(): SyntenyColorSnapshot {
+        const { ribbonColor } = self.configuration
         return {
-          value: getConf(self, ['ribbonColor', 'value']),
-          field: getConf(self, ['ribbonColor', 'field']),
-          scale: getConf(self, ['ribbonColor', 'scale']),
-          domain: getConf(self, ['ribbonColor', 'domain']),
-          range: getConf(self, ['ribbonColor', 'range']),
-          scheme: getConf(self, ['ribbonColor', 'scheme']),
-          reverse: getConf(self, ['ribbonColor', 'reverse']),
-          domainMin: getConf(self, ['ribbonColor', 'domainMin']),
-          domainMax: getConf(self, ['ribbonColor', 'domainMax']),
-          domainMid: getConf(self, ['ribbonColor', 'domainMid']),
-          labels: getConf(self, ['ribbonColor', 'labels']),
-          title: getConf(self, ['ribbonColor', 'title']),
+          ...colorSettingOf(ribbonColor),
+          labels: readConfObject(ribbonColor, 'labels'),
+          title: readConfObject(ribbonColor, 'title'),
         }
       }
       function observeRibbonFeatures(features: readonly Feature[]) {

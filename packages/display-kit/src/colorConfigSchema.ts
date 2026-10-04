@@ -1,6 +1,7 @@
 import {
   ConfigurationSchema,
   isCallbackValue,
+  readConfObject,
 } from '@jbrowse/core/configuration'
 import { paletteFromSpec, rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { categoricalField, keyNames } from '@jbrowse/core/util/categoricalField'
@@ -16,6 +17,12 @@ import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type {
+  AnyConfigurationModel,
+  ConfigurationSchemaForModel,
+  ConfigurationSlotName,
+  ConfigurationSlotValue,
+} from '@jbrowse/core/configuration'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type {
   ColorScaleName,
@@ -75,6 +82,50 @@ export interface ColorSetting {
   domainQuantile?: number
   labels?: readonly string[]
   title?: string | undefined
+}
+
+const PAINTED_SLOTS = [
+  'field',
+  'scale',
+  'domain',
+  'range',
+  'scheme',
+  'reverse',
+  'domainMin',
+  'domainMax',
+  'domainMid',
+  'domainQuantile',
+] as const
+
+type PaintedSlot = 'value' | (typeof PAINTED_SLOTS)[number]
+
+type SchemaOf<C> = ConfigurationSchemaForModel<C>
+
+/** The members {@link colorSettingOf} reads off `C`: the painted ones its schema declares. */
+export type ColorSettingOf<C> = {
+  [
+    K in PaintedSlot & ConfigurationSlotName<SchemaOf<C>>
+  ]: ConfigurationSlotValue<SchemaOf<C>, K>
+}
+
+/**
+ * A colour object's painted members as written, the ones its schema declares:
+ * `value` raw, so a `jexl:` callback reaches the display unevaluated, then the
+ * field and every scale member. A display that reads the key's `labels` or
+ * `title` spreads them on top, so renaming a key entry re-reads nothing that
+ * paints.
+ */
+export function colorSettingOf<C extends AnyConfigurationModel>(
+  color: C,
+): ColorSettingOf<C> {
+  const node: AnyConfigurationModel = color
+  const setting: Record<string, unknown> = { value: node.value }
+  for (const slot of PAINTED_SLOTS) {
+    if (slot in node) {
+      setting[slot] = readConfObject(node, slot)
+    }
+  }
+  return setting as ColorSettingOf<C>
 }
 
 /**

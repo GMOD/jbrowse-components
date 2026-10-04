@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
+import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { colorByScales } from './colorLegend.ts'
@@ -276,12 +277,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        */
       get colorSetting(): SyntenyColorSnapshot {
         return {
-          value: readConfObject(self.color, 'value'),
-          field: readConfObject(self.color, 'field'),
-          scale: readConfObject(self.color, 'scale'),
-          domain: readConfObject(self.color, 'domain'),
-          range: readConfObject(self.color, 'range'),
-          ...this.colorRamp,
+          ...colorSettingOf(self.color),
           labels: readConfObject(self.color, 'labels'),
           title: readConfObject(self.color, 'title'),
         }

@@ -11,6 +11,7 @@ import {
   FEATURE_FIELD_PRESETS,
   categoricalColorField,
   colorFieldOf,
+  colorSettingOf,
   featureColorEncoding,
   identityKeyEntries,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -54,17 +55,7 @@ const RAMP_KEY_STOPS = 8
 
 function colorSettingsOf({ conf: { color } }: FeatureColorHost): ColorSetting {
   return {
-    value: color.value,
-    field: color.field,
-    scale: readConfObject(color, 'scale'),
-    domain: readConfObject(color, 'domain'),
-    range: readConfObject(color, 'range'),
-    scheme: readConfObject(color, 'scheme'),
-    reverse: readConfObject(color, 'reverse'),
-    domainMin: readConfObject(color, 'domainMin'),
-    domainMax: readConfObject(color, 'domainMax'),
-    domainMid: readConfObject(color, 'domainMid'),
-    domainQuantile: readConfObject(color, 'domainQuantile'),
+    ...colorSettingOf(color),
     labels: readConfObject(color, 'labels'),
     title: readConfObject(color, 'title'),
   }
