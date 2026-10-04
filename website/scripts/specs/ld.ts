@@ -358,7 +358,6 @@ const lctPanelTrack = (trackId: string, name: string, file: string) => ({
   displays: [
     {
       type: 'LDTrackDisplay',
-      showLDTriangle: true,
       showLegend: true,
       // The MAF floor is per cohort and applied at build time, which is what
       // makes this pair a fair comparison: each side keeps the variants that

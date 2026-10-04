@@ -81,7 +81,7 @@ prose.
   within ten lines of the page's only figure, which already shows the first
   one's result.
 - **`ld_mosquitoes.md`** — every state it names is a config slot (`groupBy`,
-  `colorBy`, `referenceDrawingMode`, `ldMetric`, `minorAlleleFrequencyFilter`),
+  `colorBy`, `referenceDrawingMode`, `color.field`, `minorAlleleFrequencyFilter`),
   and the one menu that could carry a tour is never written as a menu path. Its
   figure's own frame is 1385px, past the 960 default. Sections freely
   reorderable.

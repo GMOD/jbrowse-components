@@ -240,8 +240,9 @@ the filters and signed LD are absent here. The
 
 ### Which metric, and how far to thin
 
-[`ldMetric`](/docs/config/ldtrackdisplay/#slot-ldmetric) switches between two
-reads of the same block:
+[`color.field`](/docs/config/ldcolor/#slot-field) switches between two reads of
+the same block, `r2` on a red ramp and `dprime` on a blue one unless
+`color.scheme` names another:
 
 - **D'** measures whether recombination has been seen between two markers, so it
   saturates near 1 wherever no recombinant haplotype has turned up. It recovers

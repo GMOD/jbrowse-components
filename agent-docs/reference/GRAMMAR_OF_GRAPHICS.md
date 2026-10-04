@@ -29,8 +29,9 @@ scale, the facet and the transform step are one object each (ADR-131, 135, 142,
 and hit test all derive from it. A display that spells one of those concepts its
 own way is the finding. The row axis follows it (ADR-165). Text follows it in
 typography only: `FloatingText` and `SvgHaloText` are the one emit, and placement
-stays each display's (ADR-162). LD and MAF resolve colour outside
-`colorEncodingOf`; Hi-C reads it through `count`'s linear preset.
+stays each display's (ADR-162). MAF resolves colour outside
+`colorEncodingOf`; Hi-C reads it through `count`'s linear preset, and LD
+through `r2`'s and `dprime`'s, the field being the statistic the file serves.
 
 **Unity is that rule held over every surface, not fewer display types**
 (Colin, 2026-09-30). The menu builders (`colorByMenu.ts` and `groupByMenu.ts`
@@ -57,9 +58,9 @@ carry.
 **Colour stays each mark's.** Scale members on each mark's `encoding.color` are
 Vega-Lite's own spelling, and a display-level `scales.color` would be a second
 spelling. Plasma and turbo are not among the named ramps (plasma reads as
-magma's sibling, turbo is not perceptually uniform). HicColor's `reverse`, left
-unset, follows `darkAtLowEnd`, since a ramp dark at its low end paints every
-sparse bin a dark speck.
+magma's sibling, turbo is not perceptually uniform). On HicColor and LDColor
+an unset `reverse` follows `darkAtLowEnd` (`matrixColorEncodingOf`), since a
+ramp dark at its low end paints every sparse cell a dark speck.
 
 ## Seams
 

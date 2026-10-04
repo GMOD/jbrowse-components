@@ -38,7 +38,7 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
     })
 
     // The column layout decides whether the file's D' column is found at all,
-    // so `ldMetric: 'dprime'` lives or dies here.
+    // so `color.field: 'dprime'` lives or dies here.
     //
     // Every line readTabixHeaderLines returns is a header by declaration —
     // either the index's meta character marked it, or the index's skipLines

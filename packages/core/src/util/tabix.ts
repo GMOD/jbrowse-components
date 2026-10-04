@@ -209,7 +209,7 @@ interface TabixHeaderSource {
  * An adapter that stops at `getHeader()` therefore cannot tell "this file has
  * no header" from "this file's header is not commented", and quietly falls back
  * to an assumed column layout. That has cost real information more than once: a
- * PLINK LD file lost its D' column, so `ldMetric: 'dprime'` silently served r²,
+ * PLINK LD file lost its D' column, so `color.field: 'dprime'` silently served r²,
  * and a bedGraph loses the names of its value columns. Nothing errors, because
  * the assumed layout parses.
  *

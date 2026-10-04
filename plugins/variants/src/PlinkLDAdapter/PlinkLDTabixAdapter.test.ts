@@ -21,7 +21,7 @@ function makeAdapter(f: string) {
 // The fixture is indexed the way a plink .ld actually gets indexed: `tabix -S 1`,
 // because its header row carries no `#`. That makes tabix's getHeader() return
 // nothing, which used to drop the column layout to the headerless default and
-// take the D' column with it — so `ldMetric: 'dprime'` served r² while the
+// take the D' column with it — so `color.field: 'dprime'` served r² while the
 // legend still said D'. The adapter reads the file's own first line when tabix
 // has no header to give.
 test('finds the D column in a file whose header tabix will not return', async () => {

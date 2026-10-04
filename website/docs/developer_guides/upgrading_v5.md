@@ -27,6 +27,7 @@ Most sessions and configs migrate through `preProcessSnapshot`:
 - canvas `color1`/`color2`/`color3` become `color`/`connectorColor`/`utrColor`
 - `outline` becomes `outlineColor`
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
+- the LD display's `ldMetric` becomes `color.field`
 
 The `heightOverride` shadow-prop that existed during development is gone, and
 there is no `<name>Override` shadow-property system.
@@ -447,6 +448,15 @@ its schemes are the ones every color scale names. `colorScheme` and
 
 `setUseLogScale` is `setColorScale('log' | 'linear')`. [](/docs/config/hiccolor)
 lists the members.
+
+## The LD color is a `color` object
+
+`LDTrackDisplay` names its statistic and ramp in
+`color: { field, scheme, reverse, domainMin, domainMax }`. `field` is `r2` or
+`dprime`, and an unset `scheme` is reds for r² and blues for D', as before.
+`ldMetric: 'dprime'` loads as `color: { field: 'dprime' }`; the v4 `colorScheme`
+string stops loading, with no migration. [](/docs/config/ldcolor) lists the
+members.
 
 ## A non-coding BED12 parses as a transcript
 

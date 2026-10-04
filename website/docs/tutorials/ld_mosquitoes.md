@@ -131,8 +131,8 @@ jbrowse sort-bed < ag1000g_2L_CMgam.vcor |
 tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.vcor.gz
 ```
 
-The track over that file is an `LDTrack`, and `ldMetric` picks which of the two
-metric columns, r² or D', the display reads:
+The track over that file is an `LDTrack`, and `color.field` picks which of the
+two metric columns, r² or D', the display reads:
 
 ```json addtrack
 {
@@ -147,7 +147,7 @@ metric columns, r² or D', the display reads:
   "displays": [
     {
       "type": "LDTrackDisplay",
-      "ldMetric": "r2",
+      "color": { "field": "r2" },
       "variantLayout": "genomic",
       "showLegend": true,
       "height": 340

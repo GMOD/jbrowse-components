@@ -108,9 +108,8 @@ in an hg38 session:
 ```
 
 [`variantLayout`](/docs/config/ldtrackdisplay/#slot-variantlayout) sizes each
-cell by genomic distance, and
-[`ldMetric`](/docs/config/ldtrackdisplay/#slot-ldmetric) picks r² or D' (a
-second LD measure), both of which this table has.
+cell by genomic distance, and [`color.field`](/docs/config/ldcolor/#slot-field)
+picks r² or D' (a second LD measure), both of which this table has.
 
 The block is a selective sweep. The allele that keeps lactase switched on into
 adulthood, `rs4988235`, rose in frequency, and its neighbouring variants rose
