@@ -83,8 +83,6 @@ export {
 
 export {
   makeClipOutliersItem,
-  AXIS_ZERO_LABEL,
-  makeAxisZeroItem,
   makeCrossHatchItem,
   makeScaleTypeSubMenu,
   makeScoreSubMenu,

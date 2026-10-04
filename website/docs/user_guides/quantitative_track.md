@@ -35,22 +35,28 @@ per pixel. The rest of the settings below are grouped under **Score**.
 The Y-axis range follows the region in view, and this checkbox (the display's
 [`scales.y.domainQuantile`](/docs/config/valuescale/#slot-scalesydomainquantile)
 slot) decides whether one anomalous position may take the whole axis. Ticked,
-the default, each sign is clipped at the 99th percentile of what is in view;
-unticked, the axis runs to the plain min and max. A config takes any quantile,
-`0.95` for a harder clip. A bar the clip cut wears a 2 px red strip across the
-edge that cut it, on this plot, the alignments coverage band and a bar plot
-alike, so a collapsed repeat's pile-up does not read as one more bar touching
-the top.
+the default, the axis still runs to the min and max in view unless a value would
+stretch it past twice the height the other 99% of values need; that end stops
+there instead. Unticked, the axis always runs to the plain min and max. A config
+takes any quantile, `0.95` for a tighter fence. A bar past the fence wears a 2
+px red strip across the edge that cut it, on this plot, the alignments coverage
+band and a bar plot alike, so a collapsed repeat's pile-up does not read as one
+more bar touching the top, and a plot with no spike shows no strip.
 
-### Start axis at 0
+### Set min/max score
 
-A linear or symlog Y axis reaches 0 whatever the region in view holds, so a bar
-always shows its whole height and a GC track reads from 0 where the region holds
-30 to 60%. This checkbox (the display's
-[`scales.y.zero`](/docs/config/valuescale/#slot-scalesyzero) slot) turns that
-off, and the axis then spans the values in view. A pinned end from **Set min/max
-score** is unmoved either way, a log axis has no 0, and Density mode, which maps
-score to colour, spans its values whichever way the box is ticked.
+**Set min/max score** pins either end of the Y axis; a field left empty follows
+the data in view. The dialog shows the values in view and the axis drawn from
+them, which together say what the settings below can still move.
+
+**Always include 0** (the display's
+[`scales.y.zero`](/docs/config/valuescale/#slot-scalesyzero) slot), ticked by
+default, extends an empty end to 0, so a bar always shows its whole height and a
+GC track reads from 0 where the region holds 30 to 60%. Unticked, the axis spans
+the values in view, and the menu row reads **Set min/max score (spans data)**.
+Values that already reach or cross 0 look the same either way. The box greys out
+when both ends are pinned or the scale is log, which has no 0, and Density mode,
+which maps score to colour, does not offer it.
 
 ### Summary score mode
 
@@ -109,9 +115,9 @@ Each row keeps the colour its subtrack was configured with. Sources sharing one
 plot box take a palette entry each instead, so the overlaid plots can be told
 apart.
 
-An outlier on one signal can blow out the shared Y axis. **Clip outliers** keeps
-the axis at the 99th percentile of the visible data for a more readable view, or
-pin the min and max from the track menu.
+An outlier on one signal can blow out the shared Y axis. **Clip outliers** stops
+the axis short of a spike that would flatten the other rows, or pin the min and
+max from the track menu.
 
 <Figure caption="Twelve per-cell-type BigWigs from a 5k PBMC scATAC dataset as one multi-quantitative track, over CD8A and MS4A1 in one discontinuous view. The CD8, MAIT and NK rows have signal at CD8A and the two B rows at MS4A1, on one shared scale." src="/img/scatac/pbmc5k_marker_swap.png" />
 

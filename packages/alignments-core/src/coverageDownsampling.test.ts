@@ -263,7 +263,7 @@ describe('computeVisibleCoverageStats', () => {
     expect(stats!.scoreMax).toBe(10)
   })
 
-  test('a domain quantile below 1 clips the peaks and anchors at 0', () => {
+  test('a domain quantile below 1 fences a pile-up at twice the peaks and anchors at 0', () => {
     const cov = perBpRegion([...new Array(99).fill(30), 1600], 100)
     const domain = (
       entries: VisibleEntry<CoverageRegion>[],
@@ -276,7 +276,7 @@ describe('computeVisibleCoverageStats', () => {
       })
     const entries = [{ visStart: 100, visEnd: 200, data: cov }]
     expect(domain(entries, 1)).toEqual([30, 1600])
-    expect(domain(entries, 0.99)).toEqual([0, 30])
+    expect(domain(entries, 0.99)).toEqual([0, 60])
     const sparse = perBpRegion(
       [...new Array(995).fill(0), ...new Array(5).fill(30)],
       100,

@@ -26,7 +26,7 @@ A GC line plot whose axis spans the loaded values, 30 to 60%:
 }
 ```
 
-The whole visible range, rather than the 99th percentile the wiggle
+The whole visible range, spikes included, rather than the fence the wiggle
 displays start on:
 
 ```js
@@ -73,9 +73,8 @@ left unset autoscales over the loaded regions, and `zero` says whether an
 autoscaled linear or symlog axis reaches 0 whatever those regions hold.
 
 Two defaults come from the display rather than from the scale.
-`domainQuantile` starts at `0.99` on the wiggle plot, clipping the outermost
-1% of each sign, and at `1`, the extremes, on the coverage band and the mark
-display. `symlogConstant` starts at `0` on the wiggle family and the mark
+`domainQuantile` starts at `0.99` on the wiggle plot, fencing a spike, and
+at `1`, the extremes, on the coverage band and the mark display. `symlogConstant` starts at `0` on the wiggle family and the mark
 display and at `1` on the coverage band.
 
 Every scale carries the same guides: `rules`, reference lines at chosen
@@ -97,10 +96,10 @@ These slots go on a display entry: `"displays": [{ "type": "ValueScale", ... }]`
 | <span id="slot-scalesytype">**scales.y.type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, log, symlog) = <code>'linear'</code> | How the axis reads its domain — the ticks, the cross-hatches and the renderer's placement all come from it. `log` cannot represent 0 or negative values and floors the domain above them; `symlog` is log-like away from zero and linear through it, so a track whose values touch or cross 0 keeps them. |
 | <span id="slot-scalesydomainmin">**scales.y.domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The bottom of the axis, pinning what would otherwise autoscale to the loaded regions. Unset autoscales that end. The score menu's "Set min/max" writes here. |
 | <span id="slot-scalesydomainmax">**scales.y.domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The top of the axis. Unset autoscales that end. |
-| <span id="slot-scalesyzero">**scales.y.zero**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Whether an autoscaled linear or symlog axis reaches 0 whatever the loaded values span, Vega-Lite's `zero`. On, a plot of values between 30 and 60 draws 0 to 60, and a bar always shows its whole height. Off, the axis spans the values alone. A pinned end is unmoved either way, a log axis has no 0, and a density plot, which maps score to colour and has no axis, spans its values whatever this says. The score menu's "Start axis at 0" toggles it. |
+| <span id="slot-scalesyzero">**scales.y.zero**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Whether an autoscaled linear or symlog axis reaches 0 whatever the loaded values span, Vega-Lite's `zero`. On, a plot of values between 30 and 60 draws 0 to 60, and a bar always shows its whole height. Off, the axis spans the values alone. A pinned end is unmoved either way, a log axis has no 0, and a density plot, which maps score to colour and has no axis, spans its values whatever this says. "Always include 0" in the score menu's "Set min/max score" dialog toggles it. |
 | <span id="slot-scalesyautoscalegroup">**scales.y.autoscaleGroup**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | A name shared by the tracks whose axes autoscale together: each unpinned end spans the data of every track in the view naming the same group, so three coverage lanes stay comparable as the view moves. A pinned end stays this track's own. The score menu's "Autoscale with other tracks" writes it. |
 | <span id="slot-scalesysymlogconstant">**scales.y.symlogConstant**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | Width of symlog's linear region around zero. `0` derives it from the domain, a thousandth of its largest magnitude — right for a wiggle track, whose units are its own. The coverage band starts at `1` instead, which makes symlog exactly `log(depth+1)` and puts the knee at one read.<br>_advanced_ |
-| <span id="slot-scalesydomainquantile">**scales.y.domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | What an unpinned end follows over the loaded values: `1` their extremes, and below it that quantile of the values on its side of 0, so `0.99` drops the outermost 1% at each end and one spike no longer flattens the rest. Where both signs appear each end is measured on its own sign, so a sparse minority tail stays visible; whether the axis then reaches 0 is `zero`'s. The score menu's "Clip outliers" toggles it. |
+| <span id="slot-scalesydomainquantile">**scales.y.domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | Where an unpinned end's outliers are fenced. An end follows the loaded values' extreme; below `1`, an extreme that would stretch the axis past twice the span this quantile of the values draws stops at that fence, and the bars past it wear the red clip strip. So `0.99` leaves a plot with no spike whole and keeps one spike from flattening the rest. Each end's quantile is measured among the values on its side of 0, so a sparse minority tail stays visible, and the span includes 0 where `zero` reaches it. A colour ramp's `domainQuantile` clips at the quantile itself, since a saturated colour hides nothing its key does not say. The score menu's "Clip outliers" toggles it. |
 | <span id="slot-scalesygrid">**scales.y.grid**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Rule the plot across at every tick, ggplot2's panel grid and Vega-Lite's `axis.grid`. The score menu's "Show cross hatches" toggles it. |
 | <span id="slot-scalesyminimalticks">**scales.y.minimalTicks**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Label only the two ends of the axis.<br>_advanced_ |
 | <span id="slot-scalesytitle">**scales.y.title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The caption beside the axis, naming what it measures, drawn once however many bands the scale rules and at every zoom. Optional, as JBrowse's other captions are: unset, `""` or `null`, the axis has none; some text is that text. |

@@ -12,7 +12,7 @@ function createDisplay(display: Record<string, unknown> = {}) {
   return mount(Session, { configuration: 'd1' }).display
 }
 
-test('the coverage axis floors at 0 while scales.y.zero is on, and Start axis at 0 lifts it', () => {
+test('the coverage axis floors at 0 while scales.y.zero is on, and unticking Always include 0 lifts it', () => {
   const display = createDisplay()
   expect(display.minScoreBound).toBe(0)
   display.setScaleZero(false)

@@ -1015,6 +1015,7 @@ export function stateModelFactory(
                 autoscaleDomainFromSpans({
                   stats,
                   quantile: domainQuantile,
+                  zero: self.axisReachesZero,
                   spans: layerSpans(entries, drawnKeys),
                 }),
                 reached,

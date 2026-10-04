@@ -1,4 +1,7 @@
-import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
+import {
+  fenceOutliers,
+  quantileExtent,
+} from '@jbrowse/core/util/quantileExtent'
 // Deliberately the `/constants` and `/normalize` entries, not the
 // `@jbrowse/wiggle-core` barrel: this package is worker/math-side and the barrel
 // re-exports React components (CrossHatches, SetMinMaxDialog, the menu
@@ -332,9 +335,10 @@ export function computeVisibleCoverageStats(
 
 /**
  * The depth domain the visible coverage autoscales to: at a `quantile` of 1
- * the extremes, `stats`, below it that quantile of the covered bins' peaks,
- * uncovered bases counting for nothing, so one pile-up no longer flattens the
- * band and a sparse window does not clip to zero.
+ * the extremes, `stats`, below it the deepest peak fenced at twice that
+ * quantile of the covered bins' peaks (`fenceOutliers`), uncovered bases
+ * counting for nothing, so a pile-up flattens at most half the band and a
+ * sparse window does not clip to zero.
  */
 export function computeVisibleCoverageDomain({
   stats,
@@ -356,7 +360,12 @@ export function computeVisibleCoverageDomain({
       }
     })
   }
-  return [0, quantileExtent(peaks, peaks.length, quantile)[1]]
+  const peak = quantileExtent(peaks, peaks.length, quantile)[1]
+  return fenceOutliers({
+    extremes: [0, stats.scoreMax],
+    quantiles: [0, Number.isFinite(peak) ? peak : 0],
+    zero: true,
+  })
 }
 
 // Reduce a per-bp depth array to at most `maxBins` DENSE bins, each holding the

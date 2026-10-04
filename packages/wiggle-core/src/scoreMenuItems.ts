@@ -42,6 +42,7 @@ export interface ScoreScaleModel extends IStateTreeNode {
   minScoreBound: number | undefined
   maxScoreBound: number | undefined
   hasManualScoreBounds: boolean
+  autoscaleRange: [number, number] | undefined
   autoscaledDomain: [number, number] | undefined
   setScaleType: (v: string) => void
   setScaleZero: (zero: boolean) => void
@@ -87,7 +88,7 @@ export function makeScaleTypeSubMenu(self: {
 export const CLIP_OUTLIERS_LABEL = 'Clip outliers'
 
 // One checkbox rather than a radio over modes: what a reader decides is whether
-// a spike may take the axis, and the quantile it clips at is the config's.
+// a spike may take the axis, and the quantile it fences at is the config's.
 export function makeClipOutliersItem(self: {
   domainQuantile: number
   clipQuantile: number
@@ -103,45 +104,34 @@ export function makeClipOutliersItem(self: {
       self.setDomainQuantile(on ? self.clipQuantile : 1)
     },
     {
-      helpText: `An unpinned end follows the ${percent}th percentile of each sign rather than the extremes, so one spike no longer flattens the rest.`,
-    },
-  )
-}
-
-// Quoted by the docs' click paths, so one literal string.
-export const AXIS_ZERO_LABEL = 'Start axis at 0'
-
-export function makeAxisZeroItem(self: {
-  scaleZero: boolean
-  setScaleZero: (zero: boolean) => void
-}): CheckboxMenuItem {
-  return toggleItem(
-    AXIS_ZERO_LABEL,
-    self.scaleZero,
-    zero => {
-      self.setScaleZero(zero)
-    },
-    {
-      helpText:
-        'A linear or symlog axis reaches 0 whatever the values in view span. Off, it spans those values alone.',
+      helpText: `A value that would stretch the axis to over twice the height the other ${percent}% of values need is cut at the edge and marked in red, so one spike no longer flattens the rest.`,
     },
   )
 }
 
 // The label shows the PINNED pair, `auto` for an end nobody pinned: the
 // resolved pair captioned every GC content track "(0 – 1)" off its default
-// domain. "Use current range" copies `autoscaledDomain`, undefined while the
-// alignments density tier's features per bin stand in for depth.
-export function makeSetMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
-  const { manualMinScore, manualMaxScore, autoscaledDomain: domain } = self
+// domain. An axis let off 0 says so too, since the dialog is where that is
+// set.
+export function makeSetMinMaxScoreItem(
+  self: ScoreScaleModel & Partial<ScoreRulesModel>,
+): MenuItem {
+  const { manualMinScore, manualMaxScore } = self
+  const offerZero = rulesABand(self)
+  const captions = [
+    ...(self.hasManualScoreBounds
+      ? [`${manualMinScore ?? 'auto'} – ${manualMaxScore ?? 'auto'}`]
+      : []),
+    ...(offerZero && !self.scaleZero ? ['spans data'] : []),
+  ]
   return {
-    label: self.hasManualScoreBounds
-      ? `Set min/max score (${manualMinScore ?? 'auto'} – ${manualMaxScore ?? 'auto'})...`
+    label: captions.length
+      ? `Set min/max score (${captions.join(', ')})...`
       : 'Set min/max score...',
     onClick: () => {
       getDialogHost(self).queueDialog(handleClose => [
         SetMinMaxDialog,
-        { model: self, domain, handleClose },
+        { model: self, offerZero, handleClose },
       ])
     },
   }
@@ -215,7 +205,7 @@ function drawsScoreRules<T extends IStateTreeNode>(
 }
 
 // A density plot maps its score to colour and rules no band, so its domain
-// spans the values whatever `zero` says; the row is offered with the axis.
+// spans the values whatever `zero` says; the dialog offers it with the axis.
 function rulesABand(self: Partial<ScoreRulesModel>) {
   return self.scoreRulesDrawn === true
 }
@@ -257,7 +247,6 @@ export function makeScoreSubMenu(
       ...leadingItems,
       makeScaleTypeSubMenu(self),
       makeClipOutliersItem(self),
-      ...(rulesABand(self) ? [makeAxisZeroItem(self)] : []),
       makeSetMinMaxScoreItem(self),
       ...(autoscalesInGroups(self) ? [makeAutoscaleGroupItem(self)] : []),
       ...(drawsScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),

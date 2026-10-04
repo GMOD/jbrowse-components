@@ -466,8 +466,8 @@ jb2export --loc all --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 
 <Figure src="/img/jbrowse-img/skbr3_cov.png" caption="SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions" />
 
-The axis clips outliers by default, following the 99th percentile of what is in
-view; `scales.y.domainQuantile=1` follows the extremes instead:
+The axis clips outliers by default, stopping short of a spike that would flatten
+the rest of the view; `scales.y.domainQuantile=1` follows the extremes instead:
 
 ```bash
 jb2export --loc all \

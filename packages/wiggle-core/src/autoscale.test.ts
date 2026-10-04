@@ -24,27 +24,50 @@ function entry(
   }
 }
 
-// What a domain quantile below 1 is for, on the distribution it was added
-// for: copy number sits at the diploid baseline (2) with a rare gain (3), and
-// clipping the <1% tail keeps the baseline readable instead of spending the
-// axis on one bin. A quantile of 1 keeps the full range.
-describe('quantile clipping', () => {
+// A quantile below 1 fences the extremes rather than replacing them: copy
+// number at the diploid baseline (2) keeps its rare gain (3), which is signal,
+// and loses only a spike that would take over half the axis.
+describe('outlier fence', () => {
   const copyNumber = [entry([...new Array(99).fill(2), 3])]
+  const spiked = [entry([...new Array(99).fill(2), 50])]
 
-  it('clips the rare gain off the top', () => {
-    expect(computeAutoscaleDomain(0.99, 'avg', copyNumber)![1]).toBeLessThan(3)
+  it('keeps a rare gain the baseline leaves room for', () => {
+    expect(computeAutoscaleDomain(0.99, 'avg', copyNumber, true)).toEqual([
+      2, 3,
+    ])
+  })
+
+  it('fences a spike at twice the axis the rest need, 0 included', () => {
+    expect(computeAutoscaleDomain(0.99, 'avg', spiked, true)).toEqual([2, 4])
+  })
+
+  // Off 0, the quantile ends' own span sets the fence; ends that meet span
+  // their own size.
+  it('fences off 0 at the span of the quantile ends', () => {
+    expect(computeAutoscaleDomain(0.99, 'avg', spiked, false)).toEqual([2, 4])
+    expect(
+      computeAutoscaleDomain(
+        0.99,
+        'avg',
+        [entry([100, ...new Array(97).fill(105), 110, 500])],
+        false,
+      ),
+    ).toEqual([100, 115])
   })
 
   it('a quantile of 1 does not clip', () => {
-    expect(computeAutoscaleDomain(1, 'avg', copyNumber)).toEqual([2, 3])
+    expect(computeAutoscaleDomain(1, 'avg', copyNumber, true)).toEqual([2, 3])
   })
 
   it('only counts features overlapping the visible window', () => {
     // features at [0,1],[1,2],[2,3],[3,4],[4,5]; window [3,5) keeps the last two
     expect(
-      computeAutoscaleDomain(1, 'avg', [
-        entry([2, 2, 2, 3, 5], { visStart: 3, visEnd: 5 }),
-      ]),
+      computeAutoscaleDomain(
+        1,
+        'avg',
+        [entry([2, 2, 2, 3, 5], { visStart: 3, visEnd: 5 })],
+        true,
+      ),
     ).toEqual([3, 5])
   })
 })
@@ -84,26 +107,35 @@ describe('visible-window clipping matches a full scan', () => {
   it('keeps a feature straddling the left edge', () => {
     // window opens inside feature 3 ([30,40)), so its 50 counts
     expect(
-      computeAutoscaleDomain(1, 'avg', [
-        wideEntry(scores, { visStart: 35, visEnd: 60 }),
-      ]),
+      computeAutoscaleDomain(
+        1,
+        'avg',
+        [wideEntry(scores, { visStart: 35, visEnd: 60 })],
+        true,
+      ),
     ).toEqual([3, 50])
   })
 
   it('keeps a feature straddling the right edge', () => {
     // window closes inside feature 3, which still overlaps
     expect(
-      computeAutoscaleDomain(1, 'avg', [
-        wideEntry(scores, { visStart: 10, visEnd: 35 }),
-      ]),
+      computeAutoscaleDomain(
+        1,
+        'avg',
+        [wideEntry(scores, { visStart: 10, visEnd: 35 })],
+        true,
+      ),
     ).toEqual([1, 50])
   })
 
   it('excludes a feature that ends exactly at the window start', () => {
     expect(
-      computeAutoscaleDomain(1, 'avg', [
-        wideEntry(scores, { visStart: 30, visEnd: 40 }),
-      ]),
+      computeAutoscaleDomain(
+        1,
+        'avg',
+        [wideEntry(scores, { visStart: 30, visEnd: 40 })],
+        true,
+      ),
     ).toEqual([50, 50])
   })
 
@@ -118,9 +150,12 @@ describe('visible-window clipping matches a full scan', () => {
     for (let visStart = 0; visStart < 2000; visStart += 137) {
       for (const width of [1, 15, 200, 1500]) {
         const visEnd = visStart + width
-        const clipped = computeAutoscaleDomain(1, 'avg', [
-          wideEntry(random, { visStart, visEnd }),
-        ])
+        const clipped = computeAutoscaleDomain(
+          1,
+          'avg',
+          [wideEntry(random, { visStart, visEnd })],
+          true,
+        )
         // the same question asked without any window, over exactly the features
         // that overlap it
         // fround because the scan reads them back out of a Float32Array
@@ -142,13 +177,13 @@ describe('visible-window clipping matches a full scan', () => {
 describe('non-finite scores', () => {
   it('scales to the real scores around a NaN', () => {
     expect(
-      computeAutoscaleDomain(1, 'avg', [entry([2, Number.NaN, 5, 3])]),
+      computeAutoscaleDomain(1, 'avg', [entry([2, Number.NaN, 5, 3])], true),
     ).toEqual([2, 5])
   })
 
   it('has no domain when every score is NaN', () => {
     expect(
-      computeAutoscaleDomain(1, 'avg', [entry([Number.NaN, Number.NaN])]),
+      computeAutoscaleDomain(1, 'avg', [entry([Number.NaN, Number.NaN])], true),
     ).toBeUndefined()
   })
 })
@@ -159,19 +194,19 @@ describe('non-finite scores', () => {
 describe('one-signed windows', () => {
   it('an all-negative window keeps a negative top', () => {
     expect(
-      computeAutoscaleDomain(0.99, 'avg', [entry([-4, -3, -2, -1])])![1],
+      computeAutoscaleDomain(0.99, 'avg', [entry([-4, -3, -2, -1])], true)![1],
     ).toBeLessThan(0)
   })
 
   it('empty bins lower no top', () => {
     expect(
-      computeAutoscaleDomain(0.99, 'avg', [entry([0, 0, 0, 5, 5, 5])]),
+      computeAutoscaleDomain(0.99, 'avg', [entry([0, 0, 0, 5, 5, 5])], true),
     ).toEqual([0, 5])
   })
 
   it('empty bins beside negatives keep the top at 0, where the extremes put it', () => {
     const scores = [...new Array(90).fill(0), -1, -2, -3, -1, -2, -3]
-    expect(computeAutoscaleDomain(0.99, 'avg', [entry(scores)])).toEqual([
+    expect(computeAutoscaleDomain(0.99, 'avg', [entry(scores)], true)).toEqual([
       -3, 0,
     ])
   })

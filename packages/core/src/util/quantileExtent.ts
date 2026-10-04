@@ -155,6 +155,31 @@ export function quantileExtent(
 
 /**
  * #api
+ * Where a value axis's open ends stand below a `domainQuantile` of 1: at the
+ * `extremes`, unless one would stretch the axis past twice the span the
+ * {@link quantileExtent} ends `quantiles` draw, 0 included where the axis
+ * reaches it (`zero`); that end stops at the fence. So a plot with no spike
+ * shows every value and cuts none, and a spike leaves the values under it at
+ * least half the axis. Quantiles that meet span their own size, as a flat
+ * domain widens in `getNiceDomain`.
+ */
+export function fenceOutliers({
+  extremes,
+  quantiles,
+  zero,
+}: {
+  extremes: readonly [number, number]
+  quantiles: readonly [number, number]
+  zero: boolean
+}): [number, number] {
+  const lo = zero ? Math.min(0, quantiles[0]) : quantiles[0]
+  const hi = zero ? Math.max(0, quantiles[1]) : quantiles[1]
+  const span = hi - lo || Math.abs(hi) || 1
+  return [Math.max(extremes[0], lo - span), Math.min(extremes[1], hi + span)]
+}
+
+/**
+ * #api
  * {@link quantileExtent} as a scale's open ends read it: over every finite
  * value on a linear scale, and on a log scale over the positive ones, since a
  * 0 or a negative met there would floor the domain at 1 and fold a domain

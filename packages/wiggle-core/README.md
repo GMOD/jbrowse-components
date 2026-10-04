@@ -12,14 +12,15 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 ### autoscaleDomainFromSpans
 
 The domain the visible instances autoscale to: at a `quantile` of 1 their
-extremes, `stats`; below it `quantileExtent`'s ends, the bottom read off the
-`low`s and the top off the `high`s less the zeros where any is positive, so
-whiskers open to their spread, a sparse window's empty bins lower no top, and a
-window of nothing above 0 keeps the top it has.
+extremes, `stats`; below it those extremes fenced by `quantileExtent`'s ends
+(`fenceOutliers`), the bottom read off the `low`s and the top off the `high`s
+less the zeros where any is positive, so whiskers open to their spread, a sparse
+window's empty bins lower no top, and a window of nothing above 0 keeps the top
+it has.
 
 ```js
 // type signature
-({ stats, quantile, spans, }: { stats: ScoreStats; quantile: number; spans: ScoreSpan[]; }) => [number, number]
+({ stats, quantile, zero, spans, }: { stats: ScoreStats; quantile: number; zero: boolean; spans: ScoreSpan[]; }) => [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -27,11 +28,12 @@ window of nothing above 0 keeps the top it has.
 ### computeAutoscaleDomain
 
 The score domain of the visible feature arrays, following `quantile` as
-`scales.y.domainQuantile` says.
+`scales.y.domainQuantile` says, its outliers fenced for an axis that reaches 0
+under `zero`.
 
 ```js
 // type signature
-(quantile: number, summaryScoreMode: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[]) => [number, number] | undefined
+(quantile: number, summaryScoreMode: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], zero: boolean) => [number, number] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)

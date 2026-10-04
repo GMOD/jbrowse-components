@@ -3445,6 +3445,7 @@
       "names": [
         "DEFAULT_CLIP_QUANTILE",
         "clipQuantileOf",
+        "fenceOutliers",
         "finiteExtremes",
         "quantileExtent",
         "quantileOf",

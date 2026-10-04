@@ -1,4 +1,7 @@
-import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
+import {
+  fenceOutliers,
+  quantileExtent,
+} from '@jbrowse/core/util/quantileExtent'
 
 export interface FeatureArrays {
   featurePositions: Uint32Array
@@ -218,18 +221,21 @@ export function computeScoreStats(
 /**
  * #api
  * The domain the visible instances autoscale to: at a `quantile` of 1 their
- * extremes, `stats`; below it `quantileExtent`'s ends, the bottom read off
- * the `low`s and the top off the `high`s less the zeros where any is
- * positive, so whiskers open to their spread, a sparse window's empty bins
- * lower no top, and a window of nothing above 0 keeps the top it has.
+ * extremes, `stats`; below it those extremes fenced by `quantileExtent`'s
+ * ends (`fenceOutliers`), the bottom read off the `low`s and the top off the
+ * `high`s less the zeros where any is positive, so whiskers open to their
+ * spread, a sparse window's empty bins lower no top, and a window of nothing
+ * above 0 keeps the top it has.
  */
 export function autoscaleDomainFromSpans({
   stats,
   quantile,
+  zero,
   spans,
 }: {
   stats: ScoreStats
   quantile: number
+  zero: boolean
   spans: ScoreSpan[]
 }): [number, number] {
   if (quantile >= 1) {
@@ -251,24 +257,31 @@ export function autoscaleDomainFromSpans({
   const tops = highs.some(v => v > 0) ? highs.filter(v => v !== 0) : highs
   const min = quantileExtent(lows, lows.length, quantile)[0]
   const max = quantileExtent(tops, tops.length, quantile)[1]
-  return [Number.isFinite(min) ? min : 0, Number.isFinite(max) ? max : 0]
+  return fenceOutliers({
+    extremes: [stats.scoreMin, stats.scoreMax],
+    quantiles: [Number.isFinite(min) ? min : 0, Number.isFinite(max) ? max : 0],
+    zero,
+  })
 }
 
 /** `autoscaleDomainFromSpans` over the wiggle packer's datasets. */
 export function autoscaleDomainFromStats({
   stats,
   quantile,
+  zero,
   summaryScoreMode,
   visibleEntries,
 }: {
   stats: ScoreStats
   quantile: number
+  zero: boolean
   summaryScoreMode: string
   visibleEntries: Dataset[]
 }): [number, number] {
   return autoscaleDomainFromSpans({
     stats,
     quantile,
+    zero,
     spans: visibleEntries.map(d => datasetSpan(d, summaryScoreMode)),
   })
 }
@@ -276,7 +289,8 @@ export function autoscaleDomainFromStats({
 /**
  * #api
  * The score domain of the visible feature arrays, following `quantile` as
- * `scales.y.domainQuantile` says.
+ * `scales.y.domainQuantile` says, its outliers fenced for an axis that
+ * reaches 0 under `zero`.
  */
 export function computeAutoscaleDomain(
   quantile: number,
@@ -286,10 +300,11 @@ export function computeAutoscaleDomain(
     visStart: number
     visEnd: number
   }[],
+  zero: boolean,
 ): [number, number] | undefined {
   const spans = visibleEntries.map(d => datasetSpan(d, summaryScoreMode))
   const stats = computeSpanStats(spans)
   return stats
-    ? autoscaleDomainFromSpans({ stats, quantile, spans })
+    ? autoscaleDomainFromSpans({ stats, quantile, zero, spans })
     : undefined
 }

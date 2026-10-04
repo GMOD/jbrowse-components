@@ -10,6 +10,7 @@ import { getCoverageMenuItem } from './coverage.ts'
 function menu(showCoverage: boolean, coverageSnpMinFrequency = 0) {
   return getCoverageMenuItem({
     showCoverage,
+    autoscaleRange: undefined,
     autoscaledDomain: undefined,
     coverageSnpMinFrequency,
     setCoverageSnpMinFrequency: () => {},

@@ -6,7 +6,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 export const VALUE_SCALE_TYPES = ['linear', 'log', 'symlog'] as const
 
 export interface ValueScaleOptions {
-  /** `domainQuantile`'s default: 1 follows the extremes, 0.99 clips the outermost 1% */
+  /** `domainQuantile`'s default: 1 follows the extremes, 0.99 fences a spike */
   domainQuantile?: number
   /** `symlogConstant`'s default */
   symlogConstant?: number
@@ -70,9 +70,8 @@ export type ValueScaleRuleConfig = Instance<
  * autoscaled linear or symlog axis reaches 0 whatever those regions hold.
  *
  * Two defaults come from the display rather than from the scale.
- * `domainQuantile` starts at `0.99` on the wiggle plot, clipping the outermost
- * 1% of each sign, and at `1`, the extremes, on the coverage band and the mark
- * display. `symlogConstant` starts at `0` on the wiggle family and the mark
+ * `domainQuantile` starts at `0.99` on the wiggle plot, fencing a spike, and
+ * at `1`, the extremes, on the coverage band and the mark display. `symlogConstant` starts at `0` on the wiggle family and the mark
  * display and at `1` on the coverage band.
  *
  * Every scale carries the same guides: `rules`, reference lines at chosen
@@ -100,7 +99,7 @@ export type ValueScaleRuleConfig = Instance<
  * ```
  *
  * #example
- * The whole visible range, rather than the 99th percentile the wiggle
+ * The whole visible range, spikes included, rather than the fence the wiggle
  * displays start on:
  * ```js
  * {
@@ -183,7 +182,8 @@ export function valueScaleSchema({
        * Off, the axis spans the values alone. A pinned end is unmoved either
        * way, a log axis has no 0, and a density plot, which maps score to
        * colour and has no axis, spans its values whatever this says.
-       * The score menu's "Start axis at 0" toggles it.
+       * "Always include 0" in the score menu's "Set min/max score" dialog
+       * toggles it.
        */
       zero: {
         type: 'boolean',
@@ -219,19 +219,22 @@ export function valueScaleSchema({
       },
       /**
        * #slot scales.y.domainQuantile
-       * What an unpinned end follows over the loaded values: `1` their
-       * extremes, and below it that quantile of the values on its side of 0,
-       * so `0.99` drops the outermost 1% at each end and one spike no longer
-       * flattens the rest. Where both signs appear each end is measured on its
-       * own sign, so a sparse minority tail stays visible; whether the axis
-       * then reaches 0 is `zero`'s. The score menu's "Clip outliers" toggles
-       * it.
+       * Where an unpinned end's outliers are fenced. An end follows the
+       * loaded values' extreme; below `1`, an extreme that would stretch the
+       * axis past twice the span this quantile of the values draws stops at
+       * that fence, and the bars past it wear the red clip strip. So `0.99`
+       * leaves a plot with no spike whole and keeps one spike from flattening
+       * the rest. Each end's quantile is measured among the values on its side
+       * of 0, so a sparse minority tail stays visible, and the span includes 0
+       * where `zero` reaches it. A colour ramp's `domainQuantile` clips at the
+       * quantile itself, since a saturated colour hides nothing its key does
+       * not say. The score menu's "Clip outliers" toggles it.
        */
       domainQuantile: {
         type: 'number',
         defaultValue: domainQuantile,
         description:
-          'the quantile an unpinned end follows: 1 the extremes, 0.99 drops the outermost 1% at each end, each sign measured on its own',
+          'fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there',
       },
       /**
        * #slot scales.y.grid

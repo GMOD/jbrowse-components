@@ -3,11 +3,7 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
-import {
-  makeAxisZeroItem,
-  makeClipOutliersItem,
-  makeScoreSubMenu,
-} from './scoreMenuItems.ts'
+import { makeClipOutliersItem, makeScoreSubMenu } from './scoreMenuItems.ts'
 import { scalesSchema, valueScaleSchema } from './valueScaleConfigSchema.ts'
 
 import type { ScoreScaleModel } from './scoreMenuItems.ts'
@@ -75,43 +71,42 @@ describe('makeScoreSubMenu', () => {
     ])
   })
 
-  // A density plot rules no band and its domain ignores `zero`, so the row
-  // comes and goes with the axis, as the reference lines do.
-  it('offers Start axis at 0 where the scale rules a band', () => {
-    const withAxis = {
-      ...makeSelf(),
+  // A density plot rules no band and its domain ignores `zero`, so the
+  // caption, like the dialog's checkbox, comes and goes with the axis.
+  it('captions an axis let off 0 where the scale rules a band', () => {
+    const withAxis = (scaleZero: boolean) => ({
+      ...makeSelf({ scaleZero }),
       scoreRulesDrawn: true,
       scoreRules: [],
       setScoreRules: () => {},
-    }
-    expect(labels(makeScoreSubMenu(withAxis))).toEqual([
+    })
+    expect(labels(makeScoreSubMenu(withAxis(true)))).toEqual([
       'Scale type',
       'Clip outliers',
-      'Start axis at 0',
       'Set min/max score...',
       'Reference lines...',
     ])
+    expect(labels(makeScoreSubMenu(withAxis(false)))).toEqual([
+      'Scale type',
+      'Clip outliers',
+      'Set min/max score (spans data)...',
+      'Reference lines...',
+    ])
+    expect(labels(makeScoreSubMenu(makeSelf({ scaleZero: false })))).toEqual([
+      'Scale type',
+      'Clip outliers',
+      'Set min/max score...',
+    ])
   })
 
-  it('Start axis at 0 writes the opposite of the slot it shows', () => {
-    const written: boolean[] = []
-    const item = makeAxisZeroItem({
-      scaleZero: true,
-      setScaleZero: zero => written.push(zero),
-    })
-    expect(item.checked).toBe(true)
-    item.onClick()
-    expect(written).toEqual([false])
-  })
-
-  it('names the percentile Clip outliers clips at, the one in force first', () => {
+  it('names the percentile Clip outliers fences at, the one in force first', () => {
     const helpOf = (over: Partial<ScoreScaleModel>) => {
       const item = makeClipOutliersItem(makeSelf(over))
       return 'helpText' in item ? item.helpText : undefined
     }
-    expect(helpOf({ domainQuantile: 0.95 })).toContain('95th percentile')
+    expect(helpOf({ domainQuantile: 0.95 })).toContain('other 95%')
     expect(helpOf({ domainQuantile: 1, clipQuantile: 0.99 })).toContain(
-      '99th percentile',
+      'other 99%',
     )
   })
 })
@@ -151,7 +146,7 @@ test('Clip outliers re-ticks at the quantile its untick wrote over, not the defa
   const clip = () => makeClipOutliersItem(display)
   clip().onClick()
   expect(display.domainQuantile).toBe(1)
-  expect(clip().helpText).toContain('95th percentile')
+  expect(clip().helpText).toContain('other 95%')
   clip().onClick()
   expect(display.domainQuantile).toBe(0.95)
 })

@@ -4534,7 +4534,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 1
         },
         "domainQuantile": {
-          "description": "the quantile an unpinned end follows: 1 the extremes, 0.99 drops the outermost 1% at each end, each sign measured on its own.",
+          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
           "type": "number",
           "default": 1
         },
@@ -7740,7 +7740,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0
         },
         "domainQuantile": {
-          "description": "the quantile an unpinned end follows: 1 the extremes, 0.99 drops the outermost 1% at each end, each sign measured on its own.",
+          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
           "type": "number",
           "default": 0.99
         },
@@ -8339,7 +8339,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0
         },
         "domainQuantile": {
-          "description": "the quantile an unpinned end follows: 1 the extremes, 0.99 drops the outermost 1% at each end, each sign measured on its own.",
+          "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
           "type": "number",
           "default": 1
         },

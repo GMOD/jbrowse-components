@@ -215,6 +215,7 @@ export function WiggleCommonMixin() {
               autoscaleDomainFromStats({
                 stats,
                 quantile: self.domainQuantile,
+                zero: self.axisReachesZero,
                 summaryScoreMode: self.effectiveSummaryScoreMode,
                 visibleEntries: entries,
               }),

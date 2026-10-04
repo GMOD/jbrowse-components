@@ -494,6 +494,23 @@ channel reader and the hover.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
+## fenceOutliers
+
+Where a value axis's open ends stand below a `domainQuantile` of 1: at the
+`extremes`, unless one would stretch the axis past twice the span the
+quantileExtent ends `quantiles` draw, 0 included where the axis
+reaches it (`zero`); that end stops at the fence. So a plot with no spike
+shows every value and cuts none, and a spike leaves the values under it at
+least half the axis. Quantiles that meet span their own size, as a flat
+domain widens in `getNiceDomain`.
+
+```js
+// type signature
+({ extremes, quantiles, zero, }: { extremes: readonly [number, number]; quantiles: readonly [number, number]; zero: boolean; }) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
+
 ## fieldReader
 
 What a channel reads off a feature: a field by name, a dotted path into a
