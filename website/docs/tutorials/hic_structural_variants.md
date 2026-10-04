@@ -13,18 +13,19 @@ so Hi-C reads linking them run far above background. We look for the
 Philadelphia chromosome, the _BCR_-_ABL1_ fusion, in the Hi-C of the K562
 leukemia line against GM12878's normal karyotype. JBrowse fetches a Hi-C matrix
 for every _pair_ of regions on screen, so a chr9 window and a chr22 window in
-one linear view draw the contacts between the two.
+one linear view draw the contacts between the two. Over the same matrices, we
+then compare the two lines' compartment calls at _EBF1_, a gene B cells depend
+on for their identity.
 
 ## Prerequisites
 
-- nothing to install to read along: every track is a public ENCODE object served
-  with CORS and byte ranges
 - a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
-  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
-  needs nothing hosted
-- `java`, which `juicer_tools` needs for the [scan script](#run-the-scan); the
-  script downloads `juicer_tools` itself
-- `curl`, for the same [scan script](#run-the-scan)
+  [Desktop](/docs/quickstart_desktop))
+- `java`, which `juicer_tools` needs for the
+  [scan script](#ranking-chr9-chr22-contact-bins-with-juicer_tools); the script
+  downloads `juicer_tools` itself
+- `curl`, for the same
+  [scan script](#ranking-chr9-chr22-contact-bins-with-juicer_tools)
 
 ## Where the data comes from
 
@@ -51,9 +52,9 @@ draws the result as a triangle: the diagonal runs along the top edge, and depth
 below it is genomic separation. Two features of that picture have names, and
 ENCODE publishes both as annotation files derived from the matrix:
 
-- **Contact domains** (also TADs) are the square blocks sitting on the diagonal.
-  Inside one, everything contacts everything; across a boundary, contact drops
-  sharply. ENCODE calls them with
+- **Contact domains** (also called topologically associating domains, TADs) are
+  the square blocks sitting on the diagonal. Inside one, everything contacts
+  everything; across a boundary, contact drops sharply. ENCODE calls them with
   [Arrowhead](https://github.com/aidenlab/juicer/wiki/Arrowhead) and ships a
   BEDPE.
 - **Loops** are individual bright dots off the diagonal: two specific points
@@ -67,11 +68,10 @@ bp-per-pixel, which over a wide window can render the triangle as red speckle.
 coarser bins; if a Hi-C track looks like noise, change it first. See
 [adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution).
 
-## The genome
+## Loading the GRCh38 assembly
 
 ENCODE aligned both Hi-C libraries to GRCh38, so we load that assembly before
-adding any track. The track configs are under
-[Configuring the Hi-C tracks](#configuring-the-hi-c-tracks).
+adding any track.
 
 ```json addassembly
 {
@@ -84,12 +84,80 @@ adding any track. The track configs are under
 }
 ```
 
+## Configuring the Hi-C tracks
+
+The `.hic` files are 20 GB and 55 GB, and JBrowse requests only the bins on
+screen.
+
+```json addtrack
+{
+  "trackId": "hic_k562_insitu",
+  "name": "K562 in situ Hi-C (ENCODE ENCSR545YBD)",
+  "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "selectedNormalization": "NONE"
+  }
+}
+```
+
+```json addtrack
+{
+  "trackId": "hic_gm12878_insitu",
+  "name": "GM12878 in situ Hi-C, deep (ENCODE ENCSR410MDC)",
+  "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "selectedNormalization": "NONE"
+  }
+}
+```
+
+Use ENCODE's direct S3 URLs. hic-straw's range reader cannot follow the
+cross-origin redirect the portal's `@@download` links return, and the `.hic`
+comes back as a 403. The S3 URL for any ENCODE file is in its metadata under
+`cloud_metadata.url`.
+
+The domain BEDPE needs one extra slot, `"type": "FeatureTrack"`:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hic_gm12878_domains",
+  "name": "GM12878 contact domains (Arrowhead)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedpeAdapter",
+    "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/467750ae-7aab-47b0-a304-dc5f8dff89f7/ENCFF301CUL.bedpe.gz"
+  }
+}
+```
+
+Arrowhead writes each domain with both BEDPE mates set to the same interval, so
+as a `FeatureTrack` the file gives one box per domain, nested domains stacking
+into rows. Loops, whose mates differ, are the paired-arc case in the
+[Hi-C track config guide](/docs/config_guides/hic_track#loops-and-interactions-as-arcs);
+the whole GM12878 loops track is `hic_gm12878_loops` in
+https://jbrowse.org/code/jb2/main/test_data/config_demo.json.
+
+To color or filter either track by a column, set
+[`columnNames`](/docs/config/bedpeadapter/#slot-columnnames) explicitly. Juicer
+writes a version banner after the header line, so column names read from the
+header come out `undefined` past the tenth column, and a jexl expression on one
+of them matches nothing and reports no error. HiCCUPS writes 24 columns and
+Arrowhead 16.
+
+Both callers leave `name` and `score` at `.` and put what they rank by further
+along: HiCCUPS' is `observed`, Arrowhead's a second column called `score`.
+Values past the tenth column arrive as strings, so compare with `>` and `<`,
+which coerce, rather than `==`.
+
 ## Two chromosomes in one view
 
 The matrix is fetched for every pair of displayed regions. Open a second region
 and JBrowse also fetches the contacts _between_ the two, drawn in the wedge
 between their triangles. Type both locations into the location box, separated by
-a space.
+a space: `chr9:129,730,000-131,730,000 chr22:22,285,000-24,285,000`.
 
 <Video src="/media/hic/two_regions.mp4" caption="A chr22 window entered into the location box beside a chr9 one, GM12878 above and K562 below: the wedge between the two triangles appears with the second region." />
 
@@ -102,19 +170,20 @@ K562 has the Philadelphia chromosome, t(9;22)(q34;q11)
 _ABL1_ on chr9. GM12878 has a normal karyotype. Both have deep in situ Hi-C from
 the same ENCODE lab and pipeline.
 
-<Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) as two windows in one linear view, GM12878 above and K562 below. The wedge between the two panels' triangles is chr9 against chr22: empty in GM12878, a dense arrowed block in K562." links="Open this view=hic/bcr_abl1_translocation" />
+<Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) as two windows in one linear view, GM12878 above and K562 below. The wedge between the two panels' triangles is chr9 against chr22: empty in GM12878, a dense block under the arrow in K562." links="Open this view=hic/bcr_abl1_translocation" />
 
-The triangles over each window match between the panels, so chr9 and chr22 each
-fold normally in K562.
+The domain boundaries inside each window line up between the two lines, so chr9
+and chr22 each fold normally in K562.
 
-## Depth and normalization
+## Depth and normalization in the translocation scan
 
-**Depth.** ENCODE's GM12878 "supernatant" fraction (`ENCSR730CER`, which the
-script has commented out) is much shallower over this chromosome pair than the
-in situ file the figure uses, `ENCSR410MDC`, and a wedge empty for want of reads
-looks the same as one empty for want of a translocation. As shipped, the scan
-finds GM12878 with more contact than K562 across the whole chr9-chr22 block,
-with the order inverting at the junction bin.
+**Depth.** The scan script below compares a case `.hic` with a control, and
+ships with ENCODE's deep GM12878 in situ file, `ENCSR410MDC`, as the control. It
+has the much shallower GM12878 "supernatant" fraction, `ENCSR730CER`, commented
+out, because a wedge empty for want of reads looks the same as one empty for
+want of a translocation. With the deep file, the scan finds GM12878 with more
+contact than K562 across the whole chr9-chr22 block except the junction bin,
+where the order inverts.
 
 **Normalization.** Matrix balancing divides out per-bin coverage differences,
 and an amplified fusion is one. Re-run the scan with `NORM=INTER_SCALE` and
@@ -127,7 +196,7 @@ The scan prints a ranked list for the control below the one for the case. The
 top bin in the control list is hot in both GM12878 and K562, so it is a
 reproducible mapping artifact and not a rearrangement.
 
-## Run the scan
+## Ranking chr9-chr22 contact bins with juicer_tools
 
 Finding the translocation takes one dump per `.hic` file and a sort. Dump the
 raw contact counts between the two chromosomes:
@@ -181,7 +250,7 @@ a
 [paired-arc track](/docs/config_guides/hic_track#loops-and-interactions-as-arcs)
 next to the matrix it was called from.
 
-## A and B compartments
+## A and B compartments at EBF1 in GM12878 and K562
 
 Above domains and loops, the matrix separates into two interleaved sets of
 regions that each contact regions of the same kind: the gene-rich, active A
@@ -208,7 +277,7 @@ the middle of each:
 The K562 track uses
 `https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig`.
 On an eigenvector track already open, **Score → Set min/max score...** writes
-the same two ends.
+the same two ends. Open both eigenvector tracks over _EBF1_ on chr5:
 
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1 is in opposite compartments in the two lines while the frame edges agree." links="Open this view=hic/compartment_switch" />
 
@@ -222,60 +291,6 @@ The
 [user guide section](/docs/user_guides/hic_track#compartments-and-subcompartments)
 covers the pinning and the sign, and why subcompartment class numbers cannot be
 compared between files.
-
-## Configuring the Hi-C tracks
-
-The `.hic` files are 20 GB and 55 GB, and JBrowse requests only the bins on
-screen.
-
-```json addtrack
-{
-  "trackId": "hic_k562_insitu",
-  "name": "K562 in situ Hi-C (ENCODE ENCSR545YBD)",
-  "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic",
-  "assemblyNames": ["hg38"],
-  "displayDefaults": {
-    "selectedNormalization": "NONE"
-  }
-}
-```
-
-Use ENCODE's direct S3 URLs. hic-straw's range reader cannot follow the
-cross-origin redirect the portal's `@@download` links return, and the `.hic`
-comes back as a 403. The S3 URL for any ENCODE file is in its metadata under
-`cloud_metadata.url`.
-
-The loop and domain BEDPEs each need one extra slot:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "hic_gm12878_domains",
-  "name": "GM12878 contact domains (Arrowhead)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedpeAdapter",
-    "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/467750ae-7aab-47b0-a304-dc5f8dff89f7/ENCFF301CUL.bedpe.gz"
-  }
-}
-```
-
-Arrowhead writes each domain with both BEDPE mates set to the same interval, so
-as a `FeatureTrack` the file gives one box per domain, nested domains stacking
-into rows. Loops, whose mates differ, are the paired-arc case. See the
-[Hi-C track config guide](/docs/config_guides/hic_track#loops-and-interactions-as-arcs).
-
-To color or filter either track by a column, set
-[`columnNames`](/docs/config/bedpeadapter/#slot-columnnames) explicitly. Juicer
-writes a version banner after the header line, so column names read from the
-header come out `undefined` past the tenth column, and a jexl expression on one
-of them matches nothing and reports no error. HiCCUPS writes 24 columns and
-Arrowhead 16.
-
-Both callers leave `name` and `score` at `.` and put what they rank by further
-along: HiCCUPS' is `observed`, Arrowhead's a second column called `score`.
-Values past the tenth column arrive as strings, so compare with `>` and `<`,
-which coerce, rather than `==`.
 
 ## See also
 
