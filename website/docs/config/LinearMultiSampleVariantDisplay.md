@@ -79,7 +79,7 @@ them by sample name, so the order below puts both of HG002's rows first:
     {
       type: 'LinearMultiSampleVariantDisplay',
       height: 400,
-      renderingMode: 'phased',
+      unit: 'haplotype',
       rows: { domain: ['HG002'] },
     },
   ],
@@ -121,7 +121,7 @@ These slots go on a display entry: `"displays": [{ "type": "LinearMultiSampleVar
 | <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>20</code> | Height of the band of connector lines above the columns, spent only in the `'columns'` layout.<br>_advanced_ |
 | <span id="slot-rows">**rows**</span><br>[RowArrangement](../rowarrangement) | The arrangement a reader gives the rows, each member by row name: a sample in allele-count mode, a haplotype (`"<sample> HP<n>"`) in phased mode, where a sample name stands for all of its haplotypes. The samples `domain` lists come first and the rest keep the file's order; a facet groups within it. |
 | <span id="slot-showtooltips">**showTooltips**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Show the hover tooltip naming the genotype, the sample and the record under the pointer. Off, the crosshairs, the highlighted cell and the cross-display `session.hovered` channel stay. |
-| <span id="slot-renderingmode">**renderingMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (alleleCount, phased) = <code>'alleleCount'</code> | 'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype |
+| <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (sample, haplotype) = <code>'sample'</code> | What one row stands for: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype |
 | <span id="slot-color">**color**</span><br>[VariantCellColor](../variantcellcolor) | The hue of every alt-carrying genotype cell: unset, the genotype colours; a CSS colour or `jexl:` callback; or a field, one of the `impact`, `svType` and `phaseSet` presets or any record field, whose values each take a colour with a key. |
 | <span id="slot-shadebydosage">**shadeByDosage**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Compose the cell hue with the genotype's alt dosage — the fraction of its called alleles that are non-reference — so a homozygote paints the hue itself and a heterozygote a lighter version of it. Off paints each alt-carrying cell its flat hue. |
 | <span id="slot-minorallelefrequencyfilter">**minorAlleleFrequencyFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Hide variants whose minor allele frequency is below this threshold<br>_advanced_ |

@@ -3690,8 +3690,8 @@ export const configManifest: ConfigManifest = {
           "type": "(frozen | undefined)"
         },
         {
-          "name": "linkedReads",
-          "type": "LinkedReadsMode"
+          "name": "unit",
+          "type": "AlignmentsUnit"
         },
         {
           "name": "showBezierConnections",
@@ -3792,7 +3792,8 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "colorBy"
+        "colorBy",
+        "linkedReads"
       ],
       "aliases": [
         "LinearPileupDisplay",
@@ -4272,8 +4273,8 @@ export const configManifest: ConfigManifest = {
           "type": "(frozen | undefined)"
         },
         {
-          "name": "linkedReads",
-          "type": "LinkedReadsMode"
+          "name": "unit",
+          "type": "AlignmentsUnit"
         },
         {
           "name": "showBezierConnections",
@@ -4382,7 +4383,8 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "colorBy"
+        "colorBy",
+        "linkedReads"
       ],
       "stateModelProps": [
         "id",
@@ -5205,8 +5207,8 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "renderingMode",
-          "type": "RenderingMode"
+          "name": "unit",
+          "type": "VariantUnit"
         },
         {
           "name": "color",
@@ -5334,7 +5336,8 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "jexlFilters"
+        "jexlFilters",
+        "renderingMode"
       ],
       "aliases": [
         "MultiLinearVariantDisplay",
@@ -7629,6 +7632,7 @@ export const configManifest: ConfigManifest = {
       "clusterTree",
       "jexlFilters",
       "layout",
+      "renderingModeSetting",
       "showSidebarLabelsSetting",
       "showTreeSetting",
       "subtreeFilter",

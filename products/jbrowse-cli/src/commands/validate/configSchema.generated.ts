@@ -4753,13 +4753,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/JexlString"
           }
         },
-        "linkedReads": {
-          "description": "View as pairs / link supplementary alignments: put a read, its mate and its split segments on one row.",
+        "unit": {
+          "description": "What one row stands for: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
           "enum": [
-            "off",
-            "normal"
+            "read",
+            "chain"
           ],
-          "default": "off"
+          "default": "read"
         },
         "showBezierConnections": {
           "description": "Draw paired-read connection curves over the pileup.",
@@ -4878,6 +4878,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "colorBy": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "linkedReads": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -5441,13 +5445,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/JexlString"
           }
         },
-        "linkedReads": {
-          "description": "View as pairs / link supplementary alignments: put a read, its mate and its split segments on one row.",
+        "unit": {
+          "description": "What one row stands for: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
           "enum": [
-            "off",
-            "normal"
+            "read",
+            "chain"
           ],
-          "default": "off"
+          "default": "read"
         },
         "showBezierConnections": {
           "description": "Draw paired-read connection curves over the pileup.",
@@ -5580,6 +5584,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "colorBy": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "linkedReads": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -7402,13 +7410,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean",
           "default": true
         },
-        "renderingMode": {
-          "description": "'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype.",
+        "unit": {
+          "description": "What one row stands for: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype.",
           "enum": [
-            "alleleCount",
-            "phased"
+            "sample",
+            "haplotype"
           ],
-          "default": "alleleCount"
+          "default": "sample"
         },
         "color": {
           "$ref": "#/$defs/VariantCellColor"
@@ -7473,6 +7481,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "auto"
         },
         "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "renderingMode": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -9783,8 +9795,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showOutline": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showOutline"
             },
-            "linkedReads": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/linkedReads"
+            "unit": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/unit"
             },
             "showBezierConnections": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showBezierConnections"
@@ -9854,6 +9866,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "colorBy": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorBy"
+            },
+            "linkedReads": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/linkedReads"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -10410,8 +10425,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showTooltips": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTooltips"
             },
-            "renderingMode": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"
+            "unit": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/unit"
             },
             "shadeByDosage": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/shadeByDosage"
@@ -10446,6 +10461,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "variantLaneLabels": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLaneLabels"
+            },
+            "renderingMode": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -12106,8 +12124,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showOutline": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showOutline"
             },
-            "linkedReads": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/linkedReads"
+            "unit": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/unit"
             },
             "showBezierConnections": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showBezierConnections"
@@ -12190,6 +12208,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "colorBy": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy"
+            },
+            "linkedReads": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/linkedReads"
             },
             "utrColor": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"
@@ -15914,6 +15935,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "layout": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "renderingModeSetting": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },

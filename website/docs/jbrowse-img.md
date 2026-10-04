@@ -317,8 +317,8 @@ S3) over a ~1.2 kb inversion on chr1 draws the same event three ways:
   encoding the junction's orientation: here the two breakpoints joined by
   **purple inversion-junction arcs**, where a read's two halves map in opposite
   orientations.
-- **`linkedReads:normal`** chains each read's split segments, so the same
-  inversion reads in the pileup itself: a **blue reverse-strand core between red
+- **`unit:chain`** chains each read's split segments, so the same inversion
+  reads in the pileup itself: a **blue reverse-strand core between red
   forward-strand flanks**, spanning breakpoint to breakpoint.
 - **`group:splitRead`** puts those reads in their own labelled section above the
   flat background pileup.
@@ -327,7 +327,7 @@ S3) over a ~1.2 kb inversion on chr1 draws the same event three ways:
 
 ```bash
 jb2export --hub hg38 \
-  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down linkedReads:normal group:splitRead coverageHeight:80 height:560 \
+  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit:chain group:splitRead coverageHeight:80 height:560 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
@@ -440,11 +440,11 @@ jb2export --fasta ref.fa --bam reads.bam arcs:cloud coverageHeight:300 \
   readConnectionsLineWidth:2 height:600 --loc chr1:1-50000
 
 ## view as pairs / link supplementary alignments: mates and split segments of one
-## read share a row, joined by a connecting line. linkedReads:bezier is NOT this —
-## it is a back-compat alias for the curved-connector overlay (showBezierConnections)
-## and leaves the layout an ordinary pileup. Add both to curve the connectors that
-## cross between displayed regions, which the per-region line pass cannot draw.
-jb2export --fasta ref.fa --bam linked.bam linkedReads:normal --loc chr1:1-50000
+## read share a row, joined by a connecting line. showBezierConnections=true is
+## the separate curved-connector overlay and leaves the layout an ordinary pileup.
+## Add both to curve the connectors that cross between displayed regions, which
+## the per-region line pass cannot draw.
+jb2export --fasta ref.fa --bam linked.bam unit:chain --loc chr1:1-50000
 ```
 
 ### BigWig / quantitative tracks
@@ -699,7 +699,7 @@ Overlays & subtracks:
 | Modifier               | Example               | Description                                                                                |
 | ---------------------- | --------------------- | ------------------------------------------------------------------------------------------ |
 | `arcs:mode`            | `arcs:cloud`          | Read-connection arcs / read-cloud panel (`off`, `up`, `down`, `cloud`)                     |
-| `linkedReads:mode`     | `linkedReads:normal`  | Linked-read chains (`off`, `normal`, `bezier`)                                             |
+| `unit:read\|chain`     | `unit:chain`          | What one row stands for: a read, or its mate and split segments chained (`read`, `chain`)  |
 | `sashimi:mode`         | `sashimi:up`          | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)                                 |
 | `coverage:true\|false` | `coverage:false`      | Toggle coverage subtrack                                                                   |
 | `snpcov`               | `snpcov`              | Coverage-only view — resizes the coverage band to fill the track                           |

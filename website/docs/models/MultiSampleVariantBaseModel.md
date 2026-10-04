@@ -8,7 +8,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 
 ## Example usage
 
-`renderingMode`, `rowColor`, `rows` and `minorAlleleFrequencyFilter` are
+`unit`, `rowColor`, `rows` and `minorAlleleFrequencyFilter` are
 config (see the display's config schema), read at runtime through `getConf`
 and written as session edits to the track's config — they are NOT plain MST
 properties. Set them in a track's `displays` array to change the default:
@@ -18,7 +18,7 @@ displays: [
   {
     type: 'LinearMultiSampleVariantDisplay',
     displayId: 'my-cohort',
-    renderingMode: 'phased',
+    unit: 'haplotype',
     rowColor: 'population',
     rows: { domain: ['NA12878', 'NA12891'] },
   },
@@ -137,7 +137,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-hassvtype">**hasSvType**</span><br><code>boolean</code> | Whether any visible variant is a structural variant, gating the "Color by...→SV type" menu option. | MultiSampleVariantBaseModel |
 | <span id="getter-hasphaseset">**hasPhaseSet**</span><br><code>boolean</code> | Whether any visible variant declares a phase set (PS in FORMAT), gating the "Color by...→Phase set" menu option. | MultiSampleVariantBaseModel |
 | <span id="getter-sampleploidy">**samplePloidy**</span><br><code>Readonly&lt;Record&lt;string, number&gt;&gt; &#124; undefined</code> | Each sample's ploidy as the latest fetch reports it, the same object while a region arrival reports the same ploidies, so the phased rows are expanded again only when one changes. | MultiSampleVariantBaseModel |
-| <span id="getter-renderingmode">**renderingMode**</span><br><code>string</code> | Returns the rendering mode config slot value | MultiSampleVariantBaseModel |
+| <span id="getter-unit">**unit**</span><br><code>"haplotype" &#124; "sample"</code> |  | MultiSampleVariantBaseModel |
 | <span id="getter-variantlayout">**variantLayout**</span><br><code>"columns" &#124; "genomic"</code> | Whether each variant draws at its genomic span, or as one of a row of equal-width columns tied to its position by a connector line. | MultiSampleVariantBaseModel |
 | <span id="getter-atgenomicpositions">**atGenomicPositions**</span><br><code>boolean</code> |  | MultiSampleVariantBaseModel |
 | <span id="getter-celldatamode">**cellDataMode**</span><br><code>"matrix" &#124; "regular"</code> | The payload shape the worker builds for `atGenomicPositions`: cells per displayed region at their spans, or one matrix of columns over the visible regions. | MultiSampleVariantBaseModel |
@@ -354,7 +354,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-setfacet">**setFacet**</span><br><code>(field: string) =&gt; void</code> | Band the sample rows so each value of a metadata attribute (e.g. 'population') is contiguous, or pass '' to clear the facet. Writes the `facet` object, keeping a declared band order while the field is the one already banding, which is the whole of it: the banding is applied on every read of `bandedSources`, over the arranged order. | MultiSampleVariantBaseModel |
 | <span id="action-setmaffilter">**setMafFilter**</span><br><code>(arg: number) =&gt; void</code> |  | MultiSampleVariantBaseModel |
 | <span id="action-setmaxmissingnessfilter">**setMaxMissingnessFilter**</span><br><code>(arg: number) =&gt; void</code> |  | MultiSampleVariantBaseModel |
-| <span id="action-setphasedmode">**setPhasedMode**</span><br><code>(arg: string) =&gt; void</code> |  | MultiSampleVariantBaseModel |
+| <span id="action-setunit">**setUnit**</span><br><code>(unit: "haplotype" &#124; "sample") =&gt; void</code> |  | MultiSampleVariantBaseModel |
 | <span id="action-setfittoheight">**setFitToHeight**</span><br><code>() =&gt; void</code> | Enable fit-to-display-height mode: `rowHeight = 0` makes `effectiveRowHeight` divide `availableHeight` across the rows. | MultiSampleVariantBaseModel |
 | <span id="action-setreferencedrawingmode">**setReferenceDrawingMode**</span><br><code>(arg: string) =&gt; void</code> |  | MultiSampleVariantBaseModel |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(arg: boolean) =&gt; void</code> |  | MultiSampleVariantBaseModel |

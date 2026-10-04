@@ -37,7 +37,7 @@ The two failures live at the edges of "name":
 
 - **A feature with no name joins nothing, rather than joining everything.** A
   PAF/synteny block carries no QNAME, and the empty-string bucket made every
-  block in the region one chain the moment `linkedReads` was set.
+  block in the region one chain the moment `unit: 'chain'` was set.
   `chainGroupingKey` and `groupReadsByName`
   (`plugins/alignments/src/features/arcs/arcChains.ts`) both skip a nameless
   feature, and that skip is the rule rather than a guard.

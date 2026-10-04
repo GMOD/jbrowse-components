@@ -55,7 +55,7 @@ connected by arcs:
   displayDefaults: {
     height: 400,
     showSoftClipping: true,
-    linkedReads: 'normal',
+    unit: 'chain',
     readConnections: 'arc',
   },
 }
@@ -99,7 +99,7 @@ These slots go on a display entry: `"displays": [{ "type": "LinearAlignmentsDisp
 | <span id="slot-sortedby">**sortedBy**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted)<br>_advanced_ |
 | <span id="slot-layoutorder">**layoutOrder**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (position, length, spliced) = <code>'position'</code> | The row order where no `sortedBy` sort applies. `length` puts the widest features in the lowest rows, so large alignments cluster at the top rather than interleaving with small ones (LGVSyntenyDisplay's default); `spliced` does the same for reads whose CIGAR carries a skip, for RNA-seq. |
 | <span id="slot-showoutline">**showOutline**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | null = auto: outline is drawn only in chain/linked-read modes. Set true/false to force it on or off regardless of mode.<br>_advanced_ |
-| <span id="slot-linkedreads">**linkedReads**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (off, normal) = <code>'off'</code> | View as pairs / link supplementary alignments: put a read, its mate and its split segments on one row |
+| <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (read, chain) = <code>'read'</code> | What one row stands for: a read, or a chain of a read, its mate and its split segments (the "View as pairs" menu row) |
 | <span id="slot-showbezierconnections">**showBezierConnections**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Draw paired-read connection curves over the pileup |
 | <span id="slot-showcoverage">**showCoverage**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw the coverage histogram band |
 | <span id="slot-showpileup">**showPileup**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw the stacked-read pileup band |

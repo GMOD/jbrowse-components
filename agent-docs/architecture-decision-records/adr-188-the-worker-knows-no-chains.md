@@ -75,7 +75,7 @@ The spelling is grammar-of-graphics vocabulary and costs nothing at runtime:
 
 | grammar term | here | spelled |
 | --- | --- | --- |
-| observation unit | a read, or a chain (mates and split segments, one QNAME) | `facet.unit`; the `linkedReads` slot; `isChainMode` |
+| observation unit | a read, or a chain (mates and split segments, one QNAME) | `unit` slot, RPC `facet.unit` |
 | facet | the field the sections stack by, and its domain | `facet` slot, RPC `facet`, `Facet` type |
 | colour channel | the read fill | `color` slot, resolved as `colorBy` |
 
@@ -94,6 +94,9 @@ collision the facet rename removed.
 - The seven chain fields left `WorkerPileupData` for `ChainFields`
   (`ChainedPileupData` is the layout's input). A consumer reading them off
   `rpcDataMap` reads them off `chainedByGroup` instead.
-- The unit still has two other spellings, the `linkedReads` slot and
-  `isChainMode`:
-  [ideas/waiting-on-a-call/linked-reads-slot-is-the-unit.md](../ideas/waiting-on-a-call/linked-reads-slot-is-the-unit.md).
+- The display slot spells the unit the same way, `unit: 'read' | 'chain'`,
+  since 2026-10-04: it replaced the beta's `linkedReads: 'off' | 'normal'`,
+  which the schema's `retired` lifts, and `isChainMode`, whose reads became
+  reads of `unit`. The multi-sample variant display took the same slot for
+  `'sample' | 'haplotype'`, replacing `renderingMode`. The renderer's
+  `chainMode` boolean stays, since a shader uniform is an int.

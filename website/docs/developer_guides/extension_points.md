@@ -971,7 +971,12 @@ config schema's `retired`:
 <!-- include: plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts#retired -->
 
 ```typescript
-retired: { colorBy: colorSlotsOf },
+retired: {
+  colorBy: colorSlotsOf,
+  linkedReads: (v: unknown) => ({
+    unit: v === 'normal' ? 'chain' : 'read',
+  }),
+},
 ```
 
 Each entry maps the old name to the members its value becomes. One declaration
