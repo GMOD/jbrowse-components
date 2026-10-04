@@ -77,6 +77,9 @@ export const wiggleColorSchema = ConfigurationSchema(
       model: types.enumeration('WiggleColorField', [...WIGGLE_COLOR_FIELDS]),
       description: 'score, the value each bar carries',
     },
+    /**
+     * #slot
+     */
     scale: colorChannelSlots({
       scales: WIGGLE_COLOR_SCALES,
       scaleName: 'WiggleColorScale',
