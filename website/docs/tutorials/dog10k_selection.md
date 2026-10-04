@@ -21,7 +21,6 @@ where the wolves fall.
 
 ## Prerequisites
 
-- nothing to read along. Everything below is for building the track yourself
 - the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
   [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
   is a config that loads it with its gene and repeat tracks, and the
@@ -52,7 +51,7 @@ directly over HTTP with no local copy of either callset.
   outgroup from:
   https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
 
-## The genome
+## Loading the UU_Cfam_GSD_1.0 dog assembly
 
 The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
 We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
@@ -74,7 +73,7 @@ GenBank accessions:
 }
 ```
 
-## Scanning for a locus
+## Scanning the genome for toy-versus-giant Fst peaks
 
 Body size is the trait, so the two groups are the breeds at its extremes: every
 animal of fourteen toy or small breeds against every animal of eleven giant
@@ -140,7 +139,7 @@ WINDOW=20000 REGIONS=chr15:40600000-42600000 \
   bash build_dog10k_size_fst.sh
 ```
 
-<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed significance line. Bottom: the wedge's span, two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band marks the 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
+<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed 99.9th-percentile line. Bottom: the wedge's span, two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band marks the 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 The genome-wide scan uses wide bins to keep the noise across thousands of
 windows down, so the _IGF1_ peak is a single bar.
@@ -167,14 +166,14 @@ breeds largely lack
 animal, that haplotype shows how far along the chromosome it extends, which
 animals depart from their breed, and where the wolves fall.
 
-## Choosing the panel
+## Choosing the toy, giant and wolf panel
 
 The panel is the two groups the scan compared plus the twelve Greek gray wolves,
 taken from the Dog10K sample table by breed name. It holds whole breeds, because
 several breeds depart from the pattern one animal at a time and the clustering
 below has to show that variation.
 
-## Slicing the locus out of the callset
+## Slicing the IGF1 window out of the SNV callset
 
 The SNV callset is a single 397 GB VCF over 1,987 canids with a tabix index
 beside it. `bcftools` reads only the window:
@@ -201,7 +200,7 @@ The second `bcftools view` keeps sites that are common within the panel. Most
 sites in a callset this size are rare, and a site that is reference in all 167
 animals draws an empty column.
 
-## Loading the slice with sample metadata
+## Loading the IGF1 slice with a sample-metadata TSV
 
 The display draws one row per sample. For a panel this size, point the adapter
 at a TSV whose first column is the sample name and whose other columns are
@@ -237,15 +236,15 @@ CLUPGR000001	Greek gray wolf	Gray wolf
 }
 ```
 
-## Framing the window
+## Framing the IGF1 window on the separating sites
 
 In a matrix every record is one column of equal width, so a window's width in
 the frame is a count of records. The build script prints which sites separate
-the two size classes, and this window is that span with a margin of
-undifferentiated sequence on each side; the Fst lane comes back down over that
-margin.
+the two size classes. Frame the view on that span with a margin of
+undifferentiated sequence on each side, as `chr15:41,348,000-41,752,000` in the
+session below does, and the Fst lane comes back down over the margin.
 
-## Clustering the rows
+## Clustering the IGF1 rows by genotype
 
 Rows arrive in the VCF's order, which is the order the panel was built in, so
 they start out grouped by breed. Clustering reads the region on screen, and over
@@ -296,7 +295,7 @@ A session can set the region directly with `clusterRegion` beside
 
 ## Reading the IGF1 haplotype block
 
-<Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, size class as the sidebar swatch, under per-site Fst between the same two panels. Fst is near zero at both window edges and high across the gene." src="/img/dog10k-igf1-haplotype.png" />
+<Figure caption="SNVs across IGF1 as a matrix, one row per canid and one column per variant, size class as the sidebar swatch, under per-site Fst between the same two panels. Fst is near zero at both window edges and high across the gene." src="/img/dog10k-igf1-haplotype.png" />
 
 Clustering on genotypes alone recovers the size split. The block's boundaries
 fall within the window, so the gene track above shows its extent. The two panels
@@ -309,15 +308,17 @@ a time over this VCF. Each point is one column of the matrix. The matrix gives
 each record equal width and the Fst lane keeps genomic spacing, so the sloped
 lines between them tie each column to its coordinate. The scan reads the phased
 imputation panel and this lane reads the SNV callset, so the peak appears in two
-different files.
+different files. The build script writes the lane as `dog10k_igf1_fst.bed.gz`,
+and it loads like the genome scan, as a `GWASTrack` whose `GWASAdapter` takes
+`scoreColumn` `fst` and `columnNames` `chrom`, `chromStart`, `chromEnd`, `name`,
+`fst`, `freqToySmall`, `freqGiant`.
 
 Rows depart from their swatch in both directions: single orange rows sit within
 the giant cluster and single blue rows within the small one. The build script
 prints the range within each size class alongside its median.
 
-The wolves form a contiguous band, on the toy and small side of the split. They
-have part of the haplotype here, where the stop-gained allele in
-[](/docs/tutorials/dog10k_lof) is absent from them.
+The wolves form a contiguous band of their own directly below the toy and small
+block, and carry part of its haplotype.
 
 ## Scanning another trait
 
