@@ -1,6 +1,6 @@
 ---
 name: row-displays-on-shared-kernels
-description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against grammar-unity. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, the MAF cleanups and the shared insertion mark landed the same day, row colour on 2026-10-03 (ADR-207); open are per-mark seams and variant wire shapes."
+description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against the grammar's one-object rule. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, the MAF cleanups and the shared insertion mark landed the same day, row colour on 2026-10-03 (ADR-207); open are per-mark seams and variant wire shapes."
 ---
 
 # Row displays on shared kernels
@@ -8,7 +8,7 @@ description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature 
 On 2026-10-02 Colin asked for simplifications, refactors and bug fixes in the
 multi-sample variant, multi-row feature and MAF displays, suspecting unfinished
 work aligning them on mark-based drawing. Four Opus audits read the code against
-[grammar-unity](grammar-unity.md),
+[GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) rule 2,
 [ADR-199](../architecture-decision-records/adr-199-the-maf-display-stays-its-own-and-shares-the-grammars-kernels.md)
 and
 [one-row-model](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md);
@@ -24,7 +24,7 @@ Each display's main layer already runs through `defineMark` and
 MAF through span, bar and coverage-band marks
 (`plugins/maf/src/LinearMafRenderer/mafMarks.ts`), the variant display through
 its own `cellMark` and `matrixCellMark` over `variant.slang` and
-`variantMatrix.slang`, which grammar-unity accepts. Off the marks: the
+`variantMatrix.slang`, which rule 2 accepts. Off the marks: the
 insertion counts, the matrix's connector lines, multi-row's density
 band, MAF's seven overlays, and the row and data plumbing around the marks.
 So the direction is ADR-199's — share kernels where two paths compute the same

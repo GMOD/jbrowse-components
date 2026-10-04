@@ -5,8 +5,8 @@ description: Move the wiggle display's plots onto render-core's bar, point, line
 
 # Wiggle's plots onto render-core's marks
 
-A review sized this on 2026-09-27, and nobody has re-measured the sizes. It is
-step 5 of [grammar-unity](../../handoffs/grammar-unity.md).
+A review sized this on 2026-09-27, and nobody has re-measured the sizes. Colin
+answered "not now" on 2026-09-30.
 
 ## What is already out of the way
 
@@ -58,8 +58,9 @@ wiggle's 12 payload bytes a feature.
 - Per-source colour paints the plot through the row table's colour plane,
   where the mark display's row colour tints only the label.
 - Wiggle's tooltip lists every source's min, mean and max at the cursor; the
-  mark display hovers one instance. The `tooltip` channel call in
-  grammar-unity is the general form.
+  mark display hovers one instance. A `tooltip` channel would be the general
+  form ([GRAMMAR_OF_GRAPHICS.md](../../reference/GRAMMAR_OF_GRAPHICS.md)
+  §"Gaps against the grammar").
 - `MultiWiggleAdapter` has no `getFeatureTable`, so multi-source rows arrive
   as `Feature`s, which
   [ADR-193](../../architecture-decision-records/adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)

@@ -126,6 +126,11 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)).
   An area mark waits on `y2`; the line is a mark
   ([ADR-184](../architecture-decision-records/adr-184-a-line-is-a-mark.md)).
+  No `tooltip` channel either: each display's hover prints its own fields,
+  and a plot naming them waits on one whose hover prints the wrong ones.
+- **`scales.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,
+  taking a zoom range and a per-row value, waits on a plot that needs either;
+  the CNV figures carry no reference line, since their keys name the level.
 - **`plotProblems` judges a draft only on the mark and canvas displays.**
   Elsewhere `colorProblems` and `scaleEndProblems` run as live notices on the
   displays holding those objects, and could judge a draft the same way with
