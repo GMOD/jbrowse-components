@@ -47,9 +47,8 @@ Ensembl Plants release 63 as
 Oat (_Avena sativa_) is an allohexaploid: three diploid grasses hybridized and
 the result kept all three genomes. Its 21 chromosomes are seven homoeologous
 groups of three, one per subgenome (A, C and D), and nearly every gene exists
-three times. The copies across subgenomes are homoeologs, and a table of them is
-a comparative dataset from one assembly, so `MCScanBlocksAdapter` puts one
-genome on both axes.
+three times. The copies across subgenomes are homoeologs. A table of them pairs
+one genome with itself, so the dotplot puts oat on both axes.
 
 The dotplot shows where the copies sit, and a segment moved between groups
 leaves the diagonal. dN/dS measures the selection pressure on each pair of
@@ -85,8 +84,9 @@ length per line):
 
 ### Finding homoeolog pairs from a protein self-alignment
 
-Naming one prefix twice is a self-comparison: jcvi drops the gene-against-itself
-diagonal, then chains the rest into syntenic blocks (co-linear runs of pairs).
+Passing the same prefix twice (`oat oat`) makes a self-comparison: jcvi drops
+the gene-against-itself diagonal, then chains the rest into syntenic blocks
+(co-linear runs of pairs).
 
 <!-- from: scripts/build_oat_homoeologs.sh -->
 

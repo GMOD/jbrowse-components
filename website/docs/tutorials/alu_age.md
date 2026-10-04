@@ -151,11 +151,10 @@ values; click it to open the row.
 
 ## Counting Alu copies per bin when zoomed out {#zooming-out}
 
-Past their `minBpPerPx`, the track's second and third marks take over from the
-per-copy bars. Each snaps copies to bins with
-`{ "type": "bin", "step": "auto" }`, counts them with an `aggregate`, and draws
-the count as a bar: one over every copy in grey, one over the AluY copies a
-`filter` admits in red.
+Past the per-copy bars' `minBpPerPx`, two binned counts replace them: every Alu
+copy in grey, and the AluY copies in red. In the config, each count is a mark
+that bins copies with `{ "type": "bin", "step": "auto" }` and counts them with
+an `aggregate`; the red one adds a `filter` for AluY.
 
 On a whole chromosome the track would exceed its feature budget. The grey mark
 has `"source": "density"`, so past the budget it draws the bins of a density

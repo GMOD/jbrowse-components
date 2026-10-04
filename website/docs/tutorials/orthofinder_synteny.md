@@ -90,8 +90,9 @@ nothing and raises no error, while a typo in `--bed` is an error.
 
 ### Duplicated genes: one ribbon, two ribbons or none {#what-to-do-with-a-duplicated-gene}
 
-A cell holds the genes from one genome in the orthogroup, so two genes in one
-cell have no single ribbon. `--pick` chooses among three treatments:
+In `Orthogroups.tsv` each cell lists one genome's genes in an orthogroup, so two
+genes in one cell have no single ribbon. `--pick` chooses among three
+treatments:
 
 | `--pick`           | A rice gene with two maize orthologs                         | Use when                                                  |
 | ------------------ | ------------------------------------------------------------ | --------------------------------------------------------- |
@@ -254,8 +255,8 @@ chromosome.
 
 <Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track. Color by → Query gives each chromosome a distinct color, and 4A resolves into three runs of genes in order along it: 4D, then 5D, then 7D." src="/img/orthofinder_synteny/wheat_4a.png" />
 
-Other chromosomes reach 4A only as single genes. The three runs are the 4AL/5AL
-and 4AL/7BS translocation pair (Devos et al. 1995; Dvorak et al. 2018).
+Other chromosomes reach 4A only as single genes. The 5D and 7D runs are the
+4AL/5AL and 4AL/7BS translocations (Devos et al. 1995; Dvorak et al. 2018).
 
 ## Vertebrates: runs of conserved genes out to zebrafish {#vertebrates}
 

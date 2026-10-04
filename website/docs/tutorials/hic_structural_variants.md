@@ -185,9 +185,10 @@ finds GM12878 with more contact than K562 across the whole chr9-chr22 block
 except the junction bin, where the order inverts.
 
 **Normalization.** Matrix balancing divides out per-bin coverage differences,
-and an amplified fusion looks like one. Re-run the scan with `NORM=INTER_SCALE`
-and *ABL1*×*BCR* drops off the top of the table. Balanced matrices suit domains
-and loops and raw counts suit rearrangements, so both Hi-C tracks here set
+and an amplified fusion is such a difference, so balancing hides it. Re-run the
+scan with `NORM=INTER_SCALE` and *ABL1*×*BCR* drops off the top of the table.
+Balanced matrices suit domains and loops and raw counts suit rearrangements, so
+both Hi-C tracks here set
 [`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)
 to `NONE`.
 
@@ -237,9 +238,9 @@ The top row pairs _ABL1_ intron 1 with the 5' end of _BCR_. Drop `RES` to
 `10000` and it lands on the junction itself, _ABL1_ intron 1 against the _BCR_
 major breakpoint cluster region.
 [The K562 fusions tutorial](/docs/tutorials/k562_fusions) places the DNA break
-of the same fusion in that intron. Further down, a second chr9 partner elsewhere
-on chr22 sits well clear of the control, so treat the ranking as a list of
-candidates to open.
+of the same fusion in that intron. Further down, a second chr9-chr22 bin also
+sits well clear of the control, so treat the ranking as a list of candidates to
+open.
 
 Purpose-built callers scan the whole genome:
 [EagleC](https://github.com/XiaoTaoWang/EagleC),

@@ -79,10 +79,10 @@ GenBank accessions:
 Body size is the trait, so the two groups are the breeds at its extremes: every
 animal of fourteen toy or small breeds against every animal of eleven giant
 breeds. Hudson Fst
-([Hudson et al. 1992](https://doi.org/10.1093/genetics/132.2.583)) per window
-over the Dog10K phased imputation panel scores how far apart their allele
-frequencies sit, summed as a ratio of averages
-([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113)), and
+([Hudson et al. 1992](https://doi.org/10.1093/genetics/132.2.583)) scores how
+far apart the two groups' allele frequencies sit, computed per window over the
+Dog10K phased imputation panel as a ratio of averages
+([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113)).
 [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
 writes one BED line per window.
 
@@ -235,13 +235,13 @@ CLUPGR000001	Greek gray wolf	Gray wolf
 }
 ```
 
-## Framing the IGF1 window on the separating sites
+## Framing IGF1 on the sites that separate toy from giant
 
 The variant display gives every record a column of equal width, so the view's
 width counts records. The build script prints which sites separate the two size
 classes. Frame the view on that span with a margin of undifferentiated sequence
-on each side, as `chr15:41,348,000-41,752,000` in the session below does, and
-the Fst track in the figure further down falls back over the margin.
+on each side, as `chr15:41,348,000-41,752,000` in the session below does, so Fst
+drops back to near zero at both edges of the figure further down.
 
 ## Clustering the IGF1 rows by genotype
 
@@ -254,8 +254,8 @@ the track menu, then **Run clustering**, reorders the rows by genotype
 similarity and draws a dendrogram in the sidebar. Then widen back out to see how
 far the block runs.
 
-The display applies the swatch from the sample table after clustering, so the
-order comes from genotypes alone.
+The display applies the size-class colour from the sample table after
+clustering, so the order comes from genotypes alone.
 
 A session can set the region directly with `clusterRegion` beside
 `runClustering`, as the figure below does:
@@ -296,10 +296,10 @@ A session can set the region directly with `clusterRegion` beside
 
 <Figure caption="SNVs across IGF1 as a matrix, one row per canid and one column per variant, size class as the sidebar swatch, under per-site Fst between the same two size classes. Fst is near zero at both window edges and high across the gene." src="/img/dog10k-igf1-haplotype.png" />
 
-Clustering on genotypes alone recovers the size split. The block's boundaries
-fall within the window, so the gene track above shows its extent. The size
-classes differ here by a shift in allele frequency, so the block is a run of
-columns where one class is enriched.
+Clustering on genotypes alone recovers the size split. Both ends of the block
+fall inside the window, so read its extent against the gene track above. The
+size classes differ here by a shift in allele frequency, so the block is a run
+of columns where one class is enriched.
 
 The Fst track above the matrix shows which columns separate the classes: the
 same Hudson Fst as the genome scan, between the same two size classes, computed
@@ -307,7 +307,7 @@ one site at a time over this VCF, with one point per matrix column. The matrix
 gives each record equal width and the Fst track keeps genomic spacing, so the
 sloped lines between them tie each column to its coordinate. The genome scan
 reads the phased imputation panel and this track reads the SNV callset, so the
-peak appears in two different files.
+peak shows up in both datasets.
 
 The build script writes the Fst track as `dog10k_igf1_fst.bed.gz`. It loads like
 the genome scan, as a `GWASTrack` whose `GWASAdapter` takes `scoreColumn` `fst`

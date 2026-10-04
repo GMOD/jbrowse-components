@@ -93,8 +93,9 @@ dogs:
   only two chromosomes, with wolves than any other breed dog in the collection
 - the Tamaskan is a wolf-lookalike bred from ordinary sled and herding dogs
 
-The run takes one dog from each of the 219 breeds with four or more sequenced
-animals, sweeping every breed for a cross, plus eight European wolves.
+As targets, FLARE paints one dog from each of the 219 breeds with four or more
+sequenced animals, to catch a wolf cross in any breed, plus eight European
+wolves held out of the wolf panel.
 
 ## The files FLARE reads and writes
 
@@ -116,8 +117,8 @@ No animal is painted against a panel that contains it:
 
 - the script removes the eight gray wolves from the wolf panel, since a target
   matched against itself paints solid
-- each swept animal comes out of the dog panel while its breed stays in, so a
-  Chow Chow is painted against other Chow Chows
+- each target dog comes out of the dog panel while another dog of its breed
+  stays in, so a Chow Chow is painted against a different Chow Chow
 
 FLARE reads the two lists as one `ref-panel` file:
 
@@ -297,8 +298,8 @@ domestication match both equally.
 
 Blocks break up towards the end of chr1, tracking the genetic map. The build
 script tiles the chromosome and prints block-edge count and recombination per
-window, and the window with the most block edges sits in a tile whose
-recombination is far above the median tile's.
+tile, and the tile with the most block edges has recombination far above the
+median tile's.
 
 ### Held-out wolves where FLARE and allele counts disagree
 
@@ -311,12 +312,12 @@ one site at a time, while FLARE matches whole haplotypes against a panel.
 ### How long the Tamaskan's and Shiloh Shepherd's wolf blocks run
 
 The build script prints a count of wolf blocks with their median and longest,
-one line per animal. The Tamaskan has many short wolf assignments, the longest
-within the range of the Kars, the Eurasier and the Spanish Mastiff. The Shiloh
+one line per animal. The Tamaskan's wolf blocks are many and short, no longer
+than ordinary breeds' (the Kars, the Eurasier, the Spanish Mastiff). The Shiloh
 Shepherd has the longest wolf block of any dog outside the two wolfdog breeds,
-and many blocks besides, where the Great Anglo-French Tricolour Hound with the
-next longest has three. A later genome-wide run over the same collection puts it
-among the three dogs with the longest, most recent wolf tracts
+and many more blocks than the runner-up, a Great Anglo-French Tricolour Hound
+with three. A later genome-wide run over the same collection puts it among the
+three dogs with the longest, most recent wolf tracts
 ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 On the full 243-animal track, **Clustering** → **Cluster rows by similarity...**

@@ -152,10 +152,10 @@ from each other less than the two units do. Unit 2 opens most of the HPRC arrays
 and sits fourth in GRCh38's. The copy counts agree with the walk lengths in walk
 rows.
 
-We wrote the KIV-2 record from the gbz-base cut of the walks above. To write one
-for your own array, we'll first cut the walks over it out of the gbz-base
-database as GFA, with enough context that the cut reaches the reference nodes on
-either side:
+We wrote the KIV-2 record from the walks above. To write one for your own array,
+we'll first cut the walks over it out of the gbz-base database as a GFA
+subgraph, with enough context that the cut reaches the reference nodes on either
+side:
 
 ```bash
 # the reference walk is PanSN GRCh38#0#chr6; the interval is the array
@@ -187,7 +187,8 @@ Alzheimer's disease risk (De Roeck et al. 2018). Each haplotype's walk length
 comes from its assembly, and PacBio measured the same repeat from HiFi reads in
 100 HPRC samples. The session below opens the genes, the catalogue's VNTR row,
 the TRGT genotypes and the gbz-base graph track in **Walk rows** layout with
-**Uniform** color, cut for every haplotype (an empty `subgraphHaplotypes`):
+**Uniform** color, with every haplotype included (an empty
+`subgraphHaplotypes`):
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -291,23 +292,24 @@ motif-length units, each walk gets a black tick at the allele TRGT called for it
 
 ## Samples where reads and assemblies disagree
 
-Show seven samples by editing the graph display in the ABCA7 session. List
-HG00099, HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in
-`subgraphHaplotypes`, list the same names in `walkRowSamples` to show their
-walks in pairs in that order, and set `repeatKey` to `chr19:1049406-1050096`.
-The samples fall into three groups:
+Each walk's bar carries a tick at the allele length TRGT called from reads, so a
+tick at the bar's end means reads and assembly agree. To compare seven samples,
+edit the graph display in the ABCA7 session. List HG00099, HG03688, HG00741,
+HG02647, HG01943, HG02559 and HG04199 in `subgraphHaplotypes`, list the same
+names in `walkRowSamples` to show their walks in pairs in that order, and set
+`repeatKey` to `chr19:1049406-1050096`. The samples fall into three groups:
 
 - HG00099, HG03688 and HG00741 tick at each bar's end: reads and assemblies
   agree.
-- HG02647 and HG01943 turn red: TRGT calls each near-homozygous while the graph
-  has a haplotype neither call reaches (two, in HG01943).
+- HG02647 and HG01943 turn red: TRGT calls each near-homozygous, but a walk sits
+  far from both calls (both walks, in HG01943).
 - HG02559 and HG04199 each have a walk with no verdict. No read spans one of
   HG02559's alleles, so the tick on HG02559#1 is grey, and HG04199's assembly
   does not span the repeat, so its readout marks that walk partial.
 
 <Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar marked with the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
-## Why HG02559's ABCA7 tick is grey
+## Reading TRGT's allele lengths and spanning reads
 
 Click the TRGT record. Its sample table gives `AL`, the allele lengths behind
 each tick, and `SD`, the number of reads spanning each allele. One of HG02559's

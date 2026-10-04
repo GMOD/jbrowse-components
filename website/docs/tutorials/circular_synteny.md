@@ -200,12 +200,11 @@ ribbons cross the middle of the circle to reach their human partners.
 On open, the circle reorders the mouse arc as the
 [linear synteny view](/docs/user_guides/linear_synteny_view) and the
 [dotplot](/docs/user_guides/dotplot_view) do: each mouse chromosome goes next to
-the human chromosome it shares the most aligned bases with. The circle lays the
-mouse arc out mirrored, so its coordinate falls where the human arc's rises.
-Chords between two arcs cross only where both sides rise together, so most
-ribbons run between facing stretches of the two arcs. A mouse chromosome that
-runs antiparallel to its human partner is drawn the other way round again, and
-the twists left on the figure are the inversions.
+the human chromosome it shares the most aligned bases with. The circle draws the
+mouse arc mirrored, so a mouse chromosome running the same way as its human
+partner faces it, and their ribbons run straight across. A mouse chromosome that
+runs antiparallel is flipped as a whole, so a twist left in the figure is an
+inversion inside a chromosome.
 
 **Re-order chromosomes** in the view's menu runs the same reorder on demand,
 with a progress bar and a cancel; running it on a circle that is already ordered
@@ -249,8 +248,8 @@ joining either X to an autosome.
 
 <Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX in one half of the circle and the same three mouse chromosomes in the other, with a gene density ring inside the ideogram. The autosome ribbons cross between the genomes, and the X ribbons stay between the two X arcs." />
 
-Chain rows under the 100 kb length filter do join the X to autosomes: the PIF
-holds short rows between human chrX and mouse autosomes, each a repeat or a
+Chain rows under the 100 kb **Min length** cut do join the X to autosomes: the
+PIF holds short rows between human chrX and mouse autosomes, each a repeat or a
 retrocopy a few hundred bases long. Lowering **Min length** in the view's menu
 brings them back.
 

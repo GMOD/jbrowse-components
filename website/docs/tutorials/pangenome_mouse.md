@@ -157,10 +157,10 @@ track menu and tick **Mark bubbles**:
 carry an allele; the allele inventory's `firstSeenIn` names the first assembly
 to contribute it.
 
-## Finding the Dock2 bubble in the hosted bubble index
+## Looking up the Dock2 bubble in the hosted bubbles BED
 
-The _Dock2_ bubble is one row of the hosted bubble index, with the segment count
-and route span the figure's label prints:
+The _Dock2_ bubble is one row of the hosted bubbles BED, with the same segment
+count and span the figure labels:
 
 ```bash
 tabix https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz \

@@ -291,15 +291,14 @@ track. The view shows:
 Zoom the synteny view to the kilobase holding the junctions; at that zoom each
 of the two inserts has a ribbon of its own. Against hg38 every split read stops
 at a junction, and the truth set has a validated call at each place they stop.
-Realigned to the derivative, most of the same reads cross all four junctions in
+Realigned to the derivative, most of the same reads cross all three junctions in
 one alignment. The consensus was polished from these reads, so the realignment
 shows that they agree with each other; the truth set, called from other
 platforms, is the independent check.
 
-Each hg38 window extends past the segment the allele includes, so the reference
-on either side of the reads is absent from the allele. The read track shows
-split alignments only, so its coverage counts reads that cross a junction and
-steps down as each arm ends.
+Each hg38 window is wider than the piece the allele uses, so its flanks have no
+counterpart in the allele. The read track shows split alignments only, so its
+coverage counts reads that cross a junction and steps down as each arm ends.
 
 <Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the truth set's validated calls over the same molecules against hg38, split alignments only, each row stopping at a call with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them." src="/img/cancer_sv/derivative_inserts.png" />
 

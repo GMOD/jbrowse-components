@@ -222,10 +222,9 @@ breakpoints have been cloned and sequenced
 ([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103)), and
 [White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334) karyotyped single
 mosquitoes by PCR across the junctions. The script scores each mosquito's
-karyotype from the tag SNPs, the in-silico method MalariaGEN ships for its phase
-3 release, Ag3: the mean number of alternate alleles across the tags, rounded
-into a genotype. The score is trimodal, which the
-[reproduce script](#reproduce-it-end-to-end) checks.
+karyotype as its mean alternate-allele count across the tag SNPs, rounded to a
+genotype, as MalariaGEN does for its Ag3 release. The score is trimodal, which
+the [reproduce script](#reproduce-it-end-to-end) checks.
 
 ## Comparing the 2La LD block with karyotypes in Cameroon and Gabon {#reading-the-2la-ld-block-against-the-karyotype-lanes}
 
@@ -244,8 +243,8 @@ whose rows hold both arrangements.
   insecticide resistance
   ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
 - The 2La span is flat in Gabon, which is near-fixed for the standard
-  arrangement, so almost no chromosome pair is a heterokaryotype. The few 2La
-  chromosomes fall below the `--maf` floor with the variants that tag them.
+  arrangement, so almost no chromosome pair is a heterokaryotype. 2La is so rare
+  there that the variants tagging it fall below the `--maf` cutoff.
 
 ## Reproduce it end to end
 

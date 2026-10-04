@@ -120,8 +120,8 @@ genome's most variable stretches this way; see
 ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_, which
 contains _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it
 in every assembly they built. The **graph** lists that segment in the allele
-inventory. Its `firstSeenIn` column names the first assembly in a fixed list,
-because these graphs record no build order; that assembly may lack the sequence.
+inventory. These graphs record no build order, so its `firstSeenIn` column names
+the first assembly in a fixed list, which need not carry the segment.
 
 The **callset** gives a genotype per assembly. We ran `vg deconstruct` once per
 chromosome over the same graph:
@@ -215,7 +215,7 @@ The track config uses the other columns, a breed and a lineage per code:
 ```
 
 In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000`, and the
-graph track cuts the segments around _HSPA1A_. Turn on the callset and the
+graph track draws the segments around _HSPA1A_. Turn on the callset and the
 allele inventory in the track selector. An insertion has no reference span to
 draw along, so in the graph track's menu:
 
