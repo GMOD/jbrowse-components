@@ -106,6 +106,16 @@ test('a written scheme holds across a metric switch', () => {
   expect(display.colorScheme).toBe('viridis')
 })
 
+test("picking the field's own scheme leaves it following the field", () => {
+  const { display } = createDisplay()
+  display.setColorScheme('reds')
+  expect(
+    readConfObject(display.configuration, ['color', 'scheme']),
+  ).toBeUndefined()
+  display.setLDMetric('dprime')
+  expect(display.colorScheme).toBe('blues')
+})
+
 test('the ramp texture follows only the scheme and its direction', () => {
   const { display } = createDisplay()
   const dispose = autorun(() => display.renderState)

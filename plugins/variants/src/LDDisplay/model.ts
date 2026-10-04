@@ -132,10 +132,17 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #action
-       * The scheme, with `reverse` back to unset so it follows the scheme.
+       * The scheme, with `reverse` back to unset so it follows the scheme. The
+       * field's own preset scheme writes `scheme` unset, so it keeps following
+       * the field.
        */
       setColorScheme(scheme: ColorSchemeName) {
-        setConf(self, ['color', 'scheme'], scheme)
+        const field: LDMetric = getConf(self, ['color', 'field'])
+        setConf(
+          self,
+          ['color', 'scheme'],
+          scheme === LD_FIELD_PRESETS[field].scheme ? undefined : scheme,
+        )
         setConf(self, ['color', 'reverse'], undefined)
       },
       /**
@@ -292,15 +299,16 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * The `color` object as it paints, under the preset of the metric the
        * loaded values are, so a file serving the other column, and a stale
        * triangle during a metric switch's refetch, keep the hue they have.
+       * Both presets name a scheme, so the encoding always carries one.
        */
-      get colorEncoding(): ContinuousRef {
+      get colorEncoding(): ContinuousRef & { scheme: ColorSchemeName } {
         return matrixColorEncodingOf(
           {
             ...colorSettingOf(self.configuration.color),
             field: self.effectiveLdMetric,
           },
           LD_FIELD_PRESETS,
-        )
+        ) as ContinuousRef & { scheme: ColorSchemeName }
       },
       /**
        * #getter
@@ -320,7 +328,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * #getter
        */
       get colorScheme(): ColorSchemeName {
-        return self.colorEncoding.scheme ?? LD_FIELD_PRESETS.r2.scheme
+        return self.colorEncoding.scheme
       },
       /**
        * #getter
