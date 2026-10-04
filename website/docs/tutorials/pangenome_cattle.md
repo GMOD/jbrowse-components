@@ -7,11 +7,12 @@ guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
 
-The bovine super-pangenome aligns twelve assemblies against the ARS-UCD1.2
-cattle reference: taurine and indicine breeds, yak, bison and gaur. Each
-assembly walks the graph as a named path, and `vg deconstruct` turns those paths
-into a VCF, so one locus reads both as a graph of where sequence is present and
-absent and as a callset listing which assemblies have it. We:
+The bovine super-pangenome builds twelve assemblies into one graph on the
+ARS-UCD1.2 cattle reference, a Hereford that is itself one of the twelve:
+taurine and indicine breeds, yak, bison and gaur. Each assembly walks the graph
+as a named path, and `vg deconstruct` turns those paths into a VCF, so one locus
+reads both as a graph of where sequence is present and absent and as a callset
+listing which assemblies have it. We:
 
 - read a whole chromosome at one node per bubble
 - at _HSPA1A_, compare the graph's allele inventory with the callset
@@ -47,8 +48,10 @@ and OMIA supplies the curated causal variants:
   https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz
 - the allele inventory:
   https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz
-- the coarse tier:
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000
+- the coarse tier, one node per bubble:
+  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000.segs.bed.gz
+  and
+  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000.links.bed.gz
 - the deconstructed callset:
   https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.vcf.gz
 - the breed and lineage of each assembly in the callset:
@@ -63,8 +66,7 @@ each of the graph files holds and how a graph produces them.
 
 We'll load the reference the graph is anchored to, then the graph track. Swap
 the prefix in `uri` for your own build of `build_pangenome_graph.sh`, which
-writes the tabix-indexed segments and links and the tier. `assemblyNameToPanSN`
-maps the assembly's name to the name in its path lines.
+writes the tabix-indexed segments and links and the tier.
 
 ```json addassembly
 {
@@ -86,7 +88,6 @@ maps the assembly's name to the name in its path lines.
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph",
-    "assemblyNameToPanSN": { "bosTau9": "bosTau9" },
     "coarse": {
       "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000",
       "aboveBpPerPx": 880
@@ -99,12 +100,11 @@ maps the assembly's name to the name in its path lines.
 }
 ```
 
-## A whole chromosome
+## Reading chr23 at one node per bubble
 
 Click **chr23** on the **Graph** line of the
 [portal page](https://staging.genomes.jbrowse.org/pangenomes/bovine), which
-opens the chromosome as
-[the HPRC page](/docs/tutorials/pangenome_hprc#a-chromosome-and-back) describes.
+opens the whole chromosome with the graph drawn one node per bubble.
 
 <Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
 
@@ -221,13 +221,15 @@ the anchored layout to draw it along, so pick **Layout → Force-directed layout
 and **Bubble spread → Compress lengths** from the graph track's menu; the figure
 shows the three under the RefSeq genes.
 
-<Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. The variant lane over the rows marks the insertion just right of the `>3423>3424` call. Every row but the yak has the insertion, which the inventory lists once, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
+<Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. The variant lane over the rows marks the insertion beside HSPA1A. Every row but the yak has the insertion, which the inventory lists once, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
 
 The yak row has the reference allele. Leonard et al. built no yak assembly, so
 their result does not cover it.
 
-A `minigraph` graph has no path lines and so no callset to deconstruct;
-[](/docs/tutorials/pangenome_mouse) reads one from the graph alone.
+Leonard et al. published the bovine graph with a path line per assembly, which
+is what `vg deconstruct` reads. A graph straight out of `minigraph` has no path
+lines and so no callset to deconstruct; [](/docs/tutorials/pangenome_mouse)
+reads its bubbles from the graph alone.
 
 ## Published variants in the callset
 
@@ -238,7 +240,20 @@ or species. The rows without it are the control.
 
 Angus cattle are born without horns. Medugorac et al. (2012) traced the Celtic
 form of polledness to a 202 bp duplication and insertion on chromosome 1, which
-OMIA curates as OMIA 000483-9913. Add OMIA's cattle records as a lane:
+OMIA, the Online Mendelian Inheritance in Animals database, curates as OMIA
+000483-9913.
+
+[`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)
+writes `omia_cattle_variants.gff3.gz` from OMIA's nightly database dump. It
+keeps the cattle records published on ARS-UCD1.2 or ARS-UCD1.3, which share
+every chromosome's coordinates:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_omia_cattle_variants.sh
+bash build_omia_cattle_variants.sh
+```
+
+Add the records as a lane:
 
 ```json addtrack
 {
@@ -286,7 +301,7 @@ slightly longer than the reference, and the insertion boxed in each row, between
 TAS2R46 and the next gene, is most of the difference. Two taurine and two
 indicine breeds share that allele, and only the gaur's deletes the span.
 
-## Build it yourself
+## Building the bovine graph files
 
 [](/docs/tutorials/pangenome_prepare_graph) turns a graph into the files above
 with one command, `build_pangenome_graph.sh`. The published bovine graphs need
@@ -303,22 +318,15 @@ runs:
 
 The whole build takes about half an hour after the download.
 
-The script writes the same `README.txt` provenance and build audits as
-[the mouse build](/docs/tutorials/pangenome_mouse#build-it-yourself).
+The script stops if the reference path does not reproduce bosTau9's chromosome
+lengths, and a
+[README.txt](https://jbrowse.org/demos/bovine_pangenome/README.txt) beside the
+hosted files records the source and every modification.
 
-For a graph with path lines and no rGFA tags, `build_pangenome_graph.sh` walks
-the paths and writes an `SM:Z:` tag per segment, so the graph track shows which
-samples cross each node.
-
-The OMIA lane comes from OMIA's nightly database dump.
-[`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)
-keeps the cattle records published on ARS-UCD1.2 or ARS-UCD1.3, which share
-every chromosome's coordinates, and writes them as GFF3:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_omia_cattle_variants.sh
-bash build_omia_cattle_variants.sh
-```
+Leonard et al. also built pggb and Minigraph-Cactus graphs of the same twelve
+assemblies, base-level GFAs with path lines and no rGFA tags.
+`build_pangenome_graph.sh` walks their paths and writes an `SM:Z:` tag per
+segment, so the graph track shows which assemblies cross each node.
 
 ## See also
 

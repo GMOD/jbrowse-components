@@ -257,9 +257,9 @@ Serving it: website/pangenome-config/bovine-arsucd12.json in GMOD/jb2hubs is the
 config that names these files. RgfaTabixAdapter takes the shared PREFIX with no
 suffix and appends .segs/.links itself; MinigraphBubbleAdapter takes the bubbles
 file directly; the alleles file is a plain BedTabixAdapter uri on an
-AlignmentsTrack. Stable names are PanSN, so a track on an ordinary bosTau9
-assembly needs assemblyNameToPanSN: { "bosTau9": "bosTau9" } — the alleles file
-is the exception, its rows sitting on bosTau9's own refNames.
+AlignmentsTrack. Stable names are PanSN with bosTau9 as the reference's
+sample, the assembly's own name, so no track needs an assemblyNameToPanSN map;
+the alleles file sits on bosTau9's plain refNames.
 
 Published variants the callset reproduces, carriers read off its GT columns:
   chr1:2,429,329     Celtic POLLED 202 bp duplication-insertion  ANG
