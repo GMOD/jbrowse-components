@@ -63,3 +63,27 @@ test('a second color-by still writes no order', () => {
   expect(display.rowDomain).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
 })
+
+// The menu's None writes the dialog's, so a colour by and back is the config
+// it started from, with no reset to offer.
+test('None after a color-by is the config it started from', () => {
+  const display = colored()
+  display.setRowColorField('')
+
+  expect(display.rowArrangementIsCustom).toBe(false)
+  expect(getSnapshot(display.configuration).rowColor).toBeUndefined()
+})
+
+test('None over a configured color-by offers the reset back to it', () => {
+  const { display } = createTestEnvironment({
+    displayConfig: { rowColor: 'population' },
+  }).createDisplay()
+  display.setSources(SOURCES)
+  display.setRowColorField('')
+  expect(display.rowArrangementIsCustom).toBe(true)
+
+  display.resetRowArrangement()
+
+  expect(display.rowColorAttribute).toBe('population')
+  expect(display.rowArrangementIsCustom).toBe(false)
+})

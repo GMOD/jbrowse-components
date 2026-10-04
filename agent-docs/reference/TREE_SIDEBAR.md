@@ -215,7 +215,8 @@ What else the mixin owns:
   `rowColorResetTarget` (`rowColorChoice.ts`) is the one rule for both: what
   a reset writes to `rowColor`, or nothing while the live object is not
   custom. It writes the base's whole object where a `name` pair or the
-  `unknown` differs, and otherwise returns an attribute's value colours to the
+  `unknown` differs, or where the base paints an attribute and the live object
+  none, and otherwise returns an attribute's value colours to the
   base's, keeping the attribute, so over a config setting no row colour a Color
   by alone survives a reset and a mode switch. Its target is never itself
   custom, so one reset is the whole way back; two rules once drifted, and a

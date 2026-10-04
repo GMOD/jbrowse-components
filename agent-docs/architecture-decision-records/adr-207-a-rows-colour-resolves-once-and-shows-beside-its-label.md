@@ -91,8 +91,10 @@ reset writes, or undefined while nothing is custom, and the target is never
 itself custom. `resetRowStyling`, a public action with no consumer that also
 skipped the persist, is gone; `resetRowArrangement` is the one reset. Parking
 under `scale: 'none'` counts as custom against a base that paints, and the
-reverse, which the old rule missed: the variant menu's None over a configured
-Color by now offers Reset as its way back.
+reverse, which the old rule missed. None over a configured Color by offers
+Reset as its way back, since a base painting an attribute where the live
+object paints none is custom too; the variant menu's None writes the dialog's
+`{ field: 'name' }` rather than parking.
 
 The same module holds what the dialog's choice writes
 (`rowColorChoiceSetting`, from the display's `rowPaletteDeals`), so one rule

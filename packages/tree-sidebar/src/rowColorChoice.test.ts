@@ -3,6 +3,7 @@ import {
   keptUnknown,
   rowColorChoiceOf,
   rowColorChoiceSetting,
+  rowColorForChoice,
   rowColorMembers,
   rowColorResetTarget,
 } from './rowColorChoice.ts'
@@ -115,6 +116,43 @@ describe('rowColorChoiceSetting', () => {
   })
 })
 
+describe('rowColorForChoice', () => {
+  const pairs = { field: 'group', domain: ['y'], range: ['#abc'] }
+
+  it('None leaves an attribute and its pairs behind', () => {
+    expect(rowColorForChoice(lift(pairs), '', false)).toEqual({ field: 'name' })
+    expect(rowColorForChoice(lift(pairs), '', true)).toEqual({
+      field: 'name',
+      unknown: '',
+    })
+  })
+
+  it('the field already named keeps its pairs and unknown, parked or not', () => {
+    const parked = { ...pairs, scale: 'none', unknown: '#ccc' }
+    expect(rowColorForChoice(lift(parked), 'group', false)).toEqual({
+      field: 'group',
+      domain: ['y'],
+      range: ['#abc'],
+      unknown: '#ccc',
+    })
+  })
+
+  it('another field starts with none', () => {
+    expect(rowColorForChoice(lift(pairs), 'pop', false)).toEqual({
+      field: 'pop',
+    })
+  })
+
+  it('None over name pairs keeps them', () => {
+    const named = { domain: ['a'], range: ['#f00'] }
+    expect(rowColorForChoice(lift(named), '', true)).toEqual({
+      field: 'name',
+      ...named,
+      unknown: '',
+    })
+  })
+})
+
 // Whatever the reset writes is itself no custom arrangement, so one reset is
 // the whole way back.
 describe('rowColorResetTarget', () => {
@@ -148,6 +186,11 @@ describe('rowColorResetTarget', () => {
       field: 'group',
       scale: 'none',
     })
+  })
+
+  it("returns None over the base's colour by to it", () => {
+    expect(settled({}, 'group')).toEqual({ field: 'group' })
+    expect(settled({ unknown: '' }, 'group')).toEqual({ field: 'group' })
   })
 
   it("returns a value recolour to the base's colours and keeps the attribute", () => {

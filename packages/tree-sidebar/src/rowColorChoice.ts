@@ -49,6 +49,10 @@ function pairsOn(
     : {}
 }
 
+function paintsAttribute({ field, scale }: RowColorSetting) {
+  return field !== 'name' && scale !== 'none'
+}
+
 /** Whether `setting`'s pairs are rows by name, which a row's swatch edits. */
 export function paintsNamePairs({ field, scale }: RowColorSetting) {
   return field === 'name' && scale !== 'none'
@@ -118,10 +122,32 @@ export function rowColorChoiceSetting(
 }
 
 /**
+ * The `rowColor` object a menu's pick of `choice` writes over `current`: the
+ * dialog's object for that choice opened and submitted untouched, so the
+ * field already named keeps its pairs and `unknown`, parked or not, and any
+ * other starts with none.
+ */
+export function rowColorForChoice(
+  current: RowColorSetting,
+  choice: string,
+  paletteDeals: boolean,
+): RowColorSnapshot {
+  return rowColorChoiceSetting(
+    paletteDeals,
+    choice,
+    current.field === (choice || 'name')
+      ? Object.fromEntries(pairedColorsOf(current))
+      : {},
+    keptUnknown(current, choice),
+  )
+}
+
+/**
  * What "Reset row order" returns the `rowColor` object to, or undefined while
  * `live` sets nothing `base` does not. The base's object where a `name` pair
- * or the `unknown` differs, or where one of the two parks under
- * `scale: 'none'` and the other paints; where only an attribute's value
+ * or the `unknown` differs, where one of the two parks under `scale: 'none'`
+ * and the other paints, or where the base paints an attribute and `live`
+ * none; where only an attribute's value
  * colours differ, the attribute with the base's colours for it, so a Color by
  * picked over a config setting none is no custom arrangement and survives a
  * reset. The target itself is never custom, so one reset is the whole way
@@ -134,7 +160,8 @@ export function rowColorResetTarget(
   if (
     !compareStructural(pairsOn(live, 'name'), pairsOn(base, 'name')) ||
     live.unknown !== base.unknown ||
-    (live.scale === 'none') !== (base.scale === 'none')
+    (live.scale === 'none') !== (base.scale === 'none') ||
+    (paintsAttribute(base) && !paintsAttribute(live))
   ) {
     return base
   }
