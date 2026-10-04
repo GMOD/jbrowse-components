@@ -4,12 +4,21 @@ import {
   isUnknownBase,
   sameBase,
 } from '@jbrowse/core/util/alignedBytes'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
+import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
+import { colorRampStops, sampleColorRamp } from '@jbrowse/core/util/colorRamp'
+import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
+import {
+  SCALE_TYPE_LINEAR,
+  makeScoreNormalizer,
+} from '@jbrowse/render-core/scoreScale'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
+
+import { MAF_FIELD_PRESETS } from '../LinearMafDisplay/mafColorConfigSchema.ts'
 
 import type { MafBlock, MafIdentityBars } from './mafRenderingBackendTypes.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
+import type { ContinuousRef } from '@jbrowse/core/util/markEncoding'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 
 /** How the identity plot draws: a ramp per cell, or a bar per cell. */
@@ -21,32 +30,97 @@ export type IdentityPlot = 'heatmap' | 'xyplot'
  */
 const STEPS = 100
 
-const IDENTITY_STOPS: readonly ColorRampStop[] = [
-  [199, 67, 56, 255],
-  [140, 140, 140, 255],
-  [47, 102, 176, 255],
-]
+/** The identity ramp as `color` declares it while its field is identity. */
+export type IdentityRamp = Omit<ContinuousRef, 'field' | 'scale'>
+
+const DEFAULT_IDENTITY_RAMP: IdentityRamp = MAF_FIELD_PRESETS.identity
+
+const MAX_KEY_STOPS = 9
+
+function identityScaleOf(ramp: IdentityRamp) {
+  const { domain, midNorm } = continuousColorScale(
+    { ...ramp, field: 'identity', scale: 'linear' },
+    [0, 1],
+  )
+  const norm = makeScoreNormalizer(domain[0], domain[1], SCALE_TYPE_LINEAR, 1)
+  const stops = colorRampStops(ramp)
+  const atFraction = (t: number) => sampleColorRamp(stops, rampMidT(t, midNorm))
+  return {
+    domain,
+    atFraction,
+    at: (identity: number) => atFraction(norm(identity)),
+    // where the ramp's stops land across the domain, up to nine of them, so
+    // the key's straight segments between them draw the ramp
+    keyOffsets: () => {
+      const n = Math.min(stops.length, MAX_KEY_STOPS)
+      const half = Math.max(midNorm, 1 - midNorm)
+      const inner = Array.from(
+        { length: n },
+        (_, i) => (i / Math.max(n - 1, 1)) * 2 * half - (half - midNorm),
+      ).filter(t => t > 0 && t < 1)
+      return [...new Set([0, ...inner, 1])].sort((a, b) => a - b)
+    },
+  }
+}
+
+const DEFAULT_IDENTITY_SCALE = identityScaleOf(DEFAULT_IDENTITY_RAMP)
+
+function rgbOf([r, g, b]: ColorRampStop) {
+  return `rgb(${r},${g},${b})`
+}
 
 /**
- * Divergent red (0) through a grey neutral (0.5) to conserved blue (1). The
- * grey middle keeps low identity visible where a white one would vanish.
+ * The default ramp: divergent red (0) through a grey neutral (0.5) to
+ * conserved blue (1). The grey middle keeps low identity visible where a white
+ * one would vanish.
  */
 export function identityColor(t: number): [number, number, number] {
-  const [r, g, b] = sampleColorRamp(IDENTITY_STOPS, t)
+  const [r, g, b] = DEFAULT_IDENTITY_SCALE.at(t)
   return [r, g, b]
 }
 
 export function identityRgb(t: number) {
-  const [r, g, b] = identityColor(t)
-  return `rgb(${r},${g},${b})`
+  return rgbOf(DEFAULT_IDENTITY_SCALE.at(t))
 }
 
-const IDENTITY_ABGR = Uint32Array.from({ length: STEPS + 1 }, (_, i) =>
-  cssColorToABGR(identityRgb(i / STEPS)),
-)
+const MAX_IDENTITY_LUTS = 16
+const identityLuts = new Map<string, Uint32Array>()
+
+/**
+ * The ramp's packed colour at each hundredth of identity, the same array for
+ * the same ramp, so a declaration read again re-encodes nothing. The domain
+ * and the middle are `continuousColorScale`'s; the stops are sampled at each
+ * hundredth rather than read off its 256-entry table, whose rounding would
+ * move a third of the default ramp's entries by one.
+ */
+export function identityLut(
+  ramp: IdentityRamp = DEFAULT_IDENTITY_RAMP,
+): Uint32Array {
+  const key = JSON.stringify([
+    ramp.scheme,
+    !!ramp.reverse,
+    ramp.range,
+    ramp.domainMin,
+    ramp.domainMax,
+    ramp.domainMid,
+  ])
+  let lut = identityLuts.get(key)
+  if (!lut) {
+    if (identityLuts.size >= MAX_IDENTITY_LUTS) {
+      identityLuts.delete(identityLuts.keys().next().value!)
+    }
+    const scale = identityScaleOf(ramp)
+    lut = Uint32Array.from({ length: STEPS + 1 }, (_, i) => {
+      const [r, g, b, a] = scale.at(i / STEPS)
+      return packAbgr(r, g, b, a)
+    })
+    identityLuts.set(key, lut)
+  }
+  return lut
+}
 
 const XYPLOT_BAR_RGB = identityRgb(1)
-const XYPLOT_BAR_ABGR = IDENTITY_ABGR[STEPS]!
+const XYPLOT_BAR_ABGR = cssColorToABGR(XYPLOT_BAR_RGB)
 
 /**
  * The key for whichever identity plot draws: the ramp, the X-Y plot's one bar
@@ -57,7 +131,9 @@ export function identityColorScale(
   mode: IdentityPlot,
   oneBaseCells = false,
   title = 'Per-base identity to reference',
+  ramp = DEFAULT_IDENTITY_RAMP,
 ): ColorScale {
+  const scale = identityScaleOf(ramp)
   if (mode === 'heatmap' && oneBaseCells) {
     return {
       kind: 'categorical',
@@ -67,12 +143,12 @@ export function identityColorScale(
         {
           value: 'match',
           label: 'Conserved (base matches)',
-          color: identityRgb(1),
+          color: rgbOf(scale.at(1)),
         },
         {
           value: 'mismatch',
           label: 'Divergent (base differs)',
-          color: identityRgb(0),
+          color: rgbOf(scale.at(0)),
         },
       ],
     }
@@ -94,10 +170,10 @@ export function identityColorScale(
         kind: 'ramp',
         id: mode,
         title,
-        domain: [0, 1],
-        stops: [0, 0.5, 1].map(offset => ({
+        domain: scale.domain,
+        stops: scale.keyOffsets().map(offset => ({
           offset,
-          color: identityRgb(offset),
+          color: rgbOf(scale.atFraction(offset)),
         })),
         format: v => `${Math.round(v * 100)}%`,
       }
@@ -236,12 +312,15 @@ export function buildIdentityRuns(
 }
 
 /** The identity heatmap: each run's cells in its ramp colour. */
-export function identitySpans(runs: MafIdentityRuns): SpanChannels {
+export function identitySpans(
+  runs: MafIdentityRuns,
+  lut = identityLut(),
+): SpanChannels {
   return {
     x: runs.x,
     x2: runs.x2,
     row: runs.row,
-    color: Uint32Array.from(runs.step, s => IDENTITY_ABGR[s]!),
+    color: Uint32Array.from(runs.step, s => lut[s]!),
     count: runs.count,
   }
 }
@@ -253,6 +332,7 @@ export function identitySpans(runs: MafIdentityRuns): SpanChannels {
 export function identityBars(
   runs: MafIdentityRuns,
   ramp: boolean,
+  lut = identityLut(),
 ): MafIdentityBars {
   return {
     x: runs.x,
@@ -260,7 +340,7 @@ export function identityBars(
     y: Float32Array.from(runs.step, s => s / STEPS),
     row: runs.row,
     color: ramp
-      ? Uint32Array.from(runs.step, s => IDENTITY_ABGR[s]!)
+      ? Uint32Array.from(runs.step, s => lut[s]!)
       : new Uint32Array(runs.count).fill(XYPLOT_BAR_ABGR),
     count: runs.count,
   }

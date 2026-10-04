@@ -65,6 +65,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import {
   identityColorScale,
+  identityLut,
   identityOver,
 } from '../LinearMafRenderer/identity.ts'
 import {
@@ -472,6 +473,20 @@ export default function stateModelFactory(
          */
         get colorKeyTitle(): string {
           return withPreset(this.colorSetting, MAF_FIELD_PRESETS).title ?? ''
+        },
+        /**
+         * #getter
+         * The identity ramp's packed colour at each hundredth, the default
+         * ramp unless `color` is identity. One array per ramp, so a colour
+         * edit that leaves the ramp alone re-encodes nothing.
+         */
+        get identityColors(): Uint32Array {
+          const color = this.colorEncoding
+          return identityLut(
+            color.field === 'identity' && color.scale === 'linear'
+              ? color
+              : undefined,
+          )
         },
         /**
          * #getter
@@ -2346,7 +2361,16 @@ export default function stateModelFactory(
                     ),
                   ]
                 : rendering === 'identity' || self.rowsColor === 'identity'
-                  ? [identityColorScale('heatmap', oneBaseCells, colorKeyTitle)]
+                  ? [
+                      identityColorScale(
+                        'heatmap',
+                        oneBaseCells,
+                        colorKeyTitle,
+                        colorEncoding.scale === 'linear'
+                          ? colorEncoding
+                          : undefined,
+                      ),
+                    ]
                   : rendering === 'xyplot'
                     ? [identityColorScale('xyplot', oneBaseCells)]
                     : []
@@ -2422,6 +2446,7 @@ export default function stateModelFactory(
           return {
             basesActive: self.basesRenderingActive,
             identity: self.identityEncoding,
+            identityColors: self.identityColors,
             gpu: {
               palette: colorPalette,
               colorMatches: self.rowsColor === 'base',

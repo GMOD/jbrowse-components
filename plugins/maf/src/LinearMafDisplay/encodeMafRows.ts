@@ -69,6 +69,8 @@ export interface MafRowsEncodeProps {
   /** The rows are drawn base by base (`basesRenderingActive`). */
   basesActive: boolean
   identity: IdentityEncoding | undefined
+  /** the identity ramp's packed colour at each hundredth (`identityLut`) */
+  identityColors: Uint32Array
   gpu: MafGpuProps
   /** The rows' source-chromosome ranks, while the rows are colored by them. */
   sourceChromRanks: ReadonlyMap<number, ReadonlyMap<string, number>> | undefined
@@ -118,6 +120,7 @@ export function encodeMafRows(
   {
     basesActive,
     identity,
+    identityColors,
     gpu,
     sourceChromRanks,
     rowIndexBySrc,
@@ -158,10 +161,13 @@ export function encodeMafRows(
     summary:
       summary &&
       encodeSummarySpans(summary, rowIndexBySrc, gpu.palette.matchColor),
-    identity: runs && identity === 'heatmap' ? identitySpans(runs) : undefined,
+    identity:
+      runs && identity === 'heatmap'
+        ? identitySpans(runs, identityColors)
+        : undefined,
     identityBars:
       runs && identity !== 'heatmap'
-        ? identityBars(runs, identity === 'rampBars')
+        ? identityBars(runs, identity === 'rampBars', identityColors)
         : undefined,
     codons,
     codonCells:
