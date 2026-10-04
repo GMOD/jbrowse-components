@@ -86,10 +86,11 @@ Files
                                              GRCh38 and CHM13, so a window for
                                              a chosen set of lanes walks those
                                              haplotypes from the anchor before
-                                             it, and its 0.47 GB overview
+                                             it. Its 0.47 GB overview, which
                                              summarizes every haplotype per
-                                             4 kb bin for windows too large to
-                                             cut. It replaces the format 2
+                                             4 kb bin, is no longer drawn: the
+                                             graph plugin retired it in 6.0.
+                                             It replaces the format 2
                                              hprc-v2.1-mc-grch38.haplotype-index.anchored.db
                                              (7.87 GB), which @gmod/gbz-base 7
                                              no longer reads.

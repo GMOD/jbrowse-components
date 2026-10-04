@@ -288,9 +288,8 @@ gbz-base construct --chains graph.chains graph.gbz
 ```
 
 Name the haplotypes. `gbz-base` reports the walks in a subgraph as `unknown#1`,
-`unknown#2`, and `gbz-haplotype-index` writes their names to a companion file,
-with a per-haplotype overview of each reference chromosome. It reads the
-database beside the GBZ to check that the two match:
+`unknown#2`, and `gbz-haplotype-index` writes their names to a companion file.
+It reads the database beside the GBZ to check that the two match:
 
 <!-- from: scripts/build_hprc_gbz_index.sh -->
 
@@ -339,9 +338,8 @@ declares one; `assemblyNameToPanSN` covers the reference, which has none:
 ```
 
 The adapter rejects a companion built from a graph with a different path count.
-A window past `nodeLimit` nodes stops the lanes, which point at the Graph
-display. That display draws the companion's overview past `nodeLimit` or 5 Mb: a
-density band and one row per haplotype.
+Past `nodeLimit` nodes, or 5 Mb for the Graph display, both displays ask the
+reader to zoom in.
 [Haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes) draws
 the lanes this track produces.
 
