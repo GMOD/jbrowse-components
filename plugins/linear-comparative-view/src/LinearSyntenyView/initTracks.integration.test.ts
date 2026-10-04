@@ -10,6 +10,11 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+// volvox.paf has no fixture: served as an empty file, a valid PAF with no rows
+beforeEach(() => {
+  fetchMock.mockResponse('')
+})
+
 const assembly = (name: string) => ({
   name,
   sequence: {

@@ -14,6 +14,11 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+// volvox.paf has no fixture: served as an empty file, a valid PAF with no rows
+beforeEach(() => {
+  fetchMock.mockResponse('')
+})
+
 // a hook to hold or fail the region lookup, which in-process resolves before a
 // test can click a second button; unset, the real lookup runs
 let mockLookup: (() => Promise<string | undefined>) | undefined

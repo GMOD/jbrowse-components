@@ -7,6 +7,11 @@ import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+// volvox.paf has no fixture: served as an empty file, a valid PAF with no rows
+beforeEach(() => {
+  fetchMock.mockResponse('')
+})
+
 // The twin of dotplot's hover.integration.test.ts, for the invalidation axis
 // nothing re-picks after: the ribbons moving under a stationary cursor. The
 // pointer handlers on `LevelSyntenyCanvas` cover the pointer moving and nothing

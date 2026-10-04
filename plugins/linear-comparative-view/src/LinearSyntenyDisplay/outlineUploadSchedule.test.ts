@@ -23,6 +23,11 @@ import type { SyntenyRenderingBackend } from './syntenyRenderingBackendTypes.ts'
 // does not, and that the installer's diff agrees.
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+// volvox.paf has no fixture: served as an empty file, a valid PAF with no rows
+beforeEach(() => {
+  fetchMock.mockResponse('')
+})
+
 const assembly = (name: string) => ({
   name,
   sequence: {
