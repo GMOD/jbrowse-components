@@ -156,7 +156,7 @@ bgzip/tabix prep are exempt (PLUMBING there); a tool another tool drives (LAST
 under jcvi, minimap2 inside a python helper) goes in that script's ALLOWED with
 the reason.
 
-The reverse check — every page names where the reader runs JBrowse — was
+The reverse check, that every page names where the reader runs JBrowse, was
 measured on 69 pages and found no drift: the six that match no quickstart link
 either hand over a hosted URL of their own or inherit the session from an
 earlier part of a series. Build it when a page lands that names nowhere.
@@ -165,10 +165,10 @@ earlier part of a series. Build it when a page lands that names nowhere.
 no paragraph worth removing: bgzip/tabix prep, `jbrowse text-index` and the
 `.anchors` explanation each live once and are linked, and the
 `## Reproduce it end to end` fence is pinned by `check-script-commands`. What
-does repeat — the "nothing to read along" bullet, the `UU_Cfam_GSD_1.0` gloss,
-the assembly-name sentence — repeats because each page has to read from a cold
-start, so the win is consistent wording, not removal. `**Add track**` and
-`**Add track...**` are both real labels (the FAB menu and the hamburger menu).
+does repeat, the `UU_Cfam_GSD_1.0` gloss and the assembly-name sentence, repeats
+because each page has to read from a cold start, so the win is consistent
+wording, not removal. `**Add track**` and `**Add track...**` are both real
+labels (the FAB menu and the hamburger menu).
 
 **`gzip -dc`, never `zcat`.** macOS `/usr/bin/zcat` only ever looks for a `.Z`,
 so `zcat foo.gz` fails there and writes an empty file, which a build script then

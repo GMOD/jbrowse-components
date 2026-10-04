@@ -51,7 +51,7 @@ See the [tutorials](/docs/tutorials/), or hosted genomes at
 - [State model reference](/docs/models)
 - [](/docs/api)
 
-## Prior art and credit
+## Prior art, credit, inspiration, and more
 
 JBrowse 2 stands on the shoulders of many great scientists that came before us.
 Points of reference:
@@ -76,9 +76,13 @@ Points of reference:
   modBAM color schemes, view as pairs, and link supplementary alignments
 - D-GENIES: for establishing a very high quality, easy to use dotplot viewer
 - GenomeSpy: for proving GPU powered and grammar of graphics techniques
-- [Every other genome visualization developer](https://cmdcolin.github.io/awesome-genome-visualization/?latest=true)
 - UCSC genome browser - For their genome browser and open data sharing, enabling
   genomes.jbrowse.org
+- PangyPlot, vgteam, pggb, Cactus, Bandage, and other tools for paving the way
+  to graph genome viewing
+
+[...and all the other awesome genome visualization developers](https://cmdcolin.github.io/awesome-genome-visualization/?latest=true).
+Thank you!
 
 ## Contact
 
