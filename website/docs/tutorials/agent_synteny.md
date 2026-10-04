@@ -209,7 +209,7 @@ Then ask for the first of the two X regions, `chrX:8,100,000-8,950,000` over
 
 <Figure caption="The X region, the alignment alone between the two rows. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
 
-## Instructions that keep the agent from failing silently
+## Instructions that prevent failures without an error
 
 Three instructions each prevent a failure that raises no error:
 

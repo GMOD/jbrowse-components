@@ -6,6 +6,5 @@
 # visual takeaway, and move the color/stroke/row glossary into the prose that
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
-tutorials/hg38_vertebrates_synteny.md /img/multiway_synteny/hg38_vertebrates_tp53.png
 tutorials/mcscan_synteny_grape_peach.md /img/mcscan_anchors.png
 tutorials/repeatmasker_classes.md /img/cookbook_color_by_type_two_ways.png

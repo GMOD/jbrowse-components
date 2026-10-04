@@ -184,8 +184,8 @@ ribbons stay near-vertical.
 The figure below types the same 70 kb into both panels with follow off. The
 maternal panel shows a chain block and the paternal panel's lane is empty,
 because those coordinates land in the gap past the block's end on the other
-haplotype. The follow button fills the lane and closes the ribbon. With follow
-off, pan the paternal panel by hand, or right-click a chain block for **Move
+haplotype. The follow button fills the lane and closes the ribbon. Turn follow
+off to pan the paternal panel by hand, or right-click a chain block for **Move
 other panel to the matching region**, which does the follow move once.
 
 <Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks in each haplotype's coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
