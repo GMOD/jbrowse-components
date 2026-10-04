@@ -44,7 +44,7 @@ export function dealtValueColors(
   }
   if (field === 'name') {
     return dealRowColors(
-      namesDeal || (unknown !== undefined && unknown !== '')
+      unknown !== '' && (namesDeal || unknown !== undefined)
         ? rowsOf()
             .filter(row => row.color === undefined)
             .map(row => row.name)

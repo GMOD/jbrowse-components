@@ -3,13 +3,14 @@ import { compareStructural } from 'mobx'
 
 import type { RowColorSetting } from './rowColorScale.ts'
 
-/**
- * The `rowColor` object as a config or the dialog writes it: a string is its
- * field, and a missing or empty field is `name`.
- */
+/** The `rowColor` object as a config or the dialog writes it. */
 export type RowColorSnapshot = Partial<RowColorSetting>
 
-/** `value` read as a `RowColorSetting`, the one shape every rule below takes. */
+/**
+ * `value` read as a `RowColorSetting`, the one shape every rule below takes:
+ * a string is its field, a missing or empty field is `name`, and a `domain`
+ * written as numbers reads as the strings the schema carries.
+ */
 export function liftRowColor(value: unknown): RowColorSetting {
   const snap: RowColorSnapshot =
     typeof value === 'string'
@@ -18,9 +19,9 @@ export function liftRowColor(value: unknown): RowColorSetting {
   return {
     field: snap.field || 'name',
     scale: snap.scale,
-    domain: snap.domain ?? [],
+    domain: (snap.domain ?? []).map(String),
     range: snap.range ?? [],
-    ...(snap.unknown === undefined ? {} : { unknown: snap.unknown }),
+    ...(snap.unknown == null ? {} : { unknown: snap.unknown }),
   }
 }
 
@@ -39,7 +40,7 @@ export function rowColorMembers(setting: RowColorSetting): RowColorSnapshot {
  * paints by that field, none while it paints by another or sits under
  * `scale: 'none'`, which parks them.
  */
-export function pairsOn(
+function pairsOn(
   setting: RowColorSetting,
   field: string,
 ): Record<string, string> {
@@ -111,10 +112,12 @@ export function rowColorChoiceSetting(
 /**
  * What "Reset row order" returns the `rowColor` object to, or undefined while
  * `live` sets nothing `base` does not. The base's object where a `name` pair
- * or the `unknown` differs; where only an attribute's value colours differ,
- * the attribute with the base's colours for it, so a Color by picked over a
- * config setting none is no custom arrangement and survives a reset. The
- * target itself is never custom, so one reset is the whole way back.
+ * or the `unknown` differs, or where one of the two parks under
+ * `scale: 'none'` and the other paints; where only an attribute's value
+ * colours differ, the attribute with the base's colours for it, so a Color by
+ * picked over a config setting none is no custom arrangement and survives a
+ * reset. The target itself is never custom, so one reset is the whole way
+ * back.
  */
 export function rowColorResetTarget(
   live: RowColorSetting,
@@ -122,7 +125,8 @@ export function rowColorResetTarget(
 ): RowColorSetting | undefined {
   if (
     !compareStructural(pairsOn(live, 'name'), pairsOn(base, 'name')) ||
-    live.unknown !== base.unknown
+    live.unknown !== base.unknown ||
+    (live.scale === 'none') !== (base.scale === 'none')
   ) {
     return base
   }
@@ -131,11 +135,5 @@ export function rowColorResetTarget(
   }
   return live.field === base.field
     ? base
-    : {
-        field: live.field,
-        scale: undefined,
-        domain: [],
-        range: [],
-        ...(base.unknown === undefined ? {} : { unknown: base.unknown }),
-      }
+    : liftRowColor({ field: live.field, unknown: base.unknown })
 }

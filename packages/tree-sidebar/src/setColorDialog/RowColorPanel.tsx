@@ -48,6 +48,7 @@ export interface ValueColor {
  */
 export default function RowColorPanel({
   eachRow,
+  keptUnknown,
   fields,
   choice,
   values,
@@ -58,6 +59,9 @@ export default function RowColorPanel({
   onClearRows,
 }: {
   eachRow: boolean
+  // The config's colour for the rows no pair names, which None keeps where no
+  // palette deals.
+  keptUnknown?: string
   fields: readonly string[]
   choice: string
   values: ValueColor[]
@@ -95,9 +99,11 @@ export default function RowColorPanel({
       {choice === '' || choice === 'name' ? (
         <div className={classes.line}>
           <Typography variant="body2" color="textSecondary">
-            {choice === ''
-              ? 'Rows show the colors their data gives them. Click a swatch in the list to color one row.'
-              : 'Each row takes a palette color. Click a swatch in the list to change one.'}
+            {choice !== ''
+              ? 'Each row takes a palette color. Click a swatch in the list to change one.'
+              : keptUnknown
+                ? "Rows take the config's color for the unlisted. Click a swatch in the list to color one row."
+                : 'Rows show the colors their data gives them. Click a swatch in the list to color one row.'}
           </Typography>
           {fields.length ? (
             <TextField

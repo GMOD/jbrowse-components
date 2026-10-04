@@ -20,6 +20,15 @@ describe('liftRowColor', () => {
     })
   })
 
+  it('reads a numeric domain as strings, and a null unknown as unset', () => {
+    expect(lift({ domain: [1, 2], unknown: null })).toEqual({
+      field: 'name',
+      scale: undefined,
+      domain: ['1', '2'],
+      range: [],
+    })
+  })
+
   it('writes back only the set members', () => {
     expect(rowColorMembers(lift({ field: 'group', unknown: '' }))).toEqual({
       field: 'group',
@@ -119,6 +128,17 @@ describe('rowColorResetTarget', () => {
     expect(settled({ ...base, unknown: '' }, base)).toEqual(base)
     expect(settled('group', base)).toEqual(base)
     expect(settled({ ...base, scale: 'none' }, base)).toEqual(base)
+  })
+
+  it('returns a parked field, or one parked by the base, to the base', () => {
+    expect(settled({ field: 'group', scale: 'none' }, 'group')).toEqual({
+      field: 'group',
+    })
+    expect(settled({ scale: 'none' }, {})).toEqual({ field: 'name' })
+    expect(settled('group', { field: 'group', scale: 'none' })).toEqual({
+      field: 'group',
+      scale: 'none',
+    })
   })
 
   it("returns a value recolour to the base's colours and keeps the attribute", () => {

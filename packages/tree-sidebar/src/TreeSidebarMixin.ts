@@ -54,9 +54,6 @@ import type { HoveredTreeNode, RowSource } from './types.ts'
 import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
-export type { RowColorSnapshot } from './rowColorChoice.ts'
-export type { RowColorSetting } from './rowColorScale.ts'
-
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the
  * sidebar's toggle slots, the `rows` object and the `rowColor` object.
@@ -526,7 +523,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #getter
        * Overridable hook: what one row is called, which titles the row colour
        * key where it lists the rows by name in a shared panel. "Row" by
-       * default; a wiggle overlay's rows are subtracks.
+       * default, which only a display of its own that shares a panel would
+       * show; a wiggle overlay's rows are subtracks.
        */
       get rowNoun(): string {
         return 'Row'

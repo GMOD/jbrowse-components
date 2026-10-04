@@ -269,6 +269,12 @@ export default observer(function SetColorDialog<
               <>
                 <RowColorPanel
                   eachRow={model.rowPaletteDeals}
+                  keptUnknown={
+                    model.rowPaletteDeals ||
+                    model.rowColorSetting.field !== 'name'
+                      ? undefined
+                      : model.rowColorSetting.unknown || undefined
+                  }
                   fields={fields}
                   choice={choice}
                   values={

@@ -472,8 +472,6 @@ describe('resolvedRowColors', () => {
         c: '#ccc',
         d: '#0d0d0d',
       })
-      // Each row where the palette would deal; on stacked rows no palette
-      // deals, so the grey reads as None and the dialog's None keeps it.
       expect(display.rowColorChoice).toBe(shared ? 'name' : '')
     }
   })
