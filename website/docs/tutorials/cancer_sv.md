@@ -153,8 +153,8 @@ it for the rest of the session.
 ## Following the chain across breakpoint split view panels {#following-the-chain-across-panels}
 
 A breakpoint split view stacks the loci a rearrangement visits, one panel per
-locus, and draws the reads that leave one panel and arrive in another. **Add →
-Breakpoint split view** builds a view whose loci you already know, one row per
+locus, and draws the reads that leave one panel and arrive in another. With loci
+you already know, **Add → Breakpoint split view** builds the view, one row per
 panel. A variant record already names its loci, so the view can also open from
 one: right-click the record in the variant track and choose **Open breakpoint
 split view**. The dialog asks for the layout, two stacked panels or one row
