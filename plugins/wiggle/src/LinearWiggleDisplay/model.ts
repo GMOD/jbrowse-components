@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
+  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -17,6 +18,7 @@ import LegendMixin, {
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import {
   editPlotMenuItems,
@@ -211,17 +213,12 @@ export default function stateModelFactory(
        * a colour and the layout decides (`effectiveColor`).
        */
       get colorSetting(): ColorSetting {
+        const { color } = self.configuration
         return {
-          value: getConf(self, ['color', 'value']),
-          field: getConf(self, ['color', 'field']) ?? '',
-          scale: getConf(self, ['color', 'scale']),
-          domain: getConf(self, ['color', 'domain']),
-          range: getConf(self, ['color', 'range']),
-          scheme: getConf(self, ['color', 'scheme']),
-          reverse: getConf(self, ['color', 'reverse']),
-          domainMid: getConf(self, ['color', 'domainMid']),
-          labels: getConf(self, ['color', 'labels']),
-          title: getConf(self, ['color', 'title']),
+          ...colorSettingOf(color),
+          field: readConfObject(color, 'field') ?? '',
+          labels: readConfObject(color, 'labels'),
+          title: readConfObject(color, 'title'),
         }
       },
 
