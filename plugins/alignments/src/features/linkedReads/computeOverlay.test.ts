@@ -917,6 +917,38 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
     expect(cp2y).toBeGreaterThan(sy1)
   })
 
+  // A fusion onto a minus-strand partner, viewed with that partner's region
+  // flipped: both segments point right on screen, so the molecule reads
+  // straight across the seam and keeps its inverted colour.
+  it('draws an inverted split straight when one partner region is flipped', () => {
+    const inverted = makeData({
+      names: ['r'],
+      ids: ['r-supplementary'],
+      flags: [SAM_FLAG_SUPPLEMENTARY],
+      strands: [-1],
+      positions: [[9000, 9100]],
+      ys: [0],
+    })
+    const arcs = computePileupBezierArcs({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [
+        { refName: 'chr1' },
+        { refName: 'chr2', reversed: true },
+      ],
+      pairs: enumerateBezierPairs(
+        new Map([
+          [0, inRegion0],
+          [1, inverted],
+        ]),
+        'crossRegion',
+      ),
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.d).toMatch(/^M [\d.]+ 5 L [\d.]+ 5$/)
+    expect(arcs[0]!.label).toBe('Split alignment (inverted)')
+  })
+
   const dips = (d: string) => {
     const { sy1, cp1y, cp2y } = controlPoints(d)
     return cp1y > sy1 && cp2y > sy1

@@ -321,6 +321,10 @@ function screenOrder(
   )
 }
 
+function screenStrand(strand: number, reversed: boolean | undefined) {
+  return reversed ? -strand : strand
+}
+
 function crossesOwnAlignment(
   { e1, e2, c, segments }: LinkedPair,
   displayedRegions: Opts['displayedRegions'],
@@ -404,11 +408,17 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     // two ends, as on a fold-back, that line would paint over them, so it dips
     // like a discordant one. A hidden-segment line whose ends share a row would
     // lie on the chain's connecting line, so it bows up over the row instead.
+    // A split junction is judged by the way its two segments point on screen,
+    // so an inverted fusion viewed with one partner's region flipped reads
+    // straight across the seam.
     const hidden = !!hiddenSegmentsBetween?.length
     const sameRef = r1.refName === r2.refName
     const sameRow = sy1 === sy2
+    const facesOneWay = c.isSplit
+      ? screenStrand(c.s1, r1.reversed) === screenStrand(c.s2, r2.reversed)
+      : c.isNormal
     const plain =
-      c.isNormal && !(sameRow && crossesOwnAlignment(pair, displayedRegions))
+      facesOneWay && !(sameRow && crossesOwnAlignment(pair, displayedRegions))
     const straight = plain && !(hidden && sameRow)
     const d = straight
       ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
