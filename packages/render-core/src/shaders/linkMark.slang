@@ -185,12 +185,14 @@ public float linkValuePx(float value, float domainMin, float domainMax, float h,
   return h - insetValueYPx(value, domainMin, domainMax, h, scaleType, insetPx, symlogConstant);
 }
 
-// The apex height of a pair, in CSS px above the baseline.
-public float linkApexPx(float halfWidthPx, float reachPx, int linkShape, int valued, float valuePx) {
+// The apex height of a pair's centreline, in CSS px above the baseline. A dome
+// stops half its stroke short of the band's top, so its thickest arc stays on
+// the canvas.
+public float linkApexPx(float halfWidthPx, float reachPx, float strokeHalfPx, int linkShape, int valued, float valuePx) {
   if (valued != 0) { return valuePx; }
   if (linkShape == LINK_SHAPE_LINE) { return 0.0; }
   if (linkShape == LINK_SHAPE_ARC) { return halfWidthPx; }
-  return min(halfWidthPx, reachPx);
+  return min(halfWidthPx, max(reachPx - strokeHalfPx, 0.0));
 }
 
 // The baseline of a row's band, in canvas px: its bottom, or its top under a
@@ -279,7 +281,7 @@ LinkVertex curveVertex(LinkInstance inst, LinkEnv e, uint seg, float side) {
     float pairHalf = abs(e.x2Px - e.xPx) * 0.5;
     float valuePx = linkValuePx(inst.y, u.domainMin, u.domainMax, u.rowHeight,
                                 u.valueScaleType, u.insetPx, u.valueSymlogConstant);
-    float apex = linkApexPx(pairHalf, e.reach, u.linkShape, u.valued, valuePx);
+    float apex = linkApexPx(pairHalf, e.reach, e.strokeHalf, u.linkShape, u.valued, valuePx);
     v.radii = linkRadiiPx(pairHalf, apex, u.canvasWidth);
     float2 ends = float2(min(e.xPx, e.x2Px), max(e.xPx, e.x2Px));
     if (u.linkShape == LINK_SHAPE_LINE) {

@@ -102,12 +102,13 @@ test('a dome is a half-ellipse from foot to foot, its apex the half-width clampe
     width: 102,
     height: 52,
   })
-  // 400 px wide: rx 200, ry clamped to the band's 100
+  // 400 px wide: rx 200, ry clamped to the band's 100 less half the stroke,
+  // so the ink stops at the band's top edge
   expect(linkMark.ink!(c, block, frame, params, 1)).toMatchObject({
     left: 299,
-    top: -1,
+    top: 0,
     width: 402,
-    height: 102,
+    height: 101,
   })
 })
 
@@ -179,9 +180,9 @@ test('a mate on another displayed region places through that region', () => {
   // foot at px 900, mate at px 1100: a 200 px dome centred on the seam
   expect(linkMark.ink!(c, block, frame, params, 0)).toMatchObject({
     left: 899,
-    top: -1,
+    top: 0,
     width: 202,
-    height: 102,
+    height: 101,
   })
 })
 
@@ -554,7 +555,7 @@ describe('a row table between the instance key and the band it draws on', () => 
 
   test('the ink follows the slot, and the hidden key has none', () => {
     expect([0, 2, 3].map(i => ink(byKey, withTable, i)?.top)).toEqual([
-      99, -1, 49,
+      100, 0, 50,
     ])
     expect(ink(byKey, withTable, 1)).toBeUndefined()
   })

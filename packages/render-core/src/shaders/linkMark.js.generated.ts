@@ -117,7 +117,7 @@ export function linkValuePx(value: number, domainMin: number, domainMax: number,
   return (h - insetValueYPx(value, domainMin, domainMax, h, scaleType, insetPx, symlogConstant))
 }
 
-export function linkApexPx(halfWidthPx: number, reachPx: number, linkShape: number, valued: number, valuePx: number): number {
+export function linkApexPx(halfWidthPx: number, reachPx: number, strokeHalfPx: number, linkShape: number, valued: number, valuePx: number): number {
   if ((valued != 0)) {
     return valuePx
   }
@@ -127,7 +127,7 @@ export function linkApexPx(halfWidthPx: number, reachPx: number, linkShape: numb
   if ((linkShape == 1)) {
     return halfWidthPx
   }
-  return _min(halfWidthPx, reachPx)
+  return _min(halfWidthPx, _max((reachPx - strokeHalfPx), 0.0))
 }
 
 function linkIsFar(halfWidthPx: number, screenWidthPx: number): boolean {

@@ -389,7 +389,14 @@ function placeCurve(c: LinkChannels, g: LinkFrame, i: number) {
     g.insetPx,
     g.symlogConstant,
   )
-  const apex = linkApexPx(pairHalf, g.reach, g.shape, g.valued, valuePx)
+  const apex = linkApexPx(
+    pairHalf,
+    g.reach,
+    g.strokePx / 2,
+    g.shape,
+    g.valued,
+    valuePx,
+  )
   if (g.shape === LINK_SHAPE_LINE) {
     g.kind = KIND_LINE
     g.rx = Math.max(2 * pairHalf, LINK_LINE_MIN_PX)
