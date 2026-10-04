@@ -8,10 +8,11 @@ tutorial_category: Population genomics
 ---
 
 The 2La chromosomal inversion of the malaria mosquito _Anopheles gambiae_ spans
-about 22 Mb and suppresses crossing over, so linkage disequilibrium runs across
-it as one block. We compute the LD with `plink2 --r2-phased`, draw it with an
-[`LDTrack`](/docs/config/ldtrack), and load the inversion as a structural
-variant genotyped per mosquito beneath it.
+about 22 Mb and suppresses crossing over, so linkage disequilibrium (LD, the
+correlation between variants) runs across it as one block. We compute the LD
+with `plink2 --r2-phased`, draw it with an [`LDTrack`](/docs/config/ldtrack),
+and load the inversion as a structural variant genotyped per mosquito beneath
+it.
 
 ## Prerequisites
 
@@ -27,8 +28,7 @@ variant genotyped per mosquito beneath it.
 ## Where the data comes from
 
 Ag1000G phase 2 AR1
-([Anopheles gambiae 1000 Genomes Consortium 2020](https://doi.org/10.1101/gr.262790.120)),
-whose terms of use were lifted in March 2022.
+([Anopheles gambiae 1000 Genomes Consortium 2020](https://doi.org/10.1101/gr.262790.120)).
 
 - the phased haplotypes and their sample list for chromosome arm 2L, which the
   commands subset to one population at a time:
@@ -36,7 +36,7 @@ whose terms of use were lifted in March 2022.
 - the sample metadata the population lists come from, `CMgam` (Cameroon) and
   `GAgam` (Gabon):
   https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt
-- the AgamP4 reference and its gene models, which the gene lane reads:
+- the AgamP4 reference and its gene models, which the gene track reads:
   https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome/
 - the 2La tag SNPs, the ~200 positions whose allele marks which arrangement a
   chromosome has, which each mosquito's karyotype is scored from
@@ -46,13 +46,13 @@ whose terms of use were lifted in March 2022.
   https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz
 - the 2La genotypes per mosquito:
   https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam.vcf.gz
-- the karyotype table the sample lane is grouped by:
+- the karyotype table the sample track is grouped by:
   https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam_samples.tsv
 
 ## Loading the AgamP4 assembly and genes
 
 The LD table and the inversion calls use 2L coordinates of the AgamP4 reference,
-so we load that assembly and its gene models first. The gene lane reads the
+so we load that assembly and its gene models first. The gene track reads the
 `AgamP4.12` annotation.
 
 ```json addassembly
@@ -82,9 +82,9 @@ so we load that assembly and its gene models first. The gene lane reads the
 
 ## The 2La inversion as one LD block
 
-Crossing over is suppressed in a 2La heterokaryotype, so the segment travels as
-a unit. The inversion spans roughly 22 Mb of chromosome arm 2L. JBrowse draws LD
-from a precomputed table, so PLINK correlates the variants and
+A mosquito with one inverted and one standard copy of 2La, a heterokaryotype,
+cannot cross over inside the inversion, so the segment is inherited as a unit.
+JBrowse draws LD from a precomputed table: PLINK correlates the variants and
 [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads its output.
 
 ## Precomputing 2L LD with PLINK
@@ -98,8 +98,8 @@ variants into one. `--double-id` sets each family id to the sample id:
 plink2 --vcf common.vcf --double-id --allow-extra-chr --make-bed --out common
 ```
 
-Then thin the variants, correlate them, and index the table. `keep.CMgam.txt` is
-the population, two tab-separated columns of the same sample id, the
+Then thin the variants, correlate them, and index the table. `keep.CMgam.txt`
+lists the Cameroon samples, two tab-separated columns of the same sample id, the
 family/individual pair plink asks for.
 
 <!-- from: scripts/build_ag1000g_ld.sh -->
@@ -131,8 +131,8 @@ jbrowse sort-bed < ag1000g_2L_CMgam.vcor |
 tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.vcor.gz
 ```
 
-The track over that file is an `LDTrack`, and the display reads one of its two
-metric columns:
+The track over that file is an `LDTrack`, and `ldMetric` picks which of the two
+metric columns, r² or D', the display reads:
 
 ```json addtrack
 {
@@ -170,8 +170,8 @@ each sample column holds one `GT`:
 ```
 
 The samples TSV has a `name` column matching the VCF sample ids and a
-`karyotype` column naming the three classes: `2L+a/2L+a`, `2La/2L+a`, `2La/2La`,
-the `+` marking the non-inverted arrangement.
+`karyotype` column naming each mosquito's pair of arrangements: `2L+a/2L+a`,
+`2La/2L+a`, `2La/2La`, the `+` marking the non-inverted arrangement.
 
 Load each population as a `VariantTrack` whose adapter includes the samples TSV,
 with a `LinearMultiSampleVariantDisplay` that bands (`facet`) and colors
@@ -205,58 +205,57 @@ with a `LinearMultiSampleVariantDisplay` that bands (`facet`) and colors
 ```
 
 [`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) keeps the
-karyotype classes contiguous, with its `domain` stacking them in dosage order,
-and
+karyotype classes contiguous, and its `domain` stacks them in dosage order.
 [`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
-`skip` fills the lane with the reference color and paints alt cells on top. The
-display draws a row for every sample in the file and divides the lane height
-among them, so each population gets a separate track. Gabon's two tracks are the
+`skip` fills the track with the reference color and paints alt cells on top. The
+display draws a row for every sample in the file and divides the track height
+among them, so each population gets its own track. Gabon's two tracks are the
 same configs with `CMgam` replaced by `GAgam` in the trackIds and file names:
 `https://jbrowse.org/demos/popgen/ag1000g_2L_GAgam.vcor.gz`,
 `https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam.vcf.gz` and
 `https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam_samples.tsv`.
 
-### The karyotype calls
+### Scoring each mosquito's 2La karyotype from tag SNPs
 
-The 2La breakpoints have been cloned and sequenced
-([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103)), and the
-build script draws the call at that published extent
-([White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334) karyotyped
-single mosquitoes by PCR across the junctions). The script scores the karyotype
-of each mosquito from the tag SNPs, the in-silico method MalariaGEN ships for
-its phase 3 release, Ag3: the mean number of alternate alleles across the tags,
-rounded into a genotype. The score is trimodal, and the
-[reproduce script](#reproduce-it-end-to-end) prints the histogram and the
-karyotype breakdown per population.
+The build script draws the `<INV>` call at the published 2La extent. The
+breakpoints have been cloned and sequenced
+([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103)), and
+[White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334) karyotyped single
+mosquitoes by PCR across the junctions. The script scores each mosquito's
+karyotype from the tag SNPs, the in-silico method MalariaGEN ships for its phase
+3 release, Ag3: the mean number of alternate alleles across the tags, rounded
+into a genotype. The score is trimodal, which the
+[reproduce script](#reproduce-it-end-to-end) checks.
 
-## Reading the 2La LD block against the karyotype lanes
+## Comparing the 2La LD block with karyotypes in Cameroon and Gabon {#reading-the-2la-ld-block-against-the-karyotype-lanes}
 
 Stack the r² track of each population over the karyotype track of the same
 population, one row per mosquito.
 
-<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in the Cameroon panel, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard arrangement."/>
+<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in Cameroon, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard arrangement."/>
 
-The edges of the block line up with the published breakpoint coordinates, where
-the karyotype lane beneath draws its calls. That lane adds which mosquitoes
-carry the inversion, and the block sits over the panel whose rows hold both
-arrangements.
+The block's edges line up with the published breakpoint coordinates, where the
+karyotype track beneath draws its calls. The karyotype track shows which
+mosquitoes carry the inversion, and the block appears only in the population
+whose rows hold both arrangements.
 
-- The second block, at the low-coordinate end of the arm in both panels, is
-  _Vgsc_, the sodium channel whose codon-995 substitutions confer pyrethroid
-  resistance ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
-- The 2La span is flat in Gabon. That population is near-fixed for the standard
-  arrangement, so almost no chromosome pair is a heterokaryotype, and the few
-  2La chromosomes fall below the MAF floor with the variants that tag them.
+- A second block, at the low-coordinate end of the arm in both populations, is
+  _Vgsc_, a sodium channel gene whose codon-995 substitutions confer pyrethroid
+  insecticide resistance
+  ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
+- The 2La span is flat in Gabon, which is near-fixed for the standard
+  arrangement, so almost no chromosome pair is a heterokaryotype. The few 2La
+  chromosomes fall below the `--maf` floor with the variants that tag them.
 
 ## Reproduce it end to end
 
 [`build_ag1000g_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ag1000g_ld.sh)
-takes the published 2La span only as a probe window, and prints the evidence for
+uses the published 2La span only as a test window, and prints the evidence for
 each choice it makes from there:
 
 1. Each panel is one population, since correlation pooled across populations
    invents linkage none of them has. The script prints, per population, mean D'
-   between variants more than 5 Mb apart inside the probe window and outside it,
+   between variants more than 5 Mb apart inside the test window and outside it,
    because only a population with both arrangements can show the block.
 2. It keeps common variants, thins them to a grid, and writes each panel's r²
    and D' table.
