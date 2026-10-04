@@ -7,12 +7,13 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-Bisulfite sequencing (WGBS) and EM-seq measure DNA methylation with short reads.
-We align an _Arabidopsis thaliana_ WGBS run with bwameth, load the BAM, and
-color each read by its methylation in the CpG, CHG and CHH contexts. JBrowse
-computes the calls from the C→T changes in the reads, so the BAM needs no
-base-modification tags (`MM`/`ML`, which nanopore and PacBio basecallers write)
-and no methylation caller runs first.
+Whole-genome bisulfite sequencing (WGBS) and enzymatic methyl sequencing
+(EM-seq) measure DNA methylation with short reads. We align an _Arabidopsis
+thaliana_ WGBS run with bwameth, load the BAM, and color each read by its
+methylation in the CpG, CHG and CHH contexts. JBrowse computes the calls from
+the C→T changes in the reads, so the BAM needs no base-modification tags
+(`MM`/`ML`, which nanopore and PacBio basecallers write) and no methylation
+caller runs first.
 
 ## Prerequisites
 
@@ -25,8 +26,8 @@ and no methylation caller runs first.
 - [samtools](http://www.htslib.org/)
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [MethylDackel](https://github.com/dpryan79/MethylDackel), for the
-  [conversion-rate check](#check-the-conversion-rate) and the optional aggregate
-  track
+  [conversion-rate check](#checking-the-bisulfite-conversion-rate) and the
+  optional aggregate track
 - UCSC's `bedGraphToBigWig`, for the optional aggregate track only
 
 ## Where the data comes from
@@ -84,7 +85,7 @@ samtools index arabidopsis_wgbs.bam
 `bwameth.py index` writes a C→T converted copy of the reference next to the
 original, so the reference directory has to be writable.
 
-### Check the conversion rate
+### Checking the bisulfite conversion rate
 
 An unconverted cytosine is indistinguishable from a methylated one, so measure
 the library's conversion rate first. The chloroplast is unmethylated, which
@@ -101,10 +102,9 @@ Column 4 of `conversion_CHH.bedGraph` is the methylated percentage at each
 cytosine, which on an unmethylated sequence is the fraction the conversion
 missed. Modern libraries convert above 99%. An organism with no plastid uses the
 library's spike-in, usually unmethylated lambda or pUC19, added to the reference
-as an extra contig. The [reproduce script](#reproduce-it-end-to-end) prints the
-rate for this run.
+as an extra contig.
 
-### Aggregate methylation, optionally
+### Optional aggregate methylation bigWigs from MethylDackel
 
 [MethylDackel](https://github.com/dpryan79/MethylDackel) calls a per-position
 methylation fraction in all three plant contexts, one bedGraph each, which
@@ -125,8 +125,8 @@ for ctx in CpG CHG CHH; do
 done
 ```
 
-One `MultiQuantitativeTrack` with a subadapter per context draws them as three
-labeled rows, the Aggregate methylation track in the figures below. The
+A `MultiQuantitativeTrack` with a subadapter per context draws the three bigWigs
+as labeled rows, the Aggregate methylation track in the figure below. The
 [long-read methylation tutorial](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl)
 loads its modkit aggregate the same way.
 
@@ -251,7 +251,7 @@ cytosine context: **CpG**, **CHG**, **CHH**, or **All cytosines**. Methylated
 cytosines paint red. Once a context is set, the same submenu has **Show
 unmethylated (blue)**, which paints converted sites blue to separate an
 unmethylated cytosine from a position with no cytosine. The figure and clip
-below leave it off.
+further down leave it off.
 
 ## Gene body methylation and transposon silencing
 
@@ -263,18 +263,18 @@ distinguish them:
 | Gene body methylation (gbM)     | yes | no  | no  | None obvious, the gene stays transcribed. Maintained by MET1, depleted at both ends of the gene                       |
 | Transposon and repeat silencing | yes | yes | yes | Heterochromatin, transcriptionally off. CMT3 maintains CHG; RNA-directed DNA methylation (RdDM) and CMT2 maintain CHH |
 
-Red in the CpG row alone is gene body methylation, and red in all three rows is
-silencing.
+Red in the CpG context alone is gene body methylation, and red in all three
+contexts is silencing.
 
 Type `chr1:4,398,000-4,412,000` into the location box for a window containing
 one of each: the expressed gene AT1G12930 on the left, and a transposon on the
 right. The [reproduce script](#reproduce-it-end-to-end) prints the fraction per
 context for both regions.
 
-To name the element on the right, add the RepeatMasker track from the TAIR10
-genome hub. It labels the element `META1_LTR#LTR/Copia`, an LTR retrotransposon,
-which is `AT1TE14315` in the TAIR10 transposable-element annotation, and no
-RefSeq transcript overlaps it:
+To identify the element on the right, add the RepeatMasker track from the TAIR10
+genome hub. It labels the element `META1_LTR#LTR/Copia`, an LTR retrotransposon
+(`AT1TE14315` in the TAIR10 transposable-element annotation). No RefSeq
+transcript overlaps it:
 
 ```json addtrack
 {
@@ -289,12 +289,12 @@ RefSeq transcript overlaps it:
 }
 ```
 
-Choose **Filter by...** in its track menu and enter
+Choose **Filter by...** in the RepeatMasker track menu and enter
 `jexl:feature.end-feature.start>1000` to keep repeats longer than 1 kb. The
 short simple repeats in the window drop out and the LTR element stays.
 
-The figure puts the three contexts side by side by opening the same reads as
-three tracks, which share one file and differ in `trackId` and in the context
+The figure below shows the three contexts side by side: the same reads open as
+three tracks that share one file and differ in `trackId` and in the context
 their `displayDefaults` pin. The CHG copy looks like this, and the CpG and CHH
 copies change the `trackId`, the name and `cytosineContext`:
 
@@ -312,9 +312,9 @@ copies change the `trackId`, the name and `cytosineContext`:
 }
 ```
 
-<Figure caption="RefSeq genes, the RepeatMasker lane, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
+<Figure caption="RefSeq genes, the RepeatMasker track, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 
-<Video src="/media/epigenomics/bisulfite_contexts.mp4" caption="One WGBS pileup recolored CpG, then CHG, then CHH from the track menu, under the RefSeq genes, the RepeatMasker lane and the aggregate MethylDackel rows: the LTR element stays red in all three contexts, and the gene body is red only in CpG." />
+<Video src="/media/epigenomics/bisulfite_contexts.mp4" caption="One WGBS pileup recolored CpG, then CHG, then CHH from the track menu, under the RefSeq genes, the RepeatMasker track and the aggregate MethylDackel rows: the LTR element stays red in all three contexts, and the gene body is red only in CpG." />
 
 ## Reproduce it end to end
 
