@@ -69,7 +69,7 @@ test('alignment overlay/layout modifiers all produce a valid display snapshot', 
   assert.ok(svg.includes('<svg'), 'output should be SVG')
 })
 
-test('bezier enables the curved-connector overlay', async () => {
+test('showBezierConnections=true enables the curved-connector overlay', async () => {
   const svg = await renderRegion({
     fasta,
     loc: 'ctgA:1-2000',
