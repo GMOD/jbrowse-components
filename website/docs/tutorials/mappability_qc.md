@@ -67,7 +67,7 @@ reports that as MAPQ 0. The read is still drawn where it aligned. MAPQ is
 ([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so MAPQ 0
 means the chosen position is about as likely wrong as right.
 
-## The block, and the reads inside it
+## Mappability, coverage and reads across the SMN block
 
 Open the hosted hg38 config at
 [genomes.jbrowse.org](https://genomes.jbrowse.org) and turn on these tracks from
@@ -159,12 +159,12 @@ Open `chr5:69,200,000-71,700,000` for the whole block, and a second view at
 
 <Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, the block on chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read SV callset. Below it, a second view from SMN1 to where the reads recover, with Umap k100 mappability and NA12878 reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
-The affected sequence is much larger than the gene. GIAB's interval,
-chr5:69,533,889-71,009,585, is about a megabase and a half. The gnomAD lane
-stays low across the span GIAB leaves out. Beyond the block, GIAB flags nothing
-larger than a few kilobases for megabases in either direction. In the read view,
-the reads stay at MAPQ 0 until well past the end of _SMN1_, and the Umap lane
-steps up at the same coordinate as the gnomAD coverage.
+The affected sequence is much larger than the gene. GIAB flags it as two long
+intervals, chr5:69,533,889-71,009,585 and a second that starts a few kilobases
+past its end, and the gnomAD lane stays low across both. Beyond them, GIAB flags
+nothing larger than a few kilobases for megabases in either direction. In the
+read view, the reads stay at MAPQ 0 until well past the end of _SMN1_, and the
+Umap lane steps up at the same coordinate as the gnomAD coverage.
 
 Zoom the read view to the SMN cassette, `chr5:70,889,000-70,989,000`.
 
@@ -173,7 +173,7 @@ Zoom the read view to the SMN cassette, `chr5:70,889,000-70,989,000`.
 Dark blue is MAPQ 0, a read that fits another place equally well; yellow is MAPQ
 60 and above.
 
-## The same block in T2T-CHM13
+## The SMN duplication in T2T-CHM13
 
 T2T-CHM13 is a finished assembly of this chromosome, so it could in principle
 place reads that GRCh38 cannot. UCSC's hg38-to-CHM13 liftOver chains over the
@@ -213,19 +213,20 @@ lifts to as its query:
 }
 ```
 
-<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on that assembly's SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
+<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on that assembly's SMN2-to-SMN1 span and its flanks, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
 
 The gene order is the same in both assemblies, _SMN2_ first and then _SMN1_. The
 crossing chains join each GRCh38 copy to both CHM13 copies, so CHM13 has the
 same duplication, with the two genes closer together.
 
-Long reads test the same question on real data. The 1000 Genomes ONT release
-aligned GM18501 to both references with the same minimap2 pipeline, and
-`scan_mappability_qc.sh` prints the share of its records over _SMN1_ at MAPQ 0
-and at MAPQ 60 on each. The long reads place better than the short reads at the
-same gene, and the MAPQ 0 share is the same on both references.
+Long reads test whether T2T-CHM13 places reads at _SMN1_ better than GRCh38
+does. The 1000 Genomes ONT release aligned GM18501 to both references with the
+same minimap2 pipeline, and `scan_mappability_qc.sh` prints the share of its
+records over _SMN1_ at MAPQ 0 and at MAPQ 60 on each. The long reads place
+better than the short reads at the same gene, and the MAPQ 0 share is the same
+on both references.
 
-## Depth at the locus and at a control
+## Depth and MAPQ at SMN1 and at a control window
 
 `scan_mappability_qc.sh` counts the reads in equal windows over _SMN1_ and over
 the right-hand end of the read view, from the same library, and the two come
@@ -237,15 +238,17 @@ The gnomAD lane shows the effect of a MAPQ filter on a depth track. Over _SMN1_
 it drops to a fraction of the control's depth, because gnomAD dropped MAPQ 0
 reads before averaging.
 
-## SV calls over the block
+## Long-read SV calls across the SMN block
 
 The long-read SV lane in the wide view is empty across the block.
 `scan_mappability_qc.sh` counts calls over the flagged block and an equal-width
 window on either side, and finds few inside and many on both sides, where the
-older DGV catalogue has records throughout. Over the whole chromosome, both
-catalogues put a larger share of their calls inside the flagged regions than
-those regions' share of chr5. Segmental duplications are copy-number variable,
-so real variation and artifacts both concentrate there.
+older Database of Genomic Variants (DGV) merged catalogue,
+https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb, has records
+throughout. Over the whole chromosome, both catalogues put a larger share of
+their calls inside the flagged regions than those regions' share of chr5.
+Segmental duplications are copy-number variable, so real variation and artifacts
+both concentrate there.
 
 ## Checking your own locus
 
