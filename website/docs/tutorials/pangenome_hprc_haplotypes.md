@@ -166,7 +166,7 @@ with the inversion and one without out of HPRC's all-vs-GRCh38 PAF, each with
 its CAT annotation ([Reproduce it end to end](#reproduce-it-end-to-end) builds
 it), and the hg38 row between them agrees with the one without.
 
-<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. The pink ribbons are each haplotype's alignment to hg38, and a ribbon that crosses itself is an inversion. Between the two haplotype rows are the RefSeq genes, the bubbles track filtered to inversion-flagged bubbles, and the rGFA segments. The boxed pair on each row is PPIAL4F and PPIAL4E, in opposite orders on the two haplotypes." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. The pink ribbons are each haplotype's alignment to hg38, and a ribbon that crosses itself is an inversion. Between the two haplotype rows: the RefSeq genes, the bubbles track filtered to inversions, and the rGFA segments. The boxed pair on each row, PPIAL4F and PPIAL4E, is in opposite order on the two haplotypes." src="/img/pangenome/hprc_inversion.png" />
 
 ## Reproduce it end to end
 
