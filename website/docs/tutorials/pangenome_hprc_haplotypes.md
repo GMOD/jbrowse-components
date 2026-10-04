@@ -122,8 +122,8 @@ Uniform**.
 <Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, each boxed with its own CAT genes so its AMY1 copies can be counted on the bar. Blue is on GRCh38's path through the graph and purple off it. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
 
 HG00133.1 has GRCh38's three _AMY1_ copies and its length, and its bar still
-shows a long purple stretch: the graph routes copies of a duplication through
-nodes off GRCh38's path.
+shows a long purple stretch, because the graph routes copies of a duplication
+through nodes off GRCh38's path.
 
 Right-click a bar to open that haplotype's span in a linear view on its own
 assembly, with its CAT genes.
@@ -141,9 +141,9 @@ haplotypes land on H1a, H2A0, H3r, H5 and H7:
 | 94 kb longer          | 5             | H5        |
 | 188 kb longer         | 7             | H7        |
 
-HG00097.2's span sits nearer H5's than any other row of the table, yet its walk
-carries four _AMY1_ copies, so count the _AMY1_ boxes on each bar to read its
-copy number.
+HG00097.2's span sits nearer H5's than any other row of the table, yet it has
+four _AMY1_ copies, so count the _AMY1_ boxes on each bar to read its copy
+number.
 
 ## Telling the 1q21.1 inversion from an inverted paralog {#inversions}
 

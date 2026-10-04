@@ -226,9 +226,9 @@ shows the three under the RefSeq genes.
 The yak row has the reference allele. Leonard et al. built no yak assembly, so
 their result does not cover it.
 
-Leonard et al. published the bovine graph with a path line per assembly, which
-is what `vg deconstruct` reads. A graph straight out of `minigraph` has no path
-lines and so no callset to deconstruct; [](/docs/tutorials/pangenome_mouse)
+Leonard et al. published the bovine graph with a path line per assembly, and
+`vg deconstruct` reads those paths. A graph straight out of `minigraph` has no
+path lines and so no callset to deconstruct; [](/docs/tutorials/pangenome_mouse)
 reads its bubbles from the graph alone.
 
 ## Published variants in the callset

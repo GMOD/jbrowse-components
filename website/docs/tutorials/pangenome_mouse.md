@@ -150,8 +150,8 @@ tick **Mark bubbles**:
 
 <Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one cut. The bubbles lane is a single row, the allele inventory draws each alternative path at its size, and the graph has one superbubble label, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
-`minigraph` writes no path lines, so the graph records only the assembly that
-first contributed each allele: `firstSeenIn` in the allele inventory is that
+`minigraph` writes no path lines, so the graph records the assembly that first
+contributed each allele: `firstSeenIn` in the allele inventory is that
 construction order, and the graph does not list which strains have an allele.
 
 ## Finding the Dock2 bubble in the hosted bubble index

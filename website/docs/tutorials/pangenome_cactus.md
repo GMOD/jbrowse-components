@@ -386,7 +386,7 @@ for strain in Sakai CFT073 NCTC86 IAI39; do
 done
 ```
 
-The four presence bigWigs load as one
+Each strain's presence bigWig loads as one row of a
 [`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track#many-signals-in-one-track),
 the
 [pggb page's presence track](/docs/tutorials/pangenome_ecoli#per-strain-presence)
