@@ -85,7 +85,7 @@ export interface SyntenyRibbonParams {
  *
  * What is STILL a light-ground assumption is the ribbon palettes themselves —
  * `defaultCigarColors` and the categorical ramps are fixed colours picked for a
- * white band, and at the 0.2 default alpha they are near invisible on a dark
+ * white band, and at the 0.25 default alpha they are near invisible on a dark
  * one. Passing the ground through lets a band be dark; tuning the palettes is a
  * separate follow-up, in the `colorPairLRDark` mould.
  */

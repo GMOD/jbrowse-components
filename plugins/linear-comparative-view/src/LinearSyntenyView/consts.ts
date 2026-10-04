@@ -4,4 +4,4 @@
 // button, and a default spelled twice is a reset that silently stops agreeing
 // with the property it resets.
 export const DEFAULT_OVERDRAW_PX = 1000
-export const DEFAULT_ALPHA = 0.2
+export const DEFAULT_ALPHA = 0.25

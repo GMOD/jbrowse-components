@@ -439,7 +439,7 @@ export function linearSyntenyViewHelperModelFactory(
        * #getter
        * The pointer is over a ribbon somewhere in this band. Drives the canvas
        * cursor, which is the only thing that says a ribbon can be clicked at
-       * all — the hover shading is subtle at the default 0.2 opacity.
+       * all — the hover shading is subtle at the default 0.25 opacity.
        */
       get hoveringFeature() {
         return self.linearSyntenyDisplays.some(d => d.hoveredInstanceIdx >= 0)

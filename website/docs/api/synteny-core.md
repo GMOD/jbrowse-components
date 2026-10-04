@@ -243,7 +243,7 @@ read from `identity`, or back to the constant.
 The alpha a legend chip is blended at however faint the ribbons are.
 
 Matching the chip to the composited ribbon is right down to a point and then
-inverts: the linear-synteny default alpha is 0.2, and at that value every
+inverts: the linear-synteny default alpha is 0.25, and at that value every
 chip washes to within a few percent of white, so a key meant to say "blue is
 this track, orange is that one" identifies nothing. Below the floor the chip
 gives up exactness for the one job it has. The ribbons themselves still draw

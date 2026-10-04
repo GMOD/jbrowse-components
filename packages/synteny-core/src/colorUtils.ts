@@ -24,7 +24,7 @@ export { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
 // `LinearSyntenyDisplay/syntenyGroundClear` fixes that ground for.
 //
 // These remain LIGHT-GROUND colours — picked against a white band, and at the
-// 0.2 default alpha they are faint on a dark one. The ground is threaded now,
+// 0.25 default alpha they are faint on a dark one. The ground is threaded now,
 // which is what makes a dark band expressible at all; giving these a dark
 // variant, in the `colorPairLRDark` mould, is the separate follow-up.
 export const defaultCigarColors = {
@@ -69,7 +69,7 @@ export type ColorScheme = keyof typeof colorSchemes
  * The alpha a legend chip is blended at however faint the ribbons are.
  *
  * Matching the chip to the composited ribbon is right down to a point and then
- * inverts: the linear-synteny default alpha is 0.2, and at that value every
+ * inverts: the linear-synteny default alpha is 0.25, and at that value every
  * chip washes to within a few percent of white, so a key meant to say "blue is
  * this track, orange is that one" identifies nothing. Below the floor the chip
  * gives up exactness for the one job it has. The ribbons themselves still draw

@@ -7,6 +7,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { when } from 'mobx'
 
 import { packSyntenyFeatureData } from '../../LinearSyntenyDisplay/testUtils.ts'
+import { DEFAULT_ALPHA } from '../consts.ts'
 import SyntenySettingsMenu from './SyntenySettingsMenu.tsx'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
@@ -269,7 +270,9 @@ const curvedLinesRow = () =>
 test('a slider row captions the value it is set to', async () => {
   const view = await openMenu()
   fireEvent.click(screen.getByTestId('cascading-submenu-opacity'))
-  expect(await screen.findByText('Opacity: 0.200')).toBeTruthy()
+  expect(
+    await screen.findByText(`Opacity: ${DEFAULT_ALPHA.toFixed(3)}`),
+  ).toBeTruthy()
   act(() => {
     view.setOpacity(0.5)
   })
