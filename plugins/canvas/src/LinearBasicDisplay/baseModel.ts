@@ -18,6 +18,7 @@ import {
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
+import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
 import {
   baseJexlFilters,
   configuredJexlFilters,
@@ -1598,7 +1599,11 @@ export default function baseStateModelFactory(
           colorField !== '' &&
           (colorField === current?.field || colorField === field)
         return {
-          facet: field === current?.field ? current : field ? { field } : null,
+          facet:
+            carryGroupDomain(
+              field ? { field } : undefined,
+              current ?? undefined,
+            ) ?? null,
           ...(colorByGroup && field
             ? field === painted
               ? {}

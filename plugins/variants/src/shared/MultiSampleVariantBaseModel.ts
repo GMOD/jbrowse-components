@@ -18,6 +18,7 @@ import {
   withPreset,
 } from '@jbrowse/core/util/colorScale'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
+import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
 import { readFor } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
   baseJexlFilters,
@@ -733,16 +734,13 @@ export default function MultiSampleVariantBaseModelF(
            * order.
            */
           setFacet(field: string) {
-            const current = self.facet
             setConf(
               self,
               'facet',
-              field
-                ? {
-                    field,
-                    domain: field === current?.field ? current.domain : [],
-                  }
-                : {},
+              carryGroupDomain<{ field: string; domain?: readonly string[] }>(
+                field ? { field } : undefined,
+                self.facet,
+              ) ?? {},
             )
             warnUnknownArrangementAttributes(self, self.adapterSamples ?? [])
           },
