@@ -91,11 +91,10 @@ is `ENSG00000188263` and _TTLL8_ is `ENSG00000138892`.
 
 <Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL (ENSG00000188263) and TTLL8 (ENSG00000138892), which GENCODE annotates as separate genes. MLC1 on the right gets a separate prediction." />
 
-_MLC1_, on the right, gets a separate Tiberius model, so the merge is specific
-to the two genes on the left. An annotator would fix it by splitting the model
-in two.
+_MLC1_, the next gene on the right, gets a separate Tiberius model, so the merge
+is specific to the two genes on the left.
 
-## Sorting the models
+## Sorting Tiberius models into five classes against GENCODE
 
 The portal compares each Tiberius model on chr22 with GENCODE and puts it in one
 of five classes, and every class except Agrees gets a card.
@@ -113,10 +112,11 @@ transcripts. The portal compares exons with genes on the same strand, and counts
 a merge only when the genes it joins do not overlap each other. _PI4KA_ is the
 control: it spans 152 kb on the minus strand, and _SERPIND1_ sits inside one of
 its introns on the plus strand. Tiberius predicts _PI4KA_ correctly, and the
-portal leaves it off the list. GENCODE readthrough genes such as `CHKB-CPT1B`
-overlap the genes they join, so the portal skips them too.
+portal leaves it off the list. GENCODE readthrough genes (one transcript
+spanning two neighbours) such as `CHKB-CPT1B` overlap the genes they join, so
+the portal skips them too.
 
-## Building the portal
+## Building the review portal with make-portal.mjs
 
 Clone the pipeline and install it:
 
@@ -142,13 +142,13 @@ node bin/make-portal.mjs \
 ```
 
 The output directory holds the page, a JBrowse config, one PNG per candidate
-and, with `--with-app`, a copy of JBrowse. Copy it to a web server to publish
-it.
+and, with `--with-app`, a copy of JBrowse. Copy it to any web server to publish.
 
 `--rnaseq reads.bam` adds an alignment track under every model, in the captures
 and in the links; repeat it for more BAMs, and label each with `--rnaseq-name`.
-Reads across the exons of a novel locus support it as a gene. The
-[example portal](https://jbrowse.org/demos/tiberius_review/) has two samples
+Reads across the exons of a novel locus support it as a gene.
+
+The [example portal](https://jbrowse.org/demos/tiberius_review/) has two samples
 from the
 [Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/):
 Human Brain Reference and Universal Human Reference, a pool of ten cell lines.
@@ -160,7 +160,7 @@ and Iso-Seq into the prediction. The released human annotation read here comes
 from a run with default weights, so the RNA-seq tracks are evidence a reviewer
 judges each model against.
 
-## The review page
+## Using the review page: cards, filters and verdicts
 
 The [example portal](https://jbrowse.org/demos/tiberius_review/) covers chr22.
 Each card shows the class, the reference genes, the locus and a capture of the
@@ -172,7 +172,7 @@ Building with `--apollo <url>` adds a second link to every card that opens the
 same window in [Apollo](https://github.com/GMOD/Apollo3), the annotation editor,
 and an `apollo_url` column to the exported TSV.
 
-## Disagreements track
+## The Disagreements track: junctions that differ from GENCODE
 
 Every capture and live link has a **Disagreements** track under the prediction,
 with one box per junction that differs from the reference, labelled with what
@@ -185,9 +185,9 @@ g13605.t1:donor-1048
 `g13605.t1` covers _CCDC116_ with two exons. Its acceptor matches GENCODE, and
 its donor is 1,048 bp from any _CCDC116_ donor.
 
-The track reads `data/conflicts.bed`, plain BED6, which also works with
-`bedtools`. The file also lists junction edits in models filed as Agrees, such
-as a model that shares four of its five junctions, which get no card.
+The track reads `data/conflicts.bed`, plain BED6 that `bedtools` also reads. The
+file also lists junction edits in models filed as Agrees (a model sharing four
+of its five junctions, say), which get no card.
 
 ```text
 chr22  21636314  21636431  g13605.t1:donor-1048     0  +
@@ -195,7 +195,7 @@ chr22  23977067  23977386  g13682.t1:acceptor+3025  0  -
 chr22  50012765  50018574  g14001.t1:split          0  -
 ```
 
-## Checking the merge against the raw data
+## Checking the IL17REL and TTLL8 merge against GENCODE
 
 Query GENCODE for the two genes the Tiberius model merges:
 
