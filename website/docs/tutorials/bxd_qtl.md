@@ -19,13 +19,11 @@ under each peak set it.
 - `jq`, to reshape it
 - `python3`, for the painting
 - htslib (`bgzip`, `tabix`), for the painting
-- A JBrowse instance to add the tracks to (see the
-  [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop) to add the built files with no
-  hosting step)
+- A JBrowse instance to add the tracks to
+  ([web quickstart](/docs/quickstart_web) or
+  [desktop quickstart](/docs/quickstart_desktop))
 
-On Debian/Ubuntu, `apt install curl jq python3 tabix` covers it. GeneNetwork
-serves the QTL scan [already computed](#qtl-manhattan-plot).
+On Debian/Ubuntu, `apt install curl jq python3 tabix` covers it.
 
 ## Where the data comes from
 
@@ -54,7 +52,7 @@ thousands of traits. We build two tracks from the panel on mm10:
 - a QTL Manhattan track (the [Manhattan display](/docs/user_guides/gwas_track))
   from a single-marker scan of a BXD phenotype
 
-## BXD consensus genotypes
+## Reading GeneNetwork's BXD genotype file
 
 GeneNetwork distributes the consensus BXD genotypes as a plain-text `.geno`
 file. Each row is a marker with a `cM` genetic-map position and an mm10 `Mb`
@@ -73,7 +71,7 @@ Chr  Locus         cM    Mb        BXD1  BXD2  BXD5  ...
 The painting skips the F1 columns, since an F1 is heterozygous at every marker
 and GeneNetwork computes the scan over the strains.
 
-## Chromosome painting
+## Painting each strain's B and D blocks
 
 The painting draws one row per strain, each block colored by genotype.
 [`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
@@ -159,7 +157,7 @@ conversion wrote.
 - `disableGeneHeuristic: true` stops the BED adapter from reading each block as
   a gene, which the `thickStart`/`thickEnd` columns would otherwise trigger.
 
-## QTL Manhattan plot
+## Loading the coat-color QTL scan as a Manhattan track
 
 GeneNetwork maps these traits itself, and its API serves the whole per-marker
 result of a GEMMA run, the mixed model that accounts for how closely the BXD
@@ -267,6 +265,10 @@ together with `facet: "group"`:
   label. The blocks keep their genotype colors, and the unscored strains, with
   no group, take no color.
 
+The fence below holds those new keys, `coatColor.json` with `facet` added.
+`https://jbrowse.org/code/jb2/main/test_data/config_bxd.json` holds the whole
+track, as `bxd_chromosome_painting_mm10`.
+
 ```json
 {
   "rowGroups": [
@@ -301,27 +303,30 @@ together with `facet: "group"`:
 }
 ```
 
-Open chr4 with the gene track filtered to _Tyrp1_ (**Filter by...** in its track
-menu, `jexl:get(feature,'name')=='Tyrp1'`), the scan and the grouped painting:
+Add the mm10 RefSeq genes
+(`https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz`, with its `.tbi`
+beside it), filter them to _Tyrp1_ with **Filter by...** in their track menu
+(`jexl:feature.name=='Tyrp1'`), and open chr4 with the genes, the scan and the
+grouped painting:
 
-<Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4, with the painting's rows banded by coat color. Under the peak at Tyrp1 the black and grey bands are solid B (blue) and both brown bands solid D (red). Away from the peak every band is a mix of the two."/>
+<Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4, with the painting's rows banded by coat color. Under the peak at Tyrp1 the black and grey bands are nearly all B (blue) and both brown bands nearly all D (red). Away from the peak every band is a mix of the two."/>
 
-The bands come from the phenotype alone, so the solid column under the peak is
-the finding: black and grey strains inherited B6's copy of _Tyrp1_, brown and
-dilute brown strains DBA/2's. The rest of chr4 is the control, where the bands
-mix B and D blocks because nothing there sets coat color.
+The bands come from the phenotype alone. Under the peak, black and grey strains
+carry B6's copy of _Tyrp1_ and brown and dilute brown strains DBA/2's. The rest
+of chr4 is the control, where the bands mix B and D blocks because nothing there
+sets coat color.
 
-## The second peak: dilute on chr9
+## Myo5a, the dilute locus, under the chr9 peak
 
 The chr9 peak falls on _Myo5a_, the dilute locus. The same grouped painting,
 with the gene track filtered to _Myo5a_, splits the bands the other way:
 
 <Figure src="/img/qtl/bxd_myo5a_locus.png" caption="The whole of chr9, same bands. Under the peak at Myo5a the black and brown bands are B and the grey and dilute brown bands D, while the rest of chr9 is mixed."/>
 
-So the four-step scale is two genes. _Tyrp1_ sets black against brown and
-_Myo5a_ sets full color against dilute, and grey is a black coat diluted. The
-scale puts the brown step at twice the dilute step, which is why the chr4 peak
-stands higher than the chr9 one.
+The two loci split the four-step scale between them: _Tyrp1_ sets black against
+brown, _Myo5a_ sets full color against dilute, and grey is a black coat diluted.
+The scale puts the brown step at twice the dilute step, and the chr4 peak stands
+higher than the chr9 one.
 
 ## Reproduce it end to end
 
