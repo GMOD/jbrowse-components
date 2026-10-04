@@ -22,6 +22,10 @@ const SPAN_FACTOR = 0.3
 // inversion flings a ~500px curl back across unrelated reads.
 const MAX_HANDLE_PX = 200
 
+// The handles are horizontal, so a tall vertical gap (stacked split-view
+// panels) only widens the sideways bulge; past this height it earns no more.
+const MAX_VERTICAL_SPAN_PX = 150
+
 // A symmetric cubic's extreme sits 3/4 of the way from its baseline to its
 // control points, so an arc asked to reach a given apex puts its controls 4/3
 // past it. Exported because the sashimi overlay solves the same equation in the
@@ -75,7 +79,8 @@ function tangentSign(strand: number, leading: boolean, reversed: boolean) {
 // How much shaping (handle length, bow height) this curve may spend: a fraction
 // of the distance it has to cover.
 function shapingBudget(p1: Pt, p2: Pt) {
-  return Math.hypot(p2.x - p1.x, p2.y - p1.y) * SPAN_FACTOR
+  const dy = Math.min(Math.abs(p2.y - p1.y), MAX_VERTICAL_SPAN_PX)
+  return Math.hypot(p2.x - p1.x, dy) * SPAN_FACTOR
 }
 
 // Fades to zero as the endpoints' rows separate, since a cross-row curve

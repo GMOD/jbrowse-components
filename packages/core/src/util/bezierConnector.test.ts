@@ -123,22 +123,28 @@ test('close endpoints do not overshoot into a loop', () => {
   expect(cx2).toBeGreaterThan(0)
 })
 
-test('vertically separated endpoints still spend a long handle', () => {
-  // stacked split views: vertical span alone earns the handle, up to the ceiling
-  const handleFor = (y2: number) =>
-    controlXs(
-      bezierConnectorPath({
-        x1: 100,
-        y1: 0,
-        x2: 100,
-        y2,
-        s1: 1,
-        s2: 1,
-        leadingEnd2: true,
-      }),
-    )[0] - 100
-  expect(handleFor(600)).toBe(180)
-  expect(handleFor(2000)).toBe(200)
+test('stacked panels bulge a connection no further than a short gap does', () => {
+  // two reads at one x in panels 600px apart, both handles leaving rightward:
+  // the gap is vertical, so spending it on the horizontal handles flung the
+  // curve ~135px sideways past both endpoints
+  const bulge = (y2: number) => {
+    const path = bezierConnectorPath({
+      x1: 100,
+      y1: 0,
+      x2: 100,
+      y2,
+      s1: 1,
+      s2: 1,
+    })
+    let max = 0
+    for (let t = 0; t <= 1; t += 0.01) {
+      max = Math.max(max, cubicXAt(path, t) - 100)
+    }
+    return max
+  }
+  expect(bulge(600)).toBeLessThanOrEqual(bulge(150) + 0.5)
+  expect(bulge(600)).toBeLessThan(40)
+  expect(bulge(600)).toBeGreaterThan(10)
 })
 
 test('MAX_HANDLE_PX bounds the fold-back hook on a full-width inversion', () => {
