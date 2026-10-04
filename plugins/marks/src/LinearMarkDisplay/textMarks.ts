@@ -25,7 +25,7 @@ const ABOVE_VALUE_GAP_PX = 2
 
 export interface TextFont {
   size: number
-  family: string
+  family?: string
 }
 
 /** One label the text layer draws, in the plot's CSS px. */

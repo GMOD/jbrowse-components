@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgHaloText, TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
@@ -30,8 +30,8 @@ function MultiWaySvgBody({
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<MultiWaySyntenyDisplayModel>) {
-  const { palette, typography } = useStyleTheme()
-  const { fontFamily } = typography
+  const palette = usePalette()
+  const fontFamily = opts?.fontFamily || undefined
   const state = {
     ...model.renderState,
     canvasWidth,
@@ -63,18 +63,13 @@ function MultiWaySvgBody({
         }}
       />
       <g transform={`translate(0 ${-model.scrollTop})`}>
-        <SvgLaneHeaders
-          rows={model.laneHeaderRows}
-          width={canvasWidth}
-          fontFamily={fontFamily}
-        />
+        <SvgLaneHeaders rows={model.laneHeaderRows} width={canvasWidth} />
         {model.laneGeneLabels(fontFamily, new Set(), canvasWidth).map(label => (
           <SvgHaloText
             key={label.key}
             x={label.left + dragOffsetPx}
             y={label.top + GENE_LABEL_FONT_PX * TEXT_BASELINE_RATIO}
             fontSize={GENE_LABEL_FONT_PX}
-            fontFamily={fontFamily}
             fill={bandInk().text}
             halo={bandGroundColor()}
             haloWidth={GENE_LABEL_HALO_PX * 2}
@@ -88,7 +83,6 @@ function MultiWaySvgBody({
             x={4}
             y={title.top + GENE_LABEL_FONT_PX * TEXT_BASELINE_RATIO}
             fontSize={GENE_LABEL_FONT_PX}
-            fontFamily={fontFamily}
             fill={bandInk().text}
             halo={bandGroundColor()}
             haloWidth={GENE_LABEL_HALO_PX * 2}

@@ -46,6 +46,26 @@ test('a text mark exports with the plot, and stays out of a plot-only export', a
   )
 })
 
+test('a text mark inherits the font the export picked', async () => {
+  const { display } = createTestEnvironment({
+    marks: [{ mark: 'text', encoding: { y: 'score' } }],
+  }).createDisplay()
+  display.setRpcData(
+    0,
+    workerResult(
+      display,
+      features([{ start: 1000, end: 4000, score: 5, name: 'geneA' }]),
+    ),
+    REGION,
+  )
+  const svg = draw(await renderSvg(display, { fontFamily: 'serif' }))
+  const labels = [...svg.matchAll(/<text[^>]*>geneA<\/text>/g)]
+  expect(labels).toHaveLength(2)
+  for (const [label] of labels) {
+    expect(label).not.toContain('font-family')
+  }
+})
+
 test('under rows the export places labels through the row table, a focused-out row placing none', async () => {
   const { display } = createTestEnvironment({
     rows: 'source',

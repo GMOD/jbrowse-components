@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -18,21 +18,24 @@ import type React from 'react'
 
 type RenderSvgModel = MarkDisplayModel & ScorePlotSvgModel
 
-// The text marks' labels as `<text>`, at the placements the screen draws. Not
-// an observer, since a figure is frozen; it reads the model once.
+// The text marks' labels as `<text>`, at the placements the screen draws,
+// measured in the export's font and inheriting it. Not an observer, since a
+// figure is frozen; it reads the model once.
 function MarkTextSvg({
   model,
   blocks,
   canvasWidth,
   plotHeight,
+  fontFamily,
 }: {
   model: RenderSvgModel
   blocks: RenderBlock[]
   canvasWidth: number
   plotHeight: number
+  fontFamily: string | undefined
 }) {
-  const { palette, typography } = useStyleTheme()
-  const font = { size: TEXT_MARK_FONT_PX, family: typography.fontFamily }
+  const palette = usePalette()
+  const font = { size: TEXT_MARK_FONT_PX, family: fontFamily }
   const labels = placeTextMarks(
     model.textMarkEntries,
     model.rpcDataMap,
@@ -47,7 +50,6 @@ function MarkTextSvg({
       x={label.x}
       y={label.baseline}
       fontSize={font.size}
-      fontFamily={font.family}
       anchor="middle"
       fill={label.color}
       halo={palette.background.paper}
@@ -84,6 +86,7 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
             blocks={renderBlocks}
             canvasWidth={canvasWidth}
             plotHeight={plotHeight}
+            fontFamily={opts?.fontFamily || undefined}
           />
         </g>
       ) : null}

@@ -2177,7 +2177,7 @@ export function stateModelFactory(
     .views(self => {
       let memo = {
         text: getFeatureName,
-        fontFamily: '',
+        fontFamily: '' as string | undefined,
         genes: undefined as unknown,
         byId: new Map<string, GeneLabel | null>(),
       }
@@ -2187,7 +2187,7 @@ export function stateModelFactory(
          * placed in the stack's px
          */
         laneGeneLabels(
-          fontFamily: string,
+          fontFamily: string | undefined,
           pinnedGroups: ReadonlySet<string> = new Set(),
           width = self.canvasWidth,
         ): PlacedLaneLabel[] {

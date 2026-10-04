@@ -53,7 +53,7 @@ function drawnNames(
   labelOf: (feature: Feature) => GeneLabel | undefined,
   groups: ReadonlyMap<string, string> | undefined,
   width: number,
-  fontFamily: string,
+  fontFamily: string | undefined,
 ) {
   const out: DrawnName[] = boxes
     .filter(b => b.right >= 0 && b.left <= width)
@@ -101,7 +101,7 @@ export function placeLaneLabels({
   glyphHeight: number
   width: number
   height: number
-  fontFamily: string
+  fontFamily: string | undefined
 }): PlacedLaneLabel[] {
   const candidates: Candidate[] = []
   for (const [row, lane] of lanes.entries()) {

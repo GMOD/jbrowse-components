@@ -9,15 +9,12 @@ import type { LaneHeaderRow } from '../laneHeader.ts'
 export function SvgLaneHeaders({
   rows,
   width,
-  fontFamily,
 }: {
   rows: LaneHeaderRow[]
   width: number
-  fontFamily: string
 }) {
   const text = {
     fontSize: LABEL_FONT_SIZE,
-    fontFamily,
     halo: bandGroundColor(),
     haloWidth: GENE_LABEL_HALO_PX * 2,
   }

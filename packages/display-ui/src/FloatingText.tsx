@@ -67,8 +67,9 @@ export function FloatingText({
  * The same line in an SVG export: two `<text>`s at the baseline `y`, a stroke
  * in the surface colour under the glyphs, since SVG paints stroke over fill
  * and a thick stroke beneath a second copy is how a halo is drawn there. Both
- * carry the size and family explicitly, because a `<text>` with neither takes
- * SVG's 16px default in a saved file.
+ * carry the size, because a `<text>` without one takes SVG's 16px default in a
+ * saved file. An export leaves `fontFamily` out, so the label inherits the
+ * family the export dialog put on the root.
  */
 export function SvgHaloText({
   x,
@@ -87,7 +88,7 @@ export function SvgHaloText({
   halo: string
   haloWidth: number | string
   fontSize: number
-  fontFamily: string
+  fontFamily?: string
   anchor?: 'start' | 'middle' | 'end'
   children: ReactNode
 }) {

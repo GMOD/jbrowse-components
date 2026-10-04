@@ -173,7 +173,7 @@ test('the export prints the lane names, and none with names off', async () => {
   )
 })
 
-test('the export draws lane headers and names in band ink over a band-ground halo, in a dark theme too', async () => {
+test('the export draws lane headers and names in band ink over a band-ground halo, in a dark theme too, inheriting the export font', async () => {
   const display = createDisplay()
   await when(() => display.features !== undefined, { timeout: 5000 })
   display.setFeatures([
@@ -207,11 +207,12 @@ test('the export draws lane headers and names in band ink over a band-ground hal
       .map(([, attrs]) => ({
         stroke: /stroke="([^"]*)"/.exec(attrs!)?.[1],
         fill: /fill="([^"]*)"/.exec(attrs!)?.[1],
+        font: /font-family="([^"]*)"/.exec(attrs!)?.[1],
       }))
   for (const text of ['volvox_random', 'galF_mate']) {
     expect(drawn(text)).toEqual([
-      { stroke: bandGroundColor(), fill: undefined },
-      { stroke: undefined, fill: bandInk().text },
+      { stroke: bandGroundColor(), fill: undefined, font: undefined },
+      { stroke: undefined, fill: bandInk().text, font: undefined },
     ])
   }
 })
