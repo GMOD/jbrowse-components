@@ -2080,7 +2080,7 @@ export const figureFrames: Record<
   },
   "dog10k-nhej1-cea-deletion": {
     "width": 1500,
-    "height": 1003,
+    "height": 1024,
     "timeout": 90000
   },
   "dog10k-amy2b-duplication": {

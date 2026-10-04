@@ -762,8 +762,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr37',
     readyTimeout: 90000,
-    // gene track, the OMIA lane, all 36 sample rows and the genotype legend
-    viewportHeight: 1003,
+    // gene track, the OMIA lane, all 36 sample rows down to the last wolf's,
+    // and the genotype legend
+    viewportHeight: 1024,
     // What the deletion does, beside the column that carries it. The legend can
     // say "homozygous alt" but not that homozygous is the affected state: CEA is
     // recessive (Parker et al. 2007; OMIA 000218-9615), so the dark cells are

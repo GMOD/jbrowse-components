@@ -82,7 +82,7 @@ jq -n \
       | map(select(.trackId | endswith("ncbiRefSeq")))) + [{
       type: "SyntenyTrack",
       trackId: "sim_vs_mau",
-      name: "D. simulans vs D. mauritiana (minimap2 asm10)",
+      name: "D. simulans vs D. mauritiana (minimap2 asm20)",
       assemblyNames: [$sim, $mau],
       adapter: {
         type: "PairwiseIndexedPAFAdapter",
