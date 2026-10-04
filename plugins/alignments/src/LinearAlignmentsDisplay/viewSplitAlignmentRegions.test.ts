@@ -3,7 +3,7 @@ import {
   viewSplitAlignmentRegionsInCurrentView,
 } from './viewSplitAlignmentRegions.ts'
 
-import type { LinkedReadsMode } from './constants.ts'
+import type { AlignmentsUnit } from './constants.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -80,16 +80,16 @@ jest.mock('@jbrowse/core/util', () => ({
   getDialogHost: (node: { session: unknown }) => node.session,
 }))
 
-function makeDisplay(linkedReads: LinkedReadsMode = 'off') {
-  const modes: LinkedReadsMode[] = []
+function makeDisplay(unit: AlignmentsUnit = 'read') {
+  const modes: AlignmentsUnit[] = []
   return {
     modes,
     display: {
-      get linkedReads() {
-        return modes.at(-1) ?? linkedReads
+      get unit() {
+        return modes.at(-1) ?? unit
       },
-      setLinkedReads(mode: LinkedReadsMode) {
-        modes.push(mode)
+      setUnit(next: AlignmentsUnit) {
+        modes.push(next)
       },
     },
   }
@@ -113,13 +113,9 @@ const fusion = makeFeature({
   tags: { SA: 'chr9,20001,+,500S300M,60,0;' },
 })
 
-function run(
-  feature: Feature,
-  linkedReads: LinkedReadsMode = 'off',
-  assembly = HG38,
-) {
+function run(feature: Feature, unit: AlignmentsUnit = 'read', assembly = HG38) {
   const { view, displayed, notifications, undos } = makeView(assembly)
-  const { display, modes } = makeDisplay(linkedReads)
+  const { display, modes } = makeDisplay(unit)
   viewSplitAlignmentRegionsInCurrentView({
     view: view as unknown as LinearGenomeViewModel,
     display,
@@ -230,16 +226,16 @@ test('integer-like refNames keep read order', () => {
     CIGAR: '500M300S',
     tags: { SA: '1,20001,+,500S300M,60,0;' },
   })
-  const { regions } = run(ensembl, 'off', ENSEMBL)
+  const { regions } = run(ensembl, 'read', ENSEMBL)
   expect(regions!.map(r => r.refName)).toEqual(['9', '1'])
 })
 
 test('enters chain layout and Undo leaves it again', () => {
   const { modes, undos, notifications, view } = run(fusion)
-  expect(modes).toEqual(['normal'])
+  expect(modes).toEqual(['chain'])
   expect(notifications).toEqual(['Showing 2 aligned segments of this read'])
   undos[0]!()
-  expect(modes).toEqual(['normal', 'off'])
+  expect(modes).toEqual(['chain', 'read'])
   expect(view.displayedRegions).toEqual([])
 })
 
@@ -261,7 +257,7 @@ test('counts the regions the view shows, after touching ones merge', () => {
 })
 
 test('leaves chain layout alone when it was already on', () => {
-  const { modes, undos } = run(fusion, 'normal')
+  const { modes, undos } = run(fusion, 'chain')
   expect(modes).toEqual([])
   undos[0]!()
   expect(modes).toEqual([])

@@ -74,7 +74,7 @@ const suite: TestSuite = {
           trackId: 'volvox-long-reads-sv-bam',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            linkedReads: 'normal',
+            unit: 'chain',
           },
         },
       ],

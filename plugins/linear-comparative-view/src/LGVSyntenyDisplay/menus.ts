@@ -18,7 +18,7 @@ import type {
 interface GroupByModel {
   facet?: Facet
   setFacet: (facet?: Facet) => void
-  // A synteny track carries the inherited `linkedReads` slot, so chain layout is
+  // A synteny track carries the inherited `unit` slot, so chain layout is
   // reachable here from a config or session even though this menu offers no way
   // in. `groupByRadioMenuItem` needs it to drop the per-read dimensions the
   // worker would degrade to ungrouped.

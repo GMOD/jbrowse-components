@@ -206,13 +206,13 @@ describe('keySectionOrder', () => {
 // Toggling "view as pairs" auto-switches coloring for the common case but must
 // not stomp on a color scheme the user picked deliberately (regression guard —
 // the auto-switch previously overwrote colorBy unconditionally).
-describe('setLinkedReads color scheme preservation', () => {
+describe('setUnit color scheme preservation', () => {
   test('entering pairs nudges the plain default to insert-size-and-orientation', () => {
     const display = createDisplay()
     expect(display.colorBy.type).toBe('normal')
 
-    display.setLinkedReads('normal')
-    expect(display.linkedReads).toBe('normal')
+    display.setUnit('chain')
+    expect(display.unit).toBe('chain')
     expect(display.colorBy.type).toBe('insertSizeAndOrientation')
   })
 
@@ -220,7 +220,7 @@ describe('setLinkedReads color scheme preservation', () => {
     const display = createDisplay()
     display.setBaseLayer({ type: 'modifications' })
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.colorBy.type).toBe('normal')
     expect(display.bodyColorScheme).toBe('modifications')
   })
@@ -229,18 +229,18 @@ describe('setLinkedReads color scheme preservation', () => {
     const display = createDisplay()
     display.setColorBy({ type: 'tag', tag: 'HP' })
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.colorBy.type).toBe('tag')
     expect(display.colorBy.tag).toBe('HP')
   })
 
   test('leaving pairs swaps the SV-signal fill back to normal', () => {
     const display = createDisplay()
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.colorBy.type).toBe('insertSizeAndOrientation')
 
-    display.setLinkedReads('off')
-    expect(display.linkedReads).toBe('off')
+    display.setUnit('read')
+    expect(display.unit).toBe('read')
     expect(display.colorBy.type).toBe('normal')
   })
 
@@ -250,18 +250,18 @@ describe('setLinkedReads color scheme preservation', () => {
     const display = createDisplay()
     display.setColorBy({ type: 'firstOfPairStrand' })
 
-    display.setLinkedReads('normal')
-    display.setLinkedReads('off')
+    display.setUnit('chain')
+    display.setUnit('read')
     expect(display.colorBy.type).toBe('firstOfPairStrand')
   })
 
   test('leaving pairs preserves an explicit non-pairing color scheme', () => {
     const display = createDisplay()
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     display.setColorBy({ type: 'tag', tag: 'HP' })
 
-    display.setLinkedReads('off')
-    expect(display.linkedReads).toBe('off')
+    display.setUnit('read')
+    expect(display.unit).toBe('read')
     expect(display.colorBy.type).toBe('tag')
     expect(display.colorBy.tag).toBe('HP')
   })
@@ -504,10 +504,10 @@ describe('sortedBy refName normalization', () => {
 describe('ordering controls in chain mode', () => {
   test('"Sort by..." greys out, naming chain mode as the reason', () => {
     const display = createDisplay()
-    display.setLinkedReads('off')
+    display.setUnit('read')
     expect(display.canSortReads).toBe(true)
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.canSortReads).toBe(false)
     const item = findMenuItem(display.trackMenuItems(), 'Sort by...')
     expect(item?.disabled).toBe(true)
@@ -525,7 +525,7 @@ describe('ordering controls in chain mode', () => {
   // the flag is spelled.
   test('"Supplementary / split reads" greys out until chain mode is on', () => {
     const display = createDisplay()
-    display.setLinkedReads('off')
+    display.setUnit('read')
     const off = findMenuItem(
       display.trackMenuItems(),
       'Supplementary / split reads',
@@ -533,7 +533,7 @@ describe('ordering controls in chain mode', () => {
     expect(off?.disabled).toBe(true)
     expect(off?.disabledHelpText).toMatch(/View as pairs/)
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(
       findMenuItem(display.trackMenuItems(), 'Supplementary / split reads')
         ?.disabled,
@@ -550,7 +550,7 @@ describe('ordering controls in chain mode', () => {
     })
     expect(hasMenuItem(display.contextMenuItems(), 'Sort by')).toBe(true)
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(hasMenuItem(display.contextMenuItems(), 'Sort by')).toBe(false)
     // the rest of the menu is untouched — only the ordering rows go
     expect(
@@ -571,7 +571,7 @@ describe('ordering controls in chain mode', () => {
     })
     expect(display.rpcProps().sortTag).toBe('HP')
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.rpcProps().sortTag).toBeUndefined()
   })
 
@@ -584,7 +584,7 @@ describe('ordering controls in chain mode', () => {
     display.setFacet({ field: 'strand' })
     expect(display.rpcProps().facet).toEqual({ field: 'strand' })
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.rpcProps().facet).toBeUndefined()
 
     // a chain-groupable dimension still reaches the worker, keeping chains whole
@@ -611,7 +611,7 @@ describe('ordering controls in chain mode', () => {
       hasMenuItem(display.trackMenuItems(), 'Collapse groups to one row'),
     ).toBe(true)
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     // the grouping survives — `tag` is chain-consistent — so this is the
     // collapse alone stepping aside, not the whole grouping degrading
     expect(display.prefersOffset).toBe(true)
@@ -624,7 +624,7 @@ describe('ordering controls in chain mode', () => {
 
   test('toggling soft clipping in chain mode leaves the fetch key alone', () => {
     const display = createDisplay()
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     const before = JSON.stringify(display.rpcProps())
 
     display.setShowSoftClipping(true)
@@ -633,7 +633,7 @@ describe('ordering controls in chain mode', () => {
     expect(JSON.stringify(display.rpcProps())).toBe(before)
 
     // ...and it is a real fetch input again the moment the mode is left
-    display.setLinkedReads('off')
+    display.setUnit('read')
     expect(display.rpcProps().showSoftClipping).toBe(true)
   })
 })
@@ -685,14 +685,14 @@ describe('chain mode is a main-thread tier', () => {
       'readChainIndices',
     )
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(JSON.stringify(display.rpcProps())).toBe(fetchKey)
     expect(display.rpcDataMap.size).toBe(1)
     expect(rows(display)).toEqual([0, 0])
     expect([...laidOut(display).connectingLinePositions]).toEqual([100, 250])
     expect(display.readIdsByChainName.get('frag')).toEqual(['id0', 'id1'])
 
-    display.setLinkedReads('off')
+    display.setUnit('read')
     expect(rows(display)).toEqual([0, 1])
     expect(display.readIdsByChainName.size).toBe(0)
   })
@@ -700,7 +700,7 @@ describe('chain mode is a main-thread tier', () => {
   test('the toggle leaves the chain-free tier alone', () => {
     const display = matesDisplay()
     const raw = display.rawDataByGroup
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.rawDataByGroup).toBe(raw)
   })
 
@@ -709,7 +709,7 @@ describe('chain mode is a main-thread tier', () => {
     display.setFacet({ field: 'tags.HP' })
     const fetchKey = JSON.stringify(display.rpcProps())
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(JSON.stringify(display.rpcProps())).not.toBe(fetchKey)
     expect(display.rpcProps().facet).toEqual({
       field: 'tags.HP',
@@ -728,7 +728,7 @@ describe('cross-region chain connectors', () => {
     const display = createDisplay()
     expect(display.bezierArcScope).toBe('none')
 
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.bezierArcScope).toBe('crossRegion')
   })
 
@@ -738,7 +738,7 @@ describe('cross-region chain connectors', () => {
     expect(display.bezierArcScope).toBe('all')
 
     // and chain mode doesn't narrow an explicit choice
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.bezierArcScope).toBe('all')
   })
 })
@@ -1695,7 +1695,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     display.setFacet({ field: 'mapq' })
     seedGroups(display, [{ key: '0', label: 'MAPQ 30+ (high confidence)' }])
     display.toggleGroupCollapsed('0')
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.effectiveFacet).toBeUndefined()
     expect(display.collapsedGroups.has('0')).toBe(false)
   })
@@ -1774,7 +1774,7 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
     ),
   )('%s fill under the %s layer', (_fill, _layer, fill, layer) => {
     const display = createDisplay()
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     display.setColorBy(fill)
     display.setBaseLayer(layer)
     const baked = applyReadColorsByGroup(

@@ -547,7 +547,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     // does), so the reverse-strand core paints blue between the red forward
     // flanks — the inversion is legible in the pileup itself, not only in the
     // arcs.
-    'linkedReads:normal',
+    'unit:chain',
     // Split the pileup on SA-tag presence, as inversion_long_read does
     // (reviewer): the reads that cross the two breakpoints get their own
     // labelled section under the arcs, and the flat background pileup goes

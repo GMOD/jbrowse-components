@@ -98,7 +98,7 @@ export type { SashimiArcSection } from './LinearAlignmentsDisplay/components/sas
 export type { ScrollModel } from './LinearAlignmentsDisplay/components/sectionScreen.ts'
 export type { TooltipPayload } from './LinearAlignmentsDisplay/components/tooltipUtils.ts'
 export type {
-  LinkedReadsMode,
+  AlignmentsUnit,
   ReadConnectionsMode,
   SashimiArcsMode,
 } from './LinearAlignmentsDisplay/constants.ts'

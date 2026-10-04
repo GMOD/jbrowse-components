@@ -251,13 +251,13 @@ Each of these cost a refilm, and the run reports none of them.
   `config/settings_to_json`, and a `PageDown` to the end is deterministic and
   stops one screen past the thing you wanted. That tour dropped the scroll and
   got shorter and clearer. Film the route; let the page carry what it produced.
-- **An action that writes one setting can write another.** `setLinkedReads`
-  nudges a `colorBy` still at `normal` to `insertSizeAndOrientation` as it
-  enters chain mode, so a tour taking a page's settings in the order the page
-  lists them filmed a menu being opened to pick a radio the app had already
-  filled in — a click that changes nothing, reported as success. The frame that
-  says so is the menu BEFORE the click: a radio already selected is the tell,
-  and the fix is usually the ORDER, on the page as well as in the spec.
+- **An action that writes one setting can write another.** `setUnit` nudges a
+  `colorBy` still at `normal` to `insertSizeAndOrientation` as it enters chain
+  mode, so a tour taking a page's settings in the order the page lists them
+  filmed a menu being opened to pick a radio the app had already filled in — a
+  click that changes nothing, reported as success. The frame that says so is the
+  menu BEFORE the click: a radio already selected is the tell, and the fix is
+  usually the ORDER, on the page as well as in the spec.
 - **The run cannot see which state a tour is left standing in.**
   `PAGE BACKGROUND UNDER THE APP` measures the TALLEST state against the frame,
   so a tour that grows the app in the middle and shrinks back reports clean
@@ -333,7 +333,7 @@ Each of these cost a refilm, and the run reports none of them.
   anyone read. Write the path the page prints, not the path you verified in the
   source, and let the run disagree.
 - **Check whether the app already did the next step for you.** An action that
-  writes one setting can nudge another (`setLinkedReads` sets `colorBy` on the
-  way into chain mode), so a tour taking a page's bullets in order can film a
-  click that changes nothing and report success. The frame to pull is the menu
-  BEFORE the click: a radio already filled in is the tell.
+  writes one setting can nudge another (`setUnit` sets `colorBy` on the way into
+  chain mode), so a tour taking a page's bullets in order can film a click that
+  changes nothing and report success. The frame to pull is the menu BEFORE the
+  click: a radio already filled in is the tell.

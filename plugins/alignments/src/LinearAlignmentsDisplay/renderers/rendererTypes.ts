@@ -65,9 +65,8 @@ export interface RenderState {
   // repaints its divs and not the canvas.
   // Color palette from theme
   colors: ColorPalette
-  // Chain (linked-reads) layout is active. The `linkedReads` enum stops at the
-  // model — renderers only ever ask the yes/no question, so they get the
-  // already-resolved `isChainMode` and the two spellings can't drift.
+  // The display's `unit` is 'chain'. A shader uniform is an int at the GPU
+  // boundary, so the unit stops at the model and renderers get the boolean.
   chainMode: boolean
   // Straight-line pass connecting normal read-pairs in pileup layout.
   // True when bezier connections are on AND chain mode is off (pileup).

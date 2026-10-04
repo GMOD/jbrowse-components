@@ -12,7 +12,7 @@ import { alignmentsArcColorConfigSchema } from './alignmentsArcColorConfigSchema
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
 import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
 import {
-  LINKED_READS_MODES,
+  ALIGNMENTS_UNITS,
   READ_CONNECTIONS_MODES,
   SASHIMI_ARCS_MODES,
 } from './constants.ts'
@@ -73,7 +73,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   displayDefaults: {
  *     height: 400,
  *     showSoftClipping: true,
- *     linkedReads: 'normal',
+ *     unit: 'chain',
  *     readConnections: 'arc',
  *   },
  * }
@@ -302,16 +302,13 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      linkedReads: {
+      unit: {
         type: 'stringEnum',
-        model: types.enumeration('LinkedReadsMode', [...LINKED_READS_MODES]),
-        defaultValue: 'off',
-        // Chains by QNAME — mates plus supplementary (split) segments onto one
-        // row. NOT a linked-read barcode (BX/MI) grouping, which this has never
-        // done and which the old wording ('barcode-chain') sent readers looking
-        // for. The menu row is "View as pairs / link supplementary alignments".
+        model: types.enumeration('AlignmentsUnit', [...ALIGNMENTS_UNITS]),
+        defaultValue: 'read',
+        // A chain joins by QNAME, never by a BX/MI linked-read barcode.
         description:
-          'View as pairs / link supplementary alignments: put a read, its mate and its split segments on one row',
+          'What one row stands for: a read, or a chain of a read, its mate and its split segments (the "View as pairs" menu row)',
       },
       /**
        * #slot
@@ -540,9 +537,15 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       explicitlyTyped: true,
       // v4's `colorBy` named a scheme and held the modification settings,
       // which are the `color` or `baseColor` object's field and the
-      // `modifications` slot now.
+      // `modifications` slot now. The v5 betas spelled `unit` as
+      // `linkedReads: 'off' | 'normal'`.
       // #region retired
-      retired: { colorBy: colorSlotsOf },
+      retired: {
+        colorBy: colorSlotsOf,
+        linkedReads: (v: unknown) => ({
+          unit: v === 'normal' ? 'chain' : 'read',
+        }),
+      },
       // #endregion
     },
   )

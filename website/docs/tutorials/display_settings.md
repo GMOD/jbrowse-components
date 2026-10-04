@@ -68,7 +68,7 @@ the id of the track you edited:
       {
         "displayId": "volvox_sv_cram-LinearAlignmentsDisplay",
         "height": 250,
-        "linkedReads": "normal",
+        "unit": "chain",
         "color": { "field": "insertSizeAndOrientation" }
       }
     ]
@@ -88,7 +88,7 @@ edit, and reopening the file restores every setting.
 
 </details>
 
-`height`, `linkedReads` and `color` are the setting names in both apps. The
+`height`, `unit` and `color` are the setting names in both apps. The
 [config schema docs](/docs/config_guide) list the names each display takes (e.g.
 [](/docs/config/linearalignmentsdisplay), [](/docs/config/linearwiggledisplay))
 and the values each accepts. The same read-back finds the key for any other
@@ -109,7 +109,7 @@ track's `displayDefaults` apply every time the track loads, and in a served
   "assemblyNames": ["volvox"],
   "displayDefaults": {
     "height": 250,
-    "linkedReads": "normal",
+    "unit": "chain",
     "color": { "field": "insertSizeAndOrientation" }
   }
 }
@@ -182,7 +182,7 @@ view: {
       trackId: 'volvox_sv_cram',
       type: 'LinearAlignmentsDisplay',
       height: 250,
-      linkedReads: 'normal',
+      unit: 'chain',
       color: { field: 'insertSizeAndOrientation' },
     },
   ],

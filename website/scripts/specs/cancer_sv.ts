@@ -681,7 +681,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   trackId: TUMOUR,
                   ...DEEP_ONT,
                   filterBy: { split: 'only' },
-                  linkedReads: 'normal',
+                  unit: 'chain',
                   showBezierConnections: true,
                   flipStrandLongReadChains: false,
                   heightMode: 'grow',
@@ -817,7 +817,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // 25,359,568, which is the tear, said once. Same subset and
                 // the same reason as the sibling lane on derivative_synteny:
                 // split alignments only.
-                // `linkedReads` (reviewer: "please enable 'view as
+                // `unit: 'chain'` (reviewer: "please enable 'view as
                 // pairs/link supplementary reads' in first row"). At this zoom
                 // it is the whole comparison in one lane: a molecule's pieces
                 // share a row across the three windows, so the row breaks
@@ -827,7 +827,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   trackId: TUMOUR,
                   ...DEEP_ONT,
                   filterBy: { split: 'only' },
-                  linkedReads: 'normal',
+                  unit: 'chain',
                   // Chain mode alone joins only the pieces that straddle two
                   // panels (`bezierArcScope` 'crossRegion'); this adds the
                   // inverted and hidden-segment joins inside one panel, as on
@@ -966,7 +966,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // "single-end" half of that claim stands and view-as-pairs is
                 // still not the lever -- but a third of the lane was competing
                 // placements and another quarter was split segments, both drawn
-                // as though each were its own molecule. `linkedReads` and the
+                // as though each were its own molecule. `unit: 'chain'` and the
                 // secondary filter below are the fix; see the sibling lane on
                 // derivative_synteny, where the same file over the whole allele
                 // is 53 non-secondary records from 29 molecules.
@@ -1028,7 +1028,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // depth the sentence is about, flat across all four
                   // junctions.
                   coverageHeight: 40,
-                  linkedReads: 'normal',
+                  unit: 'chain',
                   filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
               ],
@@ -1440,7 +1440,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // the page, so a molecule is read across a gap that is not the gap the fusion
   // closes.
   //
-  // Side by side with `linkedReads: 'normal'`, chain layout merges each
+  // Side by side with `unit: 'chain'`, chain layout merges each
   // molecule's two alignments onto ONE row across the two displayed regions
   // (`mergeChains`), so the connectors go flat and the row count halves. Same
   // layout as `k562_bcr_abl_split`, on the other side of the same amplicon, and
@@ -1524,7 +1524,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // a read whose chr9 alignment has a chr22 supplementary IS the
           // fusion's support, so every remaining row crosses the junction
           filterBy: { split: 'only' },
-          linkedReads: 'normal',
+          unit: 'chain',
           // THE LEGEND, WHICH IS THE ANSWER TO "unclear why the reads are
           // red/pink on the left but not on the right" (review). The colours
           // are not a scheme this spec picked, which is why nothing in the spec
@@ -1712,7 +1712,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           showSashimiArcs: false,
           filterBy: { split: 'only' },
           // one row per molecule across both regions -- see the note above
-          linkedReads: 'normal',
+          unit: 'chain',
           showBezierConnections: true,
           // The connectors' TOTAL, beside the connectors themselves. A
           // connector per molecule shows the junction is real and cannot show

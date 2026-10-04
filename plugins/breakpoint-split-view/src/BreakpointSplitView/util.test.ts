@@ -66,12 +66,12 @@ describe('layoutUnknown', () => {
 
 describe('linksOwnReads', () => {
   test('chained rows link every read in the row', () => {
-    expect(linksOwnReads({ height: 100, linkedReads: 'normal' })).toBe(true)
+    expect(linksOwnReads({ height: 100, unit: 'chain' })).toBe(true)
   })
 
   test('curved connectors on every pair link them too', () => {
     expect(
-      linksOwnReads({ height: 100, linkedReads: 'off', bezierArcScope: 'all' }),
+      linksOwnReads({ height: 100, unit: 'read', bezierArcScope: 'all' }),
     ).toBe(true)
   })
 
@@ -79,7 +79,7 @@ describe('linksOwnReads', () => {
     expect(
       linksOwnReads({
         height: 100,
-        linkedReads: 'off',
+        unit: 'read',
         bezierArcScope: 'crossRegion',
       }),
     ).toBe(false)

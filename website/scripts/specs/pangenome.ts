@@ -521,14 +521,14 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // window carries the paired flag -- but LINK SUPPLEMENTARY does:
               // 18 of them carry an SA tag, 10 supplementary alignments land
               // here, and 18 of the 22 SA segments map back into 2.5-2.6 Mb, so
-              // the chains are local. `linkedReads: 'normal'` is the one setting
+              // the chains are local. `unit: 'chain'` is the one setting
               // behind both menu items; on unpaired reads it chains a read's own
               // supplementary segments. That says something the CIGAR deletion
               // cannot: which reads cross the prophage boundary in one piece and
               // which are split at it.
-              linkedReads: 'normal',
+              unit: 'chain',
               // GROUPED ON THE SAME FACT the links draw (reviewer:
-              // "potentially use groupBy split reads/sa tag"). `linkedReads`
+              // "potentially use groupBy split reads/sa tag"). `unit: 'chain'`
               // chains a read's supplementary segments, which says which reads
               // are split at the prophage boundary, but the split and unsplit
               // reads are interleaved down the pileup so the answer has to be

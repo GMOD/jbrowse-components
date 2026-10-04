@@ -28,7 +28,7 @@ import type { Feature } from '@jbrowse/core/util'
  * empty name. Keyed by that name they became ONE chain — every block in the
  * region on a single row, a connecting line across the whole view, and
  * `buildChainOverlaps` tinting the lot — the moment a config or session set
- * `linkedReads: 'normal'`, which LGVSyntenyDisplay publishes as a slot. Nothing
+ * `unit: 'chain'`, which LGVSyntenyDisplay publishes as a slot. Nothing
  * links a nameless feature to another, so a singleton chain is the honest
  * answer, and it is the same answer for the ordinary case of a SAM record whose
  * QNAME the source dropped.

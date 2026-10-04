@@ -223,7 +223,7 @@ import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema'
 import type {
-  LinkedReadsMode,
+  AlignmentsUnit,
   ReadConnectionsMode,
   SashimiArcsMode,
 } from './constants.ts'
@@ -358,7 +358,7 @@ export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
  *       type: 'LinearAlignmentsDisplay',
  *       displayId: 'long_reads-LinearAlignmentsDisplay',
  *       height: 400,
- *       linkedReads: 'normal',
+ *       unit: 'chain',
  *       readConnections: 'arc',
  *     },
  *   ],
@@ -523,7 +523,7 @@ export default function stateModelFactory(
          * #getter
          */
         get isChainMode() {
-          return self.linkedReads === 'normal'
+          return self.unit === 'chain'
         },
 
         /**
@@ -3922,19 +3922,14 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Chain mode restacks the whole pileup — rows become chains — so the
-           * scroll offset names nothing after the flip, and the `scrollableHeight`
-           * clamp only catches the half of that where the new stack is shorter.
+           * A new unit restacks the whole pileup, so the scroll offset names
+           * nothing after the flip, and the `scrollableHeight` clamp only
+           * catches the half of that where the new stack is shorter.
            */
-          setLinkedReads(mode: LinkedReadsMode) {
-            const prev = self.linkedReads
-            setConf(self, 'linkedReads', mode)
-            // `LINKED_READS_MODES` is a two-member enum, so this is the whole of
-            // "the mode changed". The two separate guards this replaces —
-            // leaving 'normal', and crossing 'off' — were written when a third
-            // member ('bezier', now the orthogonal `showBezierConnections` flag)
-            // made them distinct questions, and both reduce to this one.
-            if (prev === mode) {
+          setUnit(unit: AlignmentsUnit) {
+            const prev = self.unit
+            setConf(self, 'unit', unit)
+            if (prev === unit) {
               return
             }
             self.scrollTop = 0
@@ -3945,7 +3940,7 @@ export default function stateModelFactory(
             // a per-base layer is the backdrop its marks read against, so
             // neither direction swaps there.
             const [from, to] =
-              mode === 'off'
+              unit === 'read'
                 ? (['insertSizeAndOrientation', 'normal'] as const)
                 : (['normal', 'insertSizeAndOrientation'] as const)
             if (self.colorBy.type === from && !self.baseLayer) {

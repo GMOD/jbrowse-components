@@ -11,7 +11,7 @@ import { showRegionsWithUndo } from '@jbrowse/plugin-linear-genome-view'
 import { extractFeatureTagValue } from '../shared/extractFeatureTagValue.ts'
 import { getStrand } from '../shared/util.ts'
 
-import type { LinkedReadsMode } from './constants.ts'
+import type { AlignmentsUnit } from './constants.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -52,9 +52,9 @@ export function splitAlignmentSegments(feature: Feature): AlignedSegment[] {
   return [own, ...others].sort((a, b) => a.clip - b.clip)
 }
 
-interface LinkedReadsDisplay {
-  linkedReads: LinkedReadsMode
-  setLinkedReads: (mode: LinkedReadsMode) => void
+interface UnitDisplay {
+  unit: AlignmentsUnit
+  setUnit: (unit: AlignmentsUnit) => void
 }
 
 function windowsInReadOrder(regions: Region[]) {
@@ -92,7 +92,7 @@ export function viewSplitAlignmentRegionsInCurrentView({
   segments,
 }: {
   view: LinearGenomeViewModel
-  display: LinkedReadsDisplay
+  display: UnitDisplay
   segments: AlignedSegment[]
 }) {
   const session = getSession(view)
@@ -122,9 +122,9 @@ export function viewSplitAlignmentRegionsInCurrentView({
   const dropped = loci.filter(locus => locus.region === undefined)
   const pastEnd = dropped.filter(locus => locus.onAssembly)
   const unlisted = dropped.filter(locus => !locus.onAssembly)
-  const wasLinked = display.linkedReads !== 'off'
+  const wasLinked = display.unit === 'chain'
   if (!wasLinked) {
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
   }
   const windows = windowsInReadOrder(regions)
   const shown = `Showing ${windows.length} aligned ${pluralize(windows.length, 'segment')} of this read`
@@ -145,7 +145,7 @@ export function viewSplitAlignmentRegionsInCurrentView({
     alsoUndo: wasLinked
       ? undefined
       : () => {
-          display.setLinkedReads('off')
+          display.setUnit('read')
         },
   })
 }

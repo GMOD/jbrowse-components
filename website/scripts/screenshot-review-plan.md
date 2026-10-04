@@ -429,7 +429,7 @@ tolerance ball for "did this figure move".
 - **NCBI gene tracks already in `config_demo.json`** (no rehosting needed):
   `ncbi_refseq_109_hg38_latest` (hg38), `ncbi_gff_hg19` (hg19). Add the trackId
   as the first entry in the session `tracks` array.
-- **View-as-pairs** = `linkedReads: 'normal'` in a `displaySnapshot`. The
+- **View-as-pairs** = `unit: 'chain'` in a `displaySnapshot`. The
   pairs→`insertSizeAndOrientation` coloring only auto-applies via the _menu
   action_, not on snapshot load — set `colorBy` explicitly in the snapshot too.
 - **Dotplot init fields** (top-level in the session view object, routed to

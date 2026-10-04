@@ -12,13 +12,13 @@ import {
 } from '../constants.ts'
 import { getSvChannelsMenuItem } from './svChannels.ts'
 
-import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
+import type { AlignmentsUnit, ReadConnectionsMode } from '../constants.ts'
 import type { SvChannelsModel } from './svChannels.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadConnectionsModel {
-  linkedReads: LinkedReadsMode
-  setLinkedReads: (mode: LinkedReadsMode) => void
+  unit: AlignmentsUnit
+  setUnit: (unit: AlignmentsUnit) => void
   readConnections: ReadConnectionsMode
   setReadConnections: (mode: ReadConnectionsMode) => void
   readConnectionsDown: boolean
@@ -59,14 +59,14 @@ const DEFAULT_READ_CONNECTIONS_LINE_WIDTH = 1
 export function getReadConnectionsMenuItem(
   model: ReadConnectionsModel & SvChannelsModel,
 ) {
-  const linked = model.linkedReads !== 'off'
+  const linked = model.unit === 'chain'
   const overlayActive = model.readConnections !== 'off'
   const subMenu: MenuItem[] = [
     checkboxItem(
       'View as pairs / link supplementary alignments',
       linked,
       () => {
-        model.setLinkedReads(linked ? 'off' : 'normal')
+        model.setUnit(linked ? 'read' : 'chain')
       },
     ),
     // One radio over the `readConnections` slot rather than an arcs checkbox

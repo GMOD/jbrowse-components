@@ -31,10 +31,17 @@ describe('alignments modifiers', () => {
     ).toMatchObject({ readConnections: 'arc', readConnectionsDown: true })
   })
 
-  test('linkedReads:bezier is the showBezierConnections overlay, not a layout mode', () => {
-    const { snap } = buildDisplaySnapshot('alignments', ['linkedReads:bezier'])
-    expect(snap.showBezierConnections).toBe(true)
-    expect(snap.linkedReads).toBeUndefined()
+  test('unit:chain sets the unit and leaves the bezier overlay alone', () => {
+    const { snap } = buildDisplaySnapshot('alignments', ['unit:chain'])
+    expect(snap.unit).toBe('chain')
+    expect(snap.showBezierConnections).toBeUndefined()
+  })
+
+  test('the curved-connector overlay is a slot write', () => {
+    const { snap } = buildDisplaySnapshot('alignments', [
+      'showBezierConnections=true',
+    ])
+    expect(snap).toMatchObject({ showBezierConnections: true })
   })
 
   test('sashimi:off hides arcs; sashimi:down sets mode', () => {
@@ -552,7 +559,7 @@ describe('modifier values are validated the same way everywhere', () => {
     ['alignments', 'arcs', /Missing arcs/],
     ['alignments', 'arcs:upp', /Invalid arcs value "upp"/],
     ['alignments', 'sashimi:downn', /Invalid sashimi/],
-    ['alignments', 'linkedReads:bezierr', /Invalid linkedReads/],
+    ['alignments', 'unit:normal', /Invalid unit/],
     ['alignments', 'coverage:ture', /Invalid coverage value "ture"/],
     ['alignments', 'softClipping:0', /Invalid softClipping/],
     ['alignments', 'featureHeight:bogus', /Invalid featureHeight/],

@@ -680,7 +680,7 @@ export const svSpecs: ScreenshotSpec[] = [
   },
 
   // Inverted duplication (CPX/INVdup HGSV_2721) on real 1000-genomes data: the
-  // HG02768 CRAM with linkedReads (mates drawn connected on one row) plus arc
+  // HG02768 CRAM with `unit: 'chain'` (mates drawn connected on one row) plus arc
   // read-connections and pair-orientation coloring makes the overlapping
   // inversion / tandem-dup pairing pattern visible, alongside the 1KGP ensemble
   // VCF call.
@@ -716,7 +716,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'HG02768.final',
               type: 'LinearAlignmentsDisplay',
-              linkedReads: 'normal',
+              unit: 'chain',
               readConnections: 'arc',
               // arcs drawn below the coverage band (reviewer)
               readConnectionsDown: true,
@@ -937,7 +937,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // link supplementary alignments: chains each long read's split
               // segments, so the reverse-strand core paints its flipped-strand
               // color inline between the forward flanks.
-              linkedReads: 'normal',
+              unit: 'chain',
               readConnections: 'arc',
               // Each inversion-spanning read's two split junctions land on the
               // two breakpoints (~1.2 kb apart, on-screen) and color magenta.
@@ -2267,13 +2267,13 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               // raw long-read pileup: the homozygous deletion is a
-              // clean read drop-out. linkedReads:'normal' chains each read's
+              // clean read drop-out. unit:'chain' chains each read's
               // supplementary/split alignments onto one row joined by a
               // connector ("add view as pairs / link supplementary
               // reads") so reads spanning the deletion breakpoints read as
               // coherent split alignments. (Reviewer also asked to sort the
               // split reads to the bottom of the pileup — no sort/group-by
-              // option supports that while linkedReads chain mode is active,
+              // option supports that while chain mode is active,
               // since a chain's members must share one group key and
               // "is-part-of-a-chain" isn't a groupable dimension; skipped.)
               trackId: 'hg008_t_reads_cdkn2a',
@@ -2286,7 +2286,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // packed stack; the old 520 was sized for fit-mode rows and left
               // two thirds of the track empty.
               //
-              // linkedReads is deliberately OFF here. Chaining each read to its
+              // `unit` is deliberately 'read' here. Chaining each read to its
               // supplementary segments draws a connector across the deletion,
               // and at 1px rows those connectors merge into a solid grey block
               // — the exact opposite of the drop-out the figure is about. The

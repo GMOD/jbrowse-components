@@ -267,7 +267,7 @@ interface DisplaySnapshot {
   readConnectionsDown?: boolean
   readConnectionsHeight?: number
   readConnectionsLineWidth?: number
-  linkedReads?: 'off' | 'normal'
+  unit?: 'read' | 'chain'
   showBezierConnections?: boolean
   showSashimiArcs?: boolean
   sashimiArcsMode?: 'up' | 'down' | 'auto'
@@ -655,17 +655,10 @@ const modifiers: Record<string, Modifier> = {
       }
     },
   },
-  linkedReads: {
+  unit: {
     on: ['alignments'],
     apply: (r, v) => {
-      // 'bezier' is the separate showBezierConnections overlay, not a
-      // linkedReads layout mode (which is only off|normal).
-      const mode = parseEnum('linkedReads', v, ['off', 'normal', 'bezier'])
-      if (mode === 'bezier') {
-        r.snap.showBezierConnections = true
-      } else {
-        r.snap.linkedReads = mode
-      }
+      r.snap.unit = parseEnum('unit', v, ['read', 'chain'] as const)
     },
   },
   sashimi: {

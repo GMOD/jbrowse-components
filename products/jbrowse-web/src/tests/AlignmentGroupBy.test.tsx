@@ -230,7 +230,7 @@ test('chain mode groups whole chains by HP tag into sections', async () => {
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
-  display.setLinkedReads('normal')
+  display.setUnit('chain')
   display.setFacet({ field: 'tags.HP' })
 
   await waitFor(
@@ -282,7 +282,7 @@ test('chain mode ignores a per-read group dimension (single section)', async () 
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
-  display.setLinkedReads('normal')
+  display.setUnit('chain')
   display.setFacet({ field: 'strand' })
 
   await waitFor(

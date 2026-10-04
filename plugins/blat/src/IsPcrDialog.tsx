@@ -94,7 +94,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
                   // the whole point, so it is on rather than a menu step away
                   displayDefaults: {
                     showCoverage: false,
-                    linkedReads: 'normal',
+                    unit: 'chain',
                   },
                 }
               : undefined,

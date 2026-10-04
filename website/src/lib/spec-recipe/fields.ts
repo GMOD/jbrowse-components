@@ -883,7 +883,7 @@ const CANVAS_DISPLAYS = new Set(['LinearBasicDisplay', 'LinearVariantDisplay'])
 // LD heatmap. They share one menu-item helper, so they share the label.
 const SQUASH_TO_HEIGHT_DISPLAYS = new Set(['LinearHicDisplay', 'LDTrackDisplay'])
 
-// linkedReads, drawInter, drawLongRange, readConnectionsHeight and sortedBy are
+// drawInter, drawLongRange, readConnectionsHeight and sortedBy are
 // declared by LinearAlignmentsDisplay and nothing else, so unlike the fields
 // above them the name settles the display on its own: an entry carrying one is
 // either that display or a spec naming a slot no display has. That is what lets
@@ -1426,10 +1426,11 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'The features-per-pixel ceiling above which the track asks before drawing. Nothing sets it from a menu, so it is raised on the config.',
         }
       : undefined,
-  linkedReads: (value, { displayType }) =>
-    typeof value === 'string' && isAlignmentsOnlyField(displayType)
+  unit: (value, { displayType }) =>
+    (value === 'read' || value === 'chain') &&
+    isAlignmentsOnlyField(displayType)
       ? {
-          path: `${READ_CONNECTIONS_MENU} → View as pairs / link supplementary alignments (${value === 'off' ? 'unchecked' : 'checked'})`,
+          path: `${READ_CONNECTIONS_MENU} → View as pairs / link supplementary alignments (${value === 'chain' ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   drawLongRange: (value, { displayType }) =>

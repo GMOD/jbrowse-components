@@ -8,9 +8,9 @@ import type { Facet } from '../../shared/types.ts'
 
 function makeModel() {
   return {
-    linkedReads: 'off' as 'off' | 'normal',
-    setLinkedReads(mode: 'off' | 'normal') {
-      this.linkedReads = mode
+    unit: 'read' as 'read' | 'chain',
+    setUnit(unit: 'read' | 'chain') {
+      this.unit = unit
     },
     readConnections: 'off' as 'off' | 'arc' | 'cloud',
     setReadConnections(mode?: 'off' | 'arc' | 'cloud') {
@@ -86,13 +86,13 @@ function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
 }
 
 describe('read connections menu', () => {
-  test('"View as pairs" row toggles linkedReads on/off', () => {
+  test('"View as pairs" row toggles unit between read and chain', () => {
     const model = makeModel()
     const label = 'View as pairs / link supplementary alignments'
     checkboxByLabel(model, label).onClick()
-    expect(model.linkedReads).toBe('normal')
+    expect(model.unit).toBe('chain')
     checkboxByLabel(model, label).onClick()
-    expect(model.linkedReads).toBe('off')
+    expect(model.unit).toBe('read')
   })
 
   // The overlay is one radio over the slot: arcs and the read cloud share a

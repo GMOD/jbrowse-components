@@ -54,22 +54,11 @@ export function colorSchemeIndexFor(type: ColorSchemeType) {
   return ColorScheme[COLOR_SCHEMES[type].shaderScheme]
 }
 
-// Linked-reads layout mode. 'off' → ordinary pileup; 'normal' → chain layout
-// grouping mates/supplementary alignments onto shared rows with connecting
-// lines. Bezier connection curves are orthogonal to layout (see the
-// `showBezierConnections` flag) and draw over either mode.
-//
-// The list is also the `linkedReads` config enumeration. One source so the
-// schema and the resolved type can't drift; likewise for the two below.
-//
-// It is two members, so "is chain layout on" is binary and `!== 'off'` (the
-// menu row) and `=== 'normal'` (the model's `isChainMode`) are the same
-// question. They were not always: a third member, 'bezier', is now the
-// orthogonal `showBezierConnections` flag. Adding a member means revisiting both
-// spellings and `setLinkedReads`, which currently treats any change as
-// entering-or-leaving chain mode.
-export const LINKED_READS_MODES = ['off', 'normal'] as const
-export type LinkedReadsMode = (typeof LINKED_READS_MODES)[number]
+// What one pileup row stands for: a read, or a chain of a read's mate and
+// split segments joined by QNAME. Bezier connection curves are the orthogonal
+// `showBezierConnections` flag and draw over either unit.
+export const ALIGNMENTS_UNITS = ['read', 'chain'] as const
+export type AlignmentsUnit = (typeof ALIGNMENTS_UNITS)[number]
 
 // How read connections (mate pairs + split/chimeric reads) are rendered.
 // Orthogonal to direction (readConnectionsDown): 'arc' draws regular arcs;

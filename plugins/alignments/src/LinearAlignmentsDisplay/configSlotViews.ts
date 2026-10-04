@@ -31,7 +31,7 @@ import type {
 } from '../shared/types.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema.ts'
 import type {
-  LinkedReadsMode,
+  AlignmentsUnit,
   ReadConnectionsMode,
   SashimiArcsMode,
 } from './constants.ts'
@@ -66,8 +66,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
   )
   return {
     /** #getter */
-    get linkedReads(): LinkedReadsMode {
-      return getConf(self, 'linkedReads')
+    get unit(): AlignmentsUnit {
+      return getConf(self, 'unit')
     },
     /** #getter */
     get showBezierConnections(): boolean {

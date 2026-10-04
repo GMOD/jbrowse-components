@@ -38,7 +38,7 @@ export const configVideos: VideoSpec[] = [
         say: 'From the track menu, color the reads by insert size and orientation',
         hold: 1200,
       },
-      // Colour goes first: `setLinkedReads` nudges a colorBy still at `normal`
+      // Colour goes first: `setUnit` nudges a colorBy still at `normal`
       // to `insertSizeAndOrientation`, so taking pairs first would film a click
       // on a radio the app had already filled in.
       {

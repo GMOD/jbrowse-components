@@ -40,7 +40,7 @@ import { queueSortByTagDialog } from './sortGroup.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { FilterBy } from '../../shared/types.ts'
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
-import type { LinkedReadsMode } from '../constants.ts'
+import type { AlignmentsUnit } from '../constants.ts'
 import type { FeatureLookupModel } from './contextMenuFeature.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
@@ -84,8 +84,8 @@ interface ContextMenuModel
   selectFeature: (feature: Feature) => void
   // Read by "Split current view to show split alignments", which enters chain
   // layout so the segments it lays side by side get their connector.
-  linkedReads: LinkedReadsMode
-  setLinkedReads: (mode: LinkedReadsMode) => void
+  unit: AlignmentsUnit
+  setUnit: (unit: AlignmentsUnit) => void
 }
 
 // SAM tags live under a `tags` object on the fetched feature, but a few

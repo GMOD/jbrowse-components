@@ -461,10 +461,10 @@ describe('alignments colorBy', () => {
     const { display } = createDisplay({
       color: { field: 'insertSizeAndOrientation', domain: ['150', '600'] },
     })
-    display.setLinkedReads('normal')
-    display.setLinkedReads('off')
+    display.setUnit('chain')
+    display.setUnit('read')
     expect(display.colorBy).toEqual({ type: 'normal' })
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
   })
 
@@ -500,26 +500,35 @@ describe('alignments colorBy', () => {
   // Leaving pairs mode discards the now-meaningless pairing scheme.
   it('leaving pairs resets colorBy to normal', () => {
     const { display } = createDisplay()
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     expect(display.colorBy.type).toBe('insertSizeAndOrientation')
 
-    display.setLinkedReads('off')
+    display.setUnit('read')
     expect(display.colorBy).toEqual({ type: 'normal' })
   })
 })
 
-describe('alignments linkedReads (view as pairs)', () => {
-  it('is off with no config', () => {
+describe('alignments unit (view as pairs)', () => {
+  it('is read with no config', () => {
     const { display } = createDisplay()
-    expect(display.linkedReads).toBe('off')
+    expect(display.unit).toBe('read')
   })
 
-  it('setLinkedReads writes the slot both ways', () => {
+  it('setUnit writes the slot both ways', () => {
     const { display } = createDisplay()
-    display.setLinkedReads('normal')
-    expect(display.linkedReads).toBe('normal')
-    display.setLinkedReads('off')
-    expect(display.linkedReads).toBe('off')
+    display.setUnit('chain')
+    expect(display.unit).toBe('chain')
+    display.setUnit('read')
+    expect(display.unit).toBe('read')
+  })
+
+  it.each([
+    ['normal', 'chain'],
+    ['off', 'read'],
+  ])('the beta spelling linkedReads: %s reads as unit %s', (old, unit) => {
+    const { display } = createDisplay({ linkedReads: old })
+    expect(display.unit).toBe(unit)
+    expect(display.isChainMode).toBe(unit === 'chain')
   })
 })
 

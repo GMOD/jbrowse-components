@@ -743,7 +743,7 @@ describe('FetchVisibleRegions autorun', () => {
   })
 
   // Chain identity is joined on the main thread, so the toggle is a relayout.
-  it('does NOT refetch when linkedReads toggles ungrouped', async () => {
+  it('does NOT refetch when unit toggles ungrouped', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
@@ -754,7 +754,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 
@@ -763,7 +763,7 @@ describe('FetchVisibleRegions autorun', () => {
   })
 
   // ...except under a facet, where a chain is the unit a section keeps whole.
-  it('refetches when linkedReads toggles under a facet', async () => {
+  it('refetches when unit toggles under a facet', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
@@ -775,7 +775,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setLinkedReads('normal')
+    display.setUnit('chain')
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 

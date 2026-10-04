@@ -26,8 +26,8 @@ still needs the metadata while skipping every pack.
 returns a **unique synthetic key for secondary alignments**, so a multimapper
 never joins its primary's chain, and for a feature with **no name at all** — a
 PAF/synteny block, which keyed by the empty name made every block in the region
-one chain the moment `linkedReads` was set. `groupReadsByName` skips a nameless
-read likewise.
+one chain the moment `unit: 'chain'` was set. `groupReadsByName` skips a
+nameless read likewise.
 
 - **Keep every dimension a closed set; `MAX_GROUPS` is only the backstop.** Each
   group allocates region-width depth arrays and its own GPU coverage buffer.

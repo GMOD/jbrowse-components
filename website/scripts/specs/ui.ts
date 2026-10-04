@@ -165,7 +165,7 @@ export const settingsVideoFixtures = {
       {
         trackId: SV_CRAM_TRACK_ID,
         height: SV_CRAM_HEIGHT,
-        linkedReads: 'normal',
+        unit: 'chain',
         color: { field: 'insertSizeAndOrientation' },
       },
     ],

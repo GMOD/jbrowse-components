@@ -9,7 +9,7 @@ import type {
 } from '../../shared/hitTestTypes.ts'
 import type { FilterBy } from '../../shared/types.ts'
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
-import type { LinkedReadsMode } from '../constants.ts'
+import type { AlignmentsUnit } from '../constants.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 type SortCall = [type: string, pos: number, refName: string]
@@ -112,8 +112,8 @@ function makeModel(
     selectFeature(feature: Feature) {
       selected.push(feature)
     },
-    linkedReads: 'off' as LinkedReadsMode,
-    setLinkedReads(_mode: LinkedReadsMode) {},
+    unit: 'read' as AlignmentsUnit,
+    setUnit(_unit: AlignmentsUnit) {},
     // Stands in for the RPC, resolving to a feature the assertions can tell
     // apart from one the menu already had in hand.
     withFeatureById(_featureId: string, onFeat: (feat: Feature) => void) {
