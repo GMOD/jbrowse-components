@@ -44,14 +44,14 @@ lab at the University of Michigan
   chunks that 404s at its root, and the URL is what an adapter takes as `uri`:
   https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
 
-## The QuicK-mer2 estimates
+## QuicK-mer2 k-mer copy-number estimates
 
-The [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) estimates come from the
-Kidd lab's [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track hub,
-and we read the lab's per-sample bigWigs. QuicK-mer2 counts k-mers that occur
-exactly once in the reference, so each estimate is specific to one _paralog_.
+[QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) counts k-mers that occur
+exactly once in the reference, so each estimate is specific to one _paralog_,
+one copy of a duplicated sequence. We read the lab's per-sample bigWigs from the
+Kidd lab's [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track hub.
 
-## Load the genome
+## Load the hg38 assembly
 
 The copy-number bins are on GRCh38, so the tracks below attach to an hg38
 assembly:
@@ -67,11 +67,11 @@ assembly:
 }
 ```
 
-## Load the panel as one track
+## Load the panel as one heatmap track
 
 The whole panel goes in as one track on hg38, so the display, clustering and
-color settings are declared once. The fence lists two of the panel's 104 PUR
-bigWigs; the full list is the `pur_copynumber_1000g` track in
+color settings are declared once. The config lists two of the panel's 104 PUR
+(Puerto Rican) bigWigs; the full list is the `pur_copynumber_1000g` track in
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json, and every file
 follows the `kidd_lab_cnv/<population>/<sample>.qm2.CN.1k.bw` pattern above:
 
@@ -103,7 +103,7 @@ follows the `kidd_lab_cnv/<population>/<sample>.qm2.CN.1k.bw` pattern above:
 ```
 
 The [`bigWigs`](/docs/config/multiwiggleadapter/#slot-bigwigs) shorthand takes a
-plain list of absolute URLs and names each subtrack from its filename. Four
+plain list of absolute URLs and names each subtrack from its filename. These
 display settings turn that into a copy-number heatmap:
 
 - [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `heatmap` gives each
@@ -117,7 +117,7 @@ display settings turn that into a copy-number heatmap:
   **symmetric around the origin**. The ramp divides both sides by the longer
   one, so 0 to 4 lets both extremes saturate, and gains past 4 clamp.
 
-Rows are in file order until **Clustering → Cluster rows by score...** in the
+Rows stay in file order until **Clustering → Cluster rows by score...** in the
 track menu brings similar samples together.
 
 The PUR track is also in `config_demo`, so
@@ -126,9 +126,10 @@ with these settings already applied.
 
 ## Six individuals' copy-number profiles at CCL3L1
 
-Navigate to `chr17:36,080,000-36,270,000`, around _CCL3L1_, and load six
-individuals spanning the range of copy number as a second track. The track draws
-step lines on one pinned axis, so each plateau lines up with a copy count:
+Navigate to `chr17:36,080,000-36,270,000`, around _CCL3L1_ (a chemokine gene
+with a variable number of copies), and load six individuals spanning the range
+of copy number as a second track. The track draws step lines on one pinned axis,
+so each plateau lines up with a copy count:
 
 ```json addtrack
 {
@@ -182,20 +183,21 @@ step lines on one pinned axis, so each plateau lines up with a copy count:
 
 <Figure caption="The CCL3L1 window as six stacked profiles on one shared axis, from the individual with the most copies down to one with none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
-Two paralogous blocks hold the variation. The right-hand one spans the chemokine
-genes _CCL3L1_ and _CCL4L1_, which exist in a variable number of tandem copies;
-the hg38 gene lane labels the reference copies _CCL3L3_ and _CCL4L2_. The
-left-hand one is a _TBC1D3_ repeat.
+Two paralogous blocks hold the variation. The right-hand block spans the
+chemokine genes _CCL3L1_ and _CCL4L1_, which exist in a variable number of
+tandem copies; the hg38 gene lane labels the reference copies _CCL3L3_ and
+_CCL4L2_. The left-hand block is a _TBC1D3_ repeat.
 
 ## UGT2B17, a simple deletion, against the 1000 Genomes SV map
 
-The 1000 Genomes phase 3 integrated SV map records each variant as one interval
-with fixed breakpoints and a few symbolic alleles, and gives genotypes where
-depth gives none. At a simple biallelic deletion the SV map and the depth
-profiles should agree. We'll add the SV map as a variant track, then navigate to
-_UGT2B17_ on chr4 with the PUR panel track from the first section under it. For
-your own callset, swap `uri` for a bgzip-compressed, tabix-indexed VCF on the
-same assembly:
+The 1000 Genomes phase 3 integrated structural variant (SV) map records each
+variant as one interval with fixed breakpoints and a few symbolic alleles. At a
+simple biallelic deletion the SV map and the depth profiles should agree. We'll
+add the SV map as a variant track, then navigate to _UGT2B17_ on chr4 with the
+PUR panel track from
+[Load the panel as one heatmap track](#load-the-panel-as-one-heatmap-track)
+under it. For your own callset, swap `uri` for a bgzip-compressed, tabix-indexed
+VCF on the same assembly:
 
 ```json addtrack
 {
@@ -207,16 +209,16 @@ same assembly:
 }
 ```
 
-<Figure caption="UGT2B17 on chr4 in the PUR panel track, under the SV map. A biallelic deletion: each individual sits flat at two, one or zero copies with the same breakpoints in every individual with it, and the SV map calls it as a CN0 deletion." src="/img/cnv1000g/ugt2b17_biallelic.png" />
+<Figure caption="UGT2B17 on chr4, a biallelic deletion, with the SV map above the PUR panel track. Each individual sits flat at two, one or zero copies, with the same breakpoints in every individual that has it, and the SV map calls it a CN0 deletion." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
-## A Zarr store for the whole panel
+## Load the whole panel from one Zarr store {#a-zarr-store-for-the-whole-panel}
 
-The PUR panel track holds 104 individuals.
+The PUR panel track holds 104 individuals, and the full panel has 2504.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
 measures the requests, bytes and time needed to fill the _CCL3L1_ window from
 all 2504 BigWigs and from a Zarr store holding the same samples, using the
-readers the browser uses. It takes the same `name`/`group`/`url` TSV as the
-converter, which the [build script](#reproduce-it-end-to-end) writes:
+readers the browser uses. The script takes the same `name`/`group`/`url` TSV as
+the converter, which the [build script](#reproduce-it-end-to-end) writes:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/measure_signal_latency.ts
@@ -294,18 +296,15 @@ config that holds it, so a store beside your `config.json` takes
 
 <Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies. The CCL3L1/CCL4L1 block is flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
 
-Past the two metadata reads, each request is a chunk containing every sample
-across a range of bins, so the cost of a view follows the width of its window.
+## A deletion nested inside another on chr3, sorted by clustering
 
-## A nested deletion on chr3, sorted by clustering
-
-The store also covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
-114 kb one. Navigate the Zarr track to `chr3:162,650,000-163,050,000` and run
-**Clustering → Cluster rows by score...**. The panel sorts individuals by which
-of the two deletions they have, and the long-read assembly calls of the Human
-Genome Structural Variation Consortium
+The Zarr store also covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits
+inside a 114 kb one. Navigate the Zarr track to `chr3:162,650,000-163,050,000`
+and run **Clustering → Cluster rows by score...**. The panel sorts individuals
+by which of the two deletions they have, and the long-read assembly calls of the
+Human Genome Structural Variation Consortium
 ([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both.
-We'll add them as a variant track:
+We'll add those calls as a variant track:
 
 ```json addtrack
 {
@@ -317,8 +316,8 @@ We'll add them as a variant track:
 }
 ```
 
-The track holds every insertion and deletion, so keep the long ones by entering
-this from **Filter by... → Edit filters...** in the track menu:
+The HGSVC3 track holds every insertion and deletion. To keep the long ones,
+enter this filter from **Filter by... → Edit filters...** in the track menu:
 
 ```text
 jexl:alleleLength(feature)>=5000
@@ -375,7 +374,7 @@ plugin's
 [store format](https://github.com/cmdcolin/jbrowse-plugin-zarr#store-format)
 gives the layout.
 
-## Your own samples
+## Run QuicK-mer2 on your own samples {#your-own-samples}
 
 Run [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) over your aligned reads.
 The lab's
