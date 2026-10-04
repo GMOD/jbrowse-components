@@ -7678,7 +7678,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "const": "score"
             },
             "scale": {
-              "description": "how score becomes a colour: threshold paints each band between two of its cuts; linear runs range, else scheme, else viridis across the y domain through scales.y.type, with domainMid at the middle stop, colouring each bar, point and density cell by its score, and a one-colour range runs from white to that colour; a line still parts in the two end colours; none paints value, keeping the field for a switch back; unset beside the field, it is threshold.",
+              "description": "threshold bands score at the domain cuts, linear ramps it across the y domain, none paints value; unset beside a field is threshold.",
               "enum": [
                 "none",
                 "linear",
