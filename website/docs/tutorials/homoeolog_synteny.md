@@ -51,7 +51,7 @@ three times. The copies across subgenomes are homoeologs, and a table of them is
 a comparative dataset from one assembly, so `MCScanBlocksAdapter` puts one
 genome on both axes.
 
-The karyotype shows where the copies sit, and a segment moved between groups
+The dotplot shows where the copies sit, and a segment moved between groups
 leaves the diagonal. dN/dS measures the selection pressure on each pair of
 copies, and the dotplot draws it as a colour.
 
@@ -83,10 +83,10 @@ length per line):
 { "name": "oat", "uri": "oat.chrom.sizes" }
 ```
 
-### Syntenic anchors from a self-alignment
+### Finding homoeolog pairs from a protein self-alignment
 
 Naming one prefix twice is a self-comparison: jcvi drops the gene-against-itself
-diagonal, then chains what is left into syntenic blocks.
+diagonal, then chains the rest into syntenic blocks (co-linear runs of pairs).
 
 <!-- from: scripts/build_oat_homoeologs.sh -->
 
@@ -110,18 +110,18 @@ separately keeps DIAMOND at default sensitivity, which finds homoeologs this
 recent; jcvi's own call uses `--ultra-sensitive --max-target-seqs 1000`. jcvi
 picks the file up by name and skips its alignment step.
 
-Chaining keeps an anchor only where its neighbours agree, which removes the
-off-diagonal noise of gene families' best hits. A self-comparison also chains
-the tandem and segmental duplicates within each subgenome; a homoeolog pair has
-its ends on different subgenomes, so the script keeps the anchors whose two
-chromosomes have different subgenome letters and writes them, two transcript ids
-per line, to `oat.pairs.tsv`.
+Chaining keeps a gene pair (an anchor) only where its neighbours agree, which
+removes the off-diagonal noise of gene families' best hits. A self-comparison
+also chains tandem and segmental duplicates within a subgenome. A homoeolog pair
+has its two genes on different subgenomes, so the script keeps the pairs whose
+chromosomes carry different subgenome letters and writes them, two transcript
+ids per line, to `oat.pairs.tsv`.
 
 Take `oat.oat.anchors` and skip `oat.oat.lifted.anchors`. Liftover recruits
 extra pairs near an established block, and their dS runs far above the chained
 ones', which marks them as paralogs.
 
-### dN and dS on each anchor
+### Measuring dN and dS on each homoeolog pair
 
 Ensembl declares `dn` and `ds` in every homology export and leaves both empty in
 every division, so the script computes them:
@@ -142,14 +142,14 @@ with too few synonymous differences to trust a ratio.
 [Selection pressure](/docs/tutorials/selection_pressure#dn-and-ds) explains the
 method and the filters.
 
-## Loading the blocks table in JBrowse
+## Loading the homoeolog table as a dotplot track
 
-The output is a two-column pair table with four columns after it, dN, dS, the
-synonymous substitution count and a Fisher exact p, which is the `.blocks` shape
+The `oat.kaks.tsv` output lists gene pairs, then dN, dS, the synonymous
+substitution count and a Fisher exact p, the `.blocks` shape
 [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track) reads. The script
 copies it to `oat.homoeologs.blocks` and gzips that and `oat.bed` for the track.
 A self-comparison names one assembly twice, in `blockAssemblies`, in the track's
-`assemblyNames`, and in both entries of `bedLocations`:
+`assemblyNames` and in both entries of `bedLocations`:
 
 ```json addtrack
 {
@@ -175,17 +175,17 @@ button's **dN/dS**, a ramp with 1 at its middle and 2 at its top. `syn_subs` and
 **Add → Dotplot view** with oat on both axes opens the track as a dotplot, and
 the session [below](#checking-the-rates-against-the-raw-data) does the same.
 
-## Colouring the anchors by dS, with A-D pairs as the control {#checking-the-rates-against-the-raw-data}
+## Colouring homoeolog pairs by dS, with A-D pairs as the control {#checking-the-rates-against-the-raw-data}
 
 The [script](#reproduce-it-end-to-end) ends by printing the median dS for each
 subgenome pair, the numbers behind the picture below.
 
-The control is dS. Oat's A and D subgenomes descend from closely related diploid
+**Color by value → ds** <!-- menu-path-ok --> on the palette button paints each
+pair by its dS. Oat's A and D subgenomes descend from closely related diploid
 _Avena_ species and its C subgenome from a more distant one, so A-D pairs should
-come out at a lower synonymous divergence than A-C or C-D. The palette button's
-**Color by value → ds** <!-- menu-path-ok --> paints each anchor by it. The
-session pins the ramp's ends with `domainMin` and `domainMax`, so a colour means
-one dS wherever the view goes; the menu has no field for them:
+come out at a lower dS than A-C or C-D pairs. The session pins the ramp's ends
+with `domainMin` and `domainMax`, so a colour means one dS wherever the view
+goes; the menu has no field for them:
 
 ```json session config=https://jbrowse.org/demos/oat_homoeologs/config.json
 {
@@ -237,9 +237,9 @@ one dS wherever the view goes; the menu has no field for them:
 }
 ```
 
-<Figure caption="The oat self-alignment over groups 4, 5 and 7, each anchor coloured by dS on a pinned ramp. The cells pairing an A chromosome with a D one sit lower on the ramp than those pairing either with C." src="/img/homoeolog_synteny/oat_ds.png" links="Open this view=homoeolog_synteny/oat_ds" />
+<Figure caption="Oat against itself over groups 4, 5 and 7, each homoeolog pair coloured by dS on a pinned ramp. Cells pairing an A chromosome with a D one sit lower on the ramp than cells pairing either with C." src="/img/homoeolog_synteny/oat_ds.png" links="Open this view=homoeolog_synteny/oat_ds" />
 
-Switched to **dN/dS** on the palette button, almost every pair draws below 1 on
+With **dN/dS** chosen on the palette button, almost every pair draws below 1 on
 the ramp. A ratio over 1 between copies this recently separated rests on few
 substitutions; the [primate walkthrough](/docs/tutorials/selection_pressure)
 works through that arithmetic on a locus small enough to check by eye.
