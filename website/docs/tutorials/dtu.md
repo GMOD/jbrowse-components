@@ -10,9 +10,9 @@ tutorial_category: Transcriptomics & proteins
 
 Differential transcript usage tests whether a gene changes which of its isoforms
 it expresses between two conditions, here skeletal muscle and liver. We run the
-test with satuRn on ENCODE quantifications, write each transcript's statistic
-into the GFF3 attribute column, and color the gene track by it, with a key
-listing each bin.
+test with satuRn, a Bioconductor package, on ENCODE quantifications, write each
+transcript's statistic into the GFF3 attribute column, and color the gene track
+by it, with a key listing each bin.
 
 ## Prerequisites
 
@@ -79,7 +79,7 @@ multi <- names(which(table(txinfo$gene_id) > 1))
 cnt <- cnt[txinfo$isoform_id[txinfo$gene_id %in% multi], ]
 
 # rowData has to carry isoform_id and gene_id: satuRn reads each transcript's
-# gene from there to know whose proportion the transcript is a share of
+# gene from there, since usage is a share of the gene's reads
 se <- SummarizedExperiment(
   assays = list(counts = cnt),
   colData = coldata,
@@ -87,8 +87,8 @@ se <- SummarizedExperiment(
 )
 
 # the formula names the colData column holding the groups. 0 + tissue drops the
-# intercept, so each tissue gets its own coefficient and the contrast below is a
-# plain difference between two of them rather than a difference of differences
+# intercept, so each tissue gets its own coefficient and the contrast below is
+# the difference between two of them
 se <- satuRn::fitDTU(object = se, formula = ~ 0 + tissue, parallel = FALSE)
 
 design <- model.matrix(~ 0 + tissue, data = coldata)
@@ -101,8 +101,9 @@ se <- satuRn::testDTU(object = se, contrasts = L, sort = FALSE)
 res <- rowData(se)[["fitDTUResult_muscle_vs_liver"]]
 ```
 
-`res` holds the p-value, both FDRs and the model estimates per transcript. The
-script computes the isoform fractions for the color from the TPM matrix.
+`res` holds, per transcript, the p-value, the regular and empirical FDRs and the
+model estimates. The script computes each transcript's isoform fraction, its
+share of the gene's expression, from the TPM matrix.
 
 **Write the statistics into GENCODE.** The annotation has to be the release the
 quantifications were made against. RSEM names each transcript with its version,
@@ -168,8 +169,8 @@ tabix -f -p gff dtu_muscle_vs_liver.gff3.gz
 
 ### satuRn's statistics in the GFF3 attribute column
 
-The track configuration reads its values from this column. A transcript row from
-the finished file, wrapped:
+The track configuration reads each transcript's statistics from the attribute
+column. A transcript row from the finished file, wrapped:
 
 ```text
 chr10  HAVANA  transcript  7788129  7807815  .  +  .
@@ -190,7 +191,7 @@ than 0.1, the same threshold it reports on. `dif_called` is `dif` on the
 transcripts the flag calls and absent on the rest, so a transcript the test
 could not separate has no value to color and stays grey.
 
-### The effect size and the FDR gate
+### Effect size from TPM, cutoff from the regular FDR
 
 The script takes the isoform fraction from TPM, because read counts scale with
 effective length and bias a count-based fraction toward long isoforms. It gates
@@ -215,12 +216,13 @@ hg38 assembly before either track.
 
 ## Coloring each isoform by its usage change
 
-`color` bins `dif_called` through a threshold scale. `domain` lists the cut
-points, `range` gives one color per interval between them, and `labels` gives
-the key's name for each interval, liver-preferred below zero and
-muscle-preferred above. A value on a cut takes the interval above it. The key
-lists every interval under the `title`, and a `(no value)` row for the uncalled
-transcripts. A UTR follows `color` unless `utrColor` is set.
+The track's `color` bins `dif_called`, a called transcript's isoform-fraction
+change, through a threshold scale. `domain` lists the cut points, `range` gives
+one color per interval between them, and `labels` gives the key's name for each
+interval, liver-preferred below zero and muscle-preferred above. A value on a
+cut takes the interval above it. The key lists every interval under the `title`,
+and a `(no value)` row for the uncalled transcripts. A UTR follows `color`
+unless `utrColor` is set.
 
 `labels.name` reads GENCODE's `transcript_name`, which also labels the isoform
 under the cursor. `mouseover` resolves against the gene and summarizes it;
@@ -264,15 +266,16 @@ clicking an isoform opens its numbers in the details panel.
 }
 ```
 
-Add the four coverage lanes below and open them with the transcript track at
-`chr10:7,787,600-7,812,400`, the whole of _ATP5F1C_; the gene is on the plus
-strand, so the two plus-strand lanes carry its reads. satuRn used no genomic
-coordinates, so the coverage lanes are an independent check on the color.
+Add the four coverage tracks below and open them with the transcript track at
+`chr10:7,787,600-7,812,400`, the whole of _ATP5F1C_, an ATP synthase subunit.
+The gene is on the plus strand, so the two plus-strand tracks carry its reads.
+satuRn used no genomic coordinates, so the coverage is an independent check on
+the color.
 
-Each coverage lane scales to its peak until the lanes share an axis. **Y axis...
-→ Share axis with** on one lane, with the other ticked, gives both one axis that
-follows the view, so the two tissues compare by height. In a config, each track
-names the same group:
+Each coverage track scales to its own peak until the tracks share an axis. **Y
+axis... → Share axis with** on one track, with the other ticked, gives both one
+axis that follows the view, so the two tissues compare by height. In a config,
+each track names the same group:
 
 ```json addtrack
 {
@@ -286,7 +289,7 @@ names the same group:
 }
 ```
 
-The other three lanes differ in their id, name and file:
+The other three tracks differ in their id, name and file:
 
 ```json addtrack
 {
@@ -324,7 +327,7 @@ The other three lanes differ in their id, name and file:
 }
 ```
 
-<Figure caption="ATP5F1C on hg38. ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is the cassette exon, where the muscle lane is flat and the liver lane peaks." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
+<Figure caption="ATP5F1C on hg38. ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is a cassette exon, included in some isoforms and skipped in others. Muscle coverage is flat there and liver peaks." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
 
 ## Reproduce it end to end
 
@@ -342,9 +345,6 @@ runs the satuRn fit, and writes `dtu_muscle_vs_liver.gff3.gz` with its `.tbi`
 index, a local build of the file the track configuration above loads from
 jbrowse.org. Point the track's `uri` at the local copy to open your own run. The
 script needs [Prerequisites](#prerequisites) on your `PATH`.
-
-Along the way the script prints the transcript and gene counts at each filtering
-step, and the minimum empirical FDR beside the regular-FDR count.
 
 ## See also
 
