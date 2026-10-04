@@ -6,6 +6,14 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
+import {
+  colorProblems,
+  colorSlotsOf,
+  noticeLines,
+  scaleEndProblems,
+  scaleEndsOf,
+} from '../util/colorScale.ts'
+import { readConfObject } from './readConfObject.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import { bareFormOf, shorthandTargets } from './schemaTypes.ts'
 
@@ -187,4 +195,39 @@ export function plotWrites(
     writes[key] = lifted[key] ?? null
   }
   return writes
+}
+
+function subConfOf(conf: AnyConfigurationModel, key: string) {
+  const member = (conf as unknown as Record<string, unknown>)[key]
+  return isStateTreeNode(member) ? (member as AnyConfigurationModel) : undefined
+}
+
+function membersOf(node: AnyConfigurationModel) {
+  return (name: string): unknown => readConfObject(node, name)
+}
+
+/**
+ * What a lifted plot's colour objects and `scales.y` say together that the
+ * display cannot draw as written, as corner-notice lines: each colour object
+ * under its schema's `fieldPresets`, as `jbrowse validate` judges it.
+ */
+export function schemaPlotProblems(lifted: AnyConfigurationModel): string[] {
+  return plotKeysOf(lifted).flatMap(key => {
+    const node = subConfOf(lifted, key)
+    const presets = node
+      ? getConfigurationSchemaMetadata(node)?.options.fieldPresets
+      : undefined
+    const y = key === 'scales' && node ? subConfOf(node, 'y') : undefined
+    return [
+      ...(node && presets
+        ? noticeLines(
+            key,
+            colorProblems(colorSlotsOf(membersOf(node)), presets),
+          )
+        : []),
+      ...(y
+        ? noticeLines('scales.y', scaleEndProblems(scaleEndsOf(membersOf(y))))
+        : []),
+    ]
+  })
 }

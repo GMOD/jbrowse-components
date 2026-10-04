@@ -18,7 +18,12 @@ import {
 import { configManifest } from './configManifest.generated.ts'
 import { displayDefaultsForTrackType } from './displayDefaultKeys.ts'
 import { isRecord, liftToSnapshot } from './liftConfig.ts'
-import { colorProblems, scaleEndProblems } from './markRules/colorScale.ts'
+import {
+  colorProblems,
+  colorSlotsOf,
+  scaleEndProblems,
+  scaleEndsOf,
+} from './markRules/colorScale.ts'
 import { markProblems } from './markRules/markProblems.ts'
 import {
   hasDeclaredShape,
@@ -578,20 +583,9 @@ function pushOnce(report: Report, problem: Problem) {
   }
 }
 
-function numberOf(value: unknown) {
-  return typeof value === 'number' ? value : undefined
-}
-
-function scaleEndsOf(scale: Record<string, unknown>) {
-  return {
-    domainMin: numberOf(scale.domainMin),
-    domainMax: numberOf(scale.domainMax),
-    domainQuantile: numberOf(scale.domainQuantile),
-  }
-}
-
 function scalesOf(scales: Record<string, unknown>) {
-  return isRecord(scales.y) ? { y: scaleEndsOf(scales.y) } : {}
+  const { y } = scales
+  return isRecord(y) ? { y: scaleEndsOf(name => y[name]) } : {}
 }
 
 function declaredMembers(written: Record<string, unknown>, slot: SlotEntry) {
@@ -631,21 +625,15 @@ function checkScaleSlots(
     const members = declaredMembers(written, slot)
     if (slot.fieldPresets) {
       for (const problem of colorProblems(
-        {
-          ...scaleEndsOf(members),
-          field: typeof members.field === 'string' ? members.field : '',
-          scale: typeof members.scale === 'string' ? members.scale : undefined,
-          domain: Array.isArray(members.domain) ? members.domain : undefined,
-          range: Array.isArray(members.range) ? members.range : undefined,
-          labels: Array.isArray(members.labels) ? members.labels : undefined,
-        },
+        colorSlotsOf(name => members[name]),
         slot.fieldPresets,
       )) {
         warn(`${where}.${slot.name}`, problem)
       }
     }
-    if (slot.name === 'scales' && isRecord(members.y)) {
-      for (const problem of scaleEndProblems(scaleEndsOf(members.y))) {
+    const { y } = members
+    if (slot.name === 'scales' && isRecord(y)) {
+      for (const problem of scaleEndProblems(scaleEndsOf(name => y[name]))) {
         warn(`${where}.scales.y`, problem)
       }
     }

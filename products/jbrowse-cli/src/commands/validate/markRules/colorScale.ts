@@ -275,6 +275,42 @@ export interface ColorSlots {
   labels?: readonly unknown[]
 }
 
+function numberOf(value: unknown) {
+  return typeof value === 'number' ? value : undefined
+}
+
+function stringOf(value: unknown) {
+  return typeof value === 'string' ? value : undefined
+}
+
+function listOf(value: unknown) {
+  return Array.isArray(value) ? (value as unknown[]) : undefined
+}
+
+/** A quantitative scale's ends among the members `member` reads, each a number or unset. */
+export function scaleEndsOf(member: (name: string) => unknown): ScaleEnds {
+  return {
+    domainMin: numberOf(member('domainMin')),
+    domainMax: numberOf(member('domainMax')),
+    domainQuantile: numberOf(member('domainQuantile')),
+  }
+}
+
+/**
+ * The members `colorProblems` reads among the ones `member` reads, each of the
+ * type it reads or unset, so a config snapshot and a config node answer alike.
+ */
+export function colorSlotsOf(member: (name: string) => unknown): ColorSlots {
+  return {
+    ...scaleEndsOf(member),
+    field: stringOf(member('field')) ?? '',
+    scale: stringOf(member('scale')),
+    domain: listOf(member('domain')),
+    range: listOf(member('range')),
+    labels: listOf(member('labels')),
+  }
+}
+
 function pinned(entry: unknown) {
   return entry !== '' && Number.isFinite(Number(entry))
 }

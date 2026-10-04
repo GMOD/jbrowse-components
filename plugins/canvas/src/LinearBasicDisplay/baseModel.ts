@@ -1623,18 +1623,6 @@ export default function baseStateModelFactory(
         return scanGroupByCandidates(self, opts)
       },
       /**
-       * #method
-       * The schema's refusals, then a `jexl:` colour or filter that does not
-       * compile.
-       */
-      plotProblems(draft: Plot): string[] {
-        self.liftPlot(draft)
-        return plotJexlProblems(
-          draft,
-          getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
-        )
-      },
-      /**
        * #getter
        * Overridable hook: the key while features draw, by default the one the
        * color channel's scale derives.
@@ -1643,6 +1631,25 @@ export default function baseStateModelFactory(
         return this.derivedColorScales
       },
     }))
+    .views(self => {
+      const superPlotProblems = self.plotProblems
+      return {
+        /**
+         * #method
+         * The base display's problems, then a `jexl:` colour or filter that
+         * does not compile.
+         */
+        plotProblems(draft: Plot): string[] {
+          return [
+            ...superPlotProblems(draft),
+            ...plotJexlProblems(
+              draft,
+              getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
+            ),
+          ]
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter

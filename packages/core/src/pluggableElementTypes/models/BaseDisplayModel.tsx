@@ -11,6 +11,7 @@ import {
   plotKeysOf,
   plotOf,
   plotWrites as plotWritesOf,
+  schemaPlotProblems,
 } from '../../configuration/plot.ts'
 import {
   getContainingTrack,
@@ -377,12 +378,14 @@ function stateModelFactory() {
       /**
        * #method
        * What a draft would report once applied, throwing a refusal as
-       * `liftPlot` does. A display with a rule list over its settings
-       * overrides it; the draft still applies, and draws what it can.
+       * `liftPlot` does: what its colour objects and `scales.y` say together
+       * that cannot be drawn as written. A display with a rule list over its
+       * settings overrides it; the draft still applies, and draws what it can.
        */
       plotProblems(draft: Plot): string[] {
-        this.liftPlot(draft)
-        return []
+        return schemaPlotProblems(
+          liftPlotDraft((self as unknown as DisplayModel).configuration, draft),
+        )
       },
       /**
        * #method

@@ -2,7 +2,14 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { ConfigurationSchema } from './configurationSchema.ts'
 import { setConf } from './getConf.ts'
-import { liftPlot, parsePlot, plotKeysOf, plotOf, plotWrites } from './plot.ts'
+import {
+  liftPlot,
+  parsePlot,
+  plotKeysOf,
+  plotOf,
+  plotWrites,
+  schemaPlotProblems,
+} from './plot.ts'
 
 const Facet = ConfigurationSchema(
   'PlotTestFacet',
@@ -114,4 +121,42 @@ test('a draft naming a setting outside the plot is refused before any write', ()
     'not height',
   )
   expect(() => liftPlot(conf, { height: 3 })).toThrow('not height')
+})
+
+const Color = ConfigurationSchema(
+  'PlotTestColor',
+  {
+    value: {
+      type: 'color',
+      defaultValue: 'jexl:feature.color',
+      contextVariable: ['feature'],
+    },
+    field: { type: 'string', defaultValue: 'score' },
+    scale: { type: 'maybeString' },
+    domain: { type: 'stringArray', defaultValue: [] },
+    range: { type: 'stringArray', defaultValue: [] },
+  },
+  { closed: true, fieldPresets: { score: { scale: 'threshold' } } },
+)
+
+const ColorDisplay = ConfigurationSchema(
+  'PlotTestColorDisplay',
+  { color: Color, scales: Scales },
+  { explicitIdentifier: 'displayId' },
+)
+
+test("a lifted plot's colour is judged under its schema's presets and defaults, its jexl: value unevaluated, and scales.y by its ends", () => {
+  const conf = ColorDisplay.create({ displayId: 'd' })
+  expect(schemaPlotProblems(conf)).toEqual([])
+  expect(
+    schemaPlotProblems(
+      liftPlot(conf, {
+        color: { domain: ['5', '1'] },
+        scales: { y: { domainMin: 9, domainMax: 1 } },
+      }),
+    ),
+  ).toEqual([
+    expect.stringMatching(/^color\.domain: threshold cuts are distinct/),
+    expect.stringMatching(/^scales\.y\.domainMax: domainMax is below/),
+  ])
 })
