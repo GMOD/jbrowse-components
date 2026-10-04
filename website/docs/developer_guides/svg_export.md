@@ -270,6 +270,10 @@ against one snapshot of the model. Draw overlays as plain components that read
 the model once: an `observer` used on screen follows the view, so a pan slides
 its labels across layers drawn before it.
 
+A figure carries a pinned highlight but never a hover or a selection, since both
+only say where the reader's pointer was. A body passing the screen's render
+state to a painter clears the hovered and selected ids first.
+
 ## Reusing on-screen drawing code
 
 **The GPU shader path is an accelerator, the Canvas2D painter is the source of

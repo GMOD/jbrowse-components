@@ -118,7 +118,8 @@ const GUTTER_INSET = 10
 
 /**
  * The exported key of a display composing `LegendMixin`, drawn by the shell
- * off the same `legendSpec` the chrome draws on screen. Over the plot's
+ * off `legendSpecIn` in the export's palette: the key the chrome draws on
+ * screen, in the export's theme. Over the plot's
  * top-right corner, below any axis captions there, as every display placed its
  * own; beside the plot, from its top, when the display reserved the export
  * gutter (`svgLegendWidth`) and the container granted it. `legendTop` is not

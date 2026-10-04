@@ -51,6 +51,11 @@ draws plain components that read the model once, never an on-screen observer:
 an observer follows the view, so a pan slides its labels across layers drawn
 before it.
 
+**A figure carries the pinned highlight only, never a hover or a selection**:
+both say where the reader's pointer was. A body that hands live render params to
+a painter zeroes them (`hoveredFeatureId`, `clickedFeatureId` in the synteny and
+multi-way exports), and the chord export draws every shape resting.
+
 ## The `svgReady` gate
 
 Every GPU display exposes `svgReady`, and the off-screen renderer awaits only
