@@ -18,7 +18,6 @@ retrogene leaves at its parent gene.
 
 ## Prerequisites
 
-- nothing to read along. Everything below is for building the tracks yourself
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4,
   see the [assemblies guide](/docs/config_guides/assemblies))
 - `bcftools` built with libcurl
@@ -67,7 +66,7 @@ supporting UCSC and OMIA tracks and two sequenced retrocopies from GenBank.
   UCSC's canFam4 REST API:
   https://api.genome.ucsc.edu/getData/sequence?genome=canFam4;chrom=chr18;start=48865000;end=48876000
 
-## The genome
+## Loading the UU_Cfam_GSD_1.0 dog assembly
 
 The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
 We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
@@ -99,7 +98,7 @@ anomaly. It should be common in Collies and their relatives and absent from
 unrelated breeds and wolves. The anomaly is recessive, so the darker cells below
 are affected animals and the lighter ones carriers.
 
-## Slicing one locus out of the callset
+## Slicing the NHEJ1 locus out of the Paragraph callset
 
 The genotype VCF is 5.9 GB across 1,879 dogs and wolves, published on
 [Zenodo](https://doi.org/10.5281/zenodo.14968873) with a tabix index, and
@@ -119,10 +118,10 @@ tabix -p vcf dog10k_nhej1_svs.vcf.gz
 ```
 
 `sv.samples` comes from the Dog10K sample table: every Collie, Shetland Sheepdog
-and Silken Windhound in the analysis set, four Lancashire Heelers, Australian
-Shepherds, German Shepherds and Labrador Retrievers as breeds with no reported
-association, and four Greek gray wolves as the outgroup. Read the genotypes
-directly first:
+and Silken Windhound in the analysis set; four Lancashire Heelers, a breed where
+Collie eye anomaly is reported; Australian Shepherds, German Shepherds and
+Labrador Retrievers as breeds with no reported association; and four Greek gray
+wolves as the outgroup. Read the genotypes directly first:
 
 <!-- from: scripts/build_dog10k_nhej1_sv.sh -->
 
@@ -134,7 +133,7 @@ bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
 Most of the Collies have it, some homozygous, along with some of the Shetland
 Sheepdogs and Silken Windhounds. Every other animal is homozygous reference.
 
-## Loading the slice with breed labels
+## Loading the NHEJ1 slice with breed labels
 
 An SV VCF loads as an ordinary `VariantTrack`. The multi-sample variant display
 draws one row per sample across the variant's genomic span, so a 7.8 kb deletion
@@ -151,8 +150,9 @@ is a 7.8 kb block.
 
 The VCF names each sample by its Dog10K ID. In the session below, `rows` gives
 each sample a label and orders the rows as `domain` lists them, and `rowColor`
-gives each row a swatch. The tree sidebar writes the same two settings when you
-rearrange and recolour rows by hand.
+gives each row a swatch. The fence names two animals to show the shape, and the
+figure names every row the same way. **Edit colors/arrangement...** in the track
+menu writes the same two settings as you rename and recolour rows by hand.
 
 ```json session config=test_data/dog10k/config.json
 {
@@ -208,9 +208,7 @@ curl -fO https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/liftOver/canFam3ToCa
 wc -l < unmapped.bed   # records the chain could not place
 ```
 
-An interval lifts as a unit, so a plain `liftOver` is enough. A BND holds its
-partner coordinate inside `ALT` and needs more; see the
-[cancer SV tutorial](/docs/tutorials/cancer_sv).
+An interval lifts as a unit, so a plain `liftOver` is enough for OMIA's records.
 
 ```json addtrack
 {
@@ -261,7 +259,7 @@ bcftools query -r chr37:25578185-25578186 -i 'POS=25578185' \
   | tr ' ' '\n' | grep -v '=0/0'
 ```
 
-### The Lancashire Heelers
+### Lancashire Heelers, with Collie eye anomaly and no deletion
 
 Collie eye anomaly is reported in Lancashire Heelers, and none of the four
 sampled here have the deletion. Four dogs are too few to estimate how common the
@@ -283,7 +281,7 @@ prints both records' genotypes tallied by population.
 
 The build script slices the same animals from both callsets in the same order,
 so the two lanes line up row for row: two ordinary breeds, the three Arctic
-breeds, two breeds that each include a dog without the duplication, the Alaskan
+breeds, the English Springer Spaniels and Czechoslovakian Wolfdogs, the Alaskan
 village dogs, and every gray wolf, labelled by country.
 
 ```json addtrack
@@ -326,7 +324,7 @@ copies and one with twenty are both `1/1`.
 [The CYP1A2 tutorial](/docs/tutorials/dog10k_lof#copy-number-at-cyp1a2) measures
 copy number from the SNV callset's per-sample `DP`.
 
-## FGF4 retrogene
+## An FGF4 retrogene called as intron deletions
 
 [Parker et al. (2009)](https://doi.org/10.1126/science.1173275) tied
 breed-defining short legs to an expressed _FGF4_ retrogene, a copy of the
@@ -352,7 +350,7 @@ intron 48869783-48870314: called as a DEL of 532 bp at 48869783-48870314
 intron 48870419-48870952: called as a DEL of 534 bp at 48870418-48870951
 ```
 
-### Slicing the two records out
+### Slicing the two FGF4 intron records out of the Manta callset
 
 The _FGF4_ records come from the Michigan aggregate Manta callset, which has
 `DUP` and `INV` records too. Selecting on `POS` keeps the two intron records:
@@ -476,7 +474,10 @@ Each alignment is a `SyntenyTrack` between its retrocopy and the dog assembly:
 ```
 
 `assemblyNames` is ordered `[query, target]`, the reverse of minimap2's argument
-order. The build script rewrites the `N` operations in each CIGAR to `D`, since
+order. The build script then turns each `FGF4retro-*.paf` into the file the
+track loads, `dog10k_fgf4_retro_cfa12.paf` and its CFA18 twin. It renames the
+target from the cut-out window to `chr18`, shifts its coordinates by the
+window's start, and rewrites the `N` operations in each CIGAR to `D`, since
 those bases are absent from the retrocopy. It also writes each GenBank record's
 feature table out as GFF3 for the retrocopy's gene model, and checks that the
 CDS is a single interval (the parent's has three).
@@ -497,7 +498,7 @@ The two GenBank records agree across the coding sequence and differ in how much
 UTR they include. Both deposited sequences end at the poly(A) tail, so neither
 records where its copy inserted.
 
-## Other loci
+## Slicing more of Schall and Kidd's clade-associated SVs
 
 Schall and Kidd list the clade-associated SVs they found, and any of them can be
 sliced and loaded the same way. Another retrogene shows up as a gene whose
