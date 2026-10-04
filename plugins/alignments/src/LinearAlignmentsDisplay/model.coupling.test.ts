@@ -1620,6 +1620,21 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(display.groupHeightOverrides.has('')).toBe(false)
   })
 
+  // A live figure keys on this, since none of it is in a snapshot: the hidden
+  // sections stay the mixin's, beside the collapses and height overrides.
+  test('groupStateKey carries every per-group state the lanes draw from', () => {
+    const display = collapsedUntaggedLane()
+    display.toggleGroupExpanded('')
+    display.hideGroup('1')
+    const [hidden, [collapsed, heights]] = display.groupStateKey as [
+      string[],
+      [string[], Record<string, number>],
+    ]
+    expect(hidden).toEqual(['1'])
+    expect(collapsed).toEqual([''])
+    expect(Object.keys(heights)).toEqual([''])
+  })
+
   // Grouping FROM ungrouped is the same collision the other way round: the
   // whole-pileup collapse would arrive on the "HP: none" lane.
   test('grouping drops a collapse of the ungrouped pileup', () => {

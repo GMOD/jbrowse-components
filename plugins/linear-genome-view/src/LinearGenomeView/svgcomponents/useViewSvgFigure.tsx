@@ -291,8 +291,13 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
  * correct it); **their heights and minimized flags**, since the geometry is
  * derived from them; **their configs**, since a display's settings are slots on
  * the track config and a shown track's snapshot spells that config as its id;
- * **the legend sections a reader dismissed**, which are volatile and in no
- * snapshot; **the width**, since a resize can widen the canvas without
+ * **the legend sections a reader dismissed** and **the per-group state**
+ * (hidden sections, collapses, height overrides: `groupStateKey`), which are
+ * volatile and in no snapshot; **the reload counter**, since a Retry or a Force
+ * load leaves every snapshot as it was while the figure has an error or a
+ * too-large note to replace; **the view's coloring toggles** (`colorByCDS`,
+ * `showAminoAcids`), named one by one because the view's own snapshot moves
+ * every pan frame; **the width**, since a resize can widen the canvas without
  * moving the locus; **the theme**, since each display bakes colors into its own
  * bodies, so a figure from the other mode is not stale but unreadable; and **the
  * highlight bands**, which are drawn in the figure and are the one thing in it a
@@ -300,7 +305,8 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
  *
  * A plugin's own overlay, through `LinearGenomeView-HighlightSVGComponent`, is
  * state this cannot see, so a change to it shows up at the figure's next
- * redraw rather than at once. Subscribing from inside the figure is the thing
+ * redraw rather than at once. So does a track's vertical scroll, which moves
+ * every wheel frame and has no settled copy to key on. Subscribing from inside the figure is the thing
  * that must not happen — see the note at the top of the file.
  */
 function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
@@ -330,8 +336,12 @@ function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
         getSnapshot(track.configuration),
         display?.height,
         display?.dismissedLegendSections,
+        display?.groupStateKey,
+        display?.reloadCounter,
       ]
     }),
+    view.colorByCDS,
+    view.showAminoAcids,
     session.getActiveThemeOptions?.(themeName),
     session.highlightsVisible ? view.highlights : false,
     session.highlightLabelsVisible,

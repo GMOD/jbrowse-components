@@ -16,7 +16,7 @@ const keySpaceHost = (self: object) => self as GroupKeySpaceHost
 /**
  * #stateModel HiddenGroupsMixin
  * #category display
- * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `hiddenGroups` set, `hideGroup` and `showAllGroups` over it, the `displayHiddenGroupKeys` hook a display hides a lane through on its own behalf, `hiddenGroupKeys` folding both, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
+ * #crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `hiddenGroups` set, `hideGroup` and `showAllGroups` over it, the `displayHiddenGroupKeys` hook a display hides a lane through on its own behalf, `hiddenGroupKeys` folding both, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
  *
  * A key names a section only within the grouping that issued it: `''` is both
  * the ungrouped section and every dimension's catch-all, and two dimensions'
@@ -47,6 +47,16 @@ export default function HiddenGroupsMixin() {
       get displayHiddenGroupKeys(): ReadonlySet<string> {
         return NO_HIDDEN_GROUPS
       },
+      /**
+       * #getter
+       * Overridable hook: the per-group state a display keeps beyond the
+       * hidden sections, as a plain value. None by default; alignments
+       * answers its collapses and height overrides, the state its
+       * `dropGroupState` clears.
+       */
+      get ownGroupState(): unknown {
+        return undefined
+      },
     }))
     .views(self => ({
       /**
@@ -61,6 +71,19 @@ export default function HiddenGroupsMixin() {
         return self.hiddenGroups.size === 0
           ? own
           : new Set([...own, ...self.hiddenGroups])
+      },
+      /**
+       * #getter
+       * All the per-group state as a plain, comparable value: the hidden
+       * sections, sorted, beside `ownGroupState`. A live figure keys on it,
+       * since the state is volatile and in no snapshot; a Set would
+       * serialize as `{}`.
+       */
+      get groupStateKey(): unknown {
+        return [
+          [...this.hiddenGroupKeys].sort((a, b) => a.localeCompare(b)),
+          self.ownGroupState,
+        ]
       },
     }))
     .actions(self => ({

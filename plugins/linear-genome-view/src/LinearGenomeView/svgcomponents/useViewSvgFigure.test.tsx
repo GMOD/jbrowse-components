@@ -14,7 +14,8 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { addExtensionElement } from '@jbrowse/core/ui'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
+import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
@@ -49,13 +50,24 @@ function displayModel(
   const base = types
     .compose(
       name,
-      types.compose(BaseDisplay, TrackHeightMixin(), LegendMixin()),
+      types.compose(
+        BaseDisplay,
+        TrackHeightMixin(),
+        LegendMixin(),
+        HiddenGroupsMixin(),
+      ),
       types.model({
         type: types.literal(name),
         configuration: ConfigurationReference(configSchema),
       }),
     )
+    .volatile(() => ({
+      reloadCounter: 0,
+    }))
     .views(() => ({
+      get groupKeySpace() {
+        return ''
+      },
       get colorScales(): ColorScale[] {
         return LEGEND_SECTIONS.map(id => ({
           kind: 'categorical',
@@ -64,12 +76,19 @@ function displayModel(
         }))
       },
     }))
+    .actions(self => ({
+      reload() {
+        self.reloadCounter++
+      },
+    }))
   return canRenderSvg
     ? base.actions(self => ({
         // the shape every real display's renderSvg has: async, resolving to a
         // ReactNode drawn in the track body's own coordinate space, baking in
-        // a display setting and the legend's sections as a real body does
+        // a display setting, the legend's sections, the hidden groups, the
+        // reload count and a view toggle as real bodies do
         async renderSvg() {
+          const view = getContainingView(self) as LinearGenomeViewModel
           return (
             <rect
               data-testid="body"
@@ -77,6 +96,9 @@ function displayModel(
               height={10}
               fill={getConf(self, 'color')}
               data-legend={self.legendSpec.sections.map(s => s.id).join(',')}
+              data-hidden={[...self.hiddenGroups].join(',')}
+              data-reload={self.reloadCounter}
+              data-cds={String(view.colorByCDS)}
             />
           )
         },
@@ -574,5 +596,62 @@ test('dismissing a legend section redraws the figure without it', async () => {
 
   await waitFor(() => {
     expect(sections()).toBe('shade')
+  })
+})
+
+// Volatile, so in no snapshot: a hidden section is per-group state the key
+// reads through `groupStateKey`.
+test('hiding a group redraws the figure without it', async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const { svg } = await renderFigure(view)
+  const hidden = () =>
+    svg().querySelector<SVGRectElement>('[data-testid="body"]')?.dataset.hidden
+  expect(hidden()).toBe('')
+
+  await act(async () => {
+    view.tracks[0]!.displays[0]!.hideGroup('g1')
+    await Promise.resolve()
+  })
+
+  await waitFor(() => {
+    expect(hidden()).toBe('g1')
+  })
+})
+
+// A Retry or a Force load bumps the reload counter and nothing else, while the
+// figure holds an error or a too-large note the fresh fetch replaces.
+test('a reload redraws the figure', async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const { svg } = await renderFigure(view)
+  const reloads = () =>
+    svg().querySelector<SVGRectElement>('[data-testid="body"]')?.dataset.reload
+  expect(reloads()).toBe('0')
+
+  await act(async () => {
+    view.tracks[0]!.displays[0]!.reload()
+    await Promise.resolve()
+  })
+
+  await waitFor(() => {
+    expect(reloads()).toBe('1')
+  })
+})
+
+// A view setting the bodies read, named in the key because the view's own
+// snapshot moves every pan frame.
+test('toggling color by CDS redraws the figure', async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const { svg } = await renderFigure(view)
+  const cds = () =>
+    svg().querySelector<SVGRectElement>('[data-testid="body"]')?.dataset.cds
+  const before = view.colorByCDS
+
+  await act(async () => {
+    view.setColorByCDS(!before)
+    await Promise.resolve()
+  })
+
+  await waitFor(() => {
+    expect(cds()).toBe(String(!before))
   })
 })

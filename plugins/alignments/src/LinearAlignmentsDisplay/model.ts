@@ -3340,6 +3340,19 @@ export default function stateModelFactory(
           }
         },
       }))
+      .views(self => ({
+        /**
+         * #getter
+         * The mixin's hook: the collapses and per-group height overrides
+         * `dropGroupState` clears below.
+         */
+        get ownGroupState() {
+          return [
+            [...self.collapsedGroups].sort((a, b) => a.localeCompare(b)),
+            Object.fromEntries(self.groupMaxHeightOverrides),
+          ]
+        },
+      }))
       .actions(self => {
         const dropHiddenGroups = self.dropGroupState
         return {
