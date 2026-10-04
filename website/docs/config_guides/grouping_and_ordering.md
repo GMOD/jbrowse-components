@@ -88,7 +88,7 @@ whatever order the VCF lists them:
 The domain in each case is a genetics decision, not an alphabetical one: dosage
 order in the mosquito figure, standard-before-inverted in the fly figure, both
 read straight off the figure's caption.
-[LD in mosquitoes](/docs/tutorials/ld_mosquitoes#the-block-on-the-karyotype-lanes)
+[LD in mosquitoes](/docs/tutorials/ld_mosquitoes#reading-the-2la-ld-block-against-the-karyotype-lanes)
 works through the mosquito one, and
 [population genomics](/docs/tutorials/population_genomics#the-inversion-genome-wide-and-within-each-arrangement)
 reads the fly inversion as diversity in each arrangement.

@@ -5,8 +5,8 @@ import { pageTrack } from './pageTrack.ts'
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // The LD heatmap display's home-run result: the lactase-persistence sweep at
-// LCT/MCM6, computed live from phased 1000 Genomes genotypes (exact haplotypic
-// r², not the composite estimate), so no precomputed LD file is needed.
+// LCT/MCM6, from PLINK r² tables over phased 1000 Genomes genotypes, read
+// through PlinkLDTabixAdapter.
 //
 // hg38, on the 1000 Genomes 30x high-coverage release (NYGC), which is called
 // natively on GRCh38 rather than lifted. Both halves of that matter: the
@@ -67,9 +67,8 @@ const LD_HUMAN_DOC = 'tutorials/ld_human.md'
 const LCT_LOC = 'chr2:134,000,000-137,150,000'
 
 // Both LCT figures take the same window. This one is the expensive render of the
-// two: r² is computed live, and the pooled lane correlates 5008 haplotypes
-// against the panel's 1006. The readyTimeout below is headroom rather than a
-// measured need. If it appears to hang, check for a second
+// two, since the pooled table is the larger. The readyTimeout below is headroom
+// rather than a measured need. If it appears to hang, check for a second
 // `generate-screenshots` process on the machine before shrinking anything —
 // that was the cause last time, not the window.
 const LCT_WIDE_LOC = LCT_LOC
@@ -102,9 +101,9 @@ const LCT_HIGHLIGHT = [
 
 // The 2La inversion in Anopheles gambiae: ~22 Mb of chromosome arm 2L that does
 // not recombine in a heterozygote, so wherever both arrangements segregate the
-// whole segment travels as one unit. This is the case precomputed LD exists for
-// — 22 Mb is far past what an LDDisplay can compute live from a VCF, so the r²
-// comes from `plink --r2` read back through PlinkLDTabixAdapter.
+// whole segment travels as one unit. The r² comes from `plink --r2` read back
+// through PlinkLDTabixAdapter, over variants thinned to a grid so 22 Mb of pairs
+// stays drawable.
 //
 // Built by scripts/build_ag1000g_ld.sh from Ag1000G phase 2 AR1 phased
 // haplotypes. That script prints the evidence for each choice made here rather
@@ -1041,9 +1040,7 @@ export const ldSpecs: ScreenshotSpec[] = [
     // the dendrogram only renders once the clustering RPC lands, so this waits
     // on real completion rather than on a duration guess
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
-    // the r² is computed live off 1.5 Mb of the European panel, which is the
-    // slow half now — the standalone triangle figure allowed 300 s for a wider
-    // window
+    // headroom: the clustering RPC is what it waits on
     readyTimeout: 300000,
     // The samples table is the whole 1000 Genomes release and the VCF is the
     // six-population subsample, so the app warns that it dropped the samples it

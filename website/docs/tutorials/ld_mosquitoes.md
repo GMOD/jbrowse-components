@@ -16,8 +16,7 @@ variant genotyped per mosquito beneath it.
 ## Prerequisites
 
 - a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
-  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
-  needs nothing hosted
+  [Desktop](/docs/quickstart_desktop))
 - [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) (`plink2`)
 - htslib (`bgzip`, `tabix`)
 - `samtools`
@@ -29,8 +28,7 @@ variant genotyped per mosquito beneath it.
 
 Ag1000G phase 2 AR1
 ([Anopheles gambiae 1000 Genomes Consortium 2020](https://doi.org/10.1101/gr.262790.120)),
-whose terms of use were lifted in March 2022, so nothing here needs registration
-or a data-access agreement.
+whose terms of use were lifted in March 2022.
 
 - the phased haplotypes and their sample list for chromosome arm 2L, which the
   commands subset to one population at a time:
@@ -44,14 +42,14 @@ or a data-access agreement.
   chromosome has, which each mosquito's karyotype is scored from
   ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)):
   https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt
-- the finished `CMgam` LD table, rehosted so the track blocks on this page load
-  without the build: https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz
+- the finished `CMgam` LD table, rehosted:
+  https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz
 - the 2La genotypes per mosquito:
   https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam.vcf.gz
 - the karyotype table the sample lane is grouped by:
   https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam_samples.tsv
 
-## The genome
+## Loading the AgamP4 assembly and genes
 
 The LD table and the inversion calls use 2L coordinates of the AgamP4 reference,
 so we load that assembly and its gene models first. The gene lane reads the
@@ -85,12 +83,11 @@ so we load that assembly and its gene models first. The gene lane reads the
 ## The 2La inversion as one LD block
 
 Crossing over is suppressed in a 2La heterokaryotype, so the segment travels as
-a unit. The inversion spans roughly 22 Mb of chromosome arm 2L, past what
-JBrowse can compute live from a VCF (the [](/docs/tutorials/ld_human) tutorial
-draws r² live over a few hundred kb), so we precompute the LD with PLINK and
-read it through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
+a unit. The inversion spans roughly 22 Mb of chromosome arm 2L. JBrowse draws LD
+from a precomputed table, so PLINK correlates the variants and
+[`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads its output.
 
-## Precompute the LD with PLINK
+## Precomputing 2L LD with PLINK
 
 PLINK reads a binary fileset, so we first convert the phased VCF of common
 variants into one. `--double-id` sets each family id to the sample id:
@@ -213,7 +210,11 @@ and
 [`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
 `skip` fills the lane with the reference color and paints alt cells on top. The
 display draws a row for every sample in the file and divides the lane height
-among them, so each population gets a separate track.
+among them, so each population gets a separate track. Gabon's two tracks are the
+same configs with `CMgam` replaced by `GAgam` in the trackIds and file names:
+`https://jbrowse.org/demos/popgen/ag1000g_2L_GAgam.vcor.gz`,
+`https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam.vcf.gz` and
+`https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam_samples.tsv`.
 
 ### The karyotype calls
 
@@ -223,20 +224,22 @@ build script draws the call at that published extent
 ([White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334) karyotyped
 single mosquitoes by PCR across the junctions). The script scores the karyotype
 of each mosquito from the tag SNPs, the in-silico method MalariaGEN ships for
-Ag3: the mean number of alternate alleles across the tags, rounded into a
-genotype. The score is trimodal, and the
+its phase 3 release, Ag3: the mean number of alternate alleles across the tags,
+rounded into a genotype. The score is trimodal, and the
 [reproduce script](#reproduce-it-end-to-end) prints the histogram and the
 karyotype breakdown per population.
 
-## The block on the karyotype lanes
+## Reading the 2La LD block against the karyotype lanes
 
 Stack the r² track of each population over the karyotype track of the same
 population, one row per mosquito.
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in the Cameroon panel, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard arrangement."/>
 
-The edges of the block line up with the published breakpoint coordinates and
-with the karyotype lane beneath, which draws from a different file.
+The edges of the block line up with the published breakpoint coordinates, where
+the karyotype lane beneath draws its calls. That lane adds which mosquitoes
+carry the inversion, and the block sits over the panel whose rows hold both
+arrangements.
 
 - The second block, at the low-coordinate end of the arm in both panels, is
   _Vgsc_, the sodium channel whose codon-995 substitutions confer pyrethroid

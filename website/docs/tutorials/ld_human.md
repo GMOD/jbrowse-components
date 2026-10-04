@@ -54,6 +54,8 @@ called natively on GRCh38.
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz
 - the six-population slice the haplotype matrix reads:
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz
+- the per-variant Fst lane, built below:
+  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest.bw
 - one bigWig of allele frequency per population, built below:
   https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_CEU.bw, and the same name
   ending in FIN, PJL, TSI, YRI and CHB
@@ -61,7 +63,7 @@ called natively on GRCh38.
 The gene, ClinVar and recombination lanes are tracks of the hosted UCSC hg38
 [hub](/docs/user_guides/hub_url).
 
-## The genome
+## Loading the hg38 assembly
 
 The tables, the Fst lane and the haplotypes all use GRCh38 coordinates on chr2,
 so the tracks below go on that assembly.
@@ -84,7 +86,8 @@ triangle is a matrix turned on its corner, so the vertical axis is the distance
 between the two variants.
 
 Point an [`LDTrack`](/docs/config/ldtrack) at the r² table
-[PLINK wrote below](#correlate-the-variants-with-plink), in an hg38 session:
+[PLINK wrote below](#correlating-the-lct-variants-with-plink), in an hg38
+session:
 
 ```json addtrack
 {
@@ -115,7 +118,7 @@ with it ([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)). The
 [dbSNP report](https://www.ncbi.nlm.nih.gov/snp/rs4988235) for `rs4988235` lists
 the ClinVar entry and frequency table.
 
-## Cut the region out of the VCF
+## Cutting the LCT region out of the 1000 Genomes VCF
 
 Cut the region twice: once over the whole release, once over the European panel
 the sweep happened in. `unrelated.samples` and `panel.samples` list one sample
@@ -136,7 +139,7 @@ bcftools view -S panel.samples -Oz -o panel.vcf.gz pooled.vcf.gz
 tabix -p vcf panel.vcf.gz
 ```
 
-## Correlate the variants with PLINK
+## Correlating the LCT variants with PLINK
 
 PLINK correlates allele indicators, so we first reduce each slice to biallelic
 SNVs with one record per position and the IDs dropped:
@@ -201,7 +204,29 @@ printf 'chr2\t242193529\n' > hg38.chrom.sizes
 bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
 ```
 
-## The block at two scales
+The track over it lowers the adapter's `resolutionMultiplier`. Zoomed out, a
+bigWig serves summary bins, and a bin's average sinks the few differentiated
+variants into the many around them:
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "kgp_lct_fst",
+  "name": "Fst, European panel vs the other 1000 Genomes samples (Weir & Cockerham)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest.bw",
+    "resolutionMultiplier": 0.001
+  }
+}
+```
+
+## The LCT block against Fst and the deCODE map
+
+Open the region the slice covers with that Fst track, the hub's **Recomb Rate -
+Recomb. deCODE Avg** track, and two copies of the `LDTrack` above, the second
+pointed at `https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz`:
 
 <Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, RefSeq genes and Weir and Cockerham Fst per variant across a wide span of chr2. Under the wedge, the same locus and allele-frequency floor twice, differing only in which samples went in, over that Fst lane at a separate scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
@@ -209,9 +234,10 @@ bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
   inside the block.
 - The block fills the flat span of the
   [deCODE map](https://doi.org/10.1126/science.aau1043). The map counts
-  crossovers in sequenced families rather than estimating them from LD, so it
-  checks the triangle independently. Pooling the swept panel with populations
-  the sweep never reached lightens the upper triangle.
+  crossovers in sequenced families, so it checks the triangle independently of
+  LD.
+- Pooling the swept panel with populations the sweep never reached lightens the
+  upper triangle.
 
 ## The haplotypes behind the triangle
 
@@ -263,7 +289,7 @@ Run the clustering two ways:
   the matrix. The lane is the hub's ClinVar track filtered with
   `jexl:feature.phenotypeList=='LACTASE PERSISTENCE'`.
 
-### The subsample behind the figure {#rows-have-to-be-worth-a-pixel}
+### Subsampling six populations for the haplotype matrix {#rows-have-to-be-worth-a-pixel}
 
 Over the whole release each haplotype row falls below a pixel and blurs flat.
 This figure reads a subsample of six populations, built by the third script
@@ -279,12 +305,12 @@ bcftools view -S sub.samples --force-samples -Oz -o lct_1kg38_chr2_6pop.vcf.gz p
 
 ## Allele frequency per population
 
-Twenty-five people from each population are enough to sort the haplotypes and
-too few to read a frequency off. `bcftools +fill-tags` computes each
-population's allele frequency over all of its unrelated samples and writes it
-into one INFO field per population. Its `-S` table holds a sample ID and a group
-on each line, tab-separated, so the same command takes populations,
-superpopulations, or cases and controls:
+The haplotype matrix's subsample, twenty-five people from each population, is
+enough to sort the haplotypes and too few to read a frequency off.
+`bcftools +fill-tags` computes each population's allele frequency over all of
+its unrelated samples and writes it into one INFO field per population. Its `-S`
+table holds a sample ID and a group on each line, tab-separated, so the same
+command takes populations, superpopulations, or cases and controls:
 
 <!-- from: scripts/build_lct_population_af.sh -->
 
@@ -437,11 +463,11 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_lct_population_af.sh       # builds ./lct_population_af_build
 ```
 
-## A bigger span
+## LD across a whole chromosome arm
 
-Live LD from a VCF reaches a few Mb. [](/docs/tutorials/ld_mosquitoes) draws a
-22 Mb inversion, past that, by thinning the variants to a grid before PLINK
-correlates them.
+PLINK's table holds one row per pair of variants, so a span many megabases wide
+needs fewer of them. [](/docs/tutorials/ld_mosquitoes) draws a 22 Mb inversion
+by thinning the variants to a grid before PLINK correlates them.
 
 ## See also
 

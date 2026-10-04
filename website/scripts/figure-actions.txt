@@ -14,7 +14,6 @@ tutorials/dog10k_selection.md 1
 tutorials/genomes_basics.md 5
 tutorials/genomes_proteins.md 2
 tutorials/genomes_synteny.md 2
-tutorials/ld_human.md 1
 tutorials/ld_mosquitoes.md 1
 tutorials/local_ancestry.md 2
 tutorials/mcscan_synteny_grape_peach.md 1
