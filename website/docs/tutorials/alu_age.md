@@ -8,12 +8,12 @@ guide_category: Tutorials
 tutorial_category: Grammar of graphics
 ---
 
-RepeatMasker's `milliDiv` column records each Alu copy's divergence from its
-subfamily consensus, in tenths of a percent, and divergence grows with time, so
-the column is an age. We plot it per copy, count copies per bin when zoomed out,
-and ask where the young copies sit along chromosome 1. `LinearMarkDisplay` turns
-the columns of a feature file into plots from a JSON `marks` list; it is
-experimental, and its config shape may change.
+RepeatMasker annotates Alu, a primate-specific repeat family, and its `milliDiv`
+column records each copy's divergence from its subfamily consensus, in tenths of
+a percent. Divergence grows with time, so the column is an age. We plot it per
+copy, count copies per bin zoomed out, and ask where the young copies sit along
+chromosome 1. `LinearMarkDisplay` turns the columns of a feature file into plots
+from a JSON `marks` list; it is experimental, and its config shape may change.
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ Alu rows cut out:
 - the sequence:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit
 
-## Each copy's divergence at a locus
+## Plotting each Alu copy's divergence at one locus
 
 We'll load hg38, the assembly the RepeatMasker coordinates are on.
 
@@ -61,12 +61,12 @@ We'll load hg38, the assembly the RepeatMasker coordinates are on.
 
 The track reads any BED-like file, bgzipped and tabix-indexed, with a `#` header
 line naming the columns; a mark refers to a column by its name in that header.
-The track below lists three marks. The first draws a `bar` per copy with
-`milliDiv` as the height, below `maxBpPerPx`. Its `formula` step writes the
-first four characters of the name into a `lineage` field (AluJ, then AluS, then
-AluY, which is still inserting), and a categorical `domain` fixes the legend
-order and colours. The adapter's `densityAdapter` names a density sidecar, built
-in [Zooming out](#zooming-out).
+The track below lists three marks, and the first draws a `bar` per copy with
+`milliDiv` as the height, below `maxBpPerPx`. A `formula` step writes the first
+four characters of the name into a `lineage` field (AluJ, AluS, AluY: oldest to
+youngest, and AluY is still inserting), and a categorical `domain` fixes the
+legend order and colours. The adapter's `densityAdapter` names a density
+sidecar, built in [Zooming out](#zooming-out).
 
 ```json addtrack
 {
@@ -157,9 +157,9 @@ per-copy bars. Each snaps copies to bins with
 the count as a bar: one over every copy in grey, one over the AluY copies a
 `filter` admits in red.
 
-Zoomed out to a whole chromosome, the track would fetch more features than its
-budget allows. The grey mark has `"source": "density"`, so past the budget it
-draws the bins of a density sidecar, a bigWig of feature starts per kilobase:
+On a whole chromosome the track would exceed its feature budget. The grey mark
+has `"source": "density"`, so past the budget it draws the bins of a density
+sidecar, a bigWig of feature starts per kilobase:
 
 <!-- from: scripts/build_alu_age.sh -->
 
@@ -170,16 +170,16 @@ draws the bins of a density sidecar, a bigWig of feature starts per kilobase:
 jbrowse make-density Alu.bed.gz --chrom-sizes hg38.chrom.sizes
 ```
 
-The track menu's **Density band** entry holds or forces the swap.
+**Density band** in the track menu holds or forces the swap to density bins.
 
-## The young share per megabase
+## AluY share per megabase, against the genome-wide share
 
-The red AluY count is too thin to read against a total that swings several fold,
-so a script writes the share per megabase as a BED with two log2 columns: the
-AluY share against the genome-wide share, and, as the control, the plus-strand
-share against a half.
+The red AluY count is too small to read against a total that varies several-fold
+between bins. A script instead writes a BED with two log2 columns: the AluY
+share per megabase against the genome-wide share, and the plus-strand share
+against one half as the control.
 
-Fetch the helper, then run it:
+Fetch the script, then run it:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/alu_young_share.py
@@ -238,15 +238,15 @@ and key names on an open track.
 }
 ```
 
-<Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies from the density sidecar and the AluY share per megabase against the genome-wide share. Under the wedge, the same two tracks over a stretch where Alu-sparse megabases meet Alu-dense ones, with the copies now counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
+<Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies from the density sidecar above the AluY share per megabase, red above the genome-wide share and blue below. Under the wedge, the same two tracks over a stretch where Alu-sparse megabases meet Alu-dense ones, with copies counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
 
 Where Alu is sparse the young share runs red, and where it is dense it turns
 blue.
 
-## Correlation across the genome
+## Correlating AluY share with Alu density across the genome
 
-The script prints the Spearman rank correlation of each share against copies per
-megabase:
+`alu_young_share.py` prints the Spearman rank correlation of each share against
+copies per megabase:
 
 | share, per megabase | bins | Spearman rho |        p |
 | ------------------- | ---: | -----------: | -------: |
@@ -256,9 +256,9 @@ megabase:
 The young share falls as the copies rise, and the plus-strand control shows no
 trend.[^perbin]
 
-## Checking the bars against the file
+## Checking the bars against the BED file
 
-Read the first figure's window out of the file, one line per lineage:
+Read `chr1:151,000,000-151,030,000` out of the BED, one line per lineage:
 
 ```bash
 tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:151,000,000-151,030,000 |
@@ -273,7 +273,7 @@ tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:151,000,000-151,030
 | FLAM    |      4 |           140 |
 | AluJ    |     12 |           150 |
 
-Then count the copies in one red megabase and one blue one:
+Count the copies in one red megabase and one blue one of the share track:
 
 ```bash
 tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:191,000,001-192,000,000 |
@@ -300,7 +300,7 @@ bash build_alu_age.sh                     # builds ./alu_age_build/jbrowse2
 npx --yes serve alu_age_build/jbrowse2    # then open the printed URL
 ```
 
-With no arguments it builds the tracks over UCSC's table.
+With no arguments the script builds the tracks over UCSC's table.
 `bash build_alu_age.sh rmsk.bed.gz genome.fa` builds them over your own
 RepeatMasker BED, and `FAMILY` and `YOUNG` pick another family and its youngest
 lineage.
