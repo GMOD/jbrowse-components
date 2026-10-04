@@ -120,9 +120,11 @@ Click **chr13** on the **Whole chromosome** line of the
 [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse), which opens
 the whole chromosome with the graph drawn as one node per bubble, a region where
 the strains' paths split and rejoin. Type `chr13:119,440,000-119,600,000`, and
-the graph track draws the segments there. Pick **Layout → Force-directed
-layout** from its track menu and tick **Mark bubbles**. Turn on the bubbles
-track in the track selector.
+the graph track draws the segments there. Then:
+
+- in the graph track's menu, pick **Layout → Force-directed layout** and tick
+  **Mark bubbles**
+- turn on the bubbles track in the track selector
 
 C57BL/6J has a multi-exon deletion at _Nnt_ (nicotinamide nucleotide
 transhydrogenase) that abolishes the protein and makes C57BL/6J mice glucose

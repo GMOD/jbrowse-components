@@ -193,8 +193,8 @@ One `SyntenyTrack` names all eight assemblies. `blockAssemblies` and
 gene symbol: a conserved gene is one color down the whole stack, a lane missing
 it breaks the column, and a gene no group claims is grey. A key naming the
 groups appears in the top right once the window holds few enough to list. At the
-windows below, the ribbon-strand key takes that corner, and **Show... → Show
-legend** on the track menu hides either:
+windows below, the ribbon-strand key takes that corner. To hide either, untick
+**Show... → Show legend** on the track menu:
 
 ```json addtrack
 {

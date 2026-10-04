@@ -217,9 +217,12 @@ The track config uses the other columns, a breed and a lineage per code:
 In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000`, and the
 graph track cuts the segments around _HSPA1A_. Turn on the callset and the
 allele inventory in the track selector. An insertion has no reference span to
-draw along, so pick **Layout → Force-directed layout** and **Bubble spread →
-Compress lengths** from the graph track's menu; the figure shows all three
-tracks under the RefSeq genes.
+draw along, so in the graph track's menu:
+
+- pick **Layout → Force-directed layout**
+- pick **Bubble spread → Compress lengths**
+
+The figure shows all three tracks under the RefSeq genes.
 
 <Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. The variant lane over the rows marks the insertion beside HSPA1A. Every row but the yak has the insertion, which the inventory lists once, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
 

@@ -308,11 +308,13 @@ reference, so the build script drops it from every row. The widest stripe sits
 on a CpG island, whose high GC content lowers read depth in every canid, and
 each 5 kb window spreads that over the blocks around it.
 
-The lower track repeats the estimate for every canid, with the rows clustered on
-each animal's profile across the window by **Clustering → Cluster rows by
-similarity...** in the track menu, or `runClustering`. Clustering groups animals
-whose expansion starts and ends in the same place, and the blocks on either side
-of the gene are deletion polymorphisms.
+The lower track repeats the estimate for every canid.
+
+**Clustering → Cluster rows by similarity...** in its track menu, or
+`runClustering` in the config, orders the rows by each animal's profile across
+the window. Clustering groups animals whose expansion starts and ends in the
+same place, and the blocks on either side of the gene are deletion
+polymorphisms.
 
 The depth-based estimate puts far more of the collection at three or more copies
 than the paper reports, and the two depth sources agree too closely for the gap
