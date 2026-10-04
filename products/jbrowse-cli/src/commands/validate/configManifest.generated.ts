@@ -5778,13 +5778,125 @@ export const configManifest: ConfigManifest = {
           "type": "MafColorConfigurationSchema",
           "subSlots": [
             {
+              "name": "scheme",
+              "type": "(ColorScheme | undefined)"
+            },
+            {
+              "name": "reverse",
+              "type": "boolean"
+            },
+            {
+              "name": "domainMid",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMin",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMax",
+              "type": "(number | undefined)"
+            },
+            {
               "name": "field",
               "type": "MafColorField"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            },
+            {
+              "name": "labels",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "title",
+              "type": "(string | undefined)"
             }
           ],
           "shorthand": {
             "string": "field"
-          }
+          },
+          "fieldPresets": {
+            "mismatch": {
+              "scale": "categorical",
+              "domain": [
+                "A",
+                "C",
+                "G",
+                "T",
+                "N",
+                "gap",
+                "match"
+              ],
+              "title": "Mismatch to reference"
+            },
+            "base": {
+              "scale": "categorical",
+              "domain": [
+                "A",
+                "C",
+                "G",
+                "T",
+                "N",
+                "gap"
+              ],
+              "title": "Base"
+            },
+            "identity": {
+              "scale": "linear",
+              "domainMin": 0,
+              "domainMax": 1,
+              "scheme": "redgreyblue",
+              "title": "Per-base identity to reference"
+            },
+            "chromosome": {
+              "scale": "categorical",
+              "domain": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4"
+              ],
+              "range": [
+                "hsl(210, 55%, 55%)",
+                "hsl(28, 85%, 55%)",
+                "hsl(350, 70%, 57%)",
+                "hsl(275, 45%, 58%)",
+                "hsl(150, 45%, 42%)"
+              ],
+              "labels": [
+                "Main chromosome",
+                "2nd source",
+                "3rd source",
+                "4th source",
+                "Other source"
+              ],
+              "title": "Source chromosome"
+            },
+            "codon": {
+              "scale": "categorical",
+              "domain": [
+                "nonsyn",
+                "syn",
+                "stop"
+              ],
+              "labels": [
+                "Nonsynonymous",
+                "Synonymous",
+                "Stop gained"
+              ],
+              "title": "Codon change"
+            }
+          },
+          "fieldDefault": "mismatch"
         },
         {
           "name": "y",

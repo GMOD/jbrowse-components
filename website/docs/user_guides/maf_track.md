@@ -74,6 +74,13 @@ In a display config each option is a value of `color` (`mismatch`, `base`,
 which is `y: "identity"`, identity on each row's bar height. The two combine:
 `color: "identity", y: "identity"` shades the bars on the heatmap's ramp.
 
+The heatmap's ramp runs from 0 to 100% identity, and
+[`color`](/docs/config/mafcolor) can move it. Close relatives all sit near its
+blue end, so `color: { field: "identity", domainMin: 0.7 }` spreads the ramp
+over 70 to 100%, where they differ; `scheme`, `reverse` and `domainMid` change
+the ramp itself. The source-chromosome colours below take a `range`, one colour
+per rank.
+
 The heatmap and the X-Y plot draw only while you are zoomed out past base level,
 where individual bases are no longer legible, and zooming in swaps them back for
 the ordinary base coloring; uncheck **Show bases when zoomed in** to keep the

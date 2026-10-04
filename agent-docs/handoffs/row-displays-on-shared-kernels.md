@@ -100,5 +100,5 @@ one resolution, a label bar, groups as attributes, one key and one dialog.
 
 The variant cells onto `spanMark` (~400 lines of render-core to delete ~350);
 MAF onto the mark display (ADR-199); an ordinal x for the matrix and LD; a
-helper per repeated menu action; `MafColor` and the MAF band's `scales.y`
-before their trigger.
+helper per repeated menu action; the MAF band's `scales.y` before its
+trigger.

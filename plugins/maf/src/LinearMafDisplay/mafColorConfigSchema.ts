@@ -2,7 +2,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import {
   colorDomainEndsSlots,
-  colorLabelsSlot,
   colorRampSlots,
   normalizeChannel,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -120,7 +119,15 @@ export const mafColorConfigSchema = ConfigurationSchema(
       description:
         "CSS colours: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colours",
     },
-    ...colorLabelsSlot,
+    /**
+     * #slot labels
+     */
+    labels: {
+      type: 'stringArray',
+      defaultValue: [],
+      description:
+        'what the key names each domain value, one each in order; one past the list keeps its own name',
+    },
     /**
      * #slot title
      */
@@ -137,6 +144,15 @@ export const mafColorConfigSchema = ConfigurationSchema(
       model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
       description:
         "the named ramp identity runs along; unset is redgreyblue, and range's colours, where it lists any, win over it",
+    },
+    /**
+     * #slot reverse
+     */
+    reverse: {
+      type: 'boolean',
+      defaultValue: false,
+      description:
+        'turns the identity ramp round, so its last colour paints the low end',
     },
     /**
      * #slot domainMin

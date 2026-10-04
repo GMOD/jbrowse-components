@@ -194,11 +194,13 @@ matplotlib's perceptual ramps, dark at the low end; `juicebox` fades from
 transparent to red, as Juicebox paints contacts; `fall` runs white through
 yellow and red to black, as HiGlass does; `reds` and `blues` are
 ColorBrewer's, from white; `redblue` and `purpleorange` diverge through
-white, ColorBrewer's RdBu and PuOr.
+white, ColorBrewer's RdBu and PuOr; `redgreyblue` diverges through a grey
+middle, which stays visible on a white page where a white middle would not,
+as the MAF display's identity ramp paints it.
 
 ```js
 // type signature
-readonly ["viridis", "magma", "inferno", "cividis", "juicebox", "fall", "reds", "blues", "redblue", "purpleorange"]
+readonly ["viridis", "magma", "inferno", "cividis", "juicebox", "fall", "reds", "blues", "redblue", "purpleorange", "redgreyblue"]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
@@ -330,7 +332,7 @@ and its siblings do, juicebox, fall, reds and blues do not.
 
 ```js
 // type signature
-(scheme: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "reds" | "viridis") => boolean
+(scheme: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis") => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -356,7 +358,7 @@ alike.
 
 ```js
 // type signature
-"blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "reds" | "viridis"
+"blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis"
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)

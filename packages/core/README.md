@@ -347,7 +347,9 @@ matplotlib's perceptual ramps, dark at the low end; `juicebox` fades from
 transparent to red, as Juicebox paints contacts; `fall` runs white through
 yellow and red to black, as HiGlass does; `reds` and `blues` are ColorBrewer's,
 from white; `redblue` and `purpleorange` diverge through white, ColorBrewer's
-RdBu and PuOr.
+RdBu and PuOr; `redgreyblue` diverges through a grey middle, which stays visible
+on a white page where a white middle would not, as the MAF display's identity
+ramp paints it.
 
 ```js
 // type signature
@@ -361,7 +363,8 @@ readonly[
   'reds',
   'blues',
   'redblue',
-  'purpleorange')
+  'purpleorange',
+  'redgreyblue')
 ]
 ```
 
@@ -509,7 +512,7 @@ siblings do, juicebox, fall, reds and blues do not.
 
 ```js
 // type signature
-(scheme: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "reds" | "viridis") => boolean
+(scheme: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis") => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -542,6 +545,7 @@ so a declaration spelling it out and one leaving it unset resolve alike.
   'magma' |
   'purpleorange' |
   'redblue' |
+  'redgreyblue' |
   'reds' |
   'viridis'
 ```

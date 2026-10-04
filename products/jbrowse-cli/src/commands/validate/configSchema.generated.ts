@@ -3629,7 +3629,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "reds",
                 "blues",
                 "redblue",
-                "purpleorange"
+                "purpleorange",
+                "redgreyblue"
               ]
             },
             "reverse": {
@@ -4374,7 +4375,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "reds",
                 "blues",
                 "redblue",
-                "purpleorange"
+                "purpleorange",
+                "redgreyblue"
               ]
             },
             "reverse": {
@@ -5258,7 +5260,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "reds",
                 "blues",
                 "redblue",
-                "purpleorange"
+                "purpleorange",
+                "redgreyblue"
               ]
             },
             "reverse": {
@@ -5767,7 +5770,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "reds",
                 "blues",
                 "redblue",
-                "purpleorange"
+                "purpleorange",
+                "redgreyblue"
               ]
             },
             "reverse": {
@@ -5950,7 +5954,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "reds",
                 "blues",
                 "redblue",
-                "purpleorange"
+                "purpleorange",
+                "redgreyblue"
               ]
             },
             "reverse": {
@@ -7547,7 +7552,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "reds",
             "blues",
             "redblue",
-            "purpleorange"
+            "purpleorange",
+            "redgreyblue"
           ]
         },
         "reverse": {
@@ -7716,7 +7722,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "reds",
                 "blues",
                 "redblue",
-                "purpleorange"
+                "purpleorange",
+                "redgreyblue"
               ]
             },
             "reverse": {
@@ -8010,6 +8017,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
+            "scheme": {
+              "description": "the named ramp identity runs along; unset is redgreyblue, and range's colours, where it lists any, win over it.",
+              "enum": [
+                "viridis",
+                "magma",
+                "inferno",
+                "cividis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues",
+                "redblue",
+                "purpleorange",
+                "redgreyblue"
+              ]
+            },
+            "reverse": {
+              "description": "turns the identity ramp round, so its last colour paints the low end.",
+              "type": "boolean",
+              "default": false
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "type": "number"
+            },
+            "domainMin": {
+              "description": "the identity the ramp's low end paints, 0 to 1; unset is 0, and 0.7 spreads the ramp over close relatives.",
+              "type": "number"
+            },
+            "domainMax": {
+              "description": "the identity the ramp's high end paints; unset is 1.",
+              "type": "number"
+            },
             "field": {
               "description": "what colours a cell: mismatch, base, identity, chromosome or codon.",
               "enum": [
@@ -8020,6 +8060,53 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "codon"
               ],
               "default": "mismatch"
+            },
+            "domain": {
+              "description": "the values the key lists, in order: under chromosome each rank from 0, the main source chromosome; under codon nonsyn, syn and stop.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "range": {
+              "description": "CSS colours: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colours.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
+            },
+            "labels": {
+              "description": "what the key names each domain value, one each in order; one past the list keeps its own name.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "title": {
+              "description": "key title; unset is the field's own heading, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {
@@ -8217,7 +8304,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "reds",
             "blues",
             "redblue",
-            "purpleorange"
+            "purpleorange",
+            "redgreyblue"
           ],
           "default": "juicebox"
         },
@@ -18216,7 +18304,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "reds",
                 "blues",
                 "redblue",
-                "purpleorange"
+                "purpleorange",
+                "redgreyblue"
               ]
             },
             "reverse": {
