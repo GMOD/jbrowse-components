@@ -5396,7 +5396,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         type: 'text',
         fontSize: 17,
         maxWidth: 380,
-        text: 'a palindrome: a forward match (salmon) and an inverted one (magenta)',
+        text: 'a palindrome: a forward match (salmon) and an inverted one (lavender)',
         anchor: {
           // the bare testid, not `displayPainted(...)`: an annotation anchor
           // only has to FIND the element, and annotations are drawn after the

@@ -84,7 +84,7 @@ copies of the same Y-linked families, RBMY1B and RBMY1A1 on one side against
 RBMY1D and RBMY1E on the other, CDY10P and CDY11P either side of the centre. The
 unpainted gaps inside the arms are where the two copies differ.
 
-<Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length, where four crossings remain. Bottom, one of them in a linear synteny view, colored by strand, with the genes beneath each panel. The pinched magenta ribbon is the inverted alignment." src="/img/synteny_self_chry_palindromes.png" />
+<Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length, where four crossings remain. Bottom, one of them in a linear synteny view, colored by strand, with the genes beneath each panel. The pinched lavender ribbon is the inverted alignment." src="/img/synteny_self_chry_palindromes.png" />
 
 Which view to reach for is a question of how many alignments are in frame. Every
 ribbon spans the full height of the strip, so ribbons stack rather than
