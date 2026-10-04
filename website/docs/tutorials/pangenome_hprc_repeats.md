@@ -118,19 +118,17 @@ Click the KIV-2 bubble boxed in the bubbles lane. Its details give
 routes the rGFA holds there. Every bar in walk rows falls between them, and
 GRCh38's, with no purple, is the shortest of the nine.
 
-## Which copy is which
+## Telling KIV-2's two repeat units apart {#which-copy-is-which}
 
 Walk rows count copies. At KIV-2 each extra copy is a run of new nodes, and the
 GRCh38 copy the graph aligns it to is the aligner's pick among near-identical
-sequences, so the walks leave open which copy is which. At a duplication such as
-amylase's the graph can also thread a copy GRCh38 has through nodes of its own,
-so there count the genes on each bar instead (see
-[the haplotypes page](/docs/tutorials/pangenome_hprc_haplotypes)). A record that
-lists each haplotype's copies tells them apart.
+sequences, so the walks leave open which copy is which. A record that lists each
+haplotype's copies tells them apart.
 
-We host one as a track. It holds a single VCF 4.5 `<CNV:TR>` record at the
-array: each allele lists its runs of one unit and every copy's length, and a
-phased genotype puts each allele on its haplotype:
+We host a record of the eight haplotypes' KIV-2 copies as a track. It holds a
+single VCF 4.5 `<CNV:TR>` record at the array: each allele lists its runs of one
+unit and every copy's length, and a phased genotype puts each allele on its
+haplotype:
 
 ```json addtrack
 {
@@ -154,9 +152,10 @@ from each other less than the two units do. Unit 2 opens most of the HPRC arrays
 and sits fourth in GRCh38's, and every HG00133 copy is of unit 1. The copy
 counts agree with the walk lengths in walk rows.
 
-The record came from the same graph cut. To write one for your own array, we'll
-first cut the walks over it out of the gbz-base database as GFA, with enough
-context that the cut reaches the reference nodes on either side:
+We wrote the KIV-2 record from the gbz-base cut of the walks above. To write one
+for your own array, we'll first cut the walks over it out of the gbz-base
+database as GFA, with enough context that the cut reaches the reference nodes on
+either side:
 
 ```bash
 # the reference walk is PanSN GRCh38#0#chr6; the interval is the array
@@ -178,16 +177,18 @@ printf 'chr6\t160616002\t160646753\tKIV-2\n' > arrays.bed
 node tandem-repeat-vcf.mjs cut.gfa --bed arrays.bed --name KIV-2 > kiv2.vcf
 ```
 
-A repeat finder's output draws the same way once it is written in those fields.
+A repeat finder's output draws as these bars too once it is written as a
+`<CNV:TR>` record with each allele's runs and copy lengths.
 
-## The ABCA7 VNTR
+## Measuring the ABCA7 VNTR in every haplotype's walk
 
 Each walk's length comes from an assembly, and HiFi reads measure the same
-repeat independently. An intron of _ABCA7_ holds a VNTR tied to Alzheimer's
-disease risk (De Roeck et al. 2018), which PacBio genotyped from HiFi reads in
-100 HPRC samples. Open the session below: the genes, the catalogue's VNTR row
-and the TRGT genotypes, over the gbz-base graph track cut for every haplotype
-(an empty `subgraphHaplotypes`) in **Walk rows** layout with **Uniform** color:
+repeat independently. An intron of _ABCA7_ holds a VNTR, a variable-number
+tandem repeat, tied to Alzheimer's disease risk (De Roeck et al. 2018), which
+PacBio genotyped from HiFi reads in 100 HPRC samples. Open the session below:
+the genes, the catalogue's VNTR row and the TRGT genotypes, over the gbz-base
+graph track cut for every haplotype (an empty `subgraphHaplotypes`) in **Walk
+rows** layout with **Uniform** color:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -255,7 +256,7 @@ and the TRGT genotypes, over the gbz-base graph track cut for every haplotype
 Each row is one haplotype's walk between the flanking reference nodes, blue on
 GRCh38's path and purple off it; GRCh38's walk is the short bar at the top.
 
-## TRGT's calls on the same bars
+## Setting TRGT's read-based calls on the walk-row bars
 
 [TRGT](https://github.com/PacificBiosciences/trgt) genotypes tandem repeats from
 HiFi reads. We host its _ABCA7_ call as this track:
@@ -291,10 +292,10 @@ motif-length units, each walk gets a black tick at the allele TRGT called for it
 
 ## Samples where reads and assemblies disagree
 
-Cut seven samples by editing the previous session's graph display. List HG00099,
-HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in `subgraphHaplotypes`,
-list the same names in `walkRowSamples` to show their walks in pairs in that
-order, and set `repeatKey` to `chr19:1049406-1050096`.
+Cut seven samples by editing the graph display in the ABCA7 session above. List
+HG00099, HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in
+`subgraphHaplotypes`, list the same names in `walkRowSamples` to show their
+walks in pairs in that order, and set `repeatKey` to `chr19:1049406-1050096`.
 
 HG00099, HG03688 and HG00741 tick at the end of each bar: reads and assemblies
 agree. HG02647 and HG01943 turn red: TRGT calls each near-homozygous while the
@@ -305,7 +306,7 @@ the repeat, so its readout marks that walk partial.
 
 <Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar marked with the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
-## Check it against TRGT's genotypes
+## Reading HG02559's grey tick in TRGT's sample table
 
 Click the TRGT record. Its sample table gives `AL`, the allele lengths behind
 each tick, and `SD`, the number of reads spanning each allele. One of HG02559's
@@ -345,14 +346,14 @@ opens above the details. With 94 samples the card starts on **By allele**: one
 bar per allele instead of one per haplotype, each labelled with its share of the
 188 called alleles, most common first.
 
-<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each bar is one of TRGT's alleles as copies of the 51 bp motif, with its share of the called alleles at left and its length and copy count at right. Almost every bar is an allele called once." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
+<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each bar is one of TRGT's alleles as copies of the 51 bp motif, most common first, with its share of the called alleles at left and its length and copy count at right." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
 Almost every allele is called once, and no sample has GRCh38's allele. Click the
 ALT 1 bar: the other bars fade and the **Samples** card narrows to the samples
 with it. **By haplotype** swaps the bars for the first 30 called alleles, each
 labelled with its sample.
 
-## Check the alleles against TRGT's lengths
+## HG00099's alleles in the card and in TRGT's AL field
 
 HG00099's genotype in the sample table is `1/2` with `AL` `387,3161`. The card's
 ALT 1 bar reads 387 bp and its ALT 2 bar reads 3.2 kb, so the alleles' lengths
