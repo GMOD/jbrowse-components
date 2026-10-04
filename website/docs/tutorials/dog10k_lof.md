@@ -19,7 +19,6 @@ every canid in the collection.
 
 ## Prerequisites
 
-- nothing to read along. Everything below is for building the tracks yourself
 - the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
   [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
   is a config that loads it with its gene and repeat tracks, and the
@@ -55,7 +54,7 @@ directly over HTTP with no local copy of the 397 GB callset.
 - the 15 published CRAMs the copy-number lane validates callset depth against:
   https://kiddlabshare.med.umich.edu/dog10K/cram-share/
 
-## The genome
+## Loading the UU_Cfam_GSD_1.0 dog assembly
 
 The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
 We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
@@ -80,8 +79,9 @@ GenBank accessions:
 ## The CYP1A2 nonsense variant
 
 _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs have a nonsense
-variant. This tutorial draws one half of the Dog10K paper's figure for the gene:
-the truncating variant and who has it.
+variant. The Dog10K paper's figure for the gene has two halves, the truncating
+variant and who has it, and the gene's copy number across the collection, and we
+draw both.
 
 The consequence is recessive: liver microsomes from dogs homozygous for the
 truncating allele have no CYP1A2 protein and those dogs are poor metabolizers of
@@ -91,7 +91,7 @@ drugs the enzyme clears, while heterozygotes express it normally
 The questions are which breeds have it and whether it is present in wild canids,
 which are the control: an allele shared with wolves predates domestication.
 
-## Deriving the variant's coordinate
+## Deriving the CYP1A2 stop codon's coordinate from the reference
 
 The literature names this variant by its protein consequence, p.Arg373Ter, which
 is enough to locate it against whichever assembly is in use.
@@ -112,12 +112,13 @@ callset at exactly that position finds it, passing every filter:
 <!-- from: scripts/build_dog10k_cyp1a2.sh -->
 
 ```bash
+SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 bcftools query -r chr30:38261635-38261636 -f '%POS\t%REF\t%ALT\t%FILTER\t%AC\t%AN\n' \
   "$SNVS"
 # chr30  38261635  C  T  PASS  174  3974
 ```
 
-## Slicing the gene out of the callset
+## Slicing CYP1A2 out of the Dog10K SNV callset
 
 The Dog10K SNV callset is a single 397 GB VCF over 1,987 canids with a tabix
 index, so `bcftools` fetches one gene over HTTP:
@@ -136,7 +137,7 @@ tabix -p vcf dog10k_cyp1a2_snvs.vcf.gz
 `cyp.samples` holds breeds that have the allele, two that do not, and four Greek
 gray wolves.
 
-## Loading the slice with breed labels
+## Loading the CYP1A2 slice as a variant track
 
 An SNV VCF loads as an ordinary `VariantTrack`:
 
@@ -149,10 +150,12 @@ An SNV VCF loads as an ordinary `VariantTrack`:
 }
 ```
 
-The display draws one row per sample, labelled with the Dog10K IDs. Two settings
-relabel the rows without touching the VCF: the display's `rows` labels for named
-animals ([](/docs/tutorials/dog10k_svs)), or a `samplesTsvLocation` for a larger
-panel ([Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)).
+The display draws one row per sample, labelled with the Dog10K IDs. The figure
+below names them by breed with the display's `rows`, which takes the order in
+`domain` and a name per ID in `labels` (`{ "GHND000001": "German Hound 1" }`),
+and tints them with `rowColor`. **Edit colors/arrangement...** in the track menu
+writes both keys as you rename and recolour rows. For a larger panel, a
+`samplesTsvLocation` on the adapter supplies the names instead.
 
 A whole-gene view of the slice is a field of one-pixel ticks, so zoom to the
 codon. At base level each sample's call is a block, and the gene track shows
@@ -162,7 +165,7 @@ which exon it sits in.
 
 <Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant lane, then one row per dog. Five breeds have it; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
 
-The build script genotypes the same site over every canid in the callset. Dozens
+The build script genotypes the stop site over every canid in the callset. Dozens
 of breeds have the allele and it reaches homozygosity in several: every German
 Hound and every Shetland Sheepdog sampled here has at least one copy, while
 every wolf and every coyote in the collection is homozygous reference.
@@ -277,15 +280,17 @@ label for each, so the legend reads as copy number:
 }
 ```
 
-The build script prints this `color` block from the palette it painted with. For
-named animals in a chosen order, `rows` takes
-`{ "field": "sample", "domain": [...] }` with the row names listed.
+The build script prints this `color` block from the palette it painted with. The
+figure's upper lane is a second BED the script writes,
+`dog10k_cyp1a2_breed_cn.bed.gz`, whose `sample` column already holds breed
+names; its track takes `rows: { "field": "sample", "domain": [...] }` with those
+names in drawing order.
 
 The figure has two lanes, each window coloured by its rounded call and grey at
 two copies: named animals above, and all 1,987 canids clustered on their
 profiles below.
 
-<Figure caption="Copy number over CYP1A2 and 185 kb around it, named animals above and the whole collection below. The expansion is a breed-level fact in some breeds and segregates one dog to the next in others." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
+<Figure caption="Copy number over CYP1A2 and its neighbours, named animals above and the whole collection below. The expansion is a breed-level fact in some breeds and segregates one dog to the next in others." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper lane holds every Golden Retriever, Labrador Retriever and Boxer in the
 collection, plus the four wolves from the genotype figure. Every Golden has the
@@ -304,7 +309,7 @@ on a CpG island: high GC lowers read depth in every canid, and each 5 kb window
 spreads that over the blocks around it.
 
 The lower lane is the same estimate over every canid, clustered on each animal's
-profile across the window with **Clustering → Cluster rows by similarity** in
+profile across the window with **Clustering → Cluster rows by similarity...** in
 the track menu, or `runClustering`. Clustering groups animals whose expansion
 starts and ends in the same place, and the blocks on either side of the gene are
 deletion polymorphisms.
