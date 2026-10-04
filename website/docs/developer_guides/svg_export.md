@@ -5,9 +5,9 @@ guide_category: Plugins
 ---
 
 Implement `renderSvg()` on your display by returning
-`renderDisplaySvg(model, opts, YourSvgBody)` and painting through `PaintLayer`.
-It is optional — a display without one is left out of the export, and the user
-is told which tracks were left out.
+`renderDisplaySvg(model, opts, YourSvgBody)` and painting through `MarkSvgLayer`
+or `PaintLayer`. It is optional — a display without one is left out of the
+export, and the user is told which tracks were left out.
 
 The Linear Genome View's `exportSvg()` action calls each visible display's
 `renderSvg()`, collecting the returned React nodes and rendering them into a
@@ -105,8 +105,13 @@ The surface comes from `opts`:
 
 Anything draw-shaped should go through it. Hand-rolled
 `<rect>`/`<path>`/`<line>` usually means the code should go through `PaintLayer`
-instead, the exceptions being trivial chrome and React-SVG overlays shared with
-the on-screen path.
+instead, the exceptions being trivial chrome and captions such as tree labels.
+
+A display on the mark layer paints through `MarkSvgLayer` from
+`@jbrowse/display-kit/MarkSvgLayer`, a `PaintLayer` that runs a mark list over
+the render blocks. It frames the state at the layer's own `width` and `height`,
+and its optional `paint` callback draws the overlays the screen stacks over its
+canvas, with that same framed state.
 
 ## Implementing renderSvg
 
@@ -232,9 +237,10 @@ Paint at the `canvasWidth` the shell hands your body, never at
 `view.trackWidthPx` — `view.width` minus the 2px track outline the export does
 not draw — and that same number is the block scissor bound, so painting an
 export at it clips the rightmost 2px column of content inside a `view.width`
-frame. `LinearMultiRowFeatureDisplay` shipped exactly that bug. A body reusing
-`model.renderState` has to override `canvasWidth` with the prop, as the sequence
-body above does.
+frame. `LinearMultiRowFeatureDisplay` shipped exactly that bug. `MarkSvgLayer`
+replaces the state's canvas box with the `width` and `height` you pass it, so
+the sequence body above hands it `model.renderState` unchanged. A body calling
+`PaintLayer` directly has to override `canvasWidth` itself.
 
 The Y axis runs 0 (top) to `model.height` (bottom), same as on-screen.
 Horizontal placement comes from `renderBlocks`, which gives `{ startPx, endPx }`
@@ -246,15 +252,31 @@ same expression, for the on-screen path.)
 Clip-path ids must be scoped by the owning model's `.id` — SVG ids are
 document-global, and a duplicate renders the second group unclipped.
 
+## Colours, fonts and live figures
+
+The export dialog picks its own theme and font, which need not be the ones the
+session shows. A body reads colours from `usePalette()`, never from the session.
+When a model input is built from the theme, give it a twin that takes the
+palette and call that from the body; the sequence display's `colorPaletteIn`
+above is one, beside the `colorPalette` getter the screen reads.
+
+The dialog sets `font-family` on the root `<svg>`, so a `<text>` should leave
+the attribute off and inherit it. Measure labels in `opts.fontFamily`.
+
+A live figure (`useViewSvgFigure`) mounts the export in a page and freezes it
+against one snapshot of the model. Draw overlays as plain components that read
+the model once: an `observer` used on screen follows the view, so a pan slides
+its labels across layers drawn before it.
+
 ## Reusing on-screen drawing code
 
 **The GPU shader path is an accelerator, the Canvas2D painter is the source of
 truth, and SVG export runs it.** A shader-only tweak therefore leaves the export
 unchanged.
 
-A display on the mark layer gets this for nothing: `paintMarkBlocks` runs each
-mark's `paintBlock` against the SVG context, so its body is one call over the
-same list the on-screen backend draws —
+A display on the mark layer gets this for nothing: `MarkSvgLayer` runs each
+mark's `paintBlock` against the SVG context, so its body is one component over
+the same list the on-screen backend draws —
 `example-plugins/score-example/src/LinearScoreDisplay/renderSvg.tsx` is the
 whole of one. Drawing that is not a shape is a function written against `Ctx2D`
 and called from both the on-screen layer and `renderSvg` — the sequence body

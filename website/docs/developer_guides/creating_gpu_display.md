@@ -831,9 +831,9 @@ get hoverInk(): HighlightRect[] {
 
 ## Step 8: SVG export
 
-The mark already provides the export. `paintMarkBlocks` runs each mark's painter
-against the SVG context, and `renderDisplaySvg` handles the readiness gate and
-the terminal states around it. The whole file:
+The mark already provides the export. `MarkSvgLayer` runs each mark's painter
+against the SVG context at the export's size, and `renderDisplaySvg` handles the
+readiness gate and the terminal states around it. The whole file:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/renderSvg.tsx#render-svg -->
 
@@ -869,7 +869,10 @@ function ScoreSvgBody({
 ```
 
 The model's `renderSvg` action loads it lazily, so the export code is in no
-eager chunk. [](/docs/developer_guides/svg_export) has the pipeline.
+eager chunk. The score's colour comes from config, so `model.renderState` is
+already right for the export. A render state built from the theme is not: the
+export dialog picks its own, which the body reads with `usePalette()`.
+[](/docs/developer_guides/svg_export) has the pipeline and that rule.
 
 ## Step 9: Register the display
 

@@ -28,7 +28,25 @@ minimized track, and `notifySkippedSvgTracks` names it.
 
 **The export canvas width is `view.width`**, not `renderState.canvasWidth`
 (`view.trackWidthPx`, 2px narrower). Reusing the on-screen width clips the last
-column; a body reusing `model.renderState` overrides `canvasWidth`.
+column. A body paints a mark list through `MarkSvgLayer` (display-kit), which
+replaces the state's canvas box with the layer's own `width` and `height`; its
+`paint` callback draws the overlays the screen stacks over its canvas, with the
+same framed state.
+
+**Colours come from `usePalette()`**, never `getPaletteHost` or the session:
+the export dialog picks a theme the session need not be showing. A model input
+built from the theme gets a twin taking the palette (`renderStateIn`,
+`colorPaletteIn`, `rowsEncodePropsIn`), and the body calls that. Patching a
+palette into the getter's output re-copies model logic into the export.
+
+**Text inherits the export's font.** The dialog puts `font-family` on the root,
+so a `<text>` that writes the theme's family overrides it; measure in
+`opts.fontFamily` and leave the attribute off.
+
+**A live figure (`useViewSvgFigure`) freezes against one snapshot.** An export
+draws plain components that read the model once, never an on-screen observer:
+an observer follows the view, so a pan slides its labels across layers drawn
+before it.
 
 ## The `svgReady` gate
 
@@ -90,6 +108,7 @@ leaves it declining forever:
   `setError`, not `notifyError`; retriable ones run from an autorun on
   `reloadCounter`. Cover an empty binsize list too.
 - **The containing view is empty** (chord display's `extraTerminal`).
+
 ## PaintLayer: raster-vs-vector dispatch
 
 - **A scale that rounds to zero must not go in the ctx matrix.** `serializeSvg`
@@ -99,9 +118,8 @@ leaves it declining forever:
 - **No hand-rolled JSX-SVG for anything draw-shaped** in `renderSvg.tsx`; it
   cannot rasterize and drifts from on-screen output. Exceptions: trivial chrome
   (`SvgClipRect`); Bezier-arc overlays sharing a `computeXxxArcs` with the screen
-  ("interactive" is not a reason; ADR-163 ended the arc plugin's); and passive
-  shared React-SVG overlays via an `exportSVG` prop. A control and a caption
-  cannot share a component (`LaneHeaders` / `SvgLaneHeaders`).
+  ("interactive" is not a reason; ADR-163 ended the arc plugin's). A control
+  and a caption cannot share a component (`LaneHeaders` / `SvgLaneHeaders`).
 
 ## Clip-path ids must be model-scoped
 
@@ -115,5 +133,6 @@ Prefer `SvgClipRect`.
 
 - **XML entities only.** U+00A0 becomes `&#160;`; `&nbsp;` breaks the `.svg`, the
   PNG path and `rsvg-convert`.
+
 Every export tree mounts `SvgThemeProviders`, or a `usePalette` body draws in the
 default light theme.

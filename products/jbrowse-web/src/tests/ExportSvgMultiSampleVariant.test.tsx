@@ -60,8 +60,7 @@ function expectFitModeSpread(svg: string) {
 // the lines tying each column to its genomic position. The export used to draw
 // neither: rows started at y=0 (20px above where the live canvas and tree
 // sidebar put them, leaving the bottom 20px blank) and the connector lines were
-// missing entirely, even though the component already had an `exportSVG` mode
-// nothing called.
+// missing entirely.
 test('the matrix export spreads rows in fit mode, below the connector lines', async () => {
   const { view, info } = await openMultiSampleVariantDisplay({
     displayType: 'matrix',
