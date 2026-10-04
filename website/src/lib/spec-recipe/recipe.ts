@@ -1,12 +1,14 @@
 import { deriveAddTrack, deriveAddTrackJson } from '../derive-add-track.ts'
 import { fileKind, lookupAssembly, lookupTrack } from './configs.ts'
 import { takeArrangement } from './arrangements.ts'
+import { captureFrame } from './agent.ts'
 import { imgRecipe } from './img.ts'
 import { figureFrames, videoFrames } from '../liveLinks.generated.ts'
 
 import type { RawTrack, TrackInfo  } from './configs.ts'
 import {
   decodeSpecUrl,
+  openedTrackIds,
   specDisplayType,
   specTrackId,
   specTrackSettings,
@@ -22,6 +24,7 @@ import { configManifest } from '../../../../products/jbrowse-cli/src/commands/va
 import { toProtocolUrl } from '../../../../products/jbrowse-desktop/electron/launchTarget.ts'
 
 import type { SessionSpec, SpecTrackEntry, SpecView } from './decode.ts'
+import type { AgentRecipe } from './agent.ts'
 import type { FieldContext, FieldRecipe } from './fields.ts'
 import type { ImgRecipe } from './img.ts'
 
@@ -62,7 +65,7 @@ export interface Recipe {
   python?: string
   // the `npx @jbrowse/capture` invocation that rebuilds this figure, for an
   // agent asked to make one like it
-  agentCommand: string
+  agent: AgentRecipe
   // the @jbrowse/img command drawing a one-view figure without a browser
   img?: ImgRecipe
   // the figure's own tracks as jbrowse CLI commands, for a reader putting them
@@ -363,13 +366,6 @@ function pythonLiteral(value: unknown, indent: string) {
     .replaceAll('\n', `\n${indent}`)
 }
 
-function openedTrackIds(view: SpecView): string[] {
-  return [
-    ...specTracks(view).map(specTrackId),
-    ...(view.views ?? []).flatMap(openedTrackIds),
-  ]
-}
-
 // A config's plugins are UMD builds or relative ESM paths, and neither the
 // notebook widget nor jbrowse-img loads them, so a figure needing one gets
 // neither snippet.
@@ -522,33 +518,6 @@ export function deriveCliRecipe(sessionTracks: RawTrack[] | undefined) {
     : undefined
 }
 
-// The shell command that rebuilds this figure headlessly.
-//
-// A figure's `config=` is written as the live link needs it — usually relative
-// to the instance serving it (`test_data/volvox/config.json`) — and a command
-// run from anywhere else has to resolve that against the instance's own origin
-// or fetch nothing. The spec goes to a file rather than inline: it is a whole
-// JSON document, and quoting one into a shell argument is the step an agent
-// most reliably gets wrong.
-function agentCommandFor(
-  base: string,
-  configUrl: string,
-  specJson: string,
-  frame: { width: number; height: number } | undefined,
-) {
-  const instance = base.endsWith('/') ? base : `${base}/`
-  return [
-    "cat > session.json <<'JSON'",
-    specJson,
-    'JSON',
-    '',
-    `npx @jbrowse/capture --instance ${instance} \\`,
-    `  --config ${configUrl} \\`,
-    ...(frame ? [`  --width ${frame.width} --height ${frame.height} \\`] : []),
-    '  --session session.json -o figure.png',
-  ].join('\n')
-}
-
 // Opening a figure in Desktop writes a real session to disk, so the name it
 // carries is the one the reader lives with — in the session UI, and in the
 // recent-sessions list once autosaves are shown. Every figure link says
@@ -626,7 +595,7 @@ export function buildRecipe(
     steps,
     webSteps: forWeb(steps),
     python: plugin ? undefined : pythonSnippet(configUrl, spec),
-    agentCommand: agentCommandFor(base, configUrl, specJson, frame),
+    agent: { frames: [captureFrame(decoded, figureName)], notes: [] },
     img: plugin ? undefined : imgRecipe(spec, configUrl, frame?.width),
     cli: deriveCliRecipe(sessionTracks),
     unmapped: [...new Set(collected.flatMap(c => c.unmapped))],

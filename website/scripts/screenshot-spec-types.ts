@@ -95,7 +95,7 @@ export interface ScreenshotAction {
   //
   //   graphNode  a GFA segment in a graph track, with `track` naming which when
   //              the view holds several, or in a GraphGenomeView
-  //              (scripts/graphAnchor.ts)
+  //              (@jbrowse/capture's graphAnchor.ts)
   //   locus      a genomic coordinate in a linear view (scripts/locusAnchor.ts),
   //              with `track` naming which track to land in and `fracY` how far
   //              down its band (default the middle)
@@ -109,6 +109,31 @@ export interface ScreenshotAction {
   // the width, locus and layout it was measured against, and nothing tells you
   // when one of those changes — see locusAnchor.ts for what that cost.
   anchor?: AnnotationAnchor
+}
+
+// Park the mouse somewhere that cannot react to it, so no overview-ruler
+// position readout or feature hover is left hanging in the capture.
+//
+// The JBrowse wordmark in the app bar, by its own `aria-label`, rather than the
+// `{ x: 950, y: 60 }` this idiom used to be written as. That point was described
+// in every copy as "the inert app header" and is nothing of the sort: at
+// viewportWidth 1000 it lands in the *view's* title bar a few px from the
+// minimize button, so it was one toolbar tweak away from parking the cursor on a
+// control and one narrower viewport away from parking it on the canvas. The
+// wordmark is the only thing up there that is guaranteed inert — it is an svg
+// with no handlers — and it moves with the layout instead of having to be
+// re-measured when the layout moves.
+//
+// The swap is inert: of the 16 figures converted, every one whose spec changed
+// in no other way came back byte-identical. The six that did move moved on app
+// drift accumulated since they were last swept — `alignments_soft_clipped_menu`
+// gained a `Launch` item and lost `Set max layout height...`, which is 12%
+// of its pixels and nothing to do with where the cursor sits. Those six were
+// restored from the store rather than committed, so the sweep can pick the drift
+// up on its own with nothing else in the diff.
+export const PARK_CURSOR: ScreenshotAction = {
+  type: 'hover',
+  selector: '[aria-label="JBrowse"]',
 }
 
 // One frame of a multi-stage figure. The page is captured after this stage's
@@ -279,6 +304,18 @@ export interface SessionUrlSpec extends CommonSpecFields {
   readyTimeout?: number // ms override for the ready wait (default 30000)
   waitUntil?: 'networkidle0' | 'domcontentloaded' // override goto waitUntil
   actions?: ScreenshotAction[]
+  // What the `actions` open over the view for the figure to show, as the noun
+  // phrase the recipe dialog completes "The figure's clicks open …" with: "the
+  // track menu", "the ribbon's tooltip". The dialog's capture command opens
+  // the session and clicks nothing, so it says the command draws the view
+  // under this, and leaves out the callouts anchored to it.
+  clicksOpen?: string
+  // What the `actions` change that the session does not hold, as the verb
+  // phrase completing "The figure's clicks …": "close the legend", "sort the
+  // rows by genotype at HGSV_1821". A change a session spec can express
+  // belongs in `url` instead, so the capture command lands on the picture;
+  // this is for the rest, and the dialog says its picture differs there.
+  clicksChange?: string
 }
 
 // Invoke the @jbrowse/img CLI (jb2export) directly. These produce the

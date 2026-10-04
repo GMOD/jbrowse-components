@@ -12,11 +12,11 @@ export interface ImgRecipe {
 const LINEAR_FLAGS = new Set(['trackLabels', 'showGridlines'])
 const LINEAR_CARRIED = new Set(['type', 'assembly', 'loc', 'tracks'])
 
-function quote(arg: string) {
+export function quote(arg: string) {
   return /^[\w.,:/@%+=-]+$/.test(arg) ? arg : `'${arg.replaceAll("'", `'\\''`)}'`
 }
 
-function heredoc(file: string, value: unknown) {
+export function heredoc(file: string, value: unknown) {
   return [`cat > ${file} <<'JSON'`, JSON.stringify(value, null, 2), 'JSON', '']
 }
 

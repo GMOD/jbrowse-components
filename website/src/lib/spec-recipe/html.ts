@@ -1,5 +1,6 @@
 import { escapeAttr } from '../inline-html.ts'
 
+import type { AgentRecipe } from './agent.ts'
 import type { Recipe, RecipeStep } from './recipe.ts'
 
 // First Desktop release carrying the jbrowse:// handler + "Open JBrowse Web
@@ -158,16 +159,31 @@ function panels(recipe: Recipe): Panel[] {
           },
         ]
       : []),
-    {
-      label: 'Agent',
-      kind: 'agent',
-      body: [
-        note('Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit — swap an adapter <code>uri</code> for your own file and rerun.'),
-        copyableBlock(recipe.agentCommand, 'spec-json'),
-        note('<a href="/docs/agents/">Using JBrowse with AI agents</a> covers the rest: <a href="/docs/agents_hosted_data/">hosted genomes</a> to point it at, and <a href="/docs/agents_capture/">why waiting for the render</a> is the part that goes wrong.'),
-      ].join(''),
-    },
+    agentPanel(recipe.agent),
   ]
+}
+
+// One block per frame, each with what its command leaves out of the figure,
+// then the line that stacks a composed figure's frames.
+function agentPanel({ frames, stack, notes }: AgentRecipe): Panel {
+  return {
+    label: 'Agent',
+    kind: 'agent',
+    body: [
+      note('Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit — swap an adapter <code>uri</code> for your own file and rerun.'),
+      ...(frames.length > 1
+        ? [note(`The figure stacks ${frames.length} frames: one command draws each, and ImageMagick stacks them.`)]
+        : []),
+      ...frames.flatMap(frame => [
+        ...(frame.label ? [note(`<strong>${escapeAttr(frame.label)}</strong>`)] : []),
+        copyableBlock(frame.command, 'spec-json'),
+        ...frame.notes.map(text => note(renderInline(text))),
+      ]),
+      ...(stack ? [copyableBlock(stack, 'spec-json')] : []),
+      ...notes.map(text => note(renderInline(text))),
+      note('<a href="/docs/agents/">Using JBrowse with AI agents</a> covers the rest: <a href="/docs/agents_hosted_data/">hosted genomes</a> to point it at, and <a href="/docs/agents_capture/">why waiting for the render</a> is the part that goes wrong.'),
+    ].join(''),
+  }
 }
 
 function dialogHtml(id: string, list: Panel[]): string {
@@ -192,6 +208,12 @@ function dialogHtml(id: string, list: Panel[]): string {
 
 export function recipeDialogHtml(recipe: Recipe, id: string): string {
   return dialogHtml(id, panels(recipe))
+}
+
+// A composed figure none of whose frames is linked on its own: the commands,
+// and nothing that would need one session to describe
+export function agentDialogHtml(agent: AgentRecipe, id: string): string {
+  return dialogHtml(id, [agentPanel(agent)])
 }
 
 // The video's own panel first: what the clip does, as the words it held on

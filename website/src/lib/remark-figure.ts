@@ -7,8 +7,15 @@ import {
   figureLiveRefs,
   figureSlowSpecs,
 } from './liveLinks.generated.ts'
-import { recipeButtonHtml, recipeDialogHtml } from './spec-recipe/html.ts'
+import { compositeAgent } from './spec-recipe/agent.ts'
+import {
+  agentDialogHtml,
+  recipeButtonHtml,
+  recipeDialogHtml,
+} from './spec-recipe/html.ts'
 import { buildRecipe } from './spec-recipe/recipe.ts'
+
+import type { AgentRecipe } from './spec-recipe/agent.ts'
 
 import type { Image, Paragraph, Root } from 'mdast'
 import type { Plugin } from 'unified'
@@ -123,6 +130,13 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
           (l): l is { label: string; name: string; url: string } => !!l.url,
         )
 
+      // A composed figure's Agent tab rebuilds the whole stack, one command
+      // per frame, whichever frame's link opened the dialog.
+      const composite = compositeAgent(
+        rawSrc.replace(/^\/img\//, '').replace(/\.png$/, ''),
+        new Map(multi.map(l => [l.name, l.label])),
+      )
+
       // the live link hands the reader the finished view; the dialog next to it
       // shows how to build the same thing from their own data
       const helpFor = (url: string, name?: string) => {
@@ -133,7 +147,17 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
         const id = `spec-dialog-${dialogCount++}`
         return {
           button: recipeButtonHtml(id),
-          dialog: recipeDialogHtml(recipe, id),
+          dialog: recipeDialogHtml(
+            composite ? { ...recipe, agent: composite } : recipe,
+            id,
+          ),
+        }
+      }
+      const agentHelp = (agent: AgentRecipe) => {
+        const id = `spec-dialog-${dialogCount++}`
+        return {
+          button: recipeButtonHtml(id),
+          dialog: agentDialogHtml(agent, id),
         }
       }
 
@@ -160,6 +184,9 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
         // itself; everything else is a session and gets the default
         const label = `${(live?.name ? figureLiveLabels[live.name] : undefined) ?? 'Open this view in JBrowse'} ↗`
         node.value = `<figure>${zoom(img, { url: liveUrl, label })}<figcaption>${caption} ${a(liveUrl, label)}${help.button}${slowNote(live?.name)}</figcaption>${help.dialog}</figure>`
+      } else if (composite) {
+        const help = agentHelp(composite)
+        node.value = `<figure>${zoom(img)}<figcaption>${caption} ${help.button}</figcaption>${help.dialog}</figure>`
       } else {
         node.value = `<figure>${zoom(img)}<figcaption>${caption}</figcaption></figure>`
       }

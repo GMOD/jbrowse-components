@@ -13,12 +13,39 @@
 // check-docs`, and generate-screenshots before it renders anything.
 
 import { decodeSpecUrl } from '../src/lib/spec-recipe/decode.ts'
+import { PARK_CURSOR } from './screenshot-spec-types.ts'
 
 import type {
   Annotation,
   ScreenshotAction,
   ScreenshotSpec,
 } from './screenshot-spec-types.ts'
+
+const PAGE_ACTIONS = new Set<ScreenshotAction['type']>([
+  'click',
+  'rightclick',
+  'hover',
+  'type',
+  'press',
+  'drag',
+  'scroll',
+])
+
+/**
+ * The actions that act on the page rather than wait on it: what the recipe's
+ * capture command, which opens the session and clicks nothing, leaves out.
+ * Parking the cursor moves nothing a figure shows, so it is not one.
+ */
+export function pageActions(actions: ScreenshotAction[] | undefined) {
+  return (actions ?? []).filter(
+    action =>
+      PAGE_ACTIONS.has(action.type) &&
+      !(
+        action.type === PARK_CURSOR.type &&
+        action.selector === PARK_CURSOR.selector
+      ),
+  )
+}
 
 // Spec-list mistakes that produce a plausible-looking figure instead of an
 // error. Each of these has a silent failure mode, which is the bar for being
@@ -41,6 +68,8 @@ import type {
 // - a compose whose part is itself a compose built LATER in the list, which
 //   stacks the part's previous image every time and never says so — the compose
 //   pass walks the list in order
+// - `clicksOpen`/`clicksChange` on a spec whose actions click nothing, which
+//   puts a sentence about clicks in its recipe dialog that no click backs
 export function validateSpecs(list: ScreenshotSpec[]) {
   const problems: string[] = []
   const seen = new Set<string>()
@@ -92,6 +121,15 @@ export function validateSpecs(list: ScreenshotSpec[]) {
           `${spec.name}: embedded specs ignore ${ignored.join(', ')} (they screenshot the component element, not the page)`,
         )
       }
+    }
+    if (
+      spec.mode === 'url' &&
+      (spec.clicksOpen ?? spec.clicksChange) !== undefined &&
+      pageActions(spec.actions).length === 0
+    ) {
+      problems.push(
+        `${spec.name}: clicksOpen/clicksChange on a spec whose actions click nothing`,
+      )
     }
     if ('stageColumns' in spec && spec.stageColumns && !spec.stages?.length) {
       problems.push(`${spec.name}: stageColumns without stages`)

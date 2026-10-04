@@ -125,3 +125,11 @@ export function specTracks(view: SpecView): SpecTrackEntry[] {
     Array.isArray(entry) ? entry : [entry],
   )
 }
+
+// Every track a view opens, its rows' included.
+export function openedTrackIds(view: SpecView): string[] {
+  return [
+    ...specTracks(view).map(specTrackId),
+    ...(view.views ?? []).flatMap(openedTrackIds),
+  ]
+}

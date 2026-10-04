@@ -13,8 +13,10 @@
  */
 import {
   countDetachableLabels,
+  pageActions,
   validateSpecs,
 } from './screenshot-spec-rules.ts'
+import { PARK_CURSOR } from './screenshot-spec-types.ts'
 
 import type { ScreenshotSpec } from './screenshot-spec-types.ts'
 
@@ -136,6 +138,39 @@ test('contradictory tooltip flags, and stageColumns with no stages', () => {
   expect(
     problem([{ mode: 'url', name: 'a', url: '?x', stageColumns: 2 }]),
   ).toMatch('stageColumns without stages')
+})
+
+// the recipe dialog would explain clicks the capture never made
+test('clicks described on a spec that only waits', () => {
+  expect(
+    problem([
+      {
+        mode: 'url',
+        name: 'a',
+        url: '?x',
+        actions: [PARK_CURSOR, { type: 'waitForAppSettled' }],
+        clicksOpen: 'the track menu',
+      },
+    ]),
+  ).toMatch('actions click nothing')
+  expect(
+    problem([
+      {
+        mode: 'url',
+        name: 'a',
+        url: '?x',
+        actions: [{ type: 'click', text: 'Hide legend' }],
+        clicksChange: 'close the legend',
+      },
+    ]),
+  ).toBe('')
+})
+
+test('parking the cursor is not a page action', () => {
+  const click = { type: 'click', text: 'Add' } as const
+  expect(pageActions([PARK_CURSOR, { type: 'delay', ms: 9 }, click])).toEqual([
+    click,
+  ])
 })
 
 test('the ordinary spec shapes are quiet', () => {
