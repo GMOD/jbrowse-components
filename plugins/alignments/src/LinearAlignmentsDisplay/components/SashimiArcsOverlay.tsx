@@ -110,11 +110,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
           </Fragment>
         )
       })}
-      <SashimiArcLabels
-        arcs={arcs}
-        show={model.showSashimiLabels}
-        palette={palette}
-      />
+      <SashimiArcLabels arcs={arcs} show={model.showSashimiLabels} />
     </svg>
   )
 })

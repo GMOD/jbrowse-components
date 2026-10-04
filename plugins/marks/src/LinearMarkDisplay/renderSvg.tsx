@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgHaloText, axisPlotBox } from '@jbrowse/display-ui'
@@ -102,7 +101,6 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
             left={0}
             width={canvasWidth}
             canvasHeight={plotHeight}
-            theme={{ palette: resolvePalette({ configTheme: opts?.theme }) }}
           />
         </g>
       ) : null}

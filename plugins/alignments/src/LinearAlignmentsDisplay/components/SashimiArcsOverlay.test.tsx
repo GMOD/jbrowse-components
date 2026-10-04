@@ -1,8 +1,6 @@
-import {
-  colorPairLR,
-  colorPairLRDark,
-  resolvePalette,
-} from '@jbrowse/core/ui/palette'
+import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
+import { colorPairLR, colorPairLRDark } from '@jbrowse/core/ui/palette'
+import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
@@ -152,11 +150,7 @@ describe('sashimi selection', () => {
   it('draws no outline in the export with nothing selected', () => {
     const { container } = render(
       <svg>
-        <SashimiArcsSvg
-          model={stubModel(undefined)}
-          width={800}
-          palette={resolvePalette()}
-        />
+        <SashimiArcsSvg model={stubModel(undefined)} width={800} />
       </svg>,
     )
     expect(strokeWidths(container)).toEqual(['2'])
@@ -167,11 +161,7 @@ describe('sashimi selection', () => {
   it('leaves the selected junction outline out of the export', () => {
     const { container } = render(
       <svg>
-        <SashimiArcsSvg
-          model={stubModel(SELECTED)}
-          width={800}
-          palette={resolvePalette()}
-        />
+        <SashimiArcsSvg model={stubModel(SELECTED)} width={800} />
       </svg>,
     )
     expect(strokeWidths(container)).toEqual(['2'])
@@ -233,13 +223,11 @@ describe('sashimi selection', () => {
     } as unknown as LinearAlignmentsDisplayModel
     const stroke = (themeName: string) => {
       const { container } = render(
-        <svg>
-          <SashimiArcsSvg
-            model={model}
-            width={800}
-            palette={resolvePalette({ themeName })}
-          />
-        </svg>,
+        <StyleThemeProvider theme={resolveStyleTheme({ themeName })}>
+          <svg>
+            <SashimiArcsSvg model={model} width={800} />
+          </svg>
+        </StyleThemeProvider>,
       )
       const value = container.querySelector('path')!.getAttribute('stroke')
       cleanup()

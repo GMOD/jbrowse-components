@@ -1,6 +1,6 @@
 import { paintInsertionLabels } from '@jbrowse/alignments-core'
 /* eslint-disable react-refresh/only-export-components */
-import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintFeatureBand } from '@jbrowse/plugin-canvas'
@@ -71,10 +71,7 @@ function VariantSvgBody({
   // LgvSvgBodyProps.canvasWidth.
   const exportState = { ...renderState, canvasWidth }
   const { canvasHeight } = renderState
-  // The export's palette comes from the user-selected export theme rather than
-  // the live on-screen one, the same rule plugin-maf's export follows, so a
-  // light export of a dark session still gets light-theme colors.
-  const exportPalette = resolvePalette({ configTheme: opts?.theme })
+  const palette = usePalette()
   return (
     <SvgVariantOverlay
       model={model}
@@ -93,10 +90,7 @@ function VariantSvgBody({
             paint={ctx => {
               // The band the screen drew: the same laid-out stack through the
               // same plugin-canvas call, so an export cannot pack, letter or
-              // order the marks differently from what the reader saw. Each
-              // record's fill is baked per record, but the label text and the
-              // connector stroke are the theme's, so the band takes the EXPORT
-              // palette.
+              // order the marks differently from what the reader saw.
               paintFeatureBand(
                 ctx,
                 laneLaidOutDataMap,
@@ -107,7 +101,7 @@ function VariantSvgBody({
                   bandHeight: topBands.laneHeight,
                   ...laneRenderedLabels,
                   fontSize: laneFontSize,
-                  palette: exportPalette,
+                  palette,
                 },
               )
             }}

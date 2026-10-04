@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
@@ -41,20 +41,17 @@ function SequenceSvgBody({
   renderBlocks,
   opts,
 }: LgvSvgBodyProps<SequenceDisplayModel>) {
+  const palette = usePalette()
   const { sequenceData } = model
   if (model.placeholderMessage) {
     return null
   }
 
-  // the export theme can differ from the session's
   const state: SequenceRenderState = {
     ...model.renderState,
     // the width this layer paints at, which is the block scissor bound
     canvasWidth,
-    palette: buildColorPalette(
-      resolvePalette({ configTheme: opts?.theme }),
-      model.view.colorByCDS,
-    ),
+    palette: buildColorPalette(palette, model.view.colorByCDS),
   }
   const { displayedRegions } = model.view
   const cells = new Map(

@@ -1,13 +1,10 @@
-import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
 import { render } from '@testing-library/react'
 
 import { createMafTestEnvironment } from '../testEnv.ts'
-import MafBandLabels, { SvgBandLabels } from './MafBandLabels.tsx'
+import MafBandLabels, { SvgMafBandLabels } from './MafBandLabels.tsx'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
-
-const palette = resolvePalette()
 
 const COVERAGE_HEIGHT = 45
 const CONSERVATION_HEIGHT = 40
@@ -15,7 +12,7 @@ const CONSERVATION_HEIGHT = 40
 function draw(labels: { text: string; top: number }[]) {
   const { container } = render(
     <svg>
-      <SvgBandLabels labels={labels} palette={palette} />
+      <SvgMafBandLabels labels={labels} />
     </svg>,
   )
   return [...container.querySelectorAll('text')]

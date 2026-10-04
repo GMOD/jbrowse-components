@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -38,9 +38,7 @@ function AlignmentsSvgBody({
   overlays,
   opts,
 }: LgvSvgBodyProps<LinearAlignmentsDisplayModel>) {
-  // Export colors follow the export theme, not the live session theme, so the
-  // pileup matches the labels and contrast that already use it.
-  const palette = resolvePalette({ configTheme: opts?.theme })
+  const palette = usePalette()
   const { renderSections } = model
   // anchors the left-edge scale bars / group labels to the content; non-zero
   // only when scrolled before the genome start
@@ -99,7 +97,7 @@ function AlignmentsSvgBody({
       />
       {overlays ? (
         <>
-          <SashimiArcsSvg model={model} width={canvasWidth} palette={palette} />
+          <SashimiArcsSvg model={model} width={canvasWidth} />
           <PileupBezierArcsSvg
             model={model}
             view={model.view}
@@ -119,7 +117,6 @@ function AlignmentsSvgBody({
           left={contentLeft}
           width={canvasWidth}
           canvasHeight={scroll.canvasHeight}
-          theme={{ palette }}
         />
       ) : null}
     </>

@@ -1,3 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+
 import {
   SASHIMI_LABEL_FONT_SIZE,
   SASHIMI_LABEL_HALO_WIDTH,
@@ -5,7 +7,6 @@ import {
 import { sashimiArcKey } from './sashimiArcs.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // The read count at each arc's apex, shared by the overlay and the export, as a
 // pass of its own after the paths so a heavy arc's stroke cannot bury a lighter
@@ -13,12 +14,11 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 export default function SashimiArcLabels({
   arcs,
   show,
-  palette,
 }: {
   arcs: SashimiArc[]
   show: boolean
-  palette: JBrowsePalette
 }) {
+  const palette = usePalette()
   return show
     ? arcs
         .filter(arc => arc.showLabel)

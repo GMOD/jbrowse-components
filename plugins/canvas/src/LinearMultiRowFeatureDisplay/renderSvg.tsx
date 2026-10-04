@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -73,9 +73,7 @@ function MultiRowSvgBody({
     canvasWidth,
     canvasHeight: height,
   }
-  // From the user-selected export theme rather than the live on-screen palette,
-  // so a light export of a dark session stays light.
-  const exportPalette = resolvePalette({ configTheme: opts?.theme })
+  const exportPalette = usePalette()
   const insertionAbgr = cssColorToABGR(exportPalette.insertion)
   const uploaded = new Map<number, MultiRowUploadData>()
   for (const [key, channels] of self.encodedChannels) {

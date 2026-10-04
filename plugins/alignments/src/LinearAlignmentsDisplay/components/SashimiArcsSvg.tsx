@@ -1,5 +1,6 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
 import { sashimiArcColor } from '../../features/sashimi/computeOverlay.ts'
 import SashimiArcLabels from './SashimiArcLabels.tsx'
@@ -8,7 +9,6 @@ import { bandScreenTop } from './sectionScreen.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // One side's arcs at its sub-band's top, clipped to the same box the screen
 // clips (`sashimiSideBand`). Paths first, labels second, so a count is never
@@ -21,7 +21,6 @@ function SashimiSide({
   clipId,
   width,
   showLabels,
-  palette,
 }: {
   arcs: SashimiArc[]
   top: number
@@ -30,8 +29,8 @@ function SashimiSide({
   clipId: string
   width: number
   showLabels: boolean
-  palette: JBrowsePalette
 }) {
+  const palette = usePalette()
   if (arcs.length === 0) {
     return null
   }
@@ -46,7 +45,7 @@ function SashimiSide({
           fill="none"
         />
       ))}
-      <SashimiArcLabels arcs={arcs} show={showLabels} palette={palette} />
+      <SashimiArcLabels arcs={arcs} show={showLabels} />
     </>
   )
   return (
@@ -63,7 +62,7 @@ function SashimiSide({
 }
 
 // Static sashimi arcs for SVG export: the on-screen geometry without the hover
-// and selection. The palette is the export theme's, not the live session's.
+// and selection.
 //
 // Not an observer: this draws into a figure `useViewSvgFigure` freezes with a
 // `memo`, which does not hold an observer still, and a subscription re-derived
@@ -71,11 +70,9 @@ function SashimiSide({
 export default function SashimiArcsSvg({
   model,
   width,
-  palette,
 }: {
   model: LinearAlignmentsDisplayModel
   width: number
-  palette: JBrowsePalette
 }) {
   const scroll = model.scrollModel
   const nodeId = svgNodeId(model)
@@ -92,7 +89,6 @@ export default function SashimiArcsSvg({
           clipId={`sashimi-${side}-${section.groupKey}-${nodeId}`}
           width={width}
           showLabels={model.showSashimiLabels}
-          palette={palette}
         />
       )
     }),

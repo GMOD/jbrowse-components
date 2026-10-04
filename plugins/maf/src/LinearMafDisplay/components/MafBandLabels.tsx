@@ -1,3 +1,4 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -5,7 +6,6 @@ import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // Just clear of the Y-axis gutter the two bands share.
 const LABEL_X = AXIS_GUTTER_WIDTH_PX + 2
@@ -38,13 +38,12 @@ const useStyles = makeStyles()(theme => ({
  * titles at all, which lost them from the one figure that needs them most (both
  * histograms rendered into a PNG where nothing can be hovered to disambiguate).
  */
-export function SvgBandLabels({
+export function SvgMafBandLabels({
   labels,
-  palette,
 }: {
   labels: { text: string; top: number }[]
-  palette: JBrowsePalette
 }) {
+  const palette = usePalette()
   return (
     <>
       {labels.map(({ text, top }) => (

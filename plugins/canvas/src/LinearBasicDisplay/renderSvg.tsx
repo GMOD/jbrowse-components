@@ -186,7 +186,6 @@ function CanvasFeaturesSvgBody({
           left={contentLeft}
           width={canvasWidth}
           canvasHeight={height}
-          theme={{ palette }}
         />
       ) : null}
     </>

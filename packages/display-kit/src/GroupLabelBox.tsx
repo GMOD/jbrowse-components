@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { measureText } from '@jbrowse/core/util'
 
 import {
@@ -16,11 +17,6 @@ import {
 } from './groupLabelStyle.ts'
 
 import type { GroupChipSection } from './GroupLabelChips.tsx'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
-
-interface GroupLabelTheme {
-  palette: Pick<JBrowsePalette, 'background' | 'text' | 'divider'>
-}
 
 const MEDIUM_WEIGHT_WIDTH_FACTOR = 1.05
 
@@ -29,13 +25,12 @@ export default function GroupLabelBox({
   x,
   y,
   text,
-  theme,
 }: {
   x: number
   y: number
   text: string
-  theme: GroupLabelTheme
 }) {
+  const palette = usePalette()
   const fontSize = GROUP_LABEL_FONT_SIZE
   const paddingX = GROUP_LABEL_PADDING_X
   const height = GROUP_LABEL_HEIGHT
@@ -49,7 +44,7 @@ export default function GroupLabelBox({
         width={width}
         height={height}
         rx={GROUP_LABEL_RADIUS}
-        fill={theme.palette.background.paper}
+        fill={palette.background.paper}
       />
       <rect
         x={x}
@@ -57,7 +52,7 @@ export default function GroupLabelBox({
         width={width}
         height={height}
         rx={GROUP_LABEL_RADIUS}
-        fill={theme.palette.text.primary}
+        fill={palette.text.primary}
         fillOpacity={GROUP_LABEL_TINT}
       />
       <text
@@ -65,7 +60,7 @@ export default function GroupLabelBox({
         y={y + height - 4}
         fontSize={fontSize}
         fontWeight={GROUP_LABEL_FONT_WEIGHT}
-        fill={theme.palette.text.primary}
+        fill={palette.text.primary}
       >
         {text}
       </text>
@@ -85,7 +80,6 @@ export function GroupLabelBoxes({
   left,
   width,
   canvasHeight,
-  theme,
 }: {
   sections: readonly Pick<
     GroupChipSection,
@@ -94,8 +88,8 @@ export function GroupLabelBoxes({
   left: number
   width: number
   canvasHeight: number
-  theme: GroupLabelTheme
 }) {
+  const palette = usePalette()
   return (
     <>
       {sections.map((section, i) => {
@@ -108,7 +102,7 @@ export function GroupLabelBoxes({
                 x2={width}
                 y1={section.top}
                 y2={section.top}
-                stroke={theme.palette.divider}
+                stroke={palette.divider}
                 strokeWidth={1}
               />
             ) : null}
@@ -117,7 +111,6 @@ export function GroupLabelBoxes({
                 x={left + GROUP_LABEL_INSET_X}
                 y={chipTop + 1}
                 text={groupSectionLabel(section.label)}
-                theme={theme}
               />
             )}
           </Fragment>

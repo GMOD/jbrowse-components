@@ -4,7 +4,8 @@ import React from 'react'
 import { paintInsertionLabels } from '@jbrowse/alignments-core'
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import { resolvePalette, colorLongreadInv } from '@jbrowse/core/ui/palette'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { colorLongreadInv } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
@@ -28,7 +29,7 @@ import {
   getFrameColors,
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
-import { SvgBandLabels } from './components/MafBandLabels.tsx'
+import { SvgMafBandLabels } from './components/MafBandLabels.tsx'
 import { visibleRowRange } from './components/visibleRegionGeometry.ts'
 import { cullMafRows, encodeMafRows } from './encodeMafRows.ts'
 
@@ -51,8 +52,7 @@ function MafSvgBody({
   opts,
 }: LgvSvgBodyProps<LinearMafDisplayModel>) {
   const state = model.renderState
-  // SVG export colors follow the export-chosen theme, not the live session one
-  const palette = resolvePalette({ configTheme: opts?.theme })
+  const palette = usePalette()
   const {
     effectiveRowHeight,
     rowsHeight,
@@ -63,8 +63,6 @@ function MafSvgBody({
     conservationDisplayHeight,
     scrollTop,
   } = model
-  // SVG export builds its palette from the user-selected export theme, not
-  // the live on-screen palette, so light/dark export choices stay consistent.
   // The export draws each band into its own `PaintLayer`, translated to that
   // band's own origin — so the rows painter gets a rows-sized canvas at offset
   // 0, not the display's stacked one.
@@ -211,9 +209,7 @@ function MafSvgBody({
       {/* The same titles the display shows on screen (`MafBandLabels`), and for
         the same reason: with both bands drawn they are told apart only by
         their Y-axis units, and an exported figure can't be hovered. */}
-      {overlays ? (
-        <SvgBandLabels labels={model.bandLabels} palette={palette} />
-      ) : null}
+      {overlays ? <SvgMafBandLabels labels={model.bandLabels} /> : null}
     </>
   )
 }

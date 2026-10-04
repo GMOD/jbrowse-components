@@ -67,6 +67,10 @@ export interface ExportSvgOptions extends ViewExportSvgOptions {
 export type ExportTextStyle = Pick<ExportSvgOptions, 'fontSize' | 'fontFamily'>
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
+  /**
+   * The export's theme. `SvgThemeProviders` already wraps every export tree in
+   * it, so a body reads its colours with `usePalette()`, not from here.
+   */
   theme?: ThemeOptions
   /**
    * The legend area the export container reserved to the right of every
