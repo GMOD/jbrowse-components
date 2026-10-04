@@ -9,9 +9,10 @@ guide_category: Tutorials
 tutorial_category: Genes & annotation
 ---
 
-We compare Tiberius gene predictions on human chr22 with the GENCODE annotation,
-sort the models that disagree into four classes, and build a static review page
-with one card per model, each linking back into JBrowse. The pipeline is
+We compare gene predictions from Tiberius, a deep-learning gene finder, on human
+chr22 with the GENCODE annotation, sort the models that disagree into four
+classes, and build a static review page with one card per model, each linking
+back into JBrowse. The pipeline is
 [cmdcolin/gene-review-portal](https://github.com/cmdcolin/gene-review-portal),
 and its README documents every option.
 
@@ -38,7 +39,7 @@ against GENCODE 47 and the hg38 reference.
 - hg38 reference sequence:
   https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 
-## A merged model
+## A Tiberius model that merges IL17REL and TTLL8
 
 We'll load the GRCh38 sequence the predictions were made on, then the two
 annotations. Each annotation is a GFF3 that is bgzipped, sorted and
@@ -157,9 +158,7 @@ predicted coding over the lncRNA `FAM230I`, has more in the cell-line pool.
 Tiberius has an evidence mode, a Nextflow pipeline that folds proteins, RNA-Seq
 and Iso-Seq into the prediction. The released human annotation read here comes
 from a run with default weights, so the RNA-seq tracks are evidence a reviewer
-judges each model against. On a genome with no reference annotation, read
-support across each predicted junction orders the review queue in place of the
-four disagreement classes.
+judges each model against.
 
 ## The review page
 
