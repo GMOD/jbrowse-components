@@ -34,10 +34,7 @@ import {
 
 import { legendStops } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
-import {
-  DEFAULT_HIC_COLOR_SCHEME,
-  HIC_FIELD_PRESETS,
-} from './hicColorConfigSchema.ts'
+import { HIC_FIELD_PRESETS } from './hicColorConfigSchema.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -65,6 +62,11 @@ export const RESOLUTION_ROW_CLEARANCE = 28
 
 // The fallback order when the selected normalization is not in the file.
 const NORMALIZATION_PREFERENCE = ['KR', 'SCALE', 'VC_SQRT', 'VC']
+
+type HicColorEncoding = ContinuousRef & {
+  scheme: ColorSchemeName
+  domainQuantile: number
+}
 
 function contactsLabel(normalization: string, log = false) {
   const qualifiers = [
@@ -158,13 +160,14 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        * The `color` object as it paints, through the shared reader and
        * `count`'s preset: a linear or log ramp whose `reverse`, where unset,
-       * follows whether the scheme runs dark at its low end.
+       * follows whether the scheme runs dark at its low end. The `scheme` and
+       * `domainQuantile` slots have defaults, so both are always set.
        */
-      get colorEncoding(): ContinuousRef {
+      get colorEncoding(): HicColorEncoding {
         return matrixColorEncodingOf(
           colorSettingOf(self.configuration.color),
           HIC_FIELD_PRESETS,
-        )
+        ) as HicColorEncoding
       },
       /**
        * #getter
@@ -188,7 +191,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        */
       get colorScheme(): ColorSchemeName {
-        return this.colorEncoding.scheme ?? DEFAULT_HIC_COLOR_SCHEME
+        return this.colorEncoding.scheme
       },
       /**
        * #getter
@@ -216,7 +219,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * `domainMax` follows, their maximum at 1.
        */
       get colorQuantile(): number {
-        return this.colorEncoding.domainQuantile ?? 1
+        return this.colorEncoding.domainQuantile
       },
       /**
        * #getter
