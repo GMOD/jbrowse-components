@@ -67,14 +67,7 @@ export function laneHeaderRows(
       : undefined
     return {
       assemblyName: lane.assemblyName,
-      label: [
-        lane.label,
-        where,
-        alsoOn,
-        lane.hasAnnotation ? undefined : '· no annotation',
-      ]
-        .filter(part => !!part)
-        .join('  '),
+      label: [lane.label, where, alsoOn].filter(part => !!part).join('  '),
       scale: scaleLabelOf(lane, visibleBpSpan),
       y: lane.layerTop - LABEL_BASELINE_OFFSET,
       isAnchor: lane.isAnchor,

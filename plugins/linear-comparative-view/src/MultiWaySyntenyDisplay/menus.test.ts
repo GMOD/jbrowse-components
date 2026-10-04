@@ -45,6 +45,7 @@ const peach = {
     alsoOnMore: 0,
   },
   canon: (ref: string) => ref.replace('pp', 'Pp'),
+  hasAnnotation: true,
 }
 
 const grape: HeaderLane = {
@@ -53,6 +54,7 @@ const grape: HeaderLane = {
   isAnchor: true,
   frame: undefined,
   canon: ref => ref,
+  hasAnnotation: true,
 }
 
 function headerModel({
@@ -483,6 +485,16 @@ test('the two hops are dead without a frame, and without the genome in the sessi
   expect(
     hops(laneHeaderMenuItems(headerModel({ held: false }).model, peach)),
   ).toEqual([true, true])
+})
+
+test('a lane with no gene track says so once, as a dead menu line', () => {
+  const { model } = headerModel()
+  const items = laneHeaderMenuItems(model, { ...peach, hasAnnotation: false })
+  expect(labelsOf(items).at(-1)).toBe('No gene track for this genome')
+  expect(disabledOf(items).at(-1)).toBe(true)
+  expect(labelsOf(laneHeaderMenuItems(model, peach))).not.toContain(
+    'No gene track for this genome',
+  )
 })
 
 test('the anchor lane header only opens the view region elsewhere', () => {

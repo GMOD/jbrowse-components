@@ -27,7 +27,7 @@ import type { AttributeRange } from '@jbrowse/synteny-core'
 
 export type HeaderLane = Pick<
   Lane,
-  'assemblyName' | 'label' | 'isAnchor' | 'frame' | 'canon'
+  'assemblyName' | 'label' | 'isAnchor' | 'frame' | 'canon' | 'hasAnnotation'
 >
 
 export interface LaneHeaderModel {
@@ -140,6 +140,15 @@ export function laneHeaderMenuItems(
           },
         ]
       : []),
+    ...(lane.hasAnnotation
+      ? []
+      : [
+          {
+            label: 'No gene track for this genome',
+            disabled: true,
+            onClick: () => {},
+          },
+        ]),
   ]
 }
 

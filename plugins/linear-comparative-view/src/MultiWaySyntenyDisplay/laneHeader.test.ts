@@ -97,9 +97,9 @@ describe('the label', () => {
     ).toBe('peach  Pp1:1..1,960  · also on Pp2, Pp5 and 6 more')
   })
 
-  test('says so when the session holds no annotation for the lane', () => {
+  test('leaves a lane with no annotation unmarked', () => {
     expect(rowOf(mateLane({ hasAnnotation: false })).label).toBe(
-      'peach  Pp1:1..1,960  · no annotation',
+      'peach  Pp1:1..1,960',
     )
   })
 
