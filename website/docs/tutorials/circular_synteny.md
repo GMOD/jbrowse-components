@@ -54,7 +54,7 @@ density bigWig the build script makes of them.
 - the finished config, both assemblies and the four tracks:
   https://jbrowse.org/demos/circular_synteny/config.json
 
-## What human and mouse should look like on a circle
+## What a two-genome synteny circle shows
 
 A Circos-style circle shows, for each chromosome of one genome, which
 chromosomes of the other contain its sequence and how much of each. In human and
