@@ -64,6 +64,14 @@ export async function checkExamplesSiteDocLinks(
   const readmes = readdirSync(products)
     .map(p => path.join(products, p, 'README.md'))
     .filter(f => existsSync(f))
+  const siblingSites = readdirSync(products)
+    .map(p => path.join(products, p, 'examples-site', 'src'))
+    .filter(src => existsSync(src) && path.dirname(src) !== root)
+    .flatMap(src =>
+      ['docs', 'pages'].flatMap(dir =>
+        listFilesRecursive(path.join(src, dir), ['.md', '.astro']),
+      ),
+    )
   return runExamplesSiteChecks({
     root,
     pages,
@@ -76,6 +84,7 @@ export async function checkExamplesSiteDocLinks(
         '.mdx',
       ]),
       ...readmes,
+      ...siblingSites,
     ],
     log,
   })

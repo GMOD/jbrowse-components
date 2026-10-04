@@ -1,0 +1,3 @@
+The managed component shows the same selection in its own drawer, and
+[Observe the selected feature](https://jbrowse.org/storybook/lgv/multiple-views/#observe-selection)
+mirrors it into a panel beside the stock view.
