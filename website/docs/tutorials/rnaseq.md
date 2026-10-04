@@ -15,17 +15,15 @@ pipeline's junction table as a track.
 
 ## Prerequisites
 
-- nothing to install to read along: every figure loads hosted data
 - for your own reads, an aligned, sorted and indexed BAM or CRAM from a spliced
   aligner
-- a JBrowse instance to load it into: the
-  [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop), which opens a local BAM with
-  no hosting step
+- a JBrowse instance to load it into: the [web quickstart](/docs/quickstart_web)
+  or the [desktop quickstart](/docs/quickstart_desktop)
 
 ## Where the data comes from
 
-Three hg19 alignment sets, hosted on jbrowse.org's demo bucket.
+The hg19 alignments, gene models and junction table behind the figures, hosted
+on jbrowse.org's demo bucket.
 
 - the paired-end stranded RNA-seq alignments behind every short-read figure on
   this page, from the sample files listed at
@@ -35,8 +33,10 @@ Three hg19 alignment sets, hosted on jbrowse.org's demo bucket.
   https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam
 - the NCBI RefSeq gene models drawn under every figure:
   https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz
+- the regtools junction table built from the stranded alignments, which the
+  junction track loads: https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz
 
-## The genome and the tracks
+## Loading hg19, the stranded reads and RefSeq genes
 
 The alignments are against hg19, so we load that assembly. The alias file lets
 the chromosome names in the BAM and the gene models resolve to the assembly's.
@@ -99,14 +99,15 @@ strand-specific BigWig from the aligner, loads separately as a
 
 ## What RNA-seq looks like in the genome browser
 
-The example gene is _ACTB_, a compact gene with deep, even read coverage.
+Type `chr7:5,567,000-5,570,000` into the location box. The gene there is _ACTB_,
+a compact gene with deep, even read coverage.
 
 Each grey box below is a read. The thin teal lines jumping across a gap are
 spliced alignments, where a read maps partly to one exon and partly to the next,
 skipping the intron between them. The histogram along the top is read coverage
 at each position.
 
-<Figure caption="RNA-seq reads over ACTB: the coverage histogram (top), strand-colored splice arcs, the spliced read pileup, and the NCBI RefSeq gene model." src="/img/rnaseq/basic.png" />
+<Figure caption="RNA-seq reads over ACTB under the NCBI RefSeq gene model: the coverage histogram with strand-colored splice arcs, then the spliced read pileup." src="/img/rnaseq/basic.png" />
 
 ## Read coverage and read height
 
@@ -135,10 +136,10 @@ across the intron, and 33 bp (`M`) aligned to the next. Every `N` in a read's
 CIGAR is one skipped intron.
 
 JBrowse computes the arcs on the fly from the skips in the reads in view, and
-colors each arc by transcript strand, red for forward and blue for reverse. The
-`XS` and `TS` tags record that strand directly; minimap2's `ts` records it
-relative to the read, and JBrowse combines it with the strand the read aligned
-to.
+colors each arc by transcript strand, salmon for forward and purple for reverse,
+the colors the reads of each strand take. The `XS` and `TS` tags record that
+strand directly; minimap2's `ts` records it relative to the read, and JBrowse
+combines it with the strand the read aligned to.
 
 A BAM aligned by STAR without `--outSAMstrandField intronMotif` has none of
 those tags. JBrowse then reads the first and last two bases of the intron off
@@ -159,10 +160,10 @@ pileup.
 
 <Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. The same reads in both. The teal lines are the reads whose CIGAR has a skip. File order scatters them down the stack, and the sort gathers them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
 
-**Filter by...** has a splicing radio: _Only spliced reads_ keeps just those
-reads, and the coverage histogram follows, so what is left is a histogram of the
-junction-spanning evidence alone. _Only unspliced reads_ is the complement,
-useful for checking intron retention.
+**Filter by... → Spliced reads → Only spliced reads** keeps just those reads,
+and the coverage histogram follows, so what is left is a histogram of the
+junction-spanning evidence alone. **Hide spliced reads** in the same submenu is
+the complement, useful for checking intron retention.
 
 **Sashimi arcs → Hide non-canonical junctions** drops every arc whose intron
 does not begin and end with GT-AG, GC-AG or AT-AC on either strand. At depth the
@@ -170,7 +171,7 @@ thin arcs are mostly these alignment artefacts. Raising **Sashimi arcs → Min
 read support** removes them too, but only by also removing a real junction
 supported by few reads.
 
-<Figure caption="Every junction the reads have above, and only the canonical ones below. The same pileup in both, with the gene model above it. The motif filter drops the salmon arc over the second intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
+<Figure caption="Every junction the reads have above, and only the canonical ones below. The same pileup in both, with the gene model above it. The motif filter drops the two salmon arcs around the leftmost intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 
 ## Strand-specific RNA-seq
 
@@ -180,19 +181,20 @@ which separates genes sitting close together or overlapping on opposite strands.
 
 The surfeit locus packs genes tightly and alternates their strands (_RPL7A_,
 _SURF1_, _SURF2_, _SURF4_), so the coloring, which comes from the reads alone,
-has an annotation to agree with. Open the track menu and pick **Color by... →
-Paired end → First-of-pair strand**:
+has an annotation to agree with. Type `chr9:136,214,000-136,229,000` into the
+location box, open the track menu and pick **Color by... → Paired end →
+First-of-pair strand**:
 
 <Figure caption="The surfeit locus colored by first-of-pair strand. The pileup splits into two colors, and the switch falls where the genes change strand: RPL7A forward, SURF1 reverse, SURF2 forward." src="/img/rnaseq/strand_specific.png" />
 
 Coloring shows the strand of each read, and grouped coverage shows it over a
-whole gene. Pick **Group by... → First-of-pair strand**, then turn off **Show...
-→ Show pileup**. The display draws one band per group, computed from only that
-group's reads, leaving two histograms, forward and reverse, on one autoscaled
-axis.
+whole gene. Pick **Group by... → First-of-pair strand**. The display draws one
+band per group, each with a coverage histogram computed from only that group's
+reads, forward and reverse on one autoscaled axis. Turning off **Show... → Show
+pileup** leaves the two histograms alone.
 
 In the gene-dense MHC class III region, _NELFE_ and _SKIV2L_ sit back to back on
-opposite strands:
+opposite strands. Type `chr6:31,920,500-31,933,000` into the location box:
 
 <Figure caption="NELFE and SKIV2L, adjacent and on opposite strands, grouped by first-of-pair strand: each band shows signal over exactly one of the two genes." src="/img/rnaseq/strand_split_coverage.png" />
 
@@ -218,7 +220,7 @@ assembly:
 }
 ```
 
-<Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. A long read often spans all of a transcript's exons, so one spliced alignment covers the whole transcript." src="/img/rnaseq/longread_isoseq.png" />
+<Figure caption="IsoSeq high-quality isoforms over ACTB. A long read often spans all of a transcript's exons, so one spliced alignment covers the whole transcript." src="/img/rnaseq/longread_isoseq.png" />
 
 ## Junction files from the pipeline
 
@@ -351,10 +353,11 @@ one. The colour's `labels` name each value of `known_junction` in the key, and
 `domain` lists the values as strings because the adapter reads extra columns as
 text.
 
-At the 5' end of _FOLH1_ the file separates what RefSeq annotates from what this
-library also splices:
+Type `chr11:49,220,500-49,231,500` into the location box, the 5' end of _FOLH1_,
+where the file separates what RefSeq annotates from what this library also
+splices:
 
-<Figure caption="The 5' end of FOLH1 on hg19: RefSeq transcripts above, the library's junctions below, blue where an annotated transcript joins the two ends and red where none does. The red arc joins a donor and an acceptor RefSeq uses, skipping the exons between them, and it is about as thick as the blue arcs beside it." src="/img/rnaseq/junction_track.png" links="Open this view=rnaseq/junction_track" />
+<Figure caption="The 5' end of FOLH1 on hg19: RefSeq transcripts above, the library's junctions below, blue where an annotated transcript joins the two ends and red where none does. The large red arc joins a donor and an acceptor RefSeq uses, skipping the exons between them, and it is about as thick as the blue arcs beside it." src="/img/rnaseq/junction_track.png" links="Open this view=rnaseq/junction_track" />
 
 For the STAR file, the `columnNames` end in `motif` and `annotated`, and the
 colour's `field` is `annotated`. For the portcullis file, the colour's `field`
@@ -362,11 +365,6 @@ is `canonical_ss`, its `domain` `["C", "S", "N"]`, and its `labels` canonical,
 semi-canonical and non-canonical, with a third colour in `range`. **Edit
 plot...** in the track menu edits the same marks, colours and filter on a track
 already open.
-
-A per-transcript result, such as a differential transcript usage test, goes into
-the gene track's GFF3 instead, and
-[differential transcript usage](/docs/tutorials/dtu) paints its statistic onto
-each isoform.
 
 ## See also
 

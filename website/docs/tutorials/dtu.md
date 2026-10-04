@@ -16,14 +16,13 @@ listing each bin.
 
 ## Prerequisites
 
-- a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
-  file by path, [Web](/docs/quickstart_web) through **Add track**
+- a JBrowse to open the finished GFF3 and coverage tracks in:
+  [Desktop](/docs/quickstart_desktop) takes a local file by path,
+  [Web](/docs/quickstart_web) through **Add track**
 - `curl`
 - `python3`
 - htslib (`bgzip`, `tabix`)
 - R with satuRn, SummarizedExperiment, edgeR and limma, all Bioconductor
-- to read along without running anything, the finished analysis is hosted at
-  [jbrowse.org/demos/dtu](https://jbrowse.org/demos/dtu/)
 
 ## Where the data comes from
 
@@ -167,7 +166,7 @@ bgzip -f dtu_muscle_vs_liver.gff3
 tabix -f -p gff dtu_muscle_vs_liver.gff3.gz
 ```
 
-### The attribute column
+### satuRn's statistics in the GFF3 attribute column
 
 The track configuration reads its values from this column. A transcript row from
 the finished file, wrapped:
@@ -198,7 +197,7 @@ effective length and bias a count-based fraction toward long isoforms. It gates
 on satuRn's regular FDR, because the empirical FDR assumes most tests are null
 and this contrast breaks that assumption.
 
-## The genome
+## Loading GRCh38
 
 GENCODE v29 is a GRCh38 annotation and the coverage is on GRCh38, so we load the
 hg38 assembly before either track.
@@ -214,7 +213,7 @@ hg38 assembly before either track.
 }
 ```
 
-## Configuring the track
+## Coloring each isoform by its usage change
 
 `color` bins `dif_called` through a threshold scale. `domain` lists the cut
 points, `range` gives one color per interval between them, and `labels` gives
@@ -265,7 +264,9 @@ clicking an isoform opens its numbers in the details panel.
 }
 ```
 
-Open the track over the two coverage tracks at _ATP5F1C_. satuRn used no genomic
+Add the four coverage lanes below and open them with the transcript track at
+`chr10:7,787,600-7,812,400`, the whole of _ATP5F1C_; the gene is on the plus
+strand, so the two plus-strand lanes carry its reads. satuRn used no genomic
 coordinates, so the coverage lanes are an independent check on the color.
 
 Each coverage lane scales to its peak until the lanes share an axis. **Score →

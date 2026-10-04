@@ -104,7 +104,7 @@ export const dtuSpecs: ScreenshotSpec[] = [
       // box instead.
       {
         type: 'text',
-        text: 'no reads — exon skipped',
+        text: 'exon skipped',
         anchor: {
           locus: CASSETTE_EXON,
           track: 'muscle_plus',
@@ -116,7 +116,7 @@ export const dtuSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: '37 bp exon retained',
+        text: 'exon retained',
         anchor: {
           locus: CASSETTE_EXON,
           track: 'liver_plus',

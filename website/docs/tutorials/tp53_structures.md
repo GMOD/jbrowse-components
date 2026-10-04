@@ -56,8 +56,9 @@ the transcript's translation on the GENOME row, the structure's sequence on the
 STRUCT row, and a ruler in the authors' residue numbering. The AlphaFold panel
 is one unbroken match. The 1TUP panel covers the DNA-binding core alone, and its
 ruler starts at 94, the residue where the crystallised construct begins. Under
-the AlphaFold STRUCT row, pLDDT is high across the core and falls away at both
-ends, the same tails both crystals leave out.
+the AlphaFold STRUCT row, pLDDT, AlphaFold's per-residue confidence, is high
+across the core and falls away at both ends, the same tails both crystals leave
+out.
 
 ## Annotations mapped onto the crystal
 
@@ -73,14 +74,14 @@ chain** picker lists them, and the plugin chose the protein entity because its
 sequence aligns to the transcript. Hovering any of the three copies in the 3D
 canvas highlights the same residue on the genome.
 
-## Click a hotspot
+## Finding the codon of the R248 hotspot from the crystal
 
 Open the 1TUP panel and click residue 248 on its STRUCT row, or
 [open the same session with R248 selected](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%2C%22initialResidues%22%3A%7B%22start%22%3A248%2C%22end%22%3A248%7D%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%5D%7D%2C%22colorScheme%22%3A%22mapped-chain%22%7D%5D%7D).
 The ruler and the transcript row give the same number, because the 1TUP authors
 numbered their construct the way UniProt numbers the whole protein.
 
-<Figure src="/img/protein/tp53_hotspot.png" caption="NCBI RefSeq at TP53's R248 codon beside 1TUP with R248 selected. The crystal's three copies of p53's core are blue on grey DNA, R248 is magenta on each with its neighbours drawn as sticks, and a band marks its codon on the gene." />
+<Figure src="/img/protein/tp53_hotspot.png" caption="NCBI RefSeq at TP53's R248 codon beside 1TUP with R248 selected. The crystal's three copies of p53's core are blue on grey DNA, R248 is magenta on the copies in view, with its neighbours drawn as sticks, and a band marks its codon on the gene." />
 
 R248 and the residues and bases around it are drawn as sticks, and on one copy
 its side chain reaches into the minor groove of the DNA. Hovering the codon on
@@ -125,12 +126,12 @@ its band on the gene is split across two exons.
 
 ## Checking the hotspot against the sequence
 
-Back on the genome view, zoom into the band the R248 selection drew, down to
-base level, and turn on the reference sequence. The transcript is on the minus
-strand, so the codon under the band reads `CCG` left to right on the reference
-track, which is `CGG`, arginine, on the transcript. R248W and R248Q, the two
-commonest substitutions at the codon in tumours, change its first base and its
-middle one.
+In the R248 session's genome view, zoom into the band the selection drew on
+_TP53_, down to base level, and tick **Reference sequence** in the track
+selector. The transcript is on the minus strand, so the codon under the band
+reads `CCG` left to right on the reference track, which is `CGG`, arginine, on
+the transcript. R248W and R248Q, the two commonest substitutions at the codon in
+tumours, change its first base and its middle one.
 
 ## Structures of your own gene
 
