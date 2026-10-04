@@ -95,7 +95,7 @@ Settled while building, each against the picture the band drew before:
   view's px per bp. The axis stops half the widest stroke short of the band's
   far edge, or the band's clip halves a clamped apex.
 - **An interchromosomal arc is its own unvalued link mark** (`arcCrossLink`),
-  a dome as high as its feet are apart. It first rose to the band's far edge,
+  a dome half as tall as its feet are apart. It first rose to the band's far edge,
   on the argument that a dome as wide as the screen gap reads as a short
   event; on a fusion framed with both breakpoints at the seam
   (`cancer_sv/k562_fusion_inspector_reads`) that drew every junction as a

@@ -994,6 +994,50 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
     expect(dips(arcs.find(a => a.x1 === 5100)!.d)).toBe(true)
   })
 
+  // The same chain with both regions flipped: every segment still faces one
+  // way, but screen order now runs right to left, so the chr1 to chr2 line is
+  // the one that would cross the read's other chr1 alignment.
+  it('finds the crossing in screen order when both regions are reversed', () => {
+    const chr1 = makeData({
+      names: ['f', 'f'],
+      ids: ['f-a', 'f-c'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, 1],
+      positions: [
+        [1000, 1100],
+        [500, 600],
+      ],
+      ys: [0, 0],
+      clipAtStart: [0, 200],
+    })
+    const chr2 = makeData({
+      names: ['f'],
+      ids: ['f-b'],
+      flags: [SAM_FLAG_SUPPLEMENTARY],
+      strands: [1],
+      positions: [[5000, 5100]],
+      ys: [0],
+      clipAtStart: [100],
+    })
+    const arcs = computePileupBezierArcs({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [
+        { refName: 'chr1', reversed: true },
+        { refName: 'chr2', reversed: true },
+      ],
+      pairs: enumerateBezierPairs(
+        new Map([
+          [0, chr1],
+          [1, chr2],
+        ]),
+        'crossRegion',
+      ),
+    })
+    expect(dips(arcs.find(a => a.x1 === 1100)!.d)).toBe(true)
+    expect(arcs.find(a => a.x1 === 5100)!.d).toBe('M 5100 5 L 500 5')
+  })
+
   // Reversing chr2 alone puts the supplementary's 5' edge on its right, so the
   // line would cross it; flipping the whole view keeps the two ends facing.
   it('reads the crossing in screen order across reversed regions', () => {

@@ -101,7 +101,7 @@ export const ARC_LINK_MARKS: Mark<ArcBandFeed, ArcBandState>[] = [
     params: (s: ArcBandState) => linkParams(s, false),
     enabled: bandOpen,
   }),
-  // An interchromosomal arc has no genomic radius, so it rises only as high
+  // An interchromosomal arc has no genomic radius, so its dome is half as tall
   // as its two feet are apart on screen.
   defineMark({
     shape: withPassId(linkMark, 'arcCrossLink'),

@@ -528,7 +528,7 @@ function resolveArcs(
       // across every group, which the insert-size axis prints on the
       // ruler. One connection would rescale the whole read cloud to a 107 Mb
       // "insert size" and label it. Arc mode draws it with no value at all,
-      // as high as its feet are apart (`arcMarks.ts`).
+      // half as tall as its feet are apart (`arcMarks.ts`).
       if (
         !cloud &&
         p1RegionIndex !== undefined &&
