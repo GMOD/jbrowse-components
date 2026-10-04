@@ -45,8 +45,7 @@ instead.
 
 The segment BED holds one copy-number call per line, with a `#`-prefixed header
 naming the columns past `end`.
-[Reproduce it end to end](#reproduce-it-end-to-end) builds it from the GDC for
-any project id.
+[Reproduce it end to end](#reproduce-it-end-to-end) builds it from the GDC.
 
 ```text
 #chrom  start     end        name    sample             segmean

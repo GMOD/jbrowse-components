@@ -115,10 +115,9 @@ track's `displayDefaults` apply every time the track loads, and in a served
 }
 ```
 
-With this config the track opens paired and colored. To select a non-default
-display type (`LinearMultiSampleVariantDisplay`, `LDTrackDisplay`), write a
-`displays` array; [configuring tracks](/docs/config_guides/tracks) covers both
-forms.
+The track opens paired and colored. To select a non-default display type
+(`LinearMultiSampleVariantDisplay`, `LDTrackDisplay`), write a `displays` array;
+[configuring tracks](/docs/config_guides/tracks) covers both forms.
 
 ## When a session and the track config set the same setting
 
@@ -148,9 +147,8 @@ type in brackets. This session sets `color` on that track and nothing else:
 
 The session's `color` replaces the config's, so the features draw grey, and
 their labels still read `seg04 [match]` from `displayDefaults`.[^snapshot] The
-CRAM track from the first sections follows the same rule, so a session that sets
-`height: 100` on it draws the track 100px tall and keeps the paired coloring
-from its config.
+CRAM track follows the same rule, so a session that sets `height: 100` on it
+draws the track 100px tall and keeps the paired coloring from its config.
 
 ## Where each route keeps a setting (link, session file or config)
 

@@ -67,8 +67,7 @@ jbrowse add-track variants.vcf.gz --load copy --out myproject --name "My variant
 | `inPlace` | Reference a file already staged in the directory, no file ops.     |
 | _(omit)_  | For a remote `https://…` URL, referenced directly, nothing copied. |
 
-After these commands `myproject/` is self-contained, with the config next to
-every file it needs:
+`myproject/` is now self-contained, with the config next to every file it needs:
 
 ```text
 myproject/
