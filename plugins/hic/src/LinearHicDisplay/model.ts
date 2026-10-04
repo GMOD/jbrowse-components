@@ -5,7 +5,11 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { darkAtLowEnd, rampLutOf } from '@jbrowse/core/util/colorRamp'
+import {
+  darkAtLowEnd,
+  rampDomain,
+  rampLutOf,
+} from '@jbrowse/core/util/colorRamp'
 import {
   installPrerequisiteFetch,
   readFor,
@@ -15,6 +19,10 @@ import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
+import {
+  colorEncodingOf,
+  colorSettingOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -29,6 +37,10 @@ import {
 
 import { legendStops } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
+import {
+  DEFAULT_HIC_COLOR_SCHEME,
+  HIC_FIELD_PRESETS,
+} from './hicColorConfigSchema.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -44,6 +56,7 @@ import type { HicColorScale } from './hicColorConfigSchema.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
+import type { ContinuousRef } from '@jbrowse/core/util/markEncoding'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
@@ -146,15 +159,34 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * The `color` object as it paints, through the shared reader and
+       * `count`'s preset: a linear or log ramp whose `reverse`, where unset,
+       * follows whether the scheme runs dark at its low end.
+       */
+      get colorEncoding(): ContinuousRef {
+        const setting = colorSettingOf(self.configuration.color)
+        return colorEncodingOf(
+          {
+            ...setting,
+            value: undefined,
+            domain: [],
+            range: [],
+            reverse: setting.reverse ?? darkAtLowEnd(setting.scheme),
+          },
+          HIC_FIELD_PRESETS,
+        ) as ContinuousRef
+      },
+      /**
+       * #getter
        */
       get colorScaleType(): HicColorScale {
-        return getConf(self, ['color', 'scale']) ?? 'linear'
+        return this.colorEncoding.scale
       },
       /**
        * #getter
        */
       get colorScheme(): ColorSchemeName {
-        return getConf(self, ['color', 'scheme'])
+        return this.colorEncoding.scheme ?? DEFAULT_HIC_COLOR_SCHEME
       },
       /**
        * #getter
@@ -162,14 +194,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * low end.
        */
       get colorReverse(): boolean {
-        return (
-          getConf(self, ['color', 'reverse']) ?? darkAtLowEnd(this.colorScheme)
-        )
+        return !!this.colorEncoding.reverse
       },
       /**
        * #getter
        * The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the
-       * legend read this one table.
+       * legend read this one table. It reads `colorScheme` and `colorReverse`
+       * rather than the encoding, so a domain edit re-uploads no texture.
        */
       get colorRamp(): Uint8Array {
         return rampLutOf({
@@ -183,7 +214,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * `domainMax` follows, their maximum at 1.
        */
       get colorQuantile(): number {
-        return getConf(self, ['color', 'domainQuantile'])
+        return this.colorEncoding.domainQuantile ?? 1
       },
       /**
        * #getter
@@ -246,24 +277,19 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * The domain the counts are coloured over. An unset `domainMax` follows
-       * the loaded counts: their `colorQuantile` below 1, else their maximum.
+       * The domain the counts are coloured over, as every ramp spans one: a
+       * pinned end holds, and an open one follows the loaded counts from 0,
+       * the top at their `colorQuantile` below 1, else their maximum.
        */
       get colorDomain(): [number, number] {
         const data = self.rpcData
-        const pinnedMax: number | undefined = getConf(self, [
-          'color',
-          'domainMax',
-        ])
+        const { domainMin, domainMax } = self.colorEncoding
         const loadedMax = !data
           ? 0
           : self.colorFollowsPercentile
             ? data.quantileScore
             : data.maxScore
-        return [
-          getConf(self, ['color', 'domainMin']) ?? 0,
-          pinnedMax ?? loadedMax,
-        ]
+        return rampDomain(domainMin, domainMax, [0, loadedMax])
       },
     }))
     .views(self => ({
