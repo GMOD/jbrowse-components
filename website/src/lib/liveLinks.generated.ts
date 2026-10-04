@@ -638,14 +638,17 @@ export const figureSlowSpecs: string[] = [
 ]
 
 // Each figure's capture viewport in CSS px, which the recipe's capture command
-// passes on so a reader's frame is the figure's.
+// passes on so a reader's frame is the figure's, and how it waits: past
+// capture's default where the spec's session settles slower, and taking the
+// frame anyway where the figure is of an unsettled state.
 export const figureFrames: Record<
   string,
-  { width: number; height: number }
+  { width: number; height: number; timeout?: number; allowUnsettled?: boolean }
 > = {
   "synteny_offscreen_mates": {
     "width": 1400,
-    "height": 424
+    "height": 424,
+    "timeout": 120000
   },
   "synteny_human_chimp_cigar_modes": {
     "width": 1200,
@@ -665,187 +668,233 @@ export const figureFrames: Record<
   },
   "multiway_synteny/grape_peach_cacao": {
     "width": 1500,
-    "height": 800
+    "height": 800,
+    "timeout": 120000
   },
   "multiway_synteny/grape_peach_cacao_gene_orthologs": {
     "width": 1500,
-    "height": 822
+    "height": 822,
+    "timeout": 120000
   },
   "multiway_synteny/blocks_one_vs_all": {
     "width": 1500,
-    "height": 478
+    "height": 478,
+    "timeout": 120000
   },
   "multiway_synteny/lgv_track_lanes": {
     "width": 1500,
-    "height": 680
+    "height": 680,
+    "timeout": 120000
   },
   "multiway_synteny/lgv_track_lanes_colored": {
     "width": 1500,
-    "height": 680
+    "height": 680,
+    "timeout": 120000
   },
   "multiway_synteny/lgv_track_clicked": {
     "width": 1500,
-    "height": 680
+    "height": 680,
+    "timeout": 120000
   },
   "pangenome/hprc_gbz_cfhr_lanes": {
     "width": 1500,
-    "height": 560
+    "height": 560,
+    "timeout": 240000
   },
   "multiway_synteny/ecoli_island_lanes": {
     "width": 1500,
-    "height": 712
+    "height": 712,
+    "timeout": 120000
   },
   "multiway_synteny/vertebrate_hox_lanes": {
     "width": 1500,
-    "height": 660
+    "height": 660,
+    "timeout": 120000
   },
   "multiway_synteny/solanaceae_lanes": {
     "width": 1500,
-    "height": 660
+    "height": 660,
+    "timeout": 120000
   },
   "multiway_synteny/drosophila_lanes": {
     "width": 1500,
-    "height": 660
+    "height": 660,
+    "timeout": 120000
   },
   "multiway_synteny/primate_tp53_lanes": {
     "width": 1500,
-    "height": 820
+    "height": 820,
+    "timeout": 180000
   },
   "multiway_synteny/primate_chr17_inversions": {
     "width": 1500,
-    "height": 860
+    "height": 860,
+    "timeout": 180000
   },
   "multiway_synteny/primate_chr2_fusion": {
     "width": 1500,
-    "height": 600
+    "height": 600,
+    "timeout": 120000
   },
   "multiway_synteny/ecoli_symbol_atp_operon": {
     "width": 1500,
-    "height": 1740
+    "height": 1740,
+    "timeout": 240000
   },
   "multiway_synteny/ecoli_symbol_oantigen": {
     "width": 1500,
-    "height": 1740
+    "height": 1740,
+    "timeout": 240000
   },
   "multiway_synteny/hg38_vertebrates_tp53": {
     "width": 1500,
-    "height": 1000
+    "height": 1000,
+    "timeout": 240000
   },
   "multiway_synteny/hprc_amylase_lanes": {
     "width": 1500,
-    "height": 620
+    "height": 620,
+    "timeout": 240000
   },
   "multiway_synteny/hprc_amylase_stack": {
     "width": 1500,
-    "height": 1400
+    "height": 1400,
+    "timeout": 240000
   },
   "multiway_synteny/hprc_c4_graph_stack": {
     "width": 1500,
-    "height": 460
+    "height": 460,
+    "timeout": 240000
   },
   "syri/col_ler_chr4": {
     "width": 1500,
-    "height": 460
+    "height": 460,
+    "timeout": 120000
   },
   "syri/six_accessions": {
     "width": 1500,
-    "height": 1040
+    "height": 1040,
+    "timeout": 120000
   },
   "syri/col0_lanes": {
     "width": 1500,
-    "height": 1000
+    "height": 1000,
+    "timeout": 120000
   },
   "syri/tair10_1001g": {
     "width": 1500,
-    "height": 870
+    "height": 870,
+    "timeout": 120000
   },
   "multiway_synteny/hg38_vertebrates_17p_break": {
     "width": 1500,
-    "height": 1000
+    "height": 1000,
+    "timeout": 240000
   },
   "multiway_synteny/hg38_vertebrates_17p_strand": {
     "width": 1500,
-    "height": 1000
+    "height": 1000,
+    "timeout": 240000
   },
   "multiway_synteny/grasses_rice_lanes": {
     "width": 1500,
-    "height": 660
+    "height": 660,
+    "timeout": 120000
   },
   "multiway_synteny/wheat_homoeolog_selection": {
     "width": 900,
-    "height": 767
+    "height": 767,
+    "timeout": 300000
   },
   "homoeolog_synteny/oat_homoeologs": {
     "width": 900,
-    "height": 767
+    "height": 767,
+    "timeout": 300000
   },
   "selection_pressure/lysozyme": {
     "width": 1500,
-    "height": 580
+    "height": 580,
+    "timeout": 300000
   },
   "homoeolog_synteny/oat_ds": {
     "width": 900,
-    "height": 767
+    "height": 767,
+    "timeout": 300000
   },
   "orthofinder_synteny/vertebrates": {
     "width": 1500,
-    "height": 1000
+    "height": 1000,
+    "timeout": 120000
   },
   "orthofinder_synteny/solanaceae": {
     "width": 1500,
-    "height": 1000
+    "height": 1000,
+    "timeout": 120000
   },
   "orthofinder_synteny/drosophila": {
     "width": 1500,
-    "height": 1240
+    "height": 1240,
+    "timeout": 120000
   },
   "orthofinder_synteny/grasses": {
     "width": 1500,
-    "height": 1000
+    "height": 1000,
+    "timeout": 120000
   },
   "orthofinder_synteny/grasses_maize_wgd": {
     "width": 1500,
-    "height": 1200
+    "height": 1200,
+    "timeout": 120000
   },
   "orthofinder_synteny/wheat": {
     "width": 1500,
-    "height": 1140
+    "height": 1140,
+    "timeout": 300000
   },
   "orthofinder_synteny/wheat_4a": {
     "width": 1500,
-    "height": 640
+    "height": 640,
+    "timeout": 120000
   },
   "multiway_synteny/ecoli_pangenome": {
     "width": 1500,
-    "height": 715
+    "height": 715,
+    "timeout": 120000
   },
   "multiway_synteny/ecoli_stx_island": {
     "width": 1500,
-    "height": 560
+    "height": 560,
+    "timeout": 120000
   },
   "multiway_synteny/ecoli_one_vs_all": {
     "width": 1500,
-    "height": 1290
+    "height": 1290,
+    "timeout": 120000
   },
   "multiway_synteny/ecoli_launch_selection": {
     "width": 1500,
-    "height": 420
+    "height": 420,
+    "timeout": 120000
   },
   "multiway_synteny/ecoli_launch_dialog": {
     "width": 1500,
-    "height": 622
+    "height": 622,
+    "timeout": 120000
   },
   "multiway_synteny/ecoli_launch_result": {
     "width": 1500,
-    "height": 620
+    "height": 620,
+    "timeout": 120000
   },
   "multiway_synteny/ecoli_one_vs_all_whole_genome": {
     "width": 1500,
-    "height": 890
+    "height": 890,
+    "timeout": 120000
   },
   "multiway_synteny/ecoli_identity_rows": {
     "width": 1500,
-    "height": 620
+    "height": 620,
+    "timeout": 120000
   },
   "multiway_synteny/ecoli_import_form": {
     "width": 1500,
@@ -873,23 +922,28 @@ export const figureFrames: Record<
   },
   "hs1_vs_mm39_synteny": {
     "width": 1500,
-    "height": 672
+    "height": 672,
+    "timeout": 180000
   },
   "synteny_hg38_hs1_tnnt3": {
     "width": 1200,
-    "height": 520
+    "height": 520,
+    "timeout": 120000
   },
   "genomes_synteny/ribbons_default": {
     "width": 1200,
-    "height": 520
+    "height": 520,
+    "timeout": 120000
   },
   "genomes_synteny/ribbons_curved": {
     "width": 1200,
-    "height": 520
+    "height": 520,
+    "timeout": 120000
   },
   "genomes_synteny/launch_sequence": {
     "width": 900,
-    "height": 575
+    "height": 575,
+    "timeout": 120000
   },
   "genomes_synteny/star_link": {
     "width": 1100,
@@ -897,23 +951,28 @@ export const figureFrames: Record<
   },
   "genomes_synteny/star_lanes": {
     "width": 1300,
-    "height": 1140
+    "height": 1140,
+    "timeout": 240000
   },
   "genomes_synteny/mouse_strains_nnt": {
     "width": 1300,
-    "height": 900
+    "height": 900,
+    "timeout": 240000
   },
   "genomes_synteny/human_17q21_haplotypes": {
     "width": 1300,
-    "height": 620
+    "height": 620,
+    "timeout": 240000
   },
   "sv_cgiab/dotplot_haplotypes": {
     "width": 1800,
-    "height": 820
+    "height": 820,
+    "timeout": 90000
   },
   "sv_cgiab/synteny_view": {
     "width": 1800,
-    "height": 806
+    "height": 806,
+    "timeout": 90000
   },
   "sv_synteny/dotplot_import": {
     "width": 1500,
@@ -937,7 +996,9 @@ export const figureFrames: Record<
   },
   "sv_synteny/assembly_order_warning": {
     "width": 1500,
-    "height": 425
+    "height": 425,
+    "timeout": 120000,
+    "allowUnsettled": true
   },
   "dotplot_add": {
     "width": 900,
@@ -949,47 +1010,58 @@ export const figureFrames: Record<
   },
   "dotplot_self_chry": {
     "width": 1000,
-    "height": 760
+    "height": 760,
+    "timeout": 180000
   },
   "synteny_self_chry_palindromes_family": {
     "width": 1000,
-    "height": 740
+    "height": 740,
+    "timeout": 180000
   },
   "synteny_self_chry_palindromes_zoom": {
     "width": 1000,
-    "height": 602
+    "height": 602,
+    "timeout": 180000
   },
   "gallery/yeast_dotplot": {
     "width": 1500,
-    "height": 800
+    "height": 800,
+    "timeout": 90000
   },
   "multiway_synteny/ecoli_alignment_menu": {
     "width": 1500,
-    "height": 440
+    "height": 440,
+    "timeout": 120000
   },
   "multiway_synteny/lane_header_menu": {
     "width": 1500,
-    "height": 520
+    "height": 520,
+    "timeout": 120000
   },
   "maf_row_menu": {
     "width": 1500,
-    "height": 560
+    "height": 560,
+    "timeout": 180000
   },
   "agent_synteny/comparison_built": {
     "width": 1400,
-    "height": 604
+    "height": 604,
+    "timeout": 120000
   },
   "agent_synteny/dotplot_arms": {
     "width": 1000,
-    "height": 900
+    "height": 900,
+    "timeout": 120000
   },
   "agent_synteny/inversion_2r": {
     "width": 1400,
-    "height": 560
+    "height": 560,
+    "timeout": 120000
   },
   "agent_synteny/inversion_x": {
     "width": 1400,
-    "height": 560
+    "height": 560,
+    "timeout": 120000
   },
   "volvox_alignments": {
     "width": 1000,
@@ -1013,11 +1085,13 @@ export const figureFrames: Record<
   },
   "alignments/strand_split_depth": {
     "width": 1500,
-    "height": 1015
+    "height": 1015,
+    "timeout": 120000
   },
   "alignments/strand_split_coverage": {
     "width": 1500,
-    "height": 690
+    "height": 690,
+    "timeout": 90000
   },
   "linear_align_ctx_menu": {
     "width": 1500,
@@ -1037,23 +1111,28 @@ export const figureFrames: Record<
   },
   "hic_track": {
     "width": 1500,
-    "height": 800
+    "height": 800,
+    "timeout": 180000
   },
   "hic/whole_genome": {
     "width": 1500,
-    "height": 910
+    "height": 910,
+    "timeout": 240000
   },
   "hic/percentile_off": {
     "width": 1500,
-    "height": 532
+    "height": 532,
+    "timeout": 180000
   },
   "hic/percentile_on": {
     "width": 1500,
-    "height": 532
+    "height": 532,
+    "timeout": 180000
   },
   "hic/overlay_controls": {
     "width": 1500,
-    "height": 530
+    "height": 530,
+    "timeout": 180000
   },
   "alignments/modifications2": {
     "width": 2000,
@@ -1061,11 +1140,13 @@ export const figureFrames: Record<
   },
   "alignments/haplotype": {
     "width": 1500,
-    "height": 700
+    "height": 700,
+    "timeout": 90000
   },
   "alignments/haplotype_groupby": {
     "width": 1500,
-    "height": 550
+    "height": 550,
+    "timeout": 90000
   },
   "alignments/compact": {
     "width": 1500,
@@ -1117,7 +1198,8 @@ export const figureFrames: Record<
   },
   "rnaseq/strand_split_coverage": {
     "width": 1500,
-    "height": 890
+    "height": 890,
+    "timeout": 90000
   },
   "alphagenome/expression_two_cell_lines": {
     "width": 1500,
@@ -1145,7 +1227,8 @@ export const figureFrames: Record<
   },
   "gene_prediction_merge": {
     "width": 1500,
-    "height": 500
+    "height": 500,
+    "timeout": 90000
   },
   "volvox_variants": {
     "width": 1000,
@@ -1157,11 +1240,13 @@ export const figureFrames: Record<
   },
   "variants/consequence_impact_1000g": {
     "width": 1500,
-    "height": 705
+    "height": 705,
+    "timeout": 120000
   },
   "variants/population_1000genomes": {
     "width": 1500,
-    "height": 705
+    "height": 705,
+    "timeout": 90000
   },
   "variant_panel": {
     "width": 1150,
@@ -1173,7 +1258,8 @@ export const figureFrames: Record<
   },
   "variants/potato_missingness": {
     "width": 1100,
-    "height": 830
+    "height": 830,
+    "timeout": 120000
   },
   "dtu/dtu_colored_gene_glyph": {
     "width": 1500,
@@ -1189,7 +1275,8 @@ export const figureFrames: Record<
   },
   "bigwig/whole_genome_coverage": {
     "width": 1500,
-    "height": 680
+    "height": 680,
+    "timeout": 180000
   },
   "multiwig/multi_renderer_types": {
     "width": 1500,
@@ -1205,7 +1292,8 @@ export const figureFrames: Record<
   },
   "multiwig/cluster_dialog": {
     "width": 1500,
-    "height": 620
+    "height": 620,
+    "timeout": 90000
   },
   "genomes_basics/site_home": {
     "width": 1100,
@@ -1225,27 +1313,33 @@ export const figureFrames: Record<
   },
   "genomes_basics/isoform_control": {
     "width": 900,
-    "height": 340
+    "height": 340,
+    "timeout": 120000
   },
   "genomes_basics/multiz_alignment": {
     "width": 1500,
-    "height": 1080
+    "height": 1080,
+    "timeout": 120000
   },
   "genomes_basics/promoter_regulation": {
     "width": 1000,
-    "height": 940
+    "height": 940,
+    "timeout": 180000
   },
   "genomes_basics/gnomad_filter_menu": {
     "width": 1500,
-    "height": 590
+    "height": 590,
+    "timeout": 180000
   },
   "genomes_basics/about_track": {
     "width": 1000,
-    "height": 700
+    "height": 700,
+    "timeout": 120000
   },
   "genomes_basics/genark_axolotl": {
     "width": 1500,
-    "height": 335
+    "height": 335,
+    "timeout": 180000
   },
   "pangenome/genomes_hprc_loci": {
     "width": 1100,
@@ -1269,19 +1363,23 @@ export const figureFrames: Record<
   },
   "gene_track_group_by_strand": {
     "width": 1500,
-    "height": 520
+    "height": 520,
+    "timeout": 90000
   },
   "gene_track_collapse_introns": {
     "width": 1500,
-    "height": 590
+    "height": 590,
+    "timeout": 90000
   },
   "feature_detail_sequence": {
     "width": 1500,
-    "height": 900
+    "height": 900,
+    "timeout": 90000
   },
   "feature_detail_protein": {
     "width": 1500,
-    "height": 900
+    "height": 900,
+    "timeout": 90000
   },
   "customized_feature_details": {
     "width": 1500,
@@ -1297,23 +1395,28 @@ export const figureFrames: Record<
   },
   "protein/connected": {
     "width": 2000,
-    "height": 632
+    "height": 632,
+    "timeout": 90000
   },
   "protein/annotation_1d": {
     "width": 1500,
-    "height": 1045
+    "height": 1045,
+    "timeout": 120000
   },
   "protein/tp53_hotspot": {
     "width": 2000,
-    "height": 912
+    "height": 912,
+    "timeout": 120000
   },
   "protein/tp53_mapped_chain": {
     "width": 2000,
-    "height": 880
+    "height": 880,
+    "timeout": 120000
   },
   "protein/tp53_nmr_ensemble": {
     "width": 2000,
-    "height": 912
+    "height": 912,
+    "timeout": 240000
   },
   "top_level_menus": {
     "width": 1500,
@@ -1345,23 +1448,28 @@ export const figureFrames: Record<
   },
   "multisv": {
     "width": 1500,
-    "height": 800
+    "height": 800,
+    "timeout": 90000
   },
   "multisv_svtype": {
     "width": 1500,
-    "height": 800
+    "height": 800,
+    "timeout": 90000
   },
   "multisv_rhd": {
     "width": 1500,
-    "height": 1230
+    "height": 1230,
+    "timeout": 300000
   },
   "multisv_rhd_dosage": {
     "width": 1500,
-    "height": 1000
+    "height": 1000,
+    "timeout": 600000
   },
   "multi-sv-trio": {
     "width": 1500,
-    "height": 874
+    "height": 874,
+    "timeout": 90000
   },
   "link_to_split_view": {
     "width": 1500,
@@ -1477,15 +1585,18 @@ export const figureFrames: Record<
   },
   "chromhmm": {
     "width": 1500,
-    "height": 1230
+    "height": 1230,
+    "timeout": 180000
   },
   "chromhmm_hoxa_fibroblasts": {
     "width": 1500,
-    "height": 620
+    "height": 620,
+    "timeout": 120000
   },
   "chromhmm_encode_hoxa": {
     "width": 1500,
-    "height": 620
+    "height": 620,
+    "timeout": 120000
   },
   "multirow/display_types_pick": {
     "width": 1000,
@@ -1497,47 +1608,58 @@ export const figureFrames: Record<
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "width": 1500,
-    "height": 995
+    "height": 995,
+    "timeout": 90000
   },
   "methylation/chromatin_accessibility_6ma": {
     "width": 1500,
-    "height": 1030
+    "height": 1030,
+    "timeout": 120000
   },
   "methylation/hg002_snrpn_ungrouped": {
     "width": 1500,
-    "height": 730
+    "height": 730,
+    "timeout": 90000
   },
   "methylation/hg002_snrpn_grouped": {
     "width": 1500,
-    "height": 730
+    "height": 730,
+    "timeout": 90000
   },
   "methylation/hg002_snrpn_marked_only": {
     "width": 1500,
-    "height": 742
+    "height": 742,
+    "timeout": 90000
   },
   "methylation/hg002_snrpn_fill_unmarked": {
     "width": 1500,
-    "height": 742
+    "height": 742,
+    "timeout": 90000
   },
   "methylation/hg002_snrpn_combined": {
     "width": 1500,
-    "height": 1085
+    "height": 1085,
+    "timeout": 90000
   },
   "ld/lct_pooled_vs_panel": {
     "width": 1500,
-    "height": 1070
+    "height": 1070,
+    "timeout": 600000
   },
   "ld/lct_fst_scan": {
     "width": 1500,
-    "height": 520
+    "height": 520,
+    "timeout": 120000
   },
   "ld/anopheles_2la": {
     "width": 1500,
-    "height": 1395
+    "height": 1395,
+    "timeout": 180000
   },
   "ld/lct_haploblock": {
     "width": 1500,
-    "height": 1224
+    "height": 1224,
+    "timeout": 300000
   },
   "ld/lct_population_af": {
     "width": 1500,
@@ -1545,19 +1667,23 @@ export const figureFrames: Record<
   },
   "popgen/fst_in2lt_2L": {
     "width": 1500,
-    "height": 560
+    "height": 560,
+    "timeout": 90000
   },
   "popgen/tajimad_cyp6g1": {
     "width": 1500,
-    "height": 810
+    "height": 810,
+    "timeout": 90000
   },
   "popgen/in2lt_inversion": {
     "width": 1500,
-    "height": 1194
+    "height": 1194,
+    "timeout": 120000
   },
   "popgen/in2lt_pi_ratio": {
     "width": 1500,
-    "height": 1014
+    "height": 1014,
+    "timeout": 120000
   },
   "qc/smn1_evidence": {
     "width": 1500,
@@ -1565,7 +1691,8 @@ export const figureFrames: Record<
   },
   "qc/smn_read_placement": {
     "width": 1500,
-    "height": 805
+    "height": 805,
+    "timeout": 600000
   },
   "qc/smn_problematic_regions": {
     "width": 1500,
@@ -1573,23 +1700,28 @@ export const figureFrames: Record<
   },
   "qc/smn_block_and_reads": {
     "width": 1500,
-    "height": 1250
+    "height": 1250,
+    "timeout": 600000
   },
   "qc/smn_vs_t2t": {
     "width": 1200,
-    "height": 900
+    "height": 900,
+    "timeout": 180000
   },
   "scatac/pbmc5k_marker_swap": {
     "width": 1500,
-    "height": 680
+    "height": 680,
+    "timeout": 120000
   },
   "scrna/marker_panel": {
     "width": 1900,
-    "height": 730
+    "height": 730,
+    "timeout": 120000
   },
   "scrna/percell_lyz": {
     "width": 1500,
-    "height": 1110
+    "height": 1110,
+    "timeout": 120000
   },
   "sv_inspector_importform_loaded": {
     "width": 1500,
@@ -1609,11 +1741,13 @@ export const figureFrames: Record<
   },
   "cnv": {
     "width": 1500,
-    "height": 800
+    "height": 800,
+    "timeout": 180000
   },
   "smalldel": {
     "width": 1500,
-    "height": 1000
+    "height": 1000,
+    "timeout": 90000
   },
   "alignment_clipping_indicators": {
     "width": 1500,
@@ -1629,7 +1763,8 @@ export const figureFrames: Record<
   },
   "inversion_long_read": {
     "width": 1400,
-    "height": 966
+    "height": 966,
+    "timeout": 90000
   },
   "sv_cgiab/translocation_sv_inspector_start": {
     "width": 1500,
@@ -1641,15 +1776,18 @@ export const figureFrames: Record<
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "width": 1500,
-    "height": 944
+    "height": 944,
+    "timeout": 180000
   },
   "sv_cgiab/sv_callset_comparison": {
     "width": 1500,
-    "height": 984
+    "height": 984,
+    "timeout": 180000
   },
   "sv_cgiab/deletion_sv_inspector_search": {
     "width": 1500,
-    "height": 990
+    "height": 990,
+    "timeout": 120000
   },
   "sv_cgiab/deletion_linear_view": {
     "width": 1500,
@@ -1657,7 +1795,8 @@ export const figureFrames: Record<
   },
   "sv_cgiab/vntr_tumor_normal": {
     "width": 1500,
-    "height": 1020
+    "height": 1020,
+    "timeout": 180000
   },
   "sv_cgiab/cnv_with_bed_track": {
     "width": 1800,
@@ -1665,27 +1804,33 @@ export const figureFrames: Record<
   },
   "sv_cgiab/cnv_callset_comparison": {
     "width": 1500,
-    "height": 990
+    "height": 990,
+    "timeout": 120000
   },
   "sv_cgiab/cnv_depth_baf": {
     "width": 1500,
-    "height": 972
+    "height": 972,
+    "timeout": 90000
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "width": 1500,
-    "height": 1162
+    "height": 1162,
+    "timeout": 120000
   },
   "sv_cgiab/driver_kras_gain": {
     "width": 1500,
-    "height": 952
+    "height": 952,
+    "timeout": 90000
   },
   "sv_cgiab/cnv_chr17_loh": {
     "width": 1500,
-    "height": 952
+    "height": 952,
+    "timeout": 90000
   },
   "sv_cgiab/driver_smad4_loh": {
     "width": 1500,
-    "height": 1012
+    "height": 1012,
+    "timeout": 90000
   },
   "sv_inspector_importform_after": {
     "width": 1150,
@@ -1697,7 +1842,8 @@ export const figureFrames: Record<
   },
   "cancer_sv/multihop_split_view": {
     "width": 1000,
-    "height": 1188
+    "height": 1188,
+    "timeout": 300000
   },
   "cancer_sv/derivative_synteny": {
     "width": 1600,
@@ -1709,15 +1855,18 @@ export const figureFrames: Record<
   },
   "cancer_sv/split_view_from_breakend": {
     "width": 900,
-    "height": 771
+    "height": 771,
+    "timeout": 300000
   },
   "cancer_sv/realigned_reads_reference": {
     "width": 700,
-    "height": 833
+    "height": 833,
+    "timeout": 300000
   },
   "cancer_sv/realigned_reads_derivative": {
     "width": 700,
-    "height": 833
+    "height": 833,
+    "timeout": 90000
   },
   "cancer_sv/k562_fusion_inspector_form": {
     "width": 1500,
@@ -1733,7 +1882,8 @@ export const figureFrames: Record<
   },
   "cancer_sv/k562_fusion_inspector_reads": {
     "width": 1500,
-    "height": 880
+    "height": 880,
+    "timeout": 120000
   },
   "cancer_sv/k562_bcr_abl_split": {
     "width": 1500,
@@ -1741,83 +1891,103 @@ export const figureFrames: Record<
   },
   "cancer_sv/k562_amplicon_dna": {
     "width": 1600,
-    "height": 620
+    "height": 620,
+    "timeout": 120000
   },
   "circular_view/coverage_ring_chords": {
     "width": 1000,
-    "height": 900
+    "height": 900,
+    "timeout": 120000
   },
   "circular_view/tumor_normal_rings": {
     "width": 1000,
-    "height": 900
+    "height": 900,
+    "timeout": 180000
   },
   "circular_synteny/ribbons": {
     "width": 1000,
-    "height": 900
+    "height": 900,
+    "timeout": 180000
   },
   "circular_synteny/band_hover": {
     "width": 1000,
-    "height": 900
+    "height": 900,
+    "timeout": 180000
   },
   "circular_synteny/color_by_strand": {
     "width": 1000,
-    "height": 900
+    "height": 900,
+    "timeout": 180000
   },
   "circular_synteny/rings": {
     "width": 1000,
-    "height": 900
+    "height": 900,
+    "timeout": 180000
   },
   "circular_synteny/x_control": {
     "width": 1000,
-    "height": 900
+    "height": 900,
+    "timeout": 180000
   },
   "circular_synteny/ribbon_hover": {
     "width": 1000,
-    "height": 900
+    "height": 900,
+    "timeout": 180000
   },
   "linkage_groups/alg_dotplot_res_emu": {
     "width": 900,
-    "height": 1030
+    "height": 1030,
+    "timeout": 120000
   },
   "linkage_groups/alg_stack": {
     "width": 1400,
-    "height": 944
+    "height": 944,
+    "timeout": 120000
   },
   "tcga/cohort_cnv_genome": {
     "width": 1900,
-    "height": 1132
+    "height": 1132,
+    "timeout": 900000
   },
   "tcga/cohort_cnv_erbb2": {
     "width": 1500,
-    "height": 1024
+    "height": 1024,
+    "timeout": 180000
   },
   "tcga/cohort_cnv_recurrence_subtype": {
     "width": 1900,
-    "height": 710
+    "height": 710,
+    "timeout": 180000
   },
   "tcga/mutations_cdh1_histology": {
     "width": 1500,
-    "height": 780
+    "height": 780,
+    "timeout": 180000
   },
   "tcga/mutations_pik3ca_grouped": {
     "width": 1500,
-    "height": 780
+    "height": 780,
+    "timeout": 180000
   },
   "cnv1000g/ccl3l1_ladder": {
     "width": 1500,
-    "height": 830
+    "height": 830,
+    "timeout": 120000
   },
   "cnv1000g/ugt2b17_biallelic": {
     "width": 1500,
-    "height": 875
+    "height": 875,
+    "timeout": 300000
   },
   "cnv1000g/zarr_cohort": {
     "width": 1500,
-    "height": 972
+    "height": 972,
+    "timeout": 300000
   },
   "gwas/manhattan": {
     "width": 1500,
-    "height": 470
+    "height": 470,
+    "timeout": 90000
   },
   "gwas/locuszoom_ld": {
     "width": 1500,
@@ -1833,39 +2003,48 @@ export const figureFrames: Record<
   },
   "hg002_haplotypes_import_form": {
     "width": 950,
-    "height": 561
+    "height": 561,
+    "timeout": 120000
   },
   "hg002_haplotypes_wholegenome": {
     "width": 950,
-    "height": 767
+    "height": 767,
+    "timeout": 120000
   },
   "hg002_haplotypes_8p23_inversion": {
     "width": 1400,
-    "height": 850
+    "height": 850,
+    "timeout": 120000
   },
   "hg002_haplotypes_follow_panel": {
     "width": 1400,
-    "height": 454
+    "height": 454,
+    "timeout": 120000
   },
   "hg002_haplotypes_location_markers": {
     "width": 1400,
-    "height": 560
+    "height": 560,
+    "timeout": 120000
   },
   "hic/bcr_abl1_translocation": {
     "width": 1500,
-    "height": 1100
+    "height": 1100,
+    "timeout": 240000
   },
   "hic/compartment_switch": {
     "width": 1500,
-    "height": 573
+    "height": 573,
+    "timeout": 240000
   },
   "qtl/bxd_tyrp1_locus": {
     "width": 1500,
-    "height": 1020
+    "height": 1020,
+    "timeout": 90000
   },
   "qtl/bxd_myo5a_locus": {
     "width": 1500,
-    "height": 1020
+    "height": 1020,
+    "timeout": 90000
   },
   "trio-basic": {
     "width": 1500,
@@ -1901,379 +2080,478 @@ export const figureFrames: Record<
   },
   "dog10k-nhej1-cea-deletion": {
     "width": 1500,
-    "height": 1003
+    "height": 1003,
+    "timeout": 90000
   },
   "dog10k-amy2b-duplication": {
     "width": 1500,
-    "height": 1323
+    "height": 1323,
+    "timeout": 90000
   },
   "dog10k-rnase1-insertion": {
     "width": 1500,
-    "height": 1323
+    "height": 1323,
+    "timeout": 90000
   },
   "dog10k-size-fst-scan-genome": {
     "width": 1500,
-    "height": 460
+    "height": 460,
+    "timeout": 120000
   },
   "dog10k-size-fst-scan-igf1": {
     "width": 1500,
-    "height": 576
+    "height": 576,
+    "timeout": 120000
   },
   "dog10k-fgf4-retrogene-synteny": {
     "width": 1500,
-    "height": 1128
+    "height": 1128,
+    "timeout": 90000
   },
   "dog10k-cyp1a2-nonsense": {
     "width": 1500,
-    "height": 951
+    "height": 951,
+    "timeout": 90000
   },
   "dog10k-cyp1a2-cohort-copy-number": {
     "width": 1500,
-    "height": 1162
+    "height": 1162,
+    "timeout": 180000
   },
   "dog10k-igf1-haplotype": {
     "width": 1500,
-    "height": 1135
+    "height": 1135,
+    "timeout": 120000
   },
   "maf_track": {
     "width": 1000,
-    "height": 716
+    "height": 716,
+    "timeout": 90000
   },
   "maf_codon_tooltip": {
     "width": 1250,
-    "height": 810
+    "height": 810,
+    "timeout": 90000
   },
   "maf_color_by_chromosome": {
     "width": 1000,
-    "height": 716
+    "height": 716,
+    "timeout": 90000
   },
   "maf_470way": {
     "width": 1100,
-    "height": 940
+    "height": 940,
+    "timeout": 120000
   },
   "maf_470way_codon": {
     "width": 1000,
-    "height": 765
+    "height": 765,
+    "timeout": 120000
   },
   "maf_summary_zoomed_out": {
     "width": 780,
-    "height": 720
+    "height": 720,
+    "timeout": 120000
   },
   "maf_summary_zoomed_in": {
     "width": 780,
-    "height": 720
+    "height": 720,
+    "timeout": 120000
   },
   "maf_hprc_pangenome": {
     "width": 1500,
-    "height": 1850
+    "height": 1850,
+    "timeout": 360000
   },
   "mark_display/density_sidecar": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display/multiscale": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display/facet": {
     "width": 1500,
-    "height": 610
+    "height": 610,
+    "timeout": 150000
   },
   "mark_display/edit_plot": {
     "width": 1500,
-    "height": 1000
+    "height": 1000,
+    "timeout": 90000
   },
   "alu_age/locus": {
     "width": 1500,
-    "height": 410
+    "height": 410,
+    "timeout": 90000
   },
   "alu_age/chromosome": {
     "width": 1500,
-    "height": 465
+    "height": 465,
+    "timeout": 90000
   },
   "alu_age/binned": {
     "width": 1500,
-    "height": 465
+    "height": 465,
+    "timeout": 90000
   },
   "read_marks/depth": {
     "width": 1500,
-    "height": 460
+    "height": 460,
+    "timeout": 120000
   },
   "read_marks/insert_size": {
     "width": 1500,
-    "height": 655
+    "height": 655,
+    "timeout": 120000
   },
   "read_marks/pileup": {
     "width": 1500,
-    "height": 600
+    "height": 600,
+    "timeout": 120000
   },
   "read_marks/chromosome": {
     "width": 1500,
-    "height": 510
+    "height": 510,
+    "timeout": 120000
   },
   "mark_display_examples/bars": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display_examples/points": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display_examples/ramp": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display_examples/threshold": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display_examples/histogram": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display_examples/mean": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display_examples/pileup": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display_examples/facet": {
     "width": 1500,
-    "height": 410
+    "height": 410,
+    "timeout": 90000
   },
   "mark_display_examples/labels": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display_examples/rules": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display_examples/links": {
     "width": 1500,
-    "height": 370
+    "height": 370,
+    "timeout": 90000
   },
   "mark_display_examples/rows": {
     "width": 1500,
-    "height": 510
+    "height": 510,
+    "timeout": 90000
   },
   "mark_display_examples/identity": {
     "width": 1500,
-    "height": 410
+    "height": 410,
+    "timeout": 90000
   },
   "genomes_msa/launch_sequence": {
     "width": 1500,
-    "height": 900
+    "height": 900,
+    "timeout": 120000
   },
   "genomes_msa/genomic_domains": {
     "width": 1500,
-    "height": 390
+    "height": 390,
+    "timeout": 120000
   },
   "pangenome/pggb_synteny": {
     "width": 1500,
-    "height": 715
+    "height": 715,
+    "timeout": 120000
   },
   "pangenome/maf": {
     "width": 1000,
-    "height": 710
+    "height": 710,
+    "timeout": 90000
   },
   "pangenome/pggb_untangle_rows": {
     "width": 1000,
-    "height": 450
+    "height": 450,
+    "timeout": 90000
   },
   "pangenome/pggb_untangle_dotplot": {
     "width": 1000,
-    "height": 640
+    "height": 640,
+    "timeout": 120000
   },
   "pangenome/pav": {
     "width": 1000,
-    "height": 640
+    "height": 640,
+    "timeout": 90000
   },
   "pangenome/long_reads": {
     "width": 1000,
-    "height": 865
+    "height": 865,
+    "timeout": 120000
   },
   "pangenome_cactus/graph_bubble": {
     "width": 1000,
-    "height": 1270
+    "height": 1270,
+    "timeout": 90000
   },
   "pangenome_cactus/synteny": {
     "width": 1500,
-    "height": 715
+    "height": 715,
+    "timeout": 120000
   },
   "pangenome_cactus/builders": {
     "width": 1200,
-    "height": 690
+    "height": 690,
+    "timeout": 90000
   },
   "pangenome_cactus/maf": {
     "width": 1000,
-    "height": 480
+    "height": 480,
+    "timeout": 90000
   },
   "pangenome_cactus/graph_correspondence": {
     "width": 1040,
-    "height": 380
+    "height": 380,
+    "timeout": 90000
   },
   "paper/hprc_lanes_graph_anchored": {
     "width": 1900,
-    "height": 1410
+    "height": 1410,
+    "timeout": 240000
   },
   "paper/hprc_lanes_graph_stacked": {
     "width": 1500,
-    "height": 1430
+    "height": 1430,
+    "timeout": 240000
   },
   "paper/hprc_lanes_graph_stacked_force": {
     "width": 1500,
-    "height": 1410
+    "height": 1410,
+    "timeout": 240000
   },
   "paper/cohort_sv_multisample": {
     "width": 1500,
-    "height": 585
+    "height": 585,
+    "timeout": 300000
   },
   "paper/cohort_cnv": {
     "width": 1500,
-    "height": 712
+    "height": 712,
+    "timeout": 300000
   },
   "pangenome/pggb_bubble_tier": {
     "width": 1000,
-    "height": 840
+    "height": 840,
+    "timeout": 120000
   },
   "pangenome/pggb_carriage_lane": {
     "width": 1000,
-    "height": 610
+    "height": 610,
+    "timeout": 120000
   },
   "pangenome/pggb_locus_sample_rows": {
     "width": 1000,
-    "height": 1120
+    "height": 1120,
+    "timeout": 120000
   },
   "pangenome/rgfa_subgraph_launch": {
     "width": 1000,
-    "height": 1090
+    "height": 1090,
+    "timeout": 90000
   },
   "pangenome/rgfa_paa_bubble": {
     "width": 1000,
-    "height": 1190
+    "height": 1190,
+    "timeout": 120000,
+    "allowUnsettled": true
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "width": 1000,
-    "height": 670
+    "height": 670,
+    "timeout": 90000
   },
   "pangenome/graph_context_none": {
     "width": 750,
-    "height": 912
+    "height": 912,
+    "timeout": 180000,
+    "allowUnsettled": true
   },
   "pangenome/graph_context_hop1": {
     "width": 750,
-    "height": 912
+    "height": 912,
+    "timeout": 180000,
+    "allowUnsettled": true
   },
   "pangenome/rgfa_hover_sync": {
     "width": 1000,
-    "height": 920
+    "height": 920,
+    "timeout": 90000
   },
   "pangenome/rgfa_insertion_synteny": {
     "width": 1400,
-    "height": 612
+    "height": 612,
+    "timeout": 120000
   },
   "pangenome/rgfa_launch_out_menu": {
     "width": 1000,
-    "height": 580
+    "height": 580,
+    "timeout": 90000
   },
   "pangenome/rgfa_strain_launch": {
     "width": 1000,
-    "height": 820
+    "height": 820,
+    "timeout": 90000
   },
   "pangenome/hprc_whole_chromosome": {
     "width": 1400,
-    "height": 580
+    "height": 580,
+    "timeout": 300000
   },
   "pangenome/hprc_mhc_layout_force": {
     "width": 820,
-    "height": 750
+    "height": 750,
+    "timeout": 90000
   },
   "pangenome/hprc_graph_anatomy": {
     "width": 1000,
-    "height": 940
+    "height": 940,
+    "timeout": 120000,
+    "allowUnsettled": true
   },
   "pangenome/hprc_inversion": {
     "width": 1000,
-    "height": 965
+    "height": 965,
+    "timeout": 120000,
+    "allowUnsettled": true
   },
   "pangenome/hprc_lpa_kiv2": {
     "width": 1000,
-    "height": 1170
+    "height": 1170,
+    "timeout": 180000
   },
   "pangenome/hprc_graph_vs_callset": {
     "width": 1000,
-    "height": 1340
+    "height": 1340,
+    "timeout": 360000
   },
   "pangenome/hprc_haplotype_launch": {
     "width": 1100,
-    "height": 1232
+    "height": 1232,
+    "timeout": 180000
   },
   "pangenome/hprc_kiv2_copies_by_unit": {
     "width": 1400,
-    "height": 640
+    "height": 640,
+    "timeout": 120000
   },
   "pangenome/hprc_abca7_tandem_repeat_alleles": {
     "width": 1400,
-    "height": 1010
+    "height": 1010,
+    "timeout": 120000
   },
   "pangenome/hprc_abca7_repeat_units": {
     "width": 1400,
-    "height": 1065
+    "height": 1065,
+    "timeout": 240000
   },
   "pangenome/hprc_abca7_disagreements": {
     "width": 1400,
-    "height": 745
+    "height": 745,
+    "timeout": 240000
   },
   "pangenome/prepare_graph_segments": {
     "width": 1500,
-    "height": 454
+    "height": 454,
+    "timeout": 180000
   },
   "pangenome/hprc_amylase_walk_rows": {
     "width": 1400,
-    "height": 630
+    "height": 630,
+    "timeout": 240000
   },
   "pangenome/host_your_own": {
     "width": 1500,
-    "height": 1080
+    "height": 1080,
+    "timeout": 180000
   },
   "pangenome/mouse_dock2": {
     "width": 1400,
-    "height": 1150
+    "height": 1150,
+    "timeout": 300000
   },
   "pangenome/bovine_polled": {
     "width": 1400,
-    "height": 580
+    "height": 580,
+    "timeout": 300000
   },
   "pangenome/bovine_kit": {
     "width": 1400,
-    "height": 640
+    "height": 640,
+    "timeout": 300000
   },
   "pangenome/bovine_tas2r46": {
     "width": 1400,
-    "height": 640
+    "height": 640,
+    "timeout": 300000
   },
   "pangenome/bovine_bola": {
     "width": 1400,
-    "height": 1190
+    "height": 1190,
+    "timeout": 300000
   },
   "pangenome/bovine_whole_chromosome": {
     "width": 1400,
-    "height": 550
+    "height": 550,
+    "timeout": 300000
   },
   "pangenome/graph_kiv2_walks": {
     "width": 1400,
-    "height": 910
+    "height": 910,
+    "timeout": 240000
   },
   "pangenome/graph_kiv2_walk_rows": {
     "width": 1400,
-    "height": 740
+    "height": 740,
+    "timeout": 240000
   },
   "pangenome/graph_mouse_nnt_halos": {
     "width": 1400,
-    "height": 830
+    "height": 830,
+    "timeout": 300000
   },
   "cookbook_color_by_strand": {
     "width": 1500,
@@ -2296,4465 +2574,159 @@ export const figureFrames: Record<
 // Each single-frame figure's callouts, in the @jbrowse/capture `--annotations`
 // shape, for the recipe's capture command.
 export const figureCallouts: Record<string, object[]> = {
-  "synteny_offscreen_mates": [
-    {
-      "type": "text",
-      "text": "peach alignments whose grape end is on another chromosome",
-      "fontSize": 18,
-      "maxWidth": 300,
-      "leader": true,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "locus": "chrG1:6,000,000",
-        "alignY": "bottom",
-        "dy": 8
-      },
-      "dx": 60,
-      "dy": -45
-    }
-  ],
-  "multiway_synteny/grape_peach_cacao_gene_orthologs": [
-    {
-      "type": "text",
-      "text": "three grape copies, one peach and one cacao ortholog: a tandem expansion",
-      "fontSize": 18,
-      "maxWidth": 300,
-      "leader": true,
-      "dx": 90,
-      "anchor": {
-        "view": [
-          0,
-          1
-        ],
-        "track": "GCF_030704535.1-ncbiRefSeq",
-        "locus": "chr11:863,000",
-        "fracY": 0.5
-      }
-    }
-  ],
-  "multiway_synteny/primate_chr2_fusion": [
-    {
-      "type": "text",
-      "text": "fusion site",
-      "leader": true,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "locus": "chr2:113,600,000",
-        "fracY": 1
-      },
-      "dx": 0,
-      "dy": 110
-    }
-  ],
-  "multiway_synteny/wheat_homoeolog_selection": [
-    {
-      "type": "text",
-      "text": "Bread wheat self-alignment",
-      "fontSize": 26,
-      "anchor": {
-        "selector": ".MuiAppBar-root",
-        "alignX": "left",
-        "alignY": "top",
-        "dx": 24,
-        "dy": 30
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "hLocus": "5D",
-        "vLocus": "4A"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "hLocus": "7D",
-        "vLocus": "4A"
-      }
-    },
-    {
-      "type": "text",
-      "text": "4AL/5AL and 4AL/7BS",
-      "fontSize": 18,
-      "maxWidth": 320,
-      "anchor": {
-        "hLocus": "5D",
-        "vLocus": "4A",
-        "dy": -170
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "hLocus": "5D",
-        "vLocus": "4A",
-        "dy": -120
-      },
-      "anchor": {
-        "hLocus": "5D",
-        "vLocus": "4A",
-        "alignY": "top",
-        "dy": -10
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "hLocus": "7D",
-        "vLocus": "4A",
-        "dy": -120
-      },
-      "anchor": {
-        "hLocus": "7D",
-        "vLocus": "4A",
-        "alignY": "top",
-        "dy": -10
-      }
-    }
-  ],
-  "homoeolog_synteny/oat_homoeologs": [
-    {
-      "type": "text",
-      "text": "Oat self-alignment",
-      "fontSize": 26,
-      "anchor": {
-        "selector": ".MuiAppBar-root",
-        "alignX": "left",
-        "alignY": "top",
-        "dx": 24,
-        "dy": 30
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "hLocus": "4A",
-        "vLocus": "7C"
-      }
-    },
-    {
-      "type": "text",
-      "text": "4A/7C, largest of 18 cross-group pairs",
-      "fontSize": 18,
-      "maxWidth": 320,
-      "leader": true,
-      "anchor": {
-        "hLocus": "4A",
-        "vLocus": "7C",
-        "alignX": "right"
-      },
-      "dx": 170
-    }
-  ],
-  "selection_pressure/lysozyme": [
-    {
-      "type": "text",
-      "text": "LYZ, the only pair above 1. Every neighbour is blue",
-      "fontSize": 18,
-      "maxWidth": 300,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "human_genes",
-        "locus": "12:69,351,000",
-        "fracY": 1,
-        "dy": 45,
-        "alignX": "right",
-        "dx": 95
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "human_genes",
-        "locus": "12:69,351,000",
-        "fracY": 1,
-        "dy": 52,
-        "alignX": "right",
-        "dx": 88
-      },
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "human_genes",
-        "locus": "12:69,351,000",
-        "fracY": 1,
-        "dy": 52,
-        "dx": 8
-      }
-    }
-  ],
-  "orthofinder_synteny/vertebrates": [
-    {
-      "type": "text",
-      "text": "teleost duplication:\neach gar chromosome lands on two in zebrafish",
-      "fontSize": 20,
-      "maxWidth": 380,
-      "anchor": {
-        "text": "gar",
-        "alignX": "left"
-      },
-      "dx": 10,
-      "dy": 60
-    }
-  ],
-  "orthofinder_synteny/wheat": [
-    {
-      "type": "text",
-      "text": "D genome donor",
-      "fontSize": 20,
-      "anchor": {
-        "text": "tauschii",
-        "alignX": "left"
-      },
-      "dx": 90
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "tauschii"
-      }
-    },
-    {
-      "type": "text",
-      "text": "A genome donor",
-      "fontSize": 20,
-      "anchor": {
-        "text": "urartu",
-        "alignX": "left"
-      },
-      "dx": 90
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "urartu"
-      }
-    }
-  ],
-  "orthofinder_synteny/wheat_4a": [
-    {
-      "type": "text",
-      "text": "4AL/5AL",
-      "fontSize": 20,
-      "anchor": {
-        "selector": "[data-testid=\"refLabel-5D\"]",
-        "alignX": "left"
-      },
-      "dy": 54
-    },
-    {
-      "type": "text",
-      "text": "4AL/7BS",
-      "fontSize": 20,
-      "anchor": {
-        "selector": "[data-testid=\"refLabel-7D\"]",
-        "alignX": "right"
-      },
-      "dx": -30,
-      "dy": 150
-    }
-  ],
-  "multiway_synteny/ecoli_stx_island": [
-    {
-      "type": "text",
-      "text": "stx2 (Shiga toxin) prophage island\npresent in Sakai, absent from K-12",
-      "x": 1470,
-      "y": 335,
-      "textAlign": "end",
-      "maxWidth": 380
-    },
-    {
-      "type": "arrow",
-      "from": {
-        "x": 1085,
-        "y": 365
-      },
-      "anchor": {
-        "text": "stx2B"
-      },
-      "dx": 45,
-      "dy": -28
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "stx2B"
-      },
-      "dy": -14,
-      "height": 36
-    }
-  ],
-  "multiway_synteny/ecoli_one_vs_all": [
-    {
-      "type": "text",
-      "fontSize": 18,
-      "maxWidth": 560,
-      "anchor": {
-        "track": "ecoli_ava",
-        "locus": "chr:1,444,500",
-        "alignY": "bottom",
-        "dy": -40
-      },
-      "text": "paa operon (phenylacetate catabolism): present in K-12 and NCTC86, absent from the other three"
-    },
-    {
-      "type": "circle",
-      "anchor": {
-        "view": 1,
-        "graphNode": "s502"
-      },
-      "radius": 40
-    }
-  ],
-  "multiway_synteny/ecoli_import_form": [
-    {
-      "type": "text",
-      "text": "Quick start launches straight from a synteny track",
-      "x": 780,
-      "y": 95,
-      "maxWidth": 320
-    },
-    {
-      "type": "arrow",
-      "from": {
-        "x": 770,
-        "y": 110
-      },
-      "anchor": {
-        "text": "Quick start"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"quick-start-rows\"]"
-      }
-    },
-    {
-      "type": "text",
-      "text": "Every assembly in the track becomes a row",
-      "x": 780,
-      "y": 205,
-      "maxWidth": 340
-    },
-    {
-      "type": "arrow",
-      "from": {
-        "x": 770,
-        "y": 220
-      },
-      "anchor": {
-        "selector": "[data-testid=\"quick-start-rows\"]"
-      }
-    }
-  ],
-  "mcscan_synteny/anchors": [
-    {
-      "type": "text",
-      "x": 24,
-      "y": 56,
-      "fontSize": 22,
-      "maxWidth": 700,
-      "text": ".anchors open; one ribbon per gene pair"
-    }
-  ],
-  "mcscan_synteny/anchors_simple": [
-    {
-      "type": "text",
-      "x": 24,
-      "y": 56,
-      "fontSize": 22,
-      "maxWidth": 700,
-      "text": ".anchors and .anchors.simple open; one ribbon per gene\nrendered on top of chained synteny blocks"
-    }
-  ],
-  "genomes_synteny/ribbons_default": [
-    {
-      "type": "text",
-      "x": 24,
-      "y": 56,
-      "fontSize": 22,
-      "text": "Straight ribbons, colored indels"
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "CIGAR indels"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Curved lines"
-      }
-    }
-  ],
-  "genomes_synteny/ribbons_curved": [
-    {
-      "type": "text",
-      "x": 24,
-      "y": 56,
-      "fontSize": 22,
-      "text": "Curved lines + transparent indels"
-    }
-  ],
-  "genomes_synteny/star_link": [
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "a[href*=\"_liftOver_multiway\"]"
-      },
-      "strokeWidth": 3
-    }
-  ],
-  "sv_cgiab/dotplot_haplotypes": [
-    {
-      "type": "text",
-      "text": "chr3/chr13 fusion",
-      "leader": true,
-      "anchor": {
-        "view": 0,
-        "hLocus": "chr13",
-        "vLocus": "chr3_chr13_hap1"
-      },
-      "dx": 40,
-      "dy": 80
-    },
-    {
-      "type": "text",
-      "text": "chr13 intact",
-      "leader": true,
-      "anchor": {
-        "view": 1,
-        "hLocus": "chr13",
-        "vLocus": "chr13_hap2"
-      },
-      "dx": 40,
-      "dy": 80
-    }
-  ],
-  "sv_cgiab/synteny_view": [
-    {
-      "type": "text",
-      "text": "HG008-T hap2",
-      "fontSize": 19,
-      "anchor": {
-        "selector": "[data-testid=\"refLabel-prefix\"]",
-        "view": [
-          0,
-          0
-        ],
-        "alignX": "left",
-        "alignY": "bottom",
-        "dx": 4,
-        "dy": 26
-      }
-    },
-    {
-      "type": "text",
-      "text": "GRCh38 reference",
-      "fontSize": 19,
-      "anchor": {
-        "selector": "[data-testid=\"refLabel-prefix\"]",
-        "view": [
-          0,
-          1
-        ],
-        "alignX": "left",
-        "alignY": "bottom",
-        "dx": 4,
-        "dy": 26
-      }
-    },
-    {
-      "type": "text",
-      "text": "HG008-T hap1",
-      "fontSize": 19,
-      "anchor": {
-        "selector": "[data-testid=\"refLabel-prefix\"]",
-        "view": [
-          0,
-          2
-        ],
-        "alignX": "left",
-        "alignY": "bottom",
-        "dx": 4,
-        "dy": 26
-      }
-    },
-    {
-      "type": "text",
-      "text": "chr3 breakend",
-      "fontSize": 19,
-      "color": "#1f77b4",
-      "background": "#dceaf6",
-      "leader": true,
-      "anchor": {
-        "selector": "[data-testid=\"highlight-band\"]",
-        "alignY": "top"
-      },
-      "dx": -150,
-      "dy": -34
-    },
-    {
-      "type": "text",
-      "text": "chr13 breakend",
-      "fontSize": 19,
-      "color": "#1f77b4",
-      "background": "#dceaf6",
-      "leader": true,
-      "anchor": {
-        "selector": "[data-testid=\"highlight-band\"] ~ [data-testid=\"highlight-band\"]",
-        "alignY": "top"
-      },
-      "dx": -150,
-      "dy": -34
-    }
-  ],
-  "dotplot_self_chry": [
-    {
-      "type": "box",
-      "anchor": {
-        "hLocus": "chrY:9,050,000-9,750,000",
-        "vLocus": "chrY:9,050,000-9,750,000"
-      }
-    },
-    {
-      "type": "text",
-      "text": "TSPY array",
-      "fontSize": 17,
-      "anchor": {
-        "hLocus": "chrY:9,050,000-9,750,000",
-        "vLocus": "chrY:9,050,000-9,750,000",
-        "alignY": "bottom",
-        "dy": 40
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "hLocus": "chrY:21,200,000-26,000,000",
-        "vLocus": "chrY:21,200,000-26,000,000"
-      }
-    },
-    {
-      "type": "text",
-      "text": "Yq palindromes",
-      "fontSize": 17,
-      "anchor": {
-        "hLocus": "chrY:21,200,000-26,000,000",
-        "vLocus": "chrY:21,200,000-26,000,000",
-        "alignX": "left",
-        "dx": -130
-      }
-    }
-  ],
-  "synteny_self_chry_palindromes_family": [
-    {
-      "type": "box",
-      "anchor": {
-        "hLocus": "chrY:22,330,000-22,810,000",
-        "vLocus": "chrY:22,330,000-22,810,000"
-      }
-    },
-    {
-      "type": "arrow",
-      "strokeWidth": 3,
-      "fromAnchor": {
-        "hLocus": "chrY:22,330,000-22,810,000",
-        "vLocus": "chrY:22,330,000-22,810,000",
-        "alignY": "bottom",
-        "dy": 16
-      },
-      "anchor": {
-        "hLocus": "chrY:22,330,000-22,810,000",
-        "vLocus": "chrY:22,330,000-22,810,000",
-        "alignY": "bottom",
-        "dy": 122
-      }
-    }
-  ],
-  "synteny_self_chry_palindromes_zoom": [
-    {
-      "type": "text",
-      "fontSize": 17,
-      "maxWidth": 380,
-      "text": "a palindrome: a forward match (salmon) and an inverted one (magenta)",
-      "anchor": {
-        "selector": "[data-testid=\"synteny_canvas\"]",
-        "alignX": "left",
-        "alignY": "top",
-        "dx": 16,
-        "dy": 18
-      }
-    }
-  ],
-  "multiway_synteny/ecoli_alignment_menu": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Linear synteny view with"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Linear synteny view, all assemblies here"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "at the matching region"
-      }
-    }
-  ],
-  "multiway_synteny/lane_header_menu": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Open peach at the matching region"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Re-anchor on peach"
-      }
-    }
-  ],
-  "maf_row_menu": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Open aligned genome at the matching region"
-      }
-    }
-  ],
-  "alignments/strand_split_coverage": [
-    {
-      "type": "box",
-      "strokeWidth": 2,
-      "pad": 8,
-      "anchor": {
-        "track": "hg002_nanopore_hp",
-        "locus": "1:55,705,711"
-      }
-    },
-    {
-      "type": "text",
-      "text": "reverse reads only: a basecalling artifact",
-      "fontSize": 15,
-      "textAlign": "end",
-      "anchor": {
-        "track": "hg002_nanopore_hp",
-        "locus": "1:55,705,711",
-        "fracY": 0,
-        "dy": -14,
-        "alignX": "left",
-        "dx": -14
-      }
-    },
-    {
-      "type": "box",
-      "strokeWidth": 2,
-      "pad": 8,
-      "anchor": {
-        "track": "hg002_nanopore_hp",
-        "locus": "1:55,705,716"
-      }
-    },
-    {
-      "type": "text",
-      "text": "both strands: a real variant",
-      "fontSize": 15,
-      "anchor": {
-        "track": "hg002_nanopore_hp",
-        "locus": "1:55,705,716",
-        "fracY": 0,
-        "dy": -14,
-        "alignX": "right",
-        "dx": 14
-      }
-    }
-  ],
-  "linear_align_ctx_menu": [
-    {
-      "type": "text",
-      "anchor": {
-        "track": "volvox_sv_cram",
-        "locus": "ctgA:1633",
-        "fracY": 0,
-        "dy": 35,
-        "dx": -231
-      },
-      "maxWidth": 180,
-      "text": "Right-click any read to open this menu"
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "volvox_sv_cram",
-        "locus": "ctgA:1633",
-        "fracY": 0,
-        "dy": 50,
-        "dx": -32
-      },
-      "anchor": {
-        "track": "volvox_sv_cram",
-        "locus": "ctgA:1633",
-        "fracY": 0,
-        "dy": 57
-      }
-    }
-  ],
-  "hic/percentile_off": [
-    {
-      "type": "text",
-      "text": "Emphasize faint contacts OFF",
-      "fontSize": 20,
-      "anchor": {
-        "track": "hic",
-        "alignX": "left",
-        "alignY": "bottom"
-      },
-      "dx": 150,
-      "dy": -26
-    }
-  ],
-  "hic/percentile_on": [
-    {
-      "type": "text",
-      "text": "Emphasize faint contacts ON (the default)",
-      "fontSize": 20,
-      "anchor": {
-        "track": "hic",
-        "alignX": "left",
-        "alignY": "bottom"
-      },
-      "dx": 150,
-      "dy": -26
-    }
-  ],
-  "alignments/modifications2": [
-    {
-      "type": "text",
-      "anchor": {
-        "selector": "[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-human_chr20_mod_call_5mC_5hmC_CG_cram_modifications\"]"
-      },
-      "dx": 250,
-      "dy": -60,
-      "maxWidth": 340,
-      "fontSize": 16,
-      "text": "One color per modification type: only positions marked in the MM tag"
-    },
-    {
-      "type": "text",
-      "anchor": {
-        "selector": "[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-human_chr20_mod_call_5mC_5hmC_CG_cram\"]"
-      },
-      "dx": 250,
-      "dy": -130,
-      "maxWidth": 340,
-      "fontSize": 16,
-      "text": "One color per type, plus low-probability & unmodified in blue: every CpG painted\n\n- red = methylated\n- blue = low probability or unmarked"
-    }
-  ],
-  "alignments/compact": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Read height"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Compact"
-      }
-    }
-  ],
-  "alignments/height_mode_fit": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Read height"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Fit read height to track height"
-      }
-    }
-  ],
-  "rnaseq/strand_specific": [
-    {
-      "type": "text",
-      "fontSize": 22,
-      "maxWidth": 700,
-      "text": "Color by first of pair strand",
-      "anchor": {
-        "track": "ncbi_gff_hg19",
-        "locus": "chr9:136,216,000",
-        "fracY": 0.6
-      }
-    },
-    {
-      "type": "arrow",
-      "strokeWidth": 9,
-      "fromAnchor": {
-        "track": "ncbi_gff_hg19",
-        "locus": "chr9:136215300",
-        "fracY": 0.86
-      },
-      "anchor": {
-        "track": "ncbi_gff_hg19",
-        "locus": "chr9:136218000",
-        "fracY": 0.86
-      }
-    },
-    {
-      "type": "arrow",
-      "strokeWidth": 9,
-      "fromAnchor": {
-        "track": "ncbi_gff_hg19",
-        "locus": "chr9:136222900",
-        "fracY": 0.86
-      },
-      "anchor": {
-        "track": "ncbi_gff_hg19",
-        "locus": "chr9:136219000",
-        "fracY": 0.86
-      }
-    },
-    {
-      "type": "arrow",
-      "strokeWidth": 9,
-      "fromAnchor": {
-        "track": "ncbi_gff_hg19",
-        "locus": "chr9:136223800",
-        "fracY": 0.86
-      },
-      "anchor": {
-        "track": "ncbi_gff_hg19",
-        "locus": "chr9:136227500",
-        "fracY": 0.86
-      }
-    }
-  ],
-  "alphagenome/splice_junctions": [
-    {
-      "type": "text",
-      "text": "GM12878: TAL1 is off, so no junctions",
-      "fontSize": 18,
-      "anchor": {
-        "track": "demo-tal1-interval-junctions-reference-2",
-        "locus": "chr1:47,221,000",
-        "fracY": 0.5
-      }
-    }
-  ],
-  "alphagenome/predict_variant_menu": [
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"cascading-menuitem-predict_variant_effect_with_alphagenome\"]"
-      }
-    }
-  ],
-  "alphagenome/variant_difference": [
-    {
-      "type": "text",
-      "text": "accessibility gained at the Jurkat insertion",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "demo-tal1-variant-cd34-delta-dnase.0",
-        "locus": "chr1:47,239,296",
-        "fracY": 0.3
-      },
-      "dx": -60
-    },
-    {
-      "type": "text",
-      "text": "TAL1 transcription rises",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "demo-tal1-variant-cd34-delta-rna_seq.0",
-        "locus": "chr1:47,220,300",
-        "fracY": 0.4
-      },
-      "dx": 60
-    },
-    {
-      "type": "text",
-      "text": "H3K27ac gained across the locus",
-      "fontSize": 18,
-      "anchor": {
-        "track": "demo-tal1-variant-cd34-delta-chip_histone.0",
-        "locus": "chr1:47,212,300",
-        "fracY": 0.3
-      }
-    }
-  ],
-  "variant_panel": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "SAMPLES"
-      }
-    },
-    {
-      "type": "text",
-      "anchor": {
-        "text": "SAMPLES"
-      },
-      "dy": 0,
-      "dx": -230,
-      "maxWidth": 200,
-      "text": "Per-sample genotypes"
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "text": "SAMPLES",
-        "dx": -122
-      },
-      "anchor": {
-        "text": "SAMPLES"
-      },
-      "dx": -60
-    }
-  ],
-  "dtu/dtu_colored_gene_glyph": [
-    {
-      "type": "box",
-      "anchor": {
-        "locus": "chr10:7,806,974-7,807,010"
-      },
-      "pad": 9,
-      "strokeWidth": 3
-    },
-    {
-      "type": "text",
-      "text": "no reads — exon skipped",
-      "anchor": {
-        "locus": "chr10:7,806,974-7,807,010",
-        "track": "muscle_plus",
-        "fracY": 0.5,
-        "alignX": "left"
-      },
-      "textAlign": "end",
-      "dx": -14
-    },
-    {
-      "type": "text",
-      "text": "37 bp exon retained",
-      "anchor": {
-        "locus": "chr10:7,806,974-7,807,010",
-        "track": "liver_plus",
-        "fracY": 0.35,
-        "alignX": "left"
-      },
-      "textAlign": "end",
-      "dx": -14
-    }
-  ],
-  "gc_content": [
-    {
-      "type": "text",
-      "text": "Mostly positive skew (leading strand)",
-      "anchor": {
-        "track": "gc_skew_hpylori",
-        "locus": "NC_018939v1:166,800",
-        "fracY": 0.11
-      },
-      "maxWidth": 260
-    },
-    {
-      "type": "text",
-      "text": "Mostly negative skew (lagging strand)",
-      "anchor": {
-        "track": "gc_skew_hpylori",
-        "locus": "NC_018939v1:1,034,100",
-        "fracY": 0.89
-      },
-      "maxWidth": 260
-    },
-    {
-      "type": "text",
-      "text": "Terminus: skew flips from + to −",
-      "leader": true,
-      "anchor": {
-        "track": "gc_skew_hpylori",
-        "locus": "NC_018939v1:814,000",
-        "fracY": 0.45
-      },
-      "dx": 60,
-      "dy": -45,
-      "maxWidth": 220
-    },
-    {
-      "type": "text",
-      "text": "Origin: skew flips from − to +",
-      "leader": true,
-      "anchor": {
-        "track": "gc_skew_hpylori",
-        "locus": "NC_018939v1:1,608,000",
-        "fracY": 0.45
-      },
-      "dx": -60,
-      "dy": -45,
-      "maxWidth": 220
-    }
-  ],
-  "multiwig/multi_renderer_types": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Plot type"
-      }
-    }
-  ],
-  "genomes_basics/isoform_control": [
-    {
-      "type": "circle",
-      "anchor": {
-        "selector": "[data-testid=\"track-control-isoform\"]"
-      }
-    }
-  ],
-  "pangenome/genomes_hprc_loci": [
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "tbody tr:first-child td:last-child a"
-      },
-      "strokeWidth": 3
-    }
-  ],
-  "customized_feature_details": [
-    {
-      "type": "circle",
-      "anchor": {
-        "selector": "a[href^=\"https://google.com/?q=\"]"
-      }
-    },
-    {
-      "type": "text",
-      "text": "The callback turns the name into a clickable link",
-      "leader": true,
-      "anchor": {
-        "selector": "a[href^=\"https://google.com/?q=\"]",
-        "alignX": "left"
-      },
-      "dx": -140
-    }
-  ],
-  "protein/connected": [
-    {
-      "type": "text",
-      "text": "Clicked: the nuclear export signal",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "selector": "[data-testid=\"protein-feature-Motif\"][data-feature-start=\"339\"]"
-      },
-      "dx": -260,
-      "dy": -125
-    },
-    {
-      "type": "text",
-      "text": "Its codons on the gene",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "hg38-ncbiRefSeq",
-        "locus": "chr17:7,670,650",
-        "fracY": 0.3
-      },
-      "dx": 80,
-      "dy": 10
-    },
-    {
-      "type": "text",
-      "text": "Magenta: its residues on the structure",
-      "fontSize": 18,
-      "anchor": {
-        "selector": "[data-testid=\"protein-view-molstar\"]",
-        "alignX": "left",
-        "alignY": "top",
-        "dx": 200,
-        "dy": 30
-      }
-    }
-  ],
-  "protein/annotation_1d": [
-    {
-      "type": "text",
-      "text": "DNA-binding core: confident fold, substitutions predicted pathogenic",
-      "fontSize": 18,
-      "maxWidth": 700,
-      "anchor": {
-        "view": 1,
-        "track": "P04637-DNA binding",
-        "locus": "P04637:108",
-        "fracY": 0.72
-      }
-    },
-    {
-      "type": "text",
-      "text": "Tails: low confidence, mostly benign",
-      "fontSize": 18,
-      "maxWidth": 400,
-      "anchor": {
-        "view": 1,
-        "track": "P04637-DNA binding",
-        "locus": "P04637:4",
-        "fracY": 0.72
-      }
-    }
-  ],
-  "protein/tp53_hotspot": [
-    {
-      "type": "text",
-      "text": "R248 codon",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "hg38-ncbiRefSeq",
-        "locus": "chr17:7,674,219-7,674,221",
-        "fracY": 0.3
-      },
-      "dx": 120,
-      "dy": 12
-    },
-    {
-      "type": "text",
-      "text": "R248 in magenta, with the residues and bases around it",
-      "maxWidth": 520,
-      "fontSize": 18,
-      "anchor": {
-        "selector": "[data-testid=\"protein-view-molstar\"]",
-        "alignX": "left",
-        "alignY": "top"
-      },
-      "dx": 200,
-      "dy": 40
-    }
-  ],
-  "protein/tp53_mapped_chain": [
-    {
-      "type": "box",
-      "pad": 2,
-      "anchor": {
-        "selector": "[role=\"listbox\"] li[role=\"option\"]:nth-child(2)"
-      }
-    },
-    {
-      "type": "text",
-      "text": "The p53 peptide, the chain the transcript encodes",
-      "fontSize": 18,
-      "maxWidth": 600,
-      "leader": true,
-      "anchor": {
-        "selector": "[role=\"listbox\"] li[role=\"option\"]:nth-child(2)",
-        "alignX": "left"
-      },
-      "dx": -40,
-      "dy": 40
-    }
-  ],
-  "rubberband": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Zoom to region"
-      }
-    }
-  ],
-  "link_to_split_view": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Open breakpoints in split view"
-      }
-    },
-    {
-      "type": "arrow",
-      "from": {
-        "x": 760,
-        "y": 300
-      },
-      "anchor": {
-        "text": "Open breakpoints in split view"
-      }
-    },
-    {
-      "type": "text",
-      "x": 60,
-      "y": 270,
-      "text": "Launches a breakpoint split view for the TRA — also in paired-end and long-read feature details."
-    }
-  ],
-  "lgv_usage_guide": [
-    {
-      "type": "text",
-      "text": "Open track selector",
-      "fontSize": 16,
-      "anchor": {
-        "selector": "button[title=\"Open track selector\"]",
-        "dx": -15,
-        "dy": -59
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "selector": "button[title=\"Open track selector\"]",
-        "dx": 3,
-        "dy": -51
-      },
-      "anchor": {
-        "selector": "button[title=\"Open track selector\"]"
-      }
-    },
-    {
-      "type": "text",
-      "text": "Scroll-to-zoom toggle",
-      "fontSize": 16,
-      "anchor": {
-        "selector": "[data-testid=\"scroll-zoom-toggle\"]",
-        "dx": 125,
-        "dy": -59
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "selector": "[data-testid=\"scroll-zoom-toggle\"]",
-        "dx": 144,
-        "dy": -51
-      },
-      "anchor": {
-        "selector": "[data-testid=\"scroll-zoom-toggle\"]"
-      }
-    },
-    {
-      "type": "text",
-      "text": "Pan",
-      "fontSize": 16,
-      "anchor": {
-        "selector": "button[aria-label=\"Pan left\"]",
-        "dx": 30,
-        "dy": -59
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "selector": "button[aria-label=\"Pan left\"]",
-        "dx": 45,
-        "dy": -51
-      },
-      "anchor": {
-        "selector": "button[aria-label=\"Pan left\"]"
-      }
-    },
-    {
-      "type": "text",
-      "text": "Search box",
-      "fontSize": 16,
-      "anchor": {
-        "selector": "input[placeholder=\"Search for location\"]",
-        "dx": -32,
-        "dy": -59
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "selector": "input[placeholder=\"Search for location\"]",
-        "dx": 8,
-        "dy": -51
-      },
-      "anchor": {
-        "selector": "input[placeholder=\"Search for location\"]"
-      }
-    },
-    {
-      "type": "text",
-      "text": "Zoom",
-      "fontSize": 16,
-      "anchor": {
-        "selector": "[data-testid=\"zoom_in\"]",
-        "dx": -99,
-        "dy": -59
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "selector": "[data-testid=\"zoom_in\"]",
-        "dx": -77,
-        "dy": -51
-      },
-      "anchor": {
-        "selector": "[data-testid=\"zoom_in\"]"
-      }
-    },
-    {
-      "type": "text",
-      "text": "Track menu",
-      "fontSize": 16,
-      "anchor": {
-        "selector": "[data-testid=\"track_menu_icon\"]",
-        "dx": 42,
-        "dy": -25
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "selector": "[data-testid=\"track_menu_icon\"]",
-        "dx": 42,
-        "dy": -17
-      },
-      "anchor": {
-        "selector": "[data-testid=\"track_menu_icon\"]"
-      }
-    }
-  ],
-  "scroll_zoom_toggle": [
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"scroll-zoom-toggle\"]"
-      }
-    },
-    {
-      "type": "text",
-      "text": "The scroll wheel zooms instead of scrolling the page",
-      "leader": true,
-      "anchor": {
-        "selector": "[data-testid=\"scroll-zoom-toggle\"]",
-        "alignY": "bottom"
-      },
-      "dx": 40,
-      "dy": 70
-    }
-  ],
-  "add_track_form": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Open track..."
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"addTrackWorkflow\"]"
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "text": "Open track...",
-        "dx": 96
-      },
-      "anchor": {
-        "text": "Enter track data"
-      },
-      "dx": -30
-    }
-  ],
-  "track_menu": [
-    {
-      "type": "circle",
-      "pad": 1,
-      "anchor": {
-        "selector": "[data-testid=\"track_menu_icon\"]"
-      }
-    },
-    {
-      "type": "circle",
-      "anchor": {
-        "selector": "[data-testid=\"htsTrackEntryMenu-Tracks,volvox_sv_test\"]"
-      }
-    }
-  ],
-  "tracklabels": [
-    {
-      "type": "circle",
-      "anchor": {
-        "selector": "[data-testid=\"view_menu_icon\"]"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"cascading-submenu-track_labels\"]"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"cascading-menuitem-overlapping\"], [data-testid=\"cascading-submenu-overlapping\"]"
-      }
-    }
-  ],
-  "highlight_list_edit_label": [
-    {
-      "type": "text",
-      "text": "Single-click the label to edit it",
-      "anchor": {
-        "text": "Location"
-      },
-      "dx": -190,
-      "dy": 170,
-      "maxWidth": 230
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "selector": ".MuiDataGrid-cell[data-field=\"label\"]",
-        "dx": -162,
-        "dy": 125
-      },
-      "anchor": {
-        "selector": ".MuiDataGrid-cell[data-field=\"label\"]"
-      },
-      "dx": -7,
-      "dy": 18
-    }
-  ],
-  "hierarchical/hierarchical_user_menu-fs8": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Collapse top-level categories"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Collapse subcategories"
-      }
-    }
-  ],
-  "recent_tracks": [
-    {
-      "type": "circle",
-      "anchor": {
-        "selector": "[data-testid=\"recently-used-tracks-button\"]"
-      }
-    }
-  ],
-  "plugin_store": [
-    {
-      "type": "circle",
-      "anchor": {
-        "text": "Tools"
-      },
-      "radius": 24,
-      "dy": 8
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Plugin store"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Installed plugins"
-      }
-    }
-  ],
-  "chromhmm": [
-    {
-      "type": "box",
-      "anchor": {
-        "track": "roadmap_chromhmm_multirow_hg19",
-        "locus": "chr9:36,833,266-37,034,265"
-      },
-      "pad": 2
-    },
-    {
-      "type": "text",
-      "text": "PAX5 transcribed, with genic enhancers, in B cells only",
-      "leader": true,
-      "anchor": {
-        "track": "roadmap_chromhmm_multirow_hg19",
-        "locus": "chr9:36,900,000",
-        "fracY": 0.3188976377952756
-      },
-      "dx": -260,
-      "dy": -60
-    }
-  ],
-  "chromhmm_hoxa_fibroblasts": [
-    {
-      "type": "box",
-      "anchor": {
-        "track": "roadmap_chromhmm_multirow_hg19",
-        "locus": "chr7:27,132,613-27,196,294"
-      },
-      "pad": 2
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "track": "roadmap_chromhmm_multirow_hg19",
-        "locus": "chr7:27,202,056-27,246,878"
-      },
-      "pad": 2,
-      "color": "#1565c0"
-    }
-  ],
-  "multirow/display_types_pick": [
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"cascading-submenu-display_types\"]"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"cascading-menuitem-multi-row_feature_display_(painting)\"], [data-testid=\"cascading-submenu-multi-row_feature_display_(painting)\"]"
-      }
-    }
-  ],
-  "methylation/arabidopsis_wgbs_contexts": [
-    {
-      "type": "text",
-      "text": "expressed gene body: CpG only",
-      "fontSize": 20,
-      "anchor": {
-        "track": "GCF_000001735.4-ncbiRefSeq",
-        "locus": "chr1:4,398,322-4,405,669",
-        "fracY": 1,
-        "dy": -16
-      }
-    },
-    {
-      "type": "text",
-      "text": "LTR/Copia transposon, silenced: all three contexts",
-      "fontSize": 20,
-      "maxWidth": 300,
-      "anchor": {
-        "track": "GCF_000001735.4-ncbiRefSeq",
-        "locus": "chr1:4,405,996-4,411,119",
-        "fracY": 1,
-        "dy": -16
-      }
-    },
-    {
-      "type": "text",
-      "anchor": {
-        "selector": "[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_methyldackel\"]"
-      },
-      "dx": -690,
-      "dy": -57,
-      "fontSize": 22,
-      "text": "CpG"
-    },
-    {
-      "type": "text",
-      "anchor": {
-        "selector": "[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_methyldackel\"]"
-      },
-      "dx": -690,
-      "dy": 0,
-      "fontSize": 22,
-      "text": "CHG"
-    },
-    {
-      "type": "text",
-      "anchor": {
-        "selector": "[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_methyldackel\"]"
-      },
-      "dx": -690,
-      "dy": 57,
-      "fontSize": 22,
-      "text": "CHH"
-    },
-    {
-      "type": "text",
-      "anchor": {
-        "selector": "[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_wgbs_cg\"]"
-      },
-      "dx": -690,
-      "fontSize": 22,
-      "text": "CpG"
-    },
-    {
-      "type": "text",
-      "anchor": {
-        "selector": "[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_wgbs_chg\"]"
-      },
-      "dx": -690,
-      "fontSize": 22,
-      "text": "CHG"
-    },
-    {
-      "type": "text",
-      "anchor": {
-        "selector": "[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_wgbs_chh\"]"
-      },
-      "dx": -690,
-      "fontSize": 22,
-      "text": "CHH"
-    }
-  ],
-  "methylation/chromatin_accessibility_6ma": [
-    {
-      "type": "text",
-      "text": "Hia5-treated",
-      "fontSize": 22,
-      "anchor": {
-        "track": "PAY22766-nanopore",
-        "locus": "chr12:6,530,200",
-        "fracY": 0.28
-      }
-    },
-    {
-      "type": "text",
-      "text": "No-enzyme control",
-      "fontSize": 22,
-      "anchor": {
-        "track": "PBA15131-nanopore",
-        "locus": "chr12:6,530,200",
-        "fracY": 0.28
-      }
-    }
-  ],
-  "methylation/hg002_snrpn_ungrouped": [
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"cascading-submenu-group_by...\"]"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"cascading-menuitem-tag...\"], [data-testid=\"cascading-submenu-tag...\"]"
-      }
-    }
-  ],
-  "methylation/hg002_snrpn_grouped": [
-    {
-      "type": "text",
-      "text": "HP1",
-      "anchor": {
-        "text": "HP: 1",
-        "alignX": "right",
-        "dx": 90
-      }
-    },
-    {
-      "type": "text",
-      "text": "HP2",
-      "anchor": {
-        "text": "HP: 2",
-        "alignX": "right",
-        "dx": 90
-      }
-    },
-    {
-      "type": "text",
-      "text": "HP unknown",
-      "anchor": {
-        "text": "HP: none",
-        "alignX": "right",
-        "dx": 90
-      }
-    }
-  ],
-  "methylation/hg002_snrpn_marked_only": [
-    {
-      "type": "text",
-      "text": "Modified positions only",
-      "anchor": {
-        "text": "HG002 ONT reads",
-        "alignX": "right",
-        "dx": 90
-      }
-    }
-  ],
-  "methylation/hg002_snrpn_fill_unmarked": [
-    {
-      "type": "text",
-      "text": "Every CpG filled in",
-      "anchor": {
-        "text": "HG002 ONT reads",
-        "alignX": "right",
-        "dx": 90
-      }
-    }
-  ],
-  "methylation/hg002_snrpn_combined": [
-    {
-      "type": "text",
-      "text": "HP1",
-      "anchor": {
-        "text": "HP: 1",
-        "alignX": "right",
-        "dx": 90,
-        "dy": 18
-      }
-    },
-    {
-      "type": "text",
-      "text": "HP2",
-      "anchor": {
-        "text": "HP: 2",
-        "alignX": "right",
-        "dx": 90
-      }
-    },
-    {
-      "type": "text",
-      "text": "HP unknown",
-      "anchor": {
-        "text": "HP: none",
-        "alignX": "right",
-        "dx": 90
-      }
-    }
-  ],
-  "ld/lct_pooled_vs_panel": [
-    {
-      "type": "text",
-      "text": "rs4988235",
-      "fontSize": 16,
-      "leader": true,
-      "anchor": {
-        "track": "kgp_lct_fst",
-        "locus": "chr2:135,851,076",
-        "fracY": 0.09
-      },
-      "dx": -90,
-      "dy": 30
-    }
-  ],
-  "ld/lct_fst_scan": [
-    {
-      "type": "text",
-      "text": "LCT",
-      "fontSize": 20,
-      "leader": true,
-      "anchor": {
-        "track": "kgp_lct_fst_scan",
-        "locus": "chr2:135,851,076",
-        "fracY": 0,
-        "dy": 25
-      },
-      "dx": 150
-    }
-  ],
-  "ld/anopheles_2la": [
-    {
-      "type": "box",
-      "pad": 0,
-      "strokeWidth": 3,
-      "fromAnchor": {
-        "track": "ag1000g_2l_cmgam",
-        "dy": -28
-      },
-      "anchor": {
-        "track": "ag1000g_2la_karyotype_cmgam"
-      }
-    },
-    {
-      "type": "text",
-      "text": "Cameroon: 2La inversion common, LD spans it",
-      "fontSize": 20,
-      "maxWidth": 600,
-      "anchor": {
-        "track": "ag1000g_2l_cmgam",
-        "locus": "chr2L:4,500,000",
-        "fracY": 0.55
-      }
-    },
-    {
-      "type": "box",
-      "pad": 0,
-      "strokeWidth": 3,
-      "fromAnchor": {
-        "track": "ag1000g_2l_gagam",
-        "dy": -28
-      },
-      "anchor": {
-        "track": "ag1000g_2la_karyotype_gagam"
-      }
-    },
-    {
-      "type": "text",
-      "text": "Gabon: 2La inversion rare, no LD block",
-      "fontSize": 20,
-      "maxWidth": 600,
-      "anchor": {
-        "track": "ag1000g_2l_gagam",
-        "locus": "chr2L:4,500,000",
-        "fracY": 0.55
-      }
-    }
-  ],
-  "ld/lct_haploblock": [
-    {
-      "type": "text",
-      "text": "LCT/MCM6",
-      "fontSize": 20,
-      "leader": true,
-      "anchor": {
-        "track": "hg38-clinvarMain",
-        "locus": "chr2:135,787,850",
-        "fracY": 0.5,
-        "alignX": "left"
-      },
-      "dx": -60
-    },
-    {
-      "type": "text",
-      "text": "Swept haplotype: one uniform cluster",
-      "fontSize": 22,
-      "leader": true,
-      "anchor": {
-        "track": "kgp_lct_haplotypes",
-        "locus": "chr2:135,760,000",
-        "fracY": 0.27
-      },
-      "dx": -260
-    },
-    {
-      "type": "text",
-      "text": "Every other haplotype: mosaic",
-      "fontSize": 22,
-      "leader": true,
-      "anchor": {
-        "track": "kgp_lct_haplotypes",
-        "locus": "chr2:135,760,000",
-        "fracY": 0.75
-      },
-      "dx": -260
-    }
-  ],
-  "ld/lct_population_af": [
-    {
-      "type": "text",
-      "text": "rs4988235",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "kgp_lct_population_af",
-        "locus": "chr2:135,851,076",
-        "fracY": 0.04
-      },
-      "dx": 150,
-      "dy": -30
-    }
-  ],
-  "popgen/tajimad_cyp6g1": [
-    {
-      "type": "text",
-      "anchor": {
-        "track": "tajd_all",
-        "locus": "chr2R:12,008,000",
-        "fracY": 0.63,
-        "alignX": "left"
-      },
-      "text": "Cyp6g1, insecticide resistance. Tajima's D and π both\nfall against the flanking windows: a recent hard sweep.",
-      "fontSize": 15,
-      "maxWidth": 440
-    }
-  ],
-  "popgen/in2lt_inversion": [
-    {
-      "type": "text",
-      "text": "19 In(2L)t carriers",
-      "anchor": {
-        "view": 1,
-        "track": "dgrp_In2Lt_sv",
-        "locus": "chr2L:7,000,000",
-        "fracY": 0.7
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "view": 1,
-        "track": "dgrp_In2Lt_sv",
-        "locus": "chr2L:7,000,000",
-        "fracY": 0.78
-      },
-      "anchor": {
-        "view": 1,
-        "track": "dgrp_In2Lt_sv",
-        "locus": "chr2L:7,000,000",
-        "fracY": 0.947
-      }
-    }
-  ],
-  "qc/smn1_evidence": [
-    {
-      "type": "text",
-      "text": "Dark blue is MAPQ 0: mapped here, but they fit elsewhere just as well",
-      "fontSize": 20,
-      "maxWidth": 430,
-      "anchor": {
-        "track": "na12878_qc_reads",
-        "locus": "chr5:70,895,000",
-        "fracY": 0.22
-      }
-    }
-  ],
-  "qc/smn_read_placement": [
-    {
-      "type": "text",
-      "text": "SMN1: biallelic loss causes spinal muscular atrophy",
-      "fontSize": 18,
-      "maxWidth": 330,
-      "anchor": {
-        "track": "hg38-gnomad3MeanCoverage",
-        "locus": "chr5:70,925,000",
-        "alignX": "left",
-        "fracY": 0.15
-      }
-    }
-  ],
-  "qc/smn_problematic_regions": [
-    {
-      "type": "text",
-      "text": "the dip is mappability: reads that fit in two places are dropped",
-      "fontSize": 19,
-      "maxWidth": 340,
-      "anchor": {
-        "track": "hg38-gnomad3MeanCoverage",
-        "locus": "chr5:70,400,000",
-        "fracY": 0.18
-      }
-    },
-    {
-      "type": "text",
-      "text": "even with long reads, very few calls in this block",
-      "fontSize": 18,
-      "maxWidth": 340,
-      "anchor": {
-        "track": "hg38-lrSv1kgOnt",
-        "locus": "chr5:70,300,000",
-        "fracY": 0.55
-      }
-    }
-  ],
-  "qc/smn_block_and_reads": [
-    {
-      "type": "text",
-      "text": "the dip is mappability: reads that fit in two places are dropped",
-      "fontSize": 19,
-      "maxWidth": 340,
-      "anchor": {
-        "track": "hg38-gnomad3MeanCoverage",
-        "locus": "chr5:70,300,000",
-        "fracY": 0.18
-      }
-    },
-    {
-      "type": "text",
-      "text": "even with long reads, very few calls in this block",
-      "fontSize": 18,
-      "maxWidth": 340,
-      "anchor": {
-        "track": "hg38-lrSv1kgOnt",
-        "locus": "chr5:70,300,000",
-        "fracY": 0.55
-      }
-    },
-    {
-      "type": "text",
-      "text": "SMN1: biallelic loss causes spinal muscular atrophy",
-      "fontSize": 18,
-      "maxWidth": 330,
-      "anchor": {
-        "view": 1,
-        "track": "hg38-umap100Quantitative",
-        "locus": "chr5:70,940,000",
-        "alignX": "left",
-        "fracY": 0.4
-      }
-    }
-  ],
-  "qc/smn_vs_t2t": [
-    {
-      "type": "text",
-      "fontSize": 20,
-      "maxWidth": 420,
-      "anchor": {
-        "selector": "[data-testid=\"synteny_canvas\"][data-display-drawn=\"true\"]",
-        "alignX": "left",
-        "alignY": "top",
-        "dx": 24,
-        "dy": 30
-      },
-      "text": "The same GRCh38 sequence chains to more than one place in T2T"
-    }
-  ],
-  "horizontally_flip_before": [
-    {
-      "type": "text",
-      "x": 20,
-      "y": 30,
-      "fontSize": 22,
-      "text": "Normal orientation"
-    }
-  ],
-  "horizontally_flip_after": [
-    {
-      "type": "text",
-      "x": 20,
-      "y": 30,
-      "fontSize": 22,
-      "text": "Horizontally flipped ([rev] locstring)"
-    }
-  ],
-  "inverted_duplication": [
-    {
-      "type": "text",
-      "anchor": {
-        "track": "HG02768.final",
-        "locus": "1:39,658,200",
-        "fracY": 0,
-        "dx": 50,
-        "dy": 360
-      },
-      "text": "INVdup\n\n• Green = LL pair: both mates on the forward strand\n• Navy = RR pair: both mates on the reverse strand\n• Magenta = split read: SA segment on the opposite strand",
-      "fontSize": 24,
-      "maxWidth": 920
-    }
-  ],
-  "inversion_long_read": [
-    {
-      "type": "text",
-      "text": "Group by → Split read (SA tag)",
-      "fontSize": 18,
-      "anchor": {
-        "text": "HG00151 Nanopore",
-        "alignX": "right",
-        "dx": 16
-      }
-    },
-    {
-      "type": "text",
-      "text": "Split reads with SA tag — most showing INV",
-      "fontSize": 18,
-      "maxWidth": 560,
-      "anchor": {
-        "text": "Split (SA)",
-        "alignX": "right",
-        "dx": 14,
-        "dy": 45
-      }
-    },
-    {
-      "type": "text",
-      "text": "Reads without SA tag",
-      "fontSize": 18,
-      "maxWidth": 560,
-      "anchor": {
-        "text": "Not split",
-        "alignX": "right",
-        "dx": 14,
-        "dy": 45
-      }
-    }
-  ],
-  "sv_cgiab/translocation_sv_inspector_start": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Add"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "SV inspector"
-      }
-    }
-  ],
-  "sv_cgiab/translocation_sv_inspector_view": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "SV_20"
-      }
-    },
-    {
-      "type": "text",
-      "text": "SV_20: the chr3↔chr13 translocation, drilled into below.",
-      "maxWidth": 420,
-      "anchor": {
-        "text": "SV_20",
-        "alignX": "left",
-        "alignY": "top"
-      },
-      "dy": -54
-    }
-  ],
-  "sv_cgiab/translocation_breakpoint_split": [
-    {
-      "type": "text",
-      "text": "chr3 breakend",
-      "fontSize": 19,
-      "color": "#1f77b4",
-      "background": "#dceaf6",
-      "leader": true,
-      "anchor": {
-        "text": "SV_20",
-        "alignX": "left",
-        "dx": -30
-      },
-      "dx": -150
-    },
-    {
-      "type": "text",
-      "text": "chr13 breakend",
-      "fontSize": 19,
-      "color": "#1f77b4",
-      "background": "#dceaf6",
-      "leader": true,
-      "anchor": {
-        "text": "SV_190",
-        "alignX": "left",
-        "dx": -30
-      },
-      "dx": -150
-    }
-  ],
-  "sv_cgiab/deletion_sv_inspector_search": [
-    {
-      "type": "text",
-      "text": "Searching \"SV_85\" filters to one DEL (a het CUZD1 deletion)",
-      "anchor": {
-        "text": "chr10:122,835,344..122,837,142",
-        "alignX": "left",
-        "alignY": "top",
-        "dx": 22,
-        "dy": -40
-      },
-      "fontSize": 18,
-      "maxWidth": 420
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "chr10:122,835,344..122,837,142"
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "text": "chr10:122,835,344..122,837,142",
-        "dy": 30
-      },
-      "anchor": {
-        "view": 1,
-        "track": "hg008t_benchmark_sv",
-        "locus": "chr10:122,835,344..122,837,142",
-        "fracY": 0,
-        "dy": 14
-      }
-    },
-    {
-      "type": "text",
-      "text": "The location link opens the region below, where SVTYPE=DEL draws as the <DEL> allele",
-      "anchor": {
-        "view": 1,
-        "track": "hg008t_benchmark_sv",
-        "locus": "chr10:122,835,344..122,837,142",
-        "fracY": 0,
-        "alignX": "right",
-        "dx": 50,
-        "dy": 28
-      },
-      "fontSize": 18,
-      "maxWidth": 360
-    }
-  ],
-  "sv_cgiab/cnv_with_bed_track": [
-    {
-      "type": "text",
-      "text": "two copies: tumor on the normal, one BAF band",
-      "maxWidth": 600,
-      "fontSize": 18,
-      "anchor": {
-        "track": "hg008t_bicseq2",
-        "locus": "chr5:6,000,000",
-        "fracY": 0.8
-      }
-    },
-    {
-      "type": "text",
-      "text": "gain: BAF splits in two",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "hg008t_bicseq2",
-        "locus": "chr5:38,000,000",
-        "fracY": 0.3
-      },
-      "dx": 60,
-      "dy": -12
-    },
-    {
-      "type": "text",
-      "text": "one copy lost: tumor halved, BAF at 0 and 1",
-      "fontSize": 18,
-      "anchor": {
-        "track": "hg008t_bicseq2",
-        "locus": "chr5:100,000,000",
-        "fracY": 0.2
-      }
-    }
-  ],
-  "sv_cgiab/cnv_callset_comparison": [
-    {
-      "type": "text",
-      "text": "both copies of CDKN2A gone",
-      "fontSize": 18,
-      "leader": true,
-      "dx": 90,
-      "dy": -75,
-      "anchor": {
-        "track": "hg008_depth",
-        "locus": "chr9:21,962,000",
-        "fracY": 0.9
-      }
-    },
-    {
-      "type": "text",
-      "text": "DRAGEN: no focal call, 50 kb minimum segment",
-      "fontSize": 18,
-      "maxWidth": 480,
-      "leader": true,
-      "dx": 90,
-      "anchor": {
-        "track": "hg008t_dragen_cnv",
-        "locus": "chr9:21,962,000",
-        "fracY": 0.7
-      }
-    },
-    {
-      "type": "text",
-      "text": "Wakhan: 50 kb bins, the arm alone",
-      "fontSize": 18,
-      "anchor": {
-        "track": "hg008t_wakhan_hifi_hic",
-        "locus": "chr9:22,450,000",
-        "fracY": 0.5
-      }
-    }
-  ],
-  "sv_cgiab/cnv_depth_baf": [
-    {
-      "type": "text",
-      "text": "p-arm: one copy left, heterozygosity lost",
-      "fontSize": 18,
-      "anchor": {
-        "track": "hg008_depth",
-        "locus": "chr3:45,000,000",
-        "fracY": 0.12
-      }
-    },
-    {
-      "type": "text",
-      "text": "q-arm: two copies, both alleles",
-      "fontSize": 18,
-      "anchor": {
-        "track": "hg008_depth",
-        "locus": "chr3:145,000,000",
-        "fracY": 0.85
-      }
-    }
-  ],
-  "sv_cgiab/cnv_chr17_loh": [
-    {
-      "type": "text",
-      "text": "p-arm: one copy left, heterozygosity lost",
-      "fontSize": 18,
-      "anchor": {
-        "track": "hg008_depth",
-        "locus": "chr17:12,000,000",
-        "fracY": 0.15
-      }
-    },
-    {
-      "type": "text",
-      "text": "q-arm: two copies, both of one allele",
-      "fontSize": 18,
-      "anchor": {
-        "track": "hg008_depth",
-        "locus": "chr17:45,000,000",
-        "fracY": 0.85
-      }
-    }
-  ],
-  "sv_cgiab/driver_smad4_loh": [
-    {
-      "type": "text",
-      "text": "SMAD4: heterozygous loss with LOH",
-      "fontSize": 16,
-      "textAlign": "end",
-      "anchor": {
-        "track": "mane_hg38",
-        "locus": "chr18:51,030,212",
-        "fracY": 0.1,
-        "alignX": "left",
-        "dx": -16
-      }
-    }
-  ],
-  "cancer_sv/multihop_tumour_vs_normal": [
-    {
-      "type": "text",
-      "text": "Right-click a breakend → Open breakpoint split view",
-      "fontSize": 17,
-      "maxWidth": 260,
-      "leader": true,
-      "anchor": {
-        "selector": "[data-testid=\"feature-name-r_12_1\"]"
-      },
-      "dx": -30,
-      "dy": 95
-    }
-  ],
-  "cancer_sv/derivative_synteny": [
-    {
-      "type": "text",
-      "anchor": {
-        "view": [
-          0,
-          1
-        ],
-        "track": "der3_genes",
-        "fracY": 0,
-        "alignX": "left",
-        "dx": 40,
-        "dy": 20
-      },
-      "text": "Fold-back: chr3, two short inserts, then the same chr3 stretch again, inverted",
-      "fontSize": 18,
-      "maxWidth": 900
-    },
-    {
-      "type": "text",
-      "text": "Dark rows: each molecule crosses this stretch twice, forward and then inverted",
-      "fontSize": 17,
-      "maxWidth": 380,
-      "leader": true,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "COLO829_tumor_ont",
-        "locus": "chr3:25,356,000",
-        "fracY": 0.8
-      },
-      "dx": -140,
-      "dy": -30
-    }
-  ],
-  "cancer_sv/derivative_inserts": [
-    {
-      "type": "text",
-      "text": "validated calls, where the reads stop",
-      "fontSize": 17,
-      "leader": true,
-      "dx": 80,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "COLO829_truth_set",
-        "locus": "chr3:25,359,568",
-        "fracY": 0.5
-      }
-    },
-    {
-      "type": "text",
-      "text": "hg38, three source loci",
-      "fontSize": 19,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "ncbi_refseq_hg38",
-        "locus": "chr3:25,358,800",
-        "fracY": 0.75
-      }
-    },
-    {
-      "type": "text",
-      "text": "the derivative allele",
-      "fontSize": 19,
-      "anchor": {
-        "view": [
-          0,
-          1
-        ],
-        "track": "der3_genes",
-        "alignX": "left",
-        "dx": 10,
-        "fracY": 0.95
-      }
-    }
-  ],
-  "cancer_sv/realigned_reads_reference": [
-    {
-      "type": "circle",
-      "text": "1",
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "COLO829_tumor_ont",
-        "fracY": 0,
-        "alignX": "left"
-      },
-      "radius": 15,
-      "dx": 24,
-      "dy": 78
-    },
-    {
-      "type": "text",
-      "text": "aligned to hg38",
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "COLO829_tumor_ont",
-        "fracY": 0,
-        "alignX": "left",
-        "dx": 10,
-        "dy": 30
-      }
-    }
-  ],
-  "cancer_sv/realigned_reads_derivative": [
-    {
-      "type": "circle",
-      "text": "2",
-      "anchor": {
-        "track": "reads_vs_der3",
-        "fracY": 0,
-        "alignX": "left"
-      },
-      "radius": 15,
-      "dx": 24,
-      "dy": 78
-    },
-    {
-      "type": "text",
-      "text": "realigned to the derived contig",
-      "anchor": {
-        "track": "reads_vs_der3",
-        "fracY": 0,
-        "alignX": "left",
-        "dx": 10,
-        "dy": 30
-      }
-    }
-  ],
-  "cancer_sv/k562_fusion_inspector_reads": [
-    {
-      "type": "text",
-      "text": "each line is one molecule, NUP214 into XKR3",
-      "fontSize": 18,
-      "maxWidth": 250,
-      "anchor": {
-        "track": "K562_isoseq",
-        "locus": "chr9:131,195,200",
-        "fracY": 0.55,
-        "alignX": "left",
-        "dx": 20
-      }
-    },
-    {
-      "type": "text",
-      "text": "chr22 is flipped: its coordinates run right to left",
-      "fontSize": 17,
-      "maxWidth": 330,
-      "anchor": {
-        "track": "ncbi_refseq_hg38",
-        "locus": "chr22:16,805,600",
-        "fracY": 0.5,
-        "alignX": "left"
-      }
-    }
-  ],
-  "cancer_sv/k562_bcr_abl_split": [
-    {
-      "type": "text",
-      "text": "each line is one molecule, BCR into ABL1",
-      "fontSize": 18,
-      "maxWidth": 250,
-      "anchor": {
-        "track": "K562_isoseq",
-        "locus": "chr9:130,851,100",
-        "fracY": 0.32,
-        "alignX": "left",
-        "dx": 20
-      }
-    },
-    {
-      "type": "text",
-      "text": "ABL1 intron 1 — coverage, no annotated exon",
-      "fontSize": 18,
-      "maxWidth": 560,
-      "anchor": {
-        "track": "K562_isoseq",
-        "locus": "chr9:130,778,200",
-        "fracY": 0,
-        "dy": 230,
-        "alignX": "left",
-        "dx": 6
-      }
-    }
-  ],
-  "cancer_sv/k562_amplicon_dna": [
-    {
-      "type": "text",
-      "text": "BCR-ABL1 junction, called by STAR-Fusion from RNA-seq",
-      "maxWidth": 600,
-      "fontSize": 17,
-      "leader": true,
-      "anchor": {
-        "track": "K562_star_fusion",
-        "locus": "chr9:130,854,064",
-        "fracY": 0.3
-      },
-      "dx": 60,
-      "dy": 12
-    },
-    {
-      "type": "text",
-      "text": "DNA break: copy number steps up",
-      "fontSize": 17,
-      "leader": true,
-      "anchor": {
-        "track": "K562_10x_sv",
-        "locus": "chr9:130,731,760",
-        "fracY": 0.3
-      },
-      "dx": 60,
-      "dy": 12
-    },
-    {
-      "type": "text",
-      "text": "break to chr13, no fusion call",
-      "fontSize": 17,
-      "leader": true,
-      "anchor": {
-        "track": "K562_10x_sv",
-        "locus": "chr9:131,280,138",
-        "fracY": 0.3
-      },
-      "dx": -90,
-      "dy": 80
-    }
-  ],
-  "circular_synteny/ribbon_hover": [
-    {
-      "type": "text",
-      "text": "Hovered ribbon",
-      "leader": true,
-      "anchor": {
-        "selector": "path[data-testid=\"ribbon-28-t-hg38\"]"
-      },
-      "dx": 200,
-      "dy": 140
-    }
-  ],
-  "linkage_groups/alg_dotplot_res_emu": [
-    {
-      "type": "box",
-      "anchor": {
-        "hLocus": "RES2",
-        "vLocus": "EMU19"
-      }
-    },
-    {
-      "type": "text",
-      "text": "A1a: one sponge chromosome",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "hLocus": "RES2",
-        "vLocus": "EMU19",
-        "alignY": "top"
-      },
-      "dx": 10,
-      "dy": -400
-    }
-  ],
-  "tcga/cohort_cnv_genome": [
-    {
-      "type": "text",
-      "text": "MYC (8q24)",
-      "fontSize": 20,
-      "maxWidth": 200,
-      "anchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "8:127,735,434",
-        "fracY": 0,
-        "dy": 532
-      },
-      "dx": -162
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "8:127,735,434",
-        "fracY": 0,
-        "dx": -22,
-        "dy": 519
-      },
-      "anchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "8:127,735,434",
-        "fracY": 0,
-        "dy": 422
-      }
-    },
-    {
-      "type": "text",
-      "text": "CDKN2A (9p21)",
-      "fontSize": 20,
-      "maxWidth": 200,
-      "anchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "9:21,967,752",
-        "fracY": 0,
-        "dy": 645
-      },
-      "dx": -44
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "9:21,967,752",
-        "fracY": 0,
-        "dx": 26,
-        "dy": 632
-      },
-      "anchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "9:21,967,752",
-        "fracY": 0,
-        "dy": 457
-      }
-    },
-    {
-      "type": "text",
-      "text": "CCND1 (11q13)",
-      "fontSize": 20,
-      "maxWidth": 200,
-      "anchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "11:69,641,156",
-        "fracY": 0,
-        "dy": 532
-      },
-      "dx": -63
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "11:69,641,156",
-        "fracY": 0,
-        "dx": -3,
-        "dy": 519
-      },
-      "anchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "11:69,641,156",
-        "fracY": 0,
-        "dy": 422
-      }
-    },
-    {
-      "type": "text",
-      "text": "ERBB2 (17q12)",
-      "fontSize": 20,
-      "maxWidth": 200,
-      "anchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "17:39,688,094",
-        "fracY": 0,
-        "dy": 532
-      },
-      "dx": -69
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "17:39,688,094",
-        "fracY": 0,
-        "dx": -4,
-        "dy": 519
-      },
-      "anchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "17:39,688,094",
-        "fracY": 0,
-        "dy": 422
-      }
-    }
-  ],
-  "tcga/cohort_cnv_erbb2": [
-    {
-      "type": "text",
-      "text": "balanced: the largest group, painted near-white",
-      "anchor": {
-        "track": "tcga_brca_cnv",
-        "fracY": 0.44,
-        "alignX": "left",
-        "dx": 430
-      }
-    },
-    {
-      "type": "text",
-      "text": "amplified",
-      "anchor": {
-        "track": "tcga_brca_cnv",
-        "locus": "17:39,150,000",
-        "fracY": 0.06
-      }
-    }
-  ],
-  "tcga/cohort_cnv_recurrence_subtype": [
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "tcga_brca_cnv_recurrence_by_subtype",
-        "locus": "17:39,688,094",
-        "fracY": 0,
-        "dx": 40,
-        "dy": 140
-      },
-      "anchor": {
-        "track": "tcga_brca_cnv_recurrence_by_subtype",
-        "locus": "17:39,688,094",
-        "fracY": 0,
-        "dy": 168.75
-      }
-    },
-    {
-      "type": "text",
-      "text": "ERBB2 (17q12)",
-      "fontSize": 18,
-      "maxWidth": 240,
-      "anchor": {
-        "track": "tcga_brca_cnv_recurrence_by_subtype",
-        "locus": "17:39,688,094",
-        "fracY": 0,
-        "dy": 140
-      },
-      "dx": 60
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "tcga_brca_cnv_recurrence_by_subtype",
-        "locus": "16:70,000,000",
-        "fracY": 0,
-        "dx": -400,
-        "dy": 106.25
-      },
-      "anchor": {
-        "track": "tcga_brca_cnv_recurrence_by_subtype",
-        "locus": "16:70,000,000",
-        "fracY": 0,
-        "dy": 81.25
-      }
-    },
-    {
-      "type": "text",
-      "text": "16q loss (CDH1 arm)",
-      "fontSize": 18,
-      "maxWidth": 240,
-      "anchor": {
-        "track": "tcga_brca_cnv_recurrence_by_subtype",
-        "locus": "16:70,000,000",
-        "fracY": 0,
-        "dy": 106.25
-      },
-      "dx": -420
-    }
-  ],
-  "tcga/mutations_cdh1_histology": [
-    {
-      "type": "text",
-      "text": "lobular: most of the calls in this window",
-      "anchor": {
-        "track": "tcga_brca_mutations",
-        "fracY": 0.45,
-        "alignX": "left",
-        "dx": 400
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "tcga_brca_mutations",
-        "fracY": 0.5,
-        "alignX": "left",
-        "dx": 400
-      },
-      "anchor": {
-        "track": "tcga_brca_mutations",
-        "fracY": 0.87,
-        "alignX": "left",
-        "dx": 400
-      }
-    }
-  ],
-  "cnv1000g/zarr_cohort": [
-    {
-      "type": "text",
-      "anchor": {
-        "track": "cnv_1000g_zarr",
-        "locus": "chr17:36,470,000",
-        "fracY": 0,
-        "alignX": "left",
-        "dx": 12,
-        "dy": 96
-      },
-      "textAlign": "start",
-      "text": "CCL3L1 / CCL4L1\n\nOne of the most copy-number-\nvariable loci in the human\ngenome. Both encode chemokines\nthat bind CCR5.",
-      "fontSize": 19,
-      "maxWidth": 420
-    }
-  ],
-  "hg002_haplotypes_location_markers": [
-    {
-      "type": "text",
-      "anchor": {
-        "selector": "[data-testid=\"app-bar\"]",
-        "alignX": "left",
-        "alignY": "top",
-        "dx": 24,
-        "dy": 30
-      },
-      "maxWidth": 640,
-      "fontSize": 22,
-      "text": "Location markers pair a point on one panel with the point it maps to on the other"
-    },
-    {
-      "type": "circle",
-      "anchor": {
-        "selector": "[aria-label=\"Synteny display settings\"]"
-      }
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Location markers"
-      },
-      "strokeWidth": 3
-    },
-    {
-      "type": "text",
-      "text": "maternal-only insertion",
-      "leader": true,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "hg002v1.2_mat_vs_pat",
-        "locus": "chr11_MATERNAL:24,513,461",
-        "fracY": 1
-      },
-      "dx": 180,
-      "dy": 120
-    }
-  ],
-  "hic/bcr_abl1_translocation": [
-    {
-      "type": "text",
-      "text": "GM12878, normal karyotype: no chr9-chr22 contacts",
-      "anchor": {
-        "track": "hic_gm12878_insitu",
-        "fracY": 0,
-        "alignX": "left",
-        "dx": 12,
-        "dy": 34
-      }
-    },
-    {
-      "type": "text",
-      "text": "K562 (CML): t(9;22) fuses chr9 to chr22, so they contact",
-      "anchor": {
-        "track": "hic_k562_insitu",
-        "fracY": 0,
-        "alignX": "left",
-        "dx": 12,
-        "dy": 34
-      }
-    },
-    {
-      "type": "arrow",
-      "anchor": {
-        "track": "hic_k562_insitu",
-        "locus": "chr22:22,300,000",
-        "fracY": 0.7
-      },
-      "fromAnchor": {
-        "track": "hic_k562_insitu",
-        "locus": "chr9:130,200,000",
-        "fracY": 0.34
-      }
-    }
-  ],
-  "hic/compartment_switch": [
-    {
-      "type": "text",
-      "text": "GM12878, B-cell line: A, open",
-      "fontSize": 16,
-      "anchor": {
-        "track": "hic_gm12878_compartments",
-        "locus": "chr5:158,160,000",
-        "fracY": 0.85
-      }
-    },
-    {
-      "type": "text",
-      "text": "K562, erythroleukemia: B, closed",
-      "fontSize": 16,
-      "anchor": {
-        "track": "hic_k562_compartments",
-        "locus": "chr5:158,160,000",
-        "fracY": 0.4
-      }
-    }
-  ],
-  "qtl/bxd_tyrp1_locus": [
-    {
-      "type": "text",
-      "anchor": {
-        "text": "Tyrp1",
-        "alignX": "right",
-        "dx": 12
-      },
-      "maxWidth": 360,
-      "fontSize": 15,
-      "text": "Tyrp1, the brown locus"
-    }
-  ],
-  "qtl/bxd_myo5a_locus": [
-    {
-      "type": "text",
-      "anchor": {
-        "text": "Myo5a",
-        "alignX": "right",
-        "dx": 12
-      },
-      "maxWidth": 360,
-      "fontSize": 15,
-      "text": "Myo5a, the dilute locus"
-    }
-  ],
-  "trio-matrix": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Show as genotype matrix"
-      }
-    }
-  ],
-  "trio-matrix-phased": [
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Phased"
-      }
-    }
-  ],
-  "trio-crossover-paternal": [
-    {
-      "type": "box",
-      "color": "#333",
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.hapibd",
-        "locus": "chr1:29,697,418",
-        "fracY": 0,
-        "dy": 0
-      },
-      "pad": 0,
-      "dx": -28,
-      "width": 56,
-      "height": 40
-    },
-    {
-      "type": "arrow",
-      "strokeWidth": 2,
-      "fromAnchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.hapibd",
-        "locus": "chr1:29,697,418",
-        "fracY": 0,
-        "dy": 40
-      },
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "locus": "chr1:29,697,418",
-        "fracY": 0
-      }
-    },
-    {
-      "type": "box",
-      "color": "#caa200",
-      "fillOpacity": 0.16,
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "locus": "chr1:29,497,418-29,697,418",
-        "fracY": 0.8333333333333334
-      },
-      "pad": 0,
-      "height": 43.333333333333336
-    },
-    {
-      "type": "box",
-      "color": "#caa200",
-      "fillOpacity": 0.16,
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "locus": "chr1:29,497,418-29,697,418",
-        "fracY": 0
-      },
-      "pad": 0,
-      "height": 43.333333333333336
-    },
-    {
-      "type": "box",
-      "color": "#8e44ad",
-      "fillOpacity": 0.16,
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "locus": "chr1:29,697,418-29,897,418",
-        "fracY": 0.6666666666666666
-      },
-      "pad": 0,
-      "height": 43.333333333333336
-    },
-    {
-      "type": "box",
-      "color": "#8e44ad",
-      "fillOpacity": 0.16,
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "locus": "chr1:29,697,418-29,897,418",
-        "fracY": 0
-      },
-      "pad": 0,
-      "height": 43.333333333333336
-    },
-    {
-      "type": "text",
-      "color": "#caa200",
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "fracY": 1,
-        "dy": 27,
-        "alignX": "left",
-        "dx": 60
-      },
-      "text": "Left of the crossover (yellow frame), Child hap1 matches Father hap2",
-      "maxWidth": 600
-    },
-    {
-      "type": "text",
-      "color": "#8e44ad",
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "fracY": 1,
-        "dy": 27,
-        "locus": "chr1:29,697,418",
-        "dx": 50
-      },
-      "text": "Right of it (purple frame), Child hap1 matches Father hap1",
-      "maxWidth": 600
-    }
-  ],
-  "trio-crossover-maternal": [
-    {
-      "type": "box",
-      "color": "#333",
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.hapibd",
-        "locus": "chr1:55,753,613",
-        "fracY": 0,
-        "dy": 0
-      },
-      "pad": 0,
-      "dx": -28,
-      "width": 56,
-      "height": 40
-    },
-    {
-      "type": "arrow",
-      "strokeWidth": 2,
-      "fromAnchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.hapibd",
-        "locus": "chr1:55,753,613",
-        "fracY": 0,
-        "dy": 40
-      },
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "locus": "chr1:55,753,613",
-        "fracY": 0.16666666666666666
-      }
-    },
-    {
-      "type": "box",
-      "color": "#15a01a",
-      "fillOpacity": 0.16,
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "locus": "chr1:55,553,613-55,753,613",
-        "fracY": 0.5
-      },
-      "pad": 0,
-      "height": 43.333333333333336
-    },
-    {
-      "type": "box",
-      "color": "#15a01a",
-      "fillOpacity": 0.16,
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "locus": "chr1:55,553,613-55,753,613",
-        "fracY": 0.16666666666666666
-      },
-      "pad": 0,
-      "height": 43.333333333333336
-    },
-    {
-      "type": "box",
-      "color": "#ff6f00",
-      "fillOpacity": 0.16,
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "locus": "chr1:55,753,613-55,953,613",
-        "fracY": 0.3333333333333333
-      },
-      "pad": 0,
-      "height": 43.333333333333336
-    },
-    {
-      "type": "box",
-      "color": "#ff6f00",
-      "fillOpacity": 0.16,
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "locus": "chr1:55,753,613-55,953,613",
-        "fracY": 0.16666666666666666
-      },
-      "pad": 0,
-      "height": 43.333333333333336
-    },
-    {
-      "type": "text",
-      "color": "#15a01a",
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "fracY": 1,
-        "dy": 27,
-        "alignX": "left",
-        "dx": 60
-      },
-      "text": "Left of the crossover (green frame), Child hap2 matches Mother hap2",
-      "maxWidth": 600
-    },
-    {
-      "type": "text",
-      "color": "#ff6f00",
-      "anchor": {
-        "track": "HG02024_VN049_KHVTrio.chr1.vcf",
-        "fracY": 1,
-        "dy": 27,
-        "locus": "chr1:55,753,613",
-        "dx": 50
-      },
-      "text": "Right of it (orange frame), Child hap2 matches Mother hap1",
-      "maxWidth": 600
-    }
-  ],
-  "dog10k-wolfdog-ancestry": [
-    {
-      "type": "text",
-      "text": "Eight gray wolves, left out of the reference panel",
-      "fontSize": 21,
-      "maxWidth": 760,
-      "anchor": {
-        "track": "dog10k_wolfdog_named",
-        "locus": "chr1:20,000,000",
-        "fracY": 0,
-        "dy": 55
-      }
-    },
-    {
-      "type": "text",
-      "text": "Saarloos Wolfdogs: recent wolf introgression",
-      "fontSize": 21,
-      "maxWidth": 700,
-      "anchor": {
-        "track": "dog10k_wolfdog_named",
-        "locus": "chr1:20,000,000",
-        "fracY": 0,
-        "dy": 250
-      }
-    }
-  ],
-  "dog10k-nhej1-cea-deletion": [
-    {
-      "type": "text",
-      "text": "7.8 kb intron deletion, recessive:\nhomozygotes have Collie eye anomaly",
-      "fontSize": 22,
-      "maxWidth": 460,
-      "anchor": {
-        "track": "dog10k_nhej1_svs",
-        "locus": "chr37:25,574,005-25,581,807",
-        "fracY": 0,
-        "dx": -704,
-        "dy": 170
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "dog10k_nhej1_svs",
-        "locus": "chr37:25,574,005-25,581,807",
-        "fracY": 0,
-        "dx": -249,
-        "dy": 175
-      },
-      "anchor": {
-        "track": "dog10k_nhej1_svs",
-        "locus": "chr37:25,574,005-25,581,807",
-        "fracY": 0,
-        "dx": -100,
-        "dy": 175
-      }
-    }
-  ],
-  "dog10k-amy2b-duplication": [
-    {
-      "type": "text",
-      "text": "LOC607460 is AMY2B.\nCells mark carriers\nof the duplication.",
-      "fontSize": 22,
-      "maxWidth": 300,
-      "textAlign": "end",
-      "anchor": {
-        "track": "dog10k_amy2b_svs",
-        "locus": "chr6:47,375,677-47,390,529",
-        "fracY": 0.23,
-        "dx": -430,
-        "dy": 0
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "dog10k_amy2b_svs",
-        "locus": "chr6:47,375,677-47,390,529",
-        "fracY": 0.23,
-        "dx": -420,
-        "dy": 0
-      },
-      "anchor": {
-        "track": "dog10k_amy2b_svs",
-        "locus": "chr6:47,375,677-47,390,529",
-        "fracY": 0.23,
-        "dx": -40,
-        "dy": 0
-      }
-    }
-  ],
-  "dog10k-rnase1-insertion": [
-    {
-      "type": "text",
-      "text": "LOC475395 is RNASE1.",
-      "fontSize": 22,
-      "maxWidth": 300,
-      "textAlign": "end",
-      "anchor": {
-        "track": "dog10k_rnase1_svs",
-        "locus": "chr15:18,164,072-18,164,074",
-        "fracY": 0.62,
-        "dx": -180,
-        "dy": 0
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "dog10k_rnase1_svs",
-        "locus": "chr15:18,164,072-18,164,074",
-        "fracY": 0.62,
-        "dx": -170,
-        "dy": 0
-      },
-      "anchor": {
-        "track": "dog10k_rnase1_svs",
-        "locus": "chr15:18,164,072-18,164,074",
-        "fracY": 0.62,
-        "dx": -30,
-        "dy": 0
-      }
-    }
-  ],
-  "dog10k-size-fst-scan-genome": [
-    {
-      "type": "text",
-      "text": "HMGA2",
-      "fontSize": 20,
-      "leader": true,
-      "anchor": {
-        "track": "dog10k_size_fst",
-        "locus": "chr10:8,600,000-8,800,000",
-        "fracY": 0,
-        "dy": 29
-      },
-      "dx": 150
-    },
-    {
-      "type": "text",
-      "text": "IGF1",
-      "fontSize": 20,
-      "leader": true,
-      "anchor": {
-        "track": "dog10k_size_fst",
-        "locus": "chr15:41,400,000-41,600,000",
-        "fracY": 0,
-        "dy": 135
-      },
-      "dx": 150
-    },
-    {
-      "type": "text",
-      "text": "IGF2BP2",
-      "fontSize": 20,
-      "leader": true,
-      "anchor": {
-        "track": "dog10k_size_fst",
-        "locus": "chr34:18,600,000-18,800,000",
-        "fracY": 0,
-        "dy": 158
-      },
-      "dx": -150
-    }
-  ],
-  "dog10k-size-fst-scan-igf1": [
-    {
-      "type": "text",
-      "text": "IGF1",
-      "fontSize": 20,
-      "anchor": {
-        "track": "dog10k_size_fst_igf1_20kb",
-        "locus": "chr15:41,400,000-41,600,000",
-        "fracY": 0,
-        "dy": 30
-      }
-    }
-  ],
-  "dog10k-fgf4-retrogene-synteny": [
-    {
-      "type": "text",
-      "fontSize": 18,
-      "maxWidth": 320,
-      "text": "retrogene - no introns (CFA18)",
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "dog10k_fgf4_retro_cfa18_genes",
-        "locus": "FGF4retro-CFA18:1",
-        "fracY": 1,
-        "dx": 14,
-        "dy": -26
-      }
-    },
-    {
-      "type": "text",
-      "fontSize": 18,
-      "maxWidth": 320,
-      "text": "regular gene (dog reference)",
-      "anchor": {
-        "view": [
-          0,
-          1
-        ],
-        "track": "canFam4_ncbi_refseq",
-        "locus": "chr18:48,869,100",
-        "fracY": 1,
-        "dx": 14,
-        "dy": -26
-      }
-    },
-    {
-      "type": "text",
-      "fontSize": 18,
-      "maxWidth": 320,
-      "text": "retrogene - no introns (CFA12)",
-      "anchor": {
-        "view": [
-          0,
-          2
-        ],
-        "track": "dog10k_fgf4_retro_cfa12_genes",
-        "locus": "FGF4retro-CFA12:2",
-        "fracY": 1,
-        "dx": 14,
-        "dy": -26
-      }
-    }
-  ],
-  "dog10k-cyp1a2-nonsense": [
-    {
-      "type": "text",
-      "text": "CGA → TGA (Arg373 → stop)\nhomozygotes make no CYP1A2:\npoor drug metabolizers",
-      "fontSize": 22,
-      "anchor": {
-        "track": "dog10k_cyp1a2_snvs",
-        "locus": "chr30:38,261,637",
-        "fracY": 0,
-        "dx": 24,
-        "dy": 26
-      }
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "track": "dog10k_cyp1a2_snvs",
-        "locus": "chr30:38,261,637",
-        "fracY": 0,
-        "dx": 24,
-        "dy": 14
-      },
-      "anchor": {
-        "track": "UU_Cfam_GSD_1.0-ReferenceSequenceTrack",
-        "locus": "chr30:38,261,636",
-        "fracY": 1
-      }
-    }
-  ],
-  "maf_summary_zoomed_out": [
-    {
-      "type": "text",
-      "text": "Zoomed out (180 kb): one bar per species, from the summary file",
-      "fontSize": 20,
-      "anchor": {
-        "track": "hg38.multiz470way",
-        "alignX": "left",
-        "alignY": "bottom"
-      },
-      "dx": 220,
-      "dy": -26
-    }
-  ],
-  "maf_summary_zoomed_in": [
-    {
-      "type": "text",
-      "text": "Zoomed in (200 bp): the alignment itself, one cell per base",
-      "fontSize": 20,
-      "anchor": {
-        "track": "hg38.multiz470way",
-        "alignX": "left",
-        "alignY": "bottom"
-      },
-      "dx": 220,
-      "dy": -26
-    }
-  ],
-  "maf_hprc_pangenome": [
-    {
-      "type": "text",
-      "text": "Grey: aligned to GRCh38\nWhite: no aligned sequence for that haplotype",
-      "fontSize": 18,
-      "maxWidth": 380,
-      "textAlign": "end",
-      "anchor": {
-        "track": "hprc_v2_1_mc_grch38",
-        "locus": "chr6:32,049,000",
-        "fracY": 0.12
-      }
-    },
-    {
-      "type": "circle",
-      "anchor": {
-        "graphNode": "s329764+"
-      },
-      "radius": 26,
-      "strokeWidth": 3
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "view": 0,
-        "track": "hprc_v2_1_mc_grch38",
-        "locus": "chr6:32,005,691-32,011,057",
-        "fracY": 1,
-        "dy": -8
-      },
-      "anchor": {
-        "graphNode": "s329764+",
-        "dx": -30,
-        "dy": -30
-      },
-      "strokeWidth": 3
-    }
-  ],
-  "alu_age/locus": [
-    {
-      "type": "text",
-      "text": "Bar height: divergence from consensus. Older copies are taller",
-      "fontSize": 18,
-      "maxWidth": 400,
-      "anchor": {
-        "track": "alu_age",
-        "locus": "chr1:151,010,600",
-        "fracY": 0.05
-      }
-    }
-  ],
-  "alu_age/binned": [
-    {
-      "type": "text",
-      "text": "Alu sparse: young share high",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "alu_young_share",
-        "locus": "chr1:191,500,000",
-        "fracY": 0.3
-      },
-      "dx": -40,
-      "dy": -95
-    },
-    {
-      "type": "text",
-      "text": "Alu dense: young share low",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "alu_young_share",
-        "locus": "chr1:203,500,000",
-        "fracY": 0.75
-      },
-      "dx": 80,
-      "dy": -177
-    }
-  ],
-  "read_marks/chromosome": [
-    {
-      "type": "text",
-      "text": "a tall red bar: a deletion on both copies",
-      "maxWidth": 420,
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "na12878_chr20_pair_counts",
-        "locus": "chr20:34,250,000",
-        "fracY": 0.3
-      },
-      "dx": 80,
-      "dy": -8
-    },
-    {
-      "type": "text",
-      "text": "centromere: pairs mis-mapped in repeats",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "na12878_chr20_pairs",
-        "locus": "chr20:26,300,000",
-        "fracY": 0.5
-      },
-      "dx": -80
-    }
-  ],
-  "pangenome/pggb_untangle_rows": [
-    {
-      "type": "box",
-      "color": "#ef6c00",
-      "strokeWidth": 3,
-      "anchor": {
-        "track": "ecoli_pggb_untangle_rows",
-        "locus": "chr:213,443-262,948"
-      }
-    },
-    {
-      "type": "box",
-      "color": "#2e7d32",
-      "strokeWidth": 3,
-      "anchor": {
-        "track": "ecoli_pggb_untangle_rows",
-        "locus": "chr:302,899-501,436"
-      }
-    },
-    {
-      "type": "box",
-      "color": "#6a1b9a",
-      "strokeWidth": 3,
-      "anchor": {
-        "track": "ecoli_pggb_untangle_rows",
-        "locus": "chr:914,963-1,194,177"
-      }
-    },
-    {
-      "type": "box",
-      "color": "#1565c0",
-      "strokeWidth": 3,
-      "anchor": {
-        "track": "ecoli_pggb_untangle_rows",
-        "locus": "chr:1,635,838-2,229,302"
-      }
-    },
-    {
-      "type": "box",
-      "color": "#00838f",
-      "strokeWidth": 3,
-      "anchor": {
-        "track": "ecoli_pggb_untangle_rows",
-        "locus": "chr:3,946,786-4,171,723"
-      }
-    }
-  ],
-  "pangenome/pggb_untangle_dotplot": [
-    {
-      "type": "box",
-      "color": "#ef6c00",
-      "strokeWidth": 3,
-      "anchor": {
-        "hLocus": "chr:213,443-262,948",
-        "vLocus": "chr:449,188-493,004"
-      }
-    },
-    {
-      "type": "box",
-      "color": "#2e7d32",
-      "strokeWidth": 3,
-      "anchor": {
-        "hLocus": "chr:302,899-501,436",
-        "vLocus": "chr:228,426-443,280"
-      }
-    },
-    {
-      "type": "box",
-      "color": "#6a1b9a",
-      "strokeWidth": 3,
-      "anchor": {
-        "hLocus": "chr:914,963-1,194,177",
-        "vLocus": "chr:2,058,958-2,336,701"
-      }
-    },
-    {
-      "type": "box",
-      "color": "#1565c0",
-      "strokeWidth": 3,
-      "anchor": {
-        "hLocus": "chr:1,635,838-2,229,302",
-        "vLocus": "chr:906,630-1,574,975"
-      }
-    },
-    {
-      "type": "box",
-      "color": "#00838f",
-      "strokeWidth": 3,
-      "anchor": {
-        "hLocus": "chr:3,946,786-4,171,723",
-        "vLocus": "chr:3,083,154-3,330,675"
-      }
-    }
-  ],
-  "pangenome_cactus/graph_bubble": [
-    {
-      "type": "text",
-      "text": "the other four strains skip this node",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "graphNode": "258914"
-      },
-      "dx": 220,
-      "dy": 70
-    }
-  ],
-  "pangenome_cactus/builders": [
-    {
-      "type": "text",
-      "text": "seqwish collapses the copies onto one run of nodes",
-      "maxWidth": 430,
-      "fontSize": 16,
-      "textAlign": "end",
-      "anchor": {
-        "track": "ecoli_depth_by_builder",
-        "locus": "chr:3,954,300",
-        "fracY": 0.12
-      }
-    },
-    {
-      "type": "text",
-      "text": "Minigraph-Cactus keeps the copies apart",
-      "maxWidth": 430,
-      "fontSize": 16,
-      "textAlign": "end",
-      "anchor": {
-        "track": "ecoli_depth_by_builder",
-        "locus": "chr:3,954,300",
-        "fracY": 0.62
-      }
-    }
-  ],
-  "paper/hprc_lanes_graph_stacked_force": [
-    {
-      "type": "text",
-      "text": "84.7 kb deletion",
-      "fontSize": 20,
-      "anchor": {
-        "track": "hprc_v2_1_gbz_lanes",
-        "locus": "chr1:196,810,000",
-        "fracY": 0.56
-      }
-    },
-    {
-      "type": "text",
-      "text": "66.3 kb segment",
-      "leader": true,
-      "fontSize": 20,
-      "anchor": {
-        "graphNode": "s621556"
-      },
-      "dx": 60,
-      "dy": 150
-    },
-    {
-      "type": "text",
-      "text": "upstream of the window",
-      "leader": true,
-      "fontSize": 20,
-      "anchor": {
-        "graphNode": "s621552"
-      },
-      "dx": 40,
-      "dy": -120
-    }
-  ],
-  "pangenome/pggb_bubble_tier": [
-    {
-      "type": "box",
-      "color": "#1565c0",
-      "strokeWidth": 3,
-      "pad": 8,
-      "anchor": {
-        "graphNode": "79945@1299497"
-      }
-    }
-  ],
-  "pangenome/pggb_carriage_lane": [
-    {
-      "type": "text",
-      "text": "odgi depth, windowed",
-      "fontSize": 15,
-      "anchor": {
-        "track": "ecoli_pggb_depth",
-        "locus": "chr:1,300,000",
-        "fracY": 0.3
-      }
-    },
-    {
-      "type": "text",
-      "text": "GFA SM:Z: tag, per segment",
-      "fontSize": 15,
-      "anchor": {
-        "track": "ecoli_pggb_carriage",
-        "locus": "chr:1,299,340",
-        "fracY": 0.55
-      }
-    }
-  ],
-  "pangenome/pggb_locus_sample_rows": [
-    {
-      "type": "text",
-      "text": "CFT073 skips this K12 span, and more off the left edge",
-      "fontSize": 16,
-      "maxWidth": 260,
-      "leader": true,
-      "anchor": {
-        "selector": "[data-testid=\"graph-row-label\"] + [data-testid=\"graph-row-label\"]",
-        "alignX": "right",
-        "dx": 150
-      },
-      "dx": 330,
-      "dy": 45
-    }
-  ],
-  "pangenome/rgfa_subgraph_launch": [
-    {
-      "type": "box",
-      "color": "#1565c0",
-      "strokeWidth": 3,
-      "pad": 11,
-      "anchor": {
-        "view": 0,
-        "track": "ecoli_minigraph_segments",
-        "locus": "chr:4,063,561-4,069,329",
-        "fracY": 0.1
-      }
-    },
-    {
-      "type": "box",
-      "color": "#1565c0",
-      "strokeWidth": 3,
-      "pad": 8,
-      "anchor": {
-        "view": 1,
-        "graphNode": "s1278"
-      }
-    },
-    {
-      "type": "circle",
-      "anchor": {
-        "view": 1,
-        "graphNode": "s2272"
-      },
-      "radius": 20,
-      "strokeWidth": 3
-    },
-    {
-      "type": "text",
-      "text": "CFT073's allele of the boxed segment has no K12 coordinates, so no block above",
-      "fontSize": 15,
-      "maxWidth": 260,
-      "leader": true,
-      "anchor": {
-        "view": 1,
-        "graphNode": "s2272"
-      },
-      "dx": -90,
-      "dy": 40
-    }
-  ],
-  "pangenome/rgfa_paa_bubble": [
-    {
-      "type": "circle",
-      "anchor": {
-        "view": [
-          0,
-          1
-        ],
-        "track": "ecoli_minigraph_segments",
-        "locus": "chr:1446100-1467909"
-      },
-      "radius": 34
-    },
-    {
-      "type": "circle",
-      "anchor": {
-        "view": 1,
-        "graphNode": "s502"
-      },
-      "radius": 40
-    },
-    {
-      "type": "text",
-      "text": "grey: the routes past the island",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "view": 1,
-        "graphNode": "s1613"
-      },
-      "dx": 150,
-      "dy": 100
-    }
-  ],
-  "pangenome/graph_context_none": [
-    {
-      "type": "box",
-      "anchor": {
-        "graphNode": "s2093+"
-      },
-      "strokeWidth": 3,
-      "color": "#1a56db",
-      "fillOpacity": 0.1,
-      "pad": 22
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "graphNode": "s2095+"
-      },
-      "strokeWidth": 3,
-      "color": "#e8710a",
-      "fillOpacity": 0.1,
-      "pad": 22
-    },
-    {
-      "type": "text",
-      "text": "Graph context: None",
-      "anchor": {
-        "selector": "[data-testid=\"graph-genome-canvas\"]",
-        "alignX": "left",
-        "alignY": "top"
-      },
-      "dx": 12,
-      "dy": 44,
-      "fontSize": 18,
-      "color": "#37474f"
-    }
-  ],
-  "pangenome/graph_context_hop1": [
-    {
-      "type": "box",
-      "anchor": {
-        "graphNode": "s2093+"
-      },
-      "strokeWidth": 3,
-      "color": "#1a56db",
-      "fillOpacity": 0.1,
-      "pad": 22
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "graphNode": "s2095+"
-      },
-      "strokeWidth": 3,
-      "color": "#e8710a",
-      "fillOpacity": 0.1,
-      "pad": 22
-    },
-    {
-      "type": "text",
-      "text": "Graph context: 1 hop",
-      "anchor": {
-        "selector": "[data-testid=\"graph-genome-canvas\"]",
-        "alignX": "left",
-        "alignY": "top"
-      },
-      "dx": 12,
-      "dy": 44,
-      "fontSize": 18,
-      "color": "#37474f"
-    },
-    {
-      "type": "circle",
-      "anchor": {
-        "graphNode": "s2094+"
-      },
-      "radius": 26,
-      "strokeWidth": 3,
-      "color": "#e3242b"
-    }
-  ],
-  "pangenome/rgfa_hover_sync": [
-    {
-      "type": "circle",
-      "anchor": {
-        "graphNode": "s2037"
-      },
-      "radius": 22
-    },
-    {
-      "type": "text",
-      "text": "the ringed node is sequence only CFT073 has",
-      "anchor": {
-        "graphNode": "s2037"
-      },
-      "dx": 300,
-      "dy": -60,
-      "maxWidth": 230,
-      "fontSize": 16
-    },
-    {
-      "type": "box",
-      "color": "#1565c0",
-      "strokeWidth": 3,
-      "pad": 8,
-      "anchor": {
-        "graphNode": "s403"
-      },
-      "fromAnchor": {
-        "graphNode": "s404"
-      }
-    },
-    {
-      "type": "text",
-      "text": "the K12 span between the insert's two ends",
-      "color": "#1565c0",
-      "textAlign": "end",
-      "anchor": {
-        "track": "K12_genes",
-        "locus": "chr:1,095,502-1,097,564",
-        "alignX": "left",
-        "fracY": 0,
-        "dx": -6,
-        "dy": -16
-      },
-      "fontSize": 16
-    }
-  ],
-  "pangenome/rgfa_insertion_synteny": [
-    {
-      "type": "text",
-      "text": "sequence only CFT073 has",
-      "fontSize": 18,
-      "anchor": {
-        "view": [
-          0,
-          1
-        ],
-        "track": "CFT073_genes",
-        "locus": "chr:1,127,332-1,241,061",
-        "fracY": 0,
-        "dy": -70
-      }
-    },
-    {
-      "type": "text",
-      "text": "insertion site in K12",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "K12_genes",
-        "locus": "chr:1,095,502-1,097,564",
-        "fracY": 1
-      },
-      "dx": 60,
-      "dy": 70
-    }
-  ],
-  "pangenome/hprc_whole_chromosome": [
-    {
-      "type": "text",
-      "text": "pericentromere (1q12)",
-      "fontSize": 14,
-      "maxWidth": 100,
-      "anchor": {
-        "track": "hprc_bubble_score",
-        "locus": "chr1:126,000,000",
-        "fracY": 0.08
-      }
-    },
-    {
-      "type": "box",
-      "strokeWidth": 3,
-      "anchor": {
-        "track": "hprc_tier",
-        "locus": "chr1:121,700,000-125,100,000"
-      }
-    },
-    {
-      "type": "text",
-      "text": "centromere",
-      "fontSize": 14,
-      "maxWidth": 100,
-      "anchor": {
-        "track": "hprc_tier",
-        "locus": "chr1:126,000,000",
-        "fracY": 0.06
-      }
-    }
-  ],
-  "pangenome/hprc_mhc_layout_force": [
-    {
-      "type": "circle",
-      "anchor": {
-        "graphNode": "s348700+"
-      },
-      "radius": 24,
-      "strokeWidth": 3
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "text": "Highlight in hg38"
-      }
-    }
-  ],
-  "pangenome/hprc_graph_anatomy": [
-    {
-      "type": "text",
-      "text": "backbone",
-      "leader": true,
-      "fontSize": 20,
-      "anchor": {
-        "graphNode": "s329770+"
-      },
-      "dx": 110,
-      "dy": 50
-    },
-    {
-      "type": "text",
-      "text": "allele",
-      "leader": true,
-      "fontSize": 20,
-      "anchor": {
-        "graphNode": "s352179+"
-      },
-      "dx": -120,
-      "dy": -40
-    },
-    {
-      "type": "text",
-      "text": "bubble",
-      "leader": true,
-      "fontSize": 20,
-      "anchor": {
-        "graphNode": "s329764+"
-      },
-      "dx": -130,
-      "dy": 145
-    }
-  ],
-  "pangenome/hprc_inversion": [
-    {
-      "type": "box",
-      "anchor": {
-        "view": [
-          0,
-          1
-        ],
-        "track": "hprc_minigraph_bubbles",
-        "locus": "chr1:144419293-144572458"
-      }
-    },
-    {
-      "type": "box",
-      "strokeWidth": 3,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "hprc_inv_genes_HG01891_1",
-        "locus": "JAGYVO020000062.1:6,537,074-6,537,833"
-      }
-    },
-    {
-      "type": "box",
-      "strokeWidth": 3,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "hprc_inv_genes_HG01891_1",
-        "locus": "JAGYVO020000062.1:6,757,129-6,757,888"
-      }
-    },
-    {
-      "type": "box",
-      "strokeWidth": 3,
-      "anchor": {
-        "view": [
-          0,
-          2
-        ],
-        "track": "hprc_inv_genes_HG02698_2",
-        "locus": "JBHDTM010000033.1:4,064,546-4,065,305"
-      }
-    },
-    {
-      "type": "box",
-      "strokeWidth": 3,
-      "anchor": {
-        "view": [
-          0,
-          2
-        ],
-        "track": "hprc_inv_genes_HG02698_2",
-        "locus": "JBHDTM010000033.1:4,284,528-4,285,287"
-      }
-    },
-    {
-      "type": "text",
-      "fontSize": 17,
-      "maxWidth": 260,
-      "anchor": {
-        "view": [
-          0,
-          0
-        ],
-        "track": "hprc_inv_genes_HG01891_1",
-        "locus": "JAGYVO020000062.1:6,437,000",
-        "fracY": 1,
-        "dx": 14,
-        "dy": -24
-      },
-      "text": "PPIAL4F → PPIAL4E"
-    },
-    {
-      "type": "text",
-      "fontSize": 17,
-      "maxWidth": 260,
-      "anchor": {
-        "view": [
-          0,
-          2
-        ],
-        "track": "hprc_inv_genes_HG02698_2",
-        "locus": "JBHDTM010000033.1:3,912,000",
-        "fracY": 1,
-        "dx": 14,
-        "dy": -24
-      },
-      "text": "PPIAL4E → PPIAL4F, as in hg38"
-    }
-  ],
-  "pangenome/hprc_lpa_kiv2": [
-    {
-      "type": "text",
-      "text": "kringle copies on one haplotype, absent from GRCh38",
-      "fontSize": 20,
-      "maxWidth": 260,
-      "leader": true,
-      "anchor": {
-        "graphNode": "s343607+"
-      },
-      "textAlign": "end",
-      "dx": -60,
-      "dy": 20
-    },
-    {
-      "type": "box",
-      "anchor": {
-        "track": "hprc_minigraph_bubbles",
-        "locus": "chr6:160,616,002-160,646,753"
-      },
-      "pad": 3
-    },
-    {
-      "type": "text",
-      "text": "the KIV-2 array, aka the kringle repeat",
-      "fontSize": 18,
-      "textAlign": "end",
-      "anchor": {
-        "track": "hprc_minigraph_bubbles",
-        "locus": "chr6:160,616,002-160,646,753",
-        "alignX": "left",
-        "fracY": 0,
-        "dx": -16,
-        "dy": 12
-      }
-    }
-  ],
-  "pangenome/hprc_graph_vs_callset": [
-    {
-      "type": "circle",
-      "anchor": {
-        "graphNode": "s348700+"
-      },
-      "radius": 26,
-      "strokeWidth": 3
-    },
-    {
-      "type": "arrow",
-      "fromAnchor": {
-        "view": 0,
-        "track": "hprc2_pgbi_grch38",
-        "locus": "6:32,517,422-32,529,435",
-        "fracY": 1,
-        "dy": -8
-      },
-      "anchor": {
-        "graphNode": "s348700+",
-        "dx": -30,
-        "dy": -30
-      },
-      "strokeWidth": 3
-    },
-    {
-      "type": "text",
-      "text": "the same allele, in the graph",
-      "anchor": {
-        "selector": "[data-testid=\"graph-genome-canvas\"]",
-        "alignX": "right",
-        "alignY": "top"
-      },
-      "dx": -20,
-      "dy": 40,
-      "textAlign": "end",
-      "maxWidth": 340,
-      "fontSize": 20
-    }
-  ],
-  "pangenome/mouse_dock2": [
-    {
-      "type": "text",
-      "text": "C57BL/6J, the reference",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "graphNode": "s110010685+"
-      },
-      "dx": 20,
-      "dy": -110
-    },
-    {
-      "type": "text",
-      "text": "sequence C57BL/6J lacks",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "graphNode": "s110050877+"
-      },
-      "dx": -230,
-      "dy": 10
-    }
-  ],
-  "pangenome/bovine_tas2r46": [
-    {
-      "type": "text",
-      "text": "deleted in gaur",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "bovine_pangenome_vcf",
-        "locus": "chr5:98,600,000",
-        "fracY": 0.78
-      },
-      "dx": 60,
-      "dy": -120
-    }
-  ],
-  "pangenome/bovine_bola": [
-    {
-      "type": "text",
-      "text": "graph alleles, each sequence once, whichever assemblies have it",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "bovine_minigraph_alleles",
-        "locus": "chr23:27,521,000",
-        "fracY": 0.45
-      },
-      "dx": 80,
-      "dy": -10
-    }
-  ],
-  "pangenome/bovine_whole_chromosome": [
-    {
-      "type": "text",
-      "text": "BoLA",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "track": "bovine_bubble_score",
-        "locus": "chr23:25,900,000",
-        "fracY": 0.15
-      },
-      "dx": -100,
-      "dy": -10
-    }
-  ],
-  "pangenome/graph_kiv2_walks": [
-    {
-      "type": "box",
-      "anchor": {
-        "selector": "[data-testid=\"graph-walk-readout\"]"
-      }
-    },
-    {
-      "type": "text",
-      "text": "HG00133 walks this loop",
-      "fontSize": 18,
-      "leader": true,
-      "anchor": {
-        "graphNode": "165812967"
-      },
-      "dx": 120,
-      "dy": 80
-    }
-  ],
-  "pangenome/graph_kiv2_walk_rows": [
-    {
-      "type": "box",
-      "anchor": {
-        "track": "hprc_minigraph_bubbles",
-        "locus": "chr6:160,616,002-160,646,753"
-      },
-      "pad": 3
-    },
-    {
-      "type": "text",
-      "text": "the KIV-2 array, which each bar below walks across",
-      "fontSize": 18,
-      "maxWidth": 520,
-      "textAlign": "end",
-      "anchor": {
-        "track": "hprc_minigraph_bubbles",
-        "locus": "chr6:160,616,002-160,646,753",
-        "alignX": "right",
-        "fracY": 0,
-        "dx": -48,
-        "dy": 44
-      }
-    }
-  ],
-  "pangenome/graph_mouse_nnt_halos": [
-    {
-      "type": "text",
-      "text": "Sequence the other strains have and C57BL/6J lacks: its Nnt deletion",
-      "fontSize": 17,
-      "maxWidth": 330,
-      "leader": true,
-      "anchor": {
-        "graphNode": "s130043141+"
-      },
-      "dx": 160,
-      "dy": 40
-    }
-  ]
+  "synteny_offscreen_mates": [{"type":"text","text":"peach alignments whose grape end is on another chromosome","fontSize":18,"maxWidth":300,"leader":true,"anchor":{"view":[0,0],"locus":"chrG1:6,000,000","alignY":"bottom","dy":8},"dx":60,"dy":-45}],
+  "multiway_synteny/grape_peach_cacao_gene_orthologs": [{"type":"text","text":"three grape copies, one peach and one cacao ortholog: a tandem expansion","fontSize":18,"maxWidth":300,"leader":true,"dx":90,"anchor":{"view":[0,1],"track":"GCF_030704535.1-ncbiRefSeq","locus":"chr11:863,000","fracY":0.5}}],
+  "multiway_synteny/primate_chr2_fusion": [{"type":"text","text":"fusion site","leader":true,"anchor":{"view":[0,0],"locus":"chr2:113,600,000","fracY":1},"dx":0,"dy":110}],
+  "multiway_synteny/wheat_homoeolog_selection": [{"type":"text","text":"Bread wheat self-alignment","fontSize":26,"anchor":{"selector":".MuiAppBar-root","alignX":"left","alignY":"top","dx":24,"dy":30}},{"type":"box","anchor":{"hLocus":"5D","vLocus":"4A"}},{"type":"box","anchor":{"hLocus":"7D","vLocus":"4A"}},{"type":"text","text":"4AL/5AL and 4AL/7BS","fontSize":18,"maxWidth":320,"anchor":{"hLocus":"5D","vLocus":"4A","dy":-170}},{"type":"arrow","fromAnchor":{"hLocus":"5D","vLocus":"4A","dy":-120},"anchor":{"hLocus":"5D","vLocus":"4A","alignY":"top","dy":-10}},{"type":"arrow","fromAnchor":{"hLocus":"7D","vLocus":"4A","dy":-120},"anchor":{"hLocus":"7D","vLocus":"4A","alignY":"top","dy":-10}}],
+  "homoeolog_synteny/oat_homoeologs": [{"type":"text","text":"Oat self-alignment","fontSize":26,"anchor":{"selector":".MuiAppBar-root","alignX":"left","alignY":"top","dx":24,"dy":30}},{"type":"box","anchor":{"hLocus":"4A","vLocus":"7C"}},{"type":"text","text":"4A/7C, largest of 18 cross-group pairs","fontSize":18,"maxWidth":320,"leader":true,"anchor":{"hLocus":"4A","vLocus":"7C","alignX":"right"},"dx":170}],
+  "selection_pressure/lysozyme": [{"type":"text","text":"LYZ, the only pair above 1. Every neighbour is blue","fontSize":18,"maxWidth":300,"anchor":{"view":[0,0],"track":"human_genes","locus":"12:69,351,000","fracY":1,"dy":45,"alignX":"right","dx":95}},{"type":"arrow","fromAnchor":{"view":[0,0],"track":"human_genes","locus":"12:69,351,000","fracY":1,"dy":52,"alignX":"right","dx":88},"anchor":{"view":[0,0],"track":"human_genes","locus":"12:69,351,000","fracY":1,"dy":52,"dx":8}}],
+  "orthofinder_synteny/vertebrates": [{"type":"text","text":"teleost duplication:\neach gar chromosome lands on two in zebrafish","fontSize":20,"maxWidth":380,"anchor":{"text":"gar","alignX":"left"},"dx":10,"dy":60}],
+  "orthofinder_synteny/wheat": [{"type":"text","text":"D genome donor","fontSize":20,"anchor":{"text":"tauschii","alignX":"left"},"dx":90},{"type":"box","anchor":{"text":"tauschii"}},{"type":"text","text":"A genome donor","fontSize":20,"anchor":{"text":"urartu","alignX":"left"},"dx":90},{"type":"box","anchor":{"text":"urartu"}}],
+  "orthofinder_synteny/wheat_4a": [{"type":"text","text":"4AL/5AL","fontSize":20,"anchor":{"selector":"[data-testid=\"refLabel-5D\"]","alignX":"left"},"dy":54},{"type":"text","text":"4AL/7BS","fontSize":20,"anchor":{"selector":"[data-testid=\"refLabel-7D\"]","alignX":"right"},"dx":-30,"dy":150}],
+  "multiway_synteny/ecoli_stx_island": [{"type":"text","text":"stx2 (Shiga toxin) prophage island\npresent in Sakai, absent from K-12","x":1470,"y":335,"textAlign":"end","maxWidth":380},{"type":"arrow","from":{"x":1085,"y":365},"anchor":{"text":"stx2B"},"dx":45,"dy":-28},{"type":"box","anchor":{"text":"stx2B"},"dy":-14,"height":36}],
+  "multiway_synteny/ecoli_one_vs_all": [{"type":"text","fontSize":18,"maxWidth":560,"anchor":{"track":"ecoli_ava","locus":"chr:1,444,500","alignY":"bottom","dy":-40},"text":"paa operon (phenylacetate catabolism): present in K-12 and NCTC86, absent from the other three"},{"type":"circle","anchor":{"view":1,"graphNode":"s502"},"radius":40}],
+  "multiway_synteny/ecoli_import_form": [{"type":"text","text":"Quick start launches straight from a synteny track","x":780,"y":95,"maxWidth":320},{"type":"arrow","from":{"x":770,"y":110},"anchor":{"text":"Quick start"}},{"type":"box","anchor":{"selector":"[data-testid=\"quick-start-rows\"]"}},{"type":"text","text":"Every assembly in the track becomes a row","x":780,"y":205,"maxWidth":340},{"type":"arrow","from":{"x":770,"y":220},"anchor":{"selector":"[data-testid=\"quick-start-rows\"]"}}],
+  "mcscan_synteny/anchors": [{"type":"text","x":24,"y":56,"fontSize":22,"maxWidth":700,"text":".anchors open; one ribbon per gene pair"}],
+  "mcscan_synteny/anchors_simple": [{"type":"text","x":24,"y":56,"fontSize":22,"maxWidth":700,"text":".anchors and .anchors.simple open; one ribbon per gene\nrendered on top of chained synteny blocks"}],
+  "genomes_synteny/ribbons_default": [{"type":"text","x":24,"y":56,"fontSize":22,"text":"Straight ribbons, colored indels"},{"type":"box","anchor":{"text":"CIGAR indels"}},{"type":"box","anchor":{"text":"Curved lines"}}],
+  "genomes_synteny/ribbons_curved": [{"type":"text","x":24,"y":56,"fontSize":22,"text":"Curved lines + transparent indels"}],
+  "sv_cgiab/dotplot_haplotypes": [{"type":"text","text":"chr3/chr13 fusion","leader":true,"anchor":{"view":0,"hLocus":"chr13","vLocus":"chr3_chr13_hap1"},"dx":40,"dy":80},{"type":"text","text":"chr13 intact","leader":true,"anchor":{"view":1,"hLocus":"chr13","vLocus":"chr13_hap2"},"dx":40,"dy":80}],
+  "sv_cgiab/synteny_view": [{"type":"text","text":"HG008-T hap2","fontSize":19,"anchor":{"selector":"[data-testid=\"refLabel-prefix\"]","view":[0,0],"alignX":"left","alignY":"bottom","dx":4,"dy":26}},{"type":"text","text":"GRCh38 reference","fontSize":19,"anchor":{"selector":"[data-testid=\"refLabel-prefix\"]","view":[0,1],"alignX":"left","alignY":"bottom","dx":4,"dy":26}},{"type":"text","text":"HG008-T hap1","fontSize":19,"anchor":{"selector":"[data-testid=\"refLabel-prefix\"]","view":[0,2],"alignX":"left","alignY":"bottom","dx":4,"dy":26}},{"type":"text","text":"chr3 breakend","fontSize":19,"color":"#1f77b4","background":"#dceaf6","leader":true,"anchor":{"selector":"[data-testid=\"highlight-band\"]","alignY":"top"},"dx":-150,"dy":-34},{"type":"text","text":"chr13 breakend","fontSize":19,"color":"#1f77b4","background":"#dceaf6","leader":true,"anchor":{"selector":"[data-testid=\"highlight-band\"] ~ [data-testid=\"highlight-band\"]","alignY":"top"},"dx":-150,"dy":-34}],
+  "dotplot_self_chry": [{"type":"box","anchor":{"hLocus":"chrY:9,050,000-9,750,000","vLocus":"chrY:9,050,000-9,750,000"}},{"type":"text","text":"TSPY array","fontSize":17,"anchor":{"hLocus":"chrY:9,050,000-9,750,000","vLocus":"chrY:9,050,000-9,750,000","alignY":"bottom","dy":40}},{"type":"box","anchor":{"hLocus":"chrY:21,200,000-26,000,000","vLocus":"chrY:21,200,000-26,000,000"}},{"type":"text","text":"Yq palindromes","fontSize":17,"anchor":{"hLocus":"chrY:21,200,000-26,000,000","vLocus":"chrY:21,200,000-26,000,000","alignX":"left","dx":-130}}],
+  "synteny_self_chry_palindromes_family": [{"type":"box","anchor":{"hLocus":"chrY:22,330,000-22,810,000","vLocus":"chrY:22,330,000-22,810,000"}},{"type":"arrow","strokeWidth":3,"fromAnchor":{"hLocus":"chrY:22,330,000-22,810,000","vLocus":"chrY:22,330,000-22,810,000","alignY":"bottom","dy":16},"anchor":{"hLocus":"chrY:22,330,000-22,810,000","vLocus":"chrY:22,330,000-22,810,000","alignY":"bottom","dy":122}}],
+  "synteny_self_chry_palindromes_zoom": [{"type":"text","fontSize":17,"maxWidth":380,"text":"a palindrome: a forward match (salmon) and an inverted one (magenta)","anchor":{"selector":"[data-testid=\"synteny_canvas\"]","alignX":"left","alignY":"top","dx":16,"dy":18}}],
+  "multiway_synteny/ecoli_alignment_menu": [{"type":"box","anchor":{"text":"Linear synteny view with"}},{"type":"box","anchor":{"text":"Linear synteny view, all assemblies here"}},{"type":"box","anchor":{"text":"at the matching region"}}],
+  "multiway_synteny/lane_header_menu": [{"type":"box","anchor":{"text":"Open peach at the matching region"}},{"type":"box","anchor":{"text":"Re-anchor on peach"}}],
+  "maf_row_menu": [{"type":"box","anchor":{"text":"Open aligned genome at the matching region"}}],
+  "alignments/strand_split_coverage": [{"type":"box","strokeWidth":2,"pad":8,"anchor":{"track":"hg002_nanopore_hp","locus":"1:55,705,711"}},{"type":"text","text":"reverse reads only: a basecalling artifact","fontSize":15,"textAlign":"end","anchor":{"track":"hg002_nanopore_hp","locus":"1:55,705,711","fracY":0,"dy":-14,"alignX":"left","dx":-14}},{"type":"box","strokeWidth":2,"pad":8,"anchor":{"track":"hg002_nanopore_hp","locus":"1:55,705,716"}},{"type":"text","text":"both strands: a real variant","fontSize":15,"anchor":{"track":"hg002_nanopore_hp","locus":"1:55,705,716","fracY":0,"dy":-14,"alignX":"right","dx":14}}],
+  "linear_align_ctx_menu": [{"type":"text","anchor":{"track":"volvox_sv_cram","locus":"ctgA:1633","fracY":0,"dy":35,"dx":-231},"maxWidth":180,"text":"Right-click any read to open this menu"},{"type":"arrow","fromAnchor":{"track":"volvox_sv_cram","locus":"ctgA:1633","fracY":0,"dy":50,"dx":-32},"anchor":{"track":"volvox_sv_cram","locus":"ctgA:1633","fracY":0,"dy":57}}],
+  "hic/percentile_off": [{"type":"text","text":"Emphasize faint contacts OFF","fontSize":20,"anchor":{"track":"hic","alignX":"left","alignY":"bottom"},"dx":150,"dy":-26}],
+  "hic/percentile_on": [{"type":"text","text":"Emphasize faint contacts ON (the default)","fontSize":20,"anchor":{"track":"hic","alignX":"left","alignY":"bottom"},"dx":150,"dy":-26}],
+  "alignments/modifications2": [{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-human_chr20_mod_call_5mC_5hmC_CG_cram_modifications\"]"},"dx":250,"dy":-60,"maxWidth":340,"fontSize":16,"text":"One color per modification type: only positions marked in the MM tag"},{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-human_chr20_mod_call_5mC_5hmC_CG_cram\"]"},"dx":250,"dy":-130,"maxWidth":340,"fontSize":16,"text":"One color per type, plus low-probability & unmodified in blue: every CpG painted\n\n- red = methylated\n- blue = low probability or unmarked"}],
+  "alignments/compact": [{"type":"box","anchor":{"text":"Read height"}},{"type":"box","anchor":{"text":"Compact"}}],
+  "alignments/height_mode_fit": [{"type":"box","anchor":{"text":"Read height"}},{"type":"box","anchor":{"text":"Fit read height to track height"}}],
+  "rnaseq/strand_specific": [{"type":"text","fontSize":22,"maxWidth":700,"text":"Color by first of pair strand","anchor":{"track":"ncbi_gff_hg19","locus":"chr9:136,216,000","fracY":0.6}},{"type":"arrow","strokeWidth":9,"fromAnchor":{"track":"ncbi_gff_hg19","locus":"chr9:136215300","fracY":0.86},"anchor":{"track":"ncbi_gff_hg19","locus":"chr9:136218000","fracY":0.86}},{"type":"arrow","strokeWidth":9,"fromAnchor":{"track":"ncbi_gff_hg19","locus":"chr9:136222900","fracY":0.86},"anchor":{"track":"ncbi_gff_hg19","locus":"chr9:136219000","fracY":0.86}},{"type":"arrow","strokeWidth":9,"fromAnchor":{"track":"ncbi_gff_hg19","locus":"chr9:136223800","fracY":0.86},"anchor":{"track":"ncbi_gff_hg19","locus":"chr9:136227500","fracY":0.86}}],
+  "variant_panel": [{"type":"box","anchor":{"text":"SAMPLES"}},{"type":"text","anchor":{"text":"SAMPLES"},"dy":0,"dx":-230,"maxWidth":200,"text":"Per-sample genotypes"},{"type":"arrow","fromAnchor":{"text":"SAMPLES","dx":-122},"anchor":{"text":"SAMPLES"},"dx":-60}],
+  "dtu/dtu_colored_gene_glyph": [{"type":"box","anchor":{"locus":"chr10:7,806,974-7,807,010"},"pad":9,"strokeWidth":3},{"type":"text","text":"no reads — exon skipped","anchor":{"locus":"chr10:7,806,974-7,807,010","track":"muscle_plus","fracY":0.5,"alignX":"left"},"textAlign":"end","dx":-14},{"type":"text","text":"37 bp exon retained","anchor":{"locus":"chr10:7,806,974-7,807,010","track":"liver_plus","fracY":0.35,"alignX":"left"},"textAlign":"end","dx":-14}],
+  "gc_content": [{"type":"text","text":"Mostly positive skew (leading strand)","anchor":{"track":"gc_skew_hpylori","locus":"NC_018939v1:166,800","fracY":0.11},"maxWidth":260},{"type":"text","text":"Mostly negative skew (lagging strand)","anchor":{"track":"gc_skew_hpylori","locus":"NC_018939v1:1,034,100","fracY":0.89},"maxWidth":260},{"type":"text","text":"Terminus: skew flips from + to −","leader":true,"anchor":{"track":"gc_skew_hpylori","locus":"NC_018939v1:814,000","fracY":0.45},"dx":60,"dy":-45,"maxWidth":220},{"type":"text","text":"Origin: skew flips from − to +","leader":true,"anchor":{"track":"gc_skew_hpylori","locus":"NC_018939v1:1,608,000","fracY":0.45},"dx":-60,"dy":-45,"maxWidth":220}],
+  "multiwig/multi_renderer_types": [{"type":"box","anchor":{"text":"Plot type"}}],
+  "genomes_basics/isoform_control": [{"type":"circle","anchor":{"selector":"[data-testid=\"track-control-isoform\"]"}}],
+  "customized_feature_details": [{"type":"circle","anchor":{"selector":"a[href^=\"https://google.com/?q=\"]"}},{"type":"text","text":"The callback turns the name into a clickable link","leader":true,"anchor":{"selector":"a[href^=\"https://google.com/?q=\"]","alignX":"left"},"dx":-140}],
+  "protein/connected": [{"type":"text","text":"Clicked: the nuclear export signal","fontSize":18,"leader":true,"anchor":{"selector":"[data-testid=\"protein-feature-Motif\"][data-feature-start=\"339\"]"},"dx":-260,"dy":-125},{"type":"text","text":"Its codons on the gene","fontSize":18,"leader":true,"anchor":{"track":"hg38-ncbiRefSeq","locus":"chr17:7,670,650","fracY":0.3},"dx":80,"dy":10},{"type":"text","text":"Magenta: its residues on the structure","fontSize":18,"anchor":{"selector":"[data-testid=\"protein-view-molstar\"]","alignX":"left","alignY":"top","dx":200,"dy":30}}],
+  "protein/annotation_1d": [{"type":"text","text":"DNA-binding core: confident fold, substitutions predicted pathogenic","fontSize":18,"maxWidth":700,"anchor":{"view":1,"track":"P04637-DNA binding","locus":"P04637:108","fracY":0.72}},{"type":"text","text":"Tails: low confidence, mostly benign","fontSize":18,"maxWidth":400,"anchor":{"view":1,"track":"P04637-DNA binding","locus":"P04637:4","fracY":0.72}}],
+  "protein/tp53_hotspot": [{"type":"text","text":"R248 codon","fontSize":18,"leader":true,"anchor":{"track":"hg38-ncbiRefSeq","locus":"chr17:7,674,219-7,674,221","fracY":0.3},"dx":120,"dy":12},{"type":"text","text":"R248 in magenta, with the residues and bases around it","maxWidth":520,"fontSize":18,"anchor":{"selector":"[data-testid=\"protein-view-molstar\"]","alignX":"left","alignY":"top"},"dx":200,"dy":40}],
+  "protein/tp53_mapped_chain": [{"type":"box","pad":2,"anchor":{"selector":"[role=\"listbox\"] li[role=\"option\"]:nth-child(2)"}},{"type":"text","text":"The p53 peptide, the chain the transcript encodes","fontSize":18,"maxWidth":600,"leader":true,"anchor":{"selector":"[role=\"listbox\"] li[role=\"option\"]:nth-child(2)","alignX":"left"},"dx":-40,"dy":40}],
+  "rubberband": [{"type":"box","anchor":{"text":"Zoom to region"}}],
+  "link_to_split_view": [{"type":"box","anchor":{"text":"Open breakpoints in split view"}},{"type":"arrow","from":{"x":760,"y":300},"anchor":{"text":"Open breakpoints in split view"}},{"type":"text","x":60,"y":270,"text":"Launches a breakpoint split view for the TRA — also in paired-end and long-read feature details."}],
+  "lgv_usage_guide": [{"type":"text","text":"Open track selector","fontSize":16,"anchor":{"selector":"button[title=\"Open track selector\"]","dx":-15,"dy":-59}},{"type":"arrow","fromAnchor":{"selector":"button[title=\"Open track selector\"]","dx":3,"dy":-51},"anchor":{"selector":"button[title=\"Open track selector\"]"}},{"type":"text","text":"Scroll-to-zoom toggle","fontSize":16,"anchor":{"selector":"[data-testid=\"scroll-zoom-toggle\"]","dx":125,"dy":-59}},{"type":"arrow","fromAnchor":{"selector":"[data-testid=\"scroll-zoom-toggle\"]","dx":144,"dy":-51},"anchor":{"selector":"[data-testid=\"scroll-zoom-toggle\"]"}},{"type":"text","text":"Pan","fontSize":16,"anchor":{"selector":"button[aria-label=\"Pan left\"]","dx":30,"dy":-59}},{"type":"arrow","fromAnchor":{"selector":"button[aria-label=\"Pan left\"]","dx":45,"dy":-51},"anchor":{"selector":"button[aria-label=\"Pan left\"]"}},{"type":"text","text":"Search box","fontSize":16,"anchor":{"selector":"input[placeholder=\"Search for location\"]","dx":-32,"dy":-59}},{"type":"arrow","fromAnchor":{"selector":"input[placeholder=\"Search for location\"]","dx":8,"dy":-51},"anchor":{"selector":"input[placeholder=\"Search for location\"]"}},{"type":"text","text":"Zoom","fontSize":16,"anchor":{"selector":"[data-testid=\"zoom_in\"]","dx":-99,"dy":-59}},{"type":"arrow","fromAnchor":{"selector":"[data-testid=\"zoom_in\"]","dx":-77,"dy":-51},"anchor":{"selector":"[data-testid=\"zoom_in\"]"}},{"type":"text","text":"Track menu","fontSize":16,"anchor":{"selector":"[data-testid=\"track_menu_icon\"]","dx":42,"dy":-25}},{"type":"arrow","fromAnchor":{"selector":"[data-testid=\"track_menu_icon\"]","dx":42,"dy":-17},"anchor":{"selector":"[data-testid=\"track_menu_icon\"]"}}],
+  "scroll_zoom_toggle": [{"type":"box","anchor":{"selector":"[data-testid=\"scroll-zoom-toggle\"]"}},{"type":"text","text":"The scroll wheel zooms instead of scrolling the page","leader":true,"anchor":{"selector":"[data-testid=\"scroll-zoom-toggle\"]","alignY":"bottom"},"dx":40,"dy":70}],
+  "add_track_form": [{"type":"box","anchor":{"text":"Open track..."}},{"type":"box","anchor":{"selector":"[data-testid=\"addTrackWorkflow\"]"}},{"type":"arrow","fromAnchor":{"text":"Open track...","dx":96},"anchor":{"text":"Enter track data"},"dx":-30}],
+  "track_menu": [{"type":"circle","pad":1,"anchor":{"selector":"[data-testid=\"track_menu_icon\"]"}},{"type":"circle","anchor":{"selector":"[data-testid=\"htsTrackEntryMenu-Tracks,volvox_sv_test\"]"}}],
+  "tracklabels": [{"type":"circle","anchor":{"selector":"[data-testid=\"view_menu_icon\"]"}},{"type":"box","anchor":{"selector":"[data-testid=\"cascading-submenu-track_labels\"]"}},{"type":"box","anchor":{"selector":"[data-testid=\"cascading-menuitem-overlapping\"], [data-testid=\"cascading-submenu-overlapping\"]"}}],
+  "highlight_list_edit_label": [{"type":"text","text":"Single-click the label to edit it","anchor":{"text":"Location"},"dx":-190,"dy":170,"maxWidth":230},{"type":"arrow","fromAnchor":{"selector":".MuiDataGrid-cell[data-field=\"label\"]","dx":-162,"dy":125},"anchor":{"selector":".MuiDataGrid-cell[data-field=\"label\"]"},"dx":-7,"dy":18}],
+  "hierarchical/hierarchical_user_menu-fs8": [{"type":"box","anchor":{"text":"Collapse top-level categories"}},{"type":"box","anchor":{"text":"Collapse subcategories"}}],
+  "recent_tracks": [{"type":"circle","anchor":{"selector":"[data-testid=\"recently-used-tracks-button\"]"}}],
+  "plugin_store": [{"type":"circle","anchor":{"text":"Tools"},"radius":24,"dy":8},{"type":"box","anchor":{"text":"Plugin store"}},{"type":"box","anchor":{"text":"Installed plugins"}}],
+  "chromhmm": [{"type":"box","anchor":{"track":"roadmap_chromhmm_multirow_hg19","locus":"chr9:36,833,266-37,034,265"},"pad":2},{"type":"text","text":"PAX5 transcribed, with genic enhancers, in B cells only","leader":true,"anchor":{"track":"roadmap_chromhmm_multirow_hg19","locus":"chr9:36,900,000","fracY":0.3188976377952756},"dx":-260,"dy":-60}],
+  "chromhmm_hoxa_fibroblasts": [{"type":"box","anchor":{"track":"roadmap_chromhmm_multirow_hg19","locus":"chr7:27,132,613-27,196,294"},"pad":2},{"type":"box","anchor":{"track":"roadmap_chromhmm_multirow_hg19","locus":"chr7:27,202,056-27,246,878"},"pad":2,"color":"#1565c0"}],
+  "multirow/display_types_pick": [{"type":"box","anchor":{"selector":"[data-testid=\"cascading-submenu-display_types\"]"}},{"type":"box","anchor":{"selector":"[data-testid=\"cascading-menuitem-multi-row_feature_display_(painting)\"], [data-testid=\"cascading-submenu-multi-row_feature_display_(painting)\"]"}}],
+  "methylation/arabidopsis_wgbs_contexts": [{"type":"text","text":"expressed gene body: CpG only","fontSize":20,"anchor":{"track":"GCF_000001735.4-ncbiRefSeq","locus":"chr1:4,398,322-4,405,669","fracY":1,"dy":-16}},{"type":"text","text":"LTR/Copia transposon, silenced: all three contexts","fontSize":20,"maxWidth":300,"anchor":{"track":"GCF_000001735.4-ncbiRefSeq","locus":"chr1:4,405,996-4,411,119","fracY":1,"dy":-16}},{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_methyldackel\"]"},"dx":-690,"dy":-57,"fontSize":22,"text":"CpG"},{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_methyldackel\"]"},"dx":-690,"dy":0,"fontSize":22,"text":"CHG"},{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_methyldackel\"]"},"dx":-690,"dy":57,"fontSize":22,"text":"CHH"},{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_wgbs_cg\"]"},"dx":-690,"fontSize":22,"text":"CpG"},{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_wgbs_chg\"]"},"dx":-690,"fontSize":22,"text":"CHG"},{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_wgbs_chh\"]"},"dx":-690,"fontSize":22,"text":"CHH"}],
+  "methylation/chromatin_accessibility_6ma": [{"type":"text","text":"Hia5-treated","fontSize":22,"anchor":{"track":"PAY22766-nanopore","locus":"chr12:6,530,200","fracY":0.28}},{"type":"text","text":"No-enzyme control","fontSize":22,"anchor":{"track":"PBA15131-nanopore","locus":"chr12:6,530,200","fracY":0.28}}],
+  "methylation/hg002_snrpn_ungrouped": [{"type":"box","anchor":{"selector":"[data-testid=\"cascading-submenu-group_by...\"]"}},{"type":"box","anchor":{"selector":"[data-testid=\"cascading-menuitem-tag...\"], [data-testid=\"cascading-submenu-tag...\"]"}}],
+  "methylation/hg002_snrpn_grouped": [{"type":"text","text":"HP1","anchor":{"text":"HP: 1","alignX":"right","dx":90}},{"type":"text","text":"HP2","anchor":{"text":"HP: 2","alignX":"right","dx":90}},{"type":"text","text":"HP unknown","anchor":{"text":"HP: none","alignX":"right","dx":90}}],
+  "methylation/hg002_snrpn_marked_only": [{"type":"text","text":"Modified positions only","anchor":{"text":"HG002 ONT reads","alignX":"right","dx":90}}],
+  "methylation/hg002_snrpn_fill_unmarked": [{"type":"text","text":"Every CpG filled in","anchor":{"text":"HG002 ONT reads","alignX":"right","dx":90}}],
+  "methylation/hg002_snrpn_combined": [{"type":"text","text":"HP1","anchor":{"text":"HP: 1","alignX":"right","dx":90,"dy":18}},{"type":"text","text":"HP2","anchor":{"text":"HP: 2","alignX":"right","dx":90}},{"type":"text","text":"HP unknown","anchor":{"text":"HP: none","alignX":"right","dx":90}}],
+  "ld/lct_pooled_vs_panel": [{"type":"text","text":"rs4988235","fontSize":16,"leader":true,"anchor":{"track":"kgp_lct_fst","locus":"chr2:135,851,076","fracY":0.09},"dx":-90,"dy":30}],
+  "ld/lct_fst_scan": [{"type":"text","text":"LCT","fontSize":20,"leader":true,"anchor":{"track":"kgp_lct_fst_scan","locus":"chr2:135,851,076","fracY":0,"dy":25},"dx":150}],
+  "ld/anopheles_2la": [{"type":"box","pad":0,"strokeWidth":3,"fromAnchor":{"track":"ag1000g_2l_cmgam","dy":-28},"anchor":{"track":"ag1000g_2la_karyotype_cmgam"}},{"type":"text","text":"Cameroon: 2La inversion common, LD spans it","fontSize":20,"maxWidth":600,"anchor":{"track":"ag1000g_2l_cmgam","locus":"chr2L:4,500,000","fracY":0.55}},{"type":"box","pad":0,"strokeWidth":3,"fromAnchor":{"track":"ag1000g_2l_gagam","dy":-28},"anchor":{"track":"ag1000g_2la_karyotype_gagam"}},{"type":"text","text":"Gabon: 2La inversion rare, no LD block","fontSize":20,"maxWidth":600,"anchor":{"track":"ag1000g_2l_gagam","locus":"chr2L:4,500,000","fracY":0.55}}],
+  "ld/lct_haploblock": [{"type":"text","text":"LCT/MCM6","fontSize":20,"leader":true,"anchor":{"track":"hg38-clinvarMain","locus":"chr2:135,787,850","fracY":0.5,"alignX":"left"},"dx":-60},{"type":"text","text":"Swept haplotype: one uniform cluster","fontSize":22,"leader":true,"anchor":{"track":"kgp_lct_haplotypes","locus":"chr2:135,760,000","fracY":0.27},"dx":-260},{"type":"text","text":"Every other haplotype: mosaic","fontSize":22,"leader":true,"anchor":{"track":"kgp_lct_haplotypes","locus":"chr2:135,760,000","fracY":0.75},"dx":-260}],
+  "ld/lct_population_af": [{"type":"text","text":"rs4988235","fontSize":18,"leader":true,"anchor":{"track":"kgp_lct_population_af","locus":"chr2:135,851,076","fracY":0.04},"dx":150,"dy":-30}],
+  "popgen/tajimad_cyp6g1": [{"type":"text","anchor":{"track":"tajd_all","locus":"chr2R:12,008,000","fracY":0.63,"alignX":"left"},"text":"Cyp6g1, insecticide resistance. Tajima's D and π both\nfall against the flanking windows: a recent hard sweep.","fontSize":15,"maxWidth":440}],
+  "popgen/in2lt_inversion": [{"type":"text","text":"19 In(2L)t carriers","anchor":{"view":1,"track":"dgrp_In2Lt_sv","locus":"chr2L:7,000,000","fracY":0.7}},{"type":"arrow","fromAnchor":{"view":1,"track":"dgrp_In2Lt_sv","locus":"chr2L:7,000,000","fracY":0.78},"anchor":{"view":1,"track":"dgrp_In2Lt_sv","locus":"chr2L:7,000,000","fracY":0.947}}],
+  "qc/smn1_evidence": [{"type":"text","text":"Dark blue is MAPQ 0: mapped here, but they fit elsewhere just as well","fontSize":20,"maxWidth":430,"anchor":{"track":"na12878_qc_reads","locus":"chr5:70,895,000","fracY":0.22}}],
+  "qc/smn_read_placement": [{"type":"text","text":"SMN1: biallelic loss causes spinal muscular atrophy","fontSize":18,"maxWidth":330,"anchor":{"track":"hg38-gnomad3MeanCoverage","locus":"chr5:70,925,000","alignX":"left","fracY":0.15}}],
+  "qc/smn_problematic_regions": [{"type":"text","text":"the dip is mappability: reads that fit in two places are dropped","fontSize":19,"maxWidth":340,"anchor":{"track":"hg38-gnomad3MeanCoverage","locus":"chr5:70,400,000","fracY":0.18}},{"type":"text","text":"even with long reads, very few calls in this block","fontSize":18,"maxWidth":340,"anchor":{"track":"hg38-lrSv1kgOnt","locus":"chr5:70,300,000","fracY":0.55}}],
+  "qc/smn_block_and_reads": [{"type":"text","text":"the dip is mappability: reads that fit in two places are dropped","fontSize":19,"maxWidth":340,"anchor":{"track":"hg38-gnomad3MeanCoverage","locus":"chr5:70,300,000","fracY":0.18}},{"type":"text","text":"even with long reads, very few calls in this block","fontSize":18,"maxWidth":340,"anchor":{"track":"hg38-lrSv1kgOnt","locus":"chr5:70,300,000","fracY":0.55}},{"type":"text","text":"SMN1: biallelic loss causes spinal muscular atrophy","fontSize":18,"maxWidth":330,"anchor":{"view":1,"track":"hg38-umap100Quantitative","locus":"chr5:70,940,000","alignX":"left","fracY":0.4}}],
+  "qc/smn_vs_t2t": [{"type":"text","fontSize":20,"maxWidth":420,"anchor":{"selector":"[data-testid=\"synteny_canvas\"][data-display-drawn=\"true\"]","alignX":"left","alignY":"top","dx":24,"dy":30},"text":"The same GRCh38 sequence chains to more than one place in T2T"}],
+  "horizontally_flip_before": [{"type":"text","x":20,"y":30,"fontSize":22,"text":"Normal orientation"}],
+  "horizontally_flip_after": [{"type":"text","x":20,"y":30,"fontSize":22,"text":"Horizontally flipped ([rev] locstring)"}],
+  "inverted_duplication": [{"type":"text","anchor":{"track":"HG02768.final","locus":"1:39,658,200","fracY":0,"dx":50,"dy":360},"text":"INVdup\n\n• Green = LL pair: both mates on the forward strand\n• Navy = RR pair: both mates on the reverse strand\n• Magenta = split read: SA segment on the opposite strand","fontSize":24,"maxWidth":920}],
+  "inversion_long_read": [{"type":"text","text":"Group by → Split read (SA tag)","fontSize":18,"anchor":{"text":"HG00151 Nanopore","alignX":"right","dx":16}},{"type":"text","text":"Split reads with SA tag — most showing INV","fontSize":18,"maxWidth":560,"anchor":{"text":"Split (SA)","alignX":"right","dx":14,"dy":45}},{"type":"text","text":"Reads without SA tag","fontSize":18,"maxWidth":560,"anchor":{"text":"Not split","alignX":"right","dx":14,"dy":45}}],
+  "sv_cgiab/translocation_sv_inspector_start": [{"type":"box","anchor":{"text":"Add"}},{"type":"box","anchor":{"text":"SV inspector"}}],
+  "sv_cgiab/translocation_sv_inspector_view": [{"type":"box","anchor":{"text":"SV_20"}},{"type":"text","text":"SV_20: the chr3↔chr13 translocation, drilled into below.","maxWidth":420,"anchor":{"text":"SV_20","alignX":"left","alignY":"top"},"dy":-54}],
+  "sv_cgiab/translocation_breakpoint_split": [{"type":"text","text":"chr3 breakend","fontSize":19,"color":"#1f77b4","background":"#dceaf6","leader":true,"anchor":{"text":"SV_20","alignX":"left","dx":-30},"dx":-150},{"type":"text","text":"chr13 breakend","fontSize":19,"color":"#1f77b4","background":"#dceaf6","leader":true,"anchor":{"text":"SV_190","alignX":"left","dx":-30},"dx":-150}],
+  "sv_cgiab/deletion_sv_inspector_search": [{"type":"text","text":"Searching \"SV_85\" filters to one DEL (a het CUZD1 deletion)","anchor":{"text":"chr10:122,835,344..122,837,142","alignX":"left","alignY":"top","dx":22,"dy":-40},"fontSize":18,"maxWidth":420},{"type":"box","anchor":{"text":"chr10:122,835,344..122,837,142"}},{"type":"arrow","fromAnchor":{"text":"chr10:122,835,344..122,837,142","dy":30},"anchor":{"view":1,"track":"hg008t_benchmark_sv","locus":"chr10:122,835,344..122,837,142","fracY":0,"dy":14}},{"type":"text","text":"The location link opens the region below, where SVTYPE=DEL draws as the <DEL> allele","anchor":{"view":1,"track":"hg008t_benchmark_sv","locus":"chr10:122,835,344..122,837,142","fracY":0,"alignX":"right","dx":50,"dy":28},"fontSize":18,"maxWidth":360}],
+  "sv_cgiab/cnv_with_bed_track": [{"type":"text","text":"two copies: tumor on the normal, one BAF band","maxWidth":600,"fontSize":18,"anchor":{"track":"hg008t_bicseq2","locus":"chr5:6,000,000","fracY":0.8}},{"type":"text","text":"gain: BAF splits in two","fontSize":18,"leader":true,"anchor":{"track":"hg008t_bicseq2","locus":"chr5:38,000,000","fracY":0.3},"dx":60,"dy":-12},{"type":"text","text":"one copy lost: tumor halved, BAF at 0 and 1","fontSize":18,"anchor":{"track":"hg008t_bicseq2","locus":"chr5:100,000,000","fracY":0.2}}],
+  "sv_cgiab/cnv_callset_comparison": [{"type":"text","text":"both copies of CDKN2A gone","fontSize":18,"leader":true,"dx":90,"dy":-75,"anchor":{"track":"hg008_depth","locus":"chr9:21,962,000","fracY":0.9}},{"type":"text","text":"DRAGEN: no focal call, 50 kb minimum segment","fontSize":18,"maxWidth":480,"leader":true,"dx":90,"anchor":{"track":"hg008t_dragen_cnv","locus":"chr9:21,962,000","fracY":0.7}},{"type":"text","text":"Wakhan: 50 kb bins, the arm alone","fontSize":18,"anchor":{"track":"hg008t_wakhan_hifi_hic","locus":"chr9:22,450,000","fracY":0.5}}],
+  "sv_cgiab/cnv_depth_baf": [{"type":"text","text":"p-arm: one copy left, heterozygosity lost","fontSize":18,"anchor":{"track":"hg008_depth","locus":"chr3:45,000,000","fracY":0.12}},{"type":"text","text":"q-arm: two copies, both alleles","fontSize":18,"anchor":{"track":"hg008_depth","locus":"chr3:145,000,000","fracY":0.85}}],
+  "sv_cgiab/cnv_chr17_loh": [{"type":"text","text":"p-arm: one copy left, heterozygosity lost","fontSize":18,"anchor":{"track":"hg008_depth","locus":"chr17:12,000,000","fracY":0.15}},{"type":"text","text":"q-arm: two copies, both of one allele","fontSize":18,"anchor":{"track":"hg008_depth","locus":"chr17:45,000,000","fracY":0.85}}],
+  "sv_cgiab/driver_smad4_loh": [{"type":"text","text":"SMAD4: heterozygous loss with LOH","fontSize":16,"textAlign":"end","anchor":{"track":"mane_hg38","locus":"chr18:51,030,212","fracY":0.1,"alignX":"left","dx":-16}}],
+  "cancer_sv/multihop_tumour_vs_normal": [{"type":"text","text":"Right-click a breakend → Open breakpoint split view","fontSize":17,"maxWidth":260,"leader":true,"anchor":{"selector":"[data-testid=\"feature-name-r_12_1\"]"},"dx":-30,"dy":95}],
+  "cancer_sv/derivative_synteny": [{"type":"text","anchor":{"view":[0,1],"track":"der3_genes","fracY":0,"alignX":"left","dx":40,"dy":20},"text":"Fold-back: chr3, two short inserts, then the same chr3 stretch again, inverted","fontSize":18,"maxWidth":900},{"type":"text","text":"Dark rows: each molecule crosses this stretch twice, forward and then inverted","fontSize":17,"maxWidth":380,"leader":true,"anchor":{"view":[0,0],"track":"COLO829_tumor_ont","locus":"chr3:25,356,000","fracY":0.8},"dx":-140,"dy":-30}],
+  "cancer_sv/derivative_inserts": [{"type":"text","text":"validated calls, where the reads stop","fontSize":17,"leader":true,"dx":80,"anchor":{"view":[0,0],"track":"COLO829_truth_set","locus":"chr3:25,359,568","fracY":0.5}},{"type":"text","text":"hg38, three source loci","fontSize":19,"anchor":{"view":[0,0],"track":"ncbi_refseq_hg38","locus":"chr3:25,358,800","fracY":0.75}},{"type":"text","text":"the derivative allele","fontSize":19,"anchor":{"view":[0,1],"track":"der3_genes","alignX":"left","dx":10,"fracY":0.95}}],
+  "cancer_sv/realigned_reads_reference": [{"type":"circle","text":"1","anchor":{"view":[0,0],"track":"COLO829_tumor_ont","fracY":0,"alignX":"left"},"radius":15,"dx":24,"dy":78},{"type":"text","text":"aligned to hg38","anchor":{"view":[0,0],"track":"COLO829_tumor_ont","fracY":0,"alignX":"left","dx":10,"dy":30}}],
+  "cancer_sv/realigned_reads_derivative": [{"type":"circle","text":"2","anchor":{"track":"reads_vs_der3","fracY":0,"alignX":"left"},"radius":15,"dx":24,"dy":78},{"type":"text","text":"realigned to the derived contig","anchor":{"track":"reads_vs_der3","fracY":0,"alignX":"left","dx":10,"dy":30}}],
+  "cancer_sv/k562_fusion_inspector_reads": [{"type":"text","text":"each line is one molecule, NUP214 into XKR3","fontSize":18,"maxWidth":250,"anchor":{"track":"K562_isoseq","locus":"chr9:131,195,200","fracY":0.55,"alignX":"left","dx":20}},{"type":"text","text":"chr22 is flipped: its coordinates run right to left","fontSize":17,"maxWidth":330,"anchor":{"track":"ncbi_refseq_hg38","locus":"chr22:16,805,600","fracY":0.5,"alignX":"left"}}],
+  "cancer_sv/k562_bcr_abl_split": [{"type":"text","text":"each line is one molecule, BCR into ABL1","fontSize":18,"maxWidth":250,"anchor":{"track":"K562_isoseq","locus":"chr9:130,851,100","fracY":0.32,"alignX":"left","dx":20}},{"type":"text","text":"ABL1 intron 1 — coverage, no annotated exon","fontSize":18,"maxWidth":560,"anchor":{"track":"K562_isoseq","locus":"chr9:130,778,200","fracY":0,"dy":230,"alignX":"left","dx":6}}],
+  "cancer_sv/k562_amplicon_dna": [{"type":"text","text":"BCR-ABL1 junction, called by STAR-Fusion from RNA-seq","maxWidth":600,"fontSize":17,"leader":true,"anchor":{"track":"K562_star_fusion","locus":"chr9:130,854,064","fracY":0.3},"dx":60,"dy":12},{"type":"text","text":"DNA break: copy number steps up","fontSize":17,"leader":true,"anchor":{"track":"K562_10x_sv","locus":"chr9:130,731,760","fracY":0.3},"dx":60,"dy":12},{"type":"text","text":"break to chr13, no fusion call","fontSize":17,"leader":true,"anchor":{"track":"K562_10x_sv","locus":"chr9:131,280,138","fracY":0.3},"dx":-90,"dy":80}],
+  "circular_synteny/ribbon_hover": [{"type":"text","text":"Hovered ribbon","leader":true,"anchor":{"selector":"path[data-testid=\"ribbon-28-t-hg38\"]"},"dx":200,"dy":140}],
+  "linkage_groups/alg_dotplot_res_emu": [{"type":"box","anchor":{"hLocus":"RES2","vLocus":"EMU19"}},{"type":"text","text":"A1a: one sponge chromosome","fontSize":18,"leader":true,"anchor":{"hLocus":"RES2","vLocus":"EMU19","alignY":"top"},"dx":10,"dy":-400}],
+  "tcga/cohort_cnv_genome": [{"type":"text","text":"MYC (8q24)","fontSize":20,"maxWidth":200,"anchor":{"track":"tcga_brca_cnv","locus":"8:127,735,434","fracY":0,"dy":532},"dx":-162},{"type":"arrow","fromAnchor":{"track":"tcga_brca_cnv","locus":"8:127,735,434","fracY":0,"dx":-22,"dy":519},"anchor":{"track":"tcga_brca_cnv","locus":"8:127,735,434","fracY":0,"dy":422}},{"type":"text","text":"CDKN2A (9p21)","fontSize":20,"maxWidth":200,"anchor":{"track":"tcga_brca_cnv","locus":"9:21,967,752","fracY":0,"dy":645},"dx":-44},{"type":"arrow","fromAnchor":{"track":"tcga_brca_cnv","locus":"9:21,967,752","fracY":0,"dx":26,"dy":632},"anchor":{"track":"tcga_brca_cnv","locus":"9:21,967,752","fracY":0,"dy":457}},{"type":"text","text":"CCND1 (11q13)","fontSize":20,"maxWidth":200,"anchor":{"track":"tcga_brca_cnv","locus":"11:69,641,156","fracY":0,"dy":532},"dx":-63},{"type":"arrow","fromAnchor":{"track":"tcga_brca_cnv","locus":"11:69,641,156","fracY":0,"dx":-3,"dy":519},"anchor":{"track":"tcga_brca_cnv","locus":"11:69,641,156","fracY":0,"dy":422}},{"type":"text","text":"ERBB2 (17q12)","fontSize":20,"maxWidth":200,"anchor":{"track":"tcga_brca_cnv","locus":"17:39,688,094","fracY":0,"dy":532},"dx":-69},{"type":"arrow","fromAnchor":{"track":"tcga_brca_cnv","locus":"17:39,688,094","fracY":0,"dx":-4,"dy":519},"anchor":{"track":"tcga_brca_cnv","locus":"17:39,688,094","fracY":0,"dy":422}}],
+  "tcga/cohort_cnv_erbb2": [{"type":"text","text":"balanced: the largest group, painted near-white","anchor":{"track":"tcga_brca_cnv","fracY":0.44,"alignX":"left","dx":430}},{"type":"text","text":"amplified","anchor":{"track":"tcga_brca_cnv","locus":"17:39,150,000","fracY":0.06}}],
+  "tcga/cohort_cnv_recurrence_subtype": [{"type":"arrow","fromAnchor":{"track":"tcga_brca_cnv_recurrence_by_subtype","locus":"17:39,688,094","fracY":0,"dx":40,"dy":140},"anchor":{"track":"tcga_brca_cnv_recurrence_by_subtype","locus":"17:39,688,094","fracY":0,"dy":168.75}},{"type":"text","text":"ERBB2 (17q12)","fontSize":18,"maxWidth":240,"anchor":{"track":"tcga_brca_cnv_recurrence_by_subtype","locus":"17:39,688,094","fracY":0,"dy":140},"dx":60},{"type":"arrow","fromAnchor":{"track":"tcga_brca_cnv_recurrence_by_subtype","locus":"16:70,000,000","fracY":0,"dx":-400,"dy":106.25},"anchor":{"track":"tcga_brca_cnv_recurrence_by_subtype","locus":"16:70,000,000","fracY":0,"dy":81.25}},{"type":"text","text":"16q loss (CDH1 arm)","fontSize":18,"maxWidth":240,"anchor":{"track":"tcga_brca_cnv_recurrence_by_subtype","locus":"16:70,000,000","fracY":0,"dy":106.25},"dx":-420}],
+  "tcga/mutations_cdh1_histology": [{"type":"text","text":"lobular: most of the calls in this window","anchor":{"track":"tcga_brca_mutations","fracY":0.45,"alignX":"left","dx":400}},{"type":"arrow","fromAnchor":{"track":"tcga_brca_mutations","fracY":0.5,"alignX":"left","dx":400},"anchor":{"track":"tcga_brca_mutations","fracY":0.87,"alignX":"left","dx":400}}],
+  "cnv1000g/zarr_cohort": [{"type":"text","anchor":{"track":"cnv_1000g_zarr","locus":"chr17:36,470,000","fracY":0,"alignX":"left","dx":12,"dy":96},"textAlign":"start","text":"CCL3L1 / CCL4L1\n\nOne of the most copy-number-\nvariable loci in the human\ngenome. Both encode chemokines\nthat bind CCR5.","fontSize":19,"maxWidth":420}],
+  "hg002_haplotypes_location_markers": [{"type":"text","anchor":{"selector":"[data-testid=\"app-bar\"]","alignX":"left","alignY":"top","dx":24,"dy":30},"maxWidth":640,"fontSize":22,"text":"Location markers pair a point on one panel with the point it maps to on the other"},{"type":"circle","anchor":{"selector":"[aria-label=\"Synteny display settings\"]"}},{"type":"box","anchor":{"text":"Location markers"},"strokeWidth":3},{"type":"text","text":"maternal-only insertion","leader":true,"anchor":{"view":[0,0],"track":"hg002v1.2_mat_vs_pat","locus":"chr11_MATERNAL:24,513,461","fracY":1},"dx":180,"dy":120}],
+  "hic/bcr_abl1_translocation": [{"type":"text","text":"GM12878, normal karyotype: no chr9-chr22 contacts","anchor":{"track":"hic_gm12878_insitu","fracY":0,"alignX":"left","dx":12,"dy":34}},{"type":"text","text":"K562 (CML): t(9;22) fuses chr9 to chr22, so they contact","anchor":{"track":"hic_k562_insitu","fracY":0,"alignX":"left","dx":12,"dy":34}},{"type":"arrow","anchor":{"track":"hic_k562_insitu","locus":"chr22:22,300,000","fracY":0.7},"fromAnchor":{"track":"hic_k562_insitu","locus":"chr9:130,200,000","fracY":0.34}}],
+  "hic/compartment_switch": [{"type":"text","text":"GM12878, B-cell line: A, open","fontSize":16,"anchor":{"track":"hic_gm12878_compartments","locus":"chr5:158,160,000","fracY":0.85}},{"type":"text","text":"K562, erythroleukemia: B, closed","fontSize":16,"anchor":{"track":"hic_k562_compartments","locus":"chr5:158,160,000","fracY":0.4}}],
+  "qtl/bxd_tyrp1_locus": [{"type":"text","anchor":{"text":"Tyrp1","alignX":"right","dx":12},"maxWidth":360,"fontSize":15,"text":"Tyrp1, the brown locus"}],
+  "qtl/bxd_myo5a_locus": [{"type":"text","anchor":{"text":"Myo5a","alignX":"right","dx":12},"maxWidth":360,"fontSize":15,"text":"Myo5a, the dilute locus"}],
+  "trio-matrix": [{"type":"box","anchor":{"text":"Show as genotype matrix"}}],
+  "trio-matrix-phased": [{"type":"box","anchor":{"text":"Phased"}}],
+  "trio-crossover-paternal": [{"type":"box","color":"#333","anchor":{"track":"HG02024_VN049_KHVTrio.chr1.hapibd","locus":"chr1:29,697,418","fracY":0,"dy":0},"pad":0,"dx":-28,"width":56,"height":40},{"type":"arrow","strokeWidth":2,"fromAnchor":{"track":"HG02024_VN049_KHVTrio.chr1.hapibd","locus":"chr1:29,697,418","fracY":0,"dy":40},"anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","locus":"chr1:29,697,418","fracY":0}},{"type":"box","color":"#caa200","fillOpacity":0.16,"anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","locus":"chr1:29,497,418-29,697,418","fracY":0.8333333333333334},"pad":0,"height":43.333333333333336},{"type":"box","color":"#caa200","fillOpacity":0.16,"anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","locus":"chr1:29,497,418-29,697,418","fracY":0},"pad":0,"height":43.333333333333336},{"type":"box","color":"#8e44ad","fillOpacity":0.16,"anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","locus":"chr1:29,697,418-29,897,418","fracY":0.6666666666666666},"pad":0,"height":43.333333333333336},{"type":"box","color":"#8e44ad","fillOpacity":0.16,"anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","locus":"chr1:29,697,418-29,897,418","fracY":0},"pad":0,"height":43.333333333333336},{"type":"text","color":"#caa200","anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","fracY":1,"dy":27,"alignX":"left","dx":60},"text":"Left of the crossover (yellow frame), Child hap1 matches Father hap2","maxWidth":600},{"type":"text","color":"#8e44ad","anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","fracY":1,"dy":27,"locus":"chr1:29,697,418","dx":50},"text":"Right of it (purple frame), Child hap1 matches Father hap1","maxWidth":600}],
+  "trio-crossover-maternal": [{"type":"box","color":"#333","anchor":{"track":"HG02024_VN049_KHVTrio.chr1.hapibd","locus":"chr1:55,753,613","fracY":0,"dy":0},"pad":0,"dx":-28,"width":56,"height":40},{"type":"arrow","strokeWidth":2,"fromAnchor":{"track":"HG02024_VN049_KHVTrio.chr1.hapibd","locus":"chr1:55,753,613","fracY":0,"dy":40},"anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","locus":"chr1:55,753,613","fracY":0.16666666666666666}},{"type":"box","color":"#15a01a","fillOpacity":0.16,"anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","locus":"chr1:55,553,613-55,753,613","fracY":0.5},"pad":0,"height":43.333333333333336},{"type":"box","color":"#15a01a","fillOpacity":0.16,"anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","locus":"chr1:55,553,613-55,753,613","fracY":0.16666666666666666},"pad":0,"height":43.333333333333336},{"type":"box","color":"#ff6f00","fillOpacity":0.16,"anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","locus":"chr1:55,753,613-55,953,613","fracY":0.3333333333333333},"pad":0,"height":43.333333333333336},{"type":"box","color":"#ff6f00","fillOpacity":0.16,"anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","locus":"chr1:55,753,613-55,953,613","fracY":0.16666666666666666},"pad":0,"height":43.333333333333336},{"type":"text","color":"#15a01a","anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","fracY":1,"dy":27,"alignX":"left","dx":60},"text":"Left of the crossover (green frame), Child hap2 matches Mother hap2","maxWidth":600},{"type":"text","color":"#ff6f00","anchor":{"track":"HG02024_VN049_KHVTrio.chr1.vcf","fracY":1,"dy":27,"locus":"chr1:55,753,613","dx":50},"text":"Right of it (orange frame), Child hap2 matches Mother hap1","maxWidth":600}],
+  "dog10k-wolfdog-ancestry": [{"type":"text","text":"Eight gray wolves, left out of the reference panel","fontSize":21,"maxWidth":760,"anchor":{"track":"dog10k_wolfdog_named","locus":"chr1:20,000,000","fracY":0,"dy":55}},{"type":"text","text":"Saarloos Wolfdogs: recent wolf introgression","fontSize":21,"maxWidth":700,"anchor":{"track":"dog10k_wolfdog_named","locus":"chr1:20,000,000","fracY":0,"dy":250}}],
+  "dog10k-nhej1-cea-deletion": [{"type":"text","text":"7.8 kb intron deletion, recessive:\nhomozygotes have Collie eye anomaly","fontSize":22,"maxWidth":460,"anchor":{"track":"dog10k_nhej1_svs","locus":"chr37:25,574,005-25,581,807","fracY":0,"dx":-704,"dy":170}},{"type":"arrow","fromAnchor":{"track":"dog10k_nhej1_svs","locus":"chr37:25,574,005-25,581,807","fracY":0,"dx":-249,"dy":175},"anchor":{"track":"dog10k_nhej1_svs","locus":"chr37:25,574,005-25,581,807","fracY":0,"dx":-100,"dy":175}}],
+  "dog10k-amy2b-duplication": [{"type":"text","text":"LOC607460 is AMY2B.\nCells mark carriers\nof the duplication.","fontSize":22,"maxWidth":300,"textAlign":"end","anchor":{"track":"dog10k_amy2b_svs","locus":"chr6:47,375,677-47,390,529","fracY":0.23,"dx":-430,"dy":0}},{"type":"arrow","fromAnchor":{"track":"dog10k_amy2b_svs","locus":"chr6:47,375,677-47,390,529","fracY":0.23,"dx":-420,"dy":0},"anchor":{"track":"dog10k_amy2b_svs","locus":"chr6:47,375,677-47,390,529","fracY":0.23,"dx":-40,"dy":0}}],
+  "dog10k-rnase1-insertion": [{"type":"text","text":"LOC475395 is RNASE1.","fontSize":22,"maxWidth":300,"textAlign":"end","anchor":{"track":"dog10k_rnase1_svs","locus":"chr15:18,164,072-18,164,074","fracY":0.62,"dx":-180,"dy":0}},{"type":"arrow","fromAnchor":{"track":"dog10k_rnase1_svs","locus":"chr15:18,164,072-18,164,074","fracY":0.62,"dx":-170,"dy":0},"anchor":{"track":"dog10k_rnase1_svs","locus":"chr15:18,164,072-18,164,074","fracY":0.62,"dx":-30,"dy":0}}],
+  "dog10k-size-fst-scan-genome": [{"type":"text","text":"HMGA2","fontSize":20,"leader":true,"anchor":{"track":"dog10k_size_fst","locus":"chr10:8,600,000-8,800,000","fracY":0,"dy":29},"dx":150},{"type":"text","text":"IGF1","fontSize":20,"leader":true,"anchor":{"track":"dog10k_size_fst","locus":"chr15:41,400,000-41,600,000","fracY":0,"dy":135},"dx":150},{"type":"text","text":"IGF2BP2","fontSize":20,"leader":true,"anchor":{"track":"dog10k_size_fst","locus":"chr34:18,600,000-18,800,000","fracY":0,"dy":158},"dx":-150}],
+  "dog10k-size-fst-scan-igf1": [{"type":"text","text":"IGF1","fontSize":20,"anchor":{"track":"dog10k_size_fst_igf1_20kb","locus":"chr15:41,400,000-41,600,000","fracY":0,"dy":30}}],
+  "dog10k-fgf4-retrogene-synteny": [{"type":"text","fontSize":18,"maxWidth":320,"text":"retrogene - no introns (CFA18)","anchor":{"view":[0,0],"track":"dog10k_fgf4_retro_cfa18_genes","locus":"FGF4retro-CFA18:1","fracY":1,"dx":14,"dy":-26}},{"type":"text","fontSize":18,"maxWidth":320,"text":"regular gene (dog reference)","anchor":{"view":[0,1],"track":"canFam4_ncbi_refseq","locus":"chr18:48,869,100","fracY":1,"dx":14,"dy":-26}},{"type":"text","fontSize":18,"maxWidth":320,"text":"retrogene - no introns (CFA12)","anchor":{"view":[0,2],"track":"dog10k_fgf4_retro_cfa12_genes","locus":"FGF4retro-CFA12:2","fracY":1,"dx":14,"dy":-26}}],
+  "dog10k-cyp1a2-nonsense": [{"type":"text","text":"CGA → TGA (Arg373 → stop)\nhomozygotes make no CYP1A2:\npoor drug metabolizers","fontSize":22,"anchor":{"track":"dog10k_cyp1a2_snvs","locus":"chr30:38,261,637","fracY":0,"dx":24,"dy":26}},{"type":"arrow","fromAnchor":{"track":"dog10k_cyp1a2_snvs","locus":"chr30:38,261,637","fracY":0,"dx":24,"dy":14},"anchor":{"track":"UU_Cfam_GSD_1.0-ReferenceSequenceTrack","locus":"chr30:38,261,636","fracY":1}}],
+  "maf_summary_zoomed_out": [{"type":"text","text":"Zoomed out (180 kb): one bar per species, from the summary file","fontSize":20,"anchor":{"track":"hg38.multiz470way","alignX":"left","alignY":"bottom"},"dx":220,"dy":-26}],
+  "maf_summary_zoomed_in": [{"type":"text","text":"Zoomed in (200 bp): the alignment itself, one cell per base","fontSize":20,"anchor":{"track":"hg38.multiz470way","alignX":"left","alignY":"bottom"},"dx":220,"dy":-26}],
+  "maf_hprc_pangenome": [{"type":"text","text":"Grey: aligned to GRCh38\nWhite: no aligned sequence for that haplotype","fontSize":18,"maxWidth":380,"textAlign":"end","anchor":{"track":"hprc_v2_1_mc_grch38","locus":"chr6:32,049,000","fracY":0.12}},{"type":"circle","anchor":{"graphNode":"s329764+"},"radius":26,"strokeWidth":3},{"type":"arrow","fromAnchor":{"view":0,"track":"hprc_v2_1_mc_grch38","locus":"chr6:32,005,691-32,011,057","fracY":1,"dy":-8},"anchor":{"graphNode":"s329764+","dx":-30,"dy":-30},"strokeWidth":3}],
+  "alu_age/locus": [{"type":"text","text":"Bar height: divergence from consensus. Older copies are taller","fontSize":18,"maxWidth":400,"anchor":{"track":"alu_age","locus":"chr1:151,010,600","fracY":0.05}}],
+  "alu_age/binned": [{"type":"text","text":"Alu sparse: young share high","fontSize":18,"leader":true,"anchor":{"track":"alu_young_share","locus":"chr1:191,500,000","fracY":0.3},"dx":-40,"dy":-95},{"type":"text","text":"Alu dense: young share low","fontSize":18,"leader":true,"anchor":{"track":"alu_young_share","locus":"chr1:203,500,000","fracY":0.75},"dx":80,"dy":-177}],
+  "read_marks/chromosome": [{"type":"text","text":"a tall red bar: a deletion on both copies","maxWidth":420,"fontSize":18,"leader":true,"anchor":{"track":"na12878_chr20_pair_counts","locus":"chr20:34,250,000","fracY":0.3},"dx":80,"dy":-8},{"type":"text","text":"centromere: pairs mis-mapped in repeats","fontSize":18,"leader":true,"anchor":{"track":"na12878_chr20_pairs","locus":"chr20:26,300,000","fracY":0.5},"dx":-80}],
+  "pangenome/pggb_untangle_rows": [{"type":"box","color":"#ef6c00","strokeWidth":3,"anchor":{"track":"ecoli_pggb_untangle_rows","locus":"chr:213,443-262,948"}},{"type":"box","color":"#2e7d32","strokeWidth":3,"anchor":{"track":"ecoli_pggb_untangle_rows","locus":"chr:302,899-501,436"}},{"type":"box","color":"#6a1b9a","strokeWidth":3,"anchor":{"track":"ecoli_pggb_untangle_rows","locus":"chr:914,963-1,194,177"}},{"type":"box","color":"#1565c0","strokeWidth":3,"anchor":{"track":"ecoli_pggb_untangle_rows","locus":"chr:1,635,838-2,229,302"}},{"type":"box","color":"#00838f","strokeWidth":3,"anchor":{"track":"ecoli_pggb_untangle_rows","locus":"chr:3,946,786-4,171,723"}}],
+  "pangenome/pggb_untangle_dotplot": [{"type":"box","color":"#ef6c00","strokeWidth":3,"anchor":{"hLocus":"chr:213,443-262,948","vLocus":"chr:449,188-493,004"}},{"type":"box","color":"#2e7d32","strokeWidth":3,"anchor":{"hLocus":"chr:302,899-501,436","vLocus":"chr:228,426-443,280"}},{"type":"box","color":"#6a1b9a","strokeWidth":3,"anchor":{"hLocus":"chr:914,963-1,194,177","vLocus":"chr:2,058,958-2,336,701"}},{"type":"box","color":"#1565c0","strokeWidth":3,"anchor":{"hLocus":"chr:1,635,838-2,229,302","vLocus":"chr:906,630-1,574,975"}},{"type":"box","color":"#00838f","strokeWidth":3,"anchor":{"hLocus":"chr:3,946,786-4,171,723","vLocus":"chr:3,083,154-3,330,675"}}],
+  "pangenome_cactus/graph_bubble": [{"type":"text","text":"the other four strains skip this node","fontSize":18,"leader":true,"anchor":{"graphNode":"258914"},"dx":220,"dy":70}],
+  "pangenome_cactus/builders": [{"type":"text","text":"seqwish collapses the copies onto one run of nodes","maxWidth":430,"fontSize":16,"textAlign":"end","anchor":{"track":"ecoli_depth_by_builder","locus":"chr:3,954,300","fracY":0.12}},{"type":"text","text":"Minigraph-Cactus keeps the copies apart","maxWidth":430,"fontSize":16,"textAlign":"end","anchor":{"track":"ecoli_depth_by_builder","locus":"chr:3,954,300","fracY":0.62}}],
+  "paper/hprc_lanes_graph_stacked_force": [{"type":"text","text":"84.7 kb deletion","fontSize":20,"anchor":{"track":"hprc_v2_1_gbz_lanes","locus":"chr1:196,810,000","fracY":0.56}},{"type":"text","text":"66.3 kb segment","leader":true,"fontSize":20,"anchor":{"graphNode":"s621556"},"dx":60,"dy":150},{"type":"text","text":"upstream of the window","leader":true,"fontSize":20,"anchor":{"graphNode":"s621552"},"dx":40,"dy":-120}],
+  "pangenome/pggb_bubble_tier": [{"type":"box","color":"#1565c0","strokeWidth":3,"pad":8,"anchor":{"graphNode":"79945@1299497"}}],
+  "pangenome/pggb_carriage_lane": [{"type":"text","text":"odgi depth, windowed","fontSize":15,"anchor":{"track":"ecoli_pggb_depth","locus":"chr:1,300,000","fracY":0.3}},{"type":"text","text":"GFA SM:Z: tag, per segment","fontSize":15,"anchor":{"track":"ecoli_pggb_carriage","locus":"chr:1,299,340","fracY":0.55}}],
+  "pangenome/pggb_locus_sample_rows": [{"type":"text","text":"CFT073 skips this K12 span, and more off the left edge","fontSize":16,"maxWidth":260,"leader":true,"anchor":{"selector":"[data-testid=\"graph-row-label\"] + [data-testid=\"graph-row-label\"]","alignX":"right","dx":150},"dx":330,"dy":45}],
+  "pangenome/rgfa_subgraph_launch": [{"type":"box","color":"#1565c0","strokeWidth":3,"pad":11,"anchor":{"view":0,"track":"ecoli_minigraph_segments","locus":"chr:4,063,561-4,069,329","fracY":0.1}},{"type":"box","color":"#1565c0","strokeWidth":3,"pad":8,"anchor":{"view":1,"graphNode":"s1278"}},{"type":"circle","anchor":{"view":1,"graphNode":"s2272"},"radius":20,"strokeWidth":3},{"type":"text","text":"CFT073's allele of the boxed segment has no K12 coordinates, so no block above","fontSize":15,"maxWidth":260,"leader":true,"anchor":{"view":1,"graphNode":"s2272"},"dx":-90,"dy":40}],
+  "pangenome/rgfa_paa_bubble": [{"type":"circle","anchor":{"view":[0,1],"track":"ecoli_minigraph_segments","locus":"chr:1446100-1467909"},"radius":34},{"type":"circle","anchor":{"view":1,"graphNode":"s502"},"radius":40},{"type":"text","text":"grey: the routes past the island","fontSize":18,"leader":true,"anchor":{"view":1,"graphNode":"s1613"},"dx":150,"dy":100}],
+  "pangenome/graph_context_none": [{"type":"box","anchor":{"graphNode":"s2093+"},"strokeWidth":3,"color":"#1a56db","fillOpacity":0.1,"pad":22},{"type":"box","anchor":{"graphNode":"s2095+"},"strokeWidth":3,"color":"#e8710a","fillOpacity":0.1,"pad":22},{"type":"text","text":"Graph context: None","anchor":{"selector":"[data-testid=\"graph-genome-canvas\"]","alignX":"left","alignY":"top"},"dx":12,"dy":44,"fontSize":18,"color":"#37474f"}],
+  "pangenome/graph_context_hop1": [{"type":"box","anchor":{"graphNode":"s2093+"},"strokeWidth":3,"color":"#1a56db","fillOpacity":0.1,"pad":22},{"type":"box","anchor":{"graphNode":"s2095+"},"strokeWidth":3,"color":"#e8710a","fillOpacity":0.1,"pad":22},{"type":"text","text":"Graph context: 1 hop","anchor":{"selector":"[data-testid=\"graph-genome-canvas\"]","alignX":"left","alignY":"top"},"dx":12,"dy":44,"fontSize":18,"color":"#37474f"},{"type":"circle","anchor":{"graphNode":"s2094+"},"radius":26,"strokeWidth":3,"color":"#e3242b"}],
+  "pangenome/rgfa_hover_sync": [{"type":"circle","anchor":{"graphNode":"s2037"},"radius":22},{"type":"text","text":"the ringed node is sequence only CFT073 has","anchor":{"graphNode":"s2037"},"dx":300,"dy":-60,"maxWidth":230,"fontSize":16},{"type":"box","color":"#1565c0","strokeWidth":3,"pad":8,"anchor":{"graphNode":"s403"},"fromAnchor":{"graphNode":"s404"}},{"type":"text","text":"the K12 span between the insert's two ends","color":"#1565c0","textAlign":"end","anchor":{"track":"K12_genes","locus":"chr:1,095,502-1,097,564","alignX":"left","fracY":0,"dx":-6,"dy":-16},"fontSize":16}],
+  "pangenome/rgfa_insertion_synteny": [{"type":"text","text":"sequence only CFT073 has","fontSize":18,"anchor":{"view":[0,1],"track":"CFT073_genes","locus":"chr:1,127,332-1,241,061","fracY":0,"dy":-70}},{"type":"text","text":"insertion site in K12","fontSize":18,"leader":true,"anchor":{"view":[0,0],"track":"K12_genes","locus":"chr:1,095,502-1,097,564","fracY":1},"dx":60,"dy":70}],
+  "pangenome/hprc_whole_chromosome": [{"type":"text","text":"pericentromere (1q12)","fontSize":14,"maxWidth":100,"anchor":{"track":"hprc_bubble_score","locus":"chr1:126,000,000","fracY":0.08}},{"type":"box","strokeWidth":3,"anchor":{"track":"hprc_tier","locus":"chr1:121,700,000-125,100,000"}},{"type":"text","text":"centromere","fontSize":14,"maxWidth":100,"anchor":{"track":"hprc_tier","locus":"chr1:126,000,000","fracY":0.06}}],
+  "pangenome/hprc_mhc_layout_force": [{"type":"circle","anchor":{"graphNode":"s348700+"},"radius":24,"strokeWidth":3},{"type":"box","anchor":{"text":"Highlight in hg38"}}],
+  "pangenome/hprc_graph_anatomy": [{"type":"text","text":"backbone","leader":true,"fontSize":20,"anchor":{"graphNode":"s329770+"},"dx":110,"dy":50},{"type":"text","text":"allele","leader":true,"fontSize":20,"anchor":{"graphNode":"s352179+"},"dx":-120,"dy":-40},{"type":"text","text":"bubble","leader":true,"fontSize":20,"anchor":{"graphNode":"s329764+"},"dx":-130,"dy":145}],
+  "pangenome/hprc_inversion": [{"type":"box","anchor":{"view":[0,1],"track":"hprc_minigraph_bubbles","locus":"chr1:144419293-144572458"}},{"type":"box","strokeWidth":3,"anchor":{"view":[0,0],"track":"hprc_inv_genes_HG01891_1","locus":"JAGYVO020000062.1:6,537,074-6,537,833"}},{"type":"box","strokeWidth":3,"anchor":{"view":[0,0],"track":"hprc_inv_genes_HG01891_1","locus":"JAGYVO020000062.1:6,757,129-6,757,888"}},{"type":"box","strokeWidth":3,"anchor":{"view":[0,2],"track":"hprc_inv_genes_HG02698_2","locus":"JBHDTM010000033.1:4,064,546-4,065,305"}},{"type":"box","strokeWidth":3,"anchor":{"view":[0,2],"track":"hprc_inv_genes_HG02698_2","locus":"JBHDTM010000033.1:4,284,528-4,285,287"}},{"type":"text","fontSize":17,"maxWidth":260,"anchor":{"view":[0,0],"track":"hprc_inv_genes_HG01891_1","locus":"JAGYVO020000062.1:6,437,000","fracY":1,"dx":14,"dy":-24},"text":"PPIAL4F → PPIAL4E"},{"type":"text","fontSize":17,"maxWidth":260,"anchor":{"view":[0,2],"track":"hprc_inv_genes_HG02698_2","locus":"JBHDTM010000033.1:3,912,000","fracY":1,"dx":14,"dy":-24},"text":"PPIAL4E → PPIAL4F, as in hg38"}],
+  "pangenome/hprc_lpa_kiv2": [{"type":"text","text":"kringle copies on one haplotype, absent from GRCh38","fontSize":20,"maxWidth":260,"leader":true,"anchor":{"graphNode":"s343607+"},"textAlign":"end","dx":-60,"dy":20},{"type":"box","anchor":{"track":"hprc_minigraph_bubbles","locus":"chr6:160,616,002-160,646,753"},"pad":3},{"type":"text","text":"the KIV-2 array, aka the kringle repeat","fontSize":18,"textAlign":"end","anchor":{"track":"hprc_minigraph_bubbles","locus":"chr6:160,616,002-160,646,753","alignX":"left","fracY":0,"dx":-16,"dy":12}}],
+  "pangenome/hprc_graph_vs_callset": [{"type":"circle","anchor":{"graphNode":"s348700+"},"radius":26,"strokeWidth":3},{"type":"arrow","fromAnchor":{"view":0,"track":"hprc2_pgbi_grch38","locus":"6:32,517,422-32,529,435","fracY":1,"dy":-8},"anchor":{"graphNode":"s348700+","dx":-30,"dy":-30},"strokeWidth":3},{"type":"text","text":"the same allele, in the graph","anchor":{"selector":"[data-testid=\"graph-genome-canvas\"]","alignX":"right","alignY":"top"},"dx":-20,"dy":40,"textAlign":"end","maxWidth":340,"fontSize":20}],
+  "pangenome/mouse_dock2": [{"type":"text","text":"C57BL/6J, the reference","fontSize":18,"leader":true,"anchor":{"graphNode":"s110010685+"},"dx":20,"dy":-110},{"type":"text","text":"sequence C57BL/6J lacks","fontSize":18,"leader":true,"anchor":{"graphNode":"s110050877+"},"dx":-230,"dy":10}],
+  "pangenome/bovine_tas2r46": [{"type":"text","text":"deleted in gaur","fontSize":18,"leader":true,"anchor":{"track":"bovine_pangenome_vcf","locus":"chr5:98,600,000","fracY":0.78},"dx":60,"dy":-120}],
+  "pangenome/bovine_bola": [{"type":"text","text":"graph alleles, each sequence once, whichever assemblies have it","fontSize":18,"leader":true,"anchor":{"track":"bovine_minigraph_alleles","locus":"chr23:27,521,000","fracY":0.45},"dx":80,"dy":-10}],
+  "pangenome/bovine_whole_chromosome": [{"type":"text","text":"BoLA","fontSize":18,"leader":true,"anchor":{"track":"bovine_bubble_score","locus":"chr23:25,900,000","fracY":0.15},"dx":-100,"dy":-10}],
+  "pangenome/graph_kiv2_walks": [{"type":"box","anchor":{"selector":"[data-testid=\"graph-walk-readout\"]"}},{"type":"text","text":"HG00133 walks this loop","fontSize":18,"leader":true,"anchor":{"graphNode":"165812967"},"dx":120,"dy":80}],
+  "pangenome/graph_kiv2_walk_rows": [{"type":"box","anchor":{"track":"hprc_minigraph_bubbles","locus":"chr6:160,616,002-160,646,753"},"pad":3},{"type":"text","text":"the KIV-2 array, which each bar below walks across","fontSize":18,"maxWidth":520,"textAlign":"end","anchor":{"track":"hprc_minigraph_bubbles","locus":"chr6:160,616,002-160,646,753","alignX":"right","fracY":0,"dx":-48,"dy":44}}],
+  "pangenome/graph_mouse_nnt_halos": [{"type":"text","text":"Sequence the other strains have and C57BL/6J lacks: its Nnt deletion","fontSize":17,"maxWidth":330,"leader":true,"anchor":{"graphNode":"s130043141+"},"dx":160,"dy":40}],
 }
 
 // What a figure's clicks open or change that its session does not hold, or the
@@ -6764,157 +2736,74 @@ export const figureClicks: Record<
   string,
   { open?: string; change?: string; stages?: number }
 > = {
-  "multiway_synteny/lgv_track_clicked": {
-    "change": "select a ribbon, outlining its ortholog group and opening the pair's details"
-  },
-  "multiway_synteny/primate_tp53_lanes": {
-    "change": "close the legend's gene cluster section"
-  },
+  "multiway_synteny/lgv_track_clicked": {"change":"select a ribbon, outlining its ortholog group and opening the pair's details"},
+  "multiway_synteny/primate_tp53_lanes": {"change":"close the legend's gene cluster section"},
   "multiway_synteny/ecoli_launch_selection": {},
   "multiway_synteny/ecoli_launch_dialog": {},
   "multiway_synteny/ecoli_launch_result": {},
-  "multiway_synteny/ecoli_import_form": {
-    "change": "open a Linear synteny view's import form from the Add menu"
-  },
+  "multiway_synteny/ecoli_import_form": {"change":"open a Linear synteny view's import form from the Add menu"},
   "genomes_synteny/ribbons_default": {},
-  "genomes_synteny/launch_sequence": {
-    "stages": 4
-  },
-  "genomes_synteny/star_link": {},
-  "sv_synteny/dotplot_import": {
-    "change": "switch the import form to Manual"
-  },
+  "genomes_synteny/launch_sequence": {"stages":4},
+  "sv_synteny/dotplot_import": {"change":"switch the import form to Manual"},
   "sv_synteny/color_by_attribute": {},
-  "sv_synteny/assembly_order_warning": {
-    "open": "the synteny warnings dialog"
-  },
-  "dotplot_add": {
-    "stages": 2
-  },
-  "synteny_from_dotplot_view": {
-    "stages": 2
-  },
-  "multiway_synteny/ecoli_alignment_menu": {
-    "open": "an alignment's context menu at its Launch submenu"
-  },
-  "multiway_synteny/lane_header_menu": {
-    "open": "a lane's context menu"
-  },
+  "sv_synteny/assembly_order_warning": {"open":"the synteny warnings dialog"},
+  "dotplot_add": {"stages":2},
+  "synteny_from_dotplot_view": {"stages":2},
+  "multiway_synteny/ecoli_alignment_menu": {"open":"an alignment's context menu at its Launch submenu"},
+  "multiway_synteny/lane_header_menu": {"open":"a lane's context menu"},
   "maf_row_menu": {},
   "sequence_track": {},
-  "alignments_soft_clipped_menu": {
-    "stages": 2
-  },
+  "alignments_soft_clipped_menu": {"stages":2},
   "linear_align_ctx_menu": {},
   "alignments/filter_dialog": {},
-  "alignments_sort_by_base": {
-    "stages": 2
-  },
-  "alignments/haplotype_groupby": {
-    "stages": 3
-  },
+  "alignments_sort_by_base": {"stages":2},
+  "alignments/haplotype_groupby": {"stages":3},
   "alignments/compact": {},
   "alignments/height_mode_fit": {},
-  "alignments/select_arc_display": {
-    "stages": 2
-  },
-  "alphagenome/expression_two_cell_lines": {},
-  "alphagenome/accessibility_shared_axis": {},
-  "alphagenome/splice_junctions": {},
-  "alphagenome/contact_map": {},
-  "alphagenome/predict_variant_menu": {},
-  "alphagenome/variant_difference": {},
+  "alignments/select_arc_display": {"stages":2},
   "variant_panel": {},
-  "variants/cluster_dialog": {
-    "stages": 2
-  },
+  "variants/cluster_dialog": {"stages":2},
   "variants/potato_missingness": {},
-  "bigwig/whole_genome_coverage": {
-    "stages": 2
-  },
+  "bigwig/whole_genome_coverage": {"stages":2},
   "multiwig/multi_renderer_types": {},
-  "multiwig/trackselector": {
-    "stages": 2
-  },
-  "multiwig/addtrack": {
-    "stages": 2
-  },
-  "multiwig/cluster_dialog": {
-    "stages": 2
-  },
-  "genomes_basics/site_search": {},
-  "genomes_basics/search_tp53": {
-    "stages": 3
-  },
-  "genomes_basics/isoform_control": {
-    "open": "the gene track's isoform control"
-  },
-  "genomes_basics/promoter_regulation": {
-    "stages": 2
-  },
-  "genomes_basics/gnomad_filter_menu": {
-    "stages": 2
-  },
-  "genomes_basics/about_track": {
-    "stages": 2
-  },
+  "multiwig/trackselector": {"stages":2},
+  "multiwig/addtrack": {"stages":2},
+  "multiwig/cluster_dialog": {"stages":2},
+  "genomes_basics/isoform_control": {"open":"the gene track's isoform control"},
+  "genomes_basics/promoter_regulation": {"stages":2},
+  "genomes_basics/gnomad_filter_menu": {"stages":2},
+  "genomes_basics/about_track": {"stages":2},
   "about_track": {},
-  "gene_track_color_by_cds": {
-    "stages": 2
-  },
-  "gene_track_collapse_introns": {
-    "stages": 2
-  },
+  "gene_track_color_by_cds": {"stages":2},
+  "gene_track_collapse_introns": {"stages":2},
   "feature_detail_sequence": {},
   "feature_detail_protein": {},
   "customized_feature_details": {},
   "upstream_downstream_details": {},
-  "protein/connected": {
-    "change": "select the nuclear export signal, banding its codons on the gene and its residues on the structure"
-  },
-  "protein/annotation_1d": {
-    "change": "launch the 1D protein annotation view and turn on four of its tracks"
-  },
-  "protein/tp53_mapped_chain": {
-    "open": "a structure's chain list"
-  },
-  "protein/tp53_nmr_ensemble": {
-    "change": "reset the structure's camera to fit the whole ensemble"
-  },
-  "top_level_menus": {},
-  "no_build_final": {},
+  "protein/connected": {"change":"select the nuclear export signal, banding its codons on the gene and its residues on the structure"},
+  "protein/annotation_1d": {"change":"launch the 1D protein annotation view and turn on four of its tracks"},
+  "protein/tp53_mapped_chain": {"open":"a structure's chain list"},
+  "protein/tp53_nmr_ensemble": {"change":"reset the structure's camera to fit the whole ensemble"},
   "searching_lgv": {},
   "search_feature_highlight": {},
   "rubberband": {},
   "multisv": {},
   "multisv_svtype": {},
-  "multisv_rhd": {
-    "change": "sort the matrix's rows by genotype at HGSV_1821"
-  },
+  "multisv_rhd": {"change":"sort the matrix's rows by genotype at HGSV_1821"},
   "link_to_split_view": {},
   "read_vs_ref_insertion": {},
   "add_track_form": {},
-  "add_track_tracklist": {
-    "stages": 2
-  },
+  "add_track_tracklist": {"stages":2},
   "track_menu": {},
   "tracklabels": {},
-  "edit_track_settings": {
-    "stages": 2
-  },
-  "drawer_widget_toggle": {
-    "stages": 2
-  },
+  "edit_track_settings": {"stages":2},
+  "drawer_widget_toggle": {"stages":2},
   "share_button": {},
-  "highlight_list_create": {
-    "stages": 2
-  },
+  "highlight_list_create": {"stages":2},
   "highlight_list_edit_label": {},
   "hierarchical/hierarchical_user_menu-fs8": {},
   "recent_tracks": {},
-  "favorite_tracks": {
-    "stages": 2
-  },
+  "favorite_tracks": {"stages":2},
   "plugin_store": {},
   "lgv_assembly": {},
   "add_hg38_assembly": {},
@@ -6924,88 +2813,41 @@ export const figureClicks: Record<
   "customized_theme": {},
   "assembly_manager": {},
   "hg38_assembly_table": {},
-  "default_session_form": {
-    "stages": 2
-  },
-  "chromhmm": {
-    "change": "expand the legend to its full list"
-  },
+  "default_session_form": {"stages":2},
+  "chromhmm": {"change":"expand the legend to its full list"},
   "multirow/display_types_pick": {},
   "methylation/hg002_snrpn_ungrouped": {},
   "sv_inspector_importform_filtered": {},
   "inverted_duplication": {},
   "sv_cgiab/translocation_sv_inspector_start": {},
-  "sv_cgiab/translocation_sv_inspector_view": {
-    "change": "scroll the table to SV_20"
-  },
+  "sv_cgiab/translocation_sv_inspector_view": {"change":"scroll the table to SV_20"},
   "sv_inspector_importform_after": {},
-  "cancer_sv/split_view_from_breakend": {
-    "stages": 3
-  },
-  "circular_synteny/band_hover": {
-    "open": "a chromosome band's tooltip"
-  },
-  "circular_synteny/ribbon_hover": {
-    "open": "a ribbon's tooltip"
-  },
-  "linkage_groups/alg_dotplot_res_emu": {
-    "change": "close the legend"
-  },
-  "linkage_groups/alg_stack": {
-    "change": "close the legend"
-  },
-  "tcga/mutations_cdh1_histology": {
-    "change": "collapse CDH1's introns"
-  },
-  "tcga/mutations_pik3ca_grouped": {
-    "change": "collapse PIK3CA's introns"
-  },
-  "hg002_haplotypes_import_form": {
-    "stages": 1
-  },
-  "hg002_haplotypes_follow_panel": {
-    "stages": 2
-  },
+  "cancer_sv/split_view_from_breakend": {"stages":3},
+  "circular_synteny/band_hover": {"open":"a chromosome band's tooltip"},
+  "circular_synteny/ribbon_hover": {"open":"a ribbon's tooltip"},
+  "linkage_groups/alg_dotplot_res_emu": {"change":"close the legend"},
+  "linkage_groups/alg_stack": {"change":"close the legend"},
+  "tcga/mutations_cdh1_histology": {"change":"collapse CDH1's introns"},
+  "tcga/mutations_pik3ca_grouped": {"change":"collapse PIK3CA's introns"},
+  "hg002_haplotypes_import_form": {"stages":1},
+  "hg002_haplotypes_follow_panel": {"stages":2},
   "hg002_haplotypes_location_markers": {},
-  "trio-matrix": {
-    "open": "the track menu at its Show... submenu"
-  },
+  "trio-matrix": {"open":"the track menu at its Show... submenu"},
   "trio-matrix-phased": {},
   "maf_codon_tooltip": {},
-  "mark_display/multiscale": {
-    "stages": 2
-  },
+  "mark_display/multiscale": {"stages":2},
   "mark_display/edit_plot": {},
-  "genomes_msa/launch_sequence": {
-    "stages": 3
-  },
+  "genomes_msa/launch_sequence": {"stages":3},
   "paper/cohort_sv_multisample": {},
-  "pangenome/rgfa_segment_neighbourhood": {
-    "stages": 2
-  },
+  "pangenome/rgfa_segment_neighbourhood": {"stages":2},
   "pangenome/rgfa_hover_sync": {},
-  "pangenome/rgfa_launch_out_menu": {
-    "stages": 2
-  },
-  "pangenome/rgfa_strain_launch": {
-    "stages": 2
-  },
-  "pangenome/hprc_mhc_layout_force": {
-    "open": "the node's context menu",
-    "change": "highlight the node's span in hg38"
-  },
-  "pangenome/hprc_haplotype_launch": {
-    "stages": 2
-  },
-  "pangenome/hprc_kiv2_copies_by_unit": {
-    "change": "open the record's repeat copies view"
-  },
-  "pangenome/hprc_abca7_tandem_repeat_alleles": {
-    "change": "open the record's repeat copies view"
-  },
-  "pangenome/graph_kiv2_walks": {
-    "change": "lift HG00133's walk out of the graph"
-  }
+  "pangenome/rgfa_launch_out_menu": {"stages":2},
+  "pangenome/rgfa_strain_launch": {"stages":2},
+  "pangenome/hprc_mhc_layout_force": {"open":"the node's context menu","change":"highlight the node's span in hg38"},
+  "pangenome/hprc_haplotype_launch": {"stages":2},
+  "pangenome/hprc_kiv2_copies_by_unit": {"change":"open the record's repeat copies view"},
+  "pangenome/hprc_abca7_tandem_repeat_alleles": {"change":"open the record's repeat copies view"},
+  "pangenome/graph_kiv2_walks": {"change":"lift HG00133's walk out of the graph"},
 }
 
 // Each composed figure's parts and layout, for one capture command per frame.
@@ -7019,416 +2861,49 @@ export const figureComposites: Record<
     callouts: boolean
   }
 > = {
-  "homoeolog_synteny/wheat_vs_oat": {
-    "parts": [
-      "multiway_synteny/wheat_homoeolog_selection",
-      "homoeolog_synteny/oat_homoeologs"
-    ],
-    "horizontal": true,
-    "callouts": false
-  },
-  "multiway_synteny/ecoli_launch_from_selection": {
-    "parts": [
-      "multiway_synteny/ecoli_launch_selection",
-      "multiway_synteny/ecoli_launch_dialog",
-      "multiway_synteny/ecoli_launch_result"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "mcscan_synteny/anchors_vs_simple": {
-    "parts": [
-      "mcscan_synteny/anchors",
-      "mcscan_synteny/anchors_simple"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "genomes_synteny/ribbon_settings": {
-    "parts": [
-      "genomes_synteny/ribbons_default",
-      "genomes_synteny/ribbons_curved"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "sv_synteny/color_by_attribute_steps": {
-    "parts": [
-      "sv_synteny/color_by_attribute",
-      "sv_synteny/ortholog_colors"
-    ],
-    "horizontal": true,
-    "callouts": false
-  },
-  "synteny_self_chry_palindromes": {
-    "parts": [
-      "synteny_self_chry_palindromes_family",
-      "synteny_self_chry_palindromes_zoom"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "hic/faint_contacts": {
-    "parts": [
-      "hic/percentile_off",
-      "hic/percentile_on"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "rnaseq/sort_spliced_first": {
-    "parts": [
-      "rnaseq/deep_pileup_file_order",
-      "rnaseq/deep_pileup_spliced_first"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "rnaseq/hide_non_canonical": {
-    "parts": [
-      "rnaseq/sashimi_all_junctions",
-      "rnaseq/sashimi_canonical_only"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "multirow/display_types_menu": {
-    "parts": [
-      "multirow/display_types_pick",
-      "multirow/display_types_rows"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "methylation/hg002_snrpn_group_by_hp": {
-    "parts": [
-      "methylation/hg002_snrpn_ungrouped",
-      "methylation/hg002_snrpn_grouped"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "methylation/hg002_snrpn_mod_modes": {
-    "parts": [
-      "methylation/hg002_snrpn_marked_only",
-      "methylation/hg002_snrpn_fill_unmarked"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "ld/lct_sweep_two_scales": {
-    "parts": [
-      "ld/lct_fst_scan",
-      "ld/lct_pooled_vs_panel"
-    ],
-    "horizontal": false,
-    "gutter": 70,
-    "callouts": true
-  },
-  "horizontally_flip": {
-    "parts": [
-      "horizontally_flip_before",
-      "horizontally_flip_after"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "cancer_sv/multihop_reads": {
-    "parts": [
-      "cancer_sv/multihop_tumour_vs_normal",
-      "cancer_sv/multihop_split_view"
-    ],
-    "horizontal": true,
-    "callouts": true
-  },
-  "cancer_sv/realigned_reads": {
-    "parts": [
-      "cancer_sv/realigned_reads_reference",
-      "cancer_sv/realigned_reads_derivative"
-    ],
-    "horizontal": true,
-    "callouts": false
-  },
-  "dog10k-diet-genes": {
-    "parts": [
-      "dog10k-amy2b-duplication",
-      "dog10k-rnase1-insertion"
-    ],
-    "horizontal": true,
-    "callouts": false
-  },
-  "dog10k-size-fst-scan": {
-    "parts": [
-      "dog10k-size-fst-scan-genome",
-      "dog10k-size-fst-scan-igf1"
-    ],
-    "horizontal": false,
-    "gutter": 120,
-    "callouts": true
-  },
-  "maf_summary_tier": {
-    "parts": [
-      "maf_summary_zoomed_out",
-      "maf_summary_zoomed_in"
-    ],
-    "horizontal": true,
-    "callouts": false
-  },
-  "alu_age/young_share": {
-    "parts": [
-      "alu_age/chromosome",
-      "alu_age/binned"
-    ],
-    "horizontal": false,
-    "gutter": 70,
-    "callouts": true
-  },
-  "pangenome/pggb_untangle_inversion": {
-    "parts": [
-      "pangenome/pggb_untangle_rows",
-      "pangenome/pggb_untangle_dotplot"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "paper/cohort_views": {
-    "parts": [
-      "paper/cohort_sv_multisample",
-      "paper/cohort_cnv"
-    ],
-    "horizontal": false,
-    "gutter": 40,
-    "callouts": true
-  },
-  "pangenome/rgfa_launch_roundtrip": {
-    "parts": [
-      "pangenome/rgfa_strain_launch",
-      "pangenome/rgfa_segment_neighbourhood"
-    ],
-    "horizontal": true,
-    "callouts": false
-  },
-  "pangenome/graph_context": {
-    "parts": [
-      "pangenome/graph_context_none",
-      "pangenome/graph_context_hop1"
-    ],
-    "horizontal": true,
-    "callouts": false
-  },
-  "cookbook_color_by_type_two_ways": {
-    "parts": [
-      "cookbook_color_by_type",
-      "cookbook_color_by_type_rows"
-    ],
-    "horizontal": false,
-    "callouts": false
-  },
-  "jbrowse-img/sv_review_pair": {
-    "parts": [
-      "jbrowse-img/sv_review_tumor",
-      "jbrowse-img/sv_review_normal",
-      "jbrowse-img/sv_review_derivative"
-    ],
-    "horizontal": true,
-    "callouts": true
-  },
-  "jbrowse-img/sv_sheet_056": {
-    "parts": [
-      "jbrowse-img/sv_sheet_056_tumor",
-      "jbrowse-img/sv_sheet_056_normal"
-    ],
-    "horizontal": true,
-    "callouts": false
-  },
-  "jbrowse-img/sv_sheet_009": {
-    "parts": [
-      "jbrowse-img/sv_sheet_009_tumor",
-      "jbrowse-img/sv_sheet_009_normal"
-    ],
-    "horizontal": true,
-    "callouts": false
-  },
-  "jbrowse-img/sv_sheet_013": {
-    "parts": [
-      "jbrowse-img/sv_sheet_013_tumor",
-      "jbrowse-img/sv_sheet_013_normal"
-    ],
-    "horizontal": true,
-    "callouts": false
-  },
-  "jbrowse-img/sv_callset_sheet": {
-    "parts": [
-      "jbrowse-img/sv_sheet_056",
-      "jbrowse-img/sv_sheet_009",
-      "jbrowse-img/sv_sheet_013"
-    ],
-    "horizontal": false,
-    "gutter": 40,
-    "callouts": true
-  }
+  "homoeolog_synteny/wheat_vs_oat": {"parts":["multiway_synteny/wheat_homoeolog_selection","homoeolog_synteny/oat_homoeologs"],"horizontal":true,"callouts":false},
+  "multiway_synteny/ecoli_launch_from_selection": {"parts":["multiway_synteny/ecoli_launch_selection","multiway_synteny/ecoli_launch_dialog","multiway_synteny/ecoli_launch_result"],"horizontal":false,"callouts":false},
+  "mcscan_synteny/anchors_vs_simple": {"parts":["mcscan_synteny/anchors","mcscan_synteny/anchors_simple"],"horizontal":false,"callouts":false},
+  "genomes_synteny/ribbon_settings": {"parts":["genomes_synteny/ribbons_default","genomes_synteny/ribbons_curved"],"horizontal":false,"callouts":false},
+  "sv_synteny/color_by_attribute_steps": {"parts":["sv_synteny/color_by_attribute","sv_synteny/ortholog_colors"],"horizontal":true,"callouts":false},
+  "synteny_self_chry_palindromes": {"parts":["synteny_self_chry_palindromes_family","synteny_self_chry_palindromes_zoom"],"horizontal":false,"callouts":false},
+  "hic/faint_contacts": {"parts":["hic/percentile_off","hic/percentile_on"],"horizontal":false,"callouts":false},
+  "rnaseq/sort_spliced_first": {"parts":["rnaseq/deep_pileup_file_order","rnaseq/deep_pileup_spliced_first"],"horizontal":false,"callouts":false},
+  "rnaseq/hide_non_canonical": {"parts":["rnaseq/sashimi_all_junctions","rnaseq/sashimi_canonical_only"],"horizontal":false,"callouts":false},
+  "multirow/display_types_menu": {"parts":["multirow/display_types_pick","multirow/display_types_rows"],"horizontal":false,"callouts":false},
+  "methylation/hg002_snrpn_group_by_hp": {"parts":["methylation/hg002_snrpn_ungrouped","methylation/hg002_snrpn_grouped"],"horizontal":false,"callouts":false},
+  "methylation/hg002_snrpn_mod_modes": {"parts":["methylation/hg002_snrpn_marked_only","methylation/hg002_snrpn_fill_unmarked"],"horizontal":false,"callouts":false},
+  "ld/lct_sweep_two_scales": {"parts":["ld/lct_fst_scan","ld/lct_pooled_vs_panel"],"horizontal":false,"gutter":70,"callouts":true},
+  "horizontally_flip": {"parts":["horizontally_flip_before","horizontally_flip_after"],"horizontal":false,"callouts":false},
+  "cancer_sv/multihop_reads": {"parts":["cancer_sv/multihop_tumour_vs_normal","cancer_sv/multihop_split_view"],"horizontal":true,"callouts":true},
+  "cancer_sv/realigned_reads": {"parts":["cancer_sv/realigned_reads_reference","cancer_sv/realigned_reads_derivative"],"horizontal":true,"callouts":false},
+  "dog10k-diet-genes": {"parts":["dog10k-amy2b-duplication","dog10k-rnase1-insertion"],"horizontal":true,"callouts":false},
+  "dog10k-size-fst-scan": {"parts":["dog10k-size-fst-scan-genome","dog10k-size-fst-scan-igf1"],"horizontal":false,"gutter":120,"callouts":true},
+  "maf_summary_tier": {"parts":["maf_summary_zoomed_out","maf_summary_zoomed_in"],"horizontal":true,"callouts":false},
+  "alu_age/young_share": {"parts":["alu_age/chromosome","alu_age/binned"],"horizontal":false,"gutter":70,"callouts":true},
+  "pangenome/pggb_untangle_inversion": {"parts":["pangenome/pggb_untangle_rows","pangenome/pggb_untangle_dotplot"],"horizontal":false,"callouts":false},
+  "paper/cohort_views": {"parts":["paper/cohort_sv_multisample","paper/cohort_cnv"],"horizontal":false,"gutter":40,"callouts":true},
+  "pangenome/rgfa_launch_roundtrip": {"parts":["pangenome/rgfa_strain_launch","pangenome/rgfa_segment_neighbourhood"],"horizontal":true,"callouts":false},
+  "pangenome/graph_context": {"parts":["pangenome/graph_context_none","pangenome/graph_context_hop1"],"horizontal":true,"callouts":false},
+  "cookbook_color_by_type_two_ways": {"parts":["cookbook_color_by_type","cookbook_color_by_type_rows"],"horizontal":false,"callouts":false},
+  "jbrowse-img/sv_review_pair": {"parts":["jbrowse-img/sv_review_tumor","jbrowse-img/sv_review_normal","jbrowse-img/sv_review_derivative"],"horizontal":true,"callouts":true},
+  "jbrowse-img/sv_sheet_056": {"parts":["jbrowse-img/sv_sheet_056_tumor","jbrowse-img/sv_sheet_056_normal"],"horizontal":true,"callouts":false},
+  "jbrowse-img/sv_sheet_009": {"parts":["jbrowse-img/sv_sheet_009_tumor","jbrowse-img/sv_sheet_009_normal"],"horizontal":true,"callouts":false},
+  "jbrowse-img/sv_sheet_013": {"parts":["jbrowse-img/sv_sheet_013_tumor","jbrowse-img/sv_sheet_013_normal"],"horizontal":true,"callouts":false},
+  "jbrowse-img/sv_callset_sheet": {"parts":["jbrowse-img/sv_sheet_056","jbrowse-img/sv_sheet_009","jbrowse-img/sv_sheet_013"],"horizontal":false,"gutter":40,"callouts":true},
 }
 
 // The jb2export argv of each composite frame drawn without a browser.
 export const figureImgArgs: Record<string, string[]> = {
-  "jbrowse-img/sv_review_tumor": [
-    "breakpoint",
-    "--config",
-    "https://jbrowse.org/demos/cancer_sv/config.json",
-    "--assembly",
-    "hg38",
-    "--track",
-    "COLO829_tumor_ont",
-    "height:130",
-    "force:true",
-    "featureHeight:super-compact",
-    "--loc",
-    "chr3:25,358,511-25,359,711",
-    "--loc",
-    "chr10:58,716,962-58,718,162",
-    "--loc",
-    "chr12:72,272,512-72,273,712",
-    "--width",
-    "1000"
-  ],
-  "jbrowse-img/sv_review_normal": [
-    "breakpoint",
-    "--config",
-    "https://jbrowse.org/demos/cancer_sv/config.json",
-    "--assembly",
-    "hg38",
-    "--track",
-    "COLO829BL_normal_ont",
-    "height:130",
-    "force:true",
-    "featureHeight:super-compact",
-    "--loc",
-    "chr3:25,358,511-25,359,711",
-    "--loc",
-    "chr10:58,716,962-58,718,162",
-    "--loc",
-    "chr12:72,272,512-72,273,712",
-    "--width",
-    "1000"
-  ],
-  "jbrowse-img/sv_review_derivative": [
-    "--config",
-    "https://jbrowse.org/demos/cancer_sv/config.json",
-    "--assembly",
-    "der3_RARB_BICC1_TRHDE",
-    "--track",
-    "der3_segments",
-    "height:128",
-    "--track",
-    "reads_vs_der3",
-    "height:440",
-    "--loc",
-    "der3_RARB_BICC1_TRHDE:1-39,549",
-    "--width",
-    "1000"
-  ],
-  "jbrowse-img/sv_sheet_056_tumor": [
-    "breakpoint",
-    "--config",
-    "https://jbrowse.org/demos/cancer_sv/config.json",
-    "--assembly",
-    "hg38",
-    "--track",
-    "COLO829_tumor_ont",
-    "force:true",
-    "height:240",
-    "--loc",
-    "chr7:104844021-104845221",
-    "--loc",
-    "chr7:104971255-104972455",
-    "--width",
-    "1100"
-  ],
-  "jbrowse-img/sv_sheet_056_normal": [
-    "breakpoint",
-    "--config",
-    "https://jbrowse.org/demos/cancer_sv/config.json",
-    "--assembly",
-    "hg38",
-    "--track",
-    "COLO829BL_normal_ont",
-    "force:true",
-    "height:240",
-    "--loc",
-    "chr7:104844021-104845221",
-    "--loc",
-    "chr7:104971255-104972455",
-    "--width",
-    "1100"
-  ],
-  "jbrowse-img/sv_sheet_009_tumor": [
-    "breakpoint",
-    "--config",
-    "https://jbrowse.org/demos/cancer_sv/config.json",
-    "--assembly",
-    "hg38",
-    "--track",
-    "COLO829_tumor_ont",
-    "force:true",
-    "height:240",
-    "--loc",
-    "chr1:168054750-168055950",
-    "--loc",
-    "chr19:23849782-23850982",
-    "--width",
-    "1100"
-  ],
-  "jbrowse-img/sv_sheet_009_normal": [
-    "breakpoint",
-    "--config",
-    "https://jbrowse.org/demos/cancer_sv/config.json",
-    "--assembly",
-    "hg38",
-    "--track",
-    "COLO829BL_normal_ont",
-    "force:true",
-    "height:240",
-    "--loc",
-    "chr1:168054750-168055950",
-    "--loc",
-    "chr19:23849782-23850982",
-    "--width",
-    "1100"
-  ],
-  "jbrowse-img/sv_sheet_013_tumor": [
-    "breakpoint",
-    "--config",
-    "https://jbrowse.org/demos/cancer_sv/config.json",
-    "--assembly",
-    "hg38",
-    "--track",
-    "COLO829_tumor_ont",
-    "force:true",
-    "height:240",
-    "--loc",
-    "chr2:20405166-20406366",
-    "--loc",
-    "chr2:20408103-20409303",
-    "--width",
-    "1100"
-  ],
-  "jbrowse-img/sv_sheet_013_normal": [
-    "breakpoint",
-    "--config",
-    "https://jbrowse.org/demos/cancer_sv/config.json",
-    "--assembly",
-    "hg38",
-    "--track",
-    "COLO829BL_normal_ont",
-    "force:true",
-    "height:240",
-    "--loc",
-    "chr2:20405166-20406366",
-    "--loc",
-    "chr2:20408103-20409303",
-    "--width",
-    "1100"
-  ]
+  "jbrowse-img/sv_review_tumor": ["breakpoint","--config","https://jbrowse.org/demos/cancer_sv/config.json","--assembly","hg38","--track","COLO829_tumor_ont","height:130","force:true","featureHeight:super-compact","--loc","chr3:25,358,511-25,359,711","--loc","chr10:58,716,962-58,718,162","--loc","chr12:72,272,512-72,273,712","--width","1000"],
+  "jbrowse-img/sv_review_normal": ["breakpoint","--config","https://jbrowse.org/demos/cancer_sv/config.json","--assembly","hg38","--track","COLO829BL_normal_ont","height:130","force:true","featureHeight:super-compact","--loc","chr3:25,358,511-25,359,711","--loc","chr10:58,716,962-58,718,162","--loc","chr12:72,272,512-72,273,712","--width","1000"],
+  "jbrowse-img/sv_review_derivative": ["--config","https://jbrowse.org/demos/cancer_sv/config.json","--assembly","der3_RARB_BICC1_TRHDE","--track","der3_segments","height:128","--track","reads_vs_der3","height:440","--loc","der3_RARB_BICC1_TRHDE:1-39,549","--width","1000"],
+  "jbrowse-img/sv_sheet_056_tumor": ["breakpoint","--config","https://jbrowse.org/demos/cancer_sv/config.json","--assembly","hg38","--track","COLO829_tumor_ont","force:true","height:240","--loc","chr7:104844021-104845221","--loc","chr7:104971255-104972455","--width","1100"],
+  "jbrowse-img/sv_sheet_056_normal": ["breakpoint","--config","https://jbrowse.org/demos/cancer_sv/config.json","--assembly","hg38","--track","COLO829BL_normal_ont","force:true","height:240","--loc","chr7:104844021-104845221","--loc","chr7:104971255-104972455","--width","1100"],
+  "jbrowse-img/sv_sheet_009_tumor": ["breakpoint","--config","https://jbrowse.org/demos/cancer_sv/config.json","--assembly","hg38","--track","COLO829_tumor_ont","force:true","height:240","--loc","chr1:168054750-168055950","--loc","chr19:23849782-23850982","--width","1100"],
+  "jbrowse-img/sv_sheet_009_normal": ["breakpoint","--config","https://jbrowse.org/demos/cancer_sv/config.json","--assembly","hg38","--track","COLO829BL_normal_ont","force:true","height:240","--loc","chr1:168054750-168055950","--loc","chr19:23849782-23850982","--width","1100"],
+  "jbrowse-img/sv_sheet_013_tumor": ["breakpoint","--config","https://jbrowse.org/demos/cancer_sv/config.json","--assembly","hg38","--track","COLO829_tumor_ont","force:true","height:240","--loc","chr2:20405166-20406366","--loc","chr2:20408103-20409303","--width","1100"],
+  "jbrowse-img/sv_sheet_013_normal": ["breakpoint","--config","https://jbrowse.org/demos/cancer_sv/config.json","--assembly","hg38","--track","COLO829BL_normal_ont","force:true","height:240","--loc","chr2:20405166-20406366","--loc","chr2:20408103-20409303","--width","1100"],
 }
 
 export const videoLiveRefs: Record<string, string> = {

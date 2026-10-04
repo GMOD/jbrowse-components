@@ -145,6 +145,11 @@ export function captureFrame(
 ): AgentFrame {
   const instance = base.endsWith('/') ? base : `${base}/`
   const frame = name ? (figureFrames[name] ?? videoFrames[name]) : undefined
+  const waits = name ? figureFrames[name] : undefined
+  const waitFlags = [
+    ...(waits?.timeout ? [`--timeout ${waits.timeout}`] : []),
+    ...(waits?.allowUnsettled ? ['--allowUnsettled'] : []),
+  ]
   const all = ((name ? figureCallouts[name] : undefined) ?? []) as Callout[]
   const callouts =
     name && figureClicks[name]
@@ -157,6 +162,7 @@ export function captureFrame(
       `npx @jbrowse/capture --instance ${instance} \\`,
       `  --config ${new URL(config, base).href} \\`,
       ...(frame ? [`  --width ${frame.width} --height ${frame.height} \\`] : []),
+      ...(waitFlags.length ? [`  ${waitFlags.join(' ')} \\`] : []),
       `  --spec ${files.session}${callouts.length ? ` --annotations ${files.callouts}` : ''} -o ${files.image}`,
     ].join('\n'),
     notes: clickNotes(name, all.length - callouts.length),

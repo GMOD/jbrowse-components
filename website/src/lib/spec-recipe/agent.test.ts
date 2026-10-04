@@ -27,7 +27,10 @@ jest.mock('../liveLinks.generated.ts', () => {
   const atPixel = { type: 'text', text: 'here', x: 10, y: 20 }
   return {
     figureLiveRefs: { top: query, bottom: query },
-    figureFrames: { plain: { width: 900, height: 500 } },
+    figureFrames: {
+      plain: { width: 900, height: 500 },
+      slow: { width: 900, height: 500, timeout: 240000, allowUnsettled: true },
+    },
     videoFrames: {},
     figureCallouts: {
       plain: [onData, atPixel],
@@ -81,6 +84,14 @@ test("a clicked figure keeps only the callouts on its session's own data", () =>
     "The figure's clicks open the track menu; this command draws the view under it.",
     'It leaves out 3 callouts anchored to what the clicks bring up.',
   ])
+})
+
+// capture's own budget is 60s a stage, which most of these sessions outlast
+test("a figure's own waits ride along", () => {
+  expect(captureFrame(decoded, 'slow').command).toContain(
+    '--width 900 --height 500 \\\n  --timeout 240000 --allowUnsettled \\\n  --spec session.json',
+  )
+  expect(captureFrame(decoded, 'plain').command).not.toContain('--timeout')
 })
 
 test('a figure with nothing else has no callout file', () => {

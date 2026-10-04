@@ -18,6 +18,9 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { DEFAULT_TIMEOUT } from '../../products/jbrowse-capture/src/poll.ts'
+import { liveHref } from '../src/lib/code-base.ts'
+import { decodeSpecUrl } from '../src/lib/spec-recipe/decode.ts'
 import { checkOrWrite } from './check-utils.ts'
 import { pageActions } from './screenshot-spec-rules.ts'
 import { DEFAULT_VIEWPORT } from './screenshot-spec-types.ts'
@@ -30,6 +33,8 @@ import {
 import { videoFrame } from './video-spec-rules.ts'
 import { externalClips, pastedTrackConfigs, videoSpecs } from './video-specs.ts'
 
+import type { SessionUrlSpec } from './screenshot-specs.ts'
+
 const figureLiveRefs = Object.fromEntries(
   specs.flatMap(spec => {
     const ref = specLiveRef(spec)
@@ -38,6 +43,34 @@ const figureLiveRefs = Object.fromEntries(
     return ref === undefined ? [] : [[spec.name, ref] as const]
   }),
 )
+
+// The figures whose live link is a session spec, which are the ones the recipe
+// dialog has a capture command for
+const recipeSpecs = specs.filter((spec): spec is SessionUrlSpec => {
+  const ref = specLiveRef(spec)
+  return ref !== undefined && decodeSpecUrl(liveHref(ref)) !== undefined
+})
+
+const WAITS = new Set(['waitForAppSettled', 'waitForSelector', 'waitForText'])
+
+// What a recipe spec's capture command waits with: the spec's own ready budget
+// and waits, where they run past @jbrowse/capture's per-stage default, and
+// whether the figure is OF an unsettled state (an error page, a deliberately
+// too-large view), which capture otherwise refuses to write.
+function waitsOf(spec: SessionUrlSpec) {
+  const timeout = Math.max(
+    spec.readyTimeout ?? 0,
+    ...(spec.actions ?? [])
+      .filter(action => WAITS.has(action.type))
+      .map(action => action.timeout ?? 0),
+  )
+  return {
+    ...(timeout > DEFAULT_TIMEOUT ? { timeout } : {}),
+    ...(spec.allowUnsettled ? { allowUnsettled: true } : {}),
+  }
+}
+
+const recipeNames = new Set(recipeSpecs.map(spec => spec.name))
 
 const figureFrames = Object.fromEntries(
   specs.flatMap(spec =>
@@ -49,6 +82,7 @@ const figureFrames = Object.fromEntries(
             {
               width: spec.viewportWidth ?? DEFAULT_VIEWPORT.width,
               height: spec.viewportHeight ?? DEFAULT_VIEWPORT.height,
+              ...(recipeNames.has(spec.name) ? waitsOf(spec) : {}),
             },
           ] as const,
         ],
@@ -59,11 +93,8 @@ const figureFrames = Object.fromEntries(
 // to `--annotations`. A staged figure draws each stage's own, over frames its
 // session alone does not reach.
 const figureCallouts = Object.fromEntries(
-  specs.flatMap(spec =>
-    spec.mode === 'url' &&
-    specLiveRef(spec) !== undefined &&
-    !spec.stages?.length &&
-    spec.annotations?.length
+  recipeSpecs.flatMap(spec =>
+    !spec.stages?.length && spec.annotations?.length
       ? [[spec.name, spec.annotations] as const]
       : [],
   ),
@@ -74,10 +105,7 @@ const figureCallouts = Object.fromEntries(
 // clicks open or change, as the spec words it, or how many frames a staged
 // figure stacks. Absent where the actions only wait.
 const figureClicks = Object.fromEntries(
-  specs.flatMap(spec => {
-    if (spec.mode !== 'url' || specLiveRef(spec) === undefined) {
-      return []
-    }
+  recipeSpecs.flatMap(spec => {
     const stages = spec.stages?.length ?? 0
     return stages || pageActions(spec.actions).length
       ? [
@@ -172,6 +200,15 @@ const videoPastes = Object.fromEntries(
   pastedTrackConfigs.map(entry => [entry.video, entry.json] as const),
 )
 
+// One figure a line, so the recipe's data costs a line a figure rather than a
+// line a field
+function perLine(record: Record<string, unknown>) {
+  const lines = Object.entries(record).map(
+    ([name, value]) => `  ${JSON.stringify(name)}: ${JSON.stringify(value)},`,
+  )
+  return `{\n${lines.join('\n')}\n}`
+}
+
 const outFile = join(
   dirname(fileURLToPath(import.meta.url)),
   '../src/lib/liveLinks.generated.ts',
@@ -197,15 +234,17 @@ export const figureLiveLabels: Record<string, string> = ${JSON.stringify(screens
 export const figureSlowSpecs: string[] = ${JSON.stringify([...screenshotSlowSpecNames].sort(), null, 2)}
 
 // Each figure's capture viewport in CSS px, which the recipe's capture command
-// passes on so a reader's frame is the figure's.
+// passes on so a reader's frame is the figure's, and how it waits: past
+// capture's default where the spec's session settles slower, and taking the
+// frame anyway where the figure is of an unsettled state.
 export const figureFrames: Record<
   string,
-  { width: number; height: number }
+  { width: number; height: number; timeout?: number; allowUnsettled?: boolean }
 > = ${JSON.stringify(figureFrames, null, 2)}
 
 // Each single-frame figure's callouts, in the @jbrowse/capture \`--annotations\`
 // shape, for the recipe's capture command.
-export const figureCallouts: Record<string, object[]> = ${JSON.stringify(figureCallouts, null, 2)}
+export const figureCallouts: Record<string, object[]> = ${perLine(figureCallouts)}
 
 // What a figure's clicks open or change that its session does not hold, or the
 // frames a staged figure stacks — what the recipe's capture command, which
@@ -213,7 +252,7 @@ export const figureCallouts: Record<string, object[]> = ${JSON.stringify(figureC
 export const figureClicks: Record<
   string,
   { open?: string; change?: string; stages?: number }
-> = ${JSON.stringify(figureClicks, null, 2)}
+> = ${perLine(figureClicks)}
 
 // Each composed figure's parts and layout, for one capture command per frame.
 export const figureComposites: Record<
@@ -225,10 +264,10 @@ export const figureComposites: Record<
     sideMargin?: number
     callouts: boolean
   }
-> = ${JSON.stringify(figureComposites, null, 2)}
+> = ${perLine(figureComposites)}
 
 // The jb2export argv of each composite frame drawn without a browser.
-export const figureImgArgs: Record<string, string[]> = ${JSON.stringify(figureImgArgs, null, 2)}
+export const figureImgArgs: Record<string, string[]> = ${perLine(figureImgArgs)}
 
 export const videoLiveRefs: Record<string, string> = ${JSON.stringify(videoLiveRefs, null, 2)}
 
