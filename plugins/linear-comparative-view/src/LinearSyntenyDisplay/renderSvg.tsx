@@ -41,6 +41,7 @@ export async function renderSvg(model: SyntenySvgModel, opts?: PaintLayerOpts) {
   // Narrow the genuinely-nullable derived data (undefined until instanceData +
   // colors resolve); no data-size gate — drawSyntenyTrack draws nothing for an
   // instanceCount of 0, so an empty level paints empty naturally.
+  // A figure carries no hover or selection: both say where the pointer was.
   return data && params ? (
     <PaintLayer
       width={view.width}
@@ -50,7 +51,7 @@ export async function renderSvg(model: SyntenySvgModel, opts?: PaintLayerOpts) {
         drawSyntenyTrack(
           ctx,
           data,
-          params,
+          { ...params, hoveredFeatureId: 0, clickedFeatureId: 0 },
           view.width,
           view.overdrawPx,
           model.groundColor,

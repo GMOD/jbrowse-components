@@ -125,3 +125,19 @@ test('rasterizeLayers embeds a PNG instead of paths', async () => {
   expect(ops).toContain('scale(2,2)')
   expect(ops.filter(op => op === 'fill()')).toHaveLength(1)
 })
+
+// A hover and a selection say where the reader's pointer was, so a figure
+// carries neither: the ribbon exports as it draws with nothing under the
+// pointer.
+test('a hovered or clicked ribbon exports as an idle one', async () => {
+  const data = makeData([10, 100, 110, 20])
+  const idle = renderToString(await renderSvg(makeModel(data)))
+  const touched = renderToString(
+    await renderSvg(
+      makeModel(data, {
+        renderParams: { ...params, hoveredFeatureId: 1, clickedFeatureId: 1 },
+      }),
+    ),
+  )
+  expect(touched).toBe(idle)
+})
