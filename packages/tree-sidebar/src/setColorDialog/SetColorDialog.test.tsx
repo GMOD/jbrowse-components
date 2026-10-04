@@ -48,7 +48,6 @@ function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
   ]
   const rowColorSetting: RowColorSetting = overrides.rowColorSetting ?? {
     field: 'name',
-    scale: undefined,
     domain: [],
     range: [],
   }
@@ -152,7 +151,6 @@ test('a touched Each row keeps the unknown colour its config sets', () => {
   const model = fakeModel({
     rowColorSetting: {
       field: 'name',
-      scale: undefined,
       domain: ['a'],
       range: ['#f00'],
       unknown: '#cccccc',
@@ -187,7 +185,6 @@ describe('colored by an attribute', () => {
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
-        scale: undefined,
         domain: ['g2'],
         range: ['#abcdef'],
       },
@@ -262,7 +259,6 @@ describe('colored by an attribute', () => {
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
-        scale: undefined,
         domain: ['g2'],
         range: ['#abcdef'],
         unknown: '',
@@ -281,7 +277,6 @@ test('None edits the row colors, which stay without the palette', () => {
   const model = fakeModel({
     rowColorSetting: {
       field: 'name',
-      scale: undefined,
       domain: ['a'],
       range: ['#f00'],
       unknown: '',
@@ -304,7 +299,6 @@ test('None on a display dealing no palette writes the rows alone', () => {
     rowColorFields: ['group'],
     rowColorSetting: {
       field: 'group',
-      scale: undefined,
       domain: [],
       range: [],
     },
@@ -319,8 +313,7 @@ test('None on a display dealing no palette writes the rows alone', () => {
 })
 
 // A submit names a colour object only where the reader changed a colour, so a
-// reorder or relabel leaves one the panel cannot spell, a grey `unknown` or a
-// parked field, as the config wrote it.
+// reorder or relabel leaves the config's as it wrote it.
 describe('the colour object a submit passes', () => {
   test('none for an untouched panel', () => {
     const model = fakeModel()
@@ -372,7 +365,6 @@ test('a color by the display does not offer still shows as chosen', () => {
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'tissue',
-        scale: undefined,
         domain: [],
         range: [],
       },
@@ -505,7 +497,6 @@ describe('the Other rows swatch on a stacked display', () => {
     fakeModel({
       rowColorSetting: {
         field: 'name',
-        scale: undefined,
         domain: ['a'],
         range: ['#f00'],
         unknown: '#cccccc',
@@ -576,7 +567,6 @@ test('an attribute lists Other values with the rows no pair names, and colours t
     rowColorFields: ['group'],
     rowColorSetting: {
       field: 'group',
-      scale: undefined,
       domain: ['g2'],
       range: ['#abcdef'],
     },
@@ -608,7 +598,6 @@ test('the value table lists the values in the order the key does', () => {
     rowColorFields: ['group'],
     rowColorSetting: {
       field: 'group',
-      scale: undefined,
       domain: ['g2'],
       range: ['#abcdef'],
     },
@@ -629,7 +618,6 @@ describe('the Other values swatch', () => {
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
-        scale: undefined,
         domain: ['g2'],
         range: ['#abcdef'],
       },
@@ -690,7 +678,6 @@ describe('the Other values swatch', () => {
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
-        scale: undefined,
         domain: [],
         range: [],
         unknown: '',

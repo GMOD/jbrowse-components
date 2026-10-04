@@ -233,8 +233,8 @@ What else the mixin owns:
   removes the entry; a row the dialog never showed keeps its entry. Any other object is written as the dialog shows it, so
   a colour set on one row never stands for its value, and nothing is
   materialised. An order that moves no row is not written, and a submit whose
-  colour panel the reader left alone passes no `rowColor` object, so one the
-  panel cannot spell — a grey `unknown`, a parked field — stands as written.
+  colour panel the reader left alone passes no `rowColor` object, so the
+  config's own stands as written, its pairs in the order it lists them.
 - **A display's own colour rides above the rows, and is written on Submit.**
   `plotColor` is the quantitative display's two plot colours on one line
   (`PlotColorRow`): held in the dialog's local state and written in `submit()`

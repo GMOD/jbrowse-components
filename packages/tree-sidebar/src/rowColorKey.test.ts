@@ -215,7 +215,6 @@ test("dealtValueColors reads no row by name under unknown: ''", () => {
   const dealt = dealtValueColors(
     {
       field: 'name',
-      scale: undefined,
       domain: ['a'],
       range: ['#f00'],
       unknown: '',

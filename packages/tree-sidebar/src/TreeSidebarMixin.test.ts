@@ -520,7 +520,6 @@ describe('the row palette', () => {
     expect(display.rowColorFields).toEqual(['group'])
     const preview = display.rowColorsFor({
       field: 'group',
-      scale: undefined,
       domain: ['y'],
       range: ['#abcdef'],
     })
