@@ -10,6 +10,7 @@ import {
   rampDomain,
   rampLutOf,
 } from '@jbrowse/core/util/colorRamp'
+import { colorNotices } from '@jbrowse/core/util/colorScale'
 import {
   installPrerequisiteFetch,
   readFor,
@@ -175,6 +176,18 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           },
           HIC_FIELD_PRESETS,
         ) as ContinuousRef
+      },
+      /**
+       * #getter
+       * What the `color` object says that cannot paint as written, as the
+       * corner indicator lists it: the same lines `plotProblems` and
+       * `jbrowse validate` report.
+       */
+      get notices(): string[] {
+        return colorNotices(
+          colorSettingOf(self.configuration.color),
+          HIC_FIELD_PRESETS,
+        )
       },
       /**
        * #getter
