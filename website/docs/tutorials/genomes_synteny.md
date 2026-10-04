@@ -44,11 +44,11 @@ block, laid out in rows.
 
 Right-click any chain block and choose **Launch → Linear synteny view with
 \<assembly\>**. <!-- menu-path-ok --> The dialog frames the second panel. **Use
-CIGAR to map the current visible region to the target** reads the alignment's
-CIGAR to find the interval in the other genome that matches what is in view. The
-chain through _TNNT3_ spans the whole chromosome, so with the box unticked both
-panels frame all of chromosome 11. A reverse-strand block adds **Horizontally
-flip inverted targets**, ticked by default.
+CIGAR to map the current visible region to the target** finds, from the
+alignment, the interval in the other genome that matches what is in view. The
+chain through _TNNT3_ spans the chromosome, so with the box unticked both panels
+frame all of chromosome 11. A reverse-strand block adds **Horizontally flip
+inverted targets**, ticked by default.
 
 **Open in new view** appends the result below the linear view; **Replace current
 view** puts it in that view's place.
@@ -80,12 +80,11 @@ The palette button in the same header sets what ribbons are colored by.
 
 ## The TNNT3 rearrangement
 
-_TNNT3_ (fast skeletal troponin T) is the locus of Fig 5C in Aganezov et al.
-(2022). Against GRCh38 the region reads as an inversion plus a deletion that
-removes the long noncoding RNA _LINC01150_ in every individual. Against
-T2T-CHM13 that segment is intact, on the other side of _TNNT3_ and in the
-opposite orientation. Pick **Strand** from the palette button in the view
-header, and that segment is the one off-color ribbon.
+_TNNT3_ is the locus of Fig 5C in Aganezov et al. (2022). Against GRCh38 the
+region reads as an inversion plus a deletion that removes the long noncoding RNA
+_LINC01150_ in every individual. Against T2T-CHM13 that segment is intact, on
+the other side of _TNNT3_ and in the opposite orientation. Pick **Strand** from
+the header's palette button, and that segment is the one off-color ribbon.
 
 <Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each. LINC01150 sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13, and the blue ribbon joining the two shaded spans is the segment that moved." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
@@ -93,8 +92,7 @@ header, and that segment is the one off-color ribbon.
 
 The steps above, right-clicking a chain block and launching, work for any track
 under **Pairwise alignments** → **liftOver**, one per chain file UCSC publishes
-against the genome you are in. A close pair gives long collinear blocks, a
-distant one short scattered ones. A chain or PAF of your own opens the same way
+against the genome you are in. A chain or PAF of your own opens the same way
 once it is added as a synteny track:
 [HG002 haplotypes](/docs/tutorials/hg002_haplotypes) loads a chain, and
 [Synteny (pairwise minimap2)](/docs/tutorials/synteny_visualization) a PAF.
@@ -173,9 +171,9 @@ and mm39 is C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al.
 ## Comparing one person's two haplotypes at the 17q21.31 inversion
 
 hg38's multi-way track holds both haplotypes of the H9 T2T assembly, so a stack
-can put one person's two chromosomes under the reference. At 17q21.31, around
-_MAPT_, the H2 haplotype is a 900 kb inversion (Stefansson et al. 2005), and H9
-carries one copy of each orientation. On hg38 at
+can put one person's two chromosomes under the reference. At 17q21.31 the H2
+haplotype is a 900 kb inversion (Stefansson et al. 2005), and H9 carries one of
+each. On hg38 at
 [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org), turn on
 **hg38 vs 240 genomes (liftOver, multi-way)**, type
 `chr17:45,300,000-46,800,000` into the location box, and in **Lanes → Choose
