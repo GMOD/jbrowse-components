@@ -34,6 +34,7 @@ import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
 import { STRAND_GAP_PX } from './laneStack.ts'
 import {
   frameMagnification,
+  frameOpenings,
   frameReachPx,
   frameTickXs,
   groupSpansLanes,
@@ -109,6 +110,67 @@ function locOn(lane: Lane, refName: string, start: number, end: number) {
 
 function lines(...parts: (string | undefined)[]) {
   return parts.filter(Boolean).join('\n')
+}
+
+function holesOn(lane: Lane, refName: string) {
+  return lane.frame && lane.canon(lane.frame.refName) === lane.canon(refName)
+    ? frameOpenings(lane.frame).map(o => o.at)
+    : []
+}
+
+/**
+ * Adds the ribbon between `upper`'s `start1`..`end1` and `lower`'s
+ * `from2`..`to2`, which runs the other way when `from2 > to2`, cut wherever
+ * either lane opens a hole inside its stretch, so the hole stays open. The
+ * cut lands on the other lane in proportion.
+ */
+function addAcrossHoles(
+  builder: RibbonBuilder,
+  upper: Lane,
+  refName1: string,
+  start1: number,
+  end1: number,
+  lower: Lane,
+  refName2: string,
+  from2: number,
+  to2: number,
+  kind: number,
+  featureIdx: number,
+  color: number,
+) {
+  const length1 = end1 - start1
+  const toLower = (bp1: number) =>
+    from2 + ((bp1 - start1) / length1) * (to2 - from2)
+  const toUpper = (bp2: number) =>
+    start1 + ((bp2 - from2) / (to2 - from2)) * length1
+  const lo2 = Math.min(from2, to2)
+  const hi2 = Math.max(from2, to2)
+  const cuts = holesOn(upper, refName1)
+    .filter(at => at > start1 && at < end1)
+    .map(at => ({ bp1: at, bp2: toLower(at) }))
+  // where both lanes hole at one point, each keeps its own exact breakpoint
+  for (const at of holesOn(lower, refName2)) {
+    if (at > lo2 && at < hi2) {
+      const bp1 = toUpper(at)
+      const same = cuts.find(c => Math.abs(c.bp1 - bp1) < 1)
+      if (same) {
+        same.bp2 = at
+      } else {
+        cuts.push({ bp1, bp2: at })
+      }
+    }
+  }
+  cuts.sort((a, b) => a.bp1 - b.bp1)
+  const bounds = [{ bp1: start1, bp2: from2 }, ...cuts, { bp1: end1, bp2: to2 }]
+  for (let i = 1; i < bounds.length; i++) {
+    const a = bounds[i - 1]!
+    const b = bounds[i]!
+    const s1 = upper.spanOf(refName1, a.bp1, b.bp1)
+    const s2 = lower.spanOf(refName2, a.bp2, b.bp2)
+    if (s1 && s2) {
+      builder.add(s1, s2, kind, featureIdx, color)
+    }
+  }
 }
 
 function* lanePairs(lanes: Lane[], glyphHeight: number) {
@@ -303,11 +365,20 @@ function addAlignmentDetail(
       kind: number,
       color: number,
     ) => {
-      const s1 = upper.spanOf(refName, bp1Start, bp1End)
-      const s2 = lower.spanOf(mate.refName, bp2Start, bp2End)
-      if (s1 && s2) {
-        builder.add(s1, s2, kind, featureIdx, color)
-      }
+      addAcrossHoles(
+        builder,
+        upper,
+        refName,
+        bp1Start,
+        bp1End,
+        lower,
+        mate.refName,
+        bp2Start,
+        bp2End,
+        kind,
+        featureIdx,
+        color,
+      )
     }
     visitCigarRenderedSegments(
       ops,
@@ -513,7 +584,6 @@ export function buildRibbonGeometry({
       )
       const s2 = lower.spanOf(mate.refName, mate.start, mate.end)
       if (s1 && s2 && wideEnough(s1, s2, upper, lower)) {
-        const ordered: Span = link.get('strand') === -1 ? [s2[1], s2[0]] : s2
         const idx = targets.length
         linkTarget.set(link.id(), idx)
         const via = link.get('composedThrough') as
@@ -551,7 +621,21 @@ export function buildRibbonGeometry({
             mismatch,
           )
         if (!tiled) {
-          ribbons.add(s1, ordered, KIND_BASE, idx, fill)
+          const reversed = link.get('strand') === -1
+          addAcrossHoles(
+            ribbons,
+            upper,
+            link.get('refName'),
+            link.get('start'),
+            link.get('end'),
+            lower,
+            mate.refName,
+            reversed ? mate.end : mate.start,
+            reversed ? mate.start : mate.end,
+            KIND_BASE,
+            idx,
+            fill,
+          )
         }
       }
     }

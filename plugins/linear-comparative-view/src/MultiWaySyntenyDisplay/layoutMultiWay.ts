@@ -70,6 +70,25 @@ export interface MultiWayGroup {
   weight: number
 }
 
+/** make-pif --coarse's 10 kb bound, so the cut lands alike on either tier */
+export const SPLIT_AT_GAP_BP = 10_000
+
+/**
+ * `bp` of the anchor that the lane's sequence lacks at `at`: a deletion its
+ * alignment carries. The frame opens a hole there, so what follows sits under
+ * its own anchor position and every lane carrying the deletion shows it alike.
+ */
+export interface LaneOpening {
+  at: number
+  bp: number
+}
+
+const NO_OPENINGS: readonly LaneOpening[] = []
+
+/**
+ * `min` and `max` are in the opened coordinate, the lane's bp plus every
+ * opening before it, which is the lane's bp wherever it has no openings.
+ */
 export interface RowFrame {
   refName: string
   min: number
@@ -80,7 +99,98 @@ export interface RowFrame {
   fitMax: number
   alsoOn: string[]
   alsoOnMore: number
+  openings?: readonly LaneOpening[]
   morphFrom?: readonly { frame: RowFrame; weight: number }[]
+}
+
+/** An interval's start at an opening sits after the hole, all else before. */
+export function openedBp(
+  openings: readonly LaneOpening[],
+  bp: number,
+  intervalStart = false,
+) {
+  let out = bp
+  for (const { at, bp: hole } of openings) {
+    if (at < bp || (intervalStart && at === bp)) {
+      out += hole
+    } else {
+      break
+    }
+  }
+  return out
+}
+
+/** The lane bp at an opened coordinate; inside a hole, the hole's own `at`. */
+export function laneBpOfOpened(openings: readonly LaneOpening[], at: number) {
+  let shift = 0
+  for (const opening of openings) {
+    if (at <= opening.at + shift) {
+      break
+    }
+    if (at < opening.at + shift + opening.bp) {
+      return opening.at
+    }
+    shift += opening.bp
+  }
+  return at - shift
+}
+
+export function frameOpenings(frame: RowFrame) {
+  return frame.openings ?? NO_OPENINGS
+}
+
+/**
+ * Where two alignment pieces of a lane abut, or nearly, while their anchor
+ * ends sit at least `SPLIT_AT_GAP_BP` further apart. Named records are genes,
+ * whose spacing says nothing about a deletion.
+ */
+export function laneOpeningsOf(groups: MultiWayGroup[]) {
+  const pieces = new Map<
+    string,
+    { lane: MatePlacement; anchor: MultiWayPlacement }[]
+  >()
+  for (const group of groups) {
+    if (!isNamedRecord(group.feature)) {
+      for (const [assemblyName, placements] of group.mates) {
+        for (const lane of placements) {
+          const key = `${assemblyName}\u0000${lane.refName}`
+          let list = pieces.get(key)
+          if (!list) {
+            list = []
+            pieces.set(key, list)
+          }
+          list.push({ lane, anchor: group.anchor })
+        }
+      }
+    }
+  }
+  const byLane = new Map<string, LaneOpening[]>()
+  for (const [key, list] of pieces) {
+    list.sort((a, b) => a.lane.start - b.lane.start)
+    const openings: LaneOpening[] = []
+    for (let i = 1; i < list.length; i++) {
+      const left = list[i - 1]!
+      const right = list[i]!
+      const laneGap = right.lane.start - left.lane.end
+      const anchorGap =
+        left.lane.orientation < 0
+          ? left.anchor.start - right.anchor.end
+          : right.anchor.start - left.anchor.end
+      if (
+        left.lane.orientation === right.lane.orientation &&
+        left.anchor.refName === right.anchor.refName &&
+        laneGap >= 0 &&
+        anchorGap - laneGap >= SPLIT_AT_GAP_BP
+      ) {
+        openings.push({ at: left.lane.end, bp: anchorGap - laneGap })
+      }
+    }
+    if (openings.length) {
+      byLane.set(key, openings)
+    }
+  }
+  return (assemblyName: string, refName: string): readonly LaneOpening[] =>
+    byLane.get(`${assemblyName}\u0000${refName}`) ?? NO_OPENINGS
 }
 
 function matesOf(feature: Feature): SyntenyGroupedMate[] {
@@ -264,8 +374,8 @@ export function frameReach(frame: RowFrame) {
 /** `frameReach` in the lane's own px, ascending */
 export function frameReachPx(frame: RowFrame, width: number): Span {
   const { min, max } = frameReach(frame)
-  const a = rowFrameX(frame, min, width)
-  const b = rowFrameX(frame, max, width)
+  const a = openedX(frame, min, width)
+  const b = openedX(frame, max, width)
   return a <= b ? [a, b] : [b, a]
 }
 
@@ -279,9 +389,14 @@ export function frameTickXs(frame: RowFrame, interval: number, width: number) {
   const span = Math.min(...framesOf(frame).map(f => f.max - f.min))
   if (interval > 0 && span / interval <= MAX_LANE_TICKS) {
     const reach = frameReach(frame)
+    const openings = frameOpenings(frame)
+    const last = laneBpOfOpened(openings, reach.max)
     for (
-      let bp = Math.max(0, Math.ceil(reach.min / interval) * interval);
-      bp <= reach.max;
+      let bp = Math.max(
+        0,
+        Math.ceil(laneBpOfOpened(openings, reach.min) / interval) * interval,
+      );
+      bp <= last;
       bp += interval
     ) {
       xs.push(rowFrameX(frame, bp, width))
@@ -290,9 +405,13 @@ export function frameTickXs(frame: RowFrame, interval: number, width: number) {
   return xs
 }
 
-export function rowFrameX(frame: RowFrame, bp: number, width: number) {
-  const t = (bp - frame.min) / (frame.max - frame.min)
+function openedX(frame: RowFrame, opened: number, width: number) {
+  const t = (opened - frame.min) / (frame.max - frame.min)
   return frame.flipped ? width * (1 - t) : width * t
+}
+
+export function rowFrameX(frame: RowFrame, bp: number, width: number) {
+  return openedX(frame, openedBp(frameOpenings(frame), bp), width)
 }
 
 /** A px pair in the interval's own order, clipped to `frameReach`. */
@@ -303,12 +422,34 @@ export function frameSpan(
   width: number,
 ): Span | undefined {
   const { min, max } = frameReach(frame)
-  return doesIntersect2(min, max, Math.min(start, end), Math.max(start, end))
-    ? [
-        rowFrameX(frame, clamp(start, min, max), width),
-        rowFrameX(frame, clamp(end, min, max), width),
-      ]
-    : undefined
+  const openings = frameOpenings(frame)
+  const lo = openedBp(openings, Math.min(start, end), true)
+  const hi = Math.max(lo, openedBp(openings, Math.max(start, end)))
+  if (!doesIntersect2(min, max, lo, hi)) {
+    return undefined
+  }
+  const a = openedX(frame, clamp(lo, min, max), width)
+  const b = openedX(frame, clamp(hi, min, max), width)
+  return start <= end ? [a, b] : [b, a]
+}
+
+/** px spans of a stretch of the lane, cut at each hole the frame opens in it */
+export function frameSegmentsX(
+  frame: RowFrame,
+  start: number,
+  end: number,
+  width: number,
+): Span[] {
+  const openings = frameOpenings(frame)
+  const cuts = openings.filter(o => o.at > start && o.at < end).map(o => o.at)
+  const bounds = [start, ...cuts, end]
+  return bounds.slice(1).map((to, i) => {
+    const from = bounds[i]!
+    return [
+      openedX(frame, openedBp(openings, from, true), width),
+      openedX(frame, openedBp(openings, to), width),
+    ]
+  })
 }
 
 interface PlacementRun {
@@ -325,10 +466,17 @@ export function groupRunsOnRow(
   frame: RowFrame,
 ): PlacementRun[] {
   const { min, max } = frameExtent(frame)
+  const openings = frameOpenings(frame)
   const placements = (group.mates.get(assemblyName) ?? [])
     .filter(
       p =>
-        p.refName === frame.refName && doesIntersect2(min, max, p.start, p.end),
+        p.refName === frame.refName &&
+        doesIntersect2(
+          min,
+          max,
+          openedBp(openings, p.start, true),
+          openedBp(openings, p.end),
+        ),
     )
     .sort((a, b) => a.start - b.start)
   const runs: {
@@ -401,9 +549,10 @@ export function groupRunSpansOnRow(
 
 export function laneFetchWindow(frame: RowFrame) {
   const span = frame.max - frame.min
+  const openings = frameOpenings(frame)
   return {
-    min: Math.min(frame.min, frame.fitMax - span),
-    max: Math.max(frame.max, frame.fitMin + span),
+    min: Math.min(laneBpOfOpened(openings, frame.min), frame.fitMax - span),
+    max: Math.max(laneBpOfOpened(openings, frame.max), frame.fitMin + span),
   }
 }
 

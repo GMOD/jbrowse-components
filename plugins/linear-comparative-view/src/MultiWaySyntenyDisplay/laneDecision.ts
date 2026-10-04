@@ -4,14 +4,27 @@ import {
   weightedMedian,
 } from '../keepNearMedian.ts'
 import { NEARLY_ALL, preferIncumbent } from '../syntenyHysteresis.ts'
-import { groupRunsOnRow, rowFrameX } from './layoutMultiWay.ts'
+import {
+  frameOpenings,
+  groupRunsOnRow,
+  laneBpOfOpened,
+  laneOpeningsOf,
+  openedBp,
+  rowFrameX,
+} from './layoutMultiWay.ts'
 
 import type {
   FetchRegion,
+  LaneOpening,
   MultiWayGroup,
   MultiWayPlacement,
   RowFrame,
 } from './layoutMultiWay.ts'
+
+type OpeningsOf = (
+  assemblyName: string,
+  refName: string,
+) => readonly LaneOpening[]
 
 export interface AnchorCoord {
   refName: string
@@ -56,11 +69,15 @@ export function nudgeDecision(
   dxPx: number,
   bpPerPx: number,
   anchorReversed: boolean,
+  openings: readonly LaneOpening[] = [],
 ): LaneDecision {
   const mirrored = d.flipped !== anchorReversed
   return {
     ...d,
-    pivotLaneBp: d.pivotLaneBp + (mirrored ? 1 : -1) * dxPx * bpPerPx,
+    pivotLaneBp: laneBpOfOpened(
+      openings,
+      openedBp(openings, d.pivotLaneBp) + (mirrored ? 1 : -1) * dxPx * bpPerPx,
+    ),
   }
 }
 
@@ -201,7 +218,18 @@ export function computeRowFrame(
   unitBp = 0,
   incumbent?: FitIncumbent,
 ): RowFrame | undefined {
-  return fitLane(groups, assemblyName, unitBp, incumbent, undefined)?.frame
+  return fitLane(
+    groups,
+    assemblyName,
+    unitBp,
+    incumbent,
+    undefined,
+    laneOpeningsOf(groups),
+  )?.frame
+}
+
+function withOpenings(frame: RowFrame, openings: readonly LaneOpening[]) {
+  return openings.length ? { ...frame, openings } : frame
 }
 
 type FitIncumbent = Pick<
@@ -215,6 +243,7 @@ function fitLane(
   unitBp: number,
   incumbent: FitIncumbent | undefined,
   pinned: string | undefined,
+  openingsOf: OpeningsOf,
 ) {
   const released = incumbent?.pinned && incumbent.refName !== pinned
   const contig = pickContig(
@@ -232,23 +261,31 @@ function fitLane(
     unitBp,
     held && (held.fitMin + held.fitMax) / 2,
   )
+  const openings = openingsOf(assemblyName, contig.refName)
+  const openedLo = openedBp(openings, lo, true)
+  const openedHi = Math.max(openedLo + 1, openedBp(openings, hi))
   const rung =
-    unitBp > 0 ? pickRung(Math.max(hi - lo, unitBp) / unitBp, held?.rung) : 0
-  const span = unitBp > 0 ? rung * unitBp : hi - lo
-  const min = (lo + hi) / 2 - span / 2
+    unitBp > 0
+      ? pickRung(Math.max(openedHi - openedLo, unitBp) / unitBp, held?.rung)
+      : 0
+  const span = unitBp > 0 ? rung * unitBp : openedHi - openedLo
+  const min = (openedLo + openedHi) / 2 - span / 2
   return {
     rung,
     pinned: contig.refName === pinned,
-    frame: {
-      refName: contig.refName,
-      min,
-      max: min + span,
-      flipped: anchorOrderSign(groups, assemblyName, contig.refName) < 0,
-      fitMin: lo,
-      fitMax: hi,
-      alsoOn: contig.alsoOn,
-      alsoOnMore: contig.alsoOnMore,
-    },
+    frame: withOpenings(
+      {
+        refName: contig.refName,
+        min,
+        max: min + span,
+        flipped: anchorOrderSign(groups, assemblyName, contig.refName) < 0,
+        fitMin: lo,
+        fitMax: hi,
+        alsoOn: contig.alsoOn,
+        alsoOnMore: contig.alsoOnMore,
+      },
+      openings,
+    ),
   }
 }
 
@@ -399,9 +436,11 @@ function alignFrameTo(
 }
 
 function weightInside(placements: LanePlacement[], frame: RowFrame) {
+  const openings = frameOpenings(frame)
   let inside = 0
   for (const p of placements) {
-    if (p.center >= frame.min && p.center <= frame.max) {
+    const center = openedBp(openings, p.center)
+    if (center >= frame.min && center <= frame.max) {
       inside += p.weight
     }
   }
@@ -410,9 +449,12 @@ function weightInside(placements: LanePlacement[], frame: RowFrame) {
 
 function laneBpAt(frame: RowFrame, px: number, width: number) {
   const bpPerPx = (frame.max - frame.min) / width
-  return frame.flipped
-    ? frame.min + (width - px) * bpPerPx
-    : frame.min + px * bpPerPx
+  return laneBpOfOpened(
+    frameOpenings(frame),
+    frame.flipped
+      ? frame.min + (width - px) * bpPerPx
+      : frame.min + px * bpPerPx,
+  )
 }
 
 /** `pivotPx` and `unitBp` are the view's live pivot px and visible span. */
@@ -422,23 +464,28 @@ export function frameFromDecision(
   unitBp: number,
   width: number,
   anchorReversed = false,
+  openings: readonly LaneOpening[] = [],
 ): RowFrame {
   const span = d.rung * unitBp
   const bpPerPx = span / width
   const flipped = d.flipped !== anchorReversed
+  const pivot = openedBp(openings, d.pivotLaneBp)
   const min = flipped
-    ? d.pivotLaneBp - (width - pivotPx) * bpPerPx
-    : d.pivotLaneBp - pivotPx * bpPerPx
-  return {
-    refName: d.refName,
-    min,
-    max: min + span,
-    flipped,
-    fitMin: d.fitMin,
-    fitMax: d.fitMax,
-    alsoOn: d.alsoOn,
-    alsoOnMore: d.alsoOnMore,
-  }
+    ? pivot - (width - pivotPx) * bpPerPx
+    : pivot - pivotPx * bpPerPx
+  return withOpenings(
+    {
+      refName: d.refName,
+      min,
+      max: min + span,
+      flipped,
+      fitMin: d.fitMin,
+      fitMax: d.fitMax,
+      alsoOn: d.alsoOn,
+      alsoOnMore: d.alsoOnMore,
+    },
+    openings,
+  )
 }
 
 export interface DecideLaneFramesOpts {
@@ -455,6 +502,8 @@ export interface DecideLaneFramesOpts {
   pinned?: ReadonlyMap<string, string>
   pinnedFlips?: ReadonlyMap<string, LaneFlipPin>
   frozen?: ReadonlyMap<string, LaneDecision>
+  /** read off every fetched group, so a hole does not wait on the viewport */
+  openingsOf?: OpeningsOf
 }
 
 function sameDecision(a: LaneDecision, b: LaneDecision) {
@@ -492,6 +541,7 @@ export function decideLaneFrames({
   pinned,
   pinnedFlips,
   frozen,
+  openingsOf = laneOpeningsOf(groups),
 }: DecideLaneFramesOpts) {
   const out = new Map<string, LaneDecision | undefined>()
   let upperX = anchorX
@@ -507,6 +557,7 @@ export function decideLaneFrames({
           unitBp,
           width,
           anchorReversed,
+          openingsOf(assemblyName, kept.refName),
         )
         upperX = lanePlacementXs(
           lanePlacements(groups, assemblyName, frame),
@@ -523,6 +574,7 @@ export function decideLaneFrames({
       unitBp,
       prev,
       pinned?.get(assemblyName),
+      openingsOf,
     )
     if (fit === undefined || unitBp <= 0 || width <= 0) {
       out.set(assemblyName, undefined)
@@ -579,6 +631,7 @@ export function decideLaneFrames({
         unitBp,
         width,
         anchorReversed,
+        frameOpenings(aligned),
       )
       if (
         weightInside(placements, heldFrame) >=
@@ -626,6 +679,7 @@ export function decideLaneFrames({
             unitBp,
             width,
             anchorReversed,
+            frameOpenings(aligned),
           )
         : aligned
       upperX = lanePlacementXs(

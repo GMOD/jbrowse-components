@@ -233,6 +233,6 @@ between panels**) covers the star.
 directory is two or three mate lanes and a handful of groups. Nothing
 exercises: composed links against a CIGAR oracle; ordering semantics for a
 nameless source; `laneGeneAdapters` cost or correctness with hundreds of
-tracks; a window on a lane whose record carries an interior gap; the picker
+tracks; the picker
 above ~10 lanes; anything at 44 or 464 lanes beyond the height assertion.
 

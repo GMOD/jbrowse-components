@@ -6,8 +6,9 @@ kind: spec
 
 # MultiWaySyntenyDisplay: invariants, contract, ceiling
 
-MultiWaySyntenyDisplay is a per-window, anchor-star, one-affine-frame-per-genome
-lane stack inside an ordinary LinearGenomeView. Unbuilt and undecided work lives
+MultiWaySyntenyDisplay is a per-window, anchor-star, one-frame-per-genome lane
+stack inside an ordinary LinearGenomeView. A frame is affine between the holes it
+opens at the lane's deletions. Unbuilt and undecided work lives
 in
 [../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md),
 the design record this file cites by section name.
@@ -28,6 +29,20 @@ cost is linear in lanes.
   group (runs as placements of one group would draw a cross product). Every
   gutter draws the record's own ops: the anchor's from the record, a lower one's
   composed from the two records it sits between (`composeAlignmentOps`).
+- **A lane opens a hole at each deletion it carries against the anchor**
+  (`laneOpeningsOf`, `LaneOpening`): where two alignment pieces of the lane abut,
+  or nearly, while their anchor ends sit `SPLIT_AT_GAP_BP` or more further apart.
+  The frame's `min`/`max` are in the opened coordinate (lane bp plus every hole
+  before it), so what follows the hole sits under its own anchor stretch and every
+  carrier of one deletion draws the same gap, whoever its neighbour is. Before
+  this, rows were the lane's bp end to end: HPRC's CFHR3–CFHR1 carriers showed
+  27 kb of sequence then blank, and only the carrier under a non-carrier drew the
+  deletion, as one slanted ribbon. Holes come off every fetched group
+  (`model.laneOpenings`), not the viewport's, so one opens when both its pieces
+  arrive; the decision's `pivotLaneBp` stays lane bp, so a hole appearing
+  elsewhere moves only what lies beyond it. A lane-pair ribbon crossing a hole is
+  cut there (`addAcrossHoles`). Gene records never open: their spacing is no
+  deletion. An insertion opens nothing; its sequence draws as before.
 - **Strand means the record's strand**, never the drawn twist, in the config
   schema, the `Color ribbons by` help and `multiwayGeometry.ts`. A mate's
   `orientation` is the pair's strand, never the mate's transcription strand.

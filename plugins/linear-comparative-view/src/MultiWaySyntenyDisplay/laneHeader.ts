@@ -1,5 +1,7 @@
 import { assembleLocString, getBpDisplayStr } from '@jbrowse/core/util'
 
+import { frameOpenings, laneBpOfOpened } from './layoutMultiWay.ts'
+
 import type { Lane } from './laneStack.ts'
 
 export const LABEL_FONT_SIZE = 10
@@ -27,11 +29,12 @@ export function laneRegion(lane: Pick<Lane, 'frame' | 'canon'>) {
   if (!frame) {
     return undefined
   }
-  const start = Math.max(0, Math.round(frame.min))
+  const openings = frameOpenings(frame)
+  const start = Math.max(0, Math.round(laneBpOfOpened(openings, frame.min)))
   return {
     refName: lane.canon(frame.refName),
     start,
-    end: Math.max(start + 1, Math.round(frame.max)),
+    end: Math.max(start + 1, Math.round(laneBpOfOpened(openings, frame.max))),
   }
 }
 

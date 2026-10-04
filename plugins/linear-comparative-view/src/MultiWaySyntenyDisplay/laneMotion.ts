@@ -1,6 +1,6 @@
 import { MORPH_DURATION_MS, clamp, easeInOutCubic } from '@jbrowse/core/util'
 
-import { rowFrameX } from './layoutMultiWay.ts'
+import { frameOpenings, laneBpOfOpened, rowFrameX } from './layoutMultiWay.ts'
 
 import type { LaneDecision } from './laneDecision.ts'
 import type { RowFrame } from './layoutMultiWay.ts'
@@ -42,11 +42,12 @@ function drawnLine(
   e: number,
   width: number,
 ) {
-  const target = lineOf(to, to.min, width)
+  const ref = laneBpOfOpened(frameOpenings(to), to.min)
+  const target = lineOf(to, ref, width)
   let slope = e * target.slope
   let at = e * target.at
   for (const { frame, weight } of from) {
-    const line = lineOf(frame, to.min, width)
+    const line = lineOf(frame, ref, width)
     slope += (1 - e) * weight * line.slope
     at += (1 - e) * weight * line.at
   }
@@ -124,7 +125,7 @@ export function laneTransitionsAfter({
   drawnAtMs: number
   nowMs: number
   allowed: boolean
-  frameOf: (decision: LaneDecision) => RowFrame | undefined
+  frameOf: (decision: LaneDecision, lane: string) => RowFrame | undefined
   width: number
 }) {
   const out = new Map<string, LaneTransition>()
@@ -141,9 +142,9 @@ export function laneTransitionsAfter({
         prior,
         held ? laneMotionEase(held, drawnAtMs) : 1,
       )
-      const to = frameOf(decision)
+      const to = frameOf(decision, lane)
       const frames = from.flatMap(seed => {
-        const frame = frameOf(seed.decision)
+        const frame = frameOf(seed.decision, lane)
         return frame ? [{ frame, weight: seed.weight }] : []
       })
       if (to && frames.length === from.length && canMove(frames, to, width)) {

@@ -31,13 +31,13 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import MultiPairwiseSyntenyAdapterF from '../../comparative-adapters/src/MultiPairwiseSyntenyAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from '../../comparative-adapters/src/PairwiseIndexedPAFAdapter/index.ts'
-import { SPLIT_AT_GAP_BP } from '../src/MultiWaySyntenyDisplay/afterAttach.ts'
 import {
   computeRowFrame,
   decideLaneFrames,
   frameFromDecision,
 } from '../src/MultiWaySyntenyDisplay/laneDecision.ts'
 import {
+  SPLIT_AT_GAP_BP,
   groupFeatures,
   groupRunsOnRow,
   rowAssembliesOf,

@@ -20,7 +20,7 @@ import { laneGeneFeatures } from './geneGlyph.ts'
 import { sameDecisions } from './laneDecision.ts'
 import { staleLaneSpecs } from './laneFetch.ts'
 import { laneMotionEnd } from './laneMotion.ts'
-import { mergeContiguousRegions } from './layoutMultiWay.ts'
+import { SPLIT_AT_GAP_BP, mergeContiguousRegions } from './layoutMultiWay.ts'
 
 import type { MultiWayFeatures } from './MultiWayGetFeatures.ts'
 import type {
@@ -47,9 +47,6 @@ interface MultiWayFetchArgs {
 const DEPENDENT_FETCH_DELAY = 500
 
 const DESCRIBE_DEADLINE_MS = 20_000
-
-/** make-pif --coarse's 10 kb bound, so the cut lands alike on either tier */
-export const SPLIT_AT_GAP_BP = 10_000
 
 function fetchPhases(
   self: MultiWaySyntenyDisplayModel,

@@ -142,6 +142,7 @@ import {
   groupFeatures,
   laneFetchRegion,
   laneFetchRegionMaxBp,
+  laneOpeningsOf,
   mergeContiguousRegions,
   rowAssembliesOf,
   rowFrameX,
@@ -601,6 +602,15 @@ export function stateModelFactory(
       /** #getter */
       get groups() {
         return self.features ? groupFeatures(self.features) : []
+      },
+      /**
+       * #getter
+       * each lane's holes, read off every fetched group rather than the
+       * viewport's, so one appears once both its pieces arrive and not as
+       * the second scrolls in
+       */
+      get laneOpenings() {
+        return laneOpeningsOf(this.groups)
       },
       /** #getter */
       get featuresAreNameless() {
@@ -1322,7 +1332,10 @@ export function stateModelFactory(
        * #method
        * undefined once the pivot is off the displayed regions
        */
-      laneFrameOf(decision: LaneDecision): RowFrame | undefined {
+      laneFrameOf(
+        decision: LaneDecision,
+        assemblyName: string,
+      ): RowFrame | undefined {
         const pivot = self.lgv.bpToPx(decision.pivotAnchor)
         return pivot
           ? frameFromDecision(
@@ -1331,6 +1344,7 @@ export function stateModelFactory(
               self.visibleBpSpan,
               self.canvasWidth,
               self.anchorReversed,
+              self.laneOpenings(assemblyName, decision.refName),
             )
           : undefined
       },
@@ -1341,10 +1355,10 @@ export function stateModelFactory(
         const out = new Map<string, RowFrame | undefined>()
         for (const assemblyName of self.rowAssemblies) {
           const decision = self.laneDecisions.get(assemblyName)
-          const frame = decision && self.laneFrameOf(decision)
+          const frame = decision && self.laneFrameOf(decision, assemblyName)
           const motion = frame && self.laneTransitions.get(assemblyName)
           const morphFrom = motion?.from.flatMap(seed => {
-            const from = self.laneFrameOf(seed.decision)
+            const from = self.laneFrameOf(seed.decision, assemblyName)
             return from ? [{ frame: from, weight: seed.weight }] : []
           })
           out.set(
@@ -1417,6 +1431,7 @@ export function stateModelFactory(
           frozen,
           pinned: self.pinnedLaneContigs,
           pinnedFlips: self.pinnedLaneFlips,
+          openingsOf: self.laneOpenings,
         })
       },
     }))
@@ -1456,6 +1471,7 @@ export function stateModelFactory(
             dxPx,
             (base.rung * self.visibleBpSpan) / self.canvasWidth,
             self.anchorReversed,
+            self.laneOpenings(assemblyName, base.refName),
           )
           setFrozenDecision(assemblyName, nudged)
           self.laneDecisions = new Map(self.laneDecisions).set(
@@ -1585,7 +1601,8 @@ export function stateModelFactory(
             drawnAtMs: self.laneMotionClockMs,
             nowMs,
             allowed: animationAllowed(getSession(self).animationMode),
-            frameOf: decision => self.laneFrameOf(decision),
+            frameOf: (decision, assemblyName) =>
+              self.laneFrameOf(decision, assemblyName),
             width: self.canvasWidth,
           })
           setHalfway(lanesPastHalfway(self.laneTransitions, nowMs))

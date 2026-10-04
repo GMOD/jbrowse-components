@@ -4,9 +4,9 @@ import { GENE_LABEL_FONT_PX, GENE_LABEL_GAP_PX } from './laneLabels.ts'
 import { shownFrame } from './laneMotion.ts'
 import {
   frameReachPx,
+  frameSegmentsX,
   frameSpan,
   groupRunSpansOnRow,
-  rowFrameX,
 } from './layoutMultiWay.ts'
 
 import type {
@@ -285,14 +285,13 @@ export function buildLanes({
             : Infinity,
         baseline: isAnchor
           ? anchorRegionSpans.flatMap(span => clipSpan(span, reach))
-          : frame && contig
-            ? clipSpan(
-                [
-                  rowFrameX(frame, contig.start, width),
-                  rowFrameX(frame, contig.end, width),
-                ],
-                clip,
-              )
+          : frame
+            ? frameSegmentsX(
+                frame,
+                contig?.start ?? Number.NEGATIVE_INFINITY,
+                contig?.end ?? Number.POSITIVE_INFINITY,
+                width,
+              ).flatMap(span => clipSpan(span, clip))
             : [clip],
         strandRows: !strandRows
           ? undefined
