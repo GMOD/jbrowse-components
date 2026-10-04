@@ -7,7 +7,6 @@
 # to type, the menu path to take, the config to paste or the command to run.
 tutorials/analyze_trio.md 1
 tutorials/bxd_qtl.md 1
-tutorials/circular_synteny.md 2
 tutorials/dog10k_lof.md 1
 tutorials/dog10k_selection.md 1
 tutorials/genomes_basics.md 4
