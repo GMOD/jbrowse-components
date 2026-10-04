@@ -20,8 +20,9 @@ apart.
   plus a JBrowse instance to load them into (the
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
-- [modkit](https://github.com/nanoporetech/modkit/releases) for the aggregate
-  section only, a single-binary download from its releases page
+- [modkit](https://github.com/nanoporetech/modkit/releases), Oxford Nanopore's
+  tool for tallying per-read calls into per-CpG methylation fractions, for the
+  aggregate section only; a single-binary download
 - [WhatsHap](https://whatshap.readthedocs.io/), to haplotag reads of your own
   that have no `HP` tag
 
@@ -31,8 +32,9 @@ The files are region slices of public
 [ONT open data](https://labs.epi2me.io/dataindex/) on the `ont-open-data` S3
 bucket.
 
-- the HP1 bedMethyl from the `wf-human-variation` sup run on HG002, restricted
-  to the SNRPN locus and to `m` (5mC) rows:
+- the HP1 bedMethyl (per-CpG methylation fractions) from the
+  `wf-human-variation` sup run on HG002, restricted to the SNRPN locus and to
+  `m` (5mC) rows:
   https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.1.bedmethyl.gz
 - the HP2 bedMethyl from that same run:
   https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.2.bedmethyl.gz
@@ -47,7 +49,7 @@ bucket.
 - the haplotagged read slice beside it:
   https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam
 
-## The SNRPN imprinting center
+## Two parental alleles at the SNRPN imprinting center
 
 At the _SNRPN_ imprinting center on chr15, one parental allele is methylated and
 the other is unmethylated. The reads should split into two populations, and the
@@ -107,8 +109,8 @@ covers both modes, the probability threshold, and the cytosine-context submenu.
 <Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. Top, the MM tag's modified positions alone, red against bare read bodies. Bottom, the same reads with every unmarked CpG filled in, so a read with no methylation reads blue where it was blank." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
 
 The pileup over the CpG island interleaves methylated and unmethylated reads.
-Grouping the reads by their `HP` haplotype tag separates them, in
-[Splitting the alleles apart](#splitting-the-alleles-apart).
+[Splitting the alleles apart](#splitting-the-alleles-apart) groups them by their
+`HP` haplotype tag.
 
 ## Aggregate methylation with modkit bedMethyl
 
@@ -152,19 +154,19 @@ subtrack per type, with a vertical bar per CpG on a percent-methylation axis:
 Each long read is a single DNA molecule, so reads that have an `HP` haplotype
 tag (from WhatsHap, HiPhase, or ONT's `wf-human-variation`) can be separated by
 allele. Pick **Group by... → Tag...** from the track menu and enter `HP`. The
-dialog scans the reads in view, reports the values it found, and offers to color
-reads by the same tag; with methylation coloring on, that box starts unchecked
-and the coloring stays. The pileup then stacks into one band per haplotype, one
-methylated over the island and the other unmethylated, and a third band,
-`HP: none`, holds the reads the haplotagging could not assign.
+dialog scans the reads in view and reports the values it found. It also offers
+to color reads by the same tag; with methylation coloring on, that box starts
+unchecked and the coloring stays. The pileup then stacks into one band per
+haplotype, one methylated over the island and the other unmethylated, and a
+third band, `HP: none`, holds the reads the haplotagging could not assign.
 
 <Video src="/media/methylation/group_by_hp.mp4" caption="The split as the menu does it: the interleaved pileup, the tag dialog finding HP values 1 and 2 in the reads themselves, and one methylated band resolving over one unmethylated." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order, with the track menu open at Group by... → Tag.... Bottom: the same reads grouped by the HP tag, one band per haplotype and one for untagged reads." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 
-Next, load the two per-haplotype bedMethyl files above the reads as one track
-with a row per file. Pinning the axis at 0 to 100 puts both rows on one scale,
-so an unmethylated row stays flat:
+The two per-haplotype bedMethyl files from `--partition-tag HP` load as one
+track above the reads, with a row per file. Pinning the axis at 0 to 100 puts
+both rows on one scale, so an unmethylated row stays flat:
 
 ```json addtrack
 {
@@ -196,15 +198,12 @@ so an unmethylated row stays flat:
 }
 ```
 
-<Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. The per-haplotype profile on top, the reads grouped by HP below." src="/img/methylation/hg002_snrpn_combined.png" />
+<Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. The per-haplotype profile on top, the reads grouped by HP below, with the same haplotype methylated in both." src="/img/methylation/hg002_snrpn_combined.png" />
 
-The aggregate profile and the reads split the same way, with the same haplotype
-methylated in both.
-
-See the
-[alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for
-the Group-by dialog. `whatshap haplotag` writes the `HP` tag onto your own reads
-from a phased VCF:
+Reads of your own without an `HP` tag get one from `whatshap haplotag`, which
+reads a phased VCF. The
+[alignments track guide](/docs/user_guides/alignments_track#grouping-reads)
+covers the Group-by dialog:
 
 ```bash
 whatshap haplotag --reference reference.fa -o haplotagged.bam phased.vcf.gz reads.bam
