@@ -1,9 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import {
   colorChannelSlots,
   colorDomainEndsSlots,
-  colorDomainQuantileSlot,
-  colorRampSlots,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -31,7 +30,9 @@ export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
  * `log` scale onto a named `scheme`. An unset `domainMax` follows the loaded
  * counts, saturating at their `domainQuantile`, the 95th percentile by
  * default, or at their maximum at a quantile of 1; setting it gives every
- * zoom, and every track that sets the same number, one scale.
+ * zoom, and every track that sets the same number, one scale. The slots are
+ * the shared colour object's, so `jbrowse validate` and "Edit plot..." judge
+ * them as they judge any other display's.
  *
  * #example
  * ```js
@@ -44,6 +45,15 @@ export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
 export const hicColorConfigSchema = ConfigurationSchema(
   'HicColor',
   {
+    ...colorChannelSlots({
+      scales: HIC_COLOR_SCALES,
+      scaleName: 'HicColorScale',
+      fieldType: 'string',
+      field: "count, each bin's contact count",
+      fieldDefault: 'count',
+      scale:
+        'linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear',
+    }),
     /**
      * #slot field
      */
@@ -54,22 +64,11 @@ export const hicColorConfigSchema = ConfigurationSchema(
       description: "count, each bin's contact count",
     },
     /**
-     * #slot scale
-     */
-    scale: colorChannelSlots({
-      scales: HIC_COLOR_SCALES,
-      scaleName: 'HicColorScale',
-      fieldType: 'string',
-      field: HIC_COLOR_FIELD,
-      scale:
-        'linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear',
-    }).scale,
-    /**
      * #slot scheme
      */
     scheme: {
-      ...colorRampSlots.scheme,
       type: 'stringEnum',
+      model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
       defaultValue: DEFAULT_HIC_COLOR_SCHEME,
       description:
         'the named ramp counts run across; juicebox fades from transparent to red',
@@ -84,14 +83,14 @@ export const hicColorConfigSchema = ConfigurationSchema(
       description:
         "turns the scheme's ramp round; unset reverses a scheme dark at its low end",
     },
+    ...colorDomainEndsSlots,
     /**
      * #slot domainMin
      */
     domainMin: {
-      ...colorDomainEndsSlots.domainMin,
+      type: 'maybeNumber',
       description: 'the bottom of the scale; unset is 0',
     },
-    domainMax: colorDomainEndsSlots.domainMax,
     /**
      * #slot domainQuantile
      * What an unset `domainMax` follows: the loaded counts' quantile, `0.95`
@@ -100,9 +99,8 @@ export const hicColorConfigSchema = ConfigurationSchema(
      * ramp and `scales.y` take.
      */
     domainQuantile: {
-      ...colorDomainQuantileSlot.domainQuantile,
+      type: 'number',
       defaultValue: 0.95,
-      advanced: false,
       description:
         'the quantile of the loaded counts an unset domainMax follows; 1 is their maximum',
     },

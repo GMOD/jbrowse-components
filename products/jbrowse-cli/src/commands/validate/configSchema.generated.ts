@@ -8131,13 +8131,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
+        "field": {
+          "description": "count, each bin's contact count.",
+          "const": "count",
+          "default": "count"
+        },
         "scale": {
-          "description": "linear, or log2 of the count, which lifts sparse long-range bins off the floor.",
+          "description": "linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear.",
           "enum": [
             "linear",
             "log"
-          ],
-          "default": "linear"
+          ]
         },
         "scheme": {
           "description": "the named ramp counts run across; juicebox fades from transparent to red.",
@@ -8160,7 +8164,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean"
         },
         "domainMin": {
-          "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+          "description": "the bottom of the scale; unset is 0.",
           "type": "number"
         },
         "domainMax": {
