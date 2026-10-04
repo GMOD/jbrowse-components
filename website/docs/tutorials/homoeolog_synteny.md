@@ -9,16 +9,18 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
 ---
 
-An allopolyploid has several near-complete copies of its own genome, so one
-assembly goes on both axes of a dotplot. jcvi chains a protein self-alignment
-into syntenic anchors, `kaks_from_pairs.py` measures dN and dS on each anchor,
-and `color: { field: 'dnds' }` paints selection pressure across the whole
-karyotype.
+Hexaploid oat has three near-complete copies of its genome, one from each grass
+that hybridized to make it, so most of its genes exist three times. We draw oat
+against itself in a dotplot from the gene pairs between those copies, and colour
+each pair by how far it has diverged at silent sites (dS) and at
+protein-changing ones (dN). The two subgenomes from closely related ancestors
+should pair at a lower dS than either does with the third. jcvi finds the pairs
+from a protein self-alignment, and `kaks_from_pairs.py` measures the rates.
 
 ## Prerequisites
 
-- a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
-  file by path, [Web](/docs/quickstart_web) through **Add track**
+- a JBrowse to open the files in: [Desktop](/docs/quickstart_desktop) takes a
+  local file by path, [Web](/docs/quickstart_web) through **Add track**
 - [jcvi](https://github.com/tanghaibao/jcvi)
 - [DIAMOND](https://github.com/bbuchfink/diamond)
 - python3 with [biopython](https://biopython.org/)
@@ -53,7 +55,7 @@ The karyotype shows where the copies sit, and a segment moved between groups
 leaves the diagonal. dN/dS measures the selection pressure on each pair of
 copies, and the dotplot draws it as a colour.
 
-## Producing the data
+## Producing the homoeolog table
 
 ### Gene models, a proteome, and chromosome sizes
 
@@ -111,10 +113,13 @@ picks the file up by name and skips its alignment step.
 Chaining keeps an anchor only where its neighbours agree, which removes the
 off-diagonal noise of gene families' best hits. A self-comparison also chains
 the tandem and segmental duplicates within each subgenome; a homoeolog pair has
-its ends on different subgenomes, so the script filters on the chromosome name.
+its ends on different subgenomes, so the script keeps the anchors whose two
+chromosomes have different subgenome letters and writes them, two transcript ids
+per line, to `oat.pairs.tsv`.
 
-Take `oat.oat.anchors`, not `oat.oat.lifted.anchors`, for the reason
-[selection pressure](/docs/tutorials/selection_pressure#dn-and-ds) gives.
+Take `oat.oat.anchors` and skip `oat.oat.lifted.anchors`. Liftover recruits
+extra pairs near an established block, and their dS runs far above the chained
+ones', which marks them as paralogs.
 
 ### dN and dS on each anchor
 
@@ -139,10 +144,12 @@ method and the filters.
 
 ## Loading the blocks table in JBrowse
 
-The output is a two-column pair table with the two rates after it, which is the
-`.blocks` shape [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track)
-reads. A self-comparison names one assembly twice, in `blockAssemblies`, in the
-track's `assemblyNames`, and in both entries of `bedLocations`:
+The output is a two-column pair table with four columns after it, dN, dS, the
+synonymous substitution count and a Fisher exact p, which is the `.blocks` shape
+[`MCScanBlocksAdapter`](/docs/config_guides/synteny_track) reads. The script
+copies it to `oat.homoeologs.blocks` and gzips that and `oat.bed` for the track.
+A self-comparison names one assembly twice, in `blockAssemblies`, in the track's
+`assemblyNames`, and in both entries of `bedLocations`:
 
 ```json addtrack
 {
@@ -168,9 +175,10 @@ button's **dN/dS**, a ramp with 1 at its middle and 2 at its top. `syn_subs` and
 **Add → Dotplot view** with oat on both axes opens the track as a dotplot, and
 the session [below](#checking-the-rates-against-the-raw-data) does the same.
 
-## Checking the rates against the raw data
+## Colouring the anchors by dS, with A-D pairs as the control {#checking-the-rates-against-the-raw-data}
 
-The [script](#reproduce-it-end-to-end) ends on the numbers behind the picture.
+The [script](#reproduce-it-end-to-end) ends by printing the median dS for each
+subgenome pair, the numbers behind the picture below.
 
 The control is dS. Oat's A and D subgenomes descend from closely related diploid
 _Avena_ species and its C subgenome from a more distant one, so A-D pairs should
@@ -231,17 +239,25 @@ one dS wherever the view goes; the menu has no field for them:
 
 <Figure caption="The oat self-alignment over groups 4, 5 and 7, each anchor coloured by dS on a pinned ramp. The cells pairing an A chromosome with a D one sit lower on the ramp than those pairing either with C." src="/img/homoeolog_synteny/oat_ds.png" links="Open this view=homoeolog_synteny/oat_ds" />
 
-Almost every pair is blue, and `fisher_p` supports the great majority. A ratio
-over 1 between copies this recently separated rests on few substitutions, and
-the count clearing the test is close to what chance gives. The
-[primate walkthrough](/docs/tutorials/selection_pressure) goes through that
-arithmetic on a locus small enough to check by eye.
+Switched to **dN/dS** on the palette button, almost every pair draws below 1 on
+the ramp. A ratio over 1 between copies this recently separated rests on few
+substitutions; the [primate walkthrough](/docs/tutorials/selection_pressure)
+works through that arithmetic on a locus small enough to check by eye.
 
 ## Reproduce it end to end
 
 [`build_oat_homoeologs.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_oat_homoeologs.sh)
 runs everything above and writes a `config.json` with the assembly, the track
-and a dotplot session.
+and a dotplot session:
+
+1. Turn the GFF3 into a BED of one primary transcript per gene on the 21
+   chromosomes, and translate the CDS into a proteome keyed on the same ids.
+2. Align the proteome against itself with DIAMOND and chain the hits with jcvi,
+   with `--self_remove 100` so the A-D homoeologs survive.
+3. Keep the chained anchors whose two genes sit on different subgenomes, and
+   measure dN and dS on each.
+4. Print the median dS per subgenome pair, the control the figure is read
+   against, and write the config.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_oat_homoeologs.sh

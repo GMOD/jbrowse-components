@@ -260,7 +260,8 @@ if [ ! -f oat.kaks.tsv ]; then
   mv oat.kaks.tsv.part oat.kaks.tsv
 fi
 
-# The pair table the adapter loads: the two transcript ids, then the two rates.
+# The pair table the adapter loads: the two transcript ids, then dN, dS, the
+# synonymous substitution count and the Fisher p.
 # A pair with no measurement is dropped rather than written, since it would
 # otherwise draw with no colour, indistinguishable from one whose ratio happens
 # to sit at the ramp's bottom.
@@ -350,7 +351,7 @@ cat > track.json <<'JSON'
     "blockAssemblies": ["oat", "oat"],
     "bedLocations": [{ "uri": "oat.bed.gz" }, { "uri": "oat.bed.gz" }],
     "assemblyNames": ["oat", "oat"],
-    "attributeColumns": ["dn", "ds"]
+    "attributeColumns": ["dn", "ds", "syn_subs", "fisher_p"]
   }
 }
 JSON
