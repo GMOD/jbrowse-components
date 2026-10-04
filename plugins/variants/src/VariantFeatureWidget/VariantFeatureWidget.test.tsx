@@ -84,6 +84,27 @@ test('shows the span for an SVLEN the header did not declare Integer', () => {
   expect(container.textContent).not.toContain('<DUP> (')
 })
 
+test("pairs each tandem repeat ALT with its own runs' length, not the reference's SVLEN", () => {
+  const { container } = renderWidget({
+    uniqueId: 'kiv2',
+    refName: 'chr6',
+    start: 160616002,
+    end: 160616032,
+    REF: 'A',
+    ALT: ['<CNV:TR>', '<CNV:TR>'],
+    INFO: {
+      SVLEN: [30, 30],
+      RN: [1, 1],
+      RUS: ['ACGTACGTAC', 'ACGTACGTAC'],
+      RUC: [2, 9],
+      RB: [20, 90],
+    },
+  })
+  expect(container.textContent).toContain('<CNV:TR> (20bp)')
+  expect(container.textContent).toContain('<CNV:TR> (90bp)')
+  expect(container.textContent).not.toContain('(30bp)')
+})
+
 test('shows the mate breakpoint, not a span, for a translocation', () => {
   const { container } = renderWidget({
     uniqueId: 'hello',

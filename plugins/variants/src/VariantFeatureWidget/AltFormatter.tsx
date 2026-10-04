@@ -7,35 +7,35 @@ import { getMinimalDesc } from '../VcfFeature/util.ts'
 
 function getDetail({
   value,
-  svlen,
+  bp,
   mate,
 }: {
   value: string
-  svlen?: number
+  bp?: number
   mate?: string
 }) {
   if (value === '<TRA>') {
     return mate === undefined ? '' : ` (${mate})`
   }
-  return value.startsWith('<') && svlen !== undefined
-    ? ` (${getBpDisplayStr(Math.abs(svlen))})`
+  return value.startsWith('<') && bp !== undefined
+    ? ` (${getBpDisplayStr(bp)})`
     : ''
 }
 
 export default function AltFormatter({
   value,
   refString,
-  svlen,
+  bp,
   mate,
 }: {
   value: string
   refString: string
-  svlen?: number
+  bp?: number
   mate?: string
 }) {
   const [show, setShow] = useState(false)
   const alt = getMinimalDesc(refString, value)
-  const detail = getDetail({ value, svlen, mate })
+  const detail = getDetail({ value, bp, mate })
   return alt !== value ? (
     <div>
       <ActionLink

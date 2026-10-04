@@ -1,9 +1,17 @@
+import {
+  IUPAC,
+  TANDEM_REPEAT,
+  numbers,
+  runsBp,
+  strings,
+  tandemAlleles,
+} from '../../shared/tandemRepeatRuns.ts'
+
+import type { ParsedRun } from '../../shared/tandemRepeatRuns.ts'
 import type { VCFFeatureSerialized } from '../types.ts'
 
 // A tandem repeat's alleles as the view draws them, read off one VCF 4.5
-// <CNV:TR> record. Each ALT allele states its runs: RN says how many
-// RUS/RUL/RUC/RB entries each allele takes, and RUB holds one entry per copy of
-// every run. A sample's GT picks its alleles.
+// <CNV:TR> record's runs. A sample's GT picks its alleles.
 
 // `count` copies of one unit, which indexes TandemRepeat.units
 export interface RepeatRun {
@@ -56,82 +64,7 @@ function info(f: VCFFeatureSerialized, name: string): unknown {
   return f.INFO?.[name]
 }
 
-// A list field parsed, or as the comma-joined text a VCF column holds
-function numbers(value: unknown) {
-  const raw: unknown[] = Array.isArray(value)
-    ? value
-    : String(value ?? '').split(',')
-  return raw.map(one => {
-    const n =
-      one === '' || one === null || one === undefined ? NaN : Number(one)
-    return Number.isFinite(n) ? n : undefined
-  })
-}
-
-function strings(value: unknown) {
-  const raw: unknown[] = Array.isArray(value)
-    ? value
-    : String(value ?? '').split(',')
-  return raw.map(one => {
-    const text = String(one ?? '').trim()
-    return text === '' || text === '.' ? undefined : text
-  })
-}
-
-const IUPAC = /^[ACGTURYSWKMBDHVN]+$/i
-const TANDEM_REPEAT = '<CNV:TR>'
-
 export const MAX_ROWS = 30
-
-interface ParsedRun {
-  key: string
-  length: number
-  sequence?: string
-  count: number
-  bp: number
-  copyBp?: number[]
-}
-
-// Each ALT allele's runs; undefined for an allele that is not <CNV:TR> or has a
-// run stating no unit
-function tandemAlleles(f: VCFFeatureSerialized) {
-  const alts = strings(f.ALT)
-  const rn = numbers(info(f, 'RN'))
-  const rus = strings(info(f, 'RUS'))
-  const rul = numbers(info(f, 'RUL'))
-  const ruc = numbers(info(f, 'RUC'))
-  const rb = numbers(info(f, 'RB'))
-  const rub = numbers(info(f, 'RUB')).filter(bp => bp !== undefined)
-  const counted = ruc.every(Number.isInteger)
-  let k = 0
-  let copy = 0
-  return alts.map((alt, i) => {
-    const n = rn[i] ?? (alt === TANDEM_REPEAT ? 1 : 0)
-    const runs: ParsedRun[] = []
-    for (let j = 0; j < n; j++, k++) {
-      const stated = rus[k]
-      const sequence = stated && IUPAC.test(stated) ? stated : undefined
-      const length = rul[k] ?? sequence?.length
-      const bp = rb[k]
-      const count =
-        ruc[k] ?? (length && bp !== undefined ? bp / length : undefined)
-      if (length && count !== undefined && count > 0) {
-        const copyBp =
-          counted && rub.length > 0 ? rub.slice(copy, copy + count) : undefined
-        runs.push({
-          key: sequence ?? String(length),
-          length,
-          ...(sequence ? { sequence } : {}),
-          count,
-          bp: bp ?? Math.round(length * count),
-          ...(copyBp?.length === count ? { copyBp } : {}),
-        })
-      }
-      copy += count ?? 0
-    }
-    return alt === TANDEM_REPEAT && runs.length === n ? runs : undefined
-  })
-}
 
 function unitsOf(alleles: (ParsedRun[] | undefined)[]) {
   const units = new Map<string, RepeatUnit & { key: string }>()
@@ -199,7 +132,7 @@ function sampleAlleles(
       }
       return [
         runs
-          ? { k, altIndex: i, bp: runs.reduce((s, r) => s + r.bp, 0), runs }
+          ? { k, altIndex: i, bp: runsBp(runs), runs }
           : { k, altIndex: i, bp: referenceBp },
       ]
     })
@@ -234,7 +167,7 @@ function byAlleleOf(
         ? [
             {
               label: `ALT ${i + 1}`,
-              bp: runs.reduce((s, r) => s + r.bp, 0),
+              bp: runsBp(runs),
               altIndex: i + 1,
               runs,
             },
@@ -262,7 +195,7 @@ export function tandemRepeatOf(
   if (!f.ALT?.includes(TANDEM_REPEAT)) {
     return undefined
   }
-  const alleles = tandemAlleles(f)
+  const alleles = tandemAlleles(f.ALT, f.INFO)
   if (!alleles.some(runs => runs !== undefined)) {
     return undefined
   }
@@ -286,7 +219,7 @@ export function tandemRepeatOf(
             ? [
                 {
                   label: `ALT ${i + 1}`,
-                  bp: runs.reduce((s, r) => s + r.bp, 0),
+                  bp: runsBp(runs),
                   altIndex: i + 1,
                   runs,
                 },

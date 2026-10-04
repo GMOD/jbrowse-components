@@ -110,6 +110,25 @@ test('INS feature with SVLEN when END not available', () => {
   expect(f.get('description')).toEqual('<INS> 500bp')
 })
 
+// VCF 4.5 makes a <CNV:TR> record's SVLEN the reference allele's length, the
+// same for every ALT; each allele's own length is its runs' RB summed.
+test('each tandem repeat allele is labelled by its own runs, not by SVLEN', () => {
+  const f = createFeature(
+    'chr6\t160616002\tKIV-2\tA\t<CNV:TR>,<CNV:TR>\t.\t.\tSVLEN=30751,30751;RN=2,1;RUS=ACGTACGTAC,ACGTTCGTAC,ACGTACGTAC;RUC=2,3,9;RB=20,29,90',
+  )
+
+  expect(f.get('end')).toEqual(160616002 + 30751)
+  expect(f.get('description')).toEqual('<CNV:TR> 49bp,<CNV:TR> 90bp')
+})
+
+test('a tandem repeat allele that states no runs is left bare', () => {
+  const f = createFeature(
+    'chr6\t160616002\tKIV-2\tA\t<CNV:TR>,<CNV:TR>\t.\t.\tSVLEN=30751,30751',
+  )
+
+  expect(f.get('description')).toEqual('<CNV:TR>,<CNV:TR>')
+})
+
 test('DEL with missing SVLEN falls back to REF length instead of NaN end', () => {
   const f = createFeature(
     'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tSVLEN=.;SVTYPE=DEL',

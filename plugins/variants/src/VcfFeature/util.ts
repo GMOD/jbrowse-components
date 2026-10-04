@@ -2,6 +2,11 @@ import { getBpDisplayStr, max, toLocale } from '@jbrowse/core/util'
 import { isBreakend } from '@jbrowse/core/util/svAlt'
 
 import { GENOTYPE_SPLITTER as genotypeDelimRegex } from '../shared/constants.ts'
+import {
+  TANDEM_REPEAT,
+  runsBp,
+  tandemAlleles,
+} from '../shared/tandemRepeatRuns.ts'
 
 import type VCF from '@gmod/vcf'
 import type { Variant } from '@gmod/vcf'
@@ -144,23 +149,42 @@ export function getTraMate(info?: Record<string, unknown>): string | undefined {
     : undefined
 }
 
+// The bases each symbolic ALT states for itself, or undefined. A tandem
+// repeat's are its runs summed: VCF 4.5 makes its SVLEN the reference allele's
+// length, the same for every ALT.
+export function symbolicAlleleBp(
+  alts: string[],
+  info?: Record<string, unknown>,
+) {
+  const runs = alts.includes(TANDEM_REPEAT)
+    ? tandemAlleles(alts, info)
+    : undefined
+  const svlen = Array.isArray(info?.SVLEN) ? info.SVLEN : undefined
+  return alts.map((alt, i) => {
+    if (alt === TANDEM_REPEAT) {
+      const own = runs?.[i]
+      return own ? runsBp(own) : undefined
+    }
+    const len = parseFiniteNumber(svlen?.[i])
+    return len === undefined ? undefined : Math.abs(len)
+  })
+}
+
 function formatGroupDescription(
   ref: string,
   alts: string[],
   info?: Record<string, unknown>,
 ): string {
   if (alts.every(isSymbolic)) {
-    const svlenArr = Array.isArray(info?.SVLEN) ? info.SVLEN : undefined
+    const bps = symbolicAlleleBp(alts, info)
     return alts
       .map((a, i) => {
         if (a === '<TRA>') {
           const mate = getTraMate(info)
           return mate === undefined ? a : `<TRA> ${mate}`
         }
-        const svlen = parseFiniteNumber(svlenArr?.[i])
-        return svlen !== undefined
-          ? `${a} ${getBpDisplayStr(Math.abs(svlen))}`
-          : a
+        const bp = bps[i]
+        return bp === undefined ? a : `${a} ${getBpDisplayStr(bp)}`
       })
       .join(',')
   }

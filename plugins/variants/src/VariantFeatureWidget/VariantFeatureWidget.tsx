@@ -15,7 +15,7 @@ import { getBreakendMateLocString, safeParseBreakend } from '@jbrowse/sv-core'
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getTraMate, parseFiniteNumber } from '../VcfFeature/util.ts'
+import { getTraMate, symbolicAlleleBp } from '../VcfFeature/util.ts'
 import AltFormatter from './AltFormatter.tsx'
 import { tandemRepeatOf } from './TandemRepeatPanel/tandemRepeat.ts'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
@@ -130,11 +130,8 @@ const FeatDefined = observer(function FeatDefined({
     clickedAlleles,
     ...rest
   } = feat
-  const { REF = '', INFO } = rest
-  // SVLEN arrives as strings when the header doesn't declare it Integer, and
-  // can carry '.' for a missing entry, so coerce per ALT index rather than
-  // requiring the whole array to be numeric (which dropped the span entirely)
-  const svlens = Array.isArray(INFO?.SVLEN) ? INFO.SVLEN : []
+  const { REF = '', ALT = [], INFO } = rest
+  const altBp = symbolicAlleleBp(ALT, INFO)
   const repeat = useMemo(() => {
     try {
       return tandemRepeatOf(feat)
@@ -176,11 +173,7 @@ const FeatDefined = observer(function FeatDefined({
             <AltFormatter
               value={`${value}`}
               refString={REF}
-              svlen={
-                index === undefined
-                  ? undefined
-                  : parseFiniteNumber(svlens[index])
-              }
+              bp={index === undefined ? undefined : altBp[index]}
               mate={getTraMate(INFO)}
             />
           ) : (
