@@ -522,12 +522,13 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // has to say which group is which.
     //
     // Anchored to those labels by text, so they follow the groups wherever the
-    // layout puts them; `dx` clears the "Show all reads" control beside each.
+    // layout puts them. HP: 1 is the first group, so `dy` drops its pill off the
+    // track header it would otherwise cover, as in the combined figure below.
     annotations: [
       {
         type: 'text',
         text: 'HP1',
-        anchor: { text: 'HP: 1', alignX: 'right', dx: 90 },
+        anchor: { text: 'HP: 1', alignX: 'right', dx: 90, dy: 18 },
       },
       {
         type: 'text',

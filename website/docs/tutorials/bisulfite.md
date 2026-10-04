@@ -10,8 +10,9 @@ tutorial_category: Epigenomics & single cell
 Bisulfite sequencing (WGBS) and EM-seq measure DNA methylation with short reads.
 We align an _Arabidopsis thaliana_ WGBS run with bwameth, load the BAM, and
 color each read by its methylation in the CpG, CHG and CHH contexts. JBrowse
-computes the calls from the C→T changes in the reads, so the BAM needs no MM/ML
-tags and no methylation caller runs first.
+computes the calls from the C→T changes in the reads, so the BAM needs no
+base-modification tags (`MM`/`ML`, which nanopore and PacBio basecallers write)
+and no methylation caller runs first.
 
 ## Prerequisites
 
@@ -51,8 +52,8 @@ methylation: a C→T change means unmethylated, and a retained C means methylate
 JBrowse makes that comparison per read as it draws.
 
 Plants methylate in three sequence contexts: CpG, CHG, and CHH (H is A, C, or
-T). JBrowse colors the reads by any one context at a time, so one pileup shows
-all three.
+T). JBrowse colors the reads by one context at a time, and the track menu
+switches between them, so one pileup shows each of the three in turn.
 
 ## Producing the BAM
 
@@ -167,7 +168,7 @@ loads its modkit aggregate the same way.
 }
 ```
 
-## Load the tracks
+## Loading the TAIR10 hub assembly and the WGBS BAM
 
 TAIR10 is a genome hub on [genomes.jbrowse.org](https://genomes.jbrowse.org),
 and a hub's `config.json` holds a whole JBrowse assembly: the 2bit sequence, an
@@ -181,11 +182,14 @@ curl -fO https://jbrowse.org/hubs/genark/GCF/000/001/735/GCF_000001735.4/config.
 ```
 
 The [reproduce script](#reproduce-it-end-to-end) keeps the hub's assembly entry
-as written, adding `tair10` as an alias so a session can still name it that way:
+as written, adding `tair10` as an alias so a session can still name it that way.
+The excerpt below leaves out the entry's UCSC `metadata` block; the downloaded
+`config.json` has it:
 
 ```json
 {
   "name": "GCF_000001735.4",
+  "displayName": "thale cress (tair10.1 Columbia 2018)",
   "aliases": ["tair10"],
   "sequence": {
     "type": "ReferenceSequenceTrack",
@@ -202,7 +206,8 @@ as written, adding `tair10` as an alias so a session can still name it that way:
       "refNameColumnHeaderName": "ucsc",
       "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.chromAlias.txt"
     }
-  }
+  },
+  "geneticCodes": { "NC_000932.1": 11 }
 }
 ```
 
@@ -239,10 +244,7 @@ opens on, and the track menu switches it afterwards:
 [`cytosineContext`](/docs/config/linearalignmentsdisplay/#slot-modifications)
 takes `CG`, `CHG`, `CHH` or `all`.
 
-[JBrowse Desktop](/docs/quickstart_desktop) opens the BAM and the bigWigs
-straight from local disk.
-
-## Color the reads
+## Coloring the reads by cytosine context
 
 In the alignments track menu, pick **Color by... → Bisulfite / EM-seq**, then a
 cytosine context: **CpG**, **CHG**, **CHH**, or **All cytosines**. Methylated
@@ -256,10 +258,10 @@ below leave it off.
 Plants run two unrelated methylation programs, and the three contexts
 distinguish them:
 
-| Program                         | CpG | CHG | CHH | Effect on the locus                                                                             |
-| ------------------------------- | --- | --- | --- | ----------------------------------------------------------------------------------------------- |
-| Gene body methylation (gbM)     | yes | no  | no  | None obvious, the gene stays transcribed. Maintained by MET1, depleted at both ends of the gene |
-| Transposon and repeat silencing | yes | yes | yes | Heterochromatin, transcriptionally off. CMT3 maintains CHG, RdDM and CMT2 maintain CHH          |
+| Program                         | CpG | CHG | CHH | Effect on the locus                                                                                                   |
+| ------------------------------- | --- | --- | --- | --------------------------------------------------------------------------------------------------------------------- |
+| Gene body methylation (gbM)     | yes | no  | no  | None obvious, the gene stays transcribed. Maintained by MET1, depleted at both ends of the gene                       |
+| Transposon and repeat silencing | yes | yes | yes | Heterochromatin, transcriptionally off. CMT3 maintains CHG; RNA-directed DNA methylation (RdDM) and CMT2 maintain CHH |
 
 Red in the CpG row alone is gene body methylation, and red in all three rows is
 silencing.
@@ -269,10 +271,10 @@ one of each: the expressed gene AT1G12930 on the left, and a transposon on the
 right. The [reproduce script](#reproduce-it-end-to-end) prints the fraction per
 context for both regions.
 
-The RepeatMasker lane names the element `META1_LTR#LTR/Copia`, an LTR
-retrotransposon, which is `AT1TE14315` in the TAIR10 transposable-element
-annotation. No RefSeq transcript overlaps it. The lane is the RepeatMasker track
-from the TAIR10 genome hub:
+To name the element on the right, add the RepeatMasker track from the TAIR10
+genome hub. It labels the element `META1_LTR#LTR/Copia`, an LTR retrotransposon,
+which is `AT1TE14315` in the TAIR10 transposable-element annotation, and no
+RefSeq transcript overlaps it:
 
 ```json addtrack
 {

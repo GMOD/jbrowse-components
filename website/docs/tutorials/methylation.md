@@ -6,19 +6,20 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-JBrowse reads DNA methylation straight from the MM/ML tags nanopore and PacBio
-basecallers write. We follow one dataset, HG002 nanopore reads over an
-imprinting center, from per-read calls to an aggregate profile to the two
-parental alleles pulled apart.
+Nanopore and PacBio basecallers record each read's DNA methylation in
+base-modification tags (`MM` and `ML`), and JBrowse draws those calls straight
+from the BAM. We follow one dataset, HG002 nanopore reads over the _SNRPN_
+imprinting center, where one parent's copy is methylated and the other's is not,
+from per-read calls to an aggregate profile to the two parental alleles pulled
+apart.
 
 ## Prerequisites
 
 - for your own data, long reads whose BAM or CRAM already has `MM`/`ML`
   modification tags, which modern ONT and PacBio basecallers write by default,
   plus a JBrowse instance to load them into (the
-  [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop), which opens a local modBAM
-  with no hosting step)
+  [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop))
 - [modkit](https://github.com/nanoporetech/modkit/releases) for the aggregate
   section only, a single-binary download from its releases page
 - [WhatsHap](https://whatshap.readthedocs.io/), to haplotag reads of your own
@@ -41,16 +42,20 @@ bucket.
   https://ont-open-data.s3.amazonaws.com/giab_2023.05/analysis/hg002/sup/PAO83395.pass.cram
 - the HP1 slice the figures load, rehosted on jbrowse.org:
   https://jbrowse.org/demos/methylation/HG002_SNRPN_hp1.modkit.bed.gz
+- the HP2 slice beside it:
+  https://jbrowse.org/demos/methylation/HG002_SNRPN_hp2.modkit.bed.gz
 - the haplotagged read slice beside it:
   https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam
 
 ## The SNRPN imprinting center
 
-At this locus on chr15, one parental allele is methylated and the other is
-unmethylated. The reads should split into two populations, and the reads and the
-aggregate profile should agree on which allele is which.
+At the _SNRPN_ imprinting center on chr15, one parental allele is methylated and
+the other is unmethylated. The reads should split into two populations, and the
+reads and the aggregate profile should agree on which allele is which. Every
+view below is at `chr15:24,948,000-24,962,000`; type it into the location box
+once the tracks are loaded.
 
-## The genome
+## Loading GRCh38
 
 The reads are aligned to GRCh38, and the track's `assemblyNames` has to name the
 assembly they were aligned to.
@@ -65,6 +70,12 @@ assembly they were aligned to.
   "cytobands": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt"
 }
 ```
+
+The figures also show UCSC's CpG islands and the NCBI RefSeq genes. The hosted
+hg38 hub config, https://jbrowse.org/ucsc/hg38/config.json, has both: **CpG
+Islands** reads https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz with a CSI
+index, and **NCBI RefSeq - RefSeq All** reads
+https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.
 
 ## Per-read methylation from the alignments
 
@@ -104,7 +115,7 @@ Grouping the reads by their `HP` haplotype tag separates them, in
 [modkit pileup](https://nanoporetech.github.io/modkit/) collapses the per-read
 calls into a bedMethyl file with one row per CpG per modification type, each
 holding the fraction of reads that were modified. The file is much smaller than
-the reads.
+the reads.[^dmr]
 
 ```bash
 modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
@@ -136,10 +147,6 @@ subtrack per type, with a vertical bar per CpG on a percent-methylation axis:
 }
 ```
 
-To compare two samples, run `modkit dmr` on their per-sample pileups and load
-its BED output as a `FeatureTrack` beside the bedMethyl tracks, so the
-differentially-methylated regions line up with the positions driving them.
-
 ## Splitting the alleles apart
 
 Each long read is a single DNA molecule, so reads that have an `HP` haplotype
@@ -148,11 +155,12 @@ allele. Pick **Group by... → Tag...** from the track menu and enter `HP`. The
 dialog scans the reads in view, reports the values it found, and offers to color
 reads by the same tag; with methylation coloring on, that box starts unchecked
 and the coloring stays. The pileup then stacks into one band per haplotype, one
-methylated over the island and the other unmethylated.
+methylated over the island and the other unmethylated, and a third band,
+`HP: none`, holds the reads the haplotagging could not assign.
 
 <Video src="/media/methylation/group_by_hp.mp4" caption="The split as the menu does it: the interleaved pileup, the tag dialog finding HP values 1 and 2 in the reads themselves, and one methylated band resolving over one unmethylated." />
 
-<Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order. Bottom: the same reads grouped by the HP tag, one band per haplotype. Only the grouping differs." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
+<Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order, with the track menu open at Group by... → Tag.... Bottom: the same reads grouped by the HP tag, one band per haplotype and one for untagged reads." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 
 Next, load the two per-haplotype bedMethyl files above the reads as one track
 with a row per file. Pinning the axis at 0 to 100 puts both rows on one scale,
@@ -216,3 +224,8 @@ samtools index haplotagged.bam
 ## External links
 
 - [modkit documentation](https://nanoporetech.github.io/modkit/)
+
+[^dmr]:
+    To compare two samples, run `modkit dmr` on their per-sample pileups and
+    load its BED output as a `FeatureTrack` beside the bedMethyl tracks, so the
+    differentially-methylated regions line up with the positions driving them.
