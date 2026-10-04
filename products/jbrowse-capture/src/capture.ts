@@ -1,6 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 
+import { drawAnnotations } from './annotations.ts'
 import { isBrowserConsoleNoise, launchBrowser } from './browser.ts'
 import { resolveAgainstConfig } from './catalog.ts'
 import { assertImagePath } from './imagePath.ts'
@@ -15,6 +16,7 @@ import {
 import { sessionOverflowInPage } from './sessionOverflow.ts'
 import { PUBLIC_INSTANCE, assertSessionStandsAlone, jbrowseUrl } from './url.ts'
 
+import type { Annotation } from './annotationOverlay.ts'
 import type { LaunchOptions } from './browser.ts'
 import type { ReadyOptions, ReadyReport } from './ready.ts'
 import type { JBrowseUrlOptions } from './url.ts'
@@ -110,6 +112,12 @@ export interface CaptureOptions extends OpenOptions {
    * far the session runs past it, and the frame is waited for again.
    */
   fullPage?: boolean
+  /**
+   * Callouts drawn over the settled view before the screenshot, in the shape
+   * the JBrowse docs figures use: arrows, boxes, labels and badges, each
+   * anchored to a locus, a graph node, a dotplot cell or an element.
+   */
+  annotations?: Annotation[]
 }
 
 export interface CaptureResult extends ReadyReport {
@@ -124,7 +132,7 @@ export interface CaptureResult extends ReadyReport {
 export async function captureJBrowse(
   options: CaptureOptions = {},
 ): Promise<CaptureResult> {
-  const { out, fullPage = false, ...openOptions } = options
+  const { out, fullPage = false, annotations, ...openOptions } = options
   if (out) {
     assertImagePath(out)
     mkdirSync(dirname(out), { recursive: true })
@@ -140,6 +148,9 @@ export async function captureJBrowse(
         height: viewport.height + overflow,
       })
       report = await waitForFrame(page, openOptions)
+    }
+    if (annotations?.length) {
+      await drawAnnotations(page, annotations)
     }
     const image = await page.screenshot({ path: out })
     return { url, image, ...report }

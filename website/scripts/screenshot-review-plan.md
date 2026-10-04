@@ -402,10 +402,11 @@ tolerance ball for "did this figure move".
 - **Point at a graph node by NAME, never by pixel.**
   `anchor: { view, graphNode: 's2037' }` works on a click, a rightclick, a hover
   and on any annotation; it resolves through the view's own `nodePositions` and
-  transform (`scripts/graphAnchor.ts`), and throws if the node is not there, so
-  a moved node fails the spec instead of acting on empty canvas. A box anchor
-  takes the node's drawn bounds, everything else takes a point ON the polyline
-  (a bent node's bounding-box centre can be in the hole the arc encloses).
+  transform (`products/jbrowse-capture/src/graphAnchor.ts`), and throws if the
+  node is not there, so a moved node fails the spec instead of acting on empty
+  canvas. A box anchor takes the node's drawn bounds, everything else takes a
+  point ON the polyline (a bent node's bounding-box centre can be in the hole
+  the arc encloses).
   `node scripts/probe-graph-nodes.ts <spec> [--view=N] [--hover=<id>]` prints a
   cut's node ids with lengths, ranks and resolved coordinates, so a spec picks
   its target from the graph rather than from a finished PNG. Every hand-measured

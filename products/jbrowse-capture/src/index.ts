@@ -1,4 +1,6 @@
 export { captureJBrowse, openJBrowse } from './capture.ts'
+export { clearAnnotations, drawAnnotations } from './annotations.ts'
+export { graphNodePoint, locateGraphPane } from './graphAnchor.ts'
 export { delay } from './poll.ts'
 export { waitForFrame, waitForJBrowseReady } from './ready.ts'
 export {
@@ -27,6 +29,7 @@ export {
   launchBrowser,
 } from './browser.ts'
 
+export type { Annotation, AnnotationAnchor } from './annotationOverlay.ts'
 export type { LaunchOptions } from './browser.ts'
 export type {
   CaptureOptions,

@@ -5,9 +5,9 @@
  *   launch → goto → wait-for-ready → (annotate) → screenshot → optimize →
  *   content-stable commit (only rewrites the PNG when it actually changed)
  *
- * No JBrowse coupling: it imports only ./image-pipeline.ts and ./annotations.ts,
- * both self-contained, so this file could move into its own package as-is. Point
- * it at any URL. `generate-screenshots.ts` is the heavier JBrowse-doc pipeline
+ * No JBrowse coupling: it imports only ./image-pipeline.ts and the callout
+ * overlay `@jbrowse/capture` publishes, so this file could move into its own
+ * package as-is. Point it at any URL. `generate-screenshots.ts` is the heavier JBrowse-doc pipeline
  * built on the same two primitives; this is the small reusable core of it.
  *
  * Needs the `compare`/`identify` (ImageMagick) binaries on PATH for the diff
@@ -23,9 +23,9 @@ import os from 'node:os'
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 
+import { drawAnnotations } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
-import { drawAnnotations } from './annotations.ts'
 import { commitScreenshot, optimizePng } from './image-pipeline.ts'
 // one definition, shared with the corpus generator's own navigation
 // (`captureUrl`) — this entry is the smaller of the two capture paths, and they

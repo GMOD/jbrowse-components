@@ -113,6 +113,16 @@ test('a subcommand refuses a flag it does not use', () => {
   expect(parseArgs(['url', '--help']).help).toBe(true)
 })
 
+// a url carries no callouts, so the flag that draws them is a capture's alone
+test('--annotations is a capture flag', () => {
+  expect(parseArgs(['--annotations', 'callouts.json']).annotations).toBe(
+    'callouts.json',
+  )
+  expect(() =>
+    parseArgs(['url', '--hub', 'hg38', '--annotations', 'callouts.json']),
+  ).toThrow('--annotations does not apply to `jb2capture url`')
+})
+
 test('anything else is a capture', () => {
   expect(parseArgs(['--hub', 'hg38', '-o', 'x.png']).command).toBe('capture')
 })

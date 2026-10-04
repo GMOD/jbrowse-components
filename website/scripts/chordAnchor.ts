@@ -3,10 +3,10 @@ import type { Page } from 'puppeteer'
 
 // Where a circular view drew one chord, as a point a click actually lands on.
 //
-// The same problem graphAnchor.ts solves for a bent graph node, one shape
-// further: a chord is a quadratic Bezier, so the centre of its bounding box is
-// almost never on it, and the resting chords are painted on a canvas rather
-// than kept as DOM, so there is no element to click at all.
+// The same problem @jbrowse/capture's graphAnchor.ts solves for a bent graph
+// node, one shape further: a chord is a quadratic Bezier, so the centre of its
+// bounding box is almost never on it, and the resting chords are painted on a
+// canvas rather than kept as DOM, so there is no element to click at all.
 //
 // TWO THINGS ARE HARD, and only one of them is the geometry.
 //

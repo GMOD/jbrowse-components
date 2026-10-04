@@ -158,6 +158,53 @@ Three fields on a successful capture:
   asked. The capture still succeeds, since that is the app working as designed,
   and the CLI prints a warning naming them. Narrow the location to draw them.
 
+## Callouts
+
+`--annotations` draws arrows, boxes, labels and numbered badges over the view
+once it has settled, from a JSON array (inline, a path, or `-` for stdin). These
+are the callouts on the JBrowse documentation's figures, drawn by the same code,
+so a figure's **Make this view yourself** dialog hands you its callouts as a
+file to pass here.
+
+```bash
+cat > callouts.json <<'JSON'
+[
+  { "type": "box", "anchor": { "locus": "chr17:43,044,295-43,125,483" } },
+  {
+    "type": "text",
+    "text": "BRCA1",
+    "leader": true,
+    "anchor": { "track": "hg38-ncbiRefSeqCurated", "locus": "chr17:43,044,295", "fracY": 0.5 },
+    "dx": -60,
+    "dy": -30
+  }
+]
+JSON
+npx @jbrowse/capture --hub hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated \
+  --annotations callouts.json -o brca1.png
+```
+
+Each callout places itself through an `anchor` that resolves against the running
+session, so none of them is a pixel measured off an earlier capture:
+
+- `locus`, with an optional `track` (a trackId) and `fracY` (0 is the track's
+  top, 1 its bottom), lands on a genomic position in a linear genome view. A
+  `view` index picks the view, and an array (`[0, 1]`) descends into a synteny
+  view's rows.
+- `graphNode` names a GFA segment in a graph view or graph track.
+- `hLocus` and `vLocus` name a dotplot's cell, as a whole chromosome (`chr4`) or
+  a span (`chr4:1-5,000,000`).
+- `selector` and `text` name an element of the page, such as a menu item.
+
+`dx` and `dy` nudge a callout off its anchor, and `fromAnchor` anchors an
+arrow's tail. The full vocabulary is `Annotation` in `annotationOverlay.ts`,
+exported as types from this package. An anchor that resolves to nothing, or a
+callout that lands outside the image, fails the run rather than writing a
+picture with the callout missing or parked in a corner.
+
+In a script, pass the same array as `annotations` to `captureJBrowse`, or call
+`drawAnnotations(page, annotations)` on the page `openJBrowse` returns.
+
 ## CLI
 
 `jb2capture --help` for the full list. Also:

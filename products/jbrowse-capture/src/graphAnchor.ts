@@ -1,4 +1,4 @@
-import type { AnnotationAnchor } from './screenshot-specs.ts'
+import type { AnnotationAnchor } from './annotationOverlay.ts'
 import type { JSHandle, Page } from 'puppeteer'
 
 export interface ViewportRect {
@@ -19,6 +19,30 @@ export interface GraphNodeGeometry extends ViewportRect {
   midY: number
 }
 
+export interface GraphPane {
+  // The two axis scales, which are NOT always the same number: a
+  // reference-anchored layout states y as a row pitch in screen px and pins
+  // scaleY at 1, while scaleX is the zoom. `scale` is the x one.
+  scale?: number
+  scaleX?: number
+  scaleY?: number
+  translateX?: number
+  translateY?: number
+  nodePositions?: Record<string, { x: number; y: number }[]>
+  graph?: {
+    nodes: {
+      id: string
+      length?: number
+      stable?: {
+        rank?: number
+        refName?: string
+        start?: number
+        end?: number
+      }
+    }[]
+  }
+}
+
 // The graph pane an anchor addresses, and the canvas it draws on. The graph is
 // one canvas with no element per node, so the pane is asked where it put one
 // instead, the way a locus anchor asks the LGV. The pane is the addressed view
@@ -31,38 +55,15 @@ export function locateGraphPaneInPage(
   viewPath: number[],
   trackId: string | undefined,
 ) {
-  interface Pane {
-    // The two axis scales, which are NOT always the same number: a
-    // reference-anchored layout states y as a row pitch in screen px and pins
-    // scaleY at 1, while scaleX is the zoom. `scale` is the x one.
-    scale?: number
-    scaleX?: number
-    scaleY?: number
-    translateX?: number
-    translateY?: number
-    nodePositions?: Record<string, { x: number; y: number }[]>
-    graph?: {
-      nodes: {
-        id: string
-        length?: number
-        stable?: {
-          rank?: number
-          refName?: string
-          start?: number
-          end?: number
-        }
-      }[]
-    }
-  }
-  interface Display extends Pane {
+  interface Display extends GraphPane {
     type?: string
-    pane?: Pane
+    pane?: GraphPane
   }
   interface Track {
     configuration?: { trackId?: string }
     displays?: Display[]
   }
-  interface View extends Pane {
+  interface View extends GraphPane {
     id: string
     views?: View[]
     tracks?: Track[]
@@ -75,7 +76,7 @@ export function locateGraphPaneInPage(
     return undefined
   }
   const container = `[data-testid="view-container-${CSS.escape(view.id)}"]`
-  let pane: Pane | undefined = view
+  let pane: GraphPane | undefined = view
   let scope = container
   if (view.tracks) {
     const paneOf = (d: Display) =>

@@ -1,5 +1,5 @@
+import type { AnnotationAnchor } from './annotationOverlay.ts'
 import type { ViewportRect } from './graphAnchor.ts'
-import type { AnnotationAnchor } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
 
 // A dotplot anchor's locus, with the bounds optional: a bare refName is the

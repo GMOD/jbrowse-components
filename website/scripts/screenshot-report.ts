@@ -13,7 +13,6 @@ import { relative } from 'node:path'
 // number to adjust rather than a broken run — what it must not be is invisible.
 import { PENDING_DISPLAYS } from '@jbrowse/browser-test-utils'
 
-import { visibleTooltipText } from './annotations.ts'
 import {
   repoRoot as figureRepoRoot,
   unpublishedFigures,
@@ -28,6 +27,7 @@ import {
 } from './screenshot-options.ts'
 import { type RunReport, runReportPath } from './screenshot-run-report.ts'
 import { specs } from './screenshot-specs.ts'
+import { visibleTooltipText } from './tooltips.ts'
 
 import type { CommitResult } from './image-pipeline.ts'
 import type { Page } from 'puppeteer'

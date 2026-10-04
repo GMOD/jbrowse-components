@@ -2261,8 +2261,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportWidth: 900,
     // The two cells where 4A pairs with a group it does not belong to, boxed by
     // chromosome name rather than by pixel: `hLocus`/`vLocus` resolve through
-    // the axes' own layout (scripts/dotplotAnchor.ts), so the boxes follow the
-    // plot if its width, its assembly order or its zoom ever move.
+    // the axes' own layout (@jbrowse/capture's dotplotAnchor.ts), so the boxes
+    // follow the plot if its width, its assembly order or its zoom ever move.
     //
     // Both are the published 4A rearrangements, and the caption already names
     // them: the distal end of 4AL came from 5AL, so those genes' homoeologs sit

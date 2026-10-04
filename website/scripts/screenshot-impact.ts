@@ -515,14 +515,15 @@ const GLOBAL_TRIGGERS = [
   // answers "all" about half the time.
   'website/scripts/screenshot-',
   'website/scripts/actions.ts',
-  'website/scripts/annotations.ts',
+  'website/scripts/tooltips.ts',
   // where a click or a callout lands, for the anchor kinds that ask the model
   // instead of trusting a written-down coordinate
-  'website/scripts/dotplotAnchor.ts',
-  'website/scripts/graphAnchor.ts',
   'website/scripts/locusAnchor.ts',
   'website/scripts/image-pipeline.ts',
   'packages/browser-test-utils/',
+  // the readiness gates every capture waits on, and the callout overlay with
+  // its graph-node and dotplot anchors
+  'products/jbrowse-capture/src/',
   'config/webpack/',
 ]
 

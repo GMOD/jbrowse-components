@@ -8,6 +8,7 @@ import { listHubAssemblies, listHubTracks, trackName } from './hub.ts'
 import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
 import { version } from './version.ts'
 
+import type { Annotation } from './annotationOverlay.ts'
 import type { ParsedArgs } from './args.ts'
 
 const HELP = `jb2capture — screenshot a live JBrowse 2 view, once it has finished drawing
@@ -38,6 +39,9 @@ THE IMAGE
   --scale <n>           device pixel ratio (default 2)
   --fullPage            grow the image until every view fits, not just the
                         --height of the viewport
+  --annotations <json|path|->
+                        callouts to draw over the view: a JSON array of arrows,
+                        boxes and labels, each anchored to a locus or an element
 
 WAITING
   --timeout <ms>        budget per wait stage (default 60000)
@@ -67,18 +71,31 @@ EXAMPLES
 `
 
 // inline JSON, `-` for stdin, or a path: the forms `jb2export --spec` reads
-function readJson(flag: string, value: string): object {
-  const text =
+function parseJson(value: string): unknown {
+  const inline = /^\s*[[{]/.test(value)
+  return JSON.parse(
     value === '-'
       ? readFileSync(0, 'utf8')
-      : value.trimStart().startsWith('{')
+      : inline
         ? value
-        : readFileSync(value, 'utf8')
-  const parsed: unknown = JSON.parse(text)
+        : readFileSync(value, 'utf8'),
+  )
+}
+
+function readJson(flag: string, value: string): object {
+  const parsed = parseJson(value)
   if (typeof parsed !== 'object' || parsed === null) {
     throw new Error(`--${flag} must be a JSON object`)
   }
   return parsed
+}
+
+function readAnnotations(value: string): Annotation[] {
+  const parsed = parseJson(value)
+  if (!Array.isArray(parsed)) {
+    throw new Error('--annotations must be a JSON array of callouts')
+  }
+  return parsed as Annotation[]
 }
 
 // a bare view object is the one-view spec it would be wrapped in
@@ -161,6 +178,9 @@ async function main() {
     height: args.height,
     deviceScaleFactor: args.scale,
     fullPage: args.fullPage,
+    annotations: args.annotations
+      ? readAnnotations(args.annotations)
+      : undefined,
     headless: !args.headed,
     timeout: args.timeout,
     allowUnsettled: args.allowUnsettled,

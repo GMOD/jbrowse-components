@@ -18,18 +18,15 @@ import { promisify } from 'node:util'
 
 import {
   BASE_CHROME_ARGS,
+  clearAnnotations,
   createTestServer,
+  drawAnnotations,
   findChromeExecutable,
   isBrowserConsoleNoise,
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
 import { delay, runAction } from './actions.ts'
-import {
-  clearAnnotations,
-  drawAnnotations,
-  hideLingeringTooltip,
-} from './annotations.ts'
 import {
   IM,
   IM_REPRODUCIBLE,
@@ -87,6 +84,7 @@ import {
 } from './screenshot-report.ts'
 import { selectSpecsToRender } from './screenshot-select.ts'
 import { DEFAULT_VIEWPORT } from './screenshot-spec-types.ts'
+import { hideLingeringTooltip } from './tooltips.ts'
 
 import type { CommitResult } from './image-pipeline.ts'
 import type { RunTotals } from './screenshot-report.ts'

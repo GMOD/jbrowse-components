@@ -1,7 +1,10 @@
-import { delay, waitForAppSettled } from '@jbrowse/browser-test-utils'
+import {
+  delay,
+  graphNodePoint,
+  waitForAppSettled,
+} from '@jbrowse/browser-test-utils'
 
 import { chordPoint, ideogramPoint } from './chordAnchor.ts'
-import { graphNodePoint } from './graphAnchor.ts'
 import { locusPoint } from './locusAnchor.ts'
 import { selectorPoint } from './selectorAnchor.ts'
 

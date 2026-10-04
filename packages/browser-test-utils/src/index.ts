@@ -1,16 +1,20 @@
 // Re-exported from the published @jbrowse/capture, so the figure generator,
 // the browser tests and outside scripts share one meaning of "finished
-// rendering". See website/docs/agents_capture.md.
+// rendering" and one callout overlay. See website/docs/agents_capture.md.
 export {
   PENDING_DISPLAYS,
   assemblyFromSession,
+  clearAnnotations,
   describeDisplays,
   displayCensusInPage,
   displayPainted,
   displaySettled,
+  drawAnnotations,
   encodeSessionSpec,
   findChromeExecutable,
+  graphNodePoint,
   isBrowserConsoleNoise,
+  locateGraphPane,
   sessionSpecQuery,
   trackIdsFromSession,
   waitForAppSettled,

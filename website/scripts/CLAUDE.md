@@ -69,7 +69,7 @@
   the picture is frozen.
 - **Every annotation `anchor`s** — by locus, dotplot cell, graph node or chord,
   never a measured pixel. Shapes belong in
-  `@jbrowse/browser-test-utils/src/annotationOverlay.ts`. Prefer an in-app
+  `products/jbrowse-capture/src/annotationOverlay.ts`. Prefer an in-app
   `highlight` to an overlay. A band under 24 CSS px carries no chip and clips
   any `label` to nothing (`CHIP_MIN_WIDTH`, and the band is `overflow: clip`),
   so at whole-chromosome scale the caption does the naming. Alpha it for what it

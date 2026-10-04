@@ -5,11 +5,11 @@
  *   node scripts/probe-dotplot-axes.ts multiway_synteny/wheat_homoeolog_selection
  *
  * A dotplot is one canvas, so a callout on an off-diagonal block names its two
- * chromosomes (`anchor: { hLocus, vLocus }`, scripts/dotplotAnchor.ts). Which
- * names exist, and which of the two assemblies ended up on which axis, is a
- * property of the data and of the session — this prints both axes' displayed
- * regions with the viewport px each one covers, so a spec picks its cell from
- * the plot rather than from a pixel measured off a PNG.
+ * chromosomes (`anchor: { hLocus, vLocus }`, @jbrowse/capture's
+ * dotplotAnchor.ts). Which names exist, and which of the two assemblies ended
+ * up on which axis, is a property of the data and of the session — this prints
+ * both axes' displayed regions with the viewport px each one covers, so a spec
+ * picks its cell from the plot rather than from a pixel measured off a PNG.
  */
 import { parseArgs } from 'node:util'
 

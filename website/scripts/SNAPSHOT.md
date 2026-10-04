@@ -8,8 +8,8 @@ committed images.
 It's the reusable core of the larger JBrowse doc pipeline in
 `generate-screenshots.ts`, with none of the JBrowse coupling — point it at any
 URL. It imports only `image-pipeline.ts` (the diff gate + pngquant optimize) and
-`annotations.ts` (the SVG callout overlay), both self-contained, so this file
-can move into its own package unchanged.
+`@jbrowse/capture`'s `drawAnnotations` (the SVG callout overlay), both
+self-contained, so this file can move into its own package unchanged.
 
 ## Requirements
 
@@ -68,7 +68,7 @@ await snapshotAll(
 ```
 
 Annotations (red arrows / boxes / text pills, optionally DOM-anchored) come from
-`annotations.ts`:
+`@jbrowse/capture`'s `annotations.ts`:
 
 ```ts
 await snapshot({

@@ -14,13 +14,14 @@
  */
 import { parseArgs } from 'node:util'
 
+import { graphNodePoint, locateGraphPane } from '@jbrowse/browser-test-utils'
+
 import {
   resolveUrlSpec,
   specUrl,
   specViewport,
   withHarness,
 } from './dev-harness.ts'
-import { graphNodePoint, locateGraphPane } from './graphAnchor.ts'
 import { GRAPH_DRAWN, GRAPH_VIEW_DRAWN } from './specs/graph-fixtures.ts'
 
 const PORT = 3346

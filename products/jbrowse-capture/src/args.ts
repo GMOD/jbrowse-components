@@ -18,6 +18,7 @@ export interface ParsedArgs {
   scale?: number
   timeout?: number
   fullPage: boolean
+  annotations?: string
   headed: boolean
   verbose: boolean
   help: boolean
@@ -44,6 +45,7 @@ const OPTIONS = {
   scale: { type: 'string' },
   timeout: { type: 'string' },
   fullPage: { type: 'boolean', default: false },
+  annotations: { type: 'string' },
   headed: { type: 'boolean', default: false },
   verbose: { type: 'boolean', default: false },
   help: { type: 'boolean', short: 'h', default: false },
