@@ -17,7 +17,6 @@ paint the result as one colored row per haplotype.
 
 ## Prerequisites
 
-- nothing to read along. Everything below is for building the tracks yourself
 - the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
   [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
   is a config that loads it with its gene and repeat tracks, and the
@@ -28,6 +27,7 @@ paint the result as one colored row per haplotype.
 - `curl`
 - `python3`
 - htslib (`bgzip`, `tabix`)
+- `node`, for the [JBrowse CLI](/docs/cli)
 
 On Debian/Ubuntu, `apt install bcftools tabix curl python3 default-jre` covers
 all of it, and the packaged `bcftools` is linked against libcurl. `flare.jar` is
@@ -51,7 +51,7 @@ canFam4 genetic map published separately.
   ([Wang et al. 2025](https://doi.org/10.5281/zenodo.17095604)):
   https://zenodo.org/records/17095604/files/campbell_sex_average_canFam4.tar.gz?download=1
 
-## The genome
+## Loading the UU_Cfam_GSD_1.0 dog assembly
 
 The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
 We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
@@ -148,10 +148,10 @@ bcftools view -S targets.txt --force-samples -Oz -o chr1.gt.vcf.gz chr1.subset.v
 Each of `all.txt`, `wolves.txt`, `dogs.txt` and `targets.txt` is one sample name
 per line; the build script derives them from the Dog10K sample table.
 
-### The genetic map
+### Reshaping the Campbell genetic map for FLARE
 
-FLARE requires one. The Campbell pedigree map has been transitioned onto
-`UU_Cfam_GSD_1.0`, so no liftover is needed. The build script reshapes its
+FLARE requires a genetic map. The Campbell pedigree map has been transitioned
+onto `UU_Cfam_GSD_1.0`, so no liftover is needed. The build script reshapes its
 `POS`/`rate`/`Map(cM)` columns into the four PLINK columns FLARE reads:
 chromosome, a marker ID, genetic position in cM and base-pair position. The
 chromosome names must match the VCF's. With no map for your organism, write one
@@ -210,8 +210,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 python3 flare_anc_to_bed.py wolfdog_chr1.anc.vcf.gz labels.tsv ancestry.chr1.bed
 ```
 
-Sort and index it as any BED track. The build script sorts inline with `sort` to
-stay free of node:
+Sort and index it as any BED track. The build script does the same sort inline
+with `sort`, so it runs without node:
 
 ```bash
 jbrowse sort-bed ancestry.chr1.bed | bgzip > ancestry.chr1.bed.gz
@@ -226,7 +226,11 @@ chr1	49135137	57939751	Wolf	0	.	49135137	57939751	230,159,0	Czechoslovakian 1 ha
 ```
 
 The last two columns name the row of the block and the called ancestry. The `#`
-header names them, so the track config needs no `columnNames`.
+header names them, so the track config needs no `columnNames`. The build script
+runs the same command twice, once with `labels.tsv` over every target into
+`dog10k_wolfdog_ancestry.chr1.bed.gz` and once with `named.tsv`, the animals the
+figure names, into `dog10k_wolfdog_named.chr1.bed.gz`, the file the track below
+loads.
 
 ## Loading the blocks as a multi-row track
 
@@ -303,7 +307,7 @@ prints, the fraction of near-fixed differing sites with the wolf allele, they
 score highest of the held-out wolves. That fraction scores alleles one site at a
 time, and FLARE matches whole haplotypes against a panel.
 
-### The Tamaskan and the Shiloh Shepherd
+### How long the Tamaskan's and Shiloh Shepherd's wolf blocks run
 
 The build script prints a count of wolf blocks with their median and longest,
 one line per animal. The Tamaskan has many short wolf assignments, the longest
@@ -320,11 +324,12 @@ the held-out wolves on a small branch with the wolfdog haplotypes with the most
 wolf, apart from the breed dogs. Clustering runs over the region in view, and a
 chip in the corner of the tree shows the locus.
 
-## Other row fields
+## Splitting the rows by another column
 
-The multi-row display splits rows by any column. The
-[phased trio tutorial](/docs/tutorials/analyze_trio) points `rows` at parental
-haplotype, and the [BXD QTL tutorial](/docs/tutorials/bxd_qtl) at strain.
+The multi-row display splits rows by any column of the BED. With `rows.field`
+set to a parental-haplotype column it paints a trio's inheritance blocks, and
+with a strain column an inbred panel. [](/docs/tutorials/analyze_trio) and
+[](/docs/tutorials/bxd_qtl) build both.
 
 ## Reproduce it end to end
 
