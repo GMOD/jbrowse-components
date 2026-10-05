@@ -1,6 +1,6 @@
 ---
 name: cold-load-to-first-alignments-paint
-description: "A 2026-10-04 profile of jbrowse-web's cold load to a BAM or CRAM track's first paint. On small data the wait is serialized idle time, not bytes or a CPU hot spot. The 300ms Suspense reveal throttle at InitialLoad and at the empty LGV's button is fixed; left are code each layer discovers only when it needs it (one round trip per layer), the BAM header waiting on its index, and a synchronous WebGL2 shader compile at first draw. Deep windows are bound by one RPC worker."
+description: "A 2026-10-04 profile of jbrowse-web's cold load to a BAM or CRAM track's first paint. On small data the wait is serialized idle time, not bytes or a CPU hot spot. The 300ms Suspense reveal throttle and the render-RPC code's late discovery are fixed; left are the BAM header waiting on its index and a synchronous WebGL2 shader compile at first draw. Deep windows are bound by one RPC worker."
 ---
 
 # Cold load to first alignments paint
@@ -24,14 +24,16 @@ other agents, a 100 ms difference flipped sign with the order.
 ## Where a small load goes
 
 `volvox_bam` cold on a local server, drawn at 812 ms, before `c223294d1d`
-removed the 145-354 ms idle stretch (the InitialLoad throttle; BAM cold drawn
-1060 → 920 ms, warm 707 → 506 ms in the A/B):
+removed the 145-354 ms idle stretch (the InitialLoad throttle; 580 ms on ada
+after it). A launching track now also loads its display's render-RPC code
+beside its adapter's (`RpcMethodType.preload`, `DisplayType.rpcMethods`), which
+took one round trip off each `measure-load-latency` scenario at 80 ms RTT.
 
 - 0-60 ms: HTML, `main.js` and the config; the prewarmed worker starts.
 - 60-145 ms: the first chunks evaluate.
 - 145-354 ms: idle, nothing in flight.
 - 354-555 ms: plugin chunks (page and worker in one round) and the session.
-- 555-713 ms: assembly, refNames, display chunks. Item 1.
+- 555-713 ms: assembly, refNames, display chunks.
 - 713-812 ms: fetch, render and the first draw.
 
 Boot CPU is diffuse: the costliest app function, `loadSessionSpec`, is 21 ms
@@ -39,31 +41,7 @@ inclusive, so the main-thread boot has no hot spot to optimize.
 
 ## Plan
 
-### 1. Load each layer's code when the session names it, not when it runs
-
-Code splitting makes each layer discover the code it needs only when it reaches
-it, and at 80 ms RTT each discovery is a round trip of about 85 ms. The
-`--waterfall` at 80 ms RTT on `4e53586bc2`: the worker's BAM header returns at
-1078 ms, then the render-RPC chunks (`executeRenderAlignmentData.ts` and
-`interbaseCoverage.ts`, behind `RenderAlignmentData.execute`'s dynamic import)
-start at 1240 and land at 1325, and the data read waits for them. A main-thread
-chunk also starts late, at 1185.
-
-Priced with a hack: `CoreLoadAdapterCode`, which `warmTrackAdapter` sends at
-track launch, also imported the render-RPC code when it saw a BAM or CRAM
-adapter. Ready moved 1400 → 1305 ms (10 interleaved runs), one round trip.
-**Importing it at worker boot instead was a loss** (first data request
-870 → 1230 ms): a classic worker's chunk loads run serial `importScripts` until
-`parallelizeChunkLoading` is installed, so the import blocked the worker.
-
-The design to build: one hint per session rather than a preload call per layer.
-Each display type declares the worker code its fetch runs next to its
-registration, the way it names its state model, and the session sends the
-union for its tracks through the path `hintPrewarmedWorker` and
-`CoreLoadAdapterCode` already take. First check whether the alignments render
-code needs to be split from its RPC method at all.
-
-### 2. Read the BAM header beside its index
+### 1. Read the BAM header beside its index
 
 `@gmod/bam` `getHeaderPre` awaits `index.parse()` only to size the first header
 read, and the range cache rounds that read to a 256 KB page anyway. Read the
@@ -71,7 +49,7 @@ header beside the index and fall back to the sized read when it does not parse.
 That is a `@gmod/bam` change. For CRAM the order is reversed: the `.crai`
 (needed for the byte estimate) waits on the header.
 
-### 3. Compile WebGL2 shaders before the first draw
+### 2. Compile WebGL2 shaders before the first draw
 
 [`webgl2Hal.ts`](../../packages/render-core/src/hal/webgl2Hal.ts) links every
 pass on first draw and reads `COMPILE_STATUS` right after `compileShader`, so
@@ -83,7 +61,7 @@ status at first use (`KHR_parallel_shader_compile` where present). **Needs a
 headed real-GPU number first**: the SwiftShader figure does not show what a
 user's driver costs.
 
-### 4. Decide whether deep windows parallelize the parse
+### 3. Decide whether deep windows parallelize the parse
 
 100x short reads over 1 Mb, BAM: drawn at 3.96 s, and the render worker was
 busy 2.6 s of it. Inclusive:
@@ -99,7 +77,7 @@ busy 2.6 s of it. Inclusive:
   [`filterChainFeatures.ts`](../../plugins/alignments/src/RenderAlignmentDataRPC/filterChainFeatures.ts)
   108 ms, against its comment's "nearly free"
 
-The first draw's main-thread task was 546 ms: shader compile (item 3), about
+The first draw's main-thread task was 546 ms: shader compile (item 2), about
 155 ms of `sortLayout`, then packing and `createBuffer`. Each worker line above
 is a 3-7% cut. Only splitting one region's parse across the RPC pool could give
 2x or more, and that is a design decision to weigh against
@@ -111,7 +89,7 @@ and [collections/alignments](../ideas/collections/alignments.md). The other
 heavy cells, mount to drawn: 200x at 100 kb 1.1 s BAM / 1.0 s CRAM; 1000x at
 19 kb 1.06 s / 0.93 s; 200x long reads at 19 kb 0.97 s / 0.70 s.
 
-### 5. Minor
+### 4. Minor
 
 The BGZF pool (BAM) and the CRAM slice pool each start four workers for volvox
 files of 140-400 KB, 4-31 ms of CPU each and off the critical path.
@@ -120,7 +98,9 @@ files of 140-400 KB, 4-31 ms of CPU each and off the critical path.
 
 The pileup display's Suspense boundary (`AlignmentsTooltip`) shows a fallback
 on every BAM and CRAM load, but its reveal lands with the first draw and the
-`nothrottle` arm does not beat `base`, so it does not hold the paint.
+`nothrottle` arm does not beat `base`, so it does not hold the paint. Its chunk
+is the main-thread request that starts late in the 80 ms waterfall, beside the
+render request rather than ahead of it.
 
 Bytes: the cold shell is 902 KB gzipped in 56 chunks, a BAM track adds 153 KB
 in 31, and a warm load that downloads nothing still pays item 1.

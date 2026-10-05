@@ -7,6 +7,10 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
  * its adapter classes and the RPC methods its display names. Each arrives by
  * dynamic import on that request otherwise, after the view lays out, the
  * assembly loads and the request's refNames resolve.
+ *
+ * At launch rather than at worker boot: until `parallelizeChunkLoading` is
+ * installed a classic worker loads chunks by serial `importScripts`, and an
+ * import there delayed the first data request 360ms at 80ms RTT.
  */
 export default class CoreLoadTrackCode extends RpcMethodType<'CoreLoadTrackCode'> {
   name = 'CoreLoadTrackCode' as const
