@@ -122,6 +122,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-adaptercapabilities">**adapterCapabilities**</span><br><code>readonly string[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-adapterdeclareslanes">**adapterDeclaresLanes**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-adapterpairsonanchor">**adapterPairsOnAnchor**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-adapterbatcheslanepairs">**adapterBatchesLanePairs**</span><br><code>boolean</code> | the adapter answers a window's `lanePairs` in one call | MultiWaySyntenyDisplay |
 | <span id="getter-adjacentlanesaligndirectly">**adjacentLanesAlignDirectly**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-pinnedlaneflips">**pinnedLaneFlips**</span><br><code>ReadonlyMap&lt;string, LaneFlipPin&gt;</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-configuredlanes">**configuredLanes**</span><br><code>string[]</code> | the track's assemblies beside the anchor for a source that declares its own lanes, empty for every other source | MultiWaySyntenyDisplay |
@@ -159,7 +160,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-anchorlessgroups">**anchorlessGroups**</span><br><code>PlacedGroup[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanegenesfetchspecs">**laneGenesFetchSpecs**</span><br><code>LaneGenesFetchSpec[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanegroupsfetchspecs">**laneGroupsFetchSpecs**</span><br><code>LaneGroupsFetchSpec[]</code> | a gene table read on each mate lane's window, for the rows the anchor lacks; a star source indexes its anchor alone, so it has none to give | MultiWaySyntenyDisplay |
-| <span id="getter-lanelinksfetchspecs">**laneLinksFetchSpecs**</span><br><code>LaneLinksFetchSpec[]</code> | one spec per adjacent mate-lane pair | MultiWaySyntenyDisplay |
+| <span id="getter-lanelinksfetchspecs">**laneLinksFetchSpecs**</span><br><code>LaneLinksFetchSpec[]</code> | one spec per adjacent mate-lane pair whose gutter is on screen or within a screen of it; a pair scrolled further away draws composed through the anchor, or not at all | MultiWaySyntenyDisplay |
 | <span id="getter-lanelayertemplates">**laneLayerTemplates**</span><br><code>(Record&lt;string, unknown&gt; &#124; undefined)[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanelayersources">**laneLayerSources**</span><br><code>Map&lt;string, LaneLayerSource&gt;[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanelayerreads">**laneLayerReads**</span><br><code>{ specs: LaneLayerFetchSpec[]; pastCap: boolean[]; }</code> | `pastCap` flags a layer that skipped a lane past `LANE_TEMPLATE_MAX_BP` | MultiWaySyntenyDisplay |
