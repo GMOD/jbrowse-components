@@ -121,11 +121,37 @@ describe('the entries', () => {
     expect(entriesOf(display).map(e => e.value)).toEqual(['y', 'x'])
   })
 
-  it('give a row with no value no entry, even one a pair colours', () => {
+  it('list "(no value)" last where a pair colours the rows with none', () => {
     const display = makeDisplay({
       rowColor: { field: 'group', domain: [''], range: ['#eee'] },
     })
     expect(display.resolvedRowColors.get('e')).toBe('#eee')
+    expect(entriesOf(display)).toEqual([
+      { value: 'x', label: 'x', color: p(0) },
+      { value: 'y', label: 'y', color: p(1) },
+      { value: expect.any(String), label: '(no value)', color: '#eee' },
+    ])
+  })
+
+  it('list "(no value)" in a row\'s own colour where no pair colours it', () => {
+    const display = makeDisplay(
+      { rowColor: 'group' },
+      {
+        rows: [
+          { name: 'a', group: 'x' },
+          { name: 'b', color: '#123456' },
+        ],
+      },
+    )
+    expect(entriesOf(display).at(-1)).toEqual({
+      value: expect.any(String),
+      label: '(no value)',
+      color: '#123456',
+    })
+  })
+
+  it('give an uncoloured row with no value no entry', () => {
+    const display = makeDisplay({ rowColor: 'group' })
     expect(entriesOf(display).map(e => e.value)).toEqual(['x', 'y'])
   })
 
@@ -199,6 +225,15 @@ describe('a click on an entry', () => {
     const other = display.rowColorScales[0]!.entries.at(-1)!
     display.focusLegendEntry('rowColor', other.value)
     expect(display.rowFocus).toEqual(['b'])
+  })
+
+  it('on "(no value)" focuses the rows with no value', () => {
+    const display = makeDisplay({
+      rowColor: { field: 'group', domain: [''], range: ['#eee'] },
+    })
+    const noValue = display.rowColorScales[0]!.entries.at(-1)!
+    display.focusLegendEntry('rowColor', noValue.value)
+    expect(display.rowFocus).toEqual(['d', 'e'])
   })
 
   it('on "+N more" or another scale changes nothing', () => {

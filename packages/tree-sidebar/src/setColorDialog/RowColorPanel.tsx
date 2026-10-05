@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
@@ -213,7 +214,9 @@ export default function RowColorPanel({
                     onValueColor(value, next)
                   }}
                 />
-                <Typography variant="body2">{value || '(no value)'}</Typography>
+                <Typography variant="body2">
+                  {value || NO_VALUE_LABEL}
+                </Typography>
                 <Typography variant="body2" color="textSecondary">
                   {rowCount(count)}
                 </Typography>

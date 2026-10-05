@@ -1,4 +1,5 @@
 import { MAX_LEGEND_ITEMS } from '@jbrowse/core/ui/legendSpec'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { dealRowColors } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { otherName } from './arrangeRows.ts'
@@ -124,6 +125,7 @@ export function rowFieldValue(row: object, field: string) {
 export const ROW_COLOR_SCALE_ID = 'rowColor'
 
 const OTHER_VALUE = '\u0000other'
+const NO_VALUE = '\u0000none'
 
 /** What the row colour key reads: the setting and the colours it resolved. */
 export interface RowColorKeyInputs {
@@ -134,31 +136,35 @@ export interface RowColorKeyInputs {
 }
 
 function keyColor(row: RowSource, value: string, key: RowColorKeyInputs) {
-  return key.setting.field === 'name'
+  return key.setting.field === 'name' || value === ''
     ? key.resolved.get(row.name)
     : key.dealt.get(value)
 }
 
 /**
  * The key entry `row` is listed under: its value of the `rowColor` field, the
- * "Other" entry where it took the `unknown` colour, or undefined where it has
- * no value or no colour.
+ * "(no value)" entry where it has none, the "Other" entry where it took the
+ * `unknown` colour, or undefined where it has no colour.
  */
 export function rowColorKeyValue(row: RowSource, key: RowColorKeyInputs) {
   const { field, unknown } = key.setting
   const value = field === 'name' ? row.name : rowFieldValue(row, field)
   const color = keyColor(row, value, key)
-  if (value === '' || color === undefined) {
-    return undefined
-  }
-  return color === unknown && !key.pairs.has(value) ? OTHER_VALUE : value
+  return color === undefined
+    ? undefined
+    : value === ''
+      ? NO_VALUE
+      : color === unknown && !key.pairs.has(value)
+        ? OTHER_VALUE
+        : value
 }
 
 /**
  * The row colour key over `rows`, the rows in the base arrangement: an entry
  * per value some row carries with a colour, in deal order, at most
- * `MAX_LEGEND_ITEMS` and then a "+N more" note, and a trailing "Other" in the
- * `unknown` colour where a row took it.
+ * `MAX_LEGEND_ITEMS` and then a "+N more" note, then "(no value)" in the
+ * colour of the first coloured row with no value, and a trailing "Other" in
+ * the `unknown` colour where a row took it.
  */
 export function rowColorKeyEntries(
   rows: readonly RowSource[],
@@ -168,10 +174,18 @@ export function rowColorKeyEntries(
   const { field, unknown } = key.setting
   const listed = new Map<string, CategoricalEntry>()
   let other = false
+  let noValue: CategoricalEntry | undefined
   for (const row of rows) {
     const value = rowColorKeyValue(row, key)
     if (value === OTHER_VALUE) {
       other = true
+    } else if (value === NO_VALUE) {
+      noValue ??= {
+        value,
+        label: NO_VALUE_LABEL,
+        color: key.resolved.get(row.name),
+        missing: true,
+      }
     } else if (value !== undefined && !listed.has(value)) {
       listed.set(value, {
         value,
@@ -188,6 +202,7 @@ export function rowColorKeyEntries(
   return [
     ...entries.slice(0, MAX_LEGEND_ITEMS),
     ...(more > 0 ? [{ value: '', label: `+${more} more` }] : []),
+    ...(noValue ? [noValue] : []),
     ...(other && unknown
       ? [{ value: OTHER_VALUE, label: 'Other', color: unknown }]
       : []),
