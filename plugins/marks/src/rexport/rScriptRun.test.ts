@@ -9,12 +9,15 @@ import {
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
+import { featureFields, featurePlot } from './featureToPlot.ts'
 import { frameFor, sourceNotes } from './frameFor.ts'
 import { fieldsRead, markPlot } from './markToPlot.ts'
 import { HELPERS } from './rHelpers.generated.ts'
 import { assembleRScript, helpersIn } from './rScript.ts'
 import { rStr } from './rplot.ts'
 
+import type { FeatureDisplaySpec } from './featureToPlot.ts'
+import type { ReaderName } from './frameFor.ts'
 import type { DisplaySpec } from './markToPlot.ts'
 import type { Region } from './rScript.ts'
 
@@ -42,6 +45,7 @@ const R = hasR()
 const BIGWIG = path.resolve('test_data/volvox/volvox.bw')
 const GFF = path.resolve('test_data/volvox/volvox.sort.gff3.gz')
 const VCF = path.resolve('test_data/volvox/volvox.filtered.vcf.gz')
+const BED = path.resolve('test_data/volvox/volvox-bed12.bed.gz')
 
 function hasR() {
   try {
@@ -110,9 +114,47 @@ function ran(name: string) {
 
 interface Build {
   display: DisplaySpec
-  type: 'BigWigAdapter' | 'Gff3TabixAdapter' | 'VcfTabixAdapter'
+  type: ReaderName
   uri: string
   regions: Region[]
+}
+
+interface GeneBuild {
+  display: FeatureDisplaySpec
+  type: 'Gff3TabixAdapter' | 'BedTabixAdapter'
+  uri: string
+  regions: Region[]
+}
+
+function geneScript({ display, type, uri, regions }: GeneBuild, out?: string) {
+  const f = frameFor({
+    type,
+    uri,
+    name: 'genes',
+    fields: featureFields(display, regions),
+    wholeFeatures: true,
+  })
+  const { plot, notes } = featurePlot({ display, frame: f, regions })
+  return assembleRScript({
+    regions,
+    panels: [{ variable: 'p1', plot }],
+    notes: [...sourceNotes(uri), ...notes],
+    out,
+  })
+}
+
+function geneFigure(name: string, b: GeneBuild) {
+  const png = path.join(CASES, `${name}.png`)
+  return { name: register(name, geneScript(b, png)), png }
+}
+
+/** The gene panel's frames, built by R, and then `body` over them. */
+function geneProbe(name: string, b: GeneBuild, body: string) {
+  const script = geneScript(b)
+  return register(
+    name,
+    `${script.slice(0, script.indexOf('p1 <- ggplot'))}\n${body}\n`,
+  )
 }
 
 function translate({ display, type, uri, regions }: Build) {
@@ -803,5 +845,152 @@ cat(df$row)
   )
   it('survives a feature whose end precedes its start', () => {
     expect(ran(inverted)).toBe('0 0')
+  })
+})
+
+const GENE_WINDOW = [{ refName: 'ctgA', start: 0, end: 24000 }]
+
+maybe('the gene glyph runs', () => {
+  const genes = geneFigure('genes', {
+    display: { showOnlyGenes: true },
+    type: 'Gff3TabixAdapter',
+    uri: GFF,
+    regions: GENE_WINDOW,
+  })
+  it('draws the volvox gene models', () => {
+    ran(genes.name)
+    expect(existsSync(genes.png)).toBe(true)
+  })
+
+  const lanes = geneProbe(
+    'genelanes',
+    {
+      display: { showOnlyGenes: true },
+      type: 'Gff3TabixAdapter',
+      uri: GFF,
+      regions: GENE_WINDOW,
+    },
+    `
+utr <- genes_parts[genes_parts$lane == "cds-Apple2" & genes_parts$part == "UTR", ]
+cat(sum(genes_lanes$gene == "EDEN"), paste(utr$start, utr$end, collapse = ","),
+  any(genes_lanes$type == "match"))
+`,
+  )
+  it('stacks a gene’s transcripts and implies the UTRs an mRNA leaves unnamed', () => {
+    // Apple2 is "mRNA with CDSs but no UTRs": 13000-17200 around CDS 13500-17000
+    expect(ran(lanes)).toBe('3 12999 13499,17000 17200 FALSE')
+  })
+
+  const longest = geneProbe(
+    'longest',
+    {
+      display: { showOnlyGenes: true, geneGlyphMode: 'longestCoding' },
+      type: 'Gff3TabixAdapter',
+      uri: GFF,
+      regions: GENE_WINDOW,
+    },
+    `
+cat(genes_lanes$id[genes_lanes$gene == "EDEN"],
+  sum(genes_parts$lane == "cds-Apple2" & genes_parts$part == "CDS"))
+`,
+  )
+  it('keeps the longest coding isoform and leaves a lone mRNA its CDS', () => {
+    expect(ran(longest)).toBe('EDEN.1 3')
+  })
+
+  const cut = geneProbe(
+    'cut',
+    {
+      display: { showOnlyGenes: true },
+      type: 'Gff3TabixAdapter',
+      uri: GFF,
+      regions: [{ refName: 'ctgA', start: 4000, end: 14000 }],
+    },
+    `
+e1 <- genes_parts[genes_parts$lane == "EDEN.1", ]
+cat(sum(e1$part == "CDS"), min(e1$start))
+`,
+  )
+  it('reads a transcript whole when the window cuts it', () => {
+    // two of EDEN.1's four CDS lie left of the window
+    expect(ran(cut)).toBe('4 1049')
+  })
+
+  const two = {
+    display: { showOnlyGenes: true },
+    type: 'Gff3TabixAdapter' as const,
+    uri: GFF,
+    regions: [
+      { refName: 'ctgA', start: 1000, end: 9500 },
+      { refName: 'ctgA', start: 17000, end: 23500 },
+    ],
+  }
+  const twoFigure = geneFigure('genetwo', two)
+  const twoClipped = geneProbe(
+    'genetwoclipped',
+    two,
+    `
+inside <- function(d) all(d$start >= regions$cum_start[d$.region] &
+  d$end <= regions$cum_end[d$.region])
+cat(inside(genes_parts), inside(genes_lines), nrow(genes_parts) > 0)
+`,
+  )
+  it('clips each region’s glyphs to that region on the shared axis', () => {
+    ran(twoFigure.name)
+    expect(ran(twoClipped)).toBe('TRUE TRUE TRUE')
+  })
+
+  const bed = geneFigure('bedgenes', {
+    display: {},
+    type: 'BedTabixAdapter',
+    uri: BED,
+    regions: GENE_WINDOW,
+  })
+  const bedParts = geneProbe(
+    'bedparts',
+    { display: {}, type: 'BedTabixAdapter', uri: BED, regions: GENE_WINDOW },
+    `
+e1 <- genes_parts[genes_parts$lane == genes_lanes$id[genes_lanes$name == "EDEN.1"], ]
+cat(nrow(genes_lanes), sum(e1$part == "CDS"), sum(e1$part == "UTR"))
+`,
+  )
+  it('draws a BED12 record as a transcript', () => {
+    ran(bed.name)
+    expect(existsSync(bed.png)).toBe(true)
+    // EDEN.1: four blocks, thick 1200-7608, so a UTR either end
+    expect(ran(bedParts)).toBe('4 4 2')
+  })
+})
+
+maybe('the BED mark tracks run', () => {
+  const config = JSON.parse(
+    readFileSync(path.resolve('test_data/volvox/config_marks.json'), 'utf8'),
+  ) as {
+    tracks: {
+      trackId: string
+      adapter: { type: string }
+      displays: DisplaySpec[]
+    }[]
+  }
+  const beds = config.tracks.filter(t => t.adapter.type === 'BedTabixAdapter')
+  const cases = beds.map(t =>
+    figure(t.trackId, {
+      display: t.displays[0]!,
+      type: 'BedTabixAdapter',
+      uri: BED,
+      regions: GENE_WINDOW,
+    }),
+  )
+  it('translates every volvox BedTabix mark track', () => {
+    expect(beds.map(t => t.trackId).sort()).toEqual([
+      'marks_bars',
+      'marks_line',
+      'marks_points',
+      'marks_text',
+    ])
+    for (const c of cases) {
+      ran(c.name)
+      expect(existsSync(c.png)).toBe(true)
+    }
   })
 })
