@@ -54,17 +54,8 @@ export type {
 } from './types.ts'
 
 /**
- * The three entry kinds `makeConfigurationSchemaModel` classifies: a slot
- * definition, a constant (bare string/number), or a nested sub-schema — which
- * is the **MST type** `ConfigurationSchema()` returned, hence `IAnyType`.
- *
- * A raw nested `ConfigurationSchemaDefinition` used to be a fourth member here,
- * and it was both dead and load-bearing in the wrong direction: nothing
- * constructs a sub-schema from one (the loop has no branch for it, so it throws
- * "no type set for config slot"), while a plain object of strings and numbers is
- * exactly what a *slot definition* is — so every slot in the repo matched that
- * member instead and was never checked against `ConfigSlotDefinition` at all.
- * `type: 'enum'`, a name this system has never had, compiled for years that way.
+ * Each entry is a slot definition, a constant (bare string/number), or a
+ * sub-schema: the MST type `ConfigurationSchema()` returned.
  */
 export interface ConfigurationSchemaDefinition {
   [n: string]: ConfigSlotDefinition | string | number | IAnyType
@@ -75,15 +66,10 @@ export type RetiredSpelling = (value: unknown) => Record<string, unknown>
 export interface ConfigurationSchemaOptions<
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
   EXPLICIT_IDENTIFIER extends string | undefined,
-  // A parameter for the same reason `EXPLICIT_IDENTIFIER` is one: the prop it
-  // installs is real, and a node that does not have it should not read as
-  // though it does. Defaulted so the two-argument spelling still compiles —
-  // most references name the options type rather than infer it.
   EXPLICITLY_TYPED extends boolean | undefined = boolean | undefined,
   REQUIREMENT extends ConfigurationSchemaRequirement =
     ConfigurationSchemaRequirement,
-  // the node a hook is handed: the schema's own props, `ConfigurationSchema`
-  // fills it in from the definition
+  // the node a hook is handed, filled in from the definition
   SELF = any,
 > {
   explicitlyTyped?: EXPLICITLY_TYPED
@@ -139,23 +125,13 @@ export interface ConfigurationSchemaOptions<
 type SchemaHook = (self: any) => any
 
 /**
- * Options as **stored**: what a caller passes, except that the three
- * MST-chained hooks may have accumulated a chain by merging in a
- * `baseConfiguration`. A caller's single function is a valid chain of one, so
- * `ConfigurationSchemaOptions` is assignable to this and no call site changes.
- *
- * They stay a chain rather than being folded into one function because MST is
- * what does the chaining: `.actions()` is called once per entry, which is what
- * puts the base's members on `self` by the time the subclass's function runs,
- * and what lets the subclass override one by redeclaring its name. Folding to
- * `self => ({...base(self), ...child(self)})` would give neither, and would
- * corrupt `extend` outright (it returns `{actions, views, state}`, so a spread
- * merge drops whichever side declared fewer of the three).
- *
- * `preProcessSnapshot` is the exception and composes into a single function,
- * `child(base(snapshot))`: the base normalizes and migrates first, the subclass
- * refines. It has to stay one function because `preProcessSnapshotWith` runs it
- * straight off the registry, over a partial settings bag as well as a snapshot.
+ * Options as stored, with a `baseConfiguration`'s hooks merged in. `actions`,
+ * `views` and `extend` stay a chain that MST applies one call per entry, which
+ * puts the base's members on `self` before the subclass's function runs and
+ * lets the subclass override one by name; a spread merge would give neither,
+ * and would drop half of `extend`'s `{actions, views, state}`.
+ * `preProcessSnapshot` composes into one function, `child(base(snapshot))`,
+ * since `preProcessSnapshotWith` runs it off the registry.
  */
 export interface MergedConfigurationSchemaOptions<
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
@@ -173,8 +149,6 @@ function hookList(hook: SchemaHook | SchemaHook[] | undefined) {
   return hook === undefined ? [] : Array.isArray(hook) ? hook : [hook]
 }
 
-// base first, then child. Returns the single function unchanged when only one
-// side declares the hook, so the common case never allocates a chain.
 function chainHooks(
   base: SchemaHook | SchemaHook[] | undefined,
   child: SchemaHook | SchemaHook[] | undefined,
@@ -184,15 +158,8 @@ function chainHooks(
     : (child ?? base)
 }
 
-/**
- * Fold a subclass's schema definition over its `baseConfiguration`'s. New slots
- * are added and sub-schema entries replaced wholesale, but a slot the subclass
- * **redeclares merges field-by-field over the base's** — so an override states
- * only what actually differs and inherits the rest. (`type` comes along
- * regardless: it is what marks an entry as a slot rather than a nested
- * sub-schema, per `isSlotDefinitionEntry`.) The cases are pinned by the
- * "baseConfiguration slot override merge" tests.
- */
+// A redeclared slot merges field-by-field over the base's, so an override states
+// only what differs; a sub-schema or a constant is replaced whole.
 function mergeSchemaDefinition(
   baseDefinition: ConfigurationSchemaDefinition,
   childDefinition: ConfigurationSchemaDefinition,
@@ -203,8 +170,6 @@ function mergeSchemaDefinition(
   }
   for (const [slot, childEntry] of Object.entries(childDefinition)) {
     const baseEntry = baseDefinition[slot]
-    // both sides must be slot definitions: a sub-schema (or a constant) is an
-    // opaque entry with no fields to fold, so it keeps replace semantics
     if (isSlotDefinitionEntry(baseEntry) && isSlotDefinitionEntry(childEntry)) {
       merged[slot] = { ...baseEntry, ...childEntry }
     }
@@ -246,18 +211,11 @@ function preprocessConfigurationSchemaArguments(
     )
   }
 
-  // if we have a base configuration schema that we are
-  // extending, grab the slot definitions from that
   let schemaDefinition = inputSchemaDefinition
   let options: MergedConfigurationSchemaOptions<any, any> = inputOptions
   const baseMeta = inputOptions.baseConfiguration
     ? getConfigurationSchemaMetadata(inputOptions.baseConfiguration)
     : undefined
-  // A base with no registry entry used to be skipped in silence, producing a
-  // schema missing every inherited slot with nothing thrown anywhere, and
-  // reachable without doing anything obviously wrong:
-  // `pluginManager.pluggableConfigSchemaType(…)` hands back a `types.union`,
-  // which carries no slot table of its own.
   if (inputOptions.baseConfiguration && !baseMeta) {
     throw new Error(
       `${modelName}'s baseConfiguration is not a configuration schema: it has no registered slot table, so every slot it was meant to inherit would be dropped silently. Pass the type ConfigurationSchema() returned, not a union (pluginManager.pluggableConfigSchemaType) or a plain MST model.`,
@@ -268,15 +226,9 @@ function preprocessConfigurationSchemaArguments(
       baseMeta.definition,
       schemaDefinition,
     )
-    // Everything else merges as a shallow `{...base, ...child}` spread, where
-    // the child's value replaces the base's. The four hooks, `requires` and
-    // `retired` must not: `createBaseTrackConfig` alone declares two of the hooks, so
-    // replace-semantics meant no track config schema could ever declare its
-    // own without silently dropping display-stub injection and the legacy-key
-    // migration, and a subclass stating one requirement would have dropped
-    // every one its base stated. They compose instead, base first, and
-    // `retired` merges per key so a subclass adds a spelling without dropping
-    // the ones its base retired. See MergedConfigurationSchemaOptions.
+    // The hooks, `requires` and `retired` compose, base first, where every
+    // other option is replaced by the child's: a track schema's own
+    // preProcessSnapshot must not drop the base's display-stub injection.
     const basePreProcess = baseMeta.options.preProcessSnapshot
     const childPreProcess = inputOptions.preProcessSnapshot
     const requires = [
@@ -308,7 +260,6 @@ function makeConfigurationSchemaModel<
   DEFINITION extends ConfigurationSchemaDefinition,
   OPTIONS extends MergedConfigurationSchemaOptions<any, any>,
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
-  // now assemble the MST model of the configuration schema
   const modelDefinition: Record<string, any> = {}
   if (options.explicitlyTyped) {
     modelDefinition.type = types.optional(types.literal(modelName), modelName)
@@ -319,30 +270,19 @@ function makeConfigurationSchemaModel<
     modelDefinition[identifier] = types.identifier
   }
 
-  // String/number entries in the schema definition become volatile instance
-  // constants (read via `model.someName`). Per-slot metadata lives in the
-  // schema registry (a WeakMap keyed by the MST type, see schemaRegistry.ts),
-  // not on the instance.
   const volatileConstants: Record<string, unknown> = {}
-  // The members `setSubschema` replaces: a single sub-schema, swapped for a
-  // node built from the data, or a collection of them, assigned whole so MST
-  // reconciles the entries. Collected as the loop classifies each entry.
   const subSchemaKeys = new Set<string>()
   const collectionKeys = new Set<string>()
-  // The actual slots, which is a strictly smaller set than `modelDefinition`:
-  // that also holds the sub-schema properties and the identifier, neither of
-  // which setSlot may write. Same collect-as-you-classify as subSchemaKeys.
+  // narrower than `modelDefinition`, which also holds the identifier and the
+  // sub-schemas, neither of which setSlot may write
   const slotKeys = new Set<string>()
   const storesNull = new Set<string>()
   const featureFields = new Set<string>()
   const takesNoCallback = new Map<string, string>()
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (isConfigurationSchemaType(slotDefinition)) {
-      // a sub-configuration. A bare sub-schema is already stripDefault-wrapped
-      // (so it strips when all-default); an array/map of sub-schemas gets
-      // wrapped so an empty collection is likewise omitted from the snapshot,
-      // unless it is wrapped in a default of its own: a display built on
-      // another names its own default plot that way.
+      // an empty collection strips from the snapshot as an all-default
+      // sub-schema does, unless it names a default of its own
       if (isArrayType(slotDefinition) || isMapType(slotDefinition)) {
         modelDefinition[slotName] = isOptionalType(slotDefinition)
           ? slotDefinition
@@ -358,7 +298,6 @@ function makeConfigurationSchemaModel<
     } else if (isConstantEntry(slotDefinition)) {
       volatileConstants[slotName] = slotDefinition
     } else if (isSlotDefinitionEntry(slotDefinition)) {
-      // slotDefinition is narrowed to ConfigSlotDefinition here (no cast)
       slotKeys.add(slotName)
       try {
         modelDefinition[slotName] = ConfigSlot(slotDefinition)
@@ -377,8 +316,6 @@ function makeConfigurationSchemaModel<
         )
       }
     } else if (typeof slotDefinition === 'object') {
-      // an object that's neither a sub-schema nor a slot is almost always a
-      // slot definition missing its required `type` field
       throw new Error(`no type set for config slot ${modelName}.${slotName}`)
     } else {
       throw new Error(
@@ -391,14 +328,11 @@ function makeConfigurationSchemaModel<
 
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
-    // annotated so `ConfigurationSchemaType['Type']`, which has to name these
-    // two by hand (the model's own props are a `Record<string, any>`, so
-    // nothing derived off them keeps a signature), cannot drift from them
+    // annotated so `ConfigurationSchemaType['Type']`, which names these by
+    // hand, cannot drift from them
     .actions((self): ConfigNodeActions => ({
-      // Replace a sub-schema member whole. `data` is whatever the sub-schema's
-      // `preProcessSnapshot` takes, a string shorthand included; for a
-      // collection it is the whole list or map, and `null` resets it to its
-      // default, empty unless the collection names one.
+      // `data` is whatever the sub-schema's preProcessSnapshot takes; a
+      // collection takes the whole list or map, and `null` resets it
       setSubschema(slotName: string, data: unknown) {
         if (collectionKeys.has(slotName)) {
           self[slotName] = data ?? undefined
@@ -413,28 +347,12 @@ function makeConfigurationSchemaModel<
         self[slotName] = newSchema
         return newSchema
       },
-      // generic slot setter the config editor's slot facade routes through. A
-      // slot is a bare value-union property, so this is a plain assignment,
-      // save an array, which `refillArray` writes.
-      //
-      // **Don't weaken the membership check to a warning, and don't check
-      // against `modelDefinition`** — that also holds the identifier and the
-      // sub-schema properties, neither of which is a write this action is for.
-      // Slot-name safety is a write guard (ADR-052); `setSlot`'s tests in
-      // `configurationSchema.test.ts` pin both halves. `slotKeys` already has
-      // base-schema slots merged in, so an inherited slot passes.
-      // `null` resets, the same thing `undefined` does, because a JSON-borne
-      // caller cannot spell `undefined`: a session spec, share link or agent
-      // call can set a slot and then has no way to put it back. Omitting the
-      // key is not that — this action is the merge path, where an absent key
-      // means "leave it alone". A sub-schema reads `null` the same way, and
-      // no slot stores `null` as a value.
+      // The name check is a write guard (ADR-052), never a warning. `null`
+      // resets, as `undefined` does, since JSON cannot spell `undefined`
+      // (ADR-146).
       setSlot(slotName: string, rawValue: unknown) {
         const value = rawValue ?? undefined
         if (!slotKeys.has(slotName)) {
-          // the sub-schema branch re-classifies off the definition rather than
-          // carrying a second Set: it runs only on the way to a throw, and the
-          // predicate is the same one the loop above classified with
           throw new Error(
             isConfigurationSchemaType(schemaDefinition[slotName])
               ? `${slotName} is a sub-schema on ${modelName}, not a config slot — replace it with setSubschema`
@@ -445,10 +363,7 @@ function makeConfigurationSchemaModel<
                   .join(', ')}`,
           )
         }
-        // MST skips its own type check in a production build, and a value the
-        // slot's union cannot take is then dropped with no throw: the write
-        // reported success and the slot kept its old value. `is` still runs
-        // there, so the guard holds in both builds.
+        // MST skips its own type check in a production build; `is` does not
         if (!modelDefinition[slotName].is(value)) {
           const declared = schemaDefinition[slotName]
           const slotType = isSlotDefinitionEntry(declared)
@@ -470,8 +385,6 @@ function makeConfigurationSchemaModel<
   if (Object.keys(volatileConstants).length) {
     completeModel = completeModel.volatile((/* self */) => volatileConstants)
   }
-  // one MST call per entry, base's before the subclass's — chaining is what
-  // makes the base's members visible on `self` inside the subclass's function
   for (const hook of hookList(options.actions)) {
     completeModel = completeModel.actions(hook)
   }
@@ -498,26 +411,19 @@ function makeConfigurationSchemaModel<
     ? { type: modelName, ...identifierDefault }
     : identifierDefault
 
-  // stripDefault (not optional) so a nested all-default sub-schema is omitted
-  // from its parent's snapshot: the slot props strip themselves, the sub-schema
-  // collapses to its default, and the parent's stripDefault drops the key.
+  // stripDefault, not optional, so an all-default sub-schema leaves its
+  // parent's snapshot
   registerConfigurationSchema(completeModel, metadata)
   return types.stripDefault(completeModel, modelDefault)
 }
 
 /**
- * DEFINITION is unconstrained on purpose. It carries the *merged* definition —
- * `MergeConfigDef`, an unresolved conditional that cannot be checked against a
- * constraint — and intersecting it with `ConfigurationSchemaDefinition` to
- * satisfy one would put an index signature straight back into
- * `keyof DEFINITION`. The authoring check lives on `ConfigurationSchema`'s own
- * parameter, where the literal arrives, and on the `extends` clause below.
+ * DEFINITION is unconstrained: a constraint would put an index signature back
+ * into `keyof DEFINITION`. `ConfigurationSchema`'s own parameter checks the
+ * literal where it arrives. ADR-145.
  */
 export interface ConfigurationSchemaType<
-  // `out`: a subclass schema is a superset of its base's slots, so it reads as
-  // assignable where the base is expected. Without the annotation the parameter
-  // measures as invariant and every display factory pinned to its base schema
-  // refuses the subclass.
+  // `out`, or a factory pinned to a base schema refuses its subclasses
   out DEFINITION,
   OPTIONS extends ConfigurationSchemaOptions<any, any>,
 > extends ReturnType<
@@ -527,12 +433,10 @@ export interface ConfigurationSchemaType<
   >
 > {
   /**
-   * Overrides the factory's, whose props come off a `Record<string, any>` and
-   * so admit every name. Slots come from the definition — the identifier and
-   * an `explicitlyTyped` schema's `type` ride in as two of them — and the brand
-   * names this schema, which is what `ConfigurationSchemaForModel` infers back
-   * out. `TypeWithoutSTN` too, since a wrapper — `types.optional`,
-   * `types.stripDefault` — builds its instance from that one.
+   * Replaces the factory's `Record<string, any>` props with the definition's,
+   * and brands the node with this schema for `ConfigurationSchemaForModel`.
+   * `TypeWithoutSTN` is what a `types.optional` or `stripDefault` wrapper builds
+   * its instance from.
    */
   readonly Type: ConfigNodeProps<DEFINITION> &
     ConfigNodeActions &
@@ -564,12 +468,10 @@ type RequirementOf<D, BASE> =
       >
     : ConfigurationSchemaRequirement<RequirementWhen<D>, RequirementPath<D>>
 
-// Assigning an array makes MST reconcile it, scanning ahead for a node to reuse
-// at each mismatch: seconds for a reorder of 5,000 row names. A slot array
-// holds scalars, so no reused node keeps anything of its own, and emptying and
-// refilling it takes 50 ms for the 5,000. spliceWithArray, since spreading into
-// `push` overflows the stack past about 120,000 names. An unchanged array is
-// left alone, so it fires no observer.
+// Assigning an array makes MST reconcile it entry by entry, seconds for a
+// reorder of 5,000 row names; refilling a scalar array takes 50 ms.
+// spliceWithArray, since spreading into `push` overflows the stack past about
+// 120,000 entries.
 function refillArray(held: IObservableArray<unknown>, value: unknown[]) {
   if (held.length !== value.length || held.some((v, i) => v !== value[i])) {
     held.clear()
@@ -578,11 +480,7 @@ function refillArray(held: IObservableArray<unknown>, value: unknown[]) {
 }
 
 export function ConfigurationSchema<
-  // `const` preserves each slot's literal `type` ('stringArray', 'maybeNumber',
-  // …) through inference so `SlotValueFromDef` can key on it and return a
-  // precise value type instead of `any`. Scalar `defaultValue`s become literals
-  // as a side effect, but `SlotValueFromDef` re-widens those, so read types stay
-  // `number`/`string`/`boolean`, not `1`/`'x'`/`true`.
+  // `const` keeps each slot's literal `type`, which the read types key on
   const DEFINITION extends ConfigurationSchemaDefinition,
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined = undefined,
   EXPLICIT_IDENTIFIER extends string | undefined = undefined,
@@ -619,12 +517,8 @@ export function ConfigurationSchema<
   ) as AnyConfigurationSchemaType
 }
 
-// The frozen -> live half of TrackConfigurationReference's `get`, shared with
-// hydrateTrackConfig below so there is one hydration rather than two that can
-// drift on which env they build with. The memo it goes through belongs to the
-// PluginManager instance (ADR-031): a node built with one instance's env must
-// never be handed to another, and `pluginManager.hydratedTrackConfig` scopes
-// that structurally rather than by convention.
+// memoized per PluginManager, so a node never crosses to another instance's env
+// (ADR-031)
 function hydrateInto(
   pluginManager: PluginManager,
   schemaType: IAnyType,
@@ -637,28 +531,15 @@ function hydrateInto(
 
 /**
  * #api core/configuration
- * Hydrate a plain track config into a live config node, dispatching on its
- * `type` to find the schema. `session.tracks` holds `types.frozen` plain
- * objects until something references a track (ADR-031). One of those holds only
- * what was literally authored: a slot at its schema default is absent,
- * `preProcessSnapshot` has not run, and nothing that walks a live node applies
- * to it.
+ * Hydrate a plain track config, such as a `session.tracks` entry, into a live
+ * config node, dispatching on its `type` to find the schema. A plain entry
+ * holds only what was authored: a slot at its default is absent and
+ * `preProcessSnapshot` has not run.
  *
- * Use it where a caller needs the resolved config and may be handed either
- * form. The About dialog's "Copy config" is reached from two menus, and one of
- * them passes a `session.tracks` entry.
- *
- * Returns **undefined** when the config names a track type no plugin
- * registered, or when `create` rejects it as invalid. An un-hydrated config has
- * never been validated, so the dialog opening over it should not throw. Callers
- * fall back to using the plain object.
- *
- * Shares `TrackConfigurationReference`'s per-PluginManager cache, so hydrating
- * the same entry twice returns the same node, and in an admin session a track
- * opened later resolves to that same node. A non-admin's open track
- * resolves to the session's private working copy (ADR-032), and this function
- * returns the pristine mirror beside it. The two have the same content;
- * `CopyConfigEntryPoints.test.ts` tests both cases.
+ * Returns **undefined** when no plugin registered the type or `create` rejects
+ * the config, which has never been validated; callers fall back to the plain
+ * object. Hydrating one entry twice returns one node. A shown track resolves to
+ * the session's working copy instead (ADR-032), which has the same content.
  */
 export function hydrateTrackConfig(
   pluginManager: PluginManager,
@@ -669,10 +550,6 @@ export function hydrateTrackConfig(
     return undefined
   }
   try {
-    // getTrackType throws on an unregistered name rather than returning
-    // undefined, so it is inside the guard with `create` — the two failures are
-    // the same failure (nothing here can build this config) and neither should
-    // reach a dialog that is only trying to show it
     const { configSchema } = pluginManager.getTrackType(type)
     return hydrateInto(
       pluginManager,
@@ -685,22 +562,9 @@ export function hydrateTrackConfig(
   }
 }
 
-// A slot holding either an id string (resolved through `ref`) or a full inline
-// config snapshot (held as a standalone schema instance). Both reference kinds
-// resolve to `schemaType` instances, so MST can't auto-dispatch on the instance
-// side — the explicit snapshot dispatcher (string → ref, object → schema)
-// disambiguates. Shared by TrackConfigurationReference/DisplayConfigurationReference,
-// and by neither accident nor oversight NOT by the plain branch — see the note
-// on it in `ConfigurationReference`.
-//
-// One consequence, because both refs' `set` callbacks read as if it were not
-// true: assigning a config **node** here does not store a reference to it. The
-// dispatcher sees a non-string and picks `schemaType`, so MST tries to adopt the
-// node as an inline child — which throws if it already has a parent. `set` is
-// therefore unreachable on both refs (checked by making it throw: 231 suites
-// stayed green), and exists only because MST rejects a custom reference
-// declaring `get` without it. The plain branch, with no dispatcher, does the
-// opposite and stores the reference.
+// An id string resolves through `ref`; an object is an inline config. So
+// assigning a node here adopts it as a child rather than storing a reference,
+// which makes both refs' `set` unreachable: MST only requires one beside `get`.
 function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
   return types.union(
     {
@@ -712,30 +576,15 @@ function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
 }
 
 /**
- * Reference to a track configuration. Snapshot output is the trackId string.
- *
- * One load-bearing complication: **`types.union(trackRef, schemaType)` accepts a
- * string id OR a full config.** A view that synthesizes a track nobody else can
- * draw — a read-vs-ref synteny band, an SV inspector row, a circular view's
- * added track — writes the config here rather than registering it in
- * `session.tracks`, and it then lives and dies with the track that holds it.
- * `ReadVsRef.test.tsx` and `SVInspector.test.tsx` are the canaries.
- *
- * NOTE: don't add `as SCHEMATYPE` to the return value. It narrows SnapshotIn
- * to just the object branch, forcing callers to wrap string ids in
- * `@ts-expect-error`. The inferred union SnapshotIn is `string | SnapshotIn<schema>`.
+ * Reference to a track configuration, snapshotted as its trackId. It also takes
+ * a whole config: a view's synthesized track (a read-vs-ref band, an SV
+ * inspector row) holds its config inline and lives and dies with it. ADR-084.
  */
 function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
       const session = getSession(parent)
       const trackId = String(id)
-      // Per-id lookup: subscribes only to this trackId's derivation, so
-      // resolving one track's config doesn't re-render the others. A session
-      // with track deltas hands back a private, per-track working copy so a
-      // shown track's in-place quick-edits mutate that copy and never the
-      // shared frozen base (ADR-032); any other session falls through to the
-      // frozen hydration cache (ADR-031).
       const ret = isSessionWithEditableTrackConfig(session)
         ? session.getEditableTrackConfig(trackId, schemaType)
         : session.getTrackById(trackId)
@@ -759,53 +608,19 @@ function TrackConfigurationReference(schemaType: IAnyType) {
 }
 
 /**
- * Reference to a display configuration. Looked up inside the containing track
- * config's `displays` array. Snapshot output is the displayId string.
- *
- * Resolution order:
- *   1. by displayId
- *   2. by `parent.type` — handles old sessions where the saved displayId
- *      no longer matches but a display of the same type exists on the track
- *
- * Step 2 is the safety net because `baseTrackConfig.preProcessSnapshot`
- * already injects a stub display for every registered displayType on the
- * track, so a same-type lookup always succeeds at runtime for properly
- * loaded tracks. It is what carries a **renamed display type** across for a
- * catalog track: the injected stub is named for the new type, the display
- * model's own `preProcessSnapshot` rewrites the state model's, and the saved
- * `configuration` id still spells the old name, so only the type match
- * reconnects them. Not every pre-rename session reaches it — a track config
- * that itself declares the old display entry keeps that entry's `displayId`
- * through the alias rewrite (`{ ...d, type: canonical }`) and wins the
- * first-wins dedupe, so its session resolves by id. An older third step
- * auto-created a *detached* config when neither matched — that produced an
- * orphaned MST node whose edits silently didn't persist. Removed in favor of a
- * clear throw.
- *
- * The union's schemaType branch is symmetry with `TrackConfigurationReference`
- * rather than a path anything in tree takes: the two production writers,
- * `showTrackGeneric` and `BaseTrackModel.replaceDisplay`, both write a
- * displayId string, because a display config belongs in its track config's
- * `displays` array. It stays because it costs nothing and because dropping it
- * narrows `SnapshotIn` for every caller.
+ * Reference to a display configuration in the containing track config's
+ * `displays`, snapshotted as its displayId. An id that matches nothing falls
+ * back to the display of the parent's type, which the track config always
+ * holds a stub of: that is what reconnects a session saved before a display
+ * type was renamed.
  */
 function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
-      // track.configuration is a hydrated MST node (hydrated lazily via
-      // TrackConfigurationReference), so its displays array contains MST nodes.
       const track = getContainingTrack(parent)
       const displays: AnyConfigurationModel[] = track.configuration.displays
       const displayType = (parent as { type?: string }).type
       let ret = displays.find(d => d.displayId === id)
-
-      // Fallback: match by display type when the displayId isn't found.
-      // baseTrackConfig.preProcessSnapshot injects a display entry for every
-      // registered displayType for the track, so id-mismatch (e.g. an old
-      // session with a different displayId convention) finds a same-type
-      // entry here. The `if (displayType)` guard prevents an undefined
-      // parent.type from silently matching a display whose `.type` is also
-      // undefined.
       if (!ret && displayType) {
         ret = displays.find(d => d.type === displayType)
       }
@@ -826,15 +641,8 @@ function DisplayConfigurationReference(schemaType: IAnyType) {
   return idOrSnapshotUnion(displayRef, schemaType)
 }
 
-// Instance (`Type`) a config reference reads as. A reference to a **concrete**
-// schema reads as that schema's single-branded instance (`SCHEMA['Type']`, which
-// carries `IStateTreeNode<SCHEMA>`), so `ConfigurationSchemaForModel` recovers
-// the schema and `getConf` / `self.configuration` narrow. A reference to the
-// **widened** `AnyConfigurationSchemaType` — a factory that hasn't tightened its
-// `configSchema` param past it — has an `any` definition, so it reads `any`,
-// exactly as before this type existed: such factories gain no narrowing (their
-// slot values were already `any` via the `any` definition brand). The identifier
-// prop rides in `SCHEMA['Type']`, folded into the definition.
+// a concrete schema's single-branded instance, so reads narrow; `any` for a
+// widened schema
 type ConfigReferenceInstance<SCHEMA extends AnyConfigurationSchemaType> =
   SCHEMA extends ConfigurationSchemaType<infer D, any>
     ? IsAny<D> extends true
@@ -843,25 +651,11 @@ type ConfigReferenceInstance<SCHEMA extends AnyConfigurationSchemaType> =
     : SCHEMA['Type']
 
 /**
- * Static type of the value `ConfigurationReference` produces, and therefore of a
- * track/display state model's `configuration` prop. Its **instance** type is a
- * clean, single-branded schema instance (see `ConfigReferenceInstance`), so
- * `ConfigurationSchemaForModel` — and thus `getConf(self, slot)` /
- * `readConfObject(self.configuration, slot)` — recovers the concrete schema and
- * its precise slot value types instead of `any`. The snapshot types stay
- * `id-string | schema-snapshot`, matching the runtime union (`idOrSnapshotUnion`):
- * a saved config serializes to its id string, and both an id string and a full
- * inline snapshot are accepted as input — so views that push string ids or
- * synthesized configs (`CircularView`, `SvInspectorView`) keep type-checking.
- *
- * Built by `Omit`-ing `Type` off `IType` and re-adding it, rather than reusing
- * the runtime `ITypeUnion`: `IType`'s own `Type` is `STNValue<T, this>`, which
- * re-brands `T` with `IStateTreeNode<this>`. Layering that over an already-branded
- * `SCHEMA['Type']` (which carries `IStateTreeNode<SCHEMA>`) double-brands the
- * node, and the two competing `IStateTreeNode<…>` brands defeat the single
- * `infer SCHEMA` in `ConfigurationSchemaForModel` (leaving it `any`). Re-adding a
- * plain `Type` keeps the single brand. See the "Config read type narrowing"
- * section of `packages/core/src/configuration/CLAUDE.md`.
+ * The type of a track or display model's `configuration` prop: snapshots are
+ * `id | config`, as the runtime union takes, and the instance carries the
+ * concrete schema so `getConf(self, slot)` narrows. `Type` is re-added rather
+ * than taken from `IType`, whose `STNValue` would brand the node a second time
+ * and leave `ConfigurationSchemaForModel` inferring `any`.
  */
 export type IConfigurationReference<SCHEMA extends AnyConfigurationSchemaType> =
   Omit<
@@ -874,21 +668,10 @@ export type IConfigurationReference<SCHEMA extends AnyConfigurationSchemaType> =
   > & { readonly Type: ConfigReferenceInstance<SCHEMA> }
 
 /**
- * Dispatch by the schema's identifier: `trackId` → track-ref (resolves through
- * `session.getTrackById`), `displayId` → display-ref (resolves through the
- * parent track's displays array), anything else → plain reference.
- *
- * Display schemas must declare `explicitIdentifier: 'displayId'` (directly or
- * via `baseConfiguration: baseLinearDisplayConfigSchema`, which merges its
- * options through `preprocessConfigurationSchemaArguments`).
- *
- * The return is annotated `IConfigurationReference<SCHEMATYPE>` (see its doc)
- * so `self.configuration` carries the concrete schema. The three runtime
- * branches produce MST reference/union types over `schemaType` that are
- * assignable to that annotation, so `return ref` needs no cast — and must not
- * get one: a prior `as SCHEMATYPE` was dropped because it narrowed `SnapshotIn`
- * to just the object branch and forced callers pushing string ids to
- * `@ts-expect-error` (see `TrackConfigurationReference`'s note).
+ * A reference resolved by the schema's identifier: a `trackId` through the
+ * session, a `displayId` through the containing track's `displays`, anything
+ * else by MST's own identifier lookup. No `as SCHEMATYPE` on the return: it
+ * would narrow `SnapshotIn` to the object branch and refuse a string id.
  */
 export function ConfigurationReference<
   SCHEMATYPE extends AnyConfigurationSchemaType,
@@ -900,17 +683,8 @@ export function ConfigurationReference<
       ? TrackConfigurationReference(schemaType)
       : id === 'displayId'
         ? DisplayConfigurationReference(schemaType)
-        : // Plain (non-track/display) ref — internet accounts, connections —
-          // resolved by MST's own identifier lookup rather than through the
-          // session. **Deliberately not `idOrSnapshotUnion`**, even though it is
-          // the same two members: this branch is also handed a *live, in-tree*
-          // config node (`initializeInternetAccount` pushes
-          // `jbrowse.internetAccounts[i]` straight through), and an undispatched
-          // union sends that to the reference member because
-          // `BaseReferenceType.isAssignableFrom` defers to its target type. A
-          // `typeof snapshot === 'string'` dispatcher sends it to the schema
-          // member instead, and MST refuses to adopt a node that already has a
-          // parent. `InternetAccounts.test.ts` is the canary.
+        : // not idOrSnapshotUnion: this branch is handed live in-tree nodes
+          // (an internet account), which its dispatcher would try to adopt
           types.union(types.reference(schemaType), schemaType)
   return ref
 }
