@@ -68,7 +68,9 @@ export function createDisplayWithSession({
   assemblyOf = () => testAssembly(),
   animationMode = 'enabled',
   describeAssemblies,
+  copies = 1,
 }: {
+  copies?: number
   syntenyAdapter?: Record<string, unknown>
   trackAssemblyNames?: string[]
   geneTracks?: GeneTrackSpec[]
@@ -290,21 +292,19 @@ export function createDisplayWithSession({
   const view = session.setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
-      tracks: [
-        {
-          type: 'SyntenyTrack',
-          configuration: 'multiway_track',
-          displays: [{ type: 'MultiWaySyntenyDisplay' }],
-        },
-      ],
+      tracks: Array.from({ length: copies }, () => ({
+        type: 'SyntenyTrack',
+        configuration: 'multiway_track',
+        displays: [{ type: 'MultiWaySyntenyDisplay' }],
+      })),
     }),
   )
   view.setWidth(800)
   view.setDisplayedRegions([
     { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
   ])
-  return {
-    display: view.tracks[0]!.displays[0]! as MultiWaySyntenyDisplayModel,
-    session,
-  }
+  const displays = view.tracks.map(
+    track => track.displays[0]! as MultiWaySyntenyDisplayModel,
+  )
+  return { display: displays[0]!, displays, session }
 }

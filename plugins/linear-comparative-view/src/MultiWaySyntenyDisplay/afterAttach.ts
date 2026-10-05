@@ -230,9 +230,15 @@ function installFreezeExpiry(self: MultiWaySyntenyDisplayModel) {
   )
 }
 
-// captures the session, since `getSession` finds none once the view detaches
+const laneHolders = new WeakMap<object, Map<string, number>>()
+
+// A restored session's temporary assembly has no adder and two displays can
+// share a lane, so the last display holding a name gives it back. Captures the
+// session, since `getSession` finds none once the view detaches.
 function installLaneAssemblies(self: MultiWaySyntenyDisplayModel) {
   const session = getSession(self)
+  const holders = laneHolders.get(session) ?? new Map<string, number>()
+  laneHolders.set(session, holders)
   const held = new Set<string>()
   addDisposer(
     self,
@@ -243,16 +249,25 @@ function installLaneAssemblies(self: MultiWaySyntenyDisplayModel) {
           if (!self.holdsAssembly(lane) && !self.holdsAssembly(name)) {
             session.addTemporaryAssembly?.(assembly)
           }
-          held.add(name)
+          if (!held.has(name)) {
+            held.add(name)
+            holders.set(name, (holders.get(name) ?? 0) + 1)
+          }
         }
       },
       { name: 'MultiWayLaneAssemblies' },
     ),
   )
   addDisposer(self, () => {
-    if (isAlive(session)) {
-      for (const name of held) {
-        session.removeTemporaryAssembly?.(name)
+    for (const name of held) {
+      const rest = (holders.get(name) ?? 1) - 1
+      if (rest > 0) {
+        holders.set(name, rest)
+      } else {
+        holders.delete(name)
+        if (isAlive(session)) {
+          session.removeTemporaryAssembly?.(name)
+        }
       }
     }
   })

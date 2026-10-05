@@ -221,6 +221,13 @@ describe('the baseline', () => {
         trackAssemblyNames: ['volvox', mate],
         ...opts,
       })
+      return frameDisplay(display, mate)
+    }
+
+    async function frameDisplay(
+      display: ReturnType<typeof createDisplay>,
+      mate: string,
+    ) {
       await when(() => display.features !== undefined, { timeout: 5000 })
       display.setFeatures(
         [0, 1, 2, 3].map(
@@ -464,6 +471,28 @@ describe('the baseline', () => {
       const session = getSession(display)
       const track = display.lgv.tracks[0]!
       display.lgv.hideTrack(track.configuration.trackId)
+      expect(session.temporaryAssemblies).toEqual([])
+    })
+
+    test('two displays sharing a lane keep its temporary assembly until the last one goes', async () => {
+      const { displays, session } = createDisplayWithSession({
+        trackAssemblyNames: ['volvox', 'hg002'],
+        copies: 2,
+        describeAssemblies: () => ({ hg002: { assembly: HG002 } }),
+      })
+      for (const display of displays) {
+        await frameDisplay(display, 'hg002')
+        await when(() => display.laneAssemblyConfs.has('hg002'), {
+          timeout: 5000,
+        })
+      }
+      const view = displays[0]!.lgv
+      const [held] = session.temporaryAssemblies
+      expect(held).toEqual(HG002)
+      view.hideTrack('multiway_track')
+      expect(session.temporaryAssemblies).toEqual([held])
+      expect(session.temporaryAssemblies[0]).toBe(held)
+      view.hideTrack('multiway_track')
       expect(session.temporaryAssemblies).toEqual([])
     })
 
