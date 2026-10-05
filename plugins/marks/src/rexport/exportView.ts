@@ -1,3 +1,4 @@
+import { DEFAULT_MARK_TYPE } from '../LinearMarkDisplay/markVocabulary.ts'
 import { alignmentsPanels } from './alignmentsToR.ts'
 import { featureFields, featurePlot } from './featureToPlot.ts'
 import {
@@ -12,9 +13,10 @@ import { fieldsRead, markPlot } from './markToPlot.ts'
 import { assembleRScript } from './rScript.ts'
 import { wiggleDisplaySpec } from './wiggleToMarks.ts'
 
+import type { MarkType } from '../LinearMarkDisplay/markVocabulary.ts'
 import type { FeatureDisplaySpec } from './featureToPlot.ts'
 import type { ReaderName } from './frameFor.ts'
-import type { DisplaySpec } from './markToPlot.ts'
+import type { DisplaySpec, MarkConfig } from './markToPlot.ts'
 import type { Panel, Region } from './rScript.ts'
 
 export interface RExportTrack {
@@ -107,12 +109,24 @@ function markExporter(
   return (track, regions) => markPanels(track, regions, accepted, specOf(track))
 }
 
+/** A display as its config writes it, which leaves a mark's default type out. */
+type WrittenDisplay = Omit<DisplaySpec, 'marks'> & {
+  marks: (Omit<MarkConfig, 'mark'> & { mark?: MarkType })[]
+}
+
 function markPanels(
   track: KeyedTrack,
   regions: readonly Region[],
   accepted: readonly string[],
-  display: DisplaySpec,
+  written: WrittenDisplay,
 ): RExportPanels | RExportSkipped {
+  const display: DisplaySpec = {
+    ...written,
+    marks: written.marks.map(m => ({
+      ...m,
+      mark: m.mark ?? DEFAULT_MARK_TYPE,
+    })),
+  }
   const located = locate(track, accepted)
   if ('skipped' in located) {
     return located

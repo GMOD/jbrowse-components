@@ -171,6 +171,35 @@ const strandColours = register(
   'sort(unique(ggplot_build(pileup_volvox_alignments)$data[[1]]$fill))',
 )
 
+const defaultMark = register(
+  'default_mark',
+  scriptFor(
+    [
+      track(marks, 'marks_bars', 'LinearMarkDisplay', {
+        marks: [{ encoding: { y: 'score', color: { field: 'name' } } }],
+      }),
+    ],
+    wide,
+  ),
+  drawnRows,
+)
+
+const variantTypes = register(
+  'variant_types',
+  scriptFor(
+    [
+      track(
+        marks,
+        'marks_variants',
+        'LinearMarkDisplay',
+        markDisplay('marks_variants'),
+      ),
+    ],
+    wide,
+  ),
+  'table(df_marks_variants$type)',
+)
+
 function wiggle(display: Record<string, unknown>) {
   return scriptFor(
     [track(main, 'wiggle_track_posneg', 'LinearWiggleDisplay', display)],
@@ -308,6 +337,18 @@ maybe('the emitted script, run under R', () => {
       .sort()
     expect(results.get(strandColours)?.toLowerCase()).toBe(
       `[1] ${wanted.map(c => `"${c}"`).join(' ')}`,
+    )
+  })
+
+  it('draws a mark whose type the config leaves at its default', () => {
+    expect(
+      Number(results.get(defaultMark)?.replace('[1] ', '')),
+    ).toBeGreaterThan(0)
+  })
+
+  it('names a variant by the browser\u2019s sequence-ontology term', () => {
+    expect(results.get(variantTypes)?.replaceAll(/\s+/g, ' ')).toBe(
+      'deletion insertion SNV 2 2 41',
     )
   })
 
