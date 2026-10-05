@@ -94,9 +94,9 @@ does the same for a haplotype of your own. GRCh38 has no such alias, so
 Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and
 press **haplotypes** on the CFH / CFHR row, the complement factor H gene
 cluster. A lane missing _CFHR3_ and _CFHR1_ (Hughes et al. 2006), such as
-HG00253's second haplotype, runs from _CFH_ straight on to _CFHR4_.
+HG00253's second haplotype, breaks across both genes.
 
-<Figure caption="The CFH cluster from the haplotypes launch: RefSeq genes over one lane per structural configuration, each lane a haplotype's contig read from the graph, under its CAT genes. A lane that lacks CFHR3 and CFHR1 leaves that stretch of its neighbour unmatched in the band between them." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
+<Figure caption="The CFH cluster from the haplotypes launch: RefSeq genes over one lane per structural configuration, each lane a haplotype's contig read from the graph, under its CAT genes. HG00253's second haplotype lacks CFHR3 and CFHR1, and its lane breaks across both." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
 ## C4: haplotypes with a copy GRCh38 lacks
 
