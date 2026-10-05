@@ -9,16 +9,13 @@ import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 import TreeSidebar from './TreeSidebar.tsx'
 import { treeSidebarOffset } from './treeSidebarGeometry.ts'
 
-import type { RowBand } from './arrangeRows.ts'
 import type { RowLabelSource, TreeSidebarModel } from './types.ts'
+import type { RowResizeTarget } from '@jbrowse/core/util/useRowVirtualScroll'
 import type { ReactNode } from 'react'
-
-type RowResizeTarget = Parameters<typeof useRowVirtualScroll>[1]
 
 export interface RowsPanelModel extends TreeSidebarModel, RowResizeTarget {
   scrollTop: number
   sources: RowLabelSource[]
-  rowBands: readonly RowBand[]
   showRowLabels: boolean
   canvasWidthPx: number
 }

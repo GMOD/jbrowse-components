@@ -3,6 +3,8 @@ import { useVirtualScrollWheel } from './useVirtualScrollWheel.ts'
 
 import type { RowResizeTarget } from './applyRowResizeWheel.ts'
 
+export type { RowResizeTarget } from './applyRowResizeWheel.ts'
+
 /**
  * Wheel gestures over a **row-stack** panel — the multi-sample variant displays
  * and MAF: `shift`+wheel resizes the rows, keeping the row under the cursor
