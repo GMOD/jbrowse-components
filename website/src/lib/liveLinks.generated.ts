@@ -2965,7 +2965,7 @@ export const videoFrames: Record<
   },
   "proteins/tiled_views": {
     "width": 1920,
-    "height": 1100
+    "height": 1060
   },
   "proteins/annotation_1d": {
     "width": 1920,
