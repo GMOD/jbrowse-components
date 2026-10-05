@@ -326,7 +326,7 @@ test('a delta display of a type the base does not hold is still added', () => {
     trackId: 'vcf',
     displays: [{ type: 'LDDisplay', displayId: 'vcf-LD', foo: 1 }],
   })
-  expect((merged.displays as Display[]).map(d => d.displayId)).toEqual([
+  expect(merged.displays.map(d => d.displayId)).toEqual([
     'vcf-Chord',
     'vcf-Linear',
     'vcf-LD',

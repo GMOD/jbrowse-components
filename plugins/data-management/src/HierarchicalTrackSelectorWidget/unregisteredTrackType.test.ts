@@ -71,9 +71,7 @@ async function setup() {
 test('an unregistered track type drops its own row, not the selector', async () => {
   const { session, model } = await setup()
   // the config kept it: nothing validates a frozen track config at load
-  expect(session.tracks.map(t => t.trackId as string)).toContain(
-    'fromMissingPlugin',
-  )
+  expect(session.tracks.map(t => t.trackId)).toContain('fromMissingPlugin')
 
   expect(
     model.allTracks.flatMap(g => g.tracks.map(t => t.conf.trackId as string)),
