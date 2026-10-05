@@ -266,6 +266,9 @@
           "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db",
           "locationType": "UriLocation"
         },
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/hprc_samples.tsv"
+        },
         "assemblyNames": ["hg38"],
         "assemblyNameToPanSN": {
           "hg38": "GRCh38#0",

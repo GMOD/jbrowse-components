@@ -135,6 +135,10 @@ To read one sample at full size, right-click its bar and pick **Show only** with
 its name, or pick names under **Samples → Choose samples...**, and **Samples →
 Every sample** brings the cohort back.
 
+**Group by… → superpopulation** in the same menu splits the bars into a section
+per superpopulation, from the samples table the track names, every section on
+one ruler and row height.
+
 ## Telling KIV-2A from KIV-2B {#which-copy-is-which}
 
 Walk rows give each haplotype's copy count. KIV-2's copies are near-identical,
