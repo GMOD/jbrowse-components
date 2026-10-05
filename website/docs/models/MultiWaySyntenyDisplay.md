@@ -144,7 +144,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-fitgroups">**fitGroups**</span><br><code>MultiWayGroup[]</code> | the visible groups cut to the viewport, which each lane's frame fits | MultiWaySyntenyDisplay |
 | <span id="getter-tickintervalbp">**tickIntervalBp**</span><br><code>number</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-scrollcontentheight">**scrollContentHeight**</span><br><code>number</code> |  | MultiWaySyntenyDisplay |
-| <span id="getter-lanegenetracks">**laneGeneTracks**</span><br><code>Map&lt;string, AnyConfigurationModel&gt;</code> | keyed by each lane's own spelling, not by `laneKey` | MultiWaySyntenyDisplay |
+| <span id="getter-lanegenetracks">**laneGeneTracks**</span><br><code>Map&lt;string, AnyTrackConfig&gt;</code> | keyed by each lane's own spelling, not by `laneKey` | MultiWaySyntenyDisplay |
 | <span id="getter-lanegeneadapters">**laneGeneAdapters**</span><br><code>Map&lt;string, Record&lt;string, unknown&gt;&gt;</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-scrollviewportheight">**scrollViewportHeight**</span><br><code>number</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-anchorplacements">**anchorPlacements**</span><br><code>Map&lt;string, AxisPlacement&gt;</code> | in view px before the scroll offset; a flipped view gives x1 > x2 | MultiWaySyntenyDisplay |

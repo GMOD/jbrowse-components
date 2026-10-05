@@ -3717,6 +3717,7 @@
         "storeFileHandleLocation",
         "stripFileExtension",
         "stripTrackIds",
+        "toTrackConfigEntry",
         "toggleTrackGeneric",
         "viewCanDisplayTrack",
         "viewDisplayNames",
