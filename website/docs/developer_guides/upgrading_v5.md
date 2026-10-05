@@ -527,6 +527,14 @@ and cannot evaluate a `jexl:` callback. `hydrateTrackConfig` from
 defaults. An edit to a shown track's settings is kept in the session's
 `trackConfigDeltas`, so it now survives a session snapshot.
 
+The types now say so. `session.tracks` is a `TrackConfigEntry[]`, and
+`getTrackById` answers an `AnyTrackConfig`, which is such an entry or the live
+node of an assembly's sequence track or a connection's track. The track
+selector's `selection` and the `Core-extraTrackMenuItems` contribution's
+`config` are `AnyTrackConfig` too. `readConfObject` on an entry is a compile
+error: read `trackId` and `type` off it, and its assemblies with
+`getConfAssemblyNamesOrNone`, which answers `[]` for an entry that omits them.
+
 ## An embedded view has no title bar
 
 The single-view components draw their view in a plain bordered box, with no

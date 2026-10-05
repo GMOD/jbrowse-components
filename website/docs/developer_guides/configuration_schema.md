@@ -256,29 +256,34 @@ is what every later block reads a sub-schema through:
 }))
 ```
 
-Use `readConfObject` when you hold the **config model itself** — an entry from
-`session.tracks`, or a sub-config you resolved yourself. The multi-wiggle
-"combine selected tracks" menu item works on the track selector's selection,
-which holds configs rather than models:
+Use `readConfObject` when you hold a **config node itself**, such as a
+sub-config you resolved yourself. An entry of `session.tracks` is not one: the
+session holds each track config as the frozen plain object it was written as, a
+`TrackConfigEntry`, which omits a slot at its default, so `readConfObject`
+refuses one at compile time. Read its `trackId` and `type` directly, and any
+other slot with its default supplied, such as `getConfAssemblyNamesOrNone` for
+its assemblies. The multi-wiggle "combine selected tracks" menu item works on
+the track selector's selection, which holds those entries:
 
-<!-- include: plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#readConfObject -->
+<!-- include: plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#trackConfigEntry -->
 
 ```ts
-// `tracks` are the selected track *configs*, not track models, so these
-// are readConfObject reads rather than getConf ones
+// `tracks` are the selection's track configs, mostly frozen entries
+// that omit a slot at its default, so each read supplies the default
 assemblyNames: [
-  ...new Set(tracks.flatMap(c => readConfObject(c, 'assemblyNames'))),
+  ...new Set(tracks.flatMap(c => getConfAssemblyNamesOrNone(c))),
 ],
 adapter: {
-  subadapters: tracks.map(c => ({
-    ...readConfObject(c, 'adapter'),
-    source: readConfObject(c, 'name'),
+  subadapters: tracks.map(toTrackConfigEntry).map(c => ({
+    ...(c.adapter as Record<string, unknown>),
+    source: (c.name as string | undefined) ?? '',
   })),
 },
 ```
 
 A TypeScript error "Property 'configuration' is missing" is the signal that you
-have a raw config and should call `readConfObject` instead of `getConf`.
+hold a config rather than a model: `readConfObject` for a node, and the reads
+above for a `TrackConfigEntry`.
 
 `getConf` and `readConfObject` both accept a path array for nested access —
 `getConf(self, ['adapter', 'sequenceAdapter'])`, or the adapter form shown under
