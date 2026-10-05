@@ -7,9 +7,8 @@ summary: "The multi-sample variant worker ships one payload shape for both layou
 
 ## Status
 
-Accepted (2026-10-04). Closes the variant wire shapes call in the
-[row-displays-on-shared-kernels](../handoffs/row-displays-on-shared-kernels.md)
-handoff.
+Accepted (2026-10-04). Closes the variant wire shapes call from the
+2026-10-02 audit of the row displays against the grammar's one-object rule.
 
 ## Context
 

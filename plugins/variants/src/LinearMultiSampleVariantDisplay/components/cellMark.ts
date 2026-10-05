@@ -89,7 +89,9 @@ function placeCellX(c: CellChannels, g: CellFrame, i: number) {
 /**
  * A pixel-snapped matrix cell on the pixel grid `variant.slang`
  * owns, its x through the shader's generated twins. An inversion's triangle
- * inks its bounding box.
+ * inks its bounding box. Not render-core's `spanMark`: teaching it the snapping
+ * and the glyph shapes would add about 400 lines there to delete about 350
+ * here.
  */
 export const cellMark: MarkShape<CellChannels, CellParams> = {
   id: 'cell',
