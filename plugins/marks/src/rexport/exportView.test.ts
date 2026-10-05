@@ -1,70 +1,10 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 
 import { exportTracksToR, rKey } from './exportView.ts'
-
-import type { RExportTrack } from './exportView.ts'
-
-const VOLVOX = path.resolve('test_data/volvox')
-const BASE_URI = `${pathToFileURL(VOLVOX).href}/`
-const REGIONS = [{ refName: 'ctgA', start: 1000, end: 6000 }]
-
-type Conf = Record<string, unknown> & { adapter: Record<string, unknown> }
-
-function configTracks(file: string) {
-  const config = JSON.parse(readFileSync(path.join(VOLVOX, file), 'utf8')) as {
-    tracks: (Conf & { trackId: string; name?: string; displays?: Conf[] })[]
-  }
-  return new Map(config.tracks.map(t => [t.trackId, t]))
-}
-
-function located(adapter: Record<string, unknown>) {
-  const out: Record<string, unknown> = { ...adapter }
-  for (const [k, v] of Object.entries(adapter)) {
-    if (k.endsWith('Location') && v && typeof v === 'object') {
-      out[k] = { ...v, baseUri: BASE_URI }
-    }
-  }
-  if (typeof adapter.uri === 'string') {
-    out.uri = new URL(adapter.uri, BASE_URI).href
-  }
-  return out
-}
-
-function track(
-  source: ReturnType<typeof configTracks>,
-  trackId: string,
-  displayType: string,
-  display: Record<string, unknown>,
-): RExportTrack {
-  const t = source.get(trackId)!
-  return {
-    trackId,
-    trackName: t.name ?? trackId,
-    displayType,
-    adapter: located(t.adapter),
-    display,
-    reference: path.join(VOLVOX, 'volvox.fa'),
-  }
-}
-
-function hasR() {
-  try {
-    execFileSync(
-      'Rscript',
-      ['-e', 'library(rtracklayer); library(Rsamtools)'],
-      {
-        stdio: 'ignore',
-      },
-    )
-    return true
-  } catch {
-    return false
-  }
-}
+import { REGIONS, configTracks, hasR, track } from './testFixtures.ts'
 
 describe('exporting a view of tracks to one R script', () => {
   const marks = configTracks('config_marks.json')

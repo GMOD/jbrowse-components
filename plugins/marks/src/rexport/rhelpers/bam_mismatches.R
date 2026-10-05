@@ -4,7 +4,12 @@
 # against 'ref' (an indexed FASTA or 2bit) where it does not; with no 'ref' an
 # MD-less read contributes nothing.
 bam_mismatches <- function(uri, chrom, start, end, ref = NULL, index = uri) {
-  ga <- readGAlignments(BamFile(uri, index = index), param = ScanBamParam(
+  bf <- BamFile(uri, index = index)
+  if (!chrom %in% seqlevels(bf)) {
+    return(data.frame(read_index = integer(0), refpos = integer(0),
+                      base = character(0)))
+  }
+  ga <- readGAlignments(bf, param = ScanBamParam(
     which = GRanges(chrom, IRanges(start + 1, end)), what = "seq", tag = "MD"))
   md <- as.character(mcols(ga)$MD)
   seqs <- as.character(mcols(ga)$seq)

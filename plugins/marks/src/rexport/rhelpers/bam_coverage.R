@@ -4,7 +4,11 @@
 # Deletions and skips are carved out of the depth, as JBrowse's coverage sweep
 # carves them, and zero-depth runs are dropped.
 bam_coverage <- function(uri, chrom, start, end, keep = NULL, index = uri) {
-  ga <- readGAlignments(BamFile(uri, index = index), param = ScanBamParam(
+  bf <- BamFile(uri, index = index)
+  if (!chrom %in% seqlevels(bf)) {
+    return(data.frame(start = integer(0), end = integer(0), depth = integer(0)))
+  }
+  ga <- readGAlignments(bf, param = ScanBamParam(
     which = GRanges(chrom, IRanges(start + 1, end))))
   if (!is.null(keep)) ga <- ga[keep]
   cov <- coverage(grglist(ga, drop.D.ranges = TRUE))[[chrom]]
