@@ -81,7 +81,13 @@ const SETS: Record<string, Record<string, Scenario>> = {
   },
 }
 
-const MILESTONES = ['rootChild', 'displayMounted', 'drawn', 'appReady']
+const MILESTONES = [
+  'rootChild',
+  'noTracks',
+  'displayMounted',
+  'drawn',
+  'appReady',
+]
 
 function installMarkers() {
   const t: Record<string, number> = {}
@@ -95,6 +101,9 @@ function installMarkers() {
   new MutationObserver(() => {
     if (document.querySelector('#root *')) {
       mark('rootChild')
+    }
+    if (document.querySelector('[data-testid="tracksContainer"] button')) {
+      mark('noTracks')
     }
     if (document.querySelector('[data-display-drawn]')) {
       mark('displayMounted')

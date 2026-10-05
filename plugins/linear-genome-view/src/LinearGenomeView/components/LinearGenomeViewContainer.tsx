@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -18,15 +18,13 @@ import { stickyChromeTops } from '../stickyChrome.ts'
 import Header from './Header.tsx'
 import MiniControls from './MiniControls.tsx'
 import NavigationAnnouncer from './NavigationAnnouncer.tsx'
+import NoTracksActiveButton from './NoTracksActiveButton.tsx'
 import ResizeAllTracksHandle from './ResizeAllTracksHandle.tsx'
 import Rubberband from './Rubberband.tsx'
 import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-
-// lazies
-const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   header: {
@@ -166,9 +164,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
           ) : (
             <TracksContainer model={model}>
               {!tracks.length ? (
-                <Suspense fallback={null}>
-                  <NoTracksActiveButton model={model} />
-                </Suspense>
+                <NoTracksActiveButton model={model} />
               ) : (
                 <>
                   {pinnedTracks.length ? (
