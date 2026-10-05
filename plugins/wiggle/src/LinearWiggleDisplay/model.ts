@@ -695,8 +695,9 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Overlay collapses every source onto one row, so a tree spreading its
-       * leaves over the full height would align to nothing. A subtree filter
+       * `TreeSidebarMixin`'s hook: off in overlay, which collapses every
+       * source onto one row, so a tree spreading its leaves over the full
+       * height would align to nothing. A subtree filter
        * set in a row mode still applies and is still clearable from the track
        * menu and WiggleHint.
        */
@@ -705,6 +706,7 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * `TreeSidebarMixin`'s hook: the rows' height, below the focus chip line.
        */
       get rowsContentHeight(): number {
         return self.rowsHeight

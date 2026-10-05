@@ -127,7 +127,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-haslegendkey">**hasLegendKey**</span><br><code>boolean</code> | Overrides `LegendMixin`'s: an identity key merely waiting for data must not take the way back to the "Show legend" toggle with it. | LinearMultiRowFeatureDisplay |
 | <span id="getter-height">**height**</span><br><code>number</code> | Overrides BaseLinearDisplay.height so the track container matches the rendering canvas. The MIN_DISPLAY_HEIGHT floor is on the track, never on the row, so a sub-pixel row stays legitimate. With no rows, as under the density band, it is the `height` slot whatever the row mode. | LinearMultiRowFeatureDisplay |
 | <span id="getter-rowsheight">**rowsHeight**</span><br><code>number</code> | The box the rows paint in, under `rowsTopOffset`: the canvas, its overlays and the labels. | LinearMultiRowFeatureDisplay |
-| <span id="getter-rowscontentheight">**rowsContentHeight**</span><br><code>number</code> |  | LinearMultiRowFeatureDisplay |
+| <span id="getter-rowscontentheight">**rowsContentHeight**</span><br><code>number</code> | `TreeSidebarMixin`'s hook: the height the rows fill. | LinearMultiRowFeatureDisplay |
 | <span id="getter-sidebaroffset">**sidebarOffset**</span><br><code>number</code> | Pixel width reserved on the left for the tree, 0 when no tree shows. | LinearMultiRowFeatureDisplay |
 | <span id="getter-svgsidebar">**svgSidebar**</span><br><code>SvgSidebarProps</code> |  | LinearMultiRowFeatureDisplay |
 | <span id="getter-rowkeys">**rowKeys**</span><br><code>RowKeys</code> | The key each row name holds across every loaded region, assigned at the name's first arrival and never moved; the instance buffers carry these. | LinearMultiRowFeatureDisplay |

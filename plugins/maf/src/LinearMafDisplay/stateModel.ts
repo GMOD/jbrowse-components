@@ -1356,9 +1356,10 @@ export default function stateModelFactory(
          * Height the per-sample rows add up to — the scrolled content behind the
          * `rowsHeight` viewport. Equal to it in fit-to-height mode, so that mode
          * never scrolls; larger whenever a fixed `rowHeight` asks for more rows
-         * than the track shows. The dendrogram lays against it, so leaf rows
-         * align with row tops even where the rows scroll past the viewport: the
-         * tree canvas and the SVG labels shift by `scrollTop` as the rows do.
+         * than the track shows. Also `TreeSidebarMixin`'s hook: the dendrogram
+         * lays against it, so leaf rows align with row tops even where the
+         * rows scroll past the viewport, and the tree canvas and the SVG labels
+         * shift by `scrollTop` as the rows do.
          */
         get rowsContentHeight() {
           return self.showAlignments ? self.nrow * self.effectiveRowHeight : 0
@@ -1396,8 +1397,8 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * `root` with a hidden reference row pruned, since `root` is already
-         * narrowed to the focus.
+         * `TreeSidebarMixin`'s hook: `root` with a hidden reference row
+         * pruned, since `root` is already narrowed to the focus.
          */
         get treeRoot() {
           return self.root && !self.showReferenceRow

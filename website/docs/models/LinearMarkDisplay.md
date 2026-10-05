@@ -153,7 +153,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-scrollcontentheight">**scrollContentHeight**</span><br><code>number</code> | `TrackHeightMixin`'s hook: the rows under `rows`, taller than the plot wherever a pinned `rowHeight` asks for more than it holds. | LinearMarkDisplay |
 | <span id="getter-scrollviewportheight">**scrollViewportHeight**</span><br><code>number</code> | `TrackHeightMixin`'s hook: the plot the rows scroll behind. | LinearMarkDisplay |
 | <span id="getter-valuemarkindex">**valueMarkIndex**</span><br><code>number</code> | The first mark drawing at this zoom that stands at a value: what a row's value at a column is read from, and what clustering compares. -1 where none does, so span rows cluster nothing: they would need multi-row's presence and categorical encodings (`buildMultiRowMatrix`) moved into tree-sidebar. | LinearMarkDisplay |
-| <span id="getter-rowscontentheight">**rowsContentHeight**</span><br><code>number</code> |  | LinearMarkDisplay |
+| <span id="getter-rowscontentheight">**rowsContentHeight**</span><br><code>number</code> | `TreeSidebarMixin`'s hook: the height the rows fill. | LinearMarkDisplay |
 | <span id="getter-svgsidebar">**svgSidebar**</span><br><code>SvgSidebarProps &#124; undefined</code> |  | LinearMarkDisplay |
 | <span id="getter-plotscanlocus">**plotScanLocus**</span><br><code>string &#124; undefined</code> | The window the held field scan read, for the dialog to name. | LinearMarkDisplay |
 | <span id="getter-coarseadapterslot">**coarseAdapterSlot**</span><br><code>string</code> |  | [DensityTierMixin](../densitytiermixin#getter-coarseadapterslot) |

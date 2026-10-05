@@ -688,6 +688,7 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * `TreeSidebarMixin`'s hook: the height the rows fill.
        */
       get rowsContentHeight(): number {
         return self.nrow * self.effectiveRowHeight
