@@ -32,8 +32,8 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 74 unchecked in source, 179 in tests,
-# of 1254 total config accessor calls. The gate counts source only.
+# 82 unchecked in source, 179 in tests,
+# of 1236 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1217	readConfObject('adapter')
@@ -129,6 +129,9 @@ packages/core/src/util/tracks.ts  (7)
   765	readConfObject('displayName')
   765	readConfObject('name')
   1525	readConfObject('adapter')
+packages/display-kit/src/colorConfigSchema.ts  (2)
+  138	readConfObject('labels')
+  139	readConfObject('title')
 packages/embedded-core/src/EmbeddedSessionThemeMixin.ts  (1)
   35	getConf('theme')
 packages/product-core/src/RootModel/createConfigModel.ts  (1)
@@ -149,6 +152,13 @@ packages/product-core/src/ui/FileInfoPanel.tsx  (1)
   22	readConfObject('adapter')
 packages/product-core/src/ui/RefNameInfoDialog.tsx  (1)
   57	readConfObject('adapter')
+packages/synteny-core/src/colorRamps.ts  (6)
+  86	readConfObject('range')
+  87	readConfObject('scheme')
+  88	readConfObject('reverse')
+  89	readConfObject('domainMin')
+  90	readConfObject('domainMax')
+  91	readConfObject('domainMid')
 packages/tree-sidebar/src/rowHeight/RowHeightMixin.test.ts  (1)  [test]
   163	getConf('rowHieght')
 packages/tree-sidebar/src/TreeSidebarMixin.test.ts  (1)  [test]
