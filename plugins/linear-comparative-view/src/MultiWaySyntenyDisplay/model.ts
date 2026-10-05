@@ -178,6 +178,7 @@ import type { AxisPlacement } from './anchorAxis.ts'
 import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { GeneColorSettings, GeneColors } from './geneColor.ts'
+import type { LaneGene } from './geneGlyph.ts'
 import type {
   AnchorCoord,
   FrozenLanes,
@@ -243,6 +244,7 @@ export interface HoverTarget extends RibbonRef {
 }
 
 const NO_FLIP_PINS: ReadonlyMap<string, LaneFlipPin> = new Map()
+const NO_GENES: LaneGene[] = []
 
 function regionKey(r: LaneRegion) {
   return `${r.refName}:${r.start}-${r.end}`
@@ -2051,6 +2053,7 @@ export function stateModelFactory(
     .views(self => {
       let held: {
         lane: Lane
+        genes: LaneGene[]
         colors: LaneGlyphColors
         glyphs: MultiWayCell
         boxes: MultiWayCell
@@ -2074,9 +2077,11 @@ export function stateModelFactory(
               stroke: ink.text,
               divider: ink.divider,
             }
+            const genes = laneGenes?.get(lane.assemblyName)?.genes ?? NO_GENES
             const prev = held[row]
             if (
               prev?.lane === lane &&
+              prev.genes === genes &&
               prev.colors.genes === colors.genes &&
               prev.colors.boxes === colors.boxes &&
               prev.colors.stroke === colors.stroke &&
@@ -2086,13 +2091,14 @@ export function stateModelFactory(
             }
             const { glyphs, boxes, boxNames, geneGroups } = buildLaneCells({
               lane,
-              genes: laneGenes?.get(lane.assemblyName)?.genes ?? [],
+              genes,
               glyphHeight,
               width: self.canvasWidth,
               colors,
             })
             return {
               lane,
+              genes,
               colors,
               glyphs: { kind: 'glyphs', data: glyphs },
               boxes: { kind: 'glyphs', data: boxes },
