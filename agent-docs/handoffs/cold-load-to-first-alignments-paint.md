@@ -1,6 +1,6 @@
 ---
 name: cold-load-to-first-alignments-paint
-description: "A 2026-10-04 profile of jbrowse-web's cold load to a BAM or CRAM track's first paint. On small data the wait is serialized idle time, not bytes or a CPU hot spot. The 300ms Suspense reveal throttle, the render-RPC code's late discovery and CRAM's header-then-index order are fixed; left are releasing the BAM header fix, ~117ms of diffuse main-thread work before the render request, and a synchronous WebGL2 shader compile at first draw. Deep windows are bound by one RPC worker."
+description: "A 2026-10-04 profile of jbrowse-web's cold load to a BAM or CRAM track's first paint. On small data the wait is serialized idle time, not bytes or a CPU hot spot. The 300ms Suspense reveal throttle, the render-RPC code's late discovery and CRAM's header-then-index order are fixed; left are ~117ms of diffuse main-thread work before the render request, and a synchronous WebGL2 shader compile at first draw. Deep windows are bound by one RPC worker."
 ---
 
 # Cold load to first alignments paint
@@ -41,14 +41,11 @@ inclusive, so the main-thread boot has no hot spot to optimize.
 
 ## Plan
 
-### 1. Release the BAM header fix, then shorten the main-thread chain
+### 1. Shorten the main-thread chain before the render request
 
 The header reads no longer wait a round trip on their index: CRAM's
-`readSamHeader` reads header and `.crai` together (`f2dd3d5e4f`), and
-bam-js `1a088c0` reads the first bgzf block beside the index, **committed but
-not published**. Releasing it means a bam-js version, a
-`@gmod/bam` bump in `plugins/alignments`, and `BamAdapter.readSamHeader`'s
-comment, which still says the header waits on the index.
+`readSamHeader` reads header and `.crai` together, and `@gmod/bam` 10.0.4
+reads the first bgzf block beside the index and awaits both.
 
 On ada each took 195-200 ms off one track at 200 ms RTT and about nothing at
 80 ms, because a second chain is now as long: the assembly's `.2bit` read, then
