@@ -1,7 +1,6 @@
 import {
   ConfigurationReference,
   getConf,
-  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
