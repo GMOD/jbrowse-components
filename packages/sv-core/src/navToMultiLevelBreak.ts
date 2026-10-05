@@ -1,4 +1,5 @@
 import { stripTrackIds } from '@jbrowse/core/util'
+import { transaction } from 'mobx'
 
 import { awaitSplitViewSettled, openOrReuseSplitView } from './openSplitView.ts'
 import {
@@ -158,19 +159,22 @@ export async function navToMultiLevelBreak({
   if (reused) {
     view.setDisplayName(makeTitle(feature))
   }
-  await Promise.all(
-    panels.map((panel, idx) =>
-      view.views[idx]!.navToLocations(
-        splitRegionAtPosition(panel.region, panel.pos, assemblyName),
-      ),
-    ),
-  )
+  // Settled first, then each panel takes its contig and its window in one
+  // transaction. Handed the contig first and zoomed after, a panel spent the
+  // interval at whole-contig zoom, where a force-loaded display fetches the
+  // contig and the window's own fetch then queues behind it on the adapter's
+  // worker: filmed on COLO829's tumour CRAM, the panels sat at "Downloading
+  // alignments" for nine minutes.
   await awaitSplitViewSettled(view)
-
   const bpPerPx = breakpointBpPerPx(windowSize, view.views[0]!.width)
   for (const [idx, panel] of panels.entries()) {
     const lgv = view.views[idx]!
-    lgv.zoomTo(bpPerPx)
-    lgv.centerAt(panel.pos, panel.refName)
+    transaction(() => {
+      lgv.setDisplayedRegions(
+        splitRegionAtPosition(panel.region, panel.pos, assemblyName),
+      )
+      lgv.zoomTo(bpPerPx)
+      lgv.centerAt(panel.pos, panel.refName)
+    })
   }
 }
