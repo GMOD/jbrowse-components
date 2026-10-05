@@ -112,6 +112,66 @@ export const hostedConfigs: Record<string, RawConfig & { absent: string[] }> = {
     ],
     "absent": []
   },
+  "https://jbrowse.org/demos/orthofinder_drosophila_blocks/config.json": {
+    "assemblies": [
+      {
+        "name": "melanogaster",
+        "sequence": {
+          "trackId": "melanogaster-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "ChromSizesAdapter"
+          }
+        }
+      },
+      {
+        "name": "simulans",
+        "sequence": {
+          "trackId": "simulans-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "ChromSizesAdapter"
+          }
+        }
+      },
+      {
+        "name": "yakuba",
+        "sequence": {
+          "trackId": "yakuba-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "ChromSizesAdapter"
+          }
+        }
+      },
+      {
+        "name": "pseudoobscura",
+        "sequence": {
+          "trackId": "pseudoobscura-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "ChromSizesAdapter"
+          }
+        }
+      },
+      {
+        "name": "virilis",
+        "sequence": {
+          "trackId": "virilis-ReferenceSequenceTrack",
+          "adapter": {
+            "type": "ChromSizesAdapter"
+          }
+        }
+      }
+    ],
+    "tracks": [
+      {
+        "trackId": "dros_blocks",
+        "name": "Drosophila collinear ortholog blocks",
+        "type": "SyntenyTrack",
+        "adapter": {
+          "type": "MultiGenomePAFAdapter"
+        }
+      }
+    ],
+    "absent": []
+  },
   "https://jbrowse.org/genomes/potato/config.json": {
     "assemblies": [
       {
@@ -169,7 +229,12 @@ export const hostedConfigs: Record<string, RawConfig & { absent: string[] }> = {
         "type": "GraphTrack",
         "adapter": {
           "type": "RgfaTabixAdapter"
-        }
+        },
+        "displays": [
+          {
+            "type": "LinearGraphDisplay"
+          }
+        ]
       },
       {
         "trackId": "hprc_minigraph_bubbles",
@@ -198,11 +263,14 @@ export const hostedConfigs: Record<string, RawConfig & { absent: string[] }> = {
       {
         "trackId": "hprc_v2_1_gbz_lanes",
         "name": "HPRC release 2 haplotypes vs GRCh38, read from the graph (gbz-base)",
-        "type": "SyntenyTrack",
+        "type": "GraphTrack",
         "adapter": {
           "type": "GbzBaseSyntenyAdapter"
         },
         "displays": [
+          {
+            "type": "LinearGraphDisplay"
+          },
           {
             "type": "MultiWaySyntenyDisplay"
           }
