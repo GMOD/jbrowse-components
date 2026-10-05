@@ -9,10 +9,9 @@ import type {
 
 // NA12878's 30x Illumina reads (1000 Genomes high coverage, GRCh38) read as
 // data by a mark display: depth as a coverage step, insert size as a point per
-// pair, the reads a stack coloured by their insert, and a derived BED of the
-// pairs over 1 kb scanning the chromosome for the same signature. The
-// tutorial is docs/tutorials/read_marks.md; the deletion is a heterozygous
-// 3.9 kb call in an intron of EFCAB8.
+// pair, and a derived BED of the pairs over 1 kb scanning the chromosome for
+// the same signature. The tutorial is docs/tutorials/read_marks.md; the
+// deletion is a heterozygous 3.9 kb call in an intron of EFCAB8.
 //
 // The demo config (demos/read_marks/config.json) carries the four finished
 // tracks and an hg38 whose sequence and cytobands jbrowse.org serves: the CRAM
@@ -20,55 +19,7 @@ import type {
 // Depth and insert size are a track each, and so are the chromosome scan's
 // points and its per-bin counts — a mark display draws one y axis.
 const CONFIG = 'https://jbrowse.org/demos/read_marks/config.json'
-const CRAM =
-  'https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram'
-
 const DELETION = 'chr20:32,925,000-32,955,000'
-const LEFT_BREAKPOINT = 'chr20:32,936,200-32,939,200'
-
-// The pileup is the one form the page builds up through that the demo config
-// does not carry, so the spec adds it as a session track.
-const PILEUP_TRACK = {
-  type: 'AlignmentsTrack',
-  trackId: 'na12878_read_pileup',
-  name: 'NA12878 reads (1000 Genomes, 30x)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'CramAdapter',
-    cramLocation: { uri: CRAM },
-    craiLocation: { uri: `${CRAM}.crai` },
-  },
-  displays: [
-    {
-      type: 'LinearMarkDisplay',
-      displayId: 'na12878_read_pileup-LinearMarkDisplay',
-      marks: [
-        {
-          mark: 'span',
-          transform: [
-            {
-              type: 'formula',
-              expr: 'jexl:abs(feature.template_length)',
-              as: 'insert',
-            },
-            { type: 'pileup' },
-          ],
-          encoding: {
-            row: 'row',
-            color: {
-              field: 'insert',
-              scale: 'linear',
-              domainMin: 0,
-              domainMax: 5000,
-              range: ['#c8d8ee', '#d62728'],
-              title: 'Insert size (bp)',
-            },
-          },
-        },
-      ],
-    },
-  ],
-}
 
 const geneTrack = {
   trackId: 'ncbi_refseq_hg38',
@@ -82,7 +33,6 @@ function readsSpec(
   name: string,
   loc: string,
   marks: [string, number][],
-  sessionTracks: object[] = [],
 ): SessionUrlSpec {
   const tracks = marks.map(([trackId, height]) => ({
     trackId,
@@ -93,7 +43,6 @@ function readsSpec(
     mode: 'url',
     name,
     url: sessionSpec(CONFIG, {
-      sessionTracks,
       views: [
         {
           type: 'LinearGenomeView',
@@ -124,15 +73,6 @@ export const readMarksSpecs: ScreenshotSpec[] = [
     ]),
     viewportHeight: 655,
   },
-  // The left breakpoint at base resolution, the reads stacked and coloured
-  // by their pair's insert: the spanning pairs' reads in red end at the
-  // breakpoint, the rest in blue run through it.
-  readsSpec(
-    'read_marks/pileup',
-    LEFT_BREAKPOINT,
-    [['na12878_read_pileup', 300]],
-    [PILEUP_TRACK],
-  ),
   // Chromosome 20 end to end over the derived BED: every pair under 20 kb as a
   // point, and under it the count per zoom-following bin of the deletion-sized
   // ones on an axis pinned at 60, so the centromere's thousands saturate and

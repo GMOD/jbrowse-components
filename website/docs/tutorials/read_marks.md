@@ -42,8 +42,8 @@ GRCh38:
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz
 - UCSC's GRCh38 cytoband table, rehosted:
   https://jbrowse.org/genomes/GRCh38/cytoBand.txt
-- a hosted config with the reference, RefSeq genes and every track below but the
-  reads pileup: https://jbrowse.org/demos/read_marks/config.json
+- a hosted config with the reference, RefSeq genes and every track below:
+  https://jbrowse.org/demos/read_marks/config.json
 
 ## Loading hg38
 
@@ -149,59 +149,6 @@ Open it under the depth track, on the same window.
 
 Each pair in the upper group straddles the missing 3.9 kb. On an alignments
 track `score` is the mapping quality; click a point to open its read.
-
-## Stacking reads colored by insert size at the deletion breakpoint
-
-A `span` mark over a `pileup` transform stacks the reads. A `formula` step
-writes the absolute insert as `insert`, so both mates of a pair take one colour,
-and a ramp pinned at 5 kb paints a pair spanning the deletion red.
-
-```json addtrack
-{
-  "type": "AlignmentsTrack",
-  "trackId": "na12878_read_pileup",
-  "name": "NA12878 reads (1000 Genomes, 30x)",
-  "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
-  "assemblyNames": ["hg38"],
-  "displays": [
-    {
-      "type": "LinearMarkDisplay",
-      "marks": [
-        {
-          "mark": "span",
-          "transform": [
-            {
-              "type": "formula",
-              "expr": "jexl:abs(feature.template_length)",
-              "as": "insert"
-            },
-            { "type": "pileup" }
-          ],
-          "encoding": {
-            "row": "row",
-            "color": {
-              "field": "insert",
-              "scale": "linear",
-              "domainMin": 0,
-              "domainMax": 5000,
-              "range": ["#c8d8ee", "#d62728"],
-              "title": "Insert size (bp)"
-            }
-          }
-        }
-      ]
-    }
-  ]
-}
-```
-
-Open the track at the left edge of the depth dip, `chr20:32,936,200-32,939,200`.
-
-<Figure src="/img/read_marks/pileup.png" caption="The left breakpoint, the reads stacked and coloured by their pair's insert. The red reads end together at the breakpoint, where their mates lie across the deletion to the right; the pale reads run across it, and thin out on the far side." />
-
-An unpinned ramp spans the values on screen, so in a window with no spanning
-pair it would paint the longest ordinary insert red. Pinning `domainMin` and
-`domainMax` keeps red for the long inserts.
 
 ## Scanning chromosome 20 for clusters of long-insert pairs
 
