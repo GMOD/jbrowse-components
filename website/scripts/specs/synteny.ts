@@ -855,29 +855,25 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
   ]
 }
 
-// THREE HOMOEOLOGOUS GROUPS PER SPECIES, NOT ALL SEVEN. Both plots used to
-// draw the whole genome, a 21x21 grid in wheat and 21x21 in oat, and at that
-// scale everything the figures are about is a few pixels: "these are too
-// subtle ... a couple random dots in the wheat self alignment? who cares? ...
-// can zoom in if it makes more sense zoomed in ... i dont like subtle."
-//
-// Groups 4, 5 and 7 in both, which is not an arbitrary third: 4A's two
-// published translocations go to group 5 and group 7, so the three groups
-// that make the wheat result are exactly the three whose cells have to be in
-// frame, and cutting the other four turns a 441-cell grid into an 81-cell one
-// (each cell about 5x the area). The oat plot takes the SAME three groups so
-// the pair stays a comparison of like with like, and its answer is unchanged
-// by the restriction: oat's off-group cells are everywhere, so any subset
-// shows them.
+// Oat's groups 4, 5 and 7, not all seven. The whole genome is a 21x21 grid
+// where every segment is a few pixels; three groups make it 9x9, and oat's
+// off-group cells are everywhere, so any subset shows them. Hexaploid oat's
+// subgenomes are A, C and D.
 //
 // A restriction and not a zoom: `displayedRegionNames` per axis changes WHAT
 // the axis holds, the axes relayout, and showAllRegions fits the result, so
 // the ribbons are re-drawn rather than magnified.
-const HOMOEOLOG_GROUPS = {
-  wheat: ['4A', '4B', '4D', '5A', '5B', '5D', '7A', '7B', '7D'],
-  // hexaploid oat's subgenomes are A, C and D rather than wheat's A, B and D
-  oat: ['4A', '4C', '4D', '5A', '5C', '5D', '7A', '7C', '7D'],
-}
+const OAT_HOMOEOLOG_GROUPS = [
+  '4A',
+  '4C',
+  '4D',
+  '5A',
+  '5C',
+  '5D',
+  '7A',
+  '7C',
+  '7D',
+]
 
 // Peach chr1 over grape chr1 from the grape/peach/cacao MCScan blocks, which is
 // the case the off-screen mate marks exist for. 3,796 anchors are anchored in the
@@ -2178,265 +2174,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 660,
   },
 
-  // A COMPOSITION PART, no longer embedded on its own (review: "looks like dupe
-  // of homoeolog_synteny/wheat_vs_oat" — and it was the same PNG twice, since
-  // wheat_vs_oat composes this frame beside the oat one). multiway_synteny.md
-  // now points at that pair instead of repeating its left half, and the wheat
-  // plot stays reachable live as a second `links=` target on it. The composed
-  // figure is the one that earns the page: it makes a comparison this frame
-  // cannot make alone. Same treatment homoeolog_synteny/oat_homoeologs already
-  // has, so the spec stays — parts still render, and audit-figures only walks
-  // figures docs actually embed.
-  //
-  // Bread wheat against itself: it carries three near-complete copies of its
-  // genome, so almost every gene exists three times, and Compara curates those
-  // trios as `homoeolog_one2one` — 69,940 pairs, every one within a
-  // homoeologous group (2A-2B, 2A-2D, 2B-2D and so on).
-  //
-  // The colour is dN/dS, computed rather than downloaded: no source publishes
-  // it (Ensembl declares the two columns and fills neither), so
-  // scripts/kaks_from_pairs.py aligns each pair in codon space and runs
-  // Nei-Gojobori. 67,254 of the 69,940 pairs are written, only 58 past
-  // saturation, because homoeologs are recent enough that dS stays near 0.08.
-  //
-  // Two classes of pair are dropped rather than drawn, and both used to be in
-  // this figure. 234 came out at dS 0, where the ratio has no denominator and
-  // `dnDsRatio` paints nothing, so they sat in the plot as links that could
-  // never take a colour. 1,325 more had under three synonymous differences,
-  // where a high ratio is arithmetic rather than selection — they included
-  // every one of the largest ratios in the table.
-  //
-  // Measured off what remains: median 0.205, quartiles 0.111 and 0.342, and 507
-  // pairs above 1. Of those 507, FIVE clear a Fisher exact p of 0.05, which at
-  // that many tests is what chance alone gives — one pairwise comparison has
-  // almost no power to call positive selection, and the table now carries the
-  // substitution count and the p so a reader can see that rather than infer it
-  // from the colour. What the ramp does show, overwhelmingly, is the other
-  // direction: the great majority of these pairs are significantly BELOW 1.
-  //
-  // The fixed 0..2 domain pivoted at 1 is what makes it read — the bulk shades
-  // through blue across a 3x interquartile range. An auto-scaled attribute mode
-  // would stretch to the largest outlier and flatten all of it.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/wheat_homoeolog_selection',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/wheat_homoeolog_selection/config.json',
-      ),
-      {
-        views: [
-          {
-            // A DOTPLOT, not stacked rows. Both axes are the same genome in
-            // the same order, so as two linear rows every link is near-vertical
-            // and 68k of them read as a barcode with no structure. On two axes
-            // the same links resolve into the 21x21 grid the subgenomes make:
-            // each homoeologous group is a block off the diagonal, three
-            // subgenomes against each other.
-            type: 'DotplotView',
-            // The header said `wheat,wheat`, which is the two assembly names
-            // and not a sentence (reviewer, on the composed pair: "might need
-            // to clearly label wheat self-alignment on left, and oat
-            // self-alignment on right"). A `displayName` is the label that
-            // cannot land on the data, and in the compose it is the one piece
-            // of text at the same place in both halves.
-            displayName: 'Bread wheat self-alignment',
-            views: [
-              {
-                assembly: 'wheat',
-                displayedRegionNames: HOMOEOLOG_GROUPS.wheat,
-              },
-              {
-                assembly: 'wheat',
-                displayedRegionNames: HOMOEOLOG_GROUPS.wheat,
-              },
-            ],
-            tracks: ['wheat_homoeologs'],
-            color: { field: 'dnds' },
-          },
-        ],
-      },
-    ),
-    readySelector: displayPainted('dotplot_webgl_canvas'),
-    readyTimeout: 300000,
-    // 1000 left 233 css px of blank under the plot, per the run's own report
-    viewportHeight: 767,
-    // Narrower than the 1400 default, and it is the CELLS this is for: the
-    // dotplot's height is set by the view rather than by the frame, so a 1400
-    // frame draws a 9x9 grid as wide rectangles and a self-self diagonal comes
-    // out shallow. At 900 the plot area is close to square, the diagonals run
-    // at about 45 degrees, and the composed pair is still 1800 px wide.
-    viewportWidth: 900,
-    // The two cells where 4A pairs with a group it does not belong to, boxed by
-    // chromosome name rather than by pixel: `hLocus`/`vLocus` resolve through
-    // the axes' own layout (@jbrowse/capture's dotplotAnchor.ts), so the boxes
-    // follow the plot if its width, its assembly order or its zoom ever move.
-    //
-    // Both are the published 4A rearrangements, and the caption already names
-    // them: the distal end of 4AL came from 5AL, so those genes' homoeologs sit
-    // on 5B and 5D, and a further piece came from 7BS, whose homoeolog is on 7D.
-    // A whole-chromosome cell is the right box here because the links inside it
-    // are one tight cluster rather than a scatter — the ~600-645 Mb end of 4A
-    // against the distal ends of 5B/5D, and the ~650-744 Mb end against the
-    // first 80 Mb of 7D.
-    annotations: [
-      // WHICH GENOME THIS HALF IS, in the overlay rather than only in the view
-      // header (reviewer, twice: "clearly label wheat self-alignment on left
-      // using red annotation boxes, and oat self-alignment on right"). The
-      // `displayName` in the purple bar was the previous round's answer and it
-      // is 13px of chrome; a reader scanning the composed pair needs to know
-      // which genome is which before anything else on the frame. Over the app
-      // header, at the same x/y as the oat half's, so the two titles line up
-      // across the join.
-      {
-        type: 'text',
-        text: 'Bread wheat self-alignment',
-        fontSize: 26,
-        // on the app bar, anchored to it rather than to an x/y: check-specs
-        // ratchets hand-placed coordinates and this is chrome, so it has an
-        // element. `.MuiAppBar-root` is app-core's own App.tsx header; its top
-        // left corner is the frame's top left corner in every capture width.
-        anchor: {
-          selector: '.MuiAppBar-root',
-          alignX: 'left',
-          alignY: 'top',
-          dx: 24,
-          dy: 30,
-        },
-      },
-      { type: 'box', anchor: { hLocus: '5D', vLocus: '4A' } },
-      { type: 'box', anchor: { hLocus: '7D', vLocus: '4A' } },
-      {
-        // Three tokens, not a sentence: what the 4AL/5AL and 4AL/7BS
-        // translocations are is the caption's job, and a paragraph laid over
-        // the middle of a dotplot covers the cells it is about.
-        type: 'text',
-        text: '4AL/5AL and 4AL/7BS',
-        fontSize: 18,
-        maxWidth: 320,
-        anchor: { hLocus: '5D', vLocus: '4A', dy: -170 },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: { hLocus: '5D', vLocus: '4A', dy: -120 },
-        anchor: { hLocus: '5D', vLocus: '4A', alignY: 'top', dy: -10 },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: { hLocus: '7D', vLocus: '4A', dy: -120 },
-        anchor: { hLocus: '7D', vLocus: '4A', alignY: 'top', dy: -10 },
-      },
-    ],
-  },
-
-  // homoeolog_synteny.md: hexaploid oat against itself, on the same shape as
-  // the wheat figure above and showing the opposite karyotype. Wheat's three
-  // subgenomes are near-collinear apart from 4A; oat's have exchanged whole
-  // arms, which is what the assembly paper means by a mosaic genome, and here
-  // it is a plot whose segments repeatedly leave their homoeologous group.
-  //
-  // Nothing here comes from a homology database. Compara curates homoeolog
-  // calls only for the assembly it hosts, which for oat is neither the newest
-  // nor the most contiguous, so the anchors are computed: DIAMOND self-
-  // alignment, jcvi chaining, and scripts/kaks_from_pairs.py for the colour.
-  // The assembly is GCA_951802345.1 (cv. Williams), the most contiguous oat
-  // there is, annotated by Ensembl Plants because NCBI carries gene models for
-  // no oat assembly at all.
-  {
-    mode: 'url',
-    name: 'homoeolog_synteny/oat_homoeologs',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/oat_homoeologs/config.json',
-      ),
-      {
-        views: [
-          {
-            // A dotplot for the same reason as wheat: both axes are one genome
-            // in one order, so as stacked rows every link is near-vertical and
-            // the table reads as a barcode.
-            type: 'DotplotView',
-            // Same reason as the wheat plot's: `oat,oat` in the header is two
-            // assembly names, and in the composed pair the two headers are the
-            // one place a label can sit at the same height in both halves.
-            displayName: 'Oat self-alignment',
-            views: [
-              { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
-              { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
-            ],
-            tracks: ['oat_homoeologs'],
-            color: { field: 'dnds' },
-          },
-        ],
-      },
-    ),
-    readySelector: displayPainted('dotplot_webgl_canvas'),
-    readyTimeout: 300000,
-    viewportHeight: 767,
-    // square-ish cells, same reason as the wheat plot above
-    viewportWidth: 900,
-    // The counterpart of the two boxes on the wheat plot, and the reason the two
-    // are composed side by side: same callout, same anchor kind, opposite
-    // answer. Wheat has a handful of off-group cells and every one of them is a
-    // named 4A rearrangement; oat's are ordinary. 4A/7C is only the largest, so
-    // the label says what boxing one cell cannot — that it is not the exception.
-    annotations: [
-      // the other half of the composed pair's title, same x/y and same size as
-      // the wheat one so they sit level across the join
-      {
-        type: 'text',
-        text: 'Oat self-alignment',
-        fontSize: 26,
-        // same anchor as the wheat half, so the two titles sit level across the
-        // join of the compose
-        anchor: {
-          selector: '.MuiAppBar-root',
-          alignX: 'left',
-          alignY: 'top',
-          dx: 24,
-          dy: 30,
-        },
-      },
-      { type: 'box', anchor: { hLocus: '4A', vLocus: '7C' } },
-      // To the RIGHT of the cell. 7C is one row from the top, so a pill lifted
-      // clear of it runs into the app header, and 4A is now the leftmost column
-      // (the axes hold three groups, not seven), so a pill to its left runs off
-      // the frame -- which is where this one was.
-      {
-        // COUNTED, not "dozens" (review: "'one of dozens like it' is way too
-        // vague"). The pill was vague twice over -- it did not say which cell
-        // was boxed, and "dozens" was a guess that is also wrong. Counted off
-        // the very files this track reads (oat.homoeologs.blocks.gz mapped
-        // through oat.bed.gz) over the nine chromosomes on these axes: 27
-        // off-diagonal chromosome pairs carry anchors, 9 of them on-group (the
-        // three A/C/D pairings within groups 4, 5 and 7) and 18 off-group.
-        // Every one of those 18 carries at least 10 anchors, 14 carry 50+, and
-        // 4A/7C is the largest at 2,223 -- which is what makes it the right cell
-        // to box and the reason the label can now say so. What a homoeologous
-        // group IS still belongs in the caption, not in the pill.
-        type: 'text',
-        text: '4A/7C, largest of 18 cross-group pairs',
-        fontSize: 18,
-        maxWidth: 320,
-        // ONE ANNOTATION, and it had to become one twice over. The pill and its
-        // arrow were separate, so the gap between them was two hand-written
-        // offsets that a re-worded label kept invalidating -- the comment they
-        // replace was already the second attempt at the number. And the tail
-        // silently ignored the `alignX: 'right'` it carried (a fromAnchor is
-        // always the rect's centre, which is the trap FIGURE_CAPTURE.md
-        // names), so it sat a cell-width left of where it read as sitting and
-        // the arrow collapsed to a stub in open space between box and pill.
-        //
-        // `leader` has neither failure to make: the tail comes off the measured
-        // pill and the head off the anchor, so `dx` is the gap and nothing else
-        // is a number.
-        leader: true,
-        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'right' },
-        dx: 170,
-      },
-    ],
-  },
-
   // selection_pressure.md: the one figure here where the COLOUR is the result
   // rather than the decoration. Human against rhesus macaque at the lysozyme
   // locus on chr12, every ribbon an ortholog pair coloured by dN/dS.
@@ -2571,12 +2308,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The page's control: the same oat plot coloured by dS. A and D descend from
-  // closely related diploids and C from a more distant one, so A-D anchors sit
-  // lower on the ramp than A-C and C-D (medians 0.07 against 0.12, off
-  // oat.homoeologs.blocks.gz through oat.bed.gz). Pinned 0 to 0.25, about
-  // every pair type's 90th percentile, so a cell's colour is a dS rather than a
-  // position among the values in view.
+  // homoeolog_synteny.md: hexaploid oat against itself, coloured by dS. A and D
+  // descend from closely related diploids and C from a more distant one, so
+  // A-D anchors sit lower on the ramp than A-C and C-D (medians 0.07 against
+  // 0.12, off oat.homoeologs.blocks.gz through oat.bed.gz). Pinned 0 to 0.25,
+  // about every pair type's 90th percentile, so a cell's colour is a dS rather
+  // than a position among the values in view.
+  //
+  // The anchors are computed, not curated: Compara's oat assembly is neither
+  // the newest nor the most contiguous, so DIAMOND self-alignment, jcvi
+  // chaining and scripts/kaks_from_pairs.py build them over GCA_951802345.1
+  // (cv. Williams), annotated by Ensembl Plants.
   {
     mode: 'url',
     name: 'homoeolog_synteny/oat_ds',
@@ -2590,8 +2332,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
             type: 'DotplotView',
             displayName: 'Oat self-alignment, dS',
             views: [
-              { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
-              { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
+              { assembly: 'oat', displayedRegionNames: OAT_HOMOEOLOG_GROUPS },
+              { assembly: 'oat', displayedRegionNames: OAT_HOMOEOLOG_GROUPS },
             ],
             tracks: ['oat_homoeologs'],
             color: {
@@ -2608,21 +2350,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     viewportHeight: 767,
     viewportWidth: 900,
-  },
-
-  // The two hexaploid cereals side by side, which is the one framing that makes
-  // either plot mean anything without knowing the genomes: wheat's subgenomes
-  // step up the diagonal in near-collinear threes, oat's are scattered. Same
-  // view type, same colour mode, same viewport height, so a reader compares
-  // across rather than down.
-  {
-    mode: 'compose',
-    name: 'homoeolog_synteny/wheat_vs_oat',
-    parts: [
-      'multiway_synteny/wheat_homoeolog_selection',
-      'homoeolog_synteny/oat_homoeologs',
-    ],
-    direction: 'horizontal',
   },
 
   // orthofinder_synteny.md: human/chicken/frog/spotted gar/zebrafish, stacked

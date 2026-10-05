@@ -2,7 +2,7 @@
 /**
  * probe-dotplot-axes.ts — dump the two axes a DotplotView spec actually drew.
  *
- *   node scripts/probe-dotplot-axes.ts multiway_synteny/wheat_homoeolog_selection
+ *   node scripts/probe-dotplot-axes.ts homoeolog_synteny/oat_ds
  *
  * A dotplot is one canvas, so a callout on an off-diagonal block names its two
  * chromosomes (`anchor: { hLocus, vLocus }`, @jbrowse/capture's

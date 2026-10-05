@@ -39,8 +39,6 @@ export const figureLiveRefs: Record<string, string> = {
   "multiway_synteny/hg38_vertebrates_17p_break": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fhg38_vertebrates%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A15%2C200%2C000-16%2C400%2C000%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%2C%7B%22trackId%22%3A%22hg38_liftover_multiway%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22height%22%3A600%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/hg38_vertebrates_17p_strand": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fhg38_vertebrates%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A15%2C200%2C000-16%2C400%2C000%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%2C%7B%22trackId%22%3A%22hg38_liftover_multiway%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22ribbonColor%22%3A%7B%22field%22%3A%22strand%22%7D%2C%22height%22%3A600%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/grasses_rice_lanes": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Forthofinder_grasses%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22rice%22%2C%22loc%22%3A%223%3A31%2C590%2C000-31%2C775%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22rice_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showOnlyGenes%22%3Atrue%2C%22displayMode%22%3A%22compact%22%7D%2C%7B%22trackId%22%3A%22grasses_orthogroups%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22domain%22%3A%5B%22sorghum%22%2C%22brachypodium%22%2C%22setaria%22%2C%22maize%22%5D%2C%22height%22%3A320%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "multiway_synteny/wheat_homoeolog_selection": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fwheat_homoeolog_selection%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22DotplotView%22%2C%22displayName%22%3A%22Bread%20wheat%20self-alignment%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22wheat%22%2C%22displayedRegionNames%22%3A%5B%224A%22%2C%224B%22%2C%224D%22%2C%225A%22%2C%225B%22%2C%225D%22%2C%227A%22%2C%227B%22%2C%227D%22%5D%7D%2C%7B%22assembly%22%3A%22wheat%22%2C%22displayedRegionNames%22%3A%5B%224A%22%2C%224B%22%2C%224D%22%2C%225A%22%2C%225B%22%2C%225D%22%2C%227A%22%2C%227B%22%2C%227D%22%5D%7D%5D%2C%22tracks%22%3A%5B%22wheat_homoeologs%22%5D%2C%22color%22%3A%7B%22field%22%3A%22dnds%22%7D%7D%5D%7D&sessionName=Screenshot",
-  "homoeolog_synteny/oat_homoeologs": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Foat_homoeologs%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22DotplotView%22%2C%22displayName%22%3A%22Oat%20self-alignment%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22oat%22%2C%22displayedRegionNames%22%3A%5B%224A%22%2C%224C%22%2C%224D%22%2C%225A%22%2C%225C%22%2C%225D%22%2C%227A%22%2C%227C%22%2C%227D%22%5D%7D%2C%7B%22assembly%22%3A%22oat%22%2C%22displayedRegionNames%22%3A%5B%224A%22%2C%224C%22%2C%224D%22%2C%225A%22%2C%225C%22%2C%225D%22%2C%227A%22%2C%227C%22%2C%227D%22%5D%7D%5D%2C%22tracks%22%3A%5B%22oat_homoeologs%22%5D%2C%22color%22%3A%7B%22field%22%3A%22dnds%22%7D%7D%5D%7D&sessionName=Screenshot",
   "selection_pressure/lysozyme": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fprimate_selection%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22human%22%2C%22loc%22%3A%2212%3A67%2C835%2C000-70%2C835%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22human_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showLabels%22%3A%22name%22%2C%22displayMode%22%3A%22compact%22%7D%5D%7D%2C%7B%22assembly%22%3A%22rhesus%22%2C%22loc%22%3A%2211%3A67%2C401%2C000-70%2C319%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22rhesus_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showLabels%22%3A%22name%22%2C%22displayMode%22%3A%22compact%22%7D%5D%7D%5D%2C%22tracks%22%3A%5B%5B%22primate_orthologs%22%5D%5D%2C%22color%22%3A%7B%22field%22%3A%22dnds%22%7D%2C%22opacity%22%3A0.95%2C%22drawCurves%22%3Atrue%7D%5D%7D&sessionName=Screenshot",
   "homoeolog_synteny/oat_ds": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Foat_homoeologs%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22DotplotView%22%2C%22displayName%22%3A%22Oat%20self-alignment%2C%20dS%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22oat%22%2C%22displayedRegionNames%22%3A%5B%224A%22%2C%224C%22%2C%224D%22%2C%225A%22%2C%225C%22%2C%225D%22%2C%227A%22%2C%227C%22%2C%227D%22%5D%7D%2C%7B%22assembly%22%3A%22oat%22%2C%22displayedRegionNames%22%3A%5B%224A%22%2C%224C%22%2C%224D%22%2C%225A%22%2C%225C%22%2C%225D%22%2C%227A%22%2C%227C%22%2C%227D%22%5D%7D%5D%2C%22tracks%22%3A%5B%22oat_homoeologs%22%5D%2C%22color%22%3A%7B%22field%22%3A%22ds%22%2C%22domainMin%22%3A0%2C%22domainMax%22%3A0.25%2C%22title%22%3A%22dS%22%7D%7D%5D%7D&sessionName=Screenshot",
   "orthofinder_synteny/vertebrates": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Forthofinder_vertebrates%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22human%22%7D%2C%7B%22assembly%22%3A%22chicken%22%7D%2C%7B%22assembly%22%3A%22frog%22%7D%2C%7B%22assembly%22%3A%22gar%22%7D%2C%7B%22assembly%22%3A%22zebrafish%22%7D%5D%2C%22tracks%22%3A%5B%5B%22vertebrates_orthogroups%22%5D%2C%5B%22vertebrates_orthogroups%22%5D%2C%5B%22vertebrates_orthogroups%22%5D%2C%5B%22vertebrates_orthogroups%22%5D%5D%2C%22color%22%3A%7B%22field%22%3A%22reference%22%7D%2C%22autoDiagonalize%22%3Atrue%2C%22sameScale%22%3Atrue%2C%22collapseEmptyRows%22%3Atrue%2C%22levelHeights%22%3A%5B180%2C180%2C180%2C180%5D%2C%22opacity%22%3A0.3%2C%22drawCurves%22%3Afalse%7D%5D%7D&sessionName=Screenshot",
@@ -497,7 +495,6 @@ export const figureSlowSpecs: string[] = [
   "hic/bcr_abl1_translocation",
   "hic/compartment_switch",
   "homoeolog_synteny/oat_ds",
-  "homoeolog_synteny/oat_homoeologs",
   "hs1_vs_mm39_synteny",
   "ld/anopheles_2la",
   "ld/lct_fst_scan",
@@ -547,7 +544,6 @@ export const figureSlowSpecs: string[] = [
   "multiway_synteny/primate_tp53_lanes",
   "multiway_synteny/solanaceae_lanes",
   "multiway_synteny/vertebrate_hox_lanes",
-  "multiway_synteny/wheat_homoeolog_selection",
   "orthofinder_synteny/drosophila",
   "orthofinder_synteny/grasses",
   "orthofinder_synteny/grasses_maize_wgd",
@@ -800,16 +796,6 @@ export const figureFrames: Record<
     "width": 1500,
     "height": 660,
     "timeout": 120000
-  },
-  "multiway_synteny/wheat_homoeolog_selection": {
-    "width": 900,
-    "height": 767,
-    "timeout": 300000
-  },
-  "homoeolog_synteny/oat_homoeologs": {
-    "width": 900,
-    "height": 767,
-    "timeout": 300000
   },
   "selection_pressure/lysozyme": {
     "width": 1500,
@@ -2577,8 +2563,6 @@ export const figureCallouts: Record<string, object[]> = {
   "synteny_offscreen_mates": [{"type":"text","text":"peach alignments whose grape end is on another chromosome","fontSize":18,"maxWidth":300,"leader":true,"anchor":{"view":[0,0],"locus":"chrG1:6,000,000","alignY":"bottom","dy":8},"dx":60,"dy":-45}],
   "multiway_synteny/grape_peach_cacao_gene_orthologs": [{"type":"text","text":"three grape copies, one peach and one cacao ortholog: a tandem expansion","fontSize":18,"maxWidth":300,"leader":true,"dx":90,"anchor":{"view":[0,1],"track":"GCF_030704535.1-ncbiRefSeq","locus":"chr11:863,000","fracY":0.5}}],
   "multiway_synteny/primate_chr2_fusion": [{"type":"text","text":"fusion site","leader":true,"anchor":{"view":[0,0],"locus":"chr2:113,600,000","fracY":1},"dx":0,"dy":110}],
-  "multiway_synteny/wheat_homoeolog_selection": [{"type":"text","text":"Bread wheat self-alignment","fontSize":26,"anchor":{"selector":".MuiAppBar-root","alignX":"left","alignY":"top","dx":24,"dy":30}},{"type":"box","anchor":{"hLocus":"5D","vLocus":"4A"}},{"type":"box","anchor":{"hLocus":"7D","vLocus":"4A"}},{"type":"text","text":"4AL/5AL and 4AL/7BS","fontSize":18,"maxWidth":320,"anchor":{"hLocus":"5D","vLocus":"4A","dy":-170}},{"type":"arrow","fromAnchor":{"hLocus":"5D","vLocus":"4A","dy":-120},"anchor":{"hLocus":"5D","vLocus":"4A","alignY":"top","dy":-10}},{"type":"arrow","fromAnchor":{"hLocus":"7D","vLocus":"4A","dy":-120},"anchor":{"hLocus":"7D","vLocus":"4A","alignY":"top","dy":-10}}],
-  "homoeolog_synteny/oat_homoeologs": [{"type":"text","text":"Oat self-alignment","fontSize":26,"anchor":{"selector":".MuiAppBar-root","alignX":"left","alignY":"top","dx":24,"dy":30}},{"type":"box","anchor":{"hLocus":"4A","vLocus":"7C"}},{"type":"text","text":"4A/7C, largest of 18 cross-group pairs","fontSize":18,"maxWidth":320,"leader":true,"anchor":{"hLocus":"4A","vLocus":"7C","alignX":"right"},"dx":170}],
   "selection_pressure/lysozyme": [{"type":"text","text":"LYZ, the only pair above 1. Every neighbour is blue","fontSize":18,"maxWidth":300,"anchor":{"view":[0,0],"track":"human_genes","locus":"12:69,351,000","fracY":1,"dy":45,"alignX":"right","dx":95}},{"type":"arrow","fromAnchor":{"view":[0,0],"track":"human_genes","locus":"12:69,351,000","fracY":1,"dy":52,"alignX":"right","dx":88},"anchor":{"view":[0,0],"track":"human_genes","locus":"12:69,351,000","fracY":1,"dy":52,"dx":8}}],
   "orthofinder_synteny/vertebrates": [{"type":"text","text":"teleost duplication:\neach gar chromosome lands on two in zebrafish","fontSize":20,"maxWidth":380,"anchor":{"text":"gar","alignX":"left"},"dx":10,"dy":60}],
   "orthofinder_synteny/wheat": [{"type":"text","text":"D genome donor","fontSize":20,"anchor":{"text":"tauschii","alignX":"left"},"dx":90},{"type":"box","anchor":{"text":"tauschii"}},{"type":"text","text":"A genome donor","fontSize":20,"anchor":{"text":"urartu","alignX":"left"},"dx":90},{"type":"box","anchor":{"text":"urartu"}}],
@@ -2862,7 +2846,6 @@ export const figureComposites: Record<
     callouts: boolean
   }
 > = {
-  "homoeolog_synteny/wheat_vs_oat": {"parts":["multiway_synteny/wheat_homoeolog_selection","homoeolog_synteny/oat_homoeologs"],"horizontal":true,"callouts":false},
   "multiway_synteny/ecoli_launch_from_selection": {"parts":["multiway_synteny/ecoli_launch_selection","multiway_synteny/ecoli_launch_dialog","multiway_synteny/ecoli_launch_result"],"horizontal":false,"callouts":false},
   "mcscan_synteny/anchors_vs_simple": {"parts":["mcscan_synteny/anchors","mcscan_synteny/anchors_simple"],"horizontal":false,"callouts":false},
   "genomes_synteny/ribbon_settings": {"parts":["genomes_synteny/ribbons_default","genomes_synteny/ribbons_curved"],"horizontal":false,"callouts":false},

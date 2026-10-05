@@ -362,7 +362,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // are the whole shape, and they read at card size where the axis labels do
     // not. Cropped short of the rotated x labels along the bottom for the same
     // reason.
-    src: 'homoeolog_synteny/oat_homoeologs.png',
+    src: 'homoeolog_synteny/oat_ds.png',
     band: [0.152, 0.86],
   },
   orthofinder_synteny: {
