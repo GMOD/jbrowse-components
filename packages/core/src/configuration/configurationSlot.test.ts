@@ -246,6 +246,13 @@ describe('a maybeFileLocation slot', () => {
     expect(read({ uri: '' })).toBeUndefined()
   })
 
+  test('reads a cleared local path as unset', () => {
+    expect(
+      read({ localPath: '', locationType: 'LocalPathLocation' }),
+    ).toBeUndefined()
+    expect(read({ localPath: '' })).toBeUndefined()
+  })
+
   test('reads a configured location', () => {
     expect(read({ uri: 'x.tsv', locationType: 'UriLocation' })).toEqual({
       uri: 'x.tsv',

@@ -41,7 +41,11 @@ const CssColorEntryType = types.refinement(
 
 const MaybeFileLocation = types.snapshotProcessor(types.maybe(FileLocation), {
   preProcessor: (snap: SnapshotIn<typeof FileLocation> | undefined) =>
-    snap && 'uri' in snap && snap.uri === '' ? undefined : snap,
+    snap &&
+    (('uri' in snap && snap.uri === '') ||
+      ('localPath' in snap && snap.localPath === ''))
+      ? undefined
+      : snap,
 })
 
 // The slot type vocabulary. `satisfies`, not an annotation, so the literal keys
