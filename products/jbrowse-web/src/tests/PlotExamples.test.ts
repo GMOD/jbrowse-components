@@ -35,6 +35,7 @@ const withPlot = displays.filter(({ conf }) => plotKeysOf(conf).length > 0)
 test('the displays with a plot are the ones the grammar reaches', () => {
   expect(withPlot.map(({ display }) => display.name).sort()).toEqual([
     'ChordVariantDisplay',
+    'LDTrackDisplay',
     'LGVSyntenyDisplay',
     'LinearAlignmentsDisplay',
     'LinearBasicDisplay',

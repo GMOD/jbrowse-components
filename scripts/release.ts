@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Bump versions, write the changelog and blog post, commit, tag, push. CI
-// publishes from the tag.
+// Bump versions, write the changelog and blog post, commit, push, wait for Push
+// to go green on that commit, then tag. CI publishes from the tag.
 //
 //   pnpm release <patch|minor|major> [--skip-ci-check]
 //   pnpm release --version 5.0.0-beta.1     # explicit target, incl. prereleases
@@ -188,6 +188,55 @@ function assertCiGreen(head: string) {
     throw new Error(`CI is still running on main:\n${list(pending, '…')}`)
   }
   console.log(`  ✓ ${checks.length} checks green`)
+}
+
+const POLL_MS = 15_000
+const APPEAR_MS = 5 * 60_000
+const WAIT_MS = Number(process.env.CI_WAIT_MINUTES ?? 60) * 60_000
+
+const sleep = (ms: number) =>
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+
+// Tags only after Push is green on the release commit itself: Publish and
+// Release start on the tag and cannot un-ring it. assertCiGreen checks the
+// commit before the version bump; this checks the one that gets tagged.
+function waitForPushCi(sha: string) {
+  const short = sha.slice(0, 9)
+  const started = Date.now()
+  let announced: string | undefined
+  for (;;) {
+    const raw = capture('gh', [
+      'api',
+      `repos/${REPO}/actions/runs?head_sha=${sha}`,
+      '--jq',
+      '.workflow_runs[] | select(.name == "Push") | "\\(.id)\t\\(.status)\t\\(.conclusion // "")\t\\(.html_url)"',
+    ])
+    const [id, status, conclusion, url] = raw.split('\n')[0]?.split('\t') ?? []
+    if (status === 'completed') {
+      if (conclusion !== 'success') {
+        throw new Error(
+          `Push concluded ${conclusion} on ${short}: ${url}\n` +
+            'Nothing is tagged. Fix forward on main, then re-run pnpm release.',
+        )
+      }
+      console.log(`  ✓ Push is green on ${short}: ${url}`)
+      return
+    }
+    if (id && announced !== id) {
+      console.log(`Waiting for Push on ${short}: ${url}`)
+      announced = id
+    }
+    const waited = Date.now() - started
+    if (!id && waited > APPEAR_MS) {
+      throw new Error(`No Push run appeared for ${short} in 5 minutes.`)
+    }
+    if (waited > WAIT_MS) {
+      throw new Error(
+        `Push is still ${status} on ${short} after ${WAIT_MS / 60_000} minutes: ${url}`,
+      )
+    }
+    sleep(POLL_MS)
+  }
 }
 
 // A prerelease ships packages and binaries but is not "the release": it gets no
@@ -559,23 +608,22 @@ function main() {
   // was chosen for.
   run('git', ['add', '--', ...written, ...deleted])
   run('git', ['commit', '--message', releaseTag, '--', ...written, ...deleted])
-  run('git', ['tag', '-a', releaseTag, '-m', releaseTag])
   try {
-    run('git', ['push', '--follow-tags'])
+    run('git', ['push'])
   } catch (e) {
-    // The commit and tag are local at this point, so the release is recoverable
-    // — but only if you know not to re-run and cut a second one. The tag has to
-    // come off before the rebase and go back on after: an annotated tag names a
-    // commit, and the rebase replaces the one it names.
     throw new Error(
       `Push failed (${e instanceof Error ? e.message : e}).\n` +
-        `${releaseTag} is committed and tagged LOCALLY. Do not re-run pnpm release.\n` +
-        'Rebase onto whatever landed, then re-tag and push:\n' +
-        `  git tag -d ${releaseTag} && git pull --rebase && git tag -a ${releaseTag} -m ${releaseTag} && git push --follow-tags\n` +
-        `To abandon instead: git tag -d ${releaseTag} && git reset --hard origin/main`,
+        `${releaseTag} is committed LOCALLY and untagged. Do not re-run pnpm release.\n` +
+        'Rebase onto whatever landed and push:\n' +
+        '  git pull --rebase && git push\n' +
+        `then, once Push is green, tag it: git tag -a ${releaseTag} -m ${releaseTag} && git push origin ${releaseTag}\n` +
+        'To abandon instead: git reset --hard origin/main',
       { cause: e },
     )
   }
+  waitForPushCi(capture('git', ['rev-parse', 'HEAD']))
+  run('git', ['tag', '-a', releaseTag, '-m', releaseTag])
+  run('git', ['push', 'origin', releaseTag])
 
   console.log(`✓ Released ${releaseTag}`)
 }

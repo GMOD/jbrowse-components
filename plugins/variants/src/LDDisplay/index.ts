@@ -2,6 +2,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import ldTrackDisplayConfigSchema from './configSchemaLDTrack.ts'
+import { LD_PLOT_EXAMPLES } from './plotExamples.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -22,6 +23,7 @@ export default function LDDisplayF(pluginManager: PluginManager) {
         trackType: 'LDTrack',
         rpcMethods: ['RenderLDData'],
         viewType: 'LinearGenomeView',
+        plotExamples: LD_PLOT_EXAMPLES,
         ReactComponent: lazyWithPreload(
           () => import('./components/LDDisplayComponent.tsx'),
         ),
