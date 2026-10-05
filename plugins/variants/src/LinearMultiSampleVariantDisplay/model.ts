@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { radioItems } from '@jbrowse/core/ui/menuItems'
 import {
   canonicalizeViewRefName,
   getNotificationSink,
@@ -100,7 +99,6 @@ import {
 } from '../shared/getSources.ts'
 import {
   variantContextMenuItems,
-  variantShowSubmenuItems,
   variantTrackMenuItems,
 } from '../shared/multiSampleVariantMenuItems.ts'
 import {
@@ -112,7 +110,6 @@ import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import { getVariantColorScales } from '../shared/variantLegend.ts'
 import {
   VARIANT_LANE_BOUNDS,
-  VARIANT_LANE_LABEL_OPTIONS,
   variantTopBandsGeometry,
 } from '../shared/variantTopBands.ts'
 import { cellGlyphs } from './components/cellGlyphs.ts'
@@ -533,8 +530,7 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * The filters the `filter` config slot holds. In its own block ahead
-         * of every reader so they reach it through `self`.
+         * The filters the `filter` config slot holds.
          */
         configuredFilters(): string[] {
           return configuredJexlFilters(self)
@@ -640,6 +636,16 @@ export function stateModelFactory(
          */
         get unit(): VariantUnit {
           return getConf(self, 'unit')
+        },
+        /**
+         * #getter
+         * Whether an insertion draws as a marker sized by its inserted bp, or
+         * at the 2px floor like a SNP. The marker overlay, the hover
+         * highlight and the click target all read it through
+         * `variantCellSpanPx`, so the three agree.
+         */
+        get showInsertionGlyphs(): boolean {
+          return getConf(self, 'showInsertionGlyphs')
         },
         /**
          * #getter
@@ -777,10 +783,6 @@ export function stateModelFactory(
           return VARIANT_FEATURE_WIDGET
         },
       }))
-      // The derived, self-releasing too-large banner is opt-in via
-      // `gateEnabled` below: the cell-data RPC then measures the region set
-      // before it downloads, and afterAttach clears the estimate on chromosome
-      // nav. Byte-only — no density axis.
       .actions(self => {
         const fetchMetadata = createAdapterMetadataFetch(self)
         return {
@@ -950,63 +952,61 @@ export function stateModelFactory(
           setShadeByDosage(arg: boolean) {
             setConf(self, 'shadeByDosage', arg)
           },
+          /**
+           * #action
+           * Switch the variant lane on or off. The rows resize with it, because
+           * `availableHeight` subtracts the band, so the lane takes its space
+           * from the plot and the track keeps its height.
+           */
+          setShowVariantLane(arg: boolean) {
+            setConf(self, 'showVariantLane', arg)
+          },
+          /**
+           * #action
+           * Resize the variant lane, clamped. Clamped in the setter rather than
+           * at read time for the same reason `setLineZoneHeight` is: a drag can
+           * deliver any number, and a band dragged shut has to stay grabbable.
+           */
+          setVariantLaneHeight(arg: number) {
+            setConf(
+              self,
+              'variantLaneHeight',
+              clampBandHeight(self.variantLaneHeight, arg, VARIANT_LANE_BOUNDS),
+            )
+          },
+          /**
+           * #action
+           */
+          setVariantLaneLabels(arg: ShowLabelsMode) {
+            setConf(self, 'variantLaneLabels', arg)
+          },
+          /**
+           * #action
+           */
+          setVariantLayout(arg: 'genomic' | 'columns') {
+            setConf(self, 'variantLayout', arg)
+            // the other layout mounts a backend of its own; a failure of this
+            // one's must not keep the banner up in its place
+            self.setRenderError(undefined)
+          },
+          /**
+           * #action
+           */
+          setLineZoneHeight(n: number) {
+            setConf(
+              self,
+              'lineZoneHeight',
+              clampLineZoneHeight(self.lineZoneHeight, n),
+            )
+          },
+          /**
+           * #action
+           */
+          setBackendDrawsColumns(arg: boolean) {
+            self.backendDrawsColumns = arg
+          },
         }
       })
-      .actions(self => ({
-        /**
-         * #action
-         * Switch the variant lane on or off. The rows resize with it, because
-         * `availableHeight` subtracts the band, so the lane takes its space
-         * from the plot and the track keeps its height.
-         */
-        setShowVariantLane(arg: boolean) {
-          setConf(self, 'showVariantLane', arg)
-        },
-        /**
-         * #action
-         * Resize the variant lane, clamped. Clamped in the setter rather than
-         * at read time for the same reason `setLineZoneHeight` is: a drag can
-         * deliver any number, and a band dragged shut has to stay grabbable.
-         */
-        setVariantLaneHeight(arg: number) {
-          setConf(
-            self,
-            'variantLaneHeight',
-            clampBandHeight(self.variantLaneHeight, arg, VARIANT_LANE_BOUNDS),
-          )
-        },
-        /**
-         * #action
-         */
-        setVariantLaneLabels(arg: ShowLabelsMode) {
-          setConf(self, 'variantLaneLabels', arg)
-        },
-        /**
-         * #action
-         */
-        setVariantLayout(arg: 'genomic' | 'columns') {
-          setConf(self, 'variantLayout', arg)
-          // the other layout mounts a backend of its own; a failure of this
-          // one's must not keep the banner up in its place
-          self.setRenderError(undefined)
-        },
-        /**
-         * #action
-         */
-        setLineZoneHeight(n: number) {
-          setConf(
-            self,
-            'lineZoneHeight',
-            clampLineZoneHeight(self.lineZoneHeight, n),
-          )
-        },
-        /**
-         * #action
-         */
-        setBackendDrawsColumns(arg: boolean) {
-          self.backendDrawsColumns = arg
-        },
-      }))
       .views(self => ({
         /**
          * #getter
@@ -1397,10 +1397,6 @@ export function stateModelFactory(
             lastRowRemap = out
             return out
           },
-          // Row-height model: `rowHeight` (raw setting, 0 = fit) and
-          // `effectiveRowHeight` (resolved) are `RowHeightMixin`'s; what this
-          // display owes it is `autoRowHeight` below. See
-          // agent-docs/reference/ROW_HEIGHT_AND_FIT.md.
           /**
            * #getter
            * The bands stacked above the rows — the variant lane and the
@@ -1623,30 +1619,6 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Whether an insertion is drawn wider than the reference span it
-         * consumes — a marker sized by the inserted bp — or at the 2px floor
-         * like a SNP.
-         *
-         * A getter and not three `getConf` calls, because it is the answer
-         * *three* separate pieces of geometry need and they must give the same
-         * one: the marker overlay, the cells' hover highlight, and their click
-         * target. All three read it through `variantCellSpanPx`, which is where
-         * the invariant is written down.
-         *
-         * It used to be four — the variant lane's marks were the fourth. They
-         * are plugin-canvas boxes now, and a box there is its reference span,
-         * so the band does not widen an insertion at all; the length lives in
-         * the rows' markers alone.
-         */
-        get showInsertionGlyphs(): boolean {
-          return getConf(self, 'showInsertionGlyphs')
-        },
-        get visibleRegions() {
-          const view = self.host
-          return view.visibleRegions
-        },
-        /**
-         * #getter
          * The width the columns are laid out in: the rounded **content**
          * width, so they still fill the drawn matrix when the genome doesn't
          * reach across the viewport. Not `canvasWidthPx`, the viewport box a
@@ -1656,8 +1628,6 @@ export function stateModelFactory(
         get matrixWidth() {
           return self.view.totalWidthPxWithoutBorders
         },
-      }))
-      .views(self => ({
         // Resolved geometry, never undefined. "The view isn't measured yet" is
         // the mixin-wide `canRender` gate, and "no payload" falls out of an
         // empty cell map — neither is a nullable state.
@@ -1665,68 +1635,11 @@ export function stateModelFactory(
           return {
             canvasWidth: self.atGenomicPositions
               ? self.canvasWidthPx
-              : self.matrixWidth,
+              : this.matrixWidth,
             canvasHeight: self.availableHeight,
             rowHeight: self.effectiveRowHeight,
             scrollTop: self.scrollTop,
           }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         */
-        showSubmenuItems(): MenuItem[] {
-          return [
-            ...variantShowSubmenuItems(
-              self as LinearMultiSampleVariantDisplayModel,
-            ),
-            {
-              label: 'Show as genotype matrix',
-              helpText:
-                'Draw one equal-width column per variant in view, tied to its position by a line, so the genotype pattern across variants a few bases apart stays readable at any zoom. Off, each variant is drawn across the bases it covers, so a deletion reads as long as it is',
-              type: 'checkbox',
-              checked: !self.atGenomicPositions,
-              onClick: () => {
-                self.setVariantLayout(
-                  self.atGenomicPositions ? 'columns' : 'genomic',
-                )
-              },
-            },
-            ...(self.atGenomicPositions
-              ? [
-                  {
-                    label: 'Show variant lane',
-                    helpText:
-                      'Draw the variants themselves in a lane above the genotype rows, at their genomic positions and in whatever "Color by → Cells" is set to — the relationship the coverage band has to a pileup. The lane takes its height from the rows rather than growing the track',
-                    type: 'checkbox' as const,
-                    checked: self.showVariantLane,
-                    onClick: () => {
-                      self.setShowVariantLane(!self.showVariantLane)
-                    },
-                  },
-                ]
-              : []),
-            // plugin-canvas's own five choices under its own names, so a
-            // reader who has set this on a variant track finds the same menu
-            // here
-            ...(self.showVariantLane
-              ? [
-                  {
-                    label: 'Variant lane labels',
-                    helpText:
-                      'Which text is drawn under each mark. The lane is one row, so a label is drawn only where it clears the previous one — they thin out as you zoom out, and a line is dropped when the lane is too short to hold the mark and the text',
-                    subMenu: radioItems(
-                      VARIANT_LANE_LABEL_OPTIONS,
-                      self.variantLaneLabels,
-                      mode => {
-                        self.setVariantLaneLabels(mode)
-                      },
-                    ),
-                  },
-                ]
-              : []),
-          ]
         },
       }))
       .views(self => {
@@ -2198,7 +2111,7 @@ export function stateModelFactory(
             ]
           }
           if (lane) {
-            const region = self.visibleRegions.find(
+            const region = self.host.visibleRegions.find(
               r => r.displayedRegionIndex === lane.displayedRegionIndex,
             )
             if (!region) {

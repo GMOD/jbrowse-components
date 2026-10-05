@@ -44,7 +44,7 @@ function getHoveredFeature(
     return undefined
   }
 
-  const region = regionAtPixel(model.visibleRegions, mouseX)
+  const region = regionAtPixel(model.host.visibleRegions, mouseX)
   if (!region) {
     return undefined
   }

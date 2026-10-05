@@ -120,7 +120,7 @@ function paintedText(display: LinearMultiSampleVariantDisplayModel) {
     ctx,
     display.laneLaidOutDataMap,
     display.renderBlocks,
-    display.visibleRegions,
+    display.host.visibleRegions,
     {
       canvasWidth: display.canvasWidthPx,
       bandHeight: display.topBands.laneHeight,

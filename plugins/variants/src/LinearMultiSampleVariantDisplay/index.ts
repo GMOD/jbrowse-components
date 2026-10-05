@@ -25,9 +25,8 @@ export default function LinearMultiSampleVariantDisplayF(
       helpText:
         'One row per sample (or haplotype), each variant drawn at its genomic position or as one of a row of equal-width columns',
       configSchema,
-      // lazily loaded: the multi-sample base model and its genotype machinery
-      // are fetched when a variant track picks this display or a session names
-      // it
+      // lazily loaded: the model and its genotype machinery are fetched when
+      // a variant track picks this display or a session names it
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'VariantTrack',
       rpcMethods: ['MultiSampleVariantGetCellData'],

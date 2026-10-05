@@ -1,3 +1,4 @@
+import { variantShowSubmenuItems } from '../shared/multiSampleVariantMenuItems.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 test('the layout is a fetch input, and columns spend no band on the lane', () => {
@@ -23,9 +24,9 @@ test('the layout is a fetch input, and columns spend no band on the lane', () =>
 test('Show as genotype matrix switches the layout both ways', () => {
   const { display } = createTestEnvironment().createDisplay()
   const matrixItem = () => {
-    const item = display
-      .showSubmenuItems()
-      .find(i => 'label' in i && i.label === 'Show as genotype matrix')
+    const item = variantShowSubmenuItems(display).find(
+      i => 'label' in i && i.label === 'Show as genotype matrix',
+    )
     if (!item || !('checked' in item) || !('onClick' in item)) {
       throw new Error('no "Show as genotype matrix" checkbox')
     }

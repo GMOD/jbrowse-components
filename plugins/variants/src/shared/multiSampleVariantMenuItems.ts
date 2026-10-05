@@ -1,5 +1,6 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
+import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -46,6 +47,7 @@ import {
 import { IMPACT_FIELD } from './variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from './variantFilterExamples.ts'
 import { variantFilterFields } from './variantFilterFields.ts'
+import { VARIANT_LANE_LABEL_OPTIONS } from './variantTopBands.ts'
 
 import type { LinearMultiSampleVariantDisplayModel } from '../LinearMultiSampleVariantDisplay/model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -93,8 +95,7 @@ function rowColorItems(self: LinearMultiSampleVariantDisplayModel): MenuItem[] {
   }))
 }
 
-// Items for the "Show..." submenu. The display extends them via super-capture
-// with its variant lane rows; the subtree filter has its own entry via
+// Items for the "Show..." submenu; the subtree filter has its own entry via
 // `clusteringMenuItem`.
 export function variantShowSubmenuItems(
   self: LinearMultiSampleVariantDisplayModel,
@@ -131,6 +132,49 @@ export function variantShowSubmenuItems(
         self.setShowTooltips(!self.showTooltips)
       },
     },
+    {
+      label: 'Show as genotype matrix',
+      helpText:
+        'Draw one equal-width column per variant in view, tied to its position by a line, so the genotype pattern across variants a few bases apart stays readable at any zoom. Off, each variant is drawn across the bases it covers, so a deletion reads as long as it is',
+      type: 'checkbox',
+      checked: !self.atGenomicPositions,
+      onClick: () => {
+        self.setVariantLayout(self.atGenomicPositions ? 'columns' : 'genomic')
+      },
+    },
+    ...(self.atGenomicPositions
+      ? [
+          {
+            label: 'Show variant lane',
+            helpText:
+              'Draw the variants themselves in a lane above the genotype rows, at their genomic positions and in whatever "Color by → Cells" is set to — the relationship the coverage band has to a pileup. The lane takes its height from the rows rather than growing the track',
+            type: 'checkbox' as const,
+            checked: self.showVariantLane,
+            onClick: () => {
+              self.setShowVariantLane(!self.showVariantLane)
+            },
+          },
+        ]
+      : []),
+    // plugin-canvas's own five choices under its own names, so a
+    // reader who has set this on a variant track finds the same menu
+    // here
+    ...(self.showVariantLane
+      ? [
+          {
+            label: 'Variant lane labels',
+            helpText:
+              'Which text is drawn under each mark. The lane is one row, so a label is drawn only where it clears the previous one — they thin out as you zoom out, and a line is dropped when the lane is too short to hold the mark and the text',
+            subMenu: radioItems(
+              VARIANT_LANE_LABEL_OPTIONS,
+              self.variantLaneLabels,
+              mode => {
+                self.setVariantLaneLabels(mode)
+              },
+            ),
+          },
+        ]
+      : []),
   ]
 }
 
@@ -150,7 +194,7 @@ export function variantTrackMenuItems(
     loaded,
   )
   return [
-    ...makeShowSubMenu(self.showSubmenuItems()),
+    ...makeShowSubMenu(variantShowSubmenuItems(self)),
     // No presets: a cohort's useful row heights depend on how many samples it
     // has, so fit and a typed height are the two that mean anything here.
     rowHeightMenuItem(self),

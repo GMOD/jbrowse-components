@@ -42,7 +42,7 @@ function getHoveredLaneMark(
   const result = performMultiRegionHitDetection(
     model.laneLaidOutDataMap,
     model.laneFlatbushIndexes,
-    model.visibleRegions,
+    model.host.visibleRegions,
     mouseX,
     mouseY,
   )
@@ -166,10 +166,10 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
     laneRenderedLabels,
     laneFontSize,
     renderBlocks,
-    visibleRegions,
     topBands,
     canvasWidthPx,
   } = model
+  const { visibleRegions } = model.host
   const { laneHeight } = topBands
   return laneHeight > 0 ? (
     <div style={{ position: 'absolute', top: 0, left: 0 }}>
