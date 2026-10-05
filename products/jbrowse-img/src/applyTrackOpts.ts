@@ -15,7 +15,6 @@ import { trackMatches, trackName } from './trackFields.ts'
 
 import type { AssertNever, AssertTrue, Covers, Track } from './types.ts'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   COMPACTNESS_PRESETS,
   CategoryFilter,
@@ -23,13 +22,11 @@ import type {
   ReadCategoryKey,
 } from '@jbrowse/plugin-alignments'
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
-import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   LinearMultiSampleVariantDisplayModel,
   LinearVariantDisplayModel,
 } from '@jbrowse/plugin-variants'
-import type linearWiggleDisplayModelFactory from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
 // The filter half of an alignments display's state, as the CLI may state it.
 // Every field optional: `normalizeFilterBy` on the display side fills the masks
@@ -39,10 +36,6 @@ export type FilterBySnapshot = {
   flagExclude?: number
   tagFilters?: { tag: string; value: string }[]
 } & Partial<Record<ReadCategoryKey, CategoryFilter>>
-
-type WiggleDisplayModel = Instance<
-  ReturnType<typeof linearWiggleDisplayModelFactory>
->
 
 // What `color:` names on an alignments track: a read field fills the reads and
 // anything else is a CSS colour. A per-base field is `baseColor:`'s.
@@ -197,22 +190,6 @@ export type AssertCompactnessMatchesUpstream = AssertTrue<
     : false
 >
 
-// The canvas displays' `color` is a CSS color or jexl, or `{ field }` for a
-// field's values through a palette: `color:strand` and `color:attribute:X`
-// name the field, and anything else is the color.
-function canvasColor(value: string, arg: string | undefined) {
-  return {
-    color:
-      value === 'strand'
-        ? { field: 'strand' }
-        : value === 'attribute'
-          ? {
-              field: parseStr('color:attribute', arg ?? '', 'attribute name'),
-            }
-          : value,
-  }
-}
-
 // The `heightMode` config-slot values, pinned to the upstream union so a mode
 // added or renamed there fails the build here rather than leaving the CLI
 // silently rejecting a mode the displays now accept.
@@ -226,12 +203,9 @@ export type AssertHeightModesCoverUpstream = AssertTrue<
   Covers<HeightMode, typeof HEIGHT_MODES>
 >
 
-// Settings initialized via the display snapshot passed to `view.showTrack`.
-// Keys that are config slots (`height`, `color`, `sortedBy`, …) are routed by
-// `showTrackGeneric` onto the display's config; any remaining plain MST props
-// stay on the display instance. SnapshotIn can't be derived from these
-// deeply-composed models, so the accepted keys are enumerated here.
-// A display's `color` object as the modifiers write it.
+// Settings the named modifiers write into the snapshot passed to
+// `view.showTrack`. Every other setting is a `path=value` slot write, which the
+// display validates itself, so only what a modifier translates is typed here.
 interface ColorObject {
   field?: string
   domain?: string[]
@@ -240,22 +214,13 @@ interface ColorObject {
 }
 
 interface DisplaySnapshot {
-  // common
   height?: number
-  // config slot on baseLinearDisplayConfigSchema: render regardless of the
-  // region-size / feature-density gate, the declarative equivalent of the
-  // banner's "Force load" button
   forceLoad?: boolean
-  // alignments + the canvas-based displays (feature, variant), which share
-  // LinearCanvasBaseDisplay's slots. Which display each key is valid for is
-  // pinned by the `on` list of the modifier that writes it, below.
   featureHeight?: number
   displayMode?: 'normal' | 'compact' | 'superCompact'
   heightMode?: HeightMode
-  // alignments
   baseColor?: { field: string }
   modifications?: { fillUnmarked?: boolean }
-  facet?: string
   sortedBy?: {
     type: string
     pos: number
@@ -265,76 +230,26 @@ interface DisplaySnapshot {
   }
   readConnections?: 'off' | 'arc' | 'cloud'
   readConnectionsDown?: boolean
-  readConnectionsHeight?: number
-  readConnectionsLineWidth?: number
-  unit?: 'read' | 'chain'
-  showBezierConnections?: boolean
   showSashimiArcs?: boolean
   sashimiArcsMode?: 'up' | 'down' | 'auto'
-  showCoverage?: boolean
-  showPileup?: boolean
-  coverageHeight?: number
-  showSoftClipping?: boolean
-  showLegend?: boolean
-  maxHeight?: number
-  minSashimiScore?: number
-  sashimiArcsHeight?: number
-  arcColor?: string
   // Lifted back out by `applyDisplayOpts` rather than passed to showTrack —
   // see there for why this one slot cannot ride in on the snapshot.
   filterBy?: FilterBySnapshot
-  // every display but hic
   color?: string | ColorObject
-  // wiggle / score
-  scales?: {
-    y: {
-      type?: string
-      domainMin?: number
-      domainMax?: number
-      domainQuantile?: number
-      grid?: boolean
-    }
-  }
-  mark?: string
-  resolution?: number
-  // multi-sample variants: equal-width columns rather than genomic spans
   variantLayout?: 'genomic' | 'columns'
 }
 
-// Compile-time guard that every DisplaySnapshot key actually exists on one of
-// the display models. SnapshotIn can't be derived from these
-// `_OverrideProps`-composed models, but their Instance types resolve, so we
-// check key existence against those: a property renamed or removed upstream (the
-// silently-dead-snapshot-field class of bug) then fails the build. It checks
-// existence, not snapshot-input validity or value type — value types are pinned
-// by the interface above, and WHICH display a key is valid for is pinned by each
-// modifier's `on` list.
-// Valid keys = every member of the display Instance types (MST props + resolved
-// getters) plus the wiggle config slots whose snapshot name diverges from any
-// instance member: `mark` resolves through a divergently-named getter
-// (`renderingType`), and
-// `color`/`scales` are config-slot-only with no getter —
-// `showTrackGeneric` routes all four onto the config, so `keyof` the instance
-// misses them. `height` resolves fine — it's the getter.
-type WiggleConfigSlotKey = 'mark' | 'color' | 'scales'
-// `forceLoad` is a base-linear-display config slot read through the
-// divergently-named `configForceLoad` getter, so `keyof` the instance misses it
-// the same way it misses the wiggle slots above.
-type BaseConfigSlotKey = 'forceLoad'
-// `modifications`, `baseColor` and `arcColor` are alignments config slots read
-// through the divergently-named `modificationSettings`, `baseLayer` and
-// `arcColorField` getters.
-type AlignmentsConfigSlotKey = 'modifications' | 'baseColor' | 'arcColor'
+// Compile-time guard that every DisplaySnapshot key exists on a display model, so
+// a property renamed upstream fails the build instead of going dead. `color`,
+// `forceLoad`, `modifications` and `baseColor` are config slots read through
+// differently named getters, which `keyof` the instance misses.
+type ConfigSlotKey = 'color' | 'forceLoad' | 'modifications' | 'baseColor'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
   | keyof LinearVariantDisplayModel
   | keyof LinearMultiSampleVariantDisplayModel
-  | keyof LinearHicDisplayModel
-  | keyof WiggleDisplayModel
-  | WiggleConfigSlotKey
-  | BaseConfigSlotKey
-  | AlignmentsConfigSlotKey
+  | ConfigSlotKey
 
 export type UnknownSnapshotKeys = Exclude<keyof DisplaySnapshot, DisplayKeys>
 export type AssertSnapshotKeysExist = AssertNever<UnknownSnapshotKeys>
@@ -348,12 +263,6 @@ interface BuildResult {
   // An explicit display type picks a non-default display for the track (e.g. the
   // multi-sample variant matrix), passed to showTrack as the snapshot `type`.
   displayType?: string
-}
-
-// The `scales.y` the three score modifiers share, created on first write.
-function valueScaleOf(r: BuildResult) {
-  r.snap.scales ??= { y: {} }
-  return r.snap.scales.y
 }
 
 // Friendly aliases for the displays a track type has beyond its default, so the
@@ -607,34 +516,6 @@ const modifiers: Record<string, Modifier> = {
     },
   },
 
-  // `facet` is one object across the alignments, feature and variant displays —
-  // a field, and the order its sections stack in — so one modifier writes it
-  // for all three. It names the field the way `color:` does: `tag:` on a read,
-  // `attribute:` on a feature.
-  group: {
-    on: ['alignments', ...CANVAS],
-    apply: (r, v, arg, category) => {
-      const field = parseStr('group', v, 'group field')
-      const reads = category === 'alignments'
-      // The spelling the OTHER track type uses. Left to fall through it became
-      // the field itself — `group:tag:HP` on a GFF stacked one section headed
-      // `tag` and dropped the HP, which is the shape of a copied recipe.
-      if (field === (reads ? 'attribute' : 'tag')) {
-        invalid(
-          'group',
-          field,
-          `group:${reads ? 'tag' : 'attribute'}:<name> on a ${category} track (a field of that name is facet.field=${field})`,
-        )
-      }
-      r.snap.facet =
-        field === 'tag'
-          ? `tags.${parseStr('group:tag', arg ?? '', 'tag')}`
-          : field === 'attribute'
-            ? parseStr('group:attribute', arg ?? '', 'attribute name')
-            : field
-    },
-  },
-
   // ——— alignments ———
   sort: {
     on: ['alignments'],
@@ -646,19 +527,12 @@ const modifiers: Record<string, Modifier> = {
   arcs: {
     on: ['alignments'],
     apply: (r, v) => {
-      // A bare `arcs` used to mean OFF, the opposite of every other bare
-      // modifier (`coverage`, `force`, …), so the mode is required.
+      // a bare `arcs` once meant off, so the mode is required
       const mode = parseEnum('arcs', v, ['off', 'up', 'down', 'cloud'] as const)
       r.snap.readConnections = mode === 'cloud' || mode === 'off' ? mode : 'arc'
       if (mode === 'up' || mode === 'down') {
         r.snap.readConnectionsDown = mode === 'down'
       }
-    },
-  },
-  unit: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.unit = parseEnum('unit', v, ['read', 'chain'] as const)
     },
   },
   sashimi: {
@@ -669,77 +543,6 @@ const modifiers: Record<string, Modifier> = {
       if (mode !== 'off') {
         r.snap.sashimiArcsMode = mode
       }
-    },
-  },
-  coverage: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.showCoverage = parseBool('coverage', v)
-    },
-  },
-  coverageHeight: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.coverageHeight = parseNum('coverageHeight', v)
-    },
-  },
-  readConnectionsHeight: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.readConnectionsHeight = parseNum('readConnectionsHeight', v)
-    },
-  },
-  readConnectionsLineWidth: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.readConnectionsLineWidth = parseNum('readConnectionsLineWidth', v)
-    },
-  },
-  softClipping: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.showSoftClipping = parseBool('softClipping', v)
-    },
-  },
-  // The color key. Off by default in the app because a reader can open the
-  // track menu, which is exactly what nobody looking at a PNG can do — same
-  // argument as `force`, and the reason a modification or MAPQ export is close
-  // to unreadable without it.
-  legend: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.showLegend = parseBool('legend', v)
-    },
-  },
-  maxHeight: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.maxHeight = parseNum('maxHeight', v)
-    },
-  },
-  // Sashimi band controls. `sashimiScore` is the junction-support floor, which
-  // is what separates real splice junctions from one-read aligner noise, and
-  // there is no way to raise it after the fact in a static image.
-  sashimiScore: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.minSashimiScore = parseNum('sashimiScore', v)
-    },
-  },
-  sashimiHeight: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.sashimiArcsHeight = parseNum('sashimiHeight', v)
-    },
-  },
-  arcColor: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.arcColor = parseEnum('arcColor', v, [
-        'insertSizeAndOrientation',
-        'insertSize',
-        'pairOrientation',
-      ] as const)
     },
   },
   // The four read-category filters, one flag each and one vocabulary between
@@ -786,20 +589,6 @@ const modifiers: Record<string, Modifier> = {
       }
     },
   },
-  // snpcov collapses an alignments display to coverage-only: hide the pileup
-  // band, keep coverage. Sizing the coverage band to the track height (when a
-  // height was given) makes it fill the track. Deferred to last by
-  // buildDisplaySnapshot so the user's height: flows in first.
-  snpcov: {
-    on: ['alignments'],
-    apply: r => {
-      r.snap.showPileup = false
-      r.snap.showCoverage = true
-      if (r.snap.height !== undefined) {
-        r.snap.coverageHeight = r.snap.height
-      }
-    },
-  },
 
   // ——— coloring ———
   // The per-base layer over the reads, which combines with whatever `color:`
@@ -816,23 +605,22 @@ const modifiers: Record<string, Modifier> = {
       }
     },
   },
-  // `color:` asks the same question of every track type, but each display
-  // answers it through a different slot, so this routes rather than writing one
-  // key. Alignments and the canvas-based displays name a field; wiggle takes a
-  // color string. The named modes line up across track types: `color:strand`
-  // colors by strand everywhere it applies, `color:tag:X` names a read tag the
-  // way `group:tag:X` does, and `color:attribute:X` is the canvas analogue.
+  // `color:` names a constant, or one of the read fields the alignments display
+  // paints, or `strand` on a canvas display. Any other field is
+  // `color.field=tags.HP`, the slot's own spelling.
   color: {
     on: ALL,
-    apply: (r, v, arg, category) => {
+    apply: (r, v, _v2, category) => {
       const value = parseStr('color', v, 'color scheme or CSS color')
-      if (category === 'alignments') {
+      if (value === 'tag' || value === 'attribute') {
+        invalid(
+          'color',
+          value,
+          `a CSS color or a field name; a field of that name is color.field=${value === 'tag' ? 'tags.<TAG>' : '<name>'}`,
+        )
+      } else if (category === 'alignments') {
         if (BASE_COLOR_NAMES.has(value)) {
           invalid('color', value, `a read field; baseColor:${value} draws it`)
-        } else if (value === 'tag') {
-          mergeColor(r, {
-            field: `tags.${parseStr('color:tag', arg ?? '', 'tag')}`,
-          })
         } else if (ALIGNMENTS_COLOR_FIELDS.has(value)) {
           mergeColor(r, { field: value })
         } else {
@@ -847,83 +635,11 @@ const modifiers: Record<string, Modifier> = {
           )
         }
         mergeColor(r, { scheme: value })
-      } else if (category === 'wiggle') {
-        // A string on the quantitative display's colour object is the
-        // constant, so this is the whole of "render in one solid color".
-        r.snap.color = value
+      } else if (category !== 'wiggle' && value === 'strand') {
+        mergeColor(r, { field: 'strand' })
       } else {
-        // Feature/variant: LinearCanvasBaseDisplay's `color`. A
-        // jexl with more than one colon can't survive this modifier's
-        // `split(':')`, so it goes through the JSON escape hatch.
-        const { color } = canvasColor(value, arg)
-        if (typeof color === 'object') {
-          mergeColor(r, color)
-        } else {
-          r.snap.color = color
-        }
+        r.snap.color = value
       }
-    },
-  },
-
-  // ——— wiggle / score ———
-  //
-  // These two are `alignments` as well as `wiggle`, and it is the same object
-  // in both cases rather than a translation: LinearAlignmentsDisplay's coverage
-  // band carries the same `scales.y`. Restricting them to wiggle left an RNA-seq
-  // coverage band no way to ask for a log axis from the CLI, which is exactly
-  // where one is wanted: junction depth spans two orders of magnitude, so a
-  // linear axis puts the whole picture in the first exon.
-  //
-  // Two modifiers write one sub-schema, so each merges into what the other
-  // put there; `applyDisplaySettings` merges the object onto the display's own
-  // defaults in turn, so a bag naming one member leaves the rest alone. The
-  // quantile an open end follows is `scales.y.domainQuantile=0.99`, a slot
-  // path like any other.
-  minmax: {
-    on: ['wiggle', 'alignments'],
-    apply: (r, min, max) => {
-      if (min) {
-        valueScaleOf(r).domainMin = parseNum('minmax', min)
-      }
-      if (max) {
-        valueScaleOf(r).domainMax = parseNum('minmax', max)
-      }
-    },
-  },
-  // scaletype names a member's enum value directly. It is NOT re-listed here:
-  // the member's own stringEnum rejects a bad value, which
-  // reaches jb2export as a fatal render error, so a local copy of the list would
-  // only add a way for the CLI to drift out of step with the display.
-  scaletype: {
-    on: ['wiggle', 'alignments'],
-    apply: (r, v) => {
-      valueScaleOf(r).type = parseStr('scaletype', v, 'linear, log or symlog')
-    },
-  },
-  crosshatch: {
-    on: ['wiggle'],
-    apply: (r, v) => {
-      valueScaleOf(r).grid = parseBool('crosshatch', v)
-    },
-  },
-  // Legacy fill toggle. `fill:false` historically meant "no fill" on
-  // xyplot-family renderers, which is a `point` mark; `fill:true` is a
-  // plain `bar`.
-  fill: {
-    on: ['wiggle'],
-    apply: (r, v) => {
-      r.snap.mark = parseBool('fill', v) ? 'bar' : 'point'
-    },
-  },
-  resolution: {
-    on: ['wiggle'],
-    apply: (r, v) => {
-      r.snap.resolution =
-        v === 'fine'
-          ? 10
-          : v === 'superfine'
-            ? 100
-            : parseNum('resolution', v, 'fine, superfine, or a number')
     },
   },
 }
@@ -972,36 +688,26 @@ function parseJsonModifier(opt: string): DisplaySnapshot {
   }
 }
 
-// Parse a track's modifier list into a declarative display snapshot. snpcov is
-// applied last because it reads the resolved height. Pure (no view/display), so
-// it's unit-testable; the center-line sort is returned as an intent for the
-// caller to resolve against the view. A member write is `writeMembers`'s.
+// Parse a track's modifier list into a declarative display snapshot. Pure (no
+// view/display), so it's unit-testable; the center-line sort is returned as an
+// intent for the caller to resolve against the view. A member write is
+// `writeMembers`'s.
 export function buildDisplaySnapshot(category: Category, opts: string[]) {
   const result: BuildResult = { snap: {} }
-  const deferred: [string, string, string | undefined][] = []
   for (const opt of opts) {
     if (opt.startsWith('{')) {
       mergeSettings(
         settingsOf(result),
         settingsOf({ snap: parseJsonModifier(opt) }),
       )
-      continue
-    }
-    if (isSlotPathOption(opt)) {
+    } else if (isSlotPathOption(opt)) {
       if (!isMemberWrite(opt)) {
         applySlotWrite(settingsOf(result), slotWrite(opt))
       }
-      continue
-    }
-    const [prefix = '', val1 = '', val2] = opt.split(':')
-    if (prefix === 'snpcov') {
-      deferred.push([prefix, val1, val2])
     } else {
+      const [prefix = '', val1 = '', val2] = opt.split(':')
       applyModifier(result, category, prefix, val1, val2)
     }
-  }
-  for (const [prefix, val1, val2] of deferred) {
-    applyModifier(result, category, prefix, val1, val2)
   }
   return result
 }

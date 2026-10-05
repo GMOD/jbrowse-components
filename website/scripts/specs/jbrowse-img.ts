@@ -401,7 +401,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // group:tag:HP splits the pileup into one sub-track per haplotype. HG002
+  // facet=tags.HP splits the pileup into one sub-track per haplotype. HG002
   // ultralong ONT (hg19), the same rehosted slice HG002_NANOPORE_BAM names; the
   // het deletion sits in one haplotype only.
   cliSpec('alignments_haplotype', [
@@ -409,8 +409,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
     '--bam',
     HG002_NANOPORE_BAM,
-    'group:tag:HP',
-    'color:tag:HP',
+    'facet=tags.HP',
+    'color.field=tags.HP',
     'height:400',
     '--loc',
     '1:63,005,675-63,007,432',
@@ -450,7 +450,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     // reader can open the track menu, which is the one thing nobody looking at
     // a PNG can do -- so red and blue were two unexplained colors and the
     // caption had to carry them.
-    'legend',
+    'showLegend=true',
     'height:350',
     '--loc',
     'chr20:18,503,000-18,509,000',
@@ -515,13 +515,13 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--bam',
     'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam',
     'sashimi:auto',
-    'coverageHeight:170',
+    'coverageHeight=170',
     // LOG, because junction depth here spans three orders of magnitude: the
     // last exon peaks near 4000 and the first two sit in the low hundreds, so a
     // linear axis drew them as a flat line and the band was one spike with the
     // arcs floating over nothing (reviewer). Log puts every exon on the plot,
     // which is what the arcs are meant to be read against.
-    'scaletype:log',
+    'scales.y.type=log',
     'featureHeight:super-compact',
     'height:420',
     '--loc',
@@ -547,14 +547,14 @@ export const jbrowseImgSpecs: CliSpec[] = [
     // does), so the reverse-strand core paints blue between the red forward
     // flanks — the inversion is legible in the pileup itself, not only in the
     // arcs.
-    'unit:chain',
+    'unit=chain',
     // Split the pileup on SA-tag presence, as inversion_long_read does
     // (reviewer): the reads that cross the two breakpoints get their own
     // labelled section under the arcs, and the flat background pileup goes
     // below it, so the section divider says which reads carry the SV rather
     // than leaving the reader to pick the colored ones out of a single stack.
-    'group:splitRead',
-    'coverageHeight:80',
+    'facet=splitRead',
+    'coverageHeight=80',
     // grouping stacks two coverage lanes and truncates the "Not split" lane at
     // a row boundary, so the whole SV signal fits well under the 820 the
     // ungrouped stack needed — at 820 the bottom third was empty
@@ -684,7 +684,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // `snpcov` collapses an alignments track to its coverage band alone — the
+  // `showPileup=false` collapses an alignments track to its coverage band alone — the
   // same data as `alignments_pileup` above with the pileup hidden, which is
   // what makes the pair worth showing together.
   cliSpec('snpcov', [
@@ -692,7 +692,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'data/volvox/volvox.fa',
     '--bam',
     'data/volvox/volvox-sorted.bam',
-    'snpcov',
+    'showPileup=false',
+    'coverageHeight=200',
     'height:200',
     '--loc',
     'ctgA:1-20000',
@@ -709,12 +710,13 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
     '--bigwig',
     'https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw',
-    'scaletype:log',
-    'fill:false',
-    'resolution:superfine',
+    'scales.y.type=log',
+    'mark=point',
+    'resolution=100',
     'height:400',
     'color:purple',
-    'minmax:1:1024',
+    'scales.y.domainMin=1',
+    'scales.y.domainMax=1024',
     '--width',
     '1900',
   ]),

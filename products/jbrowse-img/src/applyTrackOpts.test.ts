@@ -4,17 +4,19 @@ import { buildDisplaySnapshot } from './applyTrackOpts.ts'
 // snapshot (passed to showTrack), instead of a sequence of setter actions.
 
 describe('alignments modifiers', () => {
-  test('group:tag:HP facets by the tag, a bare dimension as its string', () => {
-    const { snap } = buildDisplaySnapshot('alignments', ['group:tag:HP'])
-    expect(snap.facet).toBe('tags.HP')
-    expect(
-      buildDisplaySnapshot('alignments', ['group:strand']).snap.facet,
-    ).toBe('strand')
+  test('a facet or colour field is the slot write the display spells', () => {
+    expect(buildDisplaySnapshot('alignments', ['facet=tags.HP']).snap).toEqual({
+      facet: 'tags.HP',
+    })
   })
 
-  test('color:tag:XS names the tag field, as group:tag:XS does', () => {
-    const { snap } = buildDisplaySnapshot('alignments', ['color:tag:XS'])
-    expect(snap.color).toEqual({ field: 'tags.XS' })
+  test('color:tag and color:attribute point at color.field', () => {
+    expect(() => buildDisplaySnapshot('alignments', ['color:tag:XS'])).toThrow(
+      /color\.field=tags\.<TAG>/,
+    )
+    expect(() =>
+      buildDisplaySnapshot('feature', ['color:attribute:gene_biotype']),
+    ).toThrow(/color\.field=<name>/)
   })
 
   test('height parses a number', () => {
@@ -31,10 +33,10 @@ describe('alignments modifiers', () => {
     ).toMatchObject({ readConnections: 'arc', readConnectionsDown: true })
   })
 
-  test('unit:chain sets the unit and leaves the bezier overlay alone', () => {
-    const { snap } = buildDisplaySnapshot('alignments', ['unit:chain'])
-    expect(snap.unit).toBe('chain')
-    expect(snap.showBezierConnections).toBeUndefined()
+  test('the unit is a slot write that leaves the bezier overlay alone', () => {
+    const { snap } = buildDisplaySnapshot('alignments', ['unit=chain'])
+    expect(snap).toMatchObject({ unit: 'chain' })
+    expect(snap).not.toHaveProperty('showBezierConnections')
   })
 
   test('the curved-connector overlay is a slot write', () => {
@@ -100,65 +102,45 @@ describe('alignments modifiers', () => {
     expect(() => buildDisplaySnapshot('alignments', ['height:8o'])).toThrow(
       /Invalid height/,
     )
-    expect(() =>
-      buildDisplaySnapshot('alignments', ['coverageHeight:x']),
-    ).toThrow(/Invalid coverageHeight/)
   })
 
-  test('a non-numeric minmax bound rejects', () => {
-    expect(() => buildDisplaySnapshot('wiggle', ['minmax:lo:100'])).toThrow(
-      /Invalid minmax/,
+  test.each([
+    'coverage',
+    'coverageHeight:80',
+    'softClipping',
+    'legend',
+    'maxHeight:4000',
+    'sashimiScore:3',
+    'sashimiHeight:120',
+    'arcColor:insertSize',
+    'readConnectionsHeight:100',
+    'readConnectionsLineWidth:2',
+    'unit:chain',
+    'snpcov',
+    'group:strand',
+    'fill:false',
+    'crosshatch',
+    'scaletype:log',
+    'minmax:0:10',
+    'resolution:fine',
+  ])('%s is no modifier: its slot is the spelling', opt => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    expect(buildDisplaySnapshot('alignments', [opt]).snap).toEqual({})
+    expect(warn).toHaveBeenCalledWith(
+      `Warning: unknown track option "${opt.split(':')[0]}"`,
     )
-  })
-
-  test('snpcov hides the pileup and fills coverage to the given height', () => {
-    const { snap } = buildDisplaySnapshot('alignments', [
-      'snpcov',
-      'height:200',
-    ])
-    expect(snap).toMatchObject({
-      showPileup: false,
-      showCoverage: true,
-      coverageHeight: 200,
-    })
+    warn.mockRestore()
   })
 })
 
 describe('feature modifiers', () => {
-  // `facet` is the same object on the feature, variant and alignments displays,
-  // so `group:` writes it for all three. It used to be gated to alignments, and
-  // a feature track could only be faceted through the `facet.field=` path.
-  test('group names the facet field on a feature and a variant track', () => {
-    expect(buildDisplaySnapshot('feature', ['group:strand']).snap.facet).toBe(
-      'strand',
+  test('the facet is one slot on a feature and a variant track', () => {
+    expect(buildDisplaySnapshot('feature', ['facet=strand']).snap).toEqual({
+      facet: 'strand',
+    })
+    expect(buildDisplaySnapshot('variant', ['facet=INFO.SVTYPE']).snap).toEqual(
+      { facet: 'INFO.SVTYPE' },
     )
-    expect(
-      buildDisplaySnapshot('variant', ['group:INFO.SVTYPE']).snap.facet,
-    ).toBe('INFO.SVTYPE')
-  })
-
-  // `attribute:` names a feature field the way `tag:` names a read's, which is
-  // the pair `color:` already takes.
-  test('group:attribute names the attribute, as color:attribute does', () => {
-    expect(
-      buildDisplaySnapshot('feature', ['group:attribute:gene_biotype']).snap
-        .facet,
-    ).toBe('gene_biotype')
-  })
-
-  // Each spelling belongs to one track type, and the other one used to fall
-  // through to the field itself: `group:tag:HP` copied onto a GFF stacked a
-  // single section headed `tag` and dropped the HP.
-  test('the other track type spelling is an error, not a field named for it', () => {
-    expect(() => buildDisplaySnapshot('feature', ['group:tag:HP'])).toThrow(
-      /Invalid group value "tag"/,
-    )
-    expect(() => buildDisplaySnapshot('variant', ['group:tag:HP'])).toThrow(
-      /group:attribute:<name> on a variant track/,
-    )
-    expect(() =>
-      buildDisplaySnapshot('alignments', ['group:attribute:type']),
-    ).toThrow(/group:tag:<name> on an? alignments track/)
   })
 
   test('featureHeight preset maps to displayMode for canvas features', () => {
@@ -259,27 +241,21 @@ describe('feature modifiers', () => {
 })
 
 describe('alignments settings a static export cannot reach any other way', () => {
-  test('the display-chrome and sashimi numbers accumulate', () => {
+  test('display-chrome and sashimi settings are slot writes', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
-      'legend',
-      'maxHeight:4000',
-      'sashimiScore:3',
-      'sashimiHeight:120',
-      'arcColor:insertSize',
+      'showLegend=true',
+      'maxHeight=4000',
+      'minSashimiScore=3',
+      'sashimiArcsHeight=120',
+      'arcColor=insertSize',
     ])
-    expect(snap).toMatchObject({
+    expect(snap).toEqual({
       showLegend: true,
       maxHeight: 4000,
       minSashimiScore: 3,
       sashimiArcsHeight: 120,
       arcColor: 'insertSize',
     })
-  })
-
-  test('legend reads as a flag, like coverage and force', () => {
-    expect(
-      buildDisplaySnapshot('alignments', ['legend:false']).snap.showLegend,
-    ).toBe(false)
   })
 
   // The SV export: the split reads of the pairs the aligner did not call
@@ -373,65 +349,33 @@ describe('alignments settings a static export cannot reach any other way', () =>
 
   test('the new alignments modifiers warn on a wiggle track', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-    const { snap } = buildDisplaySnapshot('wiggle', ['legend', 'flags:2:1540'])
-    expect(snap.showLegend).toBeUndefined()
+    const { snap } = buildDisplaySnapshot('wiggle', [
+      'sashimi:up',
+      'flags:2:1540',
+    ])
+    expect(snap.showSashimiArcs).toBeUndefined()
     expect(snap.filterBy).toBeUndefined()
     expect(warn).toHaveBeenCalledTimes(2)
     warn.mockRestore()
   })
 })
 
-describe('wiggle / score modifiers', () => {
-  test('score settings accumulate into the snapshot', () => {
+describe('score settings', () => {
+  test('a whole-setting slot write joins the snapshot', () => {
     const { snap } = buildDisplaySnapshot('wiggle', [
-      'scaletype:log',
-      'fill:false',
-      'minmax:1:1024',
-      'crosshatch:true',
-      'resolution:superfine',
+      'mark=point',
+      'resolution=100',
       'color:purple',
     ])
-    expect(snap).toMatchObject({
-      scales: {
-        y: { type: 'log', domainMin: 1, domainMax: 1024, grid: true },
-      },
-      mark: 'point',
-      resolution: 100,
-      color: 'purple',
-    })
+    expect(snap).toEqual({ mark: 'point', resolution: 100, color: 'purple' })
   })
 
-  // The coverage band carries the same `scales.y`, so these three apply to
-  // alignments too. The rest of the score group is genuinely wiggle-only and
-  // still warns.
-  test('the axis pair reaches an alignments coverage band', () => {
-    const { snap } = buildDisplaySnapshot('alignments', [
-      'scaletype:log',
-      'minmax:1:4000',
+  test('a member of the value scale waits for the display', () => {
+    const { snap } = buildDisplaySnapshot('wiggle', [
+      'scales.y.type=log',
+      'scales.y.domainMax=1024',
     ])
-    expect(snap).toMatchObject({
-      scales: { y: { type: 'log', domainMin: 1, domainMax: 4000 } },
-    })
-  })
-
-  test('the drawing settings still warn and are ignored on an alignments track', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-    const { snap } = buildDisplaySnapshot('alignments', [
-      'fill:false',
-      'crosshatch:true',
-    ])
-    expect(snap.mark).toBeUndefined()
-    expect(snap.scales?.y.grid).toBeUndefined()
-    expect(warn).toHaveBeenCalledTimes(2)
-    warn.mockRestore()
-  })
-
-  // `resolution:bogus` used to fall back to 1 silently, which reads as a
-  // deliberate coarse render rather than the typo it is
-  test('a non-numeric resolution rejects', () => {
-    expect(() => buildDisplaySnapshot('wiggle', ['resolution:x'])).toThrow(
-      /Invalid resolution/,
-    )
+    expect(snap).toEqual({})
   })
 })
 
@@ -453,11 +397,11 @@ describe('color routing', () => {
   test('baseColor draws over the reads, so it combines with a read colour', () => {
     expect(
       buildDisplaySnapshot('alignments', [
-        'color:tag:HP',
+        'color:mapq',
         'baseColor:methylation',
       ]).snap,
     ).toEqual({
-      color: { field: 'tags.HP' },
+      color: { field: 'mapq' },
       baseColor: { field: 'modifications' },
       modifications: { fillUnmarked: true },
     })
@@ -478,22 +422,22 @@ describe('color routing', () => {
   test('a whole-setting slot write joins the snapshot and a member write waits for the display', () => {
     expect(
       buildDisplaySnapshot('alignments', [
-        'color:tag:HP',
+        'color:mapq',
         'color.domain=1,2',
         'modifications.threshold=50',
         'showOutline=false',
       ]).snap,
-    ).toEqual({ color: { field: 'tags.HP' }, showOutline: false })
+    ).toEqual({ color: { field: 'mapq' }, showOutline: false })
   })
 
   test('a JSON option merges into what earlier options wrote', () => {
     expect(
       buildDisplaySnapshot('alignments', [
-        'color:tag:HP',
+        'color:mapq',
         '{"color":{"range":["rgb(1,2,3)"]},"height":300}',
       ]).snap,
     ).toEqual({
-      color: { field: 'tags.HP', range: ['rgb(1,2,3)'] },
+      color: { field: 'mapq', range: ['rgb(1,2,3)'] },
       height: 300,
     })
   })
@@ -514,24 +458,15 @@ describe('color routing', () => {
     }
   })
 
-  test('color:strand and color:attribute:<name> name the field the canvas displays color by', () => {
+  test('color:strand names the field the canvas displays color by', () => {
     for (const category of ['feature', 'variant'] as const) {
       expect(buildDisplaySnapshot(category, ['color:strand']).snap).toEqual({
         color: { field: 'strand' },
       })
-      expect(
-        buildDisplaySnapshot(category, ['color:attribute:gene_biotype']).snap,
-      ).toEqual({ color: { field: 'gene_biotype' } })
     }
     // wiggle has no strand notion — 'strand' stays a literal color there
     expect(buildDisplaySnapshot('wiggle', ['color:strand']).snap.color).toBe(
       'strand',
-    )
-  })
-
-  test('color:attribute with no attribute name rejects', () => {
-    expect(() => buildDisplaySnapshot('feature', ['color:attribute'])).toThrow(
-      /Missing color:attribute value/,
     )
   })
 
@@ -552,42 +487,28 @@ describe('modifier values are validated the same way everywhere', () => {
     ['alignments', 'height:', /Missing height/],
     ['alignments', 'height:8o', /Invalid height/],
     ['alignments', 'color:', /Missing color/],
-    ['alignments', 'group:', /Missing group/],
-    ['alignments', 'group:tag', /Missing group:tag/],
     ['alignments', 'sort:', /Missing sort/],
     // a bare `arcs` used to mean OFF, the opposite of every other bare modifier
     ['alignments', 'arcs', /Missing arcs/],
     ['alignments', 'arcs:upp', /Invalid arcs value "upp"/],
     ['alignments', 'sashimi:downn', /Invalid sashimi/],
-    ['alignments', 'unit:normal', /Invalid unit/],
-    ['alignments', 'coverage:ture', /Invalid coverage value "ture"/],
-    ['alignments', 'softClipping:0', /Invalid softClipping/],
     ['alignments', 'featureHeight:bogus', /Invalid featureHeight/],
-    ['alignments', 'coverageHeight:x', /Invalid coverageHeight/],
     ['feature', 'heightMode:bogus', /Invalid heightMode/],
     ['variant', 'display:', /Missing display/],
-    ['wiggle', 'scaletype:', /Missing scaletype/],
-    ['wiggle', 'minmax:lo:100', /Invalid minmax/],
-    ['wiggle', 'crosshatch:maybe', /Invalid crosshatch/],
-    ['wiggle', 'fill:1', /Invalid fill/],
-    ['wiggle', 'resolution:x', /Invalid resolution/],
   ] as const)('%s track: %s rejects', (category, opt, message) => {
     expect(() => buildDisplaySnapshot(category, [opt])).toThrow(message)
   })
 
-  // the flag-like modifiers stay flag-like: bare or :true is on, :false is off
-  test.each([
-    ['coverage', 'showCoverage'],
-    ['softClipping', 'showSoftClipping'],
-    ['force', 'forceLoad'],
-  ] as const)('%s reads as a flag', (opt, key) => {
-    expect(buildDisplaySnapshot('alignments', [opt]).snap[key]).toBe(true)
-    expect(buildDisplaySnapshot('alignments', [`${opt}:true`]).snap[key]).toBe(
+  test('force reads as a flag: bare or :true is on, :false is off', () => {
+    expect(buildDisplaySnapshot('alignments', ['force']).snap.forceLoad).toBe(
       true,
     )
-    expect(buildDisplaySnapshot('alignments', [`${opt}:false`]).snap[key]).toBe(
-      false,
-    )
+    expect(
+      buildDisplaySnapshot('alignments', ['force:true']).snap.forceLoad,
+    ).toBe(true)
+    expect(
+      buildDisplaySnapshot('alignments', ['force:false']).snap.forceLoad,
+    ).toBe(false)
   })
 })
 

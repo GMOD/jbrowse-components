@@ -244,7 +244,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:55 \
 
 ![HG008-T PacBio HiFi reads over CUZD1, sorted by the base at the center position so the reads with a ~1.8 kb somatic deletion cluster into one band](https://jbrowse.org/jb2-figures/jbrowse-img/alignments_readgroup.65f68378573c.png)
 
-`group:tag:HP` splits the pileup into one stacked sub-track per haplotype. This
+`facet=tags.HP` splits the pileup into one stacked sub-track per haplotype. This
 HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
 by the `HP` tag: the heterozygous deletion shows in one haplotype and not the
 other:
@@ -264,9 +264,9 @@ modified-base (`MM`/`ML`) BAM/CRAM: methylated cytosines red, unmethylated blue.
 This COLO829 nanopore CRAM (hg38, streamed from the ONT open-data S3) with the
 UCSC CpG-island BED on top shows the methylated flanks giving way to the
 unmethylated island cores, read against the annotated island boundaries.
-`legend` draws the color key, worth adding to any export whose coloring is not
-the default one: the app leaves it off, where a reader can open the track menu
-instead.
+`showLegend=true` draws the color key, worth adding to any export whose coloring
+is not the default one: the app leaves it off, where a reader can open the track
+menu instead.
 
 <!-- jb2export: methylation -->
 
@@ -282,8 +282,8 @@ jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
 number of reads spanning each junction: the standard RNA-seq splice view.
-`coverageHeight:` makes the coverage/sashimi band tall so the arcs are legible,
-and `scaletype:log` is what puts every exon on the plot: RNA-seq depth here
+`coverageHeight=` makes the coverage/sashimi band tall so the arcs are legible,
+and `scales.y.type=log` is what puts every exon on the plot: RNA-seq depth here
 spans three orders of magnitude, so on a linear axis the tallest exon is the
 only one with any height and the arcs land over a flat line. This
 strand-specific paired-end RNA-seq (hg19, public) over `B2M` shows the long
@@ -308,10 +308,10 @@ S3) over a ~1.2 kb inversion on chr1 draws the same event three ways:
   encoding the junction's orientation: here the two breakpoints joined by
   **purple inversion-junction arcs**, where a read's two halves map in opposite
   orientations.
-- **`unit:chain`** chains each read's split segments, so the same inversion
+- **`unit=chain`** chains each read's split segments, so the same inversion
   reads in the pileup itself: a **blue reverse-strand core between red
   forward-strand flanks**, spanning breakpoint to breakpoint.
-- **`group:splitRead`** puts those reads in their own labelled section above the
+- **`facet=splitRead`** puts those reads in their own labelled section above the
   flat background pileup.
 
 <!-- jb2export: sv_read_arcs -->
@@ -411,31 +411,31 @@ options):
 
 ```bash
 ## color by splice strand (XS tag), sort by haplotype (HP tag)
-jb2export --fasta ref.fa --bam reads.bam color:tag:XS sort:tag:HP --loc chr1:1-10000
+jb2export --fasta ref.fa --bam reads.bam color.field=tags.XS sort:tag:HP --loc chr1:1-10000
 
 ## color by base modifications (MM/ML tags) in super-compact layout
 jb2export --fasta ref.fa --bam reads.bam baseColor:modifications featureHeight:super-compact \
   --loc chr1:1-10000
 
 ## methylation over reads tinted by haplotype, in two quiet colors
-jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 color.range=#d9c9a3,#b7c4b1 \
-  baseColor:methylation legend --loc chr1:1-10000
+jb2export --fasta ref.fa --bam reads.bam color.field=tags.HP color.domain=1,2 color.range=#d9c9a3,#b7c4b1 \
+  baseColor:methylation showLegend=true --loc chr1:1-10000
 
 ## color by insert size + orientation to highlight structural variants
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
 
 ## read-cloud SV view — the read cloud overlays the coverage band, so use
 ## coverageHeight to make the panel tall (NOT readConnectionsHeight, which only sizes
-## the regular up/down arcs panel). The read cloud disappears if coverage:false.
-jb2export --fasta ref.fa --bam reads.bam arcs:cloud coverageHeight:300 \
-  readConnectionsLineWidth:2 height:600 --loc chr1:1-50000
+## the regular up/down arcs panel). The read cloud disappears if showCoverage=false.
+jb2export --fasta ref.fa --bam reads.bam arcs:cloud coverageHeight=300 \
+  readConnectionsLineWidth=2 height:600 --loc chr1:1-50000
 
 ## view as pairs / link supplementary alignments: mates and split segments of one
 ## read share a row, joined by a connecting line. showBezierConnections=true is
 ## the separate curved-connector overlay and leaves the layout an ordinary pileup.
 ## Add both to curve the connectors that cross between displayed regions, which
 ## the per-region line pass cannot draw.
-jb2export --fasta ref.fa --bam linked.bam unit:chain --loc chr1:1-50000
+jb2export --fasta ref.fa --bam linked.bam unit=chain --loc chr1:1-50000
 ```
 
 ### BigWig / quantitative tracks
@@ -462,7 +462,7 @@ the rest of the view; `scales.y.domainQuantile=1` follows the extremes instead:
 
 ```bash
 jb2export --loc all \
-  --bigwig coverage.bw scales.y.domainQuantile=1 fill:false resolution:superfine height:400 color:purple \
+  --bigwig coverage.bw scales.y.domainQuantile=1 mark=point resolution=100 height:400 color:purple \
   --assembly hg19 \
   --config data/config.json
 ```
@@ -599,18 +599,18 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:100 \
 ## Track modifiers
 
 Per-track settings use a colon-based syntax that follows the track file
-argument, e.g. `--bam reads.bam color:tag:RG height:400`. This is the full list
-of available modifiers.
+argument, e.g. `--bam reads.bam color:strand height:400`. This is the full list
+of named modifiers. Any other display setting is a
+[slot write](#any-display-setting-slotpathvalue) in the slot's own spelling.
 
 Modifiers are grouped below by the track types they apply to. Passing one to a
 track type it does not apply to (say `sashimi:up` on a BigWig) prints a warning
 naming the types it does work on.
 
 A modifier **value** the modifier can't use — `arcs:upp`, `height:8o`,
-`coverage:ture` — is an error, not a warning: the tool writes one figure and
-exits, so a warning would scroll past and leave you with a wrong image. The
-`true|false` modifiers (`coverage`, `softClipping`, `force`, `crosshatch`,
-`fill`) also read bare, so `coverage` on its own means `coverage:true`.
+`force:ture` — is an error, not a warning: the tool writes one figure and exits,
+so a warning would scroll past and leave you with a wrong image. The `force`
+modifier also reads bare, so `force` on its own means `force:true`.
 
 **All tracks**
 
@@ -656,14 +656,11 @@ through verbatim as a display state-model name):
 
 Reads & coloring:
 
-| Modifier                         | Example                        | Description                                                                                                                        |
-| -------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `color:field` or `color:tag:TAG` | `color:strand`, `color:tag:XS` | Color reads by a field (see fields below), or paint them all one CSS color                                                         |
-| `baseColor:field`                | `baseColor:methylation`        | Draw a per-base layer over the reads, whatever `color:` fills them with (see fields below)                                         |
-| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                                                                      |
-| `group:type` or `group:type:tag` | `group:strand`, `group:tag:HP` | Group reads into in-track stacked sections (`strand`, `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq`, or `tag:<TAG>`) |
-| `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                                                                                            |
-| `legend:true\|false`             | `legend`                       | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                    |
+| Modifier                       | Example                      | Description                                                                                |
+| ------------------------------ | ---------------------------- | ------------------------------------------------------------------------------------------ |
+| `color:field`                  | `color:strand`               | Color reads by a field (see fields below), or paint them all one CSS color                 |
+| `baseColor:field`              | `baseColor:methylation`      | Draw a per-base layer over the reads, whatever `color:` fills them with (see fields below) |
+| `sort:type` or `sort:type:tag` | `sort:strand`, `sort:tag:RG` | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                              |
 
 Which reads are drawn. These filter before the coverage pipeline as well as
 before layout, so a filter that removes reads removes them from the coverage
@@ -687,40 +684,48 @@ which lets a script pass a category through from a variable that may be empty.
 
 Overlays & subtracks:
 
-| Modifier               | Example               | Description                                                                                |
-| ---------------------- | --------------------- | ------------------------------------------------------------------------------------------ |
-| `arcs:mode`            | `arcs:cloud`          | Read-connection arcs / read-cloud panel (`off`, `up`, `down`, `cloud`)                     |
-| `unit:read\|chain`     | `unit:chain`          | What one row stands for: a read, or its mate and split segments chained (`read`, `chain`)  |
-| `sashimi:mode`         | `sashimi:up`          | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)                                 |
-| `coverage:true\|false` | `coverage:false`      | Toggle coverage subtrack                                                                   |
-| `snpcov`               | `snpcov`              | Coverage-only view — resizes the coverage band to fill the track                           |
-| `sashimiScore:N`       | `sashimiScore:3`      | Minimum reads a splice junction needs before its arc is drawn                              |
-| `arcColor:mode`        | `arcColor:insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`) |
+| Modifier       | Example      | Description                                                            |
+| -------------- | ------------ | ---------------------------------------------------------------------- |
+| `arcs:mode`    | `arcs:cloud` | Read-connection arcs / read-cloud panel (`off`, `up`, `down`, `cloud`) |
+| `sashimi:mode` | `sashimi:up` | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)             |
 
 Layout & sizing:
 
-| Modifier                     | Example                                          | Description                                                                                                                 |
-| ---------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `featureHeight:preset\|N`    | `featureHeight:super-compact`, `featureHeight:4` | Per-read height (spacing between reads is derived from it). Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
-| `coverageHeight:N`           | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                 |
-| `readConnectionsHeight:N`    | `readConnectionsHeight:120`                      | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`                                                   |
-| `readConnectionsLineWidth:N` | `readConnectionsLineWidth:2`                     | Stroke width for read-connection arcs/lines in pixels                                                                       |
-| `sashimiHeight:N`            | `sashimiHeight:120`                              | Height of the sashimi arc band                                                                                              |
-| `maxHeight:N`                | `maxHeight:4000`                                 | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                           |
+| Modifier                  | Example                                          | Description                                                                                                                 |
+| ------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `featureHeight:preset\|N` | `featureHeight:super-compact`, `featureHeight:4` | Per-read height (spacing between reads is derived from it). Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
 
-Available `color:` fields. Anything else is a CSS color, painting every read
-with it:
+Settings written as slots, in the display's own spelling:
 
-| Field                      | Description                                               |
-| -------------------------- | --------------------------------------------------------- |
-| `strand`                   | Forward/reverse strand                                    |
-| `firstOfPairStrand`        | Strand of the first read in the pair                      |
-| `mapq`                     | MAPQ                                                      |
-| `insertSize`               | Paired-end insert size                                    |
-| `pairOrientation`          | Paired-end orientation                                    |
-| `insertSizeAndOrientation` | Combined insert size + orientation                        |
-| `mateRefName`              | Reference the mate landed on                              |
-| `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
+| Write                        | Description                                                                                                                  |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `facet=strand`               | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq`, `tags.HP` |
+| `unit=chain`                 | What one row stands for: a `read`, or its mate and split segments chained                                                    |
+| `showLegend=true`            | Draw the color key. Off by default in the app, where the reader can open the track menu instead                              |
+| `showSoftClipping=true`      | Show soft-clipped bases                                                                                                      |
+| `showCoverage=false`         | Hide the coverage subtrack                                                                                                   |
+| `showPileup=false`           | Hide the pileup; with `coverageHeight`, a coverage-only view                                                                 |
+| `coverageHeight=200`         | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                  |
+| `readConnectionsHeight=120`  | Height of the paired-arcs panel, only for `arcs:up` / `arcs:down`                                                            |
+| `readConnectionsLineWidth=2` | Stroke width for read-connection arcs and lines                                                                              |
+| `sashimiArcsHeight=120`      | Height of the sashimi arc band                                                                                               |
+| `minSashimiScore=3`          | Minimum reads a splice junction needs before its arc is drawn                                                                |
+| `arcColor=insertSize`        | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                   |
+| `maxHeight=4000`             | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                            |
+
+Available `color:` fields, except `tags.<TAG>`, which is a `color.field=` write.
+Anything else is a CSS color, painting every read with it:
+
+| Field                      | Description                                    |
+| -------------------------- | ---------------------------------------------- |
+| `strand`                   | Forward/reverse strand                         |
+| `firstOfPairStrand`        | Strand of the first read in the pair           |
+| `mapq`                     | MAPQ                                           |
+| `insertSize`               | Paired-end insert size                         |
+| `pairOrientation`          | Paired-end orientation                         |
+| `insertSizeAndOrientation` | Combined insert size + orientation             |
+| `mateRefName`              | Reference the mate landed on                   |
+| `tags.<TAG>`               | Color by any BAM tag, as `color.field=tags.HP` |
 
 Available `baseColor:` fields:
 
@@ -735,29 +740,31 @@ Available `baseColor:` fields:
 **Feature tracks (GFF3/BED/BigBed) and VCF tracks**
 
 These share one display base, so every modifier below applies to both.
+`facet=<field>` stacks the track into one labelled section per value: `strand`,
+an attribute, or a dotted path such as `INFO.SVTYPE`. `color.field=<attribute>`
+colors by one.
 
-| Modifier                                | Example                                        | Description                                                                                                                                                                                                                        |
-| --------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `color:value`                           | `color:magenta`                                | Glyph fill: any CSS color, or `strand` to color by feature strand (tomato forward, cornflowerblue reverse)                                                                                                                         |
-| `color:attribute:name`                  | `color:attribute:type`                         | One stable color per distinct value of that feature attribute — the canvas analogue of an alignments `color:tag:XX`                                                                                                                |
-| `group:field` or `group:attribute:name` | `group:strand`, `group:attribute:gene_biotype` | Stack the track into one labelled section per value: `strand`, an attribute, or a dotted path such as `INFO.SVTYPE`. It writes the same `facet` setting an alignments track's `group:` does, where a field is named `tag:` instead |
-| `featureHeight:preset`                  | `featureHeight:compact`                        | Display mode (`normal`, `compact`, `super-compact`)                                                                                                                                                                                |
-| `heightMode:<fixed\|grow\|fit>[:N]`     | `heightMode:fit:200`                           | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too                  |
+| Modifier                            | Example                 | Description                                                                                                                                                                                                       |
+| ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `color:value`                       | `color:magenta`         | Glyph fill: any CSS color, or `strand` to color by feature strand (tomato forward, cornflowerblue reverse)                                                                                                        |
+| `featureHeight:preset`              | `featureHeight:compact` | Display mode (`normal`, `compact`, `super-compact`)                                                                                                                                                               |
+| `heightMode:<fixed\|grow\|fit>[:N]` | `heightMode:fit:200`    | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too |
 
 **BigWig tracks**
 
-The first three name a score axis rather than a BigWig, so they also apply to a
-BAM/CRAM track's coverage band, where `scaletype:log` is usually what an RNA-seq
-figure wants. The rest are BigWig-only and warn on any other track type.
+A BigWig's score axis is the `scales.y` setting, which also applies to a
+BAM/CRAM track's coverage band, where `scales.y.type=log` is usually what an
+RNA-seq figure wants. `mark` names how the scores draw: `bar`, `point`, `line`
+or `heatmap`.
 
-| Modifier                 | Example                | Description                                               |
-| ------------------------ | ---------------------- | --------------------------------------------------------- |
-| `minmax:min:max`         | `minmax:0:100`         | Manual score range                                        |
-| `scaletype:type`         | `scaletype:log`        | Scale type (`linear`, `log` or `symlog`)                  |
-| `fill:true\|false`       | `fill:false`           | Fill under curve                                          |
-| `crosshatch:true\|false` | `crosshatch:true`      | Draw crosshatches                                         |
-| `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier)  |
-| `color:value`            | `color:purple`         | Fill color (any CSS color — `tag:` form is BAM/CRAM only) |
+| Write                                           | Description                              |
+| ----------------------------------------------- | ---------------------------------------- |
+| `scales.y.domainMin=0` `scales.y.domainMax=100` | Manual score range                       |
+| `scales.y.type=log`                             | Scale type (`linear`, `log` or `symlog`) |
+| `scales.y.grid=true`                            | Draw gridlines                           |
+| `mark=point`                                    | `bar`, `point`, `line` or `heatmap`      |
+| `resolution=100`                                | BigWig resolution multiplier             |
+| `color:purple`                                  | Fill color (any CSS color)               |
 
 Two tracks read against each other need one axis, and an image has no menu to
 open, so give both the same `scales.y.autoscaleGroup` and they share a domain:
@@ -784,7 +791,7 @@ jb2export --fasta ref.fa --bam reads.bam color.field=tags.NM color.scale=linear 
   color.range=white,darkred --loc chr1:1-10000 --out out.svg
 
 ## haplotype in two declared colours, methylation over it, a log coverage axis
-jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
+jb2export --fasta ref.fa --bam reads.bam color.field=tags.HP color.domain=1,2 \
   color.range=#d9c9a3,#b7c4b1 baseColor:methylation scales.y.type=log \
   --loc chr1:1-10000 --out out.svg
 ```
@@ -859,7 +866,7 @@ token, no spaces):
 
 ```bash
 jb2export --fasta ref.fa --bam reads.bam '{"color":{"range":["rgb(217,201,163)"]}}' \
-  color:tag:HP --loc chr1:1-10000 --out out.svg
+  color.field=tags.HP --loc chr1:1-10000 --out out.svg
 ```
 
 ## Comparative views
@@ -1306,16 +1313,15 @@ jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
 
 ### Render only the SNPCoverage track of an alignments track
 
-`snpcov` collapses the alignments display down to coverage-only by sizing the
-coverage band to fill the whole track. Combine with `height:N` (overall track
-height) to get a coverage-only render at the size you want. Reproducible with
-the bundled volvox alignments:
+`showPileup=false` collapses the alignments display down to coverage-only; size
+the coverage band with `coverageHeight=N` to match `height:N`, the overall track
+height. Reproducible with the bundled volvox alignments:
 
 <!-- jb2export: snpcov -->
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa \
-  --bam data/volvox/volvox-sorted.bam snpcov height:200 --loc ctgA:1-20000 \
+  --bam data/volvox/volvox-sorted.bam showPileup=false coverageHeight=200 height:200 --loc ctgA:1-20000 \
   --width 1200 --out snpcov.png
 ```
 

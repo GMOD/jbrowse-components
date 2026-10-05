@@ -310,7 +310,17 @@ await test('renderRegion with csi index', async () => {
 await test('renderRegion alignments as snpcov', async () => {
   const result = await renderRegion({
     fasta: fp('volvox.fa'),
-    trackList: [['bam', [fp('volvox-sorted.bam'), 'snpcov', 'height:1000']]],
+    trackList: [
+      [
+        'bam',
+        [
+          fp('volvox-sorted.bam'),
+          'showPileup=false',
+          'coverageHeight=1000',
+          'height:1000',
+        ],
+      ],
+    ],
     loc: 'ctgA:1000-2000',
   })
   if (!result) {

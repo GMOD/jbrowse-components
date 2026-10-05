@@ -18,12 +18,12 @@ const { setupEnv, renderRegion } = await import('../src/index.ts')
 setupEnv()
 
 // force:true so the alignments track renders without a feature-density cap.
-test('group:tag:RG renders an alignments track to SVG', async () => {
+test('facet=tags.RG renders an alignments track to SVG', async () => {
   const svg = await renderRegion({
     fasta,
     loc: 'ctgA:1-2000',
     noRasterize: true,
-    trackList: [['bam', [bam, 'group:tag:RG', 'force:true']]],
+    trackList: [['bam', [bam, 'facet=tags.RG', 'force:true']]],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')
 })
@@ -54,11 +54,11 @@ test('alignment overlay/layout modifiers all produce a valid display snapshot', 
           sortedBam,
           'color:strand',
           'sort:base',
-          'group:strand',
+          'facet=strand',
           'arcs:cloud',
-          'coverageHeight:200',
+          'coverageHeight=200',
           'sashimi:down',
-          'softClipping:true',
+          'showSoftClipping=true',
           'featureHeight:compact',
           'height:500',
           'force:true',
@@ -114,12 +114,13 @@ test('wiggle score modifiers all produce a valid display snapshot', async () => 
         'bigwig',
         [
           coverageBw,
-          'scaletype:log',
-          'fill:false',
-          'minmax:0:50',
+          'scales.y.type=log',
+          'mark=point',
+          'scales.y.domainMin=0',
+          'scales.y.domainMax=50',
           'color:red',
-          'crosshatch:true',
-          'resolution:fine',
+          'scales.y.grid=true',
+          'resolution=10',
           'height:200',
         ],
       ],

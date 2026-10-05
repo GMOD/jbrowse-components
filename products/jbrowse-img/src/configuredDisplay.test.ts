@@ -152,15 +152,15 @@ describe('a path write into a setting the config already writes', () => {
   }, 60000)
 })
 
-// `group:` writes `facet`, the one object the feature, variant and alignments
-// displays share, so it draws the same labelled sections a config asking for
-// the facet draws.
-describe('group: on a feature track', () => {
-  // The section label is what a dropped modifier would cost, so it is asserted
-  // as well as the equality: an ignored `group:` renders an unstacked track,
-  // which carries no chip at all.
+// `facet=` writes the one object the feature, variant and alignments displays
+// share, so it draws the same labelled sections a config asking for the facet
+// draws.
+describe('facet= on a feature track', () => {
+  // The section label is what a dropped write would cost, so it is asserted as
+  // well as the equality: an ignored `facet=` renders an unstacked track, which
+  // carries no chip at all.
   test('stacks the same sections the config stating the facet does', async () => {
-    const written = await exportTrack(configWith(basic), ['group:strand'])
+    const written = await exportTrack(configWith(basic), ['facet=strand'])
     const stated = await exportTrack(configWith({ ...basic, facet: 'strand' }))
     expect(written).toBe(stated)
     expect(written).toContain('Forward strand')
