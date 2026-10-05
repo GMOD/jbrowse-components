@@ -19,7 +19,6 @@ const useStyles = makeStyles()(theme => ({
   root: {
     // above breakpoint split view
     zIndex: 200,
-    backgroundColor: theme.palette.background.paper,
     ...(theme.palette.mode === 'dark' && {
       outline: `1px solid ${theme.palette.divider}`,
       outlineOffset: -1,
