@@ -157,3 +157,41 @@ test('two inputs sharing a basename both render', async () => {
     `expected two tracks' worth of output, got ${both.length} vs ${one.length} for one`,
   )
 })
+
+// GCContentTrack opens the wiggle display, so `color:` is its constant fill. It
+// used to fall into the feature category and write the same key by accident.
+test('--track routes a GCContentTrack to the wiggle modifiers', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-gc-'))
+  const tracks = path.join(dir, 'tracks.json')
+  fs.writeFileSync(
+    tracks,
+    JSON.stringify([
+      {
+        trackId: 'gc',
+        type: 'GCContentTrack',
+        name: 'GC content',
+        assemblyNames: ['volvox.fa'],
+        adapter: {
+          type: 'GCContentAdapter',
+          sequenceAdapter: {
+            type: 'IndexedFastaAdapter',
+            fastaLocation: { localPath: fasta },
+            faiLocation: { localPath: `${fasta}.fai` },
+          },
+        },
+      },
+    ]),
+  )
+  const render = mods =>
+    renderRegion({
+      fasta,
+      tracks,
+      loc: 'ctgA:1-2000',
+      noRasterize: true,
+      showTracks: [['track', ['gc', 'height:100', ...mods]]],
+    })
+  const plain = await render([])
+  const red = await render(['color:red'])
+  assert.ok(plain.includes('GC content'), 'the GC track should be shown')
+  assert.notEqual(red, plain, 'color:red should repaint the track')
+})

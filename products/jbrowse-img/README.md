@@ -605,7 +605,9 @@ of named modifiers. Any other display setting is a
 
 Modifiers are grouped below by the track types they apply to. Passing one to a
 track type it does not apply to (say `sashimi:up` on a BigWig) prints a warning
-naming the types it does work on.
+naming the types it does work on. GWAS, MAF, LD, synteny and sequence tracks
+take only the all-tracks modifiers and
+[slot writes](#any-display-setting-slotpathvalue).
 
 A modifier **value** the modifier can't use — `arcs:upp`, `height:8o`,
 `force:ture` — is an error, not a warning: the tool writes one figure and exits,

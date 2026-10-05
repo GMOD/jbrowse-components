@@ -14,6 +14,10 @@ const tracks: Track[] = [
   { trackId: 'vars', type: 'VariantTrack' },
   { trackId: 'genes', type: 'FeatureTrack' },
   { trackId: 'contacts', type: 'HicTrack' },
+  { trackId: 'gc', type: 'GCContentTrack' },
+  { trackId: 'gwas', type: 'GWASTrack' },
+  { trackId: 'maf', type: 'MafTrack' },
+  { trackId: 'ld', type: 'LDTrack' },
 ]
 
 test('config track type maps to a display category', () => {
@@ -24,9 +28,19 @@ test('config track type maps to a display category', () => {
   expect(configTrackCategory(tracks, 'contacts')).toBe('hic')
 })
 
-test('unknown or missing trackId falls back to feature', () => {
-  expect(configTrackCategory(tracks, 'nope')).toBe('feature')
-  expect(configTrackCategory([{ trackId: 'x' }], 'x')).toBe('feature')
+test('GC content opens a wiggle display, and the displays no modifier targets are other', () => {
+  expect(configTrackCategory(tracks, 'gc')).toBe('wiggle')
+  for (const id of ['gwas', 'maf', 'ld']) {
+    expect(configTrackCategory(tracks, id)).toBe('other')
+  }
+})
+
+test('an unknown, missing or inherited track type is other', () => {
+  expect(configTrackCategory(tracks, 'nope')).toBe('other')
+  expect(configTrackCategory([{ trackId: 'x' }], 'x')).toBe('other')
+  expect(
+    configTrackCategory([{ trackId: 'x', type: 'constructor' }], 'x'),
+  ).toBe('other')
 })
 
 // A CLI file-type flag used to carry its own hand-written category map, parallel

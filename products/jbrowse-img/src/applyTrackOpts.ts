@@ -69,25 +69,39 @@ function mergeColor(r: BuildResult, patch: Partial<ColorObject>) {
   }
 }
 
-// Display category: which display a track opens with, and so which snapshot keys
-// are meaningful for it. Lets us build the right snapshot before the display
-// instance exists, and gate each modifier to the track types it applies to.
-export type Category = 'alignments' | 'wiggle' | 'feature' | 'variant' | 'hic'
+// Display category: the family of display a track type opens with, which says
+// which translating modifiers write keys it declares. `other` is a display none
+// of them target, so it takes the all-tracks modifiers and slot writes alone.
+export type Category =
+  | 'alignments'
+  | 'wiggle'
+  | 'feature'
+  | 'variant'
+  | 'hic'
+  | 'other'
 
-// The one track-type -> category table, keyed by the config track's own `type`.
-// Every track reaches the view through the config — a hosted one named by
-// --track, and a `--bam`/`--bigwig` file whose config readData built — so the
-// category is read off the config for both rather than derived a second way from
-// the CLI flag. Anything unlisted (FeatureTrack and friends) drives a feature
-// display.
+// Every registered track type, keyed by the config track's own `type`. A track
+// reaches the view through the config whether `--track` named it or a
+// `--bam`/`--bigwig` flag built it, so the category is read off the config for
+// both. `trackCategory.test.ts` lists the registered track types and fails on one
+// missing here, so a new type picks its family instead of falling to a default.
 const categoryByTrackType: Record<string, Category> = {
   AlignmentsTrack: 'alignments',
   QuantitativeTrack: 'wiggle',
   MultiQuantitativeTrack: 'wiggle',
+  GCContentTrack: 'wiggle',
   VariantTrack: 'variant',
   MultiVariantTrack: 'variant',
   HicTrack: 'hic',
+  FeatureTrack: 'feature',
+  GWASTrack: 'other',
+  MafTrack: 'other',
+  LDTrack: 'other',
+  SyntenyTrack: 'other',
+  ReferenceSequenceTrack: 'other',
 }
+
+export const categorizedTrackTypes = Object.keys(categoryByTrackType)
 
 export function configTrackCategory(
   tracks: Track[],
@@ -95,8 +109,9 @@ export function configTrackCategory(
 ): Category {
   const type = tracks.find(t => t.trackId === trackId)?.type
   return (
-    (typeof type === 'string' ? categoryByTrackType[type] : undefined) ??
-    'feature'
+    (typeof type === 'string'
+      ? lookup(categoryByTrackType, type)
+      : undefined) ?? 'other'
   )
 }
 
@@ -387,6 +402,7 @@ const ALL = [
   'feature',
   'variant',
   'hic',
+  'other',
 ] as const satisfies readonly Category[]
 
 export type AssertAllCategoriesListed = AssertTrue<Covers<Category, typeof ALL>>
@@ -635,7 +651,10 @@ const modifiers: Record<string, Modifier> = {
           )
         }
         mergeColor(r, { scheme: value })
-      } else if (category !== 'wiggle' && value === 'strand') {
+      } else if (
+        (category === 'feature' || category === 'variant') &&
+        value === 'strand'
+      ) {
         mergeColor(r, { field: 'strand' })
       } else {
         r.snap.color = value
@@ -663,7 +682,7 @@ function applyModifier(
     console.warn(`Warning: unknown track option "${prefix}"`)
   } else if (!modifier.on.includes(category)) {
     console.warn(
-      `Warning: track option "${prefix}" has no effect on a ${category} track (applies to: ${modifier.on.join(', ')})`,
+      `Warning: track option "${prefix}" has no effect on ${category === 'other' ? 'this track type' : `a ${category} track`} (applies to: ${modifier.on.join(', ')})`,
     )
   } else {
     modifier.apply(result, val1, val2, category)

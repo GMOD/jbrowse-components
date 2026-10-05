@@ -43,11 +43,9 @@ slot the synteny view declares.
 - `mark=` reaches `line` and `heatmap`, which `fill` never did.
 - The category gate (`on` lists, `categoryByTrackType`) now covers only the
   remaining translators. A slot write needs no gate, since the display rejects
-  a key it does not declare.
+  a key it does not declare. A track type whose display no translator targets
+  (GWAS, MAF, LD, synteny, sequence) is category `other` and takes the
+  all-tracks modifiers alone; a test fails on a registered track type missing
+  from the table.
 - A script using a removed modifier gets `unknown track option` and draws the
   default. Beta only, so no migration.
-
-## Left open
-
-`categoryByTrackType` still sends GWAS, GC-content, MAF and LD tracks to
-`'feature'` and ignores `display:`, so a translator can gate on the wrong set.
