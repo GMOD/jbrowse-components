@@ -62,8 +62,7 @@ const view = (
   ],
 })
 
-const BACKBONE_NODE = 's621556'
-const UPSTREAM_NODE = 's621552'
+const DELETION_NODE = 's621558'
 const DELETION_LOCUS = 'chr1:196,810,000'
 
 const session = (
@@ -92,20 +91,11 @@ const callouts: Annotation[] = [
   },
   {
     type: 'text',
-    text: '66.3 kb segment',
+    text: '84.7 kb deletion',
     leader: true,
     fontSize: 20,
-    anchor: { graphNode: BACKBONE_NODE },
+    anchor: { graphNode: DELETION_NODE },
     dx: 60,
-    dy: 150,
-  },
-  {
-    type: 'text',
-    text: 'upstream of the window',
-    leader: true,
-    fontSize: 20,
-    anchor: { graphNode: UPSTREAM_NODE },
-    dx: 40,
     dy: -120,
   },
 ]
