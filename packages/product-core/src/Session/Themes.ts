@@ -7,7 +7,9 @@ import {
 } from '@jbrowse/core/ui/theme'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
+  darkReaderIsDark,
   onColorSchemeChange,
+  onDarkReaderChange,
   prefersDarkColorScheme,
 } from '@jbrowse/core/util/systemColorScheme'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
@@ -97,6 +99,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
     .volatile(() => ({
       ...storedSelection(),
       systemPrefersDark: prefersDarkColorScheme(),
+      darkReaderSeen: darkReaderIsDark(),
     }))
     .views(s => {
       const self = asSession(s)
@@ -129,9 +132,16 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         /**
          * #getter
          * Light or dark, with `system` resolved against the OS preference or
-         * the toolbar's hold on the other mode.
+         * the toolbar's hold on the other mode. Dark once Dark Reader has
+         * darkened the page, whatever the stored mode says: it leaves canvas
+         * pixels alone, so a light canvas on its dark page is unreadable. The
+         * stored mode is untouched and applies again on a reload without the
+         * extension.
          */
         get effectiveThemeMode(): PaletteMode {
+          if (self.darkReaderSeen) {
+            return 'dark'
+          }
           return this.themeMode === 'system'
             ? (self.systemThemeOverride ??
                 (self.systemPrefersDark ? 'dark' : 'light'))
@@ -265,6 +275,16 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       },
       /**
        * #action
+       * Latches: Dark Reader drops its mark when the page locks it out or its
+       * own detector takes the page for dark, and the canvas must stay dark.
+       */
+      noteDarkReader() {
+        if (darkReaderIsDark()) {
+          self.darkReaderSeen = true
+        }
+      },
+      /**
+       * #action
        */
       setSystemPrefersDark(dark: boolean) {
         if (dark !== self.systemPrefersDark) {
@@ -308,6 +328,13 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
             self.setSystemPrefersDark(prefersDarkColorScheme())
           }),
         )
+        addDisposer(
+          self,
+          onDarkReaderChange(() => {
+            self.noteDarkReader()
+          }),
+        )
+        self.noteDarkReader()
         addDisposer(
           self,
           autorun(

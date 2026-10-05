@@ -42,6 +42,7 @@ function installMatchMedia(matches: boolean) {
 afterEach(() => {
   Reflect.deleteProperty(window, 'matchMedia')
   localStorage.clear()
+  delete document.documentElement.dataset.darkreaderScheme
 })
 
 // The session hangs off a parent, as it does in every product: `afterAttach`,
@@ -294,4 +295,34 @@ test('an export named by a retired theme keeps that mode', () => {
   const opts = session.getActiveThemeOptions('darkMinimal')
   expect(opts.palette?.mode).toBe('dark')
   expect(session.themeMode).toBe('light')
+})
+
+// Dark Reader's Dynamic mode darkens the page's CSS and leaves canvas pixels
+// alone, so a light session draws a light canvas on a dark page. The session
+// draws dark once the mark appears, keeps the stored mode, and stays dark when
+// Dark Reader drops the mark.
+test('a page Dark Reader has darkened draws dark, and keeps drawing dark', async () => {
+  installMatchMedia(false)
+  const session = makeSession()
+  expect(session.themeIsDark).toBe(false)
+
+  document.documentElement.dataset.darkreaderScheme = 'dark'
+  await Promise.resolve()
+  expect(session.effectiveThemeMode).toBe('dark')
+  expect(session.themeIsDark).toBe(true)
+  expect(session.themeMode).toBe('light')
+  expect(session.themeOptions.mode).toBe('dark')
+
+  delete document.documentElement.dataset.darkreaderScheme
+  await Promise.resolve()
+  expect(session.themeIsDark).toBe(true)
+})
+
+test('Dark Reader already on at startup draws dark, and its light scheme does not', () => {
+  installMatchMedia(false)
+  document.documentElement.dataset.darkreaderScheme = 'dimmed'
+  expect(makeSession().themeIsDark).toBe(false)
+
+  document.documentElement.dataset.darkreaderScheme = 'dark'
+  expect(makeSession().themeIsDark).toBe(true)
 })

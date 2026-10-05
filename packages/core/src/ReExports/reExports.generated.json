@@ -3617,7 +3617,9 @@
     "@jbrowse/core/util/systemColorScheme": {
       "package": "@jbrowse/core",
       "names": [
+        "darkReaderIsDark",
         "onColorSchemeChange",
+        "onDarkReaderChange",
         "prefersDarkColorScheme"
       ],
       "worker": "real"
