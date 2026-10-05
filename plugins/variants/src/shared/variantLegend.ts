@@ -22,6 +22,7 @@ import {
   getImpactColor,
 } from './variantConsequence.ts'
 
+import type { VariantUnit } from './constants.ts'
 import type {
   CategoricalEntry,
   CategoricalScale,
@@ -46,7 +47,7 @@ function entry(label: string, color?: string): CategoricalEntry {
 }
 
 export interface VariantLegendInputs {
-  unit: string
+  unit: VariantUnit
   // Painted, not possible: each is true only where the cell loops emitted a
   // cell of that category anywhere in the fetched cell data (see
   // `paintedLegendFlags`).

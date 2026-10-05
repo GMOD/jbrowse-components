@@ -12,6 +12,7 @@ import {
 import { makePhaseSetReader } from './phaseSetReader.ts'
 import { getCachedABGR } from './variantWebglUtils.ts'
 
+import type { VariantUnit } from './constants.ts'
 import type { ProcessedSource } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -265,7 +266,7 @@ export function makeSiteStyler({
   sampleNames: string[]
   // `genotypeDict[code - 1]` is a code's genotype; code 0 is "no genotype"
   genotypeDict: readonly string[]
-  unit: string
+  unit: VariantUnit
   drawRef: boolean
   colorByPhaseSet?: boolean
 }) {

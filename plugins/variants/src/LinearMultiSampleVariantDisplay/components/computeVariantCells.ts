@@ -6,6 +6,7 @@ import { makeSiteStyler } from '../../shared/variantCellStyles.ts'
 import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 
 import type { CellHueValues } from '../../shared/cellHue.ts'
+import type { VariantUnit } from '../../shared/constants.ts'
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
@@ -83,7 +84,7 @@ export function computeVariantCells({
 }: {
   filteredVariants: FilteredVariant[]
   sources: ProcessedSource[]
-  unit: string
+  unit: VariantUnit
   referenceDrawingMode: string
   // What the alt cells' hue reads off a variant, once per feature.
   hueValue?: (feature: Feature) => string | undefined

@@ -15,6 +15,7 @@ import {
 } from '../../shared/paintCells.ts'
 import { computeVariantCells } from './computeVariantCells.ts'
 
+import type { VariantUnit } from '../../shared/constants.ts'
 import type { ProcessedSource } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -857,7 +858,11 @@ describe('computeVariantCells cellAltDosage', () => {
     end: 101,
   })
 
-  function carriesAltByRow(f: Feature, srcs: ProcessedSource[], unit: string) {
+  function carriesAltByRow(
+    f: Feature,
+    srcs: ProcessedSource[],
+    unit: VariantUnit,
+  ) {
     const result = computeVariantCells({
       filteredVariants: [{ feature: f, mostFrequentAlt: '1' }],
       sources: srcs,

@@ -1,3 +1,4 @@
+import type { VariantUnit } from './constants.ts'
 import type { ProcessedSource, Source } from './types.ts'
 
 // A source's bare VCF sample identity: `sampleName` when present (set once a
@@ -133,7 +134,7 @@ export function buildCanonicalRows({
   // nothing sends `[]` and must compute nothing, which is also what the display
   // will draw.
   sampleFilter: string[] | undefined
-  unit: string
+  unit: VariantUnit
 }): ProcessedSource[] {
   const keep = sampleFilter ? new Set(sampleFilter) : undefined
   const rows: ProcessedSource[] = []

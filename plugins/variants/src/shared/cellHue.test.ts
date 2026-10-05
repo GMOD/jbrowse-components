@@ -11,6 +11,7 @@ import { paintFeatureColors } from './paintCells.ts'
 import { IMPACT_FIELD, getVariantImpactColor } from './variantConsequence.ts'
 import { getCachedABGR as abgr } from './variantWebglUtils.ts'
 
+import type { VariantUnit } from './constants.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
@@ -33,7 +34,10 @@ function variant(info: Record<string, unknown>, id = 'v') {
 const read = (encoding: ColorEncoding | undefined, keptField?: string) =>
   cellHueOf(encoding, keptField).read
 
-function reader(encoding: ColorEncoding | undefined, unit = 'sample') {
+function reader(
+  encoding: ColorEncoding | undefined,
+  unit: VariantUnit = 'sample',
+) {
   return cellHueReaderOf(read(encoding), {
     jexl: pluginManager.jexl,
     unit,

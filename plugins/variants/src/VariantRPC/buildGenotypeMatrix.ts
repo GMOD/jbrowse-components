@@ -1,6 +1,7 @@
 import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
 import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
 
+import type { VariantUnit } from '../shared/constants.ts'
 import type { Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
@@ -30,7 +31,7 @@ export async function buildGenotypeMatrix({
     maxMissingnessFilter: number
     filters?: SerializableFilterChain
     statusCallback?: StatusCallback
-    unit?: string
+    unit?: VariantUnit
     samplePloidy?: Record<string, number>
   }
 }) {

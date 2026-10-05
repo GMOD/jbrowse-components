@@ -3,6 +3,7 @@ import { makeHueValueTable } from '../../shared/cellHue.ts'
 import { makeSiteStyler } from '../../shared/variantCellStyles.ts'
 
 import type { CellHueValues } from '../../shared/cellHue.ts'
+import type { VariantUnit } from '../../shared/constants.ts'
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
@@ -61,7 +62,7 @@ export function computeVariantMatrixCells({
 }: {
   filteredVariants: FilteredVariant[]
   sources: ProcessedSource[]
-  unit: string
+  unit: VariantUnit
   // See computeVariantCells.
   hueValue?: (feature: Feature) => string | undefined
   // Color phased alt cells by FORMAT PS instead of by allele (see

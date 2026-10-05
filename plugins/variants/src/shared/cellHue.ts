@@ -13,6 +13,7 @@ import {
   getVariantImpactDomain,
 } from './variantConsequence.ts'
 
+import type { VariantUnit } from './constants.ts'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -132,7 +133,7 @@ export function cellHueReaderOf(
     unit,
   }: {
     jexl: JexlInstance
-    unit: string
+    unit: VariantUnit
   },
 ): CellHueReader {
   if (read === undefined) {
