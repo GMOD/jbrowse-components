@@ -457,7 +457,9 @@ function reportDryRun({
   for (const file of deleted) {
     console.log(`  - ${file}`)
   }
-  console.log(`\nWould then tag ${releaseTag} and push.`)
+  console.log(
+    `\nWould then push the commit, wait for Push to go green on it, tag ${releaseTag} and push the tag.`,
+  )
   console.log(`Rendered tree left at ${destDir} — nothing in the repo changed.`)
 }
 
