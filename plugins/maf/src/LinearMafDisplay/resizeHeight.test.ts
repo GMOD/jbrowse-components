@@ -1,3 +1,5 @@
+import { treeSidebarOffset } from '@jbrowse/tree-sidebar'
+
 import { DEFAULTS } from './displayDefaults.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
 
@@ -180,4 +182,20 @@ describe('resizable band height floor', () => {
     display.resizeConservationHeight(+1)
     expect(display.conservationHeight).toBe(9)
   })
+})
+
+test('hidden alignments draw no tree and reserve no gutter', () => {
+  const { display } = createMafTestEnvironment().createDisplay()
+  display.setSamples({
+    samples: ['a', 'b', 'c'].map(id => ({ id, label: id })),
+    treeNewick: '((a,b),c);',
+    samplesCanonical: true,
+  })
+  expect(display.hierarchy).toBeDefined()
+  expect(treeSidebarOffset(display)).toBe(display.treeAreaWidth)
+
+  display.setShowAlignments(false)
+  expect(display.hierarchy).toBeUndefined()
+  expect(treeSidebarOffset(display)).toBe(0)
+  expect(display.scrollContentHeight).toBe(0)
 })

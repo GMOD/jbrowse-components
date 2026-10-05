@@ -372,7 +372,8 @@ it painted zero-height rects. Structural typing let that through, so keep the
 contract field named for the resolved value.
 
 `computeClusterHierarchy` takes `rowsContentHeight` =
-`rows.length × effectiveRowHeight`, **never the viewport they scroll inside**.
+`rows.length × effectiveRowHeight`, which `TreeSidebarMixin` computes once from
+`sources`, **never the viewport they scroll inside**.
 Pass the viewport and the dendrogram still draws, still looks plausible, and
 names the wrong rows. "Simplify this to the display height" is the edit the
 parameter is named to refuse.

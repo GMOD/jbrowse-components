@@ -1288,7 +1288,7 @@ export default function stateModelFactory(
          *
          * This is the viewport, not the content: with a fixed `rowHeight` the
          * rows can add up to far more than this and the extra is reached by
-         * scrolling (`rowsContentHeight` / `scrollableHeight`), never by growing
+         * scrolling (`scrollContentHeight` / `scrollableHeight`), never by growing
          * the canvas. Capped at `maxRowsHeight` so even a deliberate drag can't
          * push the backing store past the browser/GPU canvas limit.
          */
@@ -1353,37 +1353,26 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Height the per-sample rows add up to — the scrolled content behind the
-         * `rowsHeight` viewport. Equal to it in fit-to-height mode, so that mode
-         * never scrolls; larger whenever a fixed `rowHeight` asks for more rows
-         * than the track shows. Also `TreeSidebarMixin`'s hook: the dendrogram
-         * lays against it, so leaf rows align with row tops even where the
-         * rows scroll past the viewport, and the tree canvas and the SVG labels
-         * shift by `scrollTop` as the rows do.
-         */
-        get rowsContentHeight() {
-          return self.showAlignments ? self.nrow * self.effectiveRowHeight : 0
-        },
-        /**
-         * #getter
-         * Full display height = rows viewport + stacked bands.
-         */
-        get totalHeight() {
-          return self.rowsHeight + self.rowsTopOffset
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
+         * The rows' scrolled content behind the `rowsHeight` viewport,
+         * `rowsContentHeight` while the alignments show. Equal to the viewport
+         * in fit-to-height mode, so that mode never scrolls.
          */
         get scrollContentHeight() {
-          return self.rowsContentHeight
+          return self.showAlignments ? self.rowsContentHeight : 0
         },
         /**
          * #getter
          */
         get scrollViewportHeight() {
           return self.rowsHeight
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: off while the alignments are hidden, since
+         * the tree lays against rows that are not drawn.
+         */
+        get drawsTree() {
+          return self.showAlignments
         },
       }))
       .views(self => ({
@@ -1393,7 +1382,7 @@ export default function stateModelFactory(
          * rendering canvases exactly (stacked bands + rows viewport).
          */
         get height() {
-          return self.totalHeight
+          return self.rowsHeight + self.rowsTopOffset
         },
         /**
          * #getter

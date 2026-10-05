@@ -704,13 +704,6 @@ export default function stateModelFactory(
       get drawsTree(): boolean {
         return !self.isOverlay
       },
-      /**
-       * #getter
-       * `TreeSidebarMixin`'s hook: the rows' height, below the focus chip line.
-       */
-      get rowsContentHeight(): number {
-        return self.rowsHeight
-      },
     }))
     .views(self => ({
       /**

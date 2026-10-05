@@ -345,11 +345,9 @@ describe('computeClusterHierarchy', () => {
   // stacked extent, leaf *i* has to land on the center of row *i*, because that
   // is where everything drawn beside the tree puts it (the hover highlight in
   // `treeDrawingAutorun`, `SvgRowLabels`, each display's own painting) — all of
-  // them off `i × effectiveRowHeight`, none of them reconciling by name.
-  //
-  // Passing a scrolling display's viewport height instead still produces a
-  // dendrogram, so nothing downstream can catch it: maf is the live case, and
-  // it deliberately passes `rowsContentHeight` rather than `rowsHeight`.
+  // them off `i × effectiveRowHeight`, none of them reconciling by name. A
+  // scrolling display's viewport height still produces a dendrogram, so
+  // nothing downstream would catch it.
   test('lands leaf i on the center of row i', () => {
     const rowHeight = 30
     const laid = computeClusterHierarchy(

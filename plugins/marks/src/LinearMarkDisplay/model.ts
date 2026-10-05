@@ -1594,13 +1594,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: the height the rows fill.
-         */
-        get rowsContentHeight(): number {
-          return self.sources.length * self.effectiveRowHeight
-        },
-        /**
-         * #getter
          */
         get svgSidebar(): SvgSidebarProps | undefined {
           return self.drawsKeyedRows

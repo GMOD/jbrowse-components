@@ -63,13 +63,15 @@ import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the
- * sidebar's toggle slots, the `rows` object and the `rowColor` object.
+ * sidebar's toggle slots, the `rows` object, the `rowColor` object and the
+ * resolved row height.
  */
 export interface TreeSidebarHost {
   configuration: TreeSidebarConfigModel & { displayId: string }
+  effectiveRowHeight: number
 }
 
-const confNode = (self: object) => self as TreeSidebarHost
+const host = (self: object) => self as TreeSidebarHost
 
 type ArrangementMember = (typeof ROW_ARRANGEMENT_MEMBERS)[number]
 type Arrangement = Partial<Record<ArrangementMember, unknown>>
@@ -105,7 +107,7 @@ function baseArrangement(self: object): Arrangement {
 }
 
 function liveArrangement(self: object): Arrangement {
-  return getSnapshot(confNode(self).configuration.rows) as Arrangement
+  return getSnapshot(host(self).configuration.rows) as Arrangement
 }
 
 /**
@@ -251,7 +253,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * Whether the dendrogram sidebar is drawn.
        */
       get showTree(): boolean {
-        return getConf(confNode(self), 'showTree')
+        return getConf(host(self), 'showTree')
       },
       /**
        * #getter
@@ -259,14 +261,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * evenly by topology (cladogram).
        */
       get showBranchLength(): boolean {
-        return getConf(confNode(self), 'showBranchLength')
+        return getConf(host(self), 'showBranchLength')
       },
       /**
        * #getter
        * Whether each row's name is drawn over the left of the plot.
        */
       get showRowLabels(): boolean {
-        return getConf(confNode(self), 'showRowLabels')
+        return getConf(host(self), 'showRowLabels')
       },
       /**
        * #getter
@@ -276,7 +278,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * unticking and reticking the track.
        */
       get treeAreaWidth(): number {
-        return getConf(confNode(self), 'treeAreaWidth')
+        return getConf(host(self), 'treeAreaWidth')
       },
       /**
        * #getter
@@ -284,14 +286,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * and the rest follow as `unlistedRowsSort` says.
        */
       get rowDomain(): string[] {
-        return getConf(confNode(self), ['rows', 'domain'])
+        return getConf(host(self), ['rows', 'domain'])
       },
       /**
        * #getter
        * The labels drawn in place of row names, `rows.labels`, by name.
        */
       get rowLabels(): Readonly<Record<string, string>> {
-        return getConf(confNode(self), ['rows', 'labels'])
+        return getConf(host(self), ['rows', 'labels'])
       },
       /**
        * #getter
@@ -299,7 +301,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * for a tree that arrived as data.
        */
       get rowTreeProvenance(): ClusterProvenance | undefined {
-        return getConf(confNode(self), ['rows', 'treeProvenance'])
+        return getConf(host(self), ['rows', 'treeProvenance'])
       },
       /**
        * #getter
@@ -308,7 +310,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * row shows.
        */
       get rowFocus(): readonly string[] | undefined {
-        const kept: string[] = getConf(confNode(self), ['rows', 'kept'])
+        const kept: string[] = getConf(host(self), ['rows', 'kept'])
         return kept.length ? kept : undefined
       },
       /**
@@ -319,10 +321,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get rowColorSetting(): RowColorSetting {
         return liftRowColor({
-          field: getConf(confNode(self), ['rowColor', 'field']),
-          domain: getConf(confNode(self), ['rowColor', 'domain']),
-          range: getConf(confNode(self), ['rowColor', 'range']),
-          unknown: getConf(confNode(self), ['rowColor', 'unknown']),
+          field: getConf(host(self), ['rowColor', 'field']),
+          domain: getConf(host(self), ['rowColor', 'domain']),
+          range: getConf(host(self), ['rowColor', 'range']),
+          unknown: getConf(host(self), ['rowColor', 'unknown']),
         })
       },
       /**
@@ -478,7 +480,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get rowTree(): string | undefined {
         return (
-          getConf(confNode(self), ['rows', 'tree']) ??
+          getConf(host(self), ['rows', 'tree']) ??
           (this.guideTreeHonoursDomain ? self.guideTreeNewick : undefined)
         )
       },
@@ -803,10 +805,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * `rows.domain` here, and the guide tree is `guideTree`'s parse.
        */
       get parsedTree() {
-        const tree: string | undefined = getConf(confNode(self), [
-          'rows',
-          'tree',
-        ])
+        const tree: string | undefined = getConf(host(self), ['rows', 'tree'])
         if (tree) {
           return buildTree(tree, self.rowTreeProvenance ? [] : self.rowDomain)
         }
@@ -822,7 +821,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         const order = orderOver(self.rowDomain, next)
         const guide = self.guideTreeNewick
         return guide &&
-          !getConf(confNode(self), ['rows', 'tree']) &&
+          !getConf(host(self), ['rows', 'tree']) &&
           self.guideTreeHonoursDomain
           ? !listsInOrder(getLeafNames(buildTree(guide, order)), order)
           : !movesNoRow(next, self.editableSources) &&
@@ -881,15 +880,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Overridable hook: the px height the dendrogram's leaves spread over,
-       * which each display sets to the height its rows fill, as they scroll
-       * where they scroll. 0 by default, which draws no tree.
-       */
-      get rowsContentHeight(): number {
-        return 0
-      },
-      /**
-       * #getter
        * Overridable hook: the tree `hierarchy` positions, `root` by default.
        * `computeClusterHierarchy` declines to position a tree whose leaves are
        * no longer the rows drawn, so a display that hides a row prunes it from
@@ -901,16 +891,26 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * Overridable hook: whether the dendrogram draws at all, true by
-       * default. This is the single gate: the on-screen sidebar, the SVG
-       * export, `spatialIndex` (subtree hover) and the tooltip dead zone the
-       * sidebar reserves all read `hierarchy`, so none keeps drawing or
-       * reserving space on its own.
+       * default; off wherever the rows it would lay against are not drawn.
+       * This is the single gate: the on-screen sidebar, the SVG export,
+       * `spatialIndex` (subtree hover) and the tooltip dead zone the sidebar
+       * reserves all read `hierarchy`, so none keeps drawing or reserving
+       * space on its own.
        */
       get drawsTree(): boolean {
         return true
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The px the rows stack to, `sources` × `effectiveRowHeight`, which the
+       * dendrogram's leaves spread over: the content the rows scroll through,
+       * never the viewport they scroll inside.
+       */
+      get rowsContentHeight(): number {
+        return self.sources.length * host(self).effectiveRowHeight
+      },
       /**
        * #getter
        * The dendrogram positioned against the rows drawn, or undefined while
@@ -925,7 +925,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           ? computeClusterHierarchy(
               self.treeRoot,
               self.sources,
-              self.rowsContentHeight,
+              this.rowsContentHeight,
               self.treeAreaWidth,
               self.showBranchLength,
               self.rowBands,
@@ -987,22 +987,22 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #action
        */
       setShowTree(arg: boolean) {
-        setConf(confNode(self), 'showTree', arg)
+        setConf(host(self), 'showTree', arg)
       },
       /**
        * #action
        */
       setShowBranchLength(arg: boolean) {
-        setConf(confNode(self), 'showBranchLength', arg)
+        setConf(host(self), 'showBranchLength', arg)
       },
       /**
        * #action
        */
       setShowRowLabels(arg: boolean) {
-        setConf(confNode(self), 'showRowLabels', arg)
+        setConf(host(self), 'showRowLabels', arg)
       },
       setTreeAreaWidth(width: number) {
-        setConf(confNode(self), 'treeAreaWidth', width)
+        setConf(host(self), 'treeAreaWidth', width)
       },
       setRunClustering(arg?: boolean) {
         self.runClustering = arg
@@ -1030,7 +1030,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     }))
     .actions(self => {
       function write(member: ArrangementMember, value: unknown) {
-        setConf(confNode(self), ['rows', member], value)
+        setConf(host(self), ['rows', member], value)
       }
       function persist() {
         if (hasParent(self)) {
@@ -1053,7 +1053,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         }
       }
       function writeRowColor(setting: RowColorSetting) {
-        setConf(confNode(self), 'rowColor', rowColorMembers(setting))
+        setConf(host(self), 'rowColor', rowColorMembers(setting))
       }
       return {
         /**

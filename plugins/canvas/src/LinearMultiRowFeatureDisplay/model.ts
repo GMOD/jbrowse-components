@@ -688,15 +688,6 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: the height the rows fill.
-       */
-      get rowsContentHeight(): number {
-        return self.nrow * self.effectiveRowHeight
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * Pixel width reserved on the left for the tree, 0 when no tree shows.
        */
       get sidebarOffset(): number {

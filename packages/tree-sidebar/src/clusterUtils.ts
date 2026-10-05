@@ -313,15 +313,8 @@ export function treeDescribesRows(
 // `treeDrawingAutorun`, `SvgRowLabels`, and each display's own painting. Pass the
 // viewport instead and the dendrogram still draws, still looks plausible, and
 // silently names the wrong rows — the same failure `treeDescribesRows` guards
-// against on the name axis, on the pixel axis instead.
-//
-// It reads as an alias for `height` on a display that grows to its content (the
-// multi-row feature display redefines `height` as exactly `nrow ×
-// effectiveRowHeight`) or that is always fit-to-height (multi-wiggle, whose
-// rows fill `rowsHeight`, under the focus chip's line). It is not one on a
-// display that scrolls: maf passes `rowsContentHeight` and NOT
-// `rowsHeight`, and the variant displays spell the product out. Changing a
-// caller to the viewport height is the tidy-up this parameter is named to refuse.
+// against on the name axis, on the pixel axis instead. `TreeSidebarMixin`'s
+// `rowsContentHeight` is that product.
 //
 // With `bands`, each band draws the clade whose leaves are exactly its rows in
 // order, if the tree holds one, laid out on its own rows under a root that
