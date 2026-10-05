@@ -112,7 +112,10 @@ export function locationPath(location: unknown) {
   if (!loc?.uri) {
     return loc?.localPath
   }
-  const resolved = resolveUri({ uri: loc.uri, baseUri: loc.baseUri })
+  return openablePath(resolveUri({ uri: loc.uri, baseUri: loc.baseUri }))
+}
+
+function openablePath(resolved: string) {
   return resolved.startsWith('file://')
     ? decodeURIComponent(new URL(resolved).pathname)
     : resolved
@@ -131,7 +134,7 @@ export function uriOf(adapter: Record<string, unknown>, slot: string) {
   return (
     locationPath(adapter[slot]) ??
     locationPath(adapter.uri) ??
-    (typeof adapter.uri === 'string' ? adapter.uri : undefined)
+    (typeof adapter.uri === 'string' ? openablePath(adapter.uri) : undefined)
   )
 }
 

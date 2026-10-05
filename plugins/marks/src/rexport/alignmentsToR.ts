@@ -111,8 +111,8 @@ const READ_DIMENSIONS: Record<
 }
 
 function deriveLevel(column: string, mateAware = false) {
-  const level = `ifelse(reads$${column} == "", ${rStr(NO_VALUE)}, as.character(reads$${column}))`
-  return mateAware ? `ifelse(is.na(reads$mate), ${level}, reads$mate)` : level
+  const level = `ifelse(READS$${column} == "", ${rStr(NO_VALUE)}, as.character(READS$${column}))`
+  return mateAware ? `ifelse(is.na(READS$mate), ${level}, READS$mate)` : level
 }
 
 function writtenColour(color: AlignmentsDisplaySnapshot['color']): ColorSpec {
@@ -248,13 +248,18 @@ export function alignmentsPanels({
   uri,
   regions,
   reference,
+  key,
 }: {
   display: AlignmentsDisplaySnapshot
   uri: string
   regions: readonly Region[]
+  /** Suffixes every R name, so several alignments tracks share one script. */
+  key?: string
   /** The assembly's FASTA or 2bit, which a read with no MD tag is compared against. */
   reference?: string
 }): { panels: Panel[]; notes: string[] } {
+  const named = (name: string) => (key ? `${name}_${key}` : name)
+  const readsName = named('reads')
   const notes = [
     'reads: each draws as one bar over its reference span, without its deletions, insertions, clips or splice gaps',
   ]
@@ -276,7 +281,7 @@ export function alignmentsPanels({
   const base = frameFor({
     type: 'BamAdapter',
     uri,
-    name: 'reads',
+    name: readsName,
     fields: [
       ...new Set([
         ...colour.tags.map(t => `tags.${t}`),
@@ -292,7 +297,7 @@ export function alignmentsPanels({
     'mate',
   ]
   const classified = frame({
-    name: 'reads',
+    name: readsName,
     columns: [
       ...base.columns,
       ...fields,
@@ -301,9 +306,11 @@ export function alignmentsPanels({
     coords: base.coords,
     packages: base.packages,
     statements: [
-      `reads <- alignments_fields(read_filter(reads, ${filterArgs(display.filterBy)}))`,
+      `${readsName} <- alignments_fields(read_filter(${readsName}, ${filterArgs(display.filterBy)}))`,
       ...(colour.derive
-        ? [`reads$${rIdent(LEVEL_COLUMN)} <- ${colour.derive}`]
+        ? [
+            `${readsName}$${rIdent(LEVEL_COLUMN)} <- ${colour.derive.replaceAll('READS', readsName)}`,
+          ]
         : []),
     ].join('\n'),
     parent: base,
@@ -334,14 +341,15 @@ export function alignmentsPanels({
     ...(colour.manual ? { fill: colour.manual } : {}),
     y: { kind: 'reverse' },
   }
+  const mismatchesName = named('mismatches')
   if (display.showMismatches !== false) {
     const mismatches = frame({
-      name: 'mismatches',
+      name: mismatchesName,
       columns: ['read_index', 'refpos', 'base', 'row'],
       packages: ['GenomicAlignments'],
-      statements: `mismatches <- bam_mismatches(${rStr(uri)}, ${at}, ${reference ? rStr(reference) : 'NULL'})
-mismatches$row <- reads$row[match(mismatches$read_index, reads$read_index)]
-mismatches <- mismatches[!is.na(mismatches$row), ]`,
+      statements: `${mismatchesName} <- bam_mismatches(${rStr(uri)}, ${at}, ${reference ? rStr(reference) : 'NULL'})
+${mismatchesName}$row <- ${readsName}$row[match(${mismatchesName}$read_index, ${readsName}$read_index)]
+${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
       parent: packed,
     })
     layers.push(
@@ -374,7 +382,7 @@ mismatches <- mismatches[!is.na(mismatches$row), ]`,
   const xlim = { start: region.start, end: region.end }
   const panels: Panel[] = [
     {
-      variable: 'pileup',
+      variable: named('pileup'),
       plot: {
         layers,
         scales,
@@ -386,14 +394,14 @@ mismatches <- mismatches[!is.na(mismatches$row), ]`,
   ]
   if (display.showCoverage !== false) {
     const coverage = frame({
-      name: 'coverage',
+      name: named('depth'),
       columns: ['start', 'end', 'depth'],
       packages: ['GenomicAlignments'],
-      statements: `coverage <- bam_coverage(${rStr(uri)}, ${at}, keep = reads$read_index)`,
+      statements: `${named('depth')} <- bam_coverage(${rStr(uri)}, ${at}, keep = ${readsName}$read_index)`,
       parent: packed,
     })
     panels.unshift({
-      variable: 'coverage',
+      variable: named('coverage'),
       plot: {
         layers: [
           layer({
