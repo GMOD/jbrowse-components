@@ -79,16 +79,23 @@ export function staleLaneSpecs<Spec extends LaneFetchSpec>(
   return specs.filter(spec => state.held?.get(spec.lane)?.key !== spec.key)
 }
 
-/** Drops a lane no spec names. */
+/**
+ * Drops a lane no spec names; with `keepCurrentKeys`, one held under a key a
+ * spec still carries stays, as a scrolled-out pair does
+ */
 export function landLaneFetch<Held extends HeldLane>(
   state: LaneFetchState<Held>,
   fetched: ReadonlyMap<string, Held>,
   specs: LaneFetchSpec[],
   anchor: string,
+  keepCurrentKeys = false,
 ): LaneFetchState<Held> {
   const current = new Set(specs.map(spec => spec.lane))
+  const keys = new Set(keepCurrentKeys ? specs.map(spec => spec.key) : [])
   const held = new Map(
-    [...(state.held ?? [])].filter(([lane]) => current.has(lane)),
+    [...(state.held ?? [])].filter(
+      ([lane, result]) => current.has(lane) || keys.has(result.key),
+    ),
   )
   for (const [lane, result] of fetched) {
     held.set(lane, result)

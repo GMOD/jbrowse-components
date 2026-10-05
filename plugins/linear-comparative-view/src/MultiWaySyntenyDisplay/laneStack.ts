@@ -107,6 +107,21 @@ export function laneGeometry(
   }
 }
 
+/**
+ * Whether the gutter from `upperRow`'s band to `lowerRow`'s lies within one
+ * viewport of the scrolled window, either side
+ */
+export function gutterNearViewport(
+  { rows }: LaneGeometry,
+  scrollTop: number,
+  viewportPx: number,
+) {
+  const lo = scrollTop - viewportPx
+  const hi = scrollTop + 2 * viewportPx
+  return (upperRow: number, lowerRow: number) =>
+    rows[upperRow]!.bandStart < hi && rows[lowerRow]!.bandEnd > lo
+}
+
 export interface Lane {
   assemblyName: string
   label: string

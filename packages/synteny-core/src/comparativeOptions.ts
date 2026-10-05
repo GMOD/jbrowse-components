@@ -15,6 +15,12 @@ export interface ComparativeOptions extends BaseOptions {
   // records are on this lane's coordinates. An adapter declares that it
   // answers these with the `lanePairsOnAnchor` capability.
   queryAssemblyName?: string
+  // Several `queryAssemblyName`/`targetAssemblyName` pairs on one anchor
+  // window, answered together: a graph cuts the window once for all of them.
+  // Each record's `assemblyName` and `mate.assemblyName` say which pair it
+  // belongs to. An adapter declares that it answers these with the
+  // `lanePairBatches` capability.
+  lanePairs?: { queryAssemblyName: string; targetAssemblyName: string }[]
   // A multi-genome adapter answering a no-target query folds the pairs
   // anchored on one query feature into one feature carrying `mates: [...]`,
   // each mate with its own pairwise `orientation`. Absent, one `mate`-carrying

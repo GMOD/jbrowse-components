@@ -33,7 +33,11 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
         haplotypes?: string[]
         opts?: Pick<
           ComparativeOptions,
-          'lodMode' | 'mateShape' | 'targetAssemblyName' | 'queryAssemblyName'
+          | 'lodMode'
+          | 'mateShape'
+          | 'targetAssemblyName'
+          | 'queryAssemblyName'
+          | 'lanePairs'
         >
       }
       return: MultiWayFeatures

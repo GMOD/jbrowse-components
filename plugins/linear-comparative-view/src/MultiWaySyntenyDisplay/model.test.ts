@@ -1438,6 +1438,129 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
   })
 })
 
+describe('lane pairs on a graph source', () => {
+  const lanes = Array.from({ length: 60 }, (_, i) => `sample${i}#1`)
+  const graphDisplay = async (
+    adapterType: string,
+    answer: (opts: Record<string, unknown>) => unknown = () => [],
+  ) => {
+    const calls: Record<string, unknown>[] = []
+    const { display } = createDisplayWithSession({
+      syntenyAdapter: { type: adapterType },
+      trackAssemblyNames: ['volvox'],
+      geneTracks: [],
+      rpc: async (name, args) => {
+        const opts = (args.opts ?? {}) as Record<string, unknown>
+        if (name === 'MultiWayGetFeatures') {
+          calls.push(opts)
+        }
+        return name === 'CoreGetInfo'
+          ? { hasCoarseTier: false, anchorAssemblyName: 'volvox', lanes: [] }
+          : opts.queryAssemblyName === undefined && opts.lanePairs === undefined
+            ? []
+            : answer(opts)
+      },
+    })
+    await when(
+      () => display.starAnchor !== undefined && display.features !== undefined,
+      { timeout: 5000 },
+    )
+    display.setFeatures(
+      lanes.map(
+        (lane, i) =>
+          new SimpleFeature({
+            uniqueId: `r${i}`,
+            refName: 'ctgA',
+            start: 100,
+            end: 300,
+            strand: 1,
+            mate: { assemblyName: lane, refName: 'ctgB', start: 100, end: 300 },
+          }),
+      ),
+    )
+    display.setLaneFrames(
+      0,
+      new Map(lanes.map(lane => [lane, decisionOn('ctgB', 200)])),
+    )
+    return { display, calls }
+  }
+
+  test('only pairs within a screen of the scrolled window are asked for', async () => {
+    const { display } = await graphDisplay('GbzBaseSyntenyAdapter')
+    const pairs = () => display.laneLinksFetchSpecs.map(s => s.lane)
+    const first = `${lanes[0]}|${lanes[1]}`
+    const last = `${lanes[58]}|${lanes[59]}`
+    expect(display.rowAssemblies).toHaveLength(60)
+    expect(pairs()).toContain(first)
+    expect(pairs()).not.toContain(last)
+    expect(pairs().length).toBeLessThan(59)
+
+    display.setScrollTop(1e9)
+    expect(pairs()).toContain(last)
+    expect(pairs()).not.toContain(first)
+  })
+
+  test('a pair scrolled out of range keeps what it fetched for the same window', async () => {
+    const { display } = await graphDisplay('GbzBaseSyntenyAdapter')
+    const [spec] = display.laneLinksFetchSpecs
+    display.setLaneLinks(
+      new Map([[spec!.lane, { key: spec!.key, links: [], ops: NO_OPS }]]),
+      display.laneLinksFetchSpecs,
+      display.anchorAssemblyName,
+    )
+    display.setScrollTop(1e9)
+    display.setLaneLinks(new Map(), display.laneLinksFetchSpecs, 'volvox')
+    expect(display.laneLinks.held?.has(spec!.lane)).toBe(true)
+
+    display.setLaneLinks(
+      new Map(),
+      display.laneLinksFetchSpecs.map(s => ({ ...s, key: 'panned' })),
+      'volvox',
+    )
+    expect(display.laneLinks.held?.has(spec!.lane)).toBe(false)
+  })
+
+  test('a batching adapter answers every pair in one call, each record on its own pair', async () => {
+    const link = (upper: string, lower: string) =>
+      new SimpleFeature({
+        uniqueId: `${upper}|${lower}`,
+        refName: 'ctgB',
+        start: 150,
+        end: 250,
+        strand: 1,
+        mate: { assemblyName: lower, refName: 'ctgB', start: 150, end: 250 },
+        assemblyName: upper,
+      })
+    const { display, calls } = await graphDisplay(
+      'BatchingGraphAdapter',
+      opts => ({
+        features: (
+          opts.lanePairs as {
+            queryAssemblyName: string
+            targetAssemblyName: string
+          }[]
+        ).map(p => link(p.queryAssemblyName, p.targetAssemblyName)),
+        ops: NO_OPS,
+      }),
+    )
+    const specs = display.laneLinksFetchSpecs
+    expect(specs.length).toBeGreaterThan(1)
+    await until(() =>
+      specs.every(s => display.laneLinks.held?.has(s.lane) === true),
+    )
+    const pairCalls = calls.filter(
+      c => c.lanePairs !== undefined || c.queryAssemblyName !== undefined,
+    )
+    expect(pairCalls).toHaveLength(1)
+    expect(pairCalls[0]!.lanePairs).toHaveLength(specs.length)
+    for (const spec of specs) {
+      expect(
+        display.laneLinks.held!.get(spec.lane)!.links.map(l => l.id()),
+      ).toEqual([spec.lane])
+    }
+  })
+})
+
 test('an adapter declaring its lanes has its header read once, and the universe lists them before any is placed', async () => {
   const calls: { name: string; args: Record<string, unknown> }[] = []
   const { display } = createDisplayWithSession({

@@ -136,6 +136,7 @@ import {
 import {
   buildLanes,
   geneLabelRowPx,
+  gutterNearViewport,
   laneContentHeight,
   laneGeometry,
 } from './laneStack.ts'
@@ -464,7 +465,13 @@ export function stateModelFactory(
           specs: LaneFetchSpec[],
           anchor: string,
         ) {
-          self.laneLinks = landLaneFetch(self.laneLinks, fetched, specs, anchor)
+          self.laneLinks = landLaneFetch(
+            self.laneLinks,
+            fetched,
+            specs,
+            anchor,
+            true,
+          )
           for (const { links } of fetched.values()) {
             observeRibbonFeatures(links)
           }
@@ -850,6 +857,13 @@ export function stateModelFactory(
       /** #getter */
       get adapterPairsOnAnchor(): boolean {
         return self.adapterCapabilities.includes('lanePairsOnAnchor')
+      },
+      /**
+       * #getter
+       * the adapter answers a window's `lanePairs` in one call
+       */
+      get adapterBatchesLanePairs(): boolean {
+        return self.adapterCapabilities.includes('lanePairBatches')
       },
       /**
        * #method
@@ -1743,13 +1757,26 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * one spec per adjacent mate-lane pair
+       * one spec per adjacent mate-lane pair whose gutter is on screen or
+       * within a screen of it; a pair scrolled further away draws composed
+       * through the anchor, or not at all
        */
       get laneLinksFetchSpecs(): LaneLinksFetchSpec[] {
         const specs: LaneLinksFetchSpec[] = []
         const onAnchor = self.adapterPairsOnAnchor
         if (self.featuresAreNameless && self.adjacentLanesAlignDirectly) {
           const { lodTier, laneWindows, rowFrames } = self
+          const nearViewport = gutterNearViewport(
+            laneGeometry(
+              self.height,
+              1 + self.rowAssemblies.length,
+              self.splitStrands,
+              self.geneLabelPx,
+              self.layerPx,
+            ),
+            self.scrollTop,
+            self.height,
+          )
           const pairRegions = (upper: string, lower: string) => {
             if (onAnchor) {
               return rowFrames.get(upper) && rowFrames.get(lower)
@@ -1761,8 +1788,10 @@ export function stateModelFactory(
               ? upperWindow.regions
               : []
           }
-          for (const { upper, lower, key } of self.lanePairs) {
-            const regions = pairRegions(upper, lower)
+          for (const [i, { upper, lower, key }] of self.lanePairs.entries()) {
+            const regions = nearViewport(i + 1, i + 2)
+              ? pairRegions(upper, lower)
+              : []
             if (regions.length > 0) {
               specs.push({
                 lane: key,

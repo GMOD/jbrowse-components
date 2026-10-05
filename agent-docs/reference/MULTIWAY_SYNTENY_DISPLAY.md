@@ -100,7 +100,10 @@ cost is linear in lanes.
 ## Where things live
 
 - **Lane links**: `laneLinksFetchSpecs`; `lanePairsOnAnchor` adapters are asked for
-  every adjacent pair on the anchor's merged blocks. `pairLinks` composes a pair's
+  each adjacent pair on the anchor's merged blocks, and `lanePairBatches` ones
+  for all of them in one call. Only pairs whose gutter is within a screen of the
+  scrolled window are asked for (`gutterNearViewport`): on the HPRC graph each
+  pair cut alone costs 70-660 ms of worker time, so 463 lanes took minutes. `pairLinks` composes a pair's
   links through the anchor (`MW/composeLaneLinks.ts`) where the star holds no
   direct record. Composition through GRCh38 loses the loci picked for being absent
   from it, which is why a graph adapter's lane pair is the alignment

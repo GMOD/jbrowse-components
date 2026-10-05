@@ -17,17 +17,25 @@ import {
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
+import { getMate } from '../syntenyMate.ts'
+import { lanePairKey } from './alignmentOps.ts'
 import { laneGeneFeatures } from './geneGlyph.ts'
 import { sameDecisions } from './laneDecision.ts'
 import { staleLaneSpecs } from './laneFetch.ts'
 import { laneMotionEnd } from './laneMotion.ts'
 
 import type { MultiWayFeatures } from './MultiWayGetFeatures.ts'
-import type { HeldLane, LaneFetchSpec, LaneFetchState } from './laneFetch.ts'
+import type {
+  HeldLane,
+  HeldLaneLinks,
+  LaneFetchSpec,
+  LaneFetchState,
+  LaneLinksFetchSpec,
+} from './laneFetch.ts'
 import type { HeldLaneLayer } from './laneLayers.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import type { LodTier } from '@jbrowse/synteny-core'
@@ -121,6 +129,71 @@ async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
 }
 
 /**
+ * Every pair on one window in one call, which the adapter answers from a
+ * single cut; a record goes to the pair its lane and its mate's lane name. A
+ * failed call is every pair's partial result, as one lane's is in
+ * `fetchEachLane`.
+ */
+async function fetchLanePairBatch(
+  self: MultiWaySyntenyDisplayModel,
+  specs: LaneLinksFetchSpec[],
+  ctx: FetchContext,
+) {
+  const byKey = Map.groupBy(specs, spec => spec.key)
+  const byLane = new Map<string, HeldLaneLinks>()
+  await Promise.all(
+    [...byKey.values()].map(async group => {
+      const [first] = group
+      const held = new Map(
+        group.map(spec => [
+          spec.lane,
+          { key: spec.key, links: [] as Feature[], ops: new Map() },
+        ]),
+      )
+      try {
+        const { features, ops } = await ctx.callRpc('MultiWayGetFeatures', {
+          adapterConfig: self.adapterConfig,
+          regions: first!.regions,
+          opts: {
+            lanePairs: group.map(spec => ({
+              queryAssemblyName: spec.assemblyName,
+              targetAssemblyName: spec.lowerAssembly,
+            })),
+            lodMode: first!.lodTier,
+          },
+        })
+        for (const feature of features) {
+          const mate = getMate(feature)
+          const pair =
+            mate &&
+            held.get(
+              lanePairKey(
+                feature.get('assemblyName') as string,
+                mate.assemblyName,
+              ),
+            )
+          if (pair) {
+            pair.links.push(feature)
+            const op = ops.get(feature.id())
+            if (op) {
+              pair.ops.set(feature.id(), op)
+            }
+          }
+        }
+      } catch (error) {
+        if (!ctx.isStale() && !isAbortException(error)) {
+          console.error('MultiWayLaneLinks: the pair batch failed', error)
+        }
+      }
+      for (const [lane, result] of held) {
+        byLane.set(lane, result)
+      }
+    }),
+  )
+  return byLane
+}
+
+/**
  * `setError` stays a noop, so a lane failure never reaches the error slot the
  * ortholog fetch owns.
  */
@@ -131,6 +204,7 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
     fetchSpecs,
     state,
     fetchOne,
+    fetchMany,
     empty,
     commit,
   }: {
@@ -138,6 +212,11 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
     fetchSpecs: () => Spec[]
     state: () => LaneFetchState<HeldLane>
     fetchOne: (spec: Spec, ctx: FetchContext) => Promise<Result>
+    /** answers every spec in one go, or undefined to fetch each */
+    fetchMany?: (
+      specs: Spec[],
+      ctx: FetchContext,
+    ) => Promise<Map<string, Result>> | undefined
     empty: (spec: Spec) => Result
     commit: (byLane: Map<string, Result>, specs: Spec[], anchor: string) => void
   },
@@ -158,14 +237,13 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
         : undefined
     },
     heldAnswers: ({ stale }) => stale.length === 0,
-    run: ({ specs, stale }, ctx) =>
-      fetchEachLane(
-        name,
-        stale.length > 0 ? stale : specs,
-        ctx,
-        fetchOne,
-        empty,
-      ),
+    run: ({ specs, stale }, ctx) => {
+      const wanted = stale.length > 0 ? stale : specs
+      return (
+        fetchMany?.(wanted, ctx) ??
+        fetchEachLane(name, wanted, ctx, fetchOne, empty)
+      )
+    },
     commit: (byLane, { specs, anchor }) => {
       commit(byLane, specs, anchor)
     },
@@ -382,6 +460,10 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       )
       return { key: spec.key, links, ops }
     },
+    fetchMany: (specs, ctx) =>
+      self.adapterBatchesLanePairs && specs.every(spec => spec.onAnchor)
+        ? fetchLanePairBatch(self, specs, ctx)
+        : undefined,
     empty: spec => ({ key: spec.key, links: [], ops: new Map() }),
     commit: (links, specs, anchor) => {
       self.setLaneLinks(links, specs, anchor)

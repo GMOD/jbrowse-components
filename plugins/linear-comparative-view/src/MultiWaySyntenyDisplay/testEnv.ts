@@ -115,6 +115,10 @@ export function createDisplayWithSession({
       slots: {},
       capabilities: ['headerLanes', 'lanePairsOnAnchor'],
     },
+    BatchingGraphAdapter: {
+      slots: {},
+      capabilities: ['headerLanes', 'lanePairsOnAnchor', 'lanePairBatches'],
+    },
     // stands in for GCContentAdapter's readsReference capability
     TestSequenceScoreAdapter: {
       slots: {},
