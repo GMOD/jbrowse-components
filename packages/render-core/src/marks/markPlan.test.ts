@@ -141,7 +141,7 @@ test('a disabled mark paints nothing and answers no hit', () => {
   expect(first.hitNearest!(REGION, BLOCK, s, 150, 5, [0], 1)?.index).toBe(0)
 })
 
-test('a banded or block-gated mark refuses the plan form', () => {
+test('a banded, block-gated or per-draw-sized mark refuses the plan form', () => {
   const banded = defineMark({
     shape: shapeNamed('banded'),
     channels,
@@ -153,8 +153,15 @@ test('a banded or block-gated mark refuses the plan form', () => {
     channels,
     params,
   })
-  expect(banded.planned).toBeUndefined()
-  expect(gated.planned).toBeUndefined()
-  expect(() => planMarks([banded], state(true))).toThrow(/band or a block gate/)
-  expect(() => planMarks([gated], state(true))).toThrow(/band or a block gate/)
+  const sized = defineMark({
+    shape: { ...shapeNamed('sized'), verticesPerInstance: () => 12 },
+    channels,
+    params,
+  })
+  for (const mark of [banded, gated, sized]) {
+    expect(mark.planned).toBeUndefined()
+    expect(() => planMarks([mark], state(true))).toThrow(
+      /a frame plan does not carry/,
+    )
+  }
 })

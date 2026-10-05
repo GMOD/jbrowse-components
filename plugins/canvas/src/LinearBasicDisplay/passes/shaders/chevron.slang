@@ -1,6 +1,6 @@
 // Strand chevrons along intron lines, drawn from line's vertex buffer
-// (lineInstance.slang). Each instance is one line and covers up to the pass's
-// per-line chevron budget; the vertex ID picks the chevron and its arm, and the
+// (lineInstance.slang). Each instance is one line and covers as many chevrons
+// as the draw asks for; the vertex ID picks the chevron and its arm, and the
 // shader places each chevron from the viewport and the line span.
 //! targets: wgsl, glsl
 //! export-consts: CHEVRON_SPACING_PX, CHEVRON_W_PX, CHEVRON_H_PX, CHEVRON_THICKNESS_PX, CHEVRON_VERTS

@@ -110,7 +110,8 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
   o.colorLine = colorLine;
   o.cutYsLo = lineCutYsPx(0, bandTop, u);
   o.cutYsHi = lineCutYsPx(4, bandTop, u);
-  o.colorAlongY = lineColorAlongY(place.overridden, u);
+  o.colorAlongY =
+    lineColorAlongY(u.rampMode, u.colorFromY, place.overridden) ? 1.0 : 0.0;
   o.yPx = sy;
   return o;
 }

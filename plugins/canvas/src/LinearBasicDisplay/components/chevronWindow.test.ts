@@ -183,7 +183,7 @@ function worstCaseSlots(blockPx: number) {
 }
 
 // A canvas narrow enough that the budget is a handful of slots, one at a
-// laptop width, and two past what the registered worst case covers.
+// laptop width, and two wide enough that a fixed 128 dropped chevrons.
 const CANVAS_WIDTHS = [120, 320, 800, 1200, 1920, 3840, 5077, 7680]
 
 test('the per-frame budget covers every window a line can open', () => {

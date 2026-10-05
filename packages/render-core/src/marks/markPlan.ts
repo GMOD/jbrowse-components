@@ -20,9 +20,10 @@ export interface MarkPlan<TRegion, TState extends MarkFrame> {
 
 /**
  * Resolve which marks draw this frame. Throws for an enabled mark the plan
- * form cannot carry — one with a `band` or a `paintsBlock` — since a plan
- * neither scissors nor asks the block anything, and without the throw the GPU
- * would draw what Canvas2D declines.
+ * form cannot carry — one with a `band`, a `paintsBlock` or a per-draw
+ * `verticesPerInstance` — since a plan neither scissors, asks the block
+ * anything nor sizes a draw, and without the throw the GPU would draw what
+ * Canvas2D declines, or a chevron a line.
  */
 export function planMarks<TRegion, TState extends MarkFrame>(
   marks: readonly Mark<TRegion, TState>[],
@@ -34,7 +35,7 @@ export function planMarks<TRegion, TState extends MarkFrame>(
     if (!mark.enabled || mark.enabled(state)) {
       if (!mark.planned) {
         throw new Error(
-          `mark ${mark.pass.id} declares a band or a block gate, which a frame plan does not carry; draw it through drawMarks`,
+          `mark ${mark.pass.id} declares a band, a block gate or a per-draw vertex count, which a frame plan does not carry; draw it through drawMarks`,
         )
       }
       enabled.push(mark)

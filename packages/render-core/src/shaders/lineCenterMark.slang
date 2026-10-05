@@ -111,7 +111,8 @@ VsOut vs_main(LineCenterInstance inst, uint vid : SV_VertexID) {
     len > CAPSULE_MIN_LEN_PX ? (currColorYPx - prevColorYPx) / len : 0.0);
   o.cutYsLo = lineCutYsPx(0, bandTop, u);
   o.cutYsHi = lineCutYsPx(4, bandTop, u);
-  o.colorAlongY = lineColorAlongY(place.overridden, u);
+  o.colorAlongY =
+    lineColorAlongY(u.rampMode, u.colorFromY, place.overridden) ? 1.0 : 0.0;
   return o;
 }
 

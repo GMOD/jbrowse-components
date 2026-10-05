@@ -192,8 +192,8 @@ describe('draw passes', () => {
     renderer.upload(REGION, data)
     renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
     const drawn = hal.draws()
-    // 800 CSS px holds 21 slots; the pass registers 128, and every surplus slot
-    // is a vertex invocation running the whole placement before culling itself.
+    // 800 CSS px holds 22 slots; the pass registers one, and every slot is a
+    // vertex invocation running the whole placement before culling itself.
     expect(drawn.find(d => d.passId === 'chevron')!.verticesPerInstance).toBe(
       chevronSlotBudget(STATE.canvasWidth) * CHEVRON_VERTS,
     )

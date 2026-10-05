@@ -586,3 +586,21 @@ test('a hover on a held region says so, and a landed one does not', () => {
 
   expect(hitAnywhere()).toMatchObject({ heldColor: true })
 })
+
+// A line's threshold colours along the line only over the plotted value; a cut
+// on another field is in that field's units, not the y axis's.
+test('the render state says which marks colour by their own y', () => {
+  const display = loaded([
+    {
+      mark: 'line',
+      encoding: {
+        y: 'score',
+        color: { field: 'score', scale: 'threshold', domain: [5] },
+      },
+    },
+  ])
+  expect(display.renderState.colorsFromY).toEqual([true])
+
+  editColor(display, 'field', 'depth')
+  expect(display.renderState.colorsFromY).toEqual([false])
+})

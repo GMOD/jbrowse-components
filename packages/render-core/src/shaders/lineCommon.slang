@@ -11,6 +11,7 @@
 // `markColor` and `rowTable` for itself, since Slang does not re-export through
 // an import.
 //! export-consts: GAP_Y, NO_PREV_X
+//! js-export: lineColorAlongY
 module lineCommon;
 
 import hpmath;
@@ -95,12 +96,10 @@ public float4 lineCutYsPx(int from, float bandTop, Uniforms u) {
   return ys;
 }
 
-// Whether a vertex's fragments read their colour along y: under a threshold
-// over the plotted value, on a row the table does not recolour.
-public float lineColorAlongY(bool overridden, Uniforms u) {
-  return u.rampMode == RAMP_THRESHOLD && u.colorFromY != 0 && !overridden
-    ? 1.0
-    : 0.0;
+// Whether a line reads its colour along y: under a threshold over the plotted
+// value, on a row the table does not recolour. The painter asks it too.
+public bool lineColorAlongY(int rampMode, int colorFromY, bool overridden) {
+  return rampMode == RAMP_THRESHOLD && colorFromY != 0 && !overridden;
 }
 
 // A line fragment's colour: along y, the interval the colour y it is read at

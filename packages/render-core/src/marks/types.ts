@@ -309,7 +309,10 @@ export interface Mark<TRegion, TState extends MarkFrame> {
    * frame and every other consumer per block, before any lens.
    */
   readonly enabled?: (state: TState) => boolean
-  /** The pass a frame plan draws; undefined with a `band` or `paintsBlock`. */
+  /**
+   * The pass a frame plan draws; undefined with a `band`, a `paintsBlock` or
+   * a per-draw `verticesPerInstance`, none of which a plan carries.
+   */
   readonly planned?: PlannedPass
   // Called through `drawMarks`, with the viewport on the block's clip column.
   // `regionKey` is the key the region was uploaded under, which a stacked
@@ -416,7 +419,9 @@ export function defineMark<
   }
   const bufferOf = lender?.id
   const planned =
-    band || shape.paintsBlock ? undefined : { id: shape.pass.id, bufferOf }
+    band || shape.paintsBlock || shape.verticesPerInstance
+      ? undefined
+      : { id: shape.pass.id, bufferOf }
 
   // `channels` gates `params`: a union payload's params lens may only read its
   // own kind of region.

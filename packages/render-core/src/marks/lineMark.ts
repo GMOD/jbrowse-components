@@ -2,6 +2,7 @@ import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { CappedPath, getDpr, makeBpMapper } from '../canvas2dUtils.ts'
 import * as centerShader from '../shaders/lineCenterMark.generated.ts'
 import { GAP_Y, NO_PREV_X } from '../shaders/lineCommon.generated.ts'
+import { lineColorAlongY } from '../shaders/lineCommon.js.generated.ts'
 import * as stepShader from '../shaders/lineStepMark.generated.ts'
 import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
 import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
@@ -461,14 +462,15 @@ function paintLine(
   const scale = params.colorScale
   const bySlot = new Map<number, number[]>()
   const own: number[] = []
-  const yThreshold =
-    params.colorFromY && scale && isThreshold(scale) ? scale : undefined
+  const { rampMode } = rampUniforms(scale)
+  const colorFromY = params.colorFromY ? 1 : 0
   for (let i = 0; i < count; i++) {
     const slot = rowSlot(row, i, g.table)
     if (slot === undefined) {
       continue
     }
-    if (yThreshold && rowColorOverride(row, i, g.table) === undefined) {
+    const overridden = rowColorOverride(row, i, g.table) !== undefined
+    if (lineColorAlongY(rampMode, colorFromY, overridden)) {
       const held = bySlot.get(slot)
       if (held) {
         held.push(i)
@@ -479,8 +481,8 @@ function paintLine(
       own.push(i)
     }
   }
-  if (yThreshold) {
-    const { cuts, colors } = yThreshold
+  if (scale && isThreshold(scale)) {
+    const { cuts, colors } = scale
     for (const [slot, indices] of bySlot) {
       const cutYs = cuts.map(cut => colorYPx(g, cut, slot))
       for (let k = 0; k <= cuts.length; k++) {
