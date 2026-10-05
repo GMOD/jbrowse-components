@@ -5,7 +5,7 @@ import { InputBase, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import JBrowseTabMenu from '../ui/App/JBrowseTabMenu.tsx'
-import { viewName } from '../ui/App/viewTitle.ts'
+import { tabDisplayName } from './tabName.ts'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
@@ -43,32 +43,6 @@ const useStyles = makeStyles()(theme => ({
     flex: 1,
   },
 }))
-
-/**
- * A tab's name is **derived** from the views it holds, unless the user set one.
- *
- * `title === undefined` is the sentinel for "not renamed", which is a plain
- * `maybe` on the tab rather than the comparison the dockview version needed:
- * dockview restores an unset title as the panel id, so telling a real title
- * from a restored one meant testing `title !== panelId` and hoping nobody named
- * a tab after a panel.
- */
-export function tabDisplayName(
-  tab: TabNode,
-  views: AbstractViewModel[],
-  session: WorkspaceSessionType,
-) {
-  if (tab.title) {
-    return tab.title
-  }
-  if (views.length === 0) {
-    return 'Empty'
-  }
-  if (views.length === 1) {
-    return viewName(views[0]!, r => session.assemblyManager.getDisplayName(r))
-  }
-  return `${views.length} views`
-}
 
 export const WorkspaceTab = observer(function WorkspaceTab({
   tab,

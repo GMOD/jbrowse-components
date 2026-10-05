@@ -285,7 +285,7 @@ export function WorkspaceLayoutMixin() {
           // A cell appearing where it cannot be seen is the one thing maximize
           // must not do, so gaining one leaves the mode. Stated as the count
           // rather than at the three actions that split (`splitPanel`,
-          // `dropTabInNewSplit`, `moveViewToSplitRight`) for the reason above —
+          // `dropTabInNewSplit`, `moveViewToSplit`) for the reason above —
           // and a fourth, `applyLayoutSpec`, arrives at it from the other side:
           // it replaces every id, so `livePanelIds` was going to clear the mode
           // regardless. Losing a cell needs nothing here; that IS `livePanelIds`.
@@ -583,10 +583,14 @@ export function WorkspaceLayoutMixin() {
             return tab.id
           },
           /**
-           * ViewMenu's "move to split view": the view leaves for a new cell.
-           * `allViewIds` is every view in the session — see `moveViewToNewTab`.
+           * ViewMenu's "move to split": the view leaves for a new cell to the
+           * right (`row`) or below (`column`) of its own.
            */
-          moveViewToSplitRight(viewId: string, allViewIds?: string[]) {
+          moveViewToSplit(
+            viewId: string,
+            direction: 'row' | 'column',
+            allViewIds?: string[],
+          ) {
             const tabId = nextId('tab')
             const panel: PanelNode = {
               id: nextId('panel'),
@@ -596,14 +600,34 @@ export function WorkspaceLayoutMixin() {
             }
             const from = rehomeView(
               viewId,
-              everyViewId('moveViewToSplitRight', allViewIds),
-              (tree, at) => splitPanel(tree, at.panel.id, 'row', panel),
+              everyViewId('moveViewToSplit', allViewIds),
+              (tree, at) => splitPanel(tree, at.panel.id, direction, panel),
             )
             if (!from) {
               return undefined
             }
             self.activePanelId = panel.id
             return panel.id
+          },
+          /**
+           * ViewMenu's "move to tab": the view joins an existing tab, which
+           * becomes the one shown.
+           */
+          moveViewToTab(viewId: string, tabId: string, allViewIds?: string[]) {
+            const target = findTab(self.tree, tabId)
+            if (!target || target.tab.viewIds.includes(viewId)) {
+              return
+            }
+            const from = rehomeView(
+              viewId,
+              everyViewId('moveViewToTab', allViewIds),
+              tree => addViewToTab(tree, tabId, viewId),
+            )
+            const landed = findTab(self.tree, tabId)
+            if (from && landed) {
+              apply(setActiveTab(self.tree, landed.panel.id, tabId))
+              self.activePanelId = landed.panel.id
+            }
           },
           homeUnassignedViews(viewIds: string[]) {
             apply(home(self.tree, viewIds))
@@ -635,7 +659,7 @@ export function WorkspaceLayoutMixin() {
           } else if (move.type === 'newTab') {
             self.moveViewToNewTab(move.viewId, ids)
           } else {
-            self.moveViewToSplitRight(move.viewId, ids)
+            self.moveViewToSplit(move.viewId, 'row', ids)
           }
           const home = tabContainingView(self.tree, move.viewId)
           if (home) {

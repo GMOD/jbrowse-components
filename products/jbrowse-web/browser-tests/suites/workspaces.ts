@@ -84,7 +84,7 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page)
         await copyView(page)
-        await clickViewMenuOption(page, 'Move to split view', 0)
+        await clickViewMenuOption(page, 'Move to split view (right)', 0)
         await waitForWorkspacesReady(page)
         await pageSnapshot(page, 'workspaces-split-view', 0.2)
       },

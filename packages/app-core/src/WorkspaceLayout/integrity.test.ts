@@ -218,7 +218,7 @@ test('an edge drop onto a panel that is not there claims no cell', () => {
 
 // 8. Moving one view out must disturb nothing else.
 //
-// `moveViewToNewTab`/`moveViewToSplitRight` home the session's views on the way
+// `moveViewToNewTab`/`moveViewToSplit` home the session's views on the way
 // through, and homing is two-directional about membership: it DROPS any view
 // its list does not name. So `allViewIds` has to be every view in the session,
 // and it used to default to `[viewId]` — which unhomed every other view in the

@@ -3,14 +3,18 @@ import { getSession } from '@jbrowse/core/util'
 import { renameIds } from '@jbrowse/core/util/types/mst'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import MenuIcon from '@mui/icons-material/Menu'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import TabIcon from '@mui/icons-material/Tab'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
 import { observer } from 'mobx-react'
+
+import { tabDisplayName } from '../../WorkspaceLayout/tabName.ts'
 
 import type { WorkspaceLayout } from '../../WorkspaceLayout/model.ts'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -42,19 +46,26 @@ const ViewMenu = observer(function ViewMenu({
     bottom: session.moveViewToBottom,
   }
 
-  // Give this view a home of its own: its own tab beside the rest, or its own
-  // split to their right. One path, whether or not the workspace is already up
-  // — the layout is session state either way, so there is nothing to defer and
-  // no second implementation for "the panels do not exist yet". That fork is
-  // the reason `init` existed.
-  const moveViewOut = (direction: 'tabs' | 'horizontal') => {
+  const moveViewOut = (to: 'tab' | 'row' | 'column') => {
     const allViewIds = session.views.map(v => v.id)
-    if (direction === 'tabs') {
+    if (to === 'tab') {
       session.moveViewToNewTab(model.id, allViewIds)
     } else {
-      session.moveViewToSplitRight(model.id, allViewIds)
+      session.moveViewToSplit(model.id, to, allViewIds)
     }
     session.setUseWorkspaces(true)
+  }
+
+  // views render in `session.views` order within a tab, so a view joining one
+  // goes to its bottom rather than wherever its old slot falls
+  const moveViewToTab = (tabId: string) => {
+    const members = session.findTab(tabId)?.tab.viewIds ?? []
+    session.moveViewToTab(
+      model.id,
+      tabId,
+      session.views.map(v => v.id),
+    )
+    session.moveViewToBottom(model.id, [...members, model.id])
   }
 
   return (
@@ -72,9 +83,13 @@ const ViewMenu = observer(function ViewMenu({
         // render would also subscribe this menu to them, so a view moving
         // between panels anywhere re-rendered every view's menu. None of it is
         // needed until the menu opens.
-        const scopeIds = session.effectiveUseWorkspaces
-          ? session.tabContainingView(model.id)?.tab.viewIds.slice()
+        const home = session.effectiveUseWorkspaces
+          ? session.tabContainingView(model.id)
           : undefined
+        const scopeIds = home?.tab.viewIds.slice()
+        const otherTabs = home
+          ? session.tabs.filter(t => t.id !== home.tab.id)
+          : []
         const viewCount = scopeIds?.length ?? session.views.length
         return [
           {
@@ -95,14 +110,40 @@ const ViewMenu = observer(function ViewMenu({
                 label: 'Move to new tab',
                 icon: OpenInNewIcon,
                 onClick: () => {
-                  moveViewOut('tabs')
+                  moveViewOut('tab')
+                },
+              },
+              ...(otherTabs.length > 0
+                ? [
+                    {
+                      label: 'Move to tab',
+                      icon: TabIcon,
+                      type: 'subMenu' as const,
+                      subMenu: otherTabs.map(tab => ({
+                        label: tabDisplayName(
+                          tab,
+                          session.views.filter(v => tab.viewIds.includes(v.id)),
+                          session,
+                        ),
+                        onClick: () => {
+                          moveViewToTab(tab.id)
+                        },
+                      })),
+                    },
+                  ]
+                : []),
+              {
+                label: 'Move to split view (right)',
+                icon: VerticalSplitIcon,
+                onClick: () => {
+                  moveViewOut('row')
                 },
               },
               {
-                label: 'Move to split view (right side of screen)',
-                icon: VerticalSplitIcon,
+                label: 'Move to split view (below)',
+                icon: HorizontalSplitIcon,
                 onClick: () => {
-                  moveViewOut('horizontal')
+                  moveViewOut('column')
                 },
               },
               // 'top'/'bottom' only mean something with a view above *and* below

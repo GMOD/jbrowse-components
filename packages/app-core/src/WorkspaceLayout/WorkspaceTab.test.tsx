@@ -3,8 +3,9 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
 import { LayoutRenderer } from './LayoutRenderer.tsx'
-import { WorkspaceTab, tabDisplayName } from './WorkspaceTab.tsx'
+import { WorkspaceTab } from './WorkspaceTab.tsx'
 import { WorkspaceLayoutMixin } from './model.ts'
+import { tabDisplayName } from './tabName.ts'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'

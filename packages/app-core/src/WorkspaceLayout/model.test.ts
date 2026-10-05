@@ -266,7 +266,7 @@ describe('setPendingMove', () => {
 
   test('keeps the arrangement it moves the view out of', () => {
     const session = createViewsSession()
-    session.moveViewToSplitRight('v2')
+    session.moveViewToSplit('v2', 'row')
     const right = session.panels[1]!.id
     const renamed = session.tabs[1]!.id
     session.renameTab(renamed, 'mine')
@@ -463,7 +463,7 @@ describe('maximize', () => {
     [
       'moving a view out to a split',
       (s: ReturnType<typeof createSession>) => {
-        s.moveViewToSplitRight('view-1', ['view-1'])
+        s.moveViewToSplit('view-1', 'row', ['view-1'])
       },
     ],
     [
@@ -714,10 +714,10 @@ test('an index means nothing on a host with no view list, and says so', () => {
 
 // The View menu passes every view id; a caller that has only the session (the
 // one-argument call an agent tries first) gets the same list read off it.
-test('moveViewToSplitRight with one argument homes the whole session', () => {
+test('moveViewToSplit without a view list homes the whole session', () => {
   const session = createViewsSession()
 
-  session.moveViewToSplitRight('v2')
+  session.moveViewToSplit('v2', 'row')
 
   expect(session.panels).toHaveLength(2)
   expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3'], ['v2']])
@@ -725,12 +725,59 @@ test('moveViewToSplitRight with one argument homes the whole session', () => {
 
 test('splitting out the only view of a cell leaves no blank cell behind', () => {
   const session = createViewsSession()
-  session.moveViewToSplitRight('v2')
+  session.moveViewToSplit('v2', 'row')
 
-  session.moveViewToSplitRight('v2')
+  session.moveViewToSplit('v2', 'row')
 
   expect(session.panels).toHaveLength(2)
   expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3'], ['v2']])
+})
+
+test('moveViewToSplit column puts the new cell below', () => {
+  const session = createViewsSession()
+
+  session.moveViewToSplit('v2', 'column')
+
+  const root = session.tree
+  expect('direction' in root && root.direction).toBe('column')
+  expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3'], ['v2']])
+})
+
+describe('moveViewToTab', () => {
+  test('joins an existing tab in another cell, and shows it', () => {
+    const session = createViewsSession()
+    session.moveViewToSplit('v2', 'row')
+    const target = session.tabs[1]!.id
+
+    session.moveViewToTab('v3', target)
+
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([
+      ['v1'],
+      ['v2', 'v3'],
+    ])
+    expect(session.activePanelId).toBe(session.panels[1]!.id)
+    expect(session.activeTabOf(session.panels[1]!.id)?.id).toBe(target)
+  })
+
+  test('takes the emptied cell away with it', () => {
+    const session = createViewsSession()
+    session.moveViewToSplit('v2', 'row')
+
+    session.moveViewToTab('v2', session.tabs[0]!.id)
+
+    expect(session.panels).toHaveLength(1)
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3', 'v2']])
+  })
+
+  test('to the tab it is already in, or one that is not there, does nothing', () => {
+    const session = createViewsSession()
+    const before = getSnapshot(session.layout)
+
+    session.moveViewToTab('v1', session.tabs[0]!.id)
+    session.moveViewToTab('v1', 'no-such-tab')
+
+    expect(getSnapshot(session.layout)).toEqual(before)
+  })
 })
 
 test('moveViewToNewTab with one argument keeps the other views homed', () => {
