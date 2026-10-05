@@ -21,7 +21,7 @@ the graph plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `IDEAS.md`).
 | `hprc25272.aln.paf.gz` and the per-target `impg/pafs/all-vs-1/` split | sparse all-vs-all and unsorted (below) |
 | `hprc465vsgrch38.aln.paf.gz` | yes, but a star (below) |
 | per-chromosome pggb `.gfa.zst` | no (below) |
-| impg TPA | no reader |
+| impg TPA | not in JBrowse; impg 0.5.0 queries it with the release's AGC (below) |
 
 - Read v2.1. v2.0 is an earlier Minigraph-Cactus run, not a repackaging:
   `…/minigraph-cactus/v2.1/README` lists fewer underalignments, patched
@@ -36,6 +36,35 @@ the graph plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `IDEAS.md`).
 anchors on the sequence queried, so on the vs-GRCh38 star a query returned zero
 rows pairing two non-reference haplotypes. A-vs-B through impg means `-o fasta`
 and realigning, or `-o maf`/`-o gfa`.
+
+**The v2.1 MAF gives a haplotype one row per copy.** Cactus writes every copy
+of a duplicated segment into the block, so at amylase (chr1:103.6–103.8 Mb)
+292 of 332 blocks repeat a haplotype, up to eight times. Redundant unplaced
+contigs repeat a few at CFH, LPA, chr22 and chrX. Blocks never overlap on
+GRCh38. The MAF adapters drew the last copy alone until each later copy became
+its own row (`sampleCopies.ts`); in file order a copy stays on one row from
+block to block 99.4% of the time at amylase.
+
+**impg's TPA route costs too much to teach on HPRC.** Measured 2026-10-04 on
+ada with impg 0.5.0, the TPAs (23.3 GiB) and `HPRC_r2_assemblies_0.6.1.agc`
+(3.3 GB, the v1.0.1 assemblies the TPAs name):
+
+- `impg index --index-mode per-file`: 6 min, 10.5 GB peak. Passing `-i` forces
+  one index file and peaks at 119 GB.
+- `-o bed` at a 400 kb GRCh38 window: 11 s, every haplotype, since every one
+  aligns to GRCh38 directly. `-x` adds the paralogous copy at a segmental
+  duplication: 327 haplotypes gain a second row at CFH.
+- `-o gfa` over 200 kb: 14 min, 23.5 GB. impg realigns the intervals with
+  FastGA and builds the graph with pggb, and the result agrees with the
+  Minigraph-Cactus graph at the CFHR3/CFHR1 deletion. Its 18.6k nodes crash
+  bandage-figure's force layout; the ordered layout draws.
+- `-o maf` refuses windows over 10 kb, and 10 kb took 14 GB. impg writes rows in
+  arbitrary order, so `taffy sort -r` has to put GRCh38 first before
+  `taffy index`.
+
+A tutorial would spend that to draw a window the gbz-base lanes and the shipped
+MAF already draw, so the HPRC page was declined. A short section in
+`pangenome_prepare_graph`, on a non-human set with no graph, is the fit left.
 
 **`hprc465vsgrch38.aln.paf.gz` is a pure star.** Every row targets GRCh38, so a
 band between two non-reference assemblies is empty by construction. Both
