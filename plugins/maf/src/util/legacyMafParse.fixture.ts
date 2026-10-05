@@ -12,6 +12,7 @@ import MafFeature from '../MafFeature.ts'
 import { buildSampleFilter } from './getSamples.ts'
 import { MafStanzaRows, applyMafLine } from './mafLines.ts'
 import { makeSourceResolver } from './parseAssemblyName.ts'
+import { freeRowId } from './sampleCopies.ts'
 
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
 import type { SourceResolver } from './parseAssemblyName.ts'
@@ -102,7 +103,9 @@ export function legacyMafTabixFeatures(
         const entry = scanMafTabixEntry(encoded, from, to, resolver.resolve)
         if (entry) {
           const { assemblyName, chr, srcStart, strand, srcSize, seq } = entry
-          alignments[assemblyName] = { chr, srcStart, strand, srcSize, seq }
+          alignments[
+            freeRowId(assemblyName, id => Object.hasOwn(alignments, id))
+          ] = { chr, srcStart, strand, srcSize, seq }
         }
         if (from === 0) {
           firstEntrySeq = (

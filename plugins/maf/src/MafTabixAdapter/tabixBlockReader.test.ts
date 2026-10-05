@@ -110,7 +110,7 @@ const LINES = [
     e('panTro6.chr3', 40, '-', 'ACTT'),
     e('mm10.chr9', 7, '+', '--GT'),
   ].join(','),
-  // a species twice: its first place, its last entry
+  // a species twice: the second entry is a copy row
   [
     e('hg38.chr1', 104, '+', 'TTAG'),
     e('mm10.chr9', 15, '+', 'TCAG'),
@@ -168,7 +168,7 @@ test('a subtree filter and a sample set pack alike both ways', async () => {
     { samples },
     new Set(['mm10', '3']),
   )
-  expect(direct.packed.sampleIds).toEqual(['mm10', '3'])
+  expect(direct.packed.sampleIds).toEqual(['mm10', 'mm10~2', '3'])
   expect(direct).toEqual(features)
 })
 
@@ -229,8 +229,9 @@ describe('getFeatures answers the MafFeatures the old parse did', () => {
       strand: -1,
       srcSize: 5000,
     })
-    expect(Object.keys(twice!)).toEqual(['hg38', 'mm10', 'panTro6'])
-    expect(twice!.mm10).toMatchObject({ chr: 'chr2', srcStart: 99 })
+    expect(Object.keys(twice!)).toEqual(['hg38', 'mm10', 'mm10~2', 'panTro6'])
+    expect(twice!.mm10).toMatchObject({ chr: 'chr9', srcStart: 15 })
+    expect(twice!['mm10~2']).toMatchObject({ chr: 'chr2', srcStart: 99 })
     expect(Object.keys(indexed!)).toEqual(['3', '12', 'hg38', 'panTro6'])
     expect(Object.keys(malformed!)).toEqual(['hg38', 'panTro6', 'rn6'])
     expect(malformed!.panTro6).toMatchObject({ srcStart: 52, srcSize: NaN })

@@ -59,7 +59,7 @@ const STANZAS = [
     'e mm10.chr9 7 30 + 800 I',
     'q panTro6.chr3 9999',
   ],
-  // a species twice, its context dropped with the row it named
+  // a species twice, its context on the row it follows
   [
     's hg38.chr1 104 4 + 5000 TTAG',
     's mm10.chr9 15 4 + 800 TCAG',
@@ -141,7 +141,7 @@ function rows(table: FeatureTable) {
 test('the direct parse packs what the MafFeatures pack, byte for byte', async () => {
   const { direct, features } = await packedBothWays(adapterOver(STANZAS))
   expect(direct.packed.rowHasContext).toBeDefined()
-  expect(direct.packed.emptySample.length).toBe(4)
+  expect(direct.packed.emptySample.length).toBe(5)
   expect(direct).toEqual(features)
 })
 
@@ -219,6 +219,9 @@ describe('getFeatures answers the MafFeatures the old parse did', () => {
     expect(late.panTro1!.context).toMatchObject({ leftStatus: 'N' })
     expect(late.baboon!.context).toBeUndefined()
     expect(Object.keys(late)).toEqual(['hg18', 'panTro1', 'baboon'])
-    expect(alignmentsOf(rebuilt[1]!).mm10!.context).toBeUndefined()
+    const twice = alignmentsOf(rebuilt[1]!)
+    expect(twice.mm10!.context).toMatchObject({ leftStatus: 'N' })
+    expect(twice['mm10~2']).toMatchObject({ chr: 'chr2', srcStart: 99 })
+    expect(twice['mm10~2']!.context).toBeUndefined()
   })
 })
