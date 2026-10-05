@@ -208,8 +208,18 @@ export function readConfigValue<T>(
   feature: Feature,
   jexl: JexlInstance,
 ) {
-  const raw = resolveConfigValue(config, key)
-  return (
-    isCallbackValue(raw) ? evaluateJexl(raw, { feature }, jexl) : raw
-  ) as T
+  return evaluateForFeature(resolveConfigValue(config, key), feature, jexl) as T
+}
+
+/**
+ * #api core/configuration
+ * A config value as `feature` reads it: a `jexl:` callback evaluated against
+ * the feature, anything else as written.
+ */
+export function evaluateForFeature(
+  value: unknown,
+  feature: Feature,
+  jexl: JexlInstance,
+) {
+  return isCallbackValue(value) ? evaluateJexl(value, { feature }, jexl) : value
 }

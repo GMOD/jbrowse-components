@@ -61,7 +61,11 @@ export {
   FormatDetailsConfigSchemaFactory,
 } from './formatDetailsConfigSchema.ts'
 export { mergeFormatCallbacks } from './mergeFormatCallbacks.ts'
-export { readConfObject, readConfigValue } from './readConfObject.ts'
+export {
+  evaluateForFeature,
+  readConfObject,
+  readConfigValue,
+} from './readConfObject.ts'
 export { applyConfSettings, getConf, setConf } from './getConf.ts'
 export type { ConfSettingsReport } from './getConf.ts'
 export { fillLocations } from './fillLocations.ts'

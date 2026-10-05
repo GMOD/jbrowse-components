@@ -1,4 +1,4 @@
-import { readConfigValue } from '@jbrowse/core/configuration'
+import { evaluateForFeature } from '@jbrowse/core/configuration'
 import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
@@ -140,11 +140,10 @@ export function cellHueReaderOf(
     return {}
   }
   if (typeof read === 'string') {
-    const cfg = { color: read }
     return {
       value: feature => {
         try {
-          const css = readConfigValue(cfg, 'color', feature, jexl)
+          const css = evaluateForFeature(read, feature, jexl)
           return typeof css === 'string' ? css : undefined
         } catch {
           return undefined

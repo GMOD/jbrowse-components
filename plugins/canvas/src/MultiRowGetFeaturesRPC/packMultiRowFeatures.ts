@@ -1,4 +1,7 @@
-import { isCallbackValue, readConfigValue } from '@jbrowse/core/configuration'
+import {
+  evaluateForFeature,
+  isCallbackValue,
+} from '@jbrowse/core/configuration'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { cssColorToABGR, featureBedColor } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
@@ -18,13 +21,9 @@ import type {
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
-function evalColorSlot(
-  colorCfg: { color: string },
-  feature: Feature,
-  jexl: JexlInstance,
-) {
+function evalColorSlot(color: string, feature: Feature, jexl: JexlInstance) {
   try {
-    const css = readConfigValue(colorCfg, 'color', feature, jexl)
+    const css = evaluateForFeature(color, feature, jexl)
     return typeof css === 'string' ? css : featureDefaultColor
   } catch {
     return featureDefaultColor
@@ -44,9 +43,8 @@ export function makeFeatureColorResolver(
         : { css: bedColor, fromBed: true }
     }
   } else if (isCallbackValue(colorConfig)) {
-    const colorCfg = { color: colorConfig }
     return (feature: Feature) => ({
-      css: evalColorSlot(colorCfg, feature, jexl),
+      css: evalColorSlot(colorConfig, feature, jexl),
       fromBed: false,
     })
   } else {
