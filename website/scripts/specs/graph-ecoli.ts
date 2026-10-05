@@ -626,8 +626,10 @@ function pggbLocusSession(
     variantLane = false,
     bubbleSpread,
     showBubbles,
+    paneHeight = 600,
   }: {
     region: typeof PGGB_LOCUS
+    paneHeight?: number
     window: string
     mafLane?: boolean
     variantLane?: boolean
@@ -680,7 +682,7 @@ function pggbLocusSession(
           // draw the window's own nodes: at base level a wider cut is a braid.
           graphTrack(PGGB_SEGMENTS_TRACK, {
             layoutMode,
-            paneHeight: 600,
+            paneHeight,
             colorScheme: 'reference-position',
             colorDomain: { start: region.start, end: region.end },
             maxRegionBp: cutNear(region),
@@ -932,12 +934,13 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // (pggb_locus_graph) has since been deleted -- it never stopped reading as a
   // tangle.
   //
-  // What the collapse does: 100 kb here is **11 bubbles and 12 backbone
-  // nodes**, because a `--min-content 50` tier absorbs every single-base bubble
-  // into the backbone and keeps every indel. Nothing is hidden that a reader
-  // was reading: each surviving node states what it collapsed (`cn` segments,
-  // `cw` traversals, `cs`/`cl` shortest and longest allele), and the IS5
-  // insertion is `cl:i:1200` here.
+  // What the collapse does: 15 kb here is two bubbles, the IS5 element and the
+  // insZ element to its left, because a `--min-content 50` tier absorbs every
+  // single-base bubble into the backbone and keeps every indel. Each surviving
+  // node states what it collapsed (`cn` segments, `cw` traversals, `cs`/`cl`
+  // shortest and longest allele), and the IS5 insertion is `cl:i:1200` here.
+  // insZ is the frame's control: NCTC86's MAF row runs straight through it
+  // while it breaks across insH21 with the other three.
   //
   // Anchored rather than force-directed, which is the opposite choice from the
   // fine figure and for the reason the layout note gives: a tier IS a chain
@@ -1010,7 +1013,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
               showCoverage: false,
               height: 110,
             },
-            { ...pggbTierCut, geneTrackId: 'K12_genes' },
+            { ...pggbTierCut, geneTrackId: 'K12_genes', height: 190 },
           ],
         },
       ],
@@ -1018,7 +1021,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readySelector: graphCutDrawn('coarse'),
     readyTimeout: 120000,
     viewportWidth: 1000,
-    viewportHeight: 840,
+    viewportHeight: 730,
     hideTooltip: true,
     // Charcoal in a tier is a bubble ON K12's coordinates, not an allele off
     // them: `bubbles_to_tier_bed.py` ranks every bubble 1 and every invariant
@@ -1169,14 +1172,15 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       // the halos and chips stacked over the rows, and one bubble label ran
       // off the pane's left edge
       showBubbles: false,
+      // five rows; at 600 they sat in the middle of a blank pane
+      paneHeight: 220,
     }),
     // Row labels too: the layout runs after the graph loads, so the track holds
     // a cut before there is a row to label.
     readySelector: `body:has([data-testid="graph-row-label"]) ${GRAPH_DRAWN}`,
     readyTimeout: 120000,
     viewportWidth: 1000,
-    // re-measure at the reshoot
-    viewportHeight: 1120,
+    viewportHeight: 740,
     hideTooltip: true,
     // The bar's own anchor is its polyline midpoint, thousands of px off the
     // left edge, so the pointer goes in from the graph's second row label,

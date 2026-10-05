@@ -418,7 +418,9 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
-          loc: 'chr:1-4,641,652',
+          // 140 kb around the shaded span: whole-chromosome, the band was eight
+          // pixels of a blue wall
+          loc: 'chr:450,000-590,000',
           // Gold, alpha'd low: getHighlightColor takes a supplied color as-is,
           // and the band has to stay transparent to the white notch it points
           // at. The Minigraph-Cactus correspondence figure marks a region with
@@ -433,6 +435,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 90 },
             {
               trackId: 'ecoli_pggb_depth',
               type: 'LinearWiggleDisplay',
@@ -469,8 +472,8 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyText: 'per-strain presence',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    // fits the 150px depth track plus the whole 240px stack
-    viewportHeight: 640,
+    // the gene lane, the 150px depth track and the whole 240px stack
+    viewportHeight: 740,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },

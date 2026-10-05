@@ -4248,7 +4248,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportWidth: 1300,
-    viewportHeight: 820,
+    viewportHeight: 770,
   },
 
   {
@@ -4303,7 +4303,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportWidth: 1300,
-    viewportHeight: 760,
+    viewportHeight: 725,
     liveLabel: 'Open the five haplotypes at 17q21.31',
   },
 

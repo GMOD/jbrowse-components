@@ -212,11 +212,10 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Projection 1: all-vs-all synteny (halSynteny from the HAL). The four strains
-  // stacked K12 -> NCTC86, one halSynteny ribbon per adjacent pair. K12/Sakai/
-  // CFT073 read as clean colinear diagonals; CFT073<->NCTC86 crosses in an X
-  // because NCTC86 is assembled in the opposite orientation, the same inversion
-  // the pggb graph and the odgi viz raster report.
+  // Projection 1: all-vs-all synteny (halSynteny from the HAL). The five strains
+  // stacked K12 -> IAI39, one halSynteny ribbon per adjacent pair, coloured by
+  // strand: the top three bands are red throughout, and IAI39's inversions are
+  // the blue ribbons crossing the bottom one.
   {
     mode: 'url',
     name: 'pangenome_cactus/synteny',

@@ -516,6 +516,20 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           views: WHOLE_GENOME_AXES,
           tracks: ['hg002v1.2_mat_vs_pat'],
         },
+        // chr8 alone under it. Genome-wide, the 8p23.1 inversion is a pixel
+        // of blue on a red line; one chromosome per axis draws it as the
+        // stretch running against the diagonal near chr8's start, which is the
+        // locus the next section opens.
+        {
+          type: 'DotplotView',
+          displayName: 'chr8 maternal (x) vs paternal (y)',
+          color: { field: 'strand' },
+          views: [
+            { assembly: 'hg002v1.2', displayedRegionNames: ['chr8_MATERNAL'] },
+            { assembly: 'hg002v1.2', displayedRegionNames: ['chr8_PATERNAL'] },
+          ],
+          tracks: ['hg002v1.2_mat_vs_pat'],
+        },
       ],
     }),
     // The dotplot paints its own canvas, so this is NOT the synteny_canvas the
@@ -528,9 +542,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     // only aspect control there is and 1400 gives a plot twice as wide as it is
     // tall. A dotplot's diagonal should read as a diagonal.
     viewportWidth: 950,
-    // 767: measured back from the run's own below-the-fold report, which had 63
-    // css px of blank under the app frame at 830.
-    viewportHeight: 767,
+    viewportHeight: 1480,
   },
   {
     ...CAPTURE,
@@ -571,13 +583,8 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     // app frame ends. The right-click that used to open a context menu into
     // this height is gone; the header toggle needs none.
     viewportHeight: 454,
-    // 2x2 rather than a column of four (review). Four 445px frames stacked is
-    // most of a page of the same app chrome four times, and the pairs that want
-    // comparing are adjacent either way: (1) beside (2) is before and after the
-    // toggle, (3) beside (4) the same for the markers. No stage sets its own
-    // viewportHeight, so both rows share one and the `+append` has nothing to
-    // reconcile.
-    stageColumns: 2,
+    // Before over after, the default stacking. Side by side, two 1400px frames
+    // made one image too wide to read at page width.
     hideTooltip: true,
     stages: [
       {

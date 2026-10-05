@@ -189,6 +189,7 @@ function bovineLocusSpec(
   loc: string,
   tracks: Record<string, unknown>[],
   viewportHeight: number,
+  view: Record<string, unknown> = {},
 ): SessionUrlSpec {
   return {
     mode: 'url',
@@ -201,6 +202,7 @@ function bovineLocusSpec(
           assembly: 'bosTau9',
           loc,
           tracks,
+          ...view,
         },
       ],
     }),
@@ -213,29 +215,32 @@ function bovineLocusSpec(
 
 export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
   dock2Spec,
-  // 2 kb around the duplication, so the Angus cell draws as wide as the
-  // 209 bp allele it carries, and the graph track under it draws that allele
-  // as the one loop off the backbone.
-  {
-    ...bovineLocusSpec(
-      'pangenome/bovine_polled',
-      'chr1:2,428,200-2,430,200',
-      [
-        bovineOmia,
-        bovineVariantLane(260),
-        graphTrack('bovine_minigraph_segments', {
-          colorScheme: 'reference-position',
-          paneHeight: 220,
-          maxRegionBp: cutNear(2_000),
-        }),
+  // 1 kb, shading the 212 bp OMIA says the allele duplicates
+  // (g.2429109_2429320dupins), so the Angus marker sits at the right edge of
+  // the sequence it copies. At 12 kb the marker was the only thing in frame
+  // and nothing said what it was a copy of. The graph track was tried here: the
+  // allele is one 208 bp bump on a straight backbone and said nothing more.
+  bovineLocusSpec(
+    'pangenome/bovine_polled',
+    'chr1:2,428,800-2,429,800',
+    [bovineOmia, bovineVariantLane(260)],
+    580,
+    {
+      highlight: [
+        {
+          refName: 'chr1',
+          start: 2429108,
+          end: 2429320,
+          color: 'rgba(255,193,7,0.30)',
+        },
       ],
-      830,
-    ),
-    readySelector: GRAPH_DRAWN,
-  },
+    },
+  ),
   // 300, not the 260 the other loci take: these two windows hold other-alt
   // and no-call cells, so their key runs two rows longer and lost yak off the
-  // lane's bottom edge at 260.
+  // lane's bottom edge at 260. The graph track under each draws the record's
+  // alleles at their own lengths: a deletion as the arc skipping the span, an
+  // insertion as a node off the backbone.
   {
     ...bovineLocusSpec(
       'pangenome/bovine_kit',
@@ -246,11 +251,11 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         graphTrack('bovine_minigraph_segments', {
           colorScheme: 'reference-position',
           bubbleSpread: 'compress',
-          paneHeight: 260,
+          paneHeight: 180,
           maxRegionBp: cutNear(100_000),
         }),
       ],
-      900,
+      860,
     ),
     readySelector: GRAPH_DRAWN,
   },
@@ -264,11 +269,11 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         graphTrack('bovine_minigraph_segments', {
           colorScheme: 'reference-position',
           bubbleSpread: 'compress',
-          paneHeight: 260,
+          paneHeight: 180,
           maxRegionBp: cutNear(40_000),
         }),
       ],
-      900,
+      860,
     ),
     readySelector: GRAPH_DRAWN,
     annotations: [
