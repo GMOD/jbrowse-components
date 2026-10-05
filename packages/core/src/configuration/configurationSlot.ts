@@ -12,21 +12,18 @@ interface SlotTypeSpec {
   /** MST type of the slot's value */
   model: IAnyType
   /**
-   * value substituted when the config editor converts a callback back to a
-   * fixed value but the slot's own default is itself a callback (see
-   * `toFixedValue`). Omitted for `maybeNumber`/`maybeBoolean`, whose fixed form
-   * is genuinely "unset" — that conversion path throws instead.
+   * the fixed value the config editor falls back to when it converts a
+   * callback back and the slot's default is itself a callback; absent on a
+   * `maybe*` type, whose fixed form is unset
    */
   fallbackDefault?: unknown
 }
 
-// What a color slot admits is what the painters parse (`isCssColor`), plus the
-// empty string a slot such as `outlineColor` spells "none" with; a field name
-// written where a color goes used to load and paint the invalid sentinel.
 function notAColor(value: unknown) {
-  return `${JSON.stringify(value)} is not a color. A color is a CSS color: a name like "red" or "steelblue", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", or "transparent"; a color computed per feature is a "jexl:" callback, in a slot that takes one`
+  return `${JSON.stringify(value)} is not a color. A color is a CSS color: a name like "red" or "steelblue", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", "transparent" or a BED triple like "255,0,0"; a color computed per feature is a "jexl:" callback, in a slot that takes one`
 }
 
+// '' is a color slot's "none", as in `outlineColor`
 const CssColorType = types.refinement(
   'CssColor',
   types.string,
@@ -34,8 +31,7 @@ const CssColorType = types.refinement(
   notAColor,
 )
 
-// An entry of a colour list has no "none" to spell, so '' is refused with the
-// rest of what is not a colour.
+// a colour list's entry has no "none" to spell
 const CssColorEntryType = types.refinement(
   'CssColorEntry',
   types.string,
@@ -48,15 +44,8 @@ const MaybeFileLocation = types.snapshotProcessor(types.maybe(FileLocation), {
     snap && 'uri' in snap && snap.uri === '' ? undefined : snap,
 })
 
-// Single source of truth for the builtin slot type names, pairing each with its
-// MST value type and its editor fallback default. Keeping model + fallback in
-// one table means adding a slot type is one edit and can't half-register.
-//
-// `satisfies` rather than an annotation: a `Record<string, …>` annotation
-// widens the keys to `string`, which is what let `type: 'enum'` — a name this
-// table has never had — compile for years and silently lose the config
-// editor's dropdown. The literal keys are what `ConfigSlotType` below is made
-// of.
+// The slot type vocabulary. `satisfies`, not an annotation, so the literal keys
+// make up `ConfigSlotType`; every surface naming a type checks against it.
 const slotTypes = {
   stringArray: { model: types.array(types.string), fallbackDefault: [] },
   expressionArray: {
@@ -74,23 +63,17 @@ const slotTypes = {
   color: { model: CssColorType, fallbackDefault: 'black' },
   integer: { model: types.integer, fallbackDefault: 1 },
   number: { model: types.number, fallbackDefault: 1 },
-  // The `maybe*` types spend `undefined` on "not explicitly set", which is the
-  // one value no config can spell and so the only reliable way to say it — a
-  // computed/auto fallback, e.g. a drag-resized track height.
+  // a `maybe*` type's unset is `undefined`, the one value no config spells:
+  // "decide from the data", as an auto-fitted height or a BED itemRgb colour
   maybeNumber: { model: types.maybe(types.number) },
   maybeBoolean: { model: types.maybe(types.boolean) },
-  // for a slot whose unset state means "decide from the data" — a feature's own
-  // BED itemRgb, say
   maybeColor: { model: types.maybe(CssColorType) },
-  // object-valued, e.g. alignments `sortedBy`
   maybeFrozen: { model: types.maybe(types.frozen()) },
-  // for text whose unset state is a third thing beside some text and none: an
-  // axis title is derived while unset, and drawn bare once it is ''
   maybeString: { model: types.maybe(types.string) },
   string: { model: types.string, fallbackDefault: '' },
   text: { model: types.string, fallbackDefault: '' },
-  // a field the display reads per feature: a name, a dotted path, or a
-  // `jexl:` expression, which the display evaluates and the reader never does
+  // a field the display reads per feature; its `jexl:` expression is the
+  // display's to evaluate, never the reader's
   featureField: { model: types.string, fallbackDefault: '' },
   fileLocation: {
     model: FileLocation,
@@ -99,25 +82,17 @@ const slotTypes = {
       locationType: 'UriLocation',
     },
   },
-  // for a sidecar the adapter works without: unset means no file is
-  // configured, and so does the `{ uri: '' }` a cleared URL field in the
-  // config editor writes
+  // a sidecar the adapter works without; the editor's cleared `{ uri: '' }`
+  // reads as unset
   maybeFileLocation: { model: MaybeFileLocation },
   frozen: { model: types.frozen(), fallbackDefault: {} },
 } satisfies Record<string, SlotTypeSpec>
 
-/**
- * The builtin table's own names — every slot type whose MST model this module
- * supplies, so excluding the two enum types. Exported for `SlotValueByType` in
- * `types.ts`, which has to name the same set and is checked against this.
- */
+/** the types whose model this module supplies; `SlotValueByType` names the same set */
 export type BuiltinSlotTypeName = keyof typeof slotTypes
 
-// The types with no builtin table entry, because the author supplies the
-// `types.enumeration` as `model` and `ConfigSlot` wraps it: in `types.maybe`
-// for `maybeStringEnum`, in `types.array` for `stringEnumArray`. Named once,
-// and spliced into both the type union and the runtime set below so those two
-// cannot drift apart.
+// the author supplies the `types.enumeration` as `model`, and `ConfigSlot`
+// wraps it in `types.maybe` or `types.array`
 const ENUM_SLOT_TYPES = [
   'stringEnum',
   'maybeStringEnum',
@@ -125,48 +100,24 @@ const ENUM_SLOT_TYPES = [
 ] as const
 
 /**
- * Every legal `type` on a slot definition: the builtin table's own names, plus
- * the enum types.
- *
- * Closed on purpose. A name outside this set still *works* at runtime as long
- * as a `model` is given — which is exactly the trap: the value round-trips
- * fine, and the only symptom is that everything keyed off the type name stops
- * recognising the slot (`slotFacade` hands the editor no `choices`, so an enum
- * renders as a free text box).
+ * Every legal `type` on a slot definition. Closed, since a name outside it
+ * would still load with a `model` given, and every surface keyed on the name
+ * would stop recognising the slot.
  */
 export type ConfigSlotType =
   | keyof typeof slotTypes
   | (typeof ENUM_SLOT_TYPES)[number]
 
-/**
- * The same closed set, at runtime, because the type alone does not close it for
- * the callers that matter most: `ConfigSlot` is plugin-facing, and a JS plugin
- * or one built against an older core reaches it with no checking at all. Those
- * are exactly the callers that hit the silent-degradation trap above, and
- * `type: 'enum'` — a name this table has never had — is the one that did.
- *
- * Typed `Set<string>` rather than `Set<ConfigSlotType>` so the membership test
- * stays a question TypeScript has not already answered for in-tree callers. It
- * is a real runtime check, not a restatement of the signature.
- */
+// the same set at runtime, for a JS plugin the type never checked
 const CONFIG_SLOT_TYPE_NAMES = new Set<string>([
   ...Object.keys(slotTypes),
   ...ENUM_SLOT_TYPES,
 ])
 
-// Lookup view over the table. The two enum types are legal `ConfigSlotType`s
-// with no entry, so indexing by the union has to tolerate a miss — this states
-// that in the type rather than casting it away at each call.
 const builtinSlotTypes: Partial<Record<ConfigSlotType, SlotTypeSpec>> =
   slotTypes
 
-// The slot types whose default is `undefined` — the genuine "unset" state,
-// distinguishable from every value a config can spell. Mostly derived from the
-// table above (they're exactly the entries with no `fallbackDefault`, since
-// "unset" is their fixed form) so the two can't drift. `maybeStringEnum` is
-// named explicitly because, like plain `stringEnum`, it has no builtin model:
-// the author supplies the enumeration and `ConfigSlot` wraps it in
-// `types.maybe`.
+// an entry with no `fallbackDefault` is one whose fixed form is unset
 const MAYBE_TYPES = new Set([
   ...Object.entries<SlotTypeSpec>(slotTypes)
     .filter(([, spec]) => spec.fallbackDefault === undefined)
@@ -174,11 +125,7 @@ const MAYBE_TYPES = new Set([
   'maybeStringEnum',
 ])
 
-/**
- * The same set as `MAYBE_TYPES`, at the type level, and derived from the same
- * property of the same table so the two cannot disagree: an entry with no
- * `fallbackDefault` is one whose fixed form is "unset".
- */
+// `MAYBE_TYPES` at the type level, off the same property
 type MaybeBuiltinSlotTypeName = {
   [
     K in keyof typeof slotTypes
@@ -231,25 +178,11 @@ interface ConfigSlotDefinitionCommon {
 }
 
 /**
- * A slot definition, split on whether the slot's type spends `undefined` on
- * "unset". The type-level twin of `ConfigSlot`'s
- * `defaultValue === undefined && !MAYBE_TYPES.has(type)` throw, which used to be
- * the only statement of the rule: a `maybe*` slot has exactly one legal
- * `defaultValue`, so requiring the field of every slot alike made 81 slots
- * across the repo carry a `defaultValue: undefined` line that said nothing.
- *
- * A `maybe*` slot's only legal `defaultValue` is the sentinel itself, but the
- * field stays `unknown` rather than being pinned to `undefined`: the spread in
- * `mergeSchemaDefinition` combines a base and a child whose halves may disagree,
- * so pinning it forces a cast through the one place slot definitions are
- * combined. `ConfigSlot` throws on a concrete one instead — and has to anyway,
- * since no type can see what a `baseConfiguration` merged in, which is the way
- * this mistake actually happens.
- *
- * Stating the sentinel stays meaningful in a subclass override, where the merge
- * is a spread and an omitted key inherits the base's value. The same spread is
- * why an enum slot's `model` stays optional here though `ConfigSlot` requires
- * one: a subclass restating only the default inherits the vocabulary.
+ * A slot definition: a `maybe*` type's `defaultValue` is optional, every
+ * other's required. A `maybe*` default stays `unknown` rather than `undefined`
+ * because a subclass override is spread over its base's, which no type can see;
+ * `ConfigSlot` throws on a concrete one. An enum's `model` is optional for the
+ * same spread: an override restating only the default inherits the vocabulary.
  */
 export type ConfigSlotDefinition =
   | (ConfigSlotDefinitionCommon & {
@@ -266,23 +199,10 @@ export type ConfigSlotDefinition =
     })
 
 /**
- * A configuration slot is a plain MST property holding the slot's value type,
- * or, where the slot declares a `contextVariable`, that or a `jexl:...`
- * callback string. Every other slot refuses a `jexl:` string, so a callback
- * the reader would evaluate is one the schema says it takes. A `featureField`
- * holds a `jexl:` expression as its value, which the display evaluates per
- * feature. The value lives directly on the parent configuration model — there
- * is no per-slot sub-model. `types.stripDefault` omits the property from the
- * parent snapshot when it equals the default, so saved sessions stay minimal.
- * Per-slot metadata (type/description/defaultValue/contextVariable) lives in
- * the schema registry (a WeakMap keyed by the MST type, see
- * schemaRegistry.ts); jexl callbacks are evaluated on read by
- * `readConfObject`.
- *
- * Interning the returned type on `(type, model, defaultValue)` was prototyped
- * and declined: a session builds 1197 slot types for 222 distinct ones, and
- * removing the repeats moves neither the time nor the heap
- * (`config-schema-construction`, published in `reference/EAGER_BUNDLE.md`).
+ * The MST property a slot is: its value type, or that or a `jexl:` callback
+ * where the slot declares a `contextVariable` (ADR-155), stripped from the
+ * snapshot at its default. Interning these was measured and declined
+ * (`config-schema-construction` in `reference/EAGER_BUNDLE.md`).
  */
 export default function ConfigSlot(definition: ConfigSlotDefinition) {
   const { model, type, defaultValue } = definition
@@ -302,24 +222,12 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
       `a slot cannot default to null, which a write reads as a reset to the default (ADR-146): a slot meaning "unset" is a maybe* type, such as maybeFrozen`,
     )
   }
-  // the `maybe*` types intentionally default to `undefined` (the "unset"
-  // state); every other slot type must declare a concrete default so a missing
-  // one is caught as an authoring mistake.
   if (defaultValue === undefined && !MAYBE_TYPES.has(type)) {
     throw new Error("no 'defaultValue' provided")
   }
-  // The inverse of the `defaultValue === undefined` check above, and the half
-  // that had no guard. A `maybe*` slot whose default is concrete can never *be*
-  // unset — no config can spell `undefined` — so the unset state such a slot
-  // exists to express (auto-fit, decide-from-the-data, inherit) is unreachable
-  // and the branch reading it never runs. There is no symptom: the slot reads as
-  // a perfectly good value everywhere.
-  //
-  // The way this happens is **inheritance**, which is why the type can't catch
-  // it: a `maybe*` override of a plain base slot inherits the base's concrete
-  // default through the definition spread, and the override's own literal looks
-  // right. `LinearMafDisplay.height` over `BaseLinearDisplay`'s `number`/100 is
-  // the case in the repo, and only that display's own tests noticed.
+  // A concrete default makes a maybe* slot's unset state unreachable, with no
+  // symptom. It arrives by inheritance: an override spread over a base slot's
+  // default.
   if (defaultValue !== undefined && MAYBE_TYPES.has(type)) {
     throw new Error(
       `a "${type}" slot cannot have a concrete defaultValue (${JSON.stringify(defaultValue)}): unset is the state a maybe* slot exists for, and no config can spell undefined, so it would be unreachable. If this slot overrides a base slot, the base's defaultValue merged in — state 'defaultValue: undefined' to overwrite it. Otherwise use the non-maybe form of the type.`,
@@ -348,8 +256,6 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
   )
 }
 
-// The author writes an enum slot's plain vocabulary, and the slot's shape
-// around it is added here.
 function enumShaped(type: ConfigSlotType, model: IAnyType) {
   return type === 'maybeStringEnum'
     ? types.maybe(model)
@@ -358,14 +264,7 @@ function enumShaped(type: ConfigSlotType, model: IAnyType) {
       : model
 }
 
-/**
- * New value when converting a fixed-value slot to a jexl callback. Already-
- * callback values are returned unchanged.
- *
- * A single JSON.stringify covers every type: `jexl:${42}` and
- * `jexl:${JSON.stringify(42)}` are identical for numbers/booleans, and the rest
- * need the quoting/serialization anyway.
- */
+/** A fixed value as the `jexl:` callback that returns it. */
 export function toCallbackValue(value: unknown) {
   return isCallbackValue(value) ? value : `jexl:${JSON.stringify(value)}`
 }
