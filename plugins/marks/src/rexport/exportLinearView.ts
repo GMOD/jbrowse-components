@@ -1,11 +1,11 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { fullConfSnapshot, getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { markPlotSettingsOf } from '../LinearMarkDisplay/markPlot.ts'
 import { exportTracksToR } from './exportView.ts'
 import { locationPath } from './frameFor.ts'
+import { withoutUnset } from './withoutUnset.ts'
 
 import type { RExportTrack } from './exportView.ts'
 import type { Region } from './rScript.ts'
@@ -72,10 +72,12 @@ function displaySettings(display: {
   type: string
   configuration: AnyConfigurationModel
 }) {
-  const snapshot = getSnapshot<Record<string, unknown>>(display.configuration)
+  const settings = withoutUnset(
+    fullConfSnapshot(display.configuration),
+  ) as Record<string, unknown>
   return display.type === 'LinearMarkDisplay'
-    ? { ...snapshot, ...markPlotSettingsOf(display.configuration) }
-    : snapshot
+    ? { ...settings, ...markPlotSettingsOf(display.configuration) }
+    : settings
 }
 
 async function tracksOf(view: LinearGenomeViewModel) {

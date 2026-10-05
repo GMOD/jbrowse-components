@@ -901,7 +901,7 @@ export function markPlot({
   } else if (y?.type === 'symlog') {
     notes.push('y: symlog has no ggplot counterpart; drawn linear')
   }
-  if (display.rowColor?.field || display.rowColor?.domain?.length) {
+  if (display.rowColor?.domain?.length || display.rowColor?.range?.length) {
     notes.push(
       'rowColor: the tint beside a row label has no ggplot counterpart',
     )
