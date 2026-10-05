@@ -68,6 +68,25 @@ export const READERS = {
     coords: ['start', 'end'],
     extra: { arg: 'info', prefix: 'INFO.' },
   },
+  BamAdapter: {
+    helper: 'read_bam',
+    location: 'bamLocation',
+    packages: ['Rsamtools', 'GenomicAlignments', 'GenomicRanges'],
+    columns: [
+      'start',
+      'end',
+      'strand',
+      'name',
+      'score',
+      'flags',
+      'template_length',
+      'pair_orientation',
+      'next_ref',
+      'next_pos',
+    ],
+    coords: ['start', 'end'],
+    extra: { arg: 'tags', prefix: 'tags.' },
+  },
 } as const
 
 export type ReaderName = keyof typeof READERS

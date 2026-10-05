@@ -37,6 +37,7 @@ const PACKAGES = [
   'GenomicRanges',
   'IRanges',
   'Rsamtools',
+  'GenomicAlignments',
   'ggplot2',
   'patchwork',
 ]
@@ -46,6 +47,15 @@ const BIGWIG = path.resolve('test_data/volvox/volvox.bw')
 const GFF = path.resolve('test_data/volvox/volvox.sort.gff3.gz')
 const VCF = path.resolve('test_data/volvox/volvox.filtered.vcf.gz')
 const BED = path.resolve('test_data/volvox/volvox-bed12.bed.gz')
+const BAM = path.resolve('test_data/volvox/volvox-sorted.bam')
+const PAIRED_BAM = path.resolve('test_data/volvox/volvox-sv.bam')
+const MARKS_CONFIG = JSON.parse(
+  readFileSync(path.resolve('test_data/volvox/config_marks.json'), 'utf8'),
+) as { tracks: { trackId: string; displays: DisplaySpec[] }[] }
+
+function marksDisplay(trackId: string) {
+  return MARKS_CONFIG.tracks.find(t => t.trackId === trackId)!.displays[0]!
+}
 
 function hasR() {
   try {
@@ -992,5 +1002,71 @@ maybe('the BED mark tracks run', () => {
       ran(c.name)
       expect(existsSync(c.png)).toBe(true)
     }
+  })
+})
+
+maybe('a BAM reads as a mark display’s features', () => {
+  const region = [{ refName: 'ctgA', start: 1000, end: 6000 }]
+  const bamFigure = (trackId: string) =>
+    figure(trackId, {
+      display: marksDisplay(trackId),
+      type: 'BamAdapter',
+      uri: BAM,
+      regions: region,
+    })
+  const pileup = bamFigure('marks_pileup')
+  const ramp = bamFigure('marks_ramp')
+  const twoAxes = bamFigure('marks_two_axes')
+  it('draws the volvox mark tracks over a BAM', () => {
+    for (const f of [pileup, ramp, twoAxes]) {
+      ran(f.name)
+      expect(existsSync(f.png)).toBe(true)
+    }
+  })
+
+  it('reports the facet track’s jexl formula rather than drawing it', () => {
+    const { notes } = translate({
+      display: marksDisplay('marks_facet'),
+      type: 'BamAdapter',
+      uri: BAM,
+      regions: region,
+    })
+    expect(notes.join('\n')).toContain('formula writes nm from a jexl callback')
+  })
+
+  const reads = helperProbe(
+    'bamreads',
+    `
+df <- read_bam(${rStr(BAM)}, "ctgA", 1000, 6000, tags = c("NM", "XX"))
+cat(nrow(df), sum(df$strand == 1), sum(df$strand == -1), sum(df$score == 37),
+  is.numeric(df[["tags.NM"]]), sum(df[["tags.NM"]]), all(is.na(df[["tags.XX"]])),
+  all(is.na(df$pair_orientation)))
+`,
+  )
+  it('answers the fields a JBrowse read does, under its names', () => {
+    // the counts BamAdapter.getFeatures gives over the same window
+    expect(ran(reads)).toBe('982 477 505 948 TRUE 1952 TRUE TRUE')
+  })
+
+  const orientation = helperProbe(
+    'bamorientation',
+    `
+df <- read_bam(${rStr(PAIRED_BAM)}, "ctgA", 1000, 6000)
+t <- table(df$pair_orientation)
+cat(paste(names(t), t, sep = "=", collapse = " "))
+`,
+  )
+  it('codes pair orientation as BamRecord does', () => {
+    expect(ran(orientation)).toBe(
+      'F1R2=107 F2R1=113 R1F2=1 R1R2=16 R2F1=4 R2R1=16',
+    )
+  })
+
+  const absent = helperProbe(
+    'bamabsent',
+    `cat(nrow(read_bam(${rStr(BAM)}, "nope", 0, 100, tags = "NM")))`,
+  )
+  it('reads a contig the BAM lacks as no reads', () => {
+    expect(ran(absent)).toBe('0')
   })
 })
