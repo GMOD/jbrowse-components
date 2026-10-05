@@ -138,15 +138,15 @@ const PGGB_LOCUS = {
 }
 const PGGB_LOCUS_WINDOW = 'chr:1,299,300-1,300,900'
 
-// 100 kb of the same graph, centred on the same insertion. The window the fine
-// index can draw is the 1.6 kb above; this one is 60x it, and is drawable only
-// because the track below draws one node per BUBBLE.
-const PGGB_TIER_WINDOW = 'chr:1,250,000-1,350,000'
+// 15 kb of the same graph, centred on the same insertion: ten times the 1.6 kb
+// the fine index draws, and drawable as a graph only because the track below
+// draws one node per BUBBLE. 100 kb put the 1.2 kb element in a sliver.
+const PGGB_TIER_WINDOW = 'chr:1,292,500-1,307,500'
 const PGGB_TIER_REGION = {
   refName: 'chr',
   assemblyName: 'K12',
-  start: 1250000,
-  end: 1350000,
+  start: 1292500,
+  end: 1307500,
 }
 const PGGB_TIER_TRACK = 'ecoli_pggb_tier50'
 // The one node in the tier that stands for the IS5 element, arrowed in

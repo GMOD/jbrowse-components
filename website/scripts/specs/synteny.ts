@@ -362,36 +362,20 @@ const TNNT3_GENE_PAGE = 'https://staging.genomes.jbrowse.org/gene/?gene=TNNT3'
 const STAR_LINK = 'a[href*="_liftOver_multiway"]'
 
 // The session STAR_LINK carries (starUrl in jb2hubs
-// website/src/components/multiSyntenyDrilldown.ts): one lane per gene-page row
-// the star holds, nearest hg38 first and pinned in that order by `domain`, 34 px
-// each so no lane scrolls. Re-copy it when that page changes its rows.
+// website/src/components/multiSyntenyDrilldown.ts), cut with Lanes → Choose
+// lanes to eight genomes from chimp to platypus, ribbons coloured by strand.
+// The full link opens 26 lanes, 34 px each, which drew as a grey wall. These
+// eight are all drawn forward but platypus, so a blue ribbon is an inversion
+// against hg38 and not a contig the assembly happened to store reversed.
 function tnnt3StarSession() {
   const lanes = [
-    'GCF_029281585.2',
-    'panPan3',
     'panTro6',
     'ponAbe3',
-    'nomLeu3',
-    'rhiRox1',
-    'GCF_008728515.1',
-    'GCF_000956065.1',
     'rheMac10',
-    'GCF_037993035.2',
-    'chlSab2',
-    'GCF_000955945.1',
-    'GCF_049354715.1',
     'GCF_040939455.1',
-    'otoGar3',
-    'galVar1',
     'GCA_033439345.1',
-    'GCF_964237555.1',
-    'ochPri3',
     'hetGla2',
-    'cavPor3',
-    'dasNov3',
-    'triMan1',
     'loxAfr3',
-    'echTel2',
     'GCF_004115215.2',
   ]
   return sessionSpec(
@@ -408,7 +392,8 @@ function tnnt3StarSession() {
               type: 'MultiWaySyntenyDisplay',
               laneFilter: { only: lanes },
               domain: lanes,
-              height: (lanes.length + 1) * 34,
+              ribbonColor: { field: 'strand' },
+              height: (lanes.length + 1) * 60,
             },
           ],
         },
@@ -420,7 +405,12 @@ function tnnt3StarSession() {
 // A hosted reference's star opened on the lanes named, in that order, with the
 // reference's gene track above it: the route the tutorial's Lanes menu takes,
 // pinned as a link
-function hostedStarSession(db: string, loc: string, lanes: string[]) {
+function hostedStarSession(
+  db: string,
+  loc: string,
+  lanes: string[],
+  display: Record<string, unknown> = {},
+) {
   return sessionSpec(
     encodeURIComponent(`https://jbrowse.org/ucsc/${db}/config-staging.json`),
     {
@@ -437,6 +427,7 @@ function hostedStarSession(db: string, loc: string, lanes: string[]) {
               laneFilter: { only: lanes },
               domain: lanes,
               height: (lanes.length + 1) * 34,
+              ...display,
             },
           ],
         },
@@ -1873,6 +1864,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'hg38_liftover_multiway',
                 type: 'MultiWaySyntenyDisplay',
+                ribbonColor: { field: 'strand' },
                 height: 600,
               },
             ],
@@ -4256,7 +4248,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportWidth: 1300,
-    viewportHeight: 1140,
+    viewportHeight: 820,
   },
 
   {
@@ -4288,17 +4280,30 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'genomes_synteny/human_17q21_haplotypes',
-    url: hostedStarSession('hg38', 'chr17:45,300,000-46,800,000', [
-      'GCA_054883195.1',
-      'GCA_054883265.1',
-      'GCA_018852615.2',
-      'GCA_018506965.1',
-      'hs1',
-    ]),
+    // H9 hap2, the H2 inversion carrier, sits beside hg38 so its inverted
+    // ribbons and the sequence hg38 lacks are the first band down; hap1 under
+    // it puts one person's two chromosomes side by side. Lane gene names off,
+    // since the RefSeq track above names the genes once.
+    url: hostedStarSession(
+      'hg38',
+      'chr17:45,300,000-46,800,000',
+      [
+        'GCA_054883265.1',
+        'GCA_054883195.1',
+        'GCA_018852615.2',
+        'GCA_018506965.1',
+        'hs1',
+      ],
+      {
+        ribbonColor: { field: 'strand' },
+        showGeneLabels: false,
+        height: 6 * 60,
+      },
+    ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportWidth: 1300,
-    viewportHeight: 620,
+    viewportHeight: 760,
     liveLabel: 'Open the five haplotypes at 17q21.31',
   },
 

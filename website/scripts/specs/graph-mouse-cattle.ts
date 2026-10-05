@@ -213,28 +213,64 @@ function bovineLocusSpec(
 
 export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
   dock2Spec,
-  bovineLocusSpec(
-    'pangenome/bovine_polled',
-    'chr1:2,424,000-2,436,000',
-    [bovineOmia, bovineVariantLane(260)],
-    580,
-  ),
+  // 2 kb around the duplication, so the Angus cell draws as wide as the
+  // 209 bp allele it carries, and the graph track under it draws that allele
+  // as the one loop off the backbone.
+  {
+    ...bovineLocusSpec(
+      'pangenome/bovine_polled',
+      'chr1:2,428,200-2,430,200',
+      [
+        bovineOmia,
+        bovineVariantLane(260),
+        graphTrack('bovine_minigraph_segments', {
+          colorScheme: 'reference-position',
+          paneHeight: 220,
+          maxRegionBp: cutNear(2_000),
+        }),
+      ],
+      830,
+    ),
+    readySelector: GRAPH_DRAWN,
+  },
   // 300, not the 260 the other loci take: these two windows hold other-alt
   // and no-call cells, so their key runs two rows longer and lost yak off the
   // lane's bottom edge at 260.
-  bovineLocusSpec(
-    'pangenome/bovine_kit',
-    'chr6:70,080,000-70,180,000',
-    [bovineGenes, bovineVariantLane(300)],
-    640,
-  ),
+  {
+    ...bovineLocusSpec(
+      'pangenome/bovine_kit',
+      'chr6:70,080,000-70,180,000',
+      [
+        bovineGenes,
+        bovineVariantLane(300),
+        graphTrack('bovine_minigraph_segments', {
+          colorScheme: 'reference-position',
+          bubbleSpread: 'compress',
+          paneHeight: 260,
+          maxRegionBp: cutNear(100_000),
+        }),
+      ],
+      900,
+    ),
+    readySelector: GRAPH_DRAWN,
+  },
   {
     ...bovineLocusSpec(
       'pangenome/bovine_tas2r46',
       'chr5:98,575,000-98,615,000',
-      [bovineGenes, bovineVariantLane(300)],
-      640,
+      [
+        bovineGenes,
+        bovineVariantLane(300),
+        graphTrack('bovine_minigraph_segments', {
+          colorScheme: 'reference-position',
+          bubbleSpread: 'compress',
+          paneHeight: 260,
+          maxRegionBp: cutNear(40_000),
+        }),
+      ],
+      900,
     ),
+    readySelector: GRAPH_DRAWN,
     annotations: [
       {
         type: 'text',
