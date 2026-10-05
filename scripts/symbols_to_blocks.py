@@ -76,7 +76,7 @@ def attr(attrs, key):
     return m.group(1) if m else None
 
 
-def read_gff(path, biotype, with_cds):
+def read_gff(path, biotype, with_cds, pseudogenes):
     genes = []
     parent = {}
     cds = []
@@ -87,8 +87,8 @@ def read_gff(path, biotype, with_cds):
             f = line.rstrip('\n').split('\t')
             if len(f) < 9:
                 continue
-            if f[2] == 'gene':
-                if biotype and attr(f[8], 'gene_biotype') != biotype:
+            if f[2] == 'gene' or (pseudogenes and f[2] == 'pseudogene'):
+                if biotype and f[2] == 'gene' and attr(f[8], 'gene_biotype') != biotype:
                     continue
                 gid = attr(f[8], 'ID')
                 if gid:
@@ -199,6 +199,7 @@ def main(argv):
     p.add_argument('-o', '--out', required=True, help='the .blocks table to write')
     p.add_argument('--bed-dir', default='.', help='where each NAME.bed is written')
     p.add_argument('--biotype', default='protein_coding', help="keep genes of this gene_biotype only; '' keeps every gene")
+    p.add_argument('--pseudogenes', action='store_true', help='also read pseudogene features, which NCBI writes outside the gene type and the --biotype filter')
     p.add_argument('--unnamed', default=r'^LOC\d+', help='a Name= matching this is an unnamed gene and joins nothing')
     p.add_argument('--keep-case', action='store_true', help='compare symbols as written instead of case-folded')
     p.add_argument('--merge-cited', action='store_true',
@@ -223,7 +224,7 @@ def main(argv):
 
     columns = OrderedDict()
     for name, path in paths.items():
-        genes = read_gff(path, a.biotype, a.merge_cited)
+        genes = read_gff(path, a.biotype, a.merge_cited, a.pseudogenes)
         label_genes(genes)
         with open(f'{a.bed_dir}/{name}.bed', 'w') as bed:
             for g in genes:

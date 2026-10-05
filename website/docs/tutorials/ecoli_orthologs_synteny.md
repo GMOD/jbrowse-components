@@ -189,9 +189,10 @@ The colors read as follows:
   whole stack.
 - A gene no group claims is grey, which marks the genes specific to a strain at
   a glance.
-- The key in the top right turns a color back into a group's name, and **Show...
-  → Show legend** on the track menu hides it. The display leaves it out in any
-  window holding more than thirty groups.
+- The demo config hides the key, since the cluster window holds dozens of
+  groups. **Show... → Show legend** on the track menu turns it on, and its
+  entries turn a color back into a group's name. The display leaves it out in
+  any window holding more than thirty groups.
 
 Lanes stack with the genome placing the most of the window's genes first. The
 default height scrolls the stack inside the track, so the session sets a

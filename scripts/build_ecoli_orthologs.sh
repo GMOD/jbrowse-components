@@ -229,11 +229,12 @@ done < strains.tsv
 # PGAP writes the locus tag into Name= for a gene it could not name, so
 # without --unnamed every hypothetical protein would look named and join
 # nothing. --merge-cited joins a gene PGAP renamed (gndA) to the gene it was
-# annotated from (K-12's gnd). The helper prints the column order it wrote,
+# annotated from (K-12's gnd). --pseudogenes keeps K-12's wbbL, which NCBI
+# writes as a pseudogene feature. The helper prints the column order it wrote,
 # which is the order blockAssemblies and bedLocations below have to list.
 # shellcheck disable=SC2046  # NAME=GFF pairs are a built argument list
 BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/symbols_to_blocks.py" \
-  --anchor "$ANCHOR" -o ecoli.blocks --unnamed '_RS[0-9]+$' --merge-cited \
+  --anchor "$ANCHOR" -o ecoli.blocks --unnamed '_RS[0-9]+$' --merge-cited --pseudogenes \
   $(for n in $NAMES; do printf '%s=%s.gff.gz ' "$n" "$n"; done))
 # the adapter reads each file whole and unzips it itself, and the plain text
 # was 14 MB before a lane drew
@@ -297,6 +298,7 @@ config = {
             'type': 'MultiWaySyntenyDisplay',
             'displayId': 'ecoli_orthologs-MultiWaySyntenyDisplay',
             'color': {'field': 'cluster'},
+            'showLegend': False,
             'height': math.ceil(len(order) * LANE_PITCH / 10) * 10,
         }],
     }],
