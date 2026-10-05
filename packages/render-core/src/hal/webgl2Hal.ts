@@ -259,6 +259,9 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     // Programs link on first draw (`getPass`). The first links here as a
     // canary, so a GL stack that cannot compile our shaders throws while
     // `createGpuHal` can still fall back to Canvas2D.
+    // Starting every pass's compile here was a loss (headed Chrome, Intel UHD
+    // 630): the GPU process ran all 17 programs before the 10 a first BAM draw
+    // needs, and a first visit drew at 1094 ms against 907.
     const canary = descriptors[0]
     if (canary) {
       this.passes.set(canary.id, {
