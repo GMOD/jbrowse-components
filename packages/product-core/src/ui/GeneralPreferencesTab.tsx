@@ -21,6 +21,7 @@ export interface GeneralPreferencesSession {
   setThemeName: (arg: string) => void
   themeMode: ThemeModeSelection
   setThemeMode: (arg: ThemeModeSelection) => void
+  darkReaderDark?: boolean
   animationMode: AnimationMode
   numberGrouping: boolean
   setPreferenceOverride: (key: string, value: unknown) => void
@@ -68,6 +69,11 @@ const GeneralPreferencesTab = observer(function GeneralPreferencesTab({
         className={classes.field}
         label="Light/dark"
         value={session.themeMode}
+        helperText={
+          session.darkReaderDark
+            ? 'Dark while Dark Reader darkens this page'
+            : undefined
+        }
         onChange={event => {
           session.setThemeMode(event.target.value as ThemeModeSelection)
         }}

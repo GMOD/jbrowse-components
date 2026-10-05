@@ -19,11 +19,12 @@ const ThemeModeButton = observer(function ThemeModeButton({
 }) {
   const dark = session.themeIsDark
   const drawnMode = dark ? 'dark' : 'light'
-  // A palette pinned to its own mode draws dark whatever the OS says, so the
-  // two disagree and the system is steering nothing to report. Everything else
-  // that hides this control is `themeMode`.
+  // A palette pinned to its own mode, or Dark Reader, draws dark whatever the
+  // OS says, so a click here would change nothing.
   const followsSystem =
-    session.themeMode === 'system' && drawnMode === session.effectiveThemeMode
+    session.themeMode === 'system' &&
+    !session.darkReaderDark &&
+    drawnMode === session.effectiveThemeMode
   if (!followsSystem) {
     return null
   }

@@ -13,6 +13,7 @@ export interface ThemeSwitchSession {
   themeMode: 'light' | 'dark' | 'system'
   effectiveThemeMode: 'light' | 'dark'
   themeIsDark: boolean
+  darkReaderDark: boolean
   systemThemeOverride?: 'light' | 'dark'
   setSystemThemeOverride: (mode?: 'light' | 'dark') => void
 }

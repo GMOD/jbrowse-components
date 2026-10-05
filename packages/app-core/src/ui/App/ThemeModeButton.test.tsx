@@ -27,9 +27,13 @@ const Session = types
     systemMode: types.optional(Mode, 'light'),
     systemThemeOverride: types.maybe(Mode),
     pinnedDark: false,
+    darkReaderDark: false,
   })
   .views(self => ({
     get effectiveThemeMode() {
+      if (self.darkReaderDark) {
+        return 'dark'
+      }
       return self.themeMode === 'system'
         ? (self.systemThemeOverride ?? self.systemMode)
         : self.themeMode
@@ -48,6 +52,7 @@ function renderButton(snap: {
   themeMode?: 'light' | 'dark' | 'system'
   systemMode?: 'light' | 'dark'
   pinnedDark?: boolean
+  darkReaderDark?: boolean
 }) {
   const session = Session.create(snap)
   const utils = render(
@@ -95,6 +100,14 @@ test('a click holds the other mode and the control stays for the way back', () =
 // is no following to report and nothing a click could change.
 test('a palette pinned to its own mode gets no control', () => {
   const { queryByTestId } = renderButton({ pinnedDark: true })
+
+  expect(queryByTestId('theme-mode-button')).toBeNull()
+})
+
+// Dark Reader draws the page dark over a light OS, and a held light mode would
+// stay dark under it, so the control would name a mode it cannot leave.
+test('a page Dark Reader has darkened gets no control', () => {
+  const { queryByTestId } = renderButton({ darkReaderDark: true })
 
   expect(queryByTestId('theme-mode-button')).toBeNull()
 })
