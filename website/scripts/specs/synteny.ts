@@ -2092,45 +2092,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 870,
   },
 
-  // The same stack where the mammals break: at hg38 chr17 near 15.75 Mb the
-  // mouse, dog and cow alignments all change orientation while the primate
-  // lanes run straight, so the [rev] marker and a crossed ribbon appear for a
-  // reason and the TP53 figure's straight lanes have their negative.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/hg38_vertebrates_17p_break',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/hg38_vertebrates/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'hg38',
-            loc: 'chr17:15,200,000-16,400,000',
-            tracks: [
-              'hg38-ncbiRefSeq',
-              {
-                trackId: 'hg38_liftover_multiway',
-                type: 'MultiWaySyntenyDisplay',
-                height: 600,
-              },
-            ],
-          },
-        ],
-      },
-    ),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 240000,
-    viewportHeight: 1000,
-  },
-
-  // The same window under `Color by... → Strand`, which the page describes and
-  // no figure held. The claim is that the color and the crossing are different
-  // statements: a lane drawn flipped runs its ribbons straight on screen while
-  // the strand color still marks every one of them, so the pair is the only way
-  // to see that the two readings disagree.
+  // hg38 chr17 near 15.75 Mb, where the mouse, dog and cow alignments change
+  // orientation while the primate lanes run straight, under `Color by... →
+  // Strand`. A lane drawn flipped runs its ribbons straight on screen while the
+  // strand color still marks each of them, and a crossed ribbon into an
+  // unflipped lane is one block against its neighbours. The same window in grey
+  // (`hg38_vertebrates_17p_break`) was retired: everything it showed, this
+  // shows, with the orientation readable.
   {
     mode: 'url',
     name: 'multiway_synteny/hg38_vertebrates_17p_strand',

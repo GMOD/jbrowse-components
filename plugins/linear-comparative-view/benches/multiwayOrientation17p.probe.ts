@@ -8,7 +8,7 @@
 //
 // THE RECORD, which this rewrites: agent-docs/measurements/multiway-17p-orientation.json.
 //
-// THE QUESTION. `multiway_synteny/hg38_vertebrates_17p_break` draws eight
+// THE QUESTION. `multiway_synteny/hg38_vertebrates_17p_strand` draws eight
 // liftOver lanes under hg38 chr17:15,200,014-16,400,014 and marks five of
 // them [rev]. The mark comes out of `decideLaneFrames` — the orientation vote
 // against the lane above, against the anchor where the lane above shares too

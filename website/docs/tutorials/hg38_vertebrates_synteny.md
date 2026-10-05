@@ -181,6 +181,7 @@ placing the most of the window at the top.
           {
             "trackId": "hg38_liftover_multiway",
             "type": "MultiWaySyntenyDisplay",
+            "ribbonColor": { "field": "strand" },
             "height": 600
           }
         ]
@@ -190,17 +191,24 @@ placing the most of the window at the top.
 }
 ```
 
-Around _TP53_ every lane but gorilla places the whole window from one chain,
-with the same genes in the same order. The gorilla lane stops after _FXR2_,
-because gorGor6 holds the _TP53_ end of the window on an unplaced contig. A
-chain records its insertions and deletions inside one alignment record, and the
-track cuts a record at every indel of 10 kb or more, drawing one ribbon per
-gap-free run. The white wedges between ribbons are stretches one genome has and
-the other lacks. The mouse, cow and dog chains have many such gaps, and the ape
-chains have gaps under the cut, so their ribbons look continuous. The mouse lane
-shows `[rev]` because its chain runs the other way against hg38 here.
+`ribbonColor` is what **Color by... → Strand**, under **Ribbons** on the track
+menu, sets. A ribbon between the anchor and the first lane takes the strand of
+one alignment, red forward and blue reverse, and a ribbon between two genome
+lanes takes the product of two alignments' strands, so two reverse alignments
+give forward.
 
-<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes, each drawing its own RefSeq gene models. White wedges in the ribbons are large indels in each chain, few in the apes and many in mouse, cow and dog. The mouse lane is reversed, and the gorilla lane stops where gorGor6 moves the rest of the window onto an unplaced contig." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
+Around _TP53_ every lane but gorilla places the whole window from one chain,
+with the same genes in the same order. The gorilla lane's ribbons stop after
+_FXR2_, because gorGor6 holds the _TP53_ end of the window on an unplaced
+contig. A chain records its insertions and deletions inside one alignment
+record, and the track cuts a record at every indel of 10 kb or more, drawing one
+ribbon per gap-free run. Sequence a lane has between two runs and hg38 lacks
+draws purple on the lane. The mouse, cow and dog chains have many such gaps, and
+the ape chains have gaps under the cut, so their ribbons look continuous. The
+mouse lane shows `[rev]` because its chain runs the other way against hg38 here,
+so the ribbons either side of it are blue.
+
+<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes, ribbons colored by strand. Chimp and orangutan run red and unbroken under hg38; the lanes below them carry purple, sequence hg38 lacks, between their ribbons, and the reversed mouse lane is joined by blue ones." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
 Navigate to `chr17:15,200,000-16,400,000`, eight megabases toward the
 centromere, near _PMP22_. The region is a hotspot of segmental duplications
@@ -208,11 +216,11 @@ centromere, near _PMP22_. The region is a hotspot of segmental duplications
 and many of those blocks run the other way against their neighbours.
 
 A lane whose blocks mostly run backwards along hg38 shows `[rev]` in its header
-and draws mirrored, so its inversions come out straight. Inside a lane, a ribbon
-crosses where one block runs against its neighbour. The marmoset lane is the
-clearest case: its chain covers the left of the window forwards and then stops,
-and a reversed block further along the same chromosome places the rest of the
-window.
+and draws mirrored, so its ribbons run straight on screen while the strand color
+still marks each of them as an inversion. Inside a lane, a ribbon crosses where
+one block runs against its neighbour. The marmoset lane is the clearest case:
+its chain covers the left of the window forwards and then stops, and a reversed
+block further along the same chromosome places the rest of the window.
 
 The gorilla lane header names chr17 beside chr5, the chromosome the lane drew.
 Part of the window aligns to chr17, the homologous chromosome, so the chr5 frame
@@ -222,18 +230,7 @@ evenly between the two orientations, **Flip lane** on its header menu turns the
 lane the other way on the same contig, and **Let the lane choose its
 orientation** hands the choice back.
 
-<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. A lane running backwards along hg38 carries a reversed marker in its header, crossed ribbons mark a block running against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
-
-**Color by... → Strand**, under **Ribbons** on the track menu, colors each
-ribbon by strand. A ribbon between the anchor and the first lane takes the
-strand of one alignment, and a ribbon between two genome lanes takes the product
-of two alignments' strands, so two reverse alignments give forward. The track
-flips a lane whose alignments all run the other way and marks it `[rev]` in its
-header, so its ribbons come out straight on screen while the strand color still
-marks each of them as an inversion. A single crossed ribbon into an unflipped
-lane is one block running against its neighbours.
-
-<Figure caption="The eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. In a flipped lane the ribbons run straight and still carry the reverse color." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
+<Figure caption="The eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. Every lane places the window as several blocks of both colors, against the TP53 window's single red runs, and a flipped lane, marked reversed in its header, runs its ribbons straight and still blue." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
 
 ## Reading a lane's span, width multiple and ribbons {#reading-the-stack}
 
