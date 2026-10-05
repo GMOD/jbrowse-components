@@ -99,7 +99,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
     .volatile(() => ({
       ...storedSelection(),
       systemPrefersDark: prefersDarkColorScheme(),
-      darkReaderSeen: darkReaderIsDark(),
+      darkReaderDark: darkReaderIsDark(),
     }))
     .views(s => {
       const self = asSession(s)
@@ -135,11 +135,11 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * the toolbar's hold on the other mode. Dark once Dark Reader has
          * darkened the page, whatever the stored mode says: it leaves canvas
          * pixels alone, so a light canvas on its dark page is unreadable. The
-         * stored mode is untouched and applies again on a reload without the
-         * extension.
+         * stored mode is untouched and applies again as soon as Dark Reader
+         * is switched off.
          */
         get effectiveThemeMode(): PaletteMode {
-          if (self.darkReaderSeen) {
+          if (self.darkReaderDark) {
             return 'dark'
           }
           return this.themeMode === 'system'
@@ -275,13 +275,9 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Latches: Dark Reader drops its mark when the page locks it out or its
-       * own detector takes the page for dark, and the canvas must stay dark.
        */
       noteDarkReader() {
-        if (darkReaderIsDark()) {
-          self.darkReaderSeen = true
-        }
+        self.darkReaderDark = darkReaderIsDark()
       },
       /**
        * #action

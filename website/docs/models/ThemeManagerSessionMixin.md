@@ -12,7 +12,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | Member | Description |
 | --- | --- |
 | <span id="volatile-systemprefersdark">**systemPrefersDark**</span><br><code>systemPrefersDark: prefersDarkColorScheme()</code> |  |
-| <span id="volatile-darkreaderseen">**darkReaderSeen**</span><br><code>darkReaderSeen: darkReaderIsDark()</code> |  |
+| <span id="volatile-darkreaderdark">**darkReaderDark**</span><br><code>darkReaderDark: darkReaderIsDark()</code> |  |
 
 ## Getters
 
@@ -21,7 +21,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | --- | --- |
 | <span id="getter-themename">**themeName**</span><br><code>string</code> | Which palette is in effect. A stored name whose theme an admin has since dropped reads as `default` without the stored value being touched, so it comes back if the plugin supplying it loads again. |
 | <span id="getter-thememode">**themeMode**</span><br><code>ThemeModeSelection</code> | Light, dark, or following the OS — the axis the palette is drawn along, and what the mode picker shows. `effectiveThemeMode` is the one to read for a colour decision. |
-| <span id="getter-effectivethememode">**effectiveThemeMode**</span><br><code>PaletteMode</code> | Light or dark, with `system` resolved against the OS preference or the toolbar's hold on the other mode. Dark once Dark Reader has darkened the page, whatever the stored mode says: it leaves canvas pixels alone, so a light canvas on its dark page is unreadable. The stored mode is untouched and applies again on a reload without the extension. |
+| <span id="getter-effectivethememode">**effectiveThemeMode**</span><br><code>PaletteMode</code> | Light or dark, with `system` resolved against the OS preference or the toolbar's hold on the other mode. Dark once Dark Reader has darkened the page, whatever the stored mode says: it leaves canvas pixels alone, so a light canvas on its dark page is unreadable. The stored mode is untouched and applies again as soon as Dark Reader is switched off. |
 | <span id="getter-themeisdark">**themeIsDark**</span><br><code>boolean</code> | Whether what is drawn right now is dark. Read off the resolved palette rather than the mode, so a palette pinned to one mode — an `extraThemes` entry declaring `mode: 'dark'` — answers for itself. |
 | <span id="getter-themeoptions">**themeOptions**</span><br><code>SerializableThemeArgs</code> |  |
 | <span id="getter-palette">**palette**</span><br><code>JBrowsePalette</code> | Every color JBrowse renders, resolved to plain strings. This is what rendering reads: it needs no React context, it crosses the RPC worker boundary as itself, and it costs no UI toolkit. Prefer it over `theme` anywhere the answer wanted is a color rather than a Material UI component style. |
@@ -42,7 +42,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | Member | Description |
 | --- | --- |
 | <span id="action-setthemename">**setThemeName**</span><br><code>(name: string) =&gt; void</code> | Pick a palette. A name from before light and dark were an axis sets the mode it spelled as well, so an old share link, a saved figure spec and `jbrowse-img --theme darkStock` all still mean what they said. Either that or a palette pinned to its own mode drops a held mode, which would otherwise resurface on the next palette change. |
-| <span id="action-notedarkreader">**noteDarkReader**</span><br><code>() =&gt; void</code> | Latches: Dark Reader drops its mark when the page locks it out or its own detector takes the page for dark, and the canvas must stay dark. |
+| <span id="action-notedarkreader">**noteDarkReader**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setsystemprefersdark">**setSystemPrefersDark**</span><br><code>(dark: boolean) =&gt; void</code> |  |
 | <span id="action-setsystemthemeoverride">**setSystemThemeOverride**</span><br><code>(mode?: PaletteMode &#124; undefined) =&gt; void</code> | Hold a session that follows the system on the mode the OS is not asking for, or `undefined` to follow it again. The toolbar's sun/moon writes this, so it stays in the toolbar after a click. The OS flipping clears it, since by then the OS has come round to the held mode. The palette is untouched: a reader on Minimal who does this keeps Minimal. |
 | <span id="action-setthememode">**setThemeMode**</span><br><code>(mode: ThemeModeSelection) =&gt; void</code> | Draw the session light or dark, leaving the palette alone. `system` follows the OS preference. Satisfies `ThemeModeSession`, so `useSessionPalette` works against an app session and an embedded one alike, and a host that follows its own dark-mode state calls this.<br><br>`themeOptions` carries the mode to the RPC worker, so the labels baked into a rendered image follow it along with what React draws. That used to take a write into the config `theme` slot, because mode lived inside a palette and there was nowhere else to put it. |

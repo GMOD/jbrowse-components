@@ -299,9 +299,9 @@ test('an export named by a retired theme keeps that mode', () => {
 
 // Dark Reader's Dynamic mode darkens the page's CSS and leaves canvas pixels
 // alone, so a light session draws a light canvas on a dark page. The session
-// draws dark once the mark appears, keeps the stored mode, and stays dark when
-// Dark Reader drops the mark.
-test('a page Dark Reader has darkened draws dark, and keeps drawing dark', async () => {
+// draws dark while the mark is there, keeps the stored mode, and goes back to
+// it when Dark Reader is switched off.
+test('a page Dark Reader has darkened draws dark until it is switched off', async () => {
   installMatchMedia(false)
   const session = makeSession()
   expect(session.themeIsDark).toBe(false)
@@ -315,7 +315,8 @@ test('a page Dark Reader has darkened draws dark, and keeps drawing dark', async
 
   delete document.documentElement.dataset.darkreaderScheme
   await Promise.resolve()
-  expect(session.themeIsDark).toBe(true)
+  expect(session.themeIsDark).toBe(false)
+  expect(session.themeMode).toBe('light')
 })
 
 test('Dark Reader already on at startup draws dark, and its light scheme does not', () => {
