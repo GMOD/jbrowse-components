@@ -8,6 +8,7 @@ import {
 } from './laneDecision.ts'
 import { laneRegion } from './laneHeader.ts'
 import {
+  anchorlessGroupsOf,
   clipGroupToAnchor,
   frameReach,
   frameSpan,
@@ -219,6 +220,38 @@ test('groups by anchor gene, dedupes repeated mates, sorts by anchor position', 
   expect(groups[0]!.mates.get('peach')).toHaveLength(1)
   expect(groups[0]!.mates.get('cacao')).toHaveLength(1)
   expect(groups[1]!.mates.has('cacao')).toBe(false)
+})
+
+test('a row the anchor lacks is one group however many lanes read it, and a row on the anchor is none', () => {
+  const vio = { refName: 'c1', start: 10, end: 20, strand: 1, name: 'vioB' }
+  const row = (lane: string, mate: string) =>
+    new SimpleFeature({
+      uniqueId: `${lane}-row`,
+      ...vio,
+      assemblyName: lane,
+      mates: [{ ...vio, assemblyName: mate, orientation: -1 }],
+    })
+  const anchored = new SimpleFeature({
+    uniqueId: 'anchored',
+    ...vio,
+    name: 'g1',
+    mates: [{ ...vio, assemblyName: 'grape', orientation: 1 }],
+  })
+  const groups = anchorlessGroupsOf(
+    [
+      ['peach', [row('peach', 'cacao'), anchored]],
+      ['cacao', [row('cacao', 'peach')]],
+    ],
+    assemblyName => assemblyName === 'grape',
+  )
+  expect(groups).toHaveLength(1)
+  const [group] = groups
+  expect(group!.anchor).toBeUndefined()
+  expect(group!.feature.id()).toBe('peach-row')
+  expect(group!.mates.get('peach')).toMatchObject([{ orientation: 1 }])
+  expect(group!.mates.get('cacao')).toMatchObject([
+    { refName: 'c1', start: 10, end: 20, name: 'vioB', orientation: -1 },
+  ])
 })
 
 test('row assemblies come out densest lane first, domain pinning over that', () => {

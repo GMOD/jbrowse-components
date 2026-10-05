@@ -139,6 +139,7 @@ import {
   laneGeometry,
 } from './laneStack.ts'
 import {
+  anchorlessGroupsOf,
   clipGroupToAnchor,
   groupFeatures,
   laneFetchRegion,
@@ -188,10 +189,12 @@ import type {
 import type {
   HeldLane,
   HeldLaneGenes,
+  HeldLaneGroups,
   HeldLaneLinks,
   LaneFetchSpec,
   LaneFetchState,
   LaneGenesFetchSpec,
+  LaneGroupsFetchSpec,
   LaneLinksFetchSpec,
   LanePair,
   LaneWindow,
@@ -205,7 +208,12 @@ import type {
 import type { LaneTransition } from './laneMotion.ts'
 import type { LaneChoice, LaneFilter } from './laneSelection.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
-import type { FetchRegion, RowFrame, Span } from './layoutMultiWay.ts'
+import type {
+  FetchRegion,
+  PlacedGroup,
+  RowFrame,
+  Span,
+} from './layoutMultiWay.ts'
 import type { LaneGlyphColors, TickGeometry } from './multiwayGeometry.ts'
 import type {
   BarLayer,
@@ -335,6 +343,11 @@ export function stateModelFactory(
        * per adjacent mate-lane pair, at the lanes' own coordinates
        */
       laneLinks: {} as LaneFetchState<HeldLaneLinks>,
+      /**
+       * #volatile
+       * per mate lane, a gene table's rows on the lane's own window
+       */
+      laneGroups: {} as LaneFetchState<HeldLaneGroups>,
       /** #volatile */
       laneLayerData: {} as LaneFetchState<HeldLaneLayer>,
       /** #volatile */
@@ -460,6 +473,22 @@ export function stateModelFactory(
             observeRibbonFeatures(links)
           }
         },
+        /** #action */
+        setLaneGroups(
+          fetched: ReadonlyMap<string, HeldLaneGroups>,
+          specs: LaneFetchSpec[],
+          anchor: string,
+        ) {
+          self.laneGroups = landLaneFetch(
+            self.laneGroups,
+            fetched,
+            specs,
+            anchor,
+          )
+          for (const { features } of fetched.values()) {
+            observeRibbonFeatures(features)
+          }
+        },
         /**
          * #action
          * takes the whole pinned order, empty meaning densest-first; merge a
@@ -490,6 +519,9 @@ export function stateModelFactory(
           observeRibbonFeatures(self.fetchedFeatures?.features ?? [])
           for (const { links } of self.laneLinks.held?.values() ?? []) {
             observeRibbonFeatures(links)
+          }
+          for (const { features } of self.laneGroups.held?.values() ?? []) {
+            observeRibbonFeatures(features)
           }
         },
         /** #action */
@@ -1669,6 +1701,16 @@ export function stateModelFactory(
           return { upper, lower, key: lanePairKey(upper, lower) }
         })
       },
+      /** #getter */
+      get anchorlessGroups(): PlacedGroup[] {
+        const anchor = self.laneKey(self.anchorAssemblyName)
+        return anchorlessGroupsOf(
+          [...(self.laneGroups.held ?? [])].map(
+            ([lane, { features }]) => [lane, features] as const,
+          ),
+          assemblyName => self.laneKey(assemblyName) === anchor,
+        )
+      },
     }))
     .views(self => ({
       /** #getter */
@@ -1693,6 +1735,30 @@ export function stateModelFactory(
           }
         }
         return specs
+      },
+      /**
+       * #getter
+       * a gene table read on each mate lane's window, for the rows the anchor
+       * lacks; a star source indexes its anchor alone, so it has none to give
+       */
+      get laneGroupsFetchSpecs(): LaneGroupsFetchSpec[] {
+        const { lodTier, features, laneWindows } = self
+        return features?.some(isNamedRecord) && self.starAnchor === undefined
+          ? self.rowAssemblies.flatMap(lane => {
+              const regions = laneWindows.get(lane)?.regions
+              return regions
+                ? [
+                    {
+                      lane,
+                      key: `${regions.map(regionKey).join(',')}|${lodTier}`,
+                      assemblyName: lane,
+                      regions,
+                      lodTier,
+                    },
+                  ]
+                : []
+            })
+          : []
       },
       /**
        * #getter
@@ -1856,7 +1922,7 @@ export function stateModelFactory(
         const view = self.lgv
         return buildLanes({
           assemblyNames: [self.anchorAssemblyName, ...self.rowAssemblies],
-          groups: self.visibleGroups,
+          groups: [...self.visibleGroups, ...self.anchorlessGroups],
           anchorSpans: self.anchorSpans,
           rowFrames: self.rowFrames,
           laneGeneAdapters: self.laneGeneAdapters,
@@ -2762,6 +2828,7 @@ export function stateModelFactory(
         return [
           { state: self.laneGenes, specs: self.laneGenesFetchSpecs },
           { state: self.laneLinks, specs: self.laneLinksFetchSpecs },
+          { state: self.laneGroups, specs: self.laneGroupsFetchSpecs },
           { state: self.laneLayerData, specs: self.laneLayersFetchSpecs },
         ]
       },

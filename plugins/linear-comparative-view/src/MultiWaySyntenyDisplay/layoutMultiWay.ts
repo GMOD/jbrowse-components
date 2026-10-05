@@ -61,11 +61,20 @@ export interface MatePlacement extends MultiWayPlacement {
   feature: Feature
 }
 
-export interface MultiWayGroup {
+/**
+ * What a lane draws a group from. A group without `anchor` is a gene-table row
+ * the anchor genome lacks: it joins the lanes that carry it, and the frames,
+ * the vote and the holes never read it.
+ */
+export interface PlacedGroup {
   key: string
-  anchor: MultiWayPlacement
+  anchor?: MultiWayPlacement
   mates: Map<string, MatePlacement[]>
   feature: Feature
+}
+
+export interface MultiWayGroup extends PlacedGroup {
+  anchor: MultiWayPlacement
   /** contig-vote evidence: anchor bp for an alignment, 1 for a named gene */
   weight: number
 }
@@ -269,6 +278,57 @@ export function groupFeatures(features: Feature[]) {
 }
 
 /**
+ * Rows fetched on each lane's own window that place nothing on the anchor. A
+ * row read from two lanes is one group, keyed by every placement it holds;
+ * its orientations are against the lane that read it first.
+ */
+export function anchorlessGroupsOf(
+  byLane: Iterable<readonly [string, readonly Feature[]]>,
+  onAnchor: (assemblyName: string) => boolean,
+) {
+  const byKey = new Map<string, PlacedGroup>()
+  for (const [lane, features] of byLane) {
+    for (const feature of features) {
+      const mates = matesOf(feature)
+      if (!mates.some(mate => onAnchor(mate.assemblyName))) {
+        const placements = [
+          {
+            assemblyName: lane,
+            refName: feature.get('refName'),
+            start: feature.get('start'),
+            end: feature.get('end'),
+            name: feature.get('name'),
+            orientation: 1,
+          },
+          ...mates,
+        ]
+        const key = placements
+          .map(p => `${p.assemblyName}:${p.refName}:${p.start}-${p.end}`)
+          .sort()
+          .join(',')
+        if (!byKey.has(key)) {
+          const byAssembly = new Map<string, MatePlacement[]>()
+          for (const p of placements) {
+            const on = byAssembly.get(p.assemblyName) ?? []
+            on.push({
+              refName: p.refName,
+              start: p.start,
+              end: p.end,
+              name: nameOf(p.name),
+              orientation: p.orientation < 0 ? -1 : 1,
+              feature,
+            })
+            byAssembly.set(p.assemblyName, on)
+          }
+          byKey.set(key, { key, mates: byAssembly, feature })
+        }
+      }
+    }
+  }
+  return [...byKey.values()]
+}
+
+/**
  * Cuts each mate by the fractions of its length the anchor's cut takes, from
  * the corresponding end.
  */
@@ -297,7 +357,7 @@ export function clipGroupToAnchor(
       }
 }
 
-export function groupSpansLanes(group: MultiWayGroup) {
+export function groupSpansLanes(group: PlacedGroup) {
   return group.mates.size > 1 || isNamedRecord(group.feature)
 }
 
@@ -481,7 +541,7 @@ interface PlacementRun {
 }
 
 export function groupRunsOnRow(
-  group: MultiWayGroup,
+  group: PlacedGroup,
   assemblyName: string,
   frame: RowFrame,
 ): PlacementRun[] {
@@ -540,7 +600,7 @@ export function groupRunsOnRow(
  * pair draws the inversion's twist. A caller drawing a box sorts them.
  */
 export function groupRunSpansOnRow(
-  group: MultiWayGroup,
+  group: PlacedGroup,
   assemblyName: string,
   frame: RowFrame,
   width: number,

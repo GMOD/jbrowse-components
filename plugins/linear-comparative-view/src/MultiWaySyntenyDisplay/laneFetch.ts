@@ -1,6 +1,7 @@
 import type { LaneLinks } from './alignmentOps.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
+import type { Feature } from '@jbrowse/core/util'
 import type { LodTier } from '@jbrowse/synteny-core'
 
 export interface LaneWindow {
@@ -38,8 +39,17 @@ export interface LaneLinksFetchSpec extends LaneFetchSpec {
   lodTier: LodTier
 }
 
+export interface LaneGroupsFetchSpec extends LaneFetchSpec {
+  regions: FetchRegion[]
+  lodTier: LodTier
+}
+
 export interface HeldLane {
   key: string
+}
+
+export interface HeldLaneGroups extends HeldLane {
+  features: Feature[]
 }
 
 export interface HeldLaneGenes extends HeldLane {

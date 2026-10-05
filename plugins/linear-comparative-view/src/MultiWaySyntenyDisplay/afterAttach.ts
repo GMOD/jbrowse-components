@@ -389,6 +389,24 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   })
 
   installLaneFetch(self, {
+    name: 'MultiWayLaneGroups',
+    fetchSpecs: () => self.laneGroupsFetchSpecs,
+    state: () => self.laneGroups,
+    fetchOne: async (spec, ctx) => {
+      const { features } = await ctx.callRpc('MultiWayGetFeatures', {
+        adapterConfig: self.adapterConfig,
+        regions: await laneRegions(getSession(self), spec.lane, spec.regions),
+        opts: { mateShape: 'grouped', lodMode: spec.lodTier },
+      })
+      return { key: spec.key, features }
+    },
+    empty: spec => ({ key: spec.key, features: [] }),
+    commit: (groups, specs, anchor) => {
+      self.setLaneGroups(groups, specs, anchor)
+    },
+  })
+
+  installLaneFetch(self, {
     name: 'MultiWayLaneLayers',
     fetchSpecs: () => self.laneLayersFetchSpecs,
     state: () => self.laneLayerData,

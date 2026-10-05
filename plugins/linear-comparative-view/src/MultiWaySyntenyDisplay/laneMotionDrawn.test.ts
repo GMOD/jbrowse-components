@@ -74,6 +74,12 @@ async function settledDisplay(animationMode: AnimationMode = 'enabled') {
   expect(display.laneDecisions.get(C)).toBeDefined()
   const held = new Map([[C, { key: 'held', genes }]])
   display.setLaneGenes(held, heldSpecs(held), display.anchorAssemblyName)
+  const groupSpecs = display.laneGroupsFetchSpecs
+  display.setLaneGroups(
+    new Map(groupSpecs.map(({ lane, key }) => [lane, { key, features: [] }])),
+    groupSpecs,
+    display.anchorAssemblyName,
+  )
   return { display, session }
 }
 

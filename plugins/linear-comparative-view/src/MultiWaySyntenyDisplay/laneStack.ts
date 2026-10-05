@@ -11,7 +11,7 @@ import {
 } from './layoutMultiWay.ts'
 
 import type {
-  MultiWayGroup,
+  PlacedGroup,
   MultiWayPlacement,
   RowFrame,
   Span,
@@ -136,7 +136,7 @@ export interface Lane {
 }
 
 export interface LaneGroup {
-  group: MultiWayGroup
+  group: PlacedGroup
   spans: Span[]
   /** per span, the run's strand against the anchor, which px order hides */
   orientations: number[]
@@ -154,7 +154,7 @@ export interface LaneStack {
 export interface BuildLanesOpts {
   /** the anchor assembly first, then the mate lanes in the order they draw */
   assemblyNames: string[]
-  groups: MultiWayGroup[]
+  groups: readonly PlacedGroup[]
   /** px, off the view's own `bpToPx` */
   anchorSpans: Map<string, Span>
   rowFrames: Map<string, RowFrame | undefined>
@@ -242,7 +242,7 @@ export function buildLanes({
       for (const group of groups) {
         const anchorSpan = anchorSpans.get(group.key)
         const runs = isAnchor
-          ? anchorSpan
+          ? anchorSpan && group.anchor
             ? [
                 {
                   span: anchorSpan,

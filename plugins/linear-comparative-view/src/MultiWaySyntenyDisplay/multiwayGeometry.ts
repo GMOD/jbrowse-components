@@ -48,11 +48,7 @@ import type { GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { NamedSpan } from './laneLabels.ts'
 import type { Lane, LaneBand, LaneStack } from './laneStack.ts'
-import type {
-  MultiWayGroup,
-  MultiWayPlacement,
-  Span,
-} from './layoutMultiWay.ts'
+import type { PlacedGroup, MultiWayPlacement, Span } from './layoutMultiWay.ts'
 import type {
   GlyphHit,
   LaneGlyphData,
@@ -488,15 +484,23 @@ export function buildRibbonGeometry({
   const linkTarget = new Map<string, number>()
   const records = new Map<string, ReadonlyMap<number, Feature>>()
   const anchor = lanes[0]
-  const targetOfGroup = (key: string, group: MultiWayGroup) => {
+  const targetOfGroup = (key: string, group: PlacedGroup) => {
     let idx = groupTarget.get(key)
     if (idx === undefined) {
       idx = targets.length
-      const { refName, start, end, name } = group.anchor
+      const at = group.anchor
       targets.push({
         feature: group.feature,
         groupKey: key,
-        label: lines(name, anchor && locOn(anchor, refName, start, end)),
+        label: at
+          ? lines(
+              at.name,
+              anchor && locOn(anchor, at.refName, at.start, at.end),
+            )
+          : lines(
+              group.feature.get('name'),
+              anchor && `not in ${anchor.label}`,
+            ),
       })
       groupTarget.set(key, idx)
     }

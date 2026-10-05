@@ -2099,3 +2099,56 @@ describe('a record crossing a displayed region’s end', () => {
     },
   )
 })
+
+test("a gene-table row the anchor lacks is read on each lane's own window and joins the lanes that carry it", async () => {
+  const vioB = {
+    refName: 'ctgB',
+    start: 150,
+    end: 250,
+    strand: 1,
+    name: 'vioB',
+  }
+  const laneCalls: string[] = []
+  const { display } = createDisplayWithSession({
+    trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],
+    rpc: async (name, args) => {
+      const [region] = args.regions as { assemblyName: string }[]
+      if (name !== 'MultiWayGetFeatures' || region?.assemblyName === 'volvox') {
+        return []
+      }
+      laneCalls.push(region!.assemblyName)
+      return region!.assemblyName === 'volvox_random'
+        ? [
+            new SimpleFeature({
+              uniqueId: 'vioB-row',
+              ...vioB,
+              assemblyName: 'volvox_random',
+              mates: [{ ...vioB, assemblyName: 'volvox_ins', orientation: 1 }],
+            }),
+          ]
+        : []
+    },
+  })
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  display.setFeatures([
+    mateRecord('r1', 'volvox_random', 'g1'),
+    mateRecord('r2', 'volvox_ins', 'g2'),
+  ])
+  display.setLaneFrames(
+    0,
+    new Map([
+      ['volvox_random', decisionOn('ctgB', 200)],
+      ['volvox_ins', decisionOn('ctgB', 200)],
+    ]),
+  )
+  await until(() => display.anchorlessGroups.length === 1)
+  expect(laneCalls.sort()).toEqual(['volvox_ins', 'volvox_random'])
+  const { key } = display.anchorlessGroups[0]!
+  const [anchor, upper, lower] = display.laneStack.lanes
+  expect(anchor!.placements.has(key)).toBe(false)
+  expect(upper!.placements.has(key)).toBe(true)
+  expect(lower!.placements.has(key)).toBe(true)
+  expect(
+    display.ribbonGeometry.targets.find(t => t.groupKey === key)?.label,
+  ).toBe('vioB\nnot in volvox')
+})
