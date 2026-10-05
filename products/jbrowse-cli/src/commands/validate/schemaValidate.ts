@@ -88,7 +88,7 @@ function describe(schema: Schema): string {
   if (name === 'JexlString') {
     return 'a "jexl:" expression'
   }
-  if (name === 'CssColor') {
+  if (name === 'CssColor' || name === 'CssColorEntry') {
     return 'a CSS color (a name like "red", "#rrggbb", "rgb()" or "hsl()")'
   }
   if (name) {
@@ -485,7 +485,7 @@ function explain(
       case 'pattern':
         emit(
           where,
-          error.schemaPath.endsWith('/CssColor/pattern')
+          /\/CssColor(?:Entry)?\/pattern$/.test(error.schemaPath)
             ? `expected ${describe({ $ref: '#/$defs/CssColor' })}, got ${JSON.stringify(error.data)}`
             : `expected a string matching /${String(parent.pattern)}/, got ${JSON.stringify(error.data)}`,
         )

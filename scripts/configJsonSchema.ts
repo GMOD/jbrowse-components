@@ -145,18 +145,20 @@ export interface Deps {
   shorthandKeysOf: (group: string, name: string) => string[]
 }
 
-// The forms `isCssColor` parses, as one anchored regex: JSON Schema patterns
-// carry no case flag, so each named color is spelled letter by letter.
-function cssColorPattern(names: readonly string[]) {
+// The forms `isCssColor` parses, as one alternation: JSON Schema patterns carry
+// no case flag, so each named color is spelled letter by letter. A functional
+// form needs an argument and a triple's components stop at 255, as the
+// parser's do; a functional form's arguments go unchecked.
+function cssColorForms(names: readonly string[]) {
   const anyCase = (word: string) =>
     word.replaceAll(/[a-z]/g, c => `[${c}${c.toUpperCase()}]`)
-  const forms = [
+  const byte = String.raw`(?:25[0-5]|2[0-4]\d|[01]?\d?\d)`
+  return [
     '#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})',
-    String.raw`(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\)`,
-    String.raw`\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}`,
+    String.raw`(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\d[^()]*\)`,
+    String.raw`${byte}\s*,\s*${byte}\s*,\s*${byte}`,
     ...[...names, 'transparent'].map(anyCase),
-  ]
-  return String.raw`^\s*(?:${forms.join('|')})\s*$`
+  ].join('|')
 }
 
 // The annotation on an `if`/`then` that states a `requires` entry: its id and
@@ -258,13 +260,13 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   function unwrap(type: MstType) {
     let cur = type
     let jexl = false
-    let color = false
+    let color: 'CssColor' | 'CssColorEntry' | undefined
     for (let i = 0; i < 16; i++) {
       if (cur.name === 'JexlString') {
         jexl = true
       }
-      if (cur.name === 'CssColor') {
-        color = true
+      if (cur.name === 'CssColor' || cur.name === 'CssColorEntry') {
+        color = cur.name
       }
       const sub = cur.getSubTypes()
       if (!sub || typeof sub !== 'object' || Array.isArray(sub)) {
@@ -333,7 +335,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       return ref('JexlString')
     }
     if (color) {
-      return ref('CssColor')
+      return ref(color)
     }
     if (type !== raw) {
       return mstSchema(type, depth)
@@ -419,7 +421,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     ],
     colorArray: [
       'CssColorArrayOrJexl',
-      { type: 'array', items: ref('CssColor') },
+      { type: 'array', items: ref('CssColorEntry') },
     ],
   }
   for (const [name, value] of Object.values(SHARED_SLOT_DEFS)) {
@@ -433,7 +435,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       case 'expressionArray':
         return { type: 'array', items: ref('JexlExpression') }
       case 'colorArray':
-        return { type: 'array', items: ref('CssColor') }
+        return { type: 'array', items: ref('CssColorEntry') }
       case 'stringArrayMap':
         return {
           type: 'object',
@@ -904,11 +906,18 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     description:
       'A field the display reads off each feature: a name, a dotted path into a structured field (`INFO.SVTYPE`), or a `jexl:` expression over `feature`, which the display evaluates per feature.',
   }
+  const colorForms = cssColorForms(deps.cssColorNames)
   defs.CssColor = {
     type: 'string',
-    pattern: cssColorPattern(deps.cssColorNames),
+    pattern: String.raw`^(?:|\s*(?:${colorForms})\s*)$`,
     description:
-      'A CSS color: a name like "red", "#rgb" / "#rrggbb" / "#rrggbbaa", or "rgb()" / "rgba()" / "hsl()" / "hsla()". A field name is not a color; color by a field through the display\'s color channel.',
+      'A CSS color: a name like "red", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", or a BED triple like "255,0,0"; "" for none. A field name is not a color; color by a field through the display\'s color channel.',
+  }
+  defs.CssColorEntry = {
+    type: 'string',
+    pattern: String.raw`^\s*(?:${colorForms})\s*$`,
+    description:
+      'A CSS color: a name like "red", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", or a BED triple like "255,0,0".',
   }
   defs.FileLocation = {
     description:

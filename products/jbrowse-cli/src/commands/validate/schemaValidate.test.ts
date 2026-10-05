@@ -112,6 +112,34 @@ describe('the schema', () => {
     expect(() => ajv.compile(configJsonSchema)).not.toThrow()
   })
 
+  // A default the schema refuses means `jbrowse validate` rejects a config
+  // that writes the slot's own default out, as `outlineColor: ""` once was.
+  it('admits every default it states', () => {
+    const ajv = new Ajv2020({ strict: false, validateSchema: false })
+    ajv.addSchema(configJsonSchema)
+    const id = configJsonSchema.$id as string
+    const refused: string[] = []
+    function walk(node: unknown, pointer: string) {
+      if (typeof node !== 'object' || node === null) {
+        return
+      }
+      if (!Array.isArray(node) && 'default' in node) {
+        const validate = ajv.getSchema(`${id}#${pointer}`)!
+        if (!validate(node.default)) {
+          refused.push(`${pointer}: ${JSON.stringify(node.default)}`)
+        }
+      }
+      for (const [key, value] of Object.entries(node)) {
+        walk(
+          value,
+          `${pointer}/${key.replaceAll('~', '~0').replaceAll('/', '~1')}`,
+        )
+      }
+    }
+    walk(configJsonSchema, '')
+    expect(refused).toEqual([])
+  })
+
   it('accepts a valid config', () => {
     expect(schemaProblems(baseConfig())).toEqual([])
   })
@@ -159,6 +187,31 @@ describe('the schema', () => {
         { type: 'LinearBasicDisplay', utrColor: color },
       ]
       expect(schemaProblems(config)).toEqual([])
+    },
+  )
+
+  it.each(['', '255,0,0', ' 0 , 128 , 255 '])(
+    'accepts the outline color %j',
+    color => {
+      const config = baseConfig()
+      config.tracks[0]!.displays = [
+        { type: 'LinearBasicDisplay', outlineColor: color },
+      ]
+      expect(schemaProblems(config)).toEqual([])
+    },
+  )
+
+  // each of these fails the slot's own check, so the track would not load
+  it.each(['rgb()', 'hsl(  )', '999,0,0', '256,0,0', ' '])(
+    'refuses the color %j',
+    color => {
+      const config = baseConfig()
+      config.tracks[0]!.displays = [
+        { type: 'LinearBasicDisplay', outlineColor: color },
+      ]
+      expect(schemaProblems(config).map(p => p.where)).toEqual([
+        'tracks[0].displays[0].outlineColor',
+      ])
     },
   )
 
