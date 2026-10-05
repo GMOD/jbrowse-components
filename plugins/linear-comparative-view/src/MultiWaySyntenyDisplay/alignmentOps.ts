@@ -8,3 +8,7 @@ export interface LaneLinks {
   links: Feature[]
   ops: AlignmentOpsById
 }
+
+export function lanePairKey(upper: string, lower: string) {
+  return `${upper}|${lower}`
+}

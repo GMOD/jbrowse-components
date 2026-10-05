@@ -5,6 +5,8 @@ import { rpcResult, unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { SPLIT_AT_GAP_BP } from './layoutMultiWay.ts'
+
 import type { AlignmentOpsById } from './alignmentOps.ts'
 import type { RegionLike, RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -29,7 +31,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
         adapterConfig: Record<string, unknown>
         // outside `opts`, so the rename pass reads these lanes' refNames alone
         haplotypes?: string[]
-        opts?: Record<string, unknown>
+        opts?: Pick<
+          ComparativeOptions,
+          'lodMode' | 'mateShape' | 'targetAssemblyName' | 'queryAssemblyName'
+        >
       }
       return: MultiWayFeatures
       wire: RpcResult<MultiWayFeaturesWire>
@@ -59,6 +64,8 @@ export default class MultiWayGetFeatures extends RpcMethodTypeWithRenameRegions<
       ...opts,
       haplotypes,
       keepAlignment: true,
+      clipToRegion: true,
+      splitAtGapBp: SPLIT_AT_GAP_BP,
       statusCallback,
       signal,
     }

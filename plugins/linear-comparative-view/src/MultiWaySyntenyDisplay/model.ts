@@ -85,7 +85,7 @@ import {
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
-import { NO_OPS } from './alignmentOps.ts'
+import { NO_OPS, lanePairKey } from './alignmentOps.ts'
 import { axisPlacement, axisSpan, displayedRegionSpans } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { composeLaneLinks } from './composeLaneLinks.ts'
@@ -193,7 +193,8 @@ import type {
   LaneFetchState,
   LaneGenesFetchSpec,
   LaneLinksFetchSpec,
-  LaneRegion,
+  LanePair,
+  LaneWindow,
 } from './laneFetch.ts'
 import type { GeneLabel, NamedSpan, PlacedLaneLabel } from './laneLabels.ts'
 import type {
@@ -204,7 +205,7 @@ import type {
 import type { LaneTransition } from './laneMotion.ts'
 import type { LaneChoice, LaneFilter } from './laneSelection.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
-import type { RowFrame, Span } from './layoutMultiWay.ts'
+import type { FetchRegion, RowFrame, Span } from './layoutMultiWay.ts'
 import type { LaneGlyphColors, TickGeometry } from './multiwayGeometry.ts'
 import type {
   BarLayer,
@@ -246,7 +247,7 @@ export interface HoverTarget extends RibbonRef {
 const NO_FLIP_PINS: ReadonlyMap<string, LaneFlipPin> = new Map()
 const NO_GENES: LaneGene[] = []
 
-function regionKey(r: LaneRegion) {
+function regionKey(r: FetchRegion) {
   return `${r.refName}:${r.start}-${r.end}`
 }
 
@@ -1622,44 +1623,73 @@ export function stateModelFactory(
     })
     .views(self => ({
       /** #getter */
-      get laneGenesFetchSpecs(): LaneGenesFetchSpec[] {
+      get anchorFetchRegions(): FetchRegion[] {
         const view = self.lgv
+        return view.initialized
+          ? mergeContiguousRegions(view.staticBlocks.contentBlocks)
+          : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * what each lane's dependent fetches ask for: the anchor's merged blocks,
+       * and each held, framed lane's window
+       */
+      get laneWindows(): ReadonlyMap<string, LaneWindow> {
+        const out = new Map<string, LaneWindow>()
+        if (!self.lgv.initialized) {
+          return out
+        }
+        const regions = self.anchorFetchRegions
+        if (regions.length) {
+          out.set(self.anchorAssemblyName, {
+            regions,
+            spanBp: self.visibleBpSpan,
+            bpPerPx: self.lgv.bpPerPx,
+          })
+        }
+        for (const [assemblyName, frame] of self.rowFrames) {
+          if (frame && self.holdsAssembly(assemblyName)) {
+            const spanBp = frame.max - frame.min
+            out.set(assemblyName, {
+              regions: [{ assemblyName, ...laneFetchRegion(frame) }],
+              spanBp,
+              bpPerPx: spanBp / self.canvasWidth,
+            })
+          }
+        }
+        return out
+      },
+      /** #getter */
+      get lanePairs(): LanePair[] {
+        const rows = self.rowAssemblies
+        return rows.slice(1).map((lower, i) => {
+          const upper = rows[i]!
+          return { upper, lower, key: lanePairKey(upper, lower) }
+        })
+      },
+    }))
+    .views(self => ({
+      /** #getter */
+      get laneGenesFetchSpecs(): LaneGenesFetchSpec[] {
         const tracks = self.laneGeneTracks
         const adapters = self.laneGeneAdapters
         const specs: LaneGenesFetchSpec[] = []
-        const keyOf = (lane: string, regions: LaneRegion[]) => {
-          const track = tracks.get(lane)
-          const source = track
-            ? (readConfObject(track, 'trackId') as string)
-            : `adapter:${JSON.stringify(adapters.get(lane))}`
-          return `${source}@${regions.map(regionKey).join(',')}`
-        }
-        if (view.initialized) {
-          const anchorAdapter = adapters.get(self.anchorAssemblyName)
-          const regions = mergeContiguousRegions(
-            view.staticBlocks.contentBlocks,
-          )
-          if (anchorAdapter && regions.length) {
+        for (const [assemblyName, { regions }] of self.laneWindows) {
+          const adapter = adapters.get(assemblyName)
+          if (adapter) {
+            const track = tracks.get(assemblyName)
+            const source = track
+              ? (readConfObject(track, 'trackId') as string)
+              : `adapter:${JSON.stringify(adapter)}`
             specs.push({
-              lane: self.anchorAssemblyName,
-              key: keyOf(self.anchorAssemblyName, regions),
-              assemblyName: self.anchorAssemblyName,
-              adapterConfig: anchorAdapter,
+              lane: assemblyName,
+              key: `${source}@${regions.map(regionKey).join(',')}`,
+              assemblyName,
+              adapterConfig: adapter,
               regions,
             })
-          }
-          for (const [assemblyName, frame] of self.rowFrames) {
-            const adapter = adapters.get(assemblyName)
-            if (adapter && frame && self.holdsAssembly(assemblyName)) {
-              const regions = [{ assemblyName, ...laneFetchRegion(frame) }]
-              specs.push({
-                lane: assemblyName,
-                key: keyOf(assemblyName, regions),
-                assemblyName,
-                adapterConfig: adapter,
-                regions,
-              })
-            }
           }
         }
         return specs
@@ -1672,40 +1702,26 @@ export function stateModelFactory(
         const specs: LaneLinksFetchSpec[] = []
         const onAnchor = self.adapterPairsOnAnchor
         if (self.featuresAreNameless && self.adjacentLanesAlignDirectly) {
-          const { lodTier } = self
-          const rows = self.rowAssemblies
-          const view = self.lgv
-          const anchorRegions =
-            onAnchor && view.initialized
-              ? mergeContiguousRegions(view.staticBlocks.contentBlocks)
-              : []
-          const pairWindow = (upperAssembly: string, lowerAssembly: string) => {
-            const upper = self.rowFrames.get(upperAssembly)
-            if (!upper || !self.rowFrames.get(lowerAssembly)) {
-              return []
-            } else if (onAnchor) {
-              return anchorRegions
-            } else if (
-              self.holdsAssembly(upperAssembly) &&
-              self.holdsAssembly(lowerAssembly)
-            ) {
-              return [
-                { assemblyName: upperAssembly, ...laneFetchRegion(upper) },
-              ]
-            } else {
-              return []
+          const { lodTier, laneWindows, rowFrames } = self
+          const pairRegions = (upper: string, lower: string) => {
+            if (onAnchor) {
+              return rowFrames.get(upper) && rowFrames.get(lower)
+                ? (laneWindows.get(self.anchorAssemblyName)?.regions ?? [])
+                : []
             }
+            const upperWindow = laneWindows.get(upper)
+            return upperWindow && laneWindows.get(lower)
+              ? upperWindow.regions
+              : []
           }
-          for (let i = 0; i + 1 < rows.length; i++) {
-            const upperAssembly = rows[i]!
-            const lowerAssembly = rows[i + 1]!
-            const regions = pairWindow(upperAssembly, lowerAssembly)
+          for (const { upper, lower, key } of self.lanePairs) {
+            const regions = pairRegions(upper, lower)
             if (regions.length > 0) {
               specs.push({
-                lane: `${upperAssembly}|${lowerAssembly}`,
+                lane: key,
                 key: `${regions.map(regionKey).join(',')}|${lodTier}`,
-                assemblyName: upperAssembly,
-                lowerAssembly,
+                assemblyName: upper,
+                lowerAssembly: lower,
                 regions,
                 onAnchor,
                 lodTier,
@@ -1783,72 +1799,42 @@ export function stateModelFactory(
        * `pastCap` flags a layer that skipped a lane past `LANE_TEMPLATE_MAX_BP`
        */
       get laneLayerReads() {
-        const view = self.lgv
         const specs: LaneLayerFetchSpec[] = []
         const layers = self.configuration.laneLayers
         const pastCap = layers.map(() => false)
-        if (!view.initialized) {
-          return { specs, pastCap }
-        }
-        const add = (
-          layer: number,
-          assemblyName: string,
-          regions: LaneRegion[],
-          lanePxBpPerPx: number,
-          spanBp: number,
-        ) => {
-          const from = this.laneLayerSources[layer]?.get(assemblyName)
-          if (!from) {
-            return
-          }
-          if (
-            from.template &&
-            (laneFetchRegionMaxBp(spanBp) > LANE_TEMPLATE_MAX_BP ||
-              regions.some(r => r.end - r.start > LANE_TEMPLATE_MAX_BP))
-          ) {
-            pastCap[layer] = true
-            return
-          }
-          const bpPerPx = laneLayerBpPerPx(lanePxBpPerPx)
-          const requests = layers[layer]!.marks.map(m =>
-            markLayerRequest(m, stepChannels(m.transform), bpPerPx),
-          )
-          const signature = JSON.stringify(requests)
-          regions.forEach((region, i) => {
-            specs.push({
-              lane: laneLayerSpecLane(assemblyName, layer, i),
-              key: `${from.source}@${regionKey(region)}@${bpPerPx}@${signature}`,
-              assemblyName,
-              layer,
-              adapterConfig: from.adapterConfig,
-              region,
-              bpPerPx,
-              requests,
-            })
-          })
-        }
-        const anchorRegions = mergeContiguousRegions(
-          view.staticBlocks.contentBlocks,
-        )
-        layers.forEach((_layer, i) => {
-          add(
-            i,
-            self.anchorAssemblyName,
-            anchorRegions,
-            view.bpPerPx,
-            self.visibleBpSpan,
-          )
-          for (const [assemblyName, frame] of self.rowFrames) {
-            if (frame && self.holdsAssembly(assemblyName)) {
-              const spanBp = frame.max - frame.min
-              add(
-                i,
-                assemblyName,
-                [{ assemblyName, ...laneFetchRegion(frame) }],
-                spanBp / self.canvasWidth,
-                spanBp,
-              )
+        layers.forEach(({ marks }, layer) => {
+          const sources = this.laneLayerSources[layer]
+          for (const [assemblyName, window] of self.laneWindows) {
+            const from = sources?.get(assemblyName)
+            if (!from) {
+              continue
             }
+            const { regions, spanBp } = window
+            if (
+              from.template &&
+              (laneFetchRegionMaxBp(spanBp) > LANE_TEMPLATE_MAX_BP ||
+                regions.some(r => r.end - r.start > LANE_TEMPLATE_MAX_BP))
+            ) {
+              pastCap[layer] = true
+              continue
+            }
+            const bpPerPx = laneLayerBpPerPx(window.bpPerPx)
+            const requests = marks.map(m =>
+              markLayerRequest(m, stepChannels(m.transform), bpPerPx),
+            )
+            const signature = JSON.stringify(requests)
+            regions.forEach((region, i) => {
+              specs.push({
+                lane: laneLayerSpecLane(assemblyName, layer, i),
+                key: `${from.source}@${regionKey(region)}@${bpPerPx}@${signature}`,
+                assemblyName,
+                layer,
+                adapterConfig: from.adapterConfig,
+                region,
+                bpPerPx,
+                requests,
+              })
+            })
           }
         })
         return { specs, pastCap }
@@ -1950,27 +1936,30 @@ export function stateModelFactory(
        */
       get pairLinks(): ReadonlyMap<string, LaneLinks> {
         const out = new Map<string, LaneLinks>()
-        const rows = self.rowAssemblies
-        const placementsOn = (assemblyName: string) =>
-          self.groups.flatMap(group =>
-            (group.mates.get(assemblyName) ?? []).map(
-              (p): LanePlacementRecord => ({
-                anchorRefName: group.anchor.refName,
-                anchorStart: group.anchor.start,
-                anchorEnd: group.anchor.end,
-                refName: p.refName,
-                start: p.start,
-                end: p.end,
-                strand: p.orientation < 0 ? -1 : 1,
-                feature: p.feature,
-                ops: self.featureOps.get(p.feature.id()),
-              }),
-            ),
-          )
-        for (let i = 0; i + 1 < rows.length; i++) {
-          const upper = rows[i]!
-          const lower = rows[i + 1]!
-          const pair = `${upper}|${lower}`
+        const placements = new Map<string, LanePlacementRecord[]>()
+        const placementsOn = (assemblyName: string) => {
+          let records = placements.get(assemblyName)
+          if (!records) {
+            records = self.groups.flatMap(group =>
+              (group.mates.get(assemblyName) ?? []).map(
+                (p): LanePlacementRecord => ({
+                  anchorRefName: group.anchor.refName,
+                  anchorStart: group.anchor.start,
+                  anchorEnd: group.anchor.end,
+                  refName: p.refName,
+                  start: p.start,
+                  end: p.end,
+                  strand: p.orientation < 0 ? -1 : 1,
+                  feature: p.feature,
+                  ops: self.featureOps.get(p.feature.id()),
+                }),
+              ),
+            )
+            placements.set(assemblyName, records)
+          }
+          return records
+        }
+        for (const { upper, lower, key: pair } of self.lanePairs) {
           const fetched = self.laneLinks.held?.get(pair)
           if (fetched !== undefined && fetched.links.length > 0) {
             out.set(pair, fetched)

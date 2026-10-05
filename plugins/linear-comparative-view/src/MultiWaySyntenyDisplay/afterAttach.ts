@@ -21,15 +21,9 @@ import { laneGeneFeatures } from './geneGlyph.ts'
 import { sameDecisions } from './laneDecision.ts'
 import { staleLaneSpecs } from './laneFetch.ts'
 import { laneMotionEnd } from './laneMotion.ts'
-import { SPLIT_AT_GAP_BP, mergeContiguousRegions } from './layoutMultiWay.ts'
 
 import type { MultiWayFeatures } from './MultiWayGetFeatures.ts'
-import type {
-  HeldLane,
-  LaneFetchSpec,
-  LaneFetchState,
-  LaneRegion,
-} from './laneFetch.ts'
+import type { HeldLane, LaneFetchSpec, LaneFetchState } from './laneFetch.ts'
 import type { HeldLaneLayer } from './laneLayers.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -54,9 +48,7 @@ function fetchPhases(
 ): GlobalFetchPhases<MultiWayFetchArgs, MultiWayFeatures> {
   return {
     prepare: () => {
-      const regions = mergeContiguousRegions(
-        self.lgv.staticBlocks.contentBlocks,
-      )
+      const regions = self.anchorFetchRegions
       return regions.length
         ? {
             regions,
@@ -76,8 +68,6 @@ function fetchPhases(
         opts: {
           mateShape: 'grouped',
           lodMode: lodTier,
-          clipToRegion: true,
-          splitAtGapBp: SPLIT_AT_GAP_BP,
         },
       })
       return { features: dedupe(features, r => r.id()), ops }
@@ -91,7 +81,7 @@ function fetchPhases(
 async function laneRegions(
   session: AbstractSessionModel,
   assemblyName: string,
-  regions: LaneRegion[],
+  regions: FetchRegion[],
 ) {
   const canonical = await getCanonicalRefNameFn({
     assemblyManager: session.assemblyManager,
@@ -387,8 +377,6 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
             ...(spec.onAnchor ? { queryAssemblyName: spec.assemblyName } : {}),
             targetAssemblyName: spec.lowerAssembly,
             lodMode: spec.lodTier,
-            clipToRegion: true,
-            splitAtGapBp: SPLIT_AT_GAP_BP,
           },
         },
       )

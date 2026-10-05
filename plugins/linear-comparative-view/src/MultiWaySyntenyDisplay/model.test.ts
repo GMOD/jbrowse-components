@@ -965,7 +965,6 @@ describe('the level-of-detail tier', () => {
       (call.args.opts ?? {}) as {
         lodMode?: string
         targetAssemblyName?: string
-        clipToRegion?: boolean
       }
     await until(() => calls.some(c => c.name === 'MultiWayGetFeatures'))
     expect(
@@ -996,10 +995,9 @@ describe('the level-of-detail tier', () => {
       )
     await until(() => linkCall() !== undefined)
     expect(opts(linkCall()!).lodMode).toBe('coarse')
-    expect(opts(linkCall()!).clipToRegion).toBe(true)
   })
 
-  test('the ortholog fetch asks for records clipped to the merged blocks', async () => {
+  test('the ortholog fetch asks for the merged blocks', async () => {
     const calls: { name: string; args: Record<string, unknown> }[] = []
     const { display } = createDisplayWithSession({
       syntenyAdapter: { type: 'PairwiseIndexedPAFAdapter' },
@@ -1015,12 +1013,7 @@ describe('the level-of-detail tier', () => {
     ])
     await until(() => calls.some(c => c.name === 'MultiWayGetFeatures'))
     const { args } = calls.find(c => c.name === 'MultiWayGetFeatures')!
-    expect(args.opts).toEqual({
-      mateShape: 'grouped',
-      lodMode: 'fine',
-      clipToRegion: true,
-      splitAtGapBp: 10000,
-    })
+    expect(args.opts).toEqual({ mateShape: 'grouped', lodMode: 'fine' })
     expect(args.regions).toEqual([
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
     ])
@@ -1403,7 +1396,6 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     expect(opts(pairCall()!)).toMatchObject({
       queryAssemblyName: 'volvox_random',
       targetAssemblyName: 'volvox_ins',
-      clipToRegion: true,
     })
   })
 

@@ -1,12 +1,18 @@
 import type { LaneLinks } from './alignmentOps.ts'
 import type { LaneGene } from './geneGlyph.ts'
+import type { FetchRegion } from './layoutMultiWay.ts'
 import type { LodTier } from '@jbrowse/synteny-core'
 
-export interface LaneRegion {
-  assemblyName: string
-  refName: string
-  start: number
-  end: number
+export interface LaneWindow {
+  regions: FetchRegion[]
+  spanBp: number
+  bpPerPx: number
+}
+
+export interface LanePair {
+  upper: string
+  lower: string
+  key: string
 }
 
 /** `lane` keys the held map; `assemblyName` is the genome the lane draws. */
@@ -18,7 +24,7 @@ export interface LaneFetchSpec {
 
 export interface LaneGenesFetchSpec extends LaneFetchSpec {
   adapterConfig: Record<string, unknown>
-  regions: LaneRegion[]
+  regions: FetchRegion[]
 }
 
 /**
@@ -27,7 +33,7 @@ export interface LaneGenesFetchSpec extends LaneFetchSpec {
  */
 export interface LaneLinksFetchSpec extends LaneFetchSpec {
   lowerAssembly: string
-  regions: LaneRegion[]
+  regions: FetchRegion[]
   onAnchor: boolean
   lodTier: LodTier
 }

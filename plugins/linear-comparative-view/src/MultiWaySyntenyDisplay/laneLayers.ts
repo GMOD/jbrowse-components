@@ -1,7 +1,8 @@
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 import { withMarkColor } from '@jbrowse/plugin-marks'
 
-import type { HeldLane, LaneFetchSpec, LaneRegion } from './laneFetch.ts'
+import type { HeldLane, LaneFetchSpec } from './laneFetch.ts'
+import type { FetchRegion } from './layoutMultiWay.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
 import type {
   EncodedChannels,
@@ -24,7 +25,7 @@ export interface LaneLayerSource {
 export interface LaneLayerFetchSpec extends LaneFetchSpec {
   layer: number
   adapterConfig: Record<string, unknown>
-  region: LaneRegion
+  region: FetchRegion
   bpPerPx: number
   requests: LayerRequest[]
 }
@@ -32,7 +33,7 @@ export interface LaneLayerFetchSpec extends LaneFetchSpec {
 export interface HeldLaneLayer extends HeldLane {
   assemblyName: string
   layer: number
-  region: LaneRegion
+  region: FetchRegion
   channels: EncodedChannels[]
 }
 
