@@ -4,6 +4,7 @@ import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
+import { mergedInsertions } from '../../LinearMafRenderer/rendering/insertions.ts'
 import { rowFlankAt } from '../../LinearMafRenderer/rendering/rowFlank.ts'
 
 import type {
@@ -194,31 +195,60 @@ function cellHitInRow(
   }
 }
 
-// Resolve an insertion marker under the cursor. Insertions are interbase (the
-// reference has gaps where this sample carries bases) so they are drawn at a
-// cell boundary, not on a cell — hit-test by genomic distance to the marker
-// anchor, mirroring plugin-alignments (same insertionBarWidth+4px box). The
-// `forEachInsertion` walk is shared with the renderers so hover and draw can't
-// disagree. `gposFrac` is the absolute fractional cursor coordinate; distance
-// is orientation-independent.
+// Resolve an insertion marker under the cursor from the channel the painter
+// draws, each row's insertions merged per `binBp` bin, so a merged marker
+// hovers as the insertion it shows. Insertions are interbase, so the hit test
+// measures genomic distance to the marker anchor, mirroring plugin-alignments
+// (same insertionBarWidth+4px box). `gposFrac` is the absolute fractional
+// cursor coordinate; distance is orientation-independent.
 function insertionHitInRow(
-  block: MafBlock,
-  row: MafAlignedRow,
+  region: MafRegionData,
+  rowIndex: number,
   gposFrac: number,
   bpPerPx: number,
   rowBandPx: number,
+  binBp: number,
   showAsUpperCase: boolean,
 ): InsertionHit | undefined {
-  const aln = row.alignmentBytes
+  const { x, row, length, count } = mergedInsertions(region, binBp)
+  for (let i = 0; i < count; i++) {
+    if (row[i] === rowIndex) {
+      const len = length[i]!
+      const rectWidthPx = insertionBarWidth(len, 1 / bpPerPx, rowBandPx) + 4
+      if (Math.abs(gposFrac - x[i]!) < (rectWidthPx / 2) * bpPerPx) {
+        return describeInsertion(region, rowIndex, x[i]!, len, showAsUpperCase)
+      }
+    }
+  }
+  return undefined
+}
+
+function describeInsertion(
+  region: MafRegionData,
+  rowIndex: number,
+  anchor: number,
+  len: number,
+  showAsUpperCase: boolean,
+): InsertionHit | undefined {
   let hit: InsertionHit | undefined
-  forEachInsertion(
-    block.refSeqBytes,
-    aln,
-    block.startBp,
-    (anchorBp, length, baseOffset, byteStart, byteEnd) => {
-      const rectWidthPx = insertionBarWidth(length, 1 / bpPerPx, rowBandPx) + 4
-      const halfBp = (rectWidthPx / 2) * bpPerPx
-      if (!hit && Math.abs(gposFrac - anchorBp) < halfBp) {
+  for (const i of [
+    blockIndexAtBp(region.blocks, anchor),
+    blockIndexAtBp(region.blocks, anchor - 1),
+  ]) {
+    const block = region.blocks[i]
+    const row = block?.rows.find(r => r.rowIndex === rowIndex)
+    if (!block || !row || hit) {
+      continue
+    }
+    const aln = row.alignmentBytes
+    forEachInsertion(
+      block.refSeqBytes,
+      aln,
+      block.startBp,
+      (anchorBp, length, baseOffset, byteStart, byteEnd) => {
+        if (hit || anchorBp !== anchor || length !== len) {
+          return
+        }
         let sequence = ''
         for (let k = byteStart; k < byteEnd; k++) {
           const code = aln[k]!
@@ -236,9 +266,9 @@ function insertionHitInRow(
           pos: forwardPos(row, baseOffset),
           strand: row.strand,
         }
-      }
-    },
-  )
+      },
+    )
+  }
   return hit
 }
 
@@ -281,9 +311,10 @@ function emptyHit(e: MafEmptyRow): EmptyHit {
 /**
  * Resolve what `rowIndex` shows at absolute genomic `bp`: an aligned base
  * (`cell`), an interbase `insertion` marker, a `deletion` run, or a
- * bridged/empty region (`empty`). Where the insertion markers are drawn, one
- * under the cursor wins over the base it abuts (within its narrow marker box),
- * matching plugin-alignments; a gap cell falls through to the deletion run that covers it. Returns undefined
+ * bridged/empty region (`empty`). Where the insertion markers are drawn,
+ * merged per `insertionBinBp` bin, one under the cursor wins over the base it
+ * abuts (within its narrow marker box), matching plugin-alignments; a gap cell
+ * falls through to the deletion run that covers it. Returns undefined
  * when no block covers the bp or the row is absent. Blocks are genomically
  * disjoint and sorted, so `blockIndexAtBp` binary-searches the one covering
  * block — this runs on every mousemove against the *buffered* region, which is
@@ -297,7 +328,7 @@ export function findRowHoverAtBp(
   rowIndex: number,
   showAsUpperCase: boolean,
   bpPerPx: number,
-  insertionsDrawn: boolean,
+  insertionBinBp: number | undefined,
   rowBandPx: number,
 ): RowHit | undefined {
   const { gposFrac, baseBp: targetBp } = bp
@@ -309,13 +340,14 @@ export function findRowHoverAtBp(
   const row = block.rows.find(r => r.rowIndex === rowIndex)
   if (row) {
     return (
-      (insertionsDrawn
+      (insertionBinBp !== undefined
         ? insertionHitInRow(
-            block,
-            row,
+            region,
+            rowIndex,
             gposFrac,
             bpPerPx,
             rowBandPx,
+            insertionBinBp,
             showAsUpperCase,
           )
         : undefined) ??

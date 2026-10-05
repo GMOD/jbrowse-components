@@ -105,7 +105,7 @@ export function mergeInsertionsPerBin(placed: Placed, binBp: number): Placed {
   }
 }
 
-function mergedInsertions(region: MafRegionData, binBp: number) {
+export function mergedInsertions(region: MafRegionData, binBp: number) {
   const placed = placedInsertions(region)
   const hit = mergedCache.get(placed)
   if (hit?.binBp === binBp) {

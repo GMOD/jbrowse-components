@@ -2140,7 +2140,7 @@ export default function stateModelFactory(
                 rowIndex,
                 self.showAsUpperCase,
                 bpPerPx,
-                self.basesRenderingActive,
+                self.basesRenderingActive ? self.encodeBinBp : undefined,
                 drawnRowHeightPx(self.effectiveRowHeight, self.rowProportion),
               )
             : undefined

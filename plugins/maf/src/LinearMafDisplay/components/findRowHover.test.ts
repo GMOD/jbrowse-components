@@ -37,7 +37,7 @@ test('returns cell hit with base + forward-strand position', () => {
       empties: [],
     },
   ])
-  expect(findRowHoverAtBp(r, at(102), 0, false, 1, true, 20)).toMatchObject({
+  expect(findRowHoverAtBp(r, at(102), 0, false, 1, 1, 20)).toMatchObject({
     kind: 'cell',
     base: 'g',
     chr: 'chrX',
@@ -67,7 +67,7 @@ test('resolves an insertion (reference-gap columns) over the abutting base', () 
     },
   ])
   // cursor right at the insertion anchor (genomic 101), wide cells (bpPerPx<1)
-  expect(findRowHoverAtBp(r, at(101), 0, false, 0.1, true, 20)).toMatchObject({
+  expect(findRowHoverAtBp(r, at(101), 0, false, 0.1, 1, 20)).toMatchObject({
     kind: 'insertion',
     length: 2,
     sequence: 'cc',
@@ -76,11 +76,9 @@ test('resolves an insertion (reference-gap columns) over the abutting base', () 
     pos: 101,
   })
   // cursor a full bp away from the marker → falls back to the plain base
-  expect(findRowHoverAtBp(r, at(101.9), 0, false, 0.1, true, 20)).toMatchObject(
-    {
-      kind: 'cell',
-    },
-  )
+  expect(findRowHoverAtBp(r, at(101.9), 0, false, 0.1, 1, 20)).toMatchObject({
+    kind: 'cell',
+  })
 })
 
 test('a minus-row insertion runs leftward from the reported position', () => {
@@ -105,7 +103,7 @@ test('a minus-row insertion runs leftward from the reported position', () => {
       empties: [],
     },
   ])
-  const hit = findRowHoverAtBp(r, at(101), 0, false, 0.1, true, 20)
+  const hit = findRowHoverAtBp(r, at(101), 0, false, 0.1, 1, 20)
   expect(hit).toMatchObject({
     kind: 'insertion',
     length: 2,
@@ -138,7 +136,7 @@ test('mirrors position through srcSize for reverse-strand rows', () => {
     },
   ])
   // baseOffset 0 → srcSize - 1 - srcStart - 0 = 1000 - 1 - 100 = 899
-  expect(findRowHoverAtBp(r, at(100), 0, false, 1, true, 20)).toMatchObject({
+  expect(findRowHoverAtBp(r, at(100), 0, false, 1, 1, 20)).toMatchObject({
     pos: 899,
   })
 })
@@ -154,7 +152,7 @@ test('passes i-line context through on the cell hit', () => {
       empties: [],
     },
   ])
-  expect(findRowHoverAtBp(r, at(100), 0, false, 1, true, 20)).toMatchObject({
+  expect(findRowHoverAtBp(r, at(100), 0, false, 1, 1, 20)).toMatchObject({
     context,
   })
 })
@@ -179,7 +177,7 @@ test('returns empty hit when the row is bridged (e line) at this block', () => {
       ],
     },
   ])
-  expect(findRowHoverAtBp(r, at(101), 1, false, 1, true, 20)).toEqual({
+  expect(findRowHoverAtBp(r, at(101), 1, false, 1, 1, 20)).toEqual({
     kind: 'empty',
     status: 'I',
     chr: 'mm.chr1',
@@ -200,16 +198,16 @@ test('resolves a deletion run on a gap cell', () => {
       empties: [],
     },
   ])
-  expect(findRowHoverAtBp(r, at(101), 0, false, 1, true, 20)).toEqual({
+  expect(findRowHoverAtBp(r, at(101), 0, false, 1, 1, 20)).toEqual({
     kind: 'deletion',
     length: 2,
   })
-  expect(findRowHoverAtBp(r, at(102), 0, false, 1, true, 20)).toEqual({
+  expect(findRowHoverAtBp(r, at(102), 0, false, 1, 1, 20)).toEqual({
     kind: 'deletion',
     length: 2,
   })
   // a non-gap base in the same row is still a cell, not the deletion
-  expect(findRowHoverAtBp(r, at(103), 0, false, 1, true, 20)).toMatchObject({
+  expect(findRowHoverAtBp(r, at(103), 0, false, 1, 1, 20)).toMatchObject({
     kind: 'cell',
   })
 })
@@ -224,8 +222,8 @@ test('returns undefined for out-of-block and out-of-row positions', () => {
       empties: [],
     },
   ])
-  expect(findRowHoverAtBp(r, at(500), 0, false, 1, true, 20)).toBeUndefined()
-  expect(findRowHoverAtBp(r, at(100), 9, false, 1, true, 20)).toBeUndefined()
+  expect(findRowHoverAtBp(r, at(500), 0, false, 1, 1, 20)).toBeUndefined()
+  expect(findRowHoverAtBp(r, at(100), 9, false, 1, 1, 20)).toBeUndefined()
 })
 
 test('a large insertion on a row too short for its count hovers as the narrow bar it draws', () => {
@@ -248,10 +246,39 @@ test('a large insertion on a row too short for its count hovers as the narrow ba
       empties: [],
     },
   ])
-  expect(findRowHoverAtBp(r, at(104.5), 0, false, 1, true, 20)?.kind).toBe(
+  expect(findRowHoverAtBp(r, at(104.5), 0, false, 1, 1, 20)?.kind).toBe(
     'insertion',
   )
-  expect(findRowHoverAtBp(r, at(104.5), 0, false, 1, true, 3)?.kind).toBe(
-    'cell',
-  )
+  expect(findRowHoverAtBp(r, at(104.5), 0, false, 1, 1, 3)?.kind).toBe('cell')
+})
+
+test('a merged insertion marker hovers as the longest insertion it draws', () => {
+  const r = region([
+    {
+      startBp: 100,
+      endBp: 108,
+      refSeqBytes: enc.encode('AA-AAAA-----AA'),
+      rows: [
+        {
+          rowIndex: 0,
+          alignmentBytes: enc.encode('AAcAAAAgggggAA'),
+          chr: 'chrX',
+          srcStart: 100,
+          strand: 1,
+        },
+      ],
+      empties: [],
+    },
+  ])
+  expect(findRowHoverAtBp(r, at(102), 0, false, 8, 16, 20)).toMatchObject({
+    kind: 'insertion',
+    length: 5,
+    sequence: 'ggggg',
+    pos: 107,
+  })
+  expect(findRowHoverAtBp(r, at(102), 0, false, 0.1, 1, 20)).toMatchObject({
+    kind: 'insertion',
+    length: 1,
+    sequence: 'c',
+  })
 })
