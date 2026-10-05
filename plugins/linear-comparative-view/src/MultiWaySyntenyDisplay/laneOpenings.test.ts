@@ -166,6 +166,20 @@ function ribbonSpans(cells: Map<string, MultiWayCell>, key: string) {
 }
 
 describe('a deletion the lane carries against the anchor', () => {
+  test('a short piece nested in a long one opens nothing past the long one', () => {
+    const lane = (start: number) => [
+      { assemblyName: 'HG00097.1', refName: 'c', start },
+    ]
+    const openingsOf = laneOpeningsOf(
+      groupFeatures([
+        piece('long', 1_000_000, 1_100_000, lane(0)),
+        piece('dup', 900_000, 900_500, lane(20_000)),
+        piece('next', 1_100_000, 1_150_000, lane(100_000)),
+      ]),
+    )
+    expect(openingsOf('HG00097.1', 'c')).toEqual([])
+  })
+
   test('opens one hole per carrier, at its breakpoint, the deletion’s length', () => {
     const openingsOf = laneOpeningsOf(groupFeatures(cfhFeatures()))
     for (const [assemblyName, [ref, at]] of Object.entries(CARRIERS)) {

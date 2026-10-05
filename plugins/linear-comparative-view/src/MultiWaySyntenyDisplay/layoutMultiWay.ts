@@ -3,6 +3,7 @@ import { clamp, doesIntersect2 } from '@jbrowse/core/util'
 import { mateSlice } from '../mateBpAt.ts'
 import { voteEvidence } from '../syntenyHysteresis.ts'
 import { getMate, getMates, isNamedRecord } from '../syntenyMate.ts'
+import { forEachLaneGap } from './laneGaps.ts'
 
 import type { SyntenyGroupedMate } from '../syntenyMate.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -177,23 +178,15 @@ export function laneOpeningsOf(groups: MultiWayGroup[]) {
   for (const [key, list] of pieces) {
     list.sort((a, b) => a.lane.start - b.lane.start)
     const openings: LaneOpening[] = []
-    for (let i = 1; i < list.length; i++) {
-      const left = list[i - 1]!
-      const right = list[i]!
-      const laneGap = right.lane.start - left.lane.end
-      const anchorGap =
-        left.lane.orientation < 0
-          ? left.anchor.start - right.anchor.end
-          : right.anchor.start - left.anchor.end
+    forEachLaneGap(list, (left, _right, laneGap, anchorGap) => {
       if (
-        left.lane.orientation === right.lane.orientation &&
-        left.anchor.refName === right.anchor.refName &&
+        anchorGap !== undefined &&
         laneGap >= 0 &&
         anchorGap - laneGap >= SPLIT_AT_GAP_BP
       ) {
         openings.push({ at: left.lane.end, bp: anchorGap - laneGap })
       }
-    }
+    })
     if (openings.length) {
       byLane.set(key, openings)
     }
