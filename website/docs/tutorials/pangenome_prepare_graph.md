@@ -327,8 +327,7 @@ declares one; `assemblyNameToPanSN` covers the reference, which has none:
     },
     "assemblyNames": ["hg38"],
     "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
-    "context": 1000,
-    "nodeLimit": 50000
+    "context": 1000
   },
   "displays": [
     { "type": "MultiWaySyntenyDisplay", "height": 600 },

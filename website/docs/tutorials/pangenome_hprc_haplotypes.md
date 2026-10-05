@@ -80,8 +80,7 @@ does the same for a haplotype of your own. GRCh38 has no such alias, so
     },
     "assemblyNames": ["hg38"],
     "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
-    "context": 1000,
-    "nodeLimit": 50000
+    "context": 1000
   },
   "displays": [
     { "type": "MultiWaySyntenyDisplay", "height": 600 },
