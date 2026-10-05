@@ -11,6 +11,7 @@ import type { VariantFeatureInfo } from './types.ts'
 // so `VariantFeatureInfo.alt` has to be normalized to `[]` by the producers.
 test('a site with no ALT alleles builds a tooltip instead of throwing', () => {
   const info: VariantFeatureInfo = {
+    featureId: 'mono1',
     ref: 'A',
     alt: [],
     name: 'mono1',
@@ -38,6 +39,7 @@ test('a site with no ALT alleles builds a tooltip instead of throwing', () => {
 // the record's rows alone.
 describe('a variant-lane hit', () => {
   const info: VariantFeatureInfo = {
+    featureId: 'rs123',
     ref: 'A',
     alt: ['T', 'G'],
     name: 'rs123',

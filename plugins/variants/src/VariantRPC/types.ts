@@ -47,7 +47,9 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   referenceDrawingMode?: string
   // What the alt cells' hue reads off each variant (`CellHue.read`).
   color?: CellHueRead
-  mode: 'regular' | 'matrix'
+  // Which blocks the payloads are drawn by: one per displayed region at
+  // genomic positions, one for the whole window in columns.
+  layout: 'genomic' | 'columns'
   displayedRegionIndices?: number[]
 }
 

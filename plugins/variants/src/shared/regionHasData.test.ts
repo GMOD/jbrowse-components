@@ -22,7 +22,7 @@ function twoRegionsLoaded() {
 }
 
 function payload() {
-  return { mode: 'regular', perRegionCellData: {} } as unknown as Parameters<
+  return { perRegionCellData: {} } as unknown as Parameters<
     ReturnType<typeof twoRegionsLoaded>['setCellData']
   >[0]
 }
@@ -57,7 +57,7 @@ test('clearing the payload clears every region', () => {
 
 // Regular mode draws each variant at its genomic position, so its payload
 // answers at every zoom; only the matrix records the zoom it fetched at.
-test('a regular-mode fetch stays current across a zoom', async () => {
+test('a fetch at genomic positions stays current across a zoom', async () => {
   jest.useFakeTimers()
   const { display, view, mockRpcCall } = createTestEnvironment().createDisplay()
   mockRpcCall.mockImplementation((_sid: string, method: string) =>
@@ -65,7 +65,6 @@ test('a regular-mode fetch stays current across a zoom', async () => {
       ? Promise.resolve({ sources: [{ name: 'HG001' }], warnings: [] })
       : method === 'MultiSampleVariantGetCellData'
         ? Promise.resolve({
-            mode: 'regular',
             perRegionCellData: {},
             samplePloidy: {},
             rowNames: [],

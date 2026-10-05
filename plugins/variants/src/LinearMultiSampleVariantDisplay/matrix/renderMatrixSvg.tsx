@@ -22,7 +22,7 @@ interface MatrixRenderSvgModel
     RenderSvgBaseModel,
     Pick<ConnectorLinesModel, 'connectorLineCoords' | 'lineZoneHeight'> {
   renderState: MatrixRenderState
-  matrixRegions: ReadonlyMap<number, VariantMatrixUploadData>
+  paintedRegionRows: ReadonlyMap<number, VariantMatrixUploadData>
   matrixBlocks: VariantMatrixRenderBlock[]
   // only `left` is read here — the column origin the matrix is shifted to when
   // the content doesn't reach the left viewport edge
@@ -69,7 +69,7 @@ function VariantMatrixSvgBody({
       <g transform={`translate(${left})`}>
         <MarkSvgLayer
           marks={VARIANT_MATRIX_MARKS}
-          regions={model.matrixRegions}
+          regions={model.paintedRegionRows}
           blocks={model.matrixBlocks}
           state={renderState}
           width={renderState.canvasWidth}

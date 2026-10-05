@@ -23,7 +23,6 @@ function displayWithCells() {
   const codes = (gts: string[]) =>
     new Uint32Array(gts.map(g => genotypeDict.indexOf(g) + 1))
   display.setCellData({
-    mode: 'regular',
     sampleNames: ['S0', 'S1', 'S2'],
     genotypeDict,
     simplifiedFeatures: [
@@ -38,10 +37,10 @@ function displayWithCells() {
     ],
     perRegionCellData: {
       0: {
-        featureGenotypeMap: {
-          v500: { genotypeCodes: codes(['0/0', '1/1', '0/0']) },
-          v700: { genotypeCodes: codes(['1/1', '0/0', '0/0']) },
-        },
+        featureInfo: [
+          { featureId: 'v500', genotypeCodes: codes(['0/0', '1/1', '0/0']) },
+          { featureId: 'v700', genotypeCodes: codes(['1/1', '0/0', '0/0']) },
+        ],
       },
     },
   } as unknown as Parameters<typeof display.setCellData>[0])
@@ -88,7 +87,6 @@ test('sortRowsBy at a bare column waits for a record there', async () => {
   // the record at 600 arrives with a later fetch; the carrier there is S2
   const genotypeDict = ['0/0', '1/1']
   display.setCellData({
-    mode: 'regular',
     sampleNames: ['S0', 'S1', 'S2'],
     genotypeDict,
     simplifiedFeatures: [
@@ -99,9 +97,9 @@ test('sortRowsBy at a bare column waits for a record there', async () => {
     ],
     perRegionCellData: {
       0: {
-        featureGenotypeMap: {
-          v600: { genotypeCodes: new Uint32Array([1, 1, 2]) },
-        },
+        featureInfo: [
+          { featureId: 'v600', genotypeCodes: new Uint32Array([1, 1, 2]) },
+        ],
       },
     },
   } as unknown as Parameters<typeof display.setCellData>[0])

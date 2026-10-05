@@ -42,7 +42,6 @@ function landCells(display: Display, regionIndex: number) {
     new Uint32Array(gts.map(g => genotypeDict.indexOf(g) + 1))
   display.setCellData(
     {
-      mode: 'regular',
       sampleNames: SOURCES.map(s => s.name),
       genotypeDict,
       samplePloidy: structuredClone(SAMPLE_PLOIDY),
@@ -53,12 +52,10 @@ function landCells(display: Display, regionIndex: number) {
       })),
       perRegionCellData: {
         [regionIndex]: {
-          featureGenotypeMap: Object.fromEntries(
-            Object.entries(GENOTYPES).map(([id, gts]) => [
-              id,
-              { genotypeCodes: codes(gts) },
-            ]),
-          ),
+          featureInfo: Object.entries(GENOTYPES).map(([id, gts]) => ({
+            featureId: id,
+            genotypeCodes: codes(gts),
+          })),
         },
       },
     } as unknown as Parameters<Display['setCellData']>[0],

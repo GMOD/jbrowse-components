@@ -4,6 +4,7 @@ import { buildVariantLaneHit } from './buildVariantHit.ts'
 import type { VariantFeatureInfo } from './types.ts'
 
 const info: VariantFeatureInfo = {
+  featureId: 'rs123',
   ref: 'A',
   alt: ['T'],
   name: 'rs123',

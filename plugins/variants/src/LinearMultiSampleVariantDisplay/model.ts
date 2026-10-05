@@ -22,7 +22,7 @@ import {
   pxPerBpOf,
   spanRect,
 } from '@jbrowse/render-core/canvas2dUtils'
-import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
+import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, shiftInk } from '@jbrowse/render-core/marks'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
@@ -37,6 +37,7 @@ import {
   VARIANT_LANE_BOUNDS,
   VARIANT_LANE_LABEL_OPTIONS,
 } from '../shared/variantTopBands.ts'
+import { cellGlyphs } from './components/cellGlyphs.ts'
 import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
 import { variantCellSpanPx } from './components/variantCellSpan.ts'
 import {
@@ -48,17 +49,17 @@ import { laneDisplayConfig } from './laneDisplayConfig.ts'
 import { buildLaneRenderData } from './laneRenderData.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
 
-import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { Placed } from '../shared/placeVariantRows.ts'
 import type { HoveredCell } from './components/VariantComponent.tsx'
+import type { CellGlyphs } from './components/cellGlyphs.ts'
+import type { VariantCellData } from './components/computeVariantCells.ts'
 import type { VariantRenderingBackend } from './components/variantRenderingBackendTypes.ts'
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type { MatrixHoveredCell } from './matrix/VariantMatrixComponent.tsx'
 import type {
   VariantMatrixRenderBlock,
   VariantMatrixRenderingBackend,
-  VariantMatrixUploadData,
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
 import type { InsertionChannels } from '@jbrowse/alignments-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -100,10 +101,6 @@ const LANE_DISPLAY_MODE = 'compact' as const
 
 /** No pins in a band: the feature there is the display's, not the lane's. */
 const NO_PINNED_FEATURES: ReadonlySet<string> = new Set()
-
-type PlacedMatrixData = Placed<
-  VariantMatrixUploadData & { refCellCount: number }
->
 
 /**
  * The GPU program each layout draws with, tagged so the one upload lifecycle
@@ -299,14 +296,14 @@ export function stateModelFactory(
             }
           },
           // A fetch input at genomic positions only, where the worker leaves
-          // reference cells out under 'skip'. Columns always carry them, so a
+          // reference cells out under 'skip'. Columns always draw them, so a
           // toggle there refetches nothing.
           rpcProps() {
             return {
               ...superRpcProps(),
               referenceDrawingMode: self.atGenomicPositions
                 ? self.referenceDrawingMode
-                : undefined,
+                : 'draw',
             }
           },
         }
@@ -388,7 +385,7 @@ export function stateModelFactory(
           const { cellData, cellHue } = self
           const options = this.cellPaintOptions
           const out = new Map<number, Uint32Array>()
-          if (cellData?.mode === 'regular') {
+          if (cellData) {
             for (const k in cellData.perRegionCellData) {
               const data = cellData.perRegionCellData[k]!
               out.set(Number(k), paintCellColors(data, cellHue, options))
@@ -398,24 +395,13 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The column layout's cell colours, the counterpart of
-         * `regionCellColors`.
-         */
-        get matrixCellColors() {
-          const { cellData, cellHue } = self
-          return cellData?.mode === 'matrix'
-            ? paintCellColors(cellData, cellHue, this.cellPaintOptions)
-            : undefined
-        },
-        /**
-         * #getter
          * Each fetched region's lane colours, which neither shading nor the
          * phased mode moves.
          */
         get regionFeatureColors() {
           const { cellData, cellHue, cellHueValuesRead } = self
           const out = new Map<number, Uint32Array>()
-          if (cellData?.mode === 'regular') {
+          if (cellData) {
             for (const k in cellData.perRegionCellData) {
               const data = cellData.perRegionCellData[k]!
               out.set(
@@ -433,11 +419,11 @@ export function stateModelFactory(
          */
         get placedRegionRows() {
           const { cellData, rowRemap } = self
-          const out = new Map<number, Placed<ShippedRegionData>>()
+          const out = new Map<number, Placed<VariantCellData>>()
           // No rowRemap means no data has landed: an empty map is the same
           // "nothing to draw" every consumer already handles. Never fall back to
           // identity placement — the worker's row order is its own.
-          if (cellData?.mode === 'regular' && rowRemap) {
+          if (cellData && rowRemap) {
             for (const k in cellData.perRegionCellData) {
               out.set(
                 Number(k),
@@ -449,51 +435,72 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The column layout's payload with its rows placed on screen.
+         * Each fetched region's cells as the `cell` mark's own attributes:
+         * the record's span and glyph, which the payload carries once per
+         * record, dealt to each of its cells. Off `cellData` alone, since
+         * neither a reorder nor a recolour moves a cell's span.
          */
-        get placedMatrixRows() {
-          const { cellData, rowRemap } = self
-          return cellData?.mode === 'matrix' && rowRemap
-            ? placeVariantRows(cellData, rowRemap)
-            : undefined
+        get regionCellGlyphs() {
+          const { cellData } = self
+          const out = new Map<number, CellGlyphs>()
+          if (cellData) {
+            for (const k in cellData.perRegionCellData) {
+              out.set(Number(k), cellGlyphs(cellData.perRegionCellData[k]!))
+            }
+          }
+          return out
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * The one walk of `perRegionCellData` every regular-mode consumer
-         * reads: each region placed (`placedRegionRows`) and painted
-         * (`regionCellColors`). So "does the glyph overlay see the same
-         * regions, and the same rows and colours, as the canvas" has a single
-         * answer — the payload is the `VariantUploadData` the cells and the
-         * insertion markers upload, carries the markers' channels while
-         * `showInsertionGlyphs` is on, and carries `featureIndexData` for the
-         * hit-test index plus `cellWorkerRowIndices` for its lookup.
-         *
-         * This is the display's "derived region map" in the sense of
-         * ARCHITECTURE.md's re-upload-without-refetch pattern: a reorder or a
-         * recolour changes each entry's identity, `createRegionUploadSync`
-         * sees the change and re-uploads, and no RPC is involved.
+         * Each fetched region placed (`placedRegionRows`) and painted
+         * (`regionCellColors`): the cells both layouts draw, which the
+         * columns upload as they are. This is the display's "derived region
+         * map" in the sense of ARCHITECTURE.md's re-upload-without-refetch
+         * pattern: a reorder or a recolour changes each entry's identity,
+         * `installUpload` sees the change and re-uploads, and no RPC is
+         * involved.
          *
          * A computed returning a plain Map, for the same reason the multi-row
          * display's is: the overlay draws inside an effect, where nothing it
          * reads is tracked, so the read has to happen here for a refetch to
          * repaint.
          */
+        get paintedRegionRows() {
+          const { placedRegionRows, regionCellColors } = self
+          const out = new Map<number, Placed<VariantCellData>>()
+          for (const [k, placed] of placedRegionRows) {
+            out.set(k, { ...placed, cellColors: regionCellColors.get(k)! })
+          }
+          return out
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The one walk of the payload every genomic-position consumer reads:
+         * `paintedRegionRows` with the `cell` mark's attributes dealt from
+         * the records (`regionCellGlyphs`), and the insertion markers'
+         * channels while `showInsertionGlyphs` is on. So "does the glyph
+         * overlay see the same regions, and the same rows and colours, as
+         * the canvas" has a single answer — the payload is the
+         * `VariantUploadData` the cells and the markers upload, and carries
+         * `featureIndexData` for the hit-test index plus
+         * `cellWorkerRowIndices` for its lookup.
+         */
         get perRegionCellMap() {
-          const { placedRegionRows, regionCellColors, showInsertionGlyphs } =
+          const { paintedRegionRows, regionCellGlyphs, showInsertionGlyphs } =
             self
           const out = new Map<
             number,
-            Placed<ShippedRegionData> & { insertions?: InsertionChannels }
+            Placed<VariantCellData> &
+              CellGlyphs & { insertions?: InsertionChannels }
           >()
-          for (const [k, placed] of placedRegionRows) {
-            const painted = {
-              ...placed,
-              cellColors: regionCellColors.get(k) ?? placed.cellColors,
-            }
+          for (const [k, painted] of paintedRegionRows) {
             out.set(k, {
               ...painted,
+              ...regionCellGlyphs.get(k)!,
               insertions: showInsertionGlyphs
                 ? variantInsertionChannels(painted)
                 : undefined,
@@ -503,60 +510,35 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The column layout's payload placed and painted, the counterpart of
-         * `perRegionCellMap`.
-         */
-        get placedMatrixData(): PlacedMatrixData | undefined {
-          const { placedMatrixRows, matrixCellColors } = self
-          return placedMatrixRows && matrixCellColors
-            ? { ...placedMatrixRows, cellColors: matrixCellColors }
-            : undefined
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The columns as the mark backend's region map: one payload under key
-         * 0, left out while it has no cells so the backend answers "nothing
-         * drawn" and the loading scrim stays over a blank canvas.
-         */
-        get matrixRegions(): ReadonlyMap<number, VariantMatrixUploadData> {
-          const data = self.placedMatrixData
-          return oneCell(0, data?.numCells ? data : undefined)
-        },
-        /**
-         * #getter
-         * The one block the column layout draws: the whole canvas, spanning
-         * the column indices, the payload's `numFeatures` carrying the pitch.
-         */
-        get matrixBlocks(): VariantMatrixRenderBlock[] {
-          return [
-            {
-              displayedRegionIndex: 0,
-              start: 0,
-              end: self.placedMatrixData?.numFeatures ?? 0,
-              screenStartPx: 0,
-              screenEndPx: self.matrixWidth,
-              reversed: false,
-            },
-          ]
-        },
-        /**
-         * #getter
          * Column pitch and origin in viewport pixels: `left` is where the
          * content starts when it doesn't reach the left viewport edge. The
          * connector lines, their hit test and the crosshair column all key off
          * this, so columns, lines and clicks stay pixel-aligned.
          */
         get columnGeometry() {
-          const { cellData } = self
-          const n =
-            cellData?.mode === 'matrix' ? cellData.simplifiedFeatures.length : 0
+          const n = self.cellData?.simplifiedFeatures.length ?? 0
           return {
             n,
             columnWidth: n ? self.matrixWidth / n : 0,
             left: Math.max(0, -self.host.offsetPx),
           }
+        },
+        /**
+         * #getter
+         * The one block the column layout draws: the whole canvas, spanning
+         * the column indices.
+         */
+        get matrixBlocks(): VariantMatrixRenderBlock[] {
+          return [
+            {
+              displayedRegionIndex: 0,
+              start: 0,
+              end: this.columnGeometry.n,
+              screenStartPx: 0,
+              screenEndPx: self.matrixWidth,
+              reversed: false,
+            },
+          ]
         },
       }))
       .views(self => ({
@@ -571,11 +553,7 @@ export function stateModelFactory(
          * in screen order.
          */
         get connectorCoordsByColumn(): (ConnectorCoord | undefined)[] {
-          const { cellData } = self
-          if (cellData?.mode !== 'matrix') {
-            return []
-          }
-          const features = cellData.simplifiedFeatures
+          const features = self.cellData?.simplifiedFeatures ?? []
           const locusX = locusViewportXFor(self)
           const { columnWidth, left } = self.columnGeometry
           return features.map(({ data }, i) => {
@@ -635,7 +613,7 @@ export function stateModelFactory(
             return inkOfInstances(
               VARIANT_MATRIX_MARKS,
               self.matrixBlocks,
-              index => self.matrixRegions.get(index),
+              index => self.paintedRegionRows.get(index),
               self.renderState,
               () => [{ mark: 0, index: matrixCell.cellIndex }],
             ).map(r => shiftInk(r, left, top))
@@ -793,15 +771,14 @@ export function stateModelFactory(
          * The record behind a lane mark, by feature id. plugin-canvas's hit test
          * answers with an id (its payload carries no VCF fields), and the tooltip
          * and the click both want the record — so this is the one place that
-         * crosses back, over `featureGenotypeMap`, the same map the genotype
+         * crosses back, over `featureInfo`, the same records the genotype
          * cells' hit test reads.
          */
         laneFeatureInfo(featureId: string) {
           const { cellData } = self
-          if (cellData?.mode === 'regular') {
-            for (const k in cellData.perRegionCellData) {
-              const info =
-                cellData.perRegionCellData[k]!.featureGenotypeMap[featureId]
+          if (cellData) {
+            for (const data of Object.values(cellData.perRegionCellData)) {
+              const info = data.featureInfo.find(f => f.featureId === featureId)
               if (info) {
                 return info
               }
@@ -838,7 +815,7 @@ export function stateModelFactory(
             self.canRender && self.topBands.laneHeight > 0
               ? self.cellData
               : undefined
-          if (cellData?.mode === 'regular') {
+          if (cellData) {
             const config = self.laneDisplayConfig
             const { jexl } = getEnv<{ pluginManager: PluginManager }>(
               self,
@@ -849,7 +826,7 @@ export function stateModelFactory(
               const displayedRegionIndex = Number(k)
               const data = cellData.perRegionCellData[k]!
               const region = displayedRegions[displayedRegionIndex]
-              if (region && data.featureIdList.length) {
+              if (region && data.featureInfo.length) {
                 out.set(
                   displayedRegionIndex,
                   buildLaneRenderData({
@@ -1117,28 +1094,28 @@ export function stateModelFactory(
          */
         startRenderingBackend(backend: VariantLayoutBackend) {
           self.setBackendDrawsColumns(backend.columns)
-          installUpload<
-            number,
-            Placed<ShippedRegionData> | VariantMatrixUploadData,
-            VariantLayoutBackend
-          >(self, backend, {
-            cells: () =>
-              self.backendDrawsColumns
-                ? self.matrixRegions
-                : self.perRegionCellMap,
-            // the width follows the backend, not the setting, which the
-            // outgoing backend still sees for one flush after a switch
-            render: b =>
-              b.columns
-                ? b.renderBlocks(self.matrixBlocks, self.matrixRegions, {
-                    ...self.renderState,
-                    canvasWidth: self.matrixWidth,
-                  })
-                : b.renderBlocks(self.renderBlocks, self.perRegionCellMap, {
-                    ...self.renderState,
-                    canvasWidth: self.canvasWidthPx,
-                  }),
-          })
+          installUpload<number, Placed<VariantCellData>, VariantLayoutBackend>(
+            self,
+            backend,
+            {
+              cells: () =>
+                self.backendDrawsColumns
+                  ? self.paintedRegionRows
+                  : self.perRegionCellMap,
+              // the width follows the backend, not the setting, which the
+              // outgoing backend still sees for one flush after a switch
+              render: b =>
+                b.columns
+                  ? b.renderBlocks(self.matrixBlocks, self.paintedRegionRows, {
+                      ...self.renderState,
+                      canvasWidth: self.matrixWidth,
+                    })
+                  : b.renderBlocks(self.renderBlocks, self.perRegionCellMap, {
+                      ...self.renderState,
+                      canvasWidth: self.canvasWidthPx,
+                    }),
+            },
+          )
         },
       }))
       .actions(self => ({

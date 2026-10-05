@@ -9,12 +9,13 @@ import { matrixCellAt } from './matrixHitTest.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
+import type { CellLookupData } from '../../shared/variantCellLookup.ts'
 import type { VariantSurface } from '../../shared/variantSurface.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 
 interface MatrixHit {
   fields: VariantTooltipFields
-  featureData: VariantFeatureInfo & { featureId: string }
+  featureInfo: VariantFeatureInfo
   /** The drawn cell's instance in the mark's channels, for `hoverInk`. */
   cell?: MatrixHoveredCell
 }
@@ -28,14 +29,14 @@ export interface MatrixHoveredCell {
 // largest index among them is the one the reader sees.
 function topDrawnCell(
   model: LinearMultiSampleVariantDisplayModel,
+  placed: CellLookupData,
   featureIdx: number,
   lowest: number,
   nearest: number,
 ) {
-  const placed = model.placedMatrixData
   const rowUnmap = model.rowUnmap
   let top: { rowIdx: number; cellIndex: number } | undefined
-  if (placed && rowUnmap) {
+  if (rowUnmap) {
     for (let rowIdx = lowest; rowIdx <= nearest; rowIdx++) {
       const workerRow = rowUnmap[rowIdx] ?? -1
       const cellIndex =
@@ -56,13 +57,9 @@ function getHoveredMatrixCell(
   mouseX: number,
   mouseY: number,
 ): MatrixHit | undefined {
-  const cellData = model.cellData
-  const sources = model.sources
-  if (
-    cellData?.mode !== 'matrix' ||
-    !sources.length ||
-    cellData.numFeatures === 0
-  ) {
+  const { cellData, sources } = model
+  const placed = model.paintedRegionRows.get(0)
+  if (!cellData || !placed || !sources.length) {
     return undefined
   }
   const { featureIdx, nearest, lowest } = matrixCellAt(
@@ -74,11 +71,11 @@ function getHoveredMatrixCell(
     mouseX,
     mouseY,
   )
-  const feature = cellData.featureData[featureIdx]
+  const feature = placed.featureInfo[featureIdx]
   if (!feature) {
     return undefined
   }
-  const top = topDrawnCell(model, featureIdx, lowest, nearest)
+  const top = topDrawnCell(model, placed, featureIdx, lowest, nearest)
   const source = top && sources[top.rowIdx]
   if (!top || !source) {
     return undefined
@@ -99,11 +96,11 @@ function getHoveredMatrixCell(
           sampleName,
           name: source.name,
           featureId: feature.featureId,
-          insertedBp: cellData.cellAltDosage[top.cellIndex]
+          insertedBp: placed.cellAltDosage[top.cellIndex]
             ? feature.insertedBp
             : 0,
         }),
-        featureData: feature,
+        featureInfo: feature,
         cell: { cellIndex: top.cellIndex },
       }
 }
@@ -121,7 +118,7 @@ export function variantMatrixSurface(
     enrich: hit => {
       const baseFeature = model.featureById(hit.fields.featureId)
       return baseFeature
-        ? enrichFeatureFromClick(baseFeature, hit.featureData, hit.fields)
+        ? enrichFeatureFromClick(baseFeature, hit.featureInfo, hit.fields)
         : undefined
     },
     onHover: hit => {

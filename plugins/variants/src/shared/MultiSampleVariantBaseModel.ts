@@ -97,8 +97,6 @@ import type {
   SvgSidebarProps,
 } from '@jbrowse/tree-sidebar'
 
-type CellDataMode = CellDataResult['mode']
-
 type VariantHoverFields = Record<string, unknown> & {
   genotype: string
   name: string
@@ -134,21 +132,11 @@ export interface VariantContextMenuInfo extends ContextMenuAnchor {
 
 // Loaded features in genomic order plus their interned genotype codes: what an
 // anchored sort needs. `simplifiedFeatures` is the single ordered list spanning
-// every fetched region, while the codes live per-region in regular mode and in
-// one flat array in matrix mode.
+// every fetched region, while the codes live in each region's payload.
 function getOrderedGenotypeCodes(cellData: CellDataResult) {
   const genotypeCodesByFeatureId = new Map<string, Uint32Array>()
-  if (cellData.mode === 'regular') {
-    for (const regionData of Object.values(cellData.perRegionCellData)) {
-      for (const featureId in regionData.featureGenotypeMap) {
-        genotypeCodesByFeatureId.set(
-          featureId,
-          regionData.featureGenotypeMap[featureId]!.genotypeCodes,
-        )
-      }
-    }
-  } else {
-    for (const info of cellData.featureData) {
+  for (const regionData of Object.values(cellData.perRegionCellData)) {
+    for (const info of regionData.featureInfo) {
       genotypeCodesByFeatureId.set(info.featureId, info.genotypeCodes)
     }
   }
@@ -177,18 +165,18 @@ function warnUnknownArrangementAttributes(
   }
 }
 
-// Regions to fetch + render, by mode. Regular mode draws each variant at its
-// genomic position, so off-screen buffered features simply clip — use the
-// half-screen-buffered regions for smooth scrolling. Matrix mode lays columns
-// out by feature index across the *visible* width, so including buffered
-// features would cram off-screen variants into the viewport and draw connector
-// lines to off-screen genomic positions — use the visible regions only.
-function fetchRegionsForMode(
+// Regions to fetch + render, by layout. At genomic positions each variant draws
+// at its span, so off-screen buffered features simply clip — use the
+// half-screen-buffered regions for smooth scrolling. Columns are laid out by
+// feature index across the *visible* width, so including buffered features
+// would cram off-screen variants into the viewport and draw connector lines to
+// off-screen genomic positions — use the visible regions only.
+function fetchRegionsForLayout(
   view: RegionHost,
   onTrack: (assemblyName: string) => boolean,
-  mode: CellDataMode,
+  layout: 'genomic' | 'columns',
 ): IndexedRegion[] {
-  if (mode === 'matrix') {
+  if (layout === 'columns') {
     return view.visibleRegions
       .filter(vr => onTrack(vr.assemblyName))
       .map(vr => ({
@@ -317,16 +305,17 @@ export default function MultiSampleVariantBaseModelF(
          * #volatile
          * The displayed regions the current `cellData` was fetched for. The
          * payload itself cannot say: a region with no variants gets no
-         * `perRegionCellData` entry, and the matrix payload is flat.
+         * `perRegionCellData` entry, and the columns payload is one entry
+         * for every region.
          */
         cellDataRegionIndices: new Set<number>() as ReadonlySet<number>,
         /**
          * #volatile
-         * The zoom the current `cellData` was fetched at, set in matrix mode
-         * alone. Matrix columns are the features of exactly the span on
+         * The zoom the current `cellData` was fetched at, set in columns
+         * alone. The columns are the features of exactly the span on
          * screen, so after a zoom inside the loaded span the held payload
          * still lays out features the view no longer shows. Undefined answers
-         * at every zoom, as regular mode's position-drawn payload does.
+         * at every zoom, as the position-drawn payload does.
          */
         cellDataBpPerPx: undefined as number | undefined,
       }))
@@ -503,16 +492,6 @@ export default function MultiSampleVariantBaseModelF(
         get atGenomicPositions(): boolean {
           return this.variantLayout === 'genomic'
         },
-        /**
-         * #getter
-         * The payload shape the worker builds for `atGenomicPositions`: cells
-         * per displayed region at their spans, or one matrix of columns over
-         * the visible regions.
-         */
-        get cellDataMode(): CellDataMode {
-          return this.atGenomicPositions ? 'regular' : 'matrix'
-        },
-
         /**
          * #getter
          * Height of the connector-line zone above the columns; 0 at genomic
@@ -1074,11 +1053,12 @@ export default function MultiSampleVariantBaseModelF(
         // Only settings the *worker* reads belong here, and nothing fetch-derived
         // may appear (`sampleFilter` reads `sourcesBase`, not `sources`, because
         // `sources` reads `samplePloidy` — a fetch result — and would loop).
-        // `referenceDrawingMode` is added by the display at genomic positions
-        // alone, where the worker drops reference cells under 'skip'.
+        // `referenceDrawingMode` is the display's: at genomic positions the
+        // worker drops reference cells under 'skip', and columns always draw
+        // them.
         rpcProps() {
           return {
-            mode: self.cellDataMode,
+            layout: self.variantLayout,
             sampleFilter: self.sampleFilter,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             maxMissingnessFilter: self.maxMissingnessFilter,
@@ -1106,9 +1086,7 @@ export default function MultiSampleVariantBaseModelF(
           const { cellData } = self
           return cellData && self.cellHueValuesRead
             ? paintedColorKeys(
-                cellData.mode === 'regular'
-                  ? Object.values(cellData.perRegionCellData)
-                  : [cellData],
+                Object.values(cellData.perRegionCellData),
                 self.cellHue,
               )
             : []
@@ -1580,8 +1558,12 @@ export default function MultiSampleVariantBaseModelF(
             return
           }
           const view = self.host
-          const mode = self.cellDataMode
-          const regions = fetchRegionsForMode(view, onTrackAssembly(self), mode)
+          const { variantLayout } = self
+          const regions = fetchRegionsForLayout(
+            view,
+            onTrackAssembly(self),
+            variantLayout,
+          )
           if (regions.length === 0) {
             return
           }
@@ -1589,7 +1571,8 @@ export default function MultiSampleVariantBaseModelF(
           // `fetchNeeded` is about to mark loaded — no second view read across
           // the async boundary.
           const args = rpcArgs(self)
-          const fetchedAt = mode === 'matrix' ? view.bpPerPx : undefined
+          const fetchedAt =
+            variantLayout === 'columns' ? view.bpPerPx : undefined
           // One RPC serves every region, so the whole batch is held or none of
           // it is, and `fetchRegionsBatched` marks them loaded together.
           await fetchRegionsBatched(self, regions, {

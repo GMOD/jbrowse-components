@@ -1,6 +1,6 @@
 ---
 name: row-displays-on-shared-kernels
-description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against the grammar's one-object rule. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, the MAF cleanups and the shared insertion mark landed the same day, row colour on 2026-10-03 (ADR-207); open are per-mark seams and variant wire shapes."
+description: "A 2026-10-02 audit of the multi-sample variant, multi-row feature and MAF displays against the grammar's one-object rule. Its bugs 1-7, the phased-dialog gate, MAF's shared identity predicates and N rule, the MAF cleanups and the shared insertion mark landed the same day, row colour on 2026-10-03 (ADR-207) and the variant wire shape on 2026-10-04 (ADR-210); open are per-mark seams."
 ---
 
 # Row displays on shared kernels
@@ -75,21 +75,18 @@ one resolution, a label bar, groups as attributes, one key and one dialog.
 
 ## Simplifications
 
-- **Variant wire shapes**: genomic ships `perRegionCellData` keyed by feature
-  id, columns one flat payload with positional `featureData[]`
-  (`executeVariantCellData.ts:100`), so about a dozen getters fork
-  (`regionCellColors`/`matrixCellColors`, `placed*Rows`,
-  `perRegionCellMap`/`placedMatrixData`, `getOrderedGenotypeCodes`,
-  `paintedDomain`, `laneFeatureInfo`). `matrixRegions` already presents the
-  matrix as region 0; ship it that way. The wire's `regular`/`matrix` against
-  the slot's `genomic`/`columns` goes with it.
+- **The variant wire shape landed 2026-10-04** as
+  [ADR-210](../architecture-decision-records/adr-210-both-variant-layouts-ship-one-cell-payload.md):
+  one `VariantCellData` per block from one cell loop, the `cell` mark's span
+  and glyph dealt from the records on the main thread. Left: the `cell`
+  shader could read them from a per-record table instead, which the HAL's one
+  RGBA8 texture per pass and its re-upload on identity do not yet carry (the
+  ADR's Rejected rows).
 - **`MultiSampleVariantBaseModel`** (1,736 lines) has one consumer
   (`LinearMultiSampleVariantDisplay/model.ts:124`); merging it follows "keep
   the main model chain in one file" and drops the super-capture overrides and
   casts. Check MST type depth first.
-- The two cell loops share a two-ended bucket writer
-  (`computeVariantCells.ts:117-294`, `computeVariantMatrixCells.ts:86-191`);
-  both variant chromes and MAF's mount the same scroll/sidebar/overlay tree.
+- Both variant chromes and MAF's mount the same scroll/sidebar/overlay tree.
   `spatialIndex` is the same `buildSpatialIndex(self.hierarchy)` on five
   displays, but the mixin owns no `hierarchy`.
 - MAF: the coverage band hard-codes a linear scale four times

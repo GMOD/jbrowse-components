@@ -3,6 +3,7 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { defineMark, paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { sweepMarkAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 
+import { featureInfoOf } from '../../shared/cellDataFixtures.ts'
 import { matrixCellMark } from './matrixCellMark.ts'
 import * as shader from './shaders/variantMatrix.iface.generated.ts'
 import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
@@ -30,15 +31,19 @@ const STATE: MatrixRenderState = {
   scrollTop: 0,
 }
 
+function columns(n: number) {
+  return Array.from({ length: n }, (_, i) => featureInfoOf(`v${i}`))
+}
+
 function makeData(
   overrides?: Partial<VariantMatrixUploadData>,
 ): VariantMatrixUploadData {
   return {
-    cellFeatureIndices: new Float32Array([0]),
+    cellFeatureIndices: new Uint32Array([0]),
     cellRowIndices: new Uint32Array([0]),
     cellColors: new Uint32Array([0xff0000ff]),
     numCells: 1,
-    numFeatures: 4,
+    featureInfo: columns(4),
     ...overrides,
   }
 }
@@ -52,7 +57,7 @@ function block(
   return {
     displayedRegionIndex: 0,
     start: 0,
-    end: data.numFeatures,
+    end: data.featureInfo.length,
     screenStartPx: 0,
     screenEndPx: state.canvasWidth,
     reversed: false,
@@ -95,21 +100,20 @@ function paint(data: VariantMatrixUploadData, state = STATE) {
 test('the declaration feeds indices/rows/colors to featureIndex/row/color', () => {
   const buf = MARK.pass.pack(
     makeData({
-      cellFeatureIndices: new Float32Array([2, 3]),
+      cellFeatureIndices: new Uint32Array([2, 3]),
       cellRowIndices: new Uint32Array([0, 7]),
       cellColors: new Uint32Array([0xff0000ff, 0x8000ff00]),
       numCells: 2,
     }),
   )
   const u32 = new Uint32Array(buf as ArrayBuffer)
-  const f32 = new Float32Array(buf as ArrayBuffer)
   const stride = shader.INSTANCE_STRIDE_WORDS
   expect(buf.byteLength).toBe(2 * shader.INSTANCE_STRIDE_BYTES)
 
-  expect(f32[shader.INSTANCE_OFFSET_F32.featureIndex]).toBe(2)
+  expect(u32[shader.INSTANCE_OFFSET_U32.featureIndex]).toBe(2)
   expect(u32[shader.INSTANCE_OFFSET_U32.row]).toBe(0)
   expect(u32[shader.INSTANCE_OFFSET_U32.color]).toBe(0xff0000ff)
-  expect(f32[stride + shader.INSTANCE_OFFSET_F32.featureIndex]).toBe(3)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.featureIndex]).toBe(3)
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.row]).toBe(7)
   expect(u32[stride + shader.INSTANCE_OFFSET_U32.color]).toBe(0x8000ff00)
 })
@@ -117,7 +121,7 @@ test('the declaration feeds indices/rows/colors to featureIndex/row/color', () =
 // `numFeatures` is the payload's, not the frame's: the one uniform `params`
 // reads off the region rather than the render state.
 test('the uniforms carry the payload column count beside the frame', () => {
-  const data = makeData({ numFeatures: 4 })
+  const data = makeData({ featureInfo: columns(4) })
   const state = { ...STATE, scrollTop: 50 }
   const hal = new MockHal([MARK.pass])
   const scratch = new ArrayBuffer(MARK.pass.uniformByteSize)
@@ -139,7 +143,7 @@ describe('painter', () => {
   test('paints a rect per cell', () => {
     const { fillRectCalls } = paint(
       makeData({
-        cellFeatureIndices: new Float32Array([0, 1]),
+        cellFeatureIndices: new Uint32Array([0, 1]),
         cellRowIndices: new Uint32Array([0, 1]),
         cellColors: new Uint32Array([0xff0000ff, 0xff00ff00]),
         numCells: 2,
@@ -153,7 +157,7 @@ describe('painter', () => {
   test('places a cell at its column with the seam overdraw', () => {
     const { fillRectCalls } = paint(
       makeData({
-        cellFeatureIndices: new Float32Array([2]),
+        cellFeatureIndices: new Uint32Array([2]),
         cellRowIndices: new Uint32Array([3]),
         cellColors: new Uint32Array([0xff204080]),
       }),
@@ -188,7 +192,7 @@ describe('painter', () => {
   })
 
   test('paints nothing when numFeatures is 0', () => {
-    const { fillRectCalls } = paint(makeData({ numFeatures: 0 }))
+    const { fillRectCalls } = paint(makeData({ featureInfo: [] }))
     expect(fillRectCalls).toHaveLength(0)
   })
 
@@ -208,7 +212,7 @@ describe('painter', () => {
 // what the painter recorded, seam overdraw included.
 describe('draw against hit', () => {
   const cells: MatrixCellChannels = {
-    featureIndex: Float32Array.of(0, 2, 2, 1),
+    featureIndex: Uint32Array.of(0, 2, 2, 1),
     row: Uint32Array.of(0, 0, 1, 3),
     color: Uint32Array.of(0xff0000ff, 0xff00ff00, 0xffff0000, 0xff0000ff),
     count: 4,

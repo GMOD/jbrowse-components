@@ -51,13 +51,9 @@ function readIntFromRange(str: string, start: number, end: number) {
  * is 343ms and 239MB per fetch, against 33ms and 4MB for the two-field range
  * walk here; at 500 samples it is 1686ms and 1.17GB against 113ms and 4MB.
  *
- * Shared by both cell loops: the two layouts paint the same phase sets from
- * the same records.
- *
- * GT is deliberately NOT read here. The loops already hold the interned
- * genotype codes, and taking GT from `samples` on one path and from the codes
- * on the other was the divergence the old comment in computeVariantMatrixCells
- * was already uneasy about.
+ * GT is deliberately NOT read here. The cell loop already holds the interned
+ * genotype codes, and taking GT from `samples` here and from the codes there
+ * was a divergence the loop's old comment was already uneasy about.
  */
 export function makePhaseSetReader(sampleNames: string[]) {
   const numSamples = sampleNames.length

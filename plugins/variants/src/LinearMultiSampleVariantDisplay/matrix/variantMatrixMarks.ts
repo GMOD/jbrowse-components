@@ -17,7 +17,7 @@ export const VARIANT_MATRIX_MARKS = [
       count: d.numCells,
     }),
     params: (s: MatrixRenderState, d: VariantMatrixUploadData) => ({
-      numFeatures: d.numFeatures,
+      numFeatures: d.featureInfo.length,
       rowHeight: s.rowHeight,
       scrollTop: s.scrollTop,
     }),

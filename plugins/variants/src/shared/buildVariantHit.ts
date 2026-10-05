@@ -4,8 +4,8 @@ import { makeSimpleAltString } from '../VcfFeature/util.ts'
 
 import type { VariantFeatureInfo } from './types.ts'
 
-// The tooltip fields both layouts' hit tests produce, each beside its own
-// carrier (`featureInfo`/`cell` vs `featureData`). The index
+// The tooltip fields both layouts' hit tests produce, each beside the record's
+// `featureInfo`. The index
 // signature reflects that these records are open — the model merges sample
 // metadata attributes into them (`{...source, ...hoveredFeature}`) before the
 // tooltip table renders — and lets them satisfy the hook's/model's

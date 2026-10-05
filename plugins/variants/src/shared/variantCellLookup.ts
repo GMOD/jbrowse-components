@@ -1,6 +1,5 @@
 // The cell arrays a (feature, row) -> cell lookup needs: a structural subset of
-// either layout's placed payload. Columns packs its feature indices as floats
-// for its shader's column attribute, genomic as integers.
+// the placed payload.
 //
 // Rows here are the **worker's** numbering, not the screen's: the arrays are
 // sorted by `(featureIndex, workerRow)` and the binary search below depends on
@@ -8,7 +7,7 @@
 // order for the painters. Callers convert the row they are querying with
 // `rowUnmap` — one lookup, versus re-sorting the arrays on every reorder.
 export interface CellLookupData {
-  cellFeatureIndices: Uint32Array | Float32Array
+  cellFeatureIndices: Uint32Array
   cellWorkerRowIndices: Uint32Array
   numCells: number
   refCellCount: number
@@ -16,7 +15,7 @@ export interface CellLookupData {
 
 // Lower bound of the (featureIndex, workerRow) key in [lo, hi): the first index
 // whose key is >= the target. Valid because each bucket is sorted by that pair
-// (both cell builders emit cells feature-major/row-minor and partition them
+// (the cell builder emits cells feature-major/row-minor and partitions them
 // stably).
 function lowerBound(
   data: CellLookupData,

@@ -20,6 +20,7 @@ const region = {
 
 function info(name: string, over?: Partial<VariantFeatureInfo>) {
   return {
+    featureId: name,
     ref: 'N',
     alt: ['<DEL>'],
     name,
@@ -43,10 +44,7 @@ function source(
     featureColors: Uint32Array.from(
       records.map((_, i) => cssColorToABGR(colors?.[i] ?? 'goldenrod')),
     ),
-    featureIdList: records.map(([id]) => id),
-    featureGenotypeMap: Object.fromEntries(
-      records.map(([id]) => [id, info(id)]),
-    ),
+    featureInfo: records.map(([id]) => info(id)),
   }
 }
 

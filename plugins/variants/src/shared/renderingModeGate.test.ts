@@ -22,7 +22,6 @@ function cellData({
   hasPhasedOrHaploid: boolean
 }): CellDataResult {
   return {
-    mode: 'regular',
     samplePloidy: { S0: ploidy },
     rowNames: ['S0'],
     hasSecondaryAlt: false,

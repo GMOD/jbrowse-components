@@ -68,7 +68,6 @@ function landCells(display: Display) {
   const codes = (gts: string[]) =>
     new Uint32Array(gts.map(g => genotypeDict.indexOf(g) + 1))
   display.setCellData({
-    mode: 'regular',
     sampleNames: SOURCES.map(s => s.name),
     genotypeDict,
     samplePloidy: SAMPLE_PLOIDY,
@@ -79,12 +78,10 @@ function landCells(display: Display) {
     })),
     perRegionCellData: {
       0: {
-        featureGenotypeMap: Object.fromEntries(
-          Object.entries(GENOTYPES).map(([id, gts]) => [
-            id,
-            { genotypeCodes: codes(gts) },
-          ]),
-        ),
+        featureInfo: Object.entries(GENOTYPES).map(([id, gts]) => ({
+          featureId: id,
+          genotypeCodes: codes(gts),
+        })),
         featureColorValues: new Uint32Array(Object.keys(GENOTYPES).length),
         colorValues: [],
         paintedColorValues: [],

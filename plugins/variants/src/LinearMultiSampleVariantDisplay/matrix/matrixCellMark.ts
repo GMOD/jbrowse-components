@@ -13,7 +13,7 @@ import type { InkRect, MarkFrame, MarkShape } from '@jbrowse/render-core/marks'
  * `numFeatures` equal columns across the canvas, on `row`, in `color`.
  */
 export interface MatrixCellChannels {
-  featureIndex: Float32Array
+  featureIndex: Uint32Array
   row: Uint32Array
   color: Uint32Array
   count: number

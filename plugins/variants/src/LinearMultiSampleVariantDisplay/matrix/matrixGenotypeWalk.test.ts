@@ -1,3 +1,8 @@
+import {
+  cellDataOf,
+  cellPayloadOf,
+  featureInfoOf,
+} from '../../shared/cellDataFixtures.ts'
 import { variantMatrixSurface } from './VariantMatrixComponent.tsx'
 import { matrixCellAt } from './matrixHitTest.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -29,48 +34,25 @@ function matrixCellData({ ref = [], alt = [] }: Cells): CellDataResult {
   }
   const byRow = (a: number, b: number) => a - b
   const rows = [...ref.toSorted(byRow), ...alt.toSorted(byRow)]
-  return {
-    mode: 'matrix',
-    samplePloidy: {},
+  return cellDataOf({
     rowNames: SAMPLE_NAMES,
-    hasPhasedOrHaploid: false,
-    hasSecondaryAlt: false,
-    hasUnphased: false,
-    hasNoCall: false,
-    hasConsequence: false,
-    hasSvType: false,
-    hasPhaseSet: false,
-    paintedCategories: 0,
-    colorRead: undefined,
     simplifiedFeatures: [
       { id: 'v0', data: { start: 100, end: 101, refName: 'ctgA', name: 'v0' } },
     ],
     genotypeDict: GENOTYPE_DICT,
     sampleNames: SAMPLE_NAMES,
-    cellFeatureIndices: new Float32Array(rows.length),
-    cellRowIndices: Uint32Array.from(rows),
-    cellColors: new Uint32Array(rows.length),
-    cellAltDosage: new Uint8Array(rows.length).fill(255, ref.length),
-    numCells: rows.length,
-    refCellCount: ref.length,
-    numFeatures: 1,
-    featureColorValues: new Uint32Array(1),
-    colorValues: [],
-    paintedColorValues: [],
-    featureData: [
-      {
-        featureId: 'v0',
-        ref: 'A',
-        alt: ['T'],
-        name: 'v0',
-        description: '',
-        length: 1,
-        insertedBp: 0,
-        type: 'SNV',
-        genotypeCodes,
-      },
-    ],
-  }
+    perRegionCellData: {
+      0: cellPayloadOf([featureInfoOf('v0', { genotypeCodes })], {
+        cellFeatureIndices: new Uint32Array(rows.length),
+        cellRowIndices: Uint32Array.from(rows),
+        cellColors: new Uint32Array(rows.length),
+        cellAltDosage: new Uint8Array(rows.length).fill(255, ref.length),
+        numCells: rows.length,
+        refCellCount: ref.length,
+        featurePositions: Uint32Array.of(100, 101),
+      }),
+    },
+  })
 }
 
 function setup(cells: Cells) {

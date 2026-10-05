@@ -96,7 +96,8 @@ function getHoveredFeature(
   }
 
   const { rowIndex, cellIndex, genomicStart, genomicEnd, insertedBp } = picked
-  const featureId = regionCellData.featureIdList[picked.featureIndex]!
+  const info = regionCellData.featureInfo[picked.featureIndex]!
+  const { featureId } = info
   // The cell row index maps directly into model.sources (same effectiveSources
   // ordering used to compute the cells), so no per-region sourceNameList is
   // shipped over RPC.
@@ -104,7 +105,6 @@ function getHoveredFeature(
   if (!source) {
     return undefined
   }
-  const info = regionCellData.featureGenotypeMap[featureId]!
   const genotype = decodeGenotype(
     cellData.genotypeDict,
     model.genotypeSampleIndex!,

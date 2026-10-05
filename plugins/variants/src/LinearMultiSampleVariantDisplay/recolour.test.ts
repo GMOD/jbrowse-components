@@ -1,6 +1,7 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
 
+import { featureInfoOf } from '../shared/cellDataFixtures.ts'
 import { ALT_HUE, cellFill } from '../shared/cellFill.ts'
 import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -22,7 +23,6 @@ function featureIndexData() {
 // one variant whose AF reads '0.5', a het cell on every sample
 function cellData(colorRead: CellHueRead): CellDataResult {
   return {
-    mode: 'regular',
     samplePloidy: Object.fromEntries(SAMPLES.map(name => [name, 2])),
     rowNames: SAMPLES,
     hasPhasedOrHaploid: false,
@@ -40,10 +40,8 @@ function cellData(colorRead: CellHueRead): CellDataResult {
     sampleNames: SAMPLES,
     perRegionCellData: {
       0: {
-        cellPositions: Uint32Array.from([100, 200, 100, 200, 100, 200]),
         cellRowIndices: Uint32Array.from([0, 1, 2]),
         cellColors: new Uint32Array(3).fill(het(ALT_HUE)),
-        cellShapeTypes: new Uint8Array(3),
         cellAltDosage: new Uint8Array(3).fill(128),
         cellFeatureIndices: new Uint32Array(3),
         numCells: 3,
@@ -52,8 +50,7 @@ function cellData(colorRead: CellHueRead): CellDataResult {
         colorValues: ['0.5'],
         paintedColorValues: [0],
         featureColorValues: Uint32Array.of(1),
-        featureGenotypeMap: {},
-        featureIdList: ['v0'],
+        featureInfo: [featureInfoOf('v0', { length: 100 })],
         featurePositions: Uint32Array.from([100, 200]),
         featureIndexData: featureIndexData(),
         featureInsertedBp: Int32Array.from([0]),

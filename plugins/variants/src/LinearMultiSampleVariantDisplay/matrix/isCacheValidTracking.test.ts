@@ -39,7 +39,9 @@ test('isCacheValid re-evaluates for callers when bpPerPx changes', () => {
   display.setLoadedRegion(0, region, undefined)
   // a loaded region is cache-valid only with a payload behind it
   display.setCellData(
-    { mode: 'matrix' } as unknown as Parameters<typeof display.setCellData>[0],
+    { perRegionCellData: {} } as unknown as Parameters<
+      typeof display.setCellData
+    >[0],
     [0],
     view.bpPerPx,
   )

@@ -15,9 +15,9 @@
 //
 // Only runs on the error path.
 
-// The deepest RPC result in the tree is the regular multi-sample variant one:
-// `perRegionCellData.0.featureGenotypeMap.<featureId>.genotypeCodes` — four
-// containers down. The alignments result is three (`groups.3.data.mismatchStarts`),
+// The deepest RPC result in the tree is the multi-sample variant one:
+// `perRegionCellData.0.featureInfo.<index>.genotypeCodes` — four containers
+// down. The alignments result is three (`groups.3.data.mismatchStarts`),
 // synteny two (`instanceData.bp1`, `attributes.identity`) and most are one. The
 // walk is capped rather than unbounded because a payload also carries plain data
 // — a featureIds array of half a million strings — and there is no reason to

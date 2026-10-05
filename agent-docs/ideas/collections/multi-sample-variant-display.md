@@ -15,7 +15,7 @@ invalidation tiers constrain all of these.
 GT-only fast path (`feature.processGenotypes`, `shared/alleleCounts.ts`) never
 surfaces DP/GQ/AD/PL — getting them requires the heavier `feature.get('samples')`
 escalation the PS-phasing coloring already takes
-(`computeVariantMatrixCells.ts:99`). MVP: a `genotypeQualityThreshold` config
+(`makePhaseSetReader`). MVP: a `genotypeQualityThreshold` config
 slot (default `0` = off = today's path unchanged); when set, a genotype with
 `GQ < threshold` renders as no-call grey instead of its allele color — masking
 chosen over continuous dimming because it reuses the existing no-call rendering
@@ -23,9 +23,9 @@ end-to-end (no shader/legend work). The `color` hue resolves on the main
 thread ([ADR-203](../../architecture-decision-records/adr-203-the-variant-cells-hue-resolves-on-the-main-thread.md)), so a masked cell has to reach it as a no-call rather
 than as a colour the repaint would overwrite. It's a
 **fetch input** (belongs in `rpcProps()`), threaded through
-`VariantRPC/executeVariantCellData.ts` into both `computeVariantCells.ts` and
-`computeVariantMatrixCells.ts`, with a menu entry (presets GQ ≥ 20/≥ 30 + custom
-dialog) cloned from `createMAFFilterMenuItem` under the "Filter by" submenu.
+`VariantRPC/executeVariantCellData.ts` into `computeVariantCells.ts`, with a
+menu entry (presets GQ ≥ 20/≥ 30 + custom dialog) cloned from
+`createMAFFilterMenuItem` under the "Filter by" submenu.
 Open question: whether masking should also feed the MAF filter (a masked het
 shouldn't count toward AF) — couples to `minorAlleleFrequencyUtils.ts`, defer
 past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**

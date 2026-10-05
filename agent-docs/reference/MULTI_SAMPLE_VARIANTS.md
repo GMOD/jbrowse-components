@@ -6,9 +6,9 @@ kind: spec
 
 # Multi-sample variant genotypes: the code pipeline
 
-The per-feature x per-sample loops in `computeVariantCells.ts` and
-`computeVariantMatrixCells.ts` run 10⁸+ times on a real panel. The rules are in
-`plugins/variants/src/CLAUDE.md`; this doc holds the mechanism behind them.
+The per-feature x per-sample loop in `computeVariantCells.ts` runs 10⁸+ times
+on a real panel. The rules are in `plugins/variants/src/CLAUDE.md`; this doc
+holds the mechanism behind them.
 
 ## Genotypes reach the cell loops as codes, never as strings
 

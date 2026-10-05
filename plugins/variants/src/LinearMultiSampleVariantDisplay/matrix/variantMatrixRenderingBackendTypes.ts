@@ -1,3 +1,4 @@
+import type { VariantFeatureInfo } from '../../shared/types.ts'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 export type { RenderBlock as VariantMatrixRenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -17,11 +18,12 @@ export interface MatrixRenderState {
 // whose regions were ALL reversed.
 
 export interface VariantMatrixUploadData {
-  cellFeatureIndices: Float32Array
+  cellFeatureIndices: Uint32Array
   cellRowIndices: Uint32Array
   cellColors: Uint32Array
   numCells: number
-  numFeatures: number
+  // the columns, one per record, in the order the cells index them
+  featureInfo: VariantFeatureInfo[]
 }
 
 export type VariantMatrixRenderingBackend = PerRegionRenderingBackend<

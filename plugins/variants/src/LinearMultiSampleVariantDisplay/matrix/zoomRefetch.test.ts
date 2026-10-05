@@ -1,6 +1,7 @@
 import { waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
+import { cellDataOf } from '../../shared/cellDataFixtures.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // Matrix columns are the features of exactly the span on screen, so a zoom that
@@ -16,34 +17,7 @@ afterEach(() => {
   jest.useRealTimers()
 })
 
-const EMPTY_MATRIX = {
-  mode: 'matrix',
-  samplePloidy: {},
-  rowNames: [],
-  hasPhasedOrHaploid: false,
-  hasSecondaryAlt: false,
-  hasUnphased: false,
-  hasNoCall: false,
-  colorRead: undefined,
-  hasConsequence: false,
-  hasSvType: false,
-  hasPhaseSet: false,
-  simplifiedFeatures: [],
-  genotypeDict: [],
-  sampleNames: ['HG001'],
-  cellFeatureIndices: new Float32Array(),
-  cellRowIndices: new Uint32Array(),
-  cellColors: new Uint32Array(),
-  cellAltDosage: new Uint8Array(),
-  numCells: 0,
-  refCellCount: 0,
-  numFeatures: 0,
-  featureData: [],
-  featureColorValues: new Uint32Array(),
-  colorValues: [],
-  paintedColorValues: [],
-  paintedCategories: 0,
-}
+const EMPTY_MATRIX = cellDataOf({ sampleNames: ['HG001'] })
 
 test('a zoom inside the fetched span refetches the matrix', async () => {
   const { createDisplay } = createTestEnvironment()

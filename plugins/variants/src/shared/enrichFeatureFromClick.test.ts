@@ -14,6 +14,7 @@ const baseFeature = {
 }
 
 const featureInfo: VariantFeatureInfo = {
+  featureId: 'bnd1',
   ref: 'A',
   alt: ['A[chr2:200['],
   name: 'bnd1',

@@ -97,7 +97,7 @@ test('reaches a buffer four containers down, as the variant result is', () => {
   const genotypeCodes = new Uint32Array(4)
   const value = {
     perRegionCellData: {
-      0: { featureGenotypeMap: { 'feat-1': { genotypeCodes } } },
+      0: { featureInfo: [{ genotypeCodes }] },
     },
   }
 
@@ -106,7 +106,7 @@ test('reaches a buffer four containers down, as the variant result is', () => {
   ]) as Error
 
   expect(message).toContain(
-    'index 0 is perRegionCellData.0.featureGenotypeMap.feat-1.genotypeCodes',
+    'index 0 is perRegionCellData.0.featureInfo.0.genotypeCodes',
   )
 })
 

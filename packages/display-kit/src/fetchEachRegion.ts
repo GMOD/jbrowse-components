@@ -282,7 +282,7 @@ export async function fetchAllRegions<R>(
  *
  * **The region list is the argument, not `needed`.** A display on this helper
  * decides its own set: variants ignores the plan's `needed` entirely and derives
- * one from the mode (`fetchRegionsForMode`), because the columns of a matrix
+ * one from the layout (`fetchRegionsForLayout`), because the columns of a matrix
  * lay out across the whole visible width and a partial refetch has no meaning.
  * Whatever list is passed is both what `call` receives and what the commits name,
  * so the two cannot come apart.

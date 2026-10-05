@@ -122,7 +122,7 @@ describe('computeVariantCells phased genotypes', () => {
     { name: 'S2 HP1', sampleName: 'S2', HP: 1 },
   ]
 
-  test('featureGenotypeMap genotypes keyed by sampleName not HP-suffixed name', () => {
+  test('featureInfo genotypes keyed by sampleName not HP-suffixed name', () => {
     const args = genotypeArgs([feature])
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
@@ -135,7 +135,7 @@ describe('computeVariantCells phased genotypes', () => {
     // The codes are aligned to the sample order, so the HP-suffixed row names
     // are not addresses into them at all — which is the point: they are render
     // rows, and four of them share these two samples' calls.
-    expect(decodeAll(result.featureGenotypeMap.f1!, args)).toEqual({
+    expect(decodeAll(result.featureInfo[0]!, args)).toEqual({
       S1: '1|0',
       S2: '1|1',
     })
@@ -296,8 +296,8 @@ describe('computeVariantCells insertion bounds', () => {
       referenceDrawingMode: 'skip',
       ...genotypeArgs([feature]),
     })
-    expect(result.cellPositions[0]).toBe(100)
-    expect(result.cellPositions[1]).toBe(101)
+    expect(result.featurePositions[0]).toBe(100)
+    expect(result.featurePositions[1]).toBe(101)
   })
 
   test('symbolic insertion draws at [start, end] regardless of SVLEN', () => {
@@ -319,8 +319,8 @@ describe('computeVariantCells insertion bounds', () => {
       referenceDrawingMode: 'skip',
       ...genotypeArgs([feature]),
     })
-    expect(result.cellPositions[0]).toBe(100)
-    expect(result.cellPositions[1]).toBe(101)
+    expect(result.featurePositions[0]).toBe(100)
+    expect(result.featurePositions[1]).toBe(101)
   })
 })
 
@@ -467,7 +467,7 @@ describe('spatial index', () => {
   ]
   // Two sites far enough apart that a query at one can't reach the other. The
   // second sits past int32 but inside uint32, since the index element type has
-  // to cover the same range cellPositions does.
+  // to cover the same range featurePositions does.
   const site = (start: number, name: string) => ({
     genotypes: { S1: '0/1', S2: '1/1' },
     FORMAT: [],
@@ -642,7 +642,7 @@ describe('cell bucket ordering', () => {
     expect([...result.cellRowIndices]).toEqual([0, 0, 1, 2, 2])
     // The trailing slot must be trimmed off, not left as a zeroed cell that the
     // renderer would paint at bp 0 and the hit-test would binary-search into.
-    expect(result.cellPositions).toHaveLength(10)
+    expect(result.cellRowIndices).toHaveLength(5)
   })
 })
 
@@ -734,16 +734,16 @@ test('a site with no ALT alleles reports an empty alt list', () => {
     ...genotypeArgs([feature]),
   })
   expect(result.numCells).toBe(1)
-  expect(result.featureGenotypeMap.f1!.alt).toEqual([])
+  expect(result.featureInfo[0]!.alt).toEqual([])
 })
 
-// featureGenotypeMap is the genotype record the anchored sort reads (via the
+// featureInfo is the genotype record the anchored sort reads (via the
 // interned genotypeCodes), not a log of what got painted. Under the default
 // `referenceDrawingMode: 'skip'` a hom-ref call paints nothing, and keying the
 // map off the painted cells made every hom-ref row indistinguishable from a
 // no-call to `sortSourcesAroundVariant` — while the columns layout, which
 // always paints ref, sorted the same data differently.
-describe('featureGenotypeMap records every genotype, not only painted ones', () => {
+describe('featureInfo records every genotype, not only painted ones', () => {
   const sources: ProcessedSource[] = [
     { name: 'S1', sampleName: 'S1' },
     { name: 'S2', sampleName: 'S2' },
@@ -768,15 +768,15 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
   test('skip mode keeps the hom-ref genotype while drawing no cell for it', () => {
     const result = run('skip')
     expect(result.numCells).toBe(1)
-    expect(decodeAll(result.featureGenotypeMap.f1!, args)).toEqual({
+    expect(decodeAll(result.featureInfo[0]!, args)).toEqual({
       S1: '0/0',
       S2: '0/1',
     })
   })
 
   test('the genotype map is identical in draw mode', () => {
-    expect(decodeAll(run('draw').featureGenotypeMap.f1!, args)).toEqual(
-      decodeAll(run('skip').featureGenotypeMap.f1!, args),
+    expect(decodeAll(run('draw').featureInfo[0]!, args)).toEqual(
+      decodeAll(run('skip').featureInfo[0]!, args),
     )
   })
 
@@ -794,7 +794,7 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
       ...args,
     })
     expect(result.numCells).toBe(1)
-    expect(decodeAll(result.featureGenotypeMap.f1!, args)).toEqual({
+    expect(decodeAll(result.featureInfo[0]!, args)).toEqual({
       S1: '0/0',
       S2: '0/1',
     })
@@ -822,7 +822,7 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
       ...phasedArgs,
     })
     expect(result.numCells).toBe(1)
-    expect(decodeAll(result.featureGenotypeMap.f1!, phasedArgs)).toEqual({
+    expect(decodeAll(result.featureInfo[0]!, phasedArgs)).toEqual({
       S1: '0|0',
       S2: '1|0',
     })

@@ -1,25 +1,18 @@
 import { autorun } from 'mobx'
 
+import {
+  cellDataOf,
+  cellPayloadOf,
+  featureInfoOf,
+} from '../../shared/cellDataFixtures.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../../VariantRPC/executeVariantCellData.ts'
 
 // The matrix lays columns out by feature index, so only the positional fields of
-// the payload matter here; the cell buffers stay empty (nothing is painted).
+// the payload matter here; there are no samples, so no cells paint.
 function matrixCellData(starts: number[], refNames?: string[]): CellDataResult {
-  return {
-    mode: 'matrix',
-    samplePloidy: {},
-    rowNames: [],
-    hasPhasedOrHaploid: false,
-    hasSecondaryAlt: false,
-    hasUnphased: false,
-    hasNoCall: false,
-    hasConsequence: false,
-    hasSvType: false,
-    hasPhaseSet: false,
-    paintedCategories: 0,
-    colorRead: undefined,
+  return cellDataOf({
     simplifiedFeatures: starts.map((start, i) => ({
       id: `v${i}`,
       data: {
@@ -29,20 +22,17 @@ function matrixCellData(starts: number[], refNames?: string[]): CellDataResult {
         name: `v${i}`,
       },
     })),
-    genotypeDict: [],
-    sampleNames: [],
-    cellFeatureIndices: new Float32Array(0),
-    cellRowIndices: new Uint32Array(0),
-    cellColors: new Uint32Array(0),
-    cellAltDosage: new Uint8Array(0),
-    numCells: 0,
-    refCellCount: 0,
-    numFeatures: starts.length,
-    featureData: [],
-    featureColorValues: new Uint32Array(starts.length),
-    colorValues: [],
-    paintedColorValues: [],
-  }
+    perRegionCellData: {
+      0: cellPayloadOf(
+        starts.map((_, i) => featureInfoOf(`v${i}`)),
+        {
+          featurePositions: Uint32Array.from(
+            starts.flatMap(start => [start, start + 1]),
+          ),
+        },
+      ),
+    },
+  })
 }
 
 // Four variants in an 8kb window shown at bpPerPx 10, so the content is exactly
@@ -64,16 +54,15 @@ function loadedDisplay({
   return { display, view }
 }
 
-// between a switch to columns and the columns fetch landing, the held payload
-// is the genomic one, whose variants no column was laid out for
-test('a genomic payload lays out no columns and draws no connectors', () => {
+// a switch to the other layout drops the held payload at once, so no payload
+// the genomic layout fetched is ever laid out as columns
+test('switching the layout drops the held payload', () => {
   const { display } = loadedDisplay()
-  display.setCellData({
-    ...matrixCellData([0, 1000]),
-    mode: 'regular',
-    perRegionCellData: {},
-  } as unknown as CellDataResult)
+  expect(display.columnGeometry.n).toBe(4)
 
+  display.setVariantLayout('genomic')
+
+  expect(display.cellData).toBeUndefined()
   expect(display.columnGeometry.n).toBe(0)
   expect(display.connectorLineCoords).toEqual([])
 })

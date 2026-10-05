@@ -3,6 +3,7 @@ import { measureText } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { paintFeatureBand } from '@jbrowse/plugin-canvas'
 
+import { featureInfoOf } from '../shared/cellDataFixtures.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -43,7 +44,6 @@ function cellData(records: LaneRecord[]): CellDataResult {
   }
   index.finish()
   return {
-    mode: 'regular',
     samplePloidy: { S0: 2 },
     rowNames: ['S0'],
     hasPhasedOrHaploid: false,
@@ -62,10 +62,8 @@ function cellData(records: LaneRecord[]): CellDataResult {
     sampleNames: ['S0'],
     perRegionCellData: {
       0: {
-        cellPositions: new Uint32Array(0),
         cellRowIndices: new Uint32Array(0),
         cellColors: new Uint32Array(0),
-        cellShapeTypes: new Uint8Array(0),
         cellAltDosage: new Uint8Array(0),
         cellFeatureIndices: new Uint32Array(0),
         numCells: 0,
@@ -73,22 +71,9 @@ function cellData(records: LaneRecord[]): CellDataResult {
         paintedCategories: 0,
         colorValues: [],
         paintedColorValues: [],
-        featureGenotypeMap: Object.fromEntries(
-          records.map(([id, start, end, description]) => [
-            id,
-            {
-              ref: 'N',
-              alt: ['N'],
-              name: id,
-              description,
-              length: end - start,
-              insertedBp: 0,
-              type: 'SNV',
-              genotypeCodes: new Uint32Array(),
-            },
-          ]),
+        featureInfo: records.map(([id, start, end, description]) =>
+          featureInfoOf(id, { description, length: end - start }),
         ),
-        featureIdList: records.map(([id]) => id),
         featurePositions: Uint32Array.from(
           records.flatMap(([, start, end]) => [start, end]),
         ),

@@ -4,42 +4,29 @@ import { fireEvent, render } from '@testing-library/react'
 
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/matrix/testEnv.ts'
 import { ConnectorLineOverlay, SvgConnectorField } from './ConnectorLines.tsx'
+import { cellDataOf, cellPayloadOf, featureInfoOf } from './cellDataFixtures.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 
-// Only the positional fields matter for the connector zone; nothing is painted.
+// Only the positional fields matter for the connector zone; there are no
+// samples, so no cells paint.
 function matrixCellData(starts: number[]): CellDataResult {
-  return {
-    mode: 'matrix',
-    samplePloidy: {},
-    rowNames: [],
-    hasPhasedOrHaploid: false,
-    hasSecondaryAlt: false,
-    hasUnphased: false,
-    hasNoCall: false,
-    hasConsequence: false,
-    hasSvType: false,
-    hasPhaseSet: false,
-    paintedCategories: 0,
-    colorRead: undefined,
+  return cellDataOf({
     simplifiedFeatures: starts.map((start, i) => ({
       id: `v${i}`,
       data: { start, end: start + 1, refName: 'ctgA', name: `v${i}` },
     })),
-    genotypeDict: [],
-    sampleNames: [],
-    cellFeatureIndices: new Float32Array(0),
-    cellRowIndices: new Uint32Array(0),
-    cellColors: new Uint32Array(0),
-    cellAltDosage: new Uint8Array(0),
-    numCells: 0,
-    refCellCount: 0,
-    numFeatures: starts.length,
-    featureData: [],
-    featureColorValues: new Uint32Array(starts.length),
-    colorValues: [],
-    paintedColorValues: [],
-  }
+    perRegionCellData: {
+      0: cellPayloadOf(
+        starts.map((_, i) => featureInfoOf(`v${i}`)),
+        {
+          featurePositions: Uint32Array.from(
+            starts.flatMap(start => [start, start + 1]),
+          ),
+        },
+      ),
+    },
+  })
 }
 
 // Four variants over an 8kb window at bpPerPx 10: four 200px columns in the

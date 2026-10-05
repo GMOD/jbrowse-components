@@ -16,10 +16,10 @@ export interface Source {
 
 export type ProcessedSource = Source & { sampleName: string }
 
-// Per-feature info for hover tooltips and the feature widget. The genomic
-// layout keys these by feature id (`featureGenotypeMap`), the columns layout
-// carries them positionally (`FeatureData`, which adds `featureId`).
+// Per-feature info for hover tooltips and the feature widget: one per record
+// in a payload's `featureInfo`, in the order its cells index them.
 interface VariantFeatureBase {
+  featureId: string
   ref: string
   alt: string[]
   name: string

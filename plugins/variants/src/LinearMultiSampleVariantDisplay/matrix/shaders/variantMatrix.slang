@@ -35,7 +35,7 @@ float drawnCellHeightPx(float rowHeight) {
 }
 
 struct CellInstance {
-  float featureIndex : ATTR0;
+  uint  featureIndex : ATTR0;
   uint  row          : ATTR1;
   uint  color        : ATTR2;
 };
@@ -67,7 +67,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float widthPx = u.canvasWidth * u.devicePixelRatio;
   // No mirror: the worker hands the features back in screen order
   // (orderByScreenPosition), so a data column index IS its screen column.
-  float col = inst.featureIndex;
+  float col = float(inst.featureIndex);
   float x1px = col / u.numFeatures * widthPx;
   float x2px = (col + 1.0) / u.numFeatures * widthPx;
 

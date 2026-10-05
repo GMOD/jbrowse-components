@@ -11,6 +11,14 @@ import { inversionTipPx } from './shaders/variant.js.generated.ts'
 
 export { SHAPE_RECT, SHAPE_TRI_LEFT }
 
+// The glyph a record's cells paint as. An inversion is symmetric — either
+// inverted or not, and VCF never sets a strand on a variant record — so one
+// triangle covers it. Everything else, insertions included, is the plain
+// full-height cell every other genotype draws.
+export function shapeTypeOf(featureType: string) {
+  return featureType === 'inversion' ? SHAPE_TRI_LEFT : SHAPE_RECT
+}
+
 // Minimal 2D path sink — both CanvasRenderingContext2D and SvgCanvas match.
 // closePath is optional because native Canvas auto-closes on fill; SVG
 // serializers need it for correctness.

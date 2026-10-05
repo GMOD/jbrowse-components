@@ -14,8 +14,7 @@ import type { DisplayConfig, LayoutRegionData } from '@jbrowse/plugin-canvas'
 export interface LaneSourceData {
   featurePositions: Uint32Array
   featureColors: Uint32Array
-  featureIdList: string[]
-  featureGenotypeMap: Record<string, VariantFeatureInfo>
+  featureInfo: VariantFeatureInfo[]
 }
 
 /** The region bounds the lane lays a block out in. */
@@ -41,7 +40,7 @@ export interface LaneRegion {
  * **Main thread, and no second fetch.** The variants worker already parsed these
  * records (it read every genotype off them), and everything a variant *record*
  * is already rides in the payload — span in `featurePositions`, ID and
- * description and SO type in `featureGenotypeMap`, and the color
+ * description and SO type in `featureInfo`, and the color
  * `paintCells` resolves into `featureColors`. So the features are rebuilt here
  * from bytes already on the wire: no extra RPC, no extra payload, and `showVariantLane` stays a
  * render-tier setting that a toggle or a band resize must not refetch. The pass
@@ -66,21 +65,20 @@ export function buildLaneRenderData({
   config: DisplayConfig
   jexl: JexlInstance
 }): LayoutRegionData {
-  const { featureIdList, featurePositions, featureColors, featureGenotypeMap } =
-    data
-  const features = featureIdList.map((featureId, f) => {
-    const info = featureGenotypeMap[featureId]
-    return new SimpleFeature({
-      uniqueId: featureId,
-      refName: region.refName,
-      start: featurePositions[f * 2]!,
-      end: featurePositions[f * 2 + 1]!,
-      name: info?.name,
-      description: info?.description,
-      type: info?.type,
-      laneColor: abgrToCssRgba(featureColors[f]!),
-    })
-  })
+  const { featureInfo, featurePositions, featureColors } = data
+  const features = featureInfo.map(
+    (info, f) =>
+      new SimpleFeature({
+        uniqueId: info.featureId,
+        refName: region.refName,
+        start: featurePositions[f * 2]!,
+        end: featurePositions[f * 2 + 1]!,
+        name: info.name,
+        description: info.description,
+        type: info.type,
+        laneColor: abgrToCssRgba(featureColors[f]!),
+      }),
+  )
   return {
     ...buildFeatureRenderData({
       features,

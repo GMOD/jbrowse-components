@@ -3,6 +3,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { featureInfoOf } from '../shared/cellDataFixtures.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -27,7 +28,6 @@ function featureIndexData() {
 // never produce a marker).
 function cellData(insertedBp: number): CellDataResult {
   return {
-    mode: 'regular',
     samplePloidy: { S0: 2 },
     rowNames: ['S0'],
     hasPhasedOrHaploid: false,
@@ -45,10 +45,8 @@ function cellData(insertedBp: number): CellDataResult {
     sampleNames: ['S0'],
     perRegionCellData: {
       0: {
-        cellPositions: Uint32Array.from([100, 200]),
         cellRowIndices: Uint32Array.from([0]),
         cellColors: Uint32Array.from([0xff0000]),
-        cellShapeTypes: new Uint8Array(1),
         cellAltDosage: Uint8Array.from([1]),
         cellFeatureIndices: new Uint32Array(1),
         numCells: 1,
@@ -56,8 +54,7 @@ function cellData(insertedBp: number): CellDataResult {
         paintedCategories: 0,
         colorValues: [],
         paintedColorValues: [],
-        featureGenotypeMap: {},
-        featureIdList: ['v0'],
+        featureInfo: [featureInfoOf('v0', { length: 100, insertedBp })],
         featurePositions: Uint32Array.from([100, 200]),
         featureIndexData: featureIndexData(),
         featureInsertedBp: Int32Array.from([insertedBp]),
@@ -132,7 +129,7 @@ test('the entry has no swatch and names what the number means', () => {
 test('the SV-type key takes its title and class names from the field preset', () => {
   const display = setup(0)
   display.setColorField(SV_TYPE_FIELD)
-  const base = cellData(0) as Extract<CellDataResult, { mode: 'regular' }>
+  const base = cellData(0)
   display.setCellData({
     ...base,
     colorRead: { field: SV_TYPE_FIELD },

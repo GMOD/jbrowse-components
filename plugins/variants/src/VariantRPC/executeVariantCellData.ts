@@ -4,7 +4,6 @@ import { withProgress } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
-import { computeVariantMatrixCells } from '../LinearMultiSampleVariantDisplay/matrix/computeVariantMatrixCells.ts'
 import { cellHueReaderOf } from '../shared/cellHue.ts'
 import { buildCanonicalRows } from '../shared/getSources.ts'
 import {
@@ -18,16 +17,18 @@ import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
 import { orderByScreenPosition } from './orderByScreenPosition.ts'
 
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
-import type { MatrixCellData } from '../LinearMultiSampleVariantDisplay/matrix/computeVariantMatrixCells.ts'
 import type { CellHueRead } from '../shared/cellHue.ts'
+import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { SimplifiedVariantFeature } from './analyzeVariants.ts'
+import type { GetCellDataArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { Region } from '@jbrowse/core/util'
 
 export type { SimplifiedVariantFeature }
 
-// What the paint loops reported, as the three legend booleans, for the genomic
-// layout's per-region merge and the columns layout's single pass alike.
+// What the paint loops reported, as the three legend booleans, merged over
+// every payload of the fetch.
 function paintedLegendFlags(passes: { paintedCategories: number }[]) {
   let mask = 0
   for (const pass of passes) {
@@ -38,6 +39,40 @@ function paintedLegendFlags(passes: { paintedCategories: number }[]) {
     hasUnphased: (mask & (1 << CELL_UNPHASED)) !== 0,
     hasNoCall: (mask & (1 << CELL_NO_CALL)) !== 0,
   }
+}
+
+// Which records each payload draws, under the key of the block that draws it.
+// At genomic positions, each displayed region's in file order, so overlapping
+// records paint later over earlier whatever order the merged fetches arrived
+// in. In columns, every record once under 0, in the screen order its column
+// index is. A region with no records gets no payload.
+function recordsByBlock({
+  layout,
+  regions,
+  displayedRegionIndices,
+  filteredVariants,
+}: {
+  layout: GetCellDataArgs['layout']
+  regions: Region[]
+  displayedRegionIndices?: number[]
+  // in screen order
+  filteredVariants: FilteredVariant[]
+}): Map<number, FilteredVariant[]> {
+  if (layout === 'columns') {
+    return new Map(filteredVariants.length ? [[0, filteredVariants]] : [])
+  }
+  return groupFeaturesByRegion(
+    [...filteredVariants].sort(
+      (a, b) => a.feature.get('start') - b.feature.get('start'),
+    ),
+    regions.map((r, i) => ({
+      refName: r.refName,
+      start: r.start,
+      end: r.end,
+      displayedRegionIndex: displayedRegionIndices?.[i] ?? i,
+    })),
+    v => v.feature,
+  )
 }
 
 export interface CellDataBase {
@@ -52,11 +87,11 @@ export interface CellDataBase {
   // phased painter uses (`isPhasedOrHaploid`) and so the one that gates the
   // "Phased" rendering-mode entry — see analyzeVariants.
   hasPhasedOrHaploid: boolean
-  // What the cell loops actually painted: a secondary-alt fill, a black
+  // What the cell loop actually painted: a secondary-alt fill, a black
   // unphased fill, a no-call fill. Each drives its legend entry, so the entry
   // means one is in the fetched cell data rather than that the data could
-  // produce one. Merged across every fetched region, which for the regular
-  // display is wider than the viewport. A secondary alt counts whether or not
+  // produce one. Merged across every fetched region, which at genomic
+  // positions is wider than the viewport. A secondary alt counts whether or not
   // a `color` hue repaints it; the key lists it under the genotype colours
   // alone.
   hasSecondaryAlt: boolean
@@ -90,18 +125,12 @@ export interface CellDataBase {
   bytes?: number
 }
 
-// The cell computations already emit the shipped shape — their genotypes are
-// the interned codes `analyzeVariants` built, not a map to be converted at
-// the boundary.
-export type ShippedRegionData = VariantCellData
-type ShippedMatrixData = MatrixCellData
-
-export type CellDataResult =
-  | (CellDataBase & {
-      mode: 'regular'
-      perRegionCellData: Record<number, ShippedRegionData>
-    })
-  | (CellDataBase & ShippedMatrixData & { mode: 'matrix' })
+export type CellDataResult = CellDataBase & {
+  // One payload per block the layout draws: under each displayed region's
+  // index at genomic positions, under 0 for the columns, whose one block runs
+  // across the whole window. A region with no variants has no entry.
+  perRegionCellData: Record<number, VariantCellData>
+}
 
 export async function executeVariantCellData({
   pluginManager,
@@ -111,7 +140,7 @@ export async function executeVariantCellData({
   args: RpcExecuteArgs<'MultiSampleVariantGetCellData'>
 }) {
   const {
-    mode,
+    layout,
     sampleFilter,
     unit,
     referenceDrawingMode = 'skip',
@@ -173,14 +202,14 @@ export async function executeVariantCellData({
       }),
   )
   // Screen order: the matrix's column order, and the order the anchored sort
-  // walks for a variant's neighbours in either mode.
+  // walks for a variant's neighbours in either layout.
   const filteredVariants = orderByScreenPosition(
     passing,
     regions,
     v => v.feature,
   )
   const simplifiedFeatures = simplifyFeatures(filteredVariants)
-  // Phase-set hues are gated on phased mode here rather than in each cell loop:
+  // Phase-set hues are gated on phased mode here rather than in the cell loop:
   // a phase set is a per-haplotype fact and only the phased loop paints one.
   // `getVariantColorScales` resolves the same combination the same way, so the
   // key and the cells agree.
@@ -202,144 +231,77 @@ export async function executeVariantCellData({
   })
   const rowNames = effectiveSources.map(s => s.name)
 
-  if (mode === 'regular') {
-    // Genomic order within a region, so overlapping records paint later over
-    // earlier as they lie in the file, whatever order the merged per-region
-    // fetches arrived in.
-    const perRegionVariants = groupFeaturesByRegion(
-      [...passing].sort(
-        (a, b) => a.feature.get('start') - b.feature.get('start'),
-      ),
-      regions.map((r, i) => ({
-        refName: r.refName,
-        start: r.start,
-        end: r.end,
-        displayedRegionIndex: displayedRegionIndices?.[i] ?? i,
-      })),
-      v => v.feature,
-    )
-    let total = 0
-    for (const list of perRegionVariants.values()) {
-      total += list.length
-    }
-    const perRegionCellData = await withProgress(
-      {
-        ...progressOpts,
-        label: 'Processing variants',
-        total,
-      },
-      report => {
-        const result: Record<number, VariantCellData> = {}
-        for (const [regionNum, regionVariants] of perRegionVariants) {
-          result[regionNum] = computeVariantCells({
-            filteredVariants: regionVariants,
-            sources: effectiveSources,
-            unit,
-            referenceDrawingMode,
-            hueValue: hue.value,
-            colorByPhaseSet,
-            featureGenotypeCodes,
-            genotypeDict,
-            sampleNames,
-            report,
-          })
-        }
-        return result
-      },
-    )
-
-    // A Set, not a list: a variant spanning two regions ships in both, sharing
-    // one `genotypeCodes` array, and handing the same buffer to postMessage
-    // twice is a structured-clone error.
-    const painted = paintedLegendFlags(Object.values(perRegionCellData))
-    const transferables = new Set<ArrayBufferLike>()
-    const shippedPerRegion: Record<number, ShippedRegionData> = {}
-    for (const [k, data] of Object.entries(perRegionCellData)) {
-      shippedPerRegion[Number(k)] = data
-      for (const id in data.featureGenotypeMap) {
-        transferables.add(data.featureGenotypeMap[id]!.genotypeCodes.buffer)
-      }
-      transferables.add(data.cellPositions.buffer)
-      transferables.add(data.cellRowIndices.buffer)
-      transferables.add(data.cellColors.buffer)
-      transferables.add(data.cellShapeTypes.buffer)
-      transferables.add(data.cellAltDosage.buffer)
-      transferables.add(data.cellFeatureIndices.buffer)
-      transferables.add(data.featureIndexData)
-      transferables.add(data.featurePositions.buffer)
-      transferables.add(data.featureInsertedBp.buffer)
-      transferables.add(data.featureColorValues.buffer)
-    }
-
-    return rpcResult(
-      {
-        mode: 'regular' as const,
-        samplePloidy,
-        rowNames,
-        hasPhasedOrHaploid,
-        colorRead: color,
-        ...painted,
-        hasConsequence,
-        hasSvType,
-        hasPhaseSet,
-        simplifiedFeatures,
-        genotypeDict,
-        sampleNames,
-        bytes,
-        perRegionCellData: shippedPerRegion,
-      },
-      [...transferables],
-    )
-  } else {
-    const cellData = await withProgress(
-      {
-        ...progressOpts,
-        label: 'Processing variants',
-        total: filteredVariants.length,
-      },
-      report =>
-        computeVariantMatrixCells({
-          filteredVariants,
+  const blocks = recordsByBlock({
+    layout,
+    regions,
+    displayedRegionIndices,
+    filteredVariants,
+  })
+  let total = 0
+  for (const list of blocks.values()) {
+    total += list.length
+  }
+  const perRegionCellData = await withProgress(
+    {
+      ...progressOpts,
+      label: 'Processing variants',
+      total,
+    },
+    report => {
+      const result: Record<number, VariantCellData> = {}
+      for (const [key, blockVariants] of blocks) {
+        result[key] = computeVariantCells({
+          filteredVariants: blockVariants,
           sources: effectiveSources,
           unit,
+          referenceDrawingMode,
           hueValue: hue.value,
           colorByPhaseSet,
           featureGenotypeCodes,
           genotypeDict,
           sampleNames,
           report,
-        }),
-    )
+        })
+      }
+      return result
+    },
+  )
 
-    const transferables: ArrayBufferLike[] = [
-      cellData.cellFeatureIndices.buffer,
-      cellData.cellRowIndices.buffer,
-      cellData.cellColors.buffer,
-      cellData.cellAltDosage.buffer,
-      cellData.featureColorValues.buffer,
-    ]
-    for (const fd of cellData.featureData) {
-      transferables.push(fd.genotypeCodes.buffer)
+  // A Set, not a list: a variant spanning two regions ships in both, sharing
+  // one `genotypeCodes` array, and handing the same buffer to postMessage
+  // twice is a structured-clone error.
+  const payloads = Object.values(perRegionCellData)
+  const transferables = new Set<ArrayBufferLike>()
+  for (const data of payloads) {
+    for (const info of data.featureInfo) {
+      transferables.add(info.genotypeCodes.buffer)
     }
-
-    return rpcResult(
-      {
-        mode: 'matrix' as const,
-        samplePloidy,
-        rowNames,
-        hasPhasedOrHaploid,
-        colorRead: color,
-        ...paintedLegendFlags([cellData]),
-        hasConsequence,
-        hasSvType,
-        hasPhaseSet,
-        simplifiedFeatures,
-        genotypeDict,
-        sampleNames,
-        bytes,
-        ...cellData,
-      },
-      transferables,
-    )
+    transferables.add(data.cellRowIndices.buffer)
+    transferables.add(data.cellColors.buffer)
+    transferables.add(data.cellAltDosage.buffer)
+    transferables.add(data.cellFeatureIndices.buffer)
+    transferables.add(data.featureIndexData)
+    transferables.add(data.featurePositions.buffer)
+    transferables.add(data.featureInsertedBp.buffer)
+    transferables.add(data.featureColorValues.buffer)
   }
+
+  return rpcResult(
+    {
+      samplePloidy,
+      rowNames,
+      hasPhasedOrHaploid,
+      colorRead: color,
+      ...paintedLegendFlags(payloads),
+      hasConsequence,
+      hasSvType,
+      hasPhaseSet,
+      simplifiedFeatures,
+      genotypeDict,
+      sampleNames,
+      bytes,
+      perRegionCellData,
+    },
+    [...transferables],
+  )
 }

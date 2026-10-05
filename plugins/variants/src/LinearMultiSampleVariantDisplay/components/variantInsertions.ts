@@ -6,12 +6,7 @@ import { cellCanDrawMarker } from './variantCellSpan.ts'
 import type { VariantRenderBlock } from './variantRenderingBackendTypes.ts'
 import type { InsertionChannels } from '@jbrowse/alignments-core'
 
-/**
- * The per-region fields the insertion channels read, declared structurally
- * rather than as `VariantCellData`: the main thread holds the *shipped* form,
- * whose `featureGenotypeMap` is interned to genotype codes before crossing the
- * RPC boundary. Both satisfy this.
- */
+/** The per-region fields the insertion channels read. */
 export interface VariantInsertionData {
   cellRowIndices: Uint32Array
   cellColors: Uint32Array

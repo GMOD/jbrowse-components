@@ -4,10 +4,9 @@ Pipeline, measurements and what each optimization bought:
 [reference/MULTI_SAMPLE_VARIANTS.md](../../../agent-docs/reference/MULTI_SAMPLE_VARIANTS.md).
 Fetch/render tiering: `agent-docs/ARCHITECTURE.md`.
 
-**Hot loops** (`computeVariantCells.ts`, `computeVariantMatrixCells.ts`, the
-upload/render callbacks) run 10⁸+ times: indexed `for`,
-`for (const key in obj)`, no `??`/`||` wrapping an allocating right-side. Not
-elsewhere.
+**Hot loops** (`computeVariantCells.ts`, the upload/render callbacks) run 10⁸+
+times: indexed `for`, `for (const key in obj)`, no `??`/`||` wrapping an
+allocating right-side. Not elsewhere.
 
 ## Rules
 

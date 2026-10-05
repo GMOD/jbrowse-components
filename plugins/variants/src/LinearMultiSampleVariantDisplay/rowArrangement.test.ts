@@ -403,14 +403,15 @@ describe('an adapter swap to a new cohort', () => {
 
 // The interned payload one variant's worth of genotypes reaches the model as:
 // codes are 1-based indices into `genotypeDict`, aligned to `sampleNames`.
-// Matrix mode rather than regular because its shape is the flat one — the sort
-// reads both through `getOrderedGenotypeCodes`.
 const ONE_VARIANT = {
-  mode: 'matrix',
   simplifiedFeatures: [{ id: 'v1' }],
-  featureData: [
-    { featureId: 'v1', genotypeCodes: Uint32Array.from([1, 2, 3]) },
-  ],
+  perRegionCellData: {
+    0: {
+      featureInfo: [
+        { featureId: 'v1', genotypeCodes: Uint32Array.from([1, 2, 3]) },
+      ],
+    },
+  },
   sampleNames: ['S0', 'S1', 'S2'],
   genotypeDict: ['0/0', '0/1', '1/1'],
 }

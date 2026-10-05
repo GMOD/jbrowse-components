@@ -1,6 +1,7 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
 
+import { featureInfoOf } from '../shared/cellDataFixtures.ts'
 import { HIDDEN_ROW } from '../shared/constants.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -25,7 +26,6 @@ function featureIndexData(numFeatures: number) {
 function regularCellData(rowNames: string[]): CellDataResult {
   const numCells = rowNames.length
   return {
-    mode: 'regular',
     samplePloidy: Object.fromEntries(SAMPLES.map(name => [name, 2])),
     rowNames,
     hasPhasedOrHaploid: false,
@@ -43,12 +43,10 @@ function regularCellData(rowNames: string[]): CellDataResult {
     sampleNames: SAMPLES,
     perRegionCellData: {
       0: {
-        cellPositions: Uint32Array.from(rowNames.flatMap(() => [100, 200])),
         // worker row r gets a cell whose colour encodes r, so a mis-placement
         // is visible as the wrong colour on a row rather than just a wrong index
         cellRowIndices: Uint32Array.from(rowNames.map((_, r) => r)),
         cellColors: Uint32Array.from(rowNames.map((_, r) => 0xff0000 + r)),
-        cellShapeTypes: new Uint8Array(numCells),
         cellAltDosage: new Uint8Array(numCells).fill(1),
         cellFeatureIndices: new Uint32Array(numCells),
         numCells,
@@ -56,8 +54,7 @@ function regularCellData(rowNames: string[]): CellDataResult {
         paintedCategories: 0,
         colorValues: [],
         paintedColorValues: [],
-        featureGenotypeMap: {},
-        featureIdList: ['v0'],
+        featureInfo: [featureInfoOf('v0', { length: 100 })],
         featurePositions: Uint32Array.from([100, 200]),
         featureIndexData: featureIndexData(1),
         featureInsertedBp: Int32Array.from([0]),

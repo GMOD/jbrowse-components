@@ -22,8 +22,8 @@ below are relative to `plugins/variants/src/`.
   `phaseSetReader` needs it too.
 - **PS reads through `processFormatFields`, not `samples`.**
 - Maps crossing RPC key by `sampleName`, never `name` (HP-suffixed when phased).
-- **`featureGenotypeMap` records every genotype, not what got painted** — both
-  cell loops ship the interned per-feature array by reference. Under the default
+- **`featureInfo` records every genotype, not what got painted** — the cell
+  loop ships the interned per-feature array by reference. Under the default
   `referenceDrawingMode: 'skip'` a painted-cells copy makes every hom-ref row
   decode as MISSING to the anchored sort.
 - **`NaN` is the only missing marker.** A value-scale sentinel made samples
@@ -207,11 +207,13 @@ never writes the `facet` slot, so a session spec's own `facet` survives it.
 ## One display, two layouts: `variantLayout`
 
 The x position is a setting of the one display, `'genomic'` or `'columns'`, the
-choice the LD display makes under the same slot, not a second display type. At
-genomic positions the worker ships cells per displayed region
-(`cellData.mode: 'regular'`); in columns it ships one matrix over the visible
-regions, laid out by feature **index** at equal widths (`'matrix'`), fetched
-visible-only and zoom-strict. The layout is a fetch input (`rpcProps().mode`).
+choice the LD display makes under the same slot, not a second display type. The
+worker ships one payload shape for both
+([ADR-210](../architecture-decision-records/adr-210-both-variant-layouts-ship-one-cell-payload.md)):
+at genomic positions a `VariantCellData` per displayed region, in columns one
+under 0 for the whole window, laid out by feature **index** at equal widths,
+fetched visible-only and zoom-strict. The layout is a fetch input
+(`rpcProps().layout`).
 
 Each layout mounts its own `DisplayChrome` and mark backend (`matrix/` holds the
 columns' body, marks and export). **The upload lifecycle installs once per

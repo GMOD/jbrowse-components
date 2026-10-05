@@ -1,11 +1,15 @@
+import {
+  cellDataOf,
+  cellPayloadOf,
+  featureInfoOf,
+} from '../../shared/cellDataFixtures.ts'
 import { f2 } from '../../shared/constants.ts'
 import { findCellIndex } from '../../shared/variantCellLookup.ts'
 import { variantMatrixSurface } from './VariantMatrixComponent.tsx'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../../VariantRPC/executeVariantCellData.ts'
-
-type MatrixCellDataResult = Extract<CellDataResult, { mode: 'matrix' }>
+import type { VariantCellData } from '../components/computeVariantCells.ts'
 
 // Two sites over two samples, every cell called: S0 is hom-ref at both, S1
 // carries the alt at both, so the reference bucket holds S0's two cells and the
@@ -17,49 +21,39 @@ const SOURCES = [
   { name: 'S0', sampleName: 'S0' },
 ]
 
-function matrixCellData(): MatrixCellDataResult {
-  return {
-    mode: 'matrix',
-    samplePloidy: {},
+function matrixCellData(cells?: Partial<VariantCellData>): CellDataResult {
+  return cellDataOf({
     rowNames: ROW_NAMES,
-    hasPhasedOrHaploid: false,
-    hasSecondaryAlt: false,
-    hasUnphased: false,
-    hasNoCall: false,
-    hasConsequence: false,
-    hasSvType: false,
-    hasPhaseSet: false,
-    paintedCategories: 0,
-    colorRead: undefined,
     simplifiedFeatures: [0, 1000].map((start, i) => ({
       id: `v${i}`,
       data: { start, end: start + 1, refName: 'ctgA', name: `v${i}` },
     })),
     genotypeDict: ['0/0', '1/1'],
     sampleNames: ROW_NAMES,
-    // reference bucket first, then non-reference, each feature-major
-    cellFeatureIndices: Float32Array.of(0, 1, 0, 1),
-    cellRowIndices: Uint32Array.of(0, 0, 1, 1),
-    cellColors: Uint32Array.of(0xffcccccc, 0xffcccccc, 0xff0000ff, 0xff0000ff),
-    cellAltDosage: Uint8Array.of(0, 0, 255, 255),
-    numCells: 4,
-    refCellCount: 2,
-    numFeatures: 2,
-    featureColorValues: new Uint32Array(2),
-    colorValues: [],
-    paintedColorValues: [],
-    featureData: [0, 1].map(i => ({
-      featureId: `v${i}`,
-      ref: 'A',
-      alt: ['T'],
-      name: `v${i}`,
-      description: '',
-      length: 1,
-      insertedBp: 0,
-      type: 'SNV',
-      genotypeCodes: Uint32Array.of(1, 2),
-    })),
-  }
+    perRegionCellData: {
+      0: cellPayloadOf(
+        [0, 1].map(i =>
+          featureInfoOf(`v${i}`, { genotypeCodes: Uint32Array.of(1, 2) }),
+        ),
+        {
+          // reference bucket first, then non-reference, each feature-major
+          cellFeatureIndices: Uint32Array.of(0, 1, 0, 1),
+          cellRowIndices: Uint32Array.of(0, 0, 1, 1),
+          cellColors: Uint32Array.of(
+            0xffcccccc,
+            0xffcccccc,
+            0xff0000ff,
+            0xff0000ff,
+          ),
+          cellAltDosage: Uint8Array.of(0, 0, 255, 255),
+          numCells: 4,
+          refCellCount: 2,
+          featurePositions: Uint32Array.of(0, 1, 1000, 1001),
+          ...cells,
+        },
+      ),
+    },
+  })
 }
 
 // An 8kb window at bpPerPx 10 fills the 800px viewport, so the two columns are
@@ -103,7 +97,7 @@ test('the hit names the drawn cell the tooltip reports, and the hover lights it'
   expect(hit.fields.sampleName).toBe('S0')
   expect(hit.fields.genotype).toBe('0/0')
   expect(hit.cell).toEqual({
-    cellIndex: findCellIndex(display.placedMatrixData!, 1, 0),
+    cellIndex: findCellIndex(display.paintedRegionRows.get(0)!, 1, 0),
   })
   expect(hit.cell!.cellIndex).toBe(1)
 
@@ -121,25 +115,27 @@ test('the hit names the drawn cell the tooltip reports, and the hover lights it'
 test('a genotype the worker drew no cell for does not hover', () => {
   const display = loadedDisplay()
   // a hom-ref call at S0, site 0, but the reference bucket holds only site 1
-  display.setCellData({
-    ...matrixCellData(),
-    cellFeatureIndices: Float32Array.of(1, 0, 1),
-    cellRowIndices: Uint32Array.of(0, 1, 1),
-    cellColors: Uint32Array.of(0xffcccccc, 0xff0000ff, 0xff0000ff),
-    numCells: 3,
-    refCellCount: 1,
-  })
+  display.setCellData(
+    matrixCellData({
+      cellFeatureIndices: Uint32Array.of(1, 0, 1),
+      cellRowIndices: Uint32Array.of(0, 1, 1),
+      cellColors: Uint32Array.of(0xffcccccc, 0xff0000ff, 0xff0000ff),
+      numCells: 3,
+      refCellCount: 1,
+    }),
+  )
   expect(variantMatrixSurface(display).getHit(10, 25)).toBeUndefined()
 })
 
 test('the tooltip reports an insertion on the cells the painter drew as alt', () => {
   const display = loadedDisplay()
-  const data = matrixCellData()
-  display.setCellData({
-    ...data,
-    cellAltDosage: Uint8Array.of(0, 0, 255, 0),
-    featureData: data.featureData.map(f => ({ ...f, insertedBp: 5 })),
-  })
+  const { featureInfo } = matrixCellData().perRegionCellData[0]!
+  display.setCellData(
+    matrixCellData({
+      cellAltDosage: Uint8Array.of(0, 0, 255, 0),
+      featureInfo: featureInfo.map(f => ({ ...f, insertedBp: 5 })),
+    }),
+  )
   const insertion = (x: number, y: number) =>
     variantMatrixSurface(display).getHit(x, y)!.fields.insertion
   expect(insertion(10, 5)).toBe('5bp')

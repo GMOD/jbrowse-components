@@ -4,15 +4,15 @@ test('the layout is a fetch input, and columns spend no band on the lane', () =>
   const { display } = createTestEnvironment({
     displayConfig: { showVariantLane: true },
   }).createDisplay()
-  expect(display.rpcProps().mode).toBe('regular')
+  expect(display.rpcProps().layout).toBe('genomic')
   expect(display.showVariantLane).toBe(true)
   expect(display.lineZoneHeight).toBe(0)
 
   display.setVariantLayout('columns')
 
-  expect(display.rpcProps().mode).toBe('matrix')
-  // the worker ships reference cells in columns whatever the setting says
-  expect(display.rpcProps()).toHaveProperty('referenceDrawingMode', undefined)
+  expect(display.rpcProps().layout).toBe('columns')
+  // columns draw reference cells whatever the setting says
+  expect(display.rpcProps()).toHaveProperty('referenceDrawingMode', 'draw')
   expect(display.showVariantLane).toBe(false)
   expect(display.topBands.laneHeight).toBe(0)
   expect(display.lineZoneHeight).toBe(20)
