@@ -1092,14 +1092,14 @@ const GRAPH_BUBBLE_SPREADS: Record<string, string> = {
 
 // The Layout quality radio, which is FMMM's iteration budget rather than a
 // rendering knob: 0 is 3 fixed + 1 fine-tuning iteration and 4 is 120 + 60
-// (graphlayout.cpp in jbrowse-plugin-graphgenomeview), labelled by the plugin's
-// own `qualityLabels`.
+// (graphlayout.cpp in jbrowse-plugin-graphgenomeview), labelled by bandage-core's
+// `LAYOUT_QUALITIES`.
 const GRAPH_LAYOUT_QUALITIES: Record<number, string> = {
-  0: 'Lowest',
-  1: 'Low',
-  2: 'Medium',
-  3: 'High',
-  4: 'Highest',
+  0: 'Fastest',
+  1: 'Fast',
+  2: 'Default',
+  3: 'Fine',
+  4: 'Best',
 }
 
 const GRAPH_CONTEXTS: Record<number, string> = {
