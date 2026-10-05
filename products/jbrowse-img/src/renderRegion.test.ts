@@ -428,6 +428,15 @@ describe('readData', () => {
     expect(result.assembly.name).toBe('GRCh38')
   })
 
+  test('an assembly file joins the config assemblies it was chosen beside', () => {
+    const result = readData({ config: configFile, assembly: assemblyFile })
+    expect(result.assemblies.map(a => a.name).sort()).toEqual([
+      'GRCh38',
+      'hg19',
+    ])
+    expect(result.assemblies).toContain(result.assembly)
+  })
+
   test('clears defaultSession from config by default', () => {
     const result = readData({ config: configFile })
     expect(result.defaultSession).toBeUndefined()

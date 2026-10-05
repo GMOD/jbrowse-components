@@ -118,6 +118,54 @@ describe('a session holding a view the subcommand cannot draw', () => {
   }, 60000)
 })
 
+describe('track flags a view fixed by --spec or --session would drop', () => {
+  const breakpointSpec = JSON.stringify({
+    type: 'BreakpointSplitView',
+    views: [
+      { assembly: 'volvox', loc: 'ctgA:1-4000', tracks: ['volvox_sv'] },
+      { assembly: 'volvox', loc: 'ctgA:20000-24000', tracks: ['volvox_sv'] },
+    ],
+  })
+
+  it('refuses --track beside a --spec', async () => {
+    await expect(
+      renderRegion({
+        ...opts,
+        mode: 'breakpoint',
+        spec: breakpointSpec,
+        showTracks: [['track', ['volvox_sv', 'height:200']]],
+      }),
+    ).rejects.toThrow(/--spec fixes the view's tracks, so --track would be/)
+  }, 60000)
+
+  it('refuses a file flag beside a --spec', async () => {
+    await expect(
+      renderRegion({
+        ...opts,
+        mode: 'breakpoint',
+        spec: breakpointSpec,
+        trackList: [['bigwig', [bigwig]]],
+      }),
+    ).rejects.toThrow(/--spec fixes the view's tracks, so --bigwig would be/)
+  }, 60000)
+
+  it('refuses --track beside an adopted breakpoint session', async () => {
+    await expect(
+      renderRegion({
+        ...opts,
+        mode: 'breakpoint',
+        session: writeSession({
+          name: 'sv',
+          views: JSON.parse(breakpointSpec).views && [
+            JSON.parse(breakpointSpec),
+          ],
+        }),
+        showTracks: [['track', ['volvox_sv']]],
+      }),
+    ).rejects.toThrow(/the session fixes the view's tracks/)
+  }, 60000)
+})
+
 describe('file-type track flags a comparative view never opens', () => {
   let warn: jest.SpyInstance
   beforeEach(() => {

@@ -188,13 +188,18 @@ export function readData(
   // configData.tracks exists below.
   let syntenyTracks: Track[] = []
 
-  // use assembly from file if a file existed
-  if (assemblyData) {
-    configData.assembly = assemblyData
-  }
-  // else check if it was an assembly name in a config file
-  else if (configData.assemblies?.length) {
+  if (configData.assemblies?.length) {
     configData.assemblies = configData.assemblies.map(expandAssemblySequence)
+  }
+  if (assemblyData) {
+    configData.assemblies = [
+      ...(configData.assemblies ?? []).filter(
+        a => a.name !== assemblyData.name,
+      ),
+      assemblyData,
+    ]
+    configData.assembly = assemblyData
+  } else if (configData.assemblies?.length) {
     // --config/--hub and the CLI assembly flags are alternatives, not additive:
     // the config's assemblies win outright, so a --fasta given alongside one is
     // dropped — and in a comparative run so is every --paf/--chain that binds to

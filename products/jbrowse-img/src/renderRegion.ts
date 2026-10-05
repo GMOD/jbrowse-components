@@ -474,6 +474,13 @@ async function addLaunchView<T extends InitView, N extends string>(
   if (ctx.spec && !settingsFromSpec) {
     throw new Error(`--spec cannot describe a ${viewType}`)
   }
+  const fixedBy = ctx.spec ? '--spec' : suppliedType ? 'the session' : undefined
+  const named = namedTrackFlags(ctx.opts)
+  if (fixedBy && viewType !== 'LinearGenomeView' && named.length > 0) {
+    throw new Error(
+      `${fixedBy} fixes the view's tracks, so ${named.join(', ')} would be dropped; put them in ${fixedBy === '--spec' ? 'the spec' : 'the session'}`,
+    )
+  }
   const view =
     suppliedType === viewType
       ? session.views[0]
@@ -739,30 +746,29 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   }
 }
 
-// Options only renderLinear reads. A comparative view takes its levels from its
-// own launch blob (or --spec), so a --track/--refseq passed to one is dropped;
-// --loc positions the sub-views of a comparative view but means nothing to a
-// circular one, which always shows the whole assembly. main.ts warns about the
-// reverse — comparative flags in a linear run — so say this here rather than
-// leave the non-linear direction silent.
-//
-// `opensNamedTracks` is which modes read --track: the breakpoint view's panels
-// are ordinary LGVs and the tracks on them are the whole picture, and the
-// circular view rings whichever tracks were named.
+function fileTrackFlags({ trackList }: Opts) {
+  return [
+    ...new Set(
+      (trackList ?? [])
+        .map(([type]) => type)
+        .filter(type => !syntenyTrackTypes.includes(type)),
+    ),
+  ].map(type => `--${type}`)
+}
+
+function namedTrackFlags(opts: Opts) {
+  return [
+    ...(opts.showTracks?.length ? ['--track'] : []),
+    ...fileTrackFlags(opts),
+  ]
+}
+
+// A comparative view's levels are its synteny files, so another file flag draws
+// nowhere; --loc means nothing to a circular view, which shows the whole assembly.
 function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
   if (mode !== 'linear') {
-    // A comparative view's levels are made of the synteny files, and it opens
-    // nothing else — so `--fasta a --paf x --fasta b --bigwig sig.bw` built the
-    // bigwig's track config and then showed it nowhere. Circular is exempt: it
-    // rings them.
     const droppedFiles = modeDescriptors[mode].comparative
-      ? [
-          ...new Set(
-            (opts.trackList ?? [])
-              .map(([type]) => type)
-              .filter(type => !syntenyTrackTypes.includes(type)),
-          ),
-        ].map(type => `--${type}`)
+      ? fileTrackFlags(opts)
       : []
     const ignored = [
       opts.showTracks?.length && !modeDescriptors[mode].opensNamedTracks
