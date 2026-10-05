@@ -1266,6 +1266,9 @@ export function stateModelFactory(
               self.symlogConstant,
             ),
             colorScales,
+            colorsFromY: self.markColors.map(
+              color => color.kind === 'numbers' && color.fromY,
+            ),
             canvasWidth,
             canvasHeight,
             bpPerPx: self.host.bpPerPx,

@@ -108,6 +108,8 @@ export interface MarkRenderState extends MarkFrame {
   symlogConstantY: number
   /** Mark `i`'s colour scale, a ramp or a threshold, undefined where its colour is neither. */
   colorScales: (MarkColorScale | undefined)[]
+  /** Whether mark `i`'s colour field is its plotted `y`, which a line's threshold colours along. */
+  colorsFromY: boolean[]
   bpPerPx: number
   origin: number
   minWidthPx: number
@@ -405,6 +407,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
           colorScale: regionColorScale(s, d, i),
+          colorFromY: s.colorsFromY[i]!,
           origin: s.origin,
           lineWidth: s.markSizes[i]!,
           rowHeight: s.rowHeight,

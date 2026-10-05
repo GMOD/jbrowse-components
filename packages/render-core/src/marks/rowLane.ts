@@ -70,6 +70,17 @@ export function rowSlot(
   return keySlot(rowKey(row, i), table)
 }
 
+/** Instance `i`'s key's colour override, undefined where it keeps its own. */
+export function rowColorOverride(
+  row: Uint32Array | undefined,
+  i: number,
+  table: RowTable | undefined,
+) {
+  const key = rowKey(row, i)
+  const override = table && key < table.keys ? table.color[key]! : NO_ROW_COLOR
+  return override >>> 24 === 0 ? undefined : override
+}
+
 /** The colour instance `i` is drawn in: its key's override, else `color`. */
 export function rowColor(
   color: number,
@@ -77,7 +88,5 @@ export function rowColor(
   i: number,
   table: RowTable | undefined,
 ) {
-  const key = rowKey(row, i)
-  const override = table && key < table.keys ? table.color[key]! : NO_ROW_COLOR
-  return override >>> 24 === 0 ? color : override
+  return rowColorOverride(row, i, table) ?? color
 }

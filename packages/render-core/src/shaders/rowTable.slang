@@ -34,6 +34,8 @@ public struct RowPlacement {
   public bool hidden;
   public uint slot;
   public float4 color;
+  // Whether `color` is the table's override rather than the instance's own.
+  public bool overridden;
 };
 
 public uint rowTableWidth(uint keys) {
@@ -74,6 +76,7 @@ public RowPlacement rowTableLookup(
   p.hidden = false;
   p.slot = key;
   p.color = own;
+  p.overridden = false;
   if (keys < 0) {
     return p;
   }
@@ -93,6 +96,7 @@ public RowPlacement rowTableLookup(
   }
   p.slot = byteOf(s.r) | (byteOf(s.g) << 8) | (byteOf(s.b) << 16);
   float4 c = table.SampleLevel(float2(u, (float(y + h) + 0.5) / rows), 0.0);
-  p.color = c.a > 0.0 ? c : own;
+  p.overridden = c.a > 0.0;
+  p.color = p.overridden ? c : own;
   return p;
 }

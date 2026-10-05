@@ -405,6 +405,7 @@ function hoverCheck(bars: EncodedChannels, region: Region, bpPerPx: number) {
     scaleTypeY: 'linear',
     symlogConstantY: 1,
     colorScales: [],
+    colorsFromY: [],
     canvasWidth: widthPx,
     canvasHeight: 100,
     bpPerPx,

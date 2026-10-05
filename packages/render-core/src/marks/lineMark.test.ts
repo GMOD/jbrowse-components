@@ -1,3 +1,4 @@
+import { clipBlock } from '../blockClipUtils.ts'
 import * as center from '../shaders/lineCenterMark.iface.generated.ts'
 import { GAP_Y, NO_PREV_X } from '../shaders/lineCommon.generated.ts'
 import * as step from '../shaders/lineStepMark.iface.generated.ts'
@@ -220,6 +221,7 @@ test('under a threshold a step is stroked once per band, a rise across the cut c
   lineStepMark.paintBlock(ctx, c, block, frame, {
     ...params,
     colorScale: { cuts: [5], colors: Uint32Array.of(RED, BLUE) },
+    colorFromY: true,
   })
   const red = abgrToCssRgba(RED)
   const blue = abgrToCssRgba(BLUE)
@@ -235,4 +237,56 @@ test('under a threshold a step is stroked once per band, a rise across the cut c
     [blue, 199, 19, 102, 2],
     [blue, 299, 19, 2, 32],
   ])
+})
+
+test('a threshold over another field colours each instance by its own value', () => {
+  const c = channels([
+    { x: 10, x2: 20, y: 9 },
+    { x: 20, x2: 30, y: 9 },
+  ])
+  c.colorValue = Float32Array.of(0, 100)
+  const { ctx, calls } = mockCtx()
+  lineStepMark.paintBlock(ctx, c, block, frame, {
+    ...params,
+    colorScale: { cuts: [50], colors: Uint32Array.of(RED, BLUE) },
+  })
+  const tops = calls.filter(r => r.w > 50)
+  expect(tops.map(r => r.fillStyle)).toEqual([
+    abgrToCssRgba(RED),
+    abgrToCssRgba(BLUE),
+  ])
+})
+
+test('along y, a row the table recolours paints its override', () => {
+  const c = channels([
+    { x: 10, x2: 20, y: 2 },
+    { x: 20, x2: 30, y: 8 },
+  ])
+  c.colorValue = c.y
+  const GREEN = 0xff00ff00
+  const table = buildRowTable(Uint32Array.of(0), Uint32Array.of(GREEN))
+  const { ctx, calls } = mockCtx()
+  lineStepMark.paintBlock(ctx, c, block, frame, {
+    ...params,
+    colorScale: { cuts: [5], colors: Uint32Array.of(RED, BLUE) },
+    colorFromY: true,
+    rowTable: table,
+  })
+  expect(new Set(calls.map(r => r.fillStyle))).toEqual(
+    new Set([abgrToCssRgba(GREEN)]),
+  )
+})
+
+test('the uniforms say whether the colour field is the plotted y', () => {
+  const clip = clipBlock(block, frame.canvasWidth, frame.canvasHeight, {
+    x: 1,
+    y: 1,
+  })!
+  const colorFromY = (p: LineParams) => {
+    const scratch = new ArrayBuffer(step.UNIFORMS_SIZE_BYTES)
+    lineStepMark.writeUniforms(scratch, clip, block, frame, p)
+    return new Int32Array(scratch)[step.UNIFORM_OFFSET_I32.colorFromY]
+  }
+  expect(colorFromY(params)).toBe(0)
+  expect(colorFromY({ ...params, colorFromY: true })).toBe(1)
 })

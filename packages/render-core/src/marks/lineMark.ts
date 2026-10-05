@@ -17,6 +17,7 @@ import {
 import {
   bandHeightPx,
   rowColor,
+  rowColorOverride,
   rowLane,
   rowSlot,
   rowTableKeys,
@@ -57,6 +58,12 @@ export interface LineChannels extends ColorChannel, RowChannel {
 export interface LineParams extends RowParams, MarkValueScale {
   /** The quantitative colour scale, for a line whose colour is a ramp or a threshold. */
   colorScale?: MarkColorScale
+  /**
+   * Whether the colour field is the plotted `y`. Only then does a threshold's
+   * cut sit on the y scale, so the line changes colour where it crosses one;
+   * otherwise each instance takes its own value's colour.
+   */
+  colorFromY?: boolean
   /** The value a step drops to across a gap. */
   origin: number
   /** Stroke width in CSS px. */
@@ -141,6 +148,7 @@ function writeLineUniforms(
     domainMax: params.domain[1],
     ...valueScaleUniforms(params),
     ...rampUniforms(params.colorScale),
+    colorFromY: params.colorFromY ? 1 : 0,
     rowHeight,
     rowBandPx: params.rowBandPx ?? rowHeight,
     rowOffsetPx: params.rowOffsetPx ?? 0,
@@ -439,9 +447,9 @@ function traceCenter(
 
 type Trace = (pen: LinePen, indices: Iterable<number>) => void
 
-// Under a threshold the line is stroked once per band per row, each pass
-// keeping the parts of the polyline inside its band; otherwise once, in each
-// instance's own colour.
+// Along y, the line is stroked once per band per row, each pass keeping the
+// parts of the polyline inside its band; otherwise once, in each instance's
+// own colour. A row the table recolours takes its override either way.
 function paintLine(
   ctx: MarkContext2D,
   c: LineChannels,
@@ -451,20 +459,28 @@ function paintLine(
 ) {
   const { row, count } = c
   const scale = params.colorScale
-  if (scale && isThreshold(scale) && c.colorValue) {
-    const bySlot = new Map<number, number[]>()
-    for (let i = 0; i < count; i++) {
-      const slot = rowSlot(row, i, g.table)
-      if (slot !== undefined) {
-        const held = bySlot.get(slot)
-        if (held) {
-          held.push(i)
-        } else {
-          bySlot.set(slot, [i])
-        }
-      }
+  const bySlot = new Map<number, number[]>()
+  const own: number[] = []
+  const yThreshold =
+    params.colorFromY && scale && isThreshold(scale) ? scale : undefined
+  for (let i = 0; i < count; i++) {
+    const slot = rowSlot(row, i, g.table)
+    if (slot === undefined) {
+      continue
     }
-    const { cuts, colors } = scale
+    if (yThreshold && rowColorOverride(row, i, g.table) === undefined) {
+      const held = bySlot.get(slot)
+      if (held) {
+        held.push(i)
+      } else {
+        bySlot.set(slot, [i])
+      }
+    } else {
+      own.push(i)
+    }
+  }
+  if (yThreshold) {
+    const { cuts, colors } = yThreshold
     for (const [slot, indices] of bySlot) {
       const cutYs = cuts.map(cut => colorYPx(g, cut, slot))
       for (let k = 0; k <= cuts.length; k++) {
@@ -478,15 +494,13 @@ function paintLine(
         pen.end()
       }
     }
-    return
   }
-  const color = paintColors(c, count, scale)
-  const pen = new InstancePen(ctx, i => rowColor(color[i]!, row, i, g.table))
-  trace(
-    pen,
-    Array.from({ length: count }, (_, i) => i),
-  )
-  pen.end()
+  if (own.length > 0) {
+    const color = paintColors(c, count, scale)
+    const pen = new InstancePen(ctx, i => rowColor(color[i]!, row, i, g.table))
+    trace(pen, own)
+    pen.end()
+  }
 }
 
 function paintStep(

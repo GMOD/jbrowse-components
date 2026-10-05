@@ -29,14 +29,14 @@ export const UNIFORM_OFFSET_F32 = {
   rampMin: 9,
   rampMax: 10,
   rampMidNorm: 11,
-  rowHeight: 60,
-  rowBandPx: 61,
-  rowOffsetPx: 62,
-  origin: 63,
-  lineWidth: 64,
-  zero: 65,
-  viewportWidth: 66,
-  devicePixelRatio: 67,
+  rowHeight: 61,
+  rowBandPx: 62,
+  rowOffsetPx: 63,
+  origin: 64,
+  lineWidth: 65,
+  zero: 66,
+  viewportWidth: 67,
+  devicePixelRatio: 68,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
@@ -44,7 +44,8 @@ export const UNIFORM_OFFSET_I32 = {
   valueScaleType: 6,
   rampMode: 8,
   colorCutCount: 12,
-  rowTableKeys: 68,
+  colorFromY: 60,
+  rowTableKeys: 69,
 } as const
 
 
@@ -104,6 +105,7 @@ export interface Uniforms {
   colorCutCount: number
   colorCuts: [[number, number, number, number], [number, number, number, number]]
   colorBands: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
+  colorFromY: number
   rowHeight: number
   rowBandPx: number
   rowOffsetPx: number
@@ -175,15 +177,16 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[57] = uniforms.colorBands[8][1]
   f32[58] = uniforms.colorBands[8][2]
   f32[59] = uniforms.colorBands[8][3]
-  f32[60] = uniforms.rowHeight
-  f32[61] = uniforms.rowBandPx
-  f32[62] = uniforms.rowOffsetPx
-  f32[63] = uniforms.origin
-  f32[64] = uniforms.lineWidth
-  f32[65] = uniforms.zero
-  f32[66] = uniforms.viewportWidth
-  f32[67] = uniforms.devicePixelRatio
-  i32[68] = uniforms.rowTableKeys
+  i32[60] = uniforms.colorFromY
+  f32[61] = uniforms.rowHeight
+  f32[62] = uniforms.rowBandPx
+  f32[63] = uniforms.rowOffsetPx
+  f32[64] = uniforms.origin
+  f32[65] = uniforms.lineWidth
+  f32[66] = uniforms.zero
+  f32[67] = uniforms.viewportWidth
+  f32[68] = uniforms.devicePixelRatio
+  i32[69] = uniforms.rowTableKeys
 }
 
 export const INSTANCE_STRIDE_BYTES = 32

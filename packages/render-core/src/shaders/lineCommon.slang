@@ -44,6 +44,9 @@ public struct Uniforms {
   public int    colorCutCount;
   public float4 colorCuts[2];
   public float4 colorBands[MAX_COLOR_BANDS];
+  // 1 where the colour field is the plotted `y`, so a threshold's cuts sit on
+  // the y scale and the line changes colour where it crosses one.
+  public int    colorFromY;
   // CSS px per row band; the canvas height where every instance is on row 0.
   public float  rowHeight;
   // CSS px the value scale runs over inside a row, and how far below the
@@ -92,10 +95,18 @@ public float4 lineCutYsPx(int from, float bandTop, Uniforms u) {
   return ys;
 }
 
-// A line fragment's colour: under a threshold, the interval the colour y it
-// is read at falls in; otherwise the colour its vertex resolved.
-public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, float4 own, Uniforms u) {
-  if (u.rampMode != RAMP_THRESHOLD) {
+// Whether a vertex's fragments read their colour along y: under a threshold
+// over the plotted value, on a row the table does not recolour.
+public float lineColorAlongY(bool overridden, Uniforms u) {
+  return u.rampMode == RAMP_THRESHOLD && u.colorFromY != 0 && !overridden
+    ? 1.0
+    : 0.0;
+}
+
+// A line fragment's colour: along y, the interval the colour y it is read at
+// falls in; otherwise the colour its vertex resolved.
+public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, float4 own, float alongY, Uniforms u) {
+  if (alongY < 0.5) {
     return own;
   }
   return u.colorBands[thresholdBandAtYPx(colorYPx, u.colorCutCount, cutYsLo, cutYsHi)];
