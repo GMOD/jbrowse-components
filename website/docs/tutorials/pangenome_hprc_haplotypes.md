@@ -104,7 +104,7 @@ Press **haplotypes** on the C4A / C4B row, the complement component 4 genes. In
 the track menu open **Lanes → Choose lanes...**, press **Untick shown**, tick
 `HG01978.2` and `HG02004.2`, and press **Draw these lanes**.
 
-<Figure caption="C4 from the HPRC page's haplotypes launch with two lanes chosen, HG01978.2 and HG02004.2, each with three copies of the C4-CYP21-TNX module, under the RefSeq genes. The band from GRCh38 leaves the third module unmatched, and the band between the two haplotypes matches it off the nodes both paths share." src="/img/multiway_synteny/hprc_c4_graph_stack.png" />
+<Figure caption="C4 from the HPRC page's haplotypes launch with two lanes chosen, HG01978.2 and HG02004.2, each with three copies of the C4-CYP21-TNX module, under the RefSeq genes. The third module is purple on both lanes, sequence hg38 lacks, and the purple band between them is that module aligned between the two haplotypes off the nodes both paths share." src="/img/multiway_synteny/hprc_c4_graph_stack.png" />
 
 ## GSTT1: a gene GRCh38's chromosome lacks
 
@@ -130,7 +130,7 @@ choose `HG01361.1`, `HG00133.2`, `HG00133.1`, `NA18608.2` and `HG00232.1`. A
 lane with more copies spans more of its contig in the same width, and its label
 gives that span as a multiple of the window.
 
-<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one per amylase structure, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes; a lane longer than the window gives its span as a multiple in its label, and each band draws the extra copies of the longer lane as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
+<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one per amylase structure, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes, with the stretch hg38 lacks in purple; a lane longer than the window gives its span as a multiple in its label." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
 
 To read the lengths, take **Display types → Graph**, enter the five names in
 **Settings → Haplotypes**, then pick **Layout → Walk rows** and **Color →
