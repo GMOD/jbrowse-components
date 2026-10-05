@@ -26,9 +26,3 @@ test('a JSON syntax error names the flag', () => {
   expect(() => readJson('session', '{bad')).toThrow(/^--session: /)
   expect(() => readAnnotations('[bad')).toThrow(/^--annotations: /)
 })
-
-test('a callout the overlay could not draw fails before a browser launches', () => {
-  expect(() => readAnnotations('[{"type":"squiggle"}]')).toThrow(
-    'annotation 0: type "squiggle" is not one of',
-  )
-})

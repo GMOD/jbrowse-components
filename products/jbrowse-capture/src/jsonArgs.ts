@@ -1,7 +1,5 @@
 import { readFileSync } from 'node:fs'
 
-import { assertValidAnnotations } from './annotationSpec.ts'
-
 import type { Annotation } from './annotationOverlay.ts'
 
 // inline JSON, `-` for stdin, or a path: the forms `jb2export --spec` reads
@@ -36,7 +34,6 @@ export function readAnnotations(value: string): Annotation[] {
   if (!Array.isArray(parsed)) {
     throw new Error('--annotations must be a JSON array of callouts')
   }
-  assertValidAnnotations(parsed as Annotation[])
   return parsed as Annotation[]
 }
 

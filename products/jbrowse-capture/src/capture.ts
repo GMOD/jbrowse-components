@@ -1,6 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 
+import { assertValidAnnotations } from './annotationSpec.ts'
 import { drawAnnotations } from './annotations.ts'
 import { isBrowserConsoleNoise, launchBrowser } from './browser.ts'
 import { resolveAgainstConfig } from './catalog.ts'
@@ -141,6 +142,9 @@ export async function captureJBrowse(
   options: CaptureOptions = {},
 ): Promise<CaptureResult> {
   const { out, fullPage = false, annotations, ...openOptions } = options
+  if (annotations) {
+    assertValidAnnotations(annotations)
+  }
   if (out) {
     assertImagePath(out)
     mkdirSync(dirname(out), { recursive: true })
