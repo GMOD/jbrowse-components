@@ -764,15 +764,6 @@ export function stateModelFactory(
           },
         }
       })
-      .views(self => ({
-        /**
-         * #getter
-         * The rows drawn, top to bottom: the arrangement narrowed to the focus.
-         */
-        get sources(): RowSource[] {
-          return self.clusterableSources
-        },
-      }))
       .views(self => {
         let keySpace = { field: '', rowKeys: new RowKeys() }
         return {

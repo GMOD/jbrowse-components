@@ -889,6 +889,16 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
+       * Overridable hook: the rows drawn, top to bottom, `bandedSources` by
+       * default. MAF drops its hidden reference row.
+       */
+      get sources(): S[] {
+        return self.bandedSources
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * The names of the rows a clustering run clusters, by band, so each band
        * clusters apart and the run writes one forest; undefined while fewer
        * than two bands stack.

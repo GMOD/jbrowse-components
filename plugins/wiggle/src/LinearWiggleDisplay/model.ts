@@ -34,7 +34,6 @@ import {
   TreeSidebarMixin,
   clusteringMenuItem,
   computeClusterHierarchy,
-  keptRows,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   setupTreeSidebarAutoruns,
@@ -391,9 +390,6 @@ export default function stateModelFactory(
        */
       get perSource(): boolean {
         return self.rowPaletteDeals
-      },
-      get sources(): Source[] {
-        return keptRows(self.editableSources, self.rowFocus)
       },
     }))
     .views(self => ({

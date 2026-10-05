@@ -1143,29 +1143,14 @@ export function stateModelFactory(
          * The adapter's samples narrowed to the focus, `rows.kept` — a
          * haplotype named there keeps its sample. The row set the fetch asks
          * for, and so it must not read `samplePloidy` (see `sampleFilter`).
-         * `undefined` until the samples land.
+         * `undefined` until the samples land: `sampleFilter` and `fetchNeeded`
+         * both read it, and its `undefined` → list transition wakes the fetch
+         * autorun (reference/FETCH_KEYS.md §"The global-fetch trigger list must
+         * be read unconditionally"). `sources` is the resolved list.
          */
         get sourcesBase(): Source[] | undefined {
           const sources = self.adapterSamples
           return sources && keptRows(sources, self.rowFocus, self.rowAlias)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The display rows, `bandedSources`, each carrying its `rowColor`. A
-         * cross-band drag snaps back while the facet is on.
-         *
-         * **Resolved — an array, never `undefined`**, which is the shared
-         * spelling across the row displays. `adapterSamples` and `sourcesBase`
-         * keep their `undefined`, because there it is genuinely load-bearing:
-         * `sampleFilter` and `fetchNeeded` both read `sourcesBase`, and its
-         * `undefined` → list transition is what wakes the fetch autorun
-         * (reference/FETCH_KEYS.md §"The global-fetch trigger list must be
-         * read unconditionally").
-         */
-        get sources(): ProcessedSource[] {
-          return self.bandedSources
         },
       }))
       .views(self => ({

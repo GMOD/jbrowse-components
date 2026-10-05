@@ -456,16 +456,6 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The display rows, which render order, label order and `rowIndexByValue`
-       * all key off.
-       */
-      get sources(): RowSource[] {
-        return self.bandedSources
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        */
       get rowIndexByValue(): Map<string, number> {
         return new Map(self.sources.map((s, i) => [s.name, i] as const))
