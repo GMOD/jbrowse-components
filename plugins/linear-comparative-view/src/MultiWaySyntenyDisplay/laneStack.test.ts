@@ -496,6 +496,28 @@ describe('the baseline', () => {
       expect(session.temporaryAssemblies).toEqual([])
     })
 
+    test('"Open in new view" on one of two displays sharing a lane leaves the other holding it', async () => {
+      const { displays, session } = createDisplayWithSession({
+        trackAssemblyNames: ['volvox', 'hg002'],
+        copies: 2,
+        describeAssemblies: () => ({ hg002: { assembly: HG002 } }),
+      })
+      for (const display of displays) {
+        await frameDisplay(display, 'hg002')
+        await when(() => display.laneAssemblyConfs.has('hg002'), {
+          timeout: 5000,
+        })
+      }
+      const [held] = session.temporaryAssemblies
+      displays[0]!.openInNewView('hg002', 'ctgA:1-100')
+      expect(session.temporaryAssemblies[0]).toBe(held)
+      const view = displays[0]!.lgv
+      view.hideTrack('multiway_track')
+      expect(session.temporaryAssemblies[0]).toBe(held)
+      view.hideTrack('multiway_track')
+      expect(session.temporaryAssemblies).toEqual([])
+    })
+
     test('a genome still loading keeps the divider until its load redraws the lane', async () => {
       const loaded = observable.box(false)
       const assembly = testAssembly()

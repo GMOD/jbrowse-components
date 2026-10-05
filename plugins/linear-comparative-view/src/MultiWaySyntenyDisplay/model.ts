@@ -106,6 +106,7 @@ import {
   staleLaneSpecs,
 } from './laneFetch.ts'
 import { LABEL_FONT_SIZE, laneHeaderRows } from './laneHeader.ts'
+import { releaseLaneAssembly } from './laneHolders.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
   LANE_TEMPLATE_MAX_BP,
@@ -3014,7 +3015,7 @@ export function stateModelFactory(
         const described = self.laneAssemblyConfs.get(assemblyName)
         if (described) {
           self.releasedLanes = new Set([...self.releasedLanes, assemblyName])
-          session.removeTemporaryAssembly?.(String(described.name))
+          releaseLaneAssembly(self, String(described.name))
         }
         const genes = self.laneGeneTracks.get(assemblyName)
         openAssemblyInLinearView({
