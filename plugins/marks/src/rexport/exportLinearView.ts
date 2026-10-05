@@ -91,6 +91,7 @@ async function tracksOf(view: LinearGenomeViewModel) {
         adapter: getConf(track, 'adapter') as Record<string, unknown>,
         display: displaySettings(display),
         reference,
+        viewBpPerPx: view.bpPerPx,
         refNames: await refNamesOf(view, track),
       })
     }

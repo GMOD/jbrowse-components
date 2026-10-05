@@ -20,8 +20,9 @@ function render(
   display: DisplaySpec,
   regions = [{ refName: 'ctgA', start: 100, end: 200 }],
   frame: RFrame = bigwig,
+  viewBpPerPx?: number,
 ) {
-  const { plot, notes } = markPlot({ display, frame, regions })
+  const { plot, notes } = markPlot({ display, frame, regions, viewBpPerPx })
   return { r: renderPlot('p', plot), notes, plot }
 }
 
@@ -865,5 +866,38 @@ describe('a column name R would misparse', () => {
       }),
     )
     expect(r).toContain('y = `read-depth`')
+  })
+})
+
+describe('a mark that draws only in a zoom range', () => {
+  const display: DisplaySpec = {
+    marks: [
+      { mark: 'bar', maxBpPerPx: 20, encoding: { y: 'score' } },
+      { mark: 'point', minBpPerPx: 20, encoding: { y: 'score' } },
+    ],
+  }
+  const draws = (viewBpPerPx: number) =>
+    render(display, undefined, undefined, viewBpPerPx).plot.layers.map(
+      l => l.geom,
+    )
+
+  it('draws the mark the view is zoomed into and no other', () => {
+    expect(draws(5)).toEqual(['rect'])
+    expect(draws(50)).toEqual(['point'])
+  })
+
+  it('takes the lower bound as inclusive and the upper as exclusive, as the display does', () => {
+    expect(draws(20)).toEqual(['point'])
+  })
+
+  it('says which mark it left out and why', () => {
+    const { notes } = render(display, undefined, undefined, 50)
+    expect(notes).toContain(
+      'bar: drawn only below 20 bp/px, which the view was not at, so it draws nothing',
+    )
+  })
+
+  it('draws every mark where the view zoom is unknown', () => {
+    expect(render(display).plot.layers).toHaveLength(2)
   })
 })

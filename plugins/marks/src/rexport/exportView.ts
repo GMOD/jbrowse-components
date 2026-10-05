@@ -27,6 +27,8 @@ export interface RExportTrack {
   reference?: string
   /** Canonical refName to the name the track's file spells it with, where they differ. */
   refNames?: Record<string, string>
+  /** The view's zoom, which gates a mark that draws only in a bp/px range. */
+  viewBpPerPx?: number
 }
 
 export interface RExportPanels {
@@ -119,7 +121,12 @@ function markPanels(
     aliases: track.refNames,
     fields: fieldsRead(display),
   })
-  const { plot, notes } = markPlot({ display, frame: base, regions })
+  const { plot, notes } = markPlot({
+    display,
+    frame: base,
+    regions,
+    viewBpPerPx: track.viewBpPerPx,
+  })
   return {
     panels: [{ variable: `p_${key}`, plot }],
     notes: [...sourceNotes(uri), ...notes],

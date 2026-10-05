@@ -376,6 +376,23 @@ function band(row: string | undefined, offset: number) {
   return offset ? expr(`${rIdent(row)} + ${offset}`) : row
 }
 
+function drawsAt(
+  { minBpPerPx = 0, maxBpPerPx = 0 }: MarkConfig,
+  bpPerPx: number,
+) {
+  return (
+    (minBpPerPx <= 0 || bpPerPx >= minBpPerPx) &&
+    (maxBpPerPx <= 0 || bpPerPx < maxBpPerPx)
+  )
+}
+
+function zoomRange({ minBpPerPx = 0, maxBpPerPx = 0 }: MarkConfig) {
+  return [
+    ...(minBpPerPx > 0 ? [`from ${minBpPerPx} bp/px`] : []),
+    ...(maxBpPerPx > 0 ? [`below ${maxBpPerPx} bp/px`] : []),
+  ].join(' ')
+}
+
 /** A rect at least `minWidthBp` wide, as the browser keeps a mark at least a pixel across. */
 function rightEdge(x: string, x2: string, minWidthBp: number | undefined) {
   return minWidthBp
@@ -594,6 +611,7 @@ export function markLayer(
     by = [],
     name = `${frame.name}_path`,
     minWidthBp,
+    viewBpPerPx,
   }: {
     /** Every step the mark's frame went through, display's first. */
     steps?: readonly Step[]
@@ -603,9 +621,17 @@ export function markLayer(
     name?: string
     /** The least width in bp a span or bar draws. */
     minWidthBp?: number
+    /** The view's zoom, which a mark's `minBpPerPx` and `maxBpPerPx` gate on. */
+    viewBpPerPx?: number
   } = {},
 ) {
   const encoding: Encoding = m.encoding ?? {}
+  if (viewBpPerPx !== undefined && !drawsAt(m, viewBpPerPx)) {
+    notes.push(
+      `${m.mark}: drawn only ${zoomRange(m)}, which the view was not at, so it draws nothing`,
+    )
+    return undefined
+  }
   const filled = stepChannels(steps)
   const y = plainField(encoding.y) || filled.y
   const row = plainField(encoding.row) || filled.row
@@ -659,9 +685,6 @@ export function markLayer(
   }
   if (m.source === 'density') {
     notes.push(`${m.mark}: drawn from the density sidecar, not the features`)
-  }
-  if (m.minBpPerPx || m.maxBpPerPx) {
-    notes.push(`${m.mark}: its zoom range is a live-view rule, not a figure's`)
   }
   // `shape` is the point's channel, and MARK_SPECS says so, so a shape written
   // on a mark that does not take it is the config's problem to report, not a
@@ -777,9 +800,12 @@ export function markPlot({
   display,
   frame,
   regions,
+  viewBpPerPx,
 }: {
   display: DisplaySpec
   frame: RFrame
+  /** The view's zoom, where the caller has it; the mark zoom gates read it. */
+  viewBpPerPx?: number
   /**
    * The displayed regions. Past one they concatenate onto a cumulative-bp
    * axis, so the x range is the one `region_layout` computed and not the
@@ -852,6 +878,7 @@ export function markPlot({
       by: facetBy ? [facetBy.field] : [],
       name: `${frame.name}_path${i + 1}`,
       minWidthBp: bpPerPx * MIN_MARK_PX,
+      viewBpPerPx,
     })
     if (!built) {
       continue
