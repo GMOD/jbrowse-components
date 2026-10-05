@@ -44,8 +44,8 @@ export function createMafTestEnvironment({
     adapter: {
       name: 'MafTabixAdapter',
       slots: {
-        summaryAdapter: { type: 'frozen', defaultValue: null },
-        annotationAdapter: { type: 'frozen', defaultValue: null },
+        summaryAdapter: { type: 'maybeFrozen' },
+        annotationAdapter: { type: 'maybeFrozen' },
       },
       // No `samples` slot on the adapter → the sample-discovery path.
       config: { type: 'MafTabixAdapter', summaryAdapter, annotationAdapter },

@@ -42,7 +42,7 @@ export function createTestEnvironment({
     trackType: 'GWASTrack',
     adapter: {
       name: 'GWASAdapter',
-      slots: { ldAdapter: { type: 'frozen', defaultValue: null } },
+      slots: { ldAdapter: { type: 'maybeFrozen' } },
       config: {
         type: 'GWASAdapter',
         ...(ldAdapter

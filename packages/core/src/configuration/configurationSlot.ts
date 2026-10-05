@@ -297,6 +297,11 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
   }
+  if (defaultValue === null) {
+    throw new Error(
+      `a slot cannot default to null, which a write reads as a reset to the default (ADR-146): a slot meaning "unset" is a maybe* type, such as maybeFrozen`,
+    )
+  }
   // the `maybe*` types intentionally default to `undefined` (the "unset"
   // state); every other slot type must declare a concrete default so a missing
   // one is caught as an authoring mistake.

@@ -148,7 +148,7 @@ function setup({
     viewModel: linearGenomeViewStateModelFactory,
     adapter: {
       name: 'CoarseTierTestAdapter',
-      slots: { coarseAdapter: { type: 'frozen', defaultValue: null } },
+      slots: { coarseAdapter: { type: 'maybeFrozen' } },
       config: {
         type: 'CoarseTierTestAdapter',
         coarseAdapter: withSource ? { type: 'BigWigAdapter' } : null,

@@ -91,7 +91,7 @@ function setup() {
     trackType: 'GWASTrack',
     adapter: {
       name: 'GWASAdapter',
-      slots: { ldAdapter: { type: 'frozen', defaultValue: null } },
+      slots: { ldAdapter: { type: 'maybeFrozen' } },
       config: {
         type: 'GWASAdapter',
         ldAdapter: { type: 'PlinkLDAdapter', uri: 'https://example.com/x.ld' },

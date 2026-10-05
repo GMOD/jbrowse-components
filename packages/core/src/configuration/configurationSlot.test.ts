@@ -49,6 +49,12 @@ test('ConfigSlot requires a defaultValue', () => {
   ).toThrow(/defaultValue/)
 })
 
+test('ConfigSlot refuses a null default, which a write reads as a reset', () => {
+  expect(() => ConfigSlot({ type: 'frozen', defaultValue: null })).toThrow(
+    /maybeFrozen/,
+  )
+})
+
 test('a jexl callback is evaluated on read with args', () => {
   const config = makeConfig(
     { type: 'color', defaultValue: 'red', contextVariable: ['a'] },

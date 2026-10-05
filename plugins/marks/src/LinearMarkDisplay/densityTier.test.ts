@@ -46,7 +46,7 @@ function createTestEnvironment(
     trackType: 'FeatureTrack',
     adapter: {
       name: 'BedAdapter',
-      slots: { densityAdapter: { type: 'frozen', defaultValue: null } },
+      slots: { densityAdapter: { type: 'maybeFrozen' } },
       config: { type: 'BedAdapter', densityAdapter },
     },
     displayName: 'LinearMarkDisplay',
