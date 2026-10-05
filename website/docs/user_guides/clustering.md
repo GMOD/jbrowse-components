@@ -135,7 +135,7 @@ rows are its species, so its `rows` takes the variant display's members, and a
 `tree` there replaces the adapter's guide tree.
 
 The per-display field references are
-[](/docs/models/multisamplevariantbasemodel) and
+[](/docs/models/linearmultisamplevariantdisplay) and
 [](/docs/config/linearwiggledisplay).
 
 ## See also
