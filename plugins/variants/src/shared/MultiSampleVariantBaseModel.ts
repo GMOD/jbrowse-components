@@ -47,7 +47,6 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   RowHeightMixin,
   TreeSidebarMixin,
-  buildSpatialIndex,
   computeClusterHierarchy,
   keptRows,
   loadedRegionIndexAt,
@@ -1291,9 +1290,6 @@ export default function MultiSampleVariantBaseModelF(
             }
           }
           return out
-        },
-        get spatialIndex() {
-          return buildSpatialIndex(self.hierarchy)
         },
         /**
          * #getter

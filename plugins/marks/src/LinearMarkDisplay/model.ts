@@ -71,7 +71,6 @@ import {
 import {
   RowHeightMixin,
   TreeSidebarMixin,
-  buildSpatialIndex,
   computeClusterHierarchy,
   orderRowsByValueAt,
   setupTreeSidebarAutoruns,
@@ -1614,12 +1613,6 @@ export function stateModelFactory(
             self.treeAreaWidth,
             self.showBranchLength,
           )
-        },
-        /**
-         * #getter
-         */
-        get spatialIndex() {
-          return buildSpatialIndex(this.hierarchy)
         },
         /**
          * #getter

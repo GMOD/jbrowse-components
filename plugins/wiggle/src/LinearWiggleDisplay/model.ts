@@ -32,7 +32,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   ContextMenuMixin,
   TreeSidebarMixin,
-  buildSpatialIndex,
   clusteringMenuItem,
   computeClusterHierarchy,
   keptRows,
@@ -723,9 +722,6 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      get spatialIndex() {
-        return buildSpatialIndex(self.hierarchy)
-      },
       /**
        * #getter
        */

@@ -47,7 +47,6 @@ import {
   RowHeightMixin,
   TreeSidebarMixin,
   applySubtreeFilter,
-  buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
   getLeafNames,
@@ -1493,14 +1492,6 @@ export default function stateModelFactory(
         // by overriding `scrollableHeight` above — nothing self-corrects a
         // stranded offset here, since the rows are a fixed-size canvas painted
         // at `-scrollTop`, not a DOM overflow container.
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         */
-        get spatialIndex() {
-          return buildSpatialIndex(self.hierarchy)
-        },
       }))
       .actions(self => ({
         /**

@@ -41,7 +41,6 @@ import {
   ContextMenuMixin,
   RowHeightMixin,
   TreeSidebarMixin,
-  buildSpatialIndex,
   computeClusterHierarchy,
   resetRowOrderMenuItems,
   setupTreeSidebarAutoruns,
@@ -720,12 +719,6 @@ export default function stateModelFactory(
        */
       get sidebarOffset(): number {
         return treeSidebarOffset(self)
-      },
-      /**
-       * #getter
-       */
-      get spatialIndex() {
-        return buildSpatialIndex(self.hierarchy)
       },
       /**
        * #getter

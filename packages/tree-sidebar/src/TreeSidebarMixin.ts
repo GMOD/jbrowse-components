@@ -35,6 +35,7 @@ import {
 } from './rowColorScale.ts'
 import { labelEdits } from './rowEdits.ts'
 import { IDENTITY_FIELDS, extraColumns } from './sourcesGridUtils.ts'
+import { buildSpatialIndex } from './spatialIndex.ts'
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
 import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
@@ -48,9 +49,14 @@ import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { RowColorSnapshot } from './rowColorChoice.ts'
 import type { RowColorKeyInputs, RowColorSetting } from './rowColorScale.ts'
 import type { RowSortSpec } from './rowSortAutorun.ts'
+import type { TreeSpatialIndex } from './spatialIndex.ts'
 import type { SvgSidebarProps } from './svgSidebarWidth.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
-import type { HoveredTreeNode, RowSource } from './types.ts'
+import type {
+  ClusterHierarchyNode,
+  HoveredTreeNode,
+  RowSource,
+} from './types.ts'
 import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
@@ -401,6 +407,22 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get svgSidebar(): SvgSidebarProps | undefined {
         return undefined
+      },
+      /**
+       * #getter
+       * Overridable hook: the dendrogram positioned against the rows drawn,
+       * or undefined, the default, for none.
+       */
+      get hierarchy(): ClusterHierarchyNode | undefined {
+        return undefined
+      },
+      /**
+       * #getter
+       * The hit index the sidebar's subtree hover reads, built from
+       * `hierarchy`.
+       */
+      get spatialIndex(): TreeSpatialIndex | undefined {
+        return buildSpatialIndex(this.hierarchy)
       },
       /**
        * #getter

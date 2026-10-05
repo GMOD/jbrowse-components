@@ -27,10 +27,6 @@ function nodeBox(node: ClusterHierarchyNode) {
   }
 }
 
-// Accepts an undefined hierarchy (returning undefined) so every consumer's
-// `spatialIndex` getter is a single `buildSpatialIndex(self.hierarchy)` call
-// rather than repeating the same `hierarchy ? … : undefined` guard.
-//
 // Internal nodes only: a leaf is one row, and "show only this subtree" over a
 // single row is not an operation the menu offers. A band forest's root draws
 // nothing, so nothing points at it.
