@@ -97,10 +97,11 @@ on from the track selector. **Display types → Graph** in its track menu draws
 that same track as a graph of the walks, and **Layout → Force-directed layout**
 lays it out.
 
-**Haplotypes → The track's 8 assemblies** is checked in the same menu: the track
-cuts for the eight HPRC assemblies the hosted config loads. Every haplotype's
-walks through the array hold more nodes than a force-directed drawing takes, so
-this step keeps the eight, and walk rows below draw them all.
+**Haplotypes → The track's 8 assemblies** <!-- menu-path-ok --> is checked in
+the same menu: the track cuts for the eight HPRC assemblies the hosted config
+loads. Every haplotype's walks through the array hold more nodes than a
+force-directed drawing takes, so this step keeps the eight, and walk rows below
+draw them all.
 
 A node draws thicker the more walks visit it (as in Bandage), so the shared
 backbone is the thick line and copies on one haplotype are thin loops. Pick
@@ -345,8 +346,8 @@ divide into motif-length units.
 
 Each walk's bar carries a tick at the allele length TRGT called from reads, so a
 tick at the bar's end means reads and assembly agree. To compare seven samples,
-keep the _ABCA7_ record picked under **Repeat**, choose **Samples → Choose
-samples...** in the graph track's menu, and pick HG00099, HG03688, HG00741,
+keep the _ABCA7_ record picked under **Repeat**, then in the graph track's menu
+choose **Samples → Choose samples...** and pick HG00099, HG03688, HG00741,
 HG02647, HG01943, HG02559 and HG04199 in that order. Their walks show in pairs,
 in the order picked, and fall into three groups:
 
@@ -359,9 +360,6 @@ in the order picked, and fall into three groups:
   does not span the repeat, so its readout marks that walk partial.
 
 <Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar marked with the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
-
-**Samples → Where walk and call disagree** shows every sample with a walk far
-from its call, and **Samples → Every sample** brings the cohort back.
 
 ## Reading TRGT's allele lengths and spanning reads
 
