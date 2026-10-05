@@ -71,7 +71,6 @@ import {
 import {
   RowHeightMixin,
   TreeSidebarMixin,
-  computeClusterHierarchy,
   orderRowsByValueAt,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
@@ -1595,17 +1594,9 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: the dendrogram positioned against the
-         * rows drawn, or undefined where it no longer names them.
          */
-        get hierarchy() {
-          return computeClusterHierarchy(
-            self.root,
-            self.sources,
-            self.sources.length * self.effectiveRowHeight,
-            self.treeAreaWidth,
-            self.showBranchLength,
-          )
+        get rowsContentHeight(): number {
+          return self.sources.length * self.effectiveRowHeight
         },
         /**
          * #getter
@@ -1614,7 +1605,7 @@ export function stateModelFactory(
           return self.drawsKeyedRows
             ? {
                 showTree: self.showTree,
-                hierarchy: this.hierarchy,
+                hierarchy: self.hierarchy,
                 sources: self.sources,
                 rowHeight: self.effectiveRowHeight,
                 treeAreaWidth: self.treeAreaWidth,

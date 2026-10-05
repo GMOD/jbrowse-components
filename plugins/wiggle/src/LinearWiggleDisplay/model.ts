@@ -33,7 +33,6 @@ import {
   ContextMenuMixin,
   TreeSidebarMixin,
   clusteringMenuItem,
-  computeClusterHierarchy,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   setupTreeSidebarAutoruns,
@@ -696,25 +695,19 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: the positioned dendrogram, or undefined in
-       * an overlay mode: overlay collapses every source onto one row, so a tree spreading its leaves over
-       * the full height would align to nothing. This is the single gate — the
-       * on-screen sidebar, the SVG export, `spatialIndex` (subtree hover), and
-       * `treeSidebarRightEdge` (the tooltip/crosshair dead zone the sidebar
-       * reserves) all read it, so none of them can keep drawing or reserving
-       * space on their own. A subtree filter set in a row mode still applies and
-       * is still clearable from the track menu and WiggleHint.
+       * Overlay collapses every source onto one row, so a tree spreading its
+       * leaves over the full height would align to nothing. A subtree filter
+       * set in a row mode still applies and is still clearable from the track
+       * menu and WiggleHint.
        */
-      get hierarchy() {
-        return self.isOverlay
-          ? undefined
-          : computeClusterHierarchy(
-              self.root,
-              self.sources,
-              self.height,
-              self.treeAreaWidth,
-              self.showBranchLength,
-            )
+      get drawsTree(): boolean {
+        return !self.isOverlay
+      },
+      /**
+       * #getter
+       */
+      get rowsContentHeight(): number {
+        return self.height
       },
     }))
     .views(self => ({

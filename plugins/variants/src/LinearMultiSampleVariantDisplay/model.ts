@@ -70,7 +70,6 @@ import { inkOfInstances, shiftInk } from '@jbrowse/render-core/marks'
 import {
   RowHeightMixin,
   TreeSidebarMixin,
-  computeClusterHierarchy,
   keptRows,
   loadedRegionIndexAt,
 } from '@jbrowse/tree-sidebar'
@@ -1440,18 +1439,9 @@ export function stateModelFactory(
           },
           /**
            * #getter
-           * `TreeSidebarMixin`'s hook: the dendrogram positioned against the
-           * rows drawn, banded as they are.
            */
-          get hierarchy() {
-            return computeClusterHierarchy(
-              self.root,
-              self.sources,
-              self.effectiveRowHeight * this.nrow,
-              self.treeAreaWidth,
-              self.showBranchLength,
-              self.rowBands,
-            )
+          get rowsContentHeight(): number {
+            return self.effectiveRowHeight * this.nrow
           },
           /**
            * #getter
@@ -1459,7 +1449,7 @@ export function stateModelFactory(
           get svgSidebar(): SvgSidebarProps {
             return {
               showTree: self.showTree,
-              hierarchy: this.hierarchy,
+              hierarchy: self.hierarchy,
               sources: self.sources,
               rowHeight: self.effectiveRowHeight,
               treeAreaWidth: self.treeAreaWidth,

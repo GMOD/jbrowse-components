@@ -10,6 +10,7 @@ import { arrangeRows, bandRows, orderRowsByDomain } from './arrangeRows.ts'
 import {
   applySubtreeFilter,
   buildTree,
+  computeClusterHierarchy,
   getLeafNames,
   keptRows,
   matchBandClades,
@@ -407,23 +408,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get svgSidebar(): SvgSidebarProps | undefined {
         return undefined
-      },
-      /**
-       * #getter
-       * Overridable hook: the dendrogram positioned against the rows drawn,
-       * or undefined, the default, for none.
-       */
-      get hierarchy(): ClusterHierarchyNode | undefined {
-        return undefined
-      },
-      /**
-       * #getter
-       * The hit index the sidebar's subtree hover reads, built from
-       * `hierarchy`.
-       */
-      get spatialIndex(): TreeSpatialIndex | undefined {
-        const { hierarchy } = this
-        return hierarchy && buildSpatialIndex(hierarchy)
       },
       /**
        * #getter
@@ -894,6 +878,68 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get sources(): S[] {
         return self.bandedSources
+      },
+      /**
+       * #getter
+       * Overridable hook: the px height the dendrogram's leaves spread over,
+       * which each display sets to the height its rows fill, as they scroll
+       * where they scroll. 0 by default, which draws no tree.
+       */
+      get rowsContentHeight(): number {
+        return 0
+      },
+      /**
+       * #getter
+       * Overridable hook: the tree `hierarchy` positions, `root` by default.
+       * `computeClusterHierarchy` declines to position a tree whose leaves are
+       * no longer the rows drawn, so a display that hides a row prunes it from
+       * the tree here too, or the whole dendrogram goes with the row.
+       */
+      get treeRoot() {
+        return self.root
+      },
+      /**
+       * #getter
+       * Overridable hook: whether the dendrogram draws at all, true by
+       * default. This is the single gate: the on-screen sidebar, the SVG
+       * export, `spatialIndex` (subtree hover) and the tooltip dead zone the
+       * sidebar reserves all read `hierarchy`, so none keeps drawing or
+       * reserving space on its own.
+       */
+      get drawsTree(): boolean {
+        return true
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The dendrogram positioned against the rows drawn, or undefined while
+       * there is no tree or `drawsTree` is off. `computeClusterHierarchy`
+       * checks the tree's leaves against the drawn row names, the backstop
+       * against anything reordering `sources` downstream of the arrangement:
+       * such a reorder drops the dendrogram rather than drawing it against
+       * rows it does not name.
+       */
+      get hierarchy(): ClusterHierarchyNode | undefined {
+        return self.drawsTree
+          ? computeClusterHierarchy(
+              self.treeRoot,
+              self.sources,
+              self.rowsContentHeight,
+              self.treeAreaWidth,
+              self.showBranchLength,
+              self.rowBands,
+            )
+          : undefined
+      },
+      /**
+       * #getter
+       * The hit index the sidebar's subtree hover reads, built from
+       * `hierarchy`.
+       */
+      get spatialIndex(): TreeSpatialIndex | undefined {
+        const { hierarchy } = this
+        return hierarchy && buildSpatialIndex(hierarchy)
       },
     }))
     .views(self => ({

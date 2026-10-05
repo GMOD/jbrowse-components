@@ -41,7 +41,6 @@ import {
   ContextMenuMixin,
   RowHeightMixin,
   TreeSidebarMixin,
-  computeClusterHierarchy,
   resetRowOrderMenuItems,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
@@ -689,21 +688,9 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: the positioned dendrogram, when a cluster
-       * tree exists and describes the rows on screen. Passing the drawn row
-       * names is the backstop against anything
-       * reordering `sources` downstream of the arrangement: such a reorder drops
-       * the dendrogram rather than drawing it against rows it does not name.
        */
-      get hierarchy() {
-        return computeClusterHierarchy(
-          self.root,
-          self.sources,
-          self.nrow * self.effectiveRowHeight,
-          self.treeAreaWidth,
-          self.showBranchLength,
-          self.rowBands,
-        )
+      get rowsContentHeight(): number {
+        return self.nrow * self.effectiveRowHeight
       },
     }))
     .views(self => ({
