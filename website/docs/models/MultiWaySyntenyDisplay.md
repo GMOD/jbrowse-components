@@ -135,6 +135,9 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-declaredlanelabels">**declaredLaneLabels**</span><br><code>Map&lt;string, string&gt;</code> | keyed by `laneKey` | MultiWaySyntenyDisplay |
 | <span id="getter-laneuniverse">**laneUniverse**</span><br><code>LaneChoice[]</code> | the anchor is never a lane | MultiWaySyntenyDisplay |
 | <span id="getter-rowassemblies">**rowAssemblies**</span><br><code>string[]</code> | a paralogy mate on the anchor assembly draws on its axis, not as a row | MultiWaySyntenyDisplay |
+| <span id="getter-lanestructureorder">**laneStructureOrder**</span><br><code>string[]</code> | the drawn lanes chained by their deletions and insertions against the anchor, for "Order lanes by structure"; empty for a gene table | MultiWaySyntenyDisplay |
+| <span id="getter-rowoflane">**rowOfLane**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | each drawn lane's row name by its canonical name, for data keyed by the records' spelling of a lane | MultiWaySyntenyDisplay |
+| <span id="getter-laneoffanchor">**laneOffAnchor**</span><br><code>ReadonlyMap&lt;string, LaneInterval[]&gt;</code> | each lane's stretches between two it aligns to the anchor with, which the anchor lacks, keyed by the lane's row; empty for a gene table, whose records are genes | MultiWaySyntenyDisplay |
 | <span id="getter-lanestodescribe">**lanesToDescribe**</span><br><code>string[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-laneassemblyconfs">**laneAssemblyConfs**</span><br><code>Map&lt;string, Record&lt;string, unknown&gt;&gt;</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-canreanchor">**canReanchor**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
