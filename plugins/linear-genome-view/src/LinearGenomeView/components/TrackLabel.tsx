@@ -19,7 +19,7 @@ const useStyles = makeStyles()(theme => ({
   root: {
     // above breakpoint split view
     zIndex: 200,
-    background: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.paper,
     display: 'inline-flex',
     alignItems: 'center',
     maxWidth: 'calc(100% - 16px)',

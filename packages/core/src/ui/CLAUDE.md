@@ -78,6 +78,11 @@ of a `makeStyles` rule is a second rule composed with `cx`, never an `sx` — th
 leading `subHeader` in `CascadingMenu` shipped its rule-off for six weeks that
 way.
 
+**A class on a `Paper` sets `backgroundColor`, never the `background`
+shorthand.** MUI draws the dark theme's elevation as a `background-image`
+overlay, and the shorthand resets it, so a floating label comes out the same
+color as the page behind it (`TrackLabel`, `MiniControls`).
+
 **`palette.ts` is the single source of truth for colors**; `theme.ts` builds the
 MUI theme over it and holds none of its own. Colors shared with RPC workers are
 plain `export const` CSS strings — import them directly, never a fallback copy

@@ -17,7 +17,7 @@ const useStyles = makeStyles()(theme => ({
   background: {
     position: 'absolute',
     right: 0,
-    background: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.paper,
 
     // needed when sticky header is off in lgv, e.g. in breakpoint split view
     zIndex: 2,
