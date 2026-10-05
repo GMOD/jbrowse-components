@@ -1,4 +1,4 @@
-import { DEFAULT_TIMEOUT, holdTrue } from './poll.ts'
+import { DEFAULT_TIMEOUT, holdTrue, queryWhileOpen } from './poll.ts'
 import { describeDisplays, displayCensusInPage } from './sessionGate.ts'
 
 import type { ElementHandle, Page } from 'puppeteer'
@@ -97,8 +97,9 @@ export async function appSettledBlocker(
   }: SettleOptions = {},
 ) {
   const blocker = () =>
-    page
-      .evaluate(
+    queryWhileOpen(
+      page,
+      page.evaluate(
         (ready, blockers, noMarker) =>
           document.querySelector('[data-app-phase]') === null
             ? noMarker
@@ -111,8 +112,9 @@ export async function appSettledBlocker(
         APP_READY,
         SETTLE_BLOCKERS,
         NO_MARKER,
-      )
-      .catch(() => 'the page could not be queried')
+      ),
+      'the page could not be queried',
+    )
   const held = await holdTrue(async () => (await blocker()) === undefined, {
     holdMs,
     timeout,

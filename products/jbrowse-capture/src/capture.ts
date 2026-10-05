@@ -86,7 +86,15 @@ export async function openJBrowse(
     }
     // an app streaming track data may never reach networkidle; the session
     // gate is the signal that it is up
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout })
+    const response = await page.goto(url, {
+      waitUntil: 'domcontentloaded',
+      timeout,
+    })
+    if (response && !response.ok()) {
+      throw new Error(
+        `${url} answered HTTP ${response.status()}. Check --instance.`,
+      )
+    }
     const { spec, session, assembly, hub, tracks } = urlOptions
     const opens = spec ?? (session && savedSnapshot(session))
     const report = await waitForJBrowseReady(page, {

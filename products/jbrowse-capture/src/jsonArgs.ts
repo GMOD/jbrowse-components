@@ -1,21 +1,30 @@
 import { readFileSync } from 'node:fs'
 
+import { assertValidAnnotations } from './annotationSpec.ts'
+
 import type { Annotation } from './annotationOverlay.ts'
 
 // inline JSON, `-` for stdin, or a path: the forms `jb2export --spec` reads
-function parseJson(value: string): unknown {
-  const inline = /^\s*[[{]/.test(value)
-  return JSON.parse(
-    value === '-'
-      ? readFileSync(0, 'utf8')
-      : inline
-        ? value
-        : readFileSync(value, 'utf8'),
-  )
+function parseJson(flag: string, value: string): unknown {
+  try {
+    const inline = /^\s*[[{]/.test(value)
+    return JSON.parse(
+      value === '-'
+        ? readFileSync(0, 'utf8')
+        : inline
+          ? value
+          : readFileSync(value, 'utf8'),
+    )
+  } catch (error) {
+    throw new Error(
+      `--${flag}: ${error instanceof Error ? error.message : error}`,
+      { cause: error },
+    )
+  }
 }
 
 export function readJson(flag: string, value: string): object {
-  const parsed = parseJson(value)
+  const parsed = parseJson(flag, value)
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new Error(`--${flag} must be a JSON object`)
   }
@@ -23,10 +32,11 @@ export function readJson(flag: string, value: string): object {
 }
 
 export function readAnnotations(value: string): Annotation[] {
-  const parsed = parseJson(value)
+  const parsed = parseJson('annotations', value)
   if (!Array.isArray(parsed)) {
     throw new Error('--annotations must be a JSON array of callouts')
   }
+  assertValidAnnotations(parsed as Annotation[])
   return parsed as Annotation[]
 }
 

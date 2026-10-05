@@ -13,8 +13,22 @@ test('a session or spec is an object, and an array is refused rather than wrappe
 })
 
 test('callouts are an array', () => {
-  expect(readAnnotations(' [{"type":"box"}]')).toEqual([{ type: 'box' }])
+  expect(
+    readAnnotations(' [{"type":"box","x":1,"y":2,"width":3,"height":4}]'),
+  ).toHaveLength(1)
   expect(() => readAnnotations('{"type":"box"}')).toThrow(
     '--annotations must be a JSON array of callouts',
+  )
+})
+
+test('a JSON syntax error names the flag', () => {
+  expect(() => readSpec('{bad')).toThrow(/^--spec: /)
+  expect(() => readJson('session', '{bad')).toThrow(/^--session: /)
+  expect(() => readAnnotations('[bad')).toThrow(/^--annotations: /)
+})
+
+test('a callout the overlay could not draw fails before a browser launches', () => {
+  expect(() => readAnnotations('[{"type":"squiggle"}]')).toThrow(
+    'annotation 0: type "squiggle" is not one of',
   )
 })

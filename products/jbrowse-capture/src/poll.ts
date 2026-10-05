@@ -1,3 +1,5 @@
+import type { Page } from 'puppeteer'
+
 /** The budget each stage of the ready chain gets unless told otherwise. */
 export const DEFAULT_TIMEOUT = 60000
 
@@ -36,4 +38,34 @@ export async function holdTrue(
     await delay(pollMs)
   }
   return false
+}
+
+const PAGE_GONE = /crashed|Target closed|Session closed|Connection closed/i
+
+/**
+ * Await a page query, answering `fallback` when it failed for a reason a later
+ * poll can outlive, such as a navigation destroying the execution context. A
+ * closed or crashed page throws, since no poll will recover it.
+ */
+export async function queryWhileOpen<T, F>(
+  page: Page,
+  query: Promise<T>,
+  fallback: F,
+): Promise<T | F> {
+  try {
+    return await query
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (
+      PAGE_GONE.test(message) ||
+      page.isClosed() ||
+      !page.browser().connected
+    ) {
+      throw new Error(
+        `the page closed or crashed before it finished rendering (${message})`,
+        { cause: error },
+      )
+    }
+    return fallback
+  }
 }

@@ -1,4 +1,10 @@
-import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
+import { PUBLIC_INSTANCE, instanceUrl, jbrowseUrl } from './url.ts'
+
+test('an instance that is not a URL names itself', () => {
+  expect(() => instanceUrl('nonsense')).toThrow(
+    'instance "nonsense" is not a URL',
+  )
+})
 
 const spec = {
   views: [

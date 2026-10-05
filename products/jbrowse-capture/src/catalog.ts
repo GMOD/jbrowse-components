@@ -87,8 +87,10 @@ export function resolveTrackId(
 /**
  * The options with the assembly and tracks checked against the config and
  * spelled the way it spells them, so a typo fails before a browser launches.
- * A config this cannot fetch passes through for the app to judge, and so does
- * a spec or saved session, which may declare tracks no config lists.
+ * A `--config` this cannot fetch passes through for the app to judge, and so
+ * does a spec or saved session, which may declare tracks no config lists. A
+ * hosted `hub` that fails to fetch throws, since genomes.jbrowse.org either has
+ * the assembly or the name is wrong.
  */
 export async function resolveAgainstConfig(
   options: JBrowseUrlOptions,
@@ -103,9 +105,10 @@ export async function resolveAgainstConfig(
   if (spec || session || !url || (!wanted && !tracks?.length)) {
     return options
   }
-  const catalog = (await fetchJson(url, 'config').catch(() => undefined)) as
-    | Catalog
-    | undefined
+  const fetched = fetchJson(url, config ? 'config' : `hub "${hub}"`)
+  const catalog = (await (config
+    ? fetched.catch(() => undefined)
+    : fetched)) as Catalog | undefined
   if (!catalog) {
     return options
   }

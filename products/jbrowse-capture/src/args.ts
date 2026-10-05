@@ -83,6 +83,14 @@ function finite(name: string, raw: string | undefined) {
   return n
 }
 
+function positiveInt(name: string, raw: string | undefined) {
+  const n = positive(name, raw)
+  if (n !== undefined && !Number.isInteger(n)) {
+    throw new Error(`--${name} needs a whole number, got "${raw}"`)
+  }
+  return n
+}
+
 function positive(name: string, raw: string | undefined) {
   const n = finite(name, raw)
   if (n !== undefined && n <= 0) {
@@ -117,14 +125,22 @@ export function parseArgs(argv: string[]): ParsedArgs {
       }
     }
   }
+  const fromStdin = (['spec', 'session', 'annotations'] as const).filter(
+    flag => values[flag] === '-',
+  )
+  if (fromStdin.length > 1) {
+    throw new Error(
+      `${fromStdin.map(f => `--${f}`).join(' and ')} cannot both read stdin (-)`,
+    )
+  }
   const { track, width, height, scale, timeout, ...rest } = values
   return {
     ...rest,
     command,
     // copied, since node hands back the option table's own default array
     tracks: [...track],
-    width: positive('width', width),
-    height: positive('height', height),
+    width: positiveInt('width', width),
+    height: positiveInt('height', height),
     scale: positive('scale', scale),
     timeout: positive('timeout', timeout),
     positionals,

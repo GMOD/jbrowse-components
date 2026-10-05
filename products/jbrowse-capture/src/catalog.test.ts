@@ -114,6 +114,18 @@ describe('against a served config', () => {
     await expect(resolveAgainstConfig(options)).resolves.toBe(options)
   })
 
+  test('a hosted hub that does not exist fails before any browser launches', async () => {
+    const real = globalThis.fetch
+    globalThis.fetch = () => Promise.resolve(new Response('', { status: 404 }))
+    try {
+      await expect(
+        resolveAgainstConfig({ hub: 'hg39zz', loc: 'x' }),
+      ).rejects.toThrow('hub "hg39zz" not found (HTTP 404')
+    } finally {
+      globalThis.fetch = real
+    }
+  })
+
   test('a spec passes through unread', async () => {
     const options = {
       instance: base,

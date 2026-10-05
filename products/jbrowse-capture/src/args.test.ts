@@ -19,6 +19,20 @@ test('a typical invocation', () => {
   expect(args.out).toBe('out.png')
 })
 
+test('a viewport is a whole number of pixels', () => {
+  expect(() => parseArgs(['--width', '1400.5'])).toThrow(
+    '--width needs a whole number, got "1400.5"',
+  )
+  expect(parseArgs(['--scale', '1.5']).scale).toBe(1.5)
+})
+
+test('only one JSON flag reads stdin', () => {
+  expect(() => parseArgs(['--spec', '-', '--annotations', '-'])).toThrow(
+    '--spec and --annotations cannot both read stdin',
+  )
+  expect(parseArgs(['--spec', '-', '--annotations', '[]']).spec).toBe('-')
+})
+
 test('--name=value and flags', () => {
   const args = parseArgs(['--width=1600', '--headed', '--fullPage'])
   expect(args.width).toBe(1600)

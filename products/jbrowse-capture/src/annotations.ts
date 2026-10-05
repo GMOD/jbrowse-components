@@ -3,6 +3,7 @@ import {
   drawAnnotationOverlay,
   parseAnnotationLocus,
 } from './annotationOverlay.ts'
+import { assertValidAnnotations } from './annotationSpec.ts'
 import { dotplotAnchorRect } from './dotplotAnchor.ts'
 import { graphNodeRect } from './graphAnchor.ts'
 
@@ -66,6 +67,7 @@ export async function clearAnnotations(page: Page) {
  * parked in the corner or missing.
  */
 export async function drawAnnotations(page: Page, annotations: Annotation[]) {
+  assertValidAnnotations(annotations)
   await clearAnnotations(page)
   const items: PayloadAnnotation[] = await Promise.all(
     annotations.map(async a => ({

@@ -107,6 +107,34 @@ test('a snackbar the app raised is named in the timeout, even once it is gone', 
   ).rejects.toThrow(/The app said: Error navigating to NOTAGENE\./)
 })
 
+test('a crashed page fails the gate at once instead of polling out the timeout', async () => {
+  const page = {
+    evaluate: () => Promise.reject(new Error('Page crashed!')),
+  } as unknown as Page
+  const start = Date.now()
+  await expect(
+    waitForSession(page, { assembly: 'hg38', timeout: 30000 }),
+  ).rejects.toThrow('the page closed or crashed before it finished rendering')
+  expect(Date.now() - start).toBeLessThan(1000)
+})
+
+test('a destroyed execution context is retried, not fatal', async () => {
+  let calls = 0
+  census(1, ['hg38'], [])
+  const page = {
+    evaluate: (fn: () => unknown) =>
+      ++calls === 1
+        ? Promise.reject(new Error('Execution context was destroyed'))
+        : Promise.resolve(fn()),
+    isClosed: () => false,
+    browser: () => ({ connected: true }),
+  } as unknown as Page
+  await expect(
+    waitForSession(page, { assembly: 'hg38', timeout: 3000 }),
+  ).resolves.toBeUndefined()
+  expect(calls).toBe(2)
+})
+
 test('no load failure reads as undefined', () => {
   census(1, ['hg38'], [])
   expect(readSessionInPage().failure).toBeUndefined()

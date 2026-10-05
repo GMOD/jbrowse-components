@@ -1,4 +1,4 @@
-import { DEFAULT_TIMEOUT, holdTrue } from './poll.ts'
+import { DEFAULT_TIMEOUT, holdTrue, queryWhileOpen } from './poll.ts'
 
 import type { Page } from 'puppeteer'
 
@@ -74,7 +74,11 @@ export async function waitForSession(
   const notices = new Set<string>()
   const reached = await holdTrue(
     async () => {
-      const read = await page.evaluate(readSessionInPage).catch(() => undefined)
+      const read = await queryWhileOpen(
+        page,
+        page.evaluate(readSessionInPage),
+        undefined,
+      )
       if (read?.failure) {
         throw new Error(`JBrowse could not load: ${read.failure}`)
       }
