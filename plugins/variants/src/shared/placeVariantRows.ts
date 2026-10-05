@@ -28,6 +28,10 @@ export type Placed<T> = T & {
  *
  * The genomic layout places one of these per region, the columns layout its
  * single payload.
+ *
+ * Reading rows through render-core's `rowTable` instead, as the multi-row
+ * display does, was measured and declined in ADR-211: a reorder costs 25 ms at
+ * 2,504 rows and 75 ms at 5,008, once per gesture.
  */
 export function placeVariantRows<
   T extends { cellRowIndices: Uint32Array; numCells: number },
